@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 680" width="1300" height="680" font-family="Helvetica, Arial, sans-serif">
+  <title>JIM-mini / Guardian — biometric monitoring triggers the matching QRME specialist agent</title>
+  <defs>
+    <linearGradient id="bgG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1B1D4E"/>
+      <stop offset="1" stop-color="#23255F"/>
+    </linearGradient>
+    <radialGradient id="coreG" cx="0.5" cy="0.45" r="0.6">
+      <stop offset="0" stop-color="#F4E3C8" stop-opacity="0.9"/>
+      <stop offset="0.6" stop-color="#E8A34D" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#E8A34D" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pulseG" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#E8A34D" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#E8A34D" stop-opacity="0"/>
+    </radialGradient>
+    <marker id="arrowG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#E8A34D"/>
+    </marker>
+    <marker id="arrowGs" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#C9CDD8"/>
+    </marker>
+  </defs>
+
+  <rect width="1300" height="680" fill="url(#bgG)"/>
+
+  <!-- 1. wearable + biometric signal -->
+  <g transform="translate(70 230)">
+    <circle cx="90" cy="90" r="120" fill="url(#pulseG)"/>
+    <!-- smart watch -->
+    <rect x="52" y="46" width="76" height="92" rx="20" fill="#2E3070" stroke="#C9CDD8" stroke-opacity="0.5" stroke-width="2"/>
+    <rect x="66" y="30" width="48" height="18" rx="7" fill="#2E3070"/>
+    <rect x="66" y="136" width="48" height="18" rx="7" fill="#2E3070"/>
+    <!-- ECG trace -->
+    <polyline points="60,92 74,92 82,72 92,116 102,92 120,92" fill="none" stroke="#E8A34D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="90" y="196" text-anchor="middle" fill="#C9CDD8" font-size="14">wearable signals</text>
+    <text x="90" y="216" text-anchor="middle" fill="#8B90A8" font-size="12">HR · SpO₂ · resp · context</text>
+  </g>
+
+  <path d="M290 320 H360" stroke="#E8A34D" stroke-width="3" fill="none" marker-end="url(#arrowG)"/>
+
+  <!-- 2. Guardian monitor: shield with pulse -->
+  <g transform="translate(380 200)">
+    <path d="M110 20 l96 34 v70 c0 78 -46 118 -96 140 c-50 -22 -96 -62 -96 -140 v-70 z"
+          fill="#2E3070" stroke="#E8A34D" stroke-opacity="0.7" stroke-width="2.5"/>
+    <polyline points="46,150 84,150 96,118 118,182 132,150 176,150" fill="none" stroke="#E8A34D" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="110" y="250" text-anchor="middle" fill="#F4E3C8" font-size="17" font-weight="bold">Guardian</text>
+    <text x="110" y="272" text-anchor="middle" fill="#C9CDD8" font-size="13">detects known conditions</text>
+  </g>
+
+  <!-- condition chips -->
+  <g transform="translate(380 470)" font-size="12" fill="#C9CDD8">
+    <g><rect width="98" height="26" rx="13" fill="none" stroke="#C9CDD8" stroke-opacity="0.5"/><text x="49" y="17" text-anchor="middle">anxiety</text></g>
+    <g transform="translate(112 0)"><rect width="120" height="26" rx="13" fill="none" stroke="#C9CDD8" stroke-opacity="0.5"/><text x="60" y="17" text-anchor="middle">financial stress</text></g>
+    <g transform="translate(0 34)"><rect width="98" height="26" rx="13" fill="none" stroke="#C9CDD8" stroke-opacity="0.5"/><text x="49" y="17" text-anchor="middle">relationship</text></g>
+    <g transform="translate(112 34)"><rect width="120" height="26" rx="13" fill="#E8A34D"/><text x="60" y="17" text-anchor="middle" fill="#161840">physical · critical</text></g>
+  </g>
+
+  <path d="M640 320 H720" stroke="#E8A34D" stroke-width="3" fill="none" marker-end="url(#arrowG)"/>
+  <text x="680" y="304" text-anchor="middle" fill="#C9CDD8" font-size="12">triggers</text>
+
+  <!-- 3. QRME specialist agent (a synthetic profile) -->
+  <g transform="translate(860 200)">
+    <circle cx="0" cy="120" r="120" fill="url(#coreG)"/>
+    <circle cx="0" cy="98" r="40" fill="#E8A34D"/>
+    <path d="M-58 214 C-58 156 -32 130 0 130 C32 130 58 156 58 214 Z" fill="#E8A34D" opacity="0.9"/>
+    <circle cx="0" cy="120" r="120" fill="none" stroke="#F4E3C8" stroke-opacity="0.3" stroke-width="1.5"/>
+    <text x="0" y="290" text-anchor="middle" fill="#F4E3C8" font-size="16" font-weight="bold">Specialist agent</text>
+    <text x="0" y="312" text-anchor="middle" fill="#C9CDD8" font-size="13">a QRME synthetic profile</text>
+  </g>
+
+  <!-- guidance out + escalation -->
+  <g transform="translate(1040 150)">
+    <rect width="210" height="70" rx="16" fill="#F4EFE4"/>
+    <path d="M30 70 l-18 20 v-20 z" fill="#F4EFE4"/>
+    <g stroke="#8B90A8" stroke-width="3" stroke-linecap="round">
+      <line x1="22" y1="26" x2="184" y2="26"/><line x1="22" y1="44" x2="150" y2="44"/>
+    </g>
+    <text x="105" y="-12" text-anchor="middle" fill="#C9CDD8" font-size="13">moderated guidance</text>
+  </g>
+
+  <!-- escalation path on critical -->
+  <g>
+    <path d="M900 434 Q900 520 1010 520" stroke="#C9CDD8" stroke-width="2.5" fill="none" stroke-dasharray="7 7" marker-end="url(#arrowGs)"/>
+    <g transform="translate(1014 494)">
+      <rect width="236" height="54" rx="12" fill="none" stroke="#E8A34D" stroke-opacity="0.7"/>
+      <circle cx="30" cy="27" r="13" fill="none" stroke="#E8A34D" stroke-width="2.5"/>
+      <text x="30" y="32" text-anchor="middle" fill="#E8A34D" font-size="15">!</text>
+      <text x="54" y="24" fill="#E8A34D" font-size="13">escalate on critical —</text>
+      <text x="54" y="42" fill="#C9CDD8" font-size="12">emergency contact / live help</text>
+    </g>
+  </g>
+
+  <!-- return loop: episode remembered -->
+  <path d="M1145 220 Q1180 130 900 96 Q640 70 470 150" stroke="#C9CDD8" stroke-width="1.6" fill="none" stroke-dasharray="6 8" opacity="0.55" marker-end="url(#arrowGs)"/>
+  <text x="760" y="70" text-anchor="middle" fill="#C9CDD8" font-size="12" opacity="0.85">episode remembered · adapts next interaction</text>
+</svg>
