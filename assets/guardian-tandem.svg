@@ -1,97 +1,147 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 680" width="1300" height="680" font-family="Helvetica, Arial, sans-serif">
   <title>JIM-mini / Guardian — biometric monitoring triggers the matching QRME specialist agent</title>
   <defs>
-    <linearGradient id="bgG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#1B1D4E"/>
-      <stop offset="1" stop-color="#23255F"/>
+    <linearGradient id="tbg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0F1136"/>
+      <stop offset="0.5" stop-color="#1B1D4E"/>
+      <stop offset="1" stop-color="#12143B"/>
     </linearGradient>
-    <radialGradient id="coreG" cx="0.5" cy="0.45" r="0.6">
-      <stop offset="0" stop-color="#F4E3C8" stop-opacity="0.9"/>
-      <stop offset="0.6" stop-color="#E8A34D" stop-opacity="0.4"/>
-      <stop offset="1" stop-color="#E8A34D" stop-opacity="0"/>
+    <radialGradient id="tvign" cx="0.5" cy="0.5" r="0.8">
+      <stop offset="0.64" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#090A26" stop-opacity="0.5"/>
     </radialGradient>
-    <radialGradient id="pulseG" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#E8A34D" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#E8A34D" stop-opacity="0"/>
+    <linearGradient id="tcard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2A2C63"/>
+      <stop offset="1" stop-color="#1E2050"/>
+    </linearGradient>
+    <linearGradient id="tshield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3E4187"/>
+      <stop offset="1" stop-color="#23255C"/>
+    </linearGradient>
+    <radialGradient id="tspec" cx="0.5" cy="0.42" r="0.72">
+      <stop offset="0" stop-color="#FFF6E6"/>
+      <stop offset="0.5" stop-color="#F0C482"/>
+      <stop offset="1" stop-color="#E8A34D" stop-opacity="0.12"/>
     </radialGradient>
-    <marker id="arrowG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M0 0 L10 5 L0 10 z" fill="#E8A34D"/>
+    <filter id="tshadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="9" stdDeviation="11" flood-color="#05061C" flood-opacity="0.55"/>
+    </filter>
+    <filter id="tsoft" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="10"/></filter>
+    <marker id="tarrow" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto">
+      <path d="M1 1 L8.5 5 L1 9 Z" fill="#E8A34D"/>
     </marker>
-    <marker id="arrowGs" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M0 0 L10 5 L0 10 z" fill="#C9CDD8"/>
+    <marker id="tarrow2" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto">
+      <path d="M1 1 L8.5 5 L1 9 Z" fill="#D96A6A"/>
     </marker>
   </defs>
 
-  <rect width="1300" height="680" fill="url(#bgG)"/>
+  <rect width="1300" height="680" fill="url(#tbg)"/>
 
-  <!-- 1. wearable + biometric signal -->
-  <g transform="translate(70 230)">
-    <circle cx="90" cy="90" r="120" fill="url(#pulseG)"/>
-    <!-- smart watch -->
-    <rect x="52" y="46" width="76" height="92" rx="20" fill="#2E3070" stroke="#C9CDD8" stroke-opacity="0.5" stroke-width="2"/>
-    <rect x="66" y="30" width="48" height="18" rx="7" fill="#2E3070"/>
-    <rect x="66" y="136" width="48" height="18" rx="7" fill="#2E3070"/>
-    <!-- ECG trace -->
-    <polyline points="60,92 74,92 82,72 92,116 102,92 120,92" fill="none" stroke="#E8A34D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="90" y="196" text-anchor="middle" fill="#C9CDD8" font-size="14">wearable signals</text>
-    <text x="90" y="216" text-anchor="middle" fill="#8B90A8" font-size="12">HR · SpO₂ · resp · context</text>
-  </g>
+  <text x="650" y="58" text-anchor="middle" font-size="28" font-weight="bold" fill="#F4E3C8" letter-spacing="1.5">JIM-mini · Guardian, in tandem with QRME</text>
+  <text x="650" y="86" text-anchor="middle" font-size="15" fill="#8B90A8">Wearable signals → condition detected → the matching specialist answers → escalation when critical</text>
 
-  <path d="M290 320 H360" stroke="#E8A34D" stroke-width="3" fill="none" marker-end="url(#arrowG)"/>
-
-  <!-- 2. Guardian monitor: shield with pulse -->
-  <g transform="translate(380 200)">
-    <path d="M110 20 l96 34 v70 c0 78 -46 118 -96 140 c-50 -22 -96 -62 -96 -140 v-70 z"
-          fill="#2E3070" stroke="#E8A34D" stroke-opacity="0.7" stroke-width="2.5"/>
-    <polyline points="46,150 84,150 96,118 118,182 132,150 176,150" fill="none" stroke="#E8A34D" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="110" y="250" text-anchor="middle" fill="#F4E3C8" font-size="17" font-weight="bold">Guardian</text>
-    <text x="110" y="272" text-anchor="middle" fill="#C9CDD8" font-size="13">detects known conditions</text>
-  </g>
-
-  <!-- condition chips -->
-  <g transform="translate(380 470)" font-size="12" fill="#C9CDD8">
-    <g><rect width="98" height="26" rx="13" fill="none" stroke="#C9CDD8" stroke-opacity="0.5"/><text x="49" y="17" text-anchor="middle">anxiety</text></g>
-    <g transform="translate(112 0)"><rect width="120" height="26" rx="13" fill="none" stroke="#C9CDD8" stroke-opacity="0.5"/><text x="60" y="17" text-anchor="middle">financial stress</text></g>
-    <g transform="translate(0 34)"><rect width="98" height="26" rx="13" fill="none" stroke="#C9CDD8" stroke-opacity="0.5"/><text x="49" y="17" text-anchor="middle">relationship</text></g>
-    <g transform="translate(112 34)"><rect width="120" height="26" rx="13" fill="#E8A34D"/><text x="60" y="17" text-anchor="middle" fill="#161840">physical · critical</text></g>
-  </g>
-
-  <path d="M640 320 H720" stroke="#E8A34D" stroke-width="3" fill="none" marker-end="url(#arrowG)"/>
-  <text x="680" y="304" text-anchor="middle" fill="#C9CDD8" font-size="12">triggers</text>
-
-  <!-- 3. QRME specialist agent (a synthetic profile) -->
-  <g transform="translate(860 200)">
-    <circle cx="0" cy="120" r="120" fill="url(#coreG)"/>
-    <circle cx="0" cy="98" r="40" fill="#E8A34D"/>
-    <path d="M-58 214 C-58 156 -32 130 0 130 C32 130 58 156 58 214 Z" fill="#E8A34D" opacity="0.9"/>
-    <circle cx="0" cy="120" r="120" fill="none" stroke="#F4E3C8" stroke-opacity="0.3" stroke-width="1.5"/>
-    <text x="0" y="290" text-anchor="middle" fill="#F4E3C8" font-size="16" font-weight="bold">Specialist agent</text>
-    <text x="0" y="312" text-anchor="middle" fill="#C9CDD8" font-size="13">a QRME synthetic profile</text>
-  </g>
-
-  <!-- guidance out + escalation -->
-  <g transform="translate(1040 150)">
-    <rect width="210" height="70" rx="16" fill="#F4EFE4"/>
-    <path d="M30 70 l-18 20 v-20 z" fill="#F4EFE4"/>
-    <g stroke="#8B90A8" stroke-width="3" stroke-linecap="round">
-      <line x1="22" y1="26" x2="184" y2="26"/><line x1="22" y1="44" x2="150" y2="44"/>
+  <!-- ===== 1: person + wearable ===== -->
+  <g transform="translate(170 340)">
+    <g filter="url(#tsoft)"><circle r="76" fill="#C9CDD8" opacity="0.22"/></g>
+    <circle cy="-58" r="36" fill="#3E4187"/>
+    <path d="M-56 92 C-56 -6 -29 -28 0 -28 C29 -28 56 92 56 92 Z" fill="#3E4187"/>
+    <path d="M-56 92 C-56 -6 -29 -28 0 -28 C29 -28 56 -6 56 92 Z" fill="#3E4187"/>
+    <!-- watch on wrist -->
+    <g transform="translate(52 30)">
+      <rect x="-9" y="-13" width="20" height="26" rx="6" fill="#12143B" stroke="#E8A34D" stroke-width="1.8"/>
+      <path d="M-5 0 L-1 0 L1 -5 L3 5 L5 0 L9 0" fill="none" stroke="#7BC47F" stroke-width="1.4" stroke-linecap="round"/>
     </g>
-    <text x="105" y="-12" text-anchor="middle" fill="#C9CDD8" font-size="13">moderated guidance</text>
+    <!-- pulse ring -->
+    <circle r="96" fill="none" stroke="#7BC47F" stroke-opacity="0.3" stroke-width="1.2" stroke-dasharray="2 8"/>
+    <text y="130" text-anchor="middle" font-size="13.5" fill="#C9CDD8" font-weight="bold">wearable signals</text>
+    <text y="150" text-anchor="middle" font-size="11.5" fill="#8B90A8">HR · SpO₂ · respiration · context</text>
   </g>
 
-  <!-- escalation path on critical -->
+  <!-- ECG stream 1->2 -->
   <g>
-    <path d="M900 434 Q900 520 1010 520" stroke="#C9CDD8" stroke-width="2.5" fill="none" stroke-dasharray="7 7" marker-end="url(#arrowGs)"/>
-    <g transform="translate(1014 494)">
-      <rect width="236" height="54" rx="12" fill="none" stroke="#E8A34D" stroke-opacity="0.7"/>
-      <circle cx="30" cy="27" r="13" fill="none" stroke="#E8A34D" stroke-width="2.5"/>
-      <text x="30" y="32" text-anchor="middle" fill="#E8A34D" font-size="15">!</text>
-      <text x="54" y="24" fill="#E8A34D" font-size="13">escalate on critical —</text>
-      <text x="54" y="42" fill="#C9CDD8" font-size="12">emergency contact / live help</text>
-    </g>
+    <path d="M266 340 L306 340 L318 340 L326 316 L336 366 L346 328 L354 340 L392 340"
+          fill="none" stroke="#7BC47F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M266 356 L392 356" stroke="#7BC47F" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="2 6"/>
   </g>
 
-  <!-- return loop: episode remembered -->
-  <path d="M1145 220 Q1180 130 900 96 Q640 70 470 150" stroke="#C9CDD8" stroke-width="1.6" fill="none" stroke-dasharray="6 8" opacity="0.55" marker-end="url(#arrowGs)"/>
-  <text x="760" y="70" text-anchor="middle" fill="#C9CDD8" font-size="12" opacity="0.85">episode remembered · adapts next interaction</text>
+  <!-- ===== 2: Guardian shield ===== -->
+  <g transform="translate(505 330)">
+    <g filter="url(#tsoft)"><path d="M0 -120 L84 -86 V4 C84 66 44 106 0 126 C-44 106 -84 66 -84 4 V-86 Z" fill="#E8A34D" opacity="0.35"/></g>
+    <path d="M0 -112 L76 -80 V2 C76 60 40 98 0 116 C-40 98 -76 60 -76 2 V-80 Z" fill="url(#tshield)" stroke="#E8A34D" stroke-width="2.6" filter="url(#tshadow)"/>
+    <!-- inner ECG -->
+    <path d="M-48 6 L-22 6 L-14 -18 L-2 34 L8 -8 L16 6 L48 6" fill="none" stroke="#7BC47F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- detection readout -->
+    <g transform="translate(0 52)" text-anchor="middle">
+      <rect x="-56" y="-14" width="112" height="26" rx="13" fill="#12143B"/>
+      <text y="4" font-size="11.5" fill="#E8C34D">anxiety · guidance</text>
+    </g>
+    <text y="-134" text-anchor="middle" font-size="16" font-weight="bold" fill="#F4E3C8">JIM-mini Guardian</text>
+    <text y="152" text-anchor="middle" font-size="11.5" fill="#8B90A8">baseline-aware detection · known conditions</text>
+  </g>
+
+  <!-- link 2->3 (tandem HTTP) -->
+  <g>
+    <path d="M600 300 C660 260 700 240 748 226" fill="none" stroke="#E8A34D" stroke-width="3" stroke-linecap="round" marker-end="url(#tarrow)"/>
+    <text x="662" y="238" font-size="11.5" fill="#E8A34D" transform="rotate(-19 662 238)" letter-spacing="1">tandem · HTTP</text>
+  </g>
+
+  <!-- ===== 3: QRME specialist ===== -->
+  <g transform="translate(850 210)">
+    <g filter="url(#tsoft)"><circle r="80" fill="#E8A34D" opacity="0.4"/></g>
+    <circle r="100" fill="url(#tspec)"/>
+    <circle r="66" fill="none" stroke="#F4E3C8" stroke-opacity="0.45" stroke-width="1.4"/>
+    <circle r="82" fill="none" stroke="#E8A34D" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="2 8"/>
+    <circle cy="-16" r="24" fill="#F5C57F"/>
+    <path d="M-38 54 C-38 14 -20 -2 0 -2 C20 -2 38 14 38 54 Z" fill="#F5C57F"/>
+    <!-- caduceus-like mark -->
+    <g transform="translate(54 -54)">
+      <circle r="15" fill="#23255C" stroke="#E8A34D" stroke-width="1.6"/>
+      <path d="M0 -7 V7 M-6 -2 H6 M-5 4 H5" stroke="#E8A34D" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </g>
+    <text y="126" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#F4E3C8">QRME specialist profile</text>
+    <text y="146" text-anchor="middle" font-size="11.5" fill="#8B90A8">moderated reply · remembered per user</text>
+  </g>
+
+  <!-- reply 3->person (guidance card) -->
+  <path d="M900 320 C920 380 900 420 850 452" fill="none" stroke="#F4E3C8" stroke-width="2" stroke-opacity="0.6" stroke-linecap="round" marker-end="url(#tarrow)"/>
+  <g transform="translate(620 440)" filter="url(#tshadow)">
+    <rect width="330" height="92" rx="16" fill="url(#tcard)"/>
+    <rect width="330" height="92" rx="16" fill="none" stroke="#E8A34D" stroke-opacity="0.5" stroke-width="1.4"/>
+    <text x="20" y="30" font-size="13" fill="#F4E3C8" font-weight="bold">Guidance, delivered</text>
+    <text x="20" y="54" font-size="12.5" fill="#C9CDD8">“Your heart rate is up. Let's do the 4-7-8</text>
+    <text x="20" y="72" font-size="12.5" fill="#C9CDD8">breathing we practiced — I'm right here.”</text>
+    <circle cx="302" cy="70" r="4" fill="#7BC47F"/>
+  </g>
+
+  <!-- ===== 4: escalation path ===== -->
+  <g>
+    <path d="M505 470 C505 520 520 556 560 580" fill="none" stroke="#D96A6A" stroke-width="2.6" stroke-opacity="0.85" stroke-linecap="round" stroke-dasharray="7 7" marker-end="url(#tarrow2)"/>
+    <text x="452" y="540" font-size="11.5" fill="#D96A6A" letter-spacing="1">if critical</text>
+  </g>
+  <g transform="translate(580 566)" filter="url(#tshadow)">
+    <rect width="290" height="72" rx="16" fill="#33201F"/>
+    <rect width="290" height="72" rx="16" fill="none" stroke="#D96A6A" stroke-opacity="0.6" stroke-width="1.6"/>
+    <!-- phone icon -->
+    <g transform="translate(30 36)">
+      <path d="M-9 -12 C-3 -14 0 -10 1 -5 C2 -1 0 1 -3 3 C-1 8 3 12 8 14 C10 11 13 9 16 11 C20 13 22 17 20 21 C17 26 10 26 3 22 C-7 16 -13 6 -12 -4 C-12 -8 -11 -11 -9 -12 Z" fill="#D96A6A" transform="scale(0.9)"/>
+    </g>
+    <text x="58" y="30" font-size="13.5" fill="#F0B9B9" font-weight="bold">Emergency contact notified</text>
+    <text x="58" y="52" font-size="11.5" fill="#AF8383">consented contact · live help handoff</text>
+  </g>
+
+  <!-- step numbers -->
+  <g font-size="13" font-weight="bold" text-anchor="middle">
+    <g><circle cx="170" cy="170" r="14" fill="#3A3D7E"/><text x="170" y="175" fill="#C9CDD8">1</text></g>
+    <g><circle cx="505" cy="170" r="14" fill="#3A3D7E"/><text x="505" y="175" fill="#C9CDD8">2</text></g>
+    <g><circle cx="850" cy="80" r="14" fill="#E8A34D"/><text x="850" y="85" fill="#161840">3</text></g>
+    <g><circle cx="1090" cy="580" r="14" fill="#D96A6A"/><text x="1090" y="585" fill="#161840">4</text></g>
+  </g>
+  <g stroke="#8B90A8" stroke-opacity="0.35" stroke-width="1.2" stroke-dasharray="2 6">
+    <line x1="170" y1="184" x2="170" y2="222"/>
+    <line x1="505" y1="184" x2="505" y2="208"/>
+    <line x1="850" y1="94" x2="850" y2="108"/>
+    <line x1="1030" y1="580" x2="882" y2="596"/>
+  </g>
+
+  <rect width="1300" height="680" fill="url(#tvign)"/>
 </svg>

@@ -1,5 +1,7 @@
 # JIM-mini / Guardian
 
+![JIM-mini — Guardian](assets/cover.svg)
+
 A standalone **personal-guidance** system (patent app 19/038,196): it monitors
 a user's biometric and contextual signals, detects known conditions, delivers
 guidance, and escalates to an emergency contact / live help on critical events.
