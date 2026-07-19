@@ -104,7 +104,8 @@ and detection rules run on the payload in memory before it is sealed, so
 behavior is identical either way. Every vaulted key is tracked locally so
 `DELETE /data/{user_id}` purges the PDI records too, and every vault access
 lands in PDI's tamper-evident audit chain. Without PDI configured, JIM stores
-data locally exactly as before.
+data locally exactly as before. QRME runs the same pattern on its side,
+vaulting profile source material — see [docs/tandem.md](docs/tandem.md).
 
 ## Test
 
