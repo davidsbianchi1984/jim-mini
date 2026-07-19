@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 700" width="1300" height="700" font-family="Helvetica, Arial, sans-serif">
+  <title>JIM-mini life layer — consented sources in, insights and coaching out</title>
+  <defs>
+    <linearGradient id="ybg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0F1136"/>
+      <stop offset="0.5" stop-color="#1B1D4E"/>
+      <stop offset="1" stop-color="#12143B"/>
+    </linearGradient>
+    <radialGradient id="yvign" cx="0.5" cy="0.5" r="0.8">
+      <stop offset="0.64" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#090A26" stop-opacity="0.5"/>
+    </radialGradient>
+    <linearGradient id="ycard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2A2C63"/>
+      <stop offset="1" stop-color="#1E2050"/>
+    </linearGradient>
+    <linearGradient id="yshield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#454890"/>
+      <stop offset="1" stop-color="#20224F"/>
+    </linearGradient>
+    <filter id="yshadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#05061C" flood-opacity="0.55"/>
+    </filter>
+    <filter id="ysoft" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="10"/></filter>
+    <marker id="yarrow" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto">
+      <path d="M1 1 L8.5 5 L1 9 Z" fill="#7BC47F"/>
+    </marker>
+  </defs>
+
+  <rect width="1300" height="700" fill="url(#ybg)"/>
+
+  <text x="650" y="56" text-anchor="middle" font-size="28" font-weight="bold" fill="#F4E3C8" letter-spacing="1.5">The life layer</text>
+  <text x="650" y="84" text-anchor="middle" font-size="15" fill="#8B90A8">You share what you're comfortable with · JIM turns it into guidance · delete anything, anytime</text>
+
+  <!-- ===== sources column ===== -->
+  <g filter="url(#yshadow)" font-size="12.5">
+    <g transform="translate(80 130)">
+      <rect width="190" height="46" rx="14" fill="url(#ycard)" stroke="#7BC47F" stroke-opacity="0.5" stroke-width="1.2"/>
+      <circle cx="24" cy="23" r="7" fill="#7BC47F"/>
+      <text x="44" y="28" fill="#C9CDD8">wearables · health</text>
+    </g>
+    <g transform="translate(80 192)">
+      <rect width="190" height="46" rx="14" fill="url(#ycard)" stroke="#7BC47F" stroke-opacity="0.5" stroke-width="1.2"/>
+      <circle cx="24" cy="23" r="7" fill="#7BC47F"/>
+      <text x="44" y="28" fill="#C9CDD8">calendar</text>
+    </g>
+    <g transform="translate(80 254)">
+      <rect width="190" height="46" rx="14" fill="url(#ycard)" stroke="#7BC47F" stroke-opacity="0.5" stroke-width="1.2"/>
+      <circle cx="24" cy="23" r="7" fill="#7BC47F"/>
+      <text x="44" y="28" fill="#C9CDD8">spending · bank</text>
+    </g>
+    <g transform="translate(80 316)" opacity="0.55">
+      <rect width="190" height="46" rx="14" fill="url(#ycard)" stroke="#8B90A8" stroke-opacity="0.4" stroke-width="1.2" stroke-dasharray="5 5"/>
+      <circle cx="24" cy="23" r="7" fill="#3A3D7E"/>
+      <text x="44" y="28" fill="#8B90A8">messages — off</text>
+    </g>
+    <g transform="translate(80 378)" opacity="0.55">
+      <rect width="190" height="46" rx="14" fill="url(#ycard)" stroke="#8B90A8" stroke-opacity="0.4" stroke-width="1.2" stroke-dasharray="5 5"/>
+      <circle cx="24" cy="23" r="7" fill="#3A3D7E"/>
+      <text x="44" y="28" fill="#8B90A8">location — off</text>
+    </g>
+    <g transform="translate(80 440)">
+      <rect width="190" height="46" rx="14" fill="url(#ycard)" stroke="#7BC47F" stroke-opacity="0.5" stroke-width="1.2"/>
+      <circle cx="24" cy="23" r="7" fill="#7BC47F"/>
+      <text x="44" y="28" fill="#C9CDD8">mood check-ins</text>
+    </g>
+  </g>
+  <text x="175" y="530" text-anchor="middle" font-size="12" fill="#8B90A8">AI only sees what you allow</text>
+
+  <!-- consent gate -->
+  <g transform="translate(360 300)" filter="url(#yshadow)">
+    <rect x="-26" y="-190" width="52" height="380" rx="16" fill="url(#yshield)" stroke="#7BC47F" stroke-opacity="0.55" stroke-width="1.6"/>
+    <g transform="translate(0 -6)">
+      <rect x="-11" y="-4" width="22" height="18" rx="4" fill="#E8A34D"/>
+      <path d="M-7 -4 v-6 a7 7 0 0 1 14 0 v6" fill="none" stroke="#E8A34D" stroke-width="3.4"/>
+    </g>
+    <text y="42" text-anchor="middle" font-size="11" fill="#C9CDD8" letter-spacing="1">CONSENT</text>
+    <text y="58" text-anchor="middle" font-size="11" fill="#C9CDD8" letter-spacing="1">GATE</text>
+  </g>
+  <g stroke="#7BC47F" stroke-opacity="0.55" stroke-width="1.8" fill="none" stroke-linecap="round">
+    <path d="M270 153 C310 160 320 190 334 220" marker-end="url(#yarrow)"/>
+    <path d="M270 277 C300 280 310 288 330 292" marker-end="url(#yarrow)"/>
+    <path d="M270 463 C310 450 320 410 334 380" marker-end="url(#yarrow)"/>
+  </g>
+
+  <!-- ===== JIM core ===== -->
+  <g transform="translate(560 300)">
+    <g filter="url(#ysoft)"><circle r="96" fill="#7BC47F" opacity="0.3"/></g>
+    <circle r="88" fill="url(#yshield)" stroke="#7BC47F" stroke-width="2.4" filter="url(#yshadow)"/>
+    <path d="M-40 6 L-16 6 L-8 -14 L2 28 L10 -4 L16 6 L40 6" fill="none" stroke="#BFEAC8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text y="44" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#F4E3C8">JIM-mini</text>
+    <text y="62" text-anchor="middle" font-size="10.5" fill="#8B90A8">transparent rules + coach</text>
+    <circle r="112" fill="none" stroke="#7BC47F" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="2 9"/>
+  </g>
+
+  <!-- ===== outputs ===== -->
+  <g stroke="#E8A34D" stroke-opacity="0.6" stroke-width="2" fill="none" stroke-linecap="round">
+    <path d="M648 262 C700 230 730 214 764 202"/>
+    <path d="M652 300 C710 300 730 300 762 300"/>
+    <path d="M648 338 C700 370 730 386 764 398"/>
+    <path d="M600 380 C610 440 640 480 700 506"/>
+  </g>
+
+  <g filter="url(#yshadow)">
+    <g transform="translate(780 168)">
+      <rect width="440" height="66" rx="16" fill="url(#ycard)" stroke="#7BC47F" stroke-opacity="0.5" stroke-width="1.2"/>
+      <circle cx="28" cy="33" r="9" fill="#7BC47F"/>
+      <text x="52" y="28" font-size="13" fill="#F4E3C8" font-weight="bold">Insights &amp; alerts</text>
+      <text x="52" y="48" font-size="11.5" fill="#8B90A8">“You slept better last night” · “High spending alert: dining out”</text>
+    </g>
+    <g transform="translate(780 266)">
+      <rect width="440" height="66" rx="16" fill="url(#ycard)" stroke="#E8A34D" stroke-opacity="0.5" stroke-width="1.2"/>
+      <circle cx="28" cy="33" r="9" fill="#E8A34D"/>
+      <text x="52" y="28" font-size="13" fill="#F4E3C8" font-weight="bold">Life coach — six areas, 24/7</text>
+      <text x="52" y="48" font-size="11.5" fill="#8B90A8">mental health · fitness · career · finance · relationships · growth</text>
+    </g>
+    <g transform="translate(780 364)">
+      <rect width="440" height="66" rx="16" fill="url(#ycard)" stroke="#C9CDD8" stroke-opacity="0.4" stroke-width="1.2"/>
+      <circle cx="28" cy="33" r="9" fill="#C9CDD8"/>
+      <text x="52" y="28" font-size="13" fill="#F4E3C8" font-weight="bold">Goals &amp; habit streaks</text>
+      <text x="52" y="48" font-size="11.5" fill="#8B90A8">“Great job! Goal complete” · 7-day streak milestones</text>
+    </g>
+    <g transform="translate(716 480)">
+      <rect width="360" height="60" rx="16" fill="#33201F" stroke="#D96A6A" stroke-opacity="0.6" stroke-width="1.4"/>
+      <circle cx="28" cy="30" r="9" fill="#D96A6A"/>
+      <text x="52" y="26" font-size="13" fill="#F0B9B9" font-weight="bold">Crisis path unchanged</text>
+      <text x="52" y="45" font-size="11.5" fill="#AF8383">a worrying check-in note still escalates like /monitor</text>
+    </g>
+  </g>
+
+  <!-- erasure footer -->
+  <g transform="translate(650 636)" text-anchor="middle" filter="url(#yshadow)">
+    <rect x="-260" y="-24" width="520" height="42" rx="21" fill="#12143B"/>
+    <rect x="-260" y="-24" width="520" height="42" rx="21" fill="none" stroke="#3A3D7E" stroke-width="1.4"/>
+    <text y="2" font-size="12.5" fill="#C9CDD8">🗑 DELETE /data/{user_id} — erases every trace, anytime</text>
+  </g>
+
+  <rect width="1300" height="700" fill="url(#yvign)"/>
+</svg>

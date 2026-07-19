@@ -48,6 +48,80 @@ CREATE TABLE IF NOT EXISTS events (
     detail     TEXT NOT NULL DEFAULT '{}',
     created_at TEXT NOT NULL
 );
+
+-- Connected data sources; nothing is read from a source the user hasn't
+-- explicitly consented to ("AI only sees what you allow").
+CREATE TABLE IF NOT EXISTS sources (
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    source     TEXT NOT NULL,   -- wearable | health | calendar | spending | bank | messages | location
+    consented  INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, source)
+);
+
+-- Events ingested from consented sources (a calendar entry, a transaction, …).
+CREATE TABLE IF NOT EXISTS context_events (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    source     TEXT NOT NULL,
+    kind       TEXT NOT NULL,
+    data       TEXT NOT NULL DEFAULT '{}',
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS checkins (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    mood       INTEGER NOT NULL,   -- 1 (low) .. 5 (great)
+    energy     INTEGER,            -- 1 .. 5
+    note       TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS goals (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    area       TEXT NOT NULL,      -- life area (see models.LifeArea)
+    title      TEXT NOT NULL,
+    target     TEXT,
+    progress   REAL NOT NULL DEFAULT 0,   -- 0 .. 1
+    status     TEXT NOT NULL DEFAULT 'active',  -- active | completed | abandoned
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS habits (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    name       TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS habit_logs (
+    habit_id   TEXT NOT NULL REFERENCES habits(id),
+    day        TEXT NOT NULL,      -- YYYY-MM-DD
+    PRIMARY KEY (habit_id, day)
+);
+
+-- Proactive nudges generated from check-ins, goals, streaks, and context.
+CREATE TABLE IF NOT EXISTS insights (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    area       TEXT,
+    kind       TEXT NOT NULL,      -- praise | alert | suggestion | milestone
+    message    TEXT NOT NULL,
+    source     TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS coach_messages (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    area       TEXT NOT NULL,
+    role       TEXT NOT NULL,      -- user | coach
+    content    TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
 """
 
 _local = threading.local()

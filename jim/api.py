@@ -7,8 +7,11 @@ from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException
 
-from . import db, guardian
-from .models import BiometricSample, Enroll, SpecialistRegister
+from . import coach, db, guardian, life
+from .models import (
+    BiometricSample, CheckIn, CoachMessage, ContextEvent, Enroll, GoalCreate,
+    GoalUpdate, HabitCreate, HabitLog, SourceConsent, SpecialistRegister,
+)
 from .qrme_client import QRMEClient
 
 
@@ -62,6 +65,103 @@ def create_app(qrme_client: QRMEClient | None = None) -> FastAPI:
     def events(user_id: str) -> list[dict]:
         _user_or_404(user_id)
         return guardian.events(user_id)
+
+    # ---- connected sources ("AI only sees what you allow") ----------------
+
+    @app.get("/sources/{user_id}")
+    def get_sources(user_id: str) -> list[dict]:
+        _user_or_404(user_id)
+        return life.sources(user_id)
+
+    @app.put("/sources/{user_id}")
+    def set_source(user_id: str, body: SourceConsent) -> dict:
+        _user_or_404(user_id)
+        return life.set_source(user_id, body.source, body.consented)
+
+    @app.post("/context/{user_id}", status_code=201)
+    def add_context(user_id: str, body: ContextEvent) -> dict:
+        _user_or_404(user_id)
+        if not life.source_allowed(user_id, body.source):
+            raise HTTPException(
+                403, f"source '{body.source}' is not consented for this user")
+        return life.add_context(user_id, body.source, body.kind, body.data)
+
+    # ---- mood & energy check-ins ------------------------------------------
+
+    @app.post("/checkin/{user_id}", status_code=201)
+    def check_in(user_id: str, body: CheckIn) -> dict:
+        _user_or_404(user_id)
+        result = life.check_in(user_id, body.mood, body.energy, body.note)
+        # A worrying note still goes through the Guardian pipeline so crisis
+        # language escalates exactly as it does from /monitor.
+        if body.note:
+            result["guardian"] = guardian.monitor(
+                user_id, {}, body.note, qrme=app.state.qrme)
+        return result
+
+    # ---- smart goals ------------------------------------------------------
+
+    @app.get("/goals/{user_id}")
+    def get_goals(user_id: str) -> list[dict]:
+        _user_or_404(user_id)
+        return life.goals(user_id)
+
+    @app.post("/goals/{user_id}", status_code=201)
+    def add_goal(user_id: str, body: GoalCreate) -> dict:
+        _user_or_404(user_id)
+        return life.add_goal(user_id, body.area, body.title, body.target)
+
+    @app.patch("/goals/{user_id}/{goal_id}")
+    def update_goal(user_id: str, goal_id: str, body: GoalUpdate) -> dict:
+        _user_or_404(user_id)
+        updated = life.update_goal(user_id, goal_id, body.progress, body.status)
+        if updated is None:
+            raise HTTPException(404, "goal not found")
+        return updated
+
+    # ---- habits & streaks -------------------------------------------------
+
+    @app.get("/habits/{user_id}")
+    def get_habits(user_id: str) -> list[dict]:
+        _user_or_404(user_id)
+        return life.habits(user_id)
+
+    @app.post("/habits/{user_id}", status_code=201)
+    def add_habit(user_id: str, body: HabitCreate) -> dict:
+        _user_or_404(user_id)
+        return life.add_habit(user_id, body.name)
+
+    @app.post("/habits/{user_id}/{habit_id}/log")
+    def log_habit(user_id: str, habit_id: str, body: HabitLog | None = None) -> dict:
+        _user_or_404(user_id)
+        logged = life.log_habit(user_id, habit_id, body.day if body else None)
+        if logged is None:
+            raise HTTPException(404, "habit not found")
+        return logged
+
+    # ---- life coach & insights --------------------------------------------
+
+    @app.post("/coach/{user_id}")
+    def coach_reply(user_id: str, body: CoachMessage) -> dict:
+        _user_or_404(user_id)
+        return coach.reply(user_id, body.area, body.message)
+
+    @app.get("/coach/{user_id}")
+    def coach_history(user_id: str, area: str | None = None) -> list[dict]:
+        _user_or_404(user_id)
+        return coach.history(user_id, area)
+
+    @app.get("/insights/{user_id}")
+    def get_insights(user_id: str) -> list[dict]:
+        _user_or_404(user_id)
+        return life.insights(user_id)
+
+    # ---- erasure ("delete anything, anytime") -----------------------------
+
+    @app.delete("/data/{user_id}")
+    def delete_data(user_id: str) -> dict:
+        _user_or_404(user_id)
+        return life.delete_user_data(user_id)
 
     return app
 
