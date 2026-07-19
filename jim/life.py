@@ -328,6 +328,109 @@ def habits(user_id: str) -> list[dict]:
 
 
 # --------------------------------------------------------------------------- #
+# journal, feedback, progress report, provider portal
+# --------------------------------------------------------------------------- #
+
+def add_journal(user_id: str, text: str, pdi=None) -> dict:
+    conn = db.connect()
+    entry_id = db.new_id("jrn")
+    stored = text
+    if pdi is not None:
+        key = vault_store(pdi, user_id,
+                          f"jim/{user_id}/medical/journal/{entry_id}",
+                          {"text": text})
+        stored = f"pdi:{key}"
+    conn.execute(
+        "INSERT INTO journal (id, user_id, text, created_at) VALUES (?,?,?,?)",
+        (entry_id, user_id, stored, db.utcnow()),
+    )
+    conn.commit()
+    return {"id": entry_id, "vaulted": pdi is not None}
+
+
+def journal_entries(user_id: str, pdi=None) -> list[dict]:
+    rows = db.connect().execute(
+        "SELECT * FROM journal WHERE user_id=? ORDER BY created_at, rowid",
+        (user_id,)).fetchall()
+    out = []
+    for row in rows:
+        item = dict(row)
+        if item["text"] and item["text"].startswith("pdi:") and pdi is not None:
+            raw = pdi.get(item["text"][4:])
+            item["text"] = json.loads(raw)["text"] if raw else None
+        out.append(item)
+    return out
+
+
+def add_feedback(user_id: str, rating: str, note: str | None) -> dict:
+    conn = db.connect()
+    feedback_id = db.new_id("fbk")
+    conn.execute(
+        "INSERT INTO feedback (id, user_id, rating, note, created_at)"
+        " VALUES (?,?,?,?,?)",
+        (feedback_id, user_id, rating, note, db.utcnow()),
+    )
+    conn.commit()
+    return {"id": feedback_id, "rating": rating}
+
+
+def progress_report(user_id: str) -> dict:
+    """Progress reports & insights: one condensed view of how it's going."""
+    conn = db.connect()
+    moods = conn.execute(
+        "SELECT COUNT(*) AS n, AVG(mood) AS mood, AVG(energy) AS energy"
+        " FROM checkins WHERE user_id=?", (user_id,)).fetchone()
+    detections = conn.execute(
+        "SELECT severity, COUNT(*) AS n FROM events"
+        " WHERE user_id=? AND type='detection' GROUP BY severity",
+        (user_id,)).fetchall()
+    fb = conn.execute(
+        "SELECT rating, COUNT(*) AS n FROM feedback WHERE user_id=?"
+        " GROUP BY rating", (user_id,)).fetchall()
+    return {
+        "checkins": {"count": moods["n"],
+                     "avg_mood": round(moods["mood"], 2) if moods["mood"] else None,
+                     "avg_energy": round(moods["energy"], 2) if moods["energy"] else None},
+        "goals": [{"title": g["title"], "area": g["area"],
+                   "progress": g["progress"], "status": g["status"]}
+                  for g in goals(user_id)],
+        "habits": [{"name": h["name"], "streak": h["streak"]}
+                   for h in habits(user_id)],
+        "detections": {r["severity"]: r["n"] for r in detections},
+        "insights": len(insights(user_id)),
+        "journal_entries": conn.execute(
+            "SELECT COUNT(*) AS n FROM journal WHERE user_id=?",
+            (user_id,)).fetchone()["n"],
+        "feedback": {r["rating"]: r["n"] for r in fb},
+    }
+
+
+def provider_summary(user: dict) -> dict:
+    """Consent-gated provider-portal view: condition-level facts only —
+    no notes, no journal text, no raw biometrics."""
+    conn = db.connect()
+    user_id = user["id"]
+    recent = conn.execute(
+        "SELECT condition, severity, created_at FROM events"
+        " WHERE user_id=? AND type='detection'"
+        " ORDER BY created_at DESC, rowid DESC LIMIT 10", (user_id,)).fetchall()
+    escalations = conn.execute(
+        "SELECT COUNT(*) AS n FROM events WHERE user_id=? AND type='escalation'",
+        (user_id,)).fetchone()["n"]
+    moods = conn.execute(
+        "SELECT AVG(mood) AS mood FROM checkins WHERE user_id=?",
+        (user_id,)).fetchone()
+    return {
+        "user_id": user_id,
+        "display_name": user["display_name"],
+        "known_conditions": user["known_conditions"],
+        "recent_detections": [dict(r) for r in recent],
+        "escalations": escalations,
+        "avg_mood": round(moods["mood"], 2) if moods["mood"] else None,
+    }
+
+
+# --------------------------------------------------------------------------- #
 # erasure — "delete anything, anytime"
 # --------------------------------------------------------------------------- #
 
@@ -349,7 +452,8 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
         ).rowcount
     for table in ("habits", "goals", "checkins", "insights", "context_events",
                   "coach_messages", "sources", "sessions", "devices",
-                  "vault_keys", "events", "tandem_links", "users"):
+                  "journal", "feedback", "vault_keys", "events",
+                  "tandem_links", "users"):
         deleted[table] = conn.execute(
             f"DELETE FROM {table} WHERE {'id' if table == 'users' else 'user_id'}=?",
             (user_id,),

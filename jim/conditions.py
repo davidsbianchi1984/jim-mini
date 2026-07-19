@@ -105,6 +105,21 @@ def detect(sample: dict, text: str | None = None,
         return Detection(PHYSICAL_DISTRESS, severity,
                          f"{kind} ({temp}°C)", {"body_temperature": temp})
 
+    systolic = sample.get("bp_systolic")
+    diastolic = sample.get("bp_diastolic")
+    if systolic is not None and (systolic >= 160 or (diastolic or 0) >= 100):
+        severity = ("critical"
+                    if systolic >= 180 or (diastolic or 0) >= 120 else "guidance")
+        return Detection(PHYSICAL_DISTRESS, severity,
+                         f"elevated blood pressure ({systolic}/{diastolic or '?'} mmHg)",
+                         {"bp_systolic": systolic, "bp_diastolic": diastolic})
+
+    hrv = sample.get("hrv")
+    if hrv is not None and hrv < 20:
+        return Detection(STRESS, "guidance",
+                         f"low heart-rate variability ({hrv} ms) — sustained stress load",
+                         {"hrv": hrv})
+
     spo2 = sample.get("blood_oxygen")
     if spo2 is not None and spo2 < 90:
         return Detection(PHYSICAL_DISTRESS,

@@ -26,6 +26,7 @@ class Enroll(BaseModel):
     display_name: str
     birthdate: date | None = None
     terms_consent: bool
+    provider_consent: bool = False          # allow a care provider's summary view
     guardian_consent: bool = False
     emergency_name: str | None = None
     emergency_phone: str | None = None
@@ -50,6 +51,10 @@ class BiometricSample(BaseModel):
     respiratory_rate: int | None = None
     blood_oxygen: float | None = None
     body_temperature: float | None = None   # °C
+    bp_systolic: int | None = None          # mmHg
+    bp_diastolic: int | None = None         # mmHg
+    hrv: float | None = None                # heart-rate variability, ms
+    activity_level: int | None = None       # 0 (sedentary) .. 10 (intense)
     movement: str | None = None             # e.g. fall | collapse | immobile
     speech: str | None = None               # e.g. slurred | incoherent
     source_device: str | None = None        # multimodal input: smart_watch |
@@ -68,6 +73,15 @@ class DeviceRegister(BaseModel):
     transport: Literal["bluetooth", "wifi", "cellular", "wired"] | None = None
     has_llm: bool = False                   # embodiment carries its own LLM
     linked_to: str | None = None            # relays through this device
+
+
+class JournalEntry(BaseModel):
+    text: str
+
+
+class GuidanceFeedback(BaseModel):
+    rating: Literal["up", "down"]
+    note: str | None = None
 
 
 class ConditionDeclare(BaseModel):

@@ -51,13 +51,18 @@ deterministic stub answers offline. `JIM_MODEL` overrides the model.
 | `GET`/`POST /habits/{user_id}`, `POST …/{habit_id}/log` | Habit tracking with streaks; milestones (7/30/100 days) earn insights |
 | `POST`/`GET /coach/{user_id}` | 24/7 life coach across `mental_health`, `health_fitness`, `career`, `finance`, `relationships`, `personal_growth`, grounded in recent check-ins and active goals |
 | `GET /insights/{user_id}` | Proactive nudges: spending alerts, sleep praise, interview prep, mindful-break suggestions, milestones |
+| `POST`/`GET /journal/{user_id}` | Journaling; entries are vaulted under PDI tandem and run the same crisis pipeline as check-in notes |
+| `POST /feedback/{user_id}` | Continuous-improvement loop: rate guidance up/down with an optional note |
+| `GET /report/{user_id}` | Progress report & insights: mood/energy averages, goals, streaks, detection counts, feedback tallies |
+| `GET /provider/{user_id}` | Consent-gated provider portal: condition-level summary only (declared conditions, detection history, escalations) — never notes or raw biometrics |
 | `DELETE /data/{user_id}` | Delete anything, anytime — erases every trace of the user |
 
 ## Condition detection (`jim/conditions.py`)
 
 Transparent rules over a biometric sample — heart rate vs. the user's resting
-baseline, respiratory rate, SpO₂, body temperature, movement (fall / collapse /
-immobility), and speech (slurred / incoherent) — plus free-text and crisis
+baseline, respiratory rate, SpO₂, blood pressure (hypertensive-crisis
+thresholds), heart-rate variability, body temperature, activity level,
+movement (fall / collapse / immobility), and speech (slurred / incoherent) — plus free-text and crisis
 cues, returning a condition domain and `info` / `guidance` / `critical`
 severity. Domains: anxiety/panic, depression, stress management, phobias,
 financial stress, relationship distress, physical distress, and physical

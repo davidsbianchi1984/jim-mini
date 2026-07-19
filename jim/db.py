@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
     resting_heart_rate INTEGER,
     goals              TEXT,
     known_conditions   TEXT NOT NULL DEFAULT '[]',  -- declared known conditions
+    provider_consent   INTEGER NOT NULL DEFAULT 0,  -- allow provider-portal summary
     devices            TEXT NOT NULL DEFAULT '[]',  -- e.g. ["smart_watch","phone"]
     personality        TEXT,                        -- counselor adaptation prefs
     created_at         TEXT NOT NULL
@@ -104,6 +105,23 @@ CREATE TABLE IF NOT EXISTS habit_logs (
     habit_id   TEXT NOT NULL REFERENCES habits(id),
     day        TEXT NOT NULL,      -- YYYY-MM-DD
     PRIMARY KEY (habit_id, day)
+);
+
+-- Free-form journal entries (vaulted when PDI tandem is on).
+CREATE TABLE IF NOT EXISTS journal (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    text       TEXT,            -- NULL when sealed in the PDI vault
+    created_at TEXT NOT NULL
+);
+
+-- User feedback on guidance/coaching — the continuous-improvement loop.
+CREATE TABLE IF NOT EXISTS feedback (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    rating     TEXT NOT NULL,   -- up | down
+    note       TEXT,
+    created_at TEXT NOT NULL
 );
 
 -- Proactive nudges generated from check-ins, goals, streaks, and context.

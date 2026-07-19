@@ -10,8 +10,9 @@ from fastapi import FastAPI, HTTPException
 from . import coach, db, guardian, life
 from .models import (
     BiometricSample, CheckIn, CoachMessage, ConditionDeclare, ContextEvent,
-    DeviceRegister, Enroll, GoalCreate, GoalUpdate, HabitCreate, HabitLog,
-    PersonalityUpdate, SessionStart, SourceConsent, SpecialistRegister,
+    DeviceRegister, Enroll, GoalCreate, GoalUpdate, GuidanceFeedback,
+    HabitCreate, HabitLog, JournalEntry, PersonalityUpdate, SessionStart,
+    SourceConsent, SpecialistRegister,
 )
 from .pdi_client import PDIClient
 from .qrme_client import QRMEClient
@@ -208,6 +209,40 @@ def create_app(qrme_client: QRMEClient | None = None,
     def get_insights(user_id: str) -> list[dict]:
         _user_or_404(user_id)
         return life.insights(user_id)
+
+    # ---- journal, feedback, reports, provider portal ----------------------
+
+    @app.post("/journal/{user_id}", status_code=201)
+    def add_journal(user_id: str, body: JournalEntry) -> dict:
+        _user_or_404(user_id)
+        result = life.add_journal(user_id, body.text, pdi=app.state.pdi)
+        # Journal text runs the same crisis pipeline as check-in notes.
+        result["guardian"] = guardian.monitor(
+            user_id, {}, body.text, qrme=app.state.qrme, pdi=app.state.pdi)
+        return result
+
+    @app.get("/journal/{user_id}")
+    def get_journal(user_id: str) -> list[dict]:
+        _user_or_404(user_id)
+        return life.journal_entries(user_id, pdi=app.state.pdi)
+
+    @app.post("/feedback/{user_id}", status_code=201)
+    def add_feedback(user_id: str, body: GuidanceFeedback) -> dict:
+        _user_or_404(user_id)
+        return life.add_feedback(user_id, body.rating, body.note)
+
+    @app.get("/report/{user_id}")
+    def progress_report(user_id: str) -> dict:
+        _user_or_404(user_id)
+        return life.progress_report(user_id)
+
+    @app.get("/provider/{user_id}")
+    def provider_portal(user_id: str) -> dict:
+        user = _user_or_404(user_id)
+        if not user.get("provider_consent"):
+            raise HTTPException(
+                403, "the user has not consented to provider access")
+        return life.provider_summary(user)
 
     # ---- erasure ("delete anything, anytime") -----------------------------
 
