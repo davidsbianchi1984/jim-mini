@@ -1,8 +1,19 @@
 [project]
 name = "jim-mini"
 version = "0.1.0"
-description = "JIM-mini / Guardian — networked responsive personal guidance system for known conditions"
+description = "Guardian — personal guidance for known conditions: monitor, predict, guide, escalate"
+readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "David Bianchi" }]
+keywords = ["ai", "personal-guidance", "biometrics", "wellness", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: FastAPI",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 dependencies = [
     "fastapi>=0.110",
     "uvicorn>=0.29",
@@ -11,6 +22,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.urls]
+Repository = "https://github.com/davidsbianchi1984/jim-mini"
 
 [build-system]
 requires = ["setuptools>=68"]

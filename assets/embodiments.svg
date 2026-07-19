@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 700" width="1300" height="700" font-family="Helvetica, Arial, sans-serif">
-  <title>JIM-mini physical embodiments — one remembered thread across wearable, stationary, and autonomous devices</title>
+<svg role="img" aria-labelledby="t d" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 700" width="1300" height="700" font-family="Helvetica, Arial, sans-serif">
+  <title id="t">JIM-mini physical embodiments — one remembered thread across wearable, stationary, and autonomous devices</title>
+  <desc id="d">JIM-mini physical embodiments — one remembered thread across wearable, stationary, and autonomous devices. Hand-built vector illustration from the QRME product family design system.</desc>
   <defs>
     <linearGradient id="zbg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0F1136"/>

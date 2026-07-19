@@ -112,6 +112,17 @@ lands in PDI's tamper-evident audit chain. Without PDI configured, JIM stores
 data locally exactly as before. QRME runs the same pattern on its side,
 vaulting profile source material — see [docs/tandem.md](docs/tandem.md).
 
+## Configuration
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `JIM_DB` | `jim.db` | SQLite database path |
+| `JIM_LLM` | auto | `stub` forces the offline deterministic provider; `anthropic` forces the SDK |
+| `JIM_MODEL` | `claude-opus-4-8` | Model used for guidance and coaching |
+| `ANTHROPIC_API_KEY` | — | Enables real model replies |
+| `JIM_QRME_URL` | — | QRME tandem: delegate specialist guidance over HTTP |
+| `JIM_PDI_URL` / `JIM_PDI_TOKEN` | — | PDI tandem: seal medical/context payloads in the encrypted vault |
+
 ## Test
 
 ```bash
@@ -143,3 +154,20 @@ events are ingested, (non-auto and auto-investing), voice mode, AR visualization
 image insights, community challenges, real emergency-services dispatch, and a
 specialist knowledge-pack marketplace — represented structurally, not as live
 integrations.
+
+## Related projects
+
+Three separate products, each standalone, interoperating only over HTTP —
+see [docs/tandem.md](docs/tandem.md) for the full architecture:
+
+- [**qrme**](https://github.com/davidsbianchi1984/qrme) — AI synthetic
+  profiles: relationship-aware, remembered, moderated.
+- [**jim-mini**](https://github.com/davidsbianchi1984/jim-mini) — Guardian
+  personal guidance: monitor, predict, guide, escalate; can delegate
+  specialist guidance to QRME.
+- [**pdi**](https://github.com/davidsbianchi1984/pdi) — Private Data
+  Infrastructure: the encrypted vault both AI systems can run on top of.
+
+## License
+
+MIT © 2026 David Bianchi — see [LICENSE](LICENSE).
