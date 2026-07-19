@@ -116,7 +116,7 @@ pytest jim/tests
 Covers standalone detection/guidance/escalation and a real in-process tandem
 run against a separate QRME instance (reached only through the HTTP client).
 
-## Physical embodiments &amp; sessions
+## Physical embodiments & sessions
 
 ![JIM-mini physical embodiments](assets/embodiments.svg)
 
