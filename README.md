@@ -134,7 +134,7 @@ notes feed the same crisis detection as biometric monitoring.
 ## Out of scope for v1
 
 Live device streaming/pairing, real bank/brokerage connections (spending
-events are ingested, no auto-investing), voice mode, AR visualizations,
+events are ingested, (non-auto and auto-investing), voice mode, AR visualizations,
 image insights, community challenges, real emergency-services dispatch, and a
 specialist knowledge-pack marketplace — represented structurally, not as live
 integrations.
