@@ -348,8 +348,8 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
             f"DELETE FROM habit_logs WHERE habit_id IN ({marks})", habit_ids
         ).rowcount
     for table in ("habits", "goals", "checkins", "insights", "context_events",
-                  "coach_messages", "sources", "sessions", "vault_keys",
-                  "events", "tandem_links", "users"):
+                  "coach_messages", "sources", "sessions", "devices",
+                  "vault_keys", "events", "tandem_links", "users"):
         deleted[table] = conn.execute(
             f"DELETE FROM {table} WHERE {'id' if table == 'users' else 'user_id'}=?",
             (user_id,),

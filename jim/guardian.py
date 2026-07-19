@@ -139,6 +139,42 @@ def _prior_heart_rates(user_id: str, pdi=None, limit: int = 4) -> list[int]:
     return list(reversed(out))
 
 
+def register_device(user_id: str, body: dict) -> dict:
+    """Clause 16: a physical embodiment — wearable, stationary system, or
+    networked autonomous device, optionally carrying its own LLM."""
+    conn = db.connect()
+    device_id = db.new_id("dev")
+    conn.execute(
+        "INSERT INTO devices (id, user_id, name, kind, transport, has_llm,"
+        " linked_to, created_at) VALUES (?,?,?,?,?,?,?,?)",
+        (device_id, user_id, body["name"], body["kind"], body.get("transport"),
+         int(body.get("has_llm", False)), body.get("linked_to"), db.utcnow()),
+    )
+    conn.commit()
+    return device_lookup(user_id, body["name"])
+
+
+def devices_for(user_id: str) -> list[dict]:
+    rows = db.connect().execute(
+        "SELECT * FROM devices WHERE user_id=? ORDER BY created_at, rowid",
+        (user_id,)).fetchall()
+    return [{**dict(r), "has_llm": bool(r["has_llm"])} for r in rows]
+
+
+def device_lookup(user_id: str, name: str | None) -> dict | None:
+    if not name:
+        return None
+    row = db.connect().execute(
+        "SELECT * FROM devices WHERE user_id=? AND name=?"
+        " ORDER BY created_at DESC, rowid DESC LIMIT 1",
+        (user_id, name)).fetchone()
+    if row is None:
+        return None
+    device = dict(row)
+    device["has_llm"] = bool(device["has_llm"])
+    return device
+
+
 def start_session(user_id: str, device: str | None) -> dict:
     """Clause 14/20: a login session; the remembered state is per user, so
     any device that starts a session resumes the same conversational thread."""
@@ -198,13 +234,16 @@ def _memory_summary(user_id: str) -> str | None:
 
 def _delivery_channel(user: dict | None, source_device: str | None = None) -> str:
     """Clause 7/18: counsel via the reporting device, the device of the
-    active login session, or a paired device — in that order."""
+    active login session, or a registered/paired device — in that order."""
     if source_device:
         return source_device
     if user:
         session = _active_session(user["id"])
         if session and session.get("device"):
             return session["device"]
+        registered = devices_for(user["id"])
+        if registered:
+            return registered[0]["name"]
     devices = (user or {}).get("devices") or []
     if devices:
         return devices[0]
@@ -275,7 +314,17 @@ def _deliver(user_id, user, detection, note, qrme, source_device=None) -> dict:
         if spec and spec["mode"] == "tandem" and qrme is None:
             delivered["note"] = "tandem specialist registered but no QRME endpoint " \
                                 "configured; used standalone guidance"
-    delivered["delivered_via"] = _delivery_channel(user, source_device)
+    channel = _delivery_channel(user, source_device)
+    delivered["delivered_via"] = channel
+    embodiment = device_lookup(user_id, channel) if user else None
+    if embodiment:
+        # Clause 16: the embodiment's transport (e.g. Bluetooth relay through
+        # a linked device) and whether it answers with its own on-device LLM.
+        delivered["delivery"] = {
+            "kind": embodiment["kind"], "transport": embodiment["transport"],
+            "linked_to": embodiment["linked_to"],
+            "on_device_llm": embodiment["has_llm"],
+        }
 
     _event(user_id, "guidance", condition=detection.condition,
            severity=detection.severity, detail=delivered)

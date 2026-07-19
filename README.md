@@ -42,6 +42,7 @@ deterministic stub answers offline. `JIM_MODEL` overrides the model.
 | `POST /specialists` | Register a condition specialist — `local` (JIM's own guidance) or `tandem` (a QRME `qrme_profile_id`) |
 | `POST /monitor/{user_id}` | Ingest a biometric/context sample (optionally tagged with its `source_device` — smart watch, stationary system, neural sensor, gesture interface); runs detect → guide → escalate, with predictive early warning when nothing has manifested yet |
 | `POST /sessions/{user_id}`, `POST …/{session_id}/end` | Login sessions per device; starting one returns the remembered interaction state, so any device resumes the same conversational thread and counseling routes to the session's device |
+| `POST`/`GET /devices/{user_id}` | Physical embodiments: wearables, stationary systems, and networked autonomous devices — transport (e.g. Bluetooth, relayed through a linked device) and an optional on-device LLM; guidance reports how and where it was delivered |
 | `GET /events/{user_id}` | Event timeline (biometric → detection → guidance → escalation) |
 | `GET`/`PUT /sources/{user_id}` | Per-source consent (wearable, health, calendar, spending, bank, messages, location) — nothing is read from a source the user hasn't allowed |
 | `POST /context/{user_id}` | Ingest an event from a consented source (403 otherwise); transparent rules turn it into insights |
@@ -113,6 +114,10 @@ pytest jim/tests
 
 Covers standalone detection/guidance/escalation and a real in-process tandem
 run against a separate QRME instance (reached only through the HTTP client).
+
+## Physical embodiments &amp; sessions
+
+![JIM-mini physical embodiments](assets/embodiments.svg)
 
 ## Life layer (`jim/life.py`, `jim/coach.py`)
 

@@ -99,9 +99,46 @@
   <g transform="translate(72 110)">
     <text font-size="56" font-weight="bold" letter-spacing="4" fill="#F4E3C8">JIM-mini</text>
     <text y="32" font-size="17" fill="#C9CDD8" opacity="0.92">Guardian — personal guidance for known conditions</text>
-    <text y="58" font-size="13.5" fill="#8B90A8">monitor · detect · guide · escalate</text>
+    <text y="58" font-size="13.5" fill="#8B90A8">monitor · predict · guide · escalate — on every device</text>
     <rect x="2" y="74" width="64" height="3" rx="1.5" fill="#7BC47F"/>
   </g>
+
+  <!-- embodiment row: watch · console · robot · phone, riding the ECG line -->
+  <g transform="translate(96 560)" opacity="0.95">
+    <g transform="translate(0 0)">
+      <rect x="-13" y="-18" width="26" height="36" rx="9" fill="#20224F" stroke="#7BC47F" stroke-width="1.4"/>
+      <path d="M-6 0 L-2 0 L0 -5 L2 5 L4 0 L6 0" fill="none" stroke="#7BC47F" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(64 0)">
+      <rect x="-20" y="-15" width="40" height="27" rx="4" fill="#20224F" stroke="#9FD8E8" stroke-opacity="0.7" stroke-width="1.4"/>
+      <rect x="-9" y="12" width="18" height="4" rx="2" fill="#2A2C63"/>
+      <text y="-20" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#E8A34D">LLM</text>
+    </g>
+    <g transform="translate(128 0)">
+      <rect x="-14" y="-14" width="28" height="24" rx="8" fill="#20224F" stroke="#C9CDD8" stroke-opacity="0.6" stroke-width="1.4"/>
+      <circle cx="-5" cy="-4" r="2.6" fill="#9FD8E8"/><circle cx="5" cy="-4" r="2.6" fill="#9FD8E8"/>
+      <rect x="-5" y="3" width="10" height="2.6" rx="1.3" fill="#7BC47F"/>
+      <circle cx="0" cy="-19" r="2.4" fill="#E8A34D"/>
+    </g>
+    <g transform="translate(186 0)">
+      <rect x="-9" y="-17" width="18" height="34" rx="5" fill="#20224F" stroke="#C9CDD8" stroke-opacity="0.5" stroke-width="1.2"/>
+      <rect x="-5" y="6" width="10" height="5" rx="2.5" fill="#E8A34D" opacity="0.9"/>
+    </g>
+    <path d="M-20 30 H206" stroke="#5FA8C0" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="3 6"/>
+    <text x="93" y="44" text-anchor="middle" font-size="10.5" fill="#8B90A8">one remembered thread across embodiments</text>
+  </g>
+
+  <!-- PDI vault node (bottom right) -->
+  <g transform="translate(1130 400)">
+    <circle r="22" fill="#1B1D4E" stroke="#9FD8E8" stroke-opacity="0.7" stroke-width="1.6"/>
+    <circle r="14" fill="none" stroke="#DDE1EC" stroke-opacity="0.6" stroke-width="2.4"/>
+    <g stroke="#DDE1EC" stroke-opacity="0.65" stroke-width="2.2" stroke-linecap="round">
+      <line y1="-10" y2="10"/><line x1="-10" x2="10"/>
+    </g>
+    <circle r="5" fill="#12143B" stroke="#E8A34D" stroke-width="1.4"/>
+    <text y="42" text-anchor="middle" font-size="12" fill="#9FD8E8" letter-spacing="1">PDI vault</text>
+  </g>
+  <path d="M902 320 C980 348 1040 372 1100 390" fill="none" stroke="#9FD8E8" stroke-width="1.6" stroke-opacity="0.5" stroke-dasharray="2 7" stroke-linecap="round"/>
 
   <rect width="1280" height="640" fill="url(#jvign)"/>
 </svg>

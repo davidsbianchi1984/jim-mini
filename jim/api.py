@@ -10,8 +10,8 @@ from fastapi import FastAPI, HTTPException
 from . import coach, db, guardian, life
 from .models import (
     BiometricSample, CheckIn, CoachMessage, ConditionDeclare, ContextEvent,
-    Enroll, GoalCreate, GoalUpdate, HabitCreate, HabitLog, PersonalityUpdate,
-    SessionStart, SourceConsent, SpecialistRegister,
+    DeviceRegister, Enroll, GoalCreate, GoalUpdate, HabitCreate, HabitLog,
+    PersonalityUpdate, SessionStart, SourceConsent, SpecialistRegister,
 )
 from .pdi_client import PDIClient
 from .qrme_client import QRMEClient
@@ -77,6 +77,18 @@ def create_app(qrme_client: QRMEClient | None = None,
     def events(user_id: str) -> list[dict]:
         _user_or_404(user_id)
         return guardian.events(user_id)
+
+    # ---- physical embodiments (clause 16) ---------------------------------
+
+    @app.post("/devices/{user_id}", status_code=201)
+    def register_device(user_id: str, body: DeviceRegister) -> dict:
+        _user_or_404(user_id)
+        return guardian.register_device(user_id, body.model_dump())
+
+    @app.get("/devices/{user_id}")
+    def get_devices(user_id: str) -> list[dict]:
+        _user_or_404(user_id)
+        return guardian.devices_for(user_id)
 
     # ---- login sessions (cross-device continuity) -------------------------
 

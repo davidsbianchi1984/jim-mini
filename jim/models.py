@@ -62,6 +62,14 @@ class SessionStart(BaseModel):
     device: str | None = None               # the device this login is on
 
 
+class DeviceRegister(BaseModel):
+    name: str                               # e.g. smart_watch, kitchen_console
+    kind: Literal["wearable", "stationary", "autonomous"]
+    transport: Literal["bluetooth", "wifi", "cellular", "wired"] | None = None
+    has_llm: bool = False                   # embodiment carries its own LLM
+    linked_to: str | None = None            # relays through this device
+
+
 class ConditionDeclare(BaseModel):
     condition: Condition
     note: str | None = None

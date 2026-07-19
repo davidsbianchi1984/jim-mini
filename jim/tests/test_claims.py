@@ -125,6 +125,43 @@ def test_multimodal_source_device_routes_delivery(client):
     assert events[0]["detail"]["source_device"] == "neural_sensor"
 
 
+def test_physical_embodiments_registry(client):
+    """Clause 16: stationary systems and networked autonomous devices with
+    their own LLMs, plus Bluetooth-linked wearables."""
+    user = enroll(client)
+    client.post(f"/devices/{user}", json={
+        "name": "kitchen_console", "kind": "stationary", "transport": "wifi",
+        "has_llm": True})
+    client.post(f"/devices/{user}", json={
+        "name": "smart_watch", "kind": "wearable", "transport": "bluetooth",
+        "linked_to": "kitchen_console"})
+    assert len(client.get(f"/devices/{user}").json()) == 2
+
+    # The stationary embodiment reports a sample; counseling routes back to
+    # it and notes it answers with its own on-device LLM.
+    r = client.post(f"/monitor/{user}",
+                    json={"heart_rate": 120, "respiratory_rate": 22,
+                          "source_device": "kitchen_console"}).json()
+    assert r["guidance"]["delivered_via"] == "kitchen_console"
+    assert r["guidance"]["delivery"] == {
+        "kind": "stationary", "transport": "wifi", "linked_to": None,
+        "on_device_llm": True}
+
+
+def test_bluetooth_linked_wearable_delivery(client):
+    """Clause 7: counseling via the smart watch or a device linked to it."""
+    user = enroll(client)
+    client.post(f"/devices/{user}", json={
+        "name": "smart_watch", "kind": "wearable", "transport": "bluetooth",
+        "linked_to": "phone"})
+    r = client.post(f"/monitor/{user}",
+                    json={"heart_rate": 120, "respiratory_rate": 22}).json()
+    assert r["guidance"]["delivered_via"] == "smart_watch"
+    delivery = r["guidance"]["delivery"]
+    assert delivery["transport"] == "bluetooth"
+    assert delivery["linked_to"] == "phone"
+
+
 def test_guidance_remembers_prior_sessions(client):
     user = enroll(client)
     client.post(f"/monitor/{user}", json={"heart_rate": 120, "respiratory_rate": 22})

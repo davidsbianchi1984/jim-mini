@@ -117,6 +117,20 @@ CREATE TABLE IF NOT EXISTS insights (
     created_at TEXT NOT NULL
 );
 
+-- Physical embodiments (clause 16): wearables, stationary systems, and
+-- networked autonomous devices — with transport (e.g. Bluetooth), an
+-- optional on-device LLM, and links between devices (watch → phone).
+CREATE TABLE IF NOT EXISTS devices (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    name       TEXT NOT NULL,   -- smart_watch | kitchen_console | helper_bot …
+    kind       TEXT NOT NULL,   -- wearable | stationary | autonomous
+    transport  TEXT,            -- bluetooth | wifi | cellular | wired
+    has_llm    INTEGER NOT NULL DEFAULT 0,  -- device carries its own LLM
+    linked_to  TEXT,            -- name of the device it relays through
+    created_at TEXT NOT NULL
+);
+
 -- Login sessions: guidance stays consistent across sessions and devices
 -- (the remembered state is per user, so any device resumes the same thread).
 CREATE TABLE IF NOT EXISTS sessions (
