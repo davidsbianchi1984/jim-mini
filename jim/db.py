@@ -29,6 +29,17 @@ CREATE TABLE IF NOT EXISTS users (
     created_at         TEXT NOT NULL
 );
 
+-- Capability tokens. A user proves "I am this user" by holding the token
+-- minted at enrollment (returned once). Every /{user_id} surface — biometric
+-- monitoring, journal, provider portal, erasure — is PHI, so all of them are
+-- gated behind it. Only the SHA-256 hash is stored.
+CREATE TABLE IF NOT EXISTS api_tokens (
+    token_hash TEXT PRIMARY KEY,
+    role       TEXT NOT NULL,   -- user
+    subject_id TEXT NOT NULL,   -- user_id
+    created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS specialists (
     condition       TEXT PRIMARY KEY,   -- condition domain key (see conditions.py)
     mode            TEXT NOT NULL,      -- local | tandem

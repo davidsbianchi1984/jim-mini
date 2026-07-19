@@ -87,4 +87,19 @@ def enroll(client, **extra):
     body.update(extra)
     r = client.post("/enroll", json=body)
     assert r.status_code == 201, r.text
-    return r.json()["id"]
+    out = r.json()
+    # Hold the user capability so subsequent per-user calls authorize. The
+    # most-recently enrolled user's token becomes the client default; tests
+    # with several users switch with as_user()/user_header().
+    client.headers["authorization"] = f"Bearer {out['user_token']}"
+    return out["id"]
+
+
+def user_header(client_response_or_token) -> dict:
+    """Authorization header from a raw user token."""
+    return {"authorization": f"Bearer {client_response_or_token}"}
+
+
+def as_user(client, token) -> None:
+    """Make ``token``'s user the client's default caller."""
+    client.headers["authorization"] = f"Bearer {token}"
