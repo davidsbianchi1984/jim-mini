@@ -11,7 +11,7 @@ from . import coach, db, guardian, life
 from .models import (
     BiometricSample, CheckIn, CoachMessage, ConditionDeclare, ContextEvent,
     Enroll, GoalCreate, GoalUpdate, HabitCreate, HabitLog, PersonalityUpdate,
-    SourceConsent, SpecialistRegister,
+    SessionStart, SourceConsent, SpecialistRegister,
 )
 from .pdi_client import PDIClient
 from .qrme_client import QRMEClient
@@ -77,6 +77,21 @@ def create_app(qrme_client: QRMEClient | None = None,
     def events(user_id: str) -> list[dict]:
         _user_or_404(user_id)
         return guardian.events(user_id)
+
+    # ---- login sessions (cross-device continuity) -------------------------
+
+    @app.post("/sessions/{user_id}", status_code=201)
+    def start_session(user_id: str, body: SessionStart) -> dict:
+        _user_or_404(user_id)
+        return guardian.start_session(user_id, body.device)
+
+    @app.post("/sessions/{user_id}/{session_id}/end")
+    def end_session(user_id: str, session_id: str) -> dict:
+        _user_or_404(user_id)
+        ended = guardian.end_session(user_id, session_id)
+        if ended is None:
+            raise HTTPException(404, "session not found")
+        return ended
 
     # ---- known conditions & counselor adaptation --------------------------
 

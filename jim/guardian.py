@@ -139,10 +139,47 @@ def _prior_heart_rates(user_id: str, pdi=None, limit: int = 4) -> list[int]:
     return list(reversed(out))
 
 
+def start_session(user_id: str, device: str | None) -> dict:
+    """Clause 14/20: a login session; the remembered state is per user, so
+    any device that starts a session resumes the same conversational thread."""
+    conn = db.connect()
+    session_id = db.new_id("ses")
+    conn.execute(
+        "INSERT INTO sessions (id, user_id, device, started_at) VALUES (?,?,?,?)",
+        (session_id, user_id, device, db.utcnow()),
+    )
+    conn.commit()
+    prior = conn.execute(
+        "SELECT COUNT(*) AS n FROM sessions WHERE user_id=? AND id != ?",
+        (user_id, session_id)).fetchone()["n"]
+    return {"id": session_id, "device": device, "prior_sessions": prior,
+            "memory": _memory_summary(user_id)}
+
+
+def end_session(user_id: str, session_id: str) -> dict | None:
+    conn = db.connect()
+    row = conn.execute("SELECT * FROM sessions WHERE id=? AND user_id=?",
+                       (session_id, user_id)).fetchone()
+    if row is None:
+        return None
+    conn.execute("UPDATE sessions SET ended_at=? WHERE id=?",
+                 (db.utcnow(), session_id))
+    conn.commit()
+    return {"id": session_id, "ended": True}
+
+
+def _active_session(user_id: str) -> dict | None:
+    row = db.connect().execute(
+        "SELECT * FROM sessions WHERE user_id=? AND ended_at IS NULL"
+        " ORDER BY started_at DESC, rowid DESC LIMIT 1", (user_id,)).fetchone()
+    return dict(row) if row else None
+
+
 def _memory_summary(user_id: str) -> str | None:
     """Clause 13/14: remembered state of prior interactions, so guidance is
-    consistent across sessions."""
-    rows = db.connect().execute(
+    consistent across login sessions and devices."""
+    conn = db.connect()
+    rows = conn.execute(
         "SELECT condition, severity, created_at FROM events"
         " WHERE user_id=? AND type='guidance'"
         " ORDER BY created_at DESC, rowid DESC LIMIT 3", (user_id,),
@@ -151,12 +188,23 @@ def _memory_summary(user_id: str) -> str | None:
         return None
     latest = rows[0]
     label = conditions.LABELS.get(latest["condition"], latest["condition"])
-    return (f"{len(rows)} recent guidance session(s); most recently for "
+    logins = conn.execute("SELECT COUNT(*) AS n FROM sessions WHERE user_id=?",
+                          (user_id,)).fetchone()["n"]
+    return (f"{len(rows)} recent guidance deliverie(s) across "
+            f"{max(logins, 1)} login session(s); most recently for "
             f"{label} ({latest['severity']}). Keep continuity with what was "
-            "already discussed.")
+            "already discussed, regardless of which device the user is on.")
 
 
-def _delivery_channel(user: dict | None) -> str:
+def _delivery_channel(user: dict | None, source_device: str | None = None) -> str:
+    """Clause 7/18: counsel via the reporting device, the device of the
+    active login session, or a paired device — in that order."""
+    if source_device:
+        return source_device
+    if user:
+        session = _active_session(user["id"])
+        if session and session.get("device"):
+            return session["device"]
     devices = (user or {}).get("devices") or []
     if devices:
         return devices[0]
@@ -209,13 +257,14 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
         "severity": detection.severity, "reason": detection.reason,
         "guidance": None, "escalation": None,
     }
-    result["guidance"] = _deliver(user_id, user, detection, note, qrme)
+    result["guidance"] = _deliver(user_id, user, detection, note, qrme,
+                                  source_device=sample.get("source_device"))
     if detection.severity == "critical":
         result["escalation"] = _escalate(user_id, user, detection)
     return result
 
 
-def _deliver(user_id, user, detection, note, qrme) -> dict:
+def _deliver(user_id, user, detection, note, qrme, source_device=None) -> dict:
     spec = _specialist(detection.condition)
 
     if spec and spec["mode"] == "tandem" and spec["qrme_profile_id"] and qrme is not None:
@@ -226,7 +275,7 @@ def _deliver(user_id, user, detection, note, qrme) -> dict:
         if spec and spec["mode"] == "tandem" and qrme is None:
             delivered["note"] = "tandem specialist registered but no QRME endpoint " \
                                 "configured; used standalone guidance"
-    delivered["delivered_via"] = _delivery_channel(user)
+    delivered["delivered_via"] = _delivery_channel(user, source_device)
 
     _event(user_id, "guidance", condition=detection.condition,
            severity=detection.severity, detail=delivered)

@@ -117,6 +117,16 @@ CREATE TABLE IF NOT EXISTS insights (
     created_at TEXT NOT NULL
 );
 
+-- Login sessions: guidance stays consistent across sessions and devices
+-- (the remembered state is per user, so any device resumes the same thread).
+CREATE TABLE IF NOT EXISTS sessions (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    device     TEXT,            -- smart_watch | phone | stationary | …
+    started_at TEXT NOT NULL,
+    ended_at   TEXT
+);
+
 -- Keys JIM has stored in the tandem PDI vault, tracked so that
 -- DELETE /data/{user_id} can purge the vault as well.
 CREATE TABLE IF NOT EXISTS vault_keys (

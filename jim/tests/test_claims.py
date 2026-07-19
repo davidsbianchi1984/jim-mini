@@ -95,6 +95,36 @@ def test_references_accompany_counseling(client):
     assert refs and any("breathing" in ref.lower() for ref in refs)
 
 
+def test_cross_device_login_sessions(client):
+    """Clause 14/20: consistent guidance across login sessions and devices."""
+    user = enroll(client)
+    watch = client.post(f"/sessions/{user}", json={"device": "smart_watch"}).json()
+    assert watch["prior_sessions"] == 0 and watch["memory"] is None
+    r = client.post(f"/monitor/{user}",
+                    json={"heart_rate": 120, "respiratory_rate": 22}).json()
+    assert r["guidance"]["delivered_via"] == "smart_watch"
+    client.post(f"/sessions/{user}/{watch['id']}/end")
+
+    # New login on a different device: same remembered thread, new channel.
+    phone = client.post(f"/sessions/{user}", json={"device": "phone"}).json()
+    assert phone["prior_sessions"] == 1
+    assert "Keep continuity" in phone["memory"]
+    r = client.post(f"/monitor/{user}",
+                    json={"heart_rate": 121, "respiratory_rate": 22}).json()
+    assert r["guidance"]["delivered_via"] == "phone"
+
+
+def test_multimodal_source_device_routes_delivery(client):
+    """Clauses 17/18: input names its modality; counseling routes back to it."""
+    user = enroll(client, devices=["phone"])
+    r = client.post(f"/monitor/{user}",
+                    json={"heart_rate": 120, "respiratory_rate": 22,
+                          "source_device": "neural_sensor"}).json()
+    assert r["guidance"]["delivered_via"] == "neural_sensor"
+    events = client.get(f"/events/{user}").json()
+    assert events[0]["detail"]["source_device"] == "neural_sensor"
+
+
 def test_guidance_remembers_prior_sessions(client):
     user = enroll(client)
     client.post(f"/monitor/{user}", json={"heart_rate": 120, "respiratory_rate": 22})

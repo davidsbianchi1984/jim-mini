@@ -52,7 +52,14 @@ class BiometricSample(BaseModel):
     body_temperature: float | None = None   # °C
     movement: str | None = None             # e.g. fall | collapse | immobile
     speech: str | None = None               # e.g. slurred | incoherent
+    source_device: str | None = None        # multimodal input: smart_watch |
+                                            # stationary | neural_sensor |
+                                            # gesture | robot | …
     note: str | None = None
+
+
+class SessionStart(BaseModel):
+    device: str | None = None               # the device this login is on
 
 
 class ConditionDeclare(BaseModel):
