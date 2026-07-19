@@ -38,10 +38,14 @@ class AnthropicProvider:
 class StubProvider:
     def generate(self, system: str, user: str) -> str:
         label = _extract(system, "condition: ") or "distress"
-        return (
+        text = (
             f"I'm here with you. [stub guidance for {label}] "
             "Let's take one slow breath together, and tell me what feels most urgent."
         )
+        tone = _extract(system, "tone: ")
+        if tone:
+            text += f" (tone: {tone})"
+        return text
 
 
 def _extract(text: str, marker: str) -> str | None:

@@ -8,8 +8,8 @@ and active goals. Uses JIM's own LLM provider and the same safety net.
 
 from __future__ import annotations
 
-from . import db, life, llm
-from .guidance import _DENY
+from . import db, guardian, life, llm
+from .guidance import _DENY, personalize
 
 AREAS = {
     "mental_health": "mental health — support, coping strategies, resources",
@@ -40,11 +40,16 @@ def _context(user_id: str) -> str:
     for g in active:
         lines.append(f"active goal ({g['area']}): {g['title']}"
                      f" — {round(g['progress'] * 100)}% done")
+    prior = history(user_id)
+    if prior:
+        lines.append(f"{len(prior)} prior coach message(s) on record — keep "
+                     "continuity with earlier sessions")
     return "\n".join(lines) if lines else "no recent check-ins or goals"
 
 
 def reply(user_id: str, area: str, message: str) -> dict:
     system = _SYSTEM.format(area=AREAS[area], context=_context(user_id))
+    system += personalize(guardian.get_user(user_id))
     text = llm.get_provider().generate(system, message)
 
     safe = not _DENY.search(text)

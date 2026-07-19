@@ -9,8 +9,9 @@ from fastapi import FastAPI, HTTPException
 
 from . import coach, db, guardian, life
 from .models import (
-    BiometricSample, CheckIn, CoachMessage, ContextEvent, Enroll, GoalCreate,
-    GoalUpdate, HabitCreate, HabitLog, SourceConsent, SpecialistRegister,
+    BiometricSample, CheckIn, CoachMessage, ConditionDeclare, ContextEvent,
+    Enroll, GoalCreate, GoalUpdate, HabitCreate, HabitLog, PersonalityUpdate,
+    SourceConsent, SpecialistRegister,
 )
 from .pdi_client import PDIClient
 from .qrme_client import QRMEClient
@@ -76,6 +77,18 @@ def create_app(qrme_client: QRMEClient | None = None,
     def events(user_id: str) -> list[dict]:
         _user_or_404(user_id)
         return guardian.events(user_id)
+
+    # ---- known conditions & counselor adaptation --------------------------
+
+    @app.post("/conditions/{user_id}", status_code=201)
+    def declare_condition(user_id: str, body: ConditionDeclare) -> dict:
+        _user_or_404(user_id)
+        return guardian.declare_condition(user_id, body.condition, body.note)
+
+    @app.put("/personality/{user_id}")
+    def set_personality(user_id: str, body: PersonalityUpdate) -> dict:
+        _user_or_404(user_id)
+        return guardian.set_personality(user_id, body.model_dump())
 
     # ---- connected sources ("AI only sees what you allow") ----------------
 

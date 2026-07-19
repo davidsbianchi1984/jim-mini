@@ -36,9 +36,11 @@ deterministic stub answers offline. `JIM_MODEL` overrides the model.
 | Endpoint | Purpose |
 |---|---|
 | `GET /health` | Status + whether tandem is configured |
-| `POST /enroll` | Enroll a user: terms/guardian consent, emergency contact (+ consent), device pairing, resting-HR baseline, goals |
+| `POST /enroll` | Enroll a user: terms/guardian consent, emergency contact (+ consent), devices, resting-HR baseline, goals, declared known conditions |
+| `POST /conditions/{user_id}` | Declare a known condition after enrollment ("receiving an indication of a known condition"); detection is sensitized for it |
+| `PUT /personality/{user_id}` | Adapt the counselor from user input — tone and free-text preferences shape every guidance and coach prompt |
 | `POST /specialists` | Register a condition specialist — `local` (JIM's own guidance) or `tandem` (a QRME `qrme_profile_id`) |
-| `POST /monitor/{user_id}` | Ingest a biometric/context sample; runs detect → guide → escalate |
+| `POST /monitor/{user_id}` | Ingest a biometric/context sample; runs detect → guide → escalate, with predictive early warning when nothing has manifested yet |
 | `GET /events/{user_id}` | Event timeline (biometric → detection → guidance → escalation) |
 | `GET`/`PUT /sources/{user_id}` | Per-source consent (wearable, health, calendar, spending, bank, messages, location) — nothing is read from a source the user hasn't allowed |
 | `POST /context/{user_id}` | Ingest an event from a consented source (403 otherwise); transparent rules turn it into insights |
@@ -51,14 +53,34 @@ deterministic stub answers offline. `JIM_MODEL` overrides the model.
 
 ## Condition detection (`jim/conditions.py`)
 
-Transparent rules over a biometric sample (heart rate vs. the user's resting
-baseline, respiratory rate, SpO₂) plus free-text and crisis cues, returning a
-condition domain and `info` / `guidance` / `critical` severity.
+Transparent rules over a biometric sample — heart rate vs. the user's resting
+baseline, respiratory rate, SpO₂, body temperature, movement (fall / collapse /
+immobility), and speech (slurred / incoherent) — plus free-text and crisis
+cues, returning a condition domain and `info` / `guidance` / `critical`
+severity. Domains: anxiety/panic, depression, stress management, phobias,
+financial stress, relationship distress, physical distress, and physical
+injury (first-aid counseling with a clear call-for-help threshold).
+
+Two things shape detection per user:
+
+- **Declared known conditions** lower the heart-rate threshold, so episodes
+  are caught earlier for users known to be prone to them.
+- **Predictive early warning** (`conditions.forecast`): a steady heart-rate
+  climb that hasn't crossed a threshold yet produces a `forecast` event and a
+  "may be building" insight — identifying a potential abnormality before it
+  manifests. Prior samples are read back from the PDI vault when tandem
+  storage is on.
 
 ## Guidance
 
 - **Standalone** (`jim/guidance.py`): JIM generates condition-specific guidance
-  through its own LLM provider, with a minimal safety check.
+  through its own LLM provider, with a minimal safety check. Every reply
+  carries a **factual basis** (`references`, e.g. Red Cross first-aid steps,
+  NHS breathing techniques), is shaped by the user's declared conditions and
+  personality preferences (a user-specific adaptation of the model), keeps
+  **continuity with prior sessions** via remembered interaction state, and
+  reports its **delivery channel** (`delivered_via`: the user's smart watch or
+  linked device when one is paired).
 - **Tandem** (`jim/qrme_client.py`): delegates to a QRME specialist profile over
   HTTP; the reply is subject to QRME's moderation and stored in QRME's per-user
   memory. If a tandem specialist is registered but no QRME endpoint is

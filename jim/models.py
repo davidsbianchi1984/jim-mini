@@ -8,7 +8,8 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 Condition = Literal[
-    "anxiety", "depression", "financial_stress", "relationship", "physical_distress"
+    "anxiety", "depression", "stress", "phobia", "financial_stress",
+    "relationship", "physical_distress", "physical_injury",
 ]
 
 LifeArea = Literal[
@@ -32,6 +33,8 @@ class Enroll(BaseModel):
     device_paired: bool = False
     resting_heart_rate: int | None = None
     goals: str | None = None
+    known_conditions: list[Condition] = Field(default_factory=list)
+    devices: list[str] = Field(default_factory=list)   # e.g. ["smart_watch"]
 
 
 class SpecialistRegister(BaseModel):
@@ -46,7 +49,20 @@ class BiometricSample(BaseModel):
     resting_heart_rate: int | None = None
     respiratory_rate: int | None = None
     blood_oxygen: float | None = None
+    body_temperature: float | None = None   # °C
+    movement: str | None = None             # e.g. fall | collapse | immobile
+    speech: str | None = None               # e.g. slurred | incoherent
     note: str | None = None
+
+
+class ConditionDeclare(BaseModel):
+    condition: Condition
+    note: str | None = None
+
+
+class PersonalityUpdate(BaseModel):
+    tone: str | None = None                 # e.g. "direct and brief"
+    instructions: str | None = None         # free-text preference
 
 
 class SourceConsent(BaseModel):

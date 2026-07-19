@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS users (
     device_paired      INTEGER NOT NULL DEFAULT 0,
     resting_heart_rate INTEGER,
     goals              TEXT,
+    known_conditions   TEXT NOT NULL DEFAULT '[]',  -- declared known conditions
+    devices            TEXT NOT NULL DEFAULT '[]',  -- e.g. ["smart_watch","phone"]
+    personality        TEXT,                        -- counselor adaptation prefs
     created_at         TEXT NOT NULL
 );
 
