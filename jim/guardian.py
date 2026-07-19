@@ -39,14 +39,15 @@ def enroll(body: dict) -> dict:
     user_id = db.new_id("usr")
     conn.execute(
         "INSERT INTO users (id, display_name, birthdate, terms_consent,"
-        " provider_consent, guardian_consent, emergency_name, emergency_phone,"
-        " contact_consent, device_paired, resting_heart_rate, goals,"
-        " known_conditions, devices, created_at)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        " provider_consent, cloud_contribution, guardian_consent,"
+        " emergency_name, emergency_phone, contact_consent, device_paired,"
+        " resting_heart_rate, goals, known_conditions, devices, created_at)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (
             user_id, body["display_name"],
             body.get("birthdate").isoformat() if body.get("birthdate") else None,
             int(body["terms_consent"]), int(body.get("provider_consent", False)),
+            int(body.get("cloud_contribution", False)),
             int(body.get("guardian_consent", False)),
             body.get("emergency_name"), body.get("emergency_phone"),
             int(body.get("contact_consent", False)),

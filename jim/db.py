@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     goals              TEXT,
     known_conditions   TEXT NOT NULL DEFAULT '[]',  -- declared known conditions
     provider_consent   INTEGER NOT NULL DEFAULT 0,  -- allow provider-portal summary
+    cloud_contribution INTEGER NOT NULL DEFAULT 0,  -- opt-in: anonymized outcomes improve the cloud model
     devices            TEXT NOT NULL DEFAULT '[]',  -- e.g. ["smart_watch","phone"]
     personality        TEXT,                        -- counselor adaptation prefs
     created_at         TEXT NOT NULL
@@ -189,6 +190,7 @@ def connect() -> sqlite3.Connection:
     if conn is None or getattr(_local, "path", None) != db_path():
         conn = sqlite3.connect(db_path())
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL")  # concurrent readers
         conn.executescript(_SCHEMA)
         _local.conn = conn
         _local.path = db_path()

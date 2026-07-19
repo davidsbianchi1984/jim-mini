@@ -27,12 +27,16 @@ class Enroll(BaseModel):
     birthdate: date | None = None
     terms_consent: bool
     provider_consent: bool = False          # allow a care provider's summary view
+    cloud_contribution: bool = False        # opt-in: anonymized guidance outcomes
+                                            # improve the shared cloud model
     guardian_consent: bool = False
     emergency_name: str | None = None
     emergency_phone: str | None = None
     contact_consent: bool = False
     device_paired: bool = False
     resting_heart_rate: int | None = None
+    # Deprecated: free-text goals from early enrollments. Use the
+    # /goals endpoints for tracked goals instead.
     goals: str | None = None
     known_conditions: list[Condition] = Field(default_factory=list)
     devices: list[str] = Field(default_factory=list)   # e.g. ["smart_watch"]

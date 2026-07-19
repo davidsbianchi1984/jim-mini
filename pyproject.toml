@@ -34,4 +34,5 @@ build-backend = "setuptools.build_meta"
 include = ["jim*"]
 
 [tool.pytest.ini_options]
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient` is deprecated"]
 testpaths = ["jim/tests"]

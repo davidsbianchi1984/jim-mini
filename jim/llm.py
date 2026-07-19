@@ -55,12 +55,24 @@ def _extract(text: str, marker: str) -> str | None:
     return None
 
 
-def get_provider() -> Provider:
+def get_provider(cloud=None) -> Provider:
+    """``cloud`` is an optional CloudModelClient; when present (or when
+    JIM_CLOUD_URL is configured) inference routes to the gateway's greater
+    model with automatic local fallback."""
     choice = os.environ.get("JIM_LLM")
     if choice == "stub":
-        return StubProvider()
-    if choice == "anthropic" or os.environ.get("ANTHROPIC_API_KEY") or os.environ.get(
+        base: Provider = StubProvider()
+    elif choice == "anthropic" or os.environ.get("ANTHROPIC_API_KEY") or os.environ.get(
         "ANTHROPIC_AUTH_TOKEN"
     ):
-        return AnthropicProvider()
-    return StubProvider()
+        base = AnthropicProvider()
+    else:
+        base = StubProvider()
+    if cloud is None and os.environ.get("JIM_CLOUD_URL"):
+        from .cloud import CloudModelClient
+        cloud = CloudModelClient(token=os.environ.get("JIM_CLOUD_TOKEN", ""),
+                                 base_url=os.environ["JIM_CLOUD_URL"])
+    if cloud is not None:
+        from .cloud import CloudProvider
+        return CloudProvider(cloud, fallback=base)
+    return base

@@ -122,6 +122,16 @@ vaulting profile source material — see [docs/tandem.md](docs/tandem.md).
 | `ANTHROPIC_API_KEY` | — | Enables real model replies |
 | `JIM_QRME_URL` | — | QRME tandem: delegate specialist guidance over HTTP |
 | `JIM_PDI_URL` / `JIM_PDI_TOKEN` | — | PDI tandem: seal medical/context payloads in the encrypted vault |
+| `JIM_CLOUD_URL` / `JIM_CLOUD_TOKEN` | — | Cloud Model Gateway: greater-model guidance with local fallback + opt-in contribution ([docs/cloud-model.md](docs/cloud-model.md)) |
+
+## Cloud model — use a greater model, and contribute to it
+
+With a [Cloud Model Gateway](docs/cloud-model.md) configured, guidance and
+coaching route to the hosted tier (e.g. `claude-fable-5`) with automatic
+local fallback. Users who opt in at enrollment (`cloud_contribution`)
+contribute **anonymized guidance outcomes only** — condition domain,
+severity, and their rating; never ids, notes, or biometrics — and can revoke
+anytime. `GET /cloud/status` reports the tier.
 
 ## Test
 

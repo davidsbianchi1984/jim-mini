@@ -14,6 +14,7 @@ from .models import (
     HabitCreate, HabitLog, JournalEntry, PersonalityUpdate, SessionStart,
     SourceConsent, SpecialistRegister,
 )
+from .cloud import CloudModelClient
 from .pdi_client import PDIClient
 from .qrme_client import QRMEClient
 
@@ -26,7 +27,8 @@ def _age(birthdate: date) -> int:
 
 
 def create_app(qrme_client: QRMEClient | None = None,
-               pdi_client: PDIClient | None = None) -> FastAPI:
+               pdi_client: PDIClient | None = None,
+               cloud_client: CloudModelClient | None = None) -> FastAPI:
     app = FastAPI(title="JIM-mini / Guardian", version="0.1.0")
 
     # Tandem is optional: injected client (tests) > JIM_QRME_URL env > none.
@@ -41,6 +43,14 @@ def create_app(qrme_client: QRMEClient | None = None,
                                base_url=os.environ["JIM_PDI_URL"])
     app.state.pdi = pdi_client
 
+    # Cloud Model Gateway: greater-model guidance with local fallback, and
+    # the opt-in contribution intake (JIM_CLOUD_URL + JIM_CLOUD_TOKEN).
+    if cloud_client is None and os.environ.get("JIM_CLOUD_URL"):
+        cloud_client = CloudModelClient(
+            token=os.environ.get("JIM_CLOUD_TOKEN", ""),
+            base_url=os.environ["JIM_CLOUD_URL"])
+    app.state.cloud = cloud_client
+
     def _user_or_404(user_id: str) -> dict:
         user = guardian.get_user(user_id)
         if user is None:
@@ -50,7 +60,20 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.get("/health")
     def health() -> dict:
         return {"status": "ok", "tandem": app.state.qrme is not None,
-                "pdi": app.state.pdi is not None}
+                "pdi": app.state.pdi is not None,
+                "cloud": app.state.cloud is not None}
+
+    @app.get("/cloud/status")
+    def cloud_status() -> dict:
+        """Whether a Cloud Model Gateway is configured, and what it serves."""
+        cloud = app.state.cloud
+        return {
+            "cloud": cloud is not None,
+            "model": cloud.model_info() if cloud is not None else None,
+            "fallback": "local provider (Anthropic SDK or offline stub)",
+            "contribution": "opt-in per user via cloud_contribution; "
+                            "anonymized guidance outcomes only; revocable",
+        }
 
     @app.post("/enroll", status_code=201)
     def enroll(body: Enroll) -> dict:
@@ -228,8 +251,26 @@ def create_app(qrme_client: QRMEClient | None = None,
 
     @app.post("/feedback/{user_id}", status_code=201)
     def add_feedback(user_id: str, body: GuidanceFeedback) -> dict:
-        _user_or_404(user_id)
-        return life.add_feedback(user_id, body.rating, body.note)
+        user = _user_or_404(user_id)
+        result = life.add_feedback(user_id, body.rating, body.note)
+        # Opt-in cloud contribution: anonymized guidance outcomes only —
+        # condition domain, severity, and the rating. Never ids or notes.
+        result["contributed"] = False
+        if user.get("cloud_contribution") and app.state.cloud is not None:
+            last = db.connect().execute(
+                "SELECT condition, severity FROM events"
+                " WHERE user_id=? AND type='guidance'"
+                " ORDER BY created_at DESC, rowid DESC LIMIT 1",
+                (user_id,)).fetchone()
+            if last:
+                result["contributed"] = app.state.cloud.contribute({
+                    "source": "jim-mini",
+                    "kind": "guidance_outcome",
+                    "condition": last["condition"],
+                    "severity": last["severity"],
+                    "rating": body.rating,
+                })
+        return result
 
     @app.get("/report/{user_id}")
     def progress_report(user_id: str) -> dict:
