@@ -58,6 +58,22 @@ deterministic stub answers offline. `JIM_MODEL` overrides the model.
 | `GET /provider/{user_id}` | Consent-gated provider portal: condition-level summary only (declared conditions, detection history, escalations) — never notes or raw biometrics |
 | `DELETE /data/{user_id}` | Delete anything, anytime — erases every trace of the user |
 
+## Authentication & access control
+
+JIM holds a person's most sensitive data — biometric streams, crisis notes, a
+journal, a provider-shareable summary. Identity is proven by a bearer
+**capability token**, never by asserting a `user_id`.
+
+- `POST /enroll` returns a `user_token` **once**. Send it as
+  `Authorization: Bearer <token>` on every `/{user_id}` endpoint.
+- Every per-user surface is PHI, so **all** of them are gated: a missing or
+  invalid token is **401**; a valid token for a different user is **403**.
+- Only the SHA-256 hash of a token is stored (`api_tokens`), so a database
+  leak never yields a usable credential.
+- **Open (no token):** `GET /health`, `GET /cloud/status`, `POST /enroll`,
+  and `POST /specialists` (service setup).
+- `DELETE /data/{user_id}` erases the user **and** revokes their token.
+
 ## Condition detection (`jim/conditions.py`)
 
 Transparent rules over a biometric sample — heart rate vs. the user's resting
