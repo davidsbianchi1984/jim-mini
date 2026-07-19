@@ -233,6 +233,13 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id)
         return life.insights(user_id)
 
+    @app.post("/companion/{user_id}")
+    def companion_checkin(user_id: str) -> dict:
+        """An ambient, unprompted check-in from the coach — grounded in the
+        user's latest mood, goals, and personality preferences."""
+        _user_or_404(user_id)
+        return coach.companion_checkin(user_id)
+
     # ---- journal, feedback, reports, provider portal ----------------------
 
     @app.post("/journal/{user_id}", status_code=201)

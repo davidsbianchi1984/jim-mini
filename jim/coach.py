@@ -74,6 +74,36 @@ def reply(user_id: str, area: str, message: str) -> dict:
     return {"delivered": True, "area": area, "content": text}
 
 
+def companion_checkin(user_id: str) -> dict:
+    """An unprompted, ambient check-in: the coach reaches out first,
+    grounded in the user's latest mood and goals. Opt-in by nature — it is
+    only ever triggered by an explicit API call on the user's behalf."""
+    user = guardian.get_user(user_id)
+    recent = life.checkins(user_id)[-1:]
+    mood_note = (f"their last check-in was mood {recent[0]['mood']}/5"
+                 if recent else "they haven't checked in lately")
+    system = _SYSTEM.format(
+        area="ambient companionship — a brief, warm, unprompted check-in",
+        context=_context(user_id))
+    system += personalize(user)
+    system += (f"\n\nYou are reaching out first ({mood_note}). One or two "
+               "sentences, warm and unpressured; invite, never demand.")
+    text = llm.get_provider().generate(system, "Reach out and check in.")
+
+    if _DENY.search(text):
+        return {"delivered": False, "reason": "failed safety check",
+                "content": None}
+    conn = db.connect()
+    conn.execute(
+        "INSERT INTO coach_messages (id, user_id, area, role, content,"
+        " created_at) VALUES (?,?,?,?,?,?)",
+        (db.new_id("msg"), user_id, "mental_health", "coach", text,
+         db.utcnow()),
+    )
+    conn.commit()
+    return {"delivered": True, "unprompted": True, "content": text}
+
+
 def history(user_id: str, area: str | None = None) -> list[dict]:
     conn = db.connect()
     if area:

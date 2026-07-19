@@ -50,6 +50,7 @@ deterministic stub answers offline. `JIM_MODEL` overrides the model.
 | `GET`/`POST /goals/{user_id}`, `PATCH /goals/{user_id}/{goal_id}` | Smart goals with progress; completion earns a praise insight |
 | `GET`/`POST /habits/{user_id}`, `POST …/{habit_id}/log` | Habit tracking with streaks; milestones (7/30/100 days) earn insights |
 | `POST`/`GET /coach/{user_id}` | 24/7 life coach across `mental_health`, `health_fitness`, `career`, `finance`, `relationships`, `personal_growth`, grounded in recent check-ins and active goals |
+| `POST /companion/{user_id}` | Ambient companion check-in: the coach reaches out first, grounded in the latest mood, goals, and personality preferences — invoked explicitly, never on a hidden schedule |
 | `GET /insights/{user_id}` | Proactive nudges: spending alerts, sleep praise, interview prep, mindful-break suggestions, milestones |
 | `POST`/`GET /journal/{user_id}` | Journaling; entries are vaulted under PDI tandem and run the same crisis pipeline as check-in notes |
 | `POST /feedback/{user_id}` | Continuous-improvement loop: rate guidance up/down with an optional note |
