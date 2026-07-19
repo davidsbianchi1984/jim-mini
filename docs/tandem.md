@@ -43,10 +43,15 @@ registry, modeling the "Private Data Infrastructure" proposal (on-premises or
 colocation deployment, optional AI-system integration).
 
 An AI system (JIM or QRME) can *optionally* use PDI as its secure store for
-sensitive data (emergency contacts, secrets) instead of keeping it in its own
-database — reached only over PDI's HTTP API via `pdi/client.py`. The AI systems
-do not depend on PDI to function; PDI is the "run on top of" infrastructure
-layer they integrate with when deployed in a private environment.
+sensitive data instead of keeping it in its own database — reached only over
+PDI's HTTP API. JIM implements this in `jim/pdi_client.py`: with
+`JIM_PDI_URL` + `JIM_PDI_TOKEN` configured, medical payloads (biometric
+samples, detection details, check-in notes) and consented context payloads are
+sealed in PDI's AES-256-GCM vault under `jim/{user}/…` keys, JIM's own
+database keeps only key references, and `DELETE /data/{user_id}` purges the
+vault records too. The AI systems do not depend on PDI to function; PDI is the
+"run on top of" infrastructure layer they integrate with when deployed in a
+private environment.
 
 ## Why over HTTP, not imports
 

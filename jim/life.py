@@ -59,6 +59,22 @@ def source_allowed(user_id: str, source: str) -> bool:
 
 
 # --------------------------------------------------------------------------- #
+# PDI vault (tandem)
+# --------------------------------------------------------------------------- #
+
+def vault_store(pdi, user_id: str, key: str, payload: dict) -> str:
+    """Seal a payload in the tandem PDI vault and remember the key locally."""
+    pdi.put(key, json.dumps(payload))
+    conn = db.connect()
+    conn.execute(
+        "INSERT OR REPLACE INTO vault_keys (user_id, key) VALUES (?,?)",
+        (user_id, key),
+    )
+    conn.commit()
+    return key
+
+
+# --------------------------------------------------------------------------- #
 # insights
 # --------------------------------------------------------------------------- #
 
@@ -87,17 +103,24 @@ def insights(user_id: str) -> list[dict]:
 # context events → insight rules
 # --------------------------------------------------------------------------- #
 
-def add_context(user_id: str, source: str, kind: str, data: dict) -> dict:
+def add_context(user_id: str, source: str, kind: str, data: dict,
+                pdi=None) -> dict:
     conn = db.connect()
     event_id = db.new_id("ctx")
+    stored = data
+    if pdi is not None and data:
+        key = vault_store(pdi, user_id, f"jim/{user_id}/context/{event_id}", data)
+        stored = {"vaulted": True, "pdi_key": key}
     conn.execute(
         "INSERT INTO context_events (id, user_id, source, kind, data, created_at)"
         " VALUES (?,?,?,?,?,?)",
-        (event_id, user_id, source, kind, json.dumps(data), db.utcnow()),
+        (event_id, user_id, source, kind, json.dumps(stored), db.utcnow()),
     )
     conn.commit()
+    # Rules run on the raw payload in memory — the vault is for storage.
     generated = _context_rules(user_id, source, kind, data)
     return {"id": event_id, "source": source, "kind": kind,
+            "vaulted": pdi is not None and bool(data),
             "insights": generated}
 
 
@@ -140,13 +163,21 @@ def _context_rules(user_id, source, kind, data) -> list[dict]:
 # check-ins
 # --------------------------------------------------------------------------- #
 
-def check_in(user_id: str, mood: int, energy: int | None, note: str | None) -> dict:
+def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
+             pdi=None) -> dict:
     conn = db.connect()
     checkin_id = db.new_id("chk")
+    stored_note = note
+    if pdi is not None and note:
+        # A check-in note is mental-health data — it belongs in the vault.
+        key = vault_store(pdi, user_id,
+                          f"jim/{user_id}/medical/checkin/{checkin_id}",
+                          {"note": note})
+        stored_note = f"pdi:{key}"
     conn.execute(
         "INSERT INTO checkins (id, user_id, mood, energy, note, created_at)"
         " VALUES (?,?,?,?,?,?)",
-        (checkin_id, user_id, mood, energy, note, db.utcnow()),
+        (checkin_id, user_id, mood, energy, stored_note, db.utcnow()),
     )
     conn.commit()
     generated = []
@@ -300,10 +331,15 @@ def habits(user_id: str) -> list[dict]:
 # erasure — "delete anything, anytime"
 # --------------------------------------------------------------------------- #
 
-def delete_user_data(user_id: str) -> dict:
-    """Erase every trace of a user across all tables."""
+def delete_user_data(user_id: str, pdi=None) -> dict:
+    """Erase every trace of a user across all tables — and the PDI vault."""
     conn = db.connect()
     deleted = {}
+    vaulted = [r["key"] for r in conn.execute(
+        "SELECT key FROM vault_keys WHERE user_id=?", (user_id,)).fetchall()]
+    if vaulted:
+        deleted["pdi_records"] = sum(
+            1 for key in vaulted if pdi is not None and pdi.delete(key))
     habit_ids = [r["id"] for r in conn.execute(
         "SELECT id FROM habits WHERE user_id=?", (user_id,)).fetchall()]
     if habit_ids:
@@ -312,7 +348,8 @@ def delete_user_data(user_id: str) -> dict:
             f"DELETE FROM habit_logs WHERE habit_id IN ({marks})", habit_ids
         ).rowcount
     for table in ("habits", "goals", "checkins", "insights", "context_events",
-                  "coach_messages", "sources", "events", "tandem_links", "users"):
+                  "coach_messages", "sources", "vault_keys", "events",
+                  "tandem_links", "users"):
         deleted[table] = conn.execute(
             f"DELETE FROM {table} WHERE {'id' if table == 'users' else 'user_id'}=?",
             (user_id,),

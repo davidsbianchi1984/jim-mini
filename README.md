@@ -24,6 +24,7 @@ events.*
 pip install -e .[dev]
 uvicorn jim.api:app            # standalone
 JIM_QRME_URL=http://localhost:8000 uvicorn jim.api:app   # tandem with QRME
+JIM_PDI_URL=http://localhost:8100 JIM_PDI_TOKEN=pdi_... uvicorn jim.api:app  # + PDI vault
 ```
 
 `JIM_DB` sets the SQLite path (default `jim.db`). Set `ANTHROPIC_API_KEY` for
@@ -62,6 +63,24 @@ condition domain and `info` / `guidance` / `critical` severity.
   HTTP; the reply is subject to QRME's moderation and stored in QRME's per-user
   memory. If a tandem specialist is registered but no QRME endpoint is
   configured, JIM falls back to standalone guidance and says so.
+
+## PDI tandem — medical data in the encrypted vault (`jim/pdi_client.py`)
+
+With `JIM_PDI_URL` + `JIM_PDI_TOKEN` set (or a `PDIClient` injected), JIM's
+most sensitive payloads never touch its own database in the clear:
+
+- **medical** — raw biometric samples (`/monitor`), detection details
+  (readings + signals), and check-in notes go to PDI under
+  `jim/{user}/medical/…`, sealed with AES-256-GCM by PDI
+- **context** — payloads from consented sources (spending, health, calendar,
+  messages, …) go under `jim/{user}/context/…`
+
+JIM's SQLite keeps only `{"vaulted": true, "pdi_key": …}` references; insight
+and detection rules run on the payload in memory before it is sealed, so
+behavior is identical either way. Every vaulted key is tracked locally so
+`DELETE /data/{user_id}` purges the PDI records too, and every vault access
+lands in PDI's tamper-evident audit chain. Without PDI configured, JIM stores
+data locally exactly as before.
 
 ## Test
 

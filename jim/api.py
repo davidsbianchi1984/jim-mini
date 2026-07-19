@@ -12,6 +12,7 @@ from .models import (
     BiometricSample, CheckIn, CoachMessage, ContextEvent, Enroll, GoalCreate,
     GoalUpdate, HabitCreate, HabitLog, SourceConsent, SpecialistRegister,
 )
+from .pdi_client import PDIClient
 from .qrme_client import QRMEClient
 
 
@@ -22,13 +23,21 @@ def _age(birthdate: date) -> int:
     )
 
 
-def create_app(qrme_client: QRMEClient | None = None) -> FastAPI:
+def create_app(qrme_client: QRMEClient | None = None,
+               pdi_client: PDIClient | None = None) -> FastAPI:
     app = FastAPI(title="JIM-mini / Guardian", version="0.1.0")
 
     # Tandem is optional: injected client (tests) > JIM_QRME_URL env > none.
     if qrme_client is None and os.environ.get("JIM_QRME_URL"):
         qrme_client = QRMEClient(base_url=os.environ["JIM_QRME_URL"])
     app.state.qrme = qrme_client
+
+    # PDI tandem: sensitive payloads (medical first) go to the encrypted
+    # vault instead of JIM's own database when configured.
+    if pdi_client is None and os.environ.get("JIM_PDI_URL"):
+        pdi_client = PDIClient(token=os.environ.get("JIM_PDI_TOKEN", ""),
+                               base_url=os.environ["JIM_PDI_URL"])
+    app.state.pdi = pdi_client
 
     def _user_or_404(user_id: str) -> dict:
         user = guardian.get_user(user_id)
@@ -38,7 +47,8 @@ def create_app(qrme_client: QRMEClient | None = None) -> FastAPI:
 
     @app.get("/health")
     def health() -> dict:
-        return {"status": "ok", "tandem": app.state.qrme is not None}
+        return {"status": "ok", "tandem": app.state.qrme is not None,
+                "pdi": app.state.pdi is not None}
 
     @app.post("/enroll", status_code=201)
     def enroll(body: Enroll) -> dict:
@@ -59,7 +69,8 @@ def create_app(qrme_client: QRMEClient | None = None) -> FastAPI:
         _user_or_404(user_id)
         sample = body.model_dump(exclude_none=True)
         note = sample.pop("note", None)
-        return guardian.monitor(user_id, sample, note, qrme=app.state.qrme)
+        return guardian.monitor(user_id, sample, note, qrme=app.state.qrme,
+                                pdi=app.state.pdi)
 
     @app.get("/events/{user_id}")
     def events(user_id: str) -> list[dict]:
@@ -84,19 +95,21 @@ def create_app(qrme_client: QRMEClient | None = None) -> FastAPI:
         if not life.source_allowed(user_id, body.source):
             raise HTTPException(
                 403, f"source '{body.source}' is not consented for this user")
-        return life.add_context(user_id, body.source, body.kind, body.data)
+        return life.add_context(user_id, body.source, body.kind, body.data,
+                                pdi=app.state.pdi)
 
     # ---- mood & energy check-ins ------------------------------------------
 
     @app.post("/checkin/{user_id}", status_code=201)
     def check_in(user_id: str, body: CheckIn) -> dict:
         _user_or_404(user_id)
-        result = life.check_in(user_id, body.mood, body.energy, body.note)
+        result = life.check_in(user_id, body.mood, body.energy, body.note,
+                               pdi=app.state.pdi)
         # A worrying note still goes through the Guardian pipeline so crisis
         # language escalates exactly as it does from /monitor.
         if body.note:
             result["guardian"] = guardian.monitor(
-                user_id, {}, body.note, qrme=app.state.qrme)
+                user_id, {}, body.note, qrme=app.state.qrme, pdi=app.state.pdi)
         return result
 
     # ---- smart goals ------------------------------------------------------
@@ -161,7 +174,7 @@ def create_app(qrme_client: QRMEClient | None = None) -> FastAPI:
     @app.delete("/data/{user_id}")
     def delete_data(user_id: str) -> dict:
         _user_or_404(user_id)
-        return life.delete_user_data(user_id)
+        return life.delete_user_data(user_id, pdi=app.state.pdi)
 
     return app
 

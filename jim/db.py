@@ -114,6 +114,14 @@ CREATE TABLE IF NOT EXISTS insights (
     created_at TEXT NOT NULL
 );
 
+-- Keys JIM has stored in the tandem PDI vault, tracked so that
+-- DELETE /data/{user_id} can purge the vault as well.
+CREATE TABLE IF NOT EXISTS vault_keys (
+    user_id TEXT NOT NULL REFERENCES users(id),
+    key     TEXT NOT NULL,
+    PRIMARY KEY (user_id, key)
+);
+
 CREATE TABLE IF NOT EXISTS coach_messages (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

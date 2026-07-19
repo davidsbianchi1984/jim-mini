@@ -10,17 +10,24 @@ from __future__ import annotations
 
 import json
 
-from . import conditions, db, guidance as local_guidance
+from . import conditions, db, guidance as local_guidance, life
 
 
-def _event(user_id, type_, *, condition=None, severity=None, detail=None):
+def _event(user_id, type_, *, condition=None, severity=None, detail=None,
+           pdi=None, vault_scope=None):
     conn = db.connect()
     event_id = db.new_id("ev")
+    stored = detail or {}
+    if pdi is not None and vault_scope and stored:
+        # Medical payloads go to the PDI vault; only the key stays local.
+        key = life.vault_store(
+            pdi, user_id, f"jim/{user_id}/{vault_scope}/{event_id}", stored)
+        stored = {"vaulted": True, "pdi_key": key}
     conn.execute(
         "INSERT INTO events (id, user_id, type, condition, severity, detail,"
         " created_at) VALUES (?,?,?,?,?,?,?)",
         (event_id, user_id, type_, condition, severity,
-         json.dumps(detail or {}), db.utcnow()),
+         json.dumps(stored), db.utcnow()),
     )
     conn.commit()
     return {"id": event_id, "type": type_, "condition": condition,
@@ -79,13 +86,16 @@ def _specialist(condition: str) -> dict | None:
     return dict(row) if row else None
 
 
-def monitor(user_id: str, sample: dict, note: str | None, qrme=None) -> dict:
+def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
+            pdi=None) -> dict:
     """Ingest one sample; run detection → guidance → escalation."""
     user = get_user(user_id)
     if user and user.get("resting_heart_rate") and "resting_heart_rate" not in sample:
         sample = {**sample, "resting_heart_rate": user["resting_heart_rate"]}
 
-    _event(user_id, "biometric", detail={**sample, **({"note": note} if note else {})})
+    _event(user_id, "biometric",
+           detail={**sample, **({"note": note} if note else {})},
+           pdi=pdi, vault_scope="medical/biometric")
 
     detection = conditions.detect(sample, note)
     if detection is None:
@@ -93,7 +103,8 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None) -> dict:
 
     _event(user_id, "detection", condition=detection.condition,
            severity=detection.severity,
-           detail={"reason": detection.reason, "signals": detection.signals})
+           detail={"reason": detection.reason, "signals": detection.signals},
+           pdi=pdi, vault_scope="medical/detection")
 
     result = {
         "detected": True, "condition": detection.condition,
