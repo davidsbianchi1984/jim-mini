@@ -58,6 +58,7 @@ deterministic stub answers offline. `JIM_MODEL` overrides the model.
 | `POST`/`GET /journal/{user_id}` | Journaling; entries are vaulted under PDI tandem and run the same crisis pipeline as check-in notes |
 | `POST /feedback/{user_id}` | Continuous-improvement loop: rate guidance up/down with an optional note |
 | `GET /report/{user_id}` | Progress report & insights: mood/energy averages, goals, streaks, detection counts, feedback tallies |
+| `GET /access-log/{user_id}` | **See who accessed my data**: every access to the user's sealed vault records (stored/read/erased + scope + time), filtered to their own `jim/{user}/…` namespace and verifiable against PDI's tamper-evident audit chain; says so plainly when no vault is configured (data local-only) |
 | `GET /provider/{user_id}` | Consent-gated provider portal: condition-level summary only (declared conditions, detection history, escalations) — never notes or raw biometrics |
 | `DELETE /data/{user_id}` | Delete anything, anytime — erases every trace of the user |
 
