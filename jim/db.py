@@ -156,9 +156,20 @@ CREATE TABLE IF NOT EXISTS insights (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),
     area       TEXT,
-    kind       TEXT NOT NULL,      -- praise | alert | suggestion | milestone
+    kind       TEXT NOT NULL,      -- praise | alert | suggestion | milestone | forecast
     message    TEXT NOT NULL,
     source     TEXT,
+    created_at TEXT NOT NULL
+);
+
+-- Numeric trend points for predictive early warnings. Context payloads are
+-- vaulted under PDI, so prediction keeps only bare numbers locally (a value
+-- and a metric name — no categories, notes, or payloads): enough to see a
+-- slope forming, nothing worth stealing.
+CREATE TABLE IF NOT EXISTS trend_points (
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    metric     TEXT NOT NULL,      -- sleep_hours | spend_amount | ...
+    value      REAL NOT NULL,
     created_at TEXT NOT NULL
 );
 

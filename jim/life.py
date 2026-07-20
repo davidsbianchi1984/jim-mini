@@ -128,6 +128,11 @@ def _context_rules(user_id, source, kind, data) -> list[dict]:
     out = []
     if kind == "transaction":
         amount = float(data.get("amount", 0))
+        if amount:
+            _trend_point(user_id, "spend_amount", amount)
+            spend_ahead = forecast_spending(user_id)
+            if spend_ahead:
+                out.append(spend_ahead)
         if amount >= _SPEND_ALERT:
             out.append(_insight(
                 user_id, "alert",
@@ -136,6 +141,11 @@ def _context_rules(user_id, source, kind, data) -> list[dict]:
                 area="finance", source=source))
     elif kind == "sleep":
         hours = float(data.get("hours", 0))
+        if hours:
+            _trend_point(user_id, "sleep_hours", hours)
+            debt_ahead = forecast_sleep_debt(user_id)
+            if debt_ahead:
+                out.append(debt_ahead)
         if hours >= 7.5:
             out.append(_insight(
                 user_id, "praise",
@@ -157,6 +167,76 @@ def _context_rules(user_id, source, kind, data) -> list[dict]:
                 "practice round with the career coach?",
                 area="career", source=source))
     return out
+
+
+# --------------------------------------------------------------------------- #
+# predictive early warnings — catch it before it happens
+# --------------------------------------------------------------------------- #
+
+def _trend_point(user_id: str, metric: str, value: float) -> None:
+    conn = db.connect()
+    conn.execute(
+        "INSERT INTO trend_points (user_id, metric, value, created_at)"
+        " VALUES (?,?,?,?)", (user_id, metric, float(value), db.utcnow()))
+    conn.commit()
+
+
+def _recent(user_id: str, metric: str, n: int) -> list[float]:
+    rows = db.connect().execute(
+        "SELECT value FROM trend_points WHERE user_id=? AND metric=?"
+        " ORDER BY created_at DESC, rowid DESC LIMIT ?",
+        (user_id, metric, n)).fetchall()
+    return [r["value"] for r in reversed(rows)]
+
+
+def forecast_mood(user_id: str) -> dict | None:
+    """A sliding mood: three strictly declining check-ins ending low — flag it
+    before it becomes a crisis-level low."""
+    rows = db.connect().execute(
+        "SELECT mood FROM checkins WHERE user_id=?"
+        " ORDER BY created_at DESC, rowid DESC LIMIT 3", (user_id,)).fetchall()
+    moods = [r["mood"] for r in reversed(rows)]
+    if len(moods) == 3 and moods[0] > moods[1] > moods[2] and moods[2] <= 3:
+        return _insight(
+            user_id, "forecast",
+            f"Your mood has been sliding ({' → '.join(map(str, moods))}). "
+            "A low may be building — a check-in with the mental-health coach "
+            "now could head it off.",
+            area="mental_health", source="forecast")
+    return None
+
+
+def forecast_sleep_debt(user_id: str) -> dict | None:
+    """Accumulating sleep debt: three consecutive short nights — flag the
+    debt before exhaustion shows up in mood or biometrics."""
+    nights = _recent(user_id, "sleep_hours", 3)
+    if len(nights) == 3 and all(h < 6.5 for h in nights):
+        debt = round(3 * 8 - sum(nights), 1)
+        return _insight(
+            user_id, "forecast",
+            f"Three short nights in a row ({', '.join(f'{h:g}h' for h in nights)}) "
+            f"— roughly {debt:g}h of sleep debt building. Tonight is the one "
+            "to protect.",
+            area="health_fitness", source="forecast")
+    return None
+
+
+def forecast_spending(user_id: str) -> dict | None:
+    """Accelerating spend: the last three purchases together are at least
+    double the prior three — an early financial-stress signal even when no
+    single purchase trips the high-spend alert."""
+    amounts = _recent(user_id, "spend_amount", 6)
+    if len(amounts) < 6:
+        return None
+    prior, recent = sum(amounts[:3]), sum(amounts[3:])
+    if prior > 0 and recent >= 2 * prior:
+        return _insight(
+            user_id, "forecast",
+            f"Spending is accelerating: your last three purchases total "
+            f"{recent:.0f}, up from {prior:.0f} — worth a look before it "
+            "becomes a stress.",
+            area="finance", source="forecast")
+    return None
 
 
 # --------------------------------------------------------------------------- #
@@ -187,6 +267,9 @@ def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
             "Time for a mindful break? A two-minute breathing pause can help — "
             "the mental-health coach is here if you want to talk.",
             area="mental_health", source="checkin"))
+    sliding = forecast_mood(user_id)
+    if sliding:
+        generated.append(sliding)
     return {"id": checkin_id, "mood": mood, "energy": energy,
             "insights": generated}
 
@@ -492,7 +575,7 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
     for table in ("habits", "goals", "checkins", "insights", "context_events",
                   "coach_messages", "sources", "sessions", "devices",
                   "journal", "feedback", "vault_keys", "events",
-                  "tandem_links", "users"):
+                  "baselines", "trend_points", "tandem_links", "users"):
         deleted[table] = conn.execute(
             f"DELETE FROM {table} WHERE {'id' if table == 'users' else 'user_id'}=?",
             (user_id,),
