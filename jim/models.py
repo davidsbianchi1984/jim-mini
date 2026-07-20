@@ -98,6 +98,10 @@ class PersonalityUpdate(BaseModel):
     instructions: str | None = None         # free-text preference
 
 
+class SensitivitySet(BaseModel):
+    level: str                              # cautious | balanced | assertive
+
+
 class SourceConsent(BaseModel):
     source: Source
     consented: bool

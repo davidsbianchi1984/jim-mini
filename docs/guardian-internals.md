@@ -12,13 +12,16 @@ The exact rules behind detection, prediction, escalation, and the life layer.
 - **Per-sample fallback**: a sample may carry its own `resting_heart_rate`;
   otherwise the enrolled baseline is used; otherwise a conservative default
   of 70 bpm. **[implemented]** (`guardian.monitor`, `conditions.detect`)
-- **Rolling update** **[planned]**: the baseline should adapt over time. The
-  design: an EMA of resting-state samples (samples taken while `activity_level`
-  is low and no condition is active), `baseline ← baseline + α·(sample −
-  baseline)` with α≈0.05, updated nightly. Baselines are stored per-metric
-  (HR, HRV, respiration, SpO₂, BP) so each threshold floats with the person.
-  Until enough resting samples exist, the enrolled/default seed is used and
-  the system is explicit that the baseline is provisional.
+- **Rolling update** **[implemented]** (`guardian.update_baseline`,
+  `baselines` table): the baseline adapts over time. An EMA of resting-state
+  samples (folded in only when `activity_level` ≤ 3 and no condition fired),
+  `baseline ← baseline + α·(sample − baseline)` with α = 0.05. The heart-rate
+  baseline is seeded from the enrolled resting rate at `/enroll`; detection
+  compares against the learned baseline once it is established
+  (≥ 5 resting samples) and against the enrolled/default seed until then —
+  `GET /baseline/{user_id}` reports each metric and whether it is still
+  provisional. The schema generalizes to other metrics (HRV, respiration,
+  SpO₂, BP); heart rate is wired through detection today.
 
 ## Detection rules **[implemented]** (`jim/conditions.py`)
 
@@ -90,13 +93,15 @@ For a **critical** detection:
 3. **Live human help** is flagged (`live_support: true`) on every critical
    escalation — the handoff to a live counselor / emergency services.
 
-**Tunable sensitivity** **[planned]**: a per-user `sensitivity` setting
-(`cautious` / `balanced` / `assertive`) shifts the guidance/critical
-boundaries — `cautious` escalates earlier (lower thresholds, contact on
-guidance-level for declared conditions), `assertive` requires stronger
-signals. Exposed as `PUT /sensitivity/{user_id}`; defaults to `balanced`.
-Escalation routing (contact vs. live help vs. guidance-only) is expressed as
-an ordered policy the user can reorder.
+**Tunable sensitivity** **[implemented]** (`guardian.set_sensitivity`,
+`conditions.detect`): a per-user `sensitivity` setting (`cautious` /
+`balanced` / `assertive`) shifts the heart-rate guidance/critical boundaries
+by ±10 bpm — `cautious` escalates earlier (lower thresholds, **and** notifies
+the emergency contact at guidance level for a *declared* condition),
+`assertive` requires stronger signals. Exposed as `PUT /sensitivity/{user_id}`;
+defaults to `balanced`. **[planned]**: expressing the escalation routing
+(contact vs. live help vs. guidance-only) as an ordered policy the user can
+reorder.
 
 ## Life layer details **[implemented]** (`jim/life.py`, `jim/coach.py`)
 
