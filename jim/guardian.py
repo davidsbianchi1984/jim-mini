@@ -306,6 +306,50 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
     return result
 
 
+def observe_activity(user_id: str, activity: str | None, signals: dict,
+                     note: str | None, qrme=None, pdi=None) -> dict:
+    """Ambient background observation (the "Jiminy Cricket" jump-in): watch what
+    someone is *doing* — editing a video, fixing a car, wrestling with a form —
+    and offer help before they ask when a struggle is building.
+
+    Safety first: crisis language in what they say escalates exactly as it does
+    from ``monitor``. Otherwise, an ambient struggle raises a *proactive*
+    intervention; a calm signal is simply logged (JIM is watching, quietly)."""
+    user = get_user(user_id)
+    known = (user or {}).get("known_conditions") or []
+    _event(user_id, "activity",
+           detail={"activity": activity, **signals,
+                   **({"note": note} if note else {})},
+           pdi=pdi, vault_scope="context/activity")
+
+    # Crisis in the note is handled by the same pipeline as everywhere else.
+    crisis = conditions.detect({}, note, known=known) if note else None
+    if crisis is not None and crisis.severity == "critical":
+        guidance = _deliver(user_id, user, crisis, note, qrme)
+        escalation = _escalate(user_id, user, crisis)
+        return {"activity": activity, "proactive": True, "source": "crisis",
+                "condition": crisis.condition, "reason": crisis.reason,
+                "intervention": guidance, "escalation": escalation}
+
+    detection = conditions.detect_ambient(signals, note)
+    if detection is None:
+        return {"activity": activity, "proactive": False, "intervention": None,
+                "watching": True}
+
+    _event(user_id, "detection", condition=detection.condition,
+           severity=detection.severity,
+           detail={"reason": detection.reason, "signals": detection.signals,
+                   "proactive": True})
+    guidance = _deliver(user_id, user, detection, note, qrme)
+    life._insight(
+        user_id, "suggestion",
+        f"I noticed you might be stuck — {detection.reason}. Offered a hand.",
+        area="personal_growth", source="ambient")
+    return {"activity": activity, "proactive": True, "source": "ambient",
+            "condition": detection.condition, "reason": detection.reason,
+            "intervention": guidance}
+
+
 def _deliver(user_id, user, detection, note, qrme, source_device=None) -> dict:
     spec = _specialist(detection.condition)
 

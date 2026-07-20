@@ -9,10 +9,10 @@ from fastapi import FastAPI, HTTPException, Request
 
 from . import auth, coach, db, guardian, life
 from .models import (
-    BiometricSample, CheckIn, CoachMessage, ConditionDeclare, ContextEvent,
-    DeviceRegister, Enroll, GoalCreate, GoalUpdate, GuidanceFeedback,
-    HabitCreate, HabitLog, JournalEntry, PersonalityUpdate, SessionStart,
-    SourceConsent, SpecialistRegister,
+    ActivityObserve, BiometricSample, CheckIn, CoachMessage, ConditionDeclare,
+    ContextEvent, DeviceRegister, Enroll, GoalCreate, GoalUpdate,
+    GuidanceFeedback, HabitCreate, HabitLog, JournalEntry, PersonalityUpdate,
+    SessionStart, SourceConsent, SpecialistRegister,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -107,6 +107,16 @@ def create_app(qrme_client: QRMEClient | None = None,
     def events(user_id: str, request: Request) -> list[dict]:
         _user_or_404(user_id, request)
         return guardian.events(user_id)
+
+    @app.post("/activity/{user_id}", status_code=201)
+    def observe_activity(user_id: str, body: ActivityObserve,
+                         request: Request) -> dict:
+        """Ambient background observation: JIM watches an ongoing activity and
+        jumps in proactively when a struggle is building — before being asked."""
+        _user_or_404(user_id, request)
+        return guardian.observe_activity(
+            user_id, body.activity, body.signals, body.note,
+            qrme=app.state.qrme, pdi=app.state.pdi)
 
     # ---- physical embodiments (clause 16) ---------------------------------
 
