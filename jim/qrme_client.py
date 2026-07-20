@@ -30,11 +30,14 @@ class _UrllibClient:
     def __init__(self, base_url: str):
         self._base = base_url.rstrip("/")
 
-    def _request(self, method: str, path: str, body=None) -> _Response:
+    def _request(self, method: str, path: str, body=None,
+                 headers=None) -> _Response:
         data = json.dumps(body).encode() if body is not None else None
+        h = {"content-type": "application/json"}
+        if headers:
+            h.update(headers)
         req = urllib.request.Request(
-            self._base + path, data=data, method=method,
-            headers={"content-type": "application/json"},
+            self._base + path, data=data, method=method, headers=h,
         )
         try:
             with urllib.request.urlopen(req) as r:
@@ -42,11 +45,11 @@ class _UrllibClient:
         except urllib.error.HTTPError as e:
             return _Response(e.code, e.read())
 
-    def post(self, path, json=None):
-        return self._request("POST", path, json)
+    def post(self, path, json=None, headers=None):
+        return self._request("POST", path, json, headers)
 
-    def get(self, path):
-        return self._request("GET", path)
+    def get(self, path, headers=None):
+        return self._request("GET", path, headers=headers)
 
 
 class QRMEClient:
@@ -57,14 +60,34 @@ class QRMEClient:
             client = _UrllibClient(base_url)
         self._client = client
 
-    def ensure_interactor(self, display_name: str, birthdate: str | None = None) -> str:
+    def ensure_interactor(self, display_name: str,
+                          birthdate: str | None = None) -> tuple[str, str | None]:
+        """Create a QRME interactor; returns (id, capability token). The token
+        is what lets JIM read the shared thread back later (continuity)."""
         body = {"display_name": display_name}
         if birthdate:
             body["birthdate"] = birthdate
         r = self._client.post("/interactors", json=body)
         if r.status_code >= 300:
             raise RuntimeError(f"QRME interactor create failed: {r.status_code}")
-        return r.json()["id"]
+        out = r.json()
+        return out["id"], out.get("token")
+
+    def thread_memory(self, profile_id: str, interactor_id: str,
+                      token: str | None, limit: int = 5) -> list[dict] | None:
+        """The shared conversation thread with a QRME profile, read back with
+        the interactor's own capability token. None when unreadable."""
+        if not token:
+            return None
+        try:
+            r = self._client.get(
+                f"/profiles/{profile_id}/memory/{interactor_id}",
+                headers={"authorization": f"Bearer {token}"})
+        except Exception:
+            return None
+        if r.status_code >= 300:
+            return None
+        return r.json()[-limit:]
 
     def profile_info(self, profile_id: str) -> dict | None:
         """Fetch a QRME profile's public card (includes ``adult_mode`` and

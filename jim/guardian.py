@@ -279,9 +279,10 @@ def device_lookup(user_id: str, name: str | None) -> dict | None:
     return device
 
 
-def start_session(user_id: str, device: str | None) -> dict:
+def start_session(user_id: str, device: str | None, qrme=None) -> dict:
     """Clause 14/20: a login session; the remembered state is per user, so
-    any device that starts a session resumes the same conversational thread."""
+    any device that starts a session resumes the same conversational thread —
+    including a thread started with a QRME specialist from another product."""
     conn = db.connect()
     session_id = db.new_id("ses")
     conn.execute(
@@ -293,7 +294,38 @@ def start_session(user_id: str, device: str | None) -> dict:
         "SELECT COUNT(*) AS n FROM sessions WHERE user_id=? AND id != ?",
         (user_id, session_id)).fetchone()["n"]
     return {"id": session_id, "device": device, "prior_sessions": prior,
-            "memory": _memory_summary(user_id)}
+            "memory": _memory_summary(user_id),
+            "continuity": _tandem_continuity(user_id, qrme)}
+
+
+def _tandem_continuity(user_id: str, qrme) -> dict | None:
+    """Cross-product continuity: if this user already has a conversation
+    thread with a QRME specialist, hand the new device the recent turns so
+    the same conversation — same interactor, same memory — picks up here."""
+    if qrme is None:
+        return None
+    link = db.connect().execute(
+        "SELECT * FROM tandem_links WHERE user_id=?", (user_id,)).fetchone()
+    if link is None:
+        return None
+    spec = db.connect().execute(
+        "SELECT qrme_profile_id FROM specialists WHERE mode='tandem'"
+        " AND qrme_profile_id IS NOT NULL LIMIT 1").fetchone()
+    if spec is None:
+        return None
+    recent = qrme.thread_memory(spec["qrme_profile_id"],
+                                link["qrme_interactor_id"],
+                                link["qrme_interactor_token"])
+    if not recent:
+        return None
+    return {
+        "with": "qrme_specialist",
+        "qrme_profile_id": spec["qrme_profile_id"],
+        "qrme_interactor_id": link["qrme_interactor_id"],
+        "recent_turns": [{"role": m["role"], "content": m["content"]}
+                         for m in recent],
+        "note": "the conversation continues here — same thread, same memory",
+    }
 
 
 def end_session(user_id: str, session_id: str) -> dict | None:
@@ -554,10 +586,12 @@ def _tandem_guidance(user_id, user, detection, note, spec, qrme) -> dict:
         "SELECT qrme_interactor_id FROM tandem_links WHERE user_id=?", (user_id,)
     ).fetchone()
     if link is None:
-        interactor_id = qrme.ensure_interactor(user["display_name"], user["birthdate"])
+        interactor_id, token = qrme.ensure_interactor(
+            user["display_name"], user["birthdate"])
         conn.execute(
-            "INSERT INTO tandem_links (user_id, qrme_interactor_id, created_at)"
-            " VALUES (?,?,?)", (user_id, interactor_id, db.utcnow()),
+            "INSERT INTO tandem_links (user_id, qrme_interactor_id,"
+            " qrme_interactor_token, created_at) VALUES (?,?,?,?)",
+            (user_id, interactor_id, token, db.utcnow()),
         )
         conn.commit()
     else:
