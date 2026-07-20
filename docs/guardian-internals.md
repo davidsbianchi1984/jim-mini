@@ -59,6 +59,22 @@ or anxiety episode before it manifests. Prior samples are read back from the
 PDI vault when tandem storage is on, so prediction works without keeping
 medical data locally.
 
+**Beyond the heart-rate climb** **[implemented]** (`life.forecast_*`,
+`trend_points` table): three more before-it-happens signals, each a
+transparent trend rule over bare local numbers (context payloads stay in the
+PDI vault; the trend store keeps only a metric name and a value):
+
+- **Sliding mood** — three strictly declining check-ins ending ≤ 3 → a
+  mental-health forecast before the low lands.
+- **Sleep debt** — three consecutive nights under 6.5 h → the accumulated
+  debt is flagged while tonight can still fix it.
+- **Spending acceleration** — the last three purchases total ≥ 2× the prior
+  three → a financial-stress early warning even when no single purchase trips
+  the high-spend alert.
+
+Each lands as a `forecast` insight; erasure removes the trend points with
+everything else.
+
 **Knowledge packs for thresholds** **[planned]**: the request for
 "purchaseable/downloadable knowledge for thresholds" maps to a
 *specialist knowledge-pack* model — signed, versioned rule bundles per domain
