@@ -99,6 +99,8 @@ are the built-in default pack. Distribution would ride the marketplace.
 
 ## Escalation decision tree **[implemented]** (`guardian._escalate`)
 
+![Escalation decision tree](diagrams/escalation.svg)
+
 For a **critical** detection:
 
 1. **Guidance is always delivered** first (local engine or the tandem QRME
