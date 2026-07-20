@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="620" viewBox="0 0 880 620" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4458"/>
+    </marker>
+  </defs>
+
+  <rect width="880" height="620" fill="#faf8f4"/>
+  <text x="440" y="38" text-anchor="middle" font-size="22" fill="#2c2836" font-style="italic">JIM-mini · Guardian Escalation Decision Tree</text>
+  <text x="440" y="60" text-anchor="middle" font-size="12" fill="#8a8496">a transparent rule ladder — every path explainable, every threshold personal</text>
+
+  <!-- input -->
+  <rect x="330" y="86" width="220" height="56" rx="12" fill="#efe6f2" stroke="#7a6a9a" stroke-width="1.8"/>
+  <text x="440" y="110" text-anchor="middle" font-size="14" fill="#4c3d63" font-weight="bold">sample · note · activity</text>
+  <text x="440" y="128" text-anchor="middle" font-size="10.5" fill="#6c5c88">biometrics, free text, or ambient signals</text>
+
+  <line x1="440" y1="142" x2="440" y2="172" stroke="#4a4458" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- crisis check -->
+  <rect x="310" y="176" width="260" height="52" rx="12" fill="#f6e3e0" stroke="#a8544a" stroke-width="1.8"/>
+  <text x="440" y="198" text-anchor="middle" font-size="13.5" fill="#6e2c26" font-weight="bold">crisis language?</text>
+  <text x="440" y="215" text-anchor="middle" font-size="10.5" fill="#8a4a42">checked first, from every entry point</text>
+
+  <!-- crisis yes -->
+  <line x1="570" y1="202" x2="662" y2="202" stroke="#a8544a" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="612" y="192" text-anchor="middle" font-size="11" fill="#a8544a" font-style="italic">yes</text>
+  <rect x="666" y="170" width="180" height="66" rx="12" fill="#f6e3e0" stroke="#a8544a" stroke-width="2.4"/>
+  <text x="756" y="192" text-anchor="middle" font-size="13" fill="#6e2c26" font-weight="bold">CRITICAL</text>
+  <text x="756" y="209" text-anchor="middle" font-size="10.5" fill="#8a4a42">guidance + contact (consented)</text>
+  <text x="756" y="224" text-anchor="middle" font-size="10.5" fill="#8a4a42">+ live human support</text>
+
+  <line x1="440" y1="228" x2="440" y2="258" stroke="#4a4458" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="452" y="248" font-size="11" fill="#8a8496" font-style="italic">no</text>
+
+  <!-- rule ladder -->
+  <rect x="240" y="262" width="400" height="128" rx="12" fill="#e4ecf5" stroke="#4d6f9c" stroke-width="1.8"/>
+  <text x="440" y="284" text-anchor="middle" font-size="13.5" fill="#2c4a6e" font-weight="bold">rule ladder — first match wins</text>
+  <text x="440" y="304" text-anchor="middle" font-size="10.8" fill="#4d6488">fall/collapse · slurred speech · temperature · blood pressure</text>
+  <text x="440" y="320" text-anchor="middle" font-size="10.8" fill="#4d6488">HRV · SpO₂ · heart rate vs. the *learned* rolling baseline</text>
+  <text x="440" y="336" text-anchor="middle" font-size="10.8" fill="#4d6488">text cues · ambient struggle (retries, stalls, frustration)</text>
+  <line x1="260" y1="348" x2="620" y2="348" stroke="#b9c6d8" stroke-width="1"/>
+  <text x="440" y="366" text-anchor="middle" font-size="10.8" fill="#4d6488" font-style="italic">sensitivity dial shifts every HR bar: cautious −10 · balanced · assertive +10</text>
+  <text x="440" y="381" text-anchor="middle" font-size="10.8" fill="#4d6488" font-style="italic">declared conditions lower the bar further — caught earlier for those prone</text>
+
+  <!-- three outcomes -->
+  <line x1="300" y1="390" x2="180 " y2="440" stroke="#4a4458" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="440" y1="390" x2="440" y2="440" stroke="#4a4458" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="580" y1="390" x2="700" y2="440" stroke="#4a4458" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- info -->
+  <rect x="70" y="444" width="220" height="88" rx="12" fill="#f2ecdf" stroke="#a08a4a" stroke-width="1.8"/>
+  <text x="180" y="468" text-anchor="middle" font-size="13.5" fill="#5c4d1e" font-weight="bold">info / forecast</text>
+  <text x="180" y="488" text-anchor="middle" font-size="10.5" fill="#7a6a34">rising-HR trend · sliding mood</text>
+  <text x="180" y="503" text-anchor="middle" font-size="10.5" fill="#7a6a34">sleep debt · spending acceleration</text>
+  <text x="180" y="521" text-anchor="middle" font-size="10.5" fill="#7a6a34" font-style="italic">→ an insight, before it happens</text>
+
+  <!-- guidance -->
+  <rect x="330" y="444" width="220" height="88" rx="12" fill="#e7f2e4" stroke="#5d8a54" stroke-width="1.8"/>
+  <text x="440" y="468" text-anchor="middle" font-size="13.5" fill="#33502d" font-weight="bold">guidance</text>
+  <text x="440" y="488" text-anchor="middle" font-size="10.5" fill="#557050">local engine, or the QRME tandem</text>
+  <text x="440" y="503" text-anchor="middle" font-size="10.5" fill="#557050">specialist (age- &amp; status-checked)</text>
+  <text x="440" y="521" text-anchor="middle" font-size="10.5" fill="#557050" font-style="italic">cautious + declared → contact too</text>
+
+  <!-- critical -->
+  <rect x="590" y="444" width="220" height="88" rx="12" fill="#f6e3e0" stroke="#a8544a" stroke-width="1.8"/>
+  <text x="700" y="468" text-anchor="middle" font-size="13.5" fill="#6e2c26" font-weight="bold">critical</text>
+  <text x="700" y="488" text-anchor="middle" font-size="10.5" fill="#8a4a42">guidance is still delivered first</text>
+  <text x="700" y="503" text-anchor="middle" font-size="10.5" fill="#8a4a42">emergency contact (if consented)</text>
+  <text x="700" y="521" text-anchor="middle" font-size="10.5" fill="#8a4a42" font-style="italic">live human help, always flagged</text>
+
+  <line x1="70" y1="565" x2="810" y2="565" stroke="#d8d2c8" stroke-width="1"/>
+  <text x="440" y="590" text-anchor="middle" font-size="11" fill="#8a8496" font-style="italic">Guidance is never withheld: every fallback path (no tandem, declined handoff, departed specialist) still delivers help locally.</text>
+</svg>

@@ -78,6 +78,26 @@ journal, a provider-shareable summary. Identity is proven by a bearer
   and `POST /specialists` (service setup).
 - `DELETE /data/{user_id}` erases the user **and** revokes their token.
 
+## Your data promise
+
+**No raw user data ever leaves your vault.**
+
+- Biometric samples, crisis notes, journal entries, and consented context are
+  sealed in your on-prem PDI vault (AES-256-GCM, tenant-isolated,
+  tamper-evident audit) — JIM's own database keeps only key references.
+  Never a third party.
+- **You can see every access**: `GET /access-log/{user_id}` lists each time
+  your sealed records were stored, read, or erased — your namespace only,
+  verifiable against the audit chain.
+- Prediction runs on bare local numbers (a metric name and a value); the
+  payloads stay in the vault. Cloud contribution is opt-in and carries only
+  anonymized guidance outcomes — condition, severity, rating. Never ids or
+  notes.
+- The provider portal opens only with your consent, shows condition-level
+  facts only, and every handoff is revocable.
+- Delete anything, anytime: `DELETE /data/{user_id}` erases every local
+  trace, purges your vault records, and revokes your token.
+
 ## Condition detection (`jim/conditions.py`)
 
 Transparent rules over a biometric sample — heart rate vs. the user's resting

@@ -178,14 +178,29 @@ every change written to PDI's audit chain for a regulator-exportable trail.
   **[implemented]**
 - **Audit**: PDI's tamper-evident hash chain records every data access;
   `GET /audit/verify` proves integrity. **[implemented]**
-- **Access control**: PDI admin endpoints require `PDI_ADMIN_TOKEN`; data
-  plane is tenant-token scoped with read/write roles. **[implemented]**
+- **Access control** **[implemented]**: every app authenticates with bearer
+  capability tokens stored only as SHA-256 hashes (a database leak yields no
+  usable credential):
+  - **QRME** — per-profile *owner* tokens gate all owner control (edit,
+    sources, memory, moderation, export, erasure, workflows, licensing);
+    *interactor* tokens gate private memory; a *reviewer* role
+    (`QRME_ADMIN_TOKEN`, constant-time compare) adjudicates objections and
+    succession. Public surfaces (chat, marketplace, summon) stay open by
+    design.
+  - **JIM-mini** — per-user tokens minted at `/enroll` gate every
+    `/{user_id}` surface (all of it is PHI); erasure revokes the token.
+  - **PDI** — tenant tokens (hashed at rest) with read/write RBAC;
+    `PDI_ADMIN_TOKEN` (constant-time compare) guards the admin plane.
+- **User-visible audit**: JIM's `GET /access-log/{user}` shows a user every
+  access to their own sealed records — filtered to their namespace,
+  verifiable against the chain. **[implemented]**
 - **GDPR**: right-to-erasure = the deletion propagation above; data-portability
   = each app's `export`. **[planned: the cross-app deletion receipt]**
-- **HIPAA** (JIM medical data): PHI is sealed in PDI, access is audited, and
-  provider handoff is consent-gated and revocable — the technical safeguards
-  are in place; a production deployment adds a BAA with the KMS/hosting
-  provider. **[planned: formal BAA + access-log export for auditors]**
+- **HIPAA** (JIM medical data): PHI is sealed in PDI, access is audited and
+  user-visible (the access log above), and provider handoff is consent-gated
+  and revocable — the technical safeguards are in place; a production
+  deployment adds a BAA with the KMS/hosting provider. **[planned: formal
+  BAA]**
 - **Regulator audit export** **[planned]**: `GET /audit/export` (admin,
   per-tenant) produces a signed, verifiable slice of the audit chain.
 
