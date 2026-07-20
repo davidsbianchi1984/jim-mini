@@ -137,7 +137,8 @@ def create_app(qrme_client: QRMEClient | None = None,
     def start_session(user_id: str, body: SessionStart,
                       request: Request) -> dict:
         _user_or_404(user_id, request)
-        return guardian.start_session(user_id, body.device)
+        return guardian.start_session(user_id, body.device,
+                                      qrme=app.state.qrme)
 
     @app.post("/sessions/{user_id}/{session_id}/end")
     def end_session(user_id: str, session_id: str, request: Request) -> dict:

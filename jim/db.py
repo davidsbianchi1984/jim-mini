@@ -65,9 +65,12 @@ CREATE TABLE IF NOT EXISTS specialists (
 
 -- Per-user mapping to a QRME interactor, created lazily for tandem guidance.
 CREATE TABLE IF NOT EXISTS tandem_links (
-    user_id            TEXT PRIMARY KEY REFERENCES users(id),
-    qrme_interactor_id TEXT NOT NULL,
-    created_at         TEXT NOT NULL
+    user_id              TEXT PRIMARY KEY REFERENCES users(id),
+    qrme_interactor_id   TEXT NOT NULL,
+    qrme_interactor_token TEXT,     -- QRME interactor capability token: lets
+                                    -- JIM read back the shared thread's memory
+                                    -- for cross-device/-product continuity
+    created_at           TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS events (
