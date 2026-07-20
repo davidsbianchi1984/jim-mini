@@ -118,6 +118,18 @@ reorder.
   crisis language in a sad entry escalates identically — contact notified when
   consented.
 
+## Tandem specialist safety **[implemented]** (`guardian._tandem_safe`)
+
+Before delegating guidance to a QRME specialist profile, JIM checks the
+profile's public card (`GET /profiles/{id}`, exposing `adult_mode` and
+`status`): a **minor or unknown-age user is never connected to an
+age-restricted profile**, and a non-`active` (restricted/departed/terminated)
+profile is not used — in both cases JIM falls back to its own standalone
+guidance with a note. If the card can't be read, JIM proceeds and relies on
+QRME's own age-gate as the backstop (JIM passes the user's birthdate when it
+creates the QRME interactor); a QRME refusal is caught and also falls back, so
+the user is never left without help.
+
 ## Provider handoff **[implemented, in QRME]**
 
 JIM-mini surfaces the local-provider directory and consented session handoff
