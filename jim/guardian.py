@@ -485,6 +485,12 @@ def _tandem_safe(user, profile_id, qrme) -> tuple[bool, str | None]:
     info = qrme.profile_info(profile_id)
     if info is None:
         return True, None
+    if info.get("status") == "departed":
+        # The specialist has departed — its QRME memorial remains; JIM points
+        # the user there while carrying the guidance itself.
+        return (False, "the specialist profile has departed; its memorial "
+                       f"remains at /profiles/{profile_id}/memorial — "
+                       "used standalone guidance")
     if info.get("status") not in (None, "active"):
         return (False, f"specialist profile is {info.get('status')}; "
                        "used standalone guidance")

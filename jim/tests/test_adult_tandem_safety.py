@@ -116,6 +116,22 @@ def test_non_active_profile_falls_back(tmp_path, monkeypatch):
     client.__exit__(None, None, None)
 
 
+def test_departed_specialist_references_its_memorial(tmp_path, monkeypatch):
+    fake = FakeQRMEProfile(adult_mode=False, status="departed")
+    client = _app(fake, tmp_path, monkeypatch)
+    uid = _enroll(client, "1990-01-01")
+    _register_tandem(client)
+    r = _trigger(client, uid)
+
+    assert fake.chat_calls == 0
+    guidance = r["guidance"]
+    assert guidance["source"] == "local"       # help still arrives
+    # ...and the note points the user at the specialist's memorial.
+    assert "memorial" in guidance["note"]
+    assert "/profiles/prf_adult/memorial" in guidance["note"]
+    client.__exit__(None, None, None)
+
+
 def test_non_adult_profile_handoff_unaffected(tmp_path, monkeypatch):
     fake = FakeQRMEProfile(adult_mode=False, status="active")
     client = _app(fake, tmp_path, monkeypatch)
