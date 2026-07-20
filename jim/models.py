@@ -115,6 +115,15 @@ class CheckIn(BaseModel):
     note: str | None = None
 
 
+class ActivityObserve(BaseModel):
+    """An ambient signal from something the user is doing right now. Signals
+    are open-ended (retries/errors, idle_seconds, duration_min, …); note is
+    what they said out loud while doing it."""
+    activity: str | None = None    # e.g. "editing video", "fixing the car"
+    signals: dict = Field(default_factory=dict)
+    note: str | None = None
+
+
 class GoalCreate(BaseModel):
     area: LifeArea
     title: str

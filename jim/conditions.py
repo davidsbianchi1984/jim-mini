@@ -152,6 +152,71 @@ def detect(sample: dict, text: str | None = None,
     return None
 
 
+FRUSTRATION = "frustration"
+LABELS[FRUSTRATION] = "task frustration / struggle"
+
+# Words that signal frustration in what someone says (or types) while doing a
+# task — the "ugh, why won't this work" of a struggle building.
+_FRUSTRATION_CUES = [
+    "ugh", "argh", "why won't", "why isn't", "come on", "stuck", "frustrat",
+    "hate this", "give up", "giving up", "can't figure", "not working",
+    "won't work", "doesn't work", "makes no sense", "seriously", "fed up",
+]
+
+
+def detect_ambient(signals: dict, text: str | None = None) -> Detection | None:
+    """Ambient struggle detection (the "Jiminy Cricket" jump-in): from the
+    signals of an *activity* — repeated attempts, a long stall, frustration in
+    what the person says — decide whether help should be offered *before it is
+    asked for*. Transparent and additive, like the biometric rules.
+
+    This never escalates on its own (crisis language is handled by ``detect``);
+    it only offers proactive guidance. Returns None when nothing rises to the
+    level of an intervention.
+    """
+    activity = signals.get("activity")
+    try:
+        retries = int(signals.get("retries") or signals.get("errors") or 0)
+    except (TypeError, ValueError):
+        retries = 0
+    try:
+        idle = float(signals.get("idle_seconds") or 0)
+    except (TypeError, ValueError):
+        idle = 0.0
+    try:
+        duration = float(signals.get("duration_min") or 0)
+    except (TypeError, ValueError):
+        duration = 0.0
+    note = (text or "").lower()
+
+    score, reasons = 0, []
+    if retries >= 5:
+        score += 2
+        reasons.append(f"{retries} repeated attempts")
+    elif retries >= 3:
+        score += 1
+        reasons.append(f"{retries} repeated attempts")
+    if any(cue in note for cue in _FRUSTRATION_CUES):
+        score += 2
+        reasons.append("frustration in what they said")
+    if idle >= 120:
+        score += 1
+        reasons.append("a long pause mid-task")
+    if duration >= 45 and retries >= 3:
+        score += 1
+        reasons.append("a long stretch without progress")
+
+    if score < 2:
+        return None
+    where = f"while {activity}" if activity else "during this task"
+    return Detection(
+        FRUSTRATION, "guidance",
+        f"struggle detected {where}: " + ", ".join(reasons),
+        {"activity": activity, "retries": retries, "idle_seconds": idle,
+         "duration_min": duration, "score": score},
+    )
+
+
 def forecast(current_hr: int | None, resting: int,
              prior_hrs: list[int]) -> Detection | None:
     """Predictive early warning (before a condition manifests): a steady
