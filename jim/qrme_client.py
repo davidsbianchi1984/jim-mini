@@ -66,6 +66,18 @@ class QRMEClient:
             raise RuntimeError(f"QRME interactor create failed: {r.status_code}")
         return r.json()["id"]
 
+    def profile_info(self, profile_id: str) -> dict | None:
+        """Fetch a QRME profile's public card (includes ``adult_mode`` and
+        ``status``). Returns None if it can't be read — the caller then relies
+        on QRME's own age-gate as the backstop."""
+        try:
+            r = self._client.get(f"/profiles/{profile_id}")
+        except Exception:
+            return None
+        if r.status_code >= 300:
+            return None
+        return r.json()
+
     def specialist_reply(self, profile_id: str, interactor_id: str, message: str) -> dict:
         """Send a message to a QRME specialist profile and return its reply.
 

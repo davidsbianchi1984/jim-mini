@@ -9,6 +9,7 @@ own guidance.
 from __future__ import annotations
 
 import json
+from datetime import date
 
 from . import conditions, db, guidance as local_guidance, life
 
@@ -464,15 +465,63 @@ def observe_activity(user_id: str, activity: str | None, signals: dict,
             "intervention": guidance}
 
 
+def _user_is_adult(user: dict | None) -> bool:
+    bd = (user or {}).get("birthdate")
+    if not bd:
+        return False                       # unknown age → not a verified adult
+    try:
+        b = date.fromisoformat(bd)
+    except ValueError:
+        return False
+    today = date.today()
+    return today.year - b.year - ((today.month, today.day) < (b.month, b.day)) >= 18
+
+
+def _tandem_safe(user, profile_id, qrme) -> tuple[bool, str | None]:
+    """Whether it is safe to hand this user to a QRME specialist profile. A
+    minor (or unknown-age) user must never be connected to an age-restricted
+    profile; a non-active profile isn't used. Undeterminable → allowed, because
+    QRME's own age-gate is the backstop (JIM passes the user's birthdate)."""
+    info = qrme.profile_info(profile_id)
+    if info is None:
+        return True, None
+    if info.get("status") not in (None, "active"):
+        return (False, f"specialist profile is {info.get('status')}; "
+                       "used standalone guidance")
+    if info.get("adult_mode") and not _user_is_adult(user):
+        return (False, "specialist is age-restricted and the user is not a "
+                       "verified adult; used standalone guidance")
+    return True, None
+
+
 def _deliver(user_id, user, detection, note, qrme, source_device=None) -> dict:
     spec = _specialist(detection.condition)
+    wants_tandem = bool(
+        spec and spec["mode"] == "tandem" and spec["qrme_profile_id"])
 
-    if spec and spec["mode"] == "tandem" and spec["qrme_profile_id"] and qrme is not None:
-        delivered = _tandem_guidance(user_id, user, detection, note, spec, qrme)
-    else:
+    safety_note = None
+    use_tandem = wants_tandem and qrme is not None
+    if use_tandem:
+        safe, reason = _tandem_safe(user, spec["qrme_profile_id"], qrme)
+        if not safe:
+            use_tandem, safety_note = False, reason
+
+    delivered = None
+    if use_tandem:
+        try:
+            delivered = _tandem_guidance(user_id, user, detection, note, spec, qrme)
+        except RuntimeError:
+            # QRME refused (e.g. its own age-gate) — never leave the user
+            # without help; fall back to local guidance.
+            delivered = None
+            safety_note = ("specialist declined the handoff; used standalone "
+                           "guidance")
+    if delivered is None:
         delivered = local_guidance.generate(
             detection, note, user=user, memory=_memory_summary(user_id))
-        if spec and spec["mode"] == "tandem" and qrme is None:
+        if safety_note:
+            delivered["note"] = safety_note
+        elif wants_tandem and qrme is None:
             delivered["note"] = "tandem specialist registered but no QRME endpoint " \
                                 "configured; used standalone guidance"
     channel = _delivery_channel(user, source_device)
