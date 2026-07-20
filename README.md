@@ -39,6 +39,8 @@ deterministic stub answers offline. `JIM_MODEL` overrides the model.
 | `POST /enroll` | Enroll a user: terms/guardian consent, emergency contact (+ consent), devices, resting-HR baseline, goals, declared known conditions |
 | `POST /conditions/{user_id}` | Declare a known condition after enrollment ("receiving an indication of a known condition"); detection is sensitized for it |
 | `PUT /personality/{user_id}` | Adapt the counselor from user input — tone and free-text preferences shape every guidance and coach prompt |
+| `PUT /sensitivity/{user_id}` | Tune escalation readiness: `cautious` (lower HR thresholds; a declared condition reaches the emergency contact even at guidance level) / `balanced` (default) / `assertive` (stronger signals required) |
+| `GET /baseline/{user_id}` | The user's rolling per-metric EMA baselines; each is provisional until enough resting samples accrue |
 | `POST /specialists` | Register a condition specialist — `local` (JIM's own guidance) or `tandem` (a QRME `qrme_profile_id`) |
 | `POST /monitor/{user_id}` | Ingest a biometric/context sample (optionally tagged with its `source_device` — smart watch, stationary system, neural sensor, gesture interface); runs detect → guide → escalate, with predictive early warning when nothing has manifested yet |
 | `POST /sessions/{user_id}`, `POST …/{session_id}/end` | Login sessions per device; starting one returns the remembered interaction state, so any device resumes the same conversational thread and counseling routes to the session's device |

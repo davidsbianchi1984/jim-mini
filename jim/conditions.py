@@ -66,16 +66,25 @@ _CRISIS = re.compile(
 )
 
 
+# How the sensitivity dial shifts the heart-rate thresholds (bpm over resting):
+# cautious escalates earlier (lower bar), assertive requires stronger signals.
+_SENSITIVITY_DELTA = {"cautious": -10, "balanced": 0, "assertive": 10}
+
+
 def detect(sample: dict, text: str | None = None,
-           known: list[str] | None = None) -> Detection | None:
+           known: list[str] | None = None,
+           sensitivity: str = "balanced") -> Detection | None:
     """Return the highest-severity detection for a sample, or None.
 
     ``known`` is the user's declared known conditions; declaring an
     HR-sensitive condition lowers the heart-rate threshold so episodes are
-    caught earlier for users known to be prone to them.
+    caught earlier for users known to be prone to them. ``sensitivity``
+    (cautious/balanced/assertive) shifts the heart-rate guidance/critical
+    boundaries for the whole user.
     """
     note = (text or sample.get("note") or "").strip()
     known = known or []
+    delta = _SENSITIVITY_DELTA.get(sensitivity, 0)
 
     if note and _CRISIS.search(note):
         return Detection(ANXIETY, "critical",
@@ -130,9 +139,10 @@ def detect(sample: dict, text: str | None = None,
     hr = sample.get("heart_rate")
     resting = sample.get("resting_heart_rate", 70)
     rr = sample.get("respiratory_rate")
-    threshold = 30 if _HR_SENSITIVE.intersection(known) else 40
+    threshold = (30 if _HR_SENSITIVE.intersection(known) else 40) + delta
+    critical_over = 70 + delta
     if hr is not None and hr >= resting + threshold and (rr is None or rr >= 20):
-        severity = "critical" if hr >= resting + 70 else "guidance"
+        severity = "critical" if hr >= resting + critical_over else "guidance"
         return Detection(ANXIETY, severity,
                          f"heart rate {hr} bpm ({hr - resting} over resting"
                          + (", sensitized for a declared condition" if threshold == 30 else "")

@@ -26,7 +26,22 @@ CREATE TABLE IF NOT EXISTS users (
     cloud_contribution INTEGER NOT NULL DEFAULT 0,  -- opt-in: anonymized outcomes improve the cloud model
     devices            TEXT NOT NULL DEFAULT '[]',  -- e.g. ["smart_watch","phone"]
     personality        TEXT,                        -- counselor adaptation prefs
+    sensitivity        TEXT NOT NULL DEFAULT 'balanced', -- cautious | balanced | assertive
     created_at         TEXT NOT NULL
+);
+
+-- Rolling per-metric baselines (EMA). Detection thresholds float with the
+-- person: a resting-state sample with no active condition nudges the baseline
+-- (value ← value + α·(sample − value), α≈0.05). Until enough resting samples
+-- have accrued the baseline is provisional and the enrolled/default seed is
+-- used instead.
+CREATE TABLE IF NOT EXISTS baselines (
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    metric     TEXT NOT NULL,       -- heart_rate | hrv | respiratory_rate | ...
+    value      REAL NOT NULL,       -- current EMA estimate
+    samples    INTEGER NOT NULL DEFAULT 0,  -- resting samples folded in
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, metric)
 );
 
 -- Capability tokens. A user proves "I am this user" by holding the token

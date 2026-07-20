@@ -58,6 +58,10 @@ def enroll(body: dict) -> dict:
         ),
     )
     conn.commit()
+    # Seed the heart-rate baseline from the enrolled resting rate; resting
+    # samples will fold in from here (and it stays provisional until enough do).
+    if body.get("resting_heart_rate"):
+        _seed_baseline(user_id, "heart_rate", float(body["resting_heart_rate"]))
     return get_user(user_id)
 
 
@@ -72,6 +76,102 @@ def get_user(user_id: str) -> dict | None:
     user["devices"] = json.loads(user.get("devices") or "[]")
     user["personality"] = json.loads(user["personality"]) if user.get("personality") else None
     return user
+
+
+SENSITIVITY_LEVELS = ("cautious", "balanced", "assertive")
+
+
+def set_sensitivity(user_id: str, level: str) -> dict:
+    """Tune how readily the Guardian escalates (cautious/balanced/assertive)."""
+    if level not in SENSITIVITY_LEVELS:
+        raise ValueError(
+            f"sensitivity must be one of {', '.join(SENSITIVITY_LEVELS)}")
+    conn = db.connect()
+    conn.execute("UPDATE users SET sensitivity=? WHERE id=?", (level, user_id))
+    conn.commit()
+    return {"user_id": user_id, "sensitivity": level}
+
+
+# -- rolling per-metric baselines (EMA) -------------------------------------
+
+_BASELINE_ALPHA = 0.05
+_BASELINE_MIN_SAMPLES = 5      # provisional until this many resting samples
+
+
+def _is_resting(sample: dict) -> bool:
+    """A resting-state reading: low/absent activity level. Only these fold into
+    the baseline, so exertion doesn't inflate someone's 'resting' rate.
+    ``activity_level`` is the 0 (sedentary) .. 10 (intense) scale; ≤3 counts as
+    at-rest. Strings are tolerated for robustness."""
+    level = sample.get("activity_level")
+    if level is None:
+        return True
+    if isinstance(level, str):
+        return level.lower() in ("low", "rest", "resting", "sedentary", "idle")
+    try:
+        return float(level) <= 3
+    except (TypeError, ValueError):
+        return True
+
+
+def _baseline_row(user_id: str, metric: str) -> dict | None:
+    row = db.connect().execute(
+        "SELECT * FROM baselines WHERE user_id=? AND metric=?",
+        (user_id, metric)).fetchone()
+    return dict(row) if row else None
+
+
+def _seed_baseline(user_id: str, metric: str, value: float) -> None:
+    conn = db.connect()
+    conn.execute(
+        "INSERT OR IGNORE INTO baselines (user_id, metric, value, samples,"
+        " updated_at) VALUES (?,?,?,0,?)", (user_id, metric, value, db.utcnow()))
+    conn.commit()
+
+
+def update_baseline(user_id: str, metric: str, value: float) -> dict:
+    """Fold a resting sample into the metric's EMA baseline."""
+    conn = db.connect()
+    row = _baseline_row(user_id, metric)
+    if row is None:
+        new_val, samples = float(value), 1
+        conn.execute(
+            "INSERT INTO baselines (user_id, metric, value, samples, updated_at)"
+            " VALUES (?,?,?,?,?)",
+            (user_id, metric, new_val, samples, db.utcnow()))
+    else:
+        new_val = row["value"] + _BASELINE_ALPHA * (value - row["value"])
+        samples = row["samples"] + 1
+        conn.execute(
+            "UPDATE baselines SET value=?, samples=?, updated_at=?"
+            " WHERE user_id=? AND metric=?",
+            (new_val, samples, db.utcnow(), user_id, metric))
+    conn.commit()
+    return {"metric": metric, "value": round(new_val, 2), "samples": samples,
+            "provisional": samples < _BASELINE_MIN_SAMPLES}
+
+
+def baseline_for(user_id: str) -> list[dict]:
+    rows = db.connect().execute(
+        "SELECT * FROM baselines WHERE user_id=? ORDER BY metric",
+        (user_id,)).fetchall()
+    return [{"metric": r["metric"], "value": round(r["value"], 2),
+             "samples": r["samples"],
+             "provisional": r["samples"] < _BASELINE_MIN_SAMPLES} for r in rows]
+
+
+def _effective_resting_hr(user_id: str, user: dict | None,
+                          sample: dict) -> int | None:
+    """The resting HR detection should compare against: the learned baseline
+    once it is established, otherwise the enrolled seed."""
+    if "resting_heart_rate" in sample:
+        return sample["resting_heart_rate"]
+    bl = _baseline_row(user_id, "heart_rate")
+    if bl and bl["samples"] >= _BASELINE_MIN_SAMPLES:
+        return round(bl["value"])
+    if user and user.get("resting_heart_rate"):
+        return user["resting_heart_rate"]
+    return None
 
 
 def declare_condition(user_id: str, condition: str, note: str | None) -> dict:
@@ -259,8 +359,9 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
             pdi=None) -> dict:
     """Ingest one sample; run detection → guidance → escalation."""
     user = get_user(user_id)
-    if user and user.get("resting_heart_rate") and "resting_heart_rate" not in sample:
-        sample = {**sample, "resting_heart_rate": user["resting_heart_rate"]}
+    resting = _effective_resting_hr(user_id, user, sample)
+    if resting is not None and "resting_heart_rate" not in sample:
+        sample = {**sample, "resting_heart_rate": resting}
 
     prior_hrs = _prior_heart_rates(user_id, pdi=pdi)
     _event(user_id, "biometric",
@@ -268,8 +369,13 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
            pdi=pdi, vault_scope="medical/biometric")
 
     known = (user or {}).get("known_conditions") or []
-    detection = conditions.detect(sample, note, known=known)
+    sensitivity = (user or {}).get("sensitivity") or "balanced"
+    detection = conditions.detect(sample, note, known=known,
+                                  sensitivity=sensitivity)
     if detection is None:
+        # A calm resting-state reading nudges the rolling baseline (clause 2).
+        if sample.get("heart_rate") and _is_resting(sample):
+            update_baseline(user_id, "heart_rate", sample["heart_rate"])
         # Predictive early warning before a condition manifests (clause 2).
         early = conditions.forecast(
             sample.get("heart_rate"),
@@ -301,8 +407,16 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
     }
     result["guidance"] = _deliver(user_id, user, detection, note, qrme,
                                   source_device=sample.get("source_device"))
-    if detection.severity == "critical":
+    # Critical always escalates. In cautious mode, a guidance-level event for a
+    # condition the user has *declared* also reaches out — catching it early for
+    # someone known to be prone to it.
+    cautious_early = (sensitivity == "cautious"
+                      and detection.severity == "guidance"
+                      and detection.condition in known)
+    if detection.severity == "critical" or cautious_early:
         result["escalation"] = _escalate(user_id, user, detection)
+        if cautious_early:
+            result["escalation"]["reason"] += " (cautious-mode early outreach)"
     return result
 
 

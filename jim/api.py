@@ -12,7 +12,7 @@ from .models import (
     ActivityObserve, BiometricSample, CheckIn, CoachMessage, ConditionDeclare,
     ContextEvent, DeviceRegister, Enroll, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate, HabitLog, JournalEntry, PersonalityUpdate,
-    SessionStart, SourceConsent, SpecialistRegister,
+    SensitivitySet, SessionStart, SourceConsent, SpecialistRegister,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -160,6 +160,22 @@ def create_app(qrme_client: QRMEClient | None = None,
                         request: Request) -> dict:
         _user_or_404(user_id, request)
         return guardian.set_personality(user_id, body.model_dump())
+
+    @app.put("/sensitivity/{user_id}")
+    def set_sensitivity(user_id: str, body: SensitivitySet,
+                        request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return guardian.set_sensitivity(user_id, body.level)
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+
+    @app.get("/baseline/{user_id}")
+    def get_baseline(user_id: str, request: Request) -> list[dict]:
+        """The user's rolling per-metric baselines (provisional until enough
+        resting samples have accrued)."""
+        _user_or_404(user_id, request)
+        return guardian.baseline_for(user_id)
 
     # ---- connected sources ("AI only sees what you allow") ----------------
 
