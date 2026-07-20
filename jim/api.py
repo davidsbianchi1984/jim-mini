@@ -324,6 +324,14 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return life.progress_report(user_id)
 
+    @app.get("/access-log/{user_id}")
+    def access_log(user_id: str, request: Request) -> dict:
+        """See who accessed my data: every access to the user's sealed vault
+        records, filtered to their own namespace and verifiable against PDI's
+        tamper-evident audit chain."""
+        _user_or_404(user_id, request)
+        return life.access_log(user_id, pdi=app.state.pdi)
+
     @app.get("/provider/{user_id}")
     def provider_portal(user_id: str, request: Request) -> dict:
         user = _user_or_404(user_id, request)

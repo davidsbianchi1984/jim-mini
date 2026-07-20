@@ -431,6 +431,45 @@ def provider_summary(user: dict) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+# access log — "see who accessed my data"
+# --------------------------------------------------------------------------- #
+
+_ACCESS_VERB = {"put": "stored", "get": "read", "delete": "erased"}
+
+
+def access_log(user_id: str, pdi=None) -> dict:
+    """A user-facing view of every access to *their* vaulted data. Reads PDI's
+    tamper-evident audit chain and filters it to this user's key namespace
+    (`jim/{user}/…`), so one user can never see another's. When no vault is
+    configured, the user's data never left this system, and we say so."""
+    if pdi is None:
+        return {"vaulted": False, "entries": [],
+                "note": "no vault configured — your data is stored locally on "
+                        "this system only; nothing is shared externally"}
+    raw = pdi.audit()
+    if raw is None:
+        return {"vaulted": True, "available": False,
+                "note": "the vault audit is temporarily unavailable"}
+    prefix = f"jim/{user_id}/"
+    entries = []
+    for e in raw:
+        ref = e.get("ref") or ""
+        if not ref.startswith(prefix):
+            continue
+        scope = ref[len(prefix):].rsplit("/", 1)[0] or "data"
+        entries.append({"action": _ACCESS_VERB.get(e["action"], e["action"]),
+                        "scope": scope, "at": e["at"]})
+    return {
+        "vaulted": True, "available": True,
+        "tamper_evident": pdi.audit_verify(),
+        "count": len(entries),
+        "entries": entries,
+        "note": "every access to your sealed data, verifiable against PDI's "
+                "hash-chained audit log",
+    }
+
+
+# --------------------------------------------------------------------------- #
 # erasure — "delete anything, anytime"
 # --------------------------------------------------------------------------- #
 
