@@ -202,6 +202,54 @@ def toggle(x, y, on):
 # --------------------------------------------------------------------------- #
 # frame
 # --------------------------------------------------------------------------- #
+PLATFORM = "ios"          # "ios" | "android"
+
+
+def _status_icons(xr, y, col):
+    o = []
+    if PLATFORM == "android":
+        o.append(rrect(xr - 9, y - 7, 8, 12, 1.5, "none", col, 1.2))
+        o.append(rrect(xr - 7.5, y - 3, 5, 7, 1, col))
+        o.append(f'<path d="M{xr-20} {y+5} L{xr-15} {y-4} L{xr-10} {y+5} Z" fill="{col}"/>')
+        o.append(f'<path d="M{xr-33} {y+5} L{xr-33} {y-2} L{xr-25} {y+5} Z" fill="{col}"/>')
+    else:
+        o.append(rrect(xr - 22, y - 6, 20, 11, 3, "none", col, 1.1))
+        o.append(rrect(xr - 20, y - 4, 14, 7, 2, col))
+        o.append(rrect(xr - 1.4, y - 2.5, 2, 5, 1, col))
+        o.append(f'<path d="M{xr-35} {y-1} a6 6 0 0 1 11 0" fill="none" stroke="{col}" stroke-width="1.3"/>')
+        o.append(f'<circle cx="{xr-29.5}" cy="{y+3}" r="1.2" fill="{col}"/>')
+        for i in range(4):
+            o.append(rrect(xr - 52 + i * 4, y + 4 - (i + 1) * 1.9, 2.6, (i + 1) * 1.9, 0.8, col))
+    return "".join(o)
+
+
+def statusbar():
+    tcol = C["silver"] if "silver" in C else C["t2"]
+    notch = "#05070d"
+    o = []
+    if PLATFORM == "android":
+        o.append(f'<circle cx="{W/2}" cy="{SY+12}" r="4.5" fill="{notch}"/>')
+        o.append(f'<circle cx="{W/2}" cy="{SY+12}" r="4.5" fill="none" stroke="{C["line"]}" stroke-width="1"/>')
+    else:
+        o.append(rrect(W / 2 - 30, SY + 5, 60, 15, 7.5, notch))
+    o.append(text(SX + 14, SY + 34, "9:41", 11, tcol, 600))
+    o.append(_status_icons(SX + SW - 14, SY + 34, tcol))
+    return o
+
+
+def navbar():
+    o = []
+    yb = SY + SH - 6
+    if PLATFORM == "android":
+        cx = W / 2
+        o.append(f'<path d="M{cx-34+5} {yb-4.5} L{cx-34-5} {yb} L{cx-34+5} {yb+4.5} Z" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.3" stroke-linejoin="round"/>')
+        o.append(f'<circle cx="{cx}" cy="{yb}" r="4.6" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.3"/>')
+        o.append(rrect(cx + 34 - 4.6, yb - 4.6, 9.2, 9.2, 1.6, "none", "rgba(255,255,255,0.5)", 1.3))
+    else:
+        o.append(rrect(W / 2 - 42, yb - 1, 84, 4, 2, "rgba(255,255,255,0.6)"))
+    return o
+
+
 def head(num, title, sub, accent="brand"):
     ac = ACCENT.get(accent, C["brandA"])
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
@@ -226,9 +274,7 @@ def head(num, title, sub, accent="brand"):
     </defs>''')
     out.append(rrect(PX, PY, PW, PH, 40, "url(#gFrame)"))
     out.append(rrect(SX, SY, SW, SH, 31, "url(#gScr)"))
-    out.append(rrect(W / 2 - 34, SY + 4, 68, 17, 9, "#05070d"))     # notch
-    out.append(text(SX + 14, SY + 34, "10:09", 11, C["t2"], 600))
-    out.append(text(SX + SW - 14, SY + 34, f"● {num}", 10, ac, 700, "end"))
+    out += statusbar()
     out.append(text(CX, SY + 66, title, 20, C["txt"], 700, spacing=-0.4))
     if sub:
         out.append(text(CX, SY + 84, sub, 11.5, C["t2"], 400))
@@ -516,6 +562,7 @@ def render(spec):
             out.append(button(CX, y, CW, spec["button"][0], spec["button"][1], 42))
 
     out += tabbar(spec.get("tab", 0))
+    out += navbar()
     out += close()
     return "".join(out)
 
@@ -690,15 +737,21 @@ SCREENS = [
 
 
 def main():
-    names = []
-    for s in SCREENS:
-        slug = s["title"].lower().replace(" & ", "-").replace(" ", "-")
-        fn = f'{s["num"]:02d}-{slug}.svg'
-        with open(os.path.join(OUT, fn), "w") as f:
-            f.write(render(s))
-        names.append((s["num"], s["title"], fn))
-    print(f"generated {len(names)} screens")
-    return names
+    global PLATFORM
+    total = 0
+    for plat, sub in (("ios", ""), ("android", "android")):
+        PLATFORM = plat
+        outdir = OUT if not sub else os.path.join(OUT, sub)
+        os.makedirs(outdir, exist_ok=True)
+        for s in SCREENS:
+            slug = s["title"].lower().replace(" & ", "-").replace(" ", "-")
+            fn = f'{s["num"]:02d}-{slug}.svg'
+            with open(os.path.join(outdir, fn), "w") as f:
+                f.write(render(s))
+            total += 1
+    PLATFORM = "ios"
+    print(f"generated {total} screens ({total // 2} × 2 platforms)")
+    return []
 
 
 if __name__ == "__main__":
