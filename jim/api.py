@@ -33,6 +33,18 @@ def create_app(qrme_client: QRMEClient | None = None,
                cloud_client: CloudModelClient | None = None) -> FastAPI:
     app = FastAPI(title="JIM-mini / Guardian", version="0.1.0")
 
+    # Optional CORS for a packaged guardian-console front-end (app/) calling the
+    # API from another origin. Off by default; set JIM_CORS_ORIGINS to a
+    # comma-separated allowlist, or "*" for any.
+    _origins = os.environ.get("JIM_CORS_ORIGINS")
+    if _origins:
+        from fastapi.middleware.cors import CORSMiddleware
+        _allow = ["*"] if _origins.strip() == "*" else [
+            o.strip() for o in _origins.split(",") if o.strip()]
+        app.add_middleware(
+            CORSMiddleware, allow_origins=_allow, allow_credentials=False,
+            allow_methods=["*"], allow_headers=["*"])
+
     # Tandem is optional: injected client (tests) > JIM_QRME_URL env > none.
     if qrme_client is None and os.environ.get("JIM_QRME_URL"):
         qrme_client = QRMEClient(base_url=os.environ["JIM_QRME_URL"])
