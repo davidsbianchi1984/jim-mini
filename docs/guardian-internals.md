@@ -30,24 +30,44 @@ are checked first):
 
 1. **Crisis language** in free text (regex: "kill myself", "end it all",
    "suicide", "hurt myself", "don't want to live") → `anxiety`, **critical**.
-2. **Movement** `fall`/`collapse` → `physical_injury` critical; `immobile` →
-   guidance.
-3. **Speech** `slurred`/`incoherent` → `physical_distress` critical (stroke
+2. **Cardiac patterns** (outrank the generic collapse rule): `rhythm:
+   fibrillation` (ECG-capable wearable) → `cardiac_event` critical with the
+   **AED playbook**; `fall`/`collapse` with an absent pulse or HR < 30 →
+   `cardiac_event` critical with the **CPR playbook** (steps, 30:2, pace cued
+   at 110/min by green/red lights + a metronome audio tick).
+3. **Movement** `fall`/`collapse` (pulse present) → `physical_injury`
+   critical; `immobile` → guidance.
+4. **Speech** `slurred`/`incoherent` → `physical_distress` critical (stroke
    pattern).
-4. **Body temperature** ≥38.5 °C or <35 → guidance; ≥40 or <35 → critical.
-5. **Blood pressure** systolic ≥160 or diastolic ≥100 → guidance; ≥180/≥120
+5. **Body temperature** ≥38.5 °C or <35 → guidance; ≥40 or <35 → critical.
+6. **Blood pressure** systolic ≥160 or diastolic ≥100 → guidance; ≥180/≥120
    → critical (hypertensive crisis).
-6. **HRV** <20 ms → `stress` guidance (sustained load).
-7. **SpO₂** <90 % → guidance; <88 → critical.
-8. **Heart rate** ≥ resting + threshold, with respiratory-rate corroboration
-   (≥20/min or absent). Threshold is **+40 bpm** normally, **+30 bpm** if the
-   user declared an HR-sensitive known condition (anxiety/stress/phobia).
-   ≥ resting + 70 → critical.
-9. **Text cues** for anxiety, depression, stress, phobia, financial stress,
-   relationship distress, physical injury → guidance.
+7. **HRV** <20 ms → `stress` guidance (sustained load).
+8. **SpO₂** <90 % → guidance (the low-oxygen playbook: breathe deeply, fresh
+   air, seek medical attention); <88 → critical.
+9. **Environmental hazards** (connected sensors): `air_quality` smoke/CO or
+   CO ≥ 9 ppm → `environmental_hazard` **critical** (leave-now playbook);
+   `poor` air → guidance.
+10. **Heart rate** ≥ resting + threshold, with respiratory-rate corroboration
+    (≥20/min or absent). Threshold is **+40 bpm** normally, **+30 bpm** if the
+    user declared an HR-sensitive known condition (anxiety/stress/phobia).
+    ≥ resting + 70 → critical.
+11. **Ergonomic risk factors**: slouched/hunched/awkward posture or ≥ 45 min
+    of repetitive motion → `ergonomic_strain` guidance (posture reset,
+    movement break) — a strain flagged before it becomes an injury.
+12. **Text cues** for anxiety, depression, stress, phobia, financial stress,
+    relationship distress, physical injury → guidance.
 
 Severity ladder: `info` (log only) → `guidance` (deliver help) →
 `critical` (deliver help **and** escalate).
+
+**First-aid playbooks** (`guidance.first_aid_for`): physical detections carry
+a deterministic, step-by-step `first_aid` block alongside the conversational
+guidance — CPR (30:2, pace cued at 110/min with green/red lights and a
+metronome tick), AED, low-blood-oxygen, environmental-hazard, and ergonomic
+playbooks. Critical escalations **dispatch alerts to every registered
+connected device** (`dispatched_alerts`), so the nearest embodiment surfaces
+the guidance.
 
 ## Predictive early warning **[implemented]** (`conditions.forecast`)
 
@@ -71,6 +91,9 @@ PDI vault; the trend store keeps only a metric name and a value):
 - **Spending acceleration** — the last three purchases total ≥ 2× the prior
   three → a financial-stress early warning even when no single purchase trips
   the high-spend alert.
+- **Blood-oxygen slide** — three strictly declining SpO₂ readings ending
+  ≤ 94% (still above the 90% detection threshold) → a physical-abnormality
+  warning while there is still time to breathe deeply and get fresh air.
 
 Each lands as a `forecast` insight; erasure removes the trend points with
 everything else.

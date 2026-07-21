@@ -415,6 +415,14 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
             sample.get("resting_heart_rate", 70), prior_hrs)
         result = {"detected": False, "guidance": None, "escalation": None,
                   "forecast": None}
+        # Physical abnormality forming: a blood-oxygen slide is flagged while
+        # it is still above the detection threshold.
+        if sample.get("blood_oxygen") is not None:
+            life._trend_point(user_id, "blood_oxygen", sample["blood_oxygen"])
+            slipping = life.forecast_spo2(user_id)
+            if slipping:
+                result["forecast"] = {"condition": "physical_distress",
+                                      "reason": slipping["message"]}
         if early is not None:
             _event(user_id, "forecast", condition=early.condition,
                    severity=early.severity,
@@ -620,11 +628,16 @@ def _escalate(user_id, user, detection) -> dict:
     contact = None
     if user and user.get("contact_consent") and user.get("emergency_phone"):
         contact = {"name": user.get("emergency_name"), "phone": user["emergency_phone"]}
+    # Autonomous coordinated response: every connected system the user has
+    # registered (wearable, stationary console, autonomous device) receives
+    # the alert, so whichever is nearest can surface the guidance.
+    dispatched = [d["name"] for d in devices_for(user_id)]
     escalation = {
         "escalated": True, "condition": detection.condition,
         "reason": detection.reason,
         "notified_emergency_contact": contact is not None,
         "emergency_contact": contact, "live_support": True,
+        "dispatched_alerts": dispatched,
     }
     _event(user_id, "escalation", condition=detection.condition,
            severity="critical", detail=escalation)
