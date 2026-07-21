@@ -10,9 +10,10 @@ from fastapi import FastAPI, HTTPException, Request
 from . import auth, coach, db, guardian, life
 from .models import (
     ActivityObserve, BiometricSample, CheckIn, CoachMessage, ConditionDeclare,
-    ContextEvent, DeviceRegister, Enroll, GoalCreate, GoalUpdate,
-    GuidanceFeedback, HabitCreate, HabitLog, JournalEntry, PersonalityUpdate,
-    SensitivitySet, SessionStart, SourceConsent, SpecialistRegister,
+    ContextEvent, DeviceRegister, EmergencyRequest, Enroll, GoalCreate,
+    GoalUpdate, GuidanceFeedback, HabitCreate, HabitLog, JournalEntry,
+    PersonalityUpdate, SensitivitySet, SessionStart, SourceConsent,
+    SpecialistRegister,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -107,6 +108,17 @@ def create_app(qrme_client: QRMEClient | None = None,
     def events(user_id: str, request: Request) -> list[dict]:
         _user_or_404(user_id, request)
         return guardian.events(user_id)
+
+    @app.post("/emergency/{user_id}", status_code=201)
+    def emergency(user_id: str, body: EmergencyRequest,
+                  request: Request) -> dict:
+        """Emergency mode: one coordinated response — reach services, share
+        location, contact family, surface the Medical ID, deliver step-by-step
+        AI first aid, and alert every connected device."""
+        _user_or_404(user_id, request)
+        sample = body.sample.model_dump(exclude_none=True) if body.sample else None
+        return guardian.emergency(user_id, body.situation, body.location,
+                                  sample, qrme=app.state.qrme, pdi=app.state.pdi)
 
     @app.post("/activity/{user_id}", status_code=201)
     def observe_activity(user_id: str, body: ActivityObserve,
