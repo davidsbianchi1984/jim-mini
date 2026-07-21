@@ -36,6 +36,15 @@ def esc(s):
     return html.escape(str(s), quote=True)
 
 
+def A(hexcol, a):
+    """hex #rrggbb + alpha 0..1 -> rgba() string. Renderer-agnostic: 8-digit
+    hex alpha renders opaque in some SVG converters (e.g. cairosvg); rgba() is
+    honoured everywhere."""
+    h = hexcol.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r},{g},{b},{a})"
+
+
 # --------------------------------------------------------------------------- #
 # tiny vector icon set (drawn, not emoji, so it renders identically anywhere)
 # --------------------------------------------------------------------------- #
@@ -136,7 +145,7 @@ def text(x, y, s, size, fill, weight=400, anchor="start", spacing=0, mono=False)
 
 
 def chip(x, y, ic, col):
-    bg = col + "28"
+    bg = A(col, 0.16)
     return (rrect(x, y, 34, 34, 11, bg) + icon(ic, x + 17, y + 17, col, 0.92))
 
 
@@ -144,7 +153,7 @@ def pill(x, y, label, tone):
     col = {"good": C["green"], "warn": C["amber"], "crit": C["emer"],
            "info": C["cyan"], "brand": C["brandA"]}[tone]
     w = 12 + len(label) * 6.2
-    return (rrect(x - w, y - 11, w, 17, 8, col + "26")
+    return (rrect(x - w, y - 11, w, 17, 8, A(col, 0.15))
             + text(x - w / 2, y + 1, label, 9.5, col, 700, "middle", 0.4))
 
 
@@ -281,6 +290,14 @@ def orb(cx, cy, r):
     return (f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#orb)"/>'
             f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="#ffffff22" stroke-width="1"/>'
             f'<ellipse cx="{cx-r*0.28}" cy="{cy-r*0.32}" rx="{r*0.28}" ry="{r*0.18}" fill="#ffffff55"/>')
+
+
+def ring(cx, cy, r, pct, col, sw=9):
+    circ = 2 * math.pi * r
+    return (f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{A(col,0.13)}" stroke-width="{sw}"/>'
+            f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{col}" stroke-width="{sw}" '
+            f'stroke-linecap="round" stroke-dasharray="{circ*pct:.1f} {circ:.1f}" '
+            f'transform="rotate(-90 {cx} {cy})"/>')
 
 
 # --------------------------------------------------------------------------- #
@@ -427,6 +444,69 @@ def render(spec):
         s, y = card_block(y, {"icon": "chart", "color": "green", "k": "Learning your baseline",
                               "s": "resting 60 · 40 calm samples", "pill": ("SET", "good")})
         out.append(s)
+
+    elif hero == "feedback":
+        out.append(rrect(CX, y, CW, 58, 16, "url(#gCard)", C["line"], 1))
+        out.append(text(CX + 14, y + 25, "“Try a 2-minute breathing pause.”", 11.5, C["txt"], 500))
+        out.append(text(CX + 14, y + 43, "Was that guidance helpful?", 11, C["t2"]))
+        y += 72
+        bw = (CW - 12) / 2
+        out.append(rrect(CX, y, bw, 74, 16, A(C["green"], 0.12), C["green"], 1.5))
+        out.append(icon("heart", CX + bw / 2, y + 30, C["green"], 1.3))
+        out.append(text(CX + bw / 2, y + 60, "Helpful", 12, C["green"], 700, "middle"))
+        out.append(rrect(CX + bw + 12, y, bw, 74, 16, A(C["red"], 0.12), C["red"], 1.5))
+        out.append(icon("warn", CX + bw + 12 + bw / 2, y + 30, C["red"], 1.3))
+        out.append(text(CX + bw + 12 + bw / 2, y + 60, "Not for me", 12, C["red"], 700, "middle"))
+        y += 88
+        s, y = card_block(y, {"icon": "chart", "color": "brand", "k": "Continuous improvement",
+                              "s": "one tap trains the guidance"})
+        out.append(s)
+
+    elif hero == "tone":
+        seg = ["Warm", "Direct", "Playful"]
+        out.append(rrect(CX, y, CW, 40, 13, "#0c1424", C["line"], 1))
+        sw = (CW - 8) / 3
+        for i, lbl in enumerate(seg):
+            on = (i == 0)
+            if on:
+                out.append(rrect(CX + 4 + i * sw, y + 4, sw, 32, 10, "url(#gBrand)"))
+            out.append(text(CX + 4 + i * sw + sw / 2, y + 25, lbl, 12, "#fff" if on else C["t2"], 650, "middle"))
+        y += 52
+        out.append(rrect(CX, y, CW, 60, 16, "url(#gCard)", C["line"], 1))
+        out.append(text(CX + 14, y + 24, "Your note to the coach", 12, C["txt"], 600))
+        out.append(text(CX + 14, y + 42, "“Keep it short. No sugar-coating.”", 11, C["t2"]))
+        y += 72
+        s, y = card_block(y, {"icon": "chat", "color": "violet", "k": "Shapes every reply",
+                              "s": "guidance & coach prompts adapt"})
+        out.append(s)
+
+    elif hero == "timeline":
+        events = [("bolt", "cyan", "Biometric sample", "HR 110 · resp 22 · 10:02"),
+                  ("warn", "amber", "Detection", "anxiety · guidance"),
+                  ("shield", "green", "Guidance delivered", "breathing + reassurance"),
+                  ("phone", "red", "Escalation", "contact notified · live help")]
+        lx = CX + 16
+        out.append(f'<line x1="{lx}" y1="{y+8}" x2="{lx}" y2="{y+8+len(events)*62-40}" stroke="{C["line"]}" stroke-width="2"/>')
+        for ic, col, k, s in events:
+            c = ACCENT[col]
+            out.append(f'<circle cx="{lx}" cy="{y+12}" r="9" fill="{C["scrB"]}" stroke="{c}" stroke-width="2"/>')
+            out.append(icon(ic, lx, y + 12, c, 0.5))
+            out.append(rrect(lx + 22, y - 6, CW - 38, 44, 12, "url(#gCard)", C["line"], 1))
+            out.append(text(lx + 36, y + 12, k, 12, C["txt"], 650))
+            out.append(text(lx + 36, y + 27, s, 10, C["t2"]))
+            y += 62
+
+    elif hero == "baselinep":
+        cx0, cy0, r = W / 2, y + 52, 46
+        out.append(ring(cx0, cy0, r, 1.0, C["green"], 9))
+        out.append(text(cx0, cy0 + 2, "60", 30, "#fff", 800, "middle"))
+        out.append(text(cx0, cy0 + 22, "RESTING HR", 8.5, C["t2"], 600, "middle", 0.6))
+        y = cy0 + r + 26
+        for ic, col, k, s, pillt in [("heart", "red", "Heart rate", "learned · 40 samples", ("SET", "good")),
+                                     ("lung", "cyan", "Respiration", "learning · 3 samples", ("12%", "info")),
+                                     ("drop", "violet", "SpO₂", "provisional", ("SEED", "info"))]:
+            s2, y = card_block(y, {"icon": ic, "color": col, "k": k, "s": s, "pill": pillt, "h": 48})
+            out.append(s2)
 
     else:  # generic stacked cards
         for c in spec["cards"]:
@@ -594,6 +674,17 @@ SCREENS = [
         dict(icon="cloud", color="violet", k="Cloud model", s="claude-fable-5 · local fallback", pill=("ON", "good")),
         dict(icon="shield", color="green", k="Offline mode", s="fully on-host, nothing leaves", pill=("READY", "good")),
         dict(icon="eye", color="cyan", k="Contribution preview", s="exactly what would be shared"),
+    ]),
+    # --- newly filled gaps ---
+    dict(num=35, title="Rate Guidance", sub="Continuous improvement", hero="feedback", accent="green", tab=0),
+    dict(num=36, title="Counselor Style", sub="Adapt the coach to you", hero="tone", accent="violet", tab=4),
+    dict(num=37, title="History", sub="Detect → guide → escalate", hero="timeline", accent="cyan", tab=3),
+    dict(num=38, title="Baseline", sub="Learning your normal", hero="baselinep", accent="green", tab=0),
+    dict(num=39, title="Tandem Specialist", sub="Delegated guidance", tab=0, accent="teal", cards=[
+        dict(icon="brain", color="violet", k="QRME anxiety specialist", s="a synthetic profile, over HTTP", pill=("TANDEM", "brand")),
+        dict(icon="shield", color="green", k="Runs QRME's moderation", s="reply checked before it's shown"),
+        dict(icon="link", color="teal", k="Falls back to local", s="standalone guidance if offline"),
+        dict(icon="person", color="cyan", k="Age- & status-checked", s="never a minor to an adult profile"),
     ]),
 ]
 
