@@ -115,6 +115,10 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/37-history.svg" width="160" alt="37 History"><br><sub>37 · History</sub></td>
 <td align="center" width="25%"><img src="docs/screens/38-baseline.svg" width="160" alt="38 Baseline"><br><sub>38 · Baseline</sub></td>
 <td align="center" width="25%"><img src="docs/screens/39-tandem-specialist.svg" width="160" alt="39 Tandem Specialist"><br><sub>39 · Tandem Specialist</sub></td>
+<td align="center" width="25%"><img src="docs/screens/40-sign-in.svg" width="160" alt="40 Sign In"><br><sub>40 · Sign In</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/41-end-session.svg" width="160" alt="41 End Session"><br><sub>41 · End Session</sub></td>
 </tr>
 </table>
 
