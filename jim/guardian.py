@@ -8,7 +8,9 @@ own guidance.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import secrets
 from datetime import date
 
 from . import conditions, db, guidance as local_guidance, life
@@ -498,6 +500,44 @@ def _medical_id(user_id: str, user: dict | None) -> dict | None:
         "emergency_contact": contact,
         "recent_detections": [dict(r) for r in recent],
     }
+
+
+def _card_hash(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def issue_medical_card(user_id: str) -> str:
+    """Mint (or rotate) the user's Medical ID card token. Returns the plaintext
+    token once; only its hash is stored, and rotating invalidates the old QR."""
+    token = "med_" + secrets.token_urlsafe(18)
+    conn = db.connect()
+    conn.execute(
+        "INSERT INTO medical_cards (user_id, token_hash, created_at)"
+        " VALUES (?,?,?) ON CONFLICT (user_id) DO UPDATE SET"
+        " token_hash=excluded.token_hash, created_at=excluded.created_at",
+        (user_id, _card_hash(token), db.utcnow()),
+    )
+    conn.commit()
+    return token
+
+
+def revoke_medical_card(user_id: str) -> bool:
+    conn = db.connect()
+    changed = conn.execute("DELETE FROM medical_cards WHERE user_id=?",
+                           (user_id,)).rowcount
+    conn.commit()
+    return changed > 0
+
+
+def resolve_medical_card(token: str) -> dict | None:
+    """Resolve a scanned card token to the Medical ID — no auth token needed
+    (the card is the credential). None if the token is unknown/revoked."""
+    row = db.connect().execute(
+        "SELECT user_id FROM medical_cards WHERE token_hash=?",
+        (_card_hash(token),)).fetchone()
+    if row is None:
+        return None
+    return _medical_id(row["user_id"], get_user(row["user_id"]))
 
 
 def emergency(user_id: str, situation: str | None = None,
