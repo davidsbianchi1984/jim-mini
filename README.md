@@ -37,6 +37,21 @@ A wide, multi-panel desktop form of Jim Mini — sidebar nav and an operator wor
   </tr>
 </table>
 
+## Platforms
+
+Every screen ships in each platform's native chrome — mobile in **iOS** (`docs/screens/`) and **Android** (`docs/screens/android/`); desktop in **macOS** (`docs/desktop/`) and **Windows** (`docs/desktop/windows/`). iOS's Dynamic Island + home indicator vs Android's punch-hole + gesture nav; macOS traffic-lights vs the Windows caption bar. (The watch is watchOS-only.)
+
+<table>
+  <tr>
+    <td align="center" width="50%"><a href="docs/screens/02-home.svg"><img src="docs/screens/02-home.svg" width="210" alt="iOS"></a><br><sub>Mobile · <b>iOS</b></sub></td>
+    <td align="center" width="50%"><a href="docs/screens/android/02-home.svg"><img src="docs/screens/android/02-home.svg" width="210" alt="Android"></a><br><sub>Mobile · <b>Android</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="docs/desktop/01-overview.svg"><img src="docs/desktop/01-overview.svg" width="440" alt="macOS"></a><br><sub>Desktop · <b>macOS</b></sub></td>
+    <td align="center"><a href="docs/desktop/windows/01-overview.svg"><img src="docs/desktop/windows/01-overview.svg" width="440" alt="Windows"></a><br><sub>Desktop · <b>Windows</b></sub></td>
+  </tr>
+</table>
+
 ## App screens
 
 Every capability has a screen, in the product's dark-OLED style (regenerate with `python3 docs/screens/build.py`). Each is a self-contained SVG — no fonts, images, or scripts — and maps to a shipped endpoint.

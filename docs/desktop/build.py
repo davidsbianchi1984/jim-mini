@@ -15,6 +15,8 @@ import os
 
 OUT = os.path.dirname(os.path.abspath(__file__))
 
+PLATFORM_D = "macos"          # "macos" | "windows"
+
 _spec = importlib.util.spec_from_file_location(
     "jimmobile", os.path.join(OUT, "..", "screens", "build.py"))
 pb = importlib.util.module_from_spec(_spec)
@@ -78,20 +80,26 @@ def frame(title, active):
          f'viewBox="0 0 {W} {H}" role="img" aria-label="Jim Mini — {esc(title)}">']
     o.append(defs())
     o.append(rrect(0, 0, W, H, 0, "url(#gPage)"))
-    o.append(f'<rect x="{WIN_X}" y="{WIN_Y}" width="{WIN_W}" height="{WIN_H}" rx="18" '
+    o.append(f'<rect x="{WIN_X}" y="{WIN_Y}" width="{WIN_W}" height="{WIN_H}" rx="{10 if PLATFORM_D == "windows" else 18}" '
              f'fill="url(#gScr)" stroke="{C["line"]}" stroke-width="1"/>')
     o.append(rrect(WIN_X, WIN_Y, SIDE_W, WIN_H, 18, "url(#gSide)"))
     o.append(rrect(WIN_X + SIDE_W - 18, WIN_Y, 18, WIN_H, 0, "url(#gScr)"))
     o.append(f'<line x1="{CONTENT_X}" y1="{WIN_Y}" x2="{CONTENT_X}" y2="{WIN_Y+WIN_H}" stroke="{C["line"]}" stroke-width="1"/>')
     o.append(f'<line x1="{CONTENT_X}" y1="{CONTENT_Y}" x2="{WIN_X+WIN_W}" y2="{CONTENT_Y}" stroke="{C["line"]}" stroke-width="1"/>')
-    for i, col in enumerate(("#ff5f57", "#febc2e", "#28c840")):
-        o.append(f'<circle cx="{WIN_X+22+i*18}" cy="{WIN_Y+27}" r="5.5" fill="{col}" opacity="0.9"/>')
+    if PLATFORM_D == "windows":
+        _bx = WIN_X + WIN_W - 22
+        o.append(f'<line x1="{_bx-70}" y1="{WIN_Y+28}" x2="{_bx-59}" y2="{WIN_Y+28}" stroke="{C["t2"]}" stroke-width="1.3"/>')
+        o.append(rrect(_bx - 41, WIN_Y + 22, 11, 11, 1.5, "none", C["t2"], 1.3))
+        o.append(f'<path d="M{_bx-11} {WIN_Y+22} l11 11 M{_bx} {WIN_Y+22} l-11 11" stroke="{C["t2"]}" stroke-width="1.3" stroke-linecap="round"/>')
+    else:
+        for i, col in enumerate(("#ff5f57", "#febc2e", "#28c840")):
+            o.append(f'<circle cx="{WIN_X+22+i*18}" cy="{WIN_Y+27}" r="5.5" fill="{col}" opacity="0.9"/>')
     o.append(f'<circle cx="{WIN_X+96}" cy="{WIN_Y+27}" r="11" fill="url(#orb)"/>')
     o.append(icon("shield", WIN_X + 96, WIN_Y + 27, "rgba(255,255,255,0.95)", 0.5))
     o.append(text(WIN_X + 114, WIN_Y + 25, "JIM", 14, C["txt"], 800, spacing=0.5))
     o.append(text(WIN_X + 114, WIN_Y + 39, "Guardian guidance", 8.5, C["t3"], 500))
     o.append(text(CONTENT_X + PAD, WIN_Y + 33, title, 15, C["txt"], 700, spacing=-0.2))
-    rx = WIN_X + WIN_W - 24
+    rx = WIN_X + WIN_W - 24 - (86 if PLATFORM_D == 'windows' else 0)
     o.append(icon("gear", rx - 10, WIN_Y + 27, C["t2"], 0.8))
     o.append(status_dot(rx - 34, WIN_Y + 31, "Guardian on", "on"))
     o.append(f'<circle cx="{rx-34-92}" cy="{WIN_Y+27}" r="13" fill="url(#orb)"/>')
@@ -503,11 +511,19 @@ def render(title, nav, fn):
 
 
 def main():
-    for num, title, nav, fn in VIEWS:
-        slug = title.lower().replace(" & ", "-").replace(" ", "-")
-        with open(os.path.join(OUT, f"{num:02d}-{slug}.svg"), "w") as f:
-            f.write(render(title, nav, fn))
-    print(f"generated {len(VIEWS)} desktop screens")
+    global PLATFORM_D
+    total = 0
+    for plat, sub in (("macos", ""), ("windows", "windows")):
+        PLATFORM_D = plat
+        outdir = OUT if not sub else os.path.join(OUT, sub)
+        os.makedirs(outdir, exist_ok=True)
+        for num, title, nav, fn in VIEWS:
+            slug = title.lower().replace(" & ", "-").replace(" ", "-")
+            with open(os.path.join(outdir, f"{num:02d}-{slug}.svg"), "w") as f:
+                f.write(render(title, nav, fn))
+            total += 1
+    PLATFORM_D = "macos"
+    print(f"generated {total} desktop screens ({len(VIEWS)} × 2 platforms)")
 
 
 if __name__ == "__main__":
