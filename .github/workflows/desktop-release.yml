@@ -1,0 +1,90 @@
+name: Guardian release
+
+# Builds the JIM guardian console (app/) into installable, optionally-signed
+# per-OS binaries on real macOS / Windows / Linux runners, and attaches them
+# to a GitHub Release.
+#
+# Triggers:
+#   - push a tag like `app-v0.1.0`  → builds + publishes a Release
+#   - manual "Run workflow"          → builds + uploads artifacts (no Release)
+#
+# Signing is optional and driven entirely by repository *secrets* (never
+# committed). electron-builder reads them from the environment:
+#   macOS   : CSC_LINK (base64 .p12), CSC_KEY_PASSWORD;
+#             notarization: APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID
+#   Windows : CSC_LINK (base64 .pfx), CSC_KEY_PASSWORD
+# If a platform's secrets are absent the build still succeeds — just unsigned.
+
+on:
+  push:
+    tags: ["guardian-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: dmg
+          - os: windows-latest
+            target: nsis
+          - os: ubuntu-latest
+            target: AppImage
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build & package (${{ matrix.target }})
+        run: npm run dist -- --publish never
+        env:
+          # macOS signing + notarization (no-op if the secrets are unset)
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jim-${{ matrix.os }}
+          path: |
+            app/release/*.dmg
+            app/release/*.exe
+            app/release/*.AppImage
+            app/release/*.blockmap
+            app/release/latest*.yml
+          if-no-files-found: warn
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all installers
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installers/**/*
+          generate_release_notes: true
