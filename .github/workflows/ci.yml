@@ -15,3 +15,23 @@ jobs:
           python-version: "3.12"
       - run: pip install -e .[dev]
       - run: pytest -q
+
+  # Smoke-test the front-end: every PR proves the desktop app still type-checks
+  # and builds. (Skips the Electron binary download — the renderer build does
+  # not need it.)
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm run build
