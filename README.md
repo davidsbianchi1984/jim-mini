@@ -18,6 +18,75 @@ to QRME specialist profiles over HTTP. See [docs/tandem.md](docs/tandem.md).
 specialist → moderated guidance, escalating to an emergency contact on critical
 events.*
 
+## App screens
+
+Every capability has a screen, in the product's dark-OLED style (regenerate with `python3 docs/screens/build.py`). Each maps to a shipped endpoint.
+
+
+**Core**
+
+<table><tr>
+<td align="center" width="25%"><img src="docs/screens/01-welcome.svg" width="160" alt="01 · Welcome"><br><sub>01 · Welcome</sub></td>
+<td align="center" width="25%"><img src="docs/screens/02-home.svg" width="160" alt="02 · Home"><br><sub>02 · Home</sub></td>
+<td align="center" width="25%"><img src="docs/screens/03-chat.svg" width="160" alt="03 · Chat"><br><sub>03 · Chat</sub></td>
+<td align="center" width="25%"><img src="docs/screens/04-voice.svg" width="160" alt="04 · Voice"><br><sub>04 · Voice</sub></td>
+</tr><tr>
+<td align="center" width="25%"><img src="docs/screens/05-daily-briefing.svg" width="160" alt="05 · Daily Briefing"><br><sub>05 · Daily Briefing</sub></td>
+<td align="center" width="25%"><img src="docs/screens/06-health.svg" width="160" alt="06 · Health"><br><sub>06 · Health</sub></td>
+<td align="center" width="25%"><img src="docs/screens/07-memories.svg" width="160" alt="07 · Memories"><br><sub>07 · Memories</sub></td>
+<td align="center" width="25%"><img src="docs/screens/08-profile.svg" width="160" alt="08 · Profile"><br><sub>08 · Profile</sub></td>
+</tr><tr>
+<td align="center" width="25%"><img src="docs/screens/09-goals.svg" width="160" alt="09 · Goals"><br><sub>09 · Goals</sub></td>
+<td align="center" width="25%"><img src="docs/screens/10-finance.svg" width="160" alt="10 · Finance"><br><sub>10 · Finance</sub></td>
+<td align="center" width="25%"><img src="docs/screens/11-emergency.svg" width="160" alt="11 · Emergency"><br><sub>11 · Emergency</sub></td>
+<td align="center" width="25%"><img src="docs/screens/12-settings.svg" width="160" alt="12 · Settings"><br><sub>12 · Settings</sub></td>
+</tr></table>
+
+
+**Guardian &amp; health**
+
+<table><tr>
+<td align="center" width="25%"><img src="docs/screens/13-live-monitoring.svg" width="160" alt="13 · Live Monitoring"><br><sub>13 · Live Monitoring</sub></td>
+<td align="center" width="25%"><img src="docs/screens/14-cpr-coach.svg" width="160" alt="14 · CPR Coach"><br><sub>14 · CPR Coach</sub></td>
+<td align="center" width="25%"><img src="docs/screens/15-emergency.svg" width="160" alt="15 · Emergency Response"><br><sub>15 · Emergency Response</sub></td>
+<td align="center" width="25%"><img src="docs/screens/16-medical-id.svg" width="160" alt="16 · Medical ID"><br><sub>16 · Medical ID</sub></td>
+</tr><tr>
+<td align="center" width="25%"><img src="docs/screens/17-foresight.svg" width="160" alt="17 · Foresight"><br><sub>17 · Foresight</sub></td>
+<td align="center" width="25%"><img src="docs/screens/18-guardian-sensitivity.svg" width="160" alt="18 · Sensitivity"><br><sub>18 · Sensitivity</sub></td>
+<td align="center" width="25%"><img src="docs/screens/19-known-conditions.svg" width="160" alt="19 · Known Conditions"><br><sub>19 · Known Conditions</sub></td>
+<td align="center" width="25%"><img src="docs/screens/20-providers.svg" width="160" alt="20 · Providers"><br><sub>20 · Providers</sub></td>
+</tr></table>
+
+
+**Life layer**
+
+<table><tr>
+<td align="center" width="25%"><img src="docs/screens/21-habits.svg" width="160" alt="21 · Habits"><br><sub>21 · Habits</sub></td>
+<td align="center" width="25%"><img src="docs/screens/22-check-in.svg" width="160" alt="22 · Check-in"><br><sub>22 · Check-in</sub></td>
+<td align="center" width="25%"><img src="docs/screens/23-journal.svg" width="160" alt="23 · Journal"><br><sub>23 · Journal</sub></td>
+<td align="center" width="25%"><img src="docs/screens/24-life-coach.svg" width="160" alt="24 · Life Coach"><br><sub>24 · Life Coach</sub></td>
+</tr><tr>
+<td align="center" width="25%"><img src="docs/screens/25-insights.svg" width="160" alt="25 · Insights"><br><sub>25 · Insights</sub></td>
+<td align="center" width="25%"><img src="docs/screens/26-companion.svg" width="160" alt="26 · Companion"><br><sub>26 · Companion</sub></td>
+<td align="center" width="25%"><img src="docs/screens/27-ambient-jump-in.svg" width="160" alt="27 · Ambient Jump-in"><br><sub>27 · Ambient Jump-in</sub></td>
+<td width="25%"></td>
+</tr></table>
+
+
+**Data, privacy &amp; system**
+
+<table><tr>
+<td align="center" width="25%"><img src="docs/screens/28-connected-sources.svg" width="160" alt="28 · Connected Sources"><br><sub>28 · Connected Sources</sub></td>
+<td align="center" width="25%"><img src="docs/screens/29-privacy-data.svg" width="160" alt="29 · Privacy & Data"><br><sub>29 · Privacy & Data</sub></td>
+<td align="center" width="25%"><img src="docs/screens/30-devices.svg" width="160" alt="30 · Devices"><br><sub>30 · Devices</sub></td>
+<td align="center" width="25%"><img src="docs/screens/31-continue.svg" width="160" alt="31 · Continuity"><br><sub>31 · Continuity</sub></td>
+</tr><tr>
+<td align="center" width="25%"><img src="docs/screens/32-notifications.svg" width="160" alt="32 · Notifications"><br><sub>32 · Notifications</sub></td>
+<td align="center" width="25%"><img src="docs/screens/33-progress-report.svg" width="160" alt="33 · Progress Report"><br><sub>33 · Progress Report</sub></td>
+<td align="center" width="25%"><img src="docs/screens/34-model-cloud.svg" width="160" alt="34 · Model & Cloud"><br><sub>34 · Model & Cloud</sub></td>
+<td width="25%"></td>
+</tr></table>
+
 ## Run
 
 ```bash
