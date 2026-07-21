@@ -87,6 +87,61 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td width="25%"></td>
 </tr></table>
 
+## Watch screens
+
+The same system on the wrist — glanceable Apple-Watch faces, one per capability (regenerate with `python3 docs/watch/build.py`).
+
+
+**Everyday**
+
+<table><tr>
+<td align="center" width="20%"><img src="docs/watch/01-home.svg" width="120" alt="01 Home"><br><sub>01 · Home</sub></td>
+<td align="center" width="20%"><img src="docs/watch/02-talk.svg" width="120" alt="02 Talk"><br><sub>02 · Talk</sub></td>
+<td align="center" width="20%"><img src="docs/watch/03-voice.svg" width="120" alt="03 Voice"><br><sub>03 · Voice</sub></td>
+<td align="center" width="20%"><img src="docs/watch/04-health.svg" width="120" alt="04 Health"><br><sub>04 · Health</sub></td>
+<td align="center" width="20%"><img src="docs/watch/05-heart.svg" width="120" alt="05 Heart"><br><sub>05 · Heart</sub></td>
+</tr><tr>
+<td align="center" width="20%"><img src="docs/watch/06-rings.svg" width="120" alt="06 Rings"><br><sub>06 · Rings</sub></td>
+<td align="center" width="20%"><img src="docs/watch/07-briefing.svg" width="120" alt="07 Briefing"><br><sub>07 · Briefing</sub></td>
+<td align="center" width="20%"><img src="docs/watch/08-streak.svg" width="120" alt="08 Streak"><br><sub>08 · Streak</sub></td>
+<td align="center" width="20%"><img src="docs/watch/09-check-in.svg" width="120" alt="09 Check-in"><br><sub>09 · Check-in</sub></td>
+<td align="center" width="20%"><img src="docs/watch/10-insight.svg" width="120" alt="10 Insight"><br><sub>10 · Insight</sub></td>
+</tr></table>
+
+
+**Guardian &amp; emergency**
+
+<table><tr>
+<td align="center" width="20%"><img src="docs/watch/11-monitoring.svg" width="120" alt="11 Monitoring"><br><sub>11 · Monitoring</sub></td>
+<td align="center" width="20%"><img src="docs/watch/12-foresight.svg" width="120" alt="12 Foresight"><br><sub>12 · Foresight</sub></td>
+<td align="center" width="20%"><img src="docs/watch/13-emergency.svg" width="120" alt="13 Emergency"><br><sub>13 · Emergency</sub></td>
+<td align="center" width="20%"><img src="docs/watch/14-cpr.svg" width="120" alt="14 CPR"><br><sub>14 · CPR</sub></td>
+<td align="center" width="20%"><img src="docs/watch/15-medical-id.svg" width="120" alt="15 Medical ID"><br><sub>15 · Medical ID</sub></td>
+</tr><tr>
+<td align="center" width="20%"><img src="docs/watch/16-sensitivity.svg" width="120" alt="16 Sensitivity"><br><sub>16 · Sensitivity</sub></td>
+<td width="20%"></td>
+<td width="20%"></td>
+<td width="20%"></td>
+<td width="20%"></td>
+</tr></table>
+
+
+**Ambient, data &amp; system**
+
+<table><tr>
+<td align="center" width="20%"><img src="docs/watch/17-ambient.svg" width="120" alt="17 Ambient"><br><sub>17 · Ambient</sub></td>
+<td align="center" width="20%"><img src="docs/watch/18-companion.svg" width="120" alt="18 Companion"><br><sub>18 · Companion</sub></td>
+<td align="center" width="20%"><img src="docs/watch/19-notifications.svg" width="120" alt="19 Notifications"><br><sub>19 · Notifications</sub></td>
+<td align="center" width="20%"><img src="docs/watch/20-devices.svg" width="120" alt="20 Devices"><br><sub>20 · Devices</sub></td>
+<td align="center" width="20%"><img src="docs/watch/21-guardian.svg" width="120" alt="21 Guardian"><br><sub>21 · Guardian</sub></td>
+</tr><tr>
+<td align="center" width="20%"><img src="docs/watch/22-settings.svg" width="120" alt="22 Settings"><br><sub>22 · Settings</sub></td>
+<td width="20%"></td>
+<td width="20%"></td>
+<td width="20%"></td>
+<td width="20%"></td>
+</tr></table>
+
 ## Run
 
 ```bash
