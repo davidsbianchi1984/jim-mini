@@ -239,6 +239,22 @@ def forecast_spending(user_id: str) -> dict | None:
     return None
 
 
+def forecast_spo2(user_id: str) -> dict | None:
+    """A physical abnormality forming before it manifests: three strictly
+    declining blood-oxygen readings ending ≤ 94% — still above the 90%
+    detection threshold, but heading for it."""
+    readings = _recent(user_id, "blood_oxygen", 3)
+    if (len(readings) == 3 and readings[0] > readings[1] > readings[2]
+            and readings[2] <= 94):
+        return _insight(
+            user_id, "forecast",
+            f"Blood oxygen has been slipping ({' → '.join(f'{r:g}%' for r in readings)}). "
+            "Breathe deeply, get some fresh air, and rest — worth heading off "
+            "before it drops further.",
+            area="health_fitness", source="forecast")
+    return None
+
+
 # --------------------------------------------------------------------------- #
 # check-ins
 # --------------------------------------------------------------------------- #

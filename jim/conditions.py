@@ -21,6 +21,9 @@ FINANCIAL_STRESS = "financial_stress"
 RELATIONSHIP = "relationship"
 PHYSICAL_DISTRESS = "physical_distress"
 PHYSICAL_INJURY = "physical_injury"
+CARDIAC = "cardiac_event"
+ENVIRONMENT = "environmental_hazard"
+ERGONOMIC = "ergonomic_strain"
 
 LABELS = {
     ANXIETY: "acute anxiety / panic",
@@ -31,6 +34,9 @@ LABELS = {
     RELATIONSHIP: "relationship distress",
     PHYSICAL_DISTRESS: "physical distress",
     PHYSICAL_INJURY: "physical injury — first aid",
+    CARDIAC: "cardiac emergency — CPR / AED",
+    ENVIRONMENT: "environmental hazard",
+    ERGONOMIC: "ergonomic risk / physical strain",
 }
 
 # Declaring one of these known conditions sensitizes the heart-rate rule
@@ -91,7 +97,25 @@ def detect(sample: dict, text: str | None = None,
                          "crisis language detected — immediate escalation",
                          {"text": note})
 
+    # Cardiac patterns outrank the generic collapse rule: fibrillation calls
+    # for an AED, a collapse with an absent/minimal pulse calls for CPR.
+    rhythm = (sample.get("rhythm") or "").lower()
+    if rhythm in ("fibrillation", "vfib", "v-fib"):
+        return Detection(CARDIAC, "critical",
+                         "cardiac fibrillation pattern detected",
+                         {"rhythm": rhythm, "pattern": "fibrillation"})
+
     movement = (sample.get("movement") or "").lower()
+    pulse = (sample.get("pulse") or "").lower()
+    hr_now = sample.get("heart_rate")
+    if movement in ("fall", "collapse") and (
+            pulse == "absent" or (hr_now is not None and hr_now < 30)):
+        return Detection(CARDIAC, "critical",
+                         f"sudden {movement} with absent/minimal pulse — "
+                         "suspected cardiac arrest",
+                         {"movement": movement, "pulse": pulse or hr_now,
+                          "pattern": "arrest"})
+
     if movement in ("fall", "collapse"):
         return Detection(PHYSICAL_INJURY, "critical",
                          f"sudden {movement} detected by movement sensors",
@@ -136,6 +160,20 @@ def detect(sample: dict, text: str | None = None,
                          f"low blood oxygen (SpO2 {spo2}%)",
                          {"blood_oxygen": spo2})
 
+    # Environmental hazards monitored by connected sensors: smoke or carbon
+    # monoxide is a leave-now emergency; merely poor air earns guidance.
+    air = (sample.get("air_quality") or "").lower()
+    co = sample.get("co_level")
+    if air in ("smoke", "co", "carbon_monoxide") or (co is not None and co >= 9):
+        return Detection(ENVIRONMENT, "critical",
+                         "hazardous air detected"
+                         + (f" ({air})" if air else f" (CO {co} ppm)"),
+                         {"air_quality": air or None, "co_level": co})
+    if air == "poor":
+        return Detection(ENVIRONMENT, "guidance",
+                         "poor air quality in the environment",
+                         {"air_quality": air})
+
     hr = sample.get("heart_rate")
     resting = sample.get("resting_heart_rate", 70)
     rr = sample.get("respiratory_rate")
@@ -150,6 +188,20 @@ def detect(sample: dict, text: str | None = None,
                          + (f", respiratory rate {rr}/min" if rr else ""),
                          {"heart_rate": hr, "resting_heart_rate": resting,
                           "respiratory_rate": rr})
+
+    # Ergonomic risk factors: sustained bad posture or repetitive motion —
+    # a strain injury forming, worth a nudge before it becomes one.
+    posture = (sample.get("posture") or "").lower()
+    repetitive = sample.get("repetitive_motion_min")
+    if posture in ("slouched", "hunched", "awkward") or (
+            repetitive is not None and repetitive >= 45):
+        return Detection(ERGONOMIC, "guidance",
+                         "ergonomic risk factors detected"
+                         + (f": {posture} posture" if posture else "")
+                         + (f", {repetitive} min of repetitive motion"
+                            if repetitive else ""),
+                         {"posture": posture or None,
+                          "repetitive_motion_min": repetitive})
 
     if note:
         for condition, cues in _TEXT_CUES:

@@ -61,6 +61,12 @@ class BiometricSample(BaseModel):
     activity_level: int | None = None       # 0 (sedentary) .. 10 (intense)
     movement: str | None = None             # e.g. fall | collapse | immobile
     speech: str | None = None               # e.g. slurred | incoherent
+    rhythm: str | None = None               # e.g. fibrillation (ECG-capable wearable)
+    pulse: str | None = None                # e.g. absent (with a collapse)
+    air_quality: str | None = None          # e.g. smoke | co | poor (env sensor)
+    co_level: float | None = None           # carbon monoxide, ppm
+    posture: str | None = None              # e.g. slouched | hunched (ergonomics)
+    repetitive_motion_min: int | None = None  # minutes of repetitive motion
     source_device: str | None = None        # multimodal input: smart_watch |
                                             # stationary | neural_sensor |
                                             # gesture | robot | …
