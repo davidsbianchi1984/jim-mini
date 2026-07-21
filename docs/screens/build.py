@@ -185,7 +185,7 @@ def button(x, y, w, label, kind="brand", h=40):
         fill = "url(#gEmer)"
         tcol = "#fff"
     else:
-        fill = "#ffffff10"
+        fill = "rgba(255,255,255,0.06)"
         tcol = C["txt"]
     st = C["line"] if kind == "ghost" else None
     return (rrect(x, y, w, h, 13, fill, st, 1)
@@ -334,8 +334,8 @@ def card_block(y, c):
 
 def orb(cx, cy, r):
     return (f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#orb)"/>'
-            f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="#ffffff22" stroke-width="1"/>'
-            f'<ellipse cx="{cx-r*0.28}" cy="{cy-r*0.32}" rx="{r*0.28}" ry="{r*0.18}" fill="#ffffff55"/>')
+            f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="1"/>'
+            f'<ellipse cx="{cx-r*0.28}" cy="{cy-r*0.32}" rx="{r*0.28}" ry="{r*0.18}" fill="rgba(255,255,255,0.33)"/>')
 
 
 def ring(cx, cy, r, pct, col, sw=9):
@@ -390,9 +390,9 @@ def render(spec):
                                  "Would you like a breathing", "exercise, or to talk it through?"]):
             out.append(text(CX + 14, y + 24 + i * 18, ln, 11.5, C["txt"], 400))
         y += 108
-        out.append(rrect(CX, y, 118, 30, 10, "#ffffff10", C["line"], 1))
+        out.append(rrect(CX, y, 118, 30, 10, "rgba(255,255,255,0.06)", C["line"], 1))
         out.append(text(CX + 59, y + 19, "Breathing Exercise", 10.5, C["txt"], 600, "middle"))
-        out.append(rrect(CX + 128, y, 70, 30, 10, "#ffffff10", C["line"], 1))
+        out.append(rrect(CX + 128, y, 70, 30, 10, "rgba(255,255,255,0.06)", C["line"], 1))
         out.append(text(CX + 163, y + 19, "Let's Talk", 10.5, C["txt"], 600, "middle"))
         y += 44
         out.append(rrect(CX, y, CW, 40, 13, "#0c1424", C["line"], 1))
@@ -553,6 +553,35 @@ def render(spec):
                                      ("drop", "violet", "SpO₂", "provisional", ("SEED", "info"))]:
             s2, y = card_block(y, {"icon": ic, "color": col, "k": k, "s": s, "pill": pillt, "h": 48})
             out.append(s2)
+
+    elif hero == "signin":
+        out.append(orb(W / 2, y + 44, 36))
+        out.append(icon("shield", W / 2, y + 42, "rgba(255,255,255,0.92)", 1.4))
+        y += 106
+        out.append(text(W / 2, y, "Welcome back", 16, "#fff", 750, "middle"))
+        out.append(text(W / 2, y + 20, "Your Guardian is ready", 11, C["t2"], 400, "middle"))
+        y += 44
+        out.append(rrect(CX, y, CW, 56, 15, "url(#gCard)", C["line"], 1))
+        out.append(icon("eye", CX + 30, y + 28, C["brandA"], 1.2))
+        out.append(text(CX + 58, y + 24, "Unlock with Face ID", 12.5, C["txt"], 650))
+        out.append(text(CX + 58, y + 40, "your data stays on device", 10, C["t2"]))
+        y += 72
+        out.append(button(CX, y, CW, "Sign In", "brand", 44))
+        out.append(button(CX, y + 54, CW, "Emergency access", "ghost", 42))
+
+    elif hero == "endsession":
+        out.append(orb(W / 2, y + 40, 32))
+        out.append(icon("shield", W / 2, y + 40, "rgba(255,255,255,0.95)", 1.3))
+        y += 92
+        out.append(text(W / 2, y, "Session ended", 16, "#fff", 750, "middle"))
+        out.append(text(W / 2, y + 20, "Guardian keeps watching in the background", 10, C["t2"], 400, "middle"))
+        y += 42
+        for ic, col, k, s in [("heart", "green", "Resting HR 60 bpm", "calm the whole session"),
+                              ("leaf", "green", "Mood logged", "4 / 5 today"),
+                              ("shield", "brand", "Still watching", "monitoring never sleeps")]:
+            s2, y = card_block(y, {"icon": ic, "color": col, "k": k, "s": s, "h": 48})
+            out.append(s2)
+        out.append(button(CX, y + 2, CW, "Sign Out", "brand", 42))
 
     else:  # generic stacked cards
         for c in spec["cards"]:
@@ -733,6 +762,9 @@ SCREENS = [
         dict(icon="link", color="teal", k="Falls back to local", s="standalone guidance if offline"),
         dict(icon="person", color="cyan", k="Age- & status-checked", s="never a minor to an adult profile"),
     ]),
+    # ---- session lifecycle (sign-in → … → sign-out) ----
+    dict(num=40, title="Sign In", sub="Welcome back", hero="signin", accent="brand", tab=0),
+    dict(num=41, title="End Session", sub="Guardian keeps watching", hero="endsession", accent="green", tab=0),
 ]
 
 

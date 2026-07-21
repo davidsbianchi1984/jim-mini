@@ -30,7 +30,7 @@ CW = SWW - 2 * (PADX - SXX)   # content width
 
 def orb(cx, cy, r):
     return (f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#orb)"/>'
-            f'<ellipse cx="{cx-r*0.28}" cy="{cy-r*0.32}" rx="{r*0.28}" ry="{r*0.18}" fill="#ffffff55"/>')
+            f'<ellipse cx="{cx-r*0.28}" cy="{cy-r*0.32}" rx="{r*0.28}" ry="{r*0.18}" fill="rgba(255,255,255,0.33)"/>')
 
 
 def head(num, title, accent="brand"):
@@ -89,7 +89,7 @@ def row(x, y, w, ic, col, k, s):
 
 
 def wbtn(x, y, w, label, kind="brand", h=34):
-    fill = "url(#gBrand)" if kind == "brand" else ("url(#gEmer)" if kind == "emer" else "#ffffff12")
+    fill = "url(#gBrand)" if kind == "brand" else ("url(#gEmer)" if kind == "emer" else "rgba(255,255,255,0.07)")
     st = C["line"] if kind == "ghost" else None
     tcol = C["txt"] if kind == "ghost" else "#fff"
     return (rrect(x, y, w, h, 12, fill, st, 1)
@@ -217,7 +217,7 @@ def render(s):
             o.append(text(PADX + 12, y + 42 + i * 14, ln, 10, C["txt"], 500))
         o.append(rrect(PADX, y + 92, CW / 2 - 4, 32, 11, "url(#gBrand)"))
         o.append(text(PADX + CW / 4, y + 112, "Yes", 11, "#fff", 700, "middle"))
-        o.append(rrect(PADX + CW / 2 + 4, y + 92, CW / 2 - 4, 32, 11, "#ffffff12", C["line"], 1))
+        o.append(rrect(PADX + CW / 2 + 4, y + 92, CW / 2 - 4, 32, 11, "rgba(255,255,255,0.07)", C["line"], 1))
         o.append(text(PADX + CW * 3 / 4, y + 112, "Later", 11, C["txt"], 700, "middle"))
     elif h == "rings":  # activity/goals rings
         for i, (r, col, pct) in enumerate([(40, C["green"], .75), (30, C["brandA"], .6), (20, C["amber"], .55)]):
@@ -257,7 +257,7 @@ def render(s):
             if xx + wch > SXX + SWW - (PADX - SXX):
                 xx = PADX; yy += 26
             on = (i == 0)
-            o.append(rrect(xx, yy, wch, 22, 8, "url(#gBrand)" if on else "#ffffff10", None if on else C["line"], 1))
+            o.append(rrect(xx, yy, wch, 22, 8, "url(#gBrand)" if on else "rgba(255,255,255,0.06)", None if on else C["line"], 1))
             o.append(text(xx + wch / 2, yy + 15, a, 9, "#fff" if on else C["t2"], 600, "middle"))
             xx += wch + 5
         o.append(text(cx, yy + 46, "“What's weighing", 10, C["txt"], 500, "middle"))
