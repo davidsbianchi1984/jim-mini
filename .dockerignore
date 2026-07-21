@@ -1,0 +1,11 @@
+**/__pycache__
+**/*.pyc
+*.db
+*.db-*
+app/node_modules
+launcher/node_modules
+app/dist
+launcher/dist
+release
+.git
+.venv
