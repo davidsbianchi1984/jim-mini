@@ -461,6 +461,106 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
     return result
 
 
+def _age_from(birthdate: str | None) -> int | None:
+    if not birthdate:
+        return None
+    try:
+        b = date.fromisoformat(birthdate)
+    except ValueError:
+        return None
+    today = date.today()
+    return today.year - b.year - ((today.month, today.day) < (b.month, b.day))
+
+
+def _medical_id(user_id: str, user: dict | None) -> dict | None:
+    """A first-responder Medical ID: condition-level facts, no notes or raw
+    biometrics. Available to the user in an emergency without a provider
+    consent gate — it is their own information."""
+    if not user:
+        return None
+    bl = _baseline_row(user_id, "heart_rate")
+    resting = (round(bl["value"]) if bl and bl["samples"] >= _BASELINE_MIN_SAMPLES
+               else user.get("resting_heart_rate"))
+    recent = db.connect().execute(
+        "SELECT condition, severity, created_at FROM events"
+        " WHERE user_id=? AND type='detection'"
+        " ORDER BY created_at DESC, rowid DESC LIMIT 5", (user_id,)).fetchall()
+    contact = None
+    if user.get("emergency_phone"):
+        contact = {"name": user.get("emergency_name"),
+                   "phone": user["emergency_phone"]}
+    return {
+        "name": user["display_name"],
+        "age": _age_from(user.get("birthdate")),
+        "known_conditions": [conditions.LABELS.get(c, c)
+                             for c in (user.get("known_conditions") or [])],
+        "resting_heart_rate": resting,
+        "emergency_contact": contact,
+        "recent_detections": [dict(r) for r in recent],
+    }
+
+
+def emergency(user_id: str, situation: str | None = None,
+              location: str | None = None, sample: dict | None = None,
+              qrme=None, pdi=None) -> dict:
+    """Emergency mode — one coordinated response mirroring the Emergency
+    screen: reach emergency services, share location, contact family, surface
+    the Medical ID, and deliver step-by-step AI first-aid guidance, while
+    alerting every connected device."""
+    user = get_user(user_id)
+    known = (user or {}).get("known_conditions") or []
+    sensitivity = (user or {}).get("sensitivity") or "balanced"
+
+    # AI guidance: run detection over whatever signal we have, then deliver the
+    # matching first-aid guidance. Fall back to general steps when a situation
+    # is described but nothing specific is detected — help is never withheld.
+    guidance, detection = None, None
+    if sample or situation:
+        detection = conditions.detect(sample or {}, situation, known=known,
+                                      sensitivity=sensitivity)
+        if detection is not None:
+            guidance = _deliver(user_id, user, detection, situation, qrme)
+        elif situation:
+            guidance = {
+                "delivered": True, "source": "local", "content": (
+                    "Stay with the person and keep calm. Do not move them "
+                    "unless they are in danger. Follow the emergency "
+                    "operator's instructions until help arrives."),
+                "first_aid": None}
+
+    contact = None
+    if user and user.get("emergency_phone"):
+        contact = {"name": user.get("emergency_name"),
+                   "phone": user["emergency_phone"], "notified": True}
+    share = None
+    if location:
+        share = {"location": location,
+                 "shared_with": ([contact["name"] or "emergency contact"]
+                                 if contact else []) + ["emergency services"]}
+    dispatched = [d["name"] for d in devices_for(user_id)]
+
+    result = {
+        "emergency": True,
+        "call_emergency_services": {
+            "action": "call emergency services",
+            "number": "911",
+            "note": "dial your local emergency number if outside the US"},
+        "share_location": share,
+        "contact_family": contact,
+        "medical_id": _medical_id(user_id, user),
+        "ai_guidance": guidance,
+        "dispatched_alerts": dispatched,
+    }
+    _event(user_id, "emergency",
+           condition=(detection.condition if detection else None),
+           severity="critical",
+           detail={"situation": situation, "location_shared": bool(location),
+                   "contact_notified": contact is not None,
+                   "devices_alerted": dispatched},
+           pdi=pdi, vault_scope="medical/emergency")
+    return result
+
+
 def observe_activity(user_id: str, activity: str | None, signals: dict,
                      note: str | None, qrme=None, pdi=None) -> dict:
     """Ambient background observation (the "Jiminy Cricket" jump-in): watch what

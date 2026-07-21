@@ -125,6 +125,16 @@ class CheckIn(BaseModel):
     note: str | None = None
 
 
+class EmergencyRequest(BaseModel):
+    """Trigger emergency mode. All fields optional — the coordinated response
+    (services, location share, family contact, Medical ID, connected-device
+    alerts) is assembled from what the user has on file; a ``situation`` or
+    ``sample`` adds targeted first-aid guidance."""
+    situation: str | None = None            # free-text description of what's wrong
+    location: str | None = None             # to share with contacts/responders
+    sample: BiometricSample | None = None   # live readings for AI guidance
+
+
 class ActivityObserve(BaseModel):
     """An ambient signal from something the user is doing right now. Signals
     are open-ended (retries/errors, idle_seconds, duration_min, …); note is
