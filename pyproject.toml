@@ -25,7 +25,9 @@ dependencies = [
 dev = ["pytest>=8", "httpx>=0.27"]
 
 [project.urls]
+Homepage = "https://github.com/davidsbianchi1984/jim-mini"
 Repository = "https://github.com/davidsbianchi1984/jim-mini"
+Changelog = "https://github.com/davidsbianchi1984/jim-mini/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["setuptools>=68"]
