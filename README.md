@@ -18,6 +18,25 @@ to QRME specialist profiles over HTTP. See [docs/tandem.md](docs/tandem.md).
 specialist → moderated guidance, escalating to an emergency contact on critical
 events.*
 
+## Desktop app
+
+A wide, multi-panel desktop form of Jim Mini — sidebar nav and an operator workspace, in the guardian-green identity — complementing the phone app and the watch. Each is a self-contained SVG; regenerate with `python3 docs/desktop/build.py`.
+
+<table>
+  <tr>
+    <td align="center" width="50%"><a href="docs/desktop/01-overview.svg"><img src="docs/desktop/01-overview.svg" width="460" alt="Overview"></a><br><sub><b>01</b> · Overview</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/02-live-monitoring.svg"><img src="docs/desktop/02-live-monitoring.svg" width="460" alt="Live Monitoring"></a><br><sub><b>02</b> · Live Monitoring</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><a href="docs/desktop/03-health.svg"><img src="docs/desktop/03-health.svg" width="460" alt="Health"></a><br><sub><b>03</b> · Health</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/04-emergency-guardian.svg"><img src="docs/desktop/04-emergency-guardian.svg" width="460" alt="Emergency & Guardian"></a><br><sub><b>04</b> · Emergency & Guardian</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><a href="docs/desktop/05-coach-life.svg"><img src="docs/desktop/05-coach-life.svg" width="460" alt="Coach & Life"></a><br><sub><b>05</b> · Coach & Life</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/06-privacy-data.svg"><img src="docs/desktop/06-privacy-data.svg" width="460" alt="Privacy & Data"></a><br><sub><b>06</b> · Privacy & Data</sub></td>
+  </tr>
+</table>
+
 ## App screens
 
 Every capability has a screen, in the product's dark-OLED style (regenerate with `python3 docs/screens/build.py`). Each is a self-contained SVG — no fonts, images, or scripts — and maps to a shipped endpoint.
