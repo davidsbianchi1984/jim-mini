@@ -591,7 +591,8 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
     for table in ("habits", "goals", "checkins", "insights", "context_events",
                   "coach_messages", "sources", "sessions", "devices",
                   "journal", "feedback", "vault_keys", "events",
-                  "baselines", "trend_points", "tandem_links", "users"):
+                  "baselines", "trend_points", "medical_cards",
+                  "tandem_links", "users"):
         deleted[table] = conn.execute(
             f"DELETE FROM {table} WHERE {'id' if table == 'users' else 'user_id'}=?",
             (user_id,),

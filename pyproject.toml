@@ -18,6 +18,7 @@ dependencies = [
     "fastapi>=0.110",
     "uvicorn>=0.29",
     "anthropic>=0.117",
+    "segno>=1.6",       # shareable Medical ID QR
 ]
 
 [project.optional-dependencies]

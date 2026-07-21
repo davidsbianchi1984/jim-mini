@@ -55,6 +55,16 @@ CREATE TABLE IF NOT EXISTS api_tokens (
     created_at TEXT NOT NULL
 );
 
+-- Shareable Medical ID card: an opaque, rotatable token behind a printable /
+-- lock-screen QR code. Scanning it resolves to the user's condition-level
+-- Medical ID *without* their auth token — the phone is locked in an emergency,
+-- so the card itself is the (revocable) credential. Only the hash is stored.
+CREATE TABLE IF NOT EXISTS medical_cards (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    token_hash TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS specialists (
     condition       TEXT PRIMARY KEY,   -- condition domain key (see conditions.py)
     mode            TEXT NOT NULL,      -- local | tandem

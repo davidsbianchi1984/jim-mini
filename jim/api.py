@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import io
 import os
 from datetime import date, datetime
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 
 from . import auth, coach, db, guardian, life
 from .models import (
@@ -108,6 +109,49 @@ def create_app(qrme_client: QRMEClient | None = None,
     def events(user_id: str, request: Request) -> list[dict]:
         _user_or_404(user_id, request)
         return guardian.events(user_id)
+
+    def _public_base() -> str:
+        return os.environ.get("JIM_PUBLIC_URL", "https://jim.app").rstrip("/")
+
+    @app.post("/medical-id/qr/{user_id}", status_code=201)
+    def issue_medical_card(user_id: str, request: Request) -> dict:
+        """Mint (or rotate) the user's shareable Medical ID QR. The returned
+        token is the credential a scanner uses; rotating invalidates the old
+        code."""
+        _user_or_404(user_id, request)
+        token = guardian.issue_medical_card(user_id)
+        return {"token": token,
+                "view_url": f"/medical-id/{token}",
+                "qr_svg_url": f"/medical-id/{token}/qr.svg"}
+
+    @app.delete("/medical-id/qr/{user_id}", status_code=204)
+    def revoke_medical_card(user_id: str, request: Request) -> Response:
+        _user_or_404(user_id, request)
+        if not guardian.revoke_medical_card(user_id):
+            raise HTTPException(404, "no Medical ID card to revoke")
+        return Response(status_code=204)
+
+    @app.get("/medical-id/{token}")
+    def view_medical_card(token: str) -> dict:
+        """Public: a first responder scans the QR and reads the Medical ID —
+        condition-level facts only, no auth token required (the phone is
+        locked)."""
+        med = guardian.resolve_medical_card(token)
+        if med is None:
+            raise HTTPException(404, "this Medical ID card is not valid")
+        return med
+
+    @app.get("/medical-id/{token}/qr.svg")
+    def medical_card_qr(token: str) -> Response:
+        """The printable / lock-screen QR image encoding the card's view URL."""
+        if guardian.resolve_medical_card(token) is None:
+            raise HTTPException(404, "this Medical ID card is not valid")
+        import segno
+        buf = io.BytesIO()
+        segno.make(f"{_public_base()}/medical-id/{token}", error="q").save(
+            buf, kind="svg", scale=8, border=2,
+            dark="#b3261e", light="#ffffff")   # medical red on white
+        return Response(content=buf.getvalue(), media_type="image/svg+xml")
 
     @app.post("/emergency/{user_id}", status_code=201)
     def emergency(user_id: str, body: EmergencyRequest,
