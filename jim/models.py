@@ -147,6 +147,26 @@ class SocialPublish(BaseModel):
     topic: str | None = None
 
 
+class AppConnect(BaseModel):
+    provider: str
+    app: str
+    capabilities: list[str] = Field(default_factory=list)  # empty = grant all
+
+
+class AppItem(BaseModel):
+    content: str
+    title: str | None = None
+
+
+class AppCollect(BaseModel):
+    items: list[AppItem] = Field(default_factory=list)
+
+
+class AppInvoke(BaseModel):
+    capability: str
+    input: str | None = None
+
+
 class CheckIn(BaseModel):
     mood: int = Field(ge=1, le=5)  # 1 low .. 5 great
     energy: int | None = Field(default=None, ge=1, le=5)
