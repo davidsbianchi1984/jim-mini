@@ -8,13 +8,13 @@ from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException, Request, Response
 
-from . import auth, coach, db, guardian, life
+from . import auth, coach, db, guardian, life, social
 from .models import (
     ActivityObserve, BiometricSample, CheckIn, CoachMessage, ConditionDeclare,
     ContextEvent, DeviceRegister, EmergencyRequest, Enroll, GoalCreate,
     GoalUpdate, GuidanceFeedback, HabitCreate, HabitLog, JournalEntry,
-    PersonalityUpdate, SensitivitySet, SessionStart, SourceConsent,
-    SpecialistRegister,
+    PersonalityUpdate, SensitivitySet, SessionStart, SocialCollect,
+    SocialConnect, SocialPublish, SourceConsent, SpecialistRegister,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -266,6 +266,71 @@ def create_app(qrme_client: QRMEClient | None = None,
                 403, f"source '{body.source}' is not consented for this user")
         return life.add_context(user_id, body.source, body.kind, body.data,
                                 pdi=app.state.pdi)
+
+    # ---- social-platform connections --------------------------------------
+    # collect posts to inform guidance, or publish an update reachable by QR.
+
+    @app.post("/social/{user_id}", status_code=201)
+    def social_connect(user_id: str, body: SocialConnect, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return social.connect(user_id, body.platform, body.direction,
+                              body.handle, body.scope)
+
+    @app.get("/social/{user_id}")
+    def social_list(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return social.for_user(user_id)
+
+    def _social_or_404(cid: str, request: Request) -> dict:
+        row = social.get(cid)
+        if row is None:
+            raise HTTPException(404, "social connection not found")
+        _user_or_404(row["user_id"], request)   # enforce the owner's token
+        return row
+
+    @app.delete("/social/connection/{cid}")
+    def social_revoke(cid: str, request: Request) -> dict:
+        return social.revoke(_social_or_404(cid, request))
+
+    @app.post("/social/connection/{cid}/collect", status_code=201)
+    def social_collect(cid: str, body: SocialCollect, request: Request) -> dict:
+        row = _social_or_404(cid, request)
+        if row["direction"] != "collect":
+            raise HTTPException(409, "this connection is for publishing, not collecting")
+        if row["status"] != "active":
+            raise HTTPException(409, "connection has been revoked")
+        return social.collect(row, [i.model_dump() for i in body.items],
+                              pdi=app.state.pdi)
+
+    @app.post("/social/connection/{cid}/publish", status_code=201)
+    def social_publish(cid: str, body: SocialPublish, request: Request) -> dict:
+        row = _social_or_404(cid, request)
+        if row["direction"] != "publish":
+            raise HTTPException(409, "this connection is for collecting, not publishing")
+        if row["status"] != "active":
+            raise HTTPException(409, "connection has been revoked")
+        return social.publish(row, body.content, body.topic)
+
+    @app.get("/social/connection/{cid}/beacon")
+    def social_beacon(cid: str, request: Request) -> dict:
+        row = _social_or_404(cid, request)
+        if row["direction"] != "publish":
+            raise HTTPException(409, "beacons are for publish connections")
+        return {"connection": cid, "platform": row["platform"],
+                "handle": f"@{row['handle']}" if row["handle"] else None,
+                "presence_url": social.presence_url(row, _public_base()),
+                "qr_svg": f"/social/connection/{cid}/qr.svg"}
+
+    @app.get("/social/connection/{cid}/qr.svg")
+    def social_qr(cid: str, request: Request) -> Response:
+        row = _social_or_404(cid, request)
+        if row["direction"] != "publish":
+            raise HTTPException(409, "beacons are for publish connections")
+        import segno
+        buf = io.BytesIO()
+        segno.make(social.presence_url(row, _public_base()), error="q").save(
+            buf, kind="svg", scale=8, border=2, dark="#161840", light="#F4E3C8")
+        return Response(content=buf.getvalue(), media_type="image/svg+xml")
 
     # ---- mood & energy check-ins ------------------------------------------
 

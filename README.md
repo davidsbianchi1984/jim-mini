@@ -126,6 +126,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/45-emergency-contacts.svg" width="160" alt="45 Emergency Contacts"><br><sub>45 · Emergency Contacts</sub></td>
 <td align="center" width="25%"><img src="docs/screens/46-all-set.svg" width="160" alt="46 All Set"><br><sub>46 · All Set</sub></td>
+<td align="center" width="25%"><img src="docs/screens/47-social-connections.svg" width="160" alt="47 Social Connections"><br><sub>47 · Social Connections</sub></td>
 </tr>
 </table>
 

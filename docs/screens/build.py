@@ -157,6 +157,32 @@ def pill(x, y, label, tone):
             + text(x - w / 2, y + 1, label, 9.5, col, 700, "middle", 0.4))
 
 
+def qrmini(qx, qy, qs, seed=5):
+    import random
+    random.seed(seed)
+    out = [rrect(qx, qy, qs, qs, 10, "#ffffff")]
+    n = 13
+    cell = (qs - 12) / n
+    dark = "#0e1626"
+
+    def finder(r, c):
+        res = []
+        for i in range(5):
+            for j in range(5):
+                if i in (0, 4) or j in (0, 4) or (i == 2 and j == 2):
+                    res.append(rrect(qx + 6 + (c + j) * cell, qy + 6 + (r + i) * cell,
+                                     cell, cell, 0, dark))
+        return "".join(res)
+    for r in range(n):
+        for c in range(n):
+            if (r < 6 and c < 6) or (r < 6 and c > n - 7) or (r > n - 7 and c < 6):
+                continue
+            if random.random() > 0.5:
+                out.append(rrect(qx + 6 + c * cell, qy + 6 + r * cell, cell, cell, 0, dark))
+    out.append(finder(0, 0) + finder(0, n - 5) + finder(n - 5, 0))
+    return "".join(out)
+
+
 def meter(x, y, w, pct, grad):
     return (rrect(x, y, w, 7, 4, "#0d1526", C["line"], 1)
             + rrect(x, y, max(6, w * pct), 7, 4, f"url(#{grad})"))
@@ -712,6 +738,38 @@ def render(spec):
             out.append(s2)
         out.append(button(CX, y + 2, CW, "Enter Jim Mini", "brand", 44))
 
+    elif hero == "social":
+        out.append(text(CX, y, "Collect posts to guide you · publish to share.",
+                        10.5, C["t2"]))
+        y += 26
+        out.append(text(CX, y, "COLLECTING", 9.5, C["t3"], 700, "start", 0.8))
+        out.append(pill(CX + CW, y + 3, "→ guidance", "info"))
+        y += 16
+        for ic, col, name, sub in [
+                ("eye", "cyan", "Instagram", "@jordan · consented"),
+                ("chat", "brandA", "X", "@jordan · consented")]:
+            out.append(rrect(CX, y, CW, 50, 14, "url(#gCard)", C["line"], 1))
+            out.append(chip(CX + 10, y + 8, ic, C[col]))
+            out.append(text(CX + 54, y + 22, name, 12.5, C["txt"], 650))
+            out.append(text(CX + 54, y + 37, sub, 10, C["t2"]))
+            out.append(pill(CX + CW - 12, y + 25, "COLLECT", "info"))
+            y += 58
+        y += 6
+        out.append(text(CX, y, "PUBLISHING", 9.5, C["t3"], 700, "start", 0.8))
+        out.append(pill(CX + CW, y + 3, "shares update", "good"))
+        y += 16
+        ph = 82
+        out.append(rrect(CX, y, CW, ph, 15, "url(#gCard)", C["line"], 1))
+        out.append(chip(CX + 12, y + 12, "flame", C["green"]))
+        out.append(text(CX + 54, y + 26, "Milestones", 12.5, C["txt"], 650))
+        out.append(text(CX + 54, y + 42, "30-day streak", 10, C["t2"]))
+        out.append(pill(CX + 150, y + 34, "LIVE", "good"))
+        out.append(text(CX + 54, y + 62, "scan to reach you", 9, C["t3"]))
+        out.append(qrmini(CX + CW - 74, y + 12, 60, seed=9))
+        y += ph + 10
+        out.append(text(CX, y, "Only what you consent to · a QR beacon shares it.",
+                        9.5, C["t3"], 500))
+
     else:  # generic stacked cards
         for c in spec["cards"]:
             s, y = card_block(y, c)
@@ -899,6 +957,7 @@ SCREENS = [
     dict(num=44, title="About You", sub="Help Jim understand you", hero="aboutyou", accent="cyan", tab=0),
     dict(num=45, title="Emergency Contacts", sub="Who Jim reaches in a crisis", hero="contacts", accent="red", tab=0),
     dict(num=46, title="All Set", sub="You're protected", hero="ready", accent="green", tab=0),
+    dict(num=47, title="Social Connections", sub="Collect to guide · publish to share", hero="social", accent="cyan", tab=0),
 ]
 
 
