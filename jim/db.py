@@ -103,6 +103,23 @@ CREATE TABLE IF NOT EXISTS sources (
     PRIMARY KEY (user_id, source)
 );
 
+-- Connected-app connectors. Each links a user to an AI-integrated app from the
+-- catalog (Apple Photos, Google Calendar, Microsoft 365, Canva, …). The
+-- Guardian's agents then collect context in, act on the app, or produce media.
+CREATE TABLE IF NOT EXISTS app_connectors (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id),
+    provider     TEXT NOT NULL,   -- apple | google | microsoft | canva
+    app          TEXT NOT NULL,
+    label        TEXT NOT NULL,
+    capabilities TEXT NOT NULL DEFAULT '[]',
+    directions   TEXT NOT NULL DEFAULT '[]',
+    status       TEXT NOT NULL DEFAULT 'active',
+    collected    INTEGER NOT NULL DEFAULT 0,
+    actions      INTEGER NOT NULL DEFAULT 0,
+    created_at   TEXT NOT NULL
+);
+
 -- Social-platform connections. collect pulls the account's posts in as
 -- consented context that informs guidance; publish shares an update on the
 -- platform, reachable by a QR beacon.

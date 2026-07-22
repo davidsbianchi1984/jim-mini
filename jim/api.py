@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import io
+import json
 import os
 from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException, Request, Response
 
-from . import auth, catalog, coach, db, guardian, life, social
+from . import app_connectors, auth, catalog, coach, db, guardian, life, social
 from .models import (
-    ActivityObserve, BiometricSample, CheckIn, CoachMessage, ConditionDeclare,
-    ContextEvent, DeviceRegister, EmergencyRequest, Enroll, GoalCreate,
-    GoalUpdate, GuidanceFeedback, HabitCreate, HabitLog, JournalEntry,
-    PersonalityUpdate, SensitivitySet, SessionStart, SocialCollect,
+    ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
+    CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
+    Enroll, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate, HabitLog,
+    JournalEntry, PersonalityUpdate, SensitivitySet, SessionStart, SocialCollect,
     SocialConnect, SocialPublish, SourceConsent, SpecialistRegister,
 )
 from .cloud import CloudModelClient
@@ -337,6 +338,56 @@ def create_app(qrme_client: QRMEClient | None = None,
         segno.make(social.presence_url(row, _public_base()), error="q").save(
             buf, kind="svg", scale=8, border=2, dark="#161840", light="#F4E3C8")
         return Response(content=buf.getvalue(), media_type="image/svg+xml")
+
+    # ---- connected-app connectors -----------------------------------------
+    # connect a catalog app; agents collect context, act, or produce with it.
+
+    @app.post("/apps/{user_id}", status_code=201)
+    def app_connect(user_id: str, body: AppConnect, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        e = app_connectors.entry(body.provider, body.app)
+        if e is None:
+            raise HTTPException(404, f"unknown connector: {body.provider}/{body.app}")
+        unknown = set(body.capabilities) - set(e["capabilities"])
+        if unknown:
+            raise HTTPException(422, f"{body.app} does not offer: {sorted(unknown)}")
+        return app_connectors.connect(user_id, e, body.capabilities)
+
+    @app.get("/apps/{user_id}")
+    def app_list(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return app_connectors.for_user(user_id)
+
+    def _app_or_404(cid: str, request: Request) -> dict:
+        row = app_connectors.get(cid)
+        if row is None:
+            raise HTTPException(404, "app connector not found")
+        _user_or_404(row["user_id"], request)
+        return row
+
+    @app.delete("/apps/connector/{cid}")
+    def app_revoke(cid: str, request: Request) -> dict:
+        return app_connectors.revoke(_app_or_404(cid, request))
+
+    @app.post("/apps/connector/{cid}/collect", status_code=201)
+    def app_collect(cid: str, body: AppCollect, request: Request) -> dict:
+        row = _app_or_404(cid, request)
+        if "collect" not in json.loads(row["directions"]):
+            raise HTTPException(409, f"{row['app']} does not support collecting context")
+        if row["status"] != "active":
+            raise HTTPException(409, "connector has been revoked")
+        return app_connectors.collect(row, [i.model_dump() for i in body.items],
+                                      pdi=app.state.pdi)
+
+    @app.post("/apps/connector/{cid}/invoke", status_code=201)
+    def app_invoke(cid: str, body: AppInvoke, request: Request) -> dict:
+        row = _app_or_404(cid, request)
+        if row["status"] != "active":
+            raise HTTPException(409, "connector has been revoked")
+        if body.capability not in json.loads(row["capabilities"]):
+            raise HTTPException(422, f"this {row['app']} connector was not granted "
+                                     f"'{body.capability}'")
+        return app_connectors.invoke(row, body.capability, body.input)
 
     # ---- mood & energy check-ins ------------------------------------------
 
