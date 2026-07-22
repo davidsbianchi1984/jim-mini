@@ -346,6 +346,29 @@ def ring(cx, cy, r, pct, col, sw=9):
             f'transform="rotate(-90 {cx} {cy})"/>')
 
 
+def apple_mark(x, y, s=0.66, col="#0b0b0f"):
+    return (f'<g transform="translate({x:.1f},{y:.1f}) scale({s})" fill="{col}">'
+            '<path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.49'
+            '-.12-1.15.42-2.35 1.07-3.08.72-.81 2.02-1.47 3.09-1.49z'
+            'M20.5 17.06c-.06.14-.94 3.22-3.1 3.25-1.75.02-2.31-1.04-4.31-1.04-2 0-2.62 1.02-4.28 1.06'
+            '-2.09.08-3.68-3.29-3.74-3.43-.06-.14-1.62-6.18 1.32-9.03.98-.96 2.36-1.5 3.65-1.5'
+            ' 1.75 0 2.82 1.05 4.25 1.05 1.37 0 2.2-1.05 4.28-1.05 1.03 0 2.6.42 3.6 1.66'
+            '-3.16 1.73-2.65 6.24.53 8.03z"/></g>')
+
+
+def google_mark(x, y, s=0.66):
+    return (f'<g transform="translate({x:.1f},{y:.1f}) scale({s})">'
+            '<path fill="#4285F4" d="M23.06 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h6.2a5.3 5.3 0 0 1-2.3 3.48v2.89h3.72c2.18-2 3.44-4.96 3.44-8.38z"/>'
+            '<path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.94-2.91l-3.72-2.89c-1.03.69-2.35 1.1-4.22 1.1-3.25 0-6-2.19-6.98-5.13H1.18v2.98A12 12 0 0 0 12 24z"/>'
+            '<path fill="#FBBC05" d="M5.02 14.27a7.2 7.2 0 0 1 0-4.54V6.75H1.18a12 12 0 0 0 0 10.5l3.84-2.98z"/>'
+            '<path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.3-3.3C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.18 6.75l3.84 2.98C6 6.94 8.75 4.75 12 4.75z"/></g>')
+
+
+def envelope(cx, cy, col):
+    return (f'<rect x="{cx-9:.1f}" y="{cy-6:.1f}" width="18" height="13" rx="2.5" fill="none" stroke="{col}" stroke-width="1.7"/>'
+            f'<path d="M{cx-8:.1f} {cy-4:.1f} L{cx:.1f} {cy+2:.1f} L{cx+8:.1f} {cy-4:.1f}" fill="none" stroke="{col}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>')
+
+
 # --------------------------------------------------------------------------- #
 # screen definitions
 # --------------------------------------------------------------------------- #
@@ -583,6 +606,28 @@ def render(spec):
             out.append(s2)
         out.append(button(CX, y + 2, CW, "Sign Out", "brand", 42))
 
+    elif hero == "auth":
+        out.append(orb(W / 2, y + 36, 30))
+        out.append(icon("shield", W / 2, y + 34, "rgba(255,255,255,0.92)", 1.4))
+        y += 82
+        out.append(text(W / 2, y, "Sign in to Jim Mini", 17, "#fff", 750, "middle", -0.3))
+        out.append(text(W / 2, y + 20, "One login for your Guardian", 11, C["t2"], 400, "middle"))
+        y += 42
+        out.append(rrect(CX, y, CW, 46, 13, "#ffffff"))
+        out.append(apple_mark(CX + 30, y + 12))
+        out.append(text(W / 2 + 10, y + 28, "Continue with Apple", 13, "#0b0b0f", 650, "middle"))
+        y += 54
+        out.append(rrect(CX, y, CW, 46, 13, "#ffffff"))
+        out.append(google_mark(CX + 31, y + 15))
+        out.append(text(W / 2 + 10, y + 28, "Continue with Google", 13, "#1f1f1f", 650, "middle"))
+        y += 54
+        out.append(rrect(CX, y, CW, 46, 13, "rgba(255,255,255,0.06)", C["line"], 1))
+        out.append(envelope(CX + 41, y + 23, C["brandA"]))
+        out.append(text(W / 2 + 10, y + 28, "Continue with Email", 13, C["txt"], 650, "middle"))
+        y += 62
+        out.append(text(W / 2, y, "Your vault unlocks with Face ID after sign-in.", 9.5, C["t3"], 500, "middle"))
+        out.append(text(W / 2, y + 16, "By continuing you agree to the Terms & Privacy Policy.", 9, C["t3"], 500, "middle"))
+
     else:  # generic stacked cards
         for c in spec["cards"]:
             s, y = card_block(y, c)
@@ -765,6 +810,7 @@ SCREENS = [
     # ---- session lifecycle (sign-in → … → sign-out) ----
     dict(num=40, title="Sign In", sub="Welcome back", hero="signin", accent="brand", tab=0),
     dict(num=41, title="End Session", sub="Guardian keeps watching", hero="endsession", accent="green", tab=0),
+    dict(num=42, title="Log In", sub="Apple, Google or email", hero="auth", accent="brand", tab=0),
 ]
 
 
