@@ -26,8 +26,6 @@ import app.jim.guardian.ApiClient
 import app.jim.guardian.MonitorResult
 import kotlin.math.roundToInt
 
-private val cardShape = RoundedCornerShape(16.dp)
-
 @Composable
 private fun screenScroll(content: @Composable ColumnScope.() -> Unit) =
     Column(
@@ -40,7 +38,7 @@ private fun screenScroll(content: @Composable ColumnScope.() -> Unit) =
 private fun BrandButton(text: String, enabled: Boolean = true, busy: Boolean = false, onClick: () -> Unit) {
     Box(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(13.dp))
-            .background(if (enabled) Jim.Card.copy(alpha = 0.4f) else Jim.Card.copy(alpha = 0.4f))
+            .background(Jim.Card.copy(alpha = 0.4f))            // muted base when disabled
             .then(if (enabled) Modifier.background(Jim.Brand) else Modifier)
             .clickable(enabled = enabled && !busy) { onClick() }
             .padding(vertical = 14.dp),
