@@ -28,6 +28,14 @@ _PLATFORM_URL = {
     "youtube": "https://youtube.com/@{h}",
     "reddit": "https://reddit.com/user/{h}",
     "threads": "https://threads.net/@{h}",
+    "whatsapp": "https://wa.me/{h}",
+    "meta": "https://meta.com/{h}",
+    "mastodon": "https://mastodon.social/@{h}",
+    "twitch": "https://twitch.tv/{h}",
+    "snapchat": "https://snapchat.com/add/{h}",
+    "roblox": "https://roblox.com/users/{h}",
+    "pinterest": "https://pinterest.com/{h}",
+    "discord": "https://discord.com/users/{h}",
 }
 
 
