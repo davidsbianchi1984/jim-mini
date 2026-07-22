@@ -628,6 +628,90 @@ def render(spec):
         out.append(text(W / 2, y, "Your vault unlocks with Face ID after sign-in.", 9.5, C["t3"], 500, "middle"))
         out.append(text(W / 2, y + 16, "By continuing you agree to the Terms & Privacy Policy.", 9, C["t3"], 500, "middle"))
 
+    elif hero == "consent":
+        out.append(text(CX, y, "Jim only uses what you allow — change it anytime.", 10.5, C["t2"]))
+        y += 26
+        rows = [("bell", "brand", "Notifications", "check-ins & alerts", "on"),
+                ("heart", "red", "Health & Motion", "sensitize known conditions", "on"),
+                ("cross", "green", "Emergency access", "reach help when it matters", "on"),
+                ("eye", "cyan", "Location", "guidance where you are", "off")]
+        for ic, col, k, s, st in rows:
+            out.append(rrect(CX, y, CW, 58, 15, "url(#gCard)", C["line"], 1))
+            out.append(chip(CX + 12, y + 12, ic, ACCENT[col]))
+            out.append(text(CX + 58, y + 25, k, 12.5, C["txt"], 650))
+            out.append(text(CX + 58, y + 41, s, 10.5, C["t2"]))
+            on = st == "on"
+            tx = CX + CW - 48
+            out.append(rrect(tx, y + 19, 40, 22, 11, C["green"] if on else C["tab"], None if on else C["line"], 1))
+            out.append(f'<circle cx="{tx + (28 if on else 12)}" cy="{y+30}" r="8.5" fill="#fff"/>')
+            y += 66
+        out.append(button(CX, y + 2, CW, "Continue", "brand", 44))
+
+    elif hero == "aboutyou":
+        out.append(text(CX, y, "The more Jim understands, the better it guides.", 10.5, C["t2"]))
+        y += 24
+        out.append(rrect(CX, y, CW, 54, 14, "url(#gCard)", C["line"], 1))
+        out.append(f'<circle cx="{CX+28}" cy="{y+27}" r="16" fill="{A(C["brandA"],0.20)}" stroke="{C["brandA"]}" stroke-width="1.2"/>')
+        out.append(text(CX + 28, y + 32, "M", 15, C["brandA"], 800, "middle"))
+        out.append(text(CX + 54, y + 24, "Maria Bianchi", 13, C["txt"], 650))
+        out.append(text(CX + 54, y + 40, "42 · San Francisco", 10.5, C["t2"]))
+        y += 66
+
+        def tags(label, items, col):
+            nonlocal y
+            out.append(text(CX, y, label, 9.5, C["t3"], 700, "start", 0.6))
+            y += 18
+            tx = CX
+            for ic, lab in items:
+                w = 30 + len(lab) * 6.4
+                if tx + w > CX + CW:
+                    tx = CX
+                    y += 34
+                out.append(rrect(tx, y, w, 27, 13, A(col, 0.12), col, 1))
+                out.append(icon(ic, tx + 15, y + 13.5, col, 0.58))
+                out.append(text(tx + 26, y + 17, lab, 10.5, C["txt"], 600))
+                tx += w + 8
+            y += 40
+        tags("KNOWN CONDITIONS", [("heart", "Hypertension"), ("drop", "Type 2 diabetes"),
+                                  ("brain", "Anxiety")], C["red"])
+        tags("WHAT MATTERS MOST", [("heart", "Family"), ("leaf", "Calm"),
+                                   ("target", "Fitness"), ("book", "Learning")], C["teal"])
+        out.append(button(CX, y + 2, CW, "Continue", "brand", 44))
+
+    elif hero == "contacts":
+        out.append(text(CX, y, "Who Jim can reach — and who it will alert.", 10.5, C["t2"]))
+        y += 24
+        people = [("A", "Alex Bianchi", "Spouse · lives with you", "Primary", "good", "green"),
+                  ("C", "Dr. Chen", "Cardiologist", "On call", "info", "cyan")]
+        for initial, name, rel, tag, tone, col in people:
+            out.append(rrect(CX, y, CW, 60, 15, "url(#gCard)", C["line"], 1))
+            out.append(f'<circle cx="{CX+30}" cy="{y+30}" r="17" fill="{A(C[col],0.20)}" stroke="{C[col]}" stroke-width="1.2"/>')
+            out.append(text(CX + 30, y + 35, initial, 15, C[col], 800, "middle"))
+            out.append(text(CX + 58, y + 26, name, 12.5, C["txt"], 650))
+            out.append(text(CX + 58, y + 42, rel, 10.5, C["t2"]))
+            out.append(pill(CX + CW - 14, y + 26, tag, tone))
+            y += 70
+        out.append(f'<rect x="{CX}" y="{y}" width="{CW}" height="46" rx="14" fill="none" stroke="{C["line"]}" stroke-width="1.4" stroke-dasharray="5 4"/>')
+        out.append(icon("plus", CX + 32, y + 23, C["brandA"], 0.8))
+        out.append(text(CX + 52, y + 28, "Add emergency contact", 12, C["brandA"], 650))
+        y += 60
+        out.append(button(CX, y, CW, "Continue", "brand", 44))
+
+    elif hero == "ready":
+        out.append(orb(W / 2, y + 40, 34))
+        out.append(f'<path d="M{W/2-11} {y+40} l7 8 14 -16" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>')
+        y += 100
+        out.append(text(W / 2, y, "You're protected", 18, "#fff", 750, "middle", -0.3))
+        out.append(text(W / 2, y + 21, "Jim is watching over you now.", 11, C["t2"], 400, "middle"))
+        y += 44
+        for ic, col, k, s in [("person", "brand", "Profile ready", "Jim knows what matters to you"),
+                              ("heart", "red", "Conditions sensitized", "earlier, gentler detection"),
+                              ("cross", "green", "Contacts added", "2 people Jim can reach"),
+                              ("shield", "cyan", "Guardian on", "monitoring never sleeps")]:
+            s2, y = card_block(y, {"icon": ic, "color": col, "k": k, "s": s, "h": 48})
+            out.append(s2)
+        out.append(button(CX, y + 2, CW, "Enter Jim Mini", "brand", 44))
+
     else:  # generic stacked cards
         for c in spec["cards"]:
             s, y = card_block(y, c)
@@ -811,6 +895,10 @@ SCREENS = [
     dict(num=40, title="Sign In", sub="Welcome back", hero="signin", accent="brand", tab=0),
     dict(num=41, title="End Session", sub="Guardian keeps watching", hero="endsession", accent="green", tab=0),
     dict(num=42, title="Log In", sub="Apple, Google or email", hero="auth", accent="brand", tab=0),
+    dict(num=43, title="Permissions", sub="What Jim can access", hero="consent", accent="brand", tab=0),
+    dict(num=44, title="About You", sub="Help Jim understand you", hero="aboutyou", accent="cyan", tab=0),
+    dict(num=45, title="Emergency Contacts", sub="Who Jim reaches in a crisis", hero="contacts", accent="red", tab=0),
+    dict(num=46, title="All Set", sub="You're protected", hero="ready", accent="green", tab=0),
 ]
 
 
