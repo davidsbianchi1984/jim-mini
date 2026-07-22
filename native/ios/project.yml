@@ -1,0 +1,32 @@
+# XcodeGen spec — generates JimGuardian.xcodeproj.
+#   brew install xcodegen && xcodegen generate && open JimGuardian.xcodeproj
+name: JimGuardian
+options:
+  bundleIdPrefix: app.jim
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+targets:
+  JimGuardian:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.jim.guardian
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+        INFOPLIST_KEY_CFBundleDisplayName: "JIM Guardian"
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1,2"
+    info:
+      properties:
+        # Allow http://127.0.0.1:8000 in the Simulator (local dev backend).
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        UIStatusBarStyle: UIStatusBarStyleLightContent
+        UIUserInterfaceStyle: Dark

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.OverviewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Width="9" Height="9" Fill="{StaticResource JimGreenBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="Guardian on · watching" Foreground="{StaticResource JimGreenBrush}"
+                           FontWeight="Bold" FontSize="12" />
+            </StackPanel>
+            <TextBlock x:Name="Greeting" FontSize="28" FontWeight="Bold" Foreground="{StaticResource JimTxtBrush}" />
+            <TextBlock Text="Your Guardian is watching — the rules are transparent."
+                       Foreground="{StaticResource JimT2Brush}" FontSize="14" TextWrapping="Wrap" />
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Learned baseline" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <ProgressRing x:Name="Loading" IsActive="True" Foreground="{StaticResource JimBrandABrush}"
+                                  Width="24" Height="24" HorizontalAlignment="Left" />
+                    <TextBlock x:Name="Empty" Text="No baseline yet — it builds from calm samples in Live Monitoring."
+                               Foreground="{StaticResource JimT2Brush}" FontSize="13" Visibility="Collapsed"
+                               TextWrapping="Wrap" />
+                    <ItemsControl x:Name="MetricsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="0,4">
+                                    <TextBlock Text="{Binding Metric}" Foreground="{StaticResource JimTxtBrush}"
+                                               HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding Display}" Foreground="{StaticResource JimT2Brush}"
+                                               HorizontalAlignment="Right" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

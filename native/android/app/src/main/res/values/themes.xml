@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose owns the visual theme; this keeps a dark splash/background so
+         there is no white flash before the first frame. -->
+    <style name="Theme.JimGuardian" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#0A0F1C</item>
+        <item name="android:statusBarColor">#0A0F1C</item>
+        <item name="android:navigationBarColor">#0A0F1C</item>
+    </style>
+</resources>
