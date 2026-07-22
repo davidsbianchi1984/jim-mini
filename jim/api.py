@@ -9,13 +9,14 @@ from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException, Request, Response
 
-from . import app_connectors, auth, catalog, coach, db, guardian, life, social
+from . import (app_connectors, auth, catalog, coach, db, guardian, life,
+               research, social)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
-    Enroll, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate, HabitLog,
-    JournalEntry, PersonalityUpdate, SensitivitySet, SessionStart, SocialCollect,
-    SocialConnect, SocialPublish, SourceConsent, SpecialistRegister,
+    Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
+    HabitLog, JournalEntry, PersonalityUpdate, SensitivitySet, SessionStart,
+    SocialCollect, SocialConnect, SocialPublish, SourceConsent, SpecialistRegister,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -388,6 +389,69 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(422, f"this {row['app']} connector was not granted "
                                      f"'{body.capability}'")
         return app_connectors.invoke(row, body.capability, body.input)
+
+    # ---- safe knowledge excursions ----------------------------------------
+    # study an unfamiliar topic without carrying the user's PHI out.
+
+    def _excursion_row(cid: str) -> dict:
+        row = db.connect().execute(
+            "SELECT * FROM excursions WHERE id=?", (cid,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "excursion not found")
+        return dict(row)
+
+    def _excursion_out(row: dict) -> dict:
+        return {"id": row["id"], "user_id": row["user_id"], "topic": row["topic"],
+                "brief": row["brief"], "redactions": row["redactions"],
+                "left_host": bool(row["left_host"]), "findings": row["findings"],
+                "learned": bool(row["learned"])}
+
+    @app.post("/excursions/{user_id}", status_code=201)
+    def start_excursion(user_id: str, body: ExcursionStart, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        cloud = app.state.cloud
+        brief, redactions = research.sanitize(
+            user_id, f"{body.topic}\n{body.question}", body.private)
+        left_host = research.would_leave(cloud)
+        findings = research.gather(brief, cloud)
+        cid = db.new_id("exc")
+        db.connect().execute(
+            "INSERT INTO excursions (id, user_id, topic, brief, redactions,"
+            " left_host, findings, learned, created_at) VALUES (?,?,?,?,?,?,?,0,?)",
+            (cid, user_id, body.topic, brief, redactions, int(left_host),
+             findings, db.utcnow()))
+        db.connect().commit()
+        return _excursion_out(_excursion_row(cid))
+
+    @app.get("/excursions/{user_id}")
+    def list_excursions(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        rows = db.connect().execute(
+            "SELECT * FROM excursions WHERE user_id=? ORDER BY created_at, rowid",
+            (user_id,)).fetchall()
+        return [_excursion_out(dict(r)) for r in rows]
+
+    @app.get("/excursions/entry/{cid}")
+    def get_excursion(cid: str, request: Request) -> dict:
+        row = _excursion_row(cid)
+        _user_or_404(row["user_id"], request)
+        return _excursion_out(row)
+
+    @app.post("/excursions/entry/{cid}/learn", status_code=201)
+    def learn_excursion(cid: str, request: Request) -> dict:
+        row = _excursion_row(cid)
+        _user_or_404(row["user_id"], request)
+        if not row["findings"]:
+            raise HTTPException(409, "this excursion has no findings to learn")
+        if row["learned"]:
+            return {"learned": True, "already_learned": True}
+        life.add_context(row["user_id"], "research", "knowledge",
+                         {"topic": row["topic"], "content": row["findings"]},
+                         pdi=app.state.pdi)
+        db.connect().execute("UPDATE excursions SET learned=1 WHERE id=?", (cid,))
+        db.connect().commit()
+        return {"learned": True, "already_learned": False,
+                "note": "findings folded into guidance context; the local model now uses them"}
 
     # ---- mood & energy check-ins ------------------------------------------
 

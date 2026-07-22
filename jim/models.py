@@ -167,6 +167,12 @@ class AppInvoke(BaseModel):
     input: str | None = None
 
 
+class ExcursionStart(BaseModel):
+    topic: str
+    question: str
+    private: list[str] = Field(default_factory=list)
+
+
 class CheckIn(BaseModel):
     mood: int = Field(ge=1, le=5)  # 1 low .. 5 great
     energy: int | None = Field(default=None, ge=1, le=5)
