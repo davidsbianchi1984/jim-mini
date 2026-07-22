@@ -3,6 +3,8 @@
   "productName": "JIM Guardian",
   "version": "0.1.0",
   "description": "JIM-mini guardian console — a runnable React front-end wired to the JIM API, packaged with Electron.",
+  "author": "David Bianchi",
+  "repository": "https://github.com/davidsbianchi1984/jim-mini",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
@@ -33,6 +35,7 @@
   "build": {
     "appId": "app.jim.guardian",
     "productName": "JIM Guardian",
+    "publish": null,
     "directories": {
       "output": "release"
     },
