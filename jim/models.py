@@ -120,7 +120,9 @@ class ContextEvent(BaseModel):
 
 
 SocialPlatform = Literal[
-    "instagram", "x", "tiktok", "facebook", "linkedin", "youtube", "reddit", "threads",
+    "instagram", "x", "tiktok", "facebook", "linkedin", "youtube", "reddit",
+    "threads", "whatsapp", "meta", "mastodon", "twitch", "snapchat", "roblox",
+    "pinterest", "discord",
 ]
 
 

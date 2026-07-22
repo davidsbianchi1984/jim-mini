@@ -59,6 +59,20 @@ def test_direction_guards(client):
     assert client.get(f"/social/connection/{collect['id']}/beacon").status_code == 409
 
 
+def test_all_image_platforms_supported(client):
+    uid = enroll(client)
+    platforms = ["instagram", "x", "tiktok", "facebook", "linkedin", "youtube",
+                 "reddit", "threads", "whatsapp", "meta", "mastodon", "twitch",
+                 "snapchat", "roblox", "pinterest", "discord"]
+    for p in platforms:
+        assert _connect(client, uid, platform=p, direction="collect")["platform"] == p
+    # A couple of the new platforms resolve to the right presence URL.
+    for p, url in [("twitch", "https://twitch.tv/jordan"),
+                   ("discord", "https://discord.com/users/jordan")]:
+        conn = _connect(client, uid, platform=p, direction="publish", handle="jordan")
+        assert client.get(f"/social/connection/{conn['id']}/beacon").json()["presence_url"] == url
+
+
 def test_revoke_withdraws_consent(client):
     uid = enroll(client)
     conn = _connect(client, uid, platform="threads", direction="collect")

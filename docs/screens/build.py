@@ -741,7 +741,16 @@ def render(spec):
     elif hero == "social":
         out.append(text(CX, y, "Collect posts to guide you · publish to share.",
                         10.5, C["t2"]))
-        y += 26
+        y += 24
+        dots = ["#E1306C", "#1DA1F2", "#25F4EE", "#1877F2", "#0A66C2", "#FF0000",
+                "#FF4500", "#c9c9d6", "#25D366", "#0866FF", "#6364FF", "#9146FF",
+                "#FFFC00", "#E2231A", "#E60023", "#5865F2"]
+        dx = CX
+        for col in dots:
+            out.append(f'<circle cx="{dx+7:.1f}" cy="{y+4}" r="6.5" fill="{col}"/>')
+            dx += 14.6
+        out.append(text(CX, y + 22, "16 platforms — Instagram to Discord", 9, C["t3"], 500))
+        y += 34
         out.append(text(CX, y, "COLLECTING", 9.5, C["t3"], 700, "start", 0.8))
         out.append(pill(CX + CW, y + 3, "→ guidance", "info"))
         y += 16
