@@ -2,7 +2,7 @@
   "name": "jim-guardian",
   "productName": "JIM Guardian",
   "version": "0.1.0",
-  "description": "JIM-mini guardian console — a runnable React front-end wired to the JIM API, packaged with Electron.",
+  "description": "JIM-mini guardian console \u2014 a runnable React front-end wired to the JIM API, packaged with Electron.",
   "author": "David Bianchi",
   "repository": "https://github.com/davidsbianchi1984/jim-mini",
   "private": true,
@@ -44,7 +44,12 @@
       "electron/**/*"
     ],
     "mac": {
-      "target": "dmg",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": "universal"
+        }
+      ],
       "category": "public.app-category.healthcare-fitness"
     },
     "win": {
