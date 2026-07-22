@@ -51,15 +51,31 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build & package (${{ matrix.target }})
+      # electron-builder treats an *empty* CSC_LINK as a cert path and fails, so
+      # the signing env is passed only when a certificate secret is actually set;
+      # otherwise we build explicitly unsigned. (secrets can't be used in `if:`,
+      # so resolve availability into a step output first.)
+      - name: Signing availability
+        id: signing
+        shell: bash
+        run: echo "enabled=${{ secrets.CSC_LINK != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & package — signed (${{ matrix.target }})
+        if: steps.signing.outputs.enabled == 'true'
         run: npm run dist -- --publish never
         env:
-          # macOS signing + notarization (no-op if the secrets are unset)
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & package — unsigned (${{ matrix.target }})
+        if: steps.signing.outputs.enabled != 'true'
+        run: npm run dist -- --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"   # don't attempt macOS signing
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload installer artifact
