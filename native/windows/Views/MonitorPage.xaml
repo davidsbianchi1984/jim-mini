@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.MonitorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="640" Spacing="16" Padding="28" HorizontalAlignment="Left">
+            <TextBlock Text="Live Monitoring" FontSize="22" FontWeight="Bold"
+                       Foreground="{StaticResource JimTxtBrush}" />
+            <TextBlock Text="Send a sample. The Guardian compares it to your baseline."
+                       Foreground="{StaticResource JimT2Brush}" FontSize="13" TextWrapping="Wrap" />
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <Slider x:Name="HeartRate" Header="Heart rate (bpm)" Minimum="40" Maximum="180" Value="72" />
+                    <Slider x:Name="Stress" Header="Stress (%)" Minimum="0" Maximum="100" Value="20" />
+                </StackPanel>
+            </Border>
+
+            <Button x:Name="SendButton" Content="Send sample" Height="46" HorizontalAlignment="Stretch"
+                    Foreground="White" Click="OnSend">
+                <Button.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="{StaticResource JimBrandA}" Offset="0" />
+                        <GradientStop Color="#FF3AA0FF" Offset="1" />
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
+
+            <Border x:Name="ResultCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1" CornerRadius="16"
+                    Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="ResultTitle" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="ResultReason" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="13" TextWrapping="Wrap" />
+                    <TextBlock x:Name="ResultGuidance" Foreground="{StaticResource JimTxtBrush}"
+                               FontSize="14" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

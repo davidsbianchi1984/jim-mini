@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.WelcomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="440" Spacing="20" Padding="24,40" HorizontalAlignment="Center">
+            <Ellipse Width="84" Height="84" HorizontalAlignment="Center">
+                <Ellipse.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="{StaticResource JimBrandA}" Offset="0" />
+                        <GradientStop Color="#FF3AA0FF" Offset="1" />
+                    </LinearGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <TextBlock Text="Your Guardian, always here" FontSize="22" FontWeight="Bold"
+                       Foreground="{StaticResource JimTxtBrush}" HorizontalAlignment="Center" TextWrapping="Wrap" />
+            <TextBlock Text="Monitor, predict, guide, escalate — grounded in your baseline, on your device."
+                       FontSize="13" Foreground="{StaticResource JimT2Brush}" HorizontalAlignment="Center"
+                       TextAlignment="Center" TextWrapping="Wrap" />
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="12">
+                    <TextBox x:Name="NameBox" Header="Name" PlaceholderText="Your name" />
+                    <TextBox x:Name="BirthBox" Header="Birthdate (yyyy-MM-dd)" Text="1984-01-01" />
+                    <CheckBox x:Name="ConsentBox" Content="I consent to the terms of use"
+                              Foreground="{StaticResource JimTxtBrush}" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock x:Name="ErrorText" Foreground="{StaticResource JimRed}" FontSize="13"
+                       TextWrapping="Wrap" Visibility="Collapsed" />
+
+            <Button x:Name="StartButton" Content="Get Started" HorizontalAlignment="Stretch"
+                    Height="46" Foreground="White" Click="OnStart">
+                <Button.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="{StaticResource JimBrandA}" Offset="0" />
+                        <GradientStop Color="#FF3AA0FF" Offset="1" />
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
+
+            <TextBlock Text="Start the backend:  JIM_CORS_ORIGINS=* uvicorn jim.api:app"
+                       FontFamily="Consolas" FontSize="11" Foreground="{StaticResource JimT2Brush}"
+                       HorizontalAlignment="Center" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
