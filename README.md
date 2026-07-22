@@ -119,6 +119,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 </tr>
 <tr>
 <td align="center" width="25%"><img src="docs/screens/41-end-session.svg" width="160" alt="41 End Session"><br><sub>41 · End Session</sub></td>
+<td align="center" width="25%"><img src="docs/screens/42-log-in.svg" width="160" alt="42 Log In"><br><sub>42 · Log In</sub></td>
 </tr>
 </table>
 
