@@ -2,7 +2,8 @@
 
 ![JIM-mini — Guardian](assets/cover.svg)
 
-A standalone **personal-guidance** system (patent app 19/038,196): it monitors
+A standalone personal-guidance system enabling seamless support for future AI agent services (**JAN2024 NETWORKED
+RESPONSIVE PERSONAL GUIDANCE SYSTEM United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending**): it monitors
 a user's biometric and contextual signals, detects known conditions, delivers
 guidance, and escalates to an emergency contact / live help on critical events.
 Around that core sits a **life layer** — consented data sources, mood/energy
