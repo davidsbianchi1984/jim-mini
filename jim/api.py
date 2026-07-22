@@ -8,7 +8,7 @@ from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException, Request, Response
 
-from . import auth, coach, db, guardian, life, social
+from . import auth, catalog, coach, db, guardian, life, social
 from .models import (
     ActivityObserve, BiometricSample, CheckIn, CoachMessage, ConditionDeclare,
     ContextEvent, DeviceRegister, EmergencyRequest, Enroll, GoalCreate,
@@ -79,6 +79,12 @@ def create_app(qrme_client: QRMEClient | None = None,
         return {"status": "ok", "tandem": app.state.qrme is not None,
                 "pdi": app.state.pdi is not None,
                 "cloud": app.state.cloud is not None}
+
+    @app.get("/connectors/catalog")
+    def connector_catalog() -> dict:
+        """The connected-apps catalog: the AI-integrated apps (Apple, Google,
+        Microsoft, Canva) the Guardian and its agents can connect to."""
+        return catalog.catalog()
 
     @app.get("/cloud/status")
     def cloud_status() -> dict:

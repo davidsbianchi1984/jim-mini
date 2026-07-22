@@ -128,6 +128,9 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/46-all-set.svg" width="160" alt="46 All Set"><br><sub>46 · All Set</sub></td>
 <td align="center" width="25%"><img src="docs/screens/47-social-connections.svg" width="160" alt="47 Social Connections"><br><sub>47 · Social Connections</sub></td>
 </tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/48-connected-apps.svg" width="160" alt="48 Connected Apps"><br><sub>48 · Connected Apps</sub></td>
+</tr>
 </table>
 
 The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 46 All Set**, then hands off to the daily app and, at the other end, **41 End Session**.
