@@ -103,6 +103,22 @@ CREATE TABLE IF NOT EXISTS sources (
     PRIMARY KEY (user_id, source)
 );
 
+-- Safe knowledge excursions. When the Guardian needs to study an unfamiliar
+-- condition or topic, it gathers general knowledge from a SANITIZED brief (the
+-- user's name and emergency contact redacted). ``brief`` is exactly what could
+-- leave; ``left_host`` records whether anything did (offline: never).
+CREATE TABLE IF NOT EXISTS excursions (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id),
+    topic        TEXT NOT NULL,       -- stays local
+    brief        TEXT NOT NULL,       -- sanitized outbound query
+    redactions   INTEGER NOT NULL DEFAULT 0,
+    left_host    INTEGER NOT NULL DEFAULT 0,
+    findings     TEXT,
+    learned      INTEGER NOT NULL DEFAULT 0,
+    created_at   TEXT NOT NULL
+);
+
 -- Connected-app connectors. Each links a user to an AI-integrated app from the
 -- catalog (Apple Photos, Google Calendar, Microsoft 365, Canva, …). The
 -- Guardian's agents then collect context in, act on the app, or produce media.
