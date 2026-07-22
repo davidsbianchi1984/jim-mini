@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **First-run onboarding screens** — provider login (Continue with Apple /
+  Google / email), permissions, "about you" (name, known conditions, focus),
+  emergency contacts, and an "all set" confirmation — completing the Welcome →
+  protected-profile journey, rendered in both iOS and Android chrome.
+
 ## [0.1.0] — 2026-07-21
 
 First public release. JIM-mini (Guardian) is the personal-guidance product of
