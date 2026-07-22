@@ -119,6 +119,60 @@ class ContextEvent(BaseModel):
     data: dict = Field(default_factory=dict)
 
 
+SocialPlatform = Literal[
+    "instagram", "x", "tiktok", "facebook", "linkedin", "youtube", "reddit",
+    "threads", "whatsapp", "meta", "mastodon", "twitch", "snapchat", "roblox",
+    "pinterest", "discord",
+]
+
+
+class SocialConnect(BaseModel):
+    platform: SocialPlatform
+    direction: Literal["collect", "publish"]
+    handle: str | None = None
+    scope: list[str] = Field(default_factory=list)
+
+
+class SocialItem(BaseModel):
+    content: str
+    title: str | None = None
+
+
+class SocialCollect(BaseModel):
+    items: list[SocialItem] = Field(default_factory=list)
+
+
+class SocialPublish(BaseModel):
+    content: str
+    topic: str | None = None
+
+
+class AppConnect(BaseModel):
+    provider: str
+    app: str
+    capabilities: list[str] = Field(default_factory=list)  # empty = grant all
+
+
+class AppItem(BaseModel):
+    content: str
+    title: str | None = None
+
+
+class AppCollect(BaseModel):
+    items: list[AppItem] = Field(default_factory=list)
+
+
+class AppInvoke(BaseModel):
+    capability: str
+    input: str | None = None
+
+
+class ExcursionStart(BaseModel):
+    topic: str
+    question: str
+    private: list[str] = Field(default_factory=list)
+
+
 class CheckIn(BaseModel):
     mood: int = Field(ge=1, le=5)  # 1 low .. 5 great
     energy: int | None = Field(default=None, ge=1, le=5)

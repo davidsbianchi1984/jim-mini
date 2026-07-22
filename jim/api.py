@@ -3,18 +3,20 @@
 from __future__ import annotations
 
 import io
+import json
 import os
 from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException, Request, Response
 
-from . import auth, coach, db, guardian, life
+from . import (app_connectors, auth, catalog, coach, db, guardian, life,
+               research, social)
 from .models import (
-    ActivityObserve, BiometricSample, CheckIn, CoachMessage, ConditionDeclare,
-    ContextEvent, DeviceRegister, EmergencyRequest, Enroll, GoalCreate,
-    GoalUpdate, GuidanceFeedback, HabitCreate, HabitLog, JournalEntry,
-    PersonalityUpdate, SensitivitySet, SessionStart, SourceConsent,
-    SpecialistRegister,
+    ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
+    CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
+    Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
+    HabitLog, JournalEntry, PersonalityUpdate, SensitivitySet, SessionStart,
+    SocialCollect, SocialConnect, SocialPublish, SourceConsent, SpecialistRegister,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -79,6 +81,12 @@ def create_app(qrme_client: QRMEClient | None = None,
         return {"status": "ok", "tandem": app.state.qrme is not None,
                 "pdi": app.state.pdi is not None,
                 "cloud": app.state.cloud is not None}
+
+    @app.get("/connectors/catalog")
+    def connector_catalog() -> dict:
+        """The connected-apps catalog: the AI-integrated apps (Apple, Google,
+        Microsoft, Canva) the Guardian and its agents can connect to."""
+        return catalog.catalog()
 
     @app.get("/cloud/status")
     def cloud_status() -> dict:
@@ -266,6 +274,184 @@ def create_app(qrme_client: QRMEClient | None = None,
                 403, f"source '{body.source}' is not consented for this user")
         return life.add_context(user_id, body.source, body.kind, body.data,
                                 pdi=app.state.pdi)
+
+    # ---- social-platform connections --------------------------------------
+    # collect posts to inform guidance, or publish an update reachable by QR.
+
+    @app.post("/social/{user_id}", status_code=201)
+    def social_connect(user_id: str, body: SocialConnect, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return social.connect(user_id, body.platform, body.direction,
+                              body.handle, body.scope)
+
+    @app.get("/social/{user_id}")
+    def social_list(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return social.for_user(user_id)
+
+    def _social_or_404(cid: str, request: Request) -> dict:
+        row = social.get(cid)
+        if row is None:
+            raise HTTPException(404, "social connection not found")
+        _user_or_404(row["user_id"], request)   # enforce the owner's token
+        return row
+
+    @app.delete("/social/connection/{cid}")
+    def social_revoke(cid: str, request: Request) -> dict:
+        return social.revoke(_social_or_404(cid, request))
+
+    @app.post("/social/connection/{cid}/collect", status_code=201)
+    def social_collect(cid: str, body: SocialCollect, request: Request) -> dict:
+        row = _social_or_404(cid, request)
+        if row["direction"] != "collect":
+            raise HTTPException(409, "this connection is for publishing, not collecting")
+        if row["status"] != "active":
+            raise HTTPException(409, "connection has been revoked")
+        return social.collect(row, [i.model_dump() for i in body.items],
+                              pdi=app.state.pdi)
+
+    @app.post("/social/connection/{cid}/publish", status_code=201)
+    def social_publish(cid: str, body: SocialPublish, request: Request) -> dict:
+        row = _social_or_404(cid, request)
+        if row["direction"] != "publish":
+            raise HTTPException(409, "this connection is for collecting, not publishing")
+        if row["status"] != "active":
+            raise HTTPException(409, "connection has been revoked")
+        return social.publish(row, body.content, body.topic)
+
+    @app.get("/social/connection/{cid}/beacon")
+    def social_beacon(cid: str, request: Request) -> dict:
+        row = _social_or_404(cid, request)
+        if row["direction"] != "publish":
+            raise HTTPException(409, "beacons are for publish connections")
+        return {"connection": cid, "platform": row["platform"],
+                "handle": f"@{row['handle']}" if row["handle"] else None,
+                "presence_url": social.presence_url(row, _public_base()),
+                "qr_svg": f"/social/connection/{cid}/qr.svg"}
+
+    @app.get("/social/connection/{cid}/qr.svg")
+    def social_qr(cid: str, request: Request) -> Response:
+        row = _social_or_404(cid, request)
+        if row["direction"] != "publish":
+            raise HTTPException(409, "beacons are for publish connections")
+        import segno
+        buf = io.BytesIO()
+        segno.make(social.presence_url(row, _public_base()), error="q").save(
+            buf, kind="svg", scale=8, border=2, dark="#161840", light="#F4E3C8")
+        return Response(content=buf.getvalue(), media_type="image/svg+xml")
+
+    # ---- connected-app connectors -----------------------------------------
+    # connect a catalog app; agents collect context, act, or produce with it.
+
+    @app.post("/apps/{user_id}", status_code=201)
+    def app_connect(user_id: str, body: AppConnect, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        e = app_connectors.entry(body.provider, body.app)
+        if e is None:
+            raise HTTPException(404, f"unknown connector: {body.provider}/{body.app}")
+        unknown = set(body.capabilities) - set(e["capabilities"])
+        if unknown:
+            raise HTTPException(422, f"{body.app} does not offer: {sorted(unknown)}")
+        return app_connectors.connect(user_id, e, body.capabilities)
+
+    @app.get("/apps/{user_id}")
+    def app_list(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return app_connectors.for_user(user_id)
+
+    def _app_or_404(cid: str, request: Request) -> dict:
+        row = app_connectors.get(cid)
+        if row is None:
+            raise HTTPException(404, "app connector not found")
+        _user_or_404(row["user_id"], request)
+        return row
+
+    @app.delete("/apps/connector/{cid}")
+    def app_revoke(cid: str, request: Request) -> dict:
+        return app_connectors.revoke(_app_or_404(cid, request))
+
+    @app.post("/apps/connector/{cid}/collect", status_code=201)
+    def app_collect(cid: str, body: AppCollect, request: Request) -> dict:
+        row = _app_or_404(cid, request)
+        if "collect" not in json.loads(row["directions"]):
+            raise HTTPException(409, f"{row['app']} does not support collecting context")
+        if row["status"] != "active":
+            raise HTTPException(409, "connector has been revoked")
+        return app_connectors.collect(row, [i.model_dump() for i in body.items],
+                                      pdi=app.state.pdi)
+
+    @app.post("/apps/connector/{cid}/invoke", status_code=201)
+    def app_invoke(cid: str, body: AppInvoke, request: Request) -> dict:
+        row = _app_or_404(cid, request)
+        if row["status"] != "active":
+            raise HTTPException(409, "connector has been revoked")
+        if body.capability not in json.loads(row["capabilities"]):
+            raise HTTPException(422, f"this {row['app']} connector was not granted "
+                                     f"'{body.capability}'")
+        return app_connectors.invoke(row, body.capability, body.input)
+
+    # ---- safe knowledge excursions ----------------------------------------
+    # study an unfamiliar topic without carrying the user's PHI out.
+
+    def _excursion_row(cid: str) -> dict:
+        row = db.connect().execute(
+            "SELECT * FROM excursions WHERE id=?", (cid,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "excursion not found")
+        return dict(row)
+
+    def _excursion_out(row: dict) -> dict:
+        return {"id": row["id"], "user_id": row["user_id"], "topic": row["topic"],
+                "brief": row["brief"], "redactions": row["redactions"],
+                "left_host": bool(row["left_host"]), "findings": row["findings"],
+                "learned": bool(row["learned"])}
+
+    @app.post("/excursions/{user_id}", status_code=201)
+    def start_excursion(user_id: str, body: ExcursionStart, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        cloud = app.state.cloud
+        brief, redactions = research.sanitize(
+            user_id, f"{body.topic}\n{body.question}", body.private)
+        left_host = research.would_leave(cloud)
+        findings = research.gather(brief, cloud)
+        cid = db.new_id("exc")
+        db.connect().execute(
+            "INSERT INTO excursions (id, user_id, topic, brief, redactions,"
+            " left_host, findings, learned, created_at) VALUES (?,?,?,?,?,?,?,0,?)",
+            (cid, user_id, body.topic, brief, redactions, int(left_host),
+             findings, db.utcnow()))
+        db.connect().commit()
+        return _excursion_out(_excursion_row(cid))
+
+    @app.get("/excursions/{user_id}")
+    def list_excursions(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        rows = db.connect().execute(
+            "SELECT * FROM excursions WHERE user_id=? ORDER BY created_at, rowid",
+            (user_id,)).fetchall()
+        return [_excursion_out(dict(r)) for r in rows]
+
+    @app.get("/excursions/entry/{cid}")
+    def get_excursion(cid: str, request: Request) -> dict:
+        row = _excursion_row(cid)
+        _user_or_404(row["user_id"], request)
+        return _excursion_out(row)
+
+    @app.post("/excursions/entry/{cid}/learn", status_code=201)
+    def learn_excursion(cid: str, request: Request) -> dict:
+        row = _excursion_row(cid)
+        _user_or_404(row["user_id"], request)
+        if not row["findings"]:
+            raise HTTPException(409, "this excursion has no findings to learn")
+        if row["learned"]:
+            return {"learned": True, "already_learned": True}
+        life.add_context(row["user_id"], "research", "knowledge",
+                         {"topic": row["topic"], "content": row["findings"]},
+                         pdi=app.state.pdi)
+        db.connect().execute("UPDATE excursions SET learned=1 WHERE id=?", (cid,))
+        db.connect().commit()
+        return {"learned": True, "already_learned": False,
+                "note": "findings folded into guidance context; the local model now uses them"}
 
     # ---- mood & energy check-ins ------------------------------------------
 

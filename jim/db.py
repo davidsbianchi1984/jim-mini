@@ -103,6 +103,55 @@ CREATE TABLE IF NOT EXISTS sources (
     PRIMARY KEY (user_id, source)
 );
 
+-- Safe knowledge excursions. When the Guardian needs to study an unfamiliar
+-- condition or topic, it gathers general knowledge from a SANITIZED brief (the
+-- user's name and emergency contact redacted). ``brief`` is exactly what could
+-- leave; ``left_host`` records whether anything did (offline: never).
+CREATE TABLE IF NOT EXISTS excursions (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id),
+    topic        TEXT NOT NULL,       -- stays local
+    brief        TEXT NOT NULL,       -- sanitized outbound query
+    redactions   INTEGER NOT NULL DEFAULT 0,
+    left_host    INTEGER NOT NULL DEFAULT 0,
+    findings     TEXT,
+    learned      INTEGER NOT NULL DEFAULT 0,
+    created_at   TEXT NOT NULL
+);
+
+-- Connected-app connectors. Each links a user to an AI-integrated app from the
+-- catalog (Apple Photos, Google Calendar, Microsoft 365, Canva, …). The
+-- Guardian's agents then collect context in, act on the app, or produce media.
+CREATE TABLE IF NOT EXISTS app_connectors (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id),
+    provider     TEXT NOT NULL,   -- apple | google | microsoft | canva
+    app          TEXT NOT NULL,
+    label        TEXT NOT NULL,
+    capabilities TEXT NOT NULL DEFAULT '[]',
+    directions   TEXT NOT NULL DEFAULT '[]',
+    status       TEXT NOT NULL DEFAULT 'active',
+    collected    INTEGER NOT NULL DEFAULT 0,
+    actions      INTEGER NOT NULL DEFAULT 0,
+    created_at   TEXT NOT NULL
+);
+
+-- Social-platform connections. collect pulls the account's posts in as
+-- consented context that informs guidance; publish shares an update on the
+-- platform, reachable by a QR beacon.
+CREATE TABLE IF NOT EXISTS social_connections (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    platform    TEXT NOT NULL,   -- instagram | x | tiktok | facebook | linkedin | youtube | reddit | threads
+    direction   TEXT NOT NULL,   -- collect | publish
+    handle      TEXT,
+    scope       TEXT NOT NULL DEFAULT '[]',
+    status      TEXT NOT NULL DEFAULT 'active',  -- active | revoked
+    collected   INTEGER NOT NULL DEFAULT 0,
+    published   INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT NOT NULL
+);
+
 -- Events ingested from consented sources (a calendar entry, a transaction, …).
 CREATE TABLE IF NOT EXISTS context_events (
     id         TEXT PRIMARY KEY,
