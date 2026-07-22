@@ -120,8 +120,16 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/41-end-session.svg" width="160" alt="41 End Session"><br><sub>41 · End Session</sub></td>
 <td align="center" width="25%"><img src="docs/screens/42-log-in.svg" width="160" alt="42 Log In"><br><sub>42 · Log In</sub></td>
+<td align="center" width="25%"><img src="docs/screens/43-permissions.svg" width="160" alt="43 Permissions"><br><sub>43 · Permissions</sub></td>
+<td align="center" width="25%"><img src="docs/screens/44-about-you.svg" width="160" alt="44 About You"><br><sub>44 · About You</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/45-emergency-contacts.svg" width="160" alt="45 Emergency Contacts"><br><sub>45 · Emergency Contacts</sub></td>
+<td align="center" width="25%"><img src="docs/screens/46-all-set.svg" width="160" alt="46 All Set"><br><sub>46 · All Set</sub></td>
 </tr>
 </table>
+
+The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 46 All Set**, then hands off to the daily app and, at the other end, **41 End Session**.
 
 ## Watch screens
 
