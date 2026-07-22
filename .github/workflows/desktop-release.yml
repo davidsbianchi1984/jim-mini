@@ -12,7 +12,7 @@ name: Guardian release
 # committed). electron-builder reads them from the environment:
 #   macOS   : CSC_LINK (base64 .p12), CSC_KEY_PASSWORD;
 #             notarization: APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID
-#   Windows : CSC_LINK (base64 .pfx), CSC_KEY_PASSWORD
+#   Windows : WIN_CSC_LINK (base64 .pfx), WIN_CSC_KEY_PASSWORD
 # If a platform's secrets are absent the build still succeeds — just unsigned.
 
 on:
@@ -51,17 +51,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # electron-builder treats an *empty* CSC_LINK as a cert path and fails, so
-      # the signing env is passed only when a certificate secret is actually set;
-      # otherwise we build explicitly unsigned. (secrets can't be used in `if:`,
-      # so resolve availability into a step output first.)
+      # Signing is per-platform and opt-in: macOS signs when CSC_LINK (an Apple
+      # Developer ID .p12) is present; Windows signs when WIN_CSC_LINK (an
+      # Authenticode .pfx) is present; Linux/AppImage never signs. Each platform
+      # sees only its own certificate, so adding one platform's cert can't break
+      # another's build, and an absent cert just yields an unsigned build.
+      # (secrets can't be used in `if:`, so resolve availability to an output.)
       - name: Signing availability
         id: signing
         shell: bash
-        run: echo "enabled=${{ secrets.CSC_LINK != '' }}" >> "$GITHUB_OUTPUT"
+        run: |
+          case "${{ runner.os }}" in
+            Windows) echo "enabled=${{ secrets.WIN_CSC_LINK != '' }}" >> "$GITHUB_OUTPUT" ;;
+            macOS)   echo "enabled=${{ secrets.CSC_LINK != '' }}" >> "$GITHUB_OUTPUT" ;;
+            *)       echo "enabled=false" >> "$GITHUB_OUTPUT" ;;
+          esac
 
-      - name: Build & package — signed (${{ matrix.target }})
-        if: steps.signing.outputs.enabled == 'true'
+      - name: Build & package — macOS signed
+        if: runner.os == 'macOS' && steps.signing.outputs.enabled == 'true'
         run: npm run dist -- --publish never
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -71,7 +78,15 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & package — unsigned (${{ matrix.target }})
+      - name: Build & package — Windows signed
+        if: runner.os == 'Windows' && steps.signing.outputs.enabled == 'true'
+        run: npm run dist -- --publish never
+        env:
+          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & package — unsigned
         if: steps.signing.outputs.enabled != 'true'
         run: npm run dist -- --publish never
         env:

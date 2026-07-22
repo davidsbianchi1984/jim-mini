@@ -31,8 +31,10 @@ under *Settings → Secrets and variables → Actions*:
 
 | Secret | Platform | Purpose |
 | --- | --- | --- |
-| `CSC_LINK` | macOS / Windows | Base64 of the signing certificate (`.p12` / `.pfx`) |
-| `CSC_KEY_PASSWORD` | macOS / Windows | Certificate password |
+| `CSC_LINK` | macOS | Base64 of the Apple Developer ID certificate (`.p12`) |
+| `CSC_KEY_PASSWORD` | macOS | Password for the `.p12` |
+| `WIN_CSC_LINK` | Windows | Base64 of the Windows code-signing certificate (`.pfx`) |
+| `WIN_CSC_KEY_PASSWORD` | Windows | Password for the `.pfx` |
 | `APPLE_ID` | macOS | Apple ID for notarization |
 | `APPLE_APP_SPECIFIC_PASSWORD` | macOS | App-specific password for notarization |
 | `APPLE_TEAM_ID` | macOS | Apple Developer Team ID |
