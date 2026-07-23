@@ -50,7 +50,7 @@ def _context(user_id: str) -> str:
 def reply(user_id: str, area: str, message: str) -> dict:
     system = _SYSTEM.format(area=AREAS[area], context=_context(user_id))
     system += personalize(guardian.get_user(user_id))
-    text = llm.get_provider().generate(system, message)
+    text = llm.provider_for_user(user_id).generate(system, message)
 
     safe = not _DENY.search(text)
     conn = db.connect()
@@ -88,7 +88,7 @@ def companion_checkin(user_id: str) -> dict:
     system += personalize(user)
     system += (f"\n\nYou are reaching out first ({mood_note}). One or two "
                "sentences, warm and unpressured; invite, never demand.")
-    text = llm.get_provider().generate(system, "Reach out and check in.")
+    text = llm.provider_for_user(user_id).generate(system, "Reach out and check in.")
 
     if _DENY.search(text):
         return {"delivered": False, "reason": "failed safety check",

@@ -275,6 +275,15 @@ CREATE TABLE IF NOT EXISTS coach_messages (
     content    TEXT NOT NULL,
     created_at TEXT NOT NULL
 );
+
+-- Per-user LLM provider preference. 'auto' (or a missing row) defers to the
+-- platform default; any other value is a jim.llm registry name the user picked
+-- (anthropic | openai | grok | perplexity | gemini | stub).
+CREATE TABLE IF NOT EXISTS model_prefs (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    provider   TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 """
 
 _local = threading.local()
