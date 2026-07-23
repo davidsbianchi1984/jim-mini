@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -34,6 +35,7 @@ import app.jim.guardian.ui.CoachScreen
 import app.jim.guardian.ui.LifeScreen
 import app.jim.guardian.ui.MonitorScreen
 import app.jim.guardian.ui.OverviewScreen
+import app.jim.guardian.ui.SafetyScreen
 import app.jim.guardian.ui.WelcomeScreen
 
 class MainActivity : ComponentActivity() {
@@ -62,6 +64,7 @@ private fun HomeShell(vm: GuardianViewModel) {
         Triple("Check-in", Icons.Filled.Spa, 2),
         Triple("Coach", Icons.Filled.Chat, 3),
         Triple("Life", Icons.Filled.Star, 4),
+        Triple("Safety", Icons.Filled.Warning, 5),
     )
     Scaffold(
         containerColor = Jim.ScrBot,
@@ -91,7 +94,8 @@ private fun HomeShell(vm: GuardianViewModel) {
                 1 -> MonitorScreen(vm)
                 2 -> CheckinScreen(vm)
                 3 -> CoachScreen(vm)
-                else -> LifeScreen(vm)
+                4 -> LifeScreen(vm)
+                else -> SafetyScreen(vm)
             }
         }
     }

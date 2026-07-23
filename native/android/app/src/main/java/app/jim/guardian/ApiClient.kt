@@ -19,6 +19,13 @@ data class BaselineMetric(val metric: String, val value: Double?, val state: Str
 data class Goal(val id: String, val area: String, val title: String, val target: String?, val status: String?)
 data class Habit(val id: String, val name: String, val streak: Int?)
 data class JournalItem(val id: String, val text: String?, val createdAt: String?)
+data class ProviderInfo(val name: String, val label: String, val configured: Boolean)
+data class FlowStep(val step: String, val label: String, val detail: String)
+data class RobotDirective(val robot: String, val directive: String)
+data class EmergencyResult(val flow: List<FlowStep>, val directives: List<RobotDirective>)
+data class EscalationPolicy(val sensitivity: String, val bySeverity: Map<String, String>)
+data class RobotSpec(val model: String, val label: String, val maker: String)
+data class Robot(val id: String, val model: String, val name: String, val status: String?, val directive: String?)
 
 class ApiException(message: String) : Exception(message)
 
@@ -166,5 +173,84 @@ object ApiClient {
 
     suspend fun addJournal(uid: String, token: String, text: String) {
         request("/journal/$uid", "POST", JSONObject().put("text", text), token)
+    }
+
+    // ---- model selection ----
+
+    suspend fun models(): List<ProviderInfo> {
+        val arr = request("/models").getJSONArray("providers")
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            ProviderInfo(o.getString("name"), o.getString("label"), o.optBoolean("configured"))
+        }
+    }
+
+    suspend fun userModel(uid: String, token: String): String {
+        return request("/model/$uid", token = token).getString("provider")
+    }
+
+    suspend fun setModel(uid: String, token: String, provider: String) {
+        request("/model/$uid", "PUT", JSONObject().put("provider", provider), token)
+    }
+
+    // ---- safety: escalation policy, Emergency, robots ----
+
+    suspend fun escalationPolicy(uid: String, token: String): EscalationPolicy {
+        val o = request("/escalation-policy/$uid", token = token)
+        val sev = o.getJSONObject("by_severity")
+        return EscalationPolicy(o.getString("sensitivity"),
+            sev.keys().asSequence().associateWith { sev.getString(it) })
+    }
+
+    suspend fun setSensitivity(uid: String, token: String, level: String) {
+        request("/sensitivity/$uid", "PUT", JSONObject().put("level", level), token)
+    }
+
+    suspend fun emergency(uid: String, token: String, situation: String?,
+                          location: String?): EmergencyResult {
+        val body = JSONObject()
+        if (!situation.isNullOrBlank()) body.put("situation", situation)
+        if (!location.isNullOrBlank()) body.put("location", location)
+        val o = request("/emergency/$uid", "POST", body, token)
+        val flow = o.getJSONArray("flow")
+        val dirs = o.optJSONArray("robot_directives")
+        return EmergencyResult(
+            (0 until flow.length()).map { i ->
+                val s = flow.getJSONObject(i)
+                FlowStep(s.getString("step"), s.getString("label"), s.optString("detail", ""))
+            },
+            (0 until (dirs?.length() ?: 0)).map { i ->
+                val d = dirs!!.getJSONObject(i)
+                RobotDirective(d.getString("robot"), d.getString("directive"))
+            },
+        )
+    }
+
+    private fun robotOf(o: JSONObject) = Robot(
+        o.getString("id"), o.optString("model", ""), o.optString("name", ""),
+        o.optString("status", null), o.optString("escalation_directive", null))
+
+    suspend fun roboticsCatalog(): List<RobotSpec> {
+        val arr = request("/robotics/catalog").getJSONArray("robots")
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            RobotSpec(o.getString("model"), o.getString("label"), o.getString("maker"))
+        }
+    }
+
+    suspend fun robots(uid: String, token: String): List<Robot> = withContext(Dispatchers.IO) {
+        val conn = (URL("$base/robots/$uid").openConnection() as HttpURLConnection).apply {
+            setRequestProperty("authorization", "Bearer $token")
+            connectTimeout = 8000; readTimeout = 8000
+        }
+        val text = conn.inputStream.bufferedReader().use { it.readText() }
+        conn.disconnect()
+        val arr = org.json.JSONArray(text)
+        (0 until arr.length()).map { robotOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun bindRobot(uid: String, token: String, model: String): Robot {
+        return robotOf(request("/robots/$uid", "POST",
+            JSONObject().put("model", model), token))
     }
 }

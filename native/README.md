@@ -12,10 +12,12 @@ talking to the same [JIM backend](../jim/api.py).
 
 Each target ships the same screens, exercising the real API end to end:
 
-**Welcome / Enroll** → `POST /enroll` · **Overview** → `GET /baseline` ·
-**Live Monitoring** → `POST /monitor` · **Check-in** → `POST /checkin` ·
-**Coach** → `POST /coach` · **Life** (goals / habits / journal) →
-`/goals`, `/habits`, `/journal`
+**Welcome / Enroll** → `POST /enroll` · **Overview** → `GET /baseline` + model
+picker (`/models`, `/model/{uid}`) · **Live Monitoring** → `POST /monitor` ·
+**Check-in** → `POST /checkin` · **Coach** → `POST /coach` · **Life** (goals /
+habits / journal) → `/goals`, `/habits`, `/journal` · **Safety** — SOS + flow
+(`/emergency`), escalation policy + sensitivity (`/escalation-policy`,
+`/sensitivity`), robot helpers (`/robotics/catalog`, `/robots/{uid}`)
 
 They persist the returned `user_token` so the app resumes signed-in, and share
 the JIM dark-OLED palette so all three feel like one product. See each folder's

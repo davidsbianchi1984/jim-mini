@@ -1,0 +1,219 @@
+import SwiftUI
+
+/// Safety: the Emergency button and flow, the escalation policy (with the
+/// sensitivity dial), and the robot helpers — behind a segmented switcher.
+struct SafetyView: View {
+    enum Tab: String, CaseIterable { case sos = "SOS", policy = "Policy", robots = "Robots" }
+    @State private var tab: Tab = .sos
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Picker("", selection: $tab) {
+                    ForEach(Tab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                }.pickerStyle(.segmented)
+
+                switch tab {
+                case .sos: SOSSection()
+                case .policy: PolicySection()
+                case .robots: RobotsSection()
+                }
+            }.padding(20)
+        }
+    }
+}
+
+// MARK: SOS — the Emergency button + coordinated flow
+
+private struct SOSSection: View {
+    @EnvironmentObject var state: AppState
+    @State private var situation = ""
+    @State private var location = ""
+    @State private var flow: [FlowStep] = []
+    @State private var directives: [RobotDirective] = []
+    @State private var busy = false
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Button(action: trigger) {
+                VStack(spacing: 4) {
+                    Text("SOS").font(.system(size: 34, weight: .heavy))
+                    Text(busy ? "Coordinating…" : "Tap for emergency")
+                        .font(.caption)
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity).padding(.vertical, 28)
+                .background(Theme.red)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+            }.disabled(busy)
+
+            VStack(alignment: .leading, spacing: 10) {
+                TextField("What's happening? (optional)", text: $situation)
+                    .foregroundStyle(Theme.txt)
+                TextField("Where are you? (optional)", text: $location)
+                    .foregroundStyle(Theme.txt)
+            }.card()
+
+            if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
+
+            if !flow.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Coordinated response").font(.headline).foregroundStyle(Theme.txt)
+                    ForEach(Array(flow.enumerated()), id: \.offset) { i, step in
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(i + 1)").font(.caption.bold())
+                                .frame(width: 20, height: 20)
+                                .background(Theme.red.opacity(0.2))
+                                .foregroundStyle(Theme.red)
+                                .clipShape(Circle())
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(step.label).font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                                Text(step.detail).font(.caption).foregroundStyle(Theme.t2)
+                            }
+                        }
+                    }
+                    ForEach(directives, id: \.robot) { d in
+                        Text("🤖 \(d.robot): \(d.directive.replacingOccurrences(of: "_", with: " "))")
+                            .font(.caption).foregroundStyle(Theme.amber)
+                    }
+                }.card()
+            }
+        }
+    }
+
+    private func trigger() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                let r = try await ApiClient.shared.emergency(
+                    uid: uid, token: token, situation: situation, location: location)
+                flow = r.flow
+                directives = r.robot_directives ?? []
+            } catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+}
+
+// MARK: Policy — the escalation ladder under the sensitivity dial
+
+private struct PolicySection: View {
+    @EnvironmentObject var state: AppState
+    @State private var policy: EscalationPolicy?
+    @State private var level = "balanced"
+
+    private let levels = ["cautious", "balanced", "assertive"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Sensitivity").font(.headline).foregroundStyle(Theme.txt)
+                Picker("", selection: $level) {
+                    ForEach(levels, id: \.self) { Text($0.capitalized).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: level) { _ in apply() }
+                Text("Cautious escalates a rung earlier; assertive a rung later. Crisis language and critical events have floors no dial can lower.")
+                    .font(.caption).foregroundStyle(Theme.t2)
+            }.card()
+
+            if let p = policy {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("How each severity resolves").font(.headline).foregroundStyle(Theme.txt)
+                    ForEach(["info", "guidance", "critical"], id: \.self) { sev in
+                        HStack {
+                            Text(sev.capitalized).font(.subheadline).foregroundStyle(Theme.txt)
+                            Spacer()
+                            Text(p.by_severity[sev]?.replacingOccurrences(of: "_", with: " ") ?? "—")
+                                .font(.subheadline.bold())
+                                .foregroundStyle(sev == "critical" ? Theme.red : Theme.brandA)
+                        }
+                    }
+                }.card()
+            }
+        }
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let uid = state.uid, let token = state.token else { return }
+        policy = try? await ApiClient.shared.escalationPolicy(uid: uid, token: token)
+        if let p = policy { level = p.sensitivity }
+    }
+
+    private func apply() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            try? await ApiClient.shared.setSensitivity(uid: uid, token: token, level: level)
+            await load()
+        }
+    }
+}
+
+// MARK: Robots — guardian responders
+
+private struct RobotsSection: View {
+    @EnvironmentObject var state: AppState
+    @State private var catalog: [RobotSpec] = []
+    @State private var chosen = "neo"
+    @State private var robots: [Robot] = []
+    @State private var busy = false
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Bind a robot").font(.headline).foregroundStyle(Theme.txt)
+                Text("Bound robots respond to escalations: mobile bodies come to you; vacuums dock and clear the floor.")
+                    .font(.caption).foregroundStyle(Theme.t2)
+                Picker("", selection: $chosen) {
+                    ForEach(catalog, id: \.model) {
+                        Text("\($0.label) · \($0.maker)").tag($0.model)
+                    }
+                }.pickerStyle(.menu).tint(Theme.brandA)
+                Button(action: bind) {
+                    HStack { if busy { ProgressView().tint(.white) }; Text("Bind").bold() }
+                        .frame(maxWidth: .infinity).padding(.vertical, 12)
+                        .background(Theme.brand).foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }.disabled(busy || catalog.isEmpty)
+            }.card()
+
+            if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
+
+            ForEach(robots, id: \.id) { r in
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(r.name).font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                        Spacer()
+                        Text((r.status ?? "docked").capitalized)
+                            .font(.caption).foregroundStyle(Theme.t2)
+                    }
+                    if let d = r.escalation_directive {
+                        Text("On escalation: \(d.replacingOccurrences(of: "_", with: " "))")
+                            .font(.caption).foregroundStyle(Theme.amber)
+                    }
+                }.card()
+            }
+        }
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let uid = state.uid, let token = state.token else { return }
+        catalog = (try? await ApiClient.shared.roboticsCatalog())?.robots ?? []
+        robots = (try? await ApiClient.shared.robots(uid: uid, token: token)) ?? []
+    }
+
+    private func bind() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do { _ = try await ApiClient.shared.bindRobot(uid: uid, token: token, model: chosen) }
+            catch { self.error = error.localizedDescription }
+            await load(); busy = false
+        }
+    }
+}

@@ -56,6 +56,56 @@ struct JournalItem: Decodable {
     let created_at: String?
 }
 
+struct ProviderInfo: Decodable {
+    let name: String
+    let label: String
+    let configured: Bool
+}
+
+struct ModelsList: Decodable {
+    let providers: [ProviderInfo]
+    let defaultName: String
+    enum CodingKeys: String, CodingKey {
+        case providers
+        case defaultName = "default"
+    }
+}
+
+struct ModelChoice: Decodable { let provider: String; let effective: String }
+
+struct EscalationPolicy: Decodable {
+    let sensitivity: String
+    let ladder: [String]
+    let by_severity: [String: String]
+}
+
+struct FlowStep: Decodable { let step: String; let label: String; let detail: String }
+
+struct RobotDirective: Decodable { let robot: String; let directive: String }
+
+struct EmergencyResult: Decodable {
+    let emergency: Bool
+    let flow: [FlowStep]
+    let robot_directives: [RobotDirective]?
+}
+
+struct RobotSpec: Decodable {
+    let model: String
+    let label: String
+    let maker: String
+    let kind: String
+}
+
+struct RoboticsCatalog: Decodable { let robots: [RobotSpec] }
+
+struct Robot: Decodable {
+    let id: String
+    let model: String
+    let name: String
+    let status: String?
+    let escalation_directive: String?
+}
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -149,5 +199,52 @@ actor ApiClient {
     func addJournal(uid: String, token: String, text: String) async throws {
         struct Ok: Decodable {}
         let _: Ok = try await request("/journal/\(uid)", method: "POST", body: ["text": text], token: token)
+    }
+
+    // MARK: Model selection
+
+    func models() async throws -> ModelsList { try await request("/models") }
+
+    func userModel(uid: String, token: String) async throws -> ModelChoice {
+        try await request("/model/\(uid)", token: token)
+    }
+
+    func setModel(uid: String, token: String, provider: String) async throws -> ModelChoice {
+        try await request("/model/\(uid)", method: "PUT",
+                          body: ["provider": provider], token: token)
+    }
+
+    // MARK: Safety — escalation policy, Emergency, robots
+
+    func escalationPolicy(uid: String, token: String) async throws -> EscalationPolicy {
+        try await request("/escalation-policy/\(uid)", token: token)
+    }
+
+    func setSensitivity(uid: String, token: String, level: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/sensitivity/\(uid)", method: "PUT",
+                                      body: ["level": level], token: token)
+    }
+
+    func emergency(uid: String, token: String, situation: String?,
+                   location: String?) async throws -> EmergencyResult {
+        var body: [String: Any] = [:]
+        if let situation, !situation.isEmpty { body["situation"] = situation }
+        if let location, !location.isEmpty { body["location"] = location }
+        return try await request("/emergency/\(uid)", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func roboticsCatalog() async throws -> RoboticsCatalog {
+        try await request("/robotics/catalog")
+    }
+
+    func robots(uid: String, token: String) async throws -> [Robot] {
+        try await request("/robots/\(uid)", token: token)
+    }
+
+    func bindRobot(uid: String, token: String, model: String) async throws -> Robot {
+        try await request("/robots/\(uid)", method: "POST",
+                          body: ["model": model], token: token)
     }
 }

@@ -27,6 +27,7 @@ struct RootView: View {
                     CheckinView().tabItem { Label("Check-in", systemImage: "leaf") }
                     CoachView().tabItem { Label("Coach", systemImage: "bubble.left.and.text.bubble.right") }
                     LifeView().tabItem { Label("Life", systemImage: "target") }
+                    SafetyView().tabItem { Label("Safety", systemImage: "sos.circle") }
                 }
                 .tint(Theme.brandA)
             } else {

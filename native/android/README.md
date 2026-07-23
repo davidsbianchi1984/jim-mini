@@ -41,7 +41,7 @@ host is allowed via `usesCleartextTraffic` in the manifest.
 | `.../ApiClient.kt` | coroutine client (`HttpURLConnection` + `org.json`) |
 | `.../AppState.kt` | `GuardianViewModel` — identity + token, persisted |
 | `.../ui/Theme.kt` | the JIM dark-OLED palette + card modifier |
-| `.../ui/Screens.kt` | Welcome, Overview, Monitor, Check-in, Coach, Life |
+| `.../ui/Screens.kt` | Welcome, Overview, Monitor, Check-in, Coach, Life, Safety |
 
 ## Versions
 

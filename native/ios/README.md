@@ -36,10 +36,10 @@ plain-http localhost.
 | `Sources/ApiClient.swift` | async `URLSession` client + wire models |
 | `Sources/AppState.swift` | enrolled identity + token, persisted |
 | `Sources/Theme.swift` | the JIM dark-OLED palette |
-| `Sources/Views/*` | Welcome, Overview, Monitor, Check-in, Coach, Life |
+| `Sources/Views/*` | Welcome, Overview, Monitor, Check-in, Coach, Life, Safety |
 
 ## Not yet wired
 
-This is a functional scaffold, not the full screen gallery. Emergency, the
-Medical-ID QR, sensitivity, and sources all have backend endpoints
-(`jim/api.py`) ready to add as further screens.
+This is a functional scaffold, not the full screen gallery. The Medical-ID QR
+and sources still have backend endpoints (`jim/api.py`) ready to add as
+further screens.
