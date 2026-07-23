@@ -17,7 +17,8 @@ picker (`/models`, `/model/{uid}`) · **Live Monitoring** → `POST /monitor` ·
 **Check-in** → `POST /checkin` · **Coach** → `POST /coach` · **Life** (goals /
 habits / journal) → `/goals`, `/habits`, `/journal` · **Safety** — SOS + flow
 (`/emergency`), escalation policy + sensitivity (`/escalation-policy`,
-`/sensitivity`), robot helpers (`/robotics/catalog`, `/robots/{uid}`)
+`/sensitivity`), robot helpers (`/robotics/catalog`, `/robots/{uid}`), and the
+Medical ID card (`/medical-id/qr/{uid}`)
 
 They persist the returned `user_token` so the app resumes signed-in, and share
 the JIM dark-OLED palette so all three feel like one product. See each folder's

@@ -103,6 +103,21 @@ public record Robot(
     [property: JsonPropertyName("status")] string? Status,
     [property: JsonPropertyName("escalation_directive")] string? EscalationDirective);
 
+public record MedicalCardIssued(
+    [property: JsonPropertyName("token")] string Token,
+    [property: JsonPropertyName("qr_svg_url")] string QrSvgUrl);
+
+public record MedicalContact(
+    [property: JsonPropertyName("name")] string? Name,
+    [property: JsonPropertyName("phone")] string? Phone);
+
+public record MedicalCard(
+    [property: JsonPropertyName("name")] string? Name,
+    [property: JsonPropertyName("age")] int? Age,
+    [property: JsonPropertyName("known_conditions")] string[]? KnownConditions,
+    [property: JsonPropertyName("resting_heart_rate")] int? RestingHeartRate,
+    [property: JsonPropertyName("emergency_contact")] MedicalContact? EmergencyContact);
+
 /// <summary>
 /// Async client for the JIM Guardian backend. Windows reaches the local dev
 /// server directly on 127.0.0.1.
@@ -241,4 +256,21 @@ public sealed class ApiClient
 
     public Task<Robot> BindRobot(string uid, string token, string model) =>
         Send<Robot>(Post($"/robots/{uid}", new { model }, token));
+
+    // -- Medical ID (first-responder card + QR) --
+
+    public Task<MedicalCardIssued> IssueMedicalCard(string uid, string token) =>
+        Send<MedicalCardIssued>(Post($"/medical-id/qr/{uid}", new { }, token));
+
+    public Task<MedicalCard> MedicalCardView(string cardToken) =>
+        Send<MedicalCard>(new HttpRequestMessage(
+            HttpMethod.Get, $"/medical-id/{cardToken}"));   // public: the card is the credential
+
+    public async Task RevokeMedicalCard(string uid, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete, $"/medical-id/qr/{uid}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
 }

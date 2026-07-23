@@ -26,6 +26,9 @@ data class EmergencyResult(val flow: List<FlowStep>, val directives: List<RobotD
 data class EscalationPolicy(val sensitivity: String, val bySeverity: Map<String, String>)
 data class RobotSpec(val model: String, val label: String, val maker: String)
 data class Robot(val id: String, val model: String, val name: String, val status: String?, val directive: String?)
+data class MedicalCardIssued(val token: String, val qrSvgUrl: String)
+data class MedicalCard(val name: String?, val age: Int?, val conditions: List<String>,
+                       val restingHr: Int?, val contactName: String?, val contactPhone: String?)
 
 class ApiException(message: String) : Exception(message)
 
@@ -252,5 +255,28 @@ object ApiClient {
     suspend fun bindRobot(uid: String, token: String, model: String): Robot {
         return robotOf(request("/robots/$uid", "POST",
             JSONObject().put("model", model), token))
+    }
+
+    // ---- Medical ID (first-responder card + QR) ----
+
+    suspend fun issueMedicalCard(uid: String, token: String): MedicalCardIssued {
+        val o = request("/medical-id/qr/$uid", "POST", null, token)
+        return MedicalCardIssued(o.getString("token"), o.getString("qr_svg_url"))
+    }
+
+    suspend fun medicalCard(cardToken: String): MedicalCard {
+        val o = request("/medical-id/$cardToken")     // public: the card is the credential
+        val conds = o.optJSONArray("known_conditions")
+        val contact = o.optJSONObject("emergency_contact")
+        return MedicalCard(
+            o.optString("name", null),
+            if (o.isNull("age")) null else o.optInt("age"),
+            (0 until (conds?.length() ?: 0)).map { conds!!.getString(it) },
+            if (o.isNull("resting_heart_rate")) null else o.optInt("resting_heart_rate"),
+            contact?.optString("name", null), contact?.optString("phone", null))
+    }
+
+    suspend fun revokeMedicalCard(uid: String, token: String) {
+        request("/medical-id/qr/$uid", "DELETE", null, token)
     }
 }

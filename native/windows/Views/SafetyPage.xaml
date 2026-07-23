@@ -49,6 +49,60 @@
             </ScrollViewer>
         </PivotItem>
 
+        <!-- Medical ID -->
+        <PivotItem Header="Med ID">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Medical ID" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock Text="A shareable card for first responders: condition-level facts only, readable from a locked phone. Re-issuing rotates the QR and kills the old one."
+                                       Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                            <Button x:Name="IssueButton" Content="Issue Medical ID" HorizontalAlignment="Stretch"
+                                    Height="42" Foreground="White" Click="OnIssueCard">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="{StaticResource JimBrandA}" Offset="0" />
+                                        <GradientStop Color="#FF3AA0FF" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="MedError" Foreground="{StaticResource JimRed}" FontSize="13"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <Border x:Name="MedCard" Background="{StaticResource JimCardBrush}"
+                            BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1" CornerRadius="16"
+                            Padding="16" Visibility="Collapsed">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Card issued" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimGreenBrush}" />
+                            <TextBlock Text="Print or lock-screen the QR at:"
+                                       Foreground="{StaticResource JimT2Brush}" FontSize="12" />
+                            <TextBlock x:Name="QrUrlText" FontFamily="Consolas" FontSize="11"
+                                       Foreground="{StaticResource JimT2Brush}" TextWrapping="Wrap" />
+                            <ItemsControl x:Name="MedRows">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Padding="0,2">
+                                            <TextBlock Text="{Binding Label}" Foreground="{StaticResource JimT2Brush}"
+                                                       FontSize="12" HorizontalAlignment="Left" />
+                                            <TextBlock Text="{Binding Value}" Foreground="{StaticResource JimTxtBrush}"
+                                                       FontSize="12" HorizontalAlignment="Right" TextWrapping="Wrap" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button Content="Revoke card" Click="OnRevokeCard"
+                                    Background="Transparent" Foreground="{StaticResource JimRed}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+
         <!-- Policy -->
         <PivotItem Header="Policy">
             <ScrollViewer>

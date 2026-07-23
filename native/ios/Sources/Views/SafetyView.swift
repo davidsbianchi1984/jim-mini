@@ -3,7 +3,9 @@ import SwiftUI
 /// Safety: the Emergency button and flow, the escalation policy (with the
 /// sensitivity dial), and the robot helpers — behind a segmented switcher.
 struct SafetyView: View {
-    enum Tab: String, CaseIterable { case sos = "SOS", policy = "Policy", robots = "Robots" }
+    enum Tab: String, CaseIterable {
+        case sos = "SOS", medical = "Med ID", policy = "Policy", robots = "Robots"
+    }
     @State private var tab: Tab = .sos
 
     var body: some View {
@@ -15,10 +17,95 @@ struct SafetyView: View {
 
                 switch tab {
                 case .sos: SOSSection()
+                case .medical: MedicalSection()
                 case .policy: PolicySection()
                 case .robots: RobotsSection()
                 }
             }.padding(20)
+        }
+    }
+}
+
+// MARK: Medical ID — the first-responder card + QR
+
+private struct MedicalSection: View {
+    @EnvironmentObject var state: AppState
+    @State private var issued: MedicalCardIssued?
+    @State private var card: MedicalCard?
+    @State private var busy = false
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Medical ID").font(.headline).foregroundStyle(Theme.txt)
+                Text("A shareable card for first responders: condition-level facts only, readable from a locked phone. Re-issuing rotates the QR and kills the old one.")
+                    .font(.caption).foregroundStyle(Theme.t2)
+                Button(action: issue) {
+                    HStack { if busy { ProgressView().tint(.white) }
+                             Text(issued == nil ? "Issue Medical ID" : "Rotate QR").bold() }
+                        .frame(maxWidth: .infinity).padding(.vertical, 12)
+                        .background(Theme.brand).foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }.disabled(busy)
+            }.card()
+
+            if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
+
+            if let issued {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Card issued").font(.headline).foregroundStyle(Theme.green)
+                    Text("Print or lock-screen the QR at:")
+                        .font(.caption).foregroundStyle(Theme.t2)
+                    Text(issued.qr_svg_url)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundStyle(Theme.t2)
+                    if let c = card {
+                        Divider().overlay(Theme.line)
+                        Text("What a responder sees").font(.subheadline.bold())
+                            .foregroundStyle(Theme.txt)
+                        row("Name", c.name ?? "—")
+                        row("Age", c.age.map(String.init) ?? "—")
+                        row("Resting HR", c.resting_heart_rate.map { "\($0) bpm" } ?? "—")
+                        row("Conditions",
+                            (c.known_conditions?.isEmpty == false)
+                                ? c.known_conditions!.joined(separator: ", ") : "none declared")
+                        if let ec = c.emergency_contact {
+                            row("Contact", "\(ec.name ?? "—") · \(ec.phone ?? "—")")
+                        }
+                    }
+                    Button("Revoke card") { revoke() }
+                        .font(.caption.bold()).foregroundStyle(Theme.red)
+                }.card()
+            }
+        }
+    }
+
+    private func row(_ k: String, _ v: String) -> some View {
+        HStack(alignment: .top) {
+            Text(k).font(.caption).foregroundStyle(Theme.t2).frame(width: 84, alignment: .leading)
+            Text(v).font(.caption).foregroundStyle(Theme.txt)
+        }
+    }
+
+    private func issue() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                let r = try await ApiClient.shared.issueMedicalCard(uid: uid, token: token)
+                issued = r
+                card = try? await ApiClient.shared.medicalCard(cardToken: r.token)
+            } catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    private func revoke() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            try? await ApiClient.shared.revokeMedicalCard(uid: uid, token: token)
+            issued = nil; card = nil
         }
     }
 }

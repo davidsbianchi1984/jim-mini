@@ -140,6 +140,60 @@ public sealed partial class SafetyPage : Page
         finally { BindButton.IsEnabled = true; }
     }
 
+    // -- Medical ID --
+
+    public record MedRow(string Label, string Value);
+
+    private async void OnIssueCard(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        IssueButton.IsEnabled = false;
+        MedError.Visibility = Visibility.Collapsed;
+        try
+        {
+            var issued = await ApiClient.Shared.IssueMedicalCard(s.Uid!, s.Token!);
+            QrUrlText.Text = issued.QrSvgUrl;
+            var card = await ApiClient.Shared.MedicalCardView(issued.Token);
+            MedRows.ItemsSource = new[]
+            {
+                new MedRow("Name", card.Name ?? "—"),
+                new MedRow("Age", card.Age?.ToString() ?? "—"),
+                new MedRow("Resting HR",
+                           card.RestingHeartRate is { } hr ? $"{hr} bpm" : "—"),
+                new MedRow("Conditions",
+                           card.KnownConditions is { Length: > 0 } kc
+                               ? string.Join(", ", kc) : "none declared"),
+                new MedRow("Contact",
+                           card.EmergencyContact is { } ec
+                               ? $"{ec.Name ?? "—"} · {ec.Phone ?? "—"}" : "—"),
+            }.ToList();
+            MedCard.Visibility = Visibility.Visible;
+            IssueButton.Content = "Rotate QR";
+        }
+        catch (Exception ex)
+        {
+            MedError.Text = ex.Message;
+            MedError.Visibility = Visibility.Visible;
+        }
+        finally { IssueButton.IsEnabled = true; }
+    }
+
+    private async void OnRevokeCard(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.RevokeMedicalCard(s.Uid!, s.Token!);
+            MedCard.Visibility = Visibility.Collapsed;
+            IssueButton.Content = "Issue Medical ID";
+        }
+        catch (Exception ex)
+        {
+            MedError.Text = ex.Message;
+            MedError.Visibility = Visibility.Visible;
+        }
+    }
+
     private static string Cap(string s) =>
         string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s[1..];
 }

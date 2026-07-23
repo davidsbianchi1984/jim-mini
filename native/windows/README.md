@@ -46,6 +46,6 @@ MSIX loopback restriction and can call `127.0.0.1` without an exemption.
 | `Views/CheckinPage` | mood / energy → `/checkin` |
 | `Views/CoachPage` | area + message → `/coach` |
 | `Views/LifePage` | goals / habits / journal (Pivot) → `/goals`, `/habits`, `/journal` |
-| `Views/SafetyPage` | SOS + flow (`/emergency`), policy (`/escalation-policy`, `/sensitivity`), robots (`/robots`) |
+| `Views/SafetyPage` | SOS + flow (`/emergency`), Medical ID (`/medical-id/qr`), policy (`/escalation-policy`, `/sensitivity`), robots (`/robots`) |
 | `ApiClient.cs` | `HttpClient` client + records |
 | `AppState.cs` | identity + token, persisted to LocalAppData |

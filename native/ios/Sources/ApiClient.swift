@@ -106,6 +106,21 @@ struct Robot: Decodable {
     let escalation_directive: String?
 }
 
+struct MedicalCardIssued: Decodable {
+    let token: String
+    let view_url: String
+    let qr_svg_url: String
+}
+
+struct MedicalCard: Decodable {
+    let name: String?
+    let age: Int?
+    let known_conditions: [String]?
+    let resting_heart_rate: Int?
+    let emergency_contact: EmergencyContact?
+    struct EmergencyContact: Decodable { let name: String?; let phone: String? }
+}
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -246,5 +261,26 @@ actor ApiClient {
     func bindRobot(uid: String, token: String, model: String) async throws -> Robot {
         try await request("/robots/\(uid)", method: "POST",
                           body: ["model": model], token: token)
+    }
+
+    // MARK: Medical ID (first-responder card + QR)
+
+    func issueMedicalCard(uid: String, token: String) async throws -> MedicalCardIssued {
+        try await request("/medical-id/qr/\(uid)", method: "POST", token: token)
+    }
+
+    func medicalCard(cardToken: String) async throws -> MedicalCard {
+        try await request("/medical-id/\(cardToken)")   // public: the card is the credential
+    }
+
+    func revokeMedicalCard(uid: String, token: String) async throws {
+        var req = URLRequest(url: base.appendingPathComponent("/medical-id/qr/\(uid)"))
+        req.httpMethod = "DELETE"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
+        let (_, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            throw ApiError.http("revoke failed")
+        }
     }
 }
