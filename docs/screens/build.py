@@ -848,6 +848,54 @@ def render(spec):
         out.append(text(CX, y, "Only the folders & albums you pick — nothing else is read.",
                         9.5, C["t3"], 500))
 
+    elif hero == "assistant":
+        prov = spec.get("provider", "apple")
+        label, col, n, apps, caps = {
+            "apple": ("Apple Intelligence", "#c9c9d6", 13,
+                ["Photos","Calendar","Mail","Messages","Files","Notes","Reminders",
+                 "Safari","Shortcuts","Passwords","Wallet","Phone","System"],
+                [("Writing Tools","rewrite · proofread · summarize"),
+                 ("Siri","cross-app actions & personal context"),
+                 ("Visual Intelligence","analyze your screen & objects"),
+                 ("Image Playground","Genmoji & image generation")]),
+            "google": ("Google Gemini", "#4285F4", 11,
+                ["Photos","Calendar","Gmail","Keep","Maps","Chrome","YouTube",
+                 "Play","Gboard","Files","Live"],
+                [("Ask Photos","natural-language photo search"),
+                 ("Auto Browse","Chrome fills forms & books"),
+                 ("Gemini Live","agentic multi-step actions"),
+                 ("Workspace","Gmail summaries & smart replies")]),
+            "microsoft": ("Microsoft Copilot", "#4cc2ff", 8,
+                ["Photos","Explorer","Notepad","Paint","Snipping","Settings","365","Copilot"],
+                [("Copilot Vision","real-time screen understanding"),
+                 ("Recall","searchable memory of your screen"),
+                 ("Click to Do","act on on-screen content"),
+                 ("Microsoft 365","draft · analyze · present")]),
+        }[prov]
+        out.append(f'<circle cx="{CX+16}" cy="{y+8}" r="8" fill="{col}"/>')
+        out.append(text(CX + 34, y + 13, label, 14, C["txt"], 750))
+        out.append(pill(CX + CW, y + 9, f"{n} apps", "info"))
+        y += 30
+        out.append(text(CX, y, "APPS", 9, C["t3"], 700, "start", 0.6))
+        y += 16
+        bx = CX
+        for a in apps:
+            w = 14 + len(a) * 6.2
+            if bx + w > CX + CW:
+                bx = CX; y += 28
+            out.append(rrect(bx, y, w, 22, 11, A(col, 0.14), col, 1))
+            out.append(text(bx + w / 2, y + 15, a, 9.5, C["txt"], 600, "middle"))
+            bx += w + 7
+        y += 36
+        out.append(text(CX, y, "CAPABILITIES", 9, C["t3"], 700, "start", 0.6))
+        y += 16
+        for k, s in caps:
+            out.append(rrect(CX, y, CW, 40, 12, "url(#gCard)", C["line"], 1))
+            out.append(f'<circle cx="{CX+18}" cy="{y+20}" r="4" fill="{col}"/>')
+            out.append(text(CX + 34, y + 17, k, 12, C["txt"], 650))
+            out.append(text(CX + 34, y + 31, s, 9.5, C["t2"]))
+            y += 48
+
     else:  # generic stacked cards
         for c in spec["cards"]:
             s, y = card_block(y, c)
@@ -1039,6 +1087,9 @@ SCREENS = [
     dict(num=48, title="Connected Apps", sub="Apple · Google · Microsoft · Canva", hero="connectedapps", accent="brand", tab=0),
     dict(num=49, title="Knowledge Excursions", sub="Study safely · your data stays home", hero="excursions", accent="cyan", tab=0),
     dict(num=50, title="Files & Photos", sub="Connect your device files & photos", hero="filesphotos", accent="brand", tab=0),
+    dict(num=51, title="Apple Intelligence", sub="13 apps · collect, act, produce", hero="assistant", provider="apple", accent="cyan", tab=0),
+    dict(num=52, title="Google Gemini", sub="11 apps · collect, act, produce", hero="assistant", provider="google", accent="cyan", tab=0),
+    dict(num=53, title="Microsoft Copilot", sub="8 apps · collect, act, produce", hero="assistant", provider="microsoft", accent="cyan", tab=0),
 ]
 
 
