@@ -36,10 +36,8 @@ plain-http localhost.
 | `Sources/ApiClient.swift` | async `URLSession` client + wire models |
 | `Sources/AppState.swift` | enrolled identity + token, persisted |
 | `Sources/Theme.swift` | the JIM dark-OLED palette |
-| `Sources/Views/*` | Welcome, Overview, Monitor, Check-in, Coach, Life, Safety |
+| `Sources/Views/*` | Welcome, Overview, Care (Monitor / Check-in / Coach), Life, Safety, Connect |
 
-## Not yet wired
-
-This is a functional scaffold, not the full screen gallery. Sources and the
-social/app connectors still have backend endpoints (`jim/api.py`) ready to add
-as further screens.
+The tab bar holds five destinations: Monitor, Check-in, and Coach share the
+segmented **Care** tab, and **Connect** gathers data sources, social-platform
+connections, and the connected-apps catalog.

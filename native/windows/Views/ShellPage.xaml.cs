@@ -22,6 +22,7 @@ public sealed partial class ShellPage : Page
             case "coach": ContentFrame.Navigate(typeof(CoachPage)); break;
             case "life": ContentFrame.Navigate(typeof(LifePage)); break;
             case "safety": ContentFrame.Navigate(typeof(SafetyPage)); break;
+            case "connect": ContentFrame.Navigate(typeof(ConnectPage)); break;
         }
     }
 

@@ -107,6 +107,34 @@ public record MedicalCardIssued(
     [property: JsonPropertyName("token")] string Token,
     [property: JsonPropertyName("qr_svg_url")] string QrSvgUrl);
 
+public record SourceRow(
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("consented")] bool Consented);
+
+public record SocialConn(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("platform")] string Platform,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("handle")] string? Handle);
+
+public record CatalogApp(
+    [property: JsonPropertyName("app")] string App,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("capabilities")] string[] Capabilities);
+
+public record CatalogProvider(
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("apps")] CatalogApp[] Apps);
+
+public record AppsCatalog(
+    [property: JsonPropertyName("providers")] CatalogProvider[] Providers);
+
+public record AppConn(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("app")] string App);
+
 public record MedicalContact(
     [property: JsonPropertyName("name")] string? Name,
     [property: JsonPropertyName("phone")] string? Phone);
@@ -256,6 +284,64 @@ public sealed class ApiClient
 
     public Task<Robot> BindRobot(string uid, string token, string model) =>
         Send<Robot>(Post($"/robots/{uid}", new { model }, token));
+
+    // -- Connect: sources, social platforms, connected apps --
+
+    public Task<SourceRow[]> Sources(string uid, string token) =>
+        Send<SourceRow[]>(Get($"/sources/{uid}", token));
+
+    public async Task SetSource(string uid, string token, string source, bool consented)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Put, $"/sources/{uid}")
+        {
+            Content = JsonContent.Create(new { source, consented }),
+        };
+        req.Headers.Add("authorization", $"Bearer {token}");
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
+
+    public Task<SocialConn[]> SocialConnections(string uid, string token) =>
+        Send<SocialConn[]>(Get($"/social/{uid}", token));
+
+    public Task<SocialConn> SocialConnect(string uid, string token, string platform,
+                                          string direction, string handle) =>
+        Send<SocialConn>(Post($"/social/{uid}",
+            handle is { Length: > 0 }
+                ? new { platform, direction, handle }
+                : (object)new { platform, direction }, token));
+
+    public async Task SocialCollect(string cid, string token, string content)
+    {
+        var req = Post($"/social/connection/{cid}/collect",
+            new { items = new[] { new { content } } }, token);
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
+
+    public async Task SocialPublish(string cid, string token, string content)
+    {
+        var req = Post($"/social/connection/{cid}/publish", new { content }, token);
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
+
+    public Task<AppsCatalog> ConnectorCatalog() =>
+        Send<AppsCatalog>(new HttpRequestMessage(HttpMethod.Get, "/connectors/catalog"));
+
+    public Task<AppConn[]> AppConnections(string uid, string token) =>
+        Send<AppConn[]>(Get($"/apps/{uid}", token));
+
+    public Task<AppConn> AppConnect(string uid, string token, string provider, string app) =>
+        Send<AppConn>(Post($"/apps/{uid}", new { provider, app }, token));
+
+    public async Task AppCollect(string cid, string token, string content)
+    {
+        var req = Post($"/apps/connector/{cid}/collect",
+            new { items = new[] { new { content } } }, token);
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
 
     // -- Medical ID (first-responder card + QR) --
 
