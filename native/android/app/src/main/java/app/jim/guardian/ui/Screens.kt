@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.jim.guardian.BaselineMetric
 import app.jim.guardian.CheckinResult
+import app.jim.guardian.EmergencyResult
+import app.jim.guardian.EscalationPolicy
 import app.jim.guardian.GuardianViewModel
 import app.jim.guardian.ApiClient
 import app.jim.guardian.Goal
@@ -28,6 +30,9 @@ import app.jim.guardian.Guidance
 import app.jim.guardian.Habit
 import app.jim.guardian.JournalItem
 import app.jim.guardian.MonitorResult
+import app.jim.guardian.ProviderInfo
+import app.jim.guardian.Robot
+import app.jim.guardian.RobotSpec
 import kotlin.math.roundToInt
 
 @Composable
@@ -149,6 +154,7 @@ fun OverviewScreen(vm: GuardianViewModel) {
                 }
             }
         }
+        ModelCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Jim.Line)) {
             Text("Sign out", color = Jim.T2)
@@ -440,6 +446,226 @@ private fun JournalPanel(vm: GuardianViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(e.text ?: "—", color = Jim.Txt, fontSize = 14.sp)
                 e.createdAt?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
+            }
+        }
+    }
+}
+
+// ---- Safety: Emergency (SOS), escalation policy, robot helpers ----
+
+@Composable
+fun SafetyScreen(vm: GuardianViewModel) {
+    var tab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("SOS", "Policy", "Robots")
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
+            tabs.forEachIndexed { i, t ->
+                Tab(selected = tab == i, onClick = { tab = i },
+                    text = { Text(t, fontSize = 13.sp) })
+            }
+        }
+        when (tab) {
+            0 -> SOSPanel(vm)
+            1 -> PolicyPanel(vm)
+            else -> RobotsPanel(vm)
+        }
+    }
+}
+
+@Composable
+private fun SOSPanel(vm: GuardianViewModel) {
+    var situation by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var result by remember { mutableStateOf<EmergencyResult?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Box(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Jim.Red)
+                .clickable(enabled = !busy) {
+                    busy = true; error = null
+                    vm.call({ ApiClient.emergency(vm.uid!!, vm.token!!, situation, location) }) { r ->
+                        busy = false
+                        r.onSuccess { result = it }.onFailure { error = it.message }
+                    }
+                }
+                .padding(vertical = 28.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("SOS", color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Black)
+                Text(if (busy) "Coordinating…" else "Tap for emergency",
+                    color = Color.White, fontSize = 12.sp)
+            }
+        }
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            labeledField("What's happening? (optional)", situation, "") { situation = it }
+            labeledField("Where are you? (optional)", location, "") { location = it }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
+        result?.let { r ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Coordinated response", color = Jim.Txt, fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold)
+                r.flow.forEachIndexed { i, s ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("${i + 1}", color = Jim.Red, fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold)
+                        Column {
+                            Text(s.label, color = Jim.Txt, fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold)
+                            Text(s.detail, color = Jim.T2, fontSize = 12.sp)
+                        }
+                    }
+                }
+                r.directives.forEach { d ->
+                    Text("🤖 ${d.robot}: ${d.directive.replace('_', ' ')}",
+                        color = Jim.Amber, fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PolicyPanel(vm: GuardianViewModel) {
+    var policy by remember { mutableStateOf<EscalationPolicy?>(null) }
+    fun reload() {
+        vm.call({ ApiClient.escalationPolicy(vm.uid!!, vm.token!!) }) { r -> policy = r.getOrNull() }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Sensitivity", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf("cautious", "balanced", "assertive").forEach { lvl ->
+                    FilterChip(
+                        selected = policy?.sensitivity == lvl,
+                        onClick = {
+                            vm.call({ ApiClient.setSensitivity(vm.uid!!, vm.token!!, lvl) }) { reload() }
+                        },
+                        label = { Text(lvl.replaceFirstChar { it.uppercase() }, fontSize = 12.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Jim.BrandA,
+                            selectedLabelColor = Color.White, labelColor = Jim.T2,
+                        ),
+                    )
+                }
+            }
+            Text("Cautious escalates a rung earlier; assertive a rung later. Crisis and critical events have floors no dial can lower.",
+                color = Jim.T2, fontSize = 12.sp)
+        }
+        policy?.let { p ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("How each severity resolves", color = Jim.Txt, fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold)
+                listOf("info", "guidance", "critical").forEach { sev ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(sev.replaceFirstChar { it.uppercase() }, color = Jim.Txt, fontSize = 14.sp)
+                        Text((p.bySeverity[sev] ?: "—").replace('_', ' '),
+                            color = if (sev == "critical") Jim.Red else Jim.BrandA,
+                            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RobotsPanel(vm: GuardianViewModel) {
+    var catalog by remember { mutableStateOf<List<RobotSpec>>(emptyList()) }
+    var chosen by remember { mutableStateOf("neo") }
+    var robots by remember { mutableStateOf<List<Robot>>(emptyList()) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() { vm.call({ ApiClient.robots(vm.uid!!, vm.token!!) }) { r -> robots = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.roboticsCatalog() }) { r -> catalog = r.getOrDefault(emptyList()) }
+        reload()
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Bind a robot", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("Bound robots respond to escalations: mobile bodies come to you; vacuums dock and clear the floor.",
+                color = Jim.T2, fontSize = 12.sp)
+            catalog.chunked(2).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    row.forEach { s ->
+                        FilterChip(
+                            selected = chosen == s.model, onClick = { chosen = s.model },
+                            label = { Text(s.label, fontSize = 11.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Jim.BrandA,
+                                selectedLabelColor = Color.White, labelColor = Jim.T2,
+                            ),
+                        )
+                    }
+                }
+            }
+            BrandButton("Bind", enabled = catalog.isNotEmpty(), busy = busy) {
+                busy = true; error = null
+                vm.call({ ApiClient.bindRobot(vm.uid!!, vm.token!!, chosen) }) { r ->
+                    busy = false
+                    r.onFailure { error = it.message }
+                    reload()
+                }
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
+        robots.forEach { rob ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(rob.name, color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text((rob.status ?: "docked").replaceFirstChar { it.uppercase() },
+                        color = Jim.T2, fontSize = 12.sp)
+                }
+                rob.directive?.let {
+                    Text("On escalation: ${it.replace('_', ' ')}", color = Jim.Amber, fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}
+
+// ---- Model picker (which LLM powers coaching & guidance) ----
+
+@Composable
+fun ModelCard(vm: GuardianViewModel) {
+    var providers by remember { mutableStateOf<List<ProviderInfo>>(emptyList()) }
+    var current by remember { mutableStateOf("auto") }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.models() }) { r -> providers = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.userModel(vm.uid!!, vm.token!!) }) { r ->
+            r.getOrNull()?.let { current = it }
+        }
+    }
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Model", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text("Which LLM powers your coaching and guidance.", color = Jim.T2, fontSize = 12.sp)
+        providers.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                row.forEach { p ->
+                    FilterChip(
+                        selected = current == p.name,
+                        onClick = {
+                            vm.call({ ApiClient.setModel(vm.uid!!, vm.token!!, p.name) }) {
+                                current = p.name
+                            }
+                        },
+                        label = { Text(p.label + if (p.configured) "" else " (no key)",
+                            fontSize = 11.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Jim.BrandA,
+                            selectedLabelColor = Color.White, labelColor = Jim.T2,
+                        ),
+                    )
+                }
             }
         }
     }

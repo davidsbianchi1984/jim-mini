@@ -25,6 +25,7 @@
             <SolidColorBrush x:Key="JimT2Brush" Color="{StaticResource JimT2}" />
             <SolidColorBrush x:Key="JimBrandABrush" Color="{StaticResource JimBrandA}" />
             <SolidColorBrush x:Key="JimGreenBrush" Color="{StaticResource JimGreen}" />
+            <SolidColorBrush x:Key="JimRedBrush" Color="{StaticResource JimRed}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

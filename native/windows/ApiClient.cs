@@ -56,6 +56,53 @@ public record JournalItem(
     [property: JsonPropertyName("text")] string? Text,
     [property: JsonPropertyName("created_at")] string? CreatedAt);
 
+public record ProviderInfo(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("configured")] bool Configured);
+
+public record ModelsList(
+    [property: JsonPropertyName("providers")] ProviderInfo[] Providers,
+    [property: JsonPropertyName("default")] string Default);
+
+public record ModelChoice(
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("effective")] string Effective);
+
+public record EscalationPolicy(
+    [property: JsonPropertyName("sensitivity")] string Sensitivity,
+    [property: JsonPropertyName("ladder")] string[] Ladder,
+    [property: JsonPropertyName("by_severity")] System.Collections.Generic.Dictionary<string, string> BySeverity);
+
+public record FlowStep(
+    [property: JsonPropertyName("step")] string Step,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("detail")] string Detail);
+
+public record RobotDirective(
+    [property: JsonPropertyName("robot")] string RobotName,
+    [property: JsonPropertyName("directive")] string Directive);
+
+public record EmergencyResult(
+    [property: JsonPropertyName("emergency")] bool Emergency,
+    [property: JsonPropertyName("flow")] FlowStep[] Flow,
+    [property: JsonPropertyName("robot_directives")] RobotDirective[]? RobotDirectives);
+
+public record RobotSpec(
+    [property: JsonPropertyName("model")] string Model,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("maker")] string Maker);
+
+public record RoboticsCatalog(
+    [property: JsonPropertyName("robots")] RobotSpec[] Robots);
+
+public record Robot(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("model")] string Model,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("status")] string? Status,
+    [property: JsonPropertyName("escalation_directive")] string? EscalationDirective);
+
 /// <summary>
 /// Async client for the JIM Guardian backend. Windows reaches the local dev
 /// server directly on 127.0.0.1.
@@ -146,4 +193,52 @@ public sealed class ApiClient
         var res = await _http.SendAsync(req);
         res.EnsureSuccessStatusCode();
     }
+
+    // -- model selection --
+
+    public Task<ModelsList> Models() =>
+        Send<ModelsList>(new HttpRequestMessage(HttpMethod.Get, "/models"));
+
+    public Task<ModelChoice> UserModel(string uid, string token) =>
+        Send<ModelChoice>(Get($"/model/{uid}", token));
+
+    public Task<ModelChoice> SetModel(string uid, string token, string provider)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Put, $"/model/{uid}")
+        {
+            Content = JsonContent.Create(new { provider }),
+        };
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<ModelChoice>(req);
+    }
+
+    // -- safety: escalation policy, Emergency, robots --
+
+    public Task<EscalationPolicy> EscalationPolicy(string uid, string token) =>
+        Send<EscalationPolicy>(Get($"/escalation-policy/{uid}", token));
+
+    public async Task SetSensitivity(string uid, string token, string level)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Put, $"/sensitivity/{uid}")
+        {
+            Content = JsonContent.Create(new { level }),
+        };
+        req.Headers.Add("authorization", $"Bearer {token}");
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
+
+    public Task<EmergencyResult> Emergency(string uid, string token,
+                                           string? situation, string? location) =>
+        Send<EmergencyResult>(Post($"/emergency/{uid}",
+            new { situation, location }, token));
+
+    public Task<RoboticsCatalog> Robotics() =>
+        Send<RoboticsCatalog>(new HttpRequestMessage(HttpMethod.Get, "/robotics/catalog"));
+
+    public Task<Robot[]> Robots(string uid, string token) =>
+        Send<Robot[]>(Get($"/robots/{uid}", token));
+
+    public Task<Robot> BindRobot(string uid, string token, string model) =>
+        Send<Robot>(Post($"/robots/{uid}", new { model }, token));
 }

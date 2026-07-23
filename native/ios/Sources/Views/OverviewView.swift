@@ -5,6 +5,8 @@ struct OverviewView: View {
     @EnvironmentObject var state: AppState
     @State private var metrics: [BaselineMetric] = []
     @State private var loading = true
+    @State private var providers: [ProviderInfo] = []
+    @State private var provider = "auto"
 
     var body: some View {
         ScrollView {
@@ -36,6 +38,20 @@ struct OverviewView: View {
                     }
                 }.card()
 
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Model").font(.headline).foregroundStyle(Theme.txt)
+                    Text("Which LLM powers your coaching and guidance.")
+                        .font(.caption).foregroundStyle(Theme.t2)
+                    Picker("", selection: $provider) {
+                        Text("Auto (platform default)").tag("auto")
+                        ForEach(providers, id: \.name) { p in
+                            Text(p.label + (p.configured ? "" : " (no key)")).tag(p.name)
+                        }
+                    }
+                    .pickerStyle(.menu).tint(Theme.brandA)
+                    .onChange(of: provider) { _ in applyModel() }
+                }.card()
+
                 Button("Sign out") { state.signOut() }
                     .font(.subheadline).foregroundStyle(Theme.t2)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)
@@ -45,10 +61,20 @@ struct OverviewView: View {
         .task { await load() }
     }
 
+    private func applyModel() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task { _ = try? await ApiClient.shared.setModel(uid: uid, token: token,
+                                                        provider: provider) }
+    }
+
     private func load() async {
         guard let uid = state.uid, let token = state.token else { return }
         loading = true
         metrics = (try? await ApiClient.shared.baseline(uid: uid, token: token)) ?? []
+        providers = (try? await ApiClient.shared.models())?.providers.filter { $0.name != "auto" } ?? []
+        if let m = try? await ApiClient.shared.userModel(uid: uid, token: token) {
+            provider = m.provider
+        }
         loading = false
     }
 }

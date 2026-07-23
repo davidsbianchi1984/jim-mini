@@ -40,6 +40,18 @@
                     </ItemsControl>
                 </StackPanel>
             </Border>
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Model" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock Text="Which LLM powers your coaching and guidance."
+                               Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                    <ComboBox x:Name="ProviderBox" HorizontalAlignment="Stretch"
+                              SelectionChanged="OnProviderPicked" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

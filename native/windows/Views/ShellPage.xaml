@@ -24,6 +24,9 @@
             <NavigationViewItem Content="Life" Tag="life">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Flag" /></NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Content="Safety" Tag="safety">
+                <NavigationViewItem.Icon><SymbolIcon Symbol="ReportHacked" /></NavigationViewItem.Icon>
+            </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>
             <Button Content="Sign out" Margin="12" Click="OnSignOut"

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.SafetyPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <Pivot MaxWidth="680" Margin="20,12" Foreground="{StaticResource JimTxtBrush}">
+
+        <!-- SOS -->
+        <PivotItem Header="SOS">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Button x:Name="SosButton" HorizontalAlignment="Stretch" Height="96"
+                            Background="{StaticResource JimRedBrush}" Foreground="White"
+                            Click="OnSos">
+                        <StackPanel>
+                            <TextBlock Text="SOS" FontSize="30" FontWeight="Black"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock x:Name="SosHint" Text="Click for emergency" FontSize="12"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="10">
+                            <TextBox x:Name="SituationBox" Header="What's happening? (optional)" />
+                            <TextBox x:Name="LocationBox" Header="Where are you? (optional)" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="SosError" Foreground="{StaticResource JimRed}" FontSize="13"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <ItemsControl x:Name="FlowList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                                        BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,0,6">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="{Binding Label}" FontWeight="Bold"
+                                                   Foreground="{StaticResource JimTxtBrush}" />
+                                        <TextBlock Text="{Binding Detail}" FontSize="12"
+                                                   Foreground="{StaticResource JimT2Brush}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+
+        <!-- Policy -->
+        <PivotItem Header="Policy">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="10">
+                            <ComboBox x:Name="SensitivityBox" Header="Sensitivity" HorizontalAlignment="Stretch"
+                                      SelectionChanged="OnSensitivityPicked">
+                                <ComboBoxItem Content="cautious" />
+                                <ComboBoxItem Content="balanced" />
+                                <ComboBoxItem Content="assertive" />
+                            </ComboBox>
+                            <TextBlock Text="Cautious escalates a rung earlier; assertive a rung later. Crisis and critical events have floors no dial can lower."
+                                       Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <ItemsControl x:Name="PolicyList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="4">
+                                    <TextBlock Text="{Binding Severity}" Foreground="{StaticResource JimTxtBrush}"
+                                               HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding Tier}" Foreground="{StaticResource JimBrandABrush}"
+                                               FontWeight="Bold" HorizontalAlignment="Right" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+
+        <!-- Robots -->
+        <PivotItem Header="Robots">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="10">
+                            <ComboBox x:Name="RobotModelBox" Header="Bind a robot" HorizontalAlignment="Stretch" />
+                            <Button x:Name="BindButton" Content="Bind" HorizontalAlignment="Stretch"
+                                    Height="42" Foreground="White" Click="OnBind">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="{StaticResource JimBrandA}" Offset="0" />
+                                        <GradientStop Color="#FF3AA0FF" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                            </Button>
+                            <TextBlock Text="Bound robots respond to escalations: mobile bodies come to you; vacuums dock and clear the floor."
+                                       Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="RobotError" Foreground="{StaticResource JimRed}" FontSize="13"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <ItemsControl x:Name="RobotsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                                        BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,0,6">
+                                    <StackPanel Spacing="2">
+                                        <Grid>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold"
+                                                       Foreground="{StaticResource JimTxtBrush}" />
+                                            <TextBlock Text="{Binding Status}" HorizontalAlignment="Right"
+                                                       Foreground="{StaticResource JimT2Brush}" FontSize="12" />
+                                        </Grid>
+                                        <TextBlock Text="{Binding Directive}" FontSize="12"
+                                                   Foreground="{StaticResource JimT2Brush}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+    </Pivot>
+</Page>
