@@ -130,6 +130,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 </tr>
 <tr>
 <td align="center" width="25%"><img src="docs/screens/48-connected-apps.svg" width="160" alt="48 Connected Apps"><br><sub>48 · Connected Apps</sub></td>
+<td align="center" width="25%"><img src="docs/screens/49-knowledge-excursions.svg" width="160" alt="49 Knowledge Excursions"><br><sub>49 · Knowledge Excursions</sub></td>
 </tr>
 </table>
 
