@@ -16,6 +16,9 @@ data class MonitorResult(
 )
 data class CheckinResult(val id: String, val guidance: Guidance?)
 data class BaselineMetric(val metric: String, val value: Double?, val state: String?, val samples: Int?)
+data class Goal(val id: String, val area: String, val title: String, val target: String?, val status: String?)
+data class Habit(val id: String, val name: String, val streak: Int?)
+data class JournalItem(val id: String, val text: String?, val createdAt: String?)
 
 class ApiException(message: String) : Exception(message)
 
@@ -102,5 +105,66 @@ object ApiClient {
                 if (o.has("samples")) o.optInt("samples") else null,
             )
         }
+    }
+
+    // ---- life coach & insights ----
+
+    suspend fun coach(uid: String, token: String, area: String, message: String): Guidance {
+        val o = request("/coach/$uid", "POST",
+            JSONObject().put("area", area).put("message", message), token)
+        return Guidance(o.optBoolean("delivered"), o.optString("source", null), o.optString("content", ""))
+    }
+
+    private suspend fun getArray(path: String, token: String): org.json.JSONArray = withContext(Dispatchers.IO) {
+        val conn = (URL("$base$path").openConnection() as HttpURLConnection).apply {
+            setRequestProperty("authorization", "Bearer $token")
+            connectTimeout = 8000; readTimeout = 8000
+        }
+        val text = conn.inputStream.bufferedReader().use { it.readText() }
+        conn.disconnect(); org.json.JSONArray(text)
+    }
+
+    suspend fun goals(uid: String, token: String): List<Goal> {
+        val arr = getArray("/goals/$uid", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            Goal(o.getString("id"), o.optString("area", ""), o.optString("title", ""),
+                o.optString("target", null), o.optString("status", null))
+        }
+    }
+
+    suspend fun addGoal(uid: String, token: String, area: String, title: String, target: String?) {
+        val body = JSONObject().put("area", area).put("title", title)
+        if (!target.isNullOrBlank()) body.put("target", target)
+        request("/goals/$uid", "POST", body, token)
+    }
+
+    suspend fun habits(uid: String, token: String): List<Habit> {
+        val arr = getArray("/habits/$uid", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            Habit(o.getString("id"), o.optString("name", ""), if (o.has("streak")) o.optInt("streak") else null)
+        }
+    }
+
+    suspend fun addHabit(uid: String, token: String, name: String) {
+        request("/habits/$uid", "POST", JSONObject().put("name", name), token)
+    }
+
+    suspend fun logHabit(uid: String, token: String, habitId: String) {
+        request("/habits/$uid/$habitId/log", "POST", JSONObject(), token)
+    }
+
+    suspend fun journal(uid: String, token: String): List<JournalItem> {
+        val arr = getArray("/journal/$uid", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            JournalItem(o.getString("id"), if (o.isNull("text")) null else o.optString("text", null),
+                o.optString("created_at", null))
+        }
+    }
+
+    suspend fun addJournal(uid: String, token: String, text: String) {
+        request("/journal/$uid", "POST", JSONObject().put("text", text), token)
     }
 }

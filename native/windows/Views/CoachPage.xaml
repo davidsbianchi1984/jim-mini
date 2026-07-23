@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.CoachPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
+            <TextBlock Text="Life Coach" FontSize="22" FontWeight="Bold" Foreground="{StaticResource JimTxtBrush}" />
+            <TextBlock Text="Talk something through. Your coach knows your baseline and goals."
+                       Foreground="{StaticResource JimT2Brush}" FontSize="13" TextWrapping="Wrap" />
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <ComboBox x:Name="AreaBox" Header="Area" SelectedIndex="0" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="mental_health" />
+                        <ComboBoxItem Content="health_fitness" />
+                        <ComboBoxItem Content="career" />
+                        <ComboBoxItem Content="finance" />
+                        <ComboBoxItem Content="relationships" />
+                        <ComboBoxItem Content="personal_growth" />
+                    </ComboBox>
+                    <TextBox x:Name="MessageBox" Header="Message" PlaceholderText="What's on your mind?"
+                             AcceptsReturn="True" TextWrapping="Wrap" Height="90" />
+                    <Button x:Name="AskButton" Content="Ask coach" HorizontalAlignment="Stretch"
+                            Height="44" Foreground="White" Click="OnAsk">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="{StaticResource JimBrandA}" Offset="0" />
+                                <GradientStop Color="#FF3AA0FF" Offset="1" />
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <TextBlock x:Name="ErrorText" Foreground="{StaticResource JimRed}" FontSize="13"
+                       TextWrapping="Wrap" Visibility="Collapsed" />
+
+            <Border x:Name="ReplyCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1" CornerRadius="16"
+                    Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Coach" FontWeight="Bold" FontSize="16" Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="ReplyText" Foreground="{StaticResource JimTxtBrush}"
+                               FontSize="14" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

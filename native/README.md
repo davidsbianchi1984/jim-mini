@@ -10,11 +10,12 @@ talking to the same [JIM backend](../jim/api.py).
 | **Android** | Kotlin + Jetpack Compose | Android Studio emulator | [`android/`](android/) |
 | **Windows** | C# + WinUI 3 | Windows 10/11 desktop | [`windows/`](windows/) |
 
-Each target ships the same first slice of the app — four screens that exercise
-the real API end to end:
+Each target ships the same screens, exercising the real API end to end:
 
 **Welcome / Enroll** → `POST /enroll` · **Overview** → `GET /baseline` ·
-**Live Monitoring** → `POST /monitor` · **Check-in** → `POST /checkin`
+**Live Monitoring** → `POST /monitor` · **Check-in** → `POST /checkin` ·
+**Coach** → `POST /coach` · **Life** (goals / habits / journal) →
+`/goals`, `/habits`, `/journal`
 
 They persist the returned `user_token` so the app resumes signed-in, and share
 the JIM dark-OLED palette so all three feel like one product. See each folder's
@@ -40,11 +41,12 @@ On a physical phone, point the client at your machine's LAN IP instead.
 
 ## Scope
 
-This is a functional **scaffold**, not the full 46-screen app — enough to build,
-run, sign in, and round-trip live data on each OS. The remaining JIM
-capabilities (coach, goals, habits, journal, emergency, Medical-ID QR,
-sensitivity, sources) already have backend endpoints in
-[`jim/api.py`](../jim/api.py) to grow into further native screens.
+This is a functional **scaffold**, not the full screen gallery — enough to
+build, run, sign in, and round-trip live data on each OS across enroll,
+monitoring, check-in, coaching, goals, habits, and journal. The remaining JIM
+capabilities (emergency, Medical-ID QR, sensitivity, sources, connectors)
+already have backend endpoints in [`jim/api.py`](../jim/api.py) to grow into
+further native screens.
 
 The existing Electron desktop app in [`../app`](../app) still builds the signed
 `.dmg` / `.exe` / `.AppImage` installers; these native targets are additive.

@@ -18,6 +18,12 @@
             <NavigationViewItem Content="Check-in" Tag="checkin">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Emoji2" /></NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Content="Coach" Tag="coach">
+                <NavigationViewItem.Icon><SymbolIcon Symbol="Message" /></NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="Life" Tag="life">
+                <NavigationViewItem.Icon><SymbolIcon Symbol="Flag" /></NavigationViewItem.Icon>
+            </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>
             <Button Content="Sign out" Margin="12" Click="OnSignOut"

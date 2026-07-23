@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -28,6 +30,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import app.jim.guardian.ui.Jim
 import app.jim.guardian.ui.JimTheme
 import app.jim.guardian.ui.CheckinScreen
+import app.jim.guardian.ui.CoachScreen
+import app.jim.guardian.ui.LifeScreen
 import app.jim.guardian.ui.MonitorScreen
 import app.jim.guardian.ui.OverviewScreen
 import app.jim.guardian.ui.WelcomeScreen
@@ -56,6 +60,8 @@ private fun HomeShell(vm: GuardianViewModel) {
         Triple("Overview", Icons.Filled.GridView, 0),
         Triple("Monitor", Icons.Filled.Favorite, 1),
         Triple("Check-in", Icons.Filled.Spa, 2),
+        Triple("Coach", Icons.Filled.Chat, 3),
+        Triple("Life", Icons.Filled.Star, 4),
     )
     Scaffold(
         containerColor = Jim.ScrBot,
@@ -83,7 +89,9 @@ private fun HomeShell(vm: GuardianViewModel) {
             when (tab) {
                 0 -> OverviewScreen(vm)
                 1 -> MonitorScreen(vm)
-                else -> CheckinScreen(vm)
+                2 -> CheckinScreen(vm)
+                3 -> CoachScreen(vm)
+                else -> LifeScreen(vm)
             }
         }
     }

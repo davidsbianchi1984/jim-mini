@@ -25,6 +25,8 @@ struct RootView: View {
                     OverviewView().tabItem { Label("Overview", systemImage: "circle.grid.cross") }
                     MonitorView().tabItem { Label("Monitor", systemImage: "waveform.path.ecg") }
                     CheckinView().tabItem { Label("Check-in", systemImage: "leaf") }
+                    CoachView().tabItem { Label("Coach", systemImage: "bubble.left.and.text.bubble.right") }
+                    LifeView().tabItem { Label("Life", systemImage: "target") }
                 }
                 .tint(Theme.brandA)
             } else {
