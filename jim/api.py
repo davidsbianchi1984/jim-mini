@@ -9,14 +9,15 @@ from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException, Request, Response
 
-from . import (app_connectors, auth, catalog, coach, db, guardian, life,
+from . import (app_connectors, auth, catalog, coach, db, guardian, life, llm,
                research, social)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
-    HabitLog, JournalEntry, PersonalityUpdate, SensitivitySet, SessionStart,
-    SocialCollect, SocialConnect, SocialPublish, SourceConsent, SpecialistRegister,
+    HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, SensitivitySet,
+    SessionStart, SocialCollect, SocialConnect, SocialPublish, SourceConsent,
+    SpecialistRegister,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -99,6 +100,32 @@ def create_app(qrme_client: QRMEClient | None = None,
             "contribution": "opt-in per user via cloud_contribution; "
                             "anonymized guidance outcomes only; revocable",
         }
+
+    @app.get("/models")
+    def list_models() -> dict:
+        """Every LLM provider JIM knows about, with whether it is configured in
+        this deployment, so a settings screen can enable/disable choices."""
+        return {"providers": llm.available(), "default": llm.default_name()}
+
+    @app.get("/model/{user_id}")
+    def get_user_model(user_id: str, request: Request) -> dict:
+        """The user's stored provider preference and what it resolves to now."""
+        _user_or_404(user_id, request)
+        choice = llm.get_choice(user_id)
+        return {"user_id": user_id, "provider": choice,
+                "effective": llm.resolve_choice(choice)}
+
+    @app.put("/model/{user_id}")
+    def set_user_model(user_id: str, body: ModelChoice,
+                       request: Request) -> dict:
+        """Choose which LLM powers this user's coaching and guidance."""
+        _user_or_404(user_id, request)
+        if body.provider not in llm.CHOICES:
+            raise HTTPException(
+                422, f"provider must be one of {', '.join(llm.CHOICES)}")
+        llm.set_choice(user_id, body.provider)
+        return {"user_id": user_id, "provider": body.provider,
+                "effective": llm.resolve_choice(body.provider)}
 
     @app.post("/enroll", status_code=201)
     def enroll(body: Enroll) -> dict:

@@ -181,7 +181,11 @@ def generate(detection: conditions.Detection, note: str | None,
     if memory:
         system += f"\nprior interactions: {memory}"
     prompt = note or f"The user may be experiencing {label}."
-    text = llm.get_provider().generate(system, prompt)
+    # Honor the user's chosen provider when we know who this is; fall back to
+    # the platform default for anonymous/pre-enrollment guidance.
+    provider = (llm.provider_for_user(user["id"]) if user and user.get("id")
+                else llm.get_provider())
+    text = provider.generate(system, prompt)
 
     if _DENY.search(text):
         return {"delivered": False, "source": "local",

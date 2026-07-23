@@ -108,6 +108,12 @@ class SensitivitySet(BaseModel):
     level: str                              # cautious | balanced | assertive
 
 
+class ModelChoice(BaseModel):
+    # A jim.llm registry name (anthropic | openai | grok | perplexity | gemini
+    # | stub) or "auto" to defer to the platform default.
+    provider: str
+
+
 class SourceConsent(BaseModel):
     source: Source
     consented: bool
