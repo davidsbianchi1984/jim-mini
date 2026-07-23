@@ -10,14 +10,14 @@ from datetime import date, datetime
 from fastapi import FastAPI, HTTPException, Request, Response
 
 from . import (app_connectors, auth, catalog, coach, db, escalation, guardian,
-               life, llm, research, social)
+               life, llm, research, robotics, social)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
-    HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, SensitivitySet,
-    SessionStart, SocialCollect, SocialConnect, SocialPublish, SourceConsent,
-    SpecialistRegister,
+    HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, RobotBind,
+    SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
+    SourceConsent, SpecialistRegister,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -233,6 +233,39 @@ def create_app(qrme_client: QRMEClient | None = None,
     def get_devices(user_id: str, request: Request) -> list[dict]:
         _user_or_404(user_id, request)
         return guardian.devices_for(user_id)
+
+    # ---- robot helpers (guardian responders) ------------------------------
+
+    @app.get("/robotics/catalog")
+    def robotics_catalog() -> dict:
+        """Every supported robot platform, with per-kind command allowlists and
+        the directive each kind receives on an escalation. Public registry."""
+        return robotics.catalog()
+
+    @app.post("/robots/{user_id}", status_code=201)
+    def bind_robot(user_id: str, body: RobotBind, request: Request) -> dict:
+        """Bind a catalog robot as a guardian responder: it registers as a
+        device (escalation alerts dispatch to it) and receives a role-specific
+        directive when the Guardian escalates."""
+        _user_or_404(user_id, request)
+        try:
+            return guardian.bind_robot(user_id, body.model, body.name,
+                                       body.llm_provider)
+        except ValueError as e:
+            raise HTTPException(422 if "llm" in str(e).lower() else 404, str(e))
+
+    @app.get("/robots/{user_id}")
+    def list_robots(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return guardian.robots_for(user_id)
+
+    @app.delete("/robots/{user_id}/{robot_id}")
+    def unbind_robot(user_id: str, robot_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        result = guardian.unbind_robot(user_id, robot_id)
+        if result is None:
+            raise HTTPException(404, "robot not found")
+        return result
 
     # ---- login sessions (cross-device continuity) -------------------------
 

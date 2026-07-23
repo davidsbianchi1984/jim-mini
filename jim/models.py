@@ -114,6 +114,12 @@ class ModelChoice(BaseModel):
     provider: str
 
 
+class RobotBind(BaseModel):
+    model: str                      # jim.robotics catalog key, e.g. "neo"
+    name: str | None = None         # household name; defaults to the label
+    llm_provider: str | None = None  # jim.llm registry name; None → user's
+
+
 class SourceConsent(BaseModel):
     source: Source
     consented: bool

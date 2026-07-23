@@ -140,6 +140,9 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/54-escalation-ladder.svg" width="160" alt="54 Escalation Ladder"><br><sub>54 · Escalation Ladder</sub></td>
 <td align="center" width="25%"><img src="docs/screens/55-emergency-watch.svg" width="160" alt="55 Emergency Watch"><br><sub>55 · Emergency Watch</sub></td>
 </tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/56-robot-helpers.svg" width="160" alt="56 Robot Helpers"><br><sub>56 · Robot Helpers</sub></td>
+</tr>
 </table>
 
 The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 46 All Set**, then hands off to the daily app and, at the other end, **41 End Session**.

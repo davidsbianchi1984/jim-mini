@@ -14,7 +14,7 @@ import secrets
 from datetime import date
 
 from . import (conditions, db, earlywarning, escalation,
-               guidance as local_guidance, life)
+               guidance as local_guidance, life, llm, robotics)
 
 
 def _event(user_id, type_, *, condition=None, severity=None, detail=None,
@@ -259,6 +259,84 @@ def register_device(user_id: str, body: dict) -> dict:
     )
     conn.commit()
     return device_lookup(user_id, body["name"])
+
+
+# ---- robot helpers (jim/robotics.py catalog) -------------------------------
+
+def bind_robot(user_id: str, model: str, name: str | None,
+               llm_provider: str | None) -> dict:
+    """Bind a catalog robot as a guardian responder. Registers a matching
+    devices row so escalation alerts dispatch to the body like any other
+    device; the robot additionally receives a role-appropriate directive."""
+    spec = robotics.get(model)
+    if spec is None:
+        raise ValueError(f"unknown robot model '{model}'")
+    provider = None
+    if spec["llm_capable"]:
+        provider = llm_provider or llm.get_choice(user_id)
+        if provider not in llm.CHOICES:
+            raise ValueError(
+                f"llm_provider must be one of {', '.join(llm.CHOICES)}")
+    elif llm_provider:
+        raise ValueError(f"{spec['label']} cannot run an onboard LLM")
+
+    robot_name = name or spec["label"]
+    conn = db.connect()
+    robot_id = db.new_id("rob")
+    conn.execute(
+        "INSERT INTO robots (id, user_id, model, name, llm_provider, status,"
+        " created_at) VALUES (?,?,?,?,?,'docked',?)",
+        (robot_id, user_id, model, robot_name, provider, db.utcnow()))
+    conn.commit()
+    register_device(user_id, {
+        "name": robot_name, "kind": "autonomous", "transport": "wifi",
+        "has_llm": spec["llm_capable"]})
+    return {"id": robot_id, "user_id": user_id, "model": model,
+            "label": spec["label"], "maker": spec["maker"],
+            "kind": spec["kind"], "name": robot_name,
+            "llm_provider": provider,
+            "escalation_directive": robotics.directive_for(model),
+            "commands": robotics.allowed_commands(model)}
+
+
+def robots_for(user_id: str) -> list[dict]:
+    rows = db.connect().execute(
+        "SELECT * FROM robots WHERE user_id=? ORDER BY created_at, rowid",
+        (user_id,)).fetchall()
+    return [{**dict(r),
+             "escalation_directive": robotics.directive_for(r["model"]),
+             "commands": robotics.allowed_commands(r["model"])} for r in rows]
+
+
+def unbind_robot(user_id: str, robot_id: str) -> dict | None:
+    conn = db.connect()
+    row = conn.execute(
+        "SELECT * FROM robots WHERE id=? AND user_id=?",
+        (robot_id, user_id)).fetchone()
+    if row is None:
+        return None
+    conn.execute("DELETE FROM robots WHERE id=?", (robot_id,))
+    conn.execute("DELETE FROM devices WHERE user_id=? AND name=?",
+                 (user_id, row["name"]))
+    conn.commit()
+    return {"id": robot_id, "unbound": True}
+
+
+def _robot_directives(user_id: str) -> list[dict]:
+    """On an escalation, every bound robot gets its role's directive: mobile
+    bodies converge on the user, vacuums dock and clear the floor."""
+    directives = []
+    conn = db.connect()
+    for r in robots_for(user_id):
+        directive = r["escalation_directive"]
+        if directive is None:
+            continue
+        conn.execute("UPDATE robots SET status='responding' WHERE id=?",
+                     (r["id"],))
+        directives.append({"robot": r["name"], "model": r["model"],
+                           "directive": directive})
+    conn.commit()
+    return directives
 
 
 def devices_for(user_id: str) -> list[dict]:
@@ -642,6 +720,7 @@ def emergency(user_id: str, situation: str | None = None,
         "medical_id": _medical_id(user_id, user),
         "ai_guidance": guidance,
         "dispatched_alerts": dispatched,
+        "robot_directives": _robot_directives(user_id),
         "escalation_decision": decision,
         # The ordered steps the Emergency screen drives, on the watch or phone.
         "flow": [
@@ -856,6 +935,9 @@ def _escalate(user_id, user, detection, decision=None) -> dict:
         "notified_emergency_contact": contact is not None,
         "emergency_contact": contact, "live_support": True,
         "dispatched_alerts": dispatched,
+        # Bound robots respond by role: mobile bodies converge on the user,
+        # vacuums dock and clear the floor for people and responders.
+        "robot_directives": _robot_directives(user_id),
         "tier": decision["tier"],
         "actions": decision["actions"],
         "rationale": decision["rationale"],

@@ -284,6 +284,19 @@ CREATE TABLE IF NOT EXISTS model_prefs (
     provider   TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
+
+-- Robot helpers bound to a user (see jim/robotics.py for the catalog). Each
+-- binding also registers a devices row, so escalation alerts dispatch to the
+-- robot like any other device; the device row's name mirrors the robot's.
+CREATE TABLE IF NOT EXISTS robots (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id),
+    model        TEXT NOT NULL,   -- robotics.BY_KEY key, e.g. neo, saros_20
+    name         TEXT NOT NULL,   -- household name, e.g. "hall NEO"
+    llm_provider TEXT,            -- jim.llm registry name loaded onboard
+    status       TEXT NOT NULL DEFAULT 'docked',  -- docked | active | responding
+    created_at   TEXT NOT NULL
+);
 """
 
 _local = threading.local()
