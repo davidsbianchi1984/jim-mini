@@ -1152,6 +1152,13 @@ SCREENS = [
     dict(num=53, title="Microsoft Copilot", sub="8 apps · collect, act, produce", hero="assistant", provider="microsoft", accent="cyan", tab=0),
     dict(num=54, title="Escalation Ladder", sub="Sensitivity dial · auditable tiers", hero="ladder", accent="red", tab=0),
     dict(num=55, title="Emergency Watch", sub="Hold SOS · coordinated response", hero="sosflow", accent="red", tab=0),
+    dict(num=56, title="Robot Helpers", sub="Guardian responders in the home", hero=None, accent="cyan", tab=0, cards=[
+        dict(icon="person", color="brand", k="NEO · 1X", s="Humanoid · goes to you in a crisis"),
+        dict(icon="heart", color="cyan", k="Memo · Sunday", s="Home robot · Gemini onboard"),
+        dict(icon="target", color="green", k="Saros 20 · Roborock", s="Vacuum · docks & clears floors"),
+        dict(icon="bolt", color="amber", k="On escalation", s="Mobile → to you · vacuums → dock"),
+        dict(icon="shield", color="violet", k="Command allowlist", s="Per-body limits, all audited"),
+    ], button=("Bind a robot", "brand")),
 ]
 
 
