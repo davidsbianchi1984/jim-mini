@@ -137,6 +137,8 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/52-google-gemini.svg" width="160" alt="52 Google Gemini"><br><sub>52 · Google Gemini</sub></td>
 <td align="center" width="25%"><img src="docs/screens/53-microsoft-copilot.svg" width="160" alt="53 Microsoft Copilot"><br><sub>53 · Microsoft Copilot</sub></td>
+<td align="center" width="25%"><img src="docs/screens/54-escalation-ladder.svg" width="160" alt="54 Escalation Ladder"><br><sub>54 · Escalation Ladder</sub></td>
+<td align="center" width="25%"><img src="docs/screens/55-emergency-watch.svg" width="160" alt="55 Emergency Watch"><br><sub>55 · Emergency Watch</sub></td>
 </tr>
 </table>
 
