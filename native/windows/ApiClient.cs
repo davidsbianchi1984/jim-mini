@@ -39,6 +39,23 @@ public record BaselineMetric(
     [property: JsonPropertyName("state")] string? State,
     [property: JsonPropertyName("samples")] int? Samples);
 
+public record Goal(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("area")] string Area,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("target")] string? Target,
+    [property: JsonPropertyName("status")] string? Status);
+
+public record Habit(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("streak")] int? Streak);
+
+public record JournalItem(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("text")] string? Text,
+    [property: JsonPropertyName("created_at")] string? CreatedAt);
+
 /// <summary>
 /// Async client for the JIM Guardian backend. Windows reaches the local dev
 /// server directly on 127.0.0.1.
@@ -92,5 +109,41 @@ public sealed class ApiClient
         var req = new HttpRequestMessage(HttpMethod.Get, $"/baseline/{uid}");
         req.Headers.Add("authorization", $"Bearer {token}");
         return await Send<BaselineMetric[]>(req);
+    }
+
+    // -- life: goals, habits, journal --
+
+    private HttpRequestMessage Get(string path, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, path);
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return req;
+    }
+
+    public Task<Goal[]> Goals(string uid, string token) => Send<Goal[]>(Get($"/goals/{uid}", token));
+
+    public Task<Goal> AddGoal(string uid, string token, string area, string title, string? target) =>
+        Send<Goal>(Post($"/goals/{uid}",
+            target is { Length: > 0 } ? new { area, title, target } : (object)new { area, title }, token));
+
+    public Task<Habit[]> Habits(string uid, string token) => Send<Habit[]>(Get($"/habits/{uid}", token));
+
+    public Task<Habit> AddHabit(string uid, string token, string name) =>
+        Send<Habit>(Post($"/habits/{uid}", new { name }, token));
+
+    public async Task LogHabit(string uid, string token, string habitId)
+    {
+        var req = Post($"/habits/{uid}/{habitId}/log", new { }, token);
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
+
+    public Task<JournalItem[]> Journal(string uid, string token) => Send<JournalItem[]>(Get($"/journal/{uid}", token));
+
+    public async Task AddJournal(string uid, string token, string text)
+    {
+        var req = Post($"/journal/{uid}", new { text }, token);
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
     }
 }

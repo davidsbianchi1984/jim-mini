@@ -23,6 +23,10 @@ import app.jim.guardian.BaselineMetric
 import app.jim.guardian.CheckinResult
 import app.jim.guardian.GuardianViewModel
 import app.jim.guardian.ApiClient
+import app.jim.guardian.Goal
+import app.jim.guardian.Guidance
+import app.jim.guardian.Habit
+import app.jim.guardian.JournalItem
 import app.jim.guardian.MonitorResult
 import kotlin.math.roundToInt
 
@@ -257,6 +261,185 @@ private fun ratingRow(label: String, value: Int, onPick: (Int) -> Unit) {
                     .clickableNoRipple { onPick(i) }, contentAlignment = Alignment.Center) {
                     Text("$i", color = if (i <= value) Color.White else Jim.T2, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
+            }
+        }
+    }
+}
+
+private val LIFE_AREAS = listOf("mental_health", "health_fitness", "career",
+    "finance", "relationships", "personal_growth")
+
+private fun pretty(s: String) = s.replace('_', ' ').replaceFirstChar { it.uppercase() }
+
+// ---- Coach ----
+
+@Composable
+fun CoachScreen(vm: GuardianViewModel) {
+    var area by remember { mutableStateOf("mental_health") }
+    var message by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    var reply by remember { mutableStateOf<Guidance?>(null) }
+
+    screenScroll {
+        Text("Life Coach", color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("Talk something through. Your coach knows your baseline and goals.",
+            color = Jim.T2, fontSize = 13.sp)
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            areaChips(area) { area = it }
+            labeledField("Message", message, "What's on your mind?") { message = it }
+        }
+        BrandButton("Ask coach", enabled = message.isNotBlank(), busy = busy) {
+            busy = true
+            vm.call({ ApiClient.coach(vm.uid!!, vm.token!!, area, message) }) {
+                reply = it.getOrNull(); busy = false
+            }
+        }
+        reply?.let { g ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Coach", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(g.content, color = Jim.Txt, fontSize = 14.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun areaChips(selected: String, onPick: (String) -> Unit) {
+    Text("Area", color = Jim.T2, fontSize = 12.sp)
+    FlowRowChips(LIFE_AREAS, selected, onPick)
+}
+
+@Composable
+private fun FlowRowChips(items: List<String>, selected: String, onPick: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        items.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                row.forEach { a ->
+                    FilterChip(
+                        selected = selected == a, onClick = { onPick(a) },
+                        label = { Text(pretty(a), fontSize = 12.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Jim.BrandA,
+                            selectedLabelColor = Color.White, labelColor = Jim.T2,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ---- Life: goals / habits / journal ----
+
+@Composable
+fun LifeScreen(vm: GuardianViewModel) {
+    var tab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Goals", "Habits", "Journal")
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
+            tabs.forEachIndexed { i, t ->
+                Tab(selected = tab == i, onClick = { tab = i },
+                    text = { Text(t, fontSize = 13.sp) })
+            }
+        }
+        when (tab) {
+            0 -> GoalsPanel(vm)
+            1 -> HabitsPanel(vm)
+            else -> JournalPanel(vm)
+        }
+    }
+}
+
+@Composable
+private fun GoalsPanel(vm: GuardianViewModel) {
+    var goals by remember { mutableStateOf<List<Goal>>(emptyList()) }
+    var area by remember { mutableStateOf("personal_growth") }
+    var title by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    fun reload() { vm.call({ ApiClient.goals(vm.uid!!, vm.token!!) }) { r -> goals = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("New goal", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            areaChips(area) { area = it }
+            labeledField("Title", title, "What do you want to achieve?") { title = it }
+            BrandButton("Add goal", enabled = title.isNotBlank(), busy = busy) {
+                busy = true
+                vm.call({ ApiClient.addGoal(vm.uid!!, vm.token!!, area, title, null) }) {
+                    title = ""; busy = false; reload()
+                }
+            }
+        }
+        goals.forEach { g ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(g.title, color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(pretty(g.area), color = Jim.T2, fontSize = 12.sp)
+                    Text(pretty(g.status ?: "active"), color = Jim.T3, fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HabitsPanel(vm: GuardianViewModel) {
+    var habits by remember { mutableStateOf<List<Habit>>(emptyList()) }
+    var name by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    fun reload() { vm.call({ ApiClient.habits(vm.uid!!, vm.token!!) }) { r -> habits = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("New habit", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            labeledField("Name", name, "e.g. Walk 20 minutes") { name = it }
+            BrandButton("Add habit", enabled = name.isNotBlank(), busy = busy) {
+                busy = true
+                vm.call({ ApiClient.addHabit(vm.uid!!, vm.token!!, name) }) {
+                    name = ""; busy = false; reload()
+                }
+            }
+        }
+        habits.forEach { h ->
+            Row(Modifier.card(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(h.name, color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("🔥 ${h.streak ?: 0} day streak", color = Jim.Amber, fontSize = 12.sp)
+                }
+                TextButton(onClick = {
+                    vm.call({ ApiClient.logHabit(vm.uid!!, vm.token!!, h.id) }) { reload() }
+                }) { Text("Log", color = Jim.BrandA, fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun JournalPanel(vm: GuardianViewModel) {
+    var entries by remember { mutableStateOf<List<JournalItem>>(emptyList()) }
+    var text by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    fun reload() { vm.call({ ApiClient.journal(vm.uid!!, vm.token!!) }) { r -> entries = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("New entry", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            labeledField("Entry", text, "How was today?") { text = it }
+            BrandButton("Save entry", enabled = text.isNotBlank(), busy = busy) {
+                busy = true
+                vm.call({ ApiClient.addJournal(vm.uid!!, vm.token!!, text) }) {
+                    text = ""; busy = false; reload()
+                }
+            }
+        }
+        entries.asReversed().forEach { e ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(e.text ?: "—", color = Jim.Txt, fontSize = 14.sp)
+                e.createdAt?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
             }
         }
     }

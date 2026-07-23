@@ -36,6 +36,26 @@ struct BaselineMetric: Decodable {
 
 struct Health: Decodable { let status: String; let tandem: Bool }
 
+struct Goal: Decodable {
+    let id: String
+    let area: String
+    let title: String
+    let target: String?
+    let status: String?
+}
+
+struct Habit: Decodable {
+    let id: String
+    let name: String
+    let streak: Int?
+}
+
+struct JournalItem: Decodable {
+    let id: String
+    let text: String?
+    let created_at: String?
+}
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -94,5 +114,40 @@ actor ApiClient {
 
     func baseline(uid: String, token: String) async throws -> [BaselineMetric] {
         try await request("/baseline/\(uid)", token: token)
+    }
+
+    // MARK: Life — goals, habits, journal
+
+    func goals(uid: String, token: String) async throws -> [Goal] {
+        try await request("/goals/\(uid)", token: token)
+    }
+
+    func addGoal(uid: String, token: String, area: String, title: String,
+                 target: String?) async throws -> Goal {
+        var body: [String: Any] = ["area": area, "title": title]
+        if let target, !target.isEmpty { body["target"] = target }
+        return try await request("/goals/\(uid)", method: "POST", body: body, token: token)
+    }
+
+    func habits(uid: String, token: String) async throws -> [Habit] {
+        try await request("/habits/\(uid)", token: token)
+    }
+
+    func addHabit(uid: String, token: String, name: String) async throws -> Habit {
+        try await request("/habits/\(uid)", method: "POST", body: ["name": name], token: token)
+    }
+
+    func logHabit(uid: String, token: String, habitId: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/habits/\(uid)/\(habitId)/log", method: "POST", token: token)
+    }
+
+    func journal(uid: String, token: String) async throws -> [JournalItem] {
+        try await request("/journal/\(uid)", token: token)
+    }
+
+    func addJournal(uid: String, token: String, text: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/journal/\(uid)", method: "POST", body: ["text": text], token: token)
     }
 }

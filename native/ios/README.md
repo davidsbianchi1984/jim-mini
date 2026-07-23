@@ -36,10 +36,10 @@ plain-http localhost.
 | `Sources/ApiClient.swift` | async `URLSession` client + wire models |
 | `Sources/AppState.swift` | enrolled identity + token, persisted |
 | `Sources/Theme.swift` | the JIM dark-OLED palette |
-| `Sources/Views/*` | Welcome, Overview, Monitor, Check-in |
+| `Sources/Views/*` | Welcome, Overview, Monitor, Check-in, Coach, Life |
 
 ## Not yet wired
 
-This is a functional scaffold, not the full 46-screen app. Coach, goals, habits,
-journal, emergency, and the Medical-ID QR all have backend endpoints
+This is a functional scaffold, not the full screen gallery. Emergency, the
+Medical-ID QR, sensitivity, and sources all have backend endpoints
 (`jim/api.py`) ready to add as further screens.
