@@ -40,6 +40,6 @@ plain-http localhost.
 
 ## Not yet wired
 
-This is a functional scaffold, not the full screen gallery. The Medical-ID QR
-and sources still have backend endpoints (`jim/api.py`) ready to add as
-further screens.
+This is a functional scaffold, not the full screen gallery. Sources and the
+social/app connectors still have backend endpoints (`jim/api.py`) ready to add
+as further screens.

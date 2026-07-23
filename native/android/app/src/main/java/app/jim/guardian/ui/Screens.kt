@@ -29,6 +29,8 @@ import app.jim.guardian.Goal
 import app.jim.guardian.Guidance
 import app.jim.guardian.Habit
 import app.jim.guardian.JournalItem
+import app.jim.guardian.MedicalCard
+import app.jim.guardian.MedicalCardIssued
 import app.jim.guardian.MonitorResult
 import app.jim.guardian.ProviderInfo
 import app.jim.guardian.Robot
@@ -456,7 +458,7 @@ private fun JournalPanel(vm: GuardianViewModel) {
 @Composable
 fun SafetyScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("SOS", "Policy", "Robots")
+    val tabs = listOf("SOS", "Med ID", "Policy", "Robots")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -467,7 +469,8 @@ fun SafetyScreen(vm: GuardianViewModel) {
         }
         when (tab) {
             0 -> SOSPanel(vm)
-            1 -> PolicyPanel(vm)
+            1 -> MedicalPanel(vm)
+            2 -> PolicyPanel(vm)
             else -> RobotsPanel(vm)
         }
     }
@@ -668,5 +671,67 @@ fun ModelCard(vm: GuardianViewModel) {
                 }
             }
         }
+    }
+}
+
+// ---- Medical ID (first-responder card + QR) ----
+
+@Composable
+private fun MedicalPanel(vm: GuardianViewModel) {
+    var issued by remember { mutableStateOf<MedicalCardIssued?>(null) }
+    var card by remember { mutableStateOf<MedicalCard?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Medical ID", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("A shareable card for first responders: condition-level facts only, readable from a locked phone. Re-issuing rotates the QR and kills the old one.",
+                color = Jim.T2, fontSize = 12.sp)
+            BrandButton(if (issued == null) "Issue Medical ID" else "Rotate QR", busy = busy) {
+                busy = true; error = null
+                vm.call({
+                    val r = ApiClient.issueMedicalCard(vm.uid!!, vm.token!!)
+                    r to ApiClient.medicalCard(r.token)
+                }) { res ->
+                    busy = false
+                    res.onSuccess { (i, c) -> issued = i; card = c }
+                       .onFailure { error = it.message }
+                }
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
+        issued?.let { i ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Card issued", color = Jim.Green, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("Print or lock-screen the QR at:", color = Jim.T2, fontSize = 12.sp)
+                Text(i.qrSvgUrl, color = Jim.T2, fontSize = 11.sp)
+                card?.let { c ->
+                    HorizontalDivider(color = Jim.Line)
+                    Text("What a responder sees", color = Jim.Txt, fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold)
+                    medRow("Name", c.name ?: "—")
+                    medRow("Age", c.age?.toString() ?: "—")
+                    medRow("Resting HR", c.restingHr?.let { "$it bpm" } ?: "—")
+                    medRow("Conditions",
+                        if (c.conditions.isEmpty()) "none declared" else c.conditions.joinToString(", "))
+                    if (c.contactName != null || c.contactPhone != null)
+                        medRow("Contact", "${c.contactName ?: "—"} · ${c.contactPhone ?: "—"}")
+                }
+                TextButton(onClick = {
+                    vm.call({ ApiClient.revokeMedicalCard(vm.uid!!, vm.token!!) }) {
+                        issued = null; card = null
+                    }
+                }) { Text("Revoke card", color = Jim.Red, fontSize = 13.sp) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun medRow(k: String, v: String) {
+    Row(Modifier.fillMaxWidth()) {
+        Text(k, color = Jim.T2, fontSize = 12.sp, modifier = Modifier.width(90.dp))
+        Text(v, color = Jim.Txt, fontSize = 12.sp)
     }
 }
