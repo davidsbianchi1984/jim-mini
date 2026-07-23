@@ -23,11 +23,10 @@ struct RootView: View {
             if state.isEnrolled {
                 TabView {
                     OverviewView().tabItem { Label("Overview", systemImage: "circle.grid.cross") }
-                    MonitorView().tabItem { Label("Monitor", systemImage: "waveform.path.ecg") }
-                    CheckinView().tabItem { Label("Check-in", systemImage: "leaf") }
-                    CoachView().tabItem { Label("Coach", systemImage: "bubble.left.and.text.bubble.right") }
+                    CareView().tabItem { Label("Care", systemImage: "heart.text.square") }
                     LifeView().tabItem { Label("Life", systemImage: "target") }
                     SafetyView().tabItem { Label("Safety", systemImage: "sos.circle") }
+                    ConnectView().tabItem { Label("Connect", systemImage: "link") }
                 }
                 .tint(Theme.brandA)
             } else {

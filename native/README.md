@@ -18,7 +18,14 @@ picker (`/models`, `/model/{uid}`) · **Live Monitoring** → `POST /monitor` ·
 habits / journal) → `/goals`, `/habits`, `/journal` · **Safety** — SOS + flow
 (`/emergency`), escalation policy + sensitivity (`/escalation-policy`,
 `/sensitivity`), robot helpers (`/robotics/catalog`, `/robots/{uid}`), and the
-Medical ID card (`/medical-id/qr/{uid}`)
+Medical ID card (`/medical-id/qr/{uid}`) · **Connect** — consented data
+sources (`/sources/{uid}`), social-platform connections (`/social/{uid}` +
+collect/publish), and the connected-apps catalog (`/connectors/catalog`,
+`/apps/{uid}` + collect)
+
+On the phone form factors, Monitor, Check-in, and Coach sit behind a single
+**Care** tab (segmented on iOS, a `TabRow` on Android) so the bottom bar stays
+at five destinations; Windows keeps them as flat sidebar items.
 
 They persist the returned `user_token` so the app resumes signed-in, and share
 the JIM dark-OLED palette so all three feel like one product. See each folder's
@@ -44,12 +51,10 @@ On a physical phone, point the client at your machine's LAN IP instead.
 
 ## Scope
 
-This is a functional **scaffold**, not the full screen gallery — enough to
-build, run, sign in, and round-trip live data on each OS across enroll,
-monitoring, check-in, coaching, goals, habits, and journal. The remaining JIM
-capabilities (emergency, Medical-ID QR, sensitivity, sources, connectors)
-already have backend endpoints in [`jim/api.py`](../jim/api.py) to grow into
-further native screens.
+These scaffolds now cover the full tenant-facing surface of
+[`jim/api.py`](../jim/api.py): enroll, monitoring, check-in, coaching, goals /
+habits / journal, safety (SOS, Medical ID, policy, robots), and the Connect
+surface (sources, social platforms, connected apps).
 
 The existing Electron desktop app in [`../app`](../app) still builds the signed
 `.dmg` / `.exe` / `.AppImage` installers; these native targets are additive.

@@ -27,6 +27,10 @@ data class EscalationPolicy(val sensitivity: String, val bySeverity: Map<String,
 data class RobotSpec(val model: String, val label: String, val maker: String)
 data class Robot(val id: String, val model: String, val name: String, val status: String?, val directive: String?)
 data class MedicalCardIssued(val token: String, val qrSvgUrl: String)
+data class SourceRow(val source: String, val consented: Boolean)
+data class SocialConn(val id: String, val platform: String, val direction: String, val handle: String?)
+data class CatalogApp(val provider: String, val app: String, val label: String)
+data class AppConn(val id: String, val provider: String, val app: String)
 data class MedicalCard(val name: String?, val age: Int?, val conditions: List<String>,
                        val restingHr: Int?, val contactName: String?, val contactPhone: String?)
 
@@ -255,6 +259,81 @@ object ApiClient {
     suspend fun bindRobot(uid: String, token: String, model: String): Robot {
         return robotOf(request("/robots/$uid", "POST",
             JSONObject().put("model", model), token))
+    }
+
+    // ---- Connect: sources, social platforms, connected apps ----
+
+    suspend fun sources(uid: String, token: String): List<SourceRow> {
+        val arr = getArray("/sources/$uid", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            SourceRow(o.getString("source"), o.optBoolean("consented"))
+        }
+    }
+
+    suspend fun setSource(uid: String, token: String, source: String, consented: Boolean) {
+        request("/sources/$uid", "PUT",
+            JSONObject().put("source", source).put("consented", consented), token)
+    }
+
+    private fun socialConnOf(o: JSONObject) = SocialConn(
+        o.getString("id"), o.optString("platform", ""), o.optString("direction", ""),
+        o.optString("handle", null))
+
+    suspend fun socialConnections(uid: String, token: String): List<SocialConn> {
+        val arr = getArray("/social/$uid", token)
+        return (0 until arr.length()).map { socialConnOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun socialConnect(uid: String, token: String, platform: String,
+                              direction: String, handle: String?): SocialConn {
+        val body = JSONObject().put("platform", platform).put("direction", direction)
+        if (!handle.isNullOrBlank()) body.put("handle", handle)
+        return socialConnOf(request("/social/$uid", "POST", body, token))
+    }
+
+    suspend fun socialCollect(cid: String, token: String, content: String) {
+        request("/social/connection/$cid/collect", "POST",
+            JSONObject().put("items", org.json.JSONArray()
+                .put(JSONObject().put("content", content))), token)
+    }
+
+    suspend fun socialPublish(cid: String, token: String, content: String) {
+        request("/social/connection/$cid/publish", "POST",
+            JSONObject().put("content", content), token)
+    }
+
+    suspend fun appsCatalog(): List<CatalogApp> {
+        val providers = request("/connectors/catalog").getJSONArray("providers")
+        val out = mutableListOf<CatalogApp>()
+        for (i in 0 until providers.length()) {
+            val p = providers.getJSONObject(i)
+            val apps = p.getJSONArray("apps")
+            for (j in 0 until apps.length()) {
+                val a = apps.getJSONObject(j)
+                out += CatalogApp(p.getString("provider"), a.getString("app"), a.getString("label"))
+            }
+        }
+        return out
+    }
+
+    suspend fun appConnections(uid: String, token: String): List<AppConn> {
+        val arr = getArray("/apps/$uid", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            AppConn(o.getString("id"), o.optString("provider", ""), o.optString("app", ""))
+        }
+    }
+
+    suspend fun appConnect(uid: String, token: String, provider: String, app: String) {
+        request("/apps/$uid", "POST",
+            JSONObject().put("provider", provider).put("app", app), token)
+    }
+
+    suspend fun appCollect(cid: String, token: String, content: String) {
+        request("/apps/connector/$cid/collect", "POST",
+            JSONObject().put("items", org.json.JSONArray()
+                .put(JSONObject().put("content", content))), token)
     }
 
     // ---- Medical ID (first-responder card + QR) ----

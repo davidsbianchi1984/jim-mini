@@ -19,7 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.jim.guardian.AppConn
 import app.jim.guardian.BaselineMetric
+import app.jim.guardian.CatalogApp
 import app.jim.guardian.CheckinResult
 import app.jim.guardian.EmergencyResult
 import app.jim.guardian.EscalationPolicy
@@ -35,6 +37,8 @@ import app.jim.guardian.MonitorResult
 import app.jim.guardian.ProviderInfo
 import app.jim.guardian.Robot
 import app.jim.guardian.RobotSpec
+import app.jim.guardian.SocialConn
+import app.jim.guardian.SourceRow
 import kotlin.math.roundToInt
 
 @Composable
@@ -733,5 +737,200 @@ private fun medRow(k: String, v: String) {
     Row(Modifier.fillMaxWidth()) {
         Text(k, color = Jim.T2, fontSize = 12.sp, modifier = Modifier.width(90.dp))
         Text(v, color = Jim.Txt, fontSize = 12.sp)
+    }
+}
+
+// ---- Care: Monitor, Check-in, Coach behind one tab ----
+
+@Composable
+fun CareScreen(vm: GuardianViewModel) {
+    var tab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Monitor", "Check-in", "Coach")
+    Column(Modifier.fillMaxSize()) {
+        TabRow(
+            selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA,
+            modifier = Modifier.padding(horizontal = 20.dp).padding(top = 12.dp),
+        ) {
+            tabs.forEachIndexed { i, t ->
+                Tab(selected = tab == i, onClick = { tab = i },
+                    text = { Text(t, fontSize = 13.sp) })
+            }
+        }
+        when (tab) {
+            0 -> MonitorScreen(vm)
+            1 -> CheckinScreen(vm)
+            else -> CoachScreen(vm)
+        }
+    }
+}
+
+// ---- Connect: data sources, social platforms, connected apps ----
+
+@Composable
+fun ConnectScreen(vm: GuardianViewModel) {
+    var tab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Sources", "Social", "Apps")
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
+            tabs.forEachIndexed { i, t ->
+                Tab(selected = tab == i, onClick = { tab = i },
+                    text = { Text(t, fontSize = 13.sp) })
+            }
+        }
+        when (tab) {
+            0 -> SourcesPanel(vm)
+            1 -> SocialPanel(vm)
+            else -> AppsPanel(vm)
+        }
+    }
+}
+
+@Composable
+private fun SourcesPanel(vm: GuardianViewModel) {
+    var rows by remember { mutableStateOf<List<SourceRow>>(emptyList()) }
+    fun reload() { vm.call({ ApiClient.sources(vm.uid!!, vm.token!!) }) { r -> rows = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("Data sources", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text("JIM sees what you allow — flip a source off and it stops being read, immediately.",
+            color = Jim.T2, fontSize = 12.sp)
+        rows.forEach { row ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(pretty(row.source), color = Jim.Txt, fontSize = 14.sp,
+                    modifier = Modifier.weight(1f))
+                Switch(
+                    checked = row.consented,
+                    onCheckedChange = { on ->
+                        vm.call({ ApiClient.setSource(vm.uid!!, vm.token!!, row.source, on) }) { reload() }
+                    },
+                    colors = SwitchDefaults.colors(checkedTrackColor = Jim.Green),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SocialPanel(vm: GuardianViewModel) {
+    val platforms = listOf("instagram", "x", "tiktok", "facebook", "linkedin", "youtube",
+        "whatsapp", "discord", "twitch", "pinterest", "snapchat", "mastodon")
+    var platform by remember { mutableStateOf(platforms.first()) }
+    var handle by remember { mutableStateOf("") }
+    var conns by remember { mutableStateOf<List<SocialConn>>(emptyList()) }
+    var status by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    fun reload() { vm.call({ ApiClient.socialConnections(vm.uid!!, vm.token!!) }) { r -> conns = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) { reload() }
+
+    fun connect(direction: String) {
+        error = null; status = null
+        vm.call({ ApiClient.socialConnect(vm.uid!!, vm.token!!, platform, direction, handle) }) { r ->
+            r.onSuccess { handle = ""; reload() }.onFailure { error = it.message }
+        }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Social platforms", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            FlowRowChips(platforms, platform) { platform = it }
+            labeledField("Handle (optional)", handle, "@you") { handle = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                smallAction("Connect to collect") { connect("collect") }
+                smallAction("Connect to publish") { connect("publish") }
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
+        status?.let { Text(it, color = Jim.Green, fontSize = 12.sp) }
+        conns.forEach { c ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("${pretty(c.platform)} · ${c.direction}", color = Jim.Txt,
+                        fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    c.handle?.let { Text("@$it", color = Jim.T3, fontSize = 12.sp) }
+                }
+                if (c.direction == "collect") {
+                    smallAction("Collect sample") {
+                        vm.call({ ApiClient.socialCollect(c.id, vm.token!!,
+                            "sample post from ${c.platform}") }) { r ->
+                            r.onSuccess { status = "collected one item from ${c.platform}" }
+                                .onFailure { error = it.message }
+                        }
+                    }
+                } else {
+                    smallAction("Publish update") {
+                        vm.call({ ApiClient.socialPublish(c.id, vm.token!!,
+                            "A check-in from my Guardian.") }) { r ->
+                            r.onSuccess { status = "published to ${c.platform}" }
+                                .onFailure { error = it.message }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppsPanel(vm: GuardianViewModel) {
+    var catalog by remember { mutableStateOf<List<CatalogApp>>(emptyList()) }
+    var conns by remember { mutableStateOf<List<AppConn>>(emptyList()) }
+    var status by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    fun reload() {
+        vm.call({ ApiClient.appsCatalog() }) { r -> catalog = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.appConnections(vm.uid!!, vm.token!!) }) { r -> conns = r.getOrDefault(emptyList()) }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Connected apps", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("Apple, Google, Microsoft, and Canva apps the Guardian can collect from and act through.",
+                color = Jim.T2, fontSize = 12.sp)
+            catalog.take(10).forEach { entry ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(entry.label, color = Jim.Txt, fontSize = 14.sp)
+                        Text(entry.provider, color = Jim.T3, fontSize = 11.sp)
+                    }
+                    TextButton(onClick = {
+                        error = null
+                        vm.call({ ApiClient.appConnect(vm.uid!!, vm.token!!,
+                            entry.provider, entry.app) }) { r ->
+                            r.onSuccess { status = "connected ${entry.provider}/${entry.app}"; reload() }
+                                .onFailure { error = it.message }
+                        }
+                    }) { Text("Connect", color = Jim.BrandA, fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+                }
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
+        status?.let { Text(it, color = Jim.Green, fontSize = 12.sp) }
+        conns.forEach { c ->
+            Row(Modifier.card(), verticalAlignment = Alignment.CenterVertically) {
+                Text("${c.provider} · ${c.app}", color = Jim.Txt, fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                TextButton(onClick = {
+                    vm.call({ ApiClient.appCollect(c.id, vm.token!!,
+                        "sample context from ${c.app}") }) { r ->
+                        r.onSuccess { status = "collected from ${c.app}" }
+                            .onFailure { error = it.message }
+                    }
+                }) { Text("Collect", color = Jim.BrandA, fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun smallAction(text: String, onClick: () -> Unit) {
+    Box(
+        Modifier.clip(RoundedCornerShape(50)).background(Jim.BrandA)
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Text(text, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }

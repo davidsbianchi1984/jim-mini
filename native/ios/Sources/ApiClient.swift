@@ -112,6 +112,25 @@ struct MedicalCardIssued: Decodable {
     let qr_svg_url: String
 }
 
+struct SourceRow: Decodable { let source: String; let consented: Bool }
+
+struct SocialConn: Decodable {
+    let id: String
+    let platform: String
+    let direction: String
+    let handle: String?
+}
+
+struct CatalogApp: Decodable { let app: String; let label: String; let capabilities: [String] }
+struct CatalogProvider: Decodable { let provider: String; let label: String; let apps: [CatalogApp] }
+struct AppsCatalog: Decodable { let providers: [CatalogProvider] }
+
+struct AppConn: Decodable {
+    let id: String
+    let provider: String
+    let app: String
+}
+
 struct MedicalCard: Decodable {
     let name: String?
     let age: Int?
@@ -261,6 +280,69 @@ actor ApiClient {
     func bindRobot(uid: String, token: String, model: String) async throws -> Robot {
         try await request("/robots/\(uid)", method: "POST",
                           body: ["model": model], token: token)
+    }
+
+    // MARK: Connect — sources, social platforms, connected apps
+
+    func sources(uid: String, token: String) async throws -> [SourceRow] {
+        try await request("/sources/\(uid)", token: token)
+    }
+
+    func setSource(uid: String, token: String, source: String,
+                   consented: Bool) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/sources/\(uid)", method: "PUT",
+                                      body: ["source": source,
+                                             "consented": consented], token: token)
+    }
+
+    func socialConnections(uid: String, token: String) async throws -> [SocialConn] {
+        try await request("/social/\(uid)", token: token)
+    }
+
+    func socialConnect(uid: String, token: String, platform: String,
+                       direction: String, handle: String?) async throws -> SocialConn {
+        var body: [String: Any] = ["platform": platform, "direction": direction]
+        if let handle, !handle.isEmpty { body["handle"] = handle }
+        return try await request("/social/\(uid)", method: "POST", body: body,
+                                 token: token)
+    }
+
+    func socialCollect(cid: String, token: String, content: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/social/connection/\(cid)/collect",
+                                      method: "POST",
+                                      body: ["items": [["content": content]]],
+                                      token: token)
+    }
+
+    func socialPublish(cid: String, token: String, content: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/social/connection/\(cid)/publish",
+                                      method: "POST", body: ["content": content],
+                                      token: token)
+    }
+
+    func appsCatalog() async throws -> AppsCatalog {
+        try await request("/connectors/catalog")
+    }
+
+    func appConnections(uid: String, token: String) async throws -> [AppConn] {
+        try await request("/apps/\(uid)", token: token)
+    }
+
+    func appConnect(uid: String, token: String, provider: String,
+                    app: String) async throws -> AppConn {
+        try await request("/apps/\(uid)", method: "POST",
+                          body: ["provider": provider, "app": app], token: token)
+    }
+
+    func appCollect(cid: String, token: String, content: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/apps/connector/\(cid)/collect",
+                                      method: "POST",
+                                      body: ["items": [["content": content]]],
+                                      token: token)
     }
 
     // MARK: Medical ID (first-responder card + QR)

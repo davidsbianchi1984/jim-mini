@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.ConnectPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <Pivot MaxWidth="680" Margin="20,12" Foreground="{StaticResource JimTxtBrush}">
+
+        <!-- Sources: consented data feeds -->
+        <PivotItem Header="Sources">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Data sources" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock Text="JIM sees what you allow — flip a source off and it stops being read, immediately."
+                                       FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="SourcesList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,4,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource JimTxtBrush}" />
+                                            <ToggleSwitch Grid.Column="1" IsOn="{Binding Consented}"
+                                                          Tag="{Binding Source}" Toggled="OnSourceToggled"
+                                                          OnContent="" OffContent="" Margin="0,-4" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+
+        <!-- Social platform connections -->
+        <PivotItem Header="Social">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Social platforms" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <ComboBox x:Name="PlatformBox" Header="Platform" HorizontalAlignment="Stretch" />
+                            <TextBox x:Name="HandleBox" Header="Handle (optional)" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Connect to collect" Click="OnConnectCollect"
+                                        Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                                <Button Content="Connect to publish" Click="OnConnectPublish"
+                                        Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="SocialError" Foreground="{StaticResource JimRedBrush}" FontSize="13"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <TextBlock x:Name="SocialStatus" Foreground="{StaticResource JimGreenBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <ItemsControl x:Name="SocialList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                                        BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,0,6">
+                                    <StackPanel Spacing="6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Title}" FontWeight="Bold"
+                                                       Foreground="{StaticResource JimTxtBrush}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Handle}" FontSize="12"
+                                                       Foreground="{StaticResource JimT2Brush}" />
+                                        </Grid>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Button Content="Collect sample" Tag="{Binding Id}" Click="OnCollect"
+                                                    Visibility="{Binding CollectVisibility}"
+                                                    Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
+                                            <Button Content="Publish update" Tag="{Binding Id}" Click="OnPublish"
+                                                    Visibility="{Binding PublishVisibility}"
+                                                    Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+
+        <!-- Connected-apps catalog -->
+        <PivotItem Header="Apps">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Connected apps" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock Text="Apple, Google, Microsoft, and Canva apps the Guardian can collect from and act through."
+                                       FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="CatalogList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,4,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Label}"
+                                                           Foreground="{StaticResource JimTxtBrush}" />
+                                                <TextBlock Text="{Binding Provider}" FontSize="11"
+                                                           Foreground="{StaticResource JimT2Brush}" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Content="Connect" Tag="{Binding Key}"
+                                                    Click="OnAppConnect" VerticalAlignment="Center"
+                                                    Background="Transparent" FontSize="12"
+                                                    Foreground="{StaticResource JimBrandABrush}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="AppsError" Foreground="{StaticResource JimRedBrush}" FontSize="13"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <TextBlock x:Name="AppsStatus" Foreground="{StaticResource JimGreenBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <ItemsControl x:Name="AppConnList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                                        BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,0,6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource JimTxtBrush}" />
+                                        <Button Grid.Column="1" Content="Collect" Tag="{Binding Id}"
+                                                Click="OnAppCollect" Background="Transparent" FontSize="12"
+                                                Foreground="{StaticResource JimBrandABrush}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+    </Pivot>
+</Page>
