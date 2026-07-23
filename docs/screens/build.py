@@ -896,6 +896,66 @@ def render(spec):
             out.append(text(CX + 34, y + 31, s, 9.5, C["t2"]))
             y += 48
 
+    elif hero == "ladder":
+        red = C["red"]; amber = C["amber"]; green = C["green"]
+        # Sensitivity dial
+        out.append(text(CX, y, "SENSITIVITY", 9, C["t3"], 700, "start", 0.6))
+        y += 14
+        seg_w = (CW - 12) / 3
+        for i, (lbl, on) in enumerate([("Cautious", False), ("Balanced", True),
+                                        ("Assertive", False)]):
+            x = CX + i * (seg_w + 6)
+            fill = A(C["brandA"], 0.25) if on else "url(#gCard)"
+            out.append(rrect(x, y, seg_w, 24, 12, fill,
+                             C["brandA"] if on else C["line"], 1))
+            out.append(text(x + seg_w / 2, y + 16, lbl, 9.5,
+                            C["txt"] if on else C["t2"], 650, "middle"))
+        y += 38
+        # The ladder, bottom tier first visually top-down as escalating rungs
+        out.append(text(CX, y, "ESCALATION LADDER", 9, C["t3"], 700, "start", 0.6))
+        y += 16
+        rungs = [("4 · Emergency services", "call 911 · location · Medical ID", red),
+                 ("3 · Notify contact", "alert your emergency contact", amber),
+                 ("2 · Check-in", "proactively ask if you're OK", amber),
+                 ("1 · Self-guidance", "deliver AI guidance", green),
+                 ("0 · Log", "record the event, nothing more", C["t3"])]
+        for k, s, col in rungs:
+            out.append(rrect(CX, y, CW, 36, 11, "url(#gCard)", C["line"], 1))
+            out.append(f'<rect x="{CX}" y="{y+6}" width="3" height="24" rx="1.5" fill="{col}"/>')
+            out.append(text(CX + 14, y + 15, k, 10.5, C["txt"], 650))
+            out.append(text(CX + 14, y + 29, s, 8.5, C["t2"]))
+            y += 42
+        y += 4
+        out.append(rrect(CX, y, CW, 30, 10, A(red, 0.10), red, 1))
+        out.append(text(CX + 10, y + 13, "Safety floors no dial can lower:", 8.5, red, 700))
+        out.append(text(CX + 10, y + 24, "crisis → services · critical → contact", 8.5, C["t2"]))
+
+    elif hero == "sosflow":
+        red = C["red"]; green = C["green"]
+        # Watch face with the held SOS button
+        wx, wy, ww, wh = CX + 58, y, 136, 128
+        out.append(rrect(wx - 8, wy, ww + 16, wh, 34, "#0B1220", C["line"], 2))
+        out.append(f'<circle cx="{wx+ww/2}" cy="{wy+wh/2}" r="40" fill="{A(red,0.18)}" stroke="{red}" stroke-width="2"/>')
+        out.append(text(wx + ww / 2, wy + wh / 2 - 2, "SOS", 17, red, 800, "middle"))
+        out.append(text(wx + ww / 2, wy + wh / 2 + 15, "hold 3s", 8.5, C["t2"], 500, "middle"))
+        y += wh + 14
+        out.append(text(CX + CW / 2, y, "Release to cancel · haptics counting down", 8.5,
+                        C["t3"], 500, "middle"))
+        y += 16
+        # The coordinated flow, in order
+        steps = [("Armed", "press-and-hold confirmed", green),
+                 ("Calling emergency services", "911 · local number abroad", red),
+                 ("Alerting your contact", "Ma · 555-0142", C["amber"]),
+                 ("Sharing your location", "12 Oak St · live", C["cyan"] if "cyan" in C else green),
+                 ("Medical ID + first aid", "shown to responders · steps until help", green)]
+        for i, (k, s, col) in enumerate(steps):
+            out.append(rrect(CX, y, CW, 36, 11, "url(#gCard)", C["line"], 1))
+            out.append(f'<circle cx="{CX+16}" cy="{y+18}" r="7" fill="{A(col,0.2)}" stroke="{col}" stroke-width="1.5"/>')
+            out.append(text(CX + 16, y + 21, str(i + 1), 8.5, col, 700, "middle"))
+            out.append(text(CX + 32, y + 15, k, 10.5, C["txt"], 650))
+            out.append(text(CX + 32, y + 29, s, 8.5, C["t2"]))
+            y += 42
+
     else:  # generic stacked cards
         for c in spec["cards"]:
             s, y = card_block(y, c)
@@ -1090,6 +1150,8 @@ SCREENS = [
     dict(num=51, title="Apple Intelligence", sub="13 apps · collect, act, produce", hero="assistant", provider="apple", accent="cyan", tab=0),
     dict(num=52, title="Google Gemini", sub="11 apps · collect, act, produce", hero="assistant", provider="google", accent="cyan", tab=0),
     dict(num=53, title="Microsoft Copilot", sub="8 apps · collect, act, produce", hero="assistant", provider="microsoft", accent="cyan", tab=0),
+    dict(num=54, title="Escalation Ladder", sub="Sensitivity dial · auditable tiers", hero="ladder", accent="red", tab=0),
+    dict(num=55, title="Emergency Watch", sub="Hold SOS · coordinated response", hero="sosflow", accent="red", tab=0),
 ]
 
 

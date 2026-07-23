@@ -9,8 +9,8 @@ from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException, Request, Response
 
-from . import (app_connectors, auth, catalog, coach, db, guardian, life, llm,
-               research, social)
+from . import (app_connectors, auth, catalog, coach, db, escalation, guardian,
+               life, llm, research, social)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
@@ -273,6 +273,15 @@ def create_app(qrme_client: QRMEClient | None = None,
             return guardian.set_sensitivity(user_id, body.level)
         except ValueError as e:
             raise HTTPException(422, str(e))
+
+    @app.get("/escalation-policy/{user_id}")
+    def escalation_policy(user_id: str, request: Request) -> dict:
+        """Transparency: how this user's sensitivity resolves each severity to
+        an escalation tier, and the safety floors no dial can lower — shown
+        before anything happens, so the behavior is never a surprise."""
+        user = _user_or_404(user_id, request)
+        level = (user or {}).get("sensitivity") or "balanced"
+        return escalation.policy(level)
 
     @app.get("/baseline/{user_id}")
     def get_baseline(user_id: str, request: Request) -> list[dict]:

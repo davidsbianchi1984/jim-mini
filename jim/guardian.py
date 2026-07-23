@@ -13,7 +13,8 @@ import json
 import secrets
 from datetime import date
 
-from . import conditions, db, guidance as local_guidance, life
+from . import (conditions, db, earlywarning, escalation,
+               guidance as local_guidance, life)
 
 
 def _event(user_id, type_, *, condition=None, severity=None, detail=None,
@@ -436,6 +437,36 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
                 area="mental_health", source="forecast")
             result["forecast"] = {"condition": early.condition,
                                   "reason": early.reason}
+        # Predictive trend model (jim.earlywarning): project the recent vitals
+        # toward their danger thresholds and, when a crossing is coming inside
+        # the sensitivity lead-time window, enrich the forecast with a risk
+        # score, minutes-to-threshold, and the fit confidence. It reuses the
+        # exact heart-rate series the rule above saw so the two agree.
+        hr_series = [*prior_hrs, sample["heart_rate"]] if sample.get("heart_rate") else []
+        history = {"heart_rate": hr_series,
+                   "blood_oxygen": life._recent(user_id, "blood_oxygen", 6)}
+        fc = earlywarning.assess(
+            history, resting=sample.get("resting_heart_rate", 70),
+            sensitivity=sensitivity)
+        if fc is not None:
+            if result["forecast"] is None:
+                # A trend the single-signal rules missed (e.g. a clean HRV or
+                # SpO2 slide) — surface it, and note the projected tier.
+                decision = escalation.decide(
+                    "info", sensitivity, condition=fc.condition, known=known,
+                    confidence=fc.confidence)
+                result["forecast"] = {"condition": fc.condition,
+                                      "reason": fc.reason,
+                                      "projected_tier": decision["tier"]}
+                _event(user_id, "forecast", condition=fc.condition,
+                       severity="info",
+                       detail={"reason": fc.reason, **fc.as_dict()},
+                       pdi=pdi, vault_scope="medical/forecast")
+            # Enrich whatever forecast we have with the quantified trend.
+            result["forecast"].update(
+                {"risk": fc.as_dict()["risk"],
+                 "horizon_min": fc.as_dict()["horizon_min"],
+                 "confidence": fc.as_dict()["confidence"]})
         return result
 
     _event(user_id, "detection", condition=detection.condition,
@@ -450,6 +481,18 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
     }
     result["guidance"] = _deliver(user_id, user, detection, note, qrme,
                                   source_device=sample.get("source_device"))
+
+    # The escalation decision tree (jim.escalation) resolves this detection to a
+    # tier for the user's sensitivity — surfaced on every detection so the UI
+    # and the audit trail can see what was chosen and why, escalated or not.
+    contactable = bool(user and user.get("contact_consent")
+                       and user.get("emergency_phone"))
+    crisis = "crisis language" in detection.reason
+    decision = escalation.decide(
+        detection.severity, sensitivity, condition=detection.condition,
+        known=known, contactable=contactable, crisis=crisis)
+    result["escalation_decision"] = decision
+
     # Critical always escalates. In cautious mode, a guidance-level event for a
     # condition the user has *declared* also reaches out — catching it early for
     # someone known to be prone to it.
@@ -457,7 +500,8 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
                       and detection.severity == "guidance"
                       and detection.condition in known)
     if detection.severity == "critical" or cautious_early:
-        result["escalation"] = _escalate(user_id, user, detection)
+        result["escalation"] = _escalate(user_id, user, detection,
+                                         decision=decision)
         if cautious_early:
             result["escalation"]["reason"] += " (cautious-mode early outreach)"
     return result
@@ -579,6 +623,14 @@ def emergency(user_id: str, situation: str | None = None,
                                  if contact else []) + ["emergency services"]}
     dispatched = [d["name"] for d in devices_for(user_id)]
 
+    # A deliberate Emergency press is the top of the ladder by definition — the
+    # user has declared the emergency — so the decision is resolved at
+    # emergency_services with a crisis floor, and its path is returned for audit.
+    decision = escalation.decide(
+        "critical", sensitivity,
+        condition=(detection.condition if detection else None),
+        known=known, contactable=contact is not None, crisis=True)
+
     result = {
         "emergency": True,
         "call_emergency_services": {
@@ -590,6 +642,23 @@ def emergency(user_id: str, situation: str | None = None,
         "medical_id": _medical_id(user_id, user),
         "ai_guidance": guidance,
         "dispatched_alerts": dispatched,
+        "escalation_decision": decision,
+        # The ordered steps the Emergency screen drives, on the watch or phone.
+        "flow": [
+            {"step": "armed", "label": "Emergency armed",
+             "detail": "press-and-hold confirmed"},
+            {"step": "call", "label": "Calling emergency services",
+             "detail": "911 (or your local number)"},
+            {"step": "notify", "label": "Alerting your emergency contact",
+             "detail": (contact["name"] or "emergency contact")
+                       if contact else "no contact on file"},
+            {"step": "locate", "label": "Sharing your location",
+             "detail": location or "location unavailable"},
+            {"step": "medical_id", "label": "Surfacing your Medical ID",
+             "detail": "shown to responders"},
+            {"step": "guide", "label": "First-aid guidance",
+             "detail": "step-by-step until help arrives"},
+        ],
     }
     _event(user_id, "emergency",
            condition=(detection.condition if detection else None),
@@ -764,7 +833,7 @@ def _tandem_guidance(user_id, user, detection, note, spec, qrme) -> dict:
     }
 
 
-def _escalate(user_id, user, detection) -> dict:
+def _escalate(user_id, user, detection, decision=None) -> dict:
     contact = None
     if user and user.get("contact_consent") and user.get("emergency_phone"):
         contact = {"name": user.get("emergency_name"), "phone": user["emergency_phone"]}
@@ -772,16 +841,29 @@ def _escalate(user_id, user, detection) -> dict:
     # registered (wearable, stationary console, autonomous device) receives
     # the alert, so whichever is nearest can surface the guidance.
     dispatched = [d["name"] for d in devices_for(user_id)]
-    escalation = {
+    # Resolve (or reuse) the escalation tier so the response carries an explicit,
+    # auditable decision path — not just "escalated: true".
+    if decision is None:
+        sensitivity = (user or {}).get("sensitivity") or "balanced"
+        decision = escalation.decide(
+            detection.severity, sensitivity, condition=detection.condition,
+            known=(user or {}).get("known_conditions") or [],
+            contactable=contact is not None,
+            crisis="crisis language" in detection.reason)
+    result = {
         "escalated": True, "condition": detection.condition,
         "reason": detection.reason,
         "notified_emergency_contact": contact is not None,
         "emergency_contact": contact, "live_support": True,
         "dispatched_alerts": dispatched,
+        "tier": decision["tier"],
+        "actions": decision["actions"],
+        "rationale": decision["rationale"],
+        "decision_path": decision["path"],
     }
     _event(user_id, "escalation", condition=detection.condition,
-           severity="critical", detail=escalation)
-    return escalation
+           severity="critical", detail=result)
+    return result
 
 
 def events(user_id: str) -> list[dict]:
