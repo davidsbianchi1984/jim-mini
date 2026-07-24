@@ -47,8 +47,9 @@ Two cross-cutting guarantees ride on every guidance surface:
   screen): everything drafted for the user is delivered in their language —
   model text is *generated* in-language, and the safety-critical
   deterministic content (CPR/AED playbooks, waiver terms) is hand-translated
-  (es, fr today) rather than machine-mangled, falling back to English with a
-  visible note for other languages.
+  for every supported language (es, fr, de, pt, it, ja, zh, hi, ar) rather
+  than machine-mangled; an unkeyed string still falls back loudly to
+  English.
 - **Provenance**: every guidance and coach response carries a `provenance`
   block — the published sources it derives from (publisher, document, URL,
   and what each supports), how the text was produced (deterministic playbook

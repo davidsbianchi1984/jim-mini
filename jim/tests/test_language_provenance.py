@@ -14,9 +14,8 @@ def test_language_catalog(client):
     r = client.get("/languages").json()
     codes = {l["code"]: l for l in r["languages"]}
     assert r["default"] == "en"
-    assert codes["es"]["safety_content_translated"] is True
-    assert codes["fr"]["safety_content_translated"] is True
-    assert codes["ja"]["safety_content_translated"] is False
+    # Every supported language now carries hand-translated safety content.
+    assert all(l["safety_content_translated"] for l in r["languages"])
 
 
 def test_set_and_get_language(client):
@@ -71,14 +70,37 @@ def test_robot_coaching_speaks_in_language(client):
     assert r["spoken"][0].startswith("Llame")
 
 
-def test_unsupported_language_falls_back_to_english_safety_text(client):
+def test_japanese_playbook_is_hand_translated(client):
     uid = enroll(client)
     client.put(f"/language/{uid}", json={"language": "ja"})
     r = client.post(f"/monitor/{uid}", json={
         "movement": "collapse", "pulse": "absent"}).json()
-    # No hand translation for ja: safety steps stay English rather than
-    # being machine-mangled.
-    assert r["guidance"]["first_aid"]["steps"][0].startswith("Call")
+    assert "救急" in r["guidance"]["first_aid"]["steps"][0]
+
+
+def test_unknown_strings_fall_back_to_english(client):
+    # The fallback mechanism survives: a string without a hand translation
+    # stays English rather than being machine-mangled.
+    from jim import i18n
+    assert i18n.tr("a string nobody translated", "ja") == \
+        "a string nobody translated"
+
+
+def test_every_language_has_complete_safety_coverage(client):
+    # Guard against partial translations: every safety string is covered in
+    # every supported language, and every playbook step / waiver term is
+    # string-keyed to a translation entry.
+    from jim import guardian, guidance, i18n
+    langs = set(i18n.SUPPORTED) - {i18n.DEFAULT}
+    for source, translations in i18n._STRINGS.items():
+        missing = langs - set(translations)
+        assert not missing, f"{source[:40]!r} missing {sorted(missing)}"
+    keyed = set(i18n._STRINGS)
+    for kind in ("cpr", "aed"):
+        for step in guidance.playbook(kind)["steps"]:
+            assert step in keyed, f"unkeyed playbook step: {step[:40]!r}"
+    for term in guardian.WAIVER_TERMS:
+        assert term in keyed, f"unkeyed waiver term: {term[:40]!r}"
 
 
 # ---- provenance -------------------------------------------------------------
