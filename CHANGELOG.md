@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Terms of Service** — docs/terms.md (v1.0: not a medical device, call
+  911 first, assumption of risk and release, robot-resuscitation boundary,
+  warranty disclaimer, liability cap) served versioned at `GET /terms`;
+  enrollment records the accepted version and timestamp on the account,
+  and the native welcome screens carry the clickwrap notice.
 - **macOS notarization wiring** — hardened runtime + entitlements +
   `notarize` in the electron-builder config; docs/releasing.md walks
   through obtaining the macOS and Windows certificates.

@@ -142,7 +142,11 @@ fun WelcomeScreen(vm: GuardianViewModel) {
                 vm.enroll(name, birthdate, language,
                     onError = { error = it }, onBusy = { busy = it })
             }
-            Text("Start the backend:  JIM_CORS_ORIGINS=* uvicorn jim.api:app",
+            Text("By enrolling you agree to the Terms of Service — JIM-mini is a wellness tool, " +
+             "not a medical device; in an emergency call 911 first. You assume the risks of " +
+             "AI guidance and monitoring. Full terms: GET /terms · docs/terms.md",
+            color = Jim.T3, fontSize = 9.sp)
+        Text("Start the backend:  JIM_CORS_ORIGINS=* uvicorn jim.api:app",
                 color = Jim.T3, fontSize = 10.sp)
         }
     }

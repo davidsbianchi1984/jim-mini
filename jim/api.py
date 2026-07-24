@@ -10,7 +10,8 @@ from datetime import date, datetime
 from fastapi import FastAPI, HTTPException, Request, Response
 
 from . import (app_connectors, auth, catalog, coach, db, escalation, family,
-               guardian, i18n, life, llm, research, robotics, social)
+               guardian, i18n, life, llm, research, robotics, social,
+               terms as terms_mod)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
     ChildEnroll,
@@ -80,6 +81,16 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(404, "user not found")
         auth.require(request, "user", user_id)
         return user
+
+    @app.get("/terms")
+    def terms() -> dict:
+        """The Terms of Service every client displays at the gateway:
+        version, key points, and where the full text lives. Acceptance is
+        required to enroll and recorded (version + timestamp) on the
+        account."""
+        return {"version": terms_mod.TERMS_VERSION,
+                "key_points": terms_mod.KEY_POINTS,
+                "document": terms_mod.DOCUMENT}
 
     @app.get("/health")
     def health() -> dict:
