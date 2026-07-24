@@ -779,7 +779,8 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
         "guidance": None, "escalation": None,
     }
     result["guidance"] = _deliver(user_id, user, detection, note, qrme,
-                                  source_device=sample.get("source_device"))
+                                  source_device=sample.get("source_device"),
+                                  pdi=pdi)
 
     # The escalation decision tree (jim.escalation) resolves this detection to a
     # tier for the user's sensitivity — surfaced on every detection so the UI
@@ -902,7 +903,8 @@ def emergency(user_id: str, situation: str | None = None,
         detection = conditions.detect(sample or {}, situation, known=known,
                                       sensitivity=sensitivity)
         if detection is not None:
-            guidance = _deliver(user_id, user, detection, situation, qrme)
+            guidance = _deliver(user_id, user, detection, situation, qrme,
+                                pdi=pdi)
         elif situation:
             guidance = {
                 "delivered": True, "source": "local", "content": (
@@ -992,7 +994,7 @@ def observe_activity(user_id: str, activity: str | None, signals: dict,
     # Crisis in the note is handled by the same pipeline as everywhere else.
     crisis = conditions.detect({}, note, known=known) if note else None
     if crisis is not None and crisis.severity == "critical":
-        guidance = _deliver(user_id, user, crisis, note, qrme)
+        guidance = _deliver(user_id, user, crisis, note, qrme, pdi=pdi)
         escalation = _escalate(user_id, user, crisis)
         return {"activity": activity, "proactive": True, "source": "crisis",
                 "condition": crisis.condition, "reason": crisis.reason,
@@ -1007,7 +1009,7 @@ def observe_activity(user_id: str, activity: str | None, signals: dict,
            severity=detection.severity,
            detail={"reason": detection.reason, "signals": detection.signals,
                    "proactive": True})
-    guidance = _deliver(user_id, user, detection, note, qrme)
+    guidance = _deliver(user_id, user, detection, note, qrme, pdi=pdi)
     life._insight(
         user_id, "suggestion",
         f"I noticed you might be stuck — {detection.reason}. Offered a hand.",
@@ -1052,7 +1054,8 @@ def _tandem_safe(user, profile_id, qrme) -> tuple[bool, str | None]:
     return True, None
 
 
-def _deliver(user_id, user, detection, note, qrme, source_device=None) -> dict:
+def _deliver(user_id, user, detection, note, qrme, source_device=None,
+             pdi=None) -> dict:
     spec = _specialist(detection.condition)
     wants_tandem = bool(
         spec and spec["mode"] == "tandem" and spec["qrme_profile_id"])
@@ -1067,7 +1070,8 @@ def _deliver(user_id, user, detection, note, qrme, source_device=None) -> dict:
     delivered = None
     if use_tandem:
         try:
-            delivered = _tandem_guidance(user_id, user, detection, note, spec, qrme)
+            delivered = _tandem_guidance(user_id, user, detection, note, spec,
+                                         qrme, pdi=pdi)
         except RuntimeError:
             # QRME refused (e.g. its own age-gate) — never leave the user
             # without help; fall back to local guidance.
@@ -1103,7 +1107,8 @@ def _deliver(user_id, user, detection, note, qrme, source_device=None) -> dict:
     return delivered
 
 
-def _tandem_guidance(user_id, user, detection, note, spec, qrme) -> dict:
+def _tandem_guidance(user_id, user, detection, note, spec, qrme,
+                     pdi=None) -> dict:
     """Delegate guidance to a QRME specialist profile over HTTP."""
     conn = db.connect()
     link = conn.execute(
@@ -1129,7 +1134,7 @@ def _tandem_guidance(user_id, user, detection, note, spec, qrme) -> dict:
         + " Please offer brief, supportive guidance."
     )
     reply = qrme.specialist_reply(spec["qrme_profile_id"], interactor_id, message)
-    return {
+    out = {
         "delivered": reply["content"] is not None,
         "source": "tandem",
         "qrme_profile_id": spec["qrme_profile_id"],
@@ -1138,6 +1143,32 @@ def _tandem_guidance(user_id, user, detection, note, spec, qrme) -> dict:
         "qrme_status": reply["status"],
         "qrme_flag_reason": reply.get("flag_reason"),
     }
+    if pdi is not None:
+        # Provable custody: the full exchange with the QRME specialist is
+        # sealed in the PDI vault under a jim/ key (which PDI's provenance
+        # attributes to JIM Guardian), hash-chained in its audit log, and
+        # registered locally so user erasure purges it too. A vault outage
+        # must never cost the user their guidance — sealing failure is
+        # reported, not raised.
+        exchange_id = db.new_id("txc")
+        key = (f"jim/{user_id}/tandem/{spec['qrme_profile_id']}/{exchange_id}")
+        try:
+            life.vault_store(pdi, user_id, key, {
+                "condition": detection.condition,
+                "specialist": spec.get("label"),
+                "qrme_profile_id": spec["qrme_profile_id"],
+                "qrme_interactor_id": interactor_id,
+                "message": message,
+                "reply": reply["content"],
+                "reply_status": reply["status"],
+                "at": db.utcnow(),
+            })
+            out["custody"] = {"vaulted": True, "pdi_key": key}
+        except Exception:
+            out["custody"] = {
+                "vaulted": False,
+                "note": "PDI vault unreachable; exchange not sealed"}
+    return out
 
 
 def _escalate(user_id, user, detection, decision=None) -> dict:

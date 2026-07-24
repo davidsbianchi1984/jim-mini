@@ -333,6 +333,12 @@ most sensitive payloads never touch its own database in the clear:
   `jim/{user}/medical/…`, sealed with AES-256-GCM by PDI
 - **context** — payloads from consented sources (spending, health, calendar,
   messages, …) go under `jim/{user}/context/…`
+- **tandem custody** — when both tandems are configured, every exchange with a
+  QRME specialist profile (the Guardian's message and the specialist's reply)
+  is sealed under `jim/{user}/tandem/{qrme_profile_id}/…`; the guidance
+  carries a `custody` block with the vault key, and PDI's provenance
+  attributes the record to JIM Guardian. A vault outage never costs the user
+  their guidance — sealing failure is reported in `custody`, not raised
 
 JIM's SQLite keeps only `{"vaulted": true, "pdi_key": …}` references; insight
 and detection rules run on the payload in memory before it is sealed, so
