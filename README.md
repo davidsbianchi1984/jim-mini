@@ -225,6 +225,17 @@ this backend — no app store, no second server, nothing to configure on the
 phone.
 
 ```bash
+python -m jim phone
+```
+
+One command: it builds the console if it's missing (first run installs the
+npm dependencies too), prints the phone URL **with a QR code right in the
+terminal**, and starts the API on the network — scan, Add to Home Screen,
+done. Flags: `--port`, `--rebuild`, `--no-build`, `--print-only`.
+
+The manual equivalent, if you prefer the steps separately:
+
+```bash
 npm --prefix app install && npm --prefix app run build   # build the console once
 uvicorn jim.api:app --host 0.0.0.0                       # listen on the network
 curl localhost:8000/pair                                 # what to open on the phone

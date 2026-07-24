@@ -6,7 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **`python -m jim phone`** — the phone setup in one command: builds the
+  console if it's missing (installing npm dependencies on first run),
+  prints the pairing URL with a scannable QR drawn straight into the
+  terminal, and starts the API on the local network. Flags: `--port`,
+  `--rebuild`, `--no-build`, `--print-only`.
 
 ## [0.1.3] — 2026-07-24
 
