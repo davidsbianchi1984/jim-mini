@@ -16,6 +16,9 @@ data class Evidence(val publisher: String, val title: String, val url: String,
 data class Provenance(val method: String, val generatedBy: String,
                       val evidence: List<Evidence>, val disclaimer: String)
 data class Custody(val vaulted: Boolean, val pdiKey: String?, val note: String?)
+data class CustodyList(val records: List<String>, val chainIntact: Boolean?)
+data class CustodyProvenance(val origin: String, val cipher: String?,
+                             val auditCount: Int, val chainIntact: Boolean?)
 data class Guidance(val delivered: Boolean, val source: String?, val content: String,
                     val references: List<String> = emptyList(), val firstAid: FirstAid? = null,
                     val provenance: Provenance? = null, val translationNote: String? = null,
@@ -177,6 +180,29 @@ object ApiClient {
     }
 
     // ---- life coach & insights ----
+
+    // ---- vault custody: sealed tandem exchanges ----
+
+    suspend fun custody(uid: String, token: String): CustodyList {
+        val o = request("/custody/$uid", token = token)
+        val arr = o.optJSONArray("records")
+        return CustodyList(
+            (0 until (arr?.length() ?: 0)).map { arr!!.getString(it) },
+            if (o.isNull("chain_intact")) null else o.getBoolean("chain_intact"))
+    }
+
+    suspend fun custodyProvenance(uid: String, token: String,
+                                  key: String): CustodyProvenance {
+        val o = request("/custody/$uid/provenance?key=" +
+            java.net.URLEncoder.encode(key, "UTF-8"), token = token)
+        val chain = o.optJSONObject("chain")
+        return CustodyProvenance(
+            o.optString("origin", ""),
+            o.optJSONObject("sealed")?.optString("cipher", null),
+            o.optJSONObject("audit")?.optInt("count") ?: 0,
+            if (chain == null || chain.isNull("intact")) null
+            else chain.getBoolean("intact"))
+    }
 
     suspend fun coach(uid: String, token: String, area: String, message: String): Guidance {
         val o = request("/coach/$uid", "POST",

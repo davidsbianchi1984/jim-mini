@@ -46,6 +46,26 @@ public record Custody(
     [property: JsonPropertyName("pdi_key")] string? PdiKey,
     [property: JsonPropertyName("note")] string? Note);
 
+public record CustodyList(
+    [property: JsonPropertyName("records")] string[] Records,
+    [property: JsonPropertyName("count")] int Count,
+    [property: JsonPropertyName("chain_intact")] bool? ChainIntact);
+
+public record CustodySealed(
+    [property: JsonPropertyName("cipher")] string? Cipher,
+    [property: JsonPropertyName("created_at")] string? CreatedAt);
+
+public record CustodyAudit([property: JsonPropertyName("count")] int Count);
+
+public record CustodyChain([property: JsonPropertyName("intact")] bool? Intact);
+
+public record CustodyProvenance(
+    [property: JsonPropertyName("key")] string Key,
+    [property: JsonPropertyName("origin")] string Origin,
+    [property: JsonPropertyName("sealed")] CustodySealed? Sealed,
+    [property: JsonPropertyName("audit")] CustodyAudit? Audit,
+    [property: JsonPropertyName("chain")] CustodyChain? Chain);
+
 public record Guidance(
     [property: JsonPropertyName("delivered")] bool Delivered,
     [property: JsonPropertyName("source")] string? Source,
@@ -292,6 +312,15 @@ public sealed class ApiClient
         req.Headers.Add("authorization", $"Bearer {token}");
         return req;
     }
+
+    // -- vault custody: sealed tandem exchanges --
+
+    public Task<CustodyList> Custody(string uid, string token) =>
+        Send<CustodyList>(Get($"/custody/{uid}", token));
+
+    public Task<CustodyProvenance> CustodyProvenance(string uid, string token, string key) =>
+        Send<CustodyProvenance>(Get(
+            $"/custody/{uid}/provenance?key={Uri.EscapeDataString(key)}", token));
 
     public Task<Goal[]> Goals(string uid, string token) => Send<Goal[]>(Get($"/goals/{uid}", token));
 

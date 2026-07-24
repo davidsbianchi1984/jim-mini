@@ -30,6 +30,9 @@
             <NavigationViewItem Content="Connect" Tag="connect">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Link" /></NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Content="Vault Custody" Tag="custody">
+                <NavigationViewItem.Icon><SymbolIcon Symbol="Permissions" /></NavigationViewItem.Icon>
+            </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>
             <Button Content="Sign out" Margin="12" Click="OnSignOut"
