@@ -20,12 +20,23 @@ def test_pairing_gives_a_reachable_address_not_loopback(client, monkeypatch):
 
 def test_pairing_says_so_when_no_reachable_address_exists(client, monkeypatch):
     """A loopback answer is useless on a phone, so pairing calls it out and
-    says how to fix it instead of handing over an address that can't work."""
+    says how to fix it instead of handing over an address that can't work —
+    whether or not the console happens to be built."""
     monkeypatch.setenv("JIM_LAN_HOST", "127.0.0.1")
     body = client.get("/pair").json()
     assert body["reachable"] is False
     assert any("cannot reach 127.0.0.1" in step for step in body["how"])
     assert any("JIM_LAN_HOST" in step for step in body["how"])
+
+
+def test_pairing_reports_every_blocker_at_once(client, monkeypatch):
+    """An unbuilt console and an unreachable address are separate problems;
+    reporting one at a time sends the user round the loop twice."""
+    monkeypatch.setenv("JIM_CONSOLE_DIR", "/nonexistent/dist")
+    monkeypatch.setenv("JIM_LAN_HOST", "127.0.0.1")
+    how = client.get("/pair").json()["how"]
+    assert any("npm --prefix app run build" in step for step in how)
+    assert any("cannot reach 127.0.0.1" in step for step in how)
 
 
 def test_pairing_qr_encodes_the_console_url(client, monkeypatch):

@@ -79,28 +79,31 @@ def pairing(port: int = 8000) -> dict:
     host = lan_address()
     base = f"http://{host}:{port}"
     built = console_dir() is not None
+    reachable = not host.startswith("127.")
+    # The two things that can be missing are independent, so report both
+    # rather than sending someone round the loop fixing one at a time.
+    how: list[str] = []
     if not built:
-        how = ["Build the console first: npm --prefix app run build",
-               "Then restart the API and re-read GET /pair."]
-    elif host.startswith("127."):
-        # Honest about the one case we can't solve for the user.
-        how = ["No local-network address found for this machine — a phone "
-               "cannot reach 127.0.0.1.",
-               "Check that Wi-Fi is connected, then set JIM_LAN_HOST to this "
-               "machine's address and restart the API.",
-               "Also start the API on all interfaces: "
-               "uvicorn jim.api:app --host 0.0.0.0"]
-    else:
-        how = ["Put the phone on the same Wi-Fi as this machine.",
-               "Start the API on all interfaces if you haven't: "
-               "uvicorn jim.api:app --host 0.0.0.0",
-               f"Open {base}/app/ in the phone's browser (or scan the QR).",
-               "Add to Home Screen — it installs and runs full-screen."]
+        how += ["Build the console first: npm --prefix app run build",
+                "Then restart the API and re-read GET /pair."]
+    if not reachable:
+        # Honest about the case we can't solve for the user: a phone that is
+        # told "127.0.0.1" will ask itself, and nothing will answer.
+        how += ["No local-network address found for this machine — a phone "
+                "cannot reach 127.0.0.1.",
+                "Check Wi-Fi is connected, then set JIM_LAN_HOST to this "
+                "machine's address and restart the API."]
+    if built and reachable:
+        how += [f"Open {base}/app/ in the phone's browser (or scan the QR).",
+                "Add to Home Screen — it installs and runs full-screen."]
+    how = ["Put the phone on the same Wi-Fi as this machine.",
+           "Start the API on all interfaces: uvicorn jim.api:app --host 0.0.0.0",
+           *how]
     return {
         "console_url": f"{base}/app/",
         "api_url": base,
         "console_built": built,
-        "reachable": not host.startswith("127."),
+        "reachable": reachable,
         "qr_svg": "/pair/qr.svg",
         "how": how,
         "note": "Local network only — this address is not reachable from the "
