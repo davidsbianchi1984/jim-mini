@@ -198,6 +198,24 @@ def create_app(qrme_client: QRMEClient | None = None,
         user["user_token"] = auth.issue("user", user["id"])
         return user
 
+    @app.get("/specialists")
+    def list_specialists() -> list[dict]:
+        """The specialist registry: which named expert stands behind each
+        condition domain, and whether guidance routes locally or in tandem
+        with a QRME profile."""
+        rows = db.connect().execute(
+            "SELECT condition, mode, label, qrme_profile_id FROM specialists"
+            " ORDER BY condition").fetchall()
+        return [dict(r) for r in rows]
+
+    @app.post("/specialists/seed", status_code=201)
+    def seed_specialists() -> dict:
+        """Populate the starter specialists: one named domain expert per
+        condition, so guidance carries a specialist attribution from the
+        first deploy. Idempotent — covered conditions are skipped."""
+        from . import seed
+        return seed.seed()
+
     @app.post("/specialists")
     def register_specialist(body: SpecialistRegister) -> dict:
         if body.mode == "tandem" and not body.qrme_profile_id:
