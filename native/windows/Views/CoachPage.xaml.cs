@@ -21,7 +21,10 @@ public sealed partial class CoachPage : Page
         {
             var reply = await ApiClient.Shared.Coach(s.Uid!, s.Token!, area, message);
             ReplyText.Text = reply.Content;
-            ReplyProvenance.Text = MonitorPage.FormatProvenance(reply);
+            var who = MonitorPage.FormatSpecialist(reply);
+            var prov = MonitorPage.FormatProvenance(reply);
+            ReplyProvenance.Text = who.Length > 0 && prov.Length > 0
+                ? $"{who}\n{prov}" : who + prov;
             ReplyProvenance.Visibility = ReplyProvenance.Text.Length > 0
                 ? Visibility.Visible : Visibility.Collapsed;
             ReplyCard.Visibility = Visibility.Visible;

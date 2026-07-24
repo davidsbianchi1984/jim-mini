@@ -31,6 +31,10 @@ public sealed partial class MonitorPage : Page
             ResultGuidance.Text = r.Guidance?.Content ?? "";
             ResultGuidance.Visibility = r.Guidance is null ? Visibility.Collapsed : Visibility.Visible;
 
+            ResultSpecialist.Text = FormatSpecialist(r.Guidance);
+            ResultSpecialist.Visibility = ResultSpecialist.Text.Length > 0
+                ? Visibility.Visible : Visibility.Collapsed;
+
             var aid = r.Guidance?.FirstAidPlaybook;
             if (aid is not null)
             {
@@ -84,6 +88,14 @@ public sealed partial class MonitorPage : Page
         {
             SendButton.IsEnabled = true;
         }
+    }
+
+    /// The named expert standing behind this condition, plus a live badge
+    /// when guidance was routed in tandem through a QRME synthetic persona.
+    internal static string FormatSpecialist(Guidance? g)
+    {
+        if (g?.Specialist is not { } who) return "";
+        return g.Source == "tandem" ? $"{who}  ·  LIVE VIA QRME" : who;
     }
 
     /// The verifiable basis of the advice: publishers, documents, URLs, and

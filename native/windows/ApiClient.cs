@@ -48,7 +48,9 @@ public record Guidance(
     [property: JsonPropertyName("references")] string[]? References,
     [property: JsonPropertyName("first_aid")] FirstAid? FirstAidPlaybook,
     [property: JsonPropertyName("provenance")] Provenance? ProvenanceInfo,
-    [property: JsonPropertyName("translation_note")] string? TranslationNote);
+    [property: JsonPropertyName("translation_note")] string? TranslationNote,
+    [property: JsonPropertyName("specialist")] string? Specialist,
+    [property: JsonPropertyName("qrme_profile_id")] string? QrmeProfileId);
 
 public record LanguageInfo(
     [property: JsonPropertyName("code")] string Code,

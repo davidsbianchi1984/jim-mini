@@ -35,13 +35,15 @@ struct Provenance: Decodable {
 
 struct Guidance: Decodable {
     let delivered: Bool
-    let source: String?
+    let source: String?                // "local" | "tandem"
     let content: String
     let references: [String]?
     let first_aid: FirstAid?
     let provenance: Provenance?
     let language: String?
     let translation_note: String?
+    let specialist: String?            // named expert behind this condition
+    let qrme_profile_id: String?       // set when routed tandem via QRME
 }
 
 struct LanguageInfo: Decodable {

@@ -23,6 +23,9 @@ public sealed partial class CheckinPage : Page
                 var lines = refs is { Length: > 0 }
                     ? string.Join("\n", System.Linq.Enumerable.Select(refs, x => $"→ {x}"))
                     : "";
+                var who = MonitorPage.FormatSpecialist(r.Guardian?.Guidance);
+                if (who.Length > 0)
+                    lines = lines.Length > 0 ? $"{who}\n{lines}" : who;
                 var prov = MonitorPage.FormatProvenance(r.Guardian?.Guidance);
                 if (prov.Length > 0)
                     lines = lines.Length > 0 ? $"{lines}\n{prov}" : prov;
