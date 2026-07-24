@@ -7,6 +7,8 @@ final class AppState: ObservableObject {
     @Published var uid: String?
     @Published var token: String?
     @Published var displayName: String = ""
+    // The user's chosen language also drives the app chrome via L10n.
+    @Published var language = "en"
 
     private let d = UserDefaults.standard
 
@@ -14,6 +16,7 @@ final class AppState: ObservableObject {
         uid = d.string(forKey: "jim.uid")
         token = d.string(forKey: "jim.token")
         displayName = d.string(forKey: "jim.name") ?? ""
+        language = d.string(forKey: "jim.lang") ?? "en"
     }
 
     var isEnrolled: Bool { uid != nil && token != nil }
@@ -27,6 +30,11 @@ final class AppState: ObservableObject {
 
     func signOut() {
         uid = nil; token = nil; displayName = ""
-        ["jim.uid", "jim.token", "jim.name"].forEach { d.removeObject(forKey: $0) }
+        ["jim.uid", "jim.token", "jim.name", "jim.lang"].forEach { d.removeObject(forKey: $0) }
+    }
+
+    func rememberLanguage(_ code: String) {
+        language = code
+        d.set(code, forKey: "jim.lang")
     }
 }

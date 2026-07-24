@@ -21,6 +21,14 @@ class GuardianViewModel(app: Application) : AndroidViewModel(app) {
         private set
     var displayName by mutableStateOf(prefs.getString("name", "") ?: "")
         private set
+    // The user's chosen language also drives the app chrome via L10n.
+    var language by mutableStateOf(prefs.getString("lang", "en") ?: "en")
+        private set
+
+    fun rememberLanguage(code: String) {
+        language = code
+        prefs.edit().putString("lang", code).apply()
+    }
 
     val isEnrolled get() = uid != null && token != null
 

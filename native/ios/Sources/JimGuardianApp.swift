@@ -22,11 +22,11 @@ struct RootView: View {
             Theme.bg.ignoresSafeArea()
             if state.isEnrolled {
                 TabView {
-                    OverviewView().tabItem { Label("Overview", systemImage: "circle.grid.cross") }
-                    CareView().tabItem { Label("Care", systemImage: "heart.text.square") }
-                    LifeView().tabItem { Label("Life", systemImage: "target") }
-                    SafetyView().tabItem { Label("Safety", systemImage: "sos.circle") }
-                    ConnectView().tabItem { Label("Connect", systemImage: "link") }
+                    OverviewView().tabItem { Label(L10n.t("tab.overview", state.language), systemImage: "circle.grid.cross") }
+                    CareView().tabItem { Label(L10n.t("tab.care", state.language), systemImage: "heart.text.square") }
+                    LifeView().tabItem { Label(L10n.t("tab.life", state.language), systemImage: "target") }
+                    SafetyView().tabItem { Label(L10n.t("tab.safety", state.language), systemImage: "sos.circle") }
+                    ConnectView().tabItem { Label(L10n.t("tab.connect", state.language), systemImage: "link") }
                 }
                 .tint(Theme.brandA)
             } else {

@@ -64,6 +64,7 @@ private struct GoalsSection: View {
                 }.card()
             }
         }
+        .refreshable { await load() }
         .task { await load() }
     }
 

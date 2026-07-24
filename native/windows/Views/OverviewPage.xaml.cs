@@ -32,6 +32,14 @@ public sealed partial class OverviewPage : Page
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
+        RefreshButton.Content = L10n.T("action.refresh");
+        await Load();
+    }
+
+    private async void OnRefresh(object sender, RoutedEventArgs e) => await Load();
+
+    private async System.Threading.Tasks.Task Load()
+    {
         var s = AppState.Current;
         Greeting.Text = $"Hi, {s.DisplayName}";
         try
@@ -116,6 +124,7 @@ public sealed partial class OverviewPage : Page
             var idx = System.Array.FindIndex(_languages, l => l.Code == current.Language);
             LanguageBox.SelectedIndex = idx >= 0 ? idx : 0;
             PreTranslateToggle.IsOn = (current.Mode ?? "pre") == "pre";
+            s.RememberLanguage(current.Language);   // chrome follows the user
         }
         catch { /* backend offline — leave empty */ }
         finally { _loadingLanguage = false; }
@@ -129,7 +138,11 @@ public sealed partial class OverviewPage : Page
         var idx = LanguageBox.SelectedIndex;
         if (idx < 0 || idx >= _languages.Length) return;
         var s = AppState.Current;
-        try { await ApiClient.Shared.SetLanguage(s.Uid!, s.Token!, _languages[idx].Code, CurrentMode); }
+        try
+        {
+            await ApiClient.Shared.SetLanguage(s.Uid!, s.Token!, _languages[idx].Code, CurrentMode);
+            s.RememberLanguage(_languages[idx].Code);
+        }
         catch { /* ignore */ }
     }
 

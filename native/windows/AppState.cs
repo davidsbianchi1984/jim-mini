@@ -15,6 +15,14 @@ public sealed class AppState
     public string? Uid { get; set; }
     public string? Token { get; set; }
     public string DisplayName { get; set; } = "";
+    // The user's chosen language also drives the app chrome via L10n.
+    public string Language { get; set; } = "en";
+
+    public void RememberLanguage(string code)
+    {
+        Language = code;
+        Save();
+    }
 
     public bool IsEnrolled => !string.IsNullOrEmpty(Uid) && !string.IsNullOrEmpty(Token);
 

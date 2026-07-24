@@ -57,11 +57,11 @@ class MainActivity : ComponentActivity() {
 private fun HomeShell(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
     val tabs = listOf(
-        Triple("Overview", Icons.Filled.GridView, 0),
-        Triple("Care", Icons.Filled.Favorite, 1),
-        Triple("Life", Icons.Filled.Star, 2),
-        Triple("Safety", Icons.Filled.Warning, 3),
-        Triple("Connect", Icons.Filled.Link, 4),
+        Triple(L10n.t("tab.overview", vm.language), Icons.Filled.GridView, 0),
+        Triple(L10n.t("tab.care", vm.language), Icons.Filled.Favorite, 1),
+        Triple(L10n.t("tab.life", vm.language), Icons.Filled.Star, 2),
+        Triple(L10n.t("tab.safety", vm.language), Icons.Filled.Warning, 3),
+        Triple(L10n.t("tab.connect", vm.language), Icons.Filled.Link, 4),
     )
     Scaffold(
         containerColor = Jim.ScrBot,
