@@ -4,7 +4,8 @@ import SwiftUI
 /// sensitivity dial), and the robot helpers — behind a segmented switcher.
 struct SafetyView: View {
     enum Tab: String, CaseIterable {
-        case sos = "SOS", medical = "Med ID", policy = "Policy", robots = "Robots"
+        case sos = "SOS", medical = "Med ID", policy = "Policy",
+             robots = "Robots", vault = "Vault"
     }
     @State private var tab: Tab = .sos
 
@@ -20,6 +21,7 @@ struct SafetyView: View {
                 case .medical: MedicalSection()
                 case .policy: PolicySection()
                 case .robots: RobotsSection()
+                case .vault: CustodySection()
                 }
             }.padding(20)
         }

@@ -78,6 +78,23 @@ struct TranslateResult: Decodable {
     let note: String?
 }
 
+struct CustodyList: Decodable {
+    let records: [String]
+    let count: Int
+    let chain_intact: Bool?
+}
+
+struct CustodyProvenance: Decodable {
+    struct Sealed: Decodable { let cipher: String?; let created_at: String? }
+    struct Audit: Decodable { let count: Int? }
+    struct Chain: Decodable { let intact: Bool? }
+    let key: String
+    let origin: String
+    let sealed: Sealed?
+    let audit: Audit?
+    let chain: Chain?
+}
+
 struct MonitorResult: Decodable {
     let detected: Bool
     let condition: String?
@@ -422,6 +439,20 @@ actor ApiClient {
         struct Ok: Decodable {}
         let _: Ok = try await request("/waivers/\(uid)", method: "DELETE",
                                       token: token)
+    }
+
+    // MARK: vault custody — sealed tandem exchanges
+
+    func custody(uid: String, token: String) async throws -> CustodyList {
+        try await request("/custody/\(uid)", token: token)
+    }
+
+    func custodyProvenance(uid: String, token: String,
+                           key: String) async throws -> CustodyProvenance {
+        let q = key.addingPercentEncoding(
+            withAllowedCharacters: .urlQueryAllowed) ?? key
+        return try await request("/custody/\(uid)/provenance?key=\(q)",
+                                 token: token)
     }
 
     // MARK: Connect — sources, social platforms, connected apps

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.CustodyPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="740" Spacing="16" Padding="28" HorizontalAlignment="Left">
+            <TextBlock Text="Vault Custody" FontSize="22" FontWeight="Bold"
+                       Foreground="{StaticResource JimTxtBrush}" />
+            <TextBlock Text="Chats with tandem specialists are sealed into the PDI vault — encrypted, attributed, and hash-chained. This is your copy of the proof. Select a record to read its provenance."
+                       Foreground="{StaticResource JimT2Brush}" FontSize="13" TextWrapping="Wrap" />
+
+            <TextBlock x:Name="ChainText" FontSize="13" FontWeight="Bold"
+                       Foreground="{StaticResource JimGreenBrush}" Visibility="Collapsed" />
+            <TextBlock x:Name="ErrorText" FontSize="13" TextWrapping="Wrap"
+                       Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
+            <TextBlock x:Name="EmptyText"
+                       Text="No sealed exchanges yet — they appear after a tandem specialist chat."
+                       Foreground="{StaticResource JimT2Brush}" FontSize="13"
+                       TextWrapping="Wrap" Visibility="Collapsed" />
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="8">
+                <ListView x:Name="RecordsList" SelectionMode="Single"
+                          SelectionChanged="OnSelect" />
+            </Border>
+
+            <Border x:Name="ProvCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="ProvTitle" FontWeight="Bold" FontSize="13"
+                               Foreground="{StaticResource JimTxtBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="ProvText" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                </StackPanel>
+            </Border>
+
+            <Button Content="Refresh" Height="40" Click="OnRefresh"
+                    Foreground="White" Background="{StaticResource JimBrandABrush}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
