@@ -27,6 +27,13 @@ provider, the KMS/HSM provider, and any managed database) is a **Business
 Associate** and must sign a BAA before production PHI flows. This is a signature,
 not a deploy — track it here.
 
+A **production-ready BAA template** — with the required 45 C.F.R.
+§ 164.504(e) provisions and an exhibit mapping each promise to the vault
+control that keeps it — is maintained in the PDI repo at
+[`docs/baa-template.md`](https://github.com/davidsbianchi1984/pdi/blob/main/docs/baa-template.md).
+Use it as the starting point for each signature below (counsel review
+required).
+
 ### Checklist before handling production PHI
 
 - [ ] BAA signed with the **hosting** provider.
