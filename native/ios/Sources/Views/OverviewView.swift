@@ -91,7 +91,7 @@ struct OverviewView: View {
                         .padding(10).background(Theme.scrBot)
                         .clipShape(RoundedRectangle(cornerRadius: 11))
                         .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
-                    Button("Translate") { runTranslate() }
+                    Button(L10n.t("action.translate", state.language)) { runTranslate() }
                         .font(.caption.bold()).foregroundStyle(.white)
                         .padding(.horizontal, 12).padding(.vertical, 8)
                         .background(Theme.brandA).clipShape(Capsule())
@@ -108,12 +108,13 @@ struct OverviewView: View {
 
                 ImproveCard()
 
-                Button("Sign out") { state.signOut() }
+                Button(L10n.t("action.sign_out", state.language)) { state.signOut() }
                     .font(.subheadline).foregroundStyle(Theme.t2)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.line, lineWidth: 1))
             }.padding(20)
         }
+        .refreshable { await load() }
         .task { await load() }
     }
 
@@ -125,6 +126,7 @@ struct OverviewView: View {
 
     private func applyLanguage() {
         guard let uid = state.uid, let token = state.token else { return }
+        state.rememberLanguage(language)
         Task {
             _ = try? await ApiClient.shared.setLanguage(
                 uid: uid, token: token, code: language,
@@ -152,6 +154,7 @@ struct OverviewView: View {
         if let l = try? await ApiClient.shared.userLanguage(uid: uid, token: token) {
             language = l.language
             preTranslate = (l.mode ?? "pre") == "pre"
+            state.rememberLanguage(l.language)   // chrome follows the user
         }
         loading = false
     }

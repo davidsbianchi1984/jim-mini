@@ -15,6 +15,9 @@
             <TextBlock x:Name="Greeting" FontSize="28" FontWeight="Bold" Foreground="{StaticResource JimTxtBrush}" />
             <TextBlock Text="Your Guardian is watching — the rules are transparent."
                        Foreground="{StaticResource JimT2Brush}" FontSize="14" TextWrapping="Wrap" />
+            <Button x:Name="RefreshButton" Content="Refresh" Click="OnRefresh"
+                    Background="Transparent" FontSize="12"
+                    Foreground="{StaticResource JimBrandABrush}" />
 
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">

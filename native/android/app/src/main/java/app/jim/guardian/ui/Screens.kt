@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import app.jim.guardian.AppConn
 import app.jim.guardian.BaselineMetric
 import app.jim.guardian.CatalogApp
+import app.jim.guardian.L10n
 import app.jim.guardian.CheckinResult
 import app.jim.guardian.ChildCreated
 import app.jim.guardian.ChildOverview
@@ -165,12 +167,19 @@ private fun labeledField(label: String, value: String, placeholder: String, onCh
 
 // ---- Overview ----
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OverviewScreen(vm: GuardianViewModel) {
     var metrics by remember { mutableStateOf<List<BaselineMetric>?>(null) }
-    LaunchedEffect(Unit) {
-        vm.call({ ApiClient.baseline(vm.uid!!, vm.token!!) }) { r -> metrics = r.getOrDefault(emptyList()) }
+    var refreshing by remember { mutableStateOf(false) }
+    fun reload() {
+        vm.call({ ApiClient.baseline(vm.uid!!, vm.token!!) }) { r ->
+            metrics = r.getOrDefault(emptyList()); refreshing = false
+        }
     }
+    LaunchedEffect(Unit) { reload() }
+    PullToRefreshBox(isRefreshing = refreshing,
+        onRefresh = { refreshing = true; reload() }) {
     screenScroll {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.size(8.dp).clip(CircleShape).background(Jim.Green))
@@ -198,8 +207,9 @@ fun OverviewScreen(vm: GuardianViewModel) {
         ImproveCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Jim.Line)) {
-            Text("Sign out", color = Jim.T2)
+            Text(L10n.t("action.sign_out", vm.language), color = Jim.T2)
         }
+    }
     }
 }
 
@@ -991,6 +1001,7 @@ fun LanguageCard(vm: GuardianViewModel) {
         vm.call({ ApiClient.userLanguage(vm.uid!!, vm.token!!) }) { r ->
             r.getOrNull()?.let { (lang, mode) ->
                 current = lang; preTranslate = mode == "pre"
+                vm.rememberLanguage(lang)   // chrome follows the user
             }
         }
     }
@@ -1006,6 +1017,7 @@ fun LanguageCard(vm: GuardianViewModel) {
                         onClick = {
                             vm.call({ ApiClient.setLanguage(vm.uid!!, vm.token!!, l.code) }) {
                                 current = l.code
+                                vm.rememberLanguage(l.code)
                             }
                         },
                         label = { Text(l.label, fontSize = 11.sp) },
