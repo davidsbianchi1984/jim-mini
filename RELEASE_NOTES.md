@@ -1,47 +1,40 @@
-# JIM-mini v0.1.1 — release notes
+# JIM-mini v0.1.2 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.1.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.1.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini (Guardian) v0.1.1** — the Guardian gets hands, a family, and
-provable custody. One of three interoperating products (with
+**JIM-mini (Guardian) v0.1.2** — the trust release: real Terms of Service
+with a recorded receipt, and signed/notarized build wiring. One of three
+interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
 [pdi](https://github.com/davidsbianchi1984/pdi)).
 
 ### Highlights
 
-- **Native apps at parity** — iOS, Android, and Windows now carry the whole
-  Guardian: Care (Monitor / Check-in / Coach / Family), Life (goals, habits,
-  journal), Safety (SOS, escalation policy, robots, Medical ID), Connect,
-  Vault Custody, and the model picker.
-- **Robots as first-aid responders** — catalog robots bind as guardian
-  responders with escalation directives. Assist-rated platforms fetch the
-  AED and coach the playbook aloud; perform-rated platforms may deliver
-  chest compressions only after a person on scene confirms. **Fully
-  autonomous resuscitation stays locked behind a signed liability waiver
-  that can never be signed for a minor.**
-- **Emergency, end to end** — predictive early warning, a transparent
-  escalation decision tree, and the one-tap Emergency flow: reach services,
-  share location, alert family, surface the Medical ID QR, deliver AI first
-  aid, ping every device.
-- **Family** — parent-led child accounts with recorded (PDI-sealed) consent,
-  age-scaled oversight that ends by itself at 18, pause/quiet hours that
-  never hold safety, and one light per child on the parent's wrist.
-- **Provable custody** — tandem specialist exchanges sealed into the PDI
-  vault with a custody viewer and provenance; the mental-health trio routes
-  through live QRME personas while crisis escalation stays local.
-- **Language everywhere** — per-user language with hand-translated safety
-  content in all supported languages, gateway choice, translate-anything,
-  and guidance provenance with published sources. Chrome localization covers
-  the apps' own labels in all 10 languages.
-- **In-app feedback** — a "Help us improve" section on every client.
+- **Terms of Service** — docs/terms.md (v1.0) leads with the section that
+  matters most: JIM is a wellness tool, **not a medical device** — call
+  911 first, 988 in crisis, and detection can be wrong in both
+  directions. Assumption of risk and release, the robot-resuscitation
+  boundary (fully autonomous resuscitation still requires the separate
+  signed waiver, never for a minor, and a robot never delivers the
+  shock), parent/guardian enrollment, warranty disclaimer, and liability
+  cap. Served versioned at `GET /terms`; enrollment records the accepted
+  version + timestamp on the account, and the native welcome screens
+  carry the clickwrap notice.
+- **Signed, notarized builds wired** — hardened runtime + entitlements +
+  notarization in the electron-builder config: adding the Apple/Windows
+  signing secrets produces Gatekeeper-clean, SmartScreen-friendly
+  installers. docs/releasing.md walks through obtaining the certificates.
+- **HIPAA posture** — docs/hipaa-baa.md now points at the signable BAA
+  template maintained in the PDI repo, where the vault enforces it in
+  code before any HIPAA-program work.
 
 ### Verification
 
-215 tests green; live-server smoke flows pass; the desktop app builds clean;
-the cross-product suite smoke (run from qrme) passes end to end.
+217 tests green; live-server smoke flows pass; the desktop app builds
+clean; the cross-product suite smoke (run from qrme) passes end to end.
 
 ### Install
 
