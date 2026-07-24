@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="JIM Guardian">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141d31"/>
+      <stop offset="1" stop-color="#0b1120"/>
+    </linearGradient>
+    <radialGradient id="orb" cx="0.5" cy="0.42" r="0.62">
+      <stop offset="0" stop-color="#7ef8b4"/>
+      <stop offset="1" stop-color="#43e08a"/>
+    </radialGradient>
+  </defs>
+  <!-- Maskable: the mark stays inside the safe circle (80% of the canvas). -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="232" r="92" fill="url(#orb)" opacity="0.22"/>
+  <circle cx="256" cy="232" r="52" fill="url(#orb)"/>
+  <!-- A steady pulse line: the Guardian watching. -->
+  <path d="M124 340 h56 l24 -46 26 92 30 -122 26 76 h102"
+        fill="none" stroke="#43e08a" stroke-width="18"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

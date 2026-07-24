@@ -87,3 +87,51 @@ button.danger { background: rgba(255,77,94,0.14) !important; color: var(--red) !
 .guidance-src { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--t3); }
 .guidance p { margin: 6px 0; line-height: 1.5; }
 .refs { margin: 6px 0 0; padding-left: 18px; color: var(--t2); font-size: 12px; }
+
+/* "Open on your phone" — the QR + URL pairing card in Privacy. */
+.pair { display: flex; gap: 14px; align-items: flex-start; margin-top: 12px; flex-wrap: wrap; }
+.pair-qr { width: 132px; height: 132px; border-radius: 12px; background: #fff; padding: 6px; }
+.pair-url { font-size: 13px; color: var(--brand); word-break: break-all; margin-bottom: 8px; }
+.pair-steps { margin: 0; padding-left: 18px; color: var(--t2); font-size: 12px; line-height: 1.7; }
+
+/* ---- Phone layout -------------------------------------------------------
+   The console runs on a phone (served by the API at /app, installable to the
+   home screen). Below the breakpoint the sidebar becomes a bottom tab bar —
+   thumb-reachable, one row, safe-area aware — and the desktop chrome that
+   doesn't earn its space (brand block, guardian chip, sign-out) folds away
+   into the Privacy screen instead. */
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+
+  .sidebar {
+    grid-row: 2; flex-direction: row; align-items: center;
+    border-right: 0; border-top: 1px solid var(--line);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    background: rgba(11,17,32,0.94);
+    backdrop-filter: blur(12px);
+  }
+  .brand, .guard-chip, .signout { display: none; }
+
+  nav { flex-direction: row; gap: 2px; width: 100%; }
+  .nav-item {
+    flex: 1; flex-direction: column; gap: 3px; justify-content: center;
+    text-align: center; padding: 8px 2px; font-size: 10px; font-weight: 700;
+    min-height: 52px;                 /* comfortable tap target */
+    border-radius: 12px;
+  }
+  .nav-item.active { box-shadow: none; }
+  .nav-icon { width: auto; font-size: 17px; }
+
+  .content {
+    grid-row: 1; padding: 18px 16px 22px;
+    padding-top: calc(18px + env(safe-area-inset-top));
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen { max-width: 100%; }
+  .screen-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .screen-head h2 { font-size: 20px; }
+
+  /* Inputs at 16px so iOS doesn't zoom the viewport when they focus. */
+  input, textarea, select { font-size: 16px; }
+  button { min-height: 44px; }
+}

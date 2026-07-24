@@ -6,7 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Run it on your phone** — the API serves the built console at `/app`, so a
+  phone on the same Wi-Fi opens the Guardian with nothing to configure (one
+  origin for UI and API, so no CORS and no "which host?" step). `GET /pair`
+  resolves this machine's local-network address and returns the URL to open —
+  with `GET /pair/qr.svg` as a scannable QR and a pairing card in the Privacy
+  screen. Installable as a PWA (manifest, icon, standalone display, app-shell
+  service worker that never caches API traffic), with a phone layout: the
+  sidebar becomes a bottom tab bar, 16px inputs so iOS doesn't zoom, and
+  safe-area insets for the notch and home indicator.
 
 ## [0.1.2] — 2026-07-24
 
