@@ -383,6 +383,11 @@ SCREENS = [
         ("warn", "amber", "Detection", "anxiety · guidance"),
         ("shield", "green", "Guidance", "breathing + reassurance"),
     ]),
+    dict(num=35, title="Family", accent="amber", rows=[
+        ("heart", "green", "Riley · 8", "quiet · full oversight"),
+        ("warn", "red", "Sam · 15", "escalated 21:40 · tap to open"),
+        ("bell", "amber", "Quiet hours", "21:00–07:00 · safety never pauses"),
+    ]),
 ]
 
 

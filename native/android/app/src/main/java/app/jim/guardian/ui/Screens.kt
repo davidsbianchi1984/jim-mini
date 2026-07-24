@@ -26,6 +26,7 @@ import app.jim.guardian.CheckinResult
 import app.jim.guardian.ChildCreated
 import app.jim.guardian.ChildOverview
 import app.jim.guardian.ChildSummary
+import app.jim.guardian.GuardianFace
 import app.jim.guardian.EmergencyResult
 import app.jim.guardian.EscalationPolicy
 import app.jim.guardian.Guidance
@@ -1152,17 +1153,70 @@ private fun FamilyPanel(vm: GuardianViewModel) {
     var created by remember { mutableStateOf<ChildCreated?>(null) }
     var kids by remember { mutableStateOf<List<ChildSummary>>(emptyList()) }
     var overview by remember { mutableStateOf<ChildOverview?>(null) }
+    var face by remember { mutableStateOf<GuardianFace?>(null) }
+    var openKid by remember { mutableStateOf<String?>(null) }
+    var pauseOn by remember { mutableStateOf(false) }
+    var quietStart by remember { mutableStateOf("") }
+    var quietEnd by remember { mutableStateOf("") }
+    var controlsNote by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
     fun reload() {
         vm.call({ ApiClient.children(vm.uid!!, vm.token!!) }) { r ->
             kids = r.getOrDefault(emptyList())
         }
+        vm.call({ ApiClient.guardianWatch(vm.uid!!, vm.token!!) }) { r ->
+            face = r.getOrNull()
+        }
     }
     LaunchedEffect(Unit) { reload() }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        face?.takeIf { it.children.isNotEmpty() }?.let { f ->
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                    .background(Jim.Card).padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Family watch", color = Jim.Txt, fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold)
+                    if (f.haptic == "alert")
+                        Text("⌚ TAPPED", color = Jim.Red, fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold)
+                }
+                f.children.forEach { c ->
+                    Row(Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            Text("●", fontSize = 11.sp, color = when (c.light) {
+                                "green" -> Jim.Green
+                                "orange" -> Jim.Amber
+                                "red" -> Jim.Red
+                                else -> Jim.T3
+                            })
+                            Text(c.displayName, color = Jim.Txt, fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold)
+                            if (c.critical24h > 0)
+                                Text("critical", color = Jim.Red, fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold)
+                            else if (c.escalations24h > 0)
+                                Text("escalated", color = Jim.Amber, fontSize = 10.sp)
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            if (c.paused)
+                                Text("paused", color = Jim.T3, fontSize = 10.sp)
+                            c.quietHours?.let {
+                                Text("🌙 $it", color = Jim.T3, fontSize = 10.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Set up my child", color = Jim.Txt, fontSize = 16.sp,
                 fontWeight = FontWeight.Bold)
@@ -1207,6 +1261,15 @@ private fun FamilyPanel(vm: GuardianViewModel) {
             Row(Modifier.fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp)).background(Jim.Card)
                     .clickable {
+                        openKid = kid.childId
+                        controlsNote = null
+                        face?.children?.firstOrNull { it.childId == kid.childId }
+                            ?.let { c ->
+                                pauseOn = c.paused
+                                val parts = (c.quietHours ?: "").split("–")
+                                quietStart = parts.getOrNull(0) ?: ""
+                                quietEnd = parts.getOrNull(1) ?: ""
+                            }
                         vm.call({ ApiClient.childOverview(vm.uid!!,
                             kid.childId, vm.token!!) }) { r ->
                             overview = r.getOrNull()
@@ -1230,6 +1293,46 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                         "alerts_only" -> Jim.Amber
                         else -> Jim.T3
                     })
+            }
+        }
+        openKid?.let { cid ->
+            Column(Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp)).background(Jim.Card)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Device controls", color = Jim.Txt, fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold)
+                Text("Pause and quiet hours hold everyday guidance only — " +
+                     "monitoring, crisis escalation, and the emergency path " +
+                     "never pause.", color = Jim.T3, fontSize = 10.sp)
+                Row(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Text("Pause guidance", color = Jim.Txt, fontSize = 12.sp)
+                    Switch(checked = pauseOn, onCheckedChange = { pauseOn = it })
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(value = quietStart,
+                        onValueChange = { quietStart = it },
+                        label = { Text("Quiet start") },
+                        modifier = Modifier.weight(1f))
+                    OutlinedTextField(value = quietEnd,
+                        onValueChange = { quietEnd = it },
+                        label = { Text("Quiet end") },
+                        modifier = Modifier.weight(1f))
+                }
+                SmallAction("Apply") {
+                    vm.call({ ApiClient.setFamilyControls(vm.uid!!, cid,
+                        vm.token!!, pauseOn,
+                        quietStart.trim().ifEmpty { null },
+                        quietEnd.trim().ifEmpty { null }) }) { r ->
+                        controlsNote = r.getOrNull()
+                        reload()
+                    }
+                }
+                controlsNote?.let {
+                    Text(it, color = Jim.Green, fontSize = 10.sp)
+                }
             }
         }
         overview?.let { o ->

@@ -58,6 +58,25 @@ public record ChildEvent(
     [property: JsonPropertyName("condition")] string? Condition,
     [property: JsonPropertyName("severity")] string? Severity);
 
+public record FamilyControlsState(
+    [property: JsonPropertyName("paused")] bool Paused,
+    [property: JsonPropertyName("quiet_start")] string? QuietStart,
+    [property: JsonPropertyName("quiet_end")] string? QuietEnd,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record GuardianChild(
+    [property: JsonPropertyName("child_id")] string ChildId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("light")] string Light,
+    [property: JsonPropertyName("critical_24h")] int? Critical24h,
+    [property: JsonPropertyName("escalations_24h")] int? Escalations24h,
+    [property: JsonPropertyName("paused")] bool? Paused,
+    [property: JsonPropertyName("quiet_hours")] string? QuietHours);
+
+public record GuardianFace(
+    [property: JsonPropertyName("children")] GuardianChild[] Children,
+    [property: JsonPropertyName("haptic")] string? Haptic);
+
 public record ChildOverview(
     [property: JsonPropertyName("display_name")] string? DisplayName,
     [property: JsonPropertyName("oversight")] string Oversight,
@@ -352,6 +371,24 @@ public sealed class ApiClient
 
     public Task<ChildOverview> ChildOverviewOf(string gid, string cid, string token) =>
         Send<ChildOverview>(Get($"/guardians/{gid}/children/{cid}", token));
+
+    public Task<FamilyControlsState> SetFamilyControls(
+        string gid, string cid, string token, bool? paused,
+        string? quietStart, string? quietEnd)
+    {
+        var body = new System.Collections.Generic.Dictionary<string, object>();
+        if (paused is { } p) body["paused"] = p;
+        if (quietStart is { Length: > 0 }) body["quiet_start"] = quietStart;
+        if (quietEnd is { Length: > 0 }) body["quiet_end"] = quietEnd;
+        var req = new HttpRequestMessage(HttpMethod.Put,
+            $"/guardians/{gid}/children/{cid}/controls")
+        { Content = System.Net.Http.Json.JsonContent.Create(body) };
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<FamilyControlsState>(req);
+    }
+
+    public Task<GuardianFace> GuardianWatch(string gid, string token) =>
+        Send<GuardianFace>(Get($"/guardians/{gid}/watch", token));
 
     // -- vault custody: sealed tandem exchanges --
 
