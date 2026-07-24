@@ -778,9 +778,21 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
         "severity": detection.severity, "reason": detection.reason,
         "guidance": None, "escalation": None,
     }
-    result["guidance"] = _deliver(user_id, user, detection, note, qrme,
-                                  source_device=sample.get("source_device"),
-                                  pdi=pdi)
+    # Guardian pause / quiet hours hold *everyday* guidance for a child —
+    # critical detections never check the hold: safety never pauses.
+    guidance_hold = None
+    if detection.severity != "critical":
+        from . import family
+        guidance_hold = family.hold_reason(user_id)
+    if guidance_hold:
+        result["guidance"] = {"delivered": False, "held": True,
+                              "source": "held", "note": guidance_hold}
+        _event(user_id, "guidance_held", condition=detection.condition,
+               severity=detection.severity, detail={"reason": guidance_hold})
+    else:
+        result["guidance"] = _deliver(user_id, user, detection, note, qrme,
+                                      source_device=sample.get("source_device"),
+                                      pdi=pdi)
 
     # The escalation decision tree (jim.escalation) resolves this detection to a
     # tier for the user's sensitivity — surfaced on every detection so the UI
