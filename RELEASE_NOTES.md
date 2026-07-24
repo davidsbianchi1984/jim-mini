@@ -1,19 +1,30 @@
-# JIM-mini v0.1.3 — release notes
+# JIM-mini v0.1.4 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.1.3` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.1.4` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini (Guardian) v0.1.3** — the trust release: real Terms of Service
-with a recorded receipt, and signed/notarized build wiring. One of three
-interoperating products (with
+**JIM-mini (Guardian) v0.1.4** — run it your way: one command prints
+every way to run the Guardian and you pick the device — your phone (scan
+a QR straight off the terminal), this PC, a packaged installer, or the
+headless API. One of three interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
 [pdi](https://github.com/davidsbianchi1984/pdi)).
 
 ### Highlights
 
-- **Run it on your phone** — the API serves the built console at `/app`
+- **`python -m jim` — the launcher menu** — every way to run the Guardian,
+  one command each, so you choose per device: `phone` (the QR flow
+  below), `desktop` (the Electron app on this PC), the packaged installer
+  (no toolchain needed), or `serve` (the headless API alone). Same
+  backend, same data, same token checks behind every door.
+- **`python -m jim phone` — the whole phone setup in one command** —
+  builds the console if it's missing (first-run `npm install` included),
+  prints the pairing URL **with a QR code drawn straight into the
+  terminal**, and serves on your local network. Scan, Add to Home
+  Screen, done.
+- **The Guardian on your phone** — the API serves the built console at `/app`
   (one origin for UI and API — nothing to configure on the phone);
   `GET /pair` returns the URL on your local network with a scannable QR,
   and the Guardian installs to the home screen as a standalone app with a
@@ -40,13 +51,13 @@ interoperating products (with
 
 ### Verification
 
-224 tests green; live-server smoke flows pass; the desktop app builds
+228 tests green; live-server smoke flows pass; the desktop app builds
 clean; the cross-product suite smoke (run from qrme) passes end to end.
 
 ### Install
 
 Download the installer for your OS below (`.dmg` / `.exe` / `.AppImage`), or run
-the backend from source — see the [README](README.md). Installers are signed
+`python -m jim` from source and pick your device — see the [README](README.md). Installers are signed
 only if signing secrets are configured; otherwise they are unsigned (see
 [docs/releasing.md](docs/releasing.md)).
 
