@@ -56,7 +56,8 @@ class FakeQRME:
 
     # The QRME Starter Collection handles this fake can resolve, mirroring
     # the real deployment's seeded marketplace.
-    starter_handles = ("marcus_bell", "dr_amara_osei")
+    starter_handles = ("marcus_bell", "dr_amara_osei", "dr_lena_whitcomb",
+                       "dr_marcus_adeyemi", "dr_priya_nair")
 
     def get(self, path, headers=None):
         if path.startswith("/summon"):

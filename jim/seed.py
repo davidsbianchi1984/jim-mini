@@ -56,6 +56,9 @@ SPECIALISTS: dict[str, str] = {
 TANDEM_HANDLES: dict[str, str] = {
     conditions.FINANCIAL_STRESS: "marcus_bell",
     conditions.PHYSICAL_DISTRESS: "dr_amara_osei",
+    conditions.ANXIETY: "dr_lena_whitcomb",
+    conditions.DEPRESSION: "dr_marcus_adeyemi",
+    conditions.RELATIONSHIP: "dr_priya_nair",
 }
 
 
