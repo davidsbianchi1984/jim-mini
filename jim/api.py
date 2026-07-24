@@ -38,7 +38,7 @@ def _age(birthdate: date) -> int:
 def create_app(qrme_client: QRMEClient | None = None,
                pdi_client: PDIClient | None = None,
                cloud_client: CloudModelClient | None = None) -> FastAPI:
-    app = FastAPI(title="JIM-mini / Guardian", version="0.1.0")
+    app = FastAPI(title="JIM-mini / Guardian", version="0.1.1")
 
     # Optional CORS for a packaged guardian-console front-end (app/) calling the
     # API from another origin. Off by default; set JIM_CORS_ORIGINS to a

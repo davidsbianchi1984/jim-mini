@@ -6,12 +6,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-07-24
+
 ### Added
 
-- **First-run onboarding screens** — provider login (Continue with Apple /
-  Google / email), permissions, "about you" (name, known conditions, focus),
-  emergency contacts, and an "all set" confirmation — completing the Welcome →
-  protected-profile journey, rendered in both iOS and Android chrome.
+- **First-run onboarding screens** — provider login (Apple / Google / email),
+  permissions, "about you", emergency contacts, and an "all set" confirmation,
+  in iOS and Android chrome.
+- **Native iOS / Android / Windows apps at parity** — Care (Monitor, Check-in,
+  Coach, Family), Life (goals/habits/journal), Safety (SOS, escalation policy,
+  robots, Medical ID card), Connect (sources, social, apps), Vault Custody,
+  and the model picker — a 5-item nav with everything reachable.
+- **Robots as guardian responders** — catalog binding, escalation directives,
+  and **first-aid rated roles**: assist-rated platforms fetch the AED and
+  coach the playbook; perform-rated may deliver compressions only after
+  on-scene confirmation. **Autonomous resuscitation stays locked behind a
+  signed liability waiver** — and can never be signed for a minor.
+- **Predictive early warning**, the escalation decision tree, and the
+  one-tap Emergency flow (services, location, family, Medical ID, AI first
+  aid, all devices).
+- **Family** — a parent enrolls and watches over a child's account: recorded
+  consent (PDI-sealed when a vault is configured), age-scaled oversight that
+  ends at 18, pause/quiet-hours that never hold safety, and the parent's
+  wrist face — one light per child.
+- **Provable custody** — tandem specialist exchanges sealed in the PDI vault,
+  a custody viewer with provenance, and the native custody screen; the
+  mental-health trio routes through live QRME personas with crisis
+  escalation guaranteed local.
+- **Language & provenance** — per-user language with hand-translated safety
+  content in all supported languages, gateway language choice,
+  translate-anything, and verifiable guidance provenance with published
+  sources; **LLM provider choice** per user.
+- **Starter specialists** — a named domain expert per condition, seeded on
+  deploy, wired to QRME starter profiles in tandem.
+- In-app **"Help us improve" feedback** (`POST`/`GET /improve`) and **chrome
+  localization** — the apps' own tab/nav labels in all 10 languages — plus
+  pull-to-refresh across the main screens.
 
 ## [0.1.0] — 2026-07-21
 

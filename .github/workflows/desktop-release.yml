@@ -17,7 +17,7 @@ name: Guardian release
 
 on:
   push:
-    tags: ["guardian-v*"]
+    tags: ["app-v*"]
   workflow_dispatch:
 
 permissions:
