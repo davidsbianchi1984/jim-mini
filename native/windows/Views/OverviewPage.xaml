@@ -76,6 +76,36 @@
                                Foreground="{StaticResource JimT2Brush}" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Help us improve" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock Text="Tell us how to make the app better — an idea, a rough edge, a bug, or what you love. It goes straight to the team."
+                               Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                    <ComboBox x:Name="ImproveCategory" Header="Category" HorizontalAlignment="Stretch" />
+                    <TextBox x:Name="ImproveMessage" PlaceholderText="What's on your mind?"
+                             TextWrapping="Wrap" AcceptsReturn="True" Height="80" />
+                    <ComboBox x:Name="ImproveRating" Header="Rating (optional)" HorizontalAlignment="Stretch" />
+                    <Button Content="Send feedback" Click="OnSendImprovement"
+                            Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
+                    <TextBlock x:Name="ImproveThanks" Foreground="{StaticResource JimGreenBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <TextBlock x:Name="ImproveTally" Foreground="{StaticResource JimT2Brush}" FontSize="11"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <TextBlock x:Name="ImproveMineHeader" Text="Yours" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimTxtBrush}" Visibility="Collapsed" />
+                    <ItemsControl x:Name="ImproveMine">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimT2Brush}"
+                                           FontSize="11" TextWrapping="Wrap" Margin="0,2" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

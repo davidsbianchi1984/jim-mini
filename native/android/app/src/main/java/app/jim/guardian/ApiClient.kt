@@ -70,6 +70,9 @@ data class AppConn(val id: String, val provider: String, val app: String)
 data class MedicalCard(val name: String?, val age: Int?, val conditions: List<String>,
                        val restingHr: Int?, val contactName: String?, val contactPhone: String?)
 
+data class ImproveItem(val category: String, val message: String, val status: String)
+data class ImproveState(val mine: List<ImproveItem>, val tally: Map<String, Int>, val total: Int)
+
 class ApiException(message: String) : Exception(message)
 
 /**
@@ -577,5 +580,27 @@ object ApiClient {
 
     suspend fun revokeMedicalCard(uid: String, token: String) {
         request("/medical-id/qr/$uid", "DELETE", null, token)
+    }
+
+    // ---- Help us improve — product feedback (open to anyone) ----
+
+    suspend fun submitImprovement(token: String?, category: String,
+                                  message: String, rating: Int?) {
+        val body = JSONObject().put("category", category).put("message", message)
+        if (rating != null) body.put("rating", rating)
+        request("/improve", "POST", body, token)
+    }
+
+    suspend fun improvements(token: String?): ImproveState {
+        val o = request("/improve", token = token)
+        val mineArr = o.optJSONArray("mine")
+        val mine = (0 until (mineArr?.length() ?: 0)).map { i ->
+            val m = mineArr!!.getJSONObject(i)
+            ImproveItem(m.optString("category", ""), m.optString("message", ""),
+                m.optString("status", ""))
+        }
+        val tallyObj = o.optJSONObject("tally") ?: JSONObject()
+        val tally = tallyObj.keys().asSequence().associateWith { tallyObj.optInt(it) }
+        return ImproveState(mine, tally, o.optInt("total"))
     }
 }

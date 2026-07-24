@@ -213,6 +213,20 @@ CREATE TABLE IF NOT EXISTS feedback (
     created_at TEXT NOT NULL
 );
 
+-- "Help us improve": product feedback anyone can send about the app itself
+-- (distinct from the guidance `feedback` table above). Submitter is a
+-- role:subject when authenticated, else 'anonymous'; a submitter sees only
+-- their own words, everyone the aggregate tally.
+CREATE TABLE IF NOT EXISTS improvements (
+    id         TEXT PRIMARY KEY,
+    submitter  TEXT NOT NULL DEFAULT 'anonymous',
+    category   TEXT NOT NULL,          -- idea | improvement | bug | praise | other
+    message    TEXT NOT NULL,
+    rating     INTEGER,                -- optional 1..5 satisfaction
+    status     TEXT NOT NULL DEFAULT 'received',   -- received | reviewed | planned | shipped
+    created_at TEXT NOT NULL
+);
+
 -- Proactive nudges generated from check-ins, goals, streaks, and context.
 CREATE TABLE IF NOT EXISTS insights (
     id         TEXT PRIMARY KEY,
