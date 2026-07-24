@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import urllib.error
+import urllib.parse
 import urllib.request
 
 
@@ -88,6 +89,21 @@ class QRMEClient:
         if r.status_code >= 300:
             return None
         return r.json()[-limit:]
+
+    def resolve_handle(self, handle: str) -> dict | None:
+        """Resolve a QRME @handle to its public profile card via summoning.
+        None when the handle doesn't resolve or QRME is unreachable — ids
+        are deployment-specific, so handles are the stable cross-product
+        names."""
+        ref = handle if handle.startswith("@") else "@" + handle
+        try:
+            r = self._client.get("/summon?ref=" + urllib.parse.quote(ref))
+        except Exception:
+            return None
+        if r.status_code >= 300:
+            return None
+        out = r.json()
+        return out.get("profile") if out.get("type") == "handle" else None
 
     def profile_info(self, profile_id: str) -> dict | None:
         """Fetch a QRME profile's public card (includes ``adult_mode`` and

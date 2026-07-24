@@ -54,7 +54,20 @@ class FakeQRME:
                 "status": "approved", "flag_reason": None}})
         return _Resp(404, {})
 
+    # The QRME Starter Collection handles this fake can resolve, mirroring
+    # the real deployment's seeded marketplace.
+    starter_handles = ("marcus_bell", "dr_amara_osei")
+
     def get(self, path, headers=None):
+        if path.startswith("/summon"):
+            from urllib.parse import parse_qs, urlparse
+            ref = parse_qs(urlparse(path).query).get("ref", [""])[0]
+            handle = ref.lstrip("@")
+            if handle in self.starter_handles:
+                return _Resp(200, {"type": "handle", "profile": {
+                    "profile_id": f"prf_{handle}",
+                    "display_name": handle, "chat": True}})
+            return _Resp(404, {"detail": "unknown handle"})
         return _Resp(404, {})
 
 
