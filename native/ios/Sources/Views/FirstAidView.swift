@@ -1,0 +1,48 @@
+import SwiftUI
+
+/// The parts of a guidance payload beyond the conversational text: the
+/// structured first-aid playbook (CPR / AED steps with the pace cue) and the
+/// crisis / self-help references — e.g. the 988 Suicide & Crisis Lifeline.
+struct GuidanceExtras: View {
+    let guidance: Guidance
+
+    var body: some View {
+        if let aid = guidance.first_aid {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    Text(aid.kind.uppercased()).font(.caption2.bold())
+                        .padding(.horizontal, 7).padding(.vertical, 3)
+                        .background(Theme.red.opacity(0.16)).foregroundStyle(Theme.red)
+                        .clipShape(Capsule())
+                    Text("First aid — step by step")
+                        .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                }
+                if aid.call_emergency_services == true {
+                    Text("📞 Call emergency services now")
+                        .font(.caption.bold()).foregroundStyle(Theme.red)
+                }
+                ForEach(Array(aid.steps.enumerated()), id: \.offset) { i, step in
+                    Text("\(i + 1). \(step)")
+                        .font(.footnote).foregroundStyle(Theme.txt)
+                }
+                if let pace = aid.pace {
+                    Divider().overlay(Theme.line)
+                    Text("Pace: \(pace.compressions_per_minute)/min · \(pace.compression_to_breath_ratio)")
+                        .font(.caption.bold()).foregroundStyle(Theme.amber)
+                    if let cue = pace.cue {
+                        Text("💡 \(cue.light)").font(.caption2).foregroundStyle(Theme.t2)
+                        Text("🔊 \(cue.audio)").font(.caption2).foregroundStyle(Theme.t2)
+                    }
+                }
+            }
+        }
+        if let refs = guidance.references, !refs.isEmpty {
+            VStack(alignment: .leading, spacing: 3) {
+                ForEach(refs, id: \.self) { r in
+                    Text("→ \(r)").font(.caption)
+                        .foregroundStyle(r.contains("988") ? Theme.green : Theme.t2)
+                }
+            }
+        }
+    }
+}

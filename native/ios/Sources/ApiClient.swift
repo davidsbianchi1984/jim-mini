@@ -4,11 +4,27 @@ import Foundation
 
 struct EnrollResult: Decodable { let id: String; let display_name: String; let user_token: String }
 
+struct PaceCue: Decodable { let light: String; let audio: String }
+
+struct Pace: Decodable {
+    let compressions_per_minute: Int
+    let compression_to_breath_ratio: String
+    let cue: PaceCue?
+}
+
+struct FirstAid: Decodable {
+    let kind: String                   // "cpr" | "aed" | ...
+    let call_emergency_services: Bool?
+    let steps: [String]
+    let pace: Pace?
+}
+
 struct Guidance: Decodable {
     let delivered: Bool
     let source: String?
     let content: String
     let references: [String]?
+    let first_aid: FirstAid?
 }
 
 struct MonitorResult: Decodable {
@@ -94,6 +110,7 @@ struct RobotSpec: Decodable {
     let label: String
     let maker: String
     let kind: String
+    let first_aid: String?             // "perform" | "assist" | nil
 }
 
 struct RoboticsCatalog: Decodable { let robots: [RobotSpec] }
@@ -104,6 +121,17 @@ struct Robot: Decodable {
     let name: String
     let status: String?
     let escalation_directive: String?
+    let first_aid: String?
+    let commands: [String]?
+}
+
+struct RobotCmdResult: Decodable {
+    let status: String
+    let note: String?
+    let instruction: String?           // perform_cpr confirmation gate
+    let spoken: [String]?              // guide_first_aid playbook steps
+    let pace: Pace?
+    let safeguards: [String]?
 }
 
 struct MedicalCardIssued: Decodable {
@@ -280,6 +308,14 @@ actor ApiClient {
     func bindRobot(uid: String, token: String, model: String) async throws -> Robot {
         try await request("/robots/\(uid)", method: "POST",
                           body: ["model": model], token: token)
+    }
+
+    func commandRobot(uid: String, token: String, robotId: String,
+                      command: String, arg: String?) async throws -> RobotCmdResult {
+        var body: [String: Any] = ["command": command]
+        if let arg, !arg.isEmpty { body["arg"] = arg }
+        return try await request("/robots/\(uid)/\(robotId)/command",
+                                 method: "POST", body: body, token: token)
     }
 
     // MARK: Connect — sources, social platforms, connected apps

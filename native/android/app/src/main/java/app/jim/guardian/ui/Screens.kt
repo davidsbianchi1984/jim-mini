@@ -25,10 +25,10 @@ import app.jim.guardian.CatalogApp
 import app.jim.guardian.CheckinResult
 import app.jim.guardian.EmergencyResult
 import app.jim.guardian.EscalationPolicy
+import app.jim.guardian.Guidance
 import app.jim.guardian.GuardianViewModel
 import app.jim.guardian.ApiClient
 import app.jim.guardian.Goal
-import app.jim.guardian.Guidance
 import app.jim.guardian.Habit
 import app.jim.guardian.JournalItem
 import app.jim.guardian.MedicalCard
@@ -201,6 +201,7 @@ fun MonitorScreen(vm: GuardianViewModel) {
                 r.guidance?.let {
                     HorizontalDivider(color = Jim.Line)
                     Text(it.content, color = Jim.Txt, fontSize = 14.sp)
+                    GuidanceExtras(it)
                 }
             }
         }
@@ -257,6 +258,7 @@ fun CheckinScreen(vm: GuardianViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("Guidance", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text(g.content, color = Jim.Txt, fontSize = 14.sp)
+                GuidanceExtras(g)
             }
         }
     }
@@ -583,14 +585,57 @@ private fun PolicyPanel(vm: GuardianViewModel) {
 }
 
 @Composable
+private fun GuidanceExtras(g: Guidance) {
+    g.firstAid?.let { aid ->
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("First aid — ${aid.kind.uppercase()}", color = Jim.Red,
+                fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            if (aid.callEms)
+                Text("📞 Call emergency services now", color = Jim.Red,
+                    fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            aid.steps.forEachIndexed { i, step ->
+                Text("${i + 1}. $step", color = Jim.Txt, fontSize = 12.sp)
+            }
+            aid.pace?.let { pace ->
+                Text("Pace: ${pace.perMinute}/min · ${pace.ratio}",
+                    color = Jim.Amber, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                pace.lightCue?.let { Text("💡 $it", color = Jim.T2, fontSize = 11.sp) }
+                pace.audioCue?.let { Text("🔊 $it", color = Jim.T2, fontSize = 11.sp) }
+            }
+        }
+    }
+    g.references.forEach { ref ->
+        Text("→ $ref", fontSize = 11.sp,
+            color = if ("988" in ref) Jim.Green else Jim.T2)
+    }
+}
+
+@Composable
 private fun RobotsPanel(vm: GuardianViewModel) {
     var catalog by remember { mutableStateOf<List<RobotSpec>>(emptyList()) }
     var chosen by remember { mutableStateOf("neo") }
     var robots by remember { mutableStateOf<List<Robot>>(emptyList()) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var cmdResult by remember { mutableStateOf<String?>(null) }
+    var confirmingCpr by remember { mutableStateOf<String?>(null) }
 
     fun reload() { vm.call({ ApiClient.robots(vm.uid!!, vm.token!!) }) { r -> robots = r.getOrDefault(emptyList()) } }
+
+    fun command(rob: Robot, cmd: String, arg: String?) {
+        error = null
+        vm.call({ ApiClient.commandRobot(vm.uid!!, vm.token!!, rob.id, cmd, arg) }) { r ->
+            r.onSuccess { res ->
+                cmdResult = when {
+                    res.spoken.isNotEmpty() -> "🔊 " + res.spoken.joinToString(" → ")
+                    res.pacePerMinute != null ->
+                        (res.note ?: res.status) + " · ${res.pacePerMinute}/min"
+                    else -> res.note ?: res.instruction ?: res.status
+                }
+            }.onFailure { error = it.message }
+            reload()
+        }
+    }
     LaunchedEffect(Unit) {
         vm.call({ ApiClient.roboticsCatalog() }) { r -> catalog = r.getOrDefault(emptyList()) }
         reload()
@@ -625,18 +670,71 @@ private fun RobotsPanel(vm: GuardianViewModel) {
             }
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
+        cmdResult?.let { Text(it, color = Jim.Green, fontSize = 12.sp) }
         robots.forEach { rob ->
-            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(rob.name, color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text((rob.status ?: "docked").replaceFirstChar { it.uppercase() },
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        Text(rob.name, color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        rob.firstAid?.let { rating ->
+                            Text(if (rating == "perform") "CPR-rated" else "first-aid assist",
+                                color = Jim.Green, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    Text((rob.status ?: "docked").replace('_', ' ')
+                        .replaceFirstChar { it.uppercase() },
                         color = Jim.T2, fontSize = 12.sp)
                 }
                 rob.directive?.let {
                     Text("On escalation: ${it.replace('_', ' ')}", color = Jim.Amber, fontSize = 12.sp)
                 }
+                if ("fetch_aed" in rob.commands) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        RobotAction("Fetch AED") { command(rob, "fetch_aed", null) }
+                        RobotAction("Coach CPR") { command(rob, "guide_first_aid", "cpr") }
+                        RobotAction("Meet EMS") { command(rob, "meet_responders", null) }
+                    }
+                }
+                if ("perform_cpr" in rob.commands) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        when {
+                            rob.status == "performing_cpr" ->
+                                RobotAction("Stop CPR", Jim.Red) { command(rob, "stop_cpr", null) }
+                            confirmingCpr == rob.id -> {
+                                RobotAction("Confirm: unresponsive, not breathing", Jim.Red) {
+                                    confirmingCpr = null
+                                    command(rob, "perform_cpr", "confirmed")
+                                }
+                                TextButton(onClick = { confirmingCpr = null }) {
+                                    Text("Cancel", color = Jim.T2, fontSize = 12.sp)
+                                }
+                            }
+                            else -> RobotAction("Perform CPR…", Jim.Red) {
+                                confirmingCpr = rob.id
+                                cmdResult = "Confirm the person is unresponsive and not " +
+                                    "breathing normally. The robot never starts on its own " +
+                                    "judgement — and never delivers a shock; the AED " +
+                                    "analyzes, a human presses."
+                            }
+                        }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun RobotAction(text: String, tint: Color = Jim.BrandA, onClick: () -> Unit) {
+    Box(
+        Modifier.clip(RoundedCornerShape(50)).background(tint)
+            .clickableNoRipple(onClick)
+            .padding(horizontal = 10.dp, vertical = 7.dp),
+    ) {
+        Text(text, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
     }
 }
 

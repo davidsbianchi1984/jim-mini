@@ -9,7 +9,10 @@ import java.net.URL
 // MARK: wire models
 
 data class EnrollResult(val id: String, val displayName: String, val userToken: String)
-data class Guidance(val delivered: Boolean, val source: String?, val content: String)
+data class Pace(val perMinute: Int, val ratio: String, val lightCue: String?, val audioCue: String?)
+data class FirstAid(val kind: String, val callEms: Boolean, val steps: List<String>, val pace: Pace?)
+data class Guidance(val delivered: Boolean, val source: String?, val content: String,
+                    val references: List<String> = emptyList(), val firstAid: FirstAid? = null)
 data class MonitorResult(
     val detected: Boolean, val condition: String?, val severity: String?,
     val reason: String?, val guidance: Guidance?,
@@ -24,8 +27,12 @@ data class FlowStep(val step: String, val label: String, val detail: String)
 data class RobotDirective(val robot: String, val directive: String)
 data class EmergencyResult(val flow: List<FlowStep>, val directives: List<RobotDirective>)
 data class EscalationPolicy(val sensitivity: String, val bySeverity: Map<String, String>)
-data class RobotSpec(val model: String, val label: String, val maker: String)
-data class Robot(val id: String, val model: String, val name: String, val status: String?, val directive: String?)
+data class RobotSpec(val model: String, val label: String, val maker: String,
+                     val firstAid: String?)
+data class Robot(val id: String, val model: String, val name: String, val status: String?,
+                 val directive: String?, val firstAid: String?, val commands: List<String>)
+data class RobotCmdResult(val status: String, val note: String?, val instruction: String?,
+                          val spoken: List<String>, val pacePerMinute: Int?)
 data class MedicalCardIssued(val token: String, val qrSvgUrl: String)
 data class SourceRow(val source: String, val consented: Boolean)
 data class SocialConn(val id: String, val platform: String, val direction: String, val handle: String?)
@@ -47,7 +54,23 @@ object ApiClient {
 
     private fun parseGuidance(o: JSONObject?): Guidance? {
         if (o == null) return null
-        return Guidance(o.optBoolean("delivered"), o.optString("source", null), o.optString("content", ""))
+        val refs = o.optJSONArray("references")
+        val aidObj = o.optJSONObject("first_aid")
+        val aid = aidObj?.let { a ->
+            val steps = a.optJSONArray("steps")
+            val paceObj = a.optJSONObject("pace")
+            val pace = paceObj?.let { pc ->
+                val cue = pc.optJSONObject("cue")
+                Pace(pc.optInt("compressions_per_minute"),
+                    pc.optString("compression_to_breath_ratio", ""),
+                    cue?.optString("light", null), cue?.optString("audio", null))
+            }
+            FirstAid(a.optString("kind", ""), a.optBoolean("call_emergency_services"),
+                (0 until (steps?.length() ?: 0)).map { steps!!.getString(it) }, pace)
+        }
+        return Guidance(o.optBoolean("delivered"), o.optString("source", null),
+            o.optString("content", ""),
+            (0 until (refs?.length() ?: 0)).map { refs!!.getString(it) }, aid)
     }
 
     private suspend fun request(
@@ -233,15 +256,21 @@ object ApiClient {
         )
     }
 
-    private fun robotOf(o: JSONObject) = Robot(
-        o.getString("id"), o.optString("model", ""), o.optString("name", ""),
-        o.optString("status", null), o.optString("escalation_directive", null))
+    private fun robotOf(o: JSONObject): Robot {
+        val cmds = o.optJSONArray("commands")
+        return Robot(
+            o.getString("id"), o.optString("model", ""), o.optString("name", ""),
+            o.optString("status", null), o.optString("escalation_directive", null),
+            o.optString("first_aid", null),
+            (0 until (cmds?.length() ?: 0)).map { cmds!!.getString(it) })
+    }
 
     suspend fun roboticsCatalog(): List<RobotSpec> {
         val arr = request("/robotics/catalog").getJSONArray("robots")
         return (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
-            RobotSpec(o.getString("model"), o.getString("label"), o.getString("maker"))
+            RobotSpec(o.getString("model"), o.getString("label"), o.getString("maker"),
+                o.optString("first_aid", null))
         }
     }
 
@@ -259,6 +288,19 @@ object ApiClient {
     suspend fun bindRobot(uid: String, token: String, model: String): Robot {
         return robotOf(request("/robots/$uid", "POST",
             JSONObject().put("model", model), token))
+    }
+
+    suspend fun commandRobot(uid: String, token: String, robotId: String,
+                             command: String, arg: String?): RobotCmdResult {
+        val body = JSONObject().put("command", command)
+        if (!arg.isNullOrBlank()) body.put("arg", arg)
+        val o = request("/robots/$uid/$robotId/command", "POST", body, token)
+        val spoken = o.optJSONArray("spoken")
+        return RobotCmdResult(
+            o.optString("status", ""), o.optString("note", null),
+            o.optString("instruction", null),
+            (0 until (spoken?.length() ?: 0)).map { spoken!!.getString(it) },
+            o.optJSONObject("pace")?.optInt("compressions_per_minute"))
     }
 
     // ---- Connect: sources, social platforms, connected apps ----

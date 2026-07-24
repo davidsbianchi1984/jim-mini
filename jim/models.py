@@ -120,6 +120,12 @@ class RobotBind(BaseModel):
     llm_provider: str | None = None  # jim.llm registry name; None → user's
 
 
+class RobotCommand(BaseModel):
+    command: str                    # from the body's kind/rating allowlist
+    arg: str | None = None          # e.g. "confirmed" for perform_cpr,
+                                    # "cpr" | "aed" for guide_first_aid
+
+
 class SourceConsent(BaseModel):
     source: Source
     consented: bool

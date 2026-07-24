@@ -42,6 +42,8 @@
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="GuidanceText" Foreground="{StaticResource JimTxtBrush}"
                                FontSize="14" TextWrapping="Wrap" />
+                    <TextBlock x:Name="GuidanceRefs" Foreground="{StaticResource JimGreenBrush}"
+                               FontSize="12" TextWrapping="Wrap" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
         </StackPanel>

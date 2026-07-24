@@ -248,6 +248,8 @@ private struct RobotsSection: View {
     @State private var robots: [Robot] = []
     @State private var busy = false
     @State private var error: String?
+    @State private var cmdResult: String?
+    @State private var confirmingCPR: String?    // robot id awaiting confirm
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -269,23 +271,92 @@ private struct RobotsSection: View {
             }.card()
 
             if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
+            if let cmdResult {
+                Text(cmdResult).font(.caption).foregroundStyle(Theme.green)
+            }
 
             ForEach(robots, id: \.id) { r in
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text(r.name).font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                        if let rating = r.first_aid {
+                            Text(rating == "perform" ? "CPR-rated" : "first-aid assist")
+                                .font(.caption2.bold())
+                                .padding(.horizontal, 6).padding(.vertical, 2)
+                                .background(Theme.green.opacity(0.16))
+                                .foregroundStyle(Theme.green).clipShape(Capsule())
+                        }
                         Spacer()
-                        Text((r.status ?? "docked").capitalized)
+                        Text((r.status ?? "docked").replacingOccurrences(of: "_", with: " ")
+                             .capitalized)
                             .font(.caption).foregroundStyle(Theme.t2)
                     }
                     if let d = r.escalation_directive {
                         Text("On escalation: \(d.replacingOccurrences(of: "_", with: " "))")
                             .font(.caption).foregroundStyle(Theme.amber)
                     }
+                    if let cmds = r.commands, cmds.contains("fetch_aed") {
+                        HStack(spacing: 8) {
+                            cmdButton("Fetch AED") { command(r, "fetch_aed", nil) }
+                            cmdButton("Coach CPR") { command(r, "guide_first_aid", "cpr") }
+                            cmdButton("Meet EMS") { command(r, "meet_responders", nil) }
+                        }
+                        if cmds.contains("perform_cpr") {
+                            HStack(spacing: 8) {
+                                if r.status == "performing_cpr" {
+                                    cmdButton("Stop CPR", tint: Theme.red) {
+                                        command(r, "stop_cpr", nil)
+                                    }
+                                } else if confirmingCPR == r.id {
+                                    cmdButton("Confirm: unresponsive, not breathing",
+                                              tint: Theme.red) {
+                                        confirmingCPR = nil
+                                        command(r, "perform_cpr", "confirmed")
+                                    }
+                                    Button("Cancel") { confirmingCPR = nil }
+                                        .font(.caption).foregroundStyle(Theme.t2)
+                                } else {
+                                    cmdButton("Perform CPR…", tint: Theme.red) {
+                                        confirmingCPR = r.id
+                                        cmdResult = "Confirm the person is unresponsive and not breathing normally. The robot never starts on its own judgement — and never delivers a shock; the AED analyzes, a human presses."
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }.card()
             }
         }
         .task { await load() }
+    }
+
+    private func cmdButton(_ label: String, tint: Color = Theme.brandA,
+                           _ action: @escaping () -> Void) -> some View {
+        Button(label, action: action)
+            .font(.caption.bold()).foregroundStyle(.white)
+            .padding(.horizontal, 10).padding(.vertical, 7)
+            .background(tint).clipShape(Capsule())
+    }
+
+    private func command(_ r: Robot, _ command: String, _ arg: String?) {
+        guard let uid = state.uid, let token = state.token else { return }
+        error = nil
+        Task {
+            do {
+                let res = try await ApiClient.shared.commandRobot(
+                    uid: uid, token: token, robotId: r.id,
+                    command: command, arg: arg)
+                var line = res.note ?? res.instruction ?? res.status
+                if let pace = res.pace {
+                    line += " · \(pace.compressions_per_minute)/min"
+                }
+                if let spoken = res.spoken {
+                    line = "🔊 " + spoken.joined(separator: " → ")
+                }
+                cmdResult = line
+            } catch { self.error = error.localizedDescription }
+            await load()
+        }
     }
 
     private func load() async {

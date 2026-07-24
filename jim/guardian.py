@@ -296,6 +296,7 @@ def bind_robot(user_id: str, model: str, name: str | None,
             "kind": spec["kind"], "name": robot_name,
             "llm_provider": provider,
             "escalation_directive": robotics.directive_for(model),
+            "first_aid": robotics.first_aid_rating(model),
             "commands": robotics.allowed_commands(model)}
 
 
@@ -305,6 +306,7 @@ def robots_for(user_id: str) -> list[dict]:
         (user_id,)).fetchall()
     return [{**dict(r),
              "escalation_directive": robotics.directive_for(r["model"]),
+             "first_aid": robotics.first_aid_rating(r["model"]),
              "commands": robotics.allowed_commands(r["model"])} for r in rows]
 
 
@@ -322,21 +324,124 @@ def unbind_robot(user_id: str, robot_id: str) -> dict | None:
     return {"id": robot_id, "unbound": True}
 
 
-def _robot_directives(user_id: str) -> list[dict]:
+def _robot_directives(user_id: str, cardiac: bool = False) -> list[dict]:
     """On an escalation, every bound robot gets its role's directive: mobile
-    bodies converge on the user, vacuums dock and clear the floor."""
+    bodies converge on the user, vacuums dock and clear the floor. A cardiac
+    escalation upgrades first-aid-rated bodies to their rescue role — perform-
+    rated platforms begin hands-only CPR, assist-rated ones fetch the AED and
+    coach the pace. Delivering a shock is never a directive: the AED analyzes
+    the rhythm and a human presses the button."""
     directives = []
     conn = db.connect()
     for r in robots_for(user_id):
-        directive = r["escalation_directive"]
+        directive = robotics.directive_for(r["model"], cardiac=cardiac)
         if directive is None:
             continue
         conn.execute("UPDATE robots SET status='responding' WHERE id=?",
                      (r["id"],))
-        directives.append({"robot": r["name"], "model": r["model"],
-                           "directive": directive})
+        entry = {"robot": r["name"], "model": r["model"],
+                 "directive": directive}
+        rating = robotics.first_aid_rating(r["model"])
+        if cardiac and rating:
+            entry["first_aid"] = rating
+        directives.append(entry)
     conn.commit()
     return directives
+
+
+# Commands a robot accepts outside its kind/rating allowlist are refused; the
+# first-aid set behaves as follows. Starting compressions is deliberately a
+# two-step: the robot will not touch a person until someone on scene confirms.
+_CPR_SAFEGUARDS = [
+    "emergency services are called before compressions begin",
+    "a person on scene confirmed the need (unresponsive, not breathing "
+    "normally)",
+    "compressions pause the moment the AED analyzes or a human takes over",
+    "the robot never delivers a shock — the AED analyzes and a human "
+    "presses the button",
+]
+
+
+def robot_command(user_id: str, robot_id: str, command: str,
+                  arg: str | None = None) -> dict | None:
+    """Send one allowlisted command to a bound robot. Returns None when the
+    robot doesn't exist; raises ValueError for a command outside the body's
+    allowlist or rating."""
+    conn = db.connect()
+    row = conn.execute("SELECT * FROM robots WHERE id=? AND user_id=?",
+                       (robot_id, user_id)).fetchone()
+    if row is None:
+        return None
+    robot = dict(row)
+    model = robot["model"]
+    allowed = robotics.allowed_commands(model)
+    if command not in allowed:
+        spec = robotics.get(model) or {}
+        raise ValueError(
+            f"'{command}' is not permitted for {spec.get('label', model)}; "
+            f"allowed: {', '.join(allowed)}")
+
+    result: dict
+    status = "active"
+    if command == "perform_cpr":
+        # Rating already enforced by the allowlist; the confirm gate is the
+        # human-in-the-loop: no compressions until someone on scene says so.
+        if arg != "confirmed":
+            result = {
+                "status": "confirmation_required",
+                "instruction": "Confirm the person is unresponsive and not "
+                               "breathing normally, then resend perform_cpr "
+                               "with arg='confirmed'. Compressions never "
+                               "start on the robot's own judgement.",
+                "safeguards": _CPR_SAFEGUARDS,
+            }
+            status = robot["status"]     # unchanged — nothing was started
+        else:
+            pace = local_guidance.playbook("cpr")["pace"]
+            result = {
+                "status": "compressions_started",
+                "pace": pace,
+                "note": "hands-only CPR at "
+                        f"{pace['compressions_per_minute']}/min; pausing for "
+                        "AED analysis and stopping when a human takes over",
+                "safeguards": _CPR_SAFEGUARDS,
+            }
+            status = "performing_cpr"
+    elif command == "stop_cpr":
+        result = {"status": "compressions_stopped",
+                  "note": "handed over to the AED / human rescuer"}
+        status = "responding"
+    elif command == "fetch_aed":
+        result = {"status": "queued", "action": "fetch_aed",
+                  "note": "retrieving the nearest AED and bringing it to "
+                          "the user"}
+        status = "responding"
+    elif command == "guide_first_aid":
+        kind = arg if arg in ("cpr", "aed") else "cpr"
+        pb = local_guidance.playbook(kind)
+        result = {"status": "coaching", "playbook": pb,
+                  "spoken": pb["steps"],
+                  "note": ("coaching aloud with the pace cue"
+                           if kind == "cpr" else
+                           "reading the AED prompts aloud — analysis and "
+                           "shock stay with the device and the human")}
+        status = "responding"
+    elif command == "meet_responders":
+        result = {"status": "queued", "action": "meet_responders",
+                  "note": "waiting at the entrance to guide EMS to the user"}
+        status = "responding"
+    else:
+        # Generic motion/utility commands are queued for the vendor bridge.
+        result = {"status": "queued", "action": command, "arg": arg}
+        status = "docked" if command in ("dock", "stop") else "active"
+
+    conn.execute("UPDATE robots SET status=? WHERE id=?", (status, robot_id))
+    conn.commit()
+    _event(user_id, "robot_command",
+           detail={"robot": robot["name"], "model": model,
+                   "command": command, "arg": arg, "result": result})
+    return {"robot_id": robot_id, "robot": robot["name"], "model": model,
+            "command": command, "robot_status": status, **result}
 
 
 def devices_for(user_id: str) -> list[dict]:
@@ -720,7 +825,10 @@ def emergency(user_id: str, situation: str | None = None,
         "medical_id": _medical_id(user_id, user),
         "ai_guidance": guidance,
         "dispatched_alerts": dispatched,
-        "robot_directives": _robot_directives(user_id),
+        "robot_directives": _robot_directives(
+            user_id,
+            cardiac=(detection is not None
+                     and detection.condition == conditions.CARDIAC)),
         "escalation_decision": decision,
         # The ordered steps the Emergency screen drives, on the watch or phone.
         "flow": [
@@ -936,8 +1044,10 @@ def _escalate(user_id, user, detection, decision=None) -> dict:
         "emergency_contact": contact, "live_support": True,
         "dispatched_alerts": dispatched,
         # Bound robots respond by role: mobile bodies converge on the user,
-        # vacuums dock and clear the floor for people and responders.
-        "robot_directives": _robot_directives(user_id),
+        # vacuums dock and clear the floor for people and responders. A
+        # cardiac event upgrades first-aid-rated bodies to their rescue role.
+        "robot_directives": _robot_directives(
+            user_id, cardiac=detection.condition == conditions.CARDIAC),
         "tier": decision["tier"],
         "actions": decision["actions"],
         "rationale": decision["rationale"],

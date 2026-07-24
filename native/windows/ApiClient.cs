@@ -14,10 +14,27 @@ public record EnrollResult(
     [property: JsonPropertyName("display_name")] string DisplayName,
     [property: JsonPropertyName("user_token")] string UserToken);
 
+public record PaceCue(
+    [property: JsonPropertyName("light")] string Light,
+    [property: JsonPropertyName("audio")] string Audio);
+
+public record Pace(
+    [property: JsonPropertyName("compressions_per_minute")] int CompressionsPerMinute,
+    [property: JsonPropertyName("compression_to_breath_ratio")] string CompressionToBreathRatio,
+    [property: JsonPropertyName("cue")] PaceCue? Cue);
+
+public record FirstAid(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("call_emergency_services")] bool? CallEmergencyServices,
+    [property: JsonPropertyName("steps")] string[] Steps,
+    [property: JsonPropertyName("pace")] Pace? Pace);
+
 public record Guidance(
     [property: JsonPropertyName("delivered")] bool Delivered,
     [property: JsonPropertyName("source")] string? Source,
-    [property: JsonPropertyName("content")] string Content);
+    [property: JsonPropertyName("content")] string Content,
+    [property: JsonPropertyName("references")] string[]? References,
+    [property: JsonPropertyName("first_aid")] FirstAid? FirstAidPlaybook);
 
 public record MonitorResult(
     [property: JsonPropertyName("detected")] bool Detected,
@@ -91,7 +108,8 @@ public record EmergencyResult(
 public record RobotSpec(
     [property: JsonPropertyName("model")] string Model,
     [property: JsonPropertyName("label")] string Label,
-    [property: JsonPropertyName("maker")] string Maker);
+    [property: JsonPropertyName("maker")] string Maker,
+    [property: JsonPropertyName("first_aid")] string? FirstAidRating);
 
 public record RoboticsCatalog(
     [property: JsonPropertyName("robots")] RobotSpec[] Robots);
@@ -101,7 +119,16 @@ public record Robot(
     [property: JsonPropertyName("model")] string Model,
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("status")] string? Status,
-    [property: JsonPropertyName("escalation_directive")] string? EscalationDirective);
+    [property: JsonPropertyName("escalation_directive")] string? EscalationDirective,
+    [property: JsonPropertyName("first_aid")] string? FirstAidRating,
+    [property: JsonPropertyName("commands")] string[]? Commands);
+
+public record RobotCmdResult(
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("instruction")] string? Instruction,
+    [property: JsonPropertyName("spoken")] string[]? Spoken,
+    [property: JsonPropertyName("pace")] Pace? Pace);
 
 public record MedicalCardIssued(
     [property: JsonPropertyName("token")] string Token,
@@ -284,6 +311,12 @@ public sealed class ApiClient
 
     public Task<Robot> BindRobot(string uid, string token, string model) =>
         Send<Robot>(Post($"/robots/{uid}", new { model }, token));
+
+    public Task<RobotCmdResult> CommandRobot(string uid, string token, string robotId,
+                                             string command, string? arg) =>
+        Send<RobotCmdResult>(Post($"/robots/{uid}/{robotId}/command",
+            arg is { Length: > 0 } ? new { command, arg } : (object)new { command },
+            token));
 
     // -- Connect: sources, social platforms, connected apps --
 

@@ -17,6 +17,7 @@
             <Color x:Key="JimT2">#FF8A94AD</Color>
             <Color x:Key="JimBrandA">#FF7C5CFF</Color>
             <Color x:Key="JimGreen">#FF43E08A</Color>
+            <Color x:Key="JimAmber">#FFF7B731</Color>
             <Color x:Key="JimRed">#FFFF3B30</Color>
             <SolidColorBrush x:Key="JimScrBotBrush" Color="{StaticResource JimScrBot}" />
             <SolidColorBrush x:Key="JimCardBrush" Color="{StaticResource JimCard}" />
@@ -25,6 +26,7 @@
             <SolidColorBrush x:Key="JimT2Brush" Color="{StaticResource JimT2}" />
             <SolidColorBrush x:Key="JimBrandABrush" Color="{StaticResource JimBrandA}" />
             <SolidColorBrush x:Key="JimGreenBrush" Color="{StaticResource JimGreen}" />
+            <SolidColorBrush x:Key="JimAmberBrush" Color="{StaticResource JimAmber}" />
             <SolidColorBrush x:Key="JimRedBrush" Color="{StaticResource JimRed}" />
         </ResourceDictionary>
     </Application.Resources>
