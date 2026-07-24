@@ -6,7 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **`python -m jim` launcher** — bare invocation prints the menu of every
+  way to run the Guardian, one command each, so users choose their device:
+  `phone` (builds the console if missing — npm install included on first
+  run — prints the pairing URL with a scannable QR drawn straight into
+  the terminal, serves on the local network; flags `--port`, `--rebuild`,
+  `--no-build`, `--print-only`), `desktop` (the Electron app on this PC,
+  or a pointer to the packaged installers when npm is absent), and
+  `serve` (the headless API alone, `--host`/`--port`). Same backend,
+  data, and token checks in every form.
 
 ## [0.1.3] — 2026-07-24
 

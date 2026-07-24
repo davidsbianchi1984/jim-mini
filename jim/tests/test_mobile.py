@@ -85,3 +85,52 @@ def test_shipped_console_declares_itself_installable():
     assert (public / "icon.svg").exists()
     sw = (public / "sw.js").read_text()
     assert "isShellAsset" in sw and "API traffic: untouched" in sw
+
+
+def test_phone_command_prints_pairing_and_qr(capsys, monkeypatch):
+    """`python -m jim phone` in one command: with a console built and a
+    reachable address, the pairing block carries the URL and a scannable
+    QR drawn into the terminal."""
+    monkeypatch.setenv("JIM_LAN_HOST", "192.168.1.42")
+    from jim.__main__ import main
+    assert main(["phone", "--print-only", "--no-build"]) == 0
+    out = capsys.readouterr().out
+    assert "http://192.168.1.42:8000/app/" in out
+    if "Add to Home Screen" in out:          # console built in this checkout
+        assert "█" in out                     # the QR itself
+
+
+def test_phone_command_explains_when_console_missing(capsys, monkeypatch):
+    """Headless checkout: the command still runs and says exactly what's
+    missing instead of printing a QR to a console that isn't there."""
+    monkeypatch.setenv("JIM_LAN_HOST", "192.168.1.42")
+    monkeypatch.setenv("JIM_CONSOLE_DIR", "/nonexistent/dist")
+    from jim.__main__ import main
+    assert main(["phone", "--print-only", "--no-build"]) == 0
+    out = capsys.readouterr().out
+    assert "npm --prefix app run build" in out
+    assert "█" not in out
+
+
+def test_bare_invocation_offers_every_way_to_run(capsys):
+    """`python -m jim` with no arguments is the launcher menu: phone,
+    desktop, packaged installer, and headless API — the user picks the
+    device; every option is one command."""
+    from jim.__main__ import main
+    assert main([]) == 0
+    out = capsys.readouterr().out
+    assert "python -m jim phone" in out
+    assert "python -m jim desktop" in out
+    assert "python -m jim serve" in out
+    assert "releases/latest" in out           # the no-toolchain option
+
+
+def test_desktop_without_npm_points_at_the_installers(capsys, monkeypatch):
+    """No npm on the machine → the desktop choice still leads somewhere:
+    the packaged installers."""
+    import shutil as _shutil
+    monkeypatch.setattr(_shutil, "which", lambda _cmd: None)
+    from jim.__main__ import main
+    assert main(["desktop"]) == 1
+    out = capsys.readouterr().out
+    assert "releases/latest" in out
