@@ -806,6 +806,40 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return life.access_log(user_id, pdi=app.state.pdi)
 
+    @app.get("/custody/{user_id}")
+    def custody(user_id: str, request: Request) -> dict:
+        """The user's sealed tandem exchanges: every QRME specialist chat
+        this Guardian sealed into the PDI vault, plus whether PDI's
+        tamper-evident audit chain is intact."""
+        _user_or_404(user_id, request)
+        if app.state.pdi is None:
+            raise HTTPException(
+                409, "no PDI vault configured (set JIM_PDI_URL / JIM_PDI_TOKEN)")
+        keys = [r["key"] for r in db.connect().execute(
+            "SELECT key FROM vault_keys WHERE user_id=? AND key LIKE ?"
+            " ORDER BY key", (user_id, f"jim/{user_id}/tandem/%")).fetchall()]
+        return {"records": keys, "count": len(keys),
+                "chain_intact": app.state.pdi.audit_verify()}
+
+    @app.get("/custody/{user_id}/provenance")
+    def custody_provenance(user_id: str, key: str, request: Request) -> dict:
+        """PDI's derivation trail for one sealed exchange — origin, seal
+        details, audit history — readable only for the user's own custody
+        records."""
+        _user_or_404(user_id, request)
+        if app.state.pdi is None:
+            raise HTTPException(
+                409, "no PDI vault configured (set JIM_PDI_URL / JIM_PDI_TOKEN)")
+        owned = db.connect().execute(
+            "SELECT 1 FROM vault_keys WHERE user_id=? AND key=?",
+            (user_id, key)).fetchone()
+        if owned is None or not key.startswith(f"jim/{user_id}/tandem/"):
+            raise HTTPException(404, "no such custody record")
+        result = app.state.pdi.provenance(key)
+        if result is None:
+            raise HTTPException(502, "PDI vault unreachable")
+        return result
+
     @app.get("/provider/{user_id}")
     def provider_portal(user_id: str, request: Request) -> dict:
         user = _user_or_404(user_id, request)

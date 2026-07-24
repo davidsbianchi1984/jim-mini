@@ -80,6 +80,17 @@ class PDIClient:
         r = self._do("DELETE", f"/records/{key}")
         return r.status_code == 204
 
+    def provenance(self, key: str) -> dict | None:
+        """PDI's verifiable derivation trail for a sealed record: origin,
+        seal details, audit history, chain status. None if unreadable."""
+        try:
+            r = self._do("GET", f"/provenance/{key}")
+        except Exception:
+            return None
+        if r.status_code >= 300:
+            return None
+        return r.json()
+
     def audit(self) -> list[dict] | None:
         """The tenant's audit log (every vault access). None if unreadable."""
         try:
