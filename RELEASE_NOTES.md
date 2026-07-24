@@ -1,11 +1,11 @@
-# JIM-mini v0.1.2 — release notes
+# JIM-mini v0.1.3 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.1.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.1.3` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini (Guardian) v0.1.2** — the trust release: real Terms of Service
+**JIM-mini (Guardian) v0.1.3** — the trust release: real Terms of Service
 with a recorded receipt, and signed/notarized build wiring. One of three
 interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
@@ -13,6 +13,13 @@ interoperating products (with
 
 ### Highlights
 
+- **Run it on your phone** — the API serves the built console at `/app`
+  (one origin for UI and API — nothing to configure on the phone);
+  `GET /pair` returns the URL on your local network with a scannable QR,
+  and the Guardian installs to the home screen as a standalone app with a
+  thumb-reachable bottom tab bar. Local network only, by design; the
+  service worker never caches API traffic, so monitoring and guidance are
+  always live.
 - **Terms of Service** — docs/terms.md (v1.0) leads with the section that
   matters most: JIM is a wellness tool, **not a medical device** — call
   911 first, 988 in crisis, and detection can be wrong in both
@@ -33,7 +40,7 @@ interoperating products (with
 
 ### Verification
 
-217 tests green; live-server smoke flows pass; the desktop app builds
+224 tests green; live-server smoke flows pass; the desktop app builds
 clean; the cross-product suite smoke (run from qrme) passes end to end.
 
 ### Install
