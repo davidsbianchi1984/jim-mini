@@ -629,6 +629,17 @@ private fun GuidanceExtras(g: Guidance) {
                         .padding(horizontal = 7.dp, vertical = 2.dp))
         }
     }
+    g.custody?.let { c ->
+        if (c.vaulted && c.pdiKey != null) {
+            Column {
+                Text("🔒 Sealed in the PDI vault", color = Jim.Green,
+                    fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(c.pdiKey, color = Jim.T3, fontSize = 9.sp, maxLines = 1)
+            }
+        } else c.note?.let {
+            Text("⚠️ $it", color = Jim.Amber, fontSize = 10.sp)
+        }
+    }
     g.firstAid?.let { aid ->
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("First aid — ${aid.kind.uppercase()}", color = Jim.Red,

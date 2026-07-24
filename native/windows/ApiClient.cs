@@ -41,6 +41,11 @@ public record Provenance(
     [property: JsonPropertyName("evidence")] Evidence[] EvidenceList,
     [property: JsonPropertyName("disclaimer")] string Disclaimer);
 
+public record Custody(
+    [property: JsonPropertyName("vaulted")] bool Vaulted,
+    [property: JsonPropertyName("pdi_key")] string? PdiKey,
+    [property: JsonPropertyName("note")] string? Note);
+
 public record Guidance(
     [property: JsonPropertyName("delivered")] bool Delivered,
     [property: JsonPropertyName("source")] string? Source,
@@ -50,7 +55,8 @@ public record Guidance(
     [property: JsonPropertyName("provenance")] Provenance? ProvenanceInfo,
     [property: JsonPropertyName("translation_note")] string? TranslationNote,
     [property: JsonPropertyName("specialist")] string? Specialist,
-    [property: JsonPropertyName("qrme_profile_id")] string? QrmeProfileId);
+    [property: JsonPropertyName("qrme_profile_id")] string? QrmeProfileId,
+    [property: JsonPropertyName("custody")] Custody? CustodyInfo);
 
 public record LanguageInfo(
     [property: JsonPropertyName("code")] string Code,

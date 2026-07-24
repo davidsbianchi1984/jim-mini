@@ -21,6 +21,18 @@ struct GuidanceExtras: View {
                 }
             }
         }
+        if let c = guidance.custody {
+            if c.vaulted, let key = c.pdi_key {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("🔒 Sealed in the PDI vault")
+                        .font(.caption2.bold()).foregroundStyle(Theme.green)
+                    Text(key).font(.caption2).foregroundStyle(Theme.t3)
+                        .lineLimit(1).truncationMode(.middle)
+                }
+            } else if let note = c.note {
+                Text("⚠️ \(note)").font(.caption2).foregroundStyle(Theme.amber)
+            }
+        }
         if let aid = guidance.first_aid {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {

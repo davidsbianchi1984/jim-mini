@@ -15,10 +15,12 @@ data class Evidence(val publisher: String, val title: String, val url: String,
                     val supports: String?)
 data class Provenance(val method: String, val generatedBy: String,
                       val evidence: List<Evidence>, val disclaimer: String)
+data class Custody(val vaulted: Boolean, val pdiKey: String?, val note: String?)
 data class Guidance(val delivered: Boolean, val source: String?, val content: String,
                     val references: List<String> = emptyList(), val firstAid: FirstAid? = null,
                     val provenance: Provenance? = null, val translationNote: String? = null,
-                    val specialist: String? = null, val qrmeProfileId: String? = null)
+                    val specialist: String? = null, val qrmeProfileId: String? = null,
+                    val custody: Custody? = null)
 data class LanguageInfo(val code: String, val label: String, val safetyTranslated: Boolean)
 data class TranslateResult(val translation: String, val engine: String, val note: String?)
 data class MonitorResult(
@@ -93,7 +95,11 @@ object ApiClient {
             o.optString("content", ""),
             (0 until (refs?.length() ?: 0)).map { refs!!.getString(it) }, aid,
             prov, o.optString("translation_note", null),
-            o.optString("specialist", null), o.optString("qrme_profile_id", null))
+            o.optString("specialist", null), o.optString("qrme_profile_id", null),
+            o.optJSONObject("custody")?.let { c ->
+                Custody(c.optBoolean("vaulted"), c.optString("pdi_key", null),
+                    c.optString("note", null))
+            })
     }
 
     private suspend fun request(

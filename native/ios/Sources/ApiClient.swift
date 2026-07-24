@@ -33,6 +33,12 @@ struct Provenance: Decodable {
     let disclaimer: String
 }
 
+struct Custody: Decodable {
+    let vaulted: Bool                  // sealed in the PDI vault?
+    let pdi_key: String?               // provenance lookup handle in PDI
+    let note: String?                  // honest report when sealing failed
+}
+
 struct Guidance: Decodable {
     let delivered: Bool
     let source: String?                // "local" | "tandem"
@@ -44,6 +50,7 @@ struct Guidance: Decodable {
     let translation_note: String?
     let specialist: String?            // named expert behind this condition
     let qrme_profile_id: String?       // set when routed tandem via QRME
+    let custody: Custody?              // tandem exchanges sealed in PDI
 }
 
 struct LanguageInfo: Decodable {
