@@ -126,6 +126,11 @@ class RobotCommand(BaseModel):
                                     # "cpr" | "aed" for guide_first_aid
 
 
+class WaiverSign(BaseModel):
+    signature: str                  # typed legal name
+    accept: bool = False            # explicit acceptance of the terms
+
+
 class SourceConsent(BaseModel):
     source: Source
     consented: bool

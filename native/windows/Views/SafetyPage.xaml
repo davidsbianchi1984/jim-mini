@@ -157,6 +157,31 @@
                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <Grid>
+                                <TextBlock Text="Autonomous-resuscitation waiver" FontWeight="Bold" FontSize="15"
+                                           Foreground="{StaticResource JimTxtBrush}" />
+                                <TextBlock x:Name="WaiverBadge" Text="SIGNED" HorizontalAlignment="Right"
+                                           FontSize="11" FontWeight="Bold" Visibility="Collapsed"
+                                           Foreground="{StaticResource JimGreenBrush}" />
+                            </Grid>
+                            <TextBlock x:Name="WaiverBlurb" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="WaiverTerms" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="SignatureBox" Header="Type your legal name to sign" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="SignWaiverButton" Content="Sign &amp; submit waiver" Click="OnSignWaiver"
+                                        Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
+                                <Button x:Name="RevokeWaiverButton" Content="Revoke — restore confirm-gated operation"
+                                        Click="OnRevokeWaiver" Visibility="Collapsed"
+                                        Background="Transparent" FontSize="12"
+                                        Foreground="{StaticResource JimRedBrush}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
                     <TextBlock x:Name="RobotError" Foreground="{StaticResource JimRed}" FontSize="13"
                                TextWrapping="Wrap" Visibility="Collapsed" />
                     <TextBlock x:Name="RobotCmdResult" Foreground="{StaticResource JimGreenBrush}" FontSize="12"
@@ -191,6 +216,13 @@
                                         <StackPanel Orientation="Horizontal" Spacing="6"
                                                     Visibility="{Binding PerformVisibility}">
                                             <Button Content="Perform CPR…" Tag="{Binding Id}" Click="OnPerformCpr"
+                                                    Visibility="{Binding ConfirmGateVisibility}"
+                                                    Background="{StaticResource JimRedBrush}" Foreground="White" FontSize="11" />
+                                            <Button Content="Start CPR (pre-authorized)" Tag="{Binding Id}" Click="OnAutoCpr"
+                                                    Visibility="{Binding WaivedVisibility}"
+                                                    Background="{StaticResource JimRedBrush}" Foreground="White" FontSize="11" />
+                                            <Button Content="Auto-resuscitate" Tag="{Binding Id}" Click="OnAutoDefib"
+                                                    Visibility="{Binding WaivedVisibility}"
                                                     Background="{StaticResource JimRedBrush}" Foreground="White" FontSize="11" />
                                             <Button Content="Stop CPR" Tag="{Binding Id}" Click="OnStopCpr"
                                                     Visibility="{Binding StopVisibility}"

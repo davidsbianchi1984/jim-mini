@@ -250,6 +250,8 @@ private struct RobotsSection: View {
     @State private var error: String?
     @State private var cmdResult: String?
     @State private var confirmingCPR: String?    // robot id awaiting confirm
+    @State private var waiver: WaiverState?
+    @State private var signatureDraft = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -269,6 +271,8 @@ private struct RobotsSection: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }.disabled(busy || catalog.isEmpty)
             }.card()
+
+            waiverCard()
 
             if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
             if let cmdResult {
@@ -307,6 +311,13 @@ private struct RobotsSection: View {
                                     cmdButton("Stop CPR", tint: Theme.red) {
                                         command(r, "stop_cpr", nil)
                                     }
+                                } else if waiver?.signed == true {
+                                    cmdButton("Start CPR (pre-authorized)", tint: Theme.red) {
+                                        command(r, "perform_cpr", nil)
+                                    }
+                                    cmdButton("Auto-resuscitate", tint: Theme.red) {
+                                        command(r, "auto_defib", nil)
+                                    }
                                 } else if confirmingCPR == r.id {
                                     cmdButton("Confirm: unresponsive, not breathing",
                                               tint: Theme.red) {
@@ -318,7 +329,7 @@ private struct RobotsSection: View {
                                 } else {
                                     cmdButton("Perform CPR…", tint: Theme.red) {
                                         confirmingCPR = r.id
-                                        cmdResult = "Confirm the person is unresponsive and not breathing normally. The robot never starts on its own judgement — and never delivers a shock; the AED analyzes, a human presses."
+                                        cmdResult = "Confirm the person is unresponsive and not breathing normally. The robot never starts on its own judgement — and never delivers a shock; the AED analyzes, a human presses. (Sign the waiver above to pre-authorize automatic operation.)"
                                     }
                                 }
                             }
@@ -328,6 +339,64 @@ private struct RobotsSection: View {
             }
         }
         .task { await load() }
+    }
+
+    @ViewBuilder
+    private func waiverCard() -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Autonomous-resuscitation waiver")
+                    .font(.headline).foregroundStyle(Theme.txt)
+                Spacer()
+                if waiver?.signed == true {
+                    Text("SIGNED").font(.caption2.bold())
+                        .padding(.horizontal, 7).padding(.vertical, 3)
+                        .background(Theme.green.opacity(0.16))
+                        .foregroundStyle(Theme.green).clipShape(Capsule())
+                }
+            }
+            if let w = waiver, w.signed {
+                Text("Signed by \(w.signature ?? "") — CPR-rated robots may start compressions automatically and operate a fully-automatic AED. A shock still only follows the AED's own rhythm analysis.")
+                    .font(.caption).foregroundStyle(Theme.t2)
+                Button("Revoke — restore confirm-gated operation") { revoke() }
+                    .font(.caption.bold()).foregroundStyle(Theme.red)
+            } else {
+                Text("Unlock automatic operation: CPR that starts on detection, and a fully-automatic AED that shocks on its own analysis after the robot verifies everyone is clear. Until signed, every start needs an on-scene confirmation and no shock is ever delivered.")
+                    .font(.caption).foregroundStyle(Theme.t2)
+                ForEach((waiver?.terms ?? []).prefix(6), id: \.self) { t in
+                    Text("• \(t)").font(.caption2).foregroundStyle(Theme.t3)
+                }
+                TextField("Type your legal name to sign", text: $signatureDraft)
+                    .foregroundStyle(Theme.txt)
+                    .padding(10).background(Theme.scrBot)
+                    .clipShape(RoundedRectangle(cornerRadius: 11))
+                    .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
+                cmdButton("Sign & submit waiver", tint: Theme.brandA) { sign() }
+            }
+        }.card()
+    }
+
+    private func sign() {
+        guard let uid = state.uid, let token = state.token,
+              !signatureDraft.isEmpty else { return }
+        error = nil
+        Task {
+            do {
+                waiver = try await ApiClient.shared.signWaiver(
+                    uid: uid, token: token, signature: signatureDraft)
+                signatureDraft = ""
+                cmdResult = "Waiver signed — automatic resuscitation pre-authorized."
+            } catch { self.error = error.localizedDescription }
+        }
+    }
+
+    private func revoke() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            try? await ApiClient.shared.revokeWaiver(uid: uid, token: token)
+            waiver = try? await ApiClient.shared.waiver(uid: uid, token: token)
+            cmdResult = "Waiver revoked — confirm-gated operation restored."
+        }
     }
 
     private func cmdButton(_ label: String, tint: Color = Theme.brandA,
@@ -353,6 +422,9 @@ private struct RobotsSection: View {
                 if let spoken = res.spoken {
                     line = "🔊 " + spoken.joined(separator: " → ")
                 }
+                if let seq = res.sequence {
+                    line = seq.joined(separator: " → ")
+                }
                 cmdResult = line
             } catch { self.error = error.localizedDescription }
             await load()
@@ -363,6 +435,7 @@ private struct RobotsSection: View {
         guard let uid = state.uid, let token = state.token else { return }
         catalog = (try? await ApiClient.shared.roboticsCatalog())?.robots ?? []
         robots = (try? await ApiClient.shared.robots(uid: uid, token: token)) ?? []
+        waiver = try? await ApiClient.shared.waiver(uid: uid, token: token)
     }
 
     private func bind() {

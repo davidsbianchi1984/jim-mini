@@ -32,7 +32,9 @@ data class RobotSpec(val model: String, val label: String, val maker: String,
 data class Robot(val id: String, val model: String, val name: String, val status: String?,
                  val directive: String?, val firstAid: String?, val commands: List<String>)
 data class RobotCmdResult(val status: String, val note: String?, val instruction: String?,
-                          val spoken: List<String>, val pacePerMinute: Int?)
+                          val spoken: List<String>, val sequence: List<String>,
+                          val pacePerMinute: Int?)
+data class WaiverState(val signed: Boolean, val signature: String?, val terms: List<String>)
 data class MedicalCardIssued(val token: String, val qrSvgUrl: String)
 data class SourceRow(val source: String, val consented: Boolean)
 data class SocialConn(val id: String, val platform: String, val direction: String, val handle: String?)
@@ -296,11 +298,32 @@ object ApiClient {
         if (!arg.isNullOrBlank()) body.put("arg", arg)
         val o = request("/robots/$uid/$robotId/command", "POST", body, token)
         val spoken = o.optJSONArray("spoken")
+        val seq = o.optJSONArray("sequence")
         return RobotCmdResult(
             o.optString("status", ""), o.optString("note", null),
             o.optString("instruction", null),
             (0 until (spoken?.length() ?: 0)).map { spoken!!.getString(it) },
+            (0 until (seq?.length() ?: 0)).map { seq!!.getString(it) },
             o.optJSONObject("pace")?.optInt("compressions_per_minute"))
+    }
+
+    private fun waiverOf(o: JSONObject): WaiverState {
+        val terms = o.optJSONArray("terms")
+        return WaiverState(o.optBoolean("signed"), o.optString("signature", null),
+            (0 until (terms?.length() ?: 0)).map { terms!!.getString(it) })
+    }
+
+    suspend fun waiver(uid: String, token: String): WaiverState =
+        waiverOf(request("/waivers/$uid", token = token))
+
+    suspend fun signWaiver(uid: String, token: String, signature: String): WaiverState {
+        request("/waivers/$uid", "POST",
+            JSONObject().put("signature", signature).put("accept", true), token)
+        return waiver(uid, token)
+    }
+
+    suspend fun revokeWaiver(uid: String, token: String) {
+        request("/waivers/$uid", "DELETE", null, token)
     }
 
     // ---- Connect: sources, social platforms, connected apps ----
