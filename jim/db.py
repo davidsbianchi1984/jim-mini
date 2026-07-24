@@ -303,6 +303,9 @@ CREATE TABLE IF NOT EXISTS guardian_links (
     child_id     TEXT NOT NULL REFERENCES users(id),
     relationship TEXT NOT NULL DEFAULT 'parent',  -- parent | legal_guardian
     oversight    TEXT NOT NULL,                   -- full | alerts_only (at setup)
+    paused       INTEGER NOT NULL DEFAULT 0,      -- holds everyday guidance only
+    quiet_start  TEXT,                            -- HH:MM (may wrap midnight)
+    quiet_end    TEXT,
     created_at   TEXT NOT NULL,
     PRIMARY KEY (guardian_id, child_id)
 );

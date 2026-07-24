@@ -15,7 +15,8 @@ from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
     ChildEnroll,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
-    Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
+    Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
+    GuidanceFeedback, HabitCreate,
     HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, RobotBind,
     LanguageChoice, RobotCommand, TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
@@ -211,7 +212,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         guardian_user = _user_or_404(guardian_id, request)
         try:
             child = family.enroll_child(
-                guardian_user, body.model_dump(exclude={"language"}))
+                guardian_user, body.model_dump(exclude={"language"}),
+                pdi=app.state.pdi)
         except ValueError as e:
             raise HTTPException(
                 403 if "verified-adult" in str(e) else 422, str(e))
@@ -245,6 +247,29 @@ def create_app(qrme_client: QRMEClient | None = None,
         if overview is None:
             raise HTTPException(404, "no such child on this guardian")
         return overview
+
+    @app.put("/guardians/{guardian_id}/children/{child_id}/controls")
+    def set_family_controls(guardian_id: str, child_id: str,
+                            body: FamilyControls, request: Request) -> dict:
+        """Pause and quiet hours for the child's device. Holds everyday
+        guidance only — monitoring, crisis escalation, and the emergency
+        path never pause."""
+        _user_or_404(guardian_id, request)
+        result = family.set_controls(
+            guardian_id, child_id, paused=body.paused,
+            quiet_start=body.quiet_start, quiet_end=body.quiet_end)
+        if result is None:
+            raise HTTPException(404, "no such child on this guardian")
+        return result
+
+    @app.get("/guardians/{guardian_id}/watch")
+    def guardian_watch(guardian_id: str, request: Request) -> dict:
+        """The parent's wrist: one light per child from the last 24 hours
+        of alert-level events (green quiet, orange escalated, red critical)
+        — the wrist taps the parent when a child needs someone. Alert-level
+        only, so the teen tier's privacy holds by construction."""
+        _user_or_404(guardian_id, request)
+        return family.watch_face(guardian_id)
 
     @app.delete("/guardians/{guardian_id}/children/{child_id}")
     def unlink_child(guardian_id: str, child_id: str,

@@ -20,7 +20,7 @@ oversight link expires by itself the day the child turns 18.
 from __future__ import annotations
 
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from . import db, guardian
 
@@ -43,7 +43,7 @@ def oversight_for(age: int) -> str:
     return "full" if age < 13 else "alerts_only"
 
 
-def enroll_child(guardian_user: dict, body: dict) -> dict:
+def enroll_child(guardian_user: dict, body: dict, pdi=None) -> dict:
     """The parent-led setup: verify the guardian is an adult, the enrollee a
     minor, then create the child account with protective defaults and the
     recorded consent link."""
@@ -85,10 +85,13 @@ def enroll_child(guardian_user: dict, body: dict) -> dict:
         (guardian_user["id"], child["id"], relationship, oversight,
          db.utcnow()))
     conn.commit()
+    # When a PDI vault is configured the consent record is sealed there —
+    # provable custody of who consented, exactly like the medical stream.
     guardian._event(child["id"], "guardian_consent", detail={
         "guardian_id": guardian_user["id"],
         "guardian_name": guardian_user["display_name"],
-        "relationship": relationship, "note": CONSENT_NOTE})
+        "relationship": relationship, "note": CONSENT_NOTE},
+        pdi=pdi, vault_scope="family/consent")
     return {**child, "sensitivity": "cautious", "oversight": oversight,
             "relationship": relationship,
             "emergency_contact": guardian_user["display_name"]}
@@ -165,6 +168,104 @@ def child_overview(guardian_id: str, child_id: str) -> dict | None:
                          "alerts only — this teenager's check-ins, notes, "
                          "and everyday guidance stay private"),
     }
+
+
+# -- device controls: pause & quiet hours (safety never pauses) --------------
+
+def set_controls(guardian_id: str, child_id: str, *, paused=None,
+                 quiet_start=None, quiet_end=None) -> dict | None:
+    """The guardian's device controls. Pause and quiet hours hold everyday
+    guidance only — detection, crisis escalation, and the emergency path
+    never pause."""
+    link = _link(guardian_id, child_id)
+    if link is None:
+        return None
+    conn = db.connect()
+    if paused is not None:
+        conn.execute("UPDATE guardian_links SET paused=? WHERE guardian_id=?"
+                     " AND child_id=?", (int(paused), guardian_id, child_id))
+    if quiet_start is not None or quiet_end is not None:
+        conn.execute(
+            "UPDATE guardian_links SET quiet_start=?, quiet_end=? WHERE"
+            " guardian_id=? AND child_id=?",
+            (quiet_start or None, quiet_end or None, guardian_id, child_id))
+    conn.commit()
+    link = _link(guardian_id, child_id)
+    return {"child_id": child_id, "paused": bool(link["paused"]),
+            "quiet_start": link["quiet_start"],
+            "quiet_end": link["quiet_end"],
+            "note": "pause and quiet hours hold everyday guidance only — "
+                    "monitoring, crisis escalation, and the emergency path "
+                    "never pause"}
+
+
+def _in_quiet_window(start: str, end: str, now: datetime) -> bool:
+    """HH:MM window, wrapping midnight when start > end (e.g. 21:00–07:00)."""
+    current = now.strftime("%H:%M")
+    if start <= end:
+        return start <= current < end
+    return current >= start or current < end
+
+
+def hold_reason(child_id: str, now: datetime | None = None) -> str | None:
+    """Why non-critical guidance is being held for this child right now —
+    guardian pause or quiet hours — or None to deliver normally. Callers
+    hold everyday guidance only; critical never checks this."""
+    row = db.connect().execute(
+        "SELECT paused, quiet_start, quiet_end FROM guardian_links WHERE"
+        " child_id=?", (child_id,)).fetchone()
+    if row is None:
+        return None
+    if row["paused"]:
+        return ("guardian pause is on — guidance held; monitoring and "
+                "escalation stay on")
+    if row["quiet_start"] and row["quiet_end"]:
+        if _in_quiet_window(row["quiet_start"], row["quiet_end"],
+                            now or datetime.now()):
+            return (f"quiet hours ({row['quiet_start']}–{row['quiet_end']}) "
+                    "— guidance held; monitoring and escalation stay on")
+    return None
+
+
+# -- the guardian's wrist: children with lights ------------------------------
+
+def watch_face(guardian_id: str) -> dict:
+    """The guardian's glanceable face: one light per child from the last
+    24 hours of alert-level events — green quiet, orange escalated, red
+    critical — plus the pause/quiet chip. Alert-level only, so it respects
+    the teen tier by construction."""
+    cutoff = (datetime.utcnow() - timedelta(hours=24)).isoformat()
+    conn = db.connect()
+    children = []
+    for link in conn.execute(
+            "SELECT l.*, u.display_name, u.birthdate FROM guardian_links l"
+            " JOIN users u ON u.id = l.child_id WHERE l.guardian_id=?"
+            " ORDER BY l.created_at", (guardian_id,)).fetchall():
+        age = _age(link["birthdate"])
+        if age >= 18:
+            children.append({"child_id": link["child_id"],
+                             "display_name": link["display_name"],
+                             "light": "idle", "oversight": "ended"})
+            continue
+        row = conn.execute(
+            "SELECT SUM(severity='critical') AS crit,"
+            " SUM(type='escalation') AS esc FROM events WHERE user_id=?"
+            " AND created_at >= ?", (link["child_id"], cutoff)).fetchone()
+        crit, esc = row["crit"] or 0, row["esc"] or 0
+        light = "red" if crit else "orange" if esc else "green"
+        children.append({
+            "child_id": link["child_id"],
+            "display_name": link["display_name"], "age": age,
+            "oversight": oversight_for(age), "light": light,
+            "critical_24h": crit, "escalations_24h": esc,
+            "paused": bool(link["paused"]),
+            "quiet_hours": (f"{link['quiet_start']}–{link['quiet_end']}"
+                            if link["quiet_start"] else None),
+        })
+    alert = any(c["light"] in ("orange", "red") for c in children)
+    return {"guardian_id": guardian_id, "children": children,
+            # The wrist taps the parent when a child needs someone.
+            "haptic": "alert" if alert else None}
 
 
 def unlink(guardian_id: str, child_id: str) -> bool:

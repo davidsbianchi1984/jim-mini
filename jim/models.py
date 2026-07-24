@@ -137,6 +137,12 @@ class ChildEnroll(BaseModel):
     language: str | None = None
 
 
+class FamilyControls(BaseModel):
+    paused: bool | None = None       # holds everyday guidance only
+    quiet_start: str | None = None   # HH:MM; window may wrap midnight
+    quiet_end: str | None = None
+
+
 class WaiverSign(BaseModel):
     signature: str                  # typed legal name
     accept: bool = False            # explicit acceptance of the terms
