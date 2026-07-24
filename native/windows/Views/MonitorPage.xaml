@@ -38,6 +38,8 @@
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="ResultReason" Foreground="{StaticResource JimT2Brush}"
                                FontSize="13" TextWrapping="Wrap" />
+                    <TextBlock x:Name="ResultSpecialist" Foreground="{StaticResource JimGreenBrush}"
+                               FontSize="12" FontWeight="Bold" TextWrapping="Wrap" Visibility="Collapsed" />
                     <TextBlock x:Name="ResultGuidance" Foreground="{StaticResource JimTxtBrush}"
                                FontSize="14" TextWrapping="Wrap" />
                     <TextBlock x:Name="ResultFirstAid" Foreground="{StaticResource JimTxtBrush}"

@@ -615,6 +615,20 @@ private fun PolicyPanel(vm: GuardianViewModel) {
 
 @Composable
 private fun GuidanceExtras(g: Guidance) {
+    g.specialist?.let { who ->
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            Text(who, color = Jim.Txt, fontSize = 12.sp,
+                fontWeight = FontWeight.Bold)
+            if (g.source == "tandem")
+                Text("LIVE · QRME", color = Jim.Green, fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .background(Jim.Green.copy(alpha = 0.16f),
+                            RoundedCornerShape(50))
+                        .padding(horizontal = 7.dp, vertical = 2.dp))
+        }
+    }
     g.firstAid?.let { aid ->
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("First aid — ${aid.kind.uppercase()}", color = Jim.Red,

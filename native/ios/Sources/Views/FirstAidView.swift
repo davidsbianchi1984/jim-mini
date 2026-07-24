@@ -7,6 +7,20 @@ struct GuidanceExtras: View {
     let guidance: Guidance
 
     var body: some View {
+        if let who = guidance.specialist {
+            HStack(spacing: 8) {
+                Image(systemName: "person.text.rectangle")
+                    .font(.caption).foregroundStyle(Theme.brandA)
+                Text(who).font(.caption.bold()).foregroundStyle(Theme.txt)
+                if guidance.source == "tandem" {
+                    Text("LIVE · QRME").font(.caption2.bold())
+                        .padding(.horizontal, 7).padding(.vertical, 3)
+                        .background(Theme.green.opacity(0.16))
+                        .foregroundStyle(Theme.green)
+                        .clipShape(Capsule())
+                }
+            }
+        }
         if let aid = guidance.first_aid {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
