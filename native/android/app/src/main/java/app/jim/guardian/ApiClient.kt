@@ -11,8 +11,14 @@ import java.net.URL
 data class EnrollResult(val id: String, val displayName: String, val userToken: String)
 data class Pace(val perMinute: Int, val ratio: String, val lightCue: String?, val audioCue: String?)
 data class FirstAid(val kind: String, val callEms: Boolean, val steps: List<String>, val pace: Pace?)
+data class Evidence(val publisher: String, val title: String, val url: String,
+                    val supports: String?)
+data class Provenance(val method: String, val generatedBy: String,
+                      val evidence: List<Evidence>, val disclaimer: String)
 data class Guidance(val delivered: Boolean, val source: String?, val content: String,
-                    val references: List<String> = emptyList(), val firstAid: FirstAid? = null)
+                    val references: List<String> = emptyList(), val firstAid: FirstAid? = null,
+                    val provenance: Provenance? = null, val translationNote: String? = null)
+data class LanguageInfo(val code: String, val label: String, val safetyTranslated: Boolean)
 data class MonitorResult(
     val detected: Boolean, val condition: String?, val severity: String?,
     val reason: String?, val guidance: Guidance?,
@@ -70,9 +76,21 @@ object ApiClient {
             FirstAid(a.optString("kind", ""), a.optBoolean("call_emergency_services"),
                 (0 until (steps?.length() ?: 0)).map { steps!!.getString(it) }, pace)
         }
+        val provObj = o.optJSONObject("provenance")
+        val prov = provObj?.let { pv ->
+            val ev = pv.optJSONArray("evidence")
+            Provenance(pv.optString("method", ""), pv.optString("generated_by", ""),
+                (0 until (ev?.length() ?: 0)).map { i ->
+                    val e = ev!!.getJSONObject(i)
+                    Evidence(e.optString("publisher", ""), e.optString("title", ""),
+                        e.optString("url", ""), e.optString("supports", null))
+                },
+                pv.optString("disclaimer", ""))
+        }
         return Guidance(o.optBoolean("delivered"), o.optString("source", null),
             o.optString("content", ""),
-            (0 until (refs?.length() ?: 0)).map { refs!!.getString(it) }, aid)
+            (0 until (refs?.length() ?: 0)).map { refs!!.getString(it) }, aid,
+            prov, o.optString("translation_note", null))
     }
 
     private suspend fun request(
@@ -151,7 +169,7 @@ object ApiClient {
     suspend fun coach(uid: String, token: String, area: String, message: String): Guidance {
         val o = request("/coach/$uid", "POST",
             JSONObject().put("area", area).put("message", message), token)
-        return Guidance(o.optBoolean("delivered"), o.optString("source", null), o.optString("content", ""))
+        return parseGuidance(o)!!
     }
 
     private suspend fun getArray(path: String, token: String): org.json.JSONArray = withContext(Dispatchers.IO) {
@@ -223,6 +241,23 @@ object ApiClient {
 
     suspend fun setModel(uid: String, token: String, provider: String) {
         request("/model/$uid", "PUT", JSONObject().put("provider", provider), token)
+    }
+
+    suspend fun languages(): List<LanguageInfo> {
+        val arr = request("/languages").getJSONArray("languages")
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            LanguageInfo(o.getString("code"), o.getString("label"),
+                o.optBoolean("safety_content_translated"))
+        }
+    }
+
+    suspend fun userLanguage(uid: String, token: String): String {
+        return request("/language/$uid", token = token).getString("language")
+    }
+
+    suspend fun setLanguage(uid: String, token: String, code: String) {
+        request("/language/$uid", "PUT", JSONObject().put("language", code), token)
     }
 
     // ---- safety: escalation policy, Emergency, robots ----

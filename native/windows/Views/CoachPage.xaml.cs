@@ -21,6 +21,9 @@ public sealed partial class CoachPage : Page
         {
             var reply = await ApiClient.Shared.Coach(s.Uid!, s.Token!, area, message);
             ReplyText.Text = reply.Content;
+            ReplyProvenance.Text = MonitorPage.FormatProvenance(reply);
+            ReplyProvenance.Visibility = ReplyProvenance.Text.Length > 0
+                ? Visibility.Visible : Visibility.Collapsed;
             ReplyCard.Visibility = Visibility.Visible;
         }
         catch (Exception ex) { ShowError(ex.Message); }

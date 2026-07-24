@@ -7,6 +7,8 @@ struct OverviewView: View {
     @State private var loading = true
     @State private var providers: [ProviderInfo] = []
     @State private var provider = "auto"
+    @State private var languages: [LanguageInfo] = []
+    @State private var language = "en"
 
     var body: some View {
         ScrollView {
@@ -52,6 +54,21 @@ struct OverviewView: View {
                     .onChange(of: provider) { _ in applyModel() }
                 }.card()
 
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Language").font(.headline).foregroundStyle(Theme.txt)
+                    Text("Everything drafted for you — guidance, coaching, first-aid steps, waiver terms — is delivered in this language.")
+                        .font(.caption).foregroundStyle(Theme.t2)
+                    Picker("", selection: $language) {
+                        ForEach(languages, id: \.code) { l in
+                            Text(l.label + (l.safety_content_translated == true
+                                            ? "" : " (safety steps in English)"))
+                                .tag(l.code)
+                        }
+                    }
+                    .pickerStyle(.menu).tint(Theme.brandA)
+                    .onChange(of: language) { _ in applyLanguage() }
+                }.card()
+
                 Button("Sign out") { state.signOut() }
                     .font(.subheadline).foregroundStyle(Theme.t2)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)
@@ -67,6 +84,12 @@ struct OverviewView: View {
                                                         provider: provider) }
     }
 
+    private func applyLanguage() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task { _ = try? await ApiClient.shared.setLanguage(uid: uid, token: token,
+                                                           code: language) }
+    }
+
     private func load() async {
         guard let uid = state.uid, let token = state.token else { return }
         loading = true
@@ -74,6 +97,10 @@ struct OverviewView: View {
         providers = (try? await ApiClient.shared.models())?.providers.filter { $0.name != "auto" } ?? []
         if let m = try? await ApiClient.shared.userModel(uid: uid, token: token) {
             provider = m.provider
+        }
+        languages = (try? await ApiClient.shared.languages())?.languages ?? []
+        if let l = try? await ApiClient.shared.userLanguage(uid: uid, token: token) {
+            language = l.language
         }
         loading = false
     }

@@ -19,13 +19,47 @@ struct FirstAid: Decodable {
     let pace: Pace?
 }
 
+struct Evidence: Decodable {
+    let publisher: String
+    let title: String
+    let url: String
+    let supports: String?
+}
+
+struct Provenance: Decodable {
+    let method: String
+    let generated_by: String
+    let evidence: [Evidence]
+    let disclaimer: String
+}
+
 struct Guidance: Decodable {
     let delivered: Bool
     let source: String?
     let content: String
     let references: [String]?
     let first_aid: FirstAid?
+    let provenance: Provenance?
+    let language: String?
+    let translation_note: String?
 }
+
+struct LanguageInfo: Decodable {
+    let code: String
+    let label: String
+    let safety_content_translated: Bool?
+}
+
+struct LanguagesList: Decodable {
+    let languages: [LanguageInfo]
+    let defaultCode: String
+    enum CodingKeys: String, CodingKey {
+        case languages
+        case defaultCode = "default"
+    }
+}
+
+struct LanguageChoice: Decodable { let language: String; let label: String }
 
 struct MonitorResult: Decodable {
     let detected: Bool
@@ -283,6 +317,19 @@ actor ApiClient {
     func setModel(uid: String, token: String, provider: String) async throws -> ModelChoice {
         try await request("/model/\(uid)", method: "PUT",
                           body: ["provider": provider], token: token)
+    }
+
+    // MARK: Language
+
+    func languages() async throws -> LanguagesList { try await request("/languages") }
+
+    func userLanguage(uid: String, token: String) async throws -> LanguageChoice {
+        try await request("/language/\(uid)", token: token)
+    }
+
+    func setLanguage(uid: String, token: String, code: String) async throws -> LanguageChoice {
+        try await request("/language/\(uid)", method: "PUT",
+                          body: ["language": code], token: token)
     }
 
     // MARK: Safety — escalation policy, Emergency, robots

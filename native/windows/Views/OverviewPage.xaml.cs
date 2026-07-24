@@ -12,7 +12,9 @@ public sealed partial class OverviewPage : Page
     public record MetricRow(string Metric, string Display);
 
     private ProviderInfo[] _providers = System.Array.Empty<ProviderInfo>();
+    private LanguageInfo[] _languages = System.Array.Empty<LanguageInfo>();
     private bool _loadingModel;   // suppress SelectionChanged while populating
+    private bool _loadingLanguage;
 
     public OverviewPage() => InitializeComponent();
 
@@ -39,6 +41,34 @@ public sealed partial class OverviewPage : Page
             Loading.Visibility = Visibility.Collapsed;
         }
         await LoadModel();
+        await LoadLanguage();
+    }
+
+    private async System.Threading.Tasks.Task LoadLanguage()
+    {
+        var s = AppState.Current;
+        _loadingLanguage = true;
+        try
+        {
+            _languages = (await ApiClient.Shared.Languages()).Languages;
+            LanguageBox.ItemsSource = _languages.Select(l =>
+                l.Label + (l.SafetyTranslated ? "" : "  (safety steps in English)")).ToList();
+            var current = await ApiClient.Shared.UserLanguage(s.Uid!, s.Token!);
+            var idx = System.Array.FindIndex(_languages, l => l.Code == current.Language);
+            LanguageBox.SelectedIndex = idx >= 0 ? idx : 0;
+        }
+        catch { /* backend offline — leave empty */ }
+        finally { _loadingLanguage = false; }
+    }
+
+    private async void OnLanguagePicked(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loadingLanguage) return;
+        var idx = LanguageBox.SelectedIndex;
+        if (idx < 0 || idx >= _languages.Length) return;
+        var s = AppState.Current;
+        try { await ApiClient.Shared.SetLanguage(s.Uid!, s.Token!, _languages[idx].Code); }
+        catch { /* ignore */ }
     }
 
     private async System.Threading.Tasks.Task LoadModel()
