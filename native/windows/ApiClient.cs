@@ -29,12 +29,39 @@ public record FirstAid(
     [property: JsonPropertyName("steps")] string[] Steps,
     [property: JsonPropertyName("pace")] Pace? Pace);
 
+public record Evidence(
+    [property: JsonPropertyName("publisher")] string Publisher,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("url")] string Url,
+    [property: JsonPropertyName("supports")] string? Supports);
+
+public record Provenance(
+    [property: JsonPropertyName("method")] string Method,
+    [property: JsonPropertyName("generated_by")] string GeneratedBy,
+    [property: JsonPropertyName("evidence")] Evidence[] EvidenceList,
+    [property: JsonPropertyName("disclaimer")] string Disclaimer);
+
 public record Guidance(
     [property: JsonPropertyName("delivered")] bool Delivered,
     [property: JsonPropertyName("source")] string? Source,
     [property: JsonPropertyName("content")] string Content,
     [property: JsonPropertyName("references")] string[]? References,
-    [property: JsonPropertyName("first_aid")] FirstAid? FirstAidPlaybook);
+    [property: JsonPropertyName("first_aid")] FirstAid? FirstAidPlaybook,
+    [property: JsonPropertyName("provenance")] Provenance? ProvenanceInfo,
+    [property: JsonPropertyName("translation_note")] string? TranslationNote);
+
+public record LanguageInfo(
+    [property: JsonPropertyName("code")] string Code,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("safety_content_translated")] bool SafetyTranslated);
+
+public record LanguagesList(
+    [property: JsonPropertyName("languages")] LanguageInfo[] Languages,
+    [property: JsonPropertyName("default")] string Default);
+
+public record LanguageChoice(
+    [property: JsonPropertyName("language")] string Language,
+    [property: JsonPropertyName("label")] string Label);
 
 public record MonitorResult(
     [property: JsonPropertyName("detected")] bool Detected,
@@ -288,6 +315,28 @@ public sealed class ApiClient
         };
         req.Headers.Add("authorization", $"Bearer {token}");
         return Send<ModelChoice>(req);
+    }
+
+    // -- language --
+
+    public Task<LanguagesList> Languages() =>
+        Send<LanguagesList>(new HttpRequestMessage(HttpMethod.Get, "/languages"));
+
+    public Task<LanguageChoice> UserLanguage(string uid, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/language/{uid}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<LanguageChoice>(req);
+    }
+
+    public Task<LanguageChoice> SetLanguage(string uid, string token, string code)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Put, $"/language/{uid}")
+        {
+            Content = JsonContent.Create(new { language = code }),
+        };
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<LanguageChoice>(req);
     }
 
     // -- safety: escalation policy, Emergency, robots --

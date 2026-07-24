@@ -131,6 +131,10 @@ class WaiverSign(BaseModel):
     accept: bool = False            # explicit acceptance of the terms
 
 
+class LanguageChoice(BaseModel):
+    language: str                   # jim.i18n.SUPPORTED code, e.g. "es"
+
+
 class SourceConsent(BaseModel):
     source: Source
     consented: bool

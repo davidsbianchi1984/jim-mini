@@ -10,13 +10,13 @@ from datetime import date, datetime
 from fastapi import FastAPI, HTTPException, Request, Response
 
 from . import (app_connectors, auth, catalog, coach, db, escalation, guardian,
-               life, llm, research, robotics, social)
+               i18n, life, llm, research, robotics, social)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
     HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, RobotBind,
-    RobotCommand, WaiverSign,
+    LanguageChoice, RobotCommand, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister,
 )
@@ -127,6 +127,38 @@ def create_app(qrme_client: QRMEClient | None = None,
         llm.set_choice(user_id, body.provider)
         return {"user_id": user_id, "provider": body.provider,
                 "effective": llm.resolve_choice(body.provider)}
+
+    @app.get("/languages")
+    def list_languages() -> dict:
+        """Supported languages: model-generated text is produced in-language;
+        the marked subset also has hand-translated safety content (playbooks,
+        waiver terms)."""
+        return {"languages": [{"code": code, "label": label,
+                               "safety_content_translated":
+                                   code == i18n.DEFAULT
+                                   or code in i18n.HAND_TRANSLATED}
+                              for code, label in i18n.SUPPORTED.items()],
+                "default": i18n.DEFAULT}
+
+    @app.get("/language/{user_id}")
+    def get_user_language(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        code = i18n.get_language(user_id)
+        return {"user_id": user_id, "language": code,
+                "label": i18n.SUPPORTED[code]}
+
+    @app.put("/language/{user_id}")
+    def set_user_language(user_id: str, body: LanguageChoice,
+                          request: Request) -> dict:
+        """Everything drafted for or delivered to this user — guidance,
+        coaching, playbooks, waiver terms — localizes to this language."""
+        _user_or_404(user_id, request)
+        if body.language not in i18n.SUPPORTED:
+            raise HTTPException(
+                422, f"language must be one of {', '.join(i18n.SUPPORTED)}")
+        i18n.set_language(user_id, body.language)
+        return {"user_id": user_id, "language": body.language,
+                "label": i18n.SUPPORTED[body.language]}
 
     @app.post("/enroll", status_code=201)
     def enroll(body: Enroll) -> dict:
@@ -275,7 +307,11 @@ def create_app(qrme_client: QRMEClient | None = None,
         operation stay locked until it is signed."""
         _user_or_404(user_id, request)
         waiver = guardian.waiver_for(user_id)
-        return {"kind": guardian.WAIVER_KIND, "terms": guardian.WAIVER_TERMS,
+        language = i18n.get_language(user_id)
+        return {"kind": guardian.WAIVER_KIND,
+                "terms": i18n.localize_strings(guardian.WAIVER_TERMS,
+                                               language),
+                "language": language,
                 "signed": waiver is not None,
                 "signature": waiver["signature"] if waiver else None,
                 "signed_at": waiver["signed_at"] if waiver else None}

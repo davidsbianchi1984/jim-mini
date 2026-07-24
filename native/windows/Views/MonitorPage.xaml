@@ -46,6 +46,8 @@
                                FontSize="12" FontWeight="Bold" TextWrapping="Wrap" Visibility="Collapsed" />
                     <TextBlock x:Name="ResultRefs" Foreground="{StaticResource JimGreenBrush}"
                                FontSize="12" TextWrapping="Wrap" Visibility="Collapsed" />
+                    <TextBlock x:Name="ResultProvenance" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="11" TextWrapping="Wrap" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
         </StackPanel>

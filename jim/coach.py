@@ -48,8 +48,12 @@ def _context(user_id: str) -> str:
 
 
 def reply(user_id: str, area: str, message: str) -> dict:
+    from . import i18n
+
     system = _SYSTEM.format(area=AREAS[area], context=_context(user_id))
     system += personalize(guardian.get_user(user_id))
+    language = i18n.get_language(user_id)
+    system += i18n.directive(language)
     text = llm.provider_for_user(user_id).generate(system, message)
 
     safe = not _DENY.search(text)
@@ -71,7 +75,17 @@ def reply(user_id: str, area: str, message: str) -> dict:
     if not safe:
         return {"delivered": False, "area": area,
                 "reason": "coach reply failed safety check", "content": None}
-    return {"delivered": True, "area": area, "content": text}
+    return {"delivered": True, "area": area, "content": text,
+            "language": language,
+            "provenance": {
+                "method": "model-generated coaching grounded in this user's "
+                          "own check-ins and goals — general habits advice, "
+                          "not professional counsel",
+                "generated_by": llm.resolve_choice(llm.get_choice(user_id)),
+                "evidence": [],
+                "disclaimer": "For medical, legal, or investment decisions, "
+                              "consult a qualified professional.",
+            }}
 
 
 def companion_checkin(user_id: str) -> dict:

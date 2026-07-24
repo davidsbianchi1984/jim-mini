@@ -46,6 +46,104 @@ REFERENCES: dict[str, list[str]] = {
     conditions.ERGONOMIC: ["OSHA: ergonomics — risk factors and prevention"],
 }
 
+# The verifiable basis behind each reference: who published it, where to read
+# it, and which part of the advice it supports. This travels with every
+# guidance response so advice is checkable at the source, not taken on faith.
+EVIDENCE: dict[str, list[dict]] = {
+    conditions.ANXIETY: [
+        {"publisher": "NHS (UK National Health Service)",
+         "title": "Breathing exercises for stress",
+         "url": "https://www.nhs.uk/mental-health/self-help/guides-tools-and-activities/breathing-exercises-for-stress/",
+         "supports": "paced-breathing techniques for acute anxiety"},
+        {"publisher": "American Psychological Association",
+         "title": "Panic disorder & grounding",
+         "url": "https://www.apa.org/topics/anxiety",
+         "supports": "grounding techniques during panic"},
+    ],
+    conditions.DEPRESSION: [
+        {"publisher": "World Health Organization",
+         "title": "Depression fact sheet & self-care",
+         "url": "https://www.who.int/news-room/fact-sheets/detail/depression",
+         "supports": "self-care basics and when to seek help"},
+        {"publisher": "988 Suicide & Crisis Lifeline",
+         "title": "24/7 crisis support (US)",
+         "url": "https://988lifeline.org",
+         "supports": "immediate human crisis support"},
+    ],
+    conditions.STRESS: [
+        {"publisher": "World Health Organization",
+         "title": "Stress — questions and answers",
+         "url": "https://www.who.int/news-room/questions-and-answers/item/stress",
+         "supports": "stress management guidance"},
+        {"publisher": "American Psychological Association",
+         "title": "Healthy ways to handle life's stressors",
+         "url": "https://www.apa.org/topics/stress",
+         "supports": "healthy coping strategies"},
+    ],
+    conditions.PHOBIA: [
+        {"publisher": "NHS (UK National Health Service)",
+         "title": "Phobias — self-help",
+         "url": "https://www.nhs.uk/mental-health/conditions/phobias/",
+         "supports": "gradual-exposure self-help"},
+    ],
+    conditions.FINANCIAL_STRESS: [
+        {"publisher": "Consumer Financial Protection Bureau",
+         "title": "Dealing with debt",
+         "url": "https://www.consumerfinance.gov/consumer-tools/debt-collection/",
+         "supports": "debt and financial-hardship resources"},
+    ],
+    conditions.RELATIONSHIP: [
+        {"publisher": "American Psychological Association",
+         "title": "Marriage & relationships",
+         "url": "https://www.apa.org/topics/marriage-relationships",
+         "supports": "healthy communication guidance"},
+    ],
+    conditions.PHYSICAL_DISTRESS: [
+        {"publisher": "American Red Cross",
+         "title": "First aid — when to call emergency services",
+         "url": "https://www.redcross.org/take-a-class/first-aid/performing-first-aid/first-aid-steps",
+         "supports": "recognizing emergencies and calling for help"},
+    ],
+    conditions.PHYSICAL_INJURY: [
+        {"publisher": "American Red Cross",
+         "title": "First aid steps",
+         "url": "https://www.redcross.org/take-a-class/first-aid/performing-first-aid/first-aid-steps",
+         "supports": "step-by-step first aid"},
+        {"publisher": "Mayo Clinic",
+         "title": "First aid basics",
+         "url": "https://www.mayoclinic.org/first-aid",
+         "supports": "condition-specific first-aid detail"},
+    ],
+    conditions.CARDIAC: [
+        {"publisher": "American Heart Association",
+         "title": "Hands-Only CPR",
+         "url": "https://cpr.heart.org/en/cpr-courses-and-kits/hands-only-cpr",
+         "supports": "compression rate (100–120/min), depth, and full chest "
+                     "recoil — the source of the playbook's 110/min pace"},
+        {"publisher": "American Red Cross",
+         "title": "How to use an AED",
+         "url": "https://www.redcross.org/take-a-class/aed/using-an-aed/aed-steps",
+         "supports": "AED pad placement, stand-clear analysis, and shock "
+                     "only when the device advises"},
+    ],
+    conditions.ENVIRONMENT: [
+        {"publisher": "US Centers for Disease Control and Prevention",
+         "title": "Carbon monoxide poisoning",
+         "url": "https://www.cdc.gov/carbon-monoxide/",
+         "supports": "CO exposure response — fresh air, evacuation"},
+        {"publisher": "American Red Cross",
+         "title": "Home fire safety",
+         "url": "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/fire.html",
+         "supports": "fire and smoke response"},
+    ],
+    conditions.ERGONOMIC: [
+        {"publisher": "US Occupational Safety and Health Administration",
+         "title": "Ergonomics",
+         "url": "https://www.osha.gov/ergonomics",
+         "supports": "risk factors and prevention for strain injuries"},
+    ],
+}
+
 # --------------------------------------------------------------------------- #
 # first-aid playbooks — deterministic, structured, delivered alongside the
 # conversational guidance so a rescuer can follow them step by step.
@@ -175,8 +273,31 @@ def personalize(user: dict | None) -> str:
     return ("\n" + "\n".join(lines)) if lines else ""
 
 
+def provenance_for(condition: str, provider_name: str,
+                   deterministic: bool = False) -> dict:
+    """The verifiable basis of a piece of advice: how it was produced, by
+    what, and the published sources it derives from — so every response can
+    be checked at the source instead of taken on faith."""
+    if deterministic:
+        method = ("deterministic first-aid playbook transcribed from the "
+                  "cited publishers — not model-generated")
+    else:
+        method = ("model-generated counsel grounded in the cited published "
+                  "sources and this user's own baseline")
+    return {
+        "method": method,
+        "generated_by": provider_name,
+        "evidence": EVIDENCE.get(condition, []),
+        "disclaimer": "Educational guidance, not a diagnosis. The evidence "
+                      "links are the derivation trail — verify anything that "
+                      "matters and seek professional care.",
+    }
+
+
 def generate(detection: conditions.Detection, note: str | None,
              user: dict | None = None, memory: str | None = None) -> dict:
+    from . import i18n
+
     label = conditions.LABELS.get(detection.condition, detection.condition)
     situation = detection.reason + (f'. The user said: "{note}"' if note else "")
     system = _SYSTEM.format(label=label, situation=situation)
@@ -186,11 +307,18 @@ def generate(detection: conditions.Detection, note: str | None,
     system += personalize(user)
     if memory:
         system += f"\nprior interactions: {memory}"
+
+    language = (i18n.get_language(user["id"]) if user and user.get("id")
+                else i18n.DEFAULT)
+    system += i18n.directive(language)
+
     prompt = note or f"The user may be experiencing {label}."
     # Honor the user's chosen provider when we know who this is; fall back to
     # the platform default for anonymous/pre-enrollment guidance.
+    choice = (llm.get_choice(user["id"]) if user and user.get("id") else None)
     provider = (llm.provider_for_user(user["id"]) if user and user.get("id")
                 else llm.get_provider())
+    effective = llm.resolve_choice(choice)
     text = provider.generate(system, prompt)
 
     if _DENY.search(text):
@@ -198,9 +326,18 @@ def generate(detection: conditions.Detection, note: str | None,
                 "reason": "guidance failed safety check", "content": None}
     out = {"delivered": True, "source": "local",
            "condition": detection.condition, "content": text,
-           "references": REFERENCES.get(detection.condition, [])}
+           "language": language,
+           "references": REFERENCES.get(detection.condition, []),
+           "provenance": provenance_for(detection.condition, effective,
+                                        deterministic=first_aid is not None)}
+    if language != i18n.DEFAULT and effective == "stub":
+        out["translation_note"] = (
+            "the offline stub cannot translate free text — structured "
+            "first-aid steps are hand-localized; conversational text may "
+            "appear in English")
     if first_aid:
         # Structured, step-by-step first aid (CPR pace cues, AED steps, …)
-        # travels with the conversational guidance.
-        out["first_aid"] = first_aid
+        # travels with the conversational guidance — hand-localized, never
+        # machine-mangled.
+        out["first_aid"] = i18n.localize_playbook(first_aid, language)
     return out

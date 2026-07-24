@@ -14,7 +14,7 @@ import secrets
 from datetime import date
 
 from . import (conditions, db, earlywarning, escalation,
-               guidance as local_guidance, life, llm, robotics)
+               guidance as local_guidance, i18n, life, llm, robotics)
 
 
 def _event(user_id, type_, *, condition=None, severity=None, detail=None,
@@ -532,7 +532,9 @@ def robot_command(user_id: str, robot_id: str, command: str,
         status = "responding"
     elif command == "guide_first_aid":
         kind = arg if arg in ("cpr", "aed") else "cpr"
-        pb = local_guidance.playbook(kind)
+        # Coach in the user's language: the playbook is hand-localized.
+        pb = i18n.localize_playbook(local_guidance.playbook(kind),
+                                    i18n.get_language(user_id))
         result = {"status": "coaching", "playbook": pb,
                   "spoken": pb["steps"],
                   "note": ("coaching aloud with the pace cue"

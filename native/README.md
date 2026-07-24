@@ -41,6 +41,20 @@ They persist the returned `user_token` so the app resumes signed-in, and share
 the JIM dark-OLED palette so all three feel like one product. See each folder's
 README for the exact build/run commands.
 
+Two cross-cutting guarantees ride on every guidance surface:
+
+- **Language** (`/languages`, `/language/{uid}`, picker on the Overview
+  screen): everything drafted for the user is delivered in their language —
+  model text is *generated* in-language, and the safety-critical
+  deterministic content (CPR/AED playbooks, waiver terms) is hand-translated
+  (es, fr today) rather than machine-mangled, falling back to English with a
+  visible note for other languages.
+- **Provenance**: every guidance and coach response carries a `provenance`
+  block — the published sources it derives from (publisher, document, URL,
+  and what each supports), how the text was produced (deterministic playbook
+  vs. model-generated), and which model produced it — rendered under the
+  advice so it can be verified at the source instead of taken on faith.
+
 ## Start the backend
 
 All three point at the local dev server. From the repo root:

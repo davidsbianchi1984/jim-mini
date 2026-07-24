@@ -20,13 +20,15 @@ public sealed partial class CheckinPage : Page
             {
                 GuidanceText.Text = guidance;
                 var refs = r.Guardian?.Guidance?.References;
-                if (refs is { Length: > 0 })
-                {
-                    GuidanceRefs.Text = string.Join(
-                        "\n", System.Linq.Enumerable.Select(refs, x => $"→ {x}"));
-                    GuidanceRefs.Visibility = Visibility.Visible;
-                }
-                else GuidanceRefs.Visibility = Visibility.Collapsed;
+                var lines = refs is { Length: > 0 }
+                    ? string.Join("\n", System.Linq.Enumerable.Select(refs, x => $"→ {x}"))
+                    : "";
+                var prov = MonitorPage.FormatProvenance(r.Guardian?.Guidance);
+                if (prov.Length > 0)
+                    lines = lines.Length > 0 ? $"{lines}\n{prov}" : prov;
+                GuidanceRefs.Text = lines;
+                GuidanceRefs.Visibility = lines.Length > 0
+                    ? Visibility.Visible : Visibility.Collapsed;
                 GuidanceCard.Visibility = Visibility.Visible;
             }
         }

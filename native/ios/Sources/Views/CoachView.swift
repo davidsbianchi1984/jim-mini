@@ -48,6 +48,7 @@ struct CoachView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Coach").font(.headline).foregroundStyle(Theme.txt)
                         Text(g.content).font(.subheadline).foregroundStyle(Theme.txt)
+                        GuidanceExtras(guidance: g)
                     }.card()
                 }
             }.padding(20)

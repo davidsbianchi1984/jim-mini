@@ -285,6 +285,12 @@ CREATE TABLE IF NOT EXISTS model_prefs (
     updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS language_prefs (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    language   TEXT NOT NULL,   -- jim.i18n.SUPPORTED code, e.g. "es"
+    updated_at TEXT NOT NULL
+);
+
 -- Robot helpers bound to a user (see jim/robotics.py for the catalog). Each
 -- binding also registers a devices row, so escalation alerts dispatch to the
 -- robot like any other device; the device row's name mirrors the robot's.

@@ -52,6 +52,18 @@
                               SelectionChanged="OnProviderPicked" />
                 </StackPanel>
             </Border>
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Language" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock Text="Everything drafted for you — guidance, coaching, first-aid steps, waiver terms — is delivered in this language."
+                               Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                    <ComboBox x:Name="LanguageBox" HorizontalAlignment="Stretch"
+                              SelectionChanged="OnLanguagePicked" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>
