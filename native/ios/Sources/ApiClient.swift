@@ -95,6 +95,40 @@ struct CustodyProvenance: Decodable {
     let chain: Chain?
 }
 
+struct ChildCreated: Decodable {
+    let id: String
+    let child_token: String            // shown once: goes on the child's device
+    let oversight: String              // "full" | "alerts_only"
+    let sensitivity: String?
+    let emergency_contact: String?
+}
+
+struct ChildSummary: Decodable {
+    let child_id: String
+    let display_name: String
+    let age: Int
+    let relationship: String
+    let oversight: String              // full | alerts_only | ended
+}
+
+struct ChildEvent: Decodable {
+    let type: String
+    let condition: String?
+    let severity: String?
+    let created_at: String
+}
+
+struct ChildOverview: Decodable {
+    let child_id: String
+    let display_name: String?
+    let age: Int?
+    let oversight: String
+    let critical_events: Int?
+    let events: [ChildEvent]?
+    let privacy_note: String?
+    let note: String?                  // set when oversight has ended
+}
+
 struct MonitorResult: Decodable {
     let detected: Bool
     let condition: String?
@@ -418,6 +452,35 @@ actor ApiClient {
         if let arg, !arg.isEmpty { body["arg"] = arg }
         return try await request("/robots/\(uid)/\(robotId)/command",
                                  method: "POST", body: body, token: token)
+    }
+
+    // MARK: family — a parent sets up and watches over a child's account
+
+    func enrollChild(gid: String, token: String, name: String,
+                     birthdate: String,
+                     guardianPhone: String?) async throws -> ChildCreated {
+        var body: [String: Any] = ["display_name": name,
+                                   "birthdate": birthdate]
+        if let guardianPhone, !guardianPhone.isEmpty {
+            body["guardian_phone"] = guardianPhone
+        }
+        return try await request("/guardians/\(gid)/children",
+                                 method: "POST", body: body, token: token)
+    }
+
+    func children(gid: String, token: String) async throws -> [ChildSummary] {
+        try await request("/guardians/\(gid)/children", token: token)
+    }
+
+    func childOverview(gid: String, cid: String,
+                       token: String) async throws -> ChildOverview {
+        try await request("/guardians/\(gid)/children/\(cid)", token: token)
+    }
+
+    func unlinkChild(gid: String, cid: String, token: String) async throws {
+        struct Ok: Decodable { let linked: Bool }
+        let _: Ok = try await request("/guardians/\(gid)/children/\(cid)",
+                                      method: "DELETE", token: token)
     }
 
     // MARK: autonomous-resuscitation waiver

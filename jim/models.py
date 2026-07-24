@@ -127,6 +127,16 @@ class RobotCommand(BaseModel):
                                     # "cpr" | "aed" for guide_first_aid
 
 
+class ChildEnroll(BaseModel):
+    display_name: str
+    birthdate: date                  # required: the tier and the 18 cutoff
+    relationship: str = "parent"     # parent | legal_guardian
+    guardian_phone: str | None = None  # becomes the consented emergency line
+    resting_heart_rate: int | None = None
+    known_conditions: list[Condition] = Field(default_factory=list)
+    language: str | None = None
+
+
 class WaiverSign(BaseModel):
     signature: str                  # typed legal name
     accept: bool = False            # explicit acceptance of the terms

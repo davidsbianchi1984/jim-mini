@@ -3,7 +3,7 @@ import SwiftUI
 /// Care: the three ways you interact with your Guardian — live monitoring,
 /// mood check-ins, and coaching — behind one tab so the bar stays at five.
 struct CareView: View {
-    enum Tab: String, CaseIterable { case monitor = "Monitor", checkin = "Check-in", coach = "Coach" }
+    enum Tab: String, CaseIterable { case monitor = "Monitor", checkin = "Check-in", coach = "Coach", family = "Family" }
     @State private var tab: Tab = .monitor
 
     var body: some View {
@@ -18,6 +18,7 @@ struct CareView: View {
             case .monitor: MonitorView()
             case .checkin: CheckinView()
             case .coach: CoachView()
+            case .family: FamilyView()
             }
         }
     }

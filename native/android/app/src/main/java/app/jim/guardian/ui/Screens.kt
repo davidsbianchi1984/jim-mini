@@ -23,6 +23,9 @@ import app.jim.guardian.AppConn
 import app.jim.guardian.BaselineMetric
 import app.jim.guardian.CatalogApp
 import app.jim.guardian.CheckinResult
+import app.jim.guardian.ChildCreated
+import app.jim.guardian.ChildOverview
+import app.jim.guardian.ChildSummary
 import app.jim.guardian.EmergencyResult
 import app.jim.guardian.EscalationPolicy
 import app.jim.guardian.Guidance
@@ -1119,7 +1122,7 @@ private fun medRow(k: String, v: String) {
 @Composable
 fun CareScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Monitor", "Check-in", "Coach")
+    val tabs = listOf("Monitor", "Check-in", "Coach", "Family")
     Column(Modifier.fillMaxSize()) {
         TabRow(
             selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA,
@@ -1133,7 +1136,131 @@ fun CareScreen(vm: GuardianViewModel) {
         when (tab) {
             0 -> MonitorScreen(vm)
             1 -> CheckinScreen(vm)
-            else -> CoachScreen(vm)
+            2 -> CoachScreen(vm)
+            else -> FamilyPanel(vm)
+        }
+    }
+}
+
+// ---- Family: a parent sets up and watches over a child's account ----
+
+@Composable
+private fun FamilyPanel(vm: GuardianViewModel) {
+    var name by remember { mutableStateOf("") }
+    var birthdate by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var created by remember { mutableStateOf<ChildCreated?>(null) }
+    var kids by remember { mutableStateOf<List<ChildSummary>>(emptyList()) }
+    var overview by remember { mutableStateOf<ChildOverview?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.children(vm.uid!!, vm.token!!) }) { r ->
+            kids = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Set up my child", color = Jim.Txt, fontSize = 16.sp,
+                fontWeight = FontWeight.Bold)
+            Text("You enroll as the recorded parent/guardian. The account " +
+                 "starts cautious, with you as the emergency contact; cloud " +
+                 "sharing stays off. The auto-defib waiver can never be " +
+                 "signed for a minor.", color = Jim.T2, fontSize = 12.sp)
+            OutlinedTextField(value = name, onValueChange = { name = it },
+                label = { Text("Child's name") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = birthdate, onValueChange = { birthdate = it },
+                label = { Text("Birthdate (YYYY-MM-DD)") },
+                modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = phone, onValueChange = { phone = it },
+                label = { Text("Your phone (emergency line, optional)") },
+                modifier = Modifier.fillMaxWidth())
+            Button(onClick = {
+                error = null
+                vm.call({ ApiClient.enrollChild(vm.uid!!, vm.token!!,
+                    name.trim(), birthdate.trim(), phone.trim()) }) { r ->
+                    r.onSuccess { created = it; name = ""; birthdate = ""; phone = "" }
+                        .onFailure { error = it.message }
+                    reload()
+                }
+            }, enabled = name.isNotBlank() && birthdate.isNotBlank(),
+                modifier = Modifier.fillMaxWidth()) {
+                Text("Create child account")
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+        created?.let { c ->
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text("Child account created", color = Jim.Green, fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold)
+                Text("Oversight: ${c.oversight} · sensitivity: ${c.sensitivity}",
+                    color = Jim.T2, fontSize = 12.sp)
+                Text("Device token — shown once, put it on their watch or phone:",
+                    color = Jim.Amber, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(c.childToken, color = Jim.Txt, fontSize = 10.sp)
+            }
+        }
+        kids.forEach { kid ->
+            Row(Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp)).background(Jim.Card)
+                    .clickable {
+                        vm.call({ ApiClient.childOverview(vm.uid!!,
+                            kid.childId, vm.token!!) }) { r ->
+                            overview = r.getOrNull()
+                        }
+                    }
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    Text("${kid.displayName} · ${kid.age}", color = Jim.Txt,
+                        fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(when (kid.oversight) {
+                        "full" -> "full oversight (under 13)"
+                        "alerts_only" -> "alerts only — daily life stays private"
+                        else -> "oversight ended — an adult now"
+                    }, color = Jim.T2, fontSize = 11.sp)
+                }
+                Text("●", fontSize = 12.sp,
+                    color = when (kid.oversight) {
+                        "full" -> Jim.Green
+                        "alerts_only" -> Jim.Amber
+                        else -> Jim.T3
+                    })
+            }
+        }
+        overview?.let { o ->
+            Column(Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp)).background(Jim.Card)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                if (o.note != null) {
+                    Text("Oversight ended", color = Jim.Txt, fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold)
+                    Text(o.note, color = Jim.T2, fontSize = 11.sp)
+                } else {
+                    Text(o.displayName ?: "Child", color = Jim.Txt,
+                        fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    o.privacyNote?.let {
+                        Text("🔒 $it", color = Jim.Amber, fontSize = 11.sp)
+                    }
+                    if (o.criticalEvents > 0)
+                        Text("⚠️ ${o.criticalEvents} critical event(s)",
+                            color = Jim.Red, fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold)
+                    o.events.forEach { e ->
+                        Text("${e.type}${e.condition?.let { " · $it" } ?: ""}" +
+                             (e.severity?.let { " · ${it.uppercase()}" } ?: ""),
+                            color = Jim.T2, fontSize = 11.sp)
+                    }
+                    if (o.events.isEmpty())
+                        Text("Nothing in the window — quiet is good news.",
+                            color = Jim.T2, fontSize = 11.sp)
+                }
+            }
         }
     }
 }

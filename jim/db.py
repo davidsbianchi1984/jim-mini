@@ -295,6 +295,18 @@ CREATE TABLE IF NOT EXISTS language_prefs (
 -- Robot helpers bound to a user (see jim/robotics.py for the catalog). Each
 -- binding also registers a devices row, so escalation alerts dispatch to the
 -- robot like any other device; the device row's name mirrors the robot's.
+-- Family: the recorded guardian/child relationship behind guardian-consented
+-- enrollment. Oversight is sized by the child's age (full under 13,
+-- alerts_only 13-17) and ends by itself at 18.
+CREATE TABLE IF NOT EXISTS guardian_links (
+    guardian_id  TEXT NOT NULL REFERENCES users(id),
+    child_id     TEXT NOT NULL REFERENCES users(id),
+    relationship TEXT NOT NULL DEFAULT 'parent',  -- parent | legal_guardian
+    oversight    TEXT NOT NULL,                   -- full | alerts_only (at setup)
+    created_at   TEXT NOT NULL,
+    PRIMARY KEY (guardian_id, child_id)
+);
+
 CREATE TABLE IF NOT EXISTS waivers (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),
