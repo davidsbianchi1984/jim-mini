@@ -110,3 +110,27 @@ def test_phone_command_explains_when_console_missing(capsys, monkeypatch):
     out = capsys.readouterr().out
     assert "npm --prefix app run build" in out
     assert "█" not in out
+
+
+def test_bare_invocation_offers_every_way_to_run(capsys):
+    """`python -m jim` with no arguments is the launcher menu: phone,
+    desktop, packaged installer, and headless API — the user picks the
+    device; every option is one command."""
+    from jim.__main__ import main
+    assert main([]) == 0
+    out = capsys.readouterr().out
+    assert "python -m jim phone" in out
+    assert "python -m jim desktop" in out
+    assert "python -m jim serve" in out
+    assert "releases/latest" in out           # the no-toolchain option
+
+
+def test_desktop_without_npm_points_at_the_installers(capsys, monkeypatch):
+    """No npm on the machine → the desktop choice still leads somewhere:
+    the packaged installers."""
+    import shutil as _shutil
+    monkeypatch.setattr(_shutil, "which", lambda _cmd: None)
+    from jim.__main__ import main
+    assert main(["desktop"]) == 1
+    out = capsys.readouterr().out
+    assert "releases/latest" in out

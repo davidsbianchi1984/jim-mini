@@ -1,22 +1,23 @@
-"""``python -m jim`` — run the Guardian, phone-ready, in one command.
+"""``python -m jim`` — run the Guardian your way, in one command.
 
-``python -m jim phone`` does everything the README's manual steps do:
+Bare ``python -m jim`` prints the launcher menu: every way to run the
+product, so the user chooses the device — phone, this PC, a packaged
+installer, or a headless API — and each choice is one command:
 
-1. **Builds the console if it's missing** (``npm --prefix app install`` when
-   node_modules is absent, then ``npm --prefix app run build``). Skipped when
-   the build already exists — rebuild explicitly with ``--rebuild``.
-2. **Prints the pairing block** — the console's URL on your local network,
-   plus the same URL as a QR code drawn straight into the terminal, so the
-   phone scans it off this very screen.
-3. **Starts the API on all interfaces** (``0.0.0.0``), which is what makes
-   it reachable from the phone at all.
+* ``python -m jim phone``    — build the console if needed, print the phone
+  URL with a QR drawn into the terminal, serve on the local network.
+* ``python -m jim desktop``  — the Electron desktop app on this PC (builds
+  the console first when needed); without npm it points at the packaged
+  installers instead.
+* ``python -m jim serve``    — the headless API alone (localhost by
+  default), for scripts, development, or fronting with your own client.
 
-Flags: ``--port`` (default 8000), ``--rebuild`` (force a console rebuild),
-``--no-build`` (never touch npm), ``--print-only`` (steps 1–2 without
-starting the server — used by tests and scripts).
+Flags on ``phone``: ``--port``, ``--rebuild``, ``--no-build``,
+``--print-only`` (pairing block without the server — used by tests).
+``serve`` takes ``--host`` and ``--port``.
 
-Security posture unchanged: the address is local-network only, and every
-personal endpoint still requires the user's bearer token.
+Security posture unchanged everywhere: the phone address is local-network
+only, and every personal endpoint still requires the user's bearer token.
 """
 
 from __future__ import annotations
@@ -30,6 +31,29 @@ from pathlib import Path
 from . import mobile
 
 REPO = Path(__file__).resolve().parent.parent
+RELEASES = "https://github.com/davidsbianchi1984/jim-mini/releases/latest"
+
+MENU = f"""
+JIM-mini (Guardian) — choose how to run it:
+
+  On your phone       python -m jim phone
+                      builds the console, prints a scannable QR, and serves
+                      on your Wi-Fi — Add to Home Screen and it's an app.
+
+  On this PC          python -m jim desktop
+                      the desktop app in an Electron window (needs npm).
+
+  Packaged installer  {RELEASES}
+                      .dmg / .exe / .AppImage built by the release workflow
+                      — no toolchain needed, just download and install.
+
+  Headless API        python -m jim serve
+                      the backend alone on localhost, for scripts and
+                      development (add --host 0.0.0.0 to expose it).
+
+Every option runs the same backend with the same data and the same token
+checks — pick per device, switch whenever.
+"""
 
 
 def ensure_console(rebuild: bool = False, allow_build: bool = True) -> bool:
@@ -76,11 +100,52 @@ def print_pairing(port: int) -> dict:
     return info
 
 
+def run_phone(args: argparse.Namespace) -> int:
+    ensure_console(rebuild=args.rebuild, allow_build=not args.no_build)
+    print_pairing(args.port)
+    if args.print_only:
+        return 0
+    import uvicorn
+    # Import string (not an app object) so the console mount happens after
+    # the build above — the app factory checks app/dist at creation time.
+    uvicorn.run("jim.api:app", host="0.0.0.0", port=args.port)
+    return 0
+
+
+def run_desktop(args: argparse.Namespace) -> int:
+    """The desktop app on this PC. With npm: build the console if needed and
+    open the Electron window. Without: point at the packaged installers —
+    that's the no-toolchain way to run on a PC."""
+    npm = shutil.which("npm")
+    if npm is None:
+        print("npm isn't installed, so the from-source desktop app can't "
+              "start here.")
+        print(f"Grab the packaged installer instead: {RELEASES}")
+        return 1
+    if not ensure_console():
+        print("The console failed to build — see the npm output above.")
+        return 1
+    app = REPO / "app"
+    if not (app / "node_modules").exists():
+        subprocess.run([npm, "--prefix", str(app), "install"], check=True)
+    print("• opening the desktop app (it starts its own backend probe)…")
+    return subprocess.run(
+        [npm, "--prefix", str(app), "run", "electron:start"]).returncode
+
+
+def run_serve(args: argparse.Namespace) -> int:
+    import uvicorn
+    uvicorn.run("jim.api:app", host=args.host, port=args.port)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m jim",
-        description="Run the Guardian, phone-ready, in one command.")
+        description="Run the Guardian your way — phone, desktop, installer, "
+                    "or headless API.")
     sub = parser.add_subparsers(dest="command")
+
     phone = sub.add_parser(
         "phone", help="build the console if needed, print the QR, serve on "
                       "the local network")
@@ -91,21 +156,24 @@ def main(argv: list[str] | None = None) -> int:
                        help="never run npm; serve whatever exists")
     phone.add_argument("--print-only", action="store_true",
                        help="print the pairing block and exit (no server)")
+
+    sub.add_parser("desktop",
+                   help="open the desktop app on this PC (or point at the "
+                        "packaged installers)")
+
+    serve = sub.add_parser("serve", help="run the headless API alone")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
+
     args = parser.parse_args(argv)
-
-    if args.command != "phone":
-        parser.print_help()
-        return 2
-
-    ensure_console(rebuild=args.rebuild, allow_build=not args.no_build)
-    print_pairing(args.port)
-    if args.print_only:
-        return 0
-
-    import uvicorn
-    # Import string (not an app object) so the console mount happens after
-    # the build above — the app factory checks app/dist at creation time.
-    uvicorn.run("jim.api:app", host="0.0.0.0", port=args.port)
+    if args.command == "phone":
+        return run_phone(args)
+    if args.command == "desktop":
+        return run_desktop(args)
+    if args.command == "serve":
+        return run_serve(args)
+    # No subcommand: the launcher menu — the choice is the point.
+    print(MENU)
     return 0
 
 
