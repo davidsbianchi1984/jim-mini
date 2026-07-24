@@ -288,6 +288,16 @@ public record MedicalCard(
     [property: JsonPropertyName("resting_heart_rate")] int? RestingHeartRate,
     [property: JsonPropertyName("emergency_contact")] MedicalContact? EmergencyContact);
 
+public record ImproveItem(
+    [property: JsonPropertyName("category")] string Category,
+    [property: JsonPropertyName("message")] string Message,
+    [property: JsonPropertyName("status")] string Status);
+
+public record ImproveState(
+    [property: JsonPropertyName("mine")] ImproveItem[] Mine,
+    [property: JsonPropertyName("tally")] System.Collections.Generic.Dictionary<string, int> Tally,
+    [property: JsonPropertyName("total")] int Total);
+
 /// <summary>
 /// Async client for the JIM Guardian backend. Windows reaches the local dev
 /// server directly on 127.0.0.1.
@@ -608,5 +618,24 @@ public sealed class ApiClient
         req.Headers.Add("authorization", $"Bearer {token}");
         var res = await _http.SendAsync(req);
         res.EnsureSuccessStatusCode();
+    }
+
+    // -- Help us improve — product feedback (open to anyone) --
+
+    public async Task SubmitImprovement(string? token, string category,
+                                        string message, int? rating)
+    {
+        object body = rating is { } r
+            ? new { category, message, rating = r }
+            : new { category, message };
+        var res = await _http.SendAsync(Post("/improve", body, token));
+        res.EnsureSuccessStatusCode();
+    }
+
+    public Task<ImproveState> Improvements(string? token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, "/improve");
+        if (token is { Length: > 0 }) req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<ImproveState>(req);
     }
 }

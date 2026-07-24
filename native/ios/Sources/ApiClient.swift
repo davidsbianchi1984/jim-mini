@@ -301,6 +301,21 @@ struct MedicalCard: Decodable {
     struct EmergencyContact: Decodable { let name: String?; let phone: String? }
 }
 
+struct ImproveReceipt: Decodable { let id: String; let status: String }
+
+struct ImproveItem: Decodable, Identifiable {
+    let id: String
+    let category: String
+    let message: String
+    let status: String
+}
+
+struct ImproveState: Decodable {
+    let mine: [ImproveItem]
+    let tally: [String: Int]
+    let total: Int
+}
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -626,6 +641,19 @@ actor ApiClient {
 
     func medicalCard(cardToken: String) async throws -> MedicalCard {
         try await request("/medical-id/\(cardToken)")   // public: the card is the credential
+    }
+
+    // MARK: Help us improve — product feedback (open to anyone)
+
+    func submitImprovement(category: String, message: String, rating: Int?,
+                           token: String?) async throws -> ImproveReceipt {
+        var body: [String: Any] = ["category": category, "message": message]
+        if let rating { body["rating"] = rating }
+        return try await request("/improve", method: "POST", body: body, token: token)
+    }
+
+    func improvements(token: String?) async throws -> ImproveState {
+        try await request("/improve", token: token)
     }
 
     func revokeMedicalCard(uid: String, token: String) async throws {

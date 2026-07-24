@@ -17,7 +17,8 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate,
-    HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, RobotBind,
+    HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
+    RobotBind,
     LanguageChoice, RobotCommand, TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister,
@@ -885,6 +886,59 @@ def create_app(qrme_client: QRMEClient | None = None,
                     "rating": body.rating,
                 })
         return result
+
+    # ---- "help us improve": product feedback on the app itself ------------
+    # Distinct from guidance feedback above: open to anyone, about the app.
+
+    _IMPROVE_CATEGORIES = ("idea", "improvement", "bug", "praise", "other")
+
+    def _submitter(request: Request) -> str:
+        who = auth.principal(request)
+        return f"{who['role']}:{who['subject_id']}" if who else "anonymous"
+
+    @app.post("/improve", status_code=201)
+    def submit_improvement(body: ImprovementSubmit, request: Request) -> dict:
+        """Tell us how to make the app better — an idea, an improvement, a
+        bug, or praise, with an optional 1–5 rating. Open to anyone."""
+        if body.category not in _IMPROVE_CATEGORIES:
+            raise HTTPException(
+                422, f"category must be one of {', '.join(_IMPROVE_CATEGORIES)}")
+        message = body.message.strip()
+        if not message:
+            raise HTTPException(422, "a message is required")
+        if body.rating is not None and not (1 <= body.rating <= 5):
+            raise HTTPException(422, "rating must be 1–5")
+        conn = db.connect()
+        iid = db.new_id("imp")
+        conn.execute(
+            "INSERT INTO improvements (id, submitter, category, message,"
+            " rating, status, created_at) VALUES (?,?,?,?,?,'received',?)",
+            (iid, _submitter(request), body.category, message, body.rating,
+             db.utcnow()))
+        conn.commit()
+        return {"id": iid, "category": body.category, "status": "received",
+                "note": "thank you — this goes straight to the team"}
+
+    @app.get("/improve")
+    def list_improvements(request: Request) -> dict:
+        """The caller's own submissions (newest first) plus the public tally
+        by category — never anyone else's words."""
+        conn = db.connect()
+        submitter = _submitter(request)
+        mine = []
+        if submitter != "anonymous":
+            mine = [dict(r) for r in conn.execute(
+                "SELECT id, category, message, rating, status, created_at"
+                " FROM improvements WHERE submitter=?"
+                " ORDER BY created_at DESC, rowid DESC", (submitter,)).fetchall()]
+        tally = {c: 0 for c in _IMPROVE_CATEGORIES}
+        for row in conn.execute(
+                "SELECT category, COUNT(*) AS n FROM improvements"
+                " GROUP BY category").fetchall():
+            if row["category"] in tally:
+                tally[row["category"]] = row["n"]
+        return {"mine": mine, "tally": tally, "total": sum(tally.values()),
+                "categories": list(_IMPROVE_CATEGORIES)}
 
     @app.get("/report/{user_id}")
     def progress_report(user_id: str, request: Request) -> dict:

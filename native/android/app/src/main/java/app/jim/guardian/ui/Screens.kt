@@ -195,6 +195,7 @@ fun OverviewScreen(vm: GuardianViewModel) {
         }
         ModelCard(vm)
         LanguageCard(vm)
+        ImproveCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Jim.Line)) {
             Text("Sign out", color = Jim.T2)
@@ -1052,6 +1053,78 @@ fun LanguageCard(vm: GuardianViewModel) {
                     .background(Jim.ScrBot).padding(10.dp))
             Text("engine: ${t.engine}" + (t.note?.let { " — $it" } ?: ""),
                 color = Jim.T3, fontSize = 10.sp)
+        }
+    }
+}
+
+// ---- Help us improve — product feedback (open to anyone) ----
+
+@Composable
+fun ImproveCard(vm: GuardianViewModel) {
+    val categories = listOf("idea", "improvement", "bug", "praise", "other")
+    var category by remember { mutableStateOf("idea") }
+    var message by remember { mutableStateOf("") }
+    var rating by remember { mutableIntStateOf(0) }
+    var state by remember { mutableStateOf<ImproveState?>(null) }
+    var thanks by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.improvements(vm.token) }) { r -> state = r.getOrNull() }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Help us improve", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text("Tell us how to make the app better — an idea, a rough edge, a bug, or what you love. It goes straight to the team.",
+            color = Jim.T2, fontSize = 12.sp)
+        categories.chunked(3).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                row.forEach { c ->
+                    FilterChip(
+                        selected = category == c,
+                        onClick = { category = c },
+                        label = { Text(c.replaceFirstChar { it.uppercase() }, fontSize = 11.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Jim.BrandA,
+                            selectedLabelColor = Color.White, labelColor = Jim.T2,
+                        ),
+                    )
+                }
+            }
+        }
+        labeledField("", message, "What's on your mind?") { message = it }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Rating", color = Jim.T2, fontSize = 12.sp)
+            (1..5).forEach { n ->
+                Text(if (n <= rating) "★" else "☆",
+                    color = if (n <= rating) Jim.Amber else Jim.T3, fontSize = 20.sp,
+                    modifier = Modifier.clickable { rating = if (rating == n) 0 else n })
+            }
+        }
+        BrandButton("Send feedback", enabled = message.isNotBlank()) {
+            vm.call({
+                ApiClient.submitImprovement(vm.token, category, message.trim(),
+                    if (rating == 0) null else rating)
+            }) {
+                thanks = "Thank you — sent."; message = ""; rating = 0; reload()
+            }
+        }
+        thanks?.let { Text(it, color = Jim.Green, fontSize = 12.sp) }
+        state?.takeIf { it.total > 0 }?.let { st ->
+            HorizontalDivider(color = Jim.Line)
+            Text("So far: " + categories.mapNotNull { c ->
+                st.tally[c]?.takeIf { it > 0 }?.let { "$it $c" }
+            }.joinToString(" · "), color = Jim.T3, fontSize = 10.sp)
+            if (st.mine.isNotEmpty()) {
+                Text("Yours", color = Jim.Txt, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                st.mine.take(4).forEach { f ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("[${f.category}] ${f.message}", color = Jim.T2, fontSize = 10.sp,
+                            maxLines = 1, modifier = Modifier.weight(1f))
+                        Text(f.status, color = Jim.BrandA, fontSize = 10.sp)
+                    }
+                }
+            }
         }
     }
 }
