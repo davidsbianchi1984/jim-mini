@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.1.4] — 2026-07-24
+
 ### Added
 
 - **`python -m jim` launcher** — bare invocation prints the menu of every
@@ -116,7 +120,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.1.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.1.4...HEAD
+[0.1.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.4
 [0.1.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.3
 [0.1.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.2
 [0.1.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.1
