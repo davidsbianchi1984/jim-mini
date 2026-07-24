@@ -40,7 +40,27 @@ under *Settings → Secrets and variables → Actions*:
 | `APPLE_TEAM_ID` | macOS | Apple Developer Team ID |
 
 electron-builder reads these from the environment during `npm run dist`. macOS
-notarization runs only when the `APPLE_*` secrets are present.
+notarization runs only when the `APPLE_*` secrets are present. The app is
+built with the hardened runtime and the entitlements in
+`app/build/entitlements.mac.plist`, which notarization requires.
+
+### Getting the certificates (one-time)
+
+**macOS**: join the [Apple Developer Program](https://developer.apple.com/programs/)
+($99/yr); create a **Developer ID Application** certificate and export it
+from Keychain as a `.p12`; `base64 -i cert.p12` → `CSC_LINK`, export
+password → `CSC_KEY_PASSWORD`. For notarization, create an
+[app-specific password](https://account.apple.com/account/manage) →
+`APPLE_APP_SPECIFIC_PASSWORD`, plus `APPLE_ID` (account email) and
+`APPLE_TEAM_ID` (Membership page).
+
+**Windows**: buy an **OV or EV code-signing certificate** from a CA
+(Sectigo, DigiCert, SSL.com; ~$80–400/yr; EV clears SmartScreen fastest);
+export as `.pfx`; `base64 -i cert.pfx` → `WIN_CSC_LINK`, password →
+`WIN_CSC_KEY_PASSWORD`.
+
+Add the secrets (repo- or org-level), push the next tag or re-run the
+workflow, and the installers come out signed — no code changes needed.
 
 ## Health data
 

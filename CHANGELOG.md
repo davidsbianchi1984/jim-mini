@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **macOS notarization wiring** — hardened runtime + entitlements +
+  `notarize` in the electron-builder config; docs/releasing.md walks
+  through obtaining the macOS and Windows certificates.
+- docs/hipaa-baa.md now points at the signable BAA template maintained in
+  the PDI repo (docs/baa-template.md there).
+
 ## [0.1.1] — 2026-07-24
 
 ### Added
