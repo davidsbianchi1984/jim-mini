@@ -130,8 +130,17 @@ struct RobotCmdResult: Decodable {
     let note: String?
     let instruction: String?           // perform_cpr confirmation gate
     let spoken: [String]?              // guide_first_aid playbook steps
+    let sequence: [String]?            // auto_defib resuscitation sequence
     let pace: Pace?
     let safeguards: [String]?
+}
+
+struct WaiverState: Decodable {
+    let kind: String
+    let terms: [String]
+    let signed: Bool
+    let signature: String?
+    let signed_at: String?
 }
 
 struct MedicalCardIssued: Decodable {
@@ -316,6 +325,27 @@ actor ApiClient {
         if let arg, !arg.isEmpty { body["arg"] = arg }
         return try await request("/robots/\(uid)/\(robotId)/command",
                                  method: "POST", body: body, token: token)
+    }
+
+    // MARK: autonomous-resuscitation waiver
+
+    func waiver(uid: String, token: String) async throws -> WaiverState {
+        try await request("/waivers/\(uid)", token: token)
+    }
+
+    func signWaiver(uid: String, token: String,
+                    signature: String) async throws -> WaiverState {
+        struct Signed: Decodable { let signed: Bool }
+        _ = try await request("/waivers/\(uid)", method: "POST",
+                              body: ["signature": signature, "accept": true],
+                              token: token) as Signed
+        return try await waiver(uid: uid, token: token)
+    }
+
+    func revokeWaiver(uid: String, token: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/waivers/\(uid)", method: "DELETE",
+                                      token: token)
     }
 
     // MARK: Connect — sources, social platforms, connected apps

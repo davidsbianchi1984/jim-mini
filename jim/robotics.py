@@ -83,8 +83,10 @@ FIRST_AID_RATING: dict[str, str] = {
 }
 
 # Extra commands unlocked by the first-aid rating (on top of the kind list).
+# auto_defib additionally requires a signed autonomous-resuscitation waiver
+# (enforced per-user in guardian.robot_command, since ratings are per-model).
 _ASSIST_COMMANDS = ["fetch_aed", "guide_first_aid", "meet_responders"]
-_PERFORM_COMMANDS = _ASSIST_COMMANDS + ["perform_cpr", "stop_cpr"]
+_PERFORM_COMMANDS = _ASSIST_COMMANDS + ["perform_cpr", "stop_cpr", "auto_defib"]
 
 # The directive each kind receives when the Guardian escalates: mobile bodies
 # converge on the user; vacuums clear the floor and light the way home.
@@ -98,6 +100,15 @@ ESCALATION_DIRECTIVE = {
 # matched to the body's rating.
 CARDIAC_DIRECTIVE = {
     "perform": "begin_hands_only_cpr_110bpm_until_aed_or_ems",
+    "assist": "fetch_aed_and_coach_cpr_pace",
+}
+
+# With a signed autonomous-resuscitation waiver on file, a perform-rated body
+# escalates straight into the full sequence: compressions plus a fully-
+# automatic-AED-class device that shocks on its own analysis (the robot's job
+# is stand-clear verification). Assist bodies keep their fetch-and-coach role.
+CARDIAC_DIRECTIVE_WAIVED = {
+    "perform": "auto_resuscitate_cpr_plus_auto_aed",
     "assist": "fetch_aed_and_coach_cpr_pace",
 }
 
@@ -137,12 +148,14 @@ def allowed_commands(model: str) -> list[str]:
     return base
 
 
-def directive_for(model: str, cardiac: bool = False) -> str | None:
+def directive_for(model: str, cardiac: bool = False,
+                  waived: bool = False) -> str | None:
     spec = BY_KEY.get(model)
     if spec is None:
         return None
     if cardiac:
         rating = FIRST_AID_RATING.get(model)
-        if rating in CARDIAC_DIRECTIVE:
-            return CARDIAC_DIRECTIVE[rating]
+        table = CARDIAC_DIRECTIVE_WAIVED if waived else CARDIAC_DIRECTIVE
+        if rating in table:
+            return table[rating]
     return ESCALATION_DIRECTIVE.get(spec["kind"])

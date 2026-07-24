@@ -16,7 +16,7 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
     HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, RobotBind,
-    RobotCommand,
+    RobotCommand, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister,
 )
@@ -267,6 +267,43 @@ def create_app(qrme_client: QRMEClient | None = None,
         if result is None:
             raise HTTPException(404, "robot not found")
         return result
+
+    @app.get("/waivers/{user_id}")
+    def get_waiver(user_id: str, request: Request) -> dict:
+        """The autonomous-resuscitation waiver: its terms, and whether this
+        user has one signed. Automatic CPR starts and fully-automatic AED
+        operation stay locked until it is signed."""
+        _user_or_404(user_id, request)
+        waiver = guardian.waiver_for(user_id)
+        return {"kind": guardian.WAIVER_KIND, "terms": guardian.WAIVER_TERMS,
+                "signed": waiver is not None,
+                "signature": waiver["signature"] if waiver else None,
+                "signed_at": waiver["signed_at"] if waiver else None}
+
+    @app.post("/waivers/{user_id}", status_code=201)
+    def sign_waiver(user_id: str, body: WaiverSign, request: Request) -> dict:
+        user = _user_or_404(user_id, request)
+        if not body.accept:
+            raise HTTPException(403, "the waiver terms must be explicitly "
+                                     "accepted")
+        signature = body.signature.strip()
+        if not signature:
+            raise HTTPException(422, "a typed legal-name signature is "
+                                     "required")
+        expected = (user.get("display_name") or "").strip().lower()
+        if expected and signature.lower() != expected:
+            raise HTTPException(
+                422, f"signature must match the enrolled name "
+                     f"({user['display_name']})")
+        return guardian.sign_waiver(user_id, signature)
+
+    @app.delete("/waivers/{user_id}")
+    def revoke_waiver(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        if not guardian.revoke_waiver(user_id):
+            raise HTTPException(404, "no signed waiver on file")
+        return {"kind": guardian.WAIVER_KIND, "signed": False,
+                "note": "confirm-gated operation restored"}
 
     @app.post("/robots/{user_id}/{robot_id}/command", status_code=201)
     def command_robot(user_id: str, robot_id: str, body: RobotCommand,

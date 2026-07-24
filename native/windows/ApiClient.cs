@@ -128,7 +128,15 @@ public record RobotCmdResult(
     [property: JsonPropertyName("note")] string? Note,
     [property: JsonPropertyName("instruction")] string? Instruction,
     [property: JsonPropertyName("spoken")] string[]? Spoken,
+    [property: JsonPropertyName("sequence")] string[]? Sequence,
     [property: JsonPropertyName("pace")] Pace? Pace);
+
+public record WaiverState(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("terms")] string[] Terms,
+    [property: JsonPropertyName("signed")] bool Signed,
+    [property: JsonPropertyName("signature")] string? Signature,
+    [property: JsonPropertyName("signed_at")] string? SignedAt);
 
 public record MedicalCardIssued(
     [property: JsonPropertyName("token")] string Token,
@@ -317,6 +325,35 @@ public sealed class ApiClient
         Send<RobotCmdResult>(Post($"/robots/{uid}/{robotId}/command",
             arg is { Length: > 0 } ? new { command, arg } : (object)new { command },
             token));
+
+    public Task<WaiverState> Waiver(string uid, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/waivers/{uid}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<WaiverState>(req);
+    }
+
+    public async Task SignWaiver(string uid, string token, string signature)
+    {
+        var req = Post($"/waivers/{uid}", new { signature, accept = true }, token);
+        var res = await _http.SendAsync(req);
+        if (!res.IsSuccessStatusCode)
+        {
+            var body = await res.Content.ReadAsStringAsync();
+            string? detail = null;
+            try { detail = JsonDocument.Parse(body).RootElement.GetProperty("detail").GetString(); }
+            catch { /* non-JSON error body */ }
+            throw new HttpRequestException(detail ?? $"HTTP {(int)res.StatusCode}");
+        }
+    }
+
+    public async Task RevokeWaiver(string uid, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete, $"/waivers/{uid}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
 
     // -- Connect: sources, social platforms, connected apps --
 

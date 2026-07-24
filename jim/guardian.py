@@ -324,6 +324,69 @@ def unbind_robot(user_id: str, robot_id: str) -> dict | None:
     return {"id": robot_id, "unbound": True}
 
 
+# ---- autonomous-resuscitation waiver ----------------------------------------
+#
+# Automatic operation — CPR without an on-scene confirmation, and a fully-
+# automatic-AED-class device that delivers a shock on its own rhythm analysis
+# — is locked behind a signed liability waiver. Signing is explicit (typed
+# legal name + acceptance), revocable at any time, and audited. Without a
+# waiver on file, the confirm-gated behavior stands and no shock is ever
+# delivered.
+
+WAIVER_KIND = "autonomous_resuscitation"
+
+WAIVER_TERMS = [
+    "I authorize my bound, CPR-rated robots to begin hands-only CPR "
+    "automatically when a cardiac arrest is detected, without waiting for "
+    "an on-scene confirmation.",
+    "I authorize the use of a fully-automatic AED: the device analyzes my "
+    "heart rhythm and delivers a shock on its own analysis after the robot "
+    "verifies everyone is clear — no button press.",
+    "I understand a shock is only ever delivered when the AED's rhythm "
+    "analysis advises it — never on the robot's own judgement.",
+    "I accept liability for automatic operation and waive claims arising "
+    "from resuscitation performed in good faith under this authorization.",
+    "Emergency services are always called first; automatic operation ends "
+    "the moment human responders take over.",
+    "I may revoke this waiver at any time, restoring confirm-gated "
+    "operation.",
+]
+
+
+def waiver_for(user_id: str) -> dict | None:
+    """The active (signed, unrevoked) autonomous-resuscitation waiver."""
+    row = db.connect().execute(
+        "SELECT * FROM waivers WHERE user_id=? AND kind=? AND revoked=0"
+        " ORDER BY signed_at DESC, rowid DESC LIMIT 1",
+        (user_id, WAIVER_KIND)).fetchone()
+    return dict(row) if row else None
+
+
+def sign_waiver(user_id: str, signature: str) -> dict:
+    conn = db.connect()
+    waiver_id = db.new_id("wvr")
+    conn.execute(
+        "INSERT INTO waivers (id, user_id, kind, signature, signed_at,"
+        " revoked) VALUES (?,?,?,?,?,0)",
+        (waiver_id, user_id, WAIVER_KIND, signature, db.utcnow()))
+    conn.commit()
+    _event(user_id, "waiver_signed",
+           detail={"kind": WAIVER_KIND, "signature": signature})
+    return {"id": waiver_id, "kind": WAIVER_KIND, "signature": signature,
+            "signed": True, "terms": WAIVER_TERMS}
+
+
+def revoke_waiver(user_id: str) -> bool:
+    conn = db.connect()
+    changed = conn.execute(
+        "UPDATE waivers SET revoked=1 WHERE user_id=? AND kind=? AND revoked=0",
+        (user_id, WAIVER_KIND)).rowcount
+    conn.commit()
+    if changed:
+        _event(user_id, "waiver_revoked", detail={"kind": WAIVER_KIND})
+    return bool(changed)
+
+
 def _robot_directives(user_id: str, cardiac: bool = False) -> list[dict]:
     """On an escalation, every bound robot gets its role's directive: mobile
     bodies converge on the user, vacuums dock and clear the floor. A cardiac
@@ -333,8 +396,10 @@ def _robot_directives(user_id: str, cardiac: bool = False) -> list[dict]:
     the rhythm and a human presses the button."""
     directives = []
     conn = db.connect()
+    waived = cardiac and waiver_for(user_id) is not None
     for r in robots_for(user_id):
-        directive = robotics.directive_for(r["model"], cardiac=cardiac)
+        directive = robotics.directive_for(r["model"], cardiac=cardiac,
+                                           waived=waived)
         if directive is None:
             continue
         conn.execute("UPDATE robots SET status='responding' WHERE id=?",
@@ -344,22 +409,39 @@ def _robot_directives(user_id: str, cardiac: bool = False) -> list[dict]:
         rating = robotics.first_aid_rating(r["model"])
         if cardiac and rating:
             entry["first_aid"] = rating
+            if waived and rating == "perform":
+                entry["waiver"] = "autonomous resuscitation pre-authorized"
         directives.append(entry)
     conn.commit()
     return directives
 
 
 # Commands a robot accepts outside its kind/rating allowlist are refused; the
-# first-aid set behaves as follows. Starting compressions is deliberately a
-# two-step: the robot will not touch a person until someone on scene confirms.
-_CPR_SAFEGUARDS = [
-    "emergency services are called before compressions begin",
-    "a person on scene confirmed the need (unresponsive, not breathing "
-    "normally)",
-    "compressions pause the moment the AED analyzes or a human takes over",
-    "the robot never delivers a shock — the AED analyzes and a human "
-    "presses the button",
-]
+# first-aid set behaves as follows. Without a signed waiver, starting
+# compressions is deliberately a two-step (nobody is touched until someone on
+# scene confirms) and no shock is ever delivered. A signed autonomous-
+# resuscitation waiver pre-authorizes automatic operation: compressions start
+# on detection, and a fully-automatic-AED-class device may shock — but only
+# on the AED's own rhythm analysis, after the robot verifies the scene is
+# clear.
+def _cpr_safeguards(waived: bool) -> list[str]:
+    base = ["emergency services are called before compressions begin",
+            "compressions pause the moment the AED analyzes or a human "
+            "takes over"]
+    if waived:
+        return base + [
+            "automatic operation pre-authorized by the signed "
+            "autonomous-resuscitation waiver",
+            "a shock is delivered only when the AED's rhythm analysis "
+            "advises it, after stand-clear verification — never on the "
+            "robot's own judgement",
+        ]
+    return base + [
+        "a person on scene confirmed the need (unresponsive, not breathing "
+        "normally)",
+        "the robot never delivers a shock — the AED analyzes and a human "
+        "presses the button",
+    ]
 
 
 def robot_command(user_id: str, robot_id: str, command: str,
@@ -381,19 +463,24 @@ def robot_command(user_id: str, robot_id: str, command: str,
             f"'{command}' is not permitted for {spec.get('label', model)}; "
             f"allowed: {', '.join(allowed)}")
 
+    waived = waiver_for(user_id) is not None
+
     result: dict
     status = "active"
     if command == "perform_cpr":
-        # Rating already enforced by the allowlist; the confirm gate is the
-        # human-in-the-loop: no compressions until someone on scene says so.
-        if arg != "confirmed":
+        # Rating already enforced by the allowlist. Without a waiver, the
+        # confirm gate is the human-in-the-loop: no compressions until
+        # someone on scene says so. A signed waiver pre-authorizes starting.
+        if not waived and arg != "confirmed":
             result = {
                 "status": "confirmation_required",
                 "instruction": "Confirm the person is unresponsive and not "
                                "breathing normally, then resend perform_cpr "
                                "with arg='confirmed'. Compressions never "
-                               "start on the robot's own judgement.",
-                "safeguards": _CPR_SAFEGUARDS,
+                               "start on the robot's own judgement. (A "
+                               "signed autonomous-resuscitation waiver "
+                               "pre-authorizes automatic starts.)",
+                "safeguards": _cpr_safeguards(False),
             }
             status = robot["status"]     # unchanged — nothing was started
         else:
@@ -401,12 +488,39 @@ def robot_command(user_id: str, robot_id: str, command: str,
             result = {
                 "status": "compressions_started",
                 "pace": pace,
-                "note": "hands-only CPR at "
+                "note": ("pre-authorized by waiver — " if waived and
+                         arg != "confirmed" else "")
+                        + "hands-only CPR at "
                         f"{pace['compressions_per_minute']}/min; pausing for "
                         "AED analysis and stopping when a human takes over",
-                "safeguards": _CPR_SAFEGUARDS,
+                "safeguards": _cpr_safeguards(waived),
             }
             status = "performing_cpr"
+    elif command == "auto_defib":
+        # Fully-automatic AED: the device decides, the robot clears the
+        # scene. Locked behind the signed waiver — without it, defibrillation
+        # stays with a semi-automatic AED and a human's button press.
+        if not waived:
+            raise ValueError(
+                "auto_defib requires a signed autonomous-resuscitation "
+                "waiver; without one, use fetch_aed / guide_first_aid — the "
+                "AED advises and a human presses the button")
+        result = {
+            "status": "auto_resuscitation_engaged",
+            "sequence": [
+                "emergency services called",
+                "fully-automatic AED pads attached",
+                "device analyzing rhythm — compressions paused",
+                "robot verifying everyone is clear (vision + audible "
+                "warning)",
+                "shock delivered automatically ONLY if the device advises "
+                "it; otherwise compressions resume",
+            ],
+            "note": "the AED's rhythm analysis is the only shock decision — "
+                    "the robot's role is scene safety",
+            "safeguards": _cpr_safeguards(True),
+        }
+        status = "performing_cpr"
     elif command == "stop_cpr":
         result = {"status": "compressions_stopped",
                   "note": "handed over to the AED / human rescuer"}

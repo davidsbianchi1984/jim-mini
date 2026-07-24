@@ -288,6 +288,15 @@ CREATE TABLE IF NOT EXISTS model_prefs (
 -- Robot helpers bound to a user (see jim/robotics.py for the catalog). Each
 -- binding also registers a devices row, so escalation alerts dispatch to the
 -- robot like any other device; the device row's name mirrors the robot's.
+CREATE TABLE IF NOT EXISTS waivers (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    kind       TEXT NOT NULL,   -- autonomous_resuscitation
+    signature  TEXT NOT NULL,   -- typed legal name
+    signed_at  TEXT NOT NULL,
+    revoked    INTEGER NOT NULL DEFAULT 0
+);
+
 CREATE TABLE IF NOT EXISTS robots (
     id           TEXT PRIMARY KEY,
     user_id      TEXT NOT NULL REFERENCES users(id),

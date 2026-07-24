@@ -21,8 +21,13 @@ habits / journal) → `/goals`, `/habits`, `/journal` · **Safety** — SOS + fl
 first-aid commands via `/robots/{uid}/{rid}/command` — assist-rated bodies
 fetch the AED, coach the CPR playbook aloud, and meet EMS; perform-rated
 platforms like Tesla Optimus, Figure 03, and Atlas can additionally deliver
-chest compressions after an on-scene human confirms; no robot ever delivers
-a shock — the AED analyzes, a human presses), and the
+chest compressions after an on-scene human confirms), the **autonomous-
+resuscitation waiver** (`/waivers/{uid}` — a signed, revocable liability
+waiver that pre-authorizes automatic operation: CPR that starts on
+detection and a fully-automatic AED that shocks on its own rhythm analysis
+after the robot verifies everyone is clear; without it, every start is
+confirm-gated and no shock is ever delivered — and even with it, a shock
+only ever follows the AED's analysis, never the robot's judgement), and the
 Medical ID card (`/medical-id/qr/{uid}`) · **Connect** — consented data
 sources (`/sources/{uid}`), social-platform connections (`/social/{uid}` +
 collect/publish), and the connected-apps catalog (`/connectors/catalog`,

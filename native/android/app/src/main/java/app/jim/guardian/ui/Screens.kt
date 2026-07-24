@@ -39,6 +39,7 @@ import app.jim.guardian.Robot
 import app.jim.guardian.RobotSpec
 import app.jim.guardian.SocialConn
 import app.jim.guardian.SourceRow
+import app.jim.guardian.WaiverState
 import kotlin.math.roundToInt
 
 @Composable
@@ -619,14 +620,20 @@ private fun RobotsPanel(vm: GuardianViewModel) {
     var error by remember { mutableStateOf<String?>(null) }
     var cmdResult by remember { mutableStateOf<String?>(null) }
     var confirmingCpr by remember { mutableStateOf<String?>(null) }
+    var waiver by remember { mutableStateOf<WaiverState?>(null) }
+    var signature by remember { mutableStateOf("") }
 
-    fun reload() { vm.call({ ApiClient.robots(vm.uid!!, vm.token!!) }) { r -> robots = r.getOrDefault(emptyList()) } }
+    fun reload() {
+        vm.call({ ApiClient.robots(vm.uid!!, vm.token!!) }) { r -> robots = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.waiver(vm.uid!!, vm.token!!) }) { r -> waiver = r.getOrNull() }
+    }
 
     fun command(rob: Robot, cmd: String, arg: String?) {
         error = null
         vm.call({ ApiClient.commandRobot(vm.uid!!, vm.token!!, rob.id, cmd, arg) }) { r ->
             r.onSuccess { res ->
                 cmdResult = when {
+                    res.sequence.isNotEmpty() -> res.sequence.joinToString(" → ")
                     res.spoken.isNotEmpty() -> "🔊 " + res.spoken.joinToString(" → ")
                     res.pacePerMinute != null ->
                         (res.note ?: res.status) + " · ${res.pacePerMinute}/min"
@@ -669,6 +676,48 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                 }
             }
         }
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Autonomous-resuscitation waiver", color = Jim.Txt,
+                    fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                if (waiver?.signed == true)
+                    Text("SIGNED", color = Jim.Green, fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold)
+            }
+            if (waiver?.signed == true) {
+                Text("Signed by ${waiver?.signature ?: ""} — CPR-rated robots may start " +
+                    "compressions automatically and operate a fully-automatic AED. A shock " +
+                    "still only follows the AED's own rhythm analysis.",
+                    color = Jim.T2, fontSize = 12.sp)
+                TextButton(onClick = {
+                    vm.call({ ApiClient.revokeWaiver(vm.uid!!, vm.token!!) }) {
+                        cmdResult = "Waiver revoked — confirm-gated operation restored."
+                        reload()
+                    }
+                }) { Text("Revoke — restore confirm-gated operation", color = Jim.Red, fontSize = 12.sp) }
+            } else {
+                Text("Unlock automatic operation: CPR that starts on detection, and a " +
+                    "fully-automatic AED that shocks on its own analysis after the robot " +
+                    "verifies everyone is clear. Until signed, every start needs an " +
+                    "on-scene confirmation and no shock is ever delivered.",
+                    color = Jim.T2, fontSize = 12.sp)
+                waiver?.terms?.forEach { t ->
+                    Text("• $t", color = Jim.T3, fontSize = 10.sp)
+                }
+                labeledField("Type your legal name to sign", signature, vm.displayName) { signature = it }
+                RobotAction("Sign & submit waiver") {
+                    if (signature.isNotBlank()) {
+                        error = null
+                        vm.call({ ApiClient.signWaiver(vm.uid!!, vm.token!!, signature) }) { r ->
+                            r.onSuccess {
+                                waiver = it; signature = ""
+                                cmdResult = "Waiver signed — automatic resuscitation pre-authorized."
+                            }.onFailure { error = it.message }
+                        }
+                    }
+                }
+            }
+        }
         error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
         cmdResult?.let { Text(it, color = Jim.Green, fontSize = 12.sp) }
         robots.forEach { rob ->
@@ -703,6 +752,14 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                         when {
                             rob.status == "performing_cpr" ->
                                 RobotAction("Stop CPR", Jim.Red) { command(rob, "stop_cpr", null) }
+                            waiver?.signed == true -> {
+                                RobotAction("Start CPR (pre-authorized)", Jim.Red) {
+                                    command(rob, "perform_cpr", null)
+                                }
+                                RobotAction("Auto-resuscitate", Jim.Red) {
+                                    command(rob, "auto_defib", null)
+                                }
+                            }
                             confirmingCpr == rob.id -> {
                                 RobotAction("Confirm: unresponsive, not breathing", Jim.Red) {
                                     confirmingCpr = null

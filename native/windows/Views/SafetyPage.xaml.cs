@@ -21,17 +21,23 @@ public sealed partial class SafetyPage : Page
         public bool Assist { get; init; }
         public bool Perform { get; init; }
         public bool PerformingCpr { get; init; }
+        public bool Waived { get; init; }
         public Visibility AssistVisibility =>
             Assist ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PerformVisibility =>
             Perform ? Visibility.Visible : Visibility.Collapsed;
         public Visibility StopVisibility =>
             PerformingCpr ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility WaivedVisibility =>
+            Waived && !PerformingCpr ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility ConfirmGateVisibility =>
+            !Waived && !PerformingCpr ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private RobotSpec[] _catalog = Array.Empty<RobotSpec>();
     private bool _loading;   // suppress SelectionChanged while populating
     private string? _pendingCprRobot;
+    private bool _waiverSigned;
 
     public SafetyPage() => InitializeComponent();
 
@@ -124,6 +130,23 @@ public sealed partial class SafetyPage : Page
                     .Select(r => $"{r.Label} · {r.Maker}").ToList();
                 if (_catalog.Length > 0) RobotModelBox.SelectedIndex = 0;
             }
+            var waiver = await ApiClient.Shared.Waiver(s.Uid!, s.Token!);
+            _waiverSigned = waiver.Signed;
+            WaiverBadge.Visibility = waiver.Signed ? Visibility.Visible : Visibility.Collapsed;
+            SignatureBox.Visibility = waiver.Signed ? Visibility.Collapsed : Visibility.Visible;
+            SignWaiverButton.Visibility = waiver.Signed ? Visibility.Collapsed : Visibility.Visible;
+            RevokeWaiverButton.Visibility = waiver.Signed ? Visibility.Visible : Visibility.Collapsed;
+            WaiverTerms.Text = waiver.Signed ? "" : string.Join("\n", waiver.Terms.Select(t => $"• {t}"));
+            WaiverTerms.Visibility = waiver.Signed ? Visibility.Collapsed : Visibility.Visible;
+            WaiverBlurb.Text = waiver.Signed
+                ? $"Signed by {waiver.Signature} — CPR-rated robots may start compressions " +
+                  "automatically and operate a fully-automatic AED. A shock still only " +
+                  "follows the AED's own rhythm analysis."
+                : "Unlock automatic operation: CPR that starts on detection, and a " +
+                  "fully-automatic AED that shocks on its own analysis after the robot " +
+                  "verifies everyone is clear. Until signed, every start needs an " +
+                  "on-scene confirmation and no shock is ever delivered.";
+
             var robots = await ApiClient.Shared.Robots(s.Uid!, s.Token!);
             RobotsList.ItemsSource = robots.Select(r => new RobotRow
             {
@@ -141,6 +164,7 @@ public sealed partial class SafetyPage : Page
                 Assist = r.Commands?.Contains("fetch_aed") == true,
                 Perform = r.Commands?.Contains("perform_cpr") == true,
                 PerformingCpr = r.Status == "performing_cpr",
+                Waived = _waiverSigned,
             }).ToList();
         }
         catch (Exception ex)
@@ -183,7 +207,9 @@ public sealed partial class SafetyPage : Page
             var r = await ApiClient.Shared.CommandRobot(
                 s.Uid!, s.Token!, robotId, command, arg);
             var line = r.Note ?? r.Instruction ?? r.Status;
-            if (r.Spoken is { Length: > 0 })
+            if (r.Sequence is { Length: > 0 })
+                line = string.Join(" → ", r.Sequence);
+            else if (r.Spoken is { Length: > 0 })
                 line = "🔊 " + string.Join(" → ", r.Spoken);
             else if (r.Pace is { } pace)
                 line += $" · {pace.CompressionsPerMinute}/min";
@@ -238,6 +264,54 @@ public sealed partial class SafetyPage : Page
     private async void OnStopCpr(object sender, RoutedEventArgs e)
     {
         if ((sender as Button)?.Tag is string id) await Command(id, "stop_cpr", null);
+    }
+
+    private async void OnAutoCpr(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is string id) await Command(id, "perform_cpr", null);
+    }
+
+    private async void OnAutoDefib(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is string id) await Command(id, "auto_defib", null);
+    }
+
+    private async void OnSignWaiver(object sender, RoutedEventArgs e)
+    {
+        var signature = SignatureBox.Text.Trim();
+        if (signature.Length == 0) return;
+        var s = AppState.Current;
+        RobotError.Visibility = Visibility.Collapsed;
+        try
+        {
+            await ApiClient.Shared.SignWaiver(s.Uid!, s.Token!, signature);
+            SignatureBox.Text = "";
+            RobotCmdResult.Text = "Waiver signed — automatic resuscitation pre-authorized.";
+            RobotCmdResult.Visibility = Visibility.Visible;
+            await LoadRobots();
+        }
+        catch (Exception ex)
+        {
+            RobotError.Text = ex.Message;
+            RobotError.Visibility = Visibility.Visible;
+        }
+    }
+
+    private async void OnRevokeWaiver(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.RevokeWaiver(s.Uid!, s.Token!);
+            RobotCmdResult.Text = "Waiver revoked — confirm-gated operation restored.";
+            RobotCmdResult.Visibility = Visibility.Visible;
+            await LoadRobots();
+        }
+        catch (Exception ex)
+        {
+            RobotError.Text = ex.Message;
+            RobotError.Visibility = Visibility.Visible;
+        }
     }
 
     // -- Medical ID --
