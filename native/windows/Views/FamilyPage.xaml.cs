@@ -14,6 +14,7 @@ namespace JimGuardian.Views;
 public sealed partial class FamilyPage : Page
 {
     private Dictionary<string, string> _kidByLabel = new();
+    private string? _openKid;
 
     public FamilyPage() => InitializeComponent();
 
@@ -40,6 +41,28 @@ public sealed partial class FamilyPage : Page
                 k => $"{k.DisplayName} · {k.Age} — {TierLabel(k.Oversight)}",
                 k => k.ChildId);
             KidsList.ItemsSource = _kidByLabel.Keys.ToList();
+
+            var face = await ApiClient.Shared.GuardianWatch(s.Uid!, s.Token!);
+            if (face.Children.Length > 0)
+            {
+                WatchTitle.Text = face.Haptic == "alert"
+                    ? "Family watch — ⌚ TAPPED" : "Family watch";
+                WatchText.Text = string.Join("\n", face.Children.Select(c =>
+                {
+                    var dot = c.Light switch
+                    {
+                        "green" => "🟢", "orange" => "🟠", "red" => "🔴",
+                        _ => "⚪",
+                    };
+                    var extra = c.Critical24h is > 0 ? " · critical"
+                        : c.Escalations24h is > 0 ? " · escalated" : "";
+                    var chips = (c.Paused == true ? " · paused" : "")
+                        + (c.QuietHours is { } q ? $" · 🌙 {q}" : "");
+                    return $"{dot} {c.DisplayName}{extra}{chips}";
+                }));
+                WatchCard.Visibility = Visibility.Visible;
+            }
+            else WatchCard.Visibility = Visibility.Collapsed;
             ErrorText.Visibility = Visibility.Collapsed;
         }
         catch (Exception ex)
@@ -80,6 +103,9 @@ public sealed partial class FamilyPage : Page
     {
         if (KidsList.SelectedItem is not string label ||
             !_kidByLabel.TryGetValue(label, out var cid)) return;
+        _openKid = cid;
+        ControlsCard.Visibility = Visibility.Visible;
+        ControlsNote.Visibility = Visibility.Collapsed;
         var s = AppState.Current;
         try
         {
@@ -111,5 +137,25 @@ public sealed partial class FamilyPage : Page
             ErrorText.Text = ex.Message;
             ErrorText.Visibility = Visibility.Visible;
         }
+    }
+
+    private async void OnApplyControls(object sender, RoutedEventArgs e)
+    {
+        if (_openKid is not { } cid) return;
+        var s = AppState.Current;
+        try
+        {
+            var r = await ApiClient.Shared.SetFamilyControls(
+                s.Uid!, cid, s.Token!, PauseToggle.IsOn,
+                QuietStartBox.Text.Trim(), QuietEndBox.Text.Trim());
+            ControlsNote.Text = r.Note ?? "applied";
+            ControlsNote.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            ErrorText.Text = ex.Message;
+            ErrorText.Visibility = Visibility.Visible;
+        }
+        await Reload();
     }
 }

@@ -129,6 +129,28 @@ struct ChildOverview: Decodable {
     let note: String?                  // set when oversight has ended
 }
 
+struct FamilyControlsState: Decodable {
+    let paused: Bool
+    let quiet_start: String?
+    let quiet_end: String?
+    let note: String?
+}
+
+struct GuardianChild: Decodable {
+    let child_id: String
+    let display_name: String
+    let light: String                  // green | orange | red | idle
+    let critical_24h: Int?
+    let escalations_24h: Int?
+    let paused: Bool?
+    let quiet_hours: String?
+}
+
+struct GuardianFace: Decodable {
+    let children: [GuardianChild]
+    let haptic: String?                // "alert" when a child needs someone
+}
+
 struct MonitorResult: Decodable {
     let detected: Bool
     let condition: String?
@@ -475,6 +497,21 @@ actor ApiClient {
     func childOverview(gid: String, cid: String,
                        token: String) async throws -> ChildOverview {
         try await request("/guardians/\(gid)/children/\(cid)", token: token)
+    }
+
+    func setFamilyControls(gid: String, cid: String, token: String,
+                           paused: Bool?, quietStart: String?,
+                           quietEnd: String?) async throws -> FamilyControlsState {
+        var body: [String: Any] = [:]
+        if let paused { body["paused"] = paused }
+        if let quietStart { body["quiet_start"] = quietStart }
+        if let quietEnd { body["quiet_end"] = quietEnd }
+        return try await request("/guardians/\(gid)/children/\(cid)/controls",
+                                 method: "PUT", body: body, token: token)
+    }
+
+    func guardianWatch(gid: String, token: String) async throws -> GuardianFace {
+        try await request("/guardians/\(gid)/watch", token: token)
     }
 
     func unlinkChild(gid: String, cid: String, token: String) async throws {

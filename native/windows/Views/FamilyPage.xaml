@@ -44,7 +44,40 @@
                 </StackPanel>
             </Border>
 
+            <Border x:Name="WatchCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="4">
+                    <TextBlock x:Name="WatchTitle" Text="Family watch" FontWeight="Bold"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="WatchText" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                </StackPanel>
+            </Border>
+
             <ListView x:Name="KidsList" SelectionMode="Single" SelectionChanged="OnSelect" />
+
+            <Border x:Name="ControlsCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Device controls" FontWeight="Bold"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock Text="Pause and quiet hours hold everyday guidance only — monitoring, crisis escalation, and the emergency path never pause."
+                               FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <ToggleSwitch x:Name="PauseToggle" Header="Pause guidance"
+                                  Foreground="{StaticResource JimTxtBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="QuietStartBox" Header="Quiet start (HH:MM)" Width="180" />
+                        <TextBox x:Name="QuietEndBox" Header="Quiet end (HH:MM)" Width="180" />
+                    </StackPanel>
+                    <Button Content="Apply" Click="OnApplyControls"
+                            Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                    <TextBlock x:Name="ControlsNote" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimGreenBrush}" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
 
             <Border x:Name="OverviewCard" Background="{StaticResource JimCardBrush}"
                     BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"

@@ -201,6 +201,7 @@ The same system on the wrist — glanceable Apple-Watch faces, one per capabilit
 <td align="center" width="20%"><img src="docs/watch/32-conditions.svg" width="120" alt="32 Conditions"><br><sub>32 · Conditions</sub></td>
 <td align="center" width="20%"><img src="docs/watch/33-style.svg" width="120" alt="33 Style"><br><sub>33 · Style</sub></td>
 <td align="center" width="20%"><img src="docs/watch/34-history.svg" width="120" alt="34 History"><br><sub>34 · History</sub></td>
+<td align="center" width="20%"><img src="docs/watch/35-family.svg" width="120" alt="35 Family"><br><sub>35 · Family</sub></td>
 </tr>
 </table>
 

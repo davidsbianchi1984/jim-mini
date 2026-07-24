@@ -35,6 +35,11 @@ data class ChildEvent(val type: String, val condition: String?,
 data class ChildOverview(val displayName: String?, val oversight: String,
                          val criticalEvents: Int, val events: List<ChildEvent>,
                          val privacyNote: String?, val note: String?)
+data class GuardianChild(val childId: String, val displayName: String,
+                         val light: String, val critical24h: Int,
+                         val escalations24h: Int, val paused: Boolean,
+                         val quietHours: String?)
+data class GuardianFace(val children: List<GuardianChild>, val haptic: String?)
 data class MonitorResult(
     val detected: Boolean, val condition: String?, val severity: String?,
     val reason: String?, val guidance: Guidance?,
@@ -194,6 +199,29 @@ object ApiClient {
                     e.optString("severity", null))
             },
             o.optString("privacy_note", null), o.optString("note", null))
+    }
+
+    suspend fun setFamilyControls(gid: String, cid: String, token: String,
+                                  paused: Boolean?, quietStart: String?,
+                                  quietEnd: String?): String {
+        val body = JSONObject()
+        paused?.let { body.put("paused", it) }
+        quietStart?.let { body.put("quiet_start", it) }
+        quietEnd?.let { body.put("quiet_end", it) }
+        return request("/guardians/$gid/children/$cid/controls", "PUT",
+            body, token).optString("note", "applied")
+    }
+
+    suspend fun guardianWatch(gid: String, token: String): GuardianFace {
+        val o = request("/guardians/$gid/watch", token = token)
+        val arr = o.optJSONArray("children")
+        return GuardianFace((0 until (arr?.length() ?: 0)).map { i ->
+            val c = arr!!.getJSONObject(i)
+            GuardianChild(c.getString("child_id"),
+                c.optString("display_name", ""), c.optString("light", "idle"),
+                c.optInt("critical_24h"), c.optInt("escalations_24h"),
+                c.optBoolean("paused"), c.optString("quiet_hours", null))
+        }, o.optString("haptic", null))
     }
 
     suspend fun checkin(uid: String, token: String, mood: Int, energy: Int, note: String): CheckinResult {
