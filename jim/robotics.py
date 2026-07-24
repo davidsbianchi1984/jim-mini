@@ -21,6 +21,15 @@ _ROWS: list[tuple[str, str, str, str, list[str], bool]] = [
      ["mobility", "manipulation", "voice", "vision", "tidying"], True),
     ("neo", "NEO", "1X Technologies", "humanoid",
      ["mobility", "manipulation", "voice", "vision", "chores"], True),
+    ("optimus", "Optimus", "Tesla", "humanoid",
+     ["mobility", "manipulation", "force_control", "voice", "vision",
+      "chores"], True),
+    ("figure_03", "Figure 03", "Figure AI", "humanoid",
+     ["mobility", "manipulation", "force_control", "voice", "vision"], True),
+    ("atlas", "Atlas", "Boston Dynamics", "humanoid",
+     ["mobility", "manipulation", "force_control", "vision"], False),
+    ("g1", "G1", "Unitree Robotics", "humanoid",
+     ["mobility", "manipulation", "voice", "vision"], True),
     ("u1_lite", "UWorld U1 Lite", "UBTech Robotics", "humanoid",
      ["mobility", "voice", "vision"], True),
     ("u1_pro", "UWorld U1 Pro", "UBTech Robotics", "humanoid",
@@ -52,6 +61,31 @@ COMMANDS: dict[str, list[str]] = {
     "vacuum": ["clean", "spot_clean", "patrol", "dock", "locate", "stop"],
 }
 
+# First-aid rating per model. "perform" means the platform has certified
+# force-controlled manipulation (mechanical-CPR class, like a LUCAS device
+# with legs) and may deliver chest compressions once a person on scene
+# confirms the need; "assist" means fetch-and-coach only — bring the AED,
+# speak the playbook, keep the pace. Vacuums have no rating: their emergency
+# job is clearing the floor. NO rating ever authorizes a robot to deliver a
+# defibrillator shock — rhythm analysis stays with the AED and the shock
+# button stays with a human.
+FIRST_AID_RATING: dict[str, str] = {
+    "optimus": "perform",
+    "figure_03": "perform",
+    "atlas": "perform",
+    "neo": "assist",
+    "g1": "assist",
+    "u1_lite": "assist",     # voice only: can coach, cannot carry
+    "u1_pro": "assist",
+    "u1_ultra": "assist",
+    "isaac_1": "assist",
+    "memo": "assist",
+}
+
+# Extra commands unlocked by the first-aid rating (on top of the kind list).
+_ASSIST_COMMANDS = ["fetch_aed", "guide_first_aid", "meet_responders"]
+_PERFORM_COMMANDS = _ASSIST_COMMANDS + ["perform_cpr", "stop_cpr"]
+
 # The directive each kind receives when the Guardian escalates: mobile bodies
 # converge on the user; vacuums clear the floor and light the way home.
 ESCALATION_DIRECTIVE = {
@@ -60,25 +94,55 @@ ESCALATION_DIRECTIVE = {
     "vacuum": "dock_and_clear_floor",
 }
 
+# Cardiac escalations override the generic directive with a first-aid role
+# matched to the body's rating.
+CARDIAC_DIRECTIVE = {
+    "perform": "begin_hands_only_cpr_110bpm_until_aed_or_ems",
+    "assist": "fetch_aed_and_coach_cpr_pace",
+}
+
 
 def catalog() -> dict:
     makers: dict[str, list[dict]] = {}
     for row in BY_KEY.values():
-        makers.setdefault(row["maker"], []).append(row)
-    return {"robots": list(BY_KEY.values()), "by_maker": makers,
+        entry = {**row, "first_aid": FIRST_AID_RATING.get(row["model"])}
+        makers.setdefault(row["maker"], []).append(entry)
+    return {"robots": [{**r, "first_aid": FIRST_AID_RATING.get(r["model"])}
+                       for r in BY_KEY.values()],
+            "by_maker": makers,
             "commands": COMMANDS,
-            "escalation_directives": ESCALATION_DIRECTIVE}
+            "first_aid_ratings": FIRST_AID_RATING,
+            "escalation_directives": ESCALATION_DIRECTIVE,
+            "cardiac_directives": CARDIAC_DIRECTIVE}
 
 
 def get(model: str) -> dict | None:
     return BY_KEY.get(model)
 
 
+def first_aid_rating(model: str) -> str | None:
+    return FIRST_AID_RATING.get(model)
+
+
 def allowed_commands(model: str) -> list[str]:
     spec = BY_KEY.get(model)
-    return COMMANDS.get(spec["kind"], []) if spec else []
+    if spec is None:
+        return []
+    base = COMMANDS.get(spec["kind"], [])
+    rating = FIRST_AID_RATING.get(model)
+    if rating == "perform":
+        return base + _PERFORM_COMMANDS
+    if rating == "assist":
+        return base + _ASSIST_COMMANDS
+    return base
 
 
-def directive_for(model: str) -> str | None:
+def directive_for(model: str, cardiac: bool = False) -> str | None:
     spec = BY_KEY.get(model)
-    return ESCALATION_DIRECTIVE.get(spec["kind"]) if spec else None
+    if spec is None:
+        return None
+    if cardiac:
+        rating = FIRST_AID_RATING.get(model)
+        if rating in CARDIAC_DIRECTIVE:
+            return CARDIAC_DIRECTIVE[rating]
+    return ESCALATION_DIRECTIVE.get(spec["kind"])

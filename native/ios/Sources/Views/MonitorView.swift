@@ -48,6 +48,7 @@ struct MonitorView: View {
                         if let g = r.guidance {
                             Divider().overlay(Theme.line)
                             Text(g.content).font(.subheadline).foregroundStyle(Theme.txt)
+                            GuidanceExtras(guidance: g)
                             if let src = g.source {
                                 Text("via \(src)").font(.caption).foregroundStyle(Theme.t3)
                             }

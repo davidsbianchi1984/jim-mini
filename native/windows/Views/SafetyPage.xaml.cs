@@ -10,10 +10,28 @@ public sealed partial class SafetyPage : Page
 {
     public record FlowRow(string Label, string Detail);
     public record PolicyRow(string Severity, string Tier);
-    public record RobotRow(string Name, string Status, string Directive);
+
+    public sealed class RobotRow
+    {
+        public string Id { get; init; } = "";
+        public string Name { get; init; } = "";
+        public string Status { get; init; } = "";
+        public string Directive { get; init; } = "";
+        public string Rating { get; init; } = "";
+        public bool Assist { get; init; }
+        public bool Perform { get; init; }
+        public bool PerformingCpr { get; init; }
+        public Visibility AssistVisibility =>
+            Assist ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PerformVisibility =>
+            Perform ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility StopVisibility =>
+            PerformingCpr ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     private RobotSpec[] _catalog = Array.Empty<RobotSpec>();
     private bool _loading;   // suppress SelectionChanged while populating
+    private string? _pendingCprRobot;
 
     public SafetyPage() => InitializeComponent();
 
@@ -107,10 +125,23 @@ public sealed partial class SafetyPage : Page
                 if (_catalog.Length > 0) RobotModelBox.SelectedIndex = 0;
             }
             var robots = await ApiClient.Shared.Robots(s.Uid!, s.Token!);
-            RobotsList.ItemsSource = robots.Select(r => new RobotRow(
-                r.Name, Cap(r.Status ?? "docked"),
-                r.EscalationDirective is { } d
-                    ? $"On escalation: {d.Replace('_', ' ')}" : "")).ToList();
+            RobotsList.ItemsSource = robots.Select(r => new RobotRow
+            {
+                Id = r.Id,
+                Name = r.Name,
+                Status = Cap((r.Status ?? "docked").Replace('_', ' ')),
+                Directive = r.EscalationDirective is { } d
+                    ? $"On escalation: {d.Replace('_', ' ')}" : "",
+                Rating = r.FirstAidRating switch
+                {
+                    "perform" => "CPR-rated",
+                    "assist" => "first-aid assist",
+                    _ => "",
+                },
+                Assist = r.Commands?.Contains("fetch_aed") == true,
+                Perform = r.Commands?.Contains("perform_cpr") == true,
+                PerformingCpr = r.Status == "performing_cpr",
+            }).ToList();
         }
         catch (Exception ex)
         {
@@ -138,6 +169,75 @@ public sealed partial class SafetyPage : Page
             RobotError.Visibility = Visibility.Visible;
         }
         finally { BindButton.IsEnabled = true; }
+    }
+
+    // -- robot first-aid commands --
+
+    private async System.Threading.Tasks.Task Command(string robotId,
+                                                      string command, string? arg)
+    {
+        var s = AppState.Current;
+        RobotError.Visibility = Visibility.Collapsed;
+        try
+        {
+            var r = await ApiClient.Shared.CommandRobot(
+                s.Uid!, s.Token!, robotId, command, arg);
+            var line = r.Note ?? r.Instruction ?? r.Status;
+            if (r.Spoken is { Length: > 0 })
+                line = "🔊 " + string.Join(" → ", r.Spoken);
+            else if (r.Pace is { } pace)
+                line += $" · {pace.CompressionsPerMinute}/min";
+            RobotCmdResult.Text = line;
+            RobotCmdResult.Visibility = Visibility.Visible;
+            await LoadRobots();
+        }
+        catch (Exception ex)
+        {
+            RobotError.Text = ex.Message;
+            RobotError.Visibility = Visibility.Visible;
+        }
+    }
+
+    private async void OnFetchAed(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is string id) await Command(id, "fetch_aed", null);
+    }
+
+    private async void OnCoachCpr(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is string id) await Command(id, "guide_first_aid", "cpr");
+    }
+
+    private async void OnMeetEms(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is string id) await Command(id, "meet_responders", null);
+    }
+
+    private void OnPerformCpr(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not string id) return;
+        _pendingCprRobot = id;
+        RobotCmdResult.Text =
+            "Confirm the person is unresponsive and not breathing normally. " +
+            "The robot never starts on its own judgement — and never delivers " +
+            "a shock; the AED analyzes, a human presses.";
+        RobotCmdResult.Visibility = Visibility.Visible;
+        ConfirmCprButton.Visibility = Visibility.Visible;
+    }
+
+    private async void OnConfirmCpr(object sender, RoutedEventArgs e)
+    {
+        ConfirmCprButton.Visibility = Visibility.Collapsed;
+        if (_pendingCprRobot is { } id)
+        {
+            _pendingCprRobot = null;
+            await Command(id, "perform_cpr", "confirmed");
+        }
+    }
+
+    private async void OnStopCpr(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is string id) await Command(id, "stop_cpr", null);
     }
 
     // -- Medical ID --

@@ -17,7 +17,12 @@ picker (`/models`, `/model/{uid}`) · **Live Monitoring** → `POST /monitor` ·
 **Check-in** → `POST /checkin` · **Coach** → `POST /coach` · **Life** (goals /
 habits / journal) → `/goals`, `/habits`, `/journal` · **Safety** — SOS + flow
 (`/emergency`), escalation policy + sensitivity (`/escalation-policy`,
-`/sensitivity`), robot helpers (`/robotics/catalog`, `/robots/{uid}`), and the
+`/sensitivity`), robot helpers (`/robotics/catalog`, `/robots/{uid}`, and
+first-aid commands via `/robots/{uid}/{rid}/command` — assist-rated bodies
+fetch the AED, coach the CPR playbook aloud, and meet EMS; perform-rated
+platforms like Tesla Optimus, Figure 03, and Atlas can additionally deliver
+chest compressions after an on-scene human confirms; no robot ever delivers
+a shock — the AED analyzes, a human presses), and the
 Medical ID card (`/medical-id/qr/{uid}`) · **Connect** — consented data
 sources (`/sources/{uid}`), social-platform connections (`/social/{uid}` +
 collect/publish), and the connected-apps catalog (`/connectors/catalog`,

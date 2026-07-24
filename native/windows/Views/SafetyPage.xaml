@@ -159,25 +159,52 @@
                     </Border>
                     <TextBlock x:Name="RobotError" Foreground="{StaticResource JimRed}" FontSize="13"
                                TextWrapping="Wrap" Visibility="Collapsed" />
+                    <TextBlock x:Name="RobotCmdResult" Foreground="{StaticResource JimGreenBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
                     <ItemsControl x:Name="RobotsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                                         BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,0,6">
-                                    <StackPanel Spacing="2">
+                                    <StackPanel Spacing="6">
                                         <Grid>
-                                            <TextBlock Text="{Binding Name}" FontWeight="Bold"
-                                                       Foreground="{StaticResource JimTxtBrush}" />
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold"
+                                                           Foreground="{StaticResource JimTxtBrush}" />
+                                                <TextBlock Text="{Binding Rating}" FontSize="11" FontWeight="Bold"
+                                                           Foreground="{StaticResource JimGreenBrush}" />
+                                            </StackPanel>
                                             <TextBlock Text="{Binding Status}" HorizontalAlignment="Right"
                                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" />
                                         </Grid>
                                         <TextBlock Text="{Binding Directive}" FontSize="12"
                                                    Foreground="{StaticResource JimT2Brush}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                                    Visibility="{Binding AssistVisibility}">
+                                            <Button Content="Fetch AED" Tag="{Binding Id}" Click="OnFetchAed"
+                                                    Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="11" />
+                                            <Button Content="Coach CPR" Tag="{Binding Id}" Click="OnCoachCpr"
+                                                    Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="11" />
+                                            <Button Content="Meet EMS" Tag="{Binding Id}" Click="OnMeetEms"
+                                                    Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="11" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                                    Visibility="{Binding PerformVisibility}">
+                                            <Button Content="Perform CPR…" Tag="{Binding Id}" Click="OnPerformCpr"
+                                                    Background="{StaticResource JimRedBrush}" Foreground="White" FontSize="11" />
+                                            <Button Content="Stop CPR" Tag="{Binding Id}" Click="OnStopCpr"
+                                                    Visibility="{Binding StopVisibility}"
+                                                    Background="{StaticResource JimRedBrush}" Foreground="White" FontSize="11" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    <Button x:Name="ConfirmCprButton" Visibility="Collapsed" Click="OnConfirmCpr"
+                            Content="Confirm: unresponsive, not breathing — start compressions"
+                            HorizontalAlignment="Stretch"
+                            Background="{StaticResource JimRedBrush}" Foreground="White" />
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>

@@ -16,6 +16,7 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
     HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, RobotBind,
+    RobotCommand,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister,
 )
@@ -263,6 +264,25 @@ def create_app(qrme_client: QRMEClient | None = None,
     def unbind_robot(user_id: str, robot_id: str, request: Request) -> dict:
         _user_or_404(user_id, request)
         result = guardian.unbind_robot(user_id, robot_id)
+        if result is None:
+            raise HTTPException(404, "robot not found")
+        return result
+
+    @app.post("/robots/{user_id}/{robot_id}/command", status_code=201)
+    def command_robot(user_id: str, robot_id: str, body: RobotCommand,
+                      request: Request) -> dict:
+        """Send one allowlisted command to a bound robot. First-aid commands
+        follow the body's rating: assist-rated platforms fetch the AED, coach
+        the playbook aloud, and meet responders; perform-rated platforms may
+        additionally deliver chest compressions — but only after a person on
+        scene confirms (perform_cpr is a two-step), and never a shock: the
+        AED analyzes the rhythm and a human presses the button."""
+        _user_or_404(user_id, request)
+        try:
+            result = guardian.robot_command(user_id, robot_id,
+                                            body.command, body.arg)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
         if result is None:
             raise HTTPException(404, "robot not found")
         return result

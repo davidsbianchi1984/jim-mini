@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -29,6 +30,41 @@ public sealed partial class MonitorPage : Page
 
             ResultGuidance.Text = r.Guidance?.Content ?? "";
             ResultGuidance.Visibility = r.Guidance is null ? Visibility.Collapsed : Visibility.Visible;
+
+            var aid = r.Guidance?.FirstAidPlaybook;
+            if (aid is not null)
+            {
+                var header = $"First aid — {aid.Kind.ToUpper()}" +
+                             (aid.CallEmergencyServices == true
+                                  ? "  ·  📞 call emergency services now" : "");
+                var steps = string.Join("\n", aid.Steps.Select(
+                    (step, i) => $"{i + 1}. {step}"));
+                ResultFirstAid.Text = $"{header}\n{steps}";
+                ResultFirstAid.Visibility = Visibility.Visible;
+                if (aid.Pace is { } pace)
+                {
+                    ResultPace.Text =
+                        $"Pace: {pace.CompressionsPerMinute}/min · " +
+                        $"{pace.CompressionToBreathRatio}" +
+                        (pace.Cue is { } cue
+                             ? $"\n💡 {cue.Light}\n🔊 {cue.Audio}" : "");
+                    ResultPace.Visibility = Visibility.Visible;
+                }
+                else ResultPace.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ResultFirstAid.Visibility = Visibility.Collapsed;
+                ResultPace.Visibility = Visibility.Collapsed;
+            }
+
+            var refs = r.Guidance?.References;
+            if (refs is { Length: > 0 })
+            {
+                ResultRefs.Text = string.Join("\n", refs.Select(x => $"→ {x}"));
+                ResultRefs.Visibility = Visibility.Visible;
+            }
+            else ResultRefs.Visibility = Visibility.Collapsed;
 
             ResultCard.Visibility = Visibility.Visible;
         }

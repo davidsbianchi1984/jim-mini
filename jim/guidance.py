@@ -131,6 +131,12 @@ _ERGONOMIC_PLAYBOOK = {
 }
 
 
+def playbook(kind: str) -> dict | None:
+    """A first-aid playbook by kind ("cpr" | "aed") — the same structured
+    steps a rescuer sees, reused verbatim when a robot coaches them aloud."""
+    return {"cpr": _CPR_PLAYBOOK, "aed": _AED_PLAYBOOK}.get(kind)
+
+
 def first_aid_for(detection: conditions.Detection) -> dict | None:
     """The structured first-aid playbook for a physical detection, or None
     when the condition doesn't call for one."""
