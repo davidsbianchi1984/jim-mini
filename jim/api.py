@@ -10,7 +10,7 @@ from datetime import date, datetime
 from fastapi import FastAPI, HTTPException, Request, Response
 
 from . import (app_connectors, auth, catalog, coach, db, escalation, family,
-               guardian, i18n, life, llm, research, robotics, social,
+               guardian, i18n, life, llm, mobile, research, robotics, social,
                terms as terms_mod)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
@@ -96,7 +96,27 @@ def create_app(qrme_client: QRMEClient | None = None,
     def health() -> dict:
         return {"status": "ok", "tandem": app.state.qrme is not None,
                 "pdi": app.state.pdi is not None,
-                "cloud": app.state.cloud is not None}
+                "cloud": app.state.cloud is not None,
+                "console": mobile.console_dir() is not None}
+
+    # -- run it from your phone ---------------------------------------------
+
+    @app.get("/pair")
+    def pair(request: Request) -> dict:
+        """How to open the Guardian on a phone: the console's URL on this
+        local network, ready to type or scan. Same Wi-Fi, no app store."""
+        return mobile.pairing(port=request.url.port or 8000)
+
+    @app.get("/pair/qr.svg")
+    def pair_qr(request: Request) -> Response:
+        """The console URL as a QR code — point the phone's camera at it."""
+        import segno
+        buf = io.BytesIO()
+        url = mobile.pairing(port=request.url.port or 8000)["console_url"]
+        segno.make(url, error="q").save(
+            buf, kind="svg", scale=8, border=2,
+            dark="#0b1120", light="#ffffff")
+        return Response(content=buf.getvalue(), media_type="image/svg+xml")
 
     @app.get("/connectors/catalog")
     def connector_catalog() -> dict:
@@ -1014,6 +1034,15 @@ def create_app(qrme_client: QRMEClient | None = None,
         result = life.delete_user_data(user_id, pdi=app.state.pdi)
         auth.revoke_subject(user_id)   # the user token dies with the data
         return result
+
+    # The console itself, served from this API so a phone loads the UI and
+    # calls the API on one origin (no CORS, nothing to configure). Mounted
+    # last so it can never shadow an API route; absent until app/ is built.
+    _console = mobile.console_dir()
+    if _console is not None:
+        from fastapi.staticfiles import StaticFiles
+        app.mount("/app", StaticFiles(directory=str(_console), html=True),
+                  name="console")
 
     return app
 

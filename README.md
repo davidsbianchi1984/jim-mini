@@ -218,6 +218,37 @@ JIM_PDI_URL=http://localhost:8100 JIM_PDI_TOKEN=pdi_... uvicorn jim.api:app  # +
 real `claude-opus-4-8` guidance; otherwise (or with `JIM_LLM=stub`) a
 deterministic stub answers offline. `JIM_MODEL` overrides the model.
 
+## Run it on your phone
+
+The console is a web app, so a phone on the same Wi-Fi runs it straight from
+this backend — no app store, no second server, nothing to configure on the
+phone.
+
+```bash
+npm --prefix app install && npm --prefix app run build   # build the console once
+uvicorn jim.api:app --host 0.0.0.0                       # listen on the network
+curl localhost:8000/pair                                 # what to open on the phone
+```
+
+`GET /pair` answers with the console's URL on your local network (and
+`GET /pair/qr.svg` is the same URL as a QR code — the Privacy screen shows
+both, so you can scan it off the laptop). Open that URL on the phone, then
+**Add to Home Screen**: it installs as a standalone app with its own icon,
+runs full-screen, and keeps working through a brief drop in connectivity.
+
+Why it needs no setup: the API serves the console at `/app`, so the UI and
+the API share one origin — the console simply calls the address it was loaded
+from. The phone layout follows: the sidebar becomes a thumb-reachable bottom
+tab bar, inputs stay at 16px so iOS doesn't zoom, and the layout respects the
+notch and home indicator.
+
+The address is local-network only and deliberately not reachable from the
+internet — your health data stays on your own network. Everything still
+requires your bearer token; a phone on the LAN is exactly as authorized as a
+laptop on the LAN. If `/pair` reports `reachable: false`, it could only find
+loopback (which on a phone means the phone itself): set `JIM_LAN_HOST` to
+this machine's address and restart.
+
 ## API
 
 | Endpoint | Purpose |
