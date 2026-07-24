@@ -40,6 +40,7 @@ import app.jim.guardian.Robot
 import app.jim.guardian.RobotSpec
 import app.jim.guardian.SocialConn
 import app.jim.guardian.SourceRow
+import app.jim.guardian.TranslateResult
 import app.jim.guardian.WaiverState
 import kotlin.math.roundToInt
 
@@ -82,6 +83,11 @@ fun WelcomeScreen(vm: GuardianViewModel) {
     var consent by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var languages by remember { mutableStateOf<List<LanguageInfo>>(emptyList()) }
+    var language by remember { mutableStateOf("en") }
+    LaunchedEffect(Unit) {
+        runCatching { ApiClient.languages() }.onSuccess { languages = it }
+    }
 
     Box(Modifier.fillMaxSize().background(Jim.Bg)) {
         screenScroll {
@@ -98,6 +104,24 @@ fun WelcomeScreen(vm: GuardianViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 labeledField("Name", name, "Your name") { name = it }
                 labeledField("Birthdate", birthdate, "yyyy-MM-dd") { birthdate = it }
+                if (languages.isNotEmpty()) {
+                    Text("Language", color = Jim.T2, fontSize = 12.sp)
+                    languages.chunked(3).forEach { row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            row.forEach { l ->
+                                FilterChip(
+                                    selected = language == l.code,
+                                    onClick = { language = l.code },
+                                    label = { Text(l.label, fontSize = 11.sp) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = Jim.BrandA,
+                                        selectedLabelColor = Color.White, labelColor = Jim.T2,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = consent, onCheckedChange = { consent = it },
                         colors = CheckboxDefaults.colors(checkedColor = Jim.Green))
@@ -107,7 +131,8 @@ fun WelcomeScreen(vm: GuardianViewModel) {
             error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
             BrandButton("Get Started", enabled = consent && name.isNotBlank(), busy = busy) {
                 error = null
-                vm.enroll(name, birthdate, onError = { error = it }, onBusy = { busy = it })
+                vm.enroll(name, birthdate, language,
+                    onError = { error = it }, onBusy = { busy = it })
             }
             Text("Start the backend:  JIM_CORS_ORIGINS=* uvicorn jim.api:app",
                 color = Jim.T3, fontSize = 10.sp)
@@ -860,10 +885,15 @@ fun ModelCard(vm: GuardianViewModel) {
 fun LanguageCard(vm: GuardianViewModel) {
     var languages by remember { mutableStateOf<List<LanguageInfo>>(emptyList()) }
     var current by remember { mutableStateOf("en") }
+    var preTranslate by remember { mutableStateOf(true) }
+    var translateInput by remember { mutableStateOf("") }
+    var translated by remember { mutableStateOf<TranslateResult?>(null) }
     LaunchedEffect(Unit) {
         vm.call({ ApiClient.languages() }) { r -> languages = r.getOrDefault(emptyList()) }
         vm.call({ ApiClient.userLanguage(vm.uid!!, vm.token!!) }) { r ->
-            r.getOrNull()?.let { current = it }
+            r.getOrNull()?.let { (lang, mode) ->
+                current = lang; preTranslate = mode == "pre"
+            }
         }
     }
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -893,6 +923,39 @@ fun LanguageCard(vm: GuardianViewModel) {
         if (chosen != null && !chosen.safetyTranslated)
             Text("Safety steps stay in English for this language (never machine-mangled).",
                 color = Jim.Amber, fontSize = 10.sp)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Pre-translate everything", color = Jim.Txt, fontSize = 13.sp)
+                Text("Off keeps originals — translate selectively below.",
+                    color = Jim.T2, fontSize = 10.sp)
+            }
+            Switch(
+                checked = preTranslate,
+                onCheckedChange = { on ->
+                    preTranslate = on
+                    vm.call({ ApiClient.setLanguage(vm.uid!!, vm.token!!, current,
+                        if (on) "pre" else "on_demand") }) { }
+                },
+                colors = SwitchDefaults.colors(checkedTrackColor = Jim.Green),
+            )
+        }
+        HorizontalDivider(color = Jim.Line)
+        Text("Translate anything", color = Jim.Txt, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        labeledField("", translateInput, "Paste or type text…") { translateInput = it }
+        RobotAction("Translate") {
+            if (translateInput.isNotBlank() && current != "en") {
+                vm.call({ ApiClient.translate(vm.uid!!, vm.token!!, translateInput) }) { r ->
+                    translated = r.getOrNull()
+                }
+            }
+        }
+        translated?.let { t ->
+            Text(t.translation, color = Jim.Txt, fontSize = 13.sp,
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(9.dp))
+                    .background(Jim.ScrBot).padding(10.dp))
+            Text("engine: ${t.engine}" + (t.note?.let { " — $it" } ?: ""),
+                color = Jim.T3, fontSize = 10.sp)
+        }
     }
 }
 

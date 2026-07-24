@@ -56,10 +56,13 @@ public sealed partial class OverviewPage : Page
             var current = await ApiClient.Shared.UserLanguage(s.Uid!, s.Token!);
             var idx = System.Array.FindIndex(_languages, l => l.Code == current.Language);
             LanguageBox.SelectedIndex = idx >= 0 ? idx : 0;
+            PreTranslateToggle.IsOn = (current.Mode ?? "pre") == "pre";
         }
         catch { /* backend offline — leave empty */ }
         finally { _loadingLanguage = false; }
     }
+
+    private string CurrentMode => PreTranslateToggle.IsOn ? "pre" : "on_demand";
 
     private async void OnLanguagePicked(object sender, SelectionChangedEventArgs e)
     {
@@ -67,8 +70,39 @@ public sealed partial class OverviewPage : Page
         var idx = LanguageBox.SelectedIndex;
         if (idx < 0 || idx >= _languages.Length) return;
         var s = AppState.Current;
-        try { await ApiClient.Shared.SetLanguage(s.Uid!, s.Token!, _languages[idx].Code); }
+        try { await ApiClient.Shared.SetLanguage(s.Uid!, s.Token!, _languages[idx].Code, CurrentMode); }
         catch { /* ignore */ }
+    }
+
+    private async void OnModeToggled(object sender, RoutedEventArgs e)
+    {
+        if (_loadingLanguage) return;
+        var idx = LanguageBox.SelectedIndex;
+        if (idx < 0 || idx >= _languages.Length) return;
+        var s = AppState.Current;
+        try { await ApiClient.Shared.SetLanguage(s.Uid!, s.Token!, _languages[idx].Code, CurrentMode); }
+        catch { /* ignore */ }
+    }
+
+    private async void OnTranslate(object sender, RoutedEventArgs e)
+    {
+        var text = TranslateBox.Text.Trim();
+        if (text.Length == 0) return;
+        var s = AppState.Current;
+        try
+        {
+            var r = await ApiClient.Shared.Translate(s.Uid!, s.Token!, text);
+            TranslateOut.Text = r.Translation;
+            TranslateOut.Visibility = Visibility.Visible;
+            TranslateEngine.Text = $"engine: {r.Engine}" +
+                (r.Note is { } n ? $" — {n}" : "");
+            TranslateEngine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            TranslateOut.Text = ex.Message;
+            TranslateOut.Visibility = Visibility.Visible;
+        }
     }
 
     private async System.Threading.Tasks.Task LoadModel()

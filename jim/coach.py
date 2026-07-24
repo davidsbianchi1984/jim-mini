@@ -52,7 +52,7 @@ def reply(user_id: str, area: str, message: str) -> dict:
 
     system = _SYSTEM.format(area=AREAS[area], context=_context(user_id))
     system += personalize(guardian.get_user(user_id))
-    language = i18n.get_language(user_id)
+    language = i18n.effective_language(user_id)
     system += i18n.directive(language)
     text = llm.provider_for_user(user_id).generate(system, message)
 

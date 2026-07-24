@@ -61,7 +61,15 @@ public record LanguagesList(
 
 public record LanguageChoice(
     [property: JsonPropertyName("language")] string Language,
-    [property: JsonPropertyName("label")] string Label);
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("mode")] string? Mode);
+
+public record TranslateResult(
+    [property: JsonPropertyName("text")] string Text,
+    [property: JsonPropertyName("translation")] string Translation,
+    [property: JsonPropertyName("language")] string Language,
+    [property: JsonPropertyName("engine")] string Engine,
+    [property: JsonPropertyName("note")] string? Note);
 
 public record MonitorResult(
     [property: JsonPropertyName("detected")] bool Detected,
@@ -241,9 +249,14 @@ public sealed class ApiClient
         return req;
     }
 
-    public Task<EnrollResult> Enroll(string name, string birthdate) =>
+    public Task<EnrollResult> Enroll(string name, string birthdate,
+                                     string? language = null) =>
         Send<EnrollResult>(Post("/enroll",
-            new { display_name = name, birthdate, terms_consent = true }));
+            language is { Length: > 0 } && language != "en"
+                ? new { display_name = name, birthdate, terms_consent = true,
+                        language }
+                : (object)new { display_name = name, birthdate,
+                                terms_consent = true }));
 
     public Task<MonitorResult> Monitor(string uid, string token, int heartRate, double stress) =>
         Send<MonitorResult>(Post($"/monitor/{uid}",
@@ -329,15 +342,19 @@ public sealed class ApiClient
         return Send<LanguageChoice>(req);
     }
 
-    public Task<LanguageChoice> SetLanguage(string uid, string token, string code)
+    public Task<LanguageChoice> SetLanguage(string uid, string token, string code,
+                                            string mode = "pre")
     {
         var req = new HttpRequestMessage(HttpMethod.Put, $"/language/{uid}")
         {
-            Content = JsonContent.Create(new { language = code }),
+            Content = JsonContent.Create(new { language = code, mode }),
         };
         req.Headers.Add("authorization", $"Bearer {token}");
         return Send<LanguageChoice>(req);
     }
+
+    public Task<TranslateResult> Translate(string uid, string token, string text) =>
+        Send<TranslateResult>(Post($"/translate/{uid}", new { text }, token));
 
     // -- safety: escalation policy, Emergency, robots --
 

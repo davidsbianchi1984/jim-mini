@@ -19,6 +19,7 @@ data class Guidance(val delivered: Boolean, val source: String?, val content: St
                     val references: List<String> = emptyList(), val firstAid: FirstAid? = null,
                     val provenance: Provenance? = null, val translationNote: String? = null)
 data class LanguageInfo(val code: String, val label: String, val safetyTranslated: Boolean)
+data class TranslateResult(val translation: String, val engine: String, val note: String?)
 data class MonitorResult(
     val detected: Boolean, val condition: String?, val severity: String?,
     val reason: String?, val guidance: Guidance?,
@@ -118,9 +119,12 @@ object ApiClient {
         if (text.isBlank()) JSONObject() else JSONObject(text)
     }
 
-    suspend fun enroll(name: String, birthdate: String): EnrollResult {
-        val o = request("/enroll", "POST", JSONObject()
-            .put("display_name", name).put("birthdate", birthdate).put("terms_consent", true))
+    suspend fun enroll(name: String, birthdate: String,
+                       language: String? = null): EnrollResult {
+        val body = JSONObject()
+            .put("display_name", name).put("birthdate", birthdate).put("terms_consent", true)
+        if (!language.isNullOrBlank() && language != "en") body.put("language", language)
+        val o = request("/enroll", "POST", body)
         return EnrollResult(o.getString("id"), o.getString("display_name"), o.getString("user_token"))
     }
 
@@ -252,12 +256,21 @@ object ApiClient {
         }
     }
 
-    suspend fun userLanguage(uid: String, token: String): String {
-        return request("/language/$uid", token = token).getString("language")
+    suspend fun userLanguage(uid: String, token: String): Pair<String, String> {
+        val o = request("/language/$uid", token = token)
+        return o.getString("language") to o.optString("mode", "pre")
     }
 
-    suspend fun setLanguage(uid: String, token: String, code: String) {
-        request("/language/$uid", "PUT", JSONObject().put("language", code), token)
+    suspend fun setLanguage(uid: String, token: String, code: String,
+                            mode: String = "pre") {
+        request("/language/$uid", "PUT",
+            JSONObject().put("language", code).put("mode", mode), token)
+    }
+
+    suspend fun translate(uid: String, token: String, text: String): TranslateResult {
+        val o = request("/translate/$uid", "POST", JSONObject().put("text", text), token)
+        return TranslateResult(o.optString("translation", ""),
+            o.optString("engine", ""), o.optString("note", null))
     }
 
     // ---- safety: escalation policy, Emergency, robots ----

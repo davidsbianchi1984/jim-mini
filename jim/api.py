@@ -16,7 +16,7 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
     HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, RobotBind,
-    LanguageChoice, RobotCommand, WaiverSign,
+    LanguageChoice, RobotCommand, TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister,
 )
@@ -143,22 +143,40 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.get("/language/{user_id}")
     def get_user_language(user_id: str, request: Request) -> dict:
         _user_or_404(user_id, request)
-        code = i18n.get_language(user_id)
+        code, mode = i18n.get_pref(user_id)
         return {"user_id": user_id, "language": code,
-                "label": i18n.SUPPORTED[code]}
+                "label": i18n.SUPPORTED[code], "mode": mode}
 
     @app.put("/language/{user_id}")
     def set_user_language(user_id: str, body: LanguageChoice,
                           request: Request) -> dict:
         """Everything drafted for or delivered to this user — guidance,
-        coaching, playbooks, waiver terms — localizes to this language."""
+        coaching, playbooks, waiver terms — localizes to this language.
+        mode "pre" (default) delivers everything already translated;
+        "on_demand" keeps originals for use with POST /translate."""
         _user_or_404(user_id, request)
         if body.language not in i18n.SUPPORTED:
             raise HTTPException(
                 422, f"language must be one of {', '.join(i18n.SUPPORTED)}")
-        i18n.set_language(user_id, body.language)
+        if body.mode not in i18n.MODES:
+            raise HTTPException(
+                422, f"mode must be one of {', '.join(i18n.MODES)}")
+        i18n.set_language(user_id, body.language, body.mode)
         return {"user_id": user_id, "language": body.language,
-                "label": i18n.SUPPORTED[body.language]}
+                "label": i18n.SUPPORTED[body.language], "mode": body.mode}
+
+    @app.post("/translate/{user_id}")
+    def translate_text(user_id: str, body: TranslateRequest,
+                       request: Request) -> dict:
+        """Translate anything the user runs across — a note, a message, a
+        document snippet — into their language (or an explicit target).
+        Known safety strings use the hand translations; free text uses the
+        user's own model; the offline stub says so instead of pretending."""
+        _user_or_404(user_id, request)
+        try:
+            return i18n.translate(user_id, body.text, body.to)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
 
     @app.post("/enroll", status_code=201)
     def enroll(body: Enroll) -> dict:
@@ -166,7 +184,16 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(403, "consent to terms of use is required to enroll")
         if body.birthdate and _age(body.birthdate) < 18 and not body.guardian_consent:
             raise HTTPException(403, "minors require parent/guardian consent")
-        user = guardian.enroll(body.model_dump())
+        user = guardian.enroll(body.model_dump(exclude={"language"}))
+        # Language chosen at the setup gateway applies from the first
+        # response onward.
+        if body.language:
+            if body.language not in i18n.SUPPORTED:
+                raise HTTPException(
+                    422,
+                    f"language must be one of {', '.join(i18n.SUPPORTED)}")
+            i18n.set_language(user["id"], body.language)
+            user["language"] = body.language
         # The user token is shown exactly once, here.
         user["user_token"] = auth.issue("user", user["id"])
         return user
@@ -307,7 +334,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         operation stay locked until it is signed."""
         _user_or_404(user_id, request)
         waiver = guardian.waiver_for(user_id)
-        language = i18n.get_language(user_id)
+        language = i18n.effective_language(user_id)
         return {"kind": guardian.WAIVER_KIND,
                 "terms": i18n.localize_strings(guardian.WAIVER_TERMS,
                                                language),
