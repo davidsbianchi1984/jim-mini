@@ -216,6 +216,18 @@ def create_app(qrme_client: QRMEClient | None = None,
         from . import seed
         return seed.seed()
 
+    @app.post("/specialists/seed/tandem", status_code=201)
+    def seed_tandem_specialists() -> dict:
+        """Wire starter specialists to their QRME Starter Collection
+        counterparts (tandem mode), resolving each @handle against the
+        connected QRME deployment. Conditions without a genuine QRME
+        counterpart stay local; existing tandem links are kept."""
+        if app.state.qrme is None:
+            raise HTTPException(
+                409, "no QRME endpoint configured (set JIM_QRME_URL)")
+        from . import seed
+        return seed.seed_tandem(app.state.qrme)
+
     @app.post("/specialists")
     def register_specialist(body: SpecialistRegister) -> dict:
         if body.mode == "tandem" and not body.qrme_profile_id:
