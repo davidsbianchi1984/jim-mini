@@ -41,6 +41,31 @@ public record Provenance(
     [property: JsonPropertyName("evidence")] Evidence[] EvidenceList,
     [property: JsonPropertyName("disclaimer")] string Disclaimer);
 
+public record ChildCreated(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("child_token")] string ChildToken,
+    [property: JsonPropertyName("oversight")] string Oversight,
+    [property: JsonPropertyName("sensitivity")] string? Sensitivity);
+
+public record ChildSummary(
+    [property: JsonPropertyName("child_id")] string ChildId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("age")] int Age,
+    [property: JsonPropertyName("oversight")] string Oversight);
+
+public record ChildEvent(
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("condition")] string? Condition,
+    [property: JsonPropertyName("severity")] string? Severity);
+
+public record ChildOverview(
+    [property: JsonPropertyName("display_name")] string? DisplayName,
+    [property: JsonPropertyName("oversight")] string Oversight,
+    [property: JsonPropertyName("critical_events")] int? CriticalEvents,
+    [property: JsonPropertyName("events")] ChildEvent[]? Events,
+    [property: JsonPropertyName("privacy_note")] string? PrivacyNote,
+    [property: JsonPropertyName("note")] string? Note);
+
 public record Custody(
     [property: JsonPropertyName("vaulted")] bool Vaulted,
     [property: JsonPropertyName("pdi_key")] string? PdiKey,
@@ -312,6 +337,21 @@ public sealed class ApiClient
         req.Headers.Add("authorization", $"Bearer {token}");
         return req;
     }
+
+    // -- family: a parent sets up and watches over a child's account --
+
+    public Task<ChildCreated> EnrollChild(string gid, string token, string name,
+                                          string birthdate, string? phone) =>
+        Send<ChildCreated>(Post($"/guardians/{gid}/children",
+            phone is { Length: > 0 }
+                ? new { display_name = name, birthdate, guardian_phone = phone }
+                : (object)new { display_name = name, birthdate }, token));
+
+    public Task<ChildSummary[]> Children(string gid, string token) =>
+        Send<ChildSummary[]>(Get($"/guardians/{gid}/children", token));
+
+    public Task<ChildOverview> ChildOverviewOf(string gid, string cid, string token) =>
+        Send<ChildOverview>(Get($"/guardians/{gid}/children/{cid}", token));
 
     // -- vault custody: sealed tandem exchanges --
 

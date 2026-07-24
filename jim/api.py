@@ -9,10 +9,11 @@ from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException, Request, Response
 
-from . import (app_connectors, auth, catalog, coach, db, escalation, guardian,
-               i18n, life, llm, research, robotics, social)
+from . import (app_connectors, auth, catalog, coach, db, escalation, family,
+               guardian, i18n, life, llm, research, robotics, social)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
+    ChildEnroll,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, GoalCreate, GoalUpdate, GuidanceFeedback, HabitCreate,
     HabitLog, JournalEntry, ModelChoice, PersonalityUpdate, RobotBind,
@@ -198,6 +199,64 @@ def create_app(qrme_client: QRMEClient | None = None,
         user["user_token"] = auth.issue("user", user["id"])
         return user
 
+    # ---- family: a parent sets up and watches over a child's account ------
+
+    @app.post("/guardians/{guardian_id}/children", status_code=201)
+    def enroll_child(guardian_id: str, body: ChildEnroll,
+                     request: Request) -> dict:
+        """Parent-led setup: a verified-adult guardian enrolls their child.
+        The consent is recorded as a relationship (who, as what, when), the
+        account starts with protective defaults, and the guardian gets an
+        age-sized oversight window."""
+        guardian_user = _user_or_404(guardian_id, request)
+        try:
+            child = family.enroll_child(
+                guardian_user, body.model_dump(exclude={"language"}))
+        except ValueError as e:
+            raise HTTPException(
+                403 if "verified-adult" in str(e) else 422, str(e))
+        if body.language:
+            if body.language not in i18n.SUPPORTED:
+                raise HTTPException(
+                    422,
+                    f"language must be one of {', '.join(i18n.SUPPORTED)}")
+            i18n.set_language(child["id"], body.language)
+            child["language"] = body.language
+        # The child's device token is shown exactly once, here — the
+        # guardian puts it on the child's watch or phone.
+        child["child_token"] = auth.issue("user", child["id"])
+        return child
+
+    @app.get("/guardians/{guardian_id}/children")
+    def list_children(guardian_id: str, request: Request) -> list[dict]:
+        """The guardian's family list, each child with their current
+        oversight tier (which ends by itself at 18)."""
+        _user_or_404(guardian_id, request)
+        return family.children_of(guardian_id)
+
+    @app.get("/guardians/{guardian_id}/children/{child_id}")
+    def child_overview(guardian_id: str, child_id: str,
+                       request: Request) -> dict:
+        """The oversight window: full timeline under 13, alerts-only for
+        teenagers, closed at 18. Condition-level facts only — never raw
+        notes or payloads."""
+        _user_or_404(guardian_id, request)
+        overview = family.child_overview(guardian_id, child_id)
+        if overview is None:
+            raise HTTPException(404, "no such child on this guardian")
+        return overview
+
+    @app.delete("/guardians/{guardian_id}/children/{child_id}")
+    def unlink_child(guardian_id: str, child_id: str,
+                     request: Request) -> dict:
+        """The guardian steps back: the oversight window closes; the child
+        account and the recorded consent event remain."""
+        _user_or_404(guardian_id, request)
+        if not family.unlink(guardian_id, child_id):
+            raise HTTPException(404, "no such child on this guardian")
+        return {"guardian_id": guardian_id, "child_id": child_id,
+                "linked": False}
+
     @app.get("/specialists")
     def list_specialists() -> list[dict]:
         """The specialist registry: which named expert stands behind each
@@ -376,6 +435,15 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.post("/waivers/{user_id}", status_code=201)
     def sign_waiver(user_id: str, body: WaiverSign, request: Request) -> dict:
         user = _user_or_404(user_id, request)
+        if user.get("birthdate") and _age(
+                date.fromisoformat(user["birthdate"])) < 18:
+            # Hard line: the autonomous-resuscitation waiver can never be
+            # signed for a minor — not by the minor, not by a guardian.
+            # Confirm-gated (human-in-the-loop) operation is the ceiling.
+            raise HTTPException(
+                403, "the autonomous-resuscitation waiver can never be "
+                     "signed for a minor — not by the minor and not by a "
+                     "guardian; confirm-gated operation is the ceiling")
         if not body.accept:
             raise HTTPException(403, "the waiver terms must be explicitly "
                                      "accepted")

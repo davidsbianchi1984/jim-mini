@@ -1159,6 +1159,19 @@ SCREENS = [
         dict(icon="bolt", color="amber", k="On escalation", s="Mobile → to you · vacuums → dock"),
         dict(icon="shield", color="violet", k="Command allowlist", s="Per-body limits, all audited"),
     ], button=("Bind a robot", "brand")),
+    dict(num=57, title="Parent Setup", sub="A guardian enrolls their child", hero=None, accent="brand", tab=0, cards=[
+        dict(icon="person", color="brand", k="Verified-adult guardian", s="Morgan Reyes · parent", pill=("18+", "info")),
+        dict(icon="heart", color="cyan", k="Child: Riley · age 8", s="birthdate sets the oversight tier"),
+        dict(icon="shield", color="green", k="Protective defaults", s="cautious sensitivity · parent is the emergency contact"),
+        dict(icon="lock", color="amber", k="Consent, recorded", s="who consented, as what, when — on the timeline"),
+        dict(icon="bolt", color="red", k="No auto-defib waiver", s="never signable for a minor — by anyone"),
+    ], button=("Create child account", "brand")),
+    dict(num=58, title="Family Oversight", sub="A window sized by age", hero=None, accent="cyan", tab=0, cards=[
+        dict(icon="heart", color="green", k="Riley · 8 · full", s="condition-level timeline, never raw notes"),
+        dict(icon="person", color="amber", k="Sam · 15 · alerts only", s="escalations reach you; the diary doesn't"),
+        dict(icon="bolt", color="red", k="Crisis escalated 21:40", s="emergency contact notified — you"),
+        dict(icon="shield", color="violet", k="Ends at 18", s="the window closes itself on their birthday"),
+    ], button=("Open Riley's window", "brand")),
 ]
 
 

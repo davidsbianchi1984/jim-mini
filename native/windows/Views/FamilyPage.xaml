@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.FamilyPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="680" Spacing="16" Padding="28" HorizontalAlignment="Left">
+            <TextBlock Text="Family" FontSize="22" FontWeight="Bold"
+                       Foreground="{StaticResource JimTxtBrush}" />
+            <TextBlock Text="Set up your child's account. You enroll as the recorded parent/guardian; the account starts cautious, with you as the emergency contact, and cloud sharing stays off. The auto-defib waiver can never be signed for a minor. Oversight is sized by age — full under 13, alerts-only for teens — and ends by itself at 18."
+                       Foreground="{StaticResource JimT2Brush}" FontSize="13" TextWrapping="Wrap" />
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBox x:Name="ChildName" Header="Child's name" />
+                    <TextBox x:Name="ChildBirthdate" Header="Birthdate (YYYY-MM-DD)" />
+                    <TextBox x:Name="GuardianPhone" Header="Your phone (emergency line, optional)" />
+                    <Button x:Name="CreateButton" Content="Create child account" Height="42"
+                            HorizontalAlignment="Stretch" Click="OnCreate"
+                            Foreground="White" Background="{StaticResource JimBrandABrush}" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock x:Name="ErrorText" Foreground="{StaticResource JimRedBrush}" FontSize="13"
+                       TextWrapping="Wrap" Visibility="Collapsed" />
+
+            <Border x:Name="CreatedCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Child account created" FontWeight="Bold"
+                               Foreground="{StaticResource JimGreenBrush}" />
+                    <TextBlock x:Name="CreatedMeta" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Device token — shown once, put it on their watch or phone:"
+                               FontSize="12" FontWeight="Bold"
+                               Foreground="{StaticResource JimAmberBrush}" />
+                    <TextBlock x:Name="CreatedToken" FontSize="11" TextWrapping="Wrap"
+                               IsTextSelectionEnabled="True"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                </StackPanel>
+            </Border>
+
+            <ListView x:Name="KidsList" SelectionMode="Single" SelectionChanged="OnSelect" />
+
+            <Border x:Name="OverviewCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="4">
+                    <TextBlock x:Name="OverviewTitle" FontWeight="Bold"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="OverviewText" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

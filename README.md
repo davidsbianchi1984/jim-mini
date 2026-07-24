@@ -142,6 +142,8 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 </tr>
 <tr>
 <td align="center" width="25%"><img src="docs/screens/56-robot-helpers.svg" width="160" alt="56 Robot Helpers"><br><sub>56 · Robot Helpers</sub></td>
+<td align="center" width="25%"><img src="docs/screens/57-parent-setup.svg" width="160" alt="57 Parent Setup"><br><sub>57 · Parent Setup</sub></td>
+<td align="center" width="25%"><img src="docs/screens/58-family-oversight.svg" width="160" alt="58 Family Oversight"><br><sub>58 · Family Oversight</sub></td>
 </tr>
 </table>
 
@@ -221,6 +223,7 @@ deterministic stub answers offline. `JIM_MODEL` overrides the model.
 |---|---|
 | `GET /health` | Status + whether tandem is configured |
 | `POST /enroll` | Enroll a user: terms/guardian consent, emergency contact (+ consent), devices, resting-HR baseline, goals, declared known conditions |
+| `POST /guardians/{gid}/children`, `GET …/children`, `GET`/`DELETE …/children/{cid}` | **Family** (`jim/family.py`): a verified-adult guardian enrolls their child — consent recorded as a relationship (who, as what, when, on the child's timeline), protective defaults (cautious sensitivity, the guardian as consented emergency contact, cloud/provider sharing hard-off), and the child's device token shown once. Oversight is sized by age: **full** under 13 (condition-level timeline, never raw notes), **alerts-only** 13–17 (escalations reach the parent; a teen's check-ins and everyday guidance stay private), and it **ends by itself at 18**. The autonomous-resuscitation waiver can never be signed for a minor — not by the minor and not by a guardian |
 | `POST /conditions/{user_id}` | Declare a known condition after enrollment ("receiving an indication of a known condition"); detection is sensitized for it |
 | `PUT /personality/{user_id}` | Adapt the counselor from user input — tone and free-text preferences shape every guidance and coach prompt |
 | `PUT /sensitivity/{user_id}` | Tune escalation readiness: `cautious` (lower HR thresholds; a declared condition reaches the emergency contact even at guidance level) / `balanced` (default) / `assertive` (stronger signals required) |

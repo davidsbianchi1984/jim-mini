@@ -26,6 +26,15 @@ data class Guidance(val delivered: Boolean, val source: String?, val content: St
                     val custody: Custody? = null)
 data class LanguageInfo(val code: String, val label: String, val safetyTranslated: Boolean)
 data class TranslateResult(val translation: String, val engine: String, val note: String?)
+data class ChildCreated(val id: String, val childToken: String,
+                        val oversight: String, val sensitivity: String?)
+data class ChildSummary(val childId: String, val displayName: String,
+                        val age: Int, val oversight: String)
+data class ChildEvent(val type: String, val condition: String?,
+                      val severity: String?)
+data class ChildOverview(val displayName: String?, val oversight: String,
+                         val criticalEvents: Int, val events: List<ChildEvent>,
+                         val privacyNote: String?, val note: String?)
 data class MonitorResult(
     val detected: Boolean, val condition: String?, val severity: String?,
     val reason: String?, val guidance: Guidance?,
@@ -149,6 +158,42 @@ object ApiClient {
             o.optString("reason", null),
             parseGuidance(o.optJSONObject("guidance")),
         )
+    }
+
+    // ---- family: a parent sets up and watches over a child's account ----
+
+    suspend fun enrollChild(gid: String, token: String, name: String,
+                            birthdate: String, phone: String?): ChildCreated {
+        val body = JSONObject().put("display_name", name)
+            .put("birthdate", birthdate)
+        if (!phone.isNullOrBlank()) body.put("guardian_phone", phone)
+        val o = request("/guardians/$gid/children", "POST", body, token)
+        return ChildCreated(o.getString("id"), o.getString("child_token"),
+            o.optString("oversight", ""), o.optString("sensitivity", null))
+    }
+
+    suspend fun children(gid: String, token: String): List<ChildSummary> {
+        val arr = getArray("/guardians/$gid/children", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            ChildSummary(o.getString("child_id"), o.optString("display_name", ""),
+                o.optInt("age"), o.optString("oversight", ""))
+        }
+    }
+
+    suspend fun childOverview(gid: String, cid: String,
+                              token: String): ChildOverview {
+        val o = request("/guardians/$gid/children/$cid", token = token)
+        val ev = o.optJSONArray("events")
+        return ChildOverview(o.optString("display_name", null),
+            o.optString("oversight", ""), o.optInt("critical_events"),
+            (0 until (ev?.length() ?: 0)).map { i ->
+                val e = ev!!.getJSONObject(i)
+                ChildEvent(e.optString("type", ""),
+                    e.optString("condition", null),
+                    e.optString("severity", null))
+            },
+            o.optString("privacy_note", null), o.optString("note", null))
     }
 
     suspend fun checkin(uid: String, token: String, mood: Int, energy: Int, note: String): CheckinResult {
