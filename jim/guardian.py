@@ -14,7 +14,7 @@ import secrets
 from datetime import date
 
 from . import (conditions, db, earlywarning, escalation,
-               guidance as local_guidance, i18n, life, llm, robotics)
+               guidance as local_guidance, i18n, life, llm, robotics, terms)
 
 
 def _event(user_id, type_, *, condition=None, severity=None, detail=None,
@@ -43,14 +43,18 @@ def enroll(body: dict) -> dict:
     user_id = db.new_id("usr")
     conn.execute(
         "INSERT INTO users (id, display_name, birthdate, terms_consent,"
+        " terms_version, terms_accepted_at,"
         " provider_consent, cloud_contribution, guardian_consent,"
         " emergency_name, emergency_phone, contact_consent, device_paired,"
         " resting_heart_rate, goals, known_conditions, devices, created_at)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (
             user_id, body["display_name"],
             body.get("birthdate").isoformat() if body.get("birthdate") else None,
-            int(body["terms_consent"]), int(body.get("provider_consent", False)),
+            int(body["terms_consent"]),
+            terms.TERMS_VERSION if body["terms_consent"] else None,
+            db.utcnow() if body["terms_consent"] else None,
+            int(body.get("provider_consent", False)),
             int(body.get("cloud_contribution", False)),
             int(body.get("guardian_consent", False)),
             body.get("emergency_name"), body.get("emergency_phone"),

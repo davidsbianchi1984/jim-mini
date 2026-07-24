@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
     display_name       TEXT NOT NULL,
     birthdate          TEXT,
     terms_consent      INTEGER NOT NULL DEFAULT 0,
+    terms_version      TEXT,             -- ToS version accepted at enrollment
+    terms_accepted_at  TEXT,
     guardian_consent   INTEGER NOT NULL DEFAULT 0,
     emergency_name     TEXT,
     emergency_phone    TEXT,

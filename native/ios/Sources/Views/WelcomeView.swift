@@ -64,6 +64,9 @@ struct WelcomeView: View {
                 .disabled(!consent || name.isEmpty || busy)
                 .opacity(!consent || name.isEmpty ? 0.5 : 1)
 
+                Text("By enrolling you agree to the Terms of Service — JIM-mini is a wellness tool, not a medical device; in an emergency call 911 first. You assume the risks of AI guidance and monitoring. Full terms: GET /terms · docs/terms.md")
+                    .font(.caption2).foregroundStyle(Theme.t3)
+
                 Text("Start the backend:  JIM_CORS_ORIGINS=* uvicorn jim.api:app")
                     .font(.system(size: 10, design: .monospaced)).foregroundStyle(Theme.t3)
             }.padding(20)
