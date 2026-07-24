@@ -288,6 +288,7 @@ CREATE TABLE IF NOT EXISTS model_prefs (
 CREATE TABLE IF NOT EXISTS language_prefs (
     user_id    TEXT PRIMARY KEY REFERENCES users(id),
     language   TEXT NOT NULL,   -- jim.i18n.SUPPORTED code, e.g. "es"
+    mode       TEXT NOT NULL DEFAULT 'pre',  -- pre | on_demand
     updated_at TEXT NOT NULL
 );
 

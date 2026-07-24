@@ -137,3 +137,68 @@ def test_coach_reply_carries_provenance(client):
     assert "model-generated" in p["method"]
     assert p["generated_by"]
     assert "qualified professional" in p["disclaimer"]
+
+
+# ---- setup gateway, translate mode, and the translate tool ------------------
+
+def test_enroll_can_choose_language_at_the_gateway(client):
+    r = client.post("/enroll", json={
+        "display_name": "Rosa", "birthdate": "1990-01-01",
+        "terms_consent": True, "language": "es"})
+    assert r.status_code == 201, r.text
+    out = r.json()
+    assert out["language"] == "es"
+    client.headers["authorization"] = f"Bearer {out['user_token']}"
+    pref = client.get(f"/language/{out['id']}").json()
+    assert pref["language"] == "es" and pref["mode"] == "pre"
+    # Pre-translated from the very first guidance.
+    g = client.post(f"/monitor/{out['id']}", json={
+        "movement": "collapse", "pulse": "absent"}).json()
+    assert g["guidance"]["first_aid"]["steps"][0].startswith("Llame")
+
+
+def test_enroll_rejects_unknown_language(client):
+    r = client.post("/enroll", json={
+        "display_name": "Rosa", "terms_consent": True, "language": "klingon"})
+    assert r.status_code == 422
+
+
+def test_on_demand_mode_keeps_originals(client):
+    uid = enroll(client)
+    client.put(f"/language/{uid}", json={"language": "es",
+                                         "mode": "on_demand"})
+    assert client.get(f"/language/{uid}").json()["mode"] == "on_demand"
+    # Content is delivered in the original English...
+    g = client.post(f"/monitor/{uid}", json={
+        "movement": "collapse", "pulse": "absent"}).json()
+    assert g["guidance"]["first_aid"]["steps"][0].startswith("Call")
+    w = client.get(f"/waivers/{uid}").json()
+    assert w["terms"][0].startswith("I authorize")
+    # ...and flipping back to pre-translated restores delivery in-language.
+    client.put(f"/language/{uid}", json={"language": "es", "mode": "pre"})
+    g = client.post(f"/monitor/{uid}", json={
+        "movement": "collapse", "pulse": "absent"}).json()
+    assert g["guidance"]["first_aid"]["steps"][0].startswith("Llame")
+
+
+def test_translate_tool_hand_strings_and_stub_honesty(client):
+    uid = enroll(client)
+    client.put(f"/language/{uid}", json={"language": "es",
+                                         "mode": "on_demand"})
+    # A known safety string translates by hand, even in on-demand mode.
+    r = client.post(f"/translate/{uid}", json={
+        "text": "Call emergency services now (or have someone else call)."
+    }).json()
+    assert r["engine"] == "hand" and r["translation"].startswith("Llame")
+    # An explicit target overrides the user's choice.
+    r = client.post(f"/translate/{uid}", json={
+        "text": "metronome tick at 110 beats per minute", "to": "fr"}).json()
+    assert r["engine"] == "hand" and "métronome" in r["translation"]
+    # Free text on the offline stub: honest note, no fake translation.
+    r = client.post(f"/translate/{uid}", json={
+        "text": "a note my neighbour left on the door"}).json()
+    assert r["engine"] == "stub" and "cannot translate" in r["note"]
+    assert r["translation"] == "a note my neighbour left on the door"
+    # Unknown targets are refused.
+    r = client.post(f"/translate/{uid}", json={"text": "hi", "to": "xx"})
+    assert r.status_code == 422

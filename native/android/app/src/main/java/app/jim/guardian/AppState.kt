@@ -24,10 +24,11 @@ class GuardianViewModel(app: Application) : AndroidViewModel(app) {
 
     val isEnrolled get() = uid != null && token != null
 
-    fun enroll(name: String, birthdate: String, onError: (String) -> Unit, onBusy: (Boolean) -> Unit) {
+    fun enroll(name: String, birthdate: String, language: String? = null,
+               onError: (String) -> Unit, onBusy: (Boolean) -> Unit) {
         onBusy(true)
         viewModelScope.launch {
-            runCatching { ApiClient.enroll(name, birthdate) }
+            runCatching { ApiClient.enroll(name, birthdate, language) }
                 .onSuccess { r ->
                     uid = r.id; token = r.userToken; displayName = r.displayName
                     prefs.edit().putString("uid", r.id).putString("token", r.userToken)

@@ -534,7 +534,7 @@ def robot_command(user_id: str, robot_id: str, command: str,
         kind = arg if arg in ("cpr", "aed") else "cpr"
         # Coach in the user's language: the playbook is hand-localized.
         pb = i18n.localize_playbook(local_guidance.playbook(kind),
-                                    i18n.get_language(user_id))
+                                    i18n.effective_language(user_id))
         result = {"status": "coaching", "playbook": pb,
                   "spoken": pb["steps"],
                   "note": ("coaching aloud with the pace cue"

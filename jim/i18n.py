@@ -36,28 +36,78 @@ HAND_TRANSLATED = tuple(code for code in SUPPORTED if code != "en")
 
 DEFAULT = "en"
 
+# How translation is applied:
+# - "pre":       everything drafted for the user arrives already in their
+#                language (generation in-language, safety text hand-swapped);
+# - "on_demand": originals are kept and the user translates selectively via
+#                POST /translate — some prefer original medical text plus a
+#                translation beside it.
+MODES = ("pre", "on_demand")
 
-def get_language(user_id: str) -> str:
+
+def get_pref(user_id: str) -> tuple[str, str]:
     from . import db
     row = db.connect().execute(
-        "SELECT language FROM language_prefs WHERE user_id=?",
+        "SELECT language, mode FROM language_prefs WHERE user_id=?",
         (user_id,)).fetchone()
-    return row["language"] if row else DEFAULT
+    return (row["language"], row["mode"]) if row else (DEFAULT, "pre")
 
 
-def set_language(user_id: str, language: str) -> str:
+def get_language(user_id: str) -> str:
+    return get_pref(user_id)[0]
+
+
+def effective_language(user_id: str) -> str:
+    """The language content is *delivered* in: the chosen language when the
+    mode is "pre", English when the user opted for on-demand translation."""
+    language, mode = get_pref(user_id)
+    return language if mode == "pre" else DEFAULT
+
+
+def set_language(user_id: str, language: str, mode: str = "pre") -> str:
     if language not in SUPPORTED:
         raise ValueError(f"unknown language {language!r}")
+    if mode not in MODES:
+        raise ValueError(f"mode must be one of {MODES}")
     from . import db
     conn = db.connect()
     conn.execute(
-        "INSERT INTO language_prefs (user_id, language, updated_at)"
-        " VALUES (?,?,?)"
+        "INSERT INTO language_prefs (user_id, language, mode, updated_at)"
+        " VALUES (?,?,?,?)"
         " ON CONFLICT(user_id) DO UPDATE SET language=excluded.language,"
-        " updated_at=excluded.updated_at",
-        (user_id, language, db.utcnow()))
+        " mode=excluded.mode, updated_at=excluded.updated_at",
+        (user_id, language, mode, db.utcnow()))
     conn.commit()
     return language
+
+
+def translate(user_id: str, text: str, to: str | None = None) -> dict:
+    """Translate anything the user runs across. Hand translations win when
+    the string is a known safety string; otherwise the user's own LLM
+    translates; the offline stub cannot, and says so instead of pretending."""
+    from . import llm
+    target = to or get_language(user_id)
+    if target not in SUPPORTED:
+        raise ValueError(f"unknown language {target!r}")
+    if target == DEFAULT:
+        return {"text": text, "translation": text, "language": target,
+                "engine": "none", "note": "target language is English"}
+    hand = tr(text, target)
+    if hand != text:
+        return {"text": text, "translation": hand, "language": target,
+                "engine": "hand"}
+    effective = llm.resolve_choice(llm.get_choice(user_id))
+    if effective == "stub":
+        return {"text": text, "translation": text, "language": target,
+                "engine": "stub",
+                "note": "the offline stub cannot translate free text — "
+                        "configure a model provider for live translation"}
+    system = (f"You are a precise translator. Translate the user's text into "
+              f"{SUPPORTED[target]} ({target}). Preserve meaning, tone, and "
+              "formatting. Output only the translation.")
+    translation = llm.provider_for_user(user_id).generate(system, text)
+    return {"text": text, "translation": translation, "language": target,
+            "engine": effective}
 
 
 def directive(language: str) -> str:

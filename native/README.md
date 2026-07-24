@@ -43,13 +43,19 @@ README for the exact build/run commands.
 
 Two cross-cutting guarantees ride on every guidance surface:
 
-- **Language** (`/languages`, `/language/{uid}`, picker on the Overview
-  screen): everything drafted for the user is delivered in their language —
+- **Language** (`/languages`, `/language/{uid}`; chosen at the enrollment
+  gateway and changeable on the Overview screen): everything drafted for the
+  user is delivered in their language —
   model text is *generated* in-language, and the safety-critical
   deterministic content (CPR/AED playbooks, waiver terms) is hand-translated
   for every supported language (es, fr, de, pt, it, ja, zh, hi, ar) rather
   than machine-mangled; an unkeyed string still falls back loudly to
-  English.
+  English. Delivery mode is the user's choice: **pre-translated** (default —
+  everything arrives in-language) or **on-demand** (originals kept). Either
+  way, `POST /translate/{uid}` — the Translate tool on the Overview screen —
+  turns anything the user runs across into their language: hand translations
+  win for known safety strings, the user's own model translates free text,
+  and the offline stub says it cannot rather than pretending.
 - **Provenance**: every guidance and coach response carries a `provenance`
   block — the published sources it derives from (publisher, document, URL,
   and what each supports), how the text was produced (deterministic playbook

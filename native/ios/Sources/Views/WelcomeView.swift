@@ -6,6 +6,8 @@ struct WelcomeView: View {
     @State private var name = ""
     @State private var birthdate = Date(timeIntervalSince1970: 441_763_200) // 1984-01-01
     @State private var consent = false
+    @State private var languages: [LanguageInfo] = []
+    @State private var language = "en"
     @State private var busy = false
     @State private var error: String?
 
@@ -38,6 +40,14 @@ struct WelcomeView: View {
                         DatePicker("", selection: $birthdate, displayedComponents: .date)
                             .labelsHidden().colorScheme(.dark)
                     }
+                    field("Language") {
+                        Picker("", selection: $language) {
+                            Text("English").tag("en")
+                            ForEach(languages.filter { $0.code != "en" }, id: \.code) { l in
+                                Text(l.label).tag(l.code)
+                            }
+                        }.pickerStyle(.menu).tint(Theme.brandA)
+                    }
                     Toggle(isOn: $consent) {
                         Text("I consent to the terms of use").font(.footnote).foregroundStyle(Theme.txt)
                     }.tint(Theme.green)
@@ -58,6 +68,9 @@ struct WelcomeView: View {
                     .font(.system(size: 10, design: .monospaced)).foregroundStyle(Theme.t3)
             }.padding(20)
         }
+        .task {
+            languages = (try? await ApiClient.shared.languages())?.languages ?? []
+        }
     }
 
     private func field<Content: View>(_ label: String, @ViewBuilder _ content: () -> Content) -> some View {
@@ -74,7 +87,8 @@ struct WelcomeView: View {
         busy = true; error = nil
         Task {
             do {
-                let r = try await ApiClient.shared.enroll(name: name, birthdate: iso)
+                let r = try await ApiClient.shared.enroll(name: name, birthdate: iso,
+                                                          language: language)
                 state.signIn(r)
             } catch {
                 self.error = "Couldn't reach your Guardian — is the backend running? (\(error.localizedDescription))"

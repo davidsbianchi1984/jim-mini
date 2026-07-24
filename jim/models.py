@@ -33,6 +33,7 @@ class Enroll(BaseModel):
     emergency_name: str | None = None
     emergency_phone: str | None = None
     contact_consent: bool = False
+    language: str | None = None             # chosen at the setup gateway
     device_paired: bool = False
     resting_heart_rate: int | None = None
     # Deprecated: free-text goals from early enrollments. Use the
@@ -133,6 +134,12 @@ class WaiverSign(BaseModel):
 
 class LanguageChoice(BaseModel):
     language: str                   # jim.i18n.SUPPORTED code, e.g. "es"
+    mode: str = "pre"               # pre (deliver translated) | on_demand
+
+
+class TranslateRequest(BaseModel):
+    text: str                       # anything the user ran across
+    to: str | None = None           # target language; None -> user's choice
 
 
 class SourceConsent(BaseModel):

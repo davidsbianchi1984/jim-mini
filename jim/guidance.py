@@ -308,7 +308,7 @@ def generate(detection: conditions.Detection, note: str | None,
     if memory:
         system += f"\nprior interactions: {memory}"
 
-    language = (i18n.get_language(user["id"]) if user and user.get("id")
+    language = (i18n.effective_language(user["id"]) if user and user.get("id")
                 else i18n.DEFAULT)
     system += i18n.directive(language)
 

@@ -59,7 +59,15 @@ struct LanguagesList: Decodable {
     }
 }
 
-struct LanguageChoice: Decodable { let language: String; let label: String }
+struct LanguageChoice: Decodable { let language: String; let label: String; let mode: String? }
+
+struct TranslateResult: Decodable {
+    let text: String
+    let translation: String
+    let language: String
+    let engine: String                 // "hand" | provider name | "stub" | "none"
+    let note: String?
+}
 
 struct MonitorResult: Decodable {
     let detected: Bool
@@ -247,9 +255,12 @@ actor ApiClient {
 
     func health() async throws -> Health { try await request("/health") }
 
-    func enroll(name: String, birthdate: String) async throws -> EnrollResult {
-        try await request("/enroll", method: "POST",
-                          body: ["display_name": name, "birthdate": birthdate, "terms_consent": true])
+    func enroll(name: String, birthdate: String,
+                language: String? = nil) async throws -> EnrollResult {
+        var body: [String: Any] = ["display_name": name, "birthdate": birthdate,
+                                   "terms_consent": true]
+        if let language, language != "en" { body["language"] = language }
+        return try await request("/enroll", method: "POST", body: body)
     }
 
     func monitor(uid: String, token: String, heartRate: Int, stress: Double) async throws -> MonitorResult {
@@ -327,9 +338,18 @@ actor ApiClient {
         try await request("/language/\(uid)", token: token)
     }
 
-    func setLanguage(uid: String, token: String, code: String) async throws -> LanguageChoice {
+    func setLanguage(uid: String, token: String, code: String,
+                     mode: String = "pre") async throws -> LanguageChoice {
         try await request("/language/\(uid)", method: "PUT",
-                          body: ["language": code], token: token)
+                          body: ["language": code, "mode": mode], token: token)
+    }
+
+    func translate(uid: String, token: String, text: String,
+                   to: String? = nil) async throws -> TranslateResult {
+        var body: [String: Any] = ["text": text]
+        if let to { body["to"] = to }
+        return try await request("/translate/\(uid)", method: "POST",
+                                 body: body, token: token)
     }
 
     // MARK: Safety — escalation policy, Emergency, robots
