@@ -317,9 +317,53 @@ page rather than a blank card.
 - **No proof the beacon is on the person it names.** A sticker outlives what is
   behind it — a code peeled off a walker and stuck somewhere else still
   resolves until its owner deactivates it.
-- **No notification transport.** `escalate` records who was notified and
-  returns the name; JIM does not ring anyone's phone. Until a channel is wired,
-  "notified" means "written down", and a site relying on it should know that.
-- **No shift awareness.** `JIM_SITE_ROSTER` is a list of names in order.
-  Rotas, on-call weeks and handovers are a scheduling product, and pretending
-  otherwise would hide how little the relay knows about who is actually there.
+- **No transport of its own.** JIM posts a signed envelope to
+  `JIM_NOTIFY_URL` and stops (`jim/notify.py`). Whatever is behind that URL —
+  SMS gateway, pager, chat webhook, a script that rings a desk phone — is the
+  deployment's, and JIM ships no vendor and holds no account. With no URL set,
+  a page is `queued` and the escalation *says nobody was reached*, which is the
+  same behaviour as before except no longer silent.
+- **No scheduling product.** `jim/rota.py` knows named people, the days they
+  work, the hours, and the site's timezone. It does not know leave, swaps,
+  fairness, or recurrence. What it does get right is the part that was actually
+  hurting: shifts crossing midnight, attributed to the day they started.
+
+## Who is on, and reaching them
+
+`JIM_SITE_ROSTER` was a list of names worked top to bottom, every time, and
+this document used to defend that as a deliberate limit. It was the wrong
+limit. The relay exists for **night shift**, and a flat list pages the day
+person at 2am — the feature failing in the hour it was built for.
+
+    JIM_SITE_TZ=Europe/Lisbon
+    JIM_SITE_ROTA='[{"name":"Dana Okafor","role":"on-call",
+                     "days":"mon-fri","from":"18:00","to":"06:00"},
+                    {"name":"Ash Bell","role":"supervisor",
+                     "days":"sat,sun","from":"08:00","to":"20:00"}]'
+
+Three things it is careful about, because each is a way of paging the wrong
+person:
+
+**Shifts cross midnight.** `18:00–06:00` is the shift this is all about, and
+`start <= now <= end` is false for every minute of it. A wrapping shift is two
+intervals and belongs to the day it *started* — at 02:00 on Saturday it is
+Friday's night worker who is on the floor, not the weekend rota.
+
+**A site is somewhere.** Without `JIM_SITE_TZ` a rota written in local time is
+evaluated in UTC, shifting every boundary by the offset — and by a *different*
+offset in summer, so it would look correct for half the year. An unrecognised
+zone is named in `GET /relay/roster`'s `warning` rather than silently treated
+as UTC.
+
+**A rota has gaps.** Nobody is rostered at 4am on a bank holiday. The relay
+then works the whole rota — better to wake the wrong person than nobody — and
+reports `on_shift: false` on the escalation *and in the page itself*, so
+whoever it wakes knows they were a guess.
+
+`GET /relay/rota` answers "who would you page right now?" in the afternoon,
+rather than leaving it to be discovered at 3am. `JIM_SITE_ROSTER` still works
+and still means plain names, always on.
+
+An escalation now reports `reached_somebody`, and when it is false it also sets
+`escalate_again_now` — because *waiting on a human* and *waiting on a human who
+was never told* need different next moves, and only the first should wait.

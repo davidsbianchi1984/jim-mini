@@ -11,8 +11,8 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, auth, beacons, catalog, coach, db, escalation,
-               family, guardian, i18n, landing, life, llm, mobile, relay, research,
-               robotics, social, terms as terms_mod)
+               family, guardian, i18n, landing, life, llm, mobile, notify,
+               relay, research, robotics, rota, social, terms as terms_mod)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
@@ -41,7 +41,7 @@ def _age(birthdate: date) -> int:
 def create_app(qrme_client: QRMEClient | None = None,
                pdi_client: PDIClient | None = None,
                cloud_client: CloudModelClient | None = None) -> FastAPI:
-    app = FastAPI(title="JIM-mini / Guardian", version="0.1.8")
+    app = FastAPI(title="JIM-mini / Guardian", version="0.1.9")
 
     # Optional CORS for a packaged guardian-console front-end (app/) calling the
     # API from another origin. Off by default; set JIM_CORS_ORIGINS to a
@@ -516,10 +516,39 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.get("/relay/roster")
     def relay_roster() -> dict:
         """Who the relay works through, and whether one is configured here."""
-        return {"configured": relay.available(), "roster": relay.roster(),
-                "ceiling": beacons.ALARM_TIER,
-                "note": ("the relay escalates people, not sirens — it cannot "
-                         "reach emergency services on anyone's behalf")}
+        out = {"configured": relay.available(), "roster": relay.roster(),
+               "ceiling": beacons.ALARM_TIER,
+               "note": ("the relay escalates people, not sirens — it cannot "
+                        "reach emergency services on anyone's behalf")}
+        warning = rota.next_free_slot_warning()
+        if warning:
+            out["warning"] = warning
+        return out
+
+    @app.get("/relay/rota")
+    def relay_rota() -> dict:
+        """The rota, and who it would page **right now**.
+
+        Answerable in the afternoon rather than discovered at 3am: an operator
+        should be able to see that their night shift resolves to the night
+        person before the night they need it to.
+        """
+        try:
+            return rota.describe()
+        except rota.RotaError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.get("/relay/channel")
+    def relay_channel() -> dict:
+        """Whether an escalation can actually reach anybody. URL-free."""
+        return notify.channel()
+
+    @app.get("/users/{user_id}/pages")
+    def list_pages(user_id: str, request: Request,
+                   undelivered_only: bool = False) -> list[dict]:
+        """Escalations and whether each reached anyone."""
+        _user_or_404(user_id, request)
+        return notify.for_user(user_id, undelivered_only)
 
     @app.get("/users/{user_id}/incidents")
     def list_incidents(user_id: str, request: Request) -> list[dict]:

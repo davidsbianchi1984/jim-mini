@@ -369,6 +369,24 @@ CREATE TABLE IF NOT EXISTS beacon_alarms (
     cleared_at  TEXT
 );
 
+-- An attempt to reach one responder about one alarm (see jim/notify.py). Its
+-- own table rather than columns on the alarm, because working a rota means
+-- several attempts per alarm, and the list somebody needs in the morning is
+-- "which pages never landed" across all of them.
+CREATE TABLE IF NOT EXISTS relay_pages (
+    id          TEXT PRIMARY KEY,
+    alarm_id    TEXT NOT NULL REFERENCES beacon_alarms(id),
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    responder   TEXT NOT NULL,
+    role        TEXT NOT NULL,
+    on_shift    INTEGER NOT NULL DEFAULT 1,  -- was the rota actually covering?
+    state       TEXT NOT NULL,   -- queued (no channel) | sent | failed
+    attempts    INTEGER NOT NULL DEFAULT 0,
+    last_error  TEXT,
+    created_at  TEXT NOT NULL,
+    sent_at     TEXT
+);
+
 CREATE TABLE IF NOT EXISTS robots (
     id           TEXT PRIMARY KEY,
     user_id      TEXT NOT NULL REFERENCES users(id),
