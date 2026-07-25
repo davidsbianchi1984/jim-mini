@@ -1,61 +1,56 @@
-# JIM-mini v0.1.5 — release notes
+# JIM-mini v0.1.6 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.1.5` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.1.6` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini (Guardian) v0.1.5** — the release where the native apps stop
-being source code and start being builds. Every phone and desktop app in
-this repository now goes through a real compiler on every change, and the
-whole Guardian ships as one container you can host. One of three
-interoperating products (with
-[qrme](https://github.com/davidsbianchi1984/qrme) and
+**JIM-mini (Guardian) v0.1.6** — a version-alignment release. QRME, JIM-mini
+and PDI are built to run in tandem, and from here they carry the same version
+number, so *the suite at 0.1.6* names one combination of three products rather
+than three that happen to be nearby. One of three interoperating products
+(with [qrme](https://github.com/davidsbianchi1984/qrme) and
 [pdi](https://github.com/davidsbianchi1984/pdi)).
 
-### Highlights
+### What changed in JIM-mini
 
-- **The native apps are compiled in CI.** Until this release the Swift,
-  Kotlin and C# in `native/` had never been through a compiler here — they
-  were checked by reading, and by brace/XML well-formedness, which catches a
-  typo and nothing else. iOS builds via XcodeGen + `xcodebuild`, Android via
-  `gradle assembleDebug`, Windows via Visual Studio's MSBuild. The gate found
-  real defects the moment it ran.
-- **Two of them the compiler caught, not a reviewer.**
-  - The **iOS project spec was invalid** — its XcodeGen `info:` block had no
-    `path`, so `xcodegen generate` failed outright and the Xcode project could
-    never have been produced at all. Fixing it also restores the
-    local-networking exemption the Simulator needs to reach the API.
-  - **Windows would not compile the journal list** — `entries` is an array, an
-    array converts implicitly to `Span<T>`, and so `.Reverse()` bound to the
-    in-place **void** overload instead of LINQ's, leaving the following
-    `.Select` attached to nothing.
-- **Failures are readable now.** Gradle prints Kotlin diagnostics well above
-  its `FAILURE` block and MSBuild scrolls errors past the per-project noise,
-  so a red run used to report an exit code and nothing else. Both steps now
-  re-surface the actual diagnostics in a collapsed group on failure.
+Nothing functional. That is the honest headline, and it is short on purpose.
+
+Everything the Guardian does at 0.1.6 it did at 0.1.5 — no API, no schema, no
+app behaviour moved. The work that earned the suite its 0.1.6 is QRME's: AI
+marks burned into portrait pixels so they survive a screenshot, live desks for
+real people behind a counter, and WebAuthn signing on Windows. None of it
+reaches across into this repository, and nothing in it asked the Guardian to
+change.
+
+**If you are already running 0.1.5, this upgrade is optional.** Take it if you
+want the three products to report matching versions; skip it and you lose
+nothing.
+
+### Still true from v0.1.5
+
+The substance of the last release is what you are actually running:
+
+- **The native apps are compiled in CI** — iOS via XcodeGen + `xcodebuild`,
+  Android via `gradle assembleDebug`, Windows via MSBuild, on every change
+  that touches `native/`, with diagnostics re-surfaced on failure.
 - **Deployable as one container** — a two-stage `Dockerfile` builds the
-  console and installs the API into a single image, so a hosted instance
-  serves UI and API from one origin exactly as the phone flow does. Non-root
-  user, database on a `/data` volume, honours `$PORT`, health at `/health`.
+  console and installs the API into one image, non-root, database on a `/data`
+  volume, health at `/health`.
 - **Published deployments** — `JIM_PUBLIC_URL` makes `GET /pair` advertise the
-  deployment's public address (QR included) instead of a LAN address, so the
-  phone flow works hosted or local from one code path. `JIM_SIGNUP_KEY` gates
-  enrollment behind a header so a published instance stays the operator's
-  rather than open registration — and it never blocks an enrolled user, or a
-  parent adding a child under their own token.
-- **[docs/hosting.md](docs/hosting.md) — the operator's side, stated plainly.**
-  The two postures, why TLS is not optional here (tokens ride in headers, and
-  browsers refuse geolocation without it, so escalation needs it), what
-  holding someone else's health data commits you to including the HIPAA/BAA
-  question, and what the deployment does **not** give you: no multi-tenancy,
-  no rate limiting, no backups, no uptime guarantee.
+  deployment's public address, and `JIM_SIGNUP_KEY` keeps a published instance
+  the operator's rather than open registration.
+- **[docs/hosting.md](docs/hosting.md)** — the two postures, why TLS is not
+  optional here, the HIPAA/BAA question, and plainly what the deployment does
+  **not** give you: no multi-tenancy, no rate limiting, no backups, no uptime
+  guarantee.
 
 ### Verification
 
-240 tests green. The console builds clean. The native compile gate is green
-on all three platforms — which for this release is the headline rather than a
-footnote: it is the first time that has ever been true here.
+240 tests green — the same 240, passing the same way, which is rather the
+point of a release that claims to change nothing. Version strings moved in
+exactly five places: `pyproject.toml`, the FastAPI app, `app/package.json`,
+and the two root entries in its lockfile (dependency versions untouched).
 
 ### Install
 

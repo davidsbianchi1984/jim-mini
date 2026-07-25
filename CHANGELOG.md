@@ -6,6 +6,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-07-25
+
+### Changed
+
+- **Version aligned across the suite.** QRME, JIM-mini and PDI are built to run
+  in tandem, but their version numbers drifted apart whenever a round of work
+  landed in one repository and not the others — QRME reached 0.1.6 on its own
+  while this one stayed at 0.1.5. From here the three carry the same number, so
+  "the suite at 0.1.6" names one combination of three products rather than
+  three that merely happen to be nearby. Anyone pinning all three can pin one
+  number.
+
+  **There are no functional changes to JIM-mini in this release.** Everything
+  the Guardian does at 0.1.6 it did at 0.1.5: no API, schema, or app behaviour
+  moved. The work that earned 0.1.6 is QRME's — AI marks burned into portrait
+  pixels, live desks, and WebAuthn signing on Windows — and none of it reaches
+  across into this repository. The number is the only thing that changed here,
+  and saying so plainly is worth more than padding the entry.
+
 ## [0.1.5] — 2026-07-25
 
 ### Added
@@ -161,7 +180,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.1.5...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.1.6...HEAD
+[0.1.6]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.6
 [0.1.5]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.5
 [0.1.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.4
 [0.1.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.3
