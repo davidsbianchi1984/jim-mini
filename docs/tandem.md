@@ -397,7 +397,7 @@ toggle takes effect across products. **[implemented]**
 ### Testing strategy for the tandem stack **[implemented]**
 
 - Each repo's suite runs standalone with an offline stub provider and no
-  external services (QRME 523, JIM 293, PDI 177 tests).
+  external services (QRME 523, JIM 297, PDI 177 tests).
 - Cross-service boundaries are exercised with doubles at the HTTP-client seam
   (JIM's `FakeQRME`, PDI's `_FakeQRME`, QRME/JIM's `FakePDIHttp`, the
   `FakeCloudHttp` gateway) — so tandem logic is covered without standing up the

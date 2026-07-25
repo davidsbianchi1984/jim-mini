@@ -69,6 +69,14 @@ version.
   runs the rota to exhaustion to prove `notify_contact` still caps it, and that
   the relay still refuses to call emergency services on anyone's behalf.
 
+- **A config typo cannot take the escalation path down.** `RotaError`'s own
+  docstring claimed it was *"raised at load, never at 3am"* — but nothing reads
+  the rota at start-up, so it was raised at exactly 3am. One typo (`"funday"`
+  for `"sunday"`) turned `POST …/escalate` into a 500, on the one path whose
+  entire job is getting somebody help, and only once an alarm was already open.
+  It degrades to the flat names now and says so loudly, while the surface an
+  operator uses to *check* a rota stays strict.
+
 - **The tandem doc was describing a past release.** This copy listed the suite
   gateway's erase, export, consent and metering as `[planned]` when
   `suite/gateway.py` had shipped them — a reader here was told cross-app
@@ -80,7 +88,7 @@ version.
 
 ### Verification
 
-293 tests green (20 new this release). 87 routes. Version strings moved in
+297 tests green (24 new this release). 87 routes. Version strings moved in
 exactly five places: `pyproject.toml`, the FastAPI app, `app/package.json`, and
 the two root entries in its lockfile (dependency versions untouched).
 

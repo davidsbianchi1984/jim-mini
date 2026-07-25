@@ -204,6 +204,12 @@ def escalate(user_id: str, alarm_id: str, http=None) -> dict | None:
         # the second should move to the next name now, not after a timeout.
         out["unreached_note"] = notify.UNREACHED
         out["escalate_again_now"] = True
+    # An unreadable rota does not stop an escalation — it must not — so this
+    # is the only place the operator finds out that the shift pattern they
+    # configured is not the one being used.
+    trouble = rota.problem()
+    if trouble:
+        out["rota_error"] = trouble
     return out
 
 

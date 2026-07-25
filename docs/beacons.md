@@ -364,6 +364,19 @@ whoever it wakes knows they were a guess.
 rather than leaving it to be discovered at 3am. `JIM_SITE_ROSTER` still works
 and still means plain names, always on.
 
+**A typo cannot take the escalation path down.** An unreadable `JIM_SITE_ROTA`
+— bad JSON, a missing name, `"funday"` for `"sunday"` — is *not* raised at the
+moment somebody needs help. The rota is ignored, the relay falls back to
+`JIM_SITE_ROSTER`'s flat names (and to `DEFAULT_ROSTER` if that is unset), and
+somebody is still woken. This matters because there is no start-up validation
+step to catch it earlier: the first read happens when an alarm is already open.
+
+Degrading is not hiding. The error is reported as `warning` on
+`GET /relay/roster`, as `rota_error` on every escalation result, and
+`GET /relay/rota` still refuses outright with a 422 — a surface an operator
+uses to *check* their rota should be strict, because degrading there would hide
+the exact thing they came to find.
+
 An escalation now reports `reached_somebody`, and when it is false it also sets
 `escalate_again_now` — because *waiting on a human* and *waiting on a human who
 was never told* need different next moves, and only the first should wait.

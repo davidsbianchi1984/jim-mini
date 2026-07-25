@@ -138,9 +138,21 @@ def _parse_time(spec, fallback: time) -> time:
     raise RotaError(f"unreadable time {spec!r} — use HH:MM")
 
 
+def _flat() -> list[dict]:
+    """``JIM_SITE_ROSTER``'s plain names as always-on entries. Cannot fail —
+    it is a split on commas, which is exactly why it is the floor."""
+    raw = os.environ.get("JIM_SITE_ROSTER", "")
+    return [{"name": n.strip(), "role": n.strip(), "days": DAYS,
+             "from": time(0, 0), "to": time(23, 59, 59)}
+            for n in raw.split(",") if n.strip()]
+
+
 def entries() -> list[dict]:
-    """The rota, normalised. ``JIM_SITE_ROTA`` wins; ``JIM_SITE_ROSTER``'s
-    plain names become always-on entries so old configuration is unchanged."""
+    """The rota, normalised, **strictly** — raises on anything unreadable.
+
+    This is the validating parse, for :func:`describe` and `GET /relay/rota`.
+    Nothing on the escalation path calls it directly; see :func:`read`.
+    """
     raw = os.environ.get("JIM_SITE_ROTA", "").strip()
     if raw:
         try:
@@ -162,10 +174,35 @@ def entries() -> list[dict]:
             })
         return out
 
-    raw = os.environ.get("JIM_SITE_ROSTER", "")
-    return [{"name": n.strip(), "role": n.strip(), "days": DAYS,
-             "from": time(0, 0), "to": time(23, 59, 59)}
-            for n in raw.split(",") if n.strip()]
+    return _flat()
+
+
+def read() -> tuple[list[dict], str | None]:
+    """``(entries, error)``. **Never raises**, and that is the whole point.
+
+    :exc:`RotaError`'s docstring claims it is "raised at load, never at 3am".
+    There is no load step — nothing reads this file at start-up — so until this
+    function existed it was raised at *exactly* 3am: a single typo in
+    ``JIM_SITE_ROTA`` (``"funday"`` for ``"sunday"``) propagated out of
+    ``relay.roster()`` and turned `POST …/escalate` into a 500. A configuration
+    mistake took down the one path whose entire job is getting somebody help,
+    and it did it only once an alarm had already been raised.
+
+    So the live path degrades instead: an unreadable rota falls back to
+    ``JIM_SITE_ROSTER``'s plain names, and to nothing if that is unset — which
+    leaves :func:`relay.roster` on its ``DEFAULT_ROSTER`` floor. Somebody is
+    still woken.
+
+    Degrading is not the same as hiding. The error rides along in the second
+    element, is reported on `GET /relay/roster` as a ``warning`` and on every
+    escalation result as ``rota_error``, and `GET /relay/rota` still refuses
+    outright — a validation surface *should* be strict. The failure this
+    guards against is silence, not strictness.
+    """
+    try:
+        return entries(), None
+    except RotaError as exc:
+        return _flat(), str(exc)
 
 
 def configured() -> bool:
@@ -207,8 +244,9 @@ def on_now(at: datetime | None = None) -> list[dict]:
         at = at.replace(tzinfo=_tz())
     else:
         at = at.astimezone(_tz())
+    rota, _err = read()
     return [{"name": e["name"], "role": e["role"]}
-            for e in entries() if _covers(e, at)]
+            for e in rota if _covers(e, at)]
 
 
 def order(at: datetime | None = None) -> tuple[list[str], bool]:
@@ -218,8 +256,9 @@ def order(at: datetime | None = None) -> tuple[list[str], bool]:
     nobody is woken — it means the relay is guessing, and the second element
     is how it admits that.
     """
+    rota, _err = read()
     on = [p["name"] for p in on_now(at)]
-    rest = [e["name"] for e in entries() if e["name"] not in on]
+    rest = [e["name"] for e in rota if e["name"] not in on]
     return (on + rest, bool(on))
 
 
@@ -251,13 +290,25 @@ def describe(at: datetime | None = None) -> dict:
     }
 
 
-def next_free_slot_warning() -> str | None:
-    """A configuration mistake worth naming out loud at read time.
+def problem() -> str | None:
+    """The configuration mistake this deployment is currently making, if any.
 
-    An unknown timezone falls back to UTC, and a rota written in local time
-    then evaluates hours off — correctly for part of the year in some zones,
-    which is worse than never working.
+    Both failures reported here **degrade rather than raise**, which is right —
+    neither should be able to stop an alarm being escalated — and both are
+    therefore invisible unless something says them out loud. This is that
+    something, and it is surfaced on `GET /relay/roster` and on every
+    escalation result.
+
+    The unreadable rota comes first because it is the larger silence: the relay
+    is running on flat names, so nobody's shifts are being honoured at all.
     """
+    _rota, err = read()
+    if err:
+        fallback = ("JIM_SITE_ROSTER's plain names"
+                    if os.environ.get("JIM_SITE_ROSTER", "").strip()
+                    else "the default roster")
+        return (f"{err} — the rota is being ignored and the relay is working "
+                f"{fallback} instead, so nobody's shifts are being honoured")
     if configured() and not tz_is_valid():
         return (f"JIM_SITE_TZ={timezone_name()!r} is not a zone this system "
                 f"knows; the rota is being evaluated in UTC, which will page "
