@@ -1012,7 +1012,7 @@ SCREENS = [
     dict(num=10, title="Finance", sub="Overview", tab=0, accent="amber", cards=[
         dict(icon="chart", color="green", k="Net worth", s="+5.3% this month", metric="$128k"),
         dict(icon="bolt", color="amber", k="Spending", s="−8.7% vs last month", metric="$3,240"),
-        dict(icon="warn", color="amber", k="Spending accelerating", s="last 3 buys 2.1× prior", pill=("HEADS-UP", "warn")),
+        dict(icon="warn", color="amber", k="Spending up", s="last 3 buys 2.1× prior", pill=("HEADS-UP", "warn")),
         dict(icon="bell", color="cyan", k="Upcoming bills", s="Electricity $120 · Internet $60"),
     ]),
     dict(num=11, title="Emergency", sub="One tap to help", hero="sos", accent="red", tab=0),
@@ -1039,12 +1039,12 @@ SCREENS = [
     ]),
     dict(num=18, title="Guardian Sensitivity", sub="How readily Jim steps in", hero="sensitivity", tab=4),
     dict(num=19, title="Known Conditions", sub="Sensitized detection", tab=4, cards=[
-        dict(icon="brain", color="violet", k="Acute anxiety / panic", s="HR threshold lowered", pill=("DECLARED", "brand")),
+        dict(icon="brain", color="violet", k="Acute anxiety", s="HR threshold lowered", pill=("DECLARED", "brand")),
         dict(icon="heart", color="red", k="Hypertension", s="BP watched closely"),
         dict(icon="plus", color="green", k="Declare a condition", s="detection adapts to you"),
     ]),
     dict(num=20, title="Providers", sub="When AI reaches its limit", tab=0, accent="teal", cards=[
-        dict(icon="cross", color="red", k="Bay Area Cardiology", s="medical · 0.8 mi", pill=("OPEN", "good")),
+        dict(icon="cross", color="red", k="Bay Area Cardio", s="medical · 0.8 mi", pill=("OPEN", "good")),
         dict(icon="brain", color="violet", k="Dr. Rivera, LCSW", s="mental health · telehealth"),
         dict(icon="link", color="cyan", k="Consented handoff", s="session summary, revocable"),
     ]),
@@ -1057,7 +1057,7 @@ SCREENS = [
     dict(num=22, title="Check-in", sub="Mood & energy", tab=0, accent="pink", cards=[
         dict(icon="leaf", color="green", k="How's your mood?", s="1 low · 5 great", metric="4"),
         dict(icon="bolt", color="amber", k="Energy", s="steady today", metric="3"),
-        dict(icon="chat", color="brand", k="Add a note", s="a worrying note runs the crisis check"),
+        dict(icon="chat", color="brand", k="Add a note", s="a worrying note runs the check"),
     ], button=("Save check-in", "brand")),
     dict(num=23, title="Journal", sub="Private, vaulted", tab=3, cards=[
         dict(icon="book", color="violet", k="A quiet day", s="today · sealed in your vault"),
@@ -1071,14 +1071,14 @@ SCREENS = [
         dict(icon="heart", color="pink", k="Relationships", s="communication tips"),
     ]),
     dict(num=25, title="Insights", sub="Proactive nudges", tab=0, cards=[
-        dict(icon="warn", color="amber", k="High spending alert", s="above your usual", pill=("ALERT", "warn")),
+        dict(icon="warn", color="amber", k="High spending", s="above your usual", pill=("ALERT", "warn")),
         dict(icon="moon", color="green", k="You slept better", s="7.5h · keep it up", pill=("PRAISE", "good")),
         dict(icon="bolt", color="brand", k="Interview prep", s="want a practice round?"),
         dict(icon="leaf", color="cyan", k="Mindful break?", s="a 2-minute pause can help"),
     ]),
     dict(num=26, title="Companion", sub="An ambient hello", tab=0, accent="violet", cards=[
         dict(icon="leaf", color="green", k="Grounded in your day", s="latest mood, goals, personality"),
-        dict(icon="chat", color="brand", k="“How did the meeting go?”", s="reaches out first — never on a schedule"),
+        dict(icon="chat", color="brand", k="“How did the meeting go?”", s="reaches out first, never on a timer"),
     ], button=("Say hi back", "brand")),
     dict(num=27, title="Ambient Jump-in", sub="Before you ask", tab=0, accent="brand", cards=[
         dict(icon="warn", color="amber", k="You've retried this a few times", s="fixing the car · 50 min"),
@@ -1092,8 +1092,8 @@ SCREENS = [
         dict(icon="person", color="brand", k="Messages", s="not connected", pill=("OFF", "crit")),
     ]),
     dict(num=29, title="Privacy & Data", sub="No raw data leaves your vault", tab=4, accent="green", cards=[
-        dict(icon="eye", color="cyan", k="Who accessed my data", s="stored · read · erased", pill=("CHAIN OK", "good")),
-        dict(icon="cloud", color="violet", k="Contribute to the model", s="preview before it leaves", pill=("OFF", "crit")),
+        dict(icon="eye", color="cyan", k="Who accessed", s="stored · read · erased", pill=("CHAIN OK", "good")),
+        dict(icon="cloud", color="violet", k="Contribute data", s="preview before it leaves", pill=("OFF", "crit")),
         dict(icon="shield", color="green", k="Export my data", s="everything, anytime"),
         dict(icon="warn", color="red", k="Delete my data", s="erased locally & in the vault"),
     ]),
@@ -1130,7 +1130,7 @@ SCREENS = [
     dict(num=37, title="History", sub="Detect → guide → escalate", hero="timeline", accent="cyan", tab=3),
     dict(num=38, title="Baseline", sub="Learning your normal", hero="baselinep", accent="green", tab=0),
     dict(num=39, title="Tandem Specialist", sub="Delegated guidance", tab=0, accent="teal", cards=[
-        dict(icon="brain", color="violet", k="QRME anxiety specialist", s="a synthetic profile, over HTTP", pill=("TANDEM", "brand")),
+        dict(icon="brain", color="violet", k="QRME specialist", s="a synthetic profile, over HTTP", pill=("TANDEM", "brand")),
         dict(icon="shield", color="green", k="Runs QRME's moderation", s="reply checked before it's shown"),
         dict(icon="link", color="teal", k="Falls back to local", s="standalone guidance if offline"),
         dict(icon="person", color="cyan", k="Age- & status-checked", s="never a minor to an adult profile"),
@@ -1160,18 +1160,32 @@ SCREENS = [
         dict(icon="shield", color="violet", k="Command allowlist", s="Per-body limits, all audited"),
     ], button=("Bind a robot", "brand")),
     dict(num=57, title="Parent Setup", sub="A guardian enrolls their child", hero=None, accent="brand", tab=0, cards=[
-        dict(icon="person", color="brand", k="Verified-adult guardian", s="Morgan Reyes · parent", pill=("18+", "info")),
+        dict(icon="person", color="brand", k="Verified guardian", s="Morgan Reyes · parent", pill=("18+", "info")),
         dict(icon="heart", color="cyan", k="Child: Riley · age 8", s="birthdate sets the oversight tier"),
-        dict(icon="shield", color="green", k="Protective defaults", s="cautious sensitivity · parent is the emergency contact"),
-        dict(icon="lock", color="amber", k="Consent, recorded", s="who consented, as what, when — on the timeline"),
-        dict(icon="bolt", color="red", k="No auto-defib waiver", s="never signable for a minor — by anyone"),
+        dict(icon="shield", color="green", k="Protective defaults", s="cautious · parent is the contact"),
+        dict(icon="clip", color="amber", k="Consent, recorded", s="who consented, as what, when"),
+        dict(icon="bolt", color="red", k="No auto-defib waiver", s="never signable for a minor, by anyone"),
     ], button=("Create child account", "brand")),
     dict(num=58, title="Family Oversight", sub="A window sized by age", hero=None, accent="cyan", tab=0, cards=[
-        dict(icon="heart", color="green", k="Riley · 8 · full", s="condition-level timeline, never raw notes"),
-        dict(icon="person", color="amber", k="Sam · 15 · alerts only", s="escalations reach you; the diary doesn't"),
+        dict(icon="heart", color="green", k="Riley · 8 · full", s="condition-level, never raw notes"),
+        dict(icon="person", color="amber", k="Sam · 15 · alerts only", s="escalations reach you, not the diary"),
         dict(icon="bolt", color="red", k="Crisis escalated 21:40", s="emergency contact notified — you"),
-        dict(icon="shield", color="violet", k="Ends at 18", s="the window closes itself on their birthday"),
+        dict(icon="shield", color="violet", k="Ends at 18", s="closes itself on their birthday"),
     ], button=("Open Riley's window", "brand")),
+    dict(num=59, title="Care Beacons", sub="A printed code on their things", hero=None, accent="brand", tab=0, cards=[
+        dict(icon="target", color="brand", k="Fridge door", s="printed code · scanned 3×", pill=("ACTIVE", "good")),
+        dict(icon="person", color="cyan", k="Stage one", s="a first name and a button"),
+        dict(icon="eye", color="green", k="Never a status", s="not how they are, not where"),
+        dict(icon="cross", color="amber", k="The alarm buys the ID", s="raising it makes you a responder"),
+        dict(icon="shield", color="red", k="Never dispatches", s="it raises people, not an ambulance"),
+    ], button=("Place a beacon", "brand")),
+    dict(num=60, title="Workplace Relay", sub="When nobody answers", hero=None, accent="cyan", tab=0, cards=[
+        dict(icon="bell", color="brand", k="Plant room", s="lone worker · site beacon", pill=("ON CALL", "good")),
+        dict(icon="bolt", color="cyan", k="Roster in order", s="night-tech → supervisor → lead"),
+        dict(icon="person", color="amber", k="Accepted, not cleared", s="somebody is coming, not over"),
+        dict(icon="eye", color="green", k="Incident scope", s="never the worker's health record"),
+        dict(icon="shield", color="red", k="Escalates people", s="never sirens — the ceiling holds"),
+    ], button=("Open incidents", "brand")),
 ]
 
 

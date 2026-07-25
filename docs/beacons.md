@@ -1,7 +1,8 @@
 # Care beacons — leaving a Guardian somewhere
 
-*Design. Nothing in this document is built yet — it is the decision record that
-the implementation round will follow.*
+*Shipped: `jim/beacons.py`, `jim/relay.py`, and the `ceiling` added to
+`jim/escalation.py`. Covered by `jim/tests/test_beacons.py`. What is **not**
+built is called out at the end.*
 
 QRME has **desk beacons**: a printed QR stuck to a shop door, resolving to a
 live person who is simply not behind it this minute, with a bell a stranger can
@@ -18,10 +19,24 @@ helmet, the frame of a walker, a bedside card.
 So the port is a **care beacon** — a printed code on the objects around a
 watched person, which a stranger can scan to raise the people who are watching.
 
-    POST   /users/{id}/beacons     place one
-    GET    /c/{beacon_id}          where the printed QR points
-    POST   /c/{beacon_id}/alarm    the bell
-    DELETE /beacons/{beacon_id}    peel it off
+    POST   /users/{id}/beacons              place one
+    GET    /users/{id}/beacons              the owner's codes and scan counts
+    DELETE /beacons/{id}                    peel it off
+    GET    /users/{id}/alarms               who rang, their token only
+    POST   /users/{id}/alarms/{id}/clear    answer one
+
+    GET    /c/{id}                          the card — where the QR points
+    GET    /c/{id}/qr.svg                   the printable code
+    POST   /c/{id}/alarm                    the bell
+
+    GET    /relay/roster                    who a site escalates through
+    GET    /users/{id}/incidents            open site alarms, incident scope
+    POST   /users/{id}/alarms/{id}/escalate next name on the roster
+    POST   /users/{id}/alarms/{id}/accept   a named human takes it
+    POST   /alarms/{id}/guidance            what to tell whoever is waiting
+
+The three `/c/…` routes take no token: a stranger holding a phone at a sticker
+is exactly the caller they exist for.
 
 ## It is not a second Medical ID
 
@@ -238,21 +253,23 @@ After the tap, it changes to a second claim, not a reassurance:
 
 ## Shape of the build
 
-New tables, never new columns — `_SCHEMA` is applied with
+Two new tables, never a new column — `_SCHEMA` is applied with
 `CREATE TABLE IF NOT EXISTS` and there is no migration machinery, so a column
 added to an existing table only ever reaches a fresh database:
 
-    care_beacons     id, user_id, label, location, scans, active, created_at
-    beacon_alarms    id, beacon_id, user_id, message, state, created_at, cleared_at
+    care_beacons   id, user_id, label, placement, kind, scans, active,
+                   created_at
+    beacon_alarms  id, beacon_id, user_id, messages, state, tier, accepted_by,
+                   created_at, cleared_at
 
-Two details carried over from QRME's implementation because both were learned
-the hard way:
+`messages` is a list rather than a string because the cooldown coalesces:
+every finder's words are kept in order on the one open alarm. `kind` is
+`personal` or `site`, and it is the only thing separating a fridge door from a
+plant room — the relay reads it rather than a second table.
 
-- The scan page is **one self-contained document** — a camera app's in-app
-  browser, on cellular, from cold, is not the place to discover a missing
-  stylesheet.
-- The alarm posts to a **relative** URL. An absolute one baked from
-  `JIM_PUBLIC_URL` breaks every LAN scan, which is most of them during testing.
+`label` and `placement` are the owner's own filing notes and are **never** in
+the card a stranger sees; the tests assert that by searching the whole
+serialized card for them.
 
 The QR renders through `segno` like the Medical ID's, and in the same medical
 red (`#b3261e`) — a printed code on a person's things should look like the
@@ -273,3 +290,15 @@ other printed code on a person's things.
 - **No proof the beacon is on the person it names.** A sticker outlives what is
   behind it — a code peeled off a walker and stuck somewhere else still
   resolves until its owner deactivates it.
+- **No HTML scan page.** `GET /c/{id}` returns JSON. QRME serves its beacon
+  card as one self-contained document because a camera app opens a URL in an
+  in-app browser, on cellular, from cold; JIM has no equivalent yet, so today a
+  scan is useful to an app and raw to a phone. That page — and an alarm form
+  posting to a **relative** URL, since an absolute one baked from
+  `JIM_PUBLIC_URL` breaks every LAN scan — is the obvious next piece.
+- **No notification transport.** `escalate` records who was notified and
+  returns the name; JIM does not ring anyone's phone. Until a channel is wired,
+  "notified" means "written down", and a site relying on it should know that.
+- **No shift awareness.** `JIM_SITE_ROSTER` is a list of names in order.
+  Rotas, on-call weeks and handovers are a scheduling product, and pretending
+  otherwise would hide how little the relay knows about who is actually there.

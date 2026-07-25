@@ -8,33 +8,56 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Care beacons, designed** — [docs/beacons.md](docs/beacons.md). QRME ships
-  desk beacons: a printed QR on a shop door, resolving to a real person who
-  isn't behind it this minute, with a bell a stranger can ring. There is no
-  desk in the Guardian, so the port is to what this product actually watches —
-  a person, and the objects around them. Design only; no code yet.
+- **Care beacons and the workplace relay are built** — `jim/beacons.py`,
+  `jim/relay.py`, 13 routes, 25 tests. A printed QR goes on the things around a
+  watched person — a fridge door, a wristband, a walker — and a stranger who
+  finds it can raise whoever is watching.
 
-  The decisions worth arguing about are written down rather than left to the
-  implementation: the alarm comes **before** the disclosure (raising it is what
-  turns a passer-by into a responder, and what earns them the Medical ID);
-  `notify_contact` is the alarm's **ceiling**, making it the first rule in
-  `escalation.py` that points down rather than up, because a stranger's tap
-  must not dispatch an ambulance; the cooldown **coalesces** rather than drops,
-  since a second person finding the same casualty is the case the feature
-  exists for; a beacon reports **watch status, never subject status**, because
-  *is this person OK right now* is exactly what a stalker is asking; and a
-  minor's beacon never opens the clinical stage at all.
+  **The alarm comes before the disclosure.** Stage one is a first name, one
+  sentence and a button; raising the alarm is the act that turns a passer-by
+  into a responder, and that is what earns them the Medical ID. The order is
+  QRME's desk beacon in reverse, because health is not a shop sign — and the
+  gate is affordable precisely because the ungated path already ships on the
+  person's own body, which is what `/medical-id/{token}` is for.
 
-  For **corporate deployments**, a workplace relay: `notify_contact` assumes a
-  contact who answers, which at 2am on a single-staffed site may be nobody, and
-  a worker's personal emergency contact is the wrong recipient for a workplace
-  incident anyway. The agent works the on-call roster in order, confirms a
-  human actually accepted rather than firing one notification into the void,
-  and repeats existing QRME first-aid guidance to whoever is waiting. It sees
-  **incident scope, never person scope** — the employer bought the deployment,
-  which does not entitle them to what is inside it — and the `notify_contact`
-  ceiling holds, so it escalates people rather than sirens. Narrow by design:
-  it earns its keep for lone and remote workers, not for an office.
+  **A beacon reports watch status, never subject status.** No health state, no
+  location, ever: *is this person OK right now* is precisely the question a
+  stalker is asking. Tested by serializing the whole card and searching it for
+  the birthdate, the contact number, the label and the placement note, rather
+  than by checking the handful of fields somebody remembered to omit.
+
+  **`notify_contact` is now a ceiling as well as a floor.** `escalation.decide`
+  gained a `ceiling` argument — the first rule in that module that *lowers* a
+  tier, and it only ever applies to a caller who is not the user. A `critical`
+  severity bases at `emergency_services`, so the ceiling is what stands between
+  an anonymous tap and a dispatch; when it clips a floor it says so
+  (`clipped_by_ceiling`, `call_emergency_services_yourself`) rather than quietly
+  returning something lower. Existing callers pass no ceiling and are unchanged,
+  which a regression test pins across every severity and sensitivity.
+
+  **The cooldown coalesces rather than drops** — a second finder's words join
+  the open alarm, because two people finding the same casualty is the case the
+  feature exists for. And **a minor's beacon never opens the clinical stage**,
+  to anyone; it is guardian-issued and routes to the guardian.
+
+  For **lone and remote workers**, a site relay: it works the roster in order,
+  distinguishes *accepted* (somebody is coming) from *cleared* (it is over),
+  refuses an anonymous acceptance, and reports an exhausted roster rather than
+  going quiet — still without dispatching. Incidents are built from the alarm,
+  not the person, so the payload carries no name, condition or history.
+
+  Two screens (59 Care Beacons, 60 Workplace Relay).
+
+### Fixed
+
+- **Nine screens had text running outside their cards**, found while checking
+  the two new ones by rendering them rather than trusting the SVG to parse.
+  Four subtitles overflowed the card edge and five titles collided with their
+  own pill — worst on *Parent Setup*, where "cautious sensitivity · parent is
+  the emergency contact" ran well past the phone frame. Also `icon="lock"`,
+  used on that screen, is not in this repo's icon set at all and had been
+  rendering as a bare dot; it is now `clip`, and a check confirms every icon
+  named by a screen exists.
 
 ## [0.1.8] — 2026-07-25
 
