@@ -50,7 +50,7 @@ def test_the_card_names_a_person_and_says_nothing_about_them(client):
     b = _place(client, u["id"], u["user_token"],
                label="fridge door", placement="kitchen, ground floor")
 
-    card = client.get(f"/c/{b['id']}").json()
+    card = client.get(f"/c/{b['id']}/card").json()
     assert card["first_name"] == "Ada"       # enough to speak to them
     assert card["watched"] is True
     assert card["status"] is None            # never how they are
@@ -68,7 +68,7 @@ def test_the_badge_is_a_claim_rather_than_a_silence(client):
     the QR handled it, so the page says so before the tap and after it."""
     u = _adult(client)
     b = _place(client, u["id"], u["user_token"])
-    assert client.get(f"/c/{b['id']}").json()["badge"] == beacons.BADGE_BEFORE
+    assert client.get(f"/c/{b['id']}/card").json()["badge"] == beacons.BADGE_BEFORE
     raised = client.post(f"/c/{b['id']}/alarm", json={}).json()
     assert raised["badge"] == beacons.BADGE_AFTER
     assert "not an emergency service" in raised["badge"]
@@ -78,7 +78,7 @@ def test_scans_are_counted_for_the_owner(client):
     u = _adult(client)
     b = _place(client, u["id"], u["user_token"])
     for _ in range(3):
-        client.get(f"/c/{b['id']}")
+        client.get(f"/c/{b['id']}/card")
     mine = client.get(f"/users/{u['id']}/beacons",
                       headers=_auth(u["user_token"])).json()
     assert mine[0]["scans"] == 3
@@ -90,8 +90,8 @@ def test_a_retired_code_is_indistinguishable_from_one_that_never_existed(client)
     assert client.delete(f"/beacons/{b['id']}",
                          headers=_auth(u["user_token"])).status_code == 200
 
-    retired = client.get(f"/c/{b['id']}")
-    never = client.get("/c/cbn_neverexisted")
+    retired = client.get(f"/c/{b['id']}/card")
+    never = client.get("/c/cbn_neverexisted/card")
     assert retired.status_code == never.status_code == 404
     assert retired.json() == never.json()
 
@@ -103,7 +103,7 @@ def test_raising_the_alarm_is_what_opens_the_medical_id(client):
     b = _place(client, u["id"], u["user_token"])
 
     # Before: nothing clinical anywhere on the page.
-    assert "medical_id" not in client.get(f"/c/{b['id']}").json()
+    assert "medical_id" not in client.get(f"/c/{b['id']}/card").json()
 
     out = client.post(f"/c/{b['id']}/alarm",
                       json={"message": "collapsed in the hall"}).json()
@@ -216,7 +216,7 @@ def test_a_minors_beacon_never_opens_the_clinical_stage(client):
     assert out["routed_to"] == "guardian"
 
     # And the card before it was no more forthcoming.
-    card = client.get(f"/c/{b['id']}").json()
+    card = client.get(f"/c/{b['id']}/card").json()
     assert card["status"] is None and card["location"] is None
 
 
@@ -388,3 +388,91 @@ def test_guidance_routes_through_qrme_when_tandem_is_configured(make_tandem,
     assert out["source"] == "qrme"
     assert out["ai"] is True
     assert "[QRME specialist]" in out["answer"]
+
+
+# --- the page a phone actually opens ---------------------------------------
+
+def test_the_scan_url_serves_a_page_not_json(client):
+    """A QR is pointed at by a person holding a phone. It used to answer JSON
+    and show a neighbour a wall of braces."""
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+
+    page = client.get(f"/c/{b['id']}")
+    assert page.status_code == 200
+    assert page.headers["content-type"].startswith("text/html")
+    assert "<!doctype html>" in page.text.lower()
+    assert client.get(f"/c/{b['id']}/card").json()["beacon"] == b["id"]
+
+
+def test_the_page_is_one_self_contained_document(client):
+    """Somebody may be reading this kneeling next to a person on the floor,
+    on cellular, from a cold start."""
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    html = client.get(f"/c/{b['id']}").text
+    for external in ('src="http', 'href="http', "@import", "<link"):
+        assert external not in html, f"page reaches out for {external!r}"
+
+
+def test_the_page_carries_a_first_name_and_nothing_else_about_them(client):
+    u = _adult(client, known_conditions=["anxiety"])
+    b = _place(client, u["id"], u["user_token"],
+               label="fridge door", placement="kitchen")
+
+    html = client.get(f"/c/{b['id']}").text
+    assert "Ada" in html
+    for leak in ("byron", "1970", "5555550123", "kitchen", "fridge",
+                 "anxiety"):
+        assert leak not in html.lower(), f"the page leaked {leak!r}"
+
+
+def test_the_medical_id_is_not_on_the_page_before_the_alarm(client):
+    """It arrives in the alarm's own response, so there is nothing on the page
+    to reveal early even by mistake.
+
+    The *label* "MEDICAL ID" does appear — inside the script that builds stage
+    two once the alarm returns. That scaffolding holds no data, and asserting
+    against it would be testing the wrong thing. The claim is about the
+    values.
+    """
+    u = _adult(client, known_conditions=["anxiety"], resting_heart_rate=58)
+    b = _place(client, u["id"], u["user_token"])
+    html = client.get(f"/c/{b['id']}").text
+
+    for value in ("Ada Byron", "58 bpm", "anxiety", "+15555550123",
+                  "Kin"):
+        assert value not in html, f"stage one already carried {value!r}"
+
+
+def test_the_page_tells_them_to_dial_before_it_offers_the_button(client):
+    """The one mistake that matters here is somebody waiting for this page
+    instead of calling, so the instruction comes first in the document."""
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    html = client.get(f"/c/{b['id']}").text
+    assert html.index("call your local") < html.index("Raise the alarm")
+    assert beacons.BADGE_BEFORE in html
+
+
+def test_the_alarm_posts_to_a_relative_url(client):
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    html = client.get(f"/c/{b['id']}").text
+    assert f'"/c/{b["id"]}/alarm"' in html
+    assert "https://jim.app" not in html
+
+
+def test_a_dead_code_renders_a_page_too(client):
+    r = client.get("/c/cbn_neverexisted")
+    assert r.status_code == 404
+    assert r.headers["content-type"].startswith("text/html")
+    assert "call your local emergency number" in r.text
+
+
+def test_the_page_does_not_depend_on_an_animation_to_be_visible(client):
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    html = client.get(f"/c/{b['id']}").text
+    assert "prefers-reduced-motion" in html
+    assert "opacity:0" not in html.replace(" ", "")

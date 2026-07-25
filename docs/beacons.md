@@ -25,7 +25,8 @@ watched person, which a stranger can scan to raise the people who are watching.
     GET    /users/{id}/alarms               who rang, their token only
     POST   /users/{id}/alarms/{id}/clear    answer one
 
-    GET    /c/{id}                          the card — where the QR points
+    GET    /c/{id}                          the page a phone opens
+    GET    /c/{id}/card                     the same card as JSON
     GET    /c/{id}/qr.svg                   the printable code
     POST   /c/{id}/alarm                    the bell
 
@@ -275,6 +276,32 @@ The QR renders through `segno` like the Medical ID's, and in the same medical
 red (`#b3261e`) — a printed code on a person's things should look like the
 other printed code on a person's things.
 
+## What a phone actually opens
+
+`GET /c/{id}` serves **HTML**, because a QR is pointed at by a person holding a
+phone — it used to answer JSON and show a neighbour a wall of braces. The JSON
+moved to `/c/{id}/card`.
+
+**Stage one is the whole page.** A first name, one sentence, and a button. The
+instruction to dial sits *above* the button in the document, because the one
+mistake that matters here is somebody waiting for a page instead of calling —
+and it is the loudest thing on the screen.
+
+**The Medical ID is not on the page at all before the alarm.** It arrives in
+the alarm's own response and is rendered in place, so there is nothing in the
+served HTML to reveal early even by mistake. A test asserts the values —
+name, resting rate, conditions, contact number — are absent from stage one.
+
+For a minor the server returns `medical_id: None`, and the page renders only
+what it is handed, so stage two simply never appears. No second check to
+forget.
+
+One self-contained document, inline everything, no fetch it has to wait on:
+somebody may be reading this kneeling next to a person on the floor. The alarm
+posts to a **relative** URL. The rise animates `transform` only and honours
+`prefers-reduced-motion`, so a browser that drops the animation still shows the
+page rather than a blank card.
+
 ## What this does not give you
 
 - **No presence.** There is no "they're fine" signal to read, by design, and no
@@ -290,12 +317,6 @@ other printed code on a person's things.
 - **No proof the beacon is on the person it names.** A sticker outlives what is
   behind it — a code peeled off a walker and stuck somewhere else still
   resolves until its owner deactivates it.
-- **No HTML scan page.** `GET /c/{id}` returns JSON. QRME serves its beacon
-  card as one self-contained document because a camera app opens a URL in an
-  in-app browser, on cellular, from cold; JIM has no equivalent yet, so today a
-  scan is useful to an app and raw to a phone. That page — and an alarm form
-  posting to a **relative** URL, since an absolute one baked from
-  `JIM_PUBLIC_URL` breaks every LAN scan — is the obvious next piece.
 - **No notification transport.** `escalate` records who was notified and
   returns the name; JIM does not ring anyone's phone. Until a channel is wired,
   "notified" means "written down", and a site relying on it should know that.

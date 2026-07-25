@@ -8,9 +8,10 @@ import os
 from datetime import date, datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, auth, beacons, catalog, coach, db, escalation,
-               family, guardian, i18n, life, llm, mobile, relay, research,
+               family, guardian, i18n, landing, life, llm, mobile, relay, research,
                robotics, social, terms as terms_mod)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
@@ -464,10 +465,24 @@ def create_app(qrme_client: QRMEClient | None = None,
     # The public surface. No token — a stranger holding a phone at a sticker is
     # exactly the caller this exists for.
 
-    @app.get("/c/{bid}")
+    @app.get("/c/{bid}", response_class=HTMLResponse)
+    def beacon_page(bid: str) -> HTMLResponse:
+        """What a phone's camera app opens when somebody scans the sticker.
+
+        HTML, because a QR is pointed at by a person holding a phone — this
+        used to answer JSON and show a neighbour a wall of braces. The JSON is
+        still served at ``/c/{id}/card`` for anything reading it
+        programmatically.
+        """
+        card = beacons.card(bid)
+        if card is None:
+            return HTMLResponse(landing.gone(), status_code=404)
+        return HTMLResponse(landing.care_page(card))
+
+    @app.get("/c/{bid}/card")
     def beacon_card(bid: str) -> dict:
-        """Stage one: a first name, a sentence and a button. Nothing clinical,
-        no location, and no word about how the person is."""
+        """Stage one as JSON — for an app rather than a phone browser. Nothing
+        clinical, no location, and no word about how the person is."""
         card = beacons.card(bid)
         if card is None:
             raise HTTPException(404, "this code does not resolve to anything")
