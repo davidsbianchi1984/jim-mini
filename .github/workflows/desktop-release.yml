@@ -119,5 +119,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: installers/**/*
-          body_path: RELEASE_NOTES.md      # curated notes; auto changelog appended
+          # No `body_path` here. This step and sync-release-notes both used to
+          # write the body from RELEASE_NOTES.md, and only the other one strips
+          # the maintainer preamble above the `---`. Two writers, one file, one
+          # of them wrong — so the body belongs to sync-release-notes, which
+          # runs after this workflow completes and lays the curated notes over
+          # the generated changelog below. This step attaches installers.
           generate_release_notes: true
