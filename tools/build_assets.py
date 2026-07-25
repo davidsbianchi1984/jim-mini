@@ -1,0 +1,297 @@
+#!/usr/bin/env python3
+"""Generate the README's hero art — GENERATED, do not hand-edit the output.
+
+    python3 tools/build_assets.py
+
+These four were hand-built one-offs and aged the way hand-built one-offs do:
+drawn before the escalation ceiling, care beacons, the workplace relay, the
+family layer's oversight tiers and the robot first-aid roles existed, and still
+showing an early product several releases later.
+
+They are generated now, from the same palette constants `docs/screens/build.py`
+uses, for the same reason the screens are: a picture of the product that cannot
+be regenerated is a picture that will be wrong soon, and nobody will notice.
+
+Dependency-free — stdlib only, so anyone can regenerate without installing
+anything.
+"""
+
+from __future__ import annotations
+
+import os
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, "assets")
+
+# Straight from docs/screens/build.py, so the art cannot drift from the screens.
+C = {
+    "scrA": "#0e1626", "scrB": "#0a0f1c",
+    "card": "#182238", "card2": "#1f2b45", "line": "#26314e",
+    "txt": "#eef1f7", "t2": "#8a94ad", "t3": "#626d88",
+    "brandA": "#7c5cff", "brandB": "#3aa0ff",
+    "green": "#43e08a", "amber": "#f7b731", "red": "#ff4d5e",
+    "emer": "#ff3b30", "cyan": "#38bdf8",
+}
+
+W, H = 1280, 640
+
+
+def esc(s):
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def text(x, y, s, size=14, fill=None, weight=400, anchor="start", spacing=0):
+    ls = f' letter-spacing="{spacing}"' if spacing else ""
+    return (f'<text x="{x}" y="{y}" font-size="{size}" fill="{fill or C["txt"]}"'
+            f' font-weight="{weight}" text-anchor="{anchor}"{ls}>{esc(s)}</text>')
+
+
+def rrect(x, y, w, h, r, fill, stroke=None, sw=1, dash=None):
+    st = f' stroke="{stroke}" stroke-width="{sw}"' if stroke else ""
+    da = f' stroke-dasharray="{dash}"' if dash else ""
+    return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}"'
+            f' fill="{fill}"{st}{da}/>')
+
+
+def circle(cx, cy, r, fill="none", stroke=None, sw=1, dash=None):
+    st = f' stroke="{stroke}" stroke-width="{sw}"' if stroke else ""
+    da = f' stroke-dasharray="{dash}"' if dash else ""
+    return f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{fill}"{st}{da}/>'
+
+
+def arrow(x1, y1, x2, y2, tint, sw=1.8, dash=None):
+    da = f' stroke-dasharray="{dash}"' if dash else ""
+    return (f'<path d="M{x1} {y1} L{x2} {y2}" stroke="{tint}"'
+            f' stroke-width="{sw}" fill="none" marker-end="url(#ah)"{da}/>')
+
+
+def panel(x, y, w, h, title, lines, tint, badge=None):
+    o = [rrect(x, y, w, h, 16, C["card"], C["line"], 1.2),
+         rrect(x, y, 4, h, 2, tint),
+         text(x + 20, y + 30, title, 15, C["txt"], 700)]
+    for i, ln in enumerate(lines):
+        o.append(text(x + 20, y + 54 + i * 20, ln, 12.5, C["t2"]))
+    if badge:
+        bw = 18 + len(badge) * 6.4
+        o.append(rrect(x + w - bw - 14, y + 14, bw, 22, 11,
+                       "rgba(255,255,255,0.05)", tint, 1))
+        o.append(text(x + w - bw / 2 - 14, y + 29.5, badge, 10.5, tint, 700,
+                      "middle"))
+    return "".join(o)
+
+
+def head(title, desc, w=W, h=H):
+    return (
+        f'<svg role="img" aria-labelledby="t d" xmlns="http://www.w3.org/2000/svg"'
+        f' viewBox="0 0 {w} {h}" width="{w}" height="{h}"'
+        f' font-family="Helvetica, Arial, sans-serif">'
+        f'<title id="t">{esc(title)}</title><desc id="d">{esc(desc)}</desc>'
+        f'<defs>'
+        f'<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">'
+        f'<stop offset="0" stop-color="{C["scrA"]}"/>'
+        f'<stop offset="1" stop-color="{C["scrB"]}"/></linearGradient>'
+        f'<linearGradient id="brand" x1="0" y1="0" x2="1" y2="0">'
+        f'<stop offset="0" stop-color="{C["brandA"]}"/>'
+        f'<stop offset="1" stop-color="{C["brandB"]}"/></linearGradient>'
+        f'<radialGradient id="glow" cx="50%" cy="50%" r="50%">'
+        f'<stop offset="0" stop-color="{C["green"]}" stop-opacity="0.30"/>'
+        f'<stop offset="1" stop-color="{C["green"]}" stop-opacity="0"/>'
+        f'</radialGradient>'
+        f'<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5"'
+        f' markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
+        f'<path d="M0 0 L10 5 L0 10 z" fill="{C["t3"]}"/></marker>'
+        f'</defs>'
+        f'<rect width="{w}" height="{h}" fill="url(#bg)"/>')
+
+
+def wordmark(x, y, name, tagline, sub=None):
+    o = [text(x, y, name, 46, C["txt"], 800, spacing=1),
+         rrect(x + 2, y + 16, 92, 4, 2, "url(#brand)"),
+         text(x, y + 46, tagline, 16, C["t2"])]
+    if sub:
+        o.append(text(x, y + 70, sub, 13, C["t3"]))
+    return "".join(o)
+
+
+def cover():
+    """Monitor → predict → guide → escalate, and the ceiling on the last rung."""
+    o = [head("JIM-mini / Guardian — personal guidance for known conditions",
+              "JIM-mini: monitor, predict, guide, escalate — with a life layer "
+              "and care beacons. Generated by tools/build_assets.py.")]
+    o.append(wordmark(86, 92, "JIM-mini",
+                      "Monitor · predict · guide · escalate",
+                      "…and a printed code that raises whoever is watching"))
+
+    # The ladder is the product. Draw it as one.
+    rungs = [("log", C["t3"]), ("guide", C["brandB"]), ("check in", C["cyan"]),
+             ("notify contact", C["amber"]), ("emergency services", C["emer"])]
+    bx, by = 86, 236
+    for i, (label, tint) in enumerate(rungs):
+        y = by + i * 54
+        o.append(rrect(bx, y, 300, 42, 12, C["card"], C["line"], 1))
+        o.append(rrect(bx, y, 4, 42, 2, tint))
+        o.append(circle(bx + 30, y + 21, 6, tint))
+        o.append(text(bx + 50, y + 26, label, 13.5, C["txt"], 600))
+        o.append(text(bx + 286, y + 26, str(i), 12, C["t3"], 700, "end"))
+
+    # The ceiling: the one rule that points down, and who it is for.
+    o.append(f'<path d="M{bx + 312} {by + 3 * 54 + 21} L{bx + 372}'
+             f' {by + 3 * 54 + 21}" stroke="{C["amber"]}" stroke-width="1.6"'
+             f' stroke-dasharray="4 4"/>')
+    o.append(text(bx + 382, by + 3 * 54 + 17, "ceiling for an anonymous",
+                  12.5, C["amber"], 600))
+    o.append(text(bx + 382, by + 3 * 54 + 33, "beacon alarm — a stranger's tap",
+                  12.5, C["t2"]))
+    o.append(text(bx + 382, by + 3 * 54 + 49, "never dispatches an ambulance",
+                  12.5, C["t2"]))
+
+    # What sits around the core.
+    o.append(panel(760, 150, 430, 116, "The life layer",
+                   ["Consented sources, check-ins, goals, habit",
+                    "streaks, journal, and a 24/7 coach across",
+                    "six life areas."], C["green"]))
+    o.append(panel(760, 288, 430, 116, "Care beacons",
+                   ["A printed code on a fridge door or a walker.",
+                    "A first name and a button — never a status,",
+                    "never a location."], C["brandB"], "NEW"))
+    o.append(panel(760, 426, 430, 116, "Family & the relay",
+                   ["Oversight sized by age, ending at 18. On a",
+                    "site, a roster worked in order until a named",
+                    "human accepts."], C["cyan"]))
+
+    o.append(text(86, 596, "Not a medical device. Call your local emergency "
+                  "number first — detection can be wrong in both directions.",
+                  12.5, C["t3"]))
+    o.append("</svg>")
+    return "".join(o)
+
+
+def guardian_tandem():
+    """How a signal becomes guidance, and where it stays local."""
+    o = [head("Guardian tandem architecture",
+              "Wearable signals to the Guardian, optional QRME specialist, "
+              "escalation always local. Generated by tools/build_assets.py.")]
+    o.append(text(86, 76, "Guardian tandem", 30, C["txt"], 800))
+    o.append(text(86, 106, "Signals in, guidance out — and the one path that "
+                  "never leaves the deployment.", 14, C["t2"]))
+
+    o.append(panel(86, 168, 250, 120, "Signals",
+                   ["Heart rate, motion, context,", "check-ins, journal notes."],
+                   C["cyan"]))
+    o.append(panel(400, 168, 250, 120, "Guardian",
+                   ["Baseline, detection,", "forecast, sensitivity dial."],
+                   C["green"]))
+    o.append(panel(714, 168, 250, 120, "Guidance",
+                   ["Its own engine, or a QRME", "specialist over HTTP."],
+                   C["brandB"]))
+    o.append(panel(1028, 168, 166, 120, "PDI",
+                   ["Sealed, and", "audit-chained."], C["amber"]))
+
+    for x in (336, 650, 964):
+        o.append(arrow(x + 8, 228, x + 56, 228, C["t3"]))
+
+    # The line that matters most is the one that does not go out.
+    o.append(rrect(400, 372, 564, 96, 16, C["card2"], C["emer"], 1.4))
+    o.append(rrect(400, 372, 4, 96, 2, C["emer"]))
+    o.append(text(422, 402, "Escalation stays local", 15, C["txt"], 700))
+    o.append(text(422, 426, "Crisis handling never routes through a synthetic "
+                  "profile, tandem or not —", 12.5, C["t2"]))
+    o.append(text(422, 446, "and an anonymous beacon alarm is capped at "
+                  "notify_contact.", 12.5, C["t2"]))
+    o.append(arrow(524, 296, 524, 364, C["emer"], 1.8, "5 4"))
+
+    o.append(text(86, 540, "Without a QRME endpoint the Guardian answers from "
+                  "its own engine; without PDI it keeps its own store.",
+                  13, C["t3"]))
+    o.append(text(86, 562, "Neither absence degrades safety — the tandem is an "
+                  "addition, never a dependency.", 13, C["t3"]))
+    o.append("</svg>")
+    return "".join(o)
+
+
+def life_layer():
+    """The half of the product that is not an emergency."""
+    o = [head("The Guardian life layer",
+              "Sources, check-ins, goals, habits, journal and a coach across "
+              "six life areas. Generated by tools/build_assets.py.")]
+    o.append(text(86, 76, "The life layer", 30, C["txt"], 800))
+    o.append(text(86, 106, "Most days are not emergencies. This is what the "
+                  "Guardian does on the other ones.", 14, C["t2"]))
+
+    items = [("Consented sources", "wearable · calendar · spending", C["cyan"]),
+             ("Check-ins", "mood and energy, in ten seconds", C["green"]),
+             ("Smart goals", "progress that survives a bad week", C["brandB"]),
+             ("Habit streaks", "logged, never scolded", C["amber"]),
+             ("Journal", "private — and it runs the crisis check", C["red"]),
+             ("24/7 coach", "six life areas, one conversation", C["brandA"])]
+    for i, (title, sub, tint) in enumerate(items):
+        x = 86 + (i % 3) * 372
+        y = 190 + (i // 3) * 140
+        # No per-card consent strapline: six identical lines is a motif that
+        # has stopped being read. The footer states it once, where it lands.
+        o.append(rrect(x, y, 336, 104, 16, C["card"], C["line"], 1.2))
+        o.append(rrect(x, y, 4, 104, 2, tint))
+        o.append(circle(x + 36, y + 52, 16, "rgba(255,255,255,0.05)", tint, 1.4))
+        o.append(circle(x + 36, y + 52, 5, tint))
+        o.append(text(x + 68, y + 46, title, 15, C["txt"], 700))
+        o.append(text(x + 68, y + 68, sub, 12.5, C["t2"]))
+
+    o.append(text(86, 566, "Nothing here is read from a source the user has "
+                  "not allowed, and every one can be withdrawn.", 13, C["t3"]))
+    o.append("</svg>")
+    return "".join(o)
+
+
+def embodiments():
+    """Robots as responders, and the line that never moves."""
+    o = [head("Robots as guardian responders",
+              "Rated first-aid roles, with autonomous resuscitation behind a "
+              "signed waiver. Generated by tools/build_assets.py.")]
+    o.append(text(86, 76, "Robots as responders", 30, C["txt"], 800))
+    o.append(text(86, 106, "A body that can fetch the AED is worth more than a "
+                  "notification. Within limits.", 14, C["t2"]))
+
+    o.append(panel(86, 168, 350, 150, "Assist-rated",
+                   ["Fetches the AED, coaches the", "playbook aloud, opens the",
+                    "door, calls the contact."], C["green"], "ALLOWED"))
+    o.append(panel(466, 168, 350, 150, "Perform-rated",
+                   ["May deliver compressions —", "only after a person on scene",
+                    "confirms."], C["amber"], "GATED"))
+    o.append(panel(846, 168, 348, 150, "Autonomous",
+                   ["Behind a signed liability", "waiver, and never signable",
+                    "for a minor. By anyone."], C["emer"], "LOCKED"))
+
+    o.append(rrect(86, 372, 1108, 92, 16, C["card2"], C["line"], 1.2))
+    o.append(rrect(86, 372, 4, 92, 2, C["red"]))
+    o.append(text(108, 402, "A robot never delivers the shock", 15, C["txt"], 700))
+    o.append(text(108, 428, "The AED decides. Every command a body accepts is "
+                  "on a per-kind allowlist, and every one is audited.",
+                  12.5, C["t2"]))
+
+    o.append(text(86, 522, "Binding a robot does not hand it judgement — it "
+                  "hands it a task list the escalation ladder controls.",
+                  13, C["t3"]))
+    o.append(text(86, 546, "Unbinding keeps the sealed record: what it saw "
+                  "stays the user's, not the manufacturer's.", 13, C["t3"]))
+    o.append("</svg>")
+    return "".join(o)
+
+
+ASSETS = {
+    "cover.svg": cover,
+    "guardian-tandem.svg": guardian_tandem,
+    "life-layer.svg": life_layer,
+    "embodiments.svg": embodiments,
+}
+
+
+def main() -> None:
+    os.makedirs(OUT, exist_ok=True)
+    for name, fn in ASSETS.items():
+        with open(os.path.join(OUT, name), "w") as f:
+            f.write(fn())
+        print(f"wrote assets/{name}")
+
+
+if __name__ == "__main__":
+    main()

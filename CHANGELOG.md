@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The four README illustrations are generated now**
+  (`tools/build_assets.py`) rather than hand-built. They had been drawn before
+  the escalation ceiling, care beacons, the workplace relay, the family
+  oversight tiers and the rated robot first-aid roles existed, and were still
+  showing an early product several releases later.
+
+  They now read their palette from the same constants `docs/screens/build.py`
+  uses, so they cannot drift away from what they are pictures of. The cover
+  draws the escalation ladder as a ladder — with the `notify_contact` ceiling
+  annotated on the rung it caps — and the tandem diagram states the line that
+  matters most: crisis handling never routes through a synthetic profile.
+  Regenerate with `python3 tools/build_assets.py`.
+
 ### Added
 
 - **Care beacons and the workplace relay are built** — `jim/beacons.py`,
