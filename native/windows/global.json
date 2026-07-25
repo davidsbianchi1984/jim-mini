@@ -1,0 +1,7 @@
+{
+  "//": "Pin the SDK for this app. GitHub's windows runners ship a newer .NET SDK than setup-dotnet installs, and `dotnet build` takes the highest it finds. Windows App SDK 1.6's PriGen targets look for Microsoft.Build.Packaging.Pri.Tasks.dll under the SDK's Microsoft/VisualStudio/<ver>/AppxPackage path, which only exists in the SDK line the App SDK targets — on a newer SDK the build dies with MSB4062 before it ever reaches the code.",
+  "sdk": {
+    "version": "8.0.0",
+    "rollForward": "latestFeature"
+  }
+}

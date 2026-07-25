@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The native apps are compiled in CI** (`.github/workflows/native.yml`) —
+  iOS via XcodeGen + `xcodebuild` on macOS, Android via `gradle assembleDebug`,
+  Windows via MSBuild. The Swift, Kotlin and C# had never been through a
+  compiler in this repository: they were checked by reading and by brace/XML
+  well-formedness, which catches a typo and nothing else. Ported from QRME,
+  where the same gate found five real defects. Compile only — signing and
+  packaging stay in the release workflow — and it runs only when `native/`
+  changes, since macOS runner minutes are not free.
 - **Published deployments** — `JIM_PUBLIC_URL` makes `GET /pair` advertise
   the deployment's public address (QR included) instead of a LAN address, so
   the phone flow works hosted or local from one code path. `JIM_SIGNUP_KEY`
@@ -25,6 +33,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   it), what holding someone else's health data commits you to including the
   HIPAA/BAA question, and plainly what the deployment does *not* give you (no
   multi-tenancy, rate limiting, backups, or uptime guarantee).
+
+### Fixed
+
+- **The iOS project spec was invalid** — its XcodeGen `info:` block had no
+  `path` (required), while also setting `GENERATE_INFOPLIST_FILE`, which is
+  mutually exclusive with it. `xcodegen generate` failed outright, so the
+  Xcode project could never have been produced. The plist is now written from
+  the spec, which also means the local-networking exemption the Simulator
+  needs to reach `http://127.0.0.1:8000` actually applies.
+- **Windows: the journal list would not compile.** `entries` is a
+  `JournalItem[]`, and an array converts implicitly to `Span<T>`, so
+  `.Reverse()` bound to `MemoryExtensions`' in-place **void** overload rather
+  than LINQ's — leaving the following `.Select` attached to nothing.
 
 ## [0.1.4] — 2026-07-24
 
