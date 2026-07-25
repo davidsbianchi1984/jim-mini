@@ -520,7 +520,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                "ceiling": beacons.ALARM_TIER,
                "note": ("the relay escalates people, not sirens — it cannot "
                         "reach emergency services on anyone's behalf")}
-        warning = rota.next_free_slot_warning()
+        warning = rota.problem()
         if warning:
             out["warning"] = warning
         return out

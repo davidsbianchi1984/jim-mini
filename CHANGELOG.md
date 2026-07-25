@@ -9,7 +9,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - **A rota, and an escalation that actually sends something** —
-  `jim/rota.py`, `jim/notify.py`, 4 routes, 20 tests. Two gaps that were both
+  `jim/rota.py`, `jim/notify.py`, 4 routes, 24 tests. Two gaps that were both
   documented as deliberate, and one of them was not defensible.
 
   **`JIM_SITE_ROSTER` was a flat list worked top to bottom, every time**, and
@@ -65,6 +65,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
   The ceiling did not move: a notification channel is not a siren, and a test
   runs the roster to exhaustion to prove `notify_contact` still caps it.
+
+  **A config typo cannot take the escalation path down.** `RotaError`'s own
+  docstring claimed it was *"raised at load, never at 3am"* — but nothing reads
+  the rota at start-up, so it was raised at exactly 3am: one typo (`"funday"`
+  for `"sunday"`) propagated out of `relay.roster()` and turned
+  `POST …/escalate` into a 500, on the one path whose entire job is getting
+  somebody help, and only once an alarm was already open. `rota.read()` never
+  raises; the rota is ignored, the flat names take over, and somebody is still
+  woken. The error is reported as `warning` on `GET /relay/roster` and
+  `rota_error` on every escalation, while `GET /relay/rota` stays strict —
+  degrading on the surface an operator uses to *check* their rota would hide
+  the thing they came to find.
 
 - **The tandem doc describes the architecture that actually exists** —
   [docs/tandem.md](docs/tandem.md), identical byte-for-byte in all three

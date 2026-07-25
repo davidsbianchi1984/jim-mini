@@ -151,7 +151,7 @@ def test_an_unknown_timezone_is_named_rather_than_silently_utc(monkeypatch):
     monkeypatch.setenv("JIM_SITE_ROTA", NIGHT)
     monkeypatch.setenv("JIM_SITE_TZ", "Mars/Olympus")
     assert rota.tz_is_valid() is False
-    assert "wrong person" in rota.next_free_slot_warning()
+    assert "wrong person" in rota.problem()
 
 
 def test_a_real_timezone_shifts_the_boundary(monkeypatch):
@@ -326,3 +326,55 @@ def test_the_relay_still_cannot_reach_emergency_services(client, monkeypatch):
     assert out["exhausted"] is True
     assert out["call_emergency_services_yourself"] is True
     assert client.get("/relay/roster").json()["ceiling"] == "notify_contact"
+
+
+# --- a config typo must not take down the escalation path ------------------
+
+def test_an_unreadable_rota_does_not_break_escalation(client, monkeypatch):
+    """The defect this guards: RotaError's own docstring says "raised at load,
+    never at 3am" — but nothing reads the rota at start-up, so one typo
+    (`funday` for `sunday`) propagated out of relay.roster() and turned
+    POST …/escalate into a 500. A configuration mistake took down the one path
+    whose entire job is getting somebody help, and only once an alarm had
+    already been raised."""
+    monkeypatch.setenv("JIM_SITE_ROTA", '[{"name": "Dana", "days": "funday"}]')
+    monkeypatch.setenv("JIM_SITE_ROSTER", "night-tech,supervisor")
+    u, _b, a = _site(client)
+
+    out = relay.escalate(u["id"], a["alarm"])
+    assert out is not None
+    assert out["notified"] == "night-tech"      # fell back to the flat names
+    assert "rota_error" in out                  # and said so, loudly
+    assert "funday" in out["rota_error"]
+    assert "nobody's shifts are being honoured" in out["rota_error"]
+
+
+def test_an_unreadable_rota_still_answers_the_roster_endpoint(client,
+                                                              monkeypatch):
+    monkeypatch.setenv("JIM_SITE_ROTA", "{not json")
+    monkeypatch.delenv("JIM_SITE_ROSTER", raising=False)
+    body = client.get("/relay/roster").json()
+
+    assert body["roster"] == list(relay.DEFAULT_ROSTER)
+    assert "the default roster" in body["warning"]
+
+
+def test_the_validation_endpoint_stays_strict(client, monkeypatch):
+    """Degrading on the live path is right; degrading on the surface an
+    operator uses to *check* their rota would hide the very thing they came
+    to find."""
+    monkeypatch.setenv("JIM_SITE_ROTA", '[{"name": "Dana", "days": "funday"}]')
+    r = client.get("/relay/rota")
+    assert r.status_code == 422
+    assert "funday" in r.json()["detail"]
+
+
+def test_read_never_raises_on_anything(monkeypatch):
+    for bad in ("{not json", '{"name":"x"}', '[{"role":"on-call"}]',
+                '[{"name":"x","days":"funday"}]',
+                '[{"name":"x","from":"twenty past"}]', '["just a string"]'):
+        monkeypatch.setenv("JIM_SITE_ROTA", bad)
+        rows, err = rota.read()
+        assert rows == [] and err, bad
+        assert rota.order()[0] == []           # and the callers stay quiet
+        assert rota.on_now() == []
