@@ -509,10 +509,9 @@ image insights, community challenges, real emergency-services dispatch, and a
 specialist knowledge-pack marketplace — represented structurally, not as live
 integrations.
 
-**Not yet built** for [care beacons](docs/beacons.md): an HTML scan page (today
-`GET /c/{id}` returns JSON, useful to an app and raw to a phone), a
-notification transport (`escalate` records who was notified; JIM rings nobody),
-and shift awareness — `JIM_SITE_ROSTER` is a list of names in order, not a rota.
+**Not yet built** for [care beacons](docs/beacons.md): a notification
+transport (`escalate` records who was notified; JIM rings nobody), and shift
+awareness — `JIM_SITE_ROSTER` is a list of names in order, not a rota.
 
 ## Related projects
 

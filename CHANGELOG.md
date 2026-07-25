@@ -23,6 +23,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **A phone that scans a care beacon gets a page now** — `jim/landing.py`.
+  `GET /c/{id}` served JSON, so a neighbour scanning a fridge magnet got a wall
+  of braces; the JSON moved to `/c/{id}/card` and the scan URL serves HTML.
+
+  Stage one is the whole page: a first name, one sentence, and a button — and
+  the instruction to dial sits *above* the button in the document, because the
+  one mistake that matters is somebody waiting for a page instead of calling.
+
+  **The Medical ID is not in the served HTML at all.** It arrives in the
+  alarm's own response and is rendered in place, so there is nothing on the
+  page to reveal early even by mistake; a test asserts the name, resting rate,
+  conditions and contact number are absent from stage one. For a minor the
+  server returns `medical_id: None` and the page renders only what it is
+  handed, so stage two simply never appears.
+
+  One self-contained document, inline everything, alarm posting to a
+  **relative** URL — somebody may be reading it kneeling next to a person on
+  the floor, and an absolute URL from `JIM_PUBLIC_URL` breaks every LAN scan.
+  The entrance animation moves `transform` only and honours
+  `prefers-reduced-motion`, so a browser that drops it still shows the page
+  rather than a blank card.
+
 - **Care beacons and the workplace relay are built** — `jim/beacons.py`,
   `jim/relay.py`, 13 routes, 25 tests. A printed QR goes on the things around a
   watched person — a fridge door, a wristband, a walker — and a stranger who
