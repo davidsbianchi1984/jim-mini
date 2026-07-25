@@ -4,24 +4,94 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Changed
-
-- **The four README illustrations are generated now**
-  (`tools/build_assets.py`) rather than hand-built. They had been drawn before
-  the escalation ceiling, care beacons, the workplace relay, the family
-  oversight tiers and the rated robot first-aid roles existed, and were still
-  showing an early product several releases later.
-
-  They now read their palette from the same constants `docs/screens/build.py`
-  uses, so they cannot drift away from what they are pictures of. The cover
-  draws the escalation ladder as a ladder — with the `notify_contact` ceiling
-  annotated on the rung it caps — and the tandem diagram states the line that
-  matters most: crisis handling never routes through a synthetic profile.
-  Regenerate with `python3 tools/build_assets.py`.
+## [0.1.9] — 2026-07-25
 
 ### Added
+
+- **A rota, and an escalation that actually sends something** —
+  `jim/rota.py`, `jim/notify.py`, 4 routes, 20 tests. Two gaps that were both
+  documented as deliberate, and one of them was not defensible.
+
+  **`JIM_SITE_ROSTER` was a flat list worked top to bottom, every time**, and
+  `relay.py`'s own comment defended that: *a rota with shift patterns is a
+  scheduling product and pretending otherwise would hide how little this
+  knows*. That was honest but wrong about the size of the gap. The relay exists
+  for **night shift** — lone workers, plant rooms, single-staffed sites — and a
+  flat list pages the day person at 2am. The feature failing in the hour it was
+  built for.
+
+  So: `JIM_SITE_ROTA`, deliberately small. Named people, the days they work,
+  the hours, and `JIM_SITE_TZ`. No leave, no swaps, no fairness, no recurrence
+  grammar. Three things it does get right, because each is a way of paging the
+  wrong person:
+
+  - **Shifts cross midnight.** `18:00–06:00` is the shift this is all about,
+    and `start <= now <= end` is false for every minute of it. A wrapping shift
+    is two intervals and belongs to the day it *started*: at 02:00 on Saturday
+    it is Friday's night worker on the floor, not the weekend rota.
+  - **A site is somewhere.** Without a timezone a rota written in local time is
+    evaluated in UTC, shifting every boundary by the offset — and by a
+    *different* offset in summer, so it would look correct for half the year.
+    An unrecognised zone is named in `GET /relay/roster`'s `warning` rather
+    than silently treated as UTC.
+  - **A rota has gaps.** Nobody rostered at 4am on a bank holiday is a real
+    state. The relay works the whole rota — better to wake the wrong person
+    than nobody — and reports `on_shift: false` on the escalation *and in the
+    page itself*, so whoever it wakes knows they were a guess.
+
+  `GET /relay/rota` answers *who would you page right now?* in the afternoon
+  rather than leaving it to be discovered at 3am. `JIM_SITE_ROSTER` still works
+  and still means plain names, always on — a test asserts the old
+  configuration is unchanged.
+
+  **And `escalate` sent nothing.** "Notified" meant a row in `events` saying
+  somebody had been notified, while nothing had left the building — so the
+  loop the relay is built around (*keep going until a human accepts*) could
+  never close on its first step. JIM now posts a signed envelope to
+  `JIM_NOTIFY_URL` and stops; the SMS gateway or pager behind it is the
+  deployment's, and the envelope matches PDI's shape so one receiver can take
+  both. An unreachable responder sets `reached_somebody: false` **and**
+  `escalate_again_now`, because *waiting on a human* and *waiting on a human
+  who was never told* need different next moves and only the first should wait.
+
+  **Incident scope survives the trip out of the building.** A webhook is the
+  easiest place in the system to turn an incident into a health record — "just
+  add the name so they know who to look for" is a reasonable-sounding sentence
+  that would undo the whole promise. So the envelope is built by copying named
+  fields *out* of `relay.incident`, never by stripping fields from a user
+  record, and not even the finder's words go out. A test reads the whole
+  envelope as one string and looks for the name, birthdate, contact number,
+  resting rate and the finder's message in it.
+
+  The ceiling did not move: a notification channel is not a siren, and a test
+  runs the roster to exhaustion to prove `notify_contact` still caps it.
+
+- **The tandem doc describes the architecture that actually exists** —
+  [docs/tandem.md](docs/tandem.md), identical byte-for-byte in all three
+  repositories. This copy was twelve lines and four `[planned]` markers behind
+  QRME's: it described the suite gateway's erase, export, consent and metering
+  as intentions when `suite/gateway.py` had shipped them, and the
+  docker-compose e2e harness as planned when it runs in CI. A reader in this
+  repo was told cross-app deletion did not exist.
+
+  New sections for the arrow that runs out of PDI into QRME, for the beacon
+  family across all three products, and for the notification channel — the one
+  thing the suite genuinely cannot supply for itself.
+
+- **The diagram is generated** — `tools/build_assets.py` writes
+  `docs/diagrams/tandem-flow.svg`, from a block identical in all three repos so
+  one picture cannot become three that disagree.
+
+  The vault arrows name **what actually goes down them**. *"Medical payloads"*
+  was true and incomplete: spending events, bank transactions, messages and
+  location all ride the same wire, under the same consent gate, into the same
+  `jim/{user}/context/…` namespace. A diagram — or a doc — naming only the
+  medical half invites the reader to assume the rest is held somewhere else,
+  and it is not. All four categories a person would be startled to find there
+  now sit on the label's bold line together; putting two of them a row down in
+  a smaller font would have re-made the same mistake more quietly. The QRME
+  arrow got the same treatment, having been summarised to *"source material"*
+  while also carrying rated placement earnings and adaptation runs.
 
 - **A phone that scans a care beacon gets a page now** — `jim/landing.py`.
   `GET /c/{id}` served JSON, so a neighbour scanning a fridge magnet got a wall
@@ -84,6 +154,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   not the person, so the payload carries no name, condition or history.
 
   Two screens (59 Care Beacons, 60 Workplace Relay).
+
+### Changed
+
+- **The four README illustrations are generated now**
+  (`tools/build_assets.py`) rather than hand-built. They had been drawn before
+  the escalation ceiling, care beacons, the workplace relay, the family
+  oversight tiers and the rated robot first-aid roles existed, and were still
+  showing an early product several releases later.
+
+  They now read their palette from the same constants `docs/screens/build.py`
+  uses, so they cannot drift away from what they are pictures of. The cover
+  draws the escalation ladder as a ladder — with the `notify_contact` ceiling
+  annotated on the rung it caps — and the tandem diagram states the line that
+  matters most: crisis handling never routes through a synthetic profile.
+  Regenerate with `python3 tools/build_assets.py`.
 
 ### Fixed
 

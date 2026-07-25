@@ -1,5 +1,7 @@
 # Tandem architecture
 
+![Tandem data flow](diagrams/tandem-flow.svg)
+
 Three separate products in three separate repositories — each stands alone
 and can also **interoperate over HTTP**. No project imports another's code.
 
@@ -16,15 +18,24 @@ and can also **interoperate over HTTP**. No project imports another's code.
    │  Guardian        │  tandem specialist  │  synthetic profiles     │
    │                  │  guidance           │                         │
    └──────────────────┘                     └─────────────────────────┘
-           │                                          │
-           │ optional (medical &                      │ optional (profile
-           │ context payloads)                        │ source material)
-           ▼                                          ▼
-   ┌──────────────────────────────────────────────────────────┐
-   │  pdi — Private Data Infrastructure                       │
-   │  AES-256-GCM vault · per-tenant isolation · audit chain  │
-   └──────────────────────────────────────────────────────────┘
+           │                                    │             ▲
+           │ optional (medical &                │ optional    │ optional
+           │ context payloads)                  │ (profile    │ (words for
+           ▼                                    ▼  source)    │  the gate)
+   ┌─────────────────────────────────────────────────────────┴────────┐
+   │  pdi — Private Data Infrastructure                               │
+   │  AES-256-GCM vault · per-tenant isolation · audit chain          │
+   └──────────────────────────────────────────────────────────────────┘
 ```
+
+**Four links, and one of them runs the other way.** For most of this project's
+life the rule was simple enough to state in a sentence — every arrow points
+*into* PDI, because PDI is the bottom layer and a vault whose availability
+depends on a model provider is a worse vault. The agent at PDI's facility gate
+broke that rule on purpose: it needs words for somebody standing outside a
+door, and rather than grow a model of its own it asks QRME for them over the
+same public HTTP everything else uses. See
+[pdi ✕ qrme](#pdi--qrme--the-agent-at-the-gate).
 
 ## qrme ✕ jim-mini
 
@@ -51,26 +62,176 @@ AI-system integration).
 Each AI system can *optionally* run on top of PDI as a tenant, each with its
 own client and token — both integrations are live:
 
-- **jim-mini** (`jim/pdi_client.py`, `JIM_PDI_URL` + `JIM_PDI_TOKEN`): medical
-  payloads — biometric samples, detection details, forecast trends, check-in
-  notes — and consented context payloads are sealed under `jim/{user}/…`
-  keys; JIM's own database keeps only key references, prediction reads prior
-  samples back from the vault, and `DELETE /data/{user_id}` purges the vault.
-- **qrme** (`qrme/pdi_client.py`, `QRME_PDI_URL` + `QRME_PDI_TOKEN`): profile
-  source material — life stories, writings, conversations, voice transcripts —
-  is sealed under `qrme/{profile}/sources/…` keys, resolved on read for
-  persona prompts and exports, and purged when the profile is deleted.
+- **jim-mini** (`jim/pdi_client.py`, `JIM_PDI_URL` + `JIM_PDI_TOKEN`) seals
+  under `jim/{user}/…`. Worth enumerating rather than summarising as "medical",
+  because the medical half is the half people expect and the rest is the half
+  they would be surprised to learn was in the same place:
+  - `medical/…` — biometric samples, detection details, forecast trends,
+    emergency events, check-in notes, journal entries.
+  - `context/…` — **every consented source**, in one namespace behind one
+    consent gate: **spending and bank transactions**, **messages**,
+    **location**, calendar, wearable and health. All four of the categories a
+    person would be startled to find here — financial, messages, location, and
+    the medical above — travel the same arrow into the same vault. A reader
+    told only about "medical payloads and consented context" would reasonably
+    assume the rest was held somewhere else. It is not, and that is the
+    direction it is worth being wrong in.
+  - `family/consent` and `tandem/{profile}/…` — the guardian-oversight record,
+    and every exchange with a QRME specialist.
+
+  JIM's own database keeps only key references, prediction reads prior samples
+  back from the vault, and `DELETE /data/{user_id}` purges it.
+- **qrme** (`qrme/pdi_client.py`, `QRME_PDI_URL` + `QRME_PDI_TOKEN`) seals under
+  `qrme/{profile}/…`: `sources/…` (life stories, writings, conversations, voice
+  transcripts), `rated/events/…` (placement earnings on the rated tier, held to
+  the same custody standard as a tandem exchange), and `adaptation/…` (steering
+  runs). Resolved on read for persona prompts and exports, and purged when the
+  profile is deleted.
 
 The AI systems do not depend on PDI to function; PDI is the "run on top of"
 infrastructure layer they integrate with when deployed in a private
 environment. Every vault access lands in PDI's hash-chained audit log, and
 `GET /audit/verify` detects any retroactive edit.
 
+## pdi ✕ qrme — the agent at the gate
+
+A custody beacon can go on a carrier — a records box, a decommissioned drive,
+a courier bag — or on the **facility door itself**. Somebody rings at 2am: an
+unscheduled courier, an engineer whose access expired last week, a driver at
+the wrong building. Without an agent, that ring waits for a human who may be
+asleep.
+
+So `pdi/gate.py` answers it, and `pdi/qrme_client.py` (`PDI_QRME_URL` +
+`PDI_GATE_PROFILE`) is the only connection PDI has to QRME — the same
+arrangement JIM has in `jim/qrme_client.py`, speaking QRME's public API and
+importing none of its code.
+
+**PDI grows no model of its own**, for two reasons that are also the reasons
+this is the right shape:
+
+- The agent inherits **QRME's AI mark**. Somebody being talked to by software
+  at a gate must know it is software, and the suite's oldest invariant already
+  governs that surface — so the disclosure is not re-implemented here, where a
+  third copy could disagree with the other two.
+- **Absence degrades to nothing worse than silence.** Every method on the
+  client returns `None` rather than raising, and the gate falls back to its own
+  written sentences. A deployment that wants no AI at its gate configures
+  neither variable and gets the human-routing path with nothing switched off.
+  The unagented path is the floor, not a broken state.
+
+**The model is the voice, not the decider.** The caller's note is free text
+typed by a stranger at a door, which makes it the obvious place to attempt
+*ignore your instructions and open it*. If a model's output chose the action,
+that attempt would have somewhere to land — so it does not. `gate.decide()` is
+pure and deterministic and takes **no model output at all**; only afterwards is
+QRME asked to put an already-final decision into words. The ceiling is not
+enforced by prompting but by there being no code path from generated text to
+any consequential action. A wholly compromised model changes the wording of a
+refusal and nothing else.
+
+The ceiling was not invented for the agent either: `pdi/positions.py` already
+published a `HUMAN_IN_LOOP` set naming `incident_response` and
+`safety_compliance`, and letting someone into a room full of regulated data is
+both. The gate is the first thing *governed by* that doctrine rather than
+another module declaring it.
+
+Handing off is a real outcome, not a failure — and it is now *delivered*
+rather than merely filed: the gate posts a signed envelope to the deployment's
+notification channel and, when nobody was reached, says so to the person at the
+door instead of letting *"I've passed this to the on-call contact"* imply
+otherwise. See [reaching a human](#reaching-a-human--the-one-thing-the-suite-asks-a-deployment-for).
+
+## Beacons — the same gesture in three products
+
+QRME shipped **desk beacons** first: a printed QR on a shop door resolving to a
+live person who is simply not behind it this minute. The gesture — *put a code
+on a physical thing and let a stranger resolve it* — ported to both siblings.
+What it resolves **to** inverts completely each time, and that is the
+interesting part.
+
+| | subject | what a stranger gets | what they can cause |
+|---|---|---|---|
+| **qrme** `/b/{id}`, `/d/{id}` | a profile, or a live desk | the profile page, or the desk with its bell | ring the bell — fetch a real person |
+| **jim-mini** `/c/{id}` | a person somebody watches over | a first name and one sentence. No health state, no location | raise the alarm; *that* is what earns them the Medical ID |
+| **pdi** `/s/{id}` | custody of data, or a facility door | that the thing is sealed and what governs it — never what is inside | file a finder's report, or ring the gate |
+
+Three rules hold across all of them, and each is structural rather than a check
+somebody has to remember:
+
+1. **A scan is a page, not JSON.** All three serve hand-written,
+   self-contained HTML at the scan URL and moved the JSON to `…/card`, because
+   these open in a camera app's in-app browser, on cellular, from cold. The
+   entrance animation moves `transform` only and honours
+   `prefers-reduced-motion`: a browser that drops it must still show the page.
+2. **A dead code and a code that never existed render the same page.** In all
+   three. Otherwise a retired code becomes a way of confirming that a
+   particular reference once existed.
+3. **The page renders only what the server handed it**, and never looks
+   anything up. So a beacon cannot disclose what its card withheld — JIM's
+   minor has no Medical ID to leak because the server returned `None`, and
+   PDI's seal card cannot leak contents because contents were never in it.
+
+Beyond that the products disagree, correctly: QRME's beacon discloses *before*
+any action, JIM's discloses only *after* one, and PDI's never discloses at all.
+Per-product detail is in each repo's `docs/beacons.md`.
+
+### Reaching a human — the one thing the suite asks a deployment for
+
+Both escalating beacons hit the same wall, and it is the only place in these
+three products where the design genuinely cannot be completed in code. PDI's
+gate recorded who a hand-off went to and told nobody; JIM's relay wrote
+*"on-call was notified"* into `events` while nothing left the building. In both
+cases the escalation escalated to a database row.
+
+The reason is real: **there is no notification channel these products could
+depend on.** A colocation facility with a manned NOC, a records warehouse with
+one on-call phone, a hospital pager system, a plant room whose supervisor lives
+in Slack — nothing in common to build against. So neither product picks one.
+`pdi/notify.py` and `jim/notify.py` post a **signed JSON envelope to a URL the
+deployment supplies** and stop. No vendor, no SDK, no account, in either repo.
+
+| | url | secret | envelope |
+|---|---|---|---|
+| **pdi** | `PDI_NOTIFY_URL` | `PDI_NOTIFY_SECRET` | `pdi-page/v1` |
+| **jim-mini** | `JIM_NOTIFY_URL` | `JIM_NOTIFY_SECRET` | `jim-page/v1` |
+
+Same shape on purpose — HMAC-SHA256 over `{timestamp}.{body}`, timestamp sent
+alongside so replay can be bounded — so an operator running both can point them
+at one receiver. `GET /gate/channel` and `GET /relay/channel` report whether a
+page can actually go out, without revealing the URL, so this is checkable in the
+afternoon rather than discovered at 3am.
+
+Three rules are shared, and each is the same rule the products already had:
+
+1. **A page never fails the thing it is about.** The stranger at the gate gets
+   their answer, the alarm still stands, whether or not the webhook answered.
+2. **Not reaching anybody is said out loud.** Both surface
+   `reached_somebody: false` rather than letting *"passed to the on-call
+   contact"* imply somebody knows. PDI renders it on the scan page; JIM adds
+   `escalate_again_now`, because waiting on a human who was never told is not
+   the same as waiting on a human.
+3. **The envelope inherits the product's own blindness.** PDI's page carries no
+   contents and not the caller's note; JIM's carries the incident and never the
+   person — no name, no conditions, no baseline, not even the finder's words.
+   Both are built by copying named fields *out* of an already-narrow payload,
+   rather than by removing fields from a wide one, because a payload assembled
+   by deletion is one forgotten line away from being a health record.
+
+Unconfigured stays a supported state in both: the page is `queued`, listable
+(`GET /gate/pages`, `GET /users/{id}/pages`), and retryable — which is what
+each product did before, minus the silence.
+
 ## Why over HTTP, not imports
 
 Each product is independently deployable, versioned, and separately repo'd.
 Interoperation only through public HTTP APIs keeps the boundaries honest: any
 project can be run, tested, and shipped without the others present.
+
+The gate agent is the clearest case for it. Embedding a model in PDI would
+have given the bottom layer of the suite a runtime dependency on a model
+provider, and put a second implementation of the AI mark in a repo whose job is
+storage. Over HTTP it is a nullable client that returns `None` when nobody
+answers.
 
 ## Cross-cutting design (identity, deletion, billing, compliance)
 
@@ -98,38 +259,43 @@ database:
   tenant token) — the broker sits *above* this and never widens what crosses
   the wire.
 
-### Data-deletion propagation **[implemented locally + planned cross-app]**
+### Data-deletion propagation **[implemented]**
 
 Within each app, deletion is complete today: QRME `DELETE /profiles/{id}` and
 JIM `DELETE /data/{user_id}` erase every local table **and** purge that
 principal's PDI vault records via tracked keys. **[implemented]**
 
-Cross-app propagation is **user-controlled** **[planned]**: when a user
-deletes in one app they choose the scope —
+Cross-app propagation runs through the **suite gateway** (`suite/gateway.py`):
+`POST /suite/erase` fans the right-to-be-forgotten out to every product the
+identity holds — deleting the profile in QRME, erasing the user in JIM, and
+dropping every sealed record in the PDI tenant — using the per-product tokens
+the caller already holds (the gateway stays stateless, storing no credential
+of its own). It returns a **per-product receipt** so a partial failure is
+visible rather than silently swallowed, and `complete` is true only when every
+product acknowledged. **[implemented]**
 
-- **This app only** (default): the app erases its own data and its own PDI
-  keys; other apps are untouched.
-- **Everywhere**: if accounts are linked, the app emits a signed
-  `deletion_request{subject}` to the broker, which fans out to the linked
-  apps; each performs its own local erasure and PDI purge and acknowledges.
-  Acknowledgements are collected so the user sees a complete-deletion receipt.
+Each product erases with its *own* authority: QRME/JIM with the owner/user
+token, PDI via the tenant's own write token — no admin key needed. PDI never
+initiates deletion — it is the storage layer; the owning app (or the gateway on
+the tenant's behalf) always drives the purge, so there is no orphaned
+ciphertext.
 
-PDI never initiates deletion — it is the storage layer; the owning app always
-drives the purge of its own keys, so there is no orphaned ciphertext.
+### Billing / subscription **[implemented: metering hooks]**
 
-### Billing / subscription **[planned]**
+A single subscription spans the three products, metered per product. The suite
+gateway exposes `POST /suite/usage`, which aggregates a cheap counter from each
+product into one meter (`suite-usage/v1`) a downstream biller reads against the
+linked identity:
 
-A single subscription spans the three products, metered per product:
+- QRME: profile stats (interactions, relationships, sources).
+- JIM-mini: recorded events.
+- PDI: sealed record count (ciphertext bytes / ops/day are also derivable from
+  the audit chain — see PDI `docs/operations.md`).
 
-- QRME: active profiles, interactions, marketplace transactions.
-- JIM-mini: monitored users, guidance sessions, provider handoffs.
-- PDI: tenants, ciphertext bytes, ops/day (derivable from the audit chain —
-  see PDI `docs/operations.md`).
-
-The billing system lives outside the three repos; each exposes a
-usage/metering read (`GET /usage`, admin) that a downstream biller
-aggregates against the linked `subject`. Entitlements (which tiers unlock
-adult mode, cloud model, knowledge packs) are checked at the app boundary.
+Metering hooks are implemented; actual rating/charging and entitlement tiers
+(which unlock adult mode, cloud model, knowledge packs) live in the billing
+system outside the three repos and are checked at the app boundary. **[rating
+out of v1]**
 
 ### Exact tandem data flows & error handling **[implemented]**
 
@@ -149,6 +315,25 @@ adult mode, cloud model, knowledge packs) are checked at the app boundary.
   configured, JIM falls back to its own standalone guidance and says so — the
   user is never left without help.
 
+**PDI → QRME gate voice** (words for a ring at a facility door):
+1. A stranger rings a facility beacon: `POST /s/{ref}/ring` with a structured
+   `kind` (`delivery`, `collection`, `access`, `other`) and free-text note.
+2. `gate.decide()` returns the outcome from the ring's structured kind and
+   facts PDI can check for itself. **No model has been consulted at this
+   point, and none will be consulted about the outcome.**
+3. If `PDI_QRME_URL` + `PDI_GATE_PROFILE` are set, PDI resolves the profile by
+   `@handle` (ids are deployment-specific; handles are the stable cross-product
+   name), lazily creates an interactor, and asks it to phrase the decision that
+   has already been made.
+4. The transcript is sealed into the tenant's own vault and the exchange lands
+   on the audit chain as `agent.engage` / `decide` / `refuse` / `handoff`.
+- **Fallback**: QRME unreachable, refusing, or holding the reply for owner
+  approval are treated identically — the gate speaks its own written sentences.
+  A caller at a door does not care why the words did not arrive.
+- **Tenant BYOK**: if the tenant holds its own key, no transcript is sealed —
+  an anonymous caller cannot present that key — and the reply says so rather
+  than silently dropping the record.
+
 **App → PDI vault** (sealed storage):
 1. The app seals a payload under a namespaced key (`jim/{user}/…`,
    `qrme/{profile}/…`) via `PUT /records`; only the key reference stays local.
@@ -160,17 +345,20 @@ adult mode, cloud model, knowledge packs) are checked at the app boundary.
   in memory *before* sealing, so behavior is identical whether or not the seal
   succeeds.
 
-### Consent management **[implemented per-app + planned unified]**
+### Consent management **[implemented]**
 
 Consent lives with the app that collects it today: QRME captures profile
 verification, third-party rights basis, and `cloud_contribution`; JIM captures
 terms/guardian consent, emergency-contact consent, per-source consent,
 `provider_consent`, and `cloud_contribution`. **[implemented]**
 
-A **unified consent center** **[planned]** presents all of a linked
-`subject`'s consents (biometric sources, profile sources, contact, provider
-handoff, cloud contribution, adult mode) in one place, each toggleable, with
-every change written to PDI's audit chain for a regulator-exportable trail.
+A **unified consent center** is backed by the suite gateway:
+`PUT /suite/consent` seals one authoritative consent document in the identity's
+PDI vault (encrypted at rest, recorded on the tamper-evident audit chain, so
+every change is regulator-exportable), and `POST /suite/consent/read` reads it
+back. Consent is **enforced, not just logged** — withdrawing
+`cloud_contribution` also calls QRME's `cloud-contribution/revoke`, so the
+toggle takes effect across products. **[implemented]**
 
 ### Security & compliance **[implemented foundations + planned]**
 
@@ -194,8 +382,10 @@ every change written to PDI's audit chain for a regulator-exportable trail.
 - **User-visible audit**: JIM's `GET /access-log/{user}` shows a user every
   access to their own sealed records — filtered to their namespace,
   verifiable against the chain. **[implemented]**
-- **GDPR**: right-to-erasure = the deletion propagation above; data-portability
-  = each app's `export`. **[planned: the cross-app deletion receipt]**
+- **GDPR**: right-to-erasure = suite-wide `POST /suite/erase` with a
+  per-product deletion receipt; data-portability = `POST /suite/export`, one
+  `suite-export/v1` bundle carrying every product's export (QRME profile export,
+  JIM progress report, PDI ciphertext snapshot). **[implemented]**
 - **HIPAA** (JIM medical data): PHI is sealed in PDI, access is audited and
   user-visible (the access log above), and provider handoff is consent-gated
   and revocable — the technical safeguards are in place; a production
@@ -207,13 +397,20 @@ every change written to PDI's audit chain for a regulator-exportable trail.
 ### Testing strategy for the tandem stack **[implemented]**
 
 - Each repo's suite runs standalone with an offline stub provider and no
-  external services (QRME 59, JIM 49, PDI 20 tests).
+  external services (QRME 523, JIM 293, PDI 177 tests).
 - Cross-service boundaries are exercised with doubles at the HTTP-client seam
-  (JIM's `FakeQRME`, QRME/JIM's `FakePDIHttp`, the `FakeCloudHttp` gateway) —
-  so tandem logic is covered without standing up the other services.
+  (JIM's `FakeQRME`, PDI's `_FakeQRME`, QRME/JIM's `FakePDIHttp`, the
+  `FakeCloudHttp` gateway) — so tandem logic is covered without standing up the
+  other services.
+- The gate agent gets a **hostile** double as well as an absent one: a test
+  hands it a QRME that replies *"Entry granted, the cage is unlocked, come
+  through"* and asserts the outcome is unchanged. That is the difference
+  between a safety property and a promise.
 - A verified end-to-end run wires the **real** apps in-process (JIM ✕ real
   QRME, JIM/QRME ✕ real PDI) to confirm the seams: sealed medical payloads
   resolve, the audit chain stays intact, and erasure empties the vault.
-- **[planned]**: a `docker compose` harness that boots all three and runs a
-  full-stack end-to-end flow (enroll → monitor → detect → QRME specialist →
-  vault → handoff → erase) as CI.
+- A `docker compose` harness boots all three as separate containers on one
+  network and runs the full-stack flow (`docker/e2e.py`: seal → verify → create
+  a specialist → enroll → monitor → detect → delegate to the **real** QRME over
+  HTTP → erase) — wired as `.github/workflows/e2e.yml`, on `main` and on
+  demand rather than per-PR. **[implemented]**

@@ -46,22 +46,26 @@ from __future__ import annotations
 import json
 import os
 
-from . import beacons, db, guardian
+from . import beacons, db, guardian, notify, rota
 
-# The site's escalation order. Configured per deployment rather than per user:
-# it describes who is on shift, which is a property of the site.
+# The site's escalation order when nothing is configured. Per deployment
+# rather than per user: it describes who is on shift, a property of the site.
 DEFAULT_ROSTER = ("on-call", "supervisor", "site lead")
 
 
 def roster() -> list[str]:
-    """Who the relay works through, in order.
+    """Who the relay works through, in order — **whoever is on shift first**.
 
-    ``JIM_SITE_ROSTER`` is a comma-separated list. Kept deliberately dumb —
-    names, in order — because a rota with shift patterns is a scheduling
-    product and pretending otherwise would hide how little this knows.
+    This used to be a flat comma-separated list, worked top to bottom every
+    time, and its own comment admitted the limitation as a deliberate one. The
+    limitation turned out to be the feature failing in the hour it was built
+    for: the relay exists for night shift, and a flat list pages the day person
+    at 2am. :mod:`jim.rota` answers *who is on now*; this puts them first.
+
+    ``JIM_SITE_ROSTER`` still works and still means exactly what it meant —
+    plain names, always on. ``JIM_SITE_ROTA`` adds days, hours and a timezone.
     """
-    raw = os.environ.get("JIM_SITE_ROSTER", "")
-    names = [n.strip() for n in raw.split(",") if n.strip()]
+    names, _ = rota.order()
     return names or list(DEFAULT_ROSTER)
 
 
@@ -71,7 +75,7 @@ def available() -> bool:
     Unset is not a broken relay — it is a personal deployment, where the
     beacon's own ``notify_contact`` path is the right and only behaviour.
     """
-    return bool(os.environ.get("JIM_SITE_ROSTER"))
+    return rota.configured()
 
 
 def incident(alarm: dict, beacon: dict) -> dict:
@@ -138,7 +142,7 @@ def _notified(alarm_id: str) -> list[str]:
     return out
 
 
-def escalate(user_id: str, alarm_id: str) -> dict | None:
+def escalate(user_id: str, alarm_id: str, http=None) -> dict | None:
     """Notify the next person on the roster. Records who was tried.
 
     Returns ``exhausted`` when the roster runs out. That is deliberately not
@@ -170,14 +174,37 @@ def escalate(user_id: str, alarm_id: str) -> dict | None:
                      "behalf"),
         }
 
+    # Actually send it. Until this existed, "notified" meant a row in `events`
+    # saying somebody had been notified, and nothing had left the building —
+    # so the loop this relay is built around could never close.
+    on = rota.on_now()
+    on_shift = any(p["name"] == who for p in on)
+    role = next((p["role"] for p in on if p["name"] == who), "responder")
+    beacon = beacons.get(alarm["beacon_id"])
+    page = notify.page(incident(alarm, beacon), user_id, who, role, on_shift,
+                       http)
+
     guardian._event(user_id, "relay", detail={"alarm": alarm_id,
                                               "notified": who})
-    return {
+    out = {
         "alarm": alarm_id,
         "notified": who,
+        "role": role,
+        # Named, because a page that went out only because the rota had run
+        # dry is a guess, and the difference matters to whoever reads this.
+        "on_shift": on_shift,
+        "page": page,
+        "reached_somebody": page["reached_somebody"],
         "remaining": [n for n in roster() if n not in _notified(alarm_id)],
         "awaiting": "acceptance — this stays open until a person confirms",
     }
+    if not page["reached_somebody"]:
+        # The caller has to be able to tell "waiting on a human" apart from
+        # "waiting on a human who was never told". They escalate differently:
+        # the second should move to the next name now, not after a timeout.
+        out["unreached_note"] = notify.UNREACHED
+        out["escalate_again_now"] = True
+    return out
 
 
 def accept(user_id: str, alarm_id: str, responder: str) -> dict | None:

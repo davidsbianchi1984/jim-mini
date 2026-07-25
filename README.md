@@ -339,7 +339,8 @@ this machine's address and restart.
 | `POST /c/{id}/alarm` | **The bell** (public). Raising the alarm is what turns a passer-by into a responder, and **that** is what earns them the Medical ID — the order QRME's desk beacon runs in reverse, because health is not a shop sign. Capped at `notify_contact`: a stranger's tap must never dispatch an ambulance. Inside the cooldown a second finder **joins** the open alarm rather than being dropped. A minor's beacon never opens the clinical stage, to anyone |
 | `GET /users/{id}/alarms`, `POST …/clear` | Who rang while they were away — their token only |
 | `GET /relay/roster`, `GET /users/{id}/incidents` | **Workplace relay** for lone and remote workers: `notify_contact` assumes a contact who answers, which at 2am on a single-staffed site may be nobody. Incidents are **incident scope, never person scope** — the employer bought the deployment, which does not entitle them to what is inside it |
-| `POST …/alarms/{id}/escalate`, `…/accept` | Works the roster in order and confirms a human **accepted** — accepting means attending, not resolved. Roster exhausted is reported, not silent, and still no dispatch |
+| `POST …/alarms/{id}/escalate`, `…/accept` | Works the rota — **whoever is on shift first** — and confirms a human **accepted**; accepting means attending, not resolved. Actually sends the page, and when it did not land says `reached_somebody: false` and `escalate_again_now` rather than waiting on an acceptance that cannot come. Rota exhausted is reported, not silent, and still no dispatch |
+| `GET /relay/rota`, `GET /relay/channel`, `GET /users/{id}/pages` | Who would be paged **right now**, whether a page can go out at all, and which pages never landed. Shifts crossing midnight belong to the day they started — the 18:00–06:00 case the flat roster always got wrong |
 | `POST /alarms/{id}/guidance` | What to tell whoever is waiting — routed to a QRME first-aid specialist when tandem is configured, else the one instruction that never depends on a model being reachable |
 | `POST /activity/{user_id}` | **Ambient observation** (the "Jiminy Cricket" jump-in): report what the user is *doing* — activity + signals (`retries`/`errors`, `idle_seconds`, `duration_min`) + what they said — and JIM offers help **proactively** when a struggle is building, before being asked. Crisis language still escalates; a calm signal is logged but never interrupts |
 | `GET /events/{user_id}` | Event timeline (biometric/activity → detection → guidance → escalation) |
@@ -465,8 +466,11 @@ vaulting profile source material — see [docs/tandem.md](docs/tandem.md).
 | `JIM_MODEL` | `claude-opus-4-8` | Model used for guidance and coaching |
 | `ANTHROPIC_API_KEY` | — | Enables real model replies |
 | `JIM_QRME_URL` | — | QRME tandem: delegate specialist guidance over HTTP |
-| `JIM_PDI_URL` / `JIM_PDI_TOKEN` | — | PDI tandem: seal medical/context payloads in the encrypted vault |
+| `JIM_PDI_URL` / `JIM_PDI_TOKEN` | — | PDI tandem: seal medical, **financial** and context payloads in the encrypted vault — every consented source goes through one namespace and one gate ([docs/tandem.md](docs/tandem.md#qrme--jim-mini--pdi)) |
 | `JIM_CLOUD_URL` / `JIM_CLOUD_TOKEN` | — | Cloud Model Gateway: greater-model guidance with local fallback + opt-in contribution ([docs/cloud-model.md](docs/cloud-model.md)) |
+| `JIM_SITE_ROTA` / `JIM_SITE_TZ` | — / `UTC` | Workplace relay: who is on shift, in JSON, evaluated in the site's own timezone ([docs/beacons.md](docs/beacons.md#who-is-on-and-reaching-them)) |
+| `JIM_SITE_ROSTER` | — | The older, flat form — plain names, always on. Still supported |
+| `JIM_NOTIFY_URL` / `JIM_NOTIFY_SECRET` | — | Where an escalation is actually delivered; signed HMAC-SHA256. Unset = queued, and the escalation says nobody was reached |
 
 ## Cloud model — use a greater model, and contribute to it
 
@@ -509,9 +513,11 @@ image insights, community challenges, real emergency-services dispatch, and a
 specialist knowledge-pack marketplace — represented structurally, not as live
 integrations.
 
-**Not yet built** for [care beacons](docs/beacons.md): a notification
-transport (`escalate` records who was notified; JIM rings nobody), and shift
-awareness — `JIM_SITE_ROSTER` is a list of names in order, not a rota.
+**Not built** for [care beacons](docs/beacons.md): a transport of JIM's own
+— it posts a signed envelope to `JIM_NOTIFY_URL` and stops, so the SMS gateway
+or pager behind it is the deployment's — and a scheduling product.
+`jim/rota.py` knows people, days, hours and the site's timezone; it does not
+know leave, swaps or fairness.
 
 ## Related projects
 
