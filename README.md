@@ -275,6 +275,20 @@ from a phone when you are not on the same network:
 The key gates *creating an account here*: anyone already enrolled keeps
 working, and a parent adding a child is authorized by their own token.
 
+The `Dockerfile` packages the console and the API into one image so a hosted
+instance serves both from the same origin, exactly like the phone flow does:
+
+```bash
+docker build -t jim-mini .
+docker run -p 8200:8200 -v jim-data:/data \
+  -e JIM_PUBLIC_URL=https://guardian.example.com \
+  -e JIM_SIGNUP_KEY="$(openssl rand -base64 24)" jim-mini
+```
+
+[docs/hosting.md](docs/hosting.md) covers the rest — TLS (browsers refuse
+geolocation without it, so escalation needs it), what mounting `/data`
+protects, and what holding other people's health data commits you to.
+
 Without `JIM_PUBLIC_URL`, the address is local-network only and deliberately
 not reachable from the internet — your health data stays on your own
 network. Everything still
