@@ -66,6 +66,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   The ceiling did not move: a notification channel is not a siren, and a test
   runs the roster to exhaustion to prove `notify_contact` still caps it.
 
+  **Screen 60 was advertising the feature this replaced.** *"Roster in order ·
+  night-tech → supervisor → lead"* is the flat list, drawn last round and still
+  in the README gallery. It reads *On shift, not in order · 18:00–06:00 ·
+  Friday's night* now, and the card next to it names the page rather than the
+  note in a table. Rendered and checked; `clock` is not in this repo's icon set
+  and would have drawn a bare dot, so it uses `watch`.
+
   **A config typo cannot take the escalation path down.** `RotaError`'s own
   docstring claimed it was *"raised at load, never at 3am"* — but nothing reads
   the rota at start-up, so it was raised at exactly 3am: one typo (`"funday"`
