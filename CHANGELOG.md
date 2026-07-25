@@ -6,13 +6,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.8] — 2026-07-25
+
+### Fixed
+
+- **`[0.1.5]` and `[0.1.6]` linked to releases that do not exist.** Both
+  versions were cut — changelog, notes, version bumps — but their `app-v*` tags
+  were never pushed, so those two entries pointed at 404s. They now point at
+  their release-prep commits. Deliberately **not** fixed by backfilling the
+  tags: pushing them now would fire the installer build and publish v0.1.5 and
+  v0.1.6 releases *dated after* v0.1.7, putting superseded installers at the top
+  of the page people download from. [docs/releasing.md](docs/releasing.md)
+  records that reasoning.
+
+### Changed
+
+- **There are no functional changes to JIM-mini in this release.** No API, no
+  schema, no behaviour moved. The substance at 0.1.8 is QRME's: a live
+  desk stops being only something you watch — you can ask to come up on the
+  stream, and the room's reactions render on the picture rather than beside it.
+  Nothing in it asked JIM-mini to change.
+
 ## [0.1.7] — 2026-07-25
 
 ### Changed
 
 - **The three products are now cut as one release** — documented in
-  [docs/releasing.md](docs/releasing.md), and in QRME's and PDI' copies of the same
-  file. Same number, same pass, even when a repository has nothing of its own
+  [docs/releasing.md](docs/releasing.md), and in QRME's and PDI's copies of the
+  same file. Same number, same pass, even when a repository has nothing of its own
   to ship that round; an empty round says so in those words rather than being
   padded. Through v0.1.5 each repository cut whenever it happened to have work,
   so the numbers matched only by coincidence — which is how QRME reached 0.1.6
@@ -196,7 +217,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.1.7...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.1.8...HEAD
+[0.1.8]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.8
 [0.1.7]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.7
 [0.1.6]: https://github.com/davidsbianchi1984/jim-mini/commit/a930bcf
 [0.1.5]: https://github.com/davidsbianchi1984/jim-mini/commit/c80c227

@@ -1,50 +1,38 @@
-# JIM-mini v0.1.7 — release notes
+# JIM-mini v0.1.8 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.1.7` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.1.8` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.1.7** — the first release cut under the new rule that the three
-products ship as one. One of three interoperating products (with
+**JIM-mini v0.1.8** — cut alongside QRME and PDI, as the three always
+are now. One of three interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
 [pdi](https://github.com/davidsbianchi1984/pdi)), all three at this
 version.
 
 ### What changed in JIM-mini
 
-**Documentation only. No API, no schema, no behaviour change.**
+**Nothing functional.** No API, no schema, no behaviour moved.
 
-[docs/releasing.md](docs/releasing.md) now records how the three products are
-released, so the next round does not have to rediscover it:
+The only change here is a repair to the changelog itself: `[0.1.5]` and
+`[0.1.6]` linked to release tags that were never pushed, so both were 404s.
+They now point at their release-prep commits. Deliberately *not* fixed by
+backfilling those tags — pushing them now would fire the installer build and
+publish two superseded releases dated *after* v0.1.7, at the top of the page
+people download from. [docs/releasing.md](docs/releasing.md) records that
+reasoning, because an unexplained gap in a tag sequence is exactly what someone
+later "fixes" without knowing why it was left.
 
-- **They are versioned as one release** — same number, same pass, even when a
-  repository has nothing of its own to ship that round.
-- **A repository with nothing to ship still cuts, and says so** in those words.
-  A note that inflates an empty round teaches people to skim the ones that are
-  not empty.
-- **Tag the release-prep commit, not the tip of `main`.** Work keeps landing
-  while a release is cut, and anything arriving after the changelog is
-  sectioned belongs under `[Unreleased]` rather than to the version being
-  tagged.
-
-That last rule is written down because it already nearly bit: QRME's v0.1.6 tag
-point sits behind its `main`, and tagging the tip would have published features
-under notes that do not mention them.
-
-Through v0.1.5 each repository cut whenever it happened to have work, so the
-numbers matched only by coincidence — which is how QRME reached 0.1.6 alone
-while this one sat at 0.1.5. v0.1.6 aligned them by hand; this is the first
-round where the alignment is the process rather than a correction.
-
-**If you are already running 0.1.6, this upgrade is optional.** Take it to keep
+**If you are already running 0.1.7, this upgrade is optional.** Take it to keep
 the three products reporting matching versions; skip it and you lose nothing.
 
-### What is in the suite at 0.1.7
+### What is in the suite at 0.1.8
 
-The substance this round is QRME's: live desks left behind as printed codes, a
-full audience layer (like, comment, share, subscribe), and a marketplace that
-can finally take payments. See
+The substance is QRME's: a live desk stops being only something you watch. You
+can ask to come up on the stream — which the host has to grant, and which needs
+a verified adult on a rated desk — and the room's comments, likes, shares and
+gifts render *on* the picture rather than beside it. See
 [QRME's notes](https://github.com/davidsbianchi1984/qrme/releases). Nothing in
 it asked JIM-mini to change.
 
