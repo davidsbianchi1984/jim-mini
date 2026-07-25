@@ -15,6 +15,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stays the operator's rather than open registration; unset leaves LAN use
   exactly as it was, and the gate never blocks an enrolled user or a parent
   adding a child under their own token.
+- **Deployable as one container** — a two-stage `Dockerfile` builds the console
+  and installs the API into a single image, so a hosted instance serves UI and
+  API from one origin exactly as the phone flow does. Runs as a non-root user,
+  keeps the database on a `/data` volume, honours `$PORT`, and reports health
+  at `/health`. [docs/hosting.md](docs/hosting.md) covers the operator side:
+  the two postures (local vs published), why TLS isn't optional here (tokens
+  in headers, and browsers refuse geolocation without it — so escalation needs
+  it), what holding someone else's health data commits you to including the
+  HIPAA/BAA question, and plainly what the deployment does *not* give you (no
+  multi-tenancy, rate limiting, backups, or uptime guarantee).
 
 ## [0.1.4] — 2026-07-24
 

@@ -1,11 +1,24 @@
+# Kept out of the build context. The image builds the console itself (stage 1)
+# and installs the package (stage 2), so nothing built locally should ride
+# along — a stale local dist shipping instead of a fresh build is the bug this
+# prevents.
+**/node_modules
+**/dist
+**/release
 **/__pycache__
 **/*.pyc
+*.egg-info
+.venv
+.git
+.github
+
+# Local data must never be baked into an image — least of all health data.
 *.db
 *.db-*
-app/node_modules
-launcher/node_modules
-app/dist
-launcher/dist
-release
-.git
-.venv
+
+# Design, native-app, and packaging material the service does not serve.
+docs/screens
+docs/desktop
+docs/watch
+native
+assets
