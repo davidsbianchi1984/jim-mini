@@ -32,6 +32,20 @@ Check what `[Unreleased]` holds before choosing the commit.
 numbers drift again, and the next round has to decide whether to re-align or
 let them diverge — which is the state this rule exists to end.
 
+### v0.1.5 and v0.1.6 have no tags
+
+They were released — changelog, notes, version bumps — but the `app-v*` tags
+were never pushed, so no GitHub Release exists for either. Their CHANGELOG
+entries link to the release-prep **commit** instead of a tag, which is why
+those two lines look different from the rest.
+
+They are deliberately **not** being backfilled. Pushing those tags now would
+fire `desktop-release.yml`, build installers on real runners, and publish
+v0.1.5 and v0.1.6 Releases dated *after* v0.1.7 — putting superseded
+installers at the top of a page people download from. The dead links were the
+only real problem, and pointing them at commits fixes that without publishing
+anything.
+
 ## Cut a release
 
 1. Update [CHANGELOG.md](../CHANGELOG.md) — move `Unreleased` items under the new
