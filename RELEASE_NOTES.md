@@ -1,58 +1,61 @@
-# JIM-mini v0.1.4 — release notes
+# JIM-mini v0.1.5 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.1.4` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.1.5` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini (Guardian) v0.1.4** — run it your way: one command prints
-every way to run the Guardian and you pick the device — your phone (scan
-a QR straight off the terminal), this PC, a packaged installer, or the
-headless API. One of three interoperating products (with
+**JIM-mini (Guardian) v0.1.5** — the release where the native apps stop
+being source code and start being builds. Every phone and desktop app in
+this repository now goes through a real compiler on every change, and the
+whole Guardian ships as one container you can host. One of three
+interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
 [pdi](https://github.com/davidsbianchi1984/pdi)).
 
 ### Highlights
 
-- **`python -m jim` — the launcher menu** — every way to run the Guardian,
-  one command each, so you choose per device: `phone` (the QR flow
-  below), `desktop` (the Electron app on this PC), the packaged installer
-  (no toolchain needed), or `serve` (the headless API alone). Same
-  backend, same data, same token checks behind every door.
-- **`python -m jim phone` — the whole phone setup in one command** —
-  builds the console if it's missing (first-run `npm install` included),
-  prints the pairing URL **with a QR code drawn straight into the
-  terminal**, and serves on your local network. Scan, Add to Home
-  Screen, done.
-- **The Guardian on your phone** — the API serves the built console at `/app`
-  (one origin for UI and API — nothing to configure on the phone);
-  `GET /pair` returns the URL on your local network with a scannable QR,
-  and the Guardian installs to the home screen as a standalone app with a
-  thumb-reachable bottom tab bar. Local network only, by design; the
-  service worker never caches API traffic, so monitoring and guidance are
-  always live.
-- **Terms of Service** — docs/terms.md (v1.0) leads with the section that
-  matters most: JIM is a wellness tool, **not a medical device** — call
-  911 first, 988 in crisis, and detection can be wrong in both
-  directions. Assumption of risk and release, the robot-resuscitation
-  boundary (fully autonomous resuscitation still requires the separate
-  signed waiver, never for a minor, and a robot never delivers the
-  shock), parent/guardian enrollment, warranty disclaimer, and liability
-  cap. Served versioned at `GET /terms`; enrollment records the accepted
-  version + timestamp on the account, and the native welcome screens
-  carry the clickwrap notice.
-- **Signed, notarized builds wired** — hardened runtime + entitlements +
-  notarization in the electron-builder config: adding the Apple/Windows
-  signing secrets produces Gatekeeper-clean, SmartScreen-friendly
-  installers. docs/releasing.md walks through obtaining the certificates.
-- **HIPAA posture** — docs/hipaa-baa.md now points at the signable BAA
-  template maintained in the PDI repo, where the vault enforces it in
-  code before any HIPAA-program work.
+- **The native apps are compiled in CI.** Until this release the Swift,
+  Kotlin and C# in `native/` had never been through a compiler here — they
+  were checked by reading, and by brace/XML well-formedness, which catches a
+  typo and nothing else. iOS builds via XcodeGen + `xcodebuild`, Android via
+  `gradle assembleDebug`, Windows via Visual Studio's MSBuild. The gate found
+  real defects the moment it ran.
+- **Two of them the compiler caught, not a reviewer.**
+  - The **iOS project spec was invalid** — its XcodeGen `info:` block had no
+    `path`, so `xcodegen generate` failed outright and the Xcode project could
+    never have been produced at all. Fixing it also restores the
+    local-networking exemption the Simulator needs to reach the API.
+  - **Windows would not compile the journal list** — `entries` is an array, an
+    array converts implicitly to `Span<T>`, and so `.Reverse()` bound to the
+    in-place **void** overload instead of LINQ's, leaving the following
+    `.Select` attached to nothing.
+- **Failures are readable now.** Gradle prints Kotlin diagnostics well above
+  its `FAILURE` block and MSBuild scrolls errors past the per-project noise,
+  so a red run used to report an exit code and nothing else. Both steps now
+  re-surface the actual diagnostics in a collapsed group on failure.
+- **Deployable as one container** — a two-stage `Dockerfile` builds the
+  console and installs the API into a single image, so a hosted instance
+  serves UI and API from one origin exactly as the phone flow does. Non-root
+  user, database on a `/data` volume, honours `$PORT`, health at `/health`.
+- **Published deployments** — `JIM_PUBLIC_URL` makes `GET /pair` advertise the
+  deployment's public address (QR included) instead of a LAN address, so the
+  phone flow works hosted or local from one code path. `JIM_SIGNUP_KEY` gates
+  enrollment behind a header so a published instance stays the operator's
+  rather than open registration — and it never blocks an enrolled user, or a
+  parent adding a child under their own token.
+- **[docs/hosting.md](docs/hosting.md) — the operator's side, stated plainly.**
+  The two postures, why TLS is not optional here (tokens ride in headers, and
+  browsers refuse geolocation without it, so escalation needs it), what
+  holding someone else's health data commits you to including the HIPAA/BAA
+  question, and what the deployment does **not** give you: no multi-tenancy,
+  no rate limiting, no backups, no uptime guarantee.
 
 ### Verification
 
-228 tests green; live-server smoke flows pass; the desktop app builds
-clean; the cross-product suite smoke (run from qrme) passes end to end.
+240 tests green. The console builds clean. The native compile gate is green
+on all three platforms — which for this release is the headline rather than a
+footnote: it is the first time that has ever been true here.
 
 ### Install
 
