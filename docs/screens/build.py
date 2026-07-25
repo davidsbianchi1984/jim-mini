@@ -1181,8 +1181,8 @@ SCREENS = [
     ], button=("Place a beacon", "brand")),
     dict(num=60, title="Workplace Relay", sub="When nobody answers", hero=None, accent="cyan", tab=0, cards=[
         dict(icon="bell", color="brand", k="Plant room", s="lone worker · site beacon", pill=("ON CALL", "good")),
-        dict(icon="bolt", color="cyan", k="Roster in order", s="night-tech → supervisor → lead"),
-        dict(icon="person", color="amber", k="Accepted, not cleared", s="somebody is coming, not over"),
+        dict(icon="watch", color="cyan", k="On shift, not in order", s="18:00–06:00 · Friday's night"),
+        dict(icon="phone", color="amber", k="Paged, then accepted", s="a webhook, not a note in a table"),
         dict(icon="eye", color="green", k="Incident scope", s="never the worker's health record"),
         dict(icon="shield", color="red", k="Escalates people", s="never sirens — the ceiling holds"),
     ], button=("Open incidents", "brand")),
