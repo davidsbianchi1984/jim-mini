@@ -1,0 +1,390 @@
+"""Care beacons and the workplace relay.
+
+Three claims carry this feature, and most of what follows is an attempt to
+break one:
+
+* **A beacon publishes watch status, never subject status.** So the tests read
+  the whole stage-one card as one string and look for the birthdate, the
+  contact number, the placement note and the label in it, rather than checking
+  the handful of fields somebody remembered to omit.
+* **A stranger's tap can never dispatch an ambulance.** So the tests push a
+  ``critical`` alarm — which bases at ``emergency_services`` — through the
+  ceiling and assert where it lands.
+* **The relay sees the incident, never the person.** Same whole-string check,
+  against the payload the roster would be handed.
+"""
+
+import json
+
+import pytest
+
+from jim import beacons, escalation, relay
+
+
+def _adult(client, name="Ada Byron", **extra):
+    body = {"display_name": name, "birthdate": "1970-04-02",
+            "terms_consent": True, "resting_heart_rate": 60,
+            "emergency_name": "Kin", "emergency_phone": "+15555550123",
+            "contact_consent": True}
+    body.update(extra)
+    r = client.post("/enroll", json=body, headers={})
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def _auth(tok):
+    return {"Authorization": f"Bearer {tok}"}
+
+
+def _place(client, uid, tok, **body):
+    body.setdefault("label", "fridge door")
+    r = client.post(f"/users/{uid}/beacons", json=body, headers=_auth(tok))
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+# --- stage one: what a stranger sees before doing anything ----------------
+
+def test_the_card_names_a_person_and_says_nothing_about_them(client):
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"],
+               label="fridge door", placement="kitchen, ground floor")
+
+    card = client.get(f"/c/{b['id']}").json()
+    assert card["first_name"] == "Ada"       # enough to speak to them
+    assert card["watched"] is True
+    assert card["status"] is None            # never how they are
+    assert card["location"] is None          # never where they are
+    assert "did not call for help" in card["badge"]
+
+    # The whole card, not three chosen fields: nothing in it is about them.
+    blob = json.dumps(card).lower()
+    for leak in ("1970", "byron", "5555550123", "kin", "kitchen", "fridge"):
+        assert leak not in blob, f"the card leaked {leak!r}"
+
+
+def test_the_badge_is_a_claim_rather_than_a_silence(client):
+    """The worst failure this feature has is somebody walking away believing
+    the QR handled it, so the page says so before the tap and after it."""
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    assert client.get(f"/c/{b['id']}").json()["badge"] == beacons.BADGE_BEFORE
+    raised = client.post(f"/c/{b['id']}/alarm", json={}).json()
+    assert raised["badge"] == beacons.BADGE_AFTER
+    assert "not an emergency service" in raised["badge"]
+
+
+def test_scans_are_counted_for_the_owner(client):
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    for _ in range(3):
+        client.get(f"/c/{b['id']}")
+    mine = client.get(f"/users/{u['id']}/beacons",
+                      headers=_auth(u["user_token"])).json()
+    assert mine[0]["scans"] == 3
+
+
+def test_a_retired_code_is_indistinguishable_from_one_that_never_existed(client):
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    assert client.delete(f"/beacons/{b['id']}",
+                         headers=_auth(u["user_token"])).status_code == 200
+
+    retired = client.get(f"/c/{b['id']}")
+    never = client.get("/c/cbn_neverexisted")
+    assert retired.status_code == never.status_code == 404
+    assert retired.json() == never.json()
+
+
+# --- stage two: the alarm is what buys the Medical ID ---------------------
+
+def test_raising_the_alarm_is_what_opens_the_medical_id(client):
+    u = _adult(client, known_conditions=["anxiety"])
+    b = _place(client, u["id"], u["user_token"])
+
+    # Before: nothing clinical anywhere on the page.
+    assert "medical_id" not in client.get(f"/c/{b['id']}").json()
+
+    out = client.post(f"/c/{b['id']}/alarm",
+                      json={"message": "collapsed in the hall"}).json()
+    assert out["raised"] is True
+    assert out["medical_id"] is not None
+    assert out["medical_id"]["emergency_contact"]["phone"] == "+15555550123"
+
+
+def test_an_alarm_cannot_dispatch_an_ambulance(client):
+    """A critical severity bases at emergency_services. The ceiling is the
+    only thing standing between an anonymous tap and a dispatch."""
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    out = client.post(f"/c/{b['id']}/alarm", json={}).json()
+
+    assert out["tier"] == "notify_contact"
+    assert out["tier"] != "emergency_services"
+    # The need did not vanish — it moved to the person standing there.
+    assert out["call_emergency_services_yourself"] is True
+
+
+def test_the_second_finder_joins_rather_than_being_dropped(client):
+    """A spammed alarm trains a family to ignore the one that matters — but
+    two people finding the same casualty is the case this exists for."""
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+
+    first = client.post(f"/c/{b['id']}/alarm", json={"message": "he's down"}).json()
+    second = client.post(f"/c/{b['id']}/alarm",
+                         json={"message": "ambulance called"}).json()
+
+    assert second["joined_existing"] is True
+    assert second["alarm"] == first["alarm"]
+
+    alarms = client.get(f"/users/{u['id']}/alarms",
+                        headers=_auth(u["user_token"])).json()
+    assert len(alarms) == 1
+    assert alarms[0]["messages"] == ["he's down", "ambulance called"]
+
+
+def test_an_alarm_lands_in_the_owners_event_timeline(client):
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    client.post(f"/c/{b['id']}/alarm", json={})
+
+    events = client.get(f"/events/{u['id']}", headers=_auth(u["user_token"])).json()
+    escalations = [e for e in events if e["type"] == "escalation"]
+    assert escalations, "a beacon alarm is an escalation and belongs on the timeline"
+
+
+def test_alarms_belong_to_the_person_they_are_about(client):
+    mine = _adult(client, name="Mine")
+    theirs = _adult(client, name="Theirs")
+    b = _place(client, mine["id"], mine["user_token"])
+    client.post(f"/c/{b['id']}/alarm", json={})
+
+    r = client.get(f"/users/{mine['id']}/alarms",
+                   headers=_auth(theirs["user_token"]))
+    assert r.status_code == 403
+
+
+def test_clearing_an_alarm_is_idempotent(client):
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    a = client.post(f"/c/{b['id']}/alarm", json={}).json()
+
+    first = client.post(f"/users/{u['id']}/alarms/{a['alarm']}/clear",
+                        headers=_auth(u["user_token"]))
+    assert first.status_code == 200 and first.json()["state"] == "cleared"
+    again = client.post(f"/users/{u['id']}/alarms/{a['alarm']}/clear",
+                        headers=_auth(u["user_token"]))
+    assert again.status_code == 404
+
+
+# --- children --------------------------------------------------------------
+
+def _child(client, parent):
+    r = client.post(f"/guardians/{parent['id']}/children",
+                    json={"display_name": "Sam Byron", "birthdate": "2015-06-01",
+                          "guardian_phone": "+15555550999"},
+                    headers=_auth(parent["user_token"]))
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def test_a_minors_beacon_is_placed_by_their_guardian(client):
+    parent = _adult(client, name="Parent One")
+    child = _child(client, parent)
+    kid_id = child["id"]
+
+    r = client.post(f"/users/{kid_id}/beacons", json={"label": "backpack"},
+                    headers=_auth(parent["user_token"]))
+    assert r.status_code == 201, r.text
+    assert r.json()["user_id"] == kid_id
+
+
+def test_a_minors_beacon_never_opens_the_clinical_stage(client):
+    """A stranger holding a backpack does not get a child's medical history
+    for tapping a button. The guardian is raised instead."""
+    parent = _adult(client, name="Parent Two")
+    child = _child(client, parent)
+    kid_id = child["id"]
+    b = client.post(f"/users/{kid_id}/beacons", json={"label": "backpack"},
+                    headers=_auth(parent["user_token"])).json()
+
+    out = client.post(f"/c/{b['id']}/alarm", json={"message": "lost child"}).json()
+    assert out["raised"] is True
+    assert out["minor"] is True
+    assert out["medical_id"] is None
+    assert out["routed_to"] == "guardian"
+
+    # And the card before it was no more forthcoming.
+    card = client.get(f"/c/{b['id']}").json()
+    assert card["status"] is None and card["location"] is None
+
+
+# --- the ceiling, as a unit -----------------------------------------------
+
+def test_the_ceiling_is_the_only_rule_that_lowers_a_tier(client):
+    high = escalation.decide("critical", "cautious", contactable=True)
+    assert high["tier"] == "emergency_services"
+
+    capped = escalation.decide("critical", "cautious", contactable=True,
+                               ceiling="notify_contact")
+    assert capped["tier"] == "notify_contact"
+    assert capped["clipped_by_ceiling"] is True
+    assert capped["call_emergency_services_yourself"] is True
+    assert any("ceiling" in step for step in capped["path"])
+
+
+def test_the_ceiling_binds_even_the_crisis_floor(client):
+    """The hardest floor in the module, and the ceiling still holds — because
+    the alternative is an anonymous tap dispatching an ambulance. The result
+    says so out loud rather than quietly returning a lower tier."""
+    capped = escalation.decide("critical", crisis=True, contactable=True,
+                               ceiling="notify_contact")
+    assert capped["tier"] == "notify_contact"
+    assert capped["call_emergency_services"] is False
+    assert capped["call_emergency_services_yourself"] is True
+
+
+def test_without_a_ceiling_nothing_moved(client):
+    """Regression: the ceiling is opt-in, and every existing caller passes
+    none. Their behaviour must be byte-identical."""
+    for sev in ("info", "guidance", "critical"):
+        for sens in ("cautious", "balanced", "assertive"):
+            d = escalation.decide(sev, sens, contactable=True)
+            assert d["clipped_by_ceiling"] is False
+            assert d["call_emergency_services_yourself"] is False
+    assert escalation.decide("critical", contactable=True)["tier"] == \
+        "emergency_services"
+
+
+def test_the_ceiling_is_published_next_to_the_floors(client):
+    """A user can see how their dial behaves before anything happens; the
+    ceiling belongs in the same place, for the same reason."""
+    u = _adult(client)
+    body = client.get(f"/escalation-policy/{u['id']}",
+                      headers=_auth(u["user_token"])).json()
+    assert "anonymous_beacon_alarm" in body["ceilings"]
+    assert "notify_contact" in body["ceilings"]["anonymous_beacon_alarm"]
+    assert body["safety_floors"]["crisis_language"] == "emergency_services"
+
+
+# --- the workplace relay ---------------------------------------------------
+
+def test_a_personal_deployment_has_no_relay(client, monkeypatch):
+    monkeypatch.delenv("JIM_SITE_ROSTER", raising=False)
+    body = client.get("/relay/roster").json()
+    assert body["configured"] is False
+    assert body["ceiling"] == "notify_contact"
+    # Unset is not broken — it is a home, where notify_contact is the answer.
+    assert body["roster"] == list(relay.DEFAULT_ROSTER)
+
+
+def test_the_relay_works_the_roster_in_order_and_does_not_repeat(client, monkeypatch):
+    monkeypatch.setenv("JIM_SITE_ROSTER", "night-tech,supervisor,site-lead")
+    u = _adult(client, name="Lone Worker")
+    b = _place(client, u["id"], u["user_token"], label="plant room", kind="site")
+    a = client.post(f"/c/{b['id']}/alarm", json={"message": "man down"}).json()
+    A = _auth(u["user_token"])
+
+    seen = []
+    for _ in range(3):
+        out = client.post(
+            f"/users/{u['id']}/alarms/{a['alarm']}/escalate", headers=A).json()
+        seen.append(out["notified"])
+    assert seen == ["night-tech", "supervisor", "site-lead"]
+
+    # Roster exhausted: not an error, not silent, and still no dispatch.
+    out = client.post(f"/users/{u['id']}/alarms/{a['alarm']}/escalate",
+                      headers=A).json()
+    assert out["exhausted"] is True
+    assert out["tried"] == seen
+    assert out["call_emergency_services_yourself"] is True
+
+
+def test_accepting_is_not_the_same_as_clearing(client, monkeypatch):
+    """Accepting says somebody is coming; clearing says it is over.
+    Conflating them is how an alarm gets marked handled by being seen."""
+    monkeypatch.setenv("JIM_SITE_ROSTER", "night-tech")
+    u = _adult(client, name="Lone Worker")
+    b = _place(client, u["id"], u["user_token"], label="plant room", kind="site")
+    a = client.post(f"/c/{b['id']}/alarm", json={}).json()
+    A = _auth(u["user_token"])
+
+    out = client.post(f"/users/{u['id']}/alarms/{a['alarm']}/accept",
+                      json={"responder": "R. Okafor"}, headers=A).json()
+    assert out["accepted_by"] == "R. Okafor"
+    assert out["state"] == "open"
+
+    alarms = client.get(f"/users/{u['id']}/alarms", headers=A).json()
+    assert alarms[0]["state"] == "open"
+    assert alarms[0]["accepted_by"] == "R. Okafor"
+
+
+def test_an_anonymous_acceptance_is_refused(client, monkeypatch):
+    monkeypatch.setenv("JIM_SITE_ROSTER", "night-tech")
+    u = _adult(client, name="Lone Worker")
+    b = _place(client, u["id"], u["user_token"], label="plant room", kind="site")
+    a = client.post(f"/c/{b['id']}/alarm", json={}).json()
+
+    r = client.post(f"/users/{u['id']}/alarms/{a['alarm']}/accept",
+                    json={"responder": "   "}, headers=_auth(u["user_token"]))
+    assert r.status_code == 422
+    assert "needs a name" in r.text
+
+
+def test_an_accepted_incident_leaves_the_queue(client, monkeypatch):
+    monkeypatch.setenv("JIM_SITE_ROSTER", "night-tech")
+    u = _adult(client, name="Lone Worker")
+    b = _place(client, u["id"], u["user_token"], label="plant room", kind="site")
+    a = client.post(f"/c/{b['id']}/alarm", json={}).json()
+    A = _auth(u["user_token"])
+
+    assert len(client.get(f"/users/{u['id']}/incidents", headers=A).json()) == 1
+    client.post(f"/users/{u['id']}/alarms/{a['alarm']}/accept",
+                json={"responder": "R. Okafor"}, headers=A)
+    assert client.get(f"/users/{u['id']}/incidents", headers=A).json() == []
+
+
+def test_the_incident_carries_nothing_about_the_worker(client, monkeypatch):
+    """The employer bought the deployment. That does not entitle them to what
+    is inside it — so the payload is built from the incident, not the person."""
+    monkeypatch.setenv("JIM_SITE_ROSTER", "night-tech")
+    u = _adult(client, name="Rosa Delgado", known_conditions=["anxiety"])
+    b = _place(client, u["id"], u["user_token"], label="plant room", kind="site")
+    client.post(f"/c/{b['id']}/alarm", json={"message": "man down in the plant room"})
+
+    incidents = client.get(f"/users/{u['id']}/incidents",
+                           headers=_auth(u["user_token"])).json()
+    assert len(incidents) == 1
+    assert incidents[0]["scope"] == "incident"
+
+    blob = json.dumps(incidents[0]).lower()
+    for leak in ("rosa", "delgado", "anxiety", "1970", "5555550123", u["id"]):
+        assert leak not in blob, f"the incident leaked {leak!r}"
+
+
+def test_a_personal_beacon_is_not_a_site_incident(client, monkeypatch):
+    monkeypatch.setenv("JIM_SITE_ROSTER", "night-tech")
+    u = _adult(client)
+    home = _place(client, u["id"], u["user_token"], label="fridge")
+    client.post(f"/c/{home['id']}/alarm", json={})
+    assert client.get(f"/users/{u['id']}/incidents",
+                      headers=_auth(u["user_token"])).json() == []
+
+
+def test_guidance_falls_back_to_the_one_instruction_that_is_always_right(client):
+    out = client.post("/alarms/alrm_x/guidance",
+                      json={"question": "he is not responding"}).json()
+    assert out["source"] == "local"
+    assert "emergency number" in out["answer"]
+
+
+def test_guidance_routes_through_qrme_when_tandem_is_configured(make_tandem,
+                                                               monkeypatch):
+    monkeypatch.setenv("JIM_SITE_FIRSTAID_PROFILE", "@dr_amara_osei")
+    c = make_tandem()
+    out = c.post("/alarms/alrm_x/guidance",
+                 json={"question": "he is not responding"}).json()
+    assert out["source"] == "qrme"
+    assert out["ai"] is True
+    assert "[QRME specialist]" in out["answer"]

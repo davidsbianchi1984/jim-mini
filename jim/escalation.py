@@ -21,6 +21,18 @@ decision can be replayed and defended.
 **Safety floors that no dial can lower:** crisis language always lands at
 ``emergency_services``; a ``critical`` detection never falls below
 ``notify_contact``, whatever the sensitivity.
+
+**And one ceiling.** Every other rule here is a floor. ``ceiling`` is the
+exception, and it exists for a caller who is not the user: a stranger who
+scanned a care beacon (:mod:`jim.beacons`) raises an alarm capped at
+``notify_contact``, because a passer-by's tap must never dispatch an ambulance
+on somebody else's behalf — a false dispatch is a real one not going somewhere
+else.
+
+When a ceiling clips a floor the result says so out loud (``clipped_by_ceiling``
+and ``call_emergency_services_yourself``) rather than quietly returning a lower
+tier. The intent behind the floor is not discarded; it is handed to the person
+standing there, who can dial faster than any escalation could anyway.
 """
 
 from __future__ import annotations
@@ -53,7 +65,7 @@ def _clamp(i: int) -> int:
 def decide(severity: str, sensitivity: str = "balanced", *,
            condition: str | None = None, known: list[str] | None = None,
            confidence: float = 1.0, contactable: bool = False,
-           crisis: bool = False) -> dict:
+           crisis: bool = False, ceiling: str | None = None) -> dict:
     """Resolve a situation to an escalation tier + concrete actions.
 
     Parameters
@@ -65,6 +77,9 @@ def decide(severity: str, sensitivity: str = "balanced", *,
     confidence    0..1 — for a forecast, how sure we are (gates predictive bumps).
     contactable   whether a reachable emergency contact exists.
     crisis        crisis / self-harm language present (hard safety floor).
+    ceiling       a tier this decision may not exceed, for a caller who is not
+                  the user (an anonymous beacon alarm). Applied after the
+                  floors, and recorded when it clips one.
     """
     known = known or []
     path: list[str] = []
@@ -97,6 +112,19 @@ def decide(severity: str, sensitivity: str = "balanced", *,
         idx = len(TIERS) - 1
         path.append("crisis language: hard floor at emergency_services")
 
+    # The ceiling — last, so it binds even the floors above. It is the only
+    # rule in this module that lowers a tier, and it only ever applies to a
+    # caller who is not the user.
+    clipped = False
+    if ceiling is not None:
+        cap = TIERS.index(ceiling)
+        if idx > cap:
+            clipped = True
+            path.append(
+                f"ceiling '{ceiling}': an anonymous caller cannot raise this "
+                f"above {ceiling} — tell them to call emergency services")
+            idx = cap
+
     tier = TIERS[idx]
 
     # Assemble cumulative actions, then reconcile with reality: if the ladder
@@ -117,6 +145,10 @@ def decide(severity: str, sensitivity: str = "balanced", *,
         "notify_contact": notify and contactable,
         "notify_contact_intended": notify,
         "call_emergency_services": call_services,
+        "clipped_by_ceiling": clipped,
+        # When the ceiling clipped a floor, the need did not go away — it moved
+        # to the person standing there, who is faster than any escalation.
+        "call_emergency_services_yourself": clipped,
         "sensitivity": sensitivity,
         "severity": severity,
         "rationale": path[-1],
@@ -138,5 +170,10 @@ def policy(sensitivity: str = "balanced") -> dict:
         "safety_floors": {
             "crisis_language": "emergency_services",
             "critical_detection": "notify_contact (minimum)",
+        },
+        "ceilings": {
+            "anonymous_beacon_alarm": (
+                "notify_contact (maximum) — a stranger who scanned a care "
+                "beacon can raise the people watching, never an ambulance"),
         },
     }

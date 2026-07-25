@@ -9,17 +9,18 @@ from datetime import date, datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 
-from . import (app_connectors, auth, catalog, coach, db, escalation, family,
-               guardian, i18n, life, llm, mobile, research, robotics, social,
-               terms as terms_mod)
+from . import (app_connectors, auth, beacons, catalog, coach, db, escalation,
+               family, guardian, i18n, life, llm, mobile, relay, research,
+               robotics, social, terms as terms_mod)
 from .models import (
-    ActivityObserve, AppCollect, AppConnect, AppInvoke, BiometricSample, CheckIn,
+    ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
+    BeaconPlace, BiometricSample, CheckIn,
     ChildEnroll,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
-    RobotBind,
+    RobotBind, RelayAccept, RelayQuestion,
     LanguageChoice, RobotCommand, TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister,
@@ -406,6 +407,137 @@ def create_app(qrme_client: QRMEClient | None = None,
             buf, kind="svg", scale=8, border=2,
             dark="#b3261e", light="#ffffff")   # medical red on white
         return Response(content=buf.getvalue(), media_type="image/svg+xml")
+
+    # -- care beacons: a printed code on the things around a watched person --
+    # Distinct from the Medical ID above: that card travels with the person and
+    # is *read*; this one stays with a place and is *rung*. The alarm comes
+    # before the disclosure, and its ceiling is notify_contact. docs/beacons.md
+
+    def _beacon_or_404(bid: str, request: Request) -> dict:
+        row = beacons.get(bid)
+        if row is None:
+            raise HTTPException(404, "beacon not found")
+        auth.require(request, "user", row["user_id"])
+        return row
+
+    @app.post("/users/{user_id}/beacons", status_code=201)
+    def place_beacon(user_id: str, body: BeaconPlace, request: Request) -> dict:
+        """Place a beacon. A minor's is guardian-issued only, so the placer is
+        taken from the caller's own token rather than the path."""
+        user = guardian.get_user(user_id)
+        if user is None:
+            raise HTTPException(404, "user not found")
+        who = auth.principal(request)
+        if who is None:
+            raise HTTPException(401, "authentication required")
+        try:
+            return beacons.place(user, body.label, body.placement, body.kind,
+                                 placed_by=who["subject_id"])
+        except beacons.BeaconError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.get("/users/{user_id}/beacons")
+    def list_beacons(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return beacons.for_user(user_id)
+
+    @app.delete("/beacons/{bid}")
+    def retire_beacon(bid: str, request: Request) -> dict:
+        return beacons.retire(_beacon_or_404(bid, request))
+
+    @app.get("/users/{user_id}/alarms")
+    def list_alarms(user_id: str, request: Request,
+                    open_only: bool = False) -> list[dict]:
+        """Who rang while they were away — their token only. Who called on
+        somebody is theirs, not a visitor's to browse."""
+        _user_or_404(user_id, request)
+        return beacons.alarms_for(user_id, open_only)
+
+    @app.post("/users/{user_id}/alarms/{alarm_id}/clear")
+    def clear_alarm(user_id: str, alarm_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        out = beacons.clear(user_id, alarm_id)
+        if out is None:
+            raise HTTPException(404, "no open alarm with that id")
+        return out
+
+    # The public surface. No token — a stranger holding a phone at a sticker is
+    # exactly the caller this exists for.
+
+    @app.get("/c/{bid}")
+    def beacon_card(bid: str) -> dict:
+        """Stage one: a first name, a sentence and a button. Nothing clinical,
+        no location, and no word about how the person is."""
+        card = beacons.card(bid)
+        if card is None:
+            raise HTTPException(404, "this code does not resolve to anything")
+        return card
+
+    @app.get("/c/{bid}/qr.svg")
+    def beacon_qr(bid: str) -> Response:
+        """The printable code, in the same medical red as the Medical ID — a
+        printed code on a person's things should look like the other one."""
+        row = beacons.get(bid)
+        if row is None or not row["active"]:
+            raise HTTPException(404, "this code does not resolve to anything")
+        import segno
+        buf = io.BytesIO()
+        segno.make(f"{_public_base()}/c/{bid}", error="q").save(
+            buf, kind="svg", scale=8, border=2,
+            dark="#b3261e", light="#ffffff")
+        return Response(content=buf.getvalue(), media_type="image/svg+xml")
+
+    @app.post("/c/{bid}/alarm", status_code=201)
+    def raise_alarm(bid: str, body: BeaconAlarm) -> dict:
+        """Stage two. Raising the alarm is what turns a passer-by into a
+        responder, and what earns them the Medical ID — never for a minor."""
+        out = beacons.alarm(bid, body.message, qrme=app.state.qrme)
+        if out is None:
+            raise HTTPException(404, "this code does not resolve to anything")
+        return out
+
+    # -- the workplace relay: the agent that answers when nobody does -------
+
+    @app.get("/relay/roster")
+    def relay_roster() -> dict:
+        """Who the relay works through, and whether one is configured here."""
+        return {"configured": relay.available(), "roster": relay.roster(),
+                "ceiling": beacons.ALARM_TIER,
+                "note": ("the relay escalates people, not sirens — it cannot "
+                         "reach emergency services on anyone's behalf")}
+
+    @app.get("/users/{user_id}/incidents")
+    def list_incidents(user_id: str, request: Request) -> list[dict]:
+        """Open, unaccepted alarms on this account's site beacons — at
+        incident scope, never person scope."""
+        _user_or_404(user_id, request)
+        return relay.open_incidents(user_id)
+
+    @app.post("/users/{user_id}/alarms/{alarm_id}/escalate")
+    def relay_escalate(user_id: str, alarm_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        out = relay.escalate(user_id, alarm_id)
+        if out is None:
+            raise HTTPException(404, "no alarm with that id")
+        return out
+
+    @app.post("/users/{user_id}/alarms/{alarm_id}/accept")
+    def relay_accept(user_id: str, alarm_id: str, body: RelayAccept,
+                     request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            out = relay.accept(user_id, alarm_id, body.responder)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        if out is None:
+            raise HTTPException(404, "no open alarm with that id")
+        return out
+
+    @app.post("/alarms/{alarm_id}/guidance")
+    def relay_guidance(alarm_id: str, body: RelayQuestion) -> dict:
+        """What to tell whoever is waiting. Public: the person standing over a
+        colleague has no account and needs an answer in ninety seconds."""
+        return relay.guidance(alarm_id, body.question, qrme=app.state.qrme)
 
     @app.post("/emergency/{user_id}", status_code=201)
     def emergency(user_id: str, body: EmergencyRequest,

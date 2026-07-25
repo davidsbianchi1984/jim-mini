@@ -335,6 +335,40 @@ CREATE TABLE IF NOT EXISTS waivers (
     revoked    INTEGER NOT NULL DEFAULT 0
 );
 
+-- Care beacons (jim/beacons.py): a printed code on the things around a watched
+-- person — a fridge door, a wristband, a walker — that a stranger can scan to
+-- raise whoever is watching. Distinct from medical_cards: that card travels
+-- with the person and is read, this code stays with a place and is *rung*.
+-- Site beacons belong to a workplace deployment rather than a home; see
+-- jim/relay.py. Full reasoning in docs/beacons.md.
+CREATE TABLE IF NOT EXISTS care_beacons (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    label      TEXT NOT NULL,   -- the owner's own filing note; never shown
+    placement  TEXT,            -- free text, e.g. "fridge door"; never shown
+    kind       TEXT NOT NULL DEFAULT 'personal',  -- personal | site
+    scans      INTEGER NOT NULL DEFAULT 0,
+    active     INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
+);
+
+-- An alarm raised from a beacon by a passer-by. `state` is open until the
+-- owner (or a responder) clears it. Within the cooldown a second alarm
+-- attaches its message to the open one rather than raising a new one or being
+-- dropped — two people finding the same person must not race, and the second
+-- must never be discarded.
+CREATE TABLE IF NOT EXISTS beacon_alarms (
+    id          TEXT PRIMARY KEY,
+    beacon_id   TEXT NOT NULL REFERENCES care_beacons(id),
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    messages    TEXT NOT NULL DEFAULT '[]',  -- every finder's words, in order
+    state       TEXT NOT NULL DEFAULT 'open',  -- open | cleared
+    tier        TEXT,            -- the escalation tier it landed on
+    accepted_by TEXT,            -- the roster entry that took it (site beacons)
+    created_at  TEXT NOT NULL,
+    cleared_at  TEXT
+);
+
 CREATE TABLE IF NOT EXISTS robots (
     id           TEXT PRIMARY KEY,
     user_id      TEXT NOT NULL REFERENCES users(id),

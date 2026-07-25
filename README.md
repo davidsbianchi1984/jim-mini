@@ -145,6 +145,10 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/57-parent-setup.svg" width="160" alt="57 Parent Setup"><br><sub>57 · Parent Setup</sub></td>
 <td align="center" width="25%"><img src="docs/screens/58-family-oversight.svg" width="160" alt="58 Family Oversight"><br><sub>58 · Family Oversight</sub></td>
 </tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/59-care-beacons.svg" width="160" alt="59 Care Beacons"><br><sub>59 · Care Beacons</sub></td>
+<td align="center" width="25%"><img src="docs/screens/60-workplace-relay.svg" width="160" alt="60 Workplace Relay"><br><sub>60 · Workplace Relay</sub></td>
+</tr>
 </table>
 
 The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 46 All Set**, then hands off to the daily app and, at the other end, **41 End Session**.
@@ -319,6 +323,13 @@ this machine's address and restart.
 | `POST /emergency/{user_id}` | **Emergency mode** — one coordinated response (the watch's Emergency screen): reach **emergency services**, **share location** with family and responders, **contact family** (the registered emergency contact), surface the **Medical ID** (age, known conditions, resting-HR baseline, recent detections, contact — condition-level facts only), deliver step-by-step **AI first aid** from an optional live `sample`/`situation` (CPR/AED/low-oxygen playbooks), and **alert every connected device**. Logged to the event timeline |
 | `POST`/`DELETE /medical-id/qr/{user_id}` | **Shareable Medical ID QR**: mint (or rotate) a printable / lock-screen QR, or revoke it. Returns the card token + its `view_url` and `qr_svg_url` |
 | `GET /medical-id/{token}`, `GET …/{token}/qr.svg` | **Scan-to-view** (public): a first responder scans the code and reads the Medical ID with **no auth token** — the phone is locked in an emergency, so the card itself is the credential. Condition-level facts only; the token is opaque, rotatable, revocable, and stored only as a hash |
+| `POST`/`GET /users/{id}/beacons`, `DELETE /beacons/{id}` | **Care beacons** ([docs/beacons.md](docs/beacons.md)): a printed QR on the *things around* a watched person — a fridge door, a wristband, a walker. Distinct from the Medical ID above, which travels with the person and is *read*; a beacon stays with a place and is **rung**. A minor's is guardian-issued only |
+| `GET /c/{id}`, `GET …/qr.svg` | **Stage one** (public): a first name, one sentence, and a button. **Never** how the person is and never where they are — *is this person OK right now* is precisely what a stalker is asking, so a beacon reports watch status and never subject status |
+| `POST /c/{id}/alarm` | **The bell** (public). Raising the alarm is what turns a passer-by into a responder, and **that** is what earns them the Medical ID — the order QRME's desk beacon runs in reverse, because health is not a shop sign. Capped at `notify_contact`: a stranger's tap must never dispatch an ambulance. Inside the cooldown a second finder **joins** the open alarm rather than being dropped. A minor's beacon never opens the clinical stage, to anyone |
+| `GET /users/{id}/alarms`, `POST …/clear` | Who rang while they were away — their token only |
+| `GET /relay/roster`, `GET /users/{id}/incidents` | **Workplace relay** for lone and remote workers: `notify_contact` assumes a contact who answers, which at 2am on a single-staffed site may be nobody. Incidents are **incident scope, never person scope** — the employer bought the deployment, which does not entitle them to what is inside it |
+| `POST …/alarms/{id}/escalate`, `…/accept` | Works the roster in order and confirms a human **accepted** — accepting means attending, not resolved. Roster exhausted is reported, not silent, and still no dispatch |
+| `POST /alarms/{id}/guidance` | What to tell whoever is waiting — routed to a QRME first-aid specialist when tandem is configured, else the one instruction that never depends on a model being reachable |
 | `POST /activity/{user_id}` | **Ambient observation** (the "Jiminy Cricket" jump-in): report what the user is *doing* — activity + signals (`retries`/`errors`, `idle_seconds`, `duration_min`) + what they said — and JIM offers help **proactively** when a struggle is building, before being asked. Crisis language still escalates; a calm signal is logged but never interrupts |
 | `GET /events/{user_id}` | Event timeline (biometric/activity → detection → guidance → escalation) |
 | `GET`/`PUT /sources/{user_id}` | Per-source consent (wearable, health, calendar, spending, bank, messages, location) — nothing is read from a source the user hasn't allowed |
@@ -487,14 +498,10 @@ image insights, community challenges, real emergency-services dispatch, and a
 specialist knowledge-pack marketplace — represented structurally, not as live
 integrations.
 
-**Designed, not yet built:** [**care beacons**](docs/beacons.md) — a printed QR
-on the things around a watched person (a fridge door, a wristband, a walker),
-which a stranger can scan to raise whoever is watching. QRME's desk beacon
-pointed at this product's subject, with the order inverted: the alarm comes
-first, and the Medical ID is what it buys. Includes a **workplace relay** for
-corporate deployments — an agent that works the on-call roster when nobody
-answers, at incident scope rather than person scope, for lone and remote
-workers.
+**Not yet built** for [care beacons](docs/beacons.md): an HTML scan page (today
+`GET /c/{id}` returns JSON, useful to an app and raw to a phone), a
+notification transport (`escalate` records who was notified; JIM rings nobody),
+and shift awareness — `JIM_SITE_ROSTER` is a list of names in order, not a rota.
 
 ## Related projects
 

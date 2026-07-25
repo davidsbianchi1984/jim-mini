@@ -277,3 +277,32 @@ class HabitLog(BaseModel):
 class CoachMessage(BaseModel):
     area: LifeArea
     message: str
+
+
+class BeaconPlace(BaseModel):
+    """Print a watched person's beacon onto something.
+
+    ``label`` and ``placement`` are the owner's own filing notes — several
+    codes, several doors — and are never shown to whoever scans one.
+    """
+
+    label: str
+    placement: str | None = None
+    kind: Literal["personal", "site"] = "personal"
+
+
+class BeaconAlarm(BaseModel):
+    """A passer-by raising the people who are watching. No account, by design."""
+
+    message: str | None = None
+
+
+class RelayAccept(BaseModel):
+    """A named human taking a site incident. Anonymous acceptance is refused —
+    'someone accepted it' is the thing the relay exists to stop being enough."""
+
+    responder: str
+
+
+class RelayQuestion(BaseModel):
+    question: str
