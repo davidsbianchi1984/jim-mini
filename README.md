@@ -1,5 +1,16 @@
 # JIM-mini / Guardian
 
+<!-- The bare URL is deliberate and must stay on its own line: GitHub turns a
+     user-attachments link into an inline player, and only that. A video
+     committed into the repo cannot play — the markdown sanitizer strips
+     <video>, and image syntax pointing at an .mp4 renders broken. The file is
+     H.264/AAC rather than the HEVC original, because Chrome and Firefox
+     cannot decode HEVC and it would be a dead black box for most visitors.
+     Outside github.com this degrades to a link, which is why the cover
+     illustration below stays. -->
+
+https://github.com/user-attachments/assets/eab7d192-7b18-464d-9b67-bd512ae87957
+
 ![JIM-mini — Guardian](assets/cover.svg)
 
 A standalone personal-guidance system enabling seamless support for future AI agent services (**JAN2024 NETWORKED RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending**): it monitors
