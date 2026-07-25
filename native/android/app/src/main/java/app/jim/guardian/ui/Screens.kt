@@ -32,6 +32,7 @@ import app.jim.guardian.GuardianFace
 import app.jim.guardian.EmergencyResult
 import app.jim.guardian.EscalationPolicy
 import app.jim.guardian.Guidance
+import app.jim.guardian.ImproveState
 import app.jim.guardian.CustodyList
 import app.jim.guardian.CustodyProvenance
 import app.jim.guardian.GuardianViewModel
@@ -59,6 +60,22 @@ private fun screenScroll(content: @Composable ColumnScope.() -> Unit) =
         verticalArrangement = Arrangement.spacedBy(16.dp),
         content = content,
     )
+
+@Composable
+private fun SmallAction(text: String, enabled: Boolean = true, onClick: () -> Unit) {
+    // A compact, inline sibling of BrandButton: sized to its label rather than
+    // filling the row, for actions that sit beside a field instead of closing
+    // out a card.
+    Box(
+        Modifier.clip(RoundedCornerShape(10.dp))
+            .background(if (enabled) Jim.Brand else Jim.Card.copy(alpha = 0.4f))
+            .clickable(enabled = enabled) { onClick() }
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+    }
+}
 
 @Composable
 private fun BrandButton(text: String, enabled: Boolean = true, busy: Boolean = false, onClick: () -> Unit) {

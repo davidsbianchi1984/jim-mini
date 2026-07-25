@@ -96,9 +96,19 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      # Same treatment as the iOS step: Gradle prints Kotlin diagnostics well
+      # above its FAILURE block, so a red run shows only "compileDebugKotlin
+      # FAILED" at the end. Re-surface the `e:` lines where they can be read.
       - name: Assemble debug
         working-directory: native/android
-        run: gradle --no-daemon assembleDebug
+        run: |
+          set -o pipefail
+          gradle --no-daemon assembleDebug 2>&1 | tee build.log || {
+            echo "::group::Kotlin diagnostics"
+            grep -E "^e: " build.log | sort -u || true
+            echo "::endgroup::"
+            exit 1
+          }
 
   windows:
     name: Windows (WinUI 3)
@@ -127,6 +137,13 @@ jobs:
       # msbuild, unlike `dotnet build`, does not restore by default.
       - name: Build
         working-directory: native/windows
-        run: >
-          msbuild JimGuardian.csproj /restore
-          /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64
+        shell: bash
+        run: |
+          set -o pipefail
+          msbuild JimGuardian.csproj /restore /p:Configuration=Release \
+            /p:Platform=x64 /p:RuntimeIdentifier=win-x64 2>&1 | tee build.log || {
+              echo "::group::C# diagnostics"
+              grep -E "error [A-Z]+[0-9]+" build.log | sort -u || true
+              echo "::endgroup::"
+              exit 1
+            }
