@@ -411,10 +411,14 @@ def tandem_flow() -> str:
     # user's bank and spending events ride the same wire under the same
     # consent gate, and a diagram naming only the medical half invites the
     # reader to assume the financial half is held somewhere else. It is not.
+    # Messages and location sit on the same line for the same reason: the
+    # bold line is the surprising ones, and burying two of them a row down
+    # would have re-made the mistake in a smaller font.
     o.append(_tf_arrow(150, 414, 150, 512, "jim"))
-    o.append(_tf_text(164, 444, "medical \u00b7 financial \u00b7 context", 12.5,
-                      TF["jim"], 600))
-    o.append(_tf_text(164, 462, "calendar \u00b7 messages \u00b7 location", 12,
+    o.append(_tf_text(164, 444,
+                      "medical \u00b7 financial \u00b7 messages \u00b7 location",
+                      12.5, TF["jim"], 600))
+    o.append(_tf_text(164, 462, "calendar \u00b7 wearable \u00b7 health", 12,
                       TF["t2"]))
     o.append(_tf_text(164, 480, "sealed under jim/{user}/\u2026", 12, TF["t3"]))
     o.append(_tf_arrow(610, 414, 610, 512, "qrme"))

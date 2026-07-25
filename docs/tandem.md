@@ -68,11 +68,14 @@ own client and token — both integrations are live:
   they would be surprised to learn was in the same place:
   - `medical/…` — biometric samples, detection details, forecast trends,
     emergency events, check-in notes, journal entries.
-  - `context/…` — **every consented source**, which is where the *financial*
-    payloads live: spending events and bank transactions, alongside calendar,
-    messages, location, wearable and health. One namespace, one consent gate,
-    one arrow. A reader told only about medical payloads would reasonably
-    assume their transactions were held somewhere else. They are not.
+  - `context/…` — **every consented source**, in one namespace behind one
+    consent gate: **spending and bank transactions**, **messages**,
+    **location**, calendar, wearable and health. All four of the categories a
+    person would be startled to find here — financial, messages, location, and
+    the medical above — travel the same arrow into the same vault. A reader
+    told only about "medical payloads and consented context" would reasonably
+    assume the rest was held somewhere else. It is not, and that is the
+    direction it is worth being wrong in.
   - `family/consent` and `tandem/{profile}/…` — the guardian-oversight record,
     and every exchange with a QRME specialist.
 
