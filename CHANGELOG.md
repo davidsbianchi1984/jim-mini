@@ -25,6 +25,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   *is this person OK right now* is exactly what a stalker is asking; and a
   minor's beacon never opens the clinical stage at all.
 
+  For **corporate deployments**, a workplace relay: `notify_contact` assumes a
+  contact who answers, which at 2am on a single-staffed site may be nobody, and
+  a worker's personal emergency contact is the wrong recipient for a workplace
+  incident anyway. The agent works the on-call roster in order, confirms a
+  human actually accepted rather than firing one notification into the void,
+  and repeats existing QRME first-aid guidance to whoever is waiting. It sees
+  **incident scope, never person scope** — the employer bought the deployment,
+  which does not entitle them to what is inside it — and the `notify_contact`
+  ceiling holds, so it escalates people rather than sirens. Narrow by design:
+  it earns its keep for lone and remote workers, not for an office.
+
 ## [0.1.8] — 2026-07-25
 
 ### Fixed

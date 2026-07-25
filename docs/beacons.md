@@ -160,6 +160,64 @@ rules, not a wall:
   seconds of the alarm; a stranger holding a backpack does not get a medical
   history because they tapped a button.
 
+## At work: the agent that answers when nobody does
+
+The Guardian is a personal product, and for a desk-bound office worker a care
+beacon adds little over walking to reception. The case where it earns its keep
+is narrow and specific, and it is a real category with a real name: **lone and
+remote workers.** Night shift, field engineers, plant rooms, single-staffed
+sites, anyone whose failure mode is *nobody was there*.
+
+That case exposes a gap in the design above. `notify_contact` assumes **a
+contact who answers.** In a personal deployment that is a family member, and
+usually true. In a workplace at 2am on a remote site it may be nobody at all —
+and a worker's personal emergency contact is the wrong recipient for a
+workplace incident regardless.
+
+So a corporate deployment adds a **relay of last resort**: an agent that takes
+the alarm when the roster does not. Three things it does, none of them
+clinical:
+
+- **Works the roster in order** rather than firing one notification into the
+  void — on-call, then supervisor, then the site's escalation list.
+- **Confirms a human actually accepted**, and keeps escalating until one does.
+  This is the loop a fire-and-forget notification leaves open, and it is the
+  whole reason to have an agent rather than a second phone number.
+- **Answers the finder while they wait.** Someone standing over a colleague
+  needs to be told what to do in the next ninety seconds. JIM already delegates
+  guidance to QRME specialist profiles for exactly this, and AI first aid
+  already ships; the agent is a new caller to it, not a new model.
+
+### Incident scope, never person scope
+
+The constraint that makes this acceptable rather than a surveillance product.
+
+A corporate deployment must not become a way for an employer to hold health
+data about employees. JIM's data promise is per-user and does not bend because
+the licence was bought by a company. So the workplace agent sees **an alarm was
+raised at this beacon and this is what is needed** — not the worker's
+conditions, baseline, history, or check-ins.
+
+This is the same decision as PDI's *blind by default* and for the same reason:
+the party who paid for the deployment is not thereby entitled to what is inside
+it.
+
+The **ceiling does not move either.** A workplace agent still cannot reach
+`emergency_services`; it escalates *people*, not sirens. An employer's agent
+dispatching an ambulance for an employee is precisely the version of this that
+should not exist.
+
+### Where it closes a loop with the other two products
+
+A workplace incident is a recordkeeping obligation, and PDI already carries
+**OSHA** in its compliance programs with retention attached. So the alarm seals
+an incident record into the tenant's vault under OSHA retention, on the
+hash-chained log, without anybody filling in a form at the time.
+
+That is the concrete answer to *is there a use case here* — lone-worker safety
+is an established category, and the suite already owns the two pieces around
+it. It is a narrower case than PDI's facility agent, and worth building second.
+
 ## The badge
 
 QRME's desk beacon carries **"Live person — not AI"** — green, top-right,
@@ -205,6 +263,10 @@ other printed code on a person's things.
 - **No presence.** There is no "they're fine" signal to read, by design, and no
   amount of asking will add one.
 - **No emergency dispatch.** The ceiling is `notify_contact`; the page says so.
+  That holds for the workplace agent too — it escalates people, not sirens.
+- **No clinician.** The workplace relay reaches humans and repeats guidance
+  that already exists. It does not triage, assess, or decide how bad something
+  is, and a site that staffs it instead of a first-aider has misread it.
 - **No identity for the scanner.** Anyone can raise an alarm on any active
   beacon, which is the point, and the reason for the coalescing cooldown rather
   than a stronger gate.
