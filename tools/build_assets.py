@@ -406,18 +406,27 @@ def tandem_flow() -> str:
     o.append(_tf_text(475, 318, "specialist guidance", 12.5, TF["jim"], 600,
                       "middle"))
 
-    # Both apps seal into the vault.
+    # Both apps seal into the vault, and the label has to name what actually
+    # goes down these arrows. "medical payloads" was true and incomplete: a
+    # user's bank and spending events ride the same wire under the same
+    # consent gate, and a diagram naming only the medical half invites the
+    # reader to assume the financial half is held somewhere else. It is not.
     o.append(_tf_arrow(150, 414, 150, 512, "jim"))
-    o.append(_tf_text(164, 452, "medical payloads", 12.5, TF["jim"], 600))
-    o.append(_tf_text(164, 470, "sealed", 12.5, TF["t3"]))
+    o.append(_tf_text(164, 444, "medical \u00b7 financial \u00b7 context", 12.5,
+                      TF["jim"], 600))
+    o.append(_tf_text(164, 462, "calendar \u00b7 messages \u00b7 location", 12,
+                      TF["t2"]))
+    o.append(_tf_text(164, 480, "sealed under jim/{user}/\u2026", 12, TF["t3"]))
     o.append(_tf_arrow(610, 414, 610, 512, "qrme"))
-    o.append(_tf_text(624, 452, "source material", 12.5, TF["qrme"], 600))
-    o.append(_tf_text(624, 470, "sealed", 12.5, TF["t3"]))
+    o.append(_tf_text(624, 444, "source material", 12.5, TF["qrme"], 600))
+    o.append(_tf_text(624, 462, "rated events \u00b7 adaptation", 12, TF["t2"]))
+    o.append(_tf_text(624, 480, "sealed under qrme/{profile}/\u2026", 12,
+                      TF["t3"]))
 
-    # …and the one that runs the other way.
+    # \u2026and the one that runs the other way.
     o.append(_tf_arrow(850, 512, 850, 414, "out"))
-    o.append(_tf_text(864, 452, "words for the gate", 12.5, TF["out"], 600))
-    o.append(_tf_text(864, 470, "never a decision", 12.5, TF["t3"]))
+    o.append(_tf_text(864, 444, "words for the gate", 12.5, TF["out"], 600))
+    o.append(_tf_text(864, 462, "never a decision", 12, TF["t3"]))
 
     o.append(_tf_text(70, 656, "Every link is optional and runs over public "
                       "HTTP — no project imports another's code. Dashed "

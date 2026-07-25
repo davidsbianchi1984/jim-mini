@@ -466,7 +466,7 @@ vaulting profile source material — see [docs/tandem.md](docs/tandem.md).
 | `JIM_MODEL` | `claude-opus-4-8` | Model used for guidance and coaching |
 | `ANTHROPIC_API_KEY` | — | Enables real model replies |
 | `JIM_QRME_URL` | — | QRME tandem: delegate specialist guidance over HTTP |
-| `JIM_PDI_URL` / `JIM_PDI_TOKEN` | — | PDI tandem: seal medical/context payloads in the encrypted vault |
+| `JIM_PDI_URL` / `JIM_PDI_TOKEN` | — | PDI tandem: seal medical, **financial** and context payloads in the encrypted vault — every consented source goes through one namespace and one gate ([docs/tandem.md](docs/tandem.md#qrme--jim-mini--pdi)) |
 | `JIM_CLOUD_URL` / `JIM_CLOUD_TOKEN` | — | Cloud Model Gateway: greater-model guidance with local fallback + opt-in contribution ([docs/cloud-model.md](docs/cloud-model.md)) |
 | `JIM_SITE_ROTA` / `JIM_SITE_TZ` | — / `UTC` | Workplace relay: who is on shift, in JSON, evaluated in the site's own timezone ([docs/beacons.md](docs/beacons.md#who-is-on-and-reaching-them)) |
 | `JIM_SITE_ROSTER` | — | The older, flat form — plain names, always on. Still supported |

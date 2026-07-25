@@ -62,15 +62,28 @@ AI-system integration).
 Each AI system can *optionally* run on top of PDI as a tenant, each with its
 own client and token — both integrations are live:
 
-- **jim-mini** (`jim/pdi_client.py`, `JIM_PDI_URL` + `JIM_PDI_TOKEN`): medical
-  payloads — biometric samples, detection details, forecast trends, check-in
-  notes — and consented context payloads are sealed under `jim/{user}/…`
-  keys; JIM's own database keeps only key references, prediction reads prior
-  samples back from the vault, and `DELETE /data/{user_id}` purges the vault.
-- **qrme** (`qrme/pdi_client.py`, `QRME_PDI_URL` + `QRME_PDI_TOKEN`): profile
-  source material — life stories, writings, conversations, voice transcripts —
-  is sealed under `qrme/{profile}/sources/…` keys, resolved on read for
-  persona prompts and exports, and purged when the profile is deleted.
+- **jim-mini** (`jim/pdi_client.py`, `JIM_PDI_URL` + `JIM_PDI_TOKEN`) seals
+  under `jim/{user}/…`. Worth enumerating rather than summarising as "medical",
+  because the medical half is the half people expect and the rest is the half
+  they would be surprised to learn was in the same place:
+  - `medical/…` — biometric samples, detection details, forecast trends,
+    emergency events, check-in notes, journal entries.
+  - `context/…` — **every consented source**, which is where the *financial*
+    payloads live: spending events and bank transactions, alongside calendar,
+    messages, location, wearable and health. One namespace, one consent gate,
+    one arrow. A reader told only about medical payloads would reasonably
+    assume their transactions were held somewhere else. They are not.
+  - `family/consent` and `tandem/{profile}/…` — the guardian-oversight record,
+    and every exchange with a QRME specialist.
+
+  JIM's own database keeps only key references, prediction reads prior samples
+  back from the vault, and `DELETE /data/{user_id}` purges it.
+- **qrme** (`qrme/pdi_client.py`, `QRME_PDI_URL` + `QRME_PDI_TOKEN`) seals under
+  `qrme/{profile}/…`: `sources/…` (life stories, writings, conversations, voice
+  transcripts), `rated/events/…` (placement earnings on the rated tier, held to
+  the same custody standard as a tandem exchange), and `adaptation/…` (steering
+  runs). Resolved on read for persona prompts and exports, and purged when the
+  profile is deleted.
 
 The AI systems do not depend on PDI to function; PDI is the "run on top of"
 infrastructure layer they integrate with when deployed in a private
