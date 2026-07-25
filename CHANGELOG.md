@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The three products are now cut as one release** — documented in
+  [docs/releasing.md](docs/releasing.md), and in QRME's and PDI' copies of the same
+  file. Same number, same pass, even when a repository has nothing of its own
+  to ship that round; an empty round says so in those words rather than being
+  padded. Through v0.1.5 each repository cut whenever it happened to have work,
+  so the numbers matched only by coincidence — which is how QRME reached 0.1.6
+  alone while this one sat at 0.1.5. The doc also writes down the trap that
+  follows: tag the release-prep commit rather than the tip of `main`, because
+  work keeps landing while a release is cut and anything arriving after the
+  changelog is sectioned belongs to `[Unreleased]`, not to the version being
+  tagged.
+
 ## [0.1.6] — 2026-07-25
 
 ### Changed
