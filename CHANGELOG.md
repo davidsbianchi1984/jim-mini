@@ -6,6 +6,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Care beacons, designed** — [docs/beacons.md](docs/beacons.md). QRME ships
+  desk beacons: a printed QR on a shop door, resolving to a real person who
+  isn't behind it this minute, with a bell a stranger can ring. There is no
+  desk in the Guardian, so the port is to what this product actually watches —
+  a person, and the objects around them. Design only; no code yet.
+
+  The decisions worth arguing about are written down rather than left to the
+  implementation: the alarm comes **before** the disclosure (raising it is what
+  turns a passer-by into a responder, and what earns them the Medical ID);
+  `notify_contact` is the alarm's **ceiling**, making it the first rule in
+  `escalation.py` that points down rather than up, because a stranger's tap
+  must not dispatch an ambulance; the cooldown **coalesces** rather than drops,
+  since a second person finding the same casualty is the case the feature
+  exists for; a beacon reports **watch status, never subject status**, because
+  *is this person OK right now* is exactly what a stalker is asking; and a
+  minor's beacon never opens the clinical stage at all.
+
 ## [0.1.8] — 2026-07-25
 
 ### Fixed
