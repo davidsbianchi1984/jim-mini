@@ -1,0 +1,132 @@
+name: Native apps
+
+# Does the native code actually compile?
+#
+# Until now it did not have an answer. The iOS, Android and Windows sources
+# have only ever been checked by reading them and by balance/well-formedness
+# checks on braces and XML — which catches a typo and nothing else. A missing
+# symbol, a type error, a SwiftUI signature that changed, an unresolved
+# dependency: all of it would have shipped, and been discovered by the first
+# person who opened Xcode.
+#
+# Each toolchain needs its own operating system, so this is three jobs on
+# three runners. macOS minutes are expensive, so it runs only when the native
+# code (or this file) changes, plus on demand.
+#
+# Compile only — no signing, no packaging, no upload. Those are
+# desktop-release.yml's business and need certificates this workflow
+# deliberately does not have.
+
+on:
+  pull_request:
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+  workflow_dispatch:
+
+jobs:
+  ios:
+    name: iOS (SwiftUI)
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # There is no .xcodeproj in the repository — project.yml is the source
+      # of truth and XcodeGen produces the project. That keeps a generated,
+      # merge-hostile file out of git, and means CI proves the spec is valid
+      # too, not just the Swift.
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the Xcode project
+        working-directory: native/ios
+        run: xcodegen generate
+
+      # Simulator SDK and signing disabled: this asks "does it compile", and
+      # nothing here should need an Apple Developer identity to answer.
+      #
+      # -quiet, and a grep for the diagnostics on failure: xcodebuild's default
+      # output is thousands of lines of per-file chatter with the actual error
+      # buried hundreds of lines above the exit, which makes a red run nearly
+      # unreadable in the Actions UI. A build gate you cannot diagnose from the
+      # log is only half a gate.
+      - name: Build
+        working-directory: native/ios
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project JimGuardian.xcodeproj \
+            -scheme JimGuardian \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY= 2>&1 | tee build.log || {
+              echo "::group::Swift diagnostics"
+              grep -E "(error|warning):" build.log | sort -u || true
+              echo "::endgroup::"
+              exit 1
+            }
+
+  android:
+    name: Android (Compose)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'          # matches jvmTarget in build.gradle.kts
+
+      # The repository carries gradle-wrapper.properties but no gradlew /
+      # wrapper jar (a checked-in binary nobody reviews). setup-gradle
+      # provisions the same version the properties file pins, so CI and a
+      # developer's machine build with one Gradle.
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Assemble debug
+        working-directory: native/android
+        run: gradle --no-daemon assembleDebug
+
+  windows:
+    name: Windows (WinUI 3)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # Build with Visual Studio's MSBuild rather than `dotnet build`. The
+      # Windows App SDK's MrtCore PriGen targets load a PRI packaging task
+      # (Microsoft.Build.Packaging.Pri.Tasks.dll) from
+      # Microsoft/VisualStudio/v17.0/AppxPackage — a directory that ships with
+      # Visual Studio's MSBuild and is simply absent from the standalone .NET
+      # SDK, so `dotnet build` fails with MSB4062 whichever SDK it picks.
+      # native/windows/README.md already names VS 2022 with the Windows
+      # application development workload as the requirement; this matches it.
+      - uses: microsoft/setup-msbuild@v2
+
+      # Unpackaged and self-contained (see JimGuardian.csproj), so a runtime
+      # identifier is required — the Windows App SDK is copied in rather than
+      # resolved from a framework package at run time. /restore because
+      # msbuild, unlike `dotnet build`, does not restore by default.
+      - name: Build
+        working-directory: native/windows
+        run: >
+          msbuild JimGuardian.csproj /restore
+          /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64

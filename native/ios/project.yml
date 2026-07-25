@@ -17,16 +17,28 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: app.jim.guardian
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
-        GENERATE_INFOPLIST_FILE: true
-        INFOPLIST_KEY_UILaunchScreen_Generation: true
-        INFOPLIST_KEY_CFBundleDisplayName: "JIM Guardian"
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1,2"
+    # A generated Info.plist and an `info:` block are mutually exclusive:
+    # GENERATE_INFOPLIST_FILE takes scalar INFOPLIST_KEY_* settings only, and
+    # NSAppTransportSecurity is a dictionary. So the plist is written here —
+    # and `path` is required, which is what the spec was missing.
+    #
+    # Kept outside Sources/ so XcodeGen does not also sweep the file it just
+    # generated into the target as a resource.
     info:
+      path: JimGuardian-Info.plist
       properties:
+        CFBundleDisplayName: JIM Guardian
+        UIUserInterfaceStyle: Dark
+        UIStatusBarStyle: UIStatusBarStyleLightContent
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         # Allow http://127.0.0.1:8000 in the Simulator (local dev backend).
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
-        UIStatusBarStyle: UIStatusBarStyleLightContent
-        UIUserInterfaceStyle: Dark

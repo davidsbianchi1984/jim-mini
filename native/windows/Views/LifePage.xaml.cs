@@ -101,7 +101,11 @@ public sealed partial class LifePage : Page
         try
         {
             var entries = await ApiClient.Shared.Journal(s.Uid!, s.Token!);
-            JournalList.ItemsSource = entries.Reverse()
+            // Enumerable.Reverse by name: `entries` is a JournalItem[], and an
+            // array converts to Span<T>, so plain .Reverse() binds to
+            // MemoryExtensions' in-place void overload and the .Select below
+            // then has nothing to attach to.
+            JournalList.ItemsSource = Enumerable.Reverse(entries)
                 .Select(j => new JournalRow(j.Text ?? "—", j.CreatedAt ?? "")).ToList();
         }
         catch { /* leave as-is */ }
