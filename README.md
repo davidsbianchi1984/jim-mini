@@ -487,6 +487,15 @@ image insights, community challenges, real emergency-services dispatch, and a
 specialist knowledge-pack marketplace — represented structurally, not as live
 integrations.
 
+**Designed, not yet built:** [**care beacons**](docs/beacons.md) — a printed QR
+on the things around a watched person (a fridge door, a wristband, a walker),
+which a stranger can scan to raise whoever is watching. QRME's desk beacon
+pointed at this product's subject, with the order inverted: the alarm comes
+first, and the Medical ID is what it buys. Includes a **workplace relay** for
+corporate deployments — an agent that works the on-call roster when nobody
+answers, at incident scope rather than person scope, for lone and remote
+workers.
+
 ## Related projects
 
 Three separate products, each standalone, interoperating only over HTTP —
