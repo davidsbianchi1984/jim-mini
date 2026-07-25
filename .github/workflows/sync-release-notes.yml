@@ -24,16 +24,42 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      # Check out the tag being synced, not the default branch. Re-syncing an
+      # older release read whatever RELEASE_NOTES.md said on main — which is
+      # always the *newest* version's notes — so asking it to repair v0.1.4
+      # would have published v0.1.8's notes onto it. That is the same failure
+      # this workflow exists to prevent, arriving by a different route.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
 
       - name: Build the body from RELEASE_NOTES.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
+          # The release's existing auto-generated "What's Changed" section is
+          # kept rather than regenerated — and de-duplicated on the way past,
+          # since several releases carry it twice from a body that was pasted
+          # over one that already had it.
+          gh release view "$TAG" --json body -q .body > current-body.md || : > current-body.md
           python3 - <<'PY'
           import pathlib
+
           src = pathlib.Path("RELEASE_NOTES.md").read_text()
           # Drop the internal "ready-to-paste" preamble above the rule so the
-          # published body starts at the headline.
+          # published body starts at the headline. It is an instruction to the
+          # maintainer, and reads oddly to somebody who came for an installer.
           body = src.split("---\n", 1)[1].lstrip("\n") if "---\n" in src else src
+
+          current = pathlib.Path("current-body.md").read_text()
+          marker = "## What's Changed"
+          if marker in current:
+              # Taking the last segment keeps exactly one copy, however many
+              # the release had accumulated.
+              tail = current.split(marker)[-1].rstrip()
+              body = body.rstrip() + "\n\n\n" + marker + tail + "\n"
+
           pathlib.Path("release-body.md").write_text(body)
           print(body[:200])
           PY
@@ -44,4 +70,4 @@ jobs:
           TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           gh release edit "$TAG" --notes-file release-body.md
-          echo "synced $TAG from RELEASE_NOTES.md"
+          echo "synced $TAG from RELEASE_NOTES.md@$TAG"
