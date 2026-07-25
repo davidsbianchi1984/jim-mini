@@ -14,8 +14,20 @@ on:
       tag:
         description: "Release tag to sync (e.g. app-v0.1.4)"
         required: true
-  push:
-    tags: ["app-v*"]
+  # Deliberately **not** `push: tags`. Both this workflow and "Guardian release" used to
+  # fire on the same tag push and both wrote the release body: this one in
+  # about six seconds, the installer build two to four minutes later. The
+  # build always won, so every release published the raw RELEASE_NOTES.md —
+  # maintainer preamble and all — and had to be re-synced by hand afterwards.
+  #
+  # Running *after* that workflow instead makes the curated notes the last
+  # write, by construction rather than by luck. `types: [completed]` and not
+  # `[completed] + success` on purpose: a build that failed may still have
+  # created the release and overwritten the body, and that is exactly when
+  # somebody is least likely to notice.
+  workflow_run:
+    workflows: ["Guardian release"]
+    types: [completed]
 
 permissions:
   contents: write
@@ -23,6 +35,13 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    # A workflow_run fires for every run of that workflow, including the
+    # manual artifact-only ones that publish no release at all. Only tag runs
+    # have anything to sync — `head_branch` carries the tag name for a
+    # tag-triggered run.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.event.workflow_run.head_branch, 'app-v')
     steps:
       # Check out the tag being synced, not the default branch. Re-syncing an
       # older release read whatever RELEASE_NOTES.md said on main — which is
@@ -31,12 +50,12 @@ jobs:
       # this workflow exists to prevent, arriving by a different route.
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref_name }}
+          ref: ${{ inputs.tag || github.event.workflow_run.head_branch }}
 
       - name: Build the body from RELEASE_NOTES.md
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ inputs.tag || github.ref_name }}
+          TAG: ${{ inputs.tag || github.event.workflow_run.head_branch }}
         run: |
           # The release's existing auto-generated "What's Changed" section is
           # kept rather than regenerated — and de-duplicated on the way past,
@@ -67,7 +86,7 @@ jobs:
       - name: Publish it to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ inputs.tag || github.ref_name }}
+          TAG: ${{ inputs.tag || github.event.workflow_run.head_branch }}
         run: |
           gh release edit "$TAG" --notes-file release-body.md
           echo "synced $TAG from RELEASE_NOTES.md@$TAG"

@@ -61,11 +61,28 @@ anything.
 
 The `app-v*` tag triggers `.github/workflows/desktop-release.yml`, which builds
 the console into per-OS installers (`.dmg` / `.exe` / `.AppImage`) on real
-macOS / Windows / Linux runners and attaches them to a GitHub Release. Paste
-`RELEASE_NOTES.md` into the release body.
+macOS / Windows / Linux runners and attaches them to a GitHub Release, with
+GitHub's generated changelog as the body.
 
-A manual **Run workflow** builds and uploads the installers as artifacts
-*without* publishing a Release — useful for a dry run.
+**Leave the release body empty when you create the tag.** When that workflow
+finishes, `sync-release-notes.yml` runs and lays `RELEASE_NOTES.md` over the
+top — dropping the maintainer preamble above the `---`, and keeping exactly one
+copy of the generated *What's Changed*. Anything typed by hand is replaced.
+
+Only one workflow writes that body, and it is that one. Both used to: the
+installer build published `RELEASE_NOTES.md` verbatim, preamble included, two
+to four minutes after the sync had already published it correctly. The build
+always won, so every release needed re-syncing by hand. The build no longer
+sets a body at all, and the sync waits for it rather than racing it.
+
+Tag names are **case-sensitive** to the trigger. `App-v0.1.9` matches
+`tags: ["app-v*"]` in neither workflow and silently does nothing.
+
+A manual **Run workflow** on the build workflow uploads the installers as
+artifacts *without* publishing a Release — useful for a dry run. To repair an
+already-published body, run **sync-release-notes** manually with the tag; it
+checks out that tag, so it publishes the notes that shipped with it rather than
+whatever `main` says today.
 
 ## Code signing (optional)
 

@@ -4,6 +4,36 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Two workflows were writing the release body, and only one of them was
+  right.** `desktop-release.yml` published the release with
+  `body_path: RELEASE_NOTES.md` — the file verbatim, *"Ready-to-paste body for
+  the GitHub Release…"* preamble and all — while `sync-release-notes.yml`
+  published the same file with that preamble stripped. Both fired on the same
+  tag push. The sync finished in about six seconds; the installer build
+  finished two to four minutes later and overwrote it.
+
+  So the build always won, and every release since the sync workflow existed
+  has shipped the maintainer preamble at the top of its notes until somebody
+  re-ran the sync by hand. The de-duplication logic already in the sync
+  workflow — *"several releases carry it twice from a body that was pasted over
+  one that already had it"* — was scar tissue from this, treating the symptom.
+
+  The build step no longer sets a body at all; it attaches installers and lets
+  GitHub generate the changelog. `sync-release-notes` now triggers on
+  `workflow_run` when that workflow **completes**, rather than on the tag push,
+  so the curated notes are the last write by construction instead of by luck.
+  It runs on a failed build too — a build that fails after creating the release
+  is exactly when a wrong body is least likely to be noticed.
+
+  [docs/releasing.md](docs/releasing.md) says to leave the release body empty
+  and records who owns it, along with the other trap in this area: tag names
+  are case-sensitive to `tags: ["app-v*"]`, so `App-v0.1.9` silently triggers
+  nothing.
+
 ## [0.1.9] — 2026-07-25
 
 ### Added
