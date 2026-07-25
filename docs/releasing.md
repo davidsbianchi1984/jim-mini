@@ -3,10 +3,40 @@
 JIM-mini ships two artifacts: the Python backend and the guardian console. This
 describes cutting a versioned release and how (optional) code-signing works.
 
+## The three products cut together
+
+JIM-mini, [QRME](https://github.com/davidsbianchi1984/qrme) and [PDI](https://github.com/davidsbianchi1984/pdi) are built to run in
+tandem, and they are versioned as **one release**: the same number, cut in the
+same pass, even when a repository has nothing of its own to ship that round.
+
+This is a deliberate reversal. Through v0.1.5 each repository cut whenever it
+happened to have work, so the numbers matched only by coincidence — QRME
+reached 0.1.6 alone while the other two sat at 0.1.5, and "the suite" named no
+particular combination of anything. Now a version names one combination of
+three products, and anyone running all three can pin one number.
+
+Three rules make that hold up:
+
+**A repository with nothing to ship still cuts, and says so.** Its changelog
+entry reads *there are no functional changes to JIM-mini in this release*, in those
+words, rather than being padded with restated work. A note that inflates an
+empty round teaches people to skim the ones that are not empty.
+
+**Tag the release-prep commit, not the tip of `main`.** Work keeps landing
+while a release is cut, and anything that arrives after the changelog is
+sectioned belongs under `[Unreleased]` — not to the version being tagged.
+Tagging the tip publishes features under notes that do not describe them.
+Check what `[Unreleased]` holds before choosing the commit.
+
+**Cut all three even when only one has content.** The moment one is skipped the
+numbers drift again, and the next round has to decide whether to re-align or
+let them diverge — which is the state this rule exists to end.
+
 ## Cut a release
 
 1. Update [CHANGELOG.md](../CHANGELOG.md) — move `Unreleased` items under the new
-   version and date it. Refresh [RELEASE_NOTES.md](../RELEASE_NOTES.md).
+   version and date it. Refresh [RELEASE_NOTES.md](../RELEASE_NOTES.md). Do the
+   same in the sibling repositories, in the same pass.
 2. Bump `version` in `pyproject.toml` and `app/package.json` if changed.
 3. Tag and push:
 
