@@ -1,0 +1,47 @@
+# Set a published release's body from RELEASE_NOTES.md.
+#
+# Release bodies were being pasted by hand, which loses markdown when the
+# copy comes from a rendered page and is easy to truncate mid-edit. The
+# file in the repo is already the source of truth ("kept in sync with
+# CHANGELOG.md"), so this just publishes it verbatim.
+#
+# Run it from the Actions tab (or on any tag push) — no local tooling.
+name: sync-release-notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to sync (e.g. app-v0.1.4)"
+        required: true
+  push:
+    tags: ["app-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the body from RELEASE_NOTES.md
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          src = pathlib.Path("RELEASE_NOTES.md").read_text()
+          # Drop the internal "ready-to-paste" preamble above the rule so the
+          # published body starts at the headline.
+          body = src.split("---\n", 1)[1].lstrip("\n") if "---\n" in src else src
+          pathlib.Path("release-body.md").write_text(body)
+          print(body[:200])
+          PY
+
+      - name: Publish it to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          gh release edit "$TAG" --notes-file release-body.md
+          echo "synced $TAG from RELEASE_NOTES.md"
