@@ -6,7 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Published deployments** — `JIM_PUBLIC_URL` makes `GET /pair` advertise
+  the deployment's public address (QR included) instead of a LAN address, so
+  the phone flow works hosted or local from one code path. `JIM_SIGNUP_KEY`
+  gates enrollment behind an `x-signup-key` header so a published instance
+  stays the operator's rather than open registration; unset leaves LAN use
+  exactly as it was, and the gate never blocks an enrolled user or a parent
+  adding a child under their own token.
 
 ## [0.1.4] — 2026-07-24
 

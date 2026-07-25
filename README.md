@@ -261,8 +261,23 @@ from. The phone layout follows: the sidebar becomes a thumb-reachable bottom
 tab bar, inputs stay at 16px so iOS doesn't zoom, and the layout respects the
 notch and home indicator.
 
-The address is local-network only and deliberately not reachable from the
-internet — your health data stays on your own network. Everything still
+### Published deployments
+
+The same code serves a laptop on Wi-Fi and an instance you host for
+yourself and colleagues to reach from anywhere — useful for troubleshooting
+from a phone when you are not on the same network:
+
+| Variable | Effect |
+|---|---|
+| `JIM_PUBLIC_URL` | `GET /pair` advertises this address (QR included) instead of a LAN one, so the phone flow works over the internet. **Serve it over HTTPS** — user tokens travel in headers and this is health data. |
+| `JIM_SIGNUP_KEY` | Enrolling requires this key as the `x-signup-key` header, so a published instance stays yours rather than open registration. Unset = open, the right default on a LAN. |
+
+The key gates *creating an account here*: anyone already enrolled keeps
+working, and a parent adding a child is authorized by their own token.
+
+Without `JIM_PUBLIC_URL`, the address is local-network only and deliberately
+not reachable from the internet — your health data stays on your own
+network. Everything still
 requires your bearer token; a phone on the LAN is exactly as authorized as a
 laptop on the LAN. If `/pair` reports `reachable: false`, it could only find
 loopback (which on a phone means the phone itself): set `JIM_LAN_HOST` to

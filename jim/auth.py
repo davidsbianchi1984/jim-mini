@@ -8,11 +8,19 @@ per-user surface requires it.
 Only the SHA-256 hash of a token is persisted, so a database leak never yields
 a usable credential. Setup and health surfaces (`/health`, `/cloud/status`,
 `/enroll`, `/specialists`) need no token.
+
+Above that sits an optional **deployment gate**. On a laptop or a LAN,
+anyone who can reach the API can enroll — the right default when reaching it
+already means being in the house. A deployment published to the internet is
+different: without a gate, whoever finds the URL can enroll on it. Setting
+``JIM_SIGNUP_KEY`` requires that key to enroll, so a hosted instance stays
+the operator's and their colleagues'. Unset, nothing changes.
 """
 
 from __future__ import annotations
 
 import hashlib
+import os
 import secrets
 
 from fastapi import HTTPException, Request
@@ -71,3 +79,23 @@ def revoke_subject(subject_id: str) -> None:
     conn = db.connect()
     conn.execute("DELETE FROM api_tokens WHERE subject_id=?", (subject_id,))
     conn.commit()
+
+
+def require_signup_key(request: Request) -> None:
+    """Deployment-level gate for enrolling.
+
+    Unset ``JIM_SIGNUP_KEY`` means open, which is what a laptop or LAN
+    deployment wants. When it is set — the sensible posture for anything
+    published — the caller must present it as ``x-signup-key``. This gates
+    *who may create an account here*; it does not replace the per-user
+    token, which still authorizes every personal surface afterwards.
+    """
+    required = os.environ.get("JIM_SIGNUP_KEY")
+    if not required:
+        return
+    presented = request.headers.get("x-signup-key", "")
+    # Constant-time compare so a wrong key can't be recovered by timing.
+    if not (presented and secrets.compare_digest(presented, required)):
+        raise HTTPException(
+            403, "this deployment requires a signup key to enroll — send it "
+                 "as the x-signup-key header")

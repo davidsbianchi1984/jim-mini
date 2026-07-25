@@ -7,7 +7,7 @@ import json
 import os
 from datetime import date, datetime
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 
 from . import (app_connectors, auth, catalog, coach, db, escalation, family,
                guardian, i18n, life, llm, mobile, research, robotics, social,
@@ -212,7 +212,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         except ValueError as exc:
             raise HTTPException(422, str(exc))
 
-    @app.post("/enroll", status_code=201)
+    @app.post("/enroll", status_code=201,
+              dependencies=[Depends(auth.require_signup_key)])
     def enroll(body: Enroll) -> dict:
         if not body.terms_consent:
             raise HTTPException(403, "consent to terms of use is required to enroll")
