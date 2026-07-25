@@ -67,8 +67,12 @@ private fun SmallAction(text: String, enabled: Boolean = true, onClick: () -> Un
     // filling the row, for actions that sit beside a field instead of closing
     // out a card.
     Box(
+        // Jim.Brand is a Brush and Jim.Card a Color, so they cannot share one
+        // background() call — a ternary over the two unifies to Any and no
+        // overload matches. Layer them the way BrandButton does instead.
         Modifier.clip(RoundedCornerShape(10.dp))
-            .background(if (enabled) Jim.Brand else Jim.Card.copy(alpha = 0.4f))
+            .background(Jim.Card.copy(alpha = 0.4f))
+            .then(if (enabled) Modifier.background(Jim.Brand) else Modifier)
             .clickable(enabled = enabled) { onClick() }
             .padding(horizontal = 14.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,

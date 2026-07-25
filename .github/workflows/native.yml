@@ -105,7 +105,7 @@ jobs:
           set -o pipefail
           gradle --no-daemon assembleDebug 2>&1 | tee build.log || {
             echo "::group::Kotlin diagnostics"
-            grep -E "^e: " build.log | sort -u || true
+            grep -E "^e: " -A 3 build.log || true
             echo "::endgroup::"
             exit 1
           }
@@ -137,13 +137,14 @@ jobs:
       # msbuild, unlike `dotnet build`, does not restore by default.
       - name: Build
         working-directory: native/windows
-        shell: bash
         run: |
-          set -o pipefail
-          msbuild JimGuardian.csproj /restore /p:Configuration=Release \
-            /p:Platform=x64 /p:RuntimeIdentifier=win-x64 2>&1 | tee build.log || {
-              echo "::group::C# diagnostics"
-              grep -E "error [A-Z]+[0-9]+" build.log | sort -u || true
-              echo "::endgroup::"
-              exit 1
-            }
+          msbuild JimGuardian.csproj /restore /p:Configuration=Release `
+            /p:Platform=x64 /p:RuntimeIdentifier=win-x64 2>&1 |
+            Tee-Object -FilePath build.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::group::C# diagnostics"
+            Select-String -Path build.log -Pattern 'error [A-Z]+[0-9]+' |
+              ForEach-Object { $_.Line.Trim() } | Sort-Object -Unique
+            Write-Output "::endgroup::"
+            exit 1
+          }
