@@ -8,6 +8,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **A room microphone, and what it costs to have one honestly** —
+  `jim/spaces.py`, 6 routes, 17 tests. `jim/mic.py` refuses anything
+  room-facing as channel 2, and is right to: one person cannot lend the voices
+  of everyone around them. That is not an argument a room microphone can never
+  exist — a kitchen console that hears *"I've fallen"* is the thing a guardian
+  product is for, and this codebase already ships stationary devices that
+  deliver guidance and cannot take any in. What an ambient microphone needs is
+  a **different consent model, not an exemption from having one.**
+
+  - **People are told, by the room itself.** A disclosure is required at
+    enrolment and must be something present in the space — an indicator, a
+    chime on wake, a spoken announcement, a posted notice. A setting in the
+    owner's app tells the owner, who already knew.
+  - **Never continuously listening.** Activation is a wake word or a press.
+    There is no `continuous` option, because a microphone that never stops is
+    a different object from one that wakes, and no notice makes it the first.
+  - **The household is recorded**, because one person's purchase is not
+    everyone's decision about their own home.
+  - **Anyone present can silence it, with no account.** `POST
+    /spaces/{id}/hold` takes **no token**. A guest, a cleaner, a visiting
+    nurse, a child — whoever can reach the device mutes it without enrolling
+    or asking whoever bought it, and need not say who they are. A mute only
+    the owner can apply is a mute for the one person who was never going to
+    need it. `GET /spaces/{id}` is likewise open: *"is this listening to me"*
+    is a question the people least likely to have an account most need
+    answered.
+
+  That last one is only safe because **nothing here is load-bearing for
+  safety** — the escalation ladder runs on worn sensors, not room audio, so
+  silencing this cannot silence an emergency. A test asserts a collapse still
+  escalates in a held room. If that ever stopped being true, the ladder would
+  be the thing that had gone wrong, not the hold.
+
+  Named for the *space* rather than "ambient", which already means the
+  background observation jump-in.
+
 - **Channel 2: a second microphone, for the agent** — `jim/mic.py`, 7 routes,
   20 tests. A phone has one microphone and one foreground claim on it. While
   somebody is on a call the Guardian is deaf — which is precisely when they
