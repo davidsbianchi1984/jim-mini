@@ -96,8 +96,15 @@ class GuidanceFeedback(BaseModel):
 
 
 class MicAttach(BaseModel):
-    """Nominate a registered wearable as the agent's secondary microphone."""
-    device_name: str                   # e.g. smart_watch
+    """Nominate a registered device's microphone as channel 2 — the agent's
+    own input, separate from the one carrying the user's voice."""
+    device_name: str                   # e.g. smart_watch, earbuds, lapel_mic
+    # What kind of microphone it is. Only ones pointed at a person qualify;
+    # a room-facing one would lend everybody's voice. See jim/mic.py:MIC_TYPES.
+    mic_type: Literal["watch", "earbuds", "headset", "lapel", "clip_on",
+                      "bone_conduction", "glasses", "collar_tag", "handheld",
+                      "speakerphone", "conference", "console", "laptop",
+                      "room_array", "doorbell"]
 
 
 class MicHandover(BaseModel):
@@ -109,6 +116,9 @@ class MicHandover(BaseModel):
     # would make that choice on the user's behalf.
     route: Literal["earpiece", "headset", "bluetooth_headset", "speaker"]
     others_present: bool = False       # anyone else in earshot
+    # What is carrying the occupying call. If it is the same device as
+    # channel 2, one microphone is being asked to be two channels.
+    primary_device: str | None = None
 
 
 class LocalitySet(BaseModel):

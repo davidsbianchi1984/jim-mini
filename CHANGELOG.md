@@ -8,8 +8,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **A second ear: borrowing a wearable's microphone** — `jim/mic.py`, 6 routes,
-  15 tests. A phone has one microphone and one foreground claim on it. While
+- **Channel 2: a second microphone, for the agent** — `jim/mic.py`, 7 routes,
+  20 tests. A phone has one microphone and one foreground claim on it. While
   somebody is on a call the Guardian is deaf — which is precisely when they
   might want to ask it something, and precisely when it cannot hear them ask.
   A watch already on the wrist has a microphone nothing else is using.
@@ -18,11 +18,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   this module touches a sample. What the service owns is whether the agent may
   listen right now, on which device, and a record of when it did.
 
-  Four refusals carry it, and the third is the one that matters:
+  Any personal microphone qualifies — watch, earbuds, headset, lapel, clip-on,
+  bone-conduction, glasses. `GET /mic/types` publishes the list so a client
+  offers the right one rather than guessing.
 
-  - **Only a wearable this user registered.** A kitchen console's microphone is
-    a *room* microphone — always somewhere people talk without thinking about
-    it. Folding the two together would let the easy case argue for the hard one.
+  Five refusals carry it:
+
+  - **Only a microphone pointed at you.** The first cut of this allowed only
+    `kind == "wearable"`, which was the right instinct reached by the wrong
+    measure: a watch qualified and a lapel mic did not, though a lapel mic is
+    aimed at one collar and a watch at a whole wrist. The axis is **who the
+    microphone is pointed at** — a speakerphone or conference puck hears
+    whoever is present, and those people never agreed. A stationary device is
+    refused whatever microphone is in it.
+  - **Not the microphone already carrying the call.** Broadening exposed a
+    collision a watch never had: earbuds on a call are the *occupied*
+    microphone, and lending them asks one microphone to be two channels.
   - **Only while the primary is actually occupied**, with the reason recorded.
     A second ear granted for no reason is just a second ear.
   - **Never on speakerphone.** On an earpiece the wearable hears the wearer; on

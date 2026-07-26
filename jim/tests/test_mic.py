@@ -1,11 +1,15 @@
-"""Lending the Guardian a wearable's microphone.
+"""Channel 2: a second microphone, for the agent.
 
 A phone has one microphone and one foreground claim on it. On a call the
 Guardian is deaf — exactly when somebody might want to ask it something.
+Most people already carry a second microphone: a watch, earbuds, a lapel or
+clip-on mic, glasses.
 
-The assertions worth reading are the refusals, and the speakerphone one most
-of all: on speaker the watch hears the *other party*, who is not a user of
-this product, was never asked, and cannot revoke anything.
+The assertions worth reading are the refusals. The speakerphone one most of
+all — on speaker the second microphone hears the *other party*, who is not a
+user of this product, was never asked, and cannot revoke anything — and the
+collision one, which only exists because anything worn now qualifies: earbuds
+carrying the call are the *occupied* microphone, not a spare.
 """
 
 from jim import db
@@ -19,11 +23,11 @@ def _watch(client, uid, name="smart_watch", kind="wearable"):
     return r.json()
 
 
-def _attached(client):
+def _attached(client, name="smart_watch", mic_type="watch"):
     uid = enroll(client)
-    _watch(client, uid)
-    assert client.put(f"/users/{uid}/mic",
-                      json={"device_name": "smart_watch"}).status_code == 200
+    _watch(client, uid, name=name)
+    assert client.put(f"/users/{uid}/mic", json={
+        "device_name": name, "mic_type": mic_type}).status_code == 200
     return uid
 
 
@@ -37,29 +41,86 @@ def test_attaching_is_not_listening(client):
     assert "nothing" in state["hears"]
 
 
-def test_only_a_wearable_can_be_lent(client):
-    """A stationary console's microphone is a *room* microphone — always
-    somewhere people talk without thinking about it. Different decision."""
+def test_a_room_facing_microphone_cannot_be_channel_2(client):
+    """The axis is who the microphone is pointed at. A conference puck hears
+    whoever is present, and they never agreed."""
+    uid = enroll(client)
+    _watch(client, uid, name="desk_puck")
+    r = client.put(f"/users/{uid}/mic", json={"device_name": "desk_puck",
+                                              "mic_type": "conference"})
+    assert r.status_code == 422
+    assert "pointed at a room" in r.json()["detail"]
+    assert "without being asked" in r.json()["detail"]
+
+
+def test_a_stationary_device_is_refused_whatever_mic_it_claims(client):
+    """Something bolted to a room hears the room, whatever is inside it."""
     uid = enroll(client)
     _watch(client, uid, name="kitchen_console", kind="stationary")
-    r = client.put(f"/users/{uid}/mic", json={"device_name": "kitchen_console"})
+    r = client.put(f"/users/{uid}/mic", json={"device_name": "kitchen_console",
+                                              "mic_type": "lapel"})
     assert r.status_code == 422
-    assert "room microphone" in r.json()["detail"]
+    assert "bolted to a room" in r.json()["detail"]
+
+
+def test_every_worn_microphone_qualifies(client):
+    """Earbuds, lapel, clip-on, glasses — a watch was never special, it was
+    just the one that happened to be implemented first."""
+    for name, mic_type in (("earbuds", "earbuds"), ("lapel_mic", "lapel"),
+                           ("clip_mic", "clip_on"), ("specs", "glasses"),
+                           ("bt_headset", "headset")):
+        uid = enroll(client)
+        _watch(client, uid, name=name)
+        r = client.put(f"/users/{uid}/mic", json={"device_name": name,
+                                                  "mic_type": mic_type})
+        assert r.status_code == 200, f"{mic_type}: {r.text}"
+        assert r.json()["channel"] == 2
+
+
+def test_the_type_list_is_published(client):
+    """So a client offers the right list rather than guessing, and the reason
+    a room microphone is excluded is discoverable before it is a refusal."""
+    out = client.get("/mic/types").json()
+    assert "earbuds" in out["personal"] and "lapel" in out["personal"]
+    assert "conference" in out["ambient"] and "speakerphone" in out["ambient"]
+    assert "pointed at a room" in out["rule"]
+
+
+def test_earbuds_carrying_the_call_cannot_also_be_channel_2(client):
+    """The collision broadening this exposed: one microphone cannot be both
+    the call and the agent's channel. A watch never had this problem."""
+    uid = _attached(client, name="earbuds", mic_type="earbuds")
+    r = client.post(f"/users/{uid}/mic/handover", json={
+        "reason": "voice_call", "route": "bluetooth_headset",
+        "primary_device": "earbuds"})
+    assert r.status_code == 403
+    assert "cannot be both channels" in r.json()["detail"]
+    assert client.get(f"/users/{uid}/mic").json()["listening"] is False
+
+
+def test_a_different_device_on_the_call_is_fine(client):
+    uid = _attached(client, name="lapel_mic", mic_type="lapel")
+    r = client.post(f"/users/{uid}/mic/handover", json={
+        "reason": "voice_call", "route": "bluetooth_headset",
+        "primary_device": "earbuds"})
+    assert r.status_code == 201
+    assert r.json()["mic_type"] == "lapel"
 
 
 def test_an_unknown_device_cannot_be_lent(client):
     uid = enroll(client)
-    r = client.put(f"/users/{uid}/mic", json={"device_name": "nobodys_watch"})
+    r = client.put(f"/users/{uid}/mic", json={"device_name": "nobodys_watch",
+                                              "mic_type": "watch"})
     assert r.status_code == 422
     assert "no device called" in r.json()["detail"]
 
 
-def test_handover_without_an_attached_wearable_is_refused(client):
+def test_handover_without_anything_attached_is_refused(client):
     uid = enroll(client)
     r = client.post(f"/users/{uid}/mic/handover",
                     json={"reason": "voice_call", "route": "earpiece"})
     assert r.status_code == 403
-    assert "no wearable attached" in r.json()["detail"]
+    assert "nothing attached" in r.json()["detail"]
 
 
 # -- the refusals that carry the design --------------------------------------

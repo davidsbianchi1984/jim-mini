@@ -1,34 +1,42 @@
-"""A second ear: lending the Guardian a wearable's microphone.
+"""Channel 2: a second microphone, for the agent.
 
 A phone has one microphone and one foreground claim on it. While somebody is
 on a call, the Guardian is deaf — which is precisely when they might want to
 ask it something, and precisely when it cannot hear them ask.
 
-A watch already on the wrist has its own microphone. This is the surface that
-lends it: the user hands the agent the wearable's mic *for the duration the
-primary is occupied*, and takes it back afterwards.
+Most people are already carrying a second microphone: a watch, earbuds, a
+lapel or clip-on mic, glasses. This is the surface that lends one to the agent
+as its own input channel — **channel 2** — for as long as the primary is
+occupied, and takes it back afterwards.
 
 **What lives here is permission and state, not audio.** Capture happens on the
 device; nothing in this module touches a sample. What the service owns is
-whether the agent may listen right now, on which device, and a record of when
-it did — the same division as everywhere else in this codebase.
+whether the agent may listen right now, on which microphone, and a record of
+when it did — the same division as everywhere else in this codebase.
 
-Four refusals carry the design, and the third is the one that matters.
+Five refusals carry the design.
 
-**Only a wearable this user registered.** A kitchen console's microphone is a
-*room* microphone — always somewhere people talk without thinking about it.
-Lending that is a different decision with a different consent question, and
-folding the two together would let the easy case argue for the hard one.
+**Only a microphone pointed at you** (:data:`MIC_TYPES`). A worn or clipped-on
+mic hears mostly its wearer; a speakerphone, conference puck, or room array
+hears whoever is present, and those people never agreed and usually do not
+know there is a decision being made. A stationary device is refused whatever
+microphone is in it, because something bolted to a room hears the room.
 
 **Only while the primary is actually occupied.** If the phone's microphone is
 free the agent should use it. A second ear granted for no reason is just a
 second ear, and the reason is what bounds it.
 
-**Never on speakerphone.** This is the load-bearing refusal. On an earpiece or
-a headset the wearable hears the wearer; on speaker it hears *the other party
-too* — someone who is not a user of this product, was never asked, and cannot
-revoke anything. A microphone the Guardian holds must not become a way to
-record the person on the other end of somebody else's call.
+**Not the microphone already carrying the call.** Once anything worn can be
+channel 2, the two can collide: earbuds on a call are the *occupied*
+microphone, and lending them asks one microphone to be two channels. A watch
+never had this problem, which is why the first version of this module did not
+look for it.
+
+**Never on speakerphone.** The load-bearing one. On an earpiece or a headset
+channel 2 hears its wearer; on speaker it hears *the other party too* —
+someone who is not a user of this product, was never asked, and cannot revoke
+anything. A microphone the Guardian holds must not become a way to record the
+person on the other end of somebody else's call.
 
 **A handover ends.** It is scoped to the call that justified it, released
 explicitly or closed out when that call ends. Nothing here persists into
@@ -44,9 +52,42 @@ from . import db
 # reason is the thing that justifies the handover, so it belongs in the row.
 REASONS = ("voice_call", "video_call", "recording", "dictation", "live_room")
 
-# Routings where the wearable hears only the wearer. Anything else — notably
-# `speaker` — puts a non-consenting voice in range.
+# Routings where the second microphone hears only its wearer. Anything else —
+# notably `speaker` — puts a non-consenting voice in range.
 PRIVATE_ROUTES = ("earpiece", "headset", "bluetooth_headset")
+
+# What may become channel 2, and what may not.
+#
+# The first version of this allowed only `kind == "wearable"`, which was the
+# right *instinct* reached by the wrong measure: a watch qualified and a lapel
+# mic did not, though a lapel mic is aimed at one collar and a watch is aimed
+# at a whole wrist. The axis that matters is not how the device attaches — it
+# is **who the microphone is pointed at**.
+#
+# A personal microphone is worn or clipped on one person and hears mostly them.
+# An ambient one sits in a room and hears whoever is in it, which is the thing
+# that cannot be lent: the people it picks up never agreed and are usually not
+# even aware there is a decision being made.
+MIC_TYPES: dict[str, bool] = {          # name -> personal?
+    # Personal — worn, clipped, or in the ear.
+    "watch": True,
+    "earbuds": True,
+    "headset": True,
+    "lapel": True,
+    "clip_on": True,
+    "bone_conduction": True,
+    "glasses": True,
+    "collar_tag": True,
+    "handheld": True,                   # a stick mic somebody is holding
+    # Ambient — pointed at a room.
+    "speakerphone": False,
+    "conference": False,
+    "console": False,
+    "laptop": False,
+    "room_array": False,
+    "doorbell": False,
+}
+PERSONAL_TYPES = tuple(k for k, v in MIC_TYPES.items() if v)
 
 
 class MicError(ValueError):
@@ -57,10 +98,11 @@ class MicError(ValueError):
 # attaching a wearable
 # --------------------------------------------------------------------------- #
 
-def attach(user_id: str, device_name: str) -> dict:
-    """Nominate a registered wearable as the agent's secondary microphone.
+def attach(user_id: str, device_name: str, mic_type: str) -> dict:
+    """Nominate a registered device's microphone as **channel 2** — the
+    agent's own input, separate from the one carrying the user's voice.
 
-    Attaching is not listening. It says *which* device may be lent, and
+    Attaching is not listening. It says *which* microphone may be lent, and
     nothing more — the lending is :func:`handover`, and it needs a reason.
     """
     row = db.connect().execute(
@@ -69,20 +111,33 @@ def attach(user_id: str, device_name: str) -> dict:
         (user_id, device_name)).fetchone()
     if row is None:
         raise MicError(f"no device called {device_name!r} on this account")
-    if row["kind"] != "wearable":
+    if mic_type not in MIC_TYPES:
         raise MicError(
-            f"{device_name!r} is a {row['kind']} device. Only a wearable can "
-            "be lent this way — a stationary microphone is a room microphone, "
-            "which is a different decision")
+            f"unknown microphone type {mic_type!r} — one of "
+            f"{', '.join(sorted(MIC_TYPES))}")
+    if not MIC_TYPES[mic_type]:
+        raise MicError(
+            f"a {mic_type.replace('_', ' ')} microphone is pointed at a room, "
+            "not at you. Everyone it picks up would be lending their voice "
+            "without being asked, so it cannot be channel 2. A worn or "
+            "clipped-on microphone can: "
+            f"{', '.join(t.replace('_', ' ') for t in PERSONAL_TYPES)}")
+    if row["kind"] == "stationary":
+        raise MicError(
+            f"{device_name!r} is registered as a stationary device. Something "
+            "bolted to a room hears the room, whatever kind of microphone is "
+            "in it")
 
     conn = db.connect()
     conn.execute(
-        "INSERT INTO mic_channels (user_id, device_id, device_name, created_at)"
-        " VALUES (?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET"
-        " device_id=excluded.device_id, device_name=excluded.device_name",
-        (user_id, row["id"], device_name, db.utcnow()))
+        "INSERT INTO mic_channels (user_id, device_id, device_name, mic_type,"
+        " created_at) VALUES (?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET"
+        " device_id=excluded.device_id, device_name=excluded.device_name,"
+        " mic_type=excluded.mic_type",
+        (user_id, row["id"], device_name, mic_type, db.utcnow()))
     conn.commit()
-    return {"attached": True, "device": device_name,
+    return {"attached": True, "device": device_name, "mic_type": mic_type,
+            "channel": 2,
             "note": "attached, not listening — the agent gets this microphone "
                     "only while your main one is busy, and only if you hand "
                     "it over"}
@@ -125,17 +180,29 @@ def _close(session_id: str, why: str) -> None:
 
 
 def handover(user_id: str, reason: str, route: str,
-             others_present: bool = False) -> dict:
-    """Lend the agent the wearable's microphone while the primary is busy.
+             others_present: bool = False,
+             primary_device: str | None = None) -> dict:
+    """Lend the agent channel 2 while the primary is busy.
 
     ``route`` is how the occupying call is being heard. It is required rather
     than optional because the safe answer depends entirely on it, and a
     default would pick one on the user's behalf.
+
+    ``primary_device`` is what is carrying that call. Once anything worn can
+    be channel 2, the two can collide: earbuds on a call are *the occupied
+    microphone*, and lending them to the agent asks one microphone to be two
+    channels. A watch never had this problem, which is why the first version
+    did not look for it.
     """
     chan = channel(user_id)
     if chan is None:
         raise MicError(
-            "no wearable attached — attach one before handing it over")
+            "nothing attached — attach a microphone before handing it over")
+    if primary_device and primary_device == chan["device_name"]:
+        raise MicError(
+            f"your {chan['device_name'].replace('_', ' ')} is already carrying "
+            "the call — one microphone cannot be both channels. Attach a "
+            "different one as channel 2, or take the call on something else")
     if reason not in REASONS:
         raise MicError(
             f"reason must be one of {', '.join(REASONS)} — what is occupying "
@@ -160,12 +227,14 @@ def handover(user_id: str, reason: str, route: str,
     conn = db.connect()
     conn.execute(
         "INSERT INTO mic_sessions (id, user_id, device_id, device_name,"
-        " reason, route, started_at) VALUES (?,?,?,?,?,?,?)",
+        " reason, route, mic_type, primary_device, started_at)"
+        " VALUES (?,?,?,?,?,?,?,?,?)",
         (session_id, user_id, chan["device_id"], chan["device_name"], reason,
-         route, db.utcnow()))
+         route, chan["mic_type"], primary_device, db.utcnow()))
     conn.commit()
-    return {"id": session_id, "listening": True,
-            "device": chan["device_name"], "reason": reason, "route": route,
+    return {"id": session_id, "listening": True, "channel": 2,
+            "device": chan["device_name"], "mic_type": chan["mic_type"],
+            "reason": reason, "route": route,
             "note": "the agent is listening on your "
                     f"{chan['device_name'].replace('_', ' ')} while your main "
                     "microphone is busy. It hears you, not your call"}
@@ -190,6 +259,7 @@ def state(user_id: str) -> dict:
     live = _live(user_id)
     return {
         "attached": chan["device_name"] if chan else None,
+        "mic_type": chan["mic_type"] if chan else None,
         "listening": bool(live),
         "device": live["device_name"] if live else None,
         "since": live["started_at"] if live else None,
@@ -211,7 +281,8 @@ def history(user_id: str, limit: int = 20) -> list[dict]:
         "SELECT * FROM mic_sessions WHERE user_id=?"
         " ORDER BY started_at DESC, rowid DESC LIMIT ?",
         (user_id, limit)).fetchall()
-    return [{"id": r["id"], "device": r["device_name"], "reason": r["reason"],
+    return [{"id": r["id"], "device": r["device_name"],
+             "mic_type": r["mic_type"], "reason": r["reason"],
              "route": r["route"], "started_at": r["started_at"],
              "ended_at": r["ended_at"],
              "ended_because": r["ended_because"],

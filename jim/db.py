@@ -281,6 +281,10 @@ CREATE TABLE IF NOT EXISTS mic_channels (
     user_id     TEXT PRIMARY KEY REFERENCES users(id),
     device_id   TEXT NOT NULL REFERENCES devices(id),
     device_name TEXT NOT NULL,
+    -- watch | earbuds | lapel | clip_on | … see jim/mic.py:MIC_TYPES. Stored
+    -- because *what kind of microphone it is* is the thing that decided it
+    -- could be lent, and that decision should be readable later.
+    mic_type    TEXT NOT NULL,
     created_at  TEXT NOT NULL
 );
 
@@ -301,6 +305,11 @@ CREATE TABLE IF NOT EXISTS mic_sessions (
     device_name   TEXT NOT NULL,
     reason        TEXT NOT NULL,   -- voice_call | video_call | recording | …
     route         TEXT NOT NULL,   -- earpiece | headset | bluetooth_headset
+    mic_type      TEXT NOT NULL DEFAULT '',
+    -- What was carrying the occupying call. Recorded because once anything
+    -- worn can be channel 2, the two can collide: earbuds on a call are the
+    -- *occupied* microphone, not a spare one.
+    primary_device TEXT,
     started_at    TEXT NOT NULL,
     ended_at      TEXT,
     ended_because TEXT

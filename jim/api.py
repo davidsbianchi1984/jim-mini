@@ -1116,15 +1116,31 @@ def create_app(qrme_client: QRMEClient | None = None,
     # ---- a second ear: borrowing a wearable's microphone -------------------
     # Permission and state only; capture is on the device. See jim/mic.py.
 
+    @app.get("/mic/types")
+    def mic_types() -> dict:
+        """Which microphones can be channel 2, and which cannot.
+
+        Published so a client can offer the right list rather than guessing,
+        and so the reason a room microphone is excluded is discoverable
+        instead of arriving as a refusal.
+        """
+        return {
+            "personal": sorted(mic.PERSONAL_TYPES),
+            "ambient": sorted(t for t, ok in mic.MIC_TYPES.items() if not ok),
+            "rule": "a microphone pointed at you can be channel 2; one "
+                    "pointed at a room cannot, because everyone it picks up "
+                    "would be lending their voice without being asked",
+        }
+
     @app.put("/users/{user_id}/mic")
     def attach_mic(user_id: str, body: MicAttach, request: Request) -> dict:
-        """Nominate a wearable whose microphone the agent may borrow.
+        """Nominate a microphone the agent may borrow as channel 2.
 
-        Attaching is **not** listening — it says which device may be lent.
+        Attaching is **not** listening — it says which one may be lent.
         """
         _user_or_404(user_id, request)
         try:
-            return mic.attach(user_id, body.device_name)
+            return mic.attach(user_id, body.device_name, body.mic_type)
         except mic.MicError as exc:
             raise HTTPException(422, str(exc))
 
@@ -1151,7 +1167,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         try:
             return mic.handover(user_id, body.reason, body.route,
-                                body.others_present)
+                                body.others_present, body.primary_device)
         except mic.MicError as exc:
             raise HTTPException(403, str(exc))
 
