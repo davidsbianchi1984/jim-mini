@@ -95,6 +95,17 @@ class GuidanceFeedback(BaseModel):
     note: str | None = None
 
 
+class LocalitySet(BaseModel):
+    """The town a referral searches near. Coarse and self-declared — not the
+    consented live-location source. None clears it."""
+    locality: str | None = None
+
+
+class ReferralPrepare(BaseModel):
+    condition: str                     # picks the specialist and the area
+    provider_id: str                   # the clinician, from /referral/clinicians
+
+
 class SpecialistTaskStart(BaseModel):
     """Hand a QRME specialist multi-step work (see jim/handoff.py)."""
     condition: str                     # which specialist to ask

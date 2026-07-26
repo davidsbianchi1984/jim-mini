@@ -8,6 +8,35 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Reaching a real clinician** — `jim/referral.py`, 4 routes, 11 tests. The
+  tandem could hand a condition to a synthetic specialist and (this round) a
+  multi-step task. Neither reaches a human being. This maps a condition to a
+  care area, finds real clinicians near the user, and asks QRME to assemble
+  the summary and raise the signature that would release it.
+
+  **JIM never holds the credential and never relays the assertion.** The
+  signature is a WebAuthn assertion against *QRME's* relying party, over a
+  challenge QRME minted, so the Face ID prompt belongs to QRME and the
+  assertion travels from the user's device to QRME directly. A guardian
+  product that could mint the consent for releasing its own user's health
+  record would be exactly the wrong shape, and standing in the middle of the
+  one exchange that proves the user was present would defeat the point of
+  collecting it. JIM stores a handle — not the summary, the signature, or the
+  link. A test asserts the transcript never reaches JIM's database.
+
+  **Locality is a town, not a position.** `sources` already carries a
+  consented `location` feed and this deliberately does not read it: live
+  position is a stream, and matching a clinic needs a place name. Typing
+  "Leeds" once is a smaller disclosure than a product inferring it
+  continuously — and it is all the match can use anyway.
+
+  Condition→area routing is coarse on purpose (`anxiety` → `mental_health`,
+  everything unmapped → `medical`); anything finer would be JIM guessing at a
+  clinical taxonomy it has no standing to define. Standalone JIM, an
+  unregistered area, and a missing tandem link each answer plainly with a
+  reason rather than raising — the caller is often a screen somebody opened
+  while unwell.
+
 - **Contribution preview and revoke** — `jim/contribution.py`, 2 routes, 11
   tests. The settings screen has offered *"Contribute data — preview before it
   leaves"* since the cloud tier shipped. **The API could do neither half.**

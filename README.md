@@ -491,6 +491,29 @@ response reports the local and gateway halves separately: a gateway that
 cannot be reached must not make the button fail, and must not let JIM claim a
 deletion that never happened.
 
+## Reaching a real clinician
+
+The tandem hands a condition to a *synthetic* specialist. This reaches a
+person. `GET /users/{id}/referral/clinicians?condition=…` maps the condition to
+a care area and finds real clinicians near you; `POST …/referral/prepare` asks
+QRME to assemble the summary and raise the signature that would release it
+(`jim/referral.py`).
+
+**Nothing is released by preparing.** The response carries the package — so you
+read exactly what would go — and a challenge your device signs. **JIM never
+holds the credential and never relays the assertion**: the signature is against
+*QRME's* relying party, so the Face ID prompt belongs to QRME and the assertion
+travels from your device to QRME directly. A guardian standing in the middle of
+the exchange that proves you were present would defeat the point of collecting
+it. JIM stores a handle, not the summary, the signature, or the link.
+
+**Locality is a town, not a position.** `PUT /users/{id}/locality` takes a place
+name you type once. The consented live-location source is deliberately not what
+this reads — position is a stream, and matching a clinic needs a place.
+
+Expertise filters and geography only ranks: a nearer clinician is never
+substituted for the right one.
+
 ## Handing a specialist a task
 
 Tandem guidance sends one message and gets one reply. For work with several

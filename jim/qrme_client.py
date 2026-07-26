@@ -117,6 +117,45 @@ class QRMEClient:
             return None
         return r.json()
 
+    # -- referrals: reaching a real clinician --------------------------------
+
+    def match_clinicians(self, area: str, location: str | None = None,
+                         limit: int = 5) -> list[dict]:
+        """Real providers QRME knows about, by expertise and locality.
+
+        An unreachable QRME is an empty list, not an exception: the caller is
+        often a screen somebody opened while unwell, and "none found" degrades
+        better than a traceback.
+        """
+        path = f"/referrals/match?area={urllib.parse.quote(area)}&limit={limit}"
+        if location:
+            path += f"&location={urllib.parse.quote(location)}"
+        try:
+            r = self._client.get(path)
+        except Exception:
+            return []
+        return r.json() if r.status_code < 300 else []
+
+    def prepare_referral(self, profile_id: str, interactor_id: str,
+                         token: str | None, provider_id: str) -> dict | None:
+        """Ask QRME to assemble the summary and mint the signature envelope.
+
+        Releases nothing. The returned challenge is signed **against QRME**
+        by the user's own device — JIM never relays the assertion, because a
+        guardian product standing in the middle of the exchange that proves
+        its user was present would defeat the point of collecting it.
+        """
+        if not token:
+            return None
+        try:
+            r = self._client.post("/referrals/prepare", json={
+                "interactor_id": interactor_id, "profile_id": profile_id,
+                "provider_id": provider_id},
+                headers={"authorization": f"Bearer {token}"})
+        except Exception:
+            return None
+        return r.json() if r.status_code < 300 else None
+
     # -- delegated workflows: handing over a task, not a turn ----------------
     #
     # `specialist_reply` sends one message and gets one reply back, which is

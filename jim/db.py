@@ -267,6 +267,29 @@ CREATE TABLE IF NOT EXISTS contribution_log (
 -- in QRME under its own moderation and the user's capability token; copying
 -- them here would quietly make JIM a second store of somebody's generated
 -- health correspondence, which is the opposite of what the tandem is for.
+-- The town a referral searches near. Coarse and self-declared, and
+-- deliberately *not* the consented `location` source: live position is a
+-- stream, and matching a clinic needs a place name. A user typing "Leeds" once
+-- is a smaller disclosure than a product inferring it continuously.
+CREATE TABLE IF NOT EXISTS user_locality (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    locality   TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+-- Referrals prepared through the Guardian. JIM keeps the handle only: the
+-- summary, the signature and the one-time link all live in QRME, because the
+-- assertion that releases them is against QRME's relying party and must
+-- travel from the user's device to QRME without passing through here.
+CREATE TABLE IF NOT EXISTS referral_requests (
+    id               TEXT PRIMARY KEY,
+    user_id          TEXT NOT NULL REFERENCES users(id),
+    condition        TEXT NOT NULL,
+    provider_id      TEXT NOT NULL,
+    qrme_referral_id TEXT,
+    created_at       TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS specialist_tasks (
     id               TEXT PRIMARY KEY,
     user_id          TEXT NOT NULL REFERENCES users(id),

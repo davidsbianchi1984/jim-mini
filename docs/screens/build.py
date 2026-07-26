@@ -1205,6 +1205,23 @@ SCREENS = [
         dict(icon="bell", color="amber", k="Waiting on you", s="confirm before it goes", pill=("PAUSED", "warn")),
         dict(icon="shield", color="cyan", k="Drafts stay in QRME", s="Jim keeps only the status"),
     ], button=("Confirm & finish", "brand")),
+    dict(num=63, title="Find a Clinician", sub="Expertise first, then near you",
+         hero=None, accent="cyan", tab=0, cards=[
+        dict(icon="person", color="cyan", k="Nearest match", s="Riverside Cardiology · Leeds", pill=("NEAR", "good")),
+        dict(icon="person", color="violet", k="Also in medical", s="Moorgate Practice · Truro"),
+        dict(icon="shield", color="green", k="Expertise never traded", s="nearer is not a substitute"),
+        dict(icon="eye", color="amber", k="A town, not your position", s="you type it, once"),
+    ], button=("Prepare a referral", "brand")),
+    # The moment the whole referral path exists for. Every line is a real
+    # field of what would be sent — the endpoint builds this from the bytes
+    # the signature actually covers.
+    dict(num=64, title="Sign to Release", sub="You sign this, not a checkbox",
+         hero=None, accent="red", tab=0, cards=[
+        dict(icon="person", color="cyan", k="To Riverside Cardiology", s="medical · Leeds"),
+        dict(icon="chat", color="violet", k="4 messages", s="with Dr W — an AI profile"),
+        dict(icon="shield", color="green", k="Nothing else goes", s="no ids, no notes, no biometrics"),
+        dict(icon="eye", color="amber", k="Opens once", s="then the link is dead"),
+    ], button=("Face ID to release", "emer")),
 ]
 
 
