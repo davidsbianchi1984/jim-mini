@@ -52,6 +52,39 @@ own persona conditioning, moderation, and per-user memory before JIM surfaces
 it. Without the endpoint, JIM uses its own standalone guidance — the two
 remain independent.
 
+### Handing over a task, not a turn
+
+The delegation above is one message and one reply, which is the right shape for
+*"say something supportive about what the sensors just saw"* and the wrong one
+for work with several steps that has to survive the user putting the phone
+down.
+
+QRME runs that as a **workflow** (`research → draft → review → send →
+confirm`), carrying each phase's output into the next and persisting between
+calls. Its own workflow routes are `require_owner`, correctly: a workflow reads
+the profile's vaulted source material unattended, and
+`workflows._scoped_items` treats a missing grant as *every source item*.
+Relaxing those routes to admit an interactor would have turned a considered
+per-turn decision into an unattended one over the whole vault.
+
+So there is a **separate delegated surface** (`qrme/delegation.py`), off until
+a profile's owner turns it on:
+
+* the owner names which phases may be delegated, and delegating `research`
+  without a grant is refused at write time;
+* a caller may only ask for a subset of that, and omitting the plan gets the
+  owner's set rather than the product default;
+* the caller must already be in conversation with the profile;
+* only the interactor who started one may read or advance it, and an owner's
+  own workflow has no row in `delegated_workflows` — that absence is what keeps
+  the two surfaces from merging.
+
+JIM's side is `jim/handoff.py`, and it is deliberately **not reachable from
+`monitor`**: escalation decides in one call and must keep doing so. A detection
+can warrant a handoff; a person starts it. JIM stores the task's *status* only
+— the drafts stay in QRME under its moderation and the user's own token, rather
+than making JIM a second store of generated health correspondence.
+
 ## qrme / jim-mini ✕ pdi
 
 PDI is a separate secure-hosting product: a private, encrypted data vault with

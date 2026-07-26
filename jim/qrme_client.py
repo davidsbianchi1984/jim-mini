@@ -117,6 +117,81 @@ class QRMEClient:
             return None
         return r.json()
 
+    # -- delegated workflows: handing over a task, not a turn ----------------
+    #
+    # `specialist_reply` sends one message and gets one reply back, which is
+    # the right shape for "say something supportive" and the wrong one for
+    # work that takes several steps and has to survive the user closing the
+    # app. QRME runs those as *workflows*, and its own workflow routes are
+    # owner-only for good reason — a workflow reads the profile's vaulted
+    # source material unattended. The delegated surface below is the one an
+    # interactor may reach, inside an envelope the profile's owner declared.
+
+    def delegation_offer(self, profile_id: str) -> dict:
+        """What this profile permits a delegated caller to run.
+
+        Asked *before* attempting a handoff, so a specialist that has not been
+        opted in produces a clean fallback rather than a 403 in the middle of
+        somebody's emergency. Unreachable QRME reads as "no delegation", which
+        is the safe direction: JIM handles it standalone.
+        """
+        try:
+            r = self._client.get(f"/profiles/{profile_id}/delegation")
+        except Exception:
+            return {"delegation": False, "phases": []}
+        if r.status_code >= 300:
+            return {"delegation": False, "phases": []}
+        return r.json()
+
+    def start_workflow(self, profile_id: str, interactor_id: str,
+                       token: str | None, goal: str,
+                       plan: list[str] | None = None) -> dict | None:
+        """Ask a specialist to take on a multi-step task. None if refused.
+
+        Needs the interactor's own capability token — the same one that reads
+        the shared thread. Without it the caller is a stranger holding an id,
+        which QRME declines by design.
+        """
+        if not token:
+            return None
+        body = {"goal": goal, "interactor_id": interactor_id}
+        if plan is not None:
+            body["plan"] = plan
+        try:
+            r = self._client.post(
+                f"/profiles/{profile_id}/delegated-workflows", json=body,
+                headers={"authorization": f"Bearer {token}"})
+        except Exception:
+            return None
+        return r.json() if r.status_code < 300 else None
+
+    def advance_workflow(self, profile_id: str, workflow_id: str,
+                         token: str | None) -> dict | None:
+        """Run the specialist's next phase. None if it could not be advanced."""
+        if not token:
+            return None
+        try:
+            r = self._client.post(
+                f"/profiles/{profile_id}/delegated-workflows/{workflow_id}"
+                "/advance", json={},
+                headers={"authorization": f"Bearer {token}"})
+        except Exception:
+            return None
+        return r.json() if r.status_code < 300 else None
+
+    def workflow_status(self, profile_id: str, workflow_id: str,
+                        token: str | None) -> dict | None:
+        """Where a handed-off task has got to. None if unreadable."""
+        if not token:
+            return None
+        try:
+            r = self._client.get(
+                f"/profiles/{profile_id}/delegated-workflows/{workflow_id}",
+                headers={"authorization": f"Bearer {token}"})
+        except Exception:
+            return None
+        return r.json() if r.status_code < 300 else None
+
     def specialist_reply(self, profile_id: str, interactor_id: str, message: str) -> dict:
         """Send a message to a QRME specialist profile and return its reply.
 

@@ -95,6 +95,15 @@ class GuidanceFeedback(BaseModel):
     note: str | None = None
 
 
+class SpecialistTaskStart(BaseModel):
+    """Hand a QRME specialist multi-step work (see jim/handoff.py)."""
+    condition: str                     # which specialist to ask
+    goal: str
+    # Omit for handoff.DEFAULT_PLAN. Whatever is asked for is intersected with
+    # what the specialist's owner permits — the narrower set wins.
+    plan: list[str] | None = None
+
+
 class ImprovementSubmit(BaseModel):
     """"Help us improve": product feedback on the app itself."""
     category: str = "idea"             # idea | improvement | bug | praise | other

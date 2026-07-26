@@ -73,6 +73,11 @@ def test_guidance_outcome_contribution(cloud_pair):
     r = jim.post(f"/feedback/{consenting}", json={"rating": "up"}).json()
     assert r["contributed"] is True
     payload = fake.contributions[0]
+    # `ref` is an opaque random handle carrying no identity — it exists so the
+    # item can be deleted at the gateway on revocation without deanonymizing
+    # the person revoking. Everything else is what it always was.
+    ref = payload.pop("ref")
+    assert ref and consenting not in ref
     assert payload == {"source": "jim-mini", "kind": "guidance_outcome",
                        "condition": "anxiety", "severity": "guidance",
                        "rating": "up"}
