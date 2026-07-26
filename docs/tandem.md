@@ -52,38 +52,42 @@ own persona conditioning, moderation, and per-user memory before JIM surfaces
 it. Without the endpoint, JIM uses its own standalone guidance — the two
 remain independent.
 
-### Handing over a task, not a turn
+### Reaching a real clinician
 
-The delegation above is one message and one reply, which is the right shape for
-*"say something supportive about what the sensors just saw"* and the wrong one
-for work with several steps that has to survive the user putting the phone
-down.
+The handoffs above end at a synthetic profile. `POST /handoffs` has always been
+able to package a session for a real provider — and it releases on
+`consent: true`, **a boolean the client sets**. For a health conversation
+leaving the product that is the "the app says the user agreed" problem
+`qrme/webauthn.py` opens by describing itself as the fix for, and the whole
+signing stack was already in the repo, unused by the one endpoint that shipped
+somebody's medical transcript outside.
 
-QRME runs that as a **workflow** (`research → draft → review → send →
-confirm`), carrying each phase's output into the next and persisting between
-calls. Its own workflow routes are `require_owner`, correctly: a workflow reads
-the profile's vaulted source material unattended, and
-`workflows._scoped_items` treats a missing grant as *every source item*.
-Relaxing those routes to admit an interactor would have turned a considered
-per-turn decision into an unattended one over the whole vault.
+A **referral** (`qrme/referral.py`) is a handoff with three differences:
 
-So there is a **separate delegated surface** (`qrme/delegation.py`), off until
-a profile's owner turns it on:
+* **Signed for, not consented to.** The envelope's challenge *is* the hash of
+  the exact package, and `release()` re-hashes the stored package at release
+  time — not the `document_sha256` column written beside it, which would agree
+  with itself however the row was edited afterwards. The user signs *this*
+  summary to *this* clinician; change either and the release stops as
+  arithmetic rather than as policy.
+* **Bound to one referral.** `binding_kind="referral"` means a valid assertion
+  raised for anything else is not a skeleton key.
+* **One-time.** A handoff token stays live for an ongoing relationship; a
+  referral link opens once, and a second attempt says so rather than quietly
+  working — a replayed link is something the patient should be able to find.
 
-* the owner names which phases may be delegated, and delegating `research`
-  without a grant is refused at write time;
-* a caller may only ask for a subset of that, and omitting the plan gets the
-  owner's set rather than the product default;
-* the caller must already be in conversation with the profile;
-* only the interactor who started one may read or advance it, and an owner's
-  own workflow has no row in `delegated_workflows` — that absence is what keeps
-  the two surfaces from merging.
+The package names the specialist as synthetic inside itself, because a
+clinician reading a transcript must never have to work out which voice was a
+person, and the AI mark rides on the portrait rather than the document.
 
-JIM's side is `jim/handoff.py`, and it is deliberately **not reachable from
-`monitor`**: escalation decides in one call and must keep doing so. A detection
-can warrant a handoff; a person starts it. JIM stores the task's *status* only
-— the drafts stay in QRME under its moderation and the user's own token, rather
-than making JIM a second store of generated health correspondence.
+**JIM matches; it never signs.** `jim/referral.py` maps a condition to an area,
+searches near a coarse self-declared locality (a town — deliberately not the
+consented live-location feed, which is a stream where a place name is wanted),
+and asks QRME to prepare. The assertion is against **QRME's** relying party and
+travels from the user's device to QRME directly: a guardian product standing in
+the middle of the exchange that proves its own user was present would defeat
+the point of collecting it. JIM stores a handle and not the summary, the
+signature, or the link.
 
 ## qrme / jim-mini ✕ pdi
 

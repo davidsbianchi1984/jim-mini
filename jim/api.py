@@ -12,8 +12,8 @@ from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
-               mobile, notify, relay, research, robotics, rota, social,
-               terms as terms_mod)
+               mobile, notify, referral, relay, research, robotics, rota,
+               social, terms as terms_mod)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
@@ -23,7 +23,8 @@ from .models import (
     GuidanceFeedback, HabitCreate,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
-    LanguageChoice, RobotCommand, TranslateRequest, WaiverSign,
+    LanguageChoice, LocalitySet, ReferralPrepare, RobotCommand,
+    TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
 )
@@ -1110,6 +1111,44 @@ def create_app(qrme_client: QRMEClient | None = None,
         """
         _user_or_404(user_id, request)
         return contribution.revoke(user_id, app.state.cloud)
+
+    # ---- reaching a real clinician ----------------------------------------
+    # JIM matches and prepares; it never holds the credential or relays the
+    # assertion. See jim/referral.py.
+
+    @app.put("/users/{user_id}/locality")
+    def set_locality(user_id: str, body: LocalitySet,
+                     request: Request) -> dict:
+        """The town a referral should search near — a place name, not a
+        position, and clearable by sending null."""
+        _user_or_404(user_id, request)
+        return referral.set_locality(user_id, body.locality)
+
+    @app.get("/users/{user_id}/referral/clinicians")
+    def referral_clinicians(user_id: str, condition: str,
+                            request: Request) -> dict:
+        """Real clinicians for this condition, near this user if known."""
+        _user_or_404(user_id, request)
+        return referral.clinicians(user_id, condition, app.state.qrme)
+
+    @app.post("/users/{user_id}/referral/prepare", status_code=201)
+    def prepare_referral(user_id: str, body: ReferralPrepare,
+                         request: Request) -> dict:
+        """Assemble the summary and raise the signature that would release it.
+
+        **Nothing is released.** The response carries the package so the user
+        can read what would go, and a challenge their device signs against
+        QRME — the Face ID prompt belongs to QRME, not to the Guardian.
+        """
+        _user_or_404(user_id, request)
+        spec = guardian._specialist(body.condition)
+        return referral.prepare(user_id, body.condition, body.provider_id,
+                                spec, app.state.qrme)
+
+    @app.get("/users/{user_id}/referral/requests")
+    def referral_requests(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return referral.requests_for(user_id)
 
     # ---- handing a specialist a task, not a turn --------------------------
     # Deliberately not reachable from `monitor`: escalation decides in one
