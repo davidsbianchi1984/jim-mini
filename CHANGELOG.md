@@ -4,6 +4,60 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **How much to trust a reading** — `jim/signal.py`, 15 tests. The last
+  standing gap: the Guardian assumed clean input. `escalation.decide` has
+  always accepted a `confidence`, but only forecasts ever supplied one, so it
+  gated *predictions* and never *measurements* — a reading was a fact by virtue
+  of arriving.
+
+  Consumer biometrics are not like that. An optical sensor loses skin contact,
+  a chest strap catches a motion artifact, and the characteristic failure is
+  not a small error but a plausible-looking number that is completely wrong,
+  with the alarming direction as likely as the reassuring one. At the top of
+  this ladder is a phone call to somebody's daughter, and an alert that is
+  usually wrong spends the only thing escalation has: her willingness to pick
+  up.
+
+  **Confidence drops only on evidence the *sensor* misbehaved** — an
+  impossible value, a jump no body could make between two readings, or the
+  device reporting its own poor contact. Being clinically abnormal never
+  lowers it. That distinction is the whole design, and it was learned the hard
+  way: the first draft graded anything outside the ordinary range as suspect,
+  which muted a lone SpO2 of 84 — the exact reading the ladder exists to carry.
+  A regression test caught it.
+
+  **A poor grade caps rather than silences.** Escalation stops at `check_in`:
+  *"we got an odd reading, are you alright?"* is the honest sentence when the
+  honest answer is that we do not know, and asking is also how the reading gets
+  corroborated. Dropping the sample would be the same mistake pointed the other
+  way — the noisy reading is sometimes real.
+
+  **Words are never noise.** The crisis floor is applied after the cap and is
+  never clipped by it. Nor can words make a heart rate of zero true: two
+  impossible readings are not two witnesses but one broken device agreeing with
+  itself, so corroboration only runs between *possible* readings. A fault is
+  phrased as a fault — *check the strap* — because telling somebody whose
+  sensor fell off that we are worried about them is how people learn to
+  disbelieve the thing.
+
+  A baseline is the one place a reading is dropped outright: it is a long-lived
+  average of what normal looks like, so it takes only ordinary values. A
+  merely-possible 195bpm is a real event worth detecting and a terrible thing
+  to average into "resting".
+
+### Fixed
+
+- **The escalation decision was advisory; raw severity was in charge.**
+  `monitor` reached out whenever `detection.severity == "critical"`, so the
+  decision tree could resolve a disbelieved reading to `check_in` and the
+  emergency contact was rung anyway. The tree is authoritative now. No
+  behaviour changes for a trusted critical — its floor is `notify_contact`, so
+  the comparison is exactly equivalent — and a test asserts that directly.
+
 ## [0.2.0] — 2026-07-25
 
 ### Fixed
