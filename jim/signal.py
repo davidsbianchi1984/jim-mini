@@ -106,7 +106,7 @@ def _grade_metric(name: str, value, prior=None) -> tuple[str, str | None]:
     except (TypeError, ValueError):
         return "implausible", f"{name}={value!r} is not a number"
 
-    hard_lo, hard_hi, plaus_lo, plaus_hi = rng
+    hard_lo, hard_hi = rng[0], rng[1]
     if v < hard_lo or v > hard_hi:
         return "implausible", (f"{name}={v:g} is outside the range a body can "
                                f"produce ({hard_lo:g}–{hard_hi:g})")
@@ -122,14 +122,14 @@ def _grade_metric(name: str, value, prior=None) -> tuple[str, str | None]:
                                f"more than {jump:g} — a jump that size is "
                                f"usually the sensor losing contact")
 
-    # Deliberately NOT "outside the ordinary range → suspect". Being clinically
-    # abnormal is the *signal*, not noise, and an earlier draft of this module
-    # conflated the two — which muted a lone SpO2 of 84, the exact reading the
-    # escalation ladder exists for. Confidence drops only on positive evidence
-    # of a *sensor* problem: an impossible value, an impossible rate of change,
-    # or the device saying so itself. An alarming number is just alarming.
-    if v < plaus_lo or v > plaus_hi:
-        return "ok", None
+    # There is deliberately no "outside the ordinary range → suspect" branch.
+    # Being clinically abnormal is the *signal*, not noise, and an earlier
+    # draft conflated the two — which muted a lone SpO2 of 84, the exact
+    # reading the escalation ladder exists for. Confidence drops only on
+    # positive evidence of a *sensor* problem: an impossible value, an
+    # impossible rate of change, or the device saying so itself. The plausible
+    # bounds in RANGES stay published for callers that want to describe a
+    # reading, and are not consulted here.
     return "ok", None
 
 
