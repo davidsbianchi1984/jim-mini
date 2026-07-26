@@ -1,5 +1,11 @@
 # JIM-mini / Guardian
 
+**Current release: v0.3.0** ([changelog](CHANGELOG.md) ·
+[release notes](RELEASE_NOTES.md)) — one of three products
+([qrme](https://github.com/davidsbianchi1984/qrme),
+[pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
+one number names one combination of all three.
+
 <!-- The bare URL is deliberate and must stay on its own line: GitHub turns a
      user-attachments link into an inline player, and only that. A video
      committed into the repo cannot play — the markdown sanitizer strips
@@ -28,6 +34,24 @@ to QRME specialist profiles over HTTP. See [docs/tandem.md](docs/tandem.md).
 *Wearable signals → Guardian detects a condition → triggers the matching
 specialist → moderated guidance, escalating to an emergency contact on critical
 events.*
+
+## What's in the current release
+
+The sections below describe every capability in detail. This is the short
+version of how it got here — what each release actually added, newest first.
+Full detail in [CHANGELOG.md](CHANGELOG.md).
+
+| Release | What landed |
+|---|---|
+| **0.3.0** | **The round where the Guardian reaches a person.** It could delegate a condition to a synthetic specialist; now it can **hand over a task** that outlives the app being closed, and **find a real clinician** near the user — without ever holding the credential or relaying the assertion, because the Face ID prompt belongs to QRME and the signature travels from the device to QRME directly. Locality is a town you type once, deliberately not the consented live-position feed. Plus a **contribution preview and revoke** that finally does both halves the settings screen had been promising |
+| **0.2.2** | A documentation release — no code changed in any of the three products. Corrections to things that described themselves inaccurately, plus the release checklist explaining why those kept happening |
+| **0.2.1** | **How much to trust a reading.** The escalation decision had been advisory while raw severity sat in the channel underneath it; sensor confidence became something the decision actually reasons about |
+| **0.2.0**–**0.1.9** | A rota, and an escalation that **actually sends something** — signed HMAC delivery, with the escalation saying plainly when nobody was reached. Care beacons and the workplace relay built, and a phone that scans a care beacon lands on a page |
+| **0.1.8**–**0.1.7** | Release-link repairs, and the point at which the three products began being **cut as one release** |
+| **0.1.6**–**0.1.5** | Version aligned across the suite. Native apps compiled in CI, published deployments, one-container deploy |
+| **0.1.4**–**0.1.2** | `python -m jim` launcher, running it on your phone, Terms of Service, macOS notarization |
+| **0.1.1** | Native iOS / Android / Windows apps at parity. First-run onboarding. **Predictive early warning**, robots as guardian responders, family oversight, and provable custody |
+| **0.1.0** | First public release — **monitor → predict → guide → escalate**, tunable sensitivity, the life layer, Medical ID, provider handoff, and the QRME tandem |
 
 ## Desktop app
 
