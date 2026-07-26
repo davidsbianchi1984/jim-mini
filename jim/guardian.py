@@ -14,7 +14,8 @@ import secrets
 from datetime import date
 
 from . import (conditions, db, earlywarning, escalation,
-               guidance as local_guidance, i18n, life, llm, robotics, terms)
+               guidance as local_guidance, i18n, life, llm, robotics, signal,
+               terms)
 
 
 def _event(user_id, type_, *, condition=None, severity=None, detail=None,
@@ -230,6 +231,24 @@ def _specialist(condition: str) -> dict | None:
         "SELECT * FROM specialists WHERE condition=?", (condition,)
     ).fetchone()
     return dict(row) if row else None
+
+
+def _prior_sample(user_id: str) -> dict:
+    """The previous biometric reading, for rate-of-change checks.
+
+    Only the most recent one, and only what it recorded — a jump is a fact
+    about two consecutive readings, not about a window.
+    """
+    row = db.connect().execute(
+        "SELECT detail FROM events WHERE user_id=? AND type='biometric'"
+        " ORDER BY created_at DESC, rowid DESC LIMIT 1", (user_id,)).fetchone()
+    if not row or not row["detail"]:
+        return {}
+    try:
+        d = json.loads(row["detail"])
+    except ValueError:
+        return {}
+    return d if isinstance(d, dict) else {}
 
 
 def _prior_heart_rates(user_id: str, pdi=None, limit: int = 4) -> list[int]:
@@ -703,8 +722,19 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
         sample = {**sample, "resting_heart_rate": resting}
 
     prior_hrs = _prior_heart_rates(user_id, pdi=pdi)
+
+    # How much of this reading to believe. Everything below used to treat a
+    # sample as fact by virtue of its arrival; a wearable losing skin contact
+    # produces a plausible-looking number that is completely wrong, and the
+    # alarming direction is as likely as the reassuring one. See jim/signal.py.
+    # Nothing is dropped — the grade travels with the sample and caps how far
+    # the escalation ladder may climb on it.
+    quality = signal.assess(sample, prior=_prior_sample(user_id),
+                            said_something=bool(note))
     _event(user_id, "biometric",
-           detail={**sample, **({"note": note} if note else {})},
+           detail={**sample, "signal_confidence": quality["confidence"],
+                   "signal_grade": quality["grade"],
+                   **({"note": note} if note else {})},
            pdi=pdi, vault_scope="medical/biometric")
 
     known = (user or {}).get("known_conditions") or []
@@ -713,14 +743,18 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
                                   sensitivity=sensitivity)
     if detection is None:
         # A calm resting-state reading nudges the rolling baseline (clause 2).
-        if sample.get("heart_rate") and _is_resting(sample):
-            update_baseline(user_id, "heart_rate", sample["heart_rate"])
+        # A rolling baseline is long-lived, so a fault let into it corrupts
+        # every future comparison. It is the one place dropping a reading is
+        # clearly right: a baseline has no urgency and can wait for a good one.
+        clean_sample = signal.clean(sample)
+        if clean_sample.get("heart_rate") and _is_resting(clean_sample):
+            update_baseline(user_id, "heart_rate", clean_sample["heart_rate"])
         # Predictive early warning before a condition manifests (clause 2).
         early = conditions.forecast(
             sample.get("heart_rate"),
             sample.get("resting_heart_rate", 70), prior_hrs)
         result = {"detected": False, "guidance": None, "escalation": None,
-                  "forecast": None}
+                  "forecast": None, "signal": quality}
         # Physical abnormality forming: a blood-oxygen slide is flagged while
         # it is still above the detection threshold.
         if sample.get("blood_oxygen") is not None:
@@ -806,16 +840,29 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
     crisis = "crisis language" in detection.reason
     decision = escalation.decide(
         detection.severity, sensitivity, condition=detection.condition,
-        known=known, contactable=contactable, crisis=crisis)
+        known=known, contactable=contactable, crisis=crisis,
+        confidence=quality["confidence"])
     result["escalation_decision"] = decision
+    result["signal"] = quality
 
-    # Critical always escalates. In cautious mode, a guidance-level event for a
-    # condition the user has *declared* also reaches out — catching it early for
-    # someone known to be prone to it.
+    # Whether to actually reach out is the *decision tree's* call, not the raw
+    # severity's. It used to be `detection.severity == "critical"`, which meant
+    # the tree could resolve a disbelieved reading to check_in and this line
+    # would ring the emergency contact anyway — the decision was advisory and
+    # the severity was in charge. With signal confidence feeding the tree that
+    # gap became load-bearing, so the tree is authoritative now.
+    #
+    # No behaviour changes for a trusted critical: its floor is notify_contact,
+    # so the comparison below is exactly equivalent.
+    #
+    # In cautious mode a guidance-level event for a *declared* condition still
+    # reaches out early, which sits below notify_contact on the ladder and so
+    # stays an explicit clause.
     cautious_early = (sensitivity == "cautious"
                       and detection.severity == "guidance"
                       and detection.condition in known)
-    if detection.severity == "critical" or cautious_early:
+    reaches_out = decision["tier_index"] >= escalation.TIERS.index("notify_contact")
+    if reaches_out or cautious_early:
         result["escalation"] = _escalate(user_id, user, detection,
                                          decision=decision)
         if cautious_early:

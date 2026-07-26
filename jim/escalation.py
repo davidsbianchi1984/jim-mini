@@ -104,13 +104,30 @@ def decide(severity: str, sensitivity: str = "balanced", *,
         idx = min(idx, 1)
         path.append(f"low forecast confidence {confidence:.2f} caps at self_guidance")
 
+    # …and neither should a reading we do not believe. This gate used to cover
+    # predictions only, so a *measurement* was a fact by virtue of arriving: a
+    # wearable reporting SpO2 62% through a motion artifact went straight to
+    # the critical floor below and rang somebody's daughter. See jim/signal.py.
+    #
+    # It caps at check_in rather than silencing. "We got an odd reading, are
+    # you alright?" is the honest sentence when the honest answer is that we do
+    # not know, and asking is also how the reading gets corroborated. The
+    # crisis floor below is applied after this and is deliberately not
+    # conditioned on it — what somebody *says* is never a sensor artifact.
+    unbelieved = severity in ("guidance", "critical") and confidence < 0.5
+    if unbelieved:
+        idx = min(idx, 2)
+        path.append(f"low signal confidence {confidence:.2f} caps at check_in — "
+                    f"ask rather than escalate on a reading we do not trust")
+
     # Safety floors — applied last so nothing above can undercut them.
-    if severity == "critical":
+    if severity == "critical" and not unbelieved:
         idx = max(idx, 3)
         path.append("critical floor: never below notify_contact")
     if crisis:
         idx = len(TIERS) - 1
-        path.append("crisis language: hard floor at emergency_services")
+        path.append("crisis language: hard floor at emergency_services — "
+                    "what somebody says is never a sensor artifact")
 
     # The ceiling — last, so it binds even the floors above. It is the only
     # rule in this module that lowers a tier, and it only ever applies to a

@@ -112,13 +112,43 @@ are the built-in default pack. Distribution would ride the marketplace.
 - **Corroboration today** **[implemented]**: the HR rule already requires
   respiratory-rate agreement (or absence) before firing, so a lone HR spike
   from a loose strap doesn't escalate on its own.
-- **Confidence & sensor fusion** **[planned]**: each sample carries an
-  optional `confidence` (0–1) per sensor; a detection's effective severity is
-  gated by the minimum confidence of the signals that produced it. Conflicting
-  signals (e.g. high HR but normal HRV and normal respiration) lower
-  confidence and downgrade critical→guidance→info. A short debounce window
-  (N consecutive corroborating samples) suppresses transient artifacts before
-  escalation.
+- **Signal confidence** **[implemented]** (`jim/signal.py`): every sample is
+  graded on ingest and the grade rides with it. `escalation.decide` has always
+  taken a `confidence`, but only forecasts ever supplied one — it gated
+  *predictions* and never *measurements*, so a reading was a fact by virtue of
+  arriving. A wearable losing skin contact produces a plausible-looking number
+  that is completely wrong, and the alarming direction is as likely as the
+  reassuring one.
+
+  **Confidence drops only on evidence the sensor misbehaved** — a
+  physiologically impossible value, a jump no body could make between two
+  readings, or the device reporting its own poor contact. Being *clinically
+  abnormal* never lowers it. That distinction is the whole design: an earlier
+  draft treated "outside the ordinary range" as suspicious and muted a lone
+  SpO2 of 84 — the exact reading this ladder exists to carry.
+
+  **A poor grade caps, it does not silence.** Escalation is capped at
+  `check_in`: *"we got an odd reading, are you alright?"* is the honest
+  sentence when the honest answer is that we do not know, and asking is also
+  how the reading gets corroborated. Dropping the sample would be the same
+  mistake pointed the other way.
+
+  **Words are never noise.** The crisis floor is applied after the cap and is
+  never clipped by it — a person typing *"I can't breathe"* is data of a
+  different kind, and nothing a user says can make a heart rate of zero true
+  either. Two impossible readings do not corroborate each other; they are one
+  broken device agreeing with itself.
+
+  A fault is phrased as a fault (*check the strap*), not as concern about the
+  person — telling somebody whose sensor fell off that we are worried about
+  them is how people learn to disbelieve the thing.
+
+  The escalation *decision* is now authoritative over raw severity: `monitor`
+  used to reach out whenever `severity == "critical"`, which meant the tree
+  could resolve to `check_in` and the contact was rung anyway.
+
+- **Debounce** **[planned]**: N consecutive corroborating samples before
+  escalation, to suppress a transient artifact that passes every check above.
 
 ## Escalation decision tree **[implemented]** (`guardian._escalate`)
 
