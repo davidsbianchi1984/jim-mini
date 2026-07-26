@@ -240,6 +240,141 @@ def test_a_refused_handover_leaves_no_record_of_listening(client):
     assert client.get(f"/users/{uid}/mic/history").json() == []
 
 
+# -- how wide it listens -----------------------------------------------------
+#
+# The gain is the mechanism behind the sentence the product tells the user —
+# *the agent hears you, not your call.* On an earpiece the other party's voice
+# is in the air beside the wearer, so a channel wide enough to hear a room
+# hears them too. The cap is what makes the sentence a fact about the capture
+# rather than a promise about the code.
+
+def test_it_starts_at_the_narrowest_setting(client):
+    """A listening default that reaches other people is a default nobody
+    chose."""
+    uid = _attached(client)
+    state = client.get(f"/users/{uid}/mic").json()
+    assert state["gain"] == "near_field"
+    assert state["effective_gain"] == "near_field"
+    assert "your own voice" in state["describes"]
+
+
+def test_the_dial_turns_up_and_down(client):
+    uid = _attached(client)
+    for level in ("wide", "normal", "near_field"):
+        out = client.put(f"/users/{uid}/mic/gain", json={"gain": level}).json()
+        assert out["gain"] == level
+        assert out["effective_gain"] == level
+        assert client.get(f"/users/{uid}/mic").json()["gain"] == level
+
+
+def test_an_unknown_level_is_rejected(client):
+    uid = _attached(client)
+    assert client.put(f"/users/{uid}/mic/gain",
+                      json={"gain": "maximum"}).status_code == 422
+
+
+def test_gain_needs_something_attached(client):
+    uid = enroll(client)
+    r = client.put(f"/users/{uid}/mic/gain", json={"gain": "normal"})
+    assert r.status_code == 422
+    assert "nothing attached" in r.json()["detail"]
+
+
+def test_a_call_caps_it_however_it_is_set(client):
+    """The one that matters. Somebody else's voice is in the air, so the
+    setting the user asked for is not the setting they get."""
+    uid = _attached(client)
+    client.put(f"/users/{uid}/mic/gain", json={"gain": "wide"})
+    out = client.post(f"/users/{uid}/mic/handover",
+                      json={"reason": "voice_call", "route": "earpiece"}).json()
+    assert out["effective_gain"] == "near_field"
+    assert out["capped"] is True
+    assert out["requested_gain"] == "wide"
+    assert "another person's voice is in the air" in out["because"]
+
+    state = client.get(f"/users/{uid}/mic").json()
+    assert state["gain"] == "wide"                  # what they asked for
+    assert state["effective_gain"] == "near_field"  # what they get
+
+
+def test_the_setting_comes_back_when_the_call_ends(client):
+    """Capped, not overwritten — otherwise a call would quietly reset a
+    preference the user set on purpose."""
+    uid = _attached(client)
+    client.put(f"/users/{uid}/mic/gain", json={"gain": "normal"})
+    client.post(f"/users/{uid}/mic/handover",
+                json={"reason": "voice_call", "route": "earpiece"})
+    client.post(f"/users/{uid}/mic/release")
+
+    state = client.get(f"/users/{uid}/mic").json()
+    assert state["effective_gain"] == "normal"
+    assert state["capped"] is False
+
+
+def test_turning_it_up_mid_call_is_accepted_and_deferred(client):
+    """A control that refuses teaches people it is broken. The situation is
+    temporarily narrower than the preference; the preference is still theirs."""
+    uid = _attached(client)
+    client.post(f"/users/{uid}/mic/handover",
+                json={"reason": "voice_call", "route": "earpiece"})
+    out = client.put(f"/users/{uid}/mic/gain", json={"gain": "wide"}).json()
+    assert out["gain"] == "wide"                  # taken
+    assert out["effective_gain"] == "near_field"  # not yet
+    assert out["capped"] is True
+
+    client.post(f"/users/{uid}/mic/release")
+    assert client.get(f"/users/{uid}/mic").json()["effective_gain"] == "wide"
+
+
+def test_a_reason_with_nobody_else_in_it_is_not_capped(client):
+    """Dictation is the user alone. Capping it would be theatre — there is no
+    second voice for the narrower channel to be protecting."""
+    uid = _attached(client)
+    client.put(f"/users/{uid}/mic/gain", json={"gain": "normal"})
+    out = client.post(f"/users/{uid}/mic/handover",
+                      json={"reason": "dictation", "route": "headset"}).json()
+    assert out["effective_gain"] == "normal"
+    assert out["capped"] is False
+
+
+def test_every_session_records_the_gain_it_actually_ran_at(client):
+    """The history has to say what was heard, not what was preferred — an
+    audit that reports the setting would overstate every capped call."""
+    uid = _attached(client)
+    client.put(f"/users/{uid}/mic/gain", json={"gain": "wide"})
+    client.post(f"/users/{uid}/mic/handover",
+                json={"reason": "voice_call", "route": "earpiece"})
+    client.post(f"/users/{uid}/mic/release")
+    client.post(f"/users/{uid}/mic/handover",
+                json={"reason": "dictation", "route": "headset"})
+
+    rows = client.get(f"/users/{uid}/mic/history").json()
+    assert rows[0]["reason"] == "dictation" and rows[0]["gain"] == "wide"
+    assert rows[1]["reason"] == "voice_call" and rows[1]["gain"] == "near_field"
+
+
+def test_the_levels_are_published(client):
+    """Including which ones reach past the wearer — that is the property the
+    cap is judged on, so a client should not have to infer it from a name."""
+    out = client.get("/mic/gains").json()
+    assert out["default"] == "near_field"
+    levels = {lvl["gain"]: lvl for lvl in out["levels"]}
+    assert levels["near_field"]["reaches_others"] is False
+    assert levels["wide"]["reaches_others"] is True
+    assert "voice_call" in out["capped_during"]
+    assert "live_room" in out["capped_during"]
+
+
+def test_a_live_room_caps_it_too(client):
+    """A room full of people is the case the cap exists for, more than a
+    two-party call is."""
+    uid = _attached(client)
+    client.put(f"/users/{uid}/mic/gain", json={"gain": "wide"})
+    out = client.post(f"/users/{uid}/mic/handover",
+                      json={"reason": "live_room", "route": "headset"}).json()
+    assert out["effective_gain"] == "near_field" and out["capped"] is True
+
+
 # -- it is per user ----------------------------------------------------------
 
 def test_another_user_cannot_lend_or_read_your_microphone(client):

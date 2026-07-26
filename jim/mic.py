@@ -89,6 +89,41 @@ MIC_TYPES: dict[str, bool] = {          # name -> personal?
 }
 PERSONAL_TYPES = tuple(k for k, v in MIC_TYPES.items() if v)
 
+# How much channel 2 picks up. Named `gain` rather than `sensitivity` because
+# `users.sensitivity` is already the escalation dial, and two settings with one
+# name is how somebody eventually turns the wrong one.
+#
+# This is not an audio-quality preference. It is **the mechanism** behind the
+# sentence the product tells the user — *the agent hears you, not your call.*
+# On an earpiece the other party's voice is in the air near the wearer, and a
+# channel wide enough to pick up a room picks that up too. A promise enforced
+# by a policy is a promise until somebody edits the policy; enforced by the
+# capture width, it is a fact about what the microphone can hear.
+#
+# `reaches_others` is what the level is judged on: not how loud, but whether
+# somebody who did not agree ends up inside it.
+GAIN_LEVELS: dict[str, dict] = {
+    "near_field": {
+        "reaches_others": False,
+        "describes": "your own voice, close to the microphone",
+    },
+    "normal": {
+        "reaches_others": True,
+        "describes": "you and whatever is happening near you",
+    },
+    "wide": {
+        "reaches_others": True,
+        "describes": "the room, including people who are not talking to you",
+    },
+}
+DEFAULT_GAIN = "near_field"
+
+# Reasons where another person's voice is in the air. While one of these is
+# what occupies the primary, channel 2 stays near-field however the user has
+# set it — a dial that can be turned up into somebody else's conversation is
+# not a safeguard, it is a suggestion.
+OTHERS_AUDIBLE = ("voice_call", "video_call", "live_room")
+
 
 class MicError(ValueError):
     """A handover that must not happen. Carries text meant for a person."""
@@ -161,6 +196,58 @@ def channel(user_id: str) -> dict | None:
 
 
 # --------------------------------------------------------------------------- #
+# gain — how wide the channel listens
+# --------------------------------------------------------------------------- #
+
+def set_gain(user_id: str, gain: str) -> dict:
+    """Turn channel 2 up or down. Adjustable any time, including mid-session.
+
+    The setting is honoured everywhere it is safe to honour it, and **capped
+    while somebody else's voice is in the air** — see :func:`effective_gain`.
+    Turning the dial up during a call does not fail; it is recorded, and it
+    takes effect when the call ends. Refusing the adjustment outright would
+    teach people the control is broken, when what is actually happening is
+    that the situation is temporarily narrower than their preference.
+    """
+    if gain not in GAIN_LEVELS:
+        raise MicError(
+            f"gain must be one of {', '.join(GAIN_LEVELS)}")
+    if channel(user_id) is None:
+        raise MicError("nothing attached — attach a microphone first")
+    conn = db.connect()
+    conn.execute("UPDATE mic_channels SET gain=? WHERE user_id=?",
+                 (gain, user_id))
+    conn.commit()
+    return {"gain": gain, **effective_gain(user_id)}
+
+
+def effective_gain(user_id: str) -> dict:
+    """What the microphone is actually running at, and why.
+
+    The user's setting is the ceiling they asked for; this is the ceiling they
+    get. The two differ exactly when somebody who never agreed would otherwise
+    be inside the capture.
+    """
+    chan = channel(user_id)
+    if chan is None:
+        return {"effective_gain": None, "capped": False, "because": None}
+    wanted = chan["gain"] or DEFAULT_GAIN
+    live = _live(user_id)
+    if live and live["reason"] in OTHERS_AUDIBLE and wanted != "near_field":
+        return {
+            "effective_gain": "near_field",
+            "capped": True,
+            "requested_gain": wanted,
+            "because": f"a {live['reason'].replace('_', ' ')} is in progress, "
+                       "so another person's voice is in the air. Your setting "
+                       "comes back when it ends",
+        }
+    return {"effective_gain": wanted, "capped": False,
+            "because": None,
+            "describes": GAIN_LEVELS[wanted]["describes"]}
+
+
+# --------------------------------------------------------------------------- #
 # lending it
 # --------------------------------------------------------------------------- #
 
@@ -227,13 +314,17 @@ def handover(user_id: str, reason: str, route: str,
     conn = db.connect()
     conn.execute(
         "INSERT INTO mic_sessions (id, user_id, device_id, device_name,"
-        " reason, route, mic_type, primary_device, started_at)"
-        " VALUES (?,?,?,?,?,?,?,?,?)",
+        " reason, route, mic_type, gain, primary_device, started_at)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?)",
         (session_id, user_id, chan["device_id"], chan["device_name"], reason,
-         route, chan["mic_type"], primary_device, db.utcnow()))
+         route, chan["mic_type"],
+         "near_field" if reason in OTHERS_AUDIBLE
+         else (chan["gain"] or DEFAULT_GAIN),
+         primary_device, db.utcnow()))
     conn.commit()
     return {"id": session_id, "listening": True, "channel": 2,
             "device": chan["device_name"], "mic_type": chan["mic_type"],
+            **effective_gain(user_id),
             "reason": reason, "route": route,
             "note": "the agent is listening on your "
                     f"{chan['device_name'].replace('_', ' ')} while your main "
@@ -260,6 +351,8 @@ def state(user_id: str) -> dict:
     return {
         "attached": chan["device_name"] if chan else None,
         "mic_type": chan["mic_type"] if chan else None,
+        "gain": chan["gain"] if chan else None,
+        **effective_gain(user_id),
         "listening": bool(live),
         "device": live["device_name"] if live else None,
         "since": live["started_at"] if live else None,
@@ -282,7 +375,8 @@ def history(user_id: str, limit: int = 20) -> list[dict]:
         " ORDER BY started_at DESC, rowid DESC LIMIT ?",
         (user_id, limit)).fetchall()
     return [{"id": r["id"], "device": r["device_name"],
-             "mic_type": r["mic_type"], "reason": r["reason"],
+             "mic_type": r["mic_type"], "gain": r["gain"],
+             "reason": r["reason"],
              "route": r["route"], "started_at": r["started_at"],
              "ended_at": r["ended_at"],
              "ended_because": r["ended_because"],

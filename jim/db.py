@@ -285,6 +285,17 @@ CREATE TABLE IF NOT EXISTS mic_channels (
     -- because *what kind of microphone it is* is the thing that decided it
     -- could be lent, and that decision should be readable later.
     mic_type    TEXT NOT NULL,
+    -- How wide channel 2 listens: near_field | normal | wide. Named `gain`
+    -- rather than `sensitivity` because `users.sensitivity` is already the
+    -- escalation dial, and two settings sharing a name is how somebody
+    -- eventually turns the wrong one.
+    --
+    -- Not an audio preference. It is the mechanism behind "the agent hears
+    -- you, not your call": a channel wide enough to pick up a room picks up
+    -- the other party bleeding from an earpiece too. `mic.effective_gain`
+    -- caps it at near_field whenever another person's voice is in the air, so
+    -- the promise is a fact about capture width rather than a policy.
+    gain        TEXT NOT NULL DEFAULT 'near_field',
     created_at  TEXT NOT NULL
 );
 
@@ -306,6 +317,8 @@ CREATE TABLE IF NOT EXISTS mic_sessions (
     reason        TEXT NOT NULL,   -- voice_call | video_call | recording | …
     route         TEXT NOT NULL,   -- earpiece | headset | bluetooth_headset
     mic_type      TEXT NOT NULL DEFAULT '',
+    -- What it actually ran at, which is not always what the user asked for.
+    gain          TEXT NOT NULL DEFAULT 'near_field',
     -- What was carrying the occupying call. Recorded because once anything
     -- worn can be channel 2, the two can collide: earbuds on a call are the
     -- *occupied* microphone, not a spare one.

@@ -23,7 +23,7 @@ from .models import (
     GuidanceFeedback, HabitCreate,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
-    LanguageChoice, LocalitySet, MicAttach, MicHandover,
+    LanguageChoice, LocalitySet, MicAttach, MicGain, MicHandover,
     ReferralPrepare, RobotCommand,
     TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
@@ -1132,6 +1132,24 @@ def create_app(qrme_client: QRMEClient | None = None,
                     "would be lending their voice without being asked",
         }
 
+    @app.get("/mic/gains")
+    def mic_gains() -> dict:
+        """How wide channel 2 can be told to listen.
+
+        Published alongside `/mic/types` so a client can build the dial from
+        the service's own words — including which levels reach past the
+        wearer, which is the property the cap is judged on.
+        """
+        return {
+            "levels": [{"gain": name, **spec}
+                       for name, spec in mic.GAIN_LEVELS.items()],
+            "default": mic.DEFAULT_GAIN,
+            "capped_during": list(mic.OTHERS_AUDIBLE),
+            "rule": "you can set it however you like; while somebody else's "
+                    "voice is in the air the agent still hears only you, and "
+                    "your setting comes back when the call ends",
+        }
+
     @app.put("/users/{user_id}/mic")
     def attach_mic(user_id: str, body: MicAttach, request: Request) -> dict:
         """Nominate a microphone the agent may borrow as channel 2.
@@ -1155,6 +1173,20 @@ def create_app(qrme_client: QRMEClient | None = None,
         """What the agent can hear right now, in words you can check."""
         _user_or_404(user_id, request)
         return mic.state(user_id)
+
+    @app.put("/users/{user_id}/mic/gain")
+    def set_mic_gain(user_id: str, body: MicGain, request: Request) -> dict:
+        """Turn channel 2 up or down.
+
+        Accepted at any level, including mid-call — a control that refuses
+        teaches people it is broken. What a call changes is the *effective*
+        gain, which is reported back here alongside the setting.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return mic.set_gain(user_id, body.gain)
+        except mic.MicError as exc:
+            raise HTTPException(422, str(exc))
 
     @app.post("/users/{user_id}/mic/handover", status_code=201)
     def hand_over_mic(user_id: str, body: MicHandover,

@@ -107,6 +107,17 @@ class MicAttach(BaseModel):
                       "room_array", "doorbell"]
 
 
+class MicGain(BaseModel):
+    """How wide channel 2 listens (see jim/mic.py:GAIN_LEVELS).
+
+    Not an audio-quality preference: it is what makes "the agent hears you,
+    not your call" true of the capture rather than true of a policy. Accepted
+    at any level; the service caps what it actually runs at while somebody
+    else's voice is in the air.
+    """
+    gain: Literal["near_field", "normal", "wide"]
+
+
 class MicHandover(BaseModel):
     """Lend it, while the primary microphone is occupied (see jim/mic.py)."""
     reason: Literal["voice_call", "video_call", "recording", "dictation",

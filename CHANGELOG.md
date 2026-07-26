@@ -8,8 +8,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Channel 2: a second microphone, for the agent** — `jim/mic.py`, 7 routes,
-  20 tests. A phone has one microphone and one foreground claim on it. While
+- **Channel 2: a second microphone, for the agent** — `jim/mic.py`, 9 routes,
+  31 tests. A phone has one microphone and one foreground claim on it. While
   somebody is on a call the Guardian is deaf — which is precisely when they
   might want to ask it something, and precisely when it cannot hear them ask.
   A watch already on the wrist has a microphone nothing else is using.
@@ -46,6 +46,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     nobody can audit, and this is the permission people most want to check up
     on. A *refused* handover records nothing, so the history never implies the
     agent heard something it did not.
+
+  And a dial, because how wide the channel listens is not an audio-quality
+  preference — it is **the mechanism** behind the sentence the product tells
+  the user, *the agent hears you, not your call.* On an earpiece the other
+  party's voice is in the air beside the wearer, and a channel wide enough to
+  hear a room hears them too. A promise enforced by a policy holds until
+  somebody edits the policy; enforced by the capture width, it is a fact about
+  what the microphone can pick up.
+
+  `PUT /users/{id}/mic/gain` sets `near_field`, `normal` or `wide`, defaulting
+  to the narrowest — a listening default that reaches other people is a default
+  nobody chose. `GET /mic/gains` publishes the levels with `reaches_others`,
+  which is the property the cap is actually judged on.
+
+  While the occupying reason is one where somebody else's voice is present
+  (`voice_call`, `video_call`, `live_room`), the effective gain is **capped at
+  near-field however the user has set it** — a dial that can be turned up into
+  somebody else's conversation is not a safeguard, it is a suggestion. The
+  adjustment is still accepted mid-call rather than refused, and takes effect
+  when the call ends: refusing outright would teach people the control is
+  broken, when what is happening is that the situation is temporarily narrower
+  than their preference. Capped, not overwritten — the setting comes back. Each
+  session records the gain it *actually ran at*, because an audit reporting the
+  preference would overstate every capped call.
 
   The counterpart is `qrme/roommic.py`, which lends the same wearable to a live
   room's profiles — where the others *are* participants and can therefore be
