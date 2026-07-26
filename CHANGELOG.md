@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-07-26
+
+**The round where the tandem reaches a person.** The Guardian could delegate a
+condition to a synthetic specialist; now it can hand over a task that outlives
+the app being closed, and find a real clinician near the user. Plus the
+settings screen finally keeps the promise it has been making about
+contribution.
+
 ### Added
 
 - **Reaching a real clinician** — `jim/referral.py`, 4 routes, 11 tests. The
@@ -609,7 +617,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.2.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.3.0...HEAD
+[0.3.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.0
 [0.2.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.2.2
 [0.2.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.2.1
 [0.2.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.2.0

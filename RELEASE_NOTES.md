@@ -1,61 +1,78 @@
-# JIM-mini v0.2.2 — release notes
+# JIM-mini v0.3.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.2.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.3.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.2.2** — a documentation release. **No code changed**: no new
-routes, no schema, no behaviour, and nothing about how the Guardian decides
-anything. Everything here corrects something that was *described* wrongly. One
+**JIM-mini v0.3.0** — the release where the Guardian reaches a person. It could
+delegate a condition to a synthetic specialist; now it can hand over a task that
+outlives the app being closed, and find a **real clinician** near the user. One
 of three interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
 [pdi](https://github.com/davidsbianchi1984/pdi)), all three cut together at this
 version.
 
-### Fixed
+### Highlights
 
-- **Three releases of changelog links were missing.** `[0.1.9]`, `[0.2.0]` and
-  `[0.2.1]` had headings but no link definitions, so three shipped versions
-  rendered as literal `[0.2.1]` bracket text rather than linking to their
-  releases, and `[Unreleased]` still compared against `app-v0.1.8` —
-  presenting a three-release diff as though it were an empty one.
+- **Reaching a real clinician** (`jim/referral.py`). Maps a condition to a care
+  area, finds clinicians near the user, and asks QRME to assemble the summary
+  and raise the signature that would release it.
 
-- **The release checklist is why that kept happening**, and is the entry that
-  matters. `docs/releasing.md` step 1 said to move the `Unreleased` items under
-  the new heading and date it, and stopped — it never mentioned the link
-  definition at the bottom of the file. The step was skipped three releases
-  running by someone following the instructions correctly, and nothing
-  complains when you miss it: the heading renders fine without a definition,
-  and the damage appears hundreds of lines from where the edit was made.
+  **JIM never holds the credential and never relays the assertion.** The
+  signature is against *QRME's* relying party, over a challenge QRME minted, so
+  the Face ID prompt belongs to QRME and the assertion travels from the user's
+  device to QRME directly. A guardian product that could mint the consent for
+  releasing its own user's health record would be exactly the wrong shape, and
+  standing in the middle of the one exchange that proves the user was present
+  would defeat the point of collecting it. JIM stores a handle — not the
+  summary, the signature, or the link — and a test asserts the transcript never
+  reaches its database.
 
-  Step 2 was wrong in the same direction. It named `pyproject.toml` and
-  `app/package.json` when the version string lives in **five** places — the two
-  it omitted being the `FastAPI(...)` call in `jim/api.py` and the second root
-  entry in `app/package-lock.json`, both of which had to be rediscovered each
-  round. Both steps now say what they meant.
+  **Locality is a town, not a position.** `sources` already carries a consented
+  `location` feed and this deliberately does not read it: live position is a
+  stream, and matching a clinic needs a place name. Typing "Leeds" once is a
+  smaller disclosure than a product inferring it continuously.
 
-  The `0.1.5` and `0.1.6` entries still point at commits rather than tags.
-  That is deliberate and explained in `docs/releasing.md`; they are untouched.
+- **Handing a specialist a task, not a turn** (`jim/handoff.py`). Tandem
+  guidance sends one message and gets one reply — right for *"say something
+  supportive"*, wrong for *"read what we have, draft the summary, hold it until
+  somebody confirms"*. QRME runs the second as a workflow; this is JIM's side.
 
-### What changed in the siblings
+  **Never on the emergency path.** `escalation.decide` resolves in one call and
+  must keep doing so — multi-step work is by definition slower than the thing it
+  would be blocking. Nothing here is reachable from `monitor`, and starting one
+  is explicit: a detection can *warrant* a handoff, a person starts it.
 
-- **QRME** — `POST /marketplace/seed` still advertised itself as *"Idempotent —
-  already-seeded profiles are skipped"* after v0.2.1 taught it to **repair**
-  too, so the text in the OpenAPI docs pointed away from the one call that
-  fixes a deployment showing bare initials instead of portraits. Corrected in
-  four places.
+  JIM keeps the task's **status only**. The drafts stay in QRME under its own
+  moderation and the user's capability token; mirroring them here would quietly
+  make JIM a second store of somebody's generated health correspondence.
 
-- **PDI** — the same checklist and changelog-link corrections as here.
+- **Contribution preview and revoke** (`jim/contribution.py`). The settings
+  screen has offered *"Contribute data — preview before it leaves"* since the
+  cloud tier shipped, and **the API could do neither half**: `cloud.contribute`
+  posted a payload, returned a bool, and wrote nothing down. There was nothing
+  to preview, and consent described as *revocable* meant only *stoppable*.
+
+  **One payload builder, used by both paths** — the preview calls the same
+  function the real send calls. A preview assembled separately is a
+  *description* of the payload, and descriptions drift from what they describe.
+  A refused post is not logged, because that would offer a revoke button for
+  data that never left; and revoke reports its local and gateway halves
+  separately, because a gateway that cannot be reached must neither fail the
+  button nor let JIM claim a deletion that did not happen.
+
+### Screens
+
+**61 · What Would Be Shared** (every line a real field of the payload),
+**62 · Specialist Working**, **63 · Find a Clinician**, **64 · Sign to Release**.
 
 ### Verification
 
-312 tests green — **the same 312, passing the same way**, which is the point of
-a release that claims no functional change. 87 routes, also unchanged. Version
-strings moved in exactly five places: `pyproject.toml`, the FastAPI app,
-`app/package.json`, and the two root entries in its lockfile (dependency
-versions untouched). Every version heading in the changelog was checked against
-its link definition — 12 for 12.
+346 tests green (34 new this release). 96 routes. 128 screens. Mutation-checked:
+logging a refused send, claiming gateway deletion regardless of the answer, and
+treating an empty phase intersection as a startable task each fail the test that
+forbids them.
 
 ### Install
 
