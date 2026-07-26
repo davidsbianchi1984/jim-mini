@@ -6,6 +6,91 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Channel 2: a second microphone, for the agent** — `jim/mic.py`, 9 routes,
+  34 tests. A phone has one microphone and one foreground claim on it. While
+  somebody is on a call the Guardian is deaf — which is precisely when they
+  might want to ask it something, and precisely when it cannot hear them ask.
+  A watch already on the wrist has a microphone nothing else is using.
+
+  **Permission and state only** — capture happens on the device; nothing in
+  this module touches a sample. What the service owns is whether the agent may
+  listen right now, on which device, and a record of when it did.
+
+  Any personal microphone qualifies — watch, earbuds, headset, lapel, clip-on,
+  bone-conduction, glasses. `GET /mic/types` publishes the list so a client
+  offers the right one rather than guessing.
+
+  Five refusals carry it:
+
+  - **Only a microphone pointed at you.** The first cut of this allowed only
+    `kind == "wearable"`, which was the right instinct reached by the wrong
+    measure: a watch qualified and a lapel mic did not, though a lapel mic is
+    aimed at one collar and a watch at a whole wrist. The axis is **who the
+    microphone is pointed at** — a speakerphone or conference puck hears
+    whoever is present, and those people never agreed. A stationary device is
+    refused whatever microphone is in it.
+  - **Not the microphone already carrying the call.** Broadening exposed a
+    collision a watch never had: earbuds on a call are the *occupied*
+    microphone, and lending them asks one microphone to be two channels.
+  - **Only while the primary is actually occupied**, with the reason recorded.
+    A second ear granted for no reason is just a second ear.
+  - **Never on speakerphone.** On an earpiece the wearable hears the wearer; on
+    speaker it hears **the other party too** — someone who is not a user of this
+    product, was never asked, and cannot revoke anything. A microphone the
+    Guardian holds must not become a way to record the person on the other end
+    of somebody else's call. Likewise refused with others in earshot.
+  - **A handover ends**, released explicitly or closed out with its reason, and
+    every one is recorded: a listening permission that leaves no trace is one
+    nobody can audit, and this is the permission people most want to check up
+    on. A *refused* handover records nothing, so the history never implies the
+    agent heard something it did not.
+
+  Two bounds on what it hears, deliberately separate. **Focus** keys the
+  channel on its wearer and drops the rest — background talk, a television, the
+  people at the next table. It is not a setting: an option to include the
+  chatter is an option to record people who never agreed, and nobody hands the
+  agent a microphone in order to be told what the next table was saying.
+  **Gain** is how far away that wearer can be. Focus decides what is *listened
+  to*; gain decides what is *in range*, and keeping both means a failure of the
+  first is still bounded by the second — which is the only reason to have a
+  filter and a limit rather than a filter alone.
+
+  Every gain level therefore describes **the user at a distance, never a level
+  of company**: close to the microphone, at arm's length, from anywhere in the
+  room. There is no setting whose answer to "what does it pick up" is "more
+  people". `reaches_others` survives that reframing and is what the cap is
+  judged on — not that others are transcribed, but that another voice is
+  physically inside the pickup pattern, which is worse and is what a filter
+  failure would expose.
+
+  How wide the channel listens is not an audio-quality preference — it is
+  **the mechanism** behind the sentence the product tells the user, *the agent
+  hears you, not your call.* A promise enforced by a policy holds until
+  somebody edits the policy; enforced by the capture width, it is a fact about
+  what the microphone can pick up.
+
+  `PUT /users/{id}/mic/gain` sets `near_field`, `normal` or `wide`, defaulting
+  to the narrowest — a listening default that reaches other people is a default
+  nobody chose. `GET /mic/gains` publishes the levels, `reaches_others`, and
+  the focus guarantee.
+
+  While the occupying reason is one where somebody else's voice is present
+  (`voice_call`, `video_call`, `live_room`), the effective gain is **capped at
+  near-field however the user has set it** — a dial that can be turned up into
+  somebody else's conversation is not a safeguard, it is a suggestion. The
+  adjustment is still accepted mid-call rather than refused, and takes effect
+  when the call ends: refusing outright would teach people the control is
+  broken, when what is happening is that the situation is temporarily narrower
+  than their preference. Capped, not overwritten — the setting comes back. Each
+  session records the gain it *actually ran at*, because an audit reporting the
+  preference would overstate every capped call.
+
+  The counterpart is `qrme/roommic.py`, which lends the same wearable to a live
+  room's profiles — where the others *are* participants and can therefore be
+  told, which is why that side discloses rather than refuses.
+
 ## [0.3.0] — 2026-07-26
 
 **The round where the tandem reaches a person.** The Guardian could delegate a

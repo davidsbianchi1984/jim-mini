@@ -95,6 +95,43 @@ class GuidanceFeedback(BaseModel):
     note: str | None = None
 
 
+class MicAttach(BaseModel):
+    """Nominate a registered device's microphone as channel 2 — the agent's
+    own input, separate from the one carrying the user's voice."""
+    device_name: str                   # e.g. smart_watch, earbuds, lapel_mic
+    # What kind of microphone it is. Only ones pointed at a person qualify;
+    # a room-facing one would lend everybody's voice. See jim/mic.py:MIC_TYPES.
+    mic_type: Literal["watch", "earbuds", "headset", "lapel", "clip_on",
+                      "bone_conduction", "glasses", "collar_tag", "handheld",
+                      "speakerphone", "conference", "console", "laptop",
+                      "room_array", "doorbell"]
+
+
+class MicGain(BaseModel):
+    """How wide channel 2 listens (see jim/mic.py:GAIN_LEVELS).
+
+    Not an audio-quality preference: it is what makes "the agent hears you,
+    not your call" true of the capture rather than true of a policy. Accepted
+    at any level; the service caps what it actually runs at while somebody
+    else's voice is in the air.
+    """
+    gain: Literal["near_field", "normal", "wide"]
+
+
+class MicHandover(BaseModel):
+    """Lend it, while the primary microphone is occupied (see jim/mic.py)."""
+    reason: Literal["voice_call", "video_call", "recording", "dictation",
+                    "live_room"]
+    # How the occupying call is being heard. Required, not defaulted: on
+    # speaker the wearable hears the other party too, and picking a default
+    # would make that choice on the user's behalf.
+    route: Literal["earpiece", "headset", "bluetooth_headset", "speaker"]
+    others_present: bool = False       # anyone else in earshot
+    # What is carrying the occupying call. If it is the same device as
+    # channel 2, one microphone is being asked to be two channels.
+    primary_device: str | None = None
+
+
 class LocalitySet(BaseModel):
     """The town a referral searches near. Coarse and self-declared — not the
     consented live-location source. None clears it."""

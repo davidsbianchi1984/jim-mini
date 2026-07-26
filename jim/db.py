@@ -271,6 +271,63 @@ CREATE TABLE IF NOT EXISTS contribution_log (
 -- deliberately *not* the consented `location` source: live position is a
 -- stream, and matching a clinic needs a place name. A user typing "Leeds" once
 -- is a smaller disclosure than a product inferring it continuously.
+-- A wearable whose microphone the Guardian may borrow while the phone's is
+-- occupied (see jim/mic.py). One per user: a second ear is a second ear, and
+-- a list of them would be a room full of microphones by another name.
+--
+-- Attaching is not listening. This row says *which* device may be lent; the
+-- lending is a `mic_sessions` row and needs a reason.
+CREATE TABLE IF NOT EXISTS mic_channels (
+    user_id     TEXT PRIMARY KEY REFERENCES users(id),
+    device_id   TEXT NOT NULL REFERENCES devices(id),
+    device_name TEXT NOT NULL,
+    -- watch | earbuds | lapel | clip_on | … see jim/mic.py:MIC_TYPES. Stored
+    -- because *what kind of microphone it is* is the thing that decided it
+    -- could be lent, and that decision should be readable later.
+    mic_type    TEXT NOT NULL,
+    -- How wide channel 2 listens: near_field | normal | wide. Named `gain`
+    -- rather than `sensitivity` because `users.sensitivity` is already the
+    -- escalation dial, and two settings sharing a name is how somebody
+    -- eventually turns the wrong one.
+    --
+    -- Not an audio preference. It is the mechanism behind "the agent hears
+    -- you, not your call": a channel wide enough to pick up a room picks up
+    -- the other party bleeding from an earpiece too. `mic.effective_gain`
+    -- caps it at near_field whenever another person's voice is in the air, so
+    -- the promise is a fact about capture width rather than a policy.
+    gain        TEXT NOT NULL DEFAULT 'near_field',
+    created_at  TEXT NOT NULL
+);
+
+-- Each period the agent actually held that microphone.
+--
+-- `route` is how the occupying call was being heard, and it is stored rather
+-- than checked-and-forgotten because it is the whole justification: on an
+-- earpiece the wearable hears the wearer, on speaker it hears the other party
+-- as well — someone who is not a user here and was never asked.
+--
+-- Rows are never deleted on release. A listening permission that leaves no
+-- trace is one nobody can audit, and this is the permission people most want
+-- to check up on.
+CREATE TABLE IF NOT EXISTS mic_sessions (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    device_id     TEXT NOT NULL,
+    device_name   TEXT NOT NULL,
+    reason        TEXT NOT NULL,   -- voice_call | video_call | recording | …
+    route         TEXT NOT NULL,   -- earpiece | headset | bluetooth_headset
+    mic_type      TEXT NOT NULL DEFAULT '',
+    -- What it actually ran at, which is not always what the user asked for.
+    gain          TEXT NOT NULL DEFAULT 'near_field',
+    -- What was carrying the occupying call. Recorded because once anything
+    -- worn can be channel 2, the two can collide: earbuds on a call are the
+    -- *occupied* microphone, not a spare one.
+    primary_device TEXT,
+    started_at    TEXT NOT NULL,
+    ended_at      TEXT,
+    ended_because TEXT
+);
+
 CREATE TABLE IF NOT EXISTS user_locality (
     user_id    TEXT PRIMARY KEY REFERENCES users(id),
     locality   TEXT NOT NULL,

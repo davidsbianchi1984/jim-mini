@@ -12,8 +12,8 @@ from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
-               mobile, notify, referral, relay, research, robotics, rota,
-               social, terms as terms_mod)
+               mic, mobile, notify, referral, relay, research, robotics,
+               rota, social, terms as terms_mod)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
@@ -23,7 +23,8 @@ from .models import (
     GuidanceFeedback, HabitCreate,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
-    LanguageChoice, LocalitySet, ReferralPrepare, RobotCommand,
+    LanguageChoice, LocalitySet, MicAttach, MicGain, MicHandover,
+    ReferralPrepare, RobotCommand,
     TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
@@ -1111,6 +1112,111 @@ def create_app(qrme_client: QRMEClient | None = None,
         """
         _user_or_404(user_id, request)
         return contribution.revoke(user_id, app.state.cloud)
+
+    # ---- a second ear: borrowing a wearable's microphone -------------------
+    # Permission and state only; capture is on the device. See jim/mic.py.
+
+    @app.get("/mic/types")
+    def mic_types() -> dict:
+        """Which microphones can be channel 2, and which cannot.
+
+        Published so a client can offer the right list rather than guessing,
+        and so the reason a room microphone is excluded is discoverable
+        instead of arriving as a refusal.
+        """
+        return {
+            "personal": sorted(mic.PERSONAL_TYPES),
+            "ambient": sorted(t for t, ok in mic.MIC_TYPES.items() if not ok),
+            "rule": "a microphone pointed at you can be channel 2; one "
+                    "pointed at a room cannot, because everyone it picks up "
+                    "would be lending their voice without being asked",
+        }
+
+    @app.get("/mic/gains")
+    def mic_gains() -> dict:
+        """How wide channel 2 can be told to listen.
+
+        Published alongside `/mic/types` so a client can build the dial from
+        the service's own words — including which levels reach past the
+        wearer, which is the property the cap is judged on.
+        """
+        return {
+            "levels": [{"gain": name, **spec}
+                       for name, spec in mic.GAIN_LEVELS.items()],
+            "default": mic.DEFAULT_GAIN,
+            "capped_during": list(mic.OTHERS_AUDIBLE),
+            "voice_focus": mic.VOICE_FOCUS,
+            "rule": "every level is you at a different distance, never more "
+                    "people — the channel keys on your voice and drops the "
+                    "chatter at all of them. You can set it however you like; "
+                    "while somebody else's voice is in the air the agent stays "
+                    "narrow anyway, and your setting comes back afterwards",
+        }
+
+    @app.put("/users/{user_id}/mic")
+    def attach_mic(user_id: str, body: MicAttach, request: Request) -> dict:
+        """Nominate a microphone the agent may borrow as channel 2.
+
+        Attaching is **not** listening — it says which one may be lent.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return mic.attach(user_id, body.device_name, body.mic_type)
+        except mic.MicError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/users/{user_id}/mic")
+    def detach_mic(user_id: str, request: Request) -> dict:
+        """Remove the wearable, ending any live handover with it."""
+        _user_or_404(user_id, request)
+        return mic.detach(user_id)
+
+    @app.get("/users/{user_id}/mic")
+    def mic_state(user_id: str, request: Request) -> dict:
+        """What the agent can hear right now, in words you can check."""
+        _user_or_404(user_id, request)
+        return mic.state(user_id)
+
+    @app.put("/users/{user_id}/mic/gain")
+    def set_mic_gain(user_id: str, body: MicGain, request: Request) -> dict:
+        """Turn channel 2 up or down.
+
+        Accepted at any level, including mid-call — a control that refuses
+        teaches people it is broken. What a call changes is the *effective*
+        gain, which is reported back here alongside the setting.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return mic.set_gain(user_id, body.gain)
+        except mic.MicError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.post("/users/{user_id}/mic/handover", status_code=201)
+    def hand_over_mic(user_id: str, body: MicHandover,
+                      request: Request) -> dict:
+        """Lend the agent the wearable while your main microphone is busy.
+
+        Refused on speaker, or with others in earshot: the wearable would be
+        picking up somebody who is not a user here and was never asked.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return mic.handover(user_id, body.reason, body.route,
+                                body.others_present, body.primary_device)
+        except mic.MicError as exc:
+            raise HTTPException(403, str(exc))
+
+    @app.post("/users/{user_id}/mic/release")
+    def release_mic(user_id: str, request: Request) -> dict:
+        """Take the microphone back."""
+        _user_or_404(user_id, request)
+        return mic.release(user_id)
+
+    @app.get("/users/{user_id}/mic/history")
+    def mic_history(user_id: str, request: Request) -> list[dict]:
+        """Every time the agent held it, and for how long."""
+        _user_or_404(user_id, request)
+        return mic.history(user_id)
 
     # ---- reaching a real clinician ----------------------------------------
     # JIM matches and prepares; it never holds the credential or relays the
