@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse
 from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
-               rota, social, spaces, terms as terms_mod)
+               rota, social, terms as terms_mod)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
@@ -24,7 +24,6 @@ from .models import (
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     LanguageChoice, LocalitySet, MicAttach, MicHandover,
-    SpaceEnroll, SpaceHold,
     ReferralPrepare, RobotCommand,
     TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
@@ -1183,81 +1182,6 @@ def create_app(qrme_client: QRMEClient | None = None,
         """Every time the agent held it, and for how long."""
         _user_or_404(user_id, request)
         return mic.history(user_id)
-
-    # ---- a room microphone, and what it costs to have one honestly --------
-    # See jim/spaces.py. Note which of these need a token and which do not:
-    # setting one up is the owner's decision, silencing it is not.
-
-    @app.post("/users/{user_id}/spaces", status_code=201)
-    def enroll_space(user_id: str, body: SpaceEnroll,
-                     request: Request) -> dict:
-        """Let a stationary device listen in a named space.
-
-        Requires a disclosure present *in the room* and a wake-word or
-        press-to-talk activation. Continuous listening is not offered.
-        """
-        _user_or_404(user_id, request)
-        try:
-            return spaces.enroll(user_id, body.device_name, body.space,
-                                 body.disclosure, body.activation,
-                                 body.household)
-        except spaces.SpaceError as exc:
-            raise HTTPException(422, str(exc))
-
-    @app.get("/users/{user_id}/spaces")
-    def list_spaces(user_id: str, request: Request) -> list[dict]:
-        _user_or_404(user_id, request)
-        return spaces.spaces_for(user_id)
-
-    @app.delete("/users/{user_id}/spaces/{space_id}")
-    def remove_space(user_id: str, space_id: str, request: Request) -> dict:
-        _user_or_404(user_id, request)
-        return spaces.remove(space_id)
-
-    @app.get("/users/{user_id}/spaces/{space_id}/holds")
-    def space_holds(user_id: str, space_id: str,
-                    request: Request) -> list[dict]:
-        """Every time this room was silenced — a pattern of holds is the room
-        telling its owner something they should probably hear."""
-        _user_or_404(user_id, request)
-        return spaces.holds_for(space_id)
-
-    @app.get("/spaces/{space_id}")
-    def space_state(space_id: str) -> dict:
-        """Is this thing listening to me?
-
-        **No token.** The people least likely to have an account here are the
-        ones who most need this answered — a guest, a cleaner, a visitor.
-        """
-        try:
-            return spaces.state(space_id)
-        except spaces.SpaceError as exc:
-            raise HTTPException(404, str(exc))
-
-    @app.post("/spaces/{space_id}/hold", status_code=201)
-    def hold_space(space_id: str, body: SpaceHold) -> dict:
-        """Silence this room's microphone for a while.
-
-        **No token, deliberately.** Anybody who can reach the device can mute
-        it without enrolling, logging in, or asking whoever bought it — a mute
-        only the owner can apply is a mute for the one person who was never
-        going to need it. Nothing on the escalation ladder runs on room audio,
-        so this cannot silence an emergency.
-        """
-        try:
-            return spaces.hold(space_id, body.minutes, body.reason,
-                               body.placed_by)
-        except spaces.SpaceError as exc:
-            raise HTTPException(404, str(exc))
-
-    @app.post("/spaces/{space_id}/hold/{hold_id}/lift")
-    def lift_hold(space_id: str, hold_id: str) -> dict:
-        """End a hold early. Also unauthenticated: whoever placed it may not
-        be the one still in the room."""
-        try:
-            return spaces.lift(hold_id)
-        except spaces.SpaceError as exc:
-            raise HTTPException(404, str(exc))
 
     # ---- reaching a real clinician ----------------------------------------
     # JIM matches and prepares; it never holds the credential or relays the

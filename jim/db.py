@@ -315,49 +315,6 @@ CREATE TABLE IF NOT EXISTS mic_sessions (
     ended_because TEXT
 );
 
--- A stationary device listening in a named space (see jim/ambient.py).
---
--- `jim/mic.py` refuses anything room-facing as channel 2, and is right to: one
--- person cannot lend the voices of everyone around them. This is the other
--- arrangement — an ambient microphone with its own consent model rather than
--- an exemption from having one.
---
--- `disclosure` is required and must name something present *in the room*: a
--- setting in the owner's app tells the owner, who already knew. `activation`
--- has no `continuous` option, because a microphone that never stops is a
--- different object from one that wakes.
-CREATE TABLE IF NOT EXISTS ambient_spaces (
-    id          TEXT PRIMARY KEY,
-    user_id     TEXT NOT NULL REFERENCES users(id),
-    device_id   TEXT NOT NULL REFERENCES devices(id),
-    device_name TEXT NOT NULL,
-    space       TEXT NOT NULL,   -- kitchen | living room | ward 4 …
-    disclosure  TEXT NOT NULL,   -- comma-separated; see ambient.DISCLOSURES
-    activation  TEXT NOT NULL,   -- wake_word | press_to_talk
-    household   TEXT NOT NULL DEFAULT '',  -- who else lives with it
-    created_at  TEXT NOT NULL
-);
-
--- A period the room's microphone is silenced.
---
--- Placed **without a token, by anybody**. A guest, a cleaner, a visiting
--- nurse, a child — whoever can reach the device can mute it without enrolling
--- or asking the person who bought it. A mute only the owner can apply is a
--- mute for the one person who was never going to need it.
---
--- `placed_by` is optional free text: nobody should have to identify themselves
--- to stop being recorded. Rows are kept, because a pattern of holds is the
--- room telling its owner something they should probably hear.
-CREATE TABLE IF NOT EXISTS ambient_holds (
-    id         TEXT PRIMARY KEY,
-    space_id   TEXT NOT NULL REFERENCES ambient_spaces(id),
-    until      TEXT NOT NULL,
-    reason     TEXT,
-    placed_by  TEXT,
-    lifted_at  TEXT,
-    created_at TEXT NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS user_locality (
     user_id    TEXT PRIMARY KEY REFERENCES users(id),
     locality   TEXT NOT NULL,

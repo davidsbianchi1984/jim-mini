@@ -121,28 +121,6 @@ class MicHandover(BaseModel):
     primary_device: str | None = None
 
 
-class SpaceEnroll(BaseModel):
-    """Let a stationary device listen in a named space (see jim/ambient.py).
-    Every field after the device is a condition of doing so."""
-    device_name: str
-    space: str                         # kitchen | living room | ward 4 …
-    # How the room tells the people in it. At least one, and each option is
-    # something you could notice while standing there.
-    disclosure: list[Literal["indicator_light", "chime_on_wake",
-                             "spoken_announcement", "posted_notice"]]
-    # No `continuous`: a microphone that never stops is a different object.
-    activation: Literal["wake_word", "press_to_talk"]
-    household: list[str] = Field(default_factory=list)
-
-
-class SpaceHold(BaseModel):
-    """Silence a room's microphone. Needs no token — see jim/ambient.py."""
-    minutes: int = 60
-    reason: str | None = None
-    placed_by: str | None = None       # optional: nobody must identify
-                                       # themselves to stop being recorded
-
-
 class LocalitySet(BaseModel):
     """The town a referral searches near. Coarse and self-declared — not the
     consented live-location source. None clears it."""
