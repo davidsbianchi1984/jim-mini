@@ -51,7 +51,26 @@ anything.
 1. Update [CHANGELOG.md](../CHANGELOG.md) — move `Unreleased` items under the new
    version and date it. Refresh [RELEASE_NOTES.md](../RELEASE_NOTES.md). Do the
    same in the sibling repositories, in the same pass.
-2. Bump `version` in `pyproject.toml` and `app/package.json` if changed.
+
+   **Add the link definition at the bottom of the file, and repoint
+   `[Unreleased]` at the version you are cutting:**
+
+   ```markdown
+   [Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.2.1...HEAD
+   [0.2.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.2.1
+   ```
+
+   This is the step that gets missed, because nothing complains. The heading
+   renders fine without a definition and the damage shows up hundreds of lines
+   away — a released version rendering as literal `[0.2.1]` text, and an
+   `[Unreleased]` link quietly diffing against a tag three releases old.
+   0.1.9, 0.2.0 and 0.2.1 were all cut without it.
+
+2. Bump the version string in **all five places**: `pyproject.toml`, the
+   `FastAPI(...)` call in `jim/api.py`, `app/package.json`, and the **two root
+   entries** in `app/package-lock.json` — the top-level `"version"` and the one
+   under `packages` → `""`. Leave every other version in the lockfile alone;
+   dependency pins look identical and are not yours.
 3. Tag and push:
 
    ```bash

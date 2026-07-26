@@ -4,6 +4,25 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Changelog release links stopped at 0.1.8.** `[0.1.9]`, `[0.2.0]` and
+  `[0.2.1]` had headings but no link definition, so three shipped versions
+  rendered as literal `[0.2.1]` text instead of linking to their releases, and
+  `[Unreleased]` still compared against `app-v0.1.8` — presenting a
+  three-release diff as though it were an empty one.
+
+- **The release checklist is why it kept happening.** `docs/releasing.md` step 1
+  said to move the `Unreleased` items and date the heading, and never mentioned
+  the link definition at the bottom of the file — so the step was skipped three
+  releases running by someone following the instructions correctly. Step 2 was
+  wrong in the same direction: it named `pyproject.toml` and `app/package.json`
+  when the version string actually lives in **five** places, the two extra ones
+  being the `FastAPI(...)` call and the second root entry in the lockfile.
+  Both steps now say what they meant.
+
 ## [0.2.1] — 2026-07-26
 
 ### Added
@@ -495,7 +514,10 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.1.8...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.2.1...HEAD
+[0.2.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.2.1
+[0.2.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.2.0
+[0.1.9]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.9
 [0.1.8]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.8
 [0.1.7]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.1.7
 [0.1.6]: https://github.com/davidsbianchi1984/jim-mini/commit/a930bcf
