@@ -1145,9 +1145,12 @@ def create_app(qrme_client: QRMEClient | None = None,
                        for name, spec in mic.GAIN_LEVELS.items()],
             "default": mic.DEFAULT_GAIN,
             "capped_during": list(mic.OTHERS_AUDIBLE),
-            "rule": "you can set it however you like; while somebody else's "
-                    "voice is in the air the agent still hears only you, and "
-                    "your setting comes back when the call ends",
+            "voice_focus": mic.VOICE_FOCUS,
+            "rule": "every level is you at a different distance, never more "
+                    "people — the channel keys on your voice and drops the "
+                    "chatter at all of them. You can set it however you like; "
+                    "while somebody else's voice is in the air the agent stays "
+                    "narrow anyway, and your setting comes back afterwards",
         }
 
     @app.put("/users/{user_id}/mic")

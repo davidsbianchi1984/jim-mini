@@ -255,7 +255,46 @@ def test_it_starts_at_the_narrowest_setting(client):
     state = client.get(f"/users/{uid}/mic").json()
     assert state["gain"] == "near_field"
     assert state["effective_gain"] == "near_field"
-    assert "your own voice" in state["describes"]
+    assert "close to the microphone" in state["describes"]
+
+
+def test_every_level_is_the_user_at_a_distance_never_more_people(client):
+    """The dial widens how far away its wearer can be, not how many voices
+    come with them. There is no setting whose answer to "what does it pick up"
+    is "more people" — nobody lends a microphone to hear the next table."""
+    out = client.get("/mic/gains").json()
+    for level in out["levels"]:
+        assert level["describes"].startswith("you"), level
+    assert "never more people" in out["rule"]
+
+
+def test_the_channel_keys_on_its_wearer_at_every_level(client):
+    """Focus is not a setting. An option to include the chatter is an option
+    to record people who never agreed."""
+    uid = _attached(client)
+    assert client.get("/mic/gains").json()["voice_focus"] is True
+    for level in ("near_field", "normal", "wide"):
+        out = client.put(f"/users/{uid}/mic/gain", json={"gain": level}).json()
+        assert out["voice_focus"] is True, level
+
+    heard = client.post(f"/users/{uid}/mic/handover", json={
+        "reason": "dictation", "route": "headset"}).json()
+    assert heard["voice_focus"] is True
+    assert "drops the rest" in heard["note"]
+    assert "the people at the next table" in heard["note"]
+
+
+def test_focus_does_not_stand_in_for_the_cap(client):
+    """The two are separate on purpose: focus decides what is listened to,
+    gain decides what is in range. A filter is a thing that can fail, so the
+    limit has to hold without it."""
+    uid = _attached(client)
+    client.put(f"/users/{uid}/mic/gain", json={"gain": "wide"})
+    out = client.post(f"/users/{uid}/mic/handover",
+                      json={"reason": "voice_call", "route": "earpiece"}).json()
+    assert out["voice_focus"] is True      # still keyed on the wearer
+    assert out["capped"] is True           # and still narrowed anyway
+    assert out["effective_gain"] == "near_field"
 
 
 def test_the_dial_turns_up_and_down(client):

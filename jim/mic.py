@@ -42,6 +42,14 @@ person on the other end of somebody else's call.
 explicitly or closed out when that call ends. Nothing here persists into
 tomorrow quietly, because a permission that outlives its reason is one nobody
 remembers granting.
+
+Two things bound what it hears, and they are deliberately separate.
+:data:`VOICE_FOCUS` keys the channel on its wearer and drops the chatter — the
+next table, a television, the room. :data:`GAIN_LEVELS` sets how far away that
+wearer can be, and is capped while another person's voice is in the air. Focus
+decides what is *listened to*; gain decides what is *in range*. Keeping both
+means a failure of the first is still bounded by the second, which is the only
+reason to have a filter and a limit rather than a filter alone.
 """
 
 from __future__ import annotations
@@ -100,23 +108,47 @@ PERSONAL_TYPES = tuple(k for k, v in MIC_TYPES.items() if v)
 # by a policy is a promise until somebody edits the policy; enforced by the
 # capture width, it is a fact about what the microphone can hear.
 #
-# `reaches_others` is what the level is judged on: not how loud, but whether
-# somebody who did not agree ends up inside it.
+# Every level describes **the wearer at some distance**, never a level of
+# company. There is no setting where the answer to "what does it pick up" is
+# "more people", because there is no situation in which somebody else's chatter
+# is what the microphone was lent for. What widens is how far from the
+# microphone its wearer can be, not how many voices come with them.
+#
+# `reaches_others` survives that reframing and is the property the cap is
+# judged on. It does not mean other people are transcribed — :data:`VOICE_FOCUS`
+# is what handles that. It means another person's voice is physically inside
+# the pickup pattern at that width, which is a different and worse fact: focus
+# is a filter, and a filter is a thing that can fail. A safeguard that only
+# holds while the filter works is one safeguard, not two.
 GAIN_LEVELS: dict[str, dict] = {
     "near_field": {
         "reaches_others": False,
-        "describes": "your own voice, close to the microphone",
+        "describes": "you, speaking close to the microphone",
     },
     "normal": {
         "reaches_others": True,
-        "describes": "you and whatever is happening near you",
+        "describes": "you, at arm's length or across a desk",
     },
     "wide": {
         "reaches_others": True,
-        "describes": "the room, including people who are not talking to you",
+        "describes": "you, from anywhere in the room",
     },
 }
 DEFAULT_GAIN = "near_field"
+
+# Channel 2 keys on its wearer's voice and drops the rest — background talk,
+# a television, the people at the next table. Not a setting, and deliberately
+# not one: an option to include the chatter is an option to record people who
+# never agreed, and nobody ever handed the agent a microphone in order to be
+# told what the next table was saying.
+#
+# It does not replace the gain cap and is not allowed to be used as an excuse
+# for one. Focus decides what is *listened to*; gain decides what is *in
+# range*. Keeping both means a failure of the first is still bounded by the
+# second.
+VOICE_FOCUS = True
+FOCUS_NOTE = ("it keys on your voice and drops the rest — background talk, a "
+              "television, the people at the next table")
 
 # Reasons where another person's voice is in the air. While one of these is
 # what occupies the primary, channel 2 stays near-field however the user has
@@ -172,10 +204,10 @@ def attach(user_id: str, device_name: str, mic_type: str) -> dict:
         (user_id, row["id"], device_name, mic_type, db.utcnow()))
     conn.commit()
     return {"attached": True, "device": device_name, "mic_type": mic_type,
-            "channel": 2,
+            "channel": 2, "voice_focus": VOICE_FOCUS,
             "note": "attached, not listening — the agent gets this microphone "
                     "only while your main one is busy, and only if you hand "
-                    "it over"}
+                    f"it over. When it does, {FOCUS_NOTE}"}
 
 
 def detach(user_id: str) -> dict:
@@ -238,13 +270,16 @@ def effective_gain(user_id: str) -> dict:
             "effective_gain": "near_field",
             "capped": True,
             "requested_gain": wanted,
+            "describes": GAIN_LEVELS["near_field"]["describes"],
+            "voice_focus": VOICE_FOCUS,
             "because": f"a {live['reason'].replace('_', ' ')} is in progress, "
                        "so another person's voice is in the air. Your setting "
                        "comes back when it ends",
         }
     return {"effective_gain": wanted, "capped": False,
             "because": None,
-            "describes": GAIN_LEVELS[wanted]["describes"]}
+            "describes": GAIN_LEVELS[wanted]["describes"],
+            "voice_focus": VOICE_FOCUS}
 
 
 # --------------------------------------------------------------------------- #
@@ -328,7 +363,8 @@ def handover(user_id: str, reason: str, route: str,
             "reason": reason, "route": route,
             "note": "the agent is listening on your "
                     f"{chan['device_name'].replace('_', ' ')} while your main "
-                    "microphone is busy. It hears you, not your call"}
+                    f"microphone is busy. It hears you, not your call — "
+                    f"{FOCUS_NOTE}"}
 
 
 def release(user_id: str, why: str = "released") -> dict:

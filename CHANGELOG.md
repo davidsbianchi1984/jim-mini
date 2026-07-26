@@ -9,7 +9,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - **Channel 2: a second microphone, for the agent** — `jim/mic.py`, 9 routes,
-  31 tests. A phone has one microphone and one foreground claim on it. While
+  34 tests. A phone has one microphone and one foreground claim on it. While
   somebody is on a call the Guardian is deaf — which is precisely when they
   might want to ask it something, and precisely when it cannot hear them ask.
   A watch already on the wrist has a microphone nothing else is using.
@@ -47,18 +47,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     on. A *refused* handover records nothing, so the history never implies the
     agent heard something it did not.
 
-  And a dial, because how wide the channel listens is not an audio-quality
-  preference — it is **the mechanism** behind the sentence the product tells
-  the user, *the agent hears you, not your call.* On an earpiece the other
-  party's voice is in the air beside the wearer, and a channel wide enough to
-  hear a room hears them too. A promise enforced by a policy holds until
+  Two bounds on what it hears, deliberately separate. **Focus** keys the
+  channel on its wearer and drops the rest — background talk, a television, the
+  people at the next table. It is not a setting: an option to include the
+  chatter is an option to record people who never agreed, and nobody hands the
+  agent a microphone in order to be told what the next table was saying.
+  **Gain** is how far away that wearer can be. Focus decides what is *listened
+  to*; gain decides what is *in range*, and keeping both means a failure of the
+  first is still bounded by the second — which is the only reason to have a
+  filter and a limit rather than a filter alone.
+
+  Every gain level therefore describes **the user at a distance, never a level
+  of company**: close to the microphone, at arm's length, from anywhere in the
+  room. There is no setting whose answer to "what does it pick up" is "more
+  people". `reaches_others` survives that reframing and is what the cap is
+  judged on — not that others are transcribed, but that another voice is
+  physically inside the pickup pattern, which is worse and is what a filter
+  failure would expose.
+
+  How wide the channel listens is not an audio-quality preference — it is
+  **the mechanism** behind the sentence the product tells the user, *the agent
+  hears you, not your call.* A promise enforced by a policy holds until
   somebody edits the policy; enforced by the capture width, it is a fact about
   what the microphone can pick up.
 
   `PUT /users/{id}/mic/gain` sets `near_field`, `normal` or `wide`, defaulting
   to the narrowest — a listening default that reaches other people is a default
-  nobody chose. `GET /mic/gains` publishes the levels with `reaches_others`,
-  which is the property the cap is actually judged on.
+  nobody chose. `GET /mic/gains` publishes the levels, `reaches_others`, and
+  the focus guarantee.
 
   While the occupying reason is one where somebody else's voice is present
   (`voice_call`, `video_call`, `live_room`), the effective gain is **capped at
