@@ -240,6 +240,44 @@ CREATE TABLE IF NOT EXISTS insights (
     created_at TEXT NOT NULL
 );
 
+-- Everything this deployment has ever sent to the Cloud Model Gateway's
+-- contribution intake, and the exact payload it sent.
+--
+-- Contribution used to be fire-and-forget: `cloud.contribute` returned a bool
+-- and nothing was written down. That made two promises unkeepable. The
+-- settings screen already offered "preview before it leaves", and there was
+-- nothing to show; and consent described as revocable could only ever stop
+-- *future* sends, because nothing identified what had already gone.
+--
+-- `ref` is the opaque handle sent alongside the payload. It carries no
+-- identity — only this local table maps it back to a user — so revocation can
+-- name items at the gateway without deanonymizing the person revoking.
+CREATE TABLE IF NOT EXISTS contribution_log (
+    ref            TEXT PRIMARY KEY,   -- opaque id sent with the payload
+    user_id        TEXT NOT NULL REFERENCES users(id),
+    payload        TEXT NOT NULL,      -- the exact JSON that was sent
+    revoked        INTEGER NOT NULL DEFAULT 0,
+    contributed_at TEXT NOT NULL
+);
+
+-- Multi-step work handed to a QRME specialist (see jim/handoff.py). The
+-- workflow itself lives in QRME — this is JIM's handle on it.
+--
+-- Status only, never the working memory. The drafts a specialist produces stay
+-- in QRME under its own moderation and the user's capability token; copying
+-- them here would quietly make JIM a second store of somebody's generated
+-- health correspondence, which is the opposite of what the tandem is for.
+CREATE TABLE IF NOT EXISTS specialist_tasks (
+    id               TEXT PRIMARY KEY,
+    user_id          TEXT NOT NULL REFERENCES users(id),
+    qrme_profile_id  TEXT NOT NULL,
+    qrme_workflow_id TEXT NOT NULL,
+    goal             TEXT NOT NULL,
+    status           TEXT NOT NULL,   -- mirrors QRME's; refreshed on read
+    created_at       TEXT NOT NULL,
+    updated_at       TEXT NOT NULL
+);
+
 -- Numeric trend points for predictive early warnings. Context payloads are
 -- vaulted under PDI, so prediction keeps only bare numbers locally (a value
 -- and a metric name — no categories, notes, or payloads): enough to see a

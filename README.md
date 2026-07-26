@@ -481,6 +481,32 @@ contribute **anonymized guidance outcomes only** — condition domain,
 severity, and their rating; never ids, notes, or biometrics — and can revoke
 anytime. `GET /cloud/status` reports the tier.
 
+**See exactly what would leave, and undo what did.** `GET
+/users/{id}/cloud-contribution` returns `preview_next` — the actual payload,
+built by the same function that builds the real send, so it cannot drift into
+describing something the send does not do — alongside every item ever
+contributed, verbatim. `POST …/cloud-contribution/revoke` turns it off *and*
+asks the gateway to delete what already went, by each item's random `ref`. The
+response reports the local and gateway halves separately: a gateway that
+cannot be reached must not make the button fail, and must not let JIM claim a
+deletion that never happened.
+
+## Handing a specialist a task
+
+Tandem guidance sends one message and gets one reply. For work with several
+steps — *"read what we have, draft the summary, hold it until somebody
+confirms"* — `POST /users/{id}/specialist-tasks` hands a QRME specialist a
+**workflow** instead (`jim/handoff.py`), advanced with `…/{task}/advance` and
+readable later with `GET …/specialist-tasks/{task}`.
+
+Deliberately **not on the emergency path**: escalation decides in one call and
+must keep doing so, so nothing here is reachable from `monitor`. Starting one
+is explicit — a detection can warrant a handoff, a person starts it. JIM keeps
+the task's **status only**; the drafts stay in QRME under its own moderation
+and your capability token. A specialist whose owner has not enabled delegation
+answers plainly rather than failing, and a narrower policy narrows the plan
+rather than refusing it.
+
 ## Test
 
 ```bash

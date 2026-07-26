@@ -1186,6 +1186,25 @@ SCREENS = [
         dict(icon="eye", color="green", k="Incident scope", s="never the worker's health record"),
         dict(icon="shield", color="red", k="Escalates people", s="never sirens — the ceiling holds"),
     ], button=("Open incidents", "brand")),
+    # The screen behind "Contribute data · preview before it leaves" on 29.
+    # Every row is a real field of the payload rather than a description of
+    # one — the endpoint builds this from the same function that builds the
+    # send, so what is listed here is what goes.
+    dict(num=61, title="What Would Be Shared", sub="Exactly this, nothing else",
+         hero=None, accent="violet", tab=4, cards=[
+        dict(icon="cloud", color="violet", k="condition", s="anxiety"),
+        dict(icon="chart", color="amber", k="severity", s="guidance"),
+        dict(icon="leaf", color="green", k="rating", s="the rating you give"),
+        dict(icon="eye", color="cyan", k="ref", s="random · maps back only here"),
+        dict(icon="shield", color="red", k="Never sent", s="ids, names, notes, raw biometrics"),
+    ], button=("Stop sharing & delete", "emer")),
+    dict(num=62, title="Specialist Working", sub="A task, not a reply", hero=None,
+         accent="teal", tab=0, cards=[
+        dict(icon="link", color="teal", k="Dr Whitcomb", s="summarize last month for my GP"),
+        dict(icon="chart", color="green", k="Phases done", s="research · draft · review", pill=("3/4", "good")),
+        dict(icon="bell", color="amber", k="Waiting on you", s="confirm before it goes", pill=("PAUSED", "warn")),
+        dict(icon="shield", color="cyan", k="Drafts stay in QRME", s="Jim keeps only the status"),
+    ], button=("Confirm & finish", "brand")),
 ]
 
 

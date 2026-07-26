@@ -10,9 +10,10 @@ from datetime import date, datetime
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
-from . import (app_connectors, auth, beacons, catalog, coach, db, escalation,
-               family, guardian, i18n, landing, life, llm, mobile, notify,
-               relay, research, robotics, rota, social, terms as terms_mod)
+from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
+               escalation, family, guardian, handoff, i18n, landing, life, llm,
+               mobile, notify, relay, research, robotics, rota, social,
+               terms as terms_mod)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
@@ -24,7 +25,7 @@ from .models import (
     RobotBind, RelayAccept, RelayQuestion,
     LanguageChoice, RobotCommand, TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
-    SourceConsent, SpecialistRegister,
+    SourceConsent, SpecialistRegister, SpecialistTaskStart,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -1078,22 +1079,80 @@ def create_app(qrme_client: QRMEClient | None = None,
         result = life.add_feedback(user_id, body.rating, body.note)
         # Opt-in cloud contribution: anonymized guidance outcomes only —
         # condition domain, severity, and the rating. Never ids or notes.
+        # `contribution.send` logs exactly what left, which is what makes the
+        # preview and revoke surfaces below able to tell the truth.
         result["contributed"] = False
         if user.get("cloud_contribution") and app.state.cloud is not None:
-            last = db.connect().execute(
-                "SELECT condition, severity FROM events"
-                " WHERE user_id=? AND type='guidance'"
-                " ORDER BY created_at DESC, rowid DESC LIMIT 1",
-                (user_id,)).fetchone()
-            if last:
-                result["contributed"] = app.state.cloud.contribute({
-                    "source": "jim-mini",
-                    "kind": "guidance_outcome",
-                    "condition": last["condition"],
-                    "severity": last["severity"],
-                    "rating": body.rating,
-                })
+            result["contributed"] = contribution.send(
+                user_id, body.rating, app.state.cloud)
         return result
+
+    @app.get("/users/{user_id}/cloud-contribution")
+    def cloud_contribution(user_id: str, request: Request) -> dict:
+        """What would leave if you contribute, and everything that already has.
+
+        The settings screen offers "preview before it leaves"; this is the
+        thing that lets it. `preview_next` is built by the same function that
+        builds the real payload, so it cannot drift into describing something
+        the send does not do.
+        """
+        user = _user_or_404(user_id, request)
+        return contribution.view(user_id, bool(user.get("cloud_contribution")))
+
+    @app.post("/users/{user_id}/cloud-contribution/revoke")
+    def revoke_cloud_contribution(user_id: str, request: Request) -> dict:
+        """Turn contribution off **and** delete what has already gone.
+
+        Consent the screen calls revocable used to mean only "stoppable" —
+        nothing identified what had already been sent, so nothing could be
+        withdrawn. Each item's opaque ref is asked to be deleted at the
+        gateway.
+        """
+        _user_or_404(user_id, request)
+        return contribution.revoke(user_id, app.state.cloud)
+
+    # ---- handing a specialist a task, not a turn --------------------------
+    # Deliberately not reachable from `monitor`: escalation decides in one
+    # call and must keep doing so. See jim/handoff.py.
+
+    @app.post("/users/{user_id}/specialist-tasks", status_code=201)
+    def start_specialist_task(user_id: str, body: SpecialistTaskStart,
+                              request: Request) -> dict:
+        """Ask a QRME specialist to take on multi-step work.
+
+        A refusal is a 200-shaped answer with `started: false` and a reason,
+        not an error — the caller may still have somebody in front of them,
+        and "this specialist doesn't accept delegated work" is information
+        rather than a fault.
+        """
+        _user_or_404(user_id, request)
+        spec = guardian._specialist(body.condition)
+        return handoff.start(user_id, body.goal, spec, app.state.qrme,
+                             body.plan)
+
+    @app.get("/users/{user_id}/specialist-tasks")
+    def list_specialist_tasks(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return handoff.list_for(user_id)
+
+    @app.get("/users/{user_id}/specialist-tasks/{task_id}")
+    def get_specialist_task(user_id: str, task_id: str,
+                            request: Request) -> dict:
+        _user_or_404(user_id, request)
+        out = handoff.status(user_id, task_id, app.state.qrme)
+        if out is None:
+            raise HTTPException(404, "no such task")
+        return out
+
+    @app.post("/users/{user_id}/specialist-tasks/{task_id}/advance")
+    def advance_specialist_task(user_id: str, task_id: str,
+                                request: Request) -> dict:
+        """Run the specialist's next phase."""
+        _user_or_404(user_id, request)
+        out = handoff.advance(user_id, task_id, app.state.qrme)
+        if out is None:
+            raise HTTPException(404, "no such task")
+        return out
 
     # ---- "help us improve": product feedback on the app itself ------------
     # Distinct from guidance feedback above: open to anyone, about the app.

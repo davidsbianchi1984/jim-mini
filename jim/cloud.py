@@ -93,6 +93,23 @@ class CloudModelClient:
         r = self._do("POST", "/v1/contributions", payload)
         return r.status_code < 300
 
+    def revoke_contributions(self, refs: list[str]) -> bool:
+        """Ask the gateway to delete previously contributed items by their
+        opaque refs. The refs carry no identity — only the contributor's local
+        log maps them back — so revocation works without deanonymizing.
+
+        Never raises: revocation is something a user asked for, and the local
+        record is marked revoked either way. A gateway that cannot be reached
+        must not make the button fail.
+        """
+        if not refs:
+            return True
+        try:
+            r = self._do("POST", "/v1/contributions/revoke", {"refs": refs})
+            return r.status_code < 300
+        except Exception:
+            return False
+
 
 class CloudProvider:
     """Greater-model inference with automatic local fallback."""

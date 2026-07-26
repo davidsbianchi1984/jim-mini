@@ -6,6 +6,63 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Contribution preview and revoke** — `jim/contribution.py`, 2 routes, 11
+  tests. The settings screen has offered *"Contribute data — preview before it
+  leaves"* since the cloud tier shipped. **The API could do neither half.**
+  `cloud.contribute` posted a payload, returned a bool, and wrote nothing
+  down, so there was nothing to preview, and consent described as *revocable*
+  meant only *stoppable* — turning the flag off prevented future sends while
+  everything already contributed stayed at the gateway with nothing naming it.
+
+  **One payload builder, used by both paths.** The preview calls the same
+  function the real send calls, rather than reconstructing something that
+  looks like it. A preview assembled separately is a *description* of the
+  payload, and descriptions drift from what they describe — which is exactly
+  the failure this endpoint exists to correct.
+
+  A failed post is **not** logged: recording it would offer a revoke button
+  for data that never left. On revoke, local rows are marked whether or not
+  the gateway answered, and the response says which happened separately —
+  leaving them unmarked on an outage would show a user their data as still
+  shared after they revoked it, and marking them regardless would claim a
+  deletion that never happened.
+
+  What leaves is unchanged: condition domain, severity, rating. Never ids,
+  names, notes, or raw biometrics. Contributions now carry a random `ref` so
+  an item can be deleted at the gateway without deanonymizing the person
+  revoking it.
+
+- **Handing a specialist a task, not a turn** — `jim/handoff.py`, 4 routes, 12
+  tests. `_tandem_guidance` sends one message and gets one reply. That is the
+  right shape for *"say something supportive"* and the wrong one for *"read
+  what we have, draft the summary, hold it until somebody confirms"*. QRME
+  runs the second as a workflow; this is JIM's side of it.
+
+  **Never on the emergency path.** `escalation.decide` resolves in one call and
+  must keep doing so — multi-step work is by definition slower than the thing
+  it would block. Nothing here is reachable from `monitor`.
+
+  **Starting one is explicit.** Having a detection kick off a workflow by
+  itself reads well and is the wrong default: it would let a noisy reading
+  commit a specialist to unattended multi-phase work over the user's vaulted
+  material.
+
+  JIM keeps the task's **status only**. The drafts stay in QRME under its own
+  moderation and the user's capability token; mirroring them here would quietly
+  make JIM a second store of somebody's generated health correspondence. A
+  narrower owner policy narrows the plan rather than failing it — but an empty
+  intersection is a refusal, because a workflow with no phases completes
+  instantly and reads as success.
+
+### Screens
+
+- **61 · What Would Be Shared** — the screen behind that settings row. Every
+  line is a real field of the payload rather than a description of one.
+- **62 · Specialist Working** — a handed-off task mid-flight, showing where it
+  has got to and what it is waiting on.
+
 ## [0.2.2] — 2026-07-26
 
 **A documentation release.** No code changed in any of the three products — no
