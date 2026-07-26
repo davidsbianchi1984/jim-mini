@@ -1,71 +1,61 @@
-# JIM-mini v0.2.1 — release notes
+# JIM-mini v0.2.2 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.2.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.2.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.2.1** — the release where the Guardian stops treating every
-reading as a fact. One of three interoperating products (with
+**JIM-mini v0.2.2** — a documentation release. **No code changed**: no new
+routes, no schema, no behaviour, and nothing about how the Guardian decides
+anything. Everything here corrects something that was *described* wrongly. One
+of three interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
 [pdi](https://github.com/davidsbianchi1984/pdi)), all three cut together at this
 version.
 
-### Highlights
-
-- **How much to trust a reading** (`jim/signal.py`). `escalation.decide` has
-  always accepted a `confidence`, but **only forecasts ever supplied one** — it
-  gated *predictions* and never *measurements*, so a reading was a fact by
-  virtue of arriving.
-
-  Consumer biometrics are not like that. An optical sensor loses skin contact,
-  a chest strap catches a motion artifact, and the characteristic failure is not
-  a small error but a plausible-looking number that is completely wrong, with
-  the alarming direction as likely as the reassuring one. At the top of this
-  ladder is a phone call to somebody's daughter, and an alert that is usually
-  wrong spends the only thing escalation has: her willingness to pick up.
-
-- **Confidence drops only on evidence the *sensor* misbehaved** — an impossible
-  value, a jump no body could make between two readings, or the device reporting
-  its own poor contact. Being clinically abnormal never lowers it.
-
-  That distinction is the whole design, and it was learned the hard way: the
-  first draft graded anything outside the ordinary range as suspect, which muted
-  a lone SpO2 of 84 — the exact reading the ladder exists to carry. A
-  pre-existing test caught it.
-
-- **A poor grade caps rather than silences.** Escalation stops at `check_in`:
-  *"we got an odd reading, are you alright?"* is the honest sentence when the
-  honest answer is that we do not know, and asking is also how the reading gets
-  corroborated. Dropping the sample would be the same mistake pointed the other
-  way, because the noisy reading is sometimes real.
-
-- **Words are never noise.** The crisis floor is applied after the cap and is
-  never clipped by it. Nor can words make a heart rate of zero true: two
-  impossible readings are not two witnesses but one broken device agreeing with
-  itself. A fault is phrased as a fault — *check the strap* — because telling
-  somebody whose sensor fell off that we are worried about them is how people
-  learn to disbelieve the thing.
-
 ### Fixed
 
-- **The escalation decision was advisory; raw severity was in charge.**
-  `monitor` reached out whenever `severity == "critical"`, so the tree could
-  resolve a disbelieved reading to `check_in` and the emergency contact was rung
-  anyway. The tree is authoritative now. No behaviour changes for a trusted
-  critical — its floor is `notify_contact`, so the comparison is exactly
-  equivalent — and a test asserts that directly.
+- **Three releases of changelog links were missing.** `[0.1.9]`, `[0.2.0]` and
+  `[0.2.1]` had headings but no link definitions, so three shipped versions
+  rendered as literal `[0.2.1]` bracket text rather than linking to their
+  releases, and `[Unreleased]` still compared against `app-v0.1.8` —
+  presenting a three-release diff as though it were an empty one.
 
-- **A rota typo cannot take the escalation path down.** `RotaError`'s docstring
-  said *"raised at load, never at 3am"*, but nothing reads the rota at start-up,
-  so it was raised at exactly 3am: one typo turned `POST …/escalate` into a 500.
-  It degrades to the flat names now and says so loudly.
+- **The release checklist is why that kept happening**, and is the entry that
+  matters. `docs/releasing.md` step 1 said to move the `Unreleased` items under
+  the new heading and date it, and stopped — it never mentioned the link
+  definition at the bottom of the file. The step was skipped three releases
+  running by someone following the instructions correctly, and nothing
+  complains when you miss it: the heading renders fine without a definition,
+  and the damage appears hundreds of lines from where the edit was made.
+
+  Step 2 was wrong in the same direction. It named `pyproject.toml` and
+  `app/package.json` when the version string lives in **five** places — the two
+  it omitted being the `FastAPI(...)` call in `jim/api.py` and the second root
+  entry in `app/package-lock.json`, both of which had to be rediscovered each
+  round. Both steps now say what they meant.
+
+  The `0.1.5` and `0.1.6` entries still point at commits rather than tags.
+  That is deliberate and explained in `docs/releasing.md`; they are untouched.
+
+### What changed in the siblings
+
+- **QRME** — `POST /marketplace/seed` still advertised itself as *"Idempotent —
+  already-seeded profiles are skipped"* after v0.2.1 taught it to **repair**
+  too, so the text in the OpenAPI docs pointed away from the one call that
+  fixes a deployment showing bare initials instead of portraits. Corrected in
+  four places.
+
+- **PDI** — the same checklist and changelog-link corrections as here.
 
 ### Verification
 
-312 tests green (19 new this release). 87 routes. Mutation-checked: letting the
-confidence cap clip the crisis floor, and letting an impossible reading be
-corroborated, each fail the test that forbids them.
+312 tests green — **the same 312, passing the same way**, which is the point of
+a release that claims no functional change. 87 routes, also unchanged. Version
+strings moved in exactly five places: `pyproject.toml`, the FastAPI app,
+`app/package.json`, and the two root entries in its lockfile (dependency
+versions untouched). Every version heading in the changelog was checked against
+its link definition — 12 for 12.
 
 ### Install
 
