@@ -183,6 +183,12 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/59-care-beacons.svg" width="160" alt="59 Care Beacons"><br><sub>59 · Care Beacons</sub></td>
 <td align="center" width="25%"><img src="docs/screens/60-workplace-relay.svg" width="160" alt="60 Workplace Relay"><br><sub>60 · Workplace Relay</sub></td>
+<td align="center" width="25%"><img src="docs/screens/61-what-would-be-shared.svg" width="160" alt="61 What Would Be Shared"><br><sub>61 · What Would Be Shared</sub></td>
+<td align="center" width="25%"><img src="docs/screens/62-specialist-working.svg" width="160" alt="62 Specialist Working"><br><sub>62 · Specialist Working</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/63-find-a-clinician.svg" width="160" alt="63 Find a Clinician"><br><sub>63 · Find a Clinician</sub></td>
+<td align="center" width="25%"><img src="docs/screens/64-sign-to-release.svg" width="160" alt="64 Sign to Release"><br><sub>64 · Sign to Release</sub></td>
 </tr>
 </table>
 

@@ -91,6 +91,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   room's profiles — where the others *are* participants and can therefore be
   told, which is why that side discloses rather than refuses.
 
+## [0.4.0] — 2026-07-26
+
+**A documentation round for JIM-mini.** There are no functional changes to
+JIM-mini in this release — no new routes, no schema, no behaviour. What changed
+is that the README now says which version you are looking at, and four screens
+that shipped in 0.3.0 became findable.
+
+### Changed
+
+- **The README names its release, and says what each one added.** It opened on
+  a video and a patent notice and never stated a version, so a reader could not
+  tell which release they were looking at or what had happened across thirteen
+  of them. The changelog had it all; the changelog is not where somebody lands.
+  The same section went into all three repositories, because the three are cut
+  as one release and a reader arriving at any of them should be able to answer
+  that question the same way.
+
+### Fixed
+
+- **Screens 61–64 existed in the repository and nowhere a reader would find
+  them.** They shipped in 0.3.0 as files — *What Would Be Shared*, *Specialist
+  Working*, *Find a Clinician*, *Sign to Release* — and were never added to the
+  README gallery, so the four screens illustrating that round's headline feature
+  were invisible on the page describing it.
+
 ## [0.3.0] — 2026-07-26
 
 **The round where the tandem reaches a person.** The Guardian could delegate a
@@ -702,7 +727,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.3.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.0...HEAD
+[0.4.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.0
 [0.3.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.0
 [0.2.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.2.2
 [0.2.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.2.1
