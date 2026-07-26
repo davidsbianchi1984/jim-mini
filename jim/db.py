@@ -271,6 +271,41 @@ CREATE TABLE IF NOT EXISTS contribution_log (
 -- deliberately *not* the consented `location` source: live position is a
 -- stream, and matching a clinic needs a place name. A user typing "Leeds" once
 -- is a smaller disclosure than a product inferring it continuously.
+-- A wearable whose microphone the Guardian may borrow while the phone's is
+-- occupied (see jim/mic.py). One per user: a second ear is a second ear, and
+-- a list of them would be a room full of microphones by another name.
+--
+-- Attaching is not listening. This row says *which* device may be lent; the
+-- lending is a `mic_sessions` row and needs a reason.
+CREATE TABLE IF NOT EXISTS mic_channels (
+    user_id     TEXT PRIMARY KEY REFERENCES users(id),
+    device_id   TEXT NOT NULL REFERENCES devices(id),
+    device_name TEXT NOT NULL,
+    created_at  TEXT NOT NULL
+);
+
+-- Each period the agent actually held that microphone.
+--
+-- `route` is how the occupying call was being heard, and it is stored rather
+-- than checked-and-forgotten because it is the whole justification: on an
+-- earpiece the wearable hears the wearer, on speaker it hears the other party
+-- as well — someone who is not a user here and was never asked.
+--
+-- Rows are never deleted on release. A listening permission that leaves no
+-- trace is one nobody can audit, and this is the permission people most want
+-- to check up on.
+CREATE TABLE IF NOT EXISTS mic_sessions (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    device_id     TEXT NOT NULL,
+    device_name   TEXT NOT NULL,
+    reason        TEXT NOT NULL,   -- voice_call | video_call | recording | …
+    route         TEXT NOT NULL,   -- earpiece | headset | bluetooth_headset
+    started_at    TEXT NOT NULL,
+    ended_at      TEXT,
+    ended_because TEXT
+);
+
 CREATE TABLE IF NOT EXISTS user_locality (
     user_id    TEXT PRIMARY KEY REFERENCES users(id),
     locality   TEXT NOT NULL,

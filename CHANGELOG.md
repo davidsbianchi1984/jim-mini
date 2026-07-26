@@ -6,6 +6,40 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A second ear: borrowing a wearable's microphone** — `jim/mic.py`, 6 routes,
+  15 tests. A phone has one microphone and one foreground claim on it. While
+  somebody is on a call the Guardian is deaf — which is precisely when they
+  might want to ask it something, and precisely when it cannot hear them ask.
+  A watch already on the wrist has a microphone nothing else is using.
+
+  **Permission and state only** — capture happens on the device; nothing in
+  this module touches a sample. What the service owns is whether the agent may
+  listen right now, on which device, and a record of when it did.
+
+  Four refusals carry it, and the third is the one that matters:
+
+  - **Only a wearable this user registered.** A kitchen console's microphone is
+    a *room* microphone — always somewhere people talk without thinking about
+    it. Folding the two together would let the easy case argue for the hard one.
+  - **Only while the primary is actually occupied**, with the reason recorded.
+    A second ear granted for no reason is just a second ear.
+  - **Never on speakerphone.** On an earpiece the wearable hears the wearer; on
+    speaker it hears **the other party too** — someone who is not a user of this
+    product, was never asked, and cannot revoke anything. A microphone the
+    Guardian holds must not become a way to record the person on the other end
+    of somebody else's call. Likewise refused with others in earshot.
+  - **A handover ends**, released explicitly or closed out with its reason, and
+    every one is recorded: a listening permission that leaves no trace is one
+    nobody can audit, and this is the permission people most want to check up
+    on. A *refused* handover records nothing, so the history never implies the
+    agent heard something it did not.
+
+  The counterpart is `qrme/roommic.py`, which lends the same wearable to a live
+  room's profiles — where the others *are* participants and can therefore be
+  told, which is why that side discloses rather than refuses.
+
 ## [0.3.0] — 2026-07-26
 
 **The round where the tandem reaches a person.** The Guardian could delegate a

@@ -12,8 +12,8 @@ from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
-               mobile, notify, referral, relay, research, robotics, rota,
-               social, terms as terms_mod)
+               mic, mobile, notify, referral, relay, research, robotics,
+               rota, social, terms as terms_mod)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
@@ -23,7 +23,8 @@ from .models import (
     GuidanceFeedback, HabitCreate,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
-    LanguageChoice, LocalitySet, ReferralPrepare, RobotCommand,
+    LanguageChoice, LocalitySet, MicAttach, MicHandover,
+    ReferralPrepare, RobotCommand,
     TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
@@ -1111,6 +1112,60 @@ def create_app(qrme_client: QRMEClient | None = None,
         """
         _user_or_404(user_id, request)
         return contribution.revoke(user_id, app.state.cloud)
+
+    # ---- a second ear: borrowing a wearable's microphone -------------------
+    # Permission and state only; capture is on the device. See jim/mic.py.
+
+    @app.put("/users/{user_id}/mic")
+    def attach_mic(user_id: str, body: MicAttach, request: Request) -> dict:
+        """Nominate a wearable whose microphone the agent may borrow.
+
+        Attaching is **not** listening — it says which device may be lent.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return mic.attach(user_id, body.device_name)
+        except mic.MicError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/users/{user_id}/mic")
+    def detach_mic(user_id: str, request: Request) -> dict:
+        """Remove the wearable, ending any live handover with it."""
+        _user_or_404(user_id, request)
+        return mic.detach(user_id)
+
+    @app.get("/users/{user_id}/mic")
+    def mic_state(user_id: str, request: Request) -> dict:
+        """What the agent can hear right now, in words you can check."""
+        _user_or_404(user_id, request)
+        return mic.state(user_id)
+
+    @app.post("/users/{user_id}/mic/handover", status_code=201)
+    def hand_over_mic(user_id: str, body: MicHandover,
+                      request: Request) -> dict:
+        """Lend the agent the wearable while your main microphone is busy.
+
+        Refused on speaker, or with others in earshot: the wearable would be
+        picking up somebody who is not a user here and was never asked.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return mic.handover(user_id, body.reason, body.route,
+                                body.others_present)
+        except mic.MicError as exc:
+            raise HTTPException(403, str(exc))
+
+    @app.post("/users/{user_id}/mic/release")
+    def release_mic(user_id: str, request: Request) -> dict:
+        """Take the microphone back."""
+        _user_or_404(user_id, request)
+        return mic.release(user_id)
+
+    @app.get("/users/{user_id}/mic/history")
+    def mic_history(user_id: str, request: Request) -> list[dict]:
+        """Every time the agent held it, and for how long."""
+        _user_or_404(user_id, request)
+        return mic.history(user_id)
 
     # ---- reaching a real clinician ----------------------------------------
     # JIM matches and prepares; it never holds the credential or relays the

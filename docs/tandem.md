@@ -52,6 +52,39 @@ own persona conditioning, moderation, and per-user memory before JIM surfaces
 it. Without the endpoint, JIM uses its own standalone guidance — the two
 remain independent.
 
+### Handing over a task, not a turn
+
+The delegation above is one message and one reply, which is the right shape for
+*"say something supportive about what the sensors just saw"* and the wrong one
+for work with several steps that has to survive the user putting the phone
+down.
+
+QRME runs that as a **workflow** (`research → draft → review → send →
+confirm`), carrying each phase's output into the next and persisting between
+calls. Its own workflow routes are `require_owner`, correctly: a workflow reads
+the profile's vaulted source material unattended, and
+`workflows._scoped_items` treats a missing grant as *every source item*.
+Relaxing those routes to admit an interactor would have turned a considered
+per-turn decision into an unattended one over the whole vault.
+
+So there is a **separate delegated surface** (`qrme/delegation.py`), off until
+a profile's owner turns it on:
+
+* the owner names which phases may be delegated, and delegating `research`
+  without a grant is refused at write time;
+* a caller may only ask for a subset of that, and omitting the plan gets the
+  owner's set rather than the product default;
+* the caller must already be in conversation with the profile;
+* only the interactor who started one may read or advance it, and an owner's
+  own workflow has no row in `delegated_workflows` — that absence is what keeps
+  the two surfaces from merging.
+
+JIM's side is `jim/handoff.py`, and it is deliberately **not reachable from
+`monitor`**: escalation decides in one call and must keep doing so. A detection
+can warrant a handoff; a person starts it. JIM stores the task's *status* only
+— the drafts stay in QRME under its moderation and the user's own token, rather
+than making JIM a second store of generated health correspondence.
+
 ### Reaching a real clinician
 
 The handoffs above end at a synthetic profile. `POST /handoffs` has always been
@@ -80,6 +113,27 @@ The package names the specialist as synthetic inside itself, because a
 clinician reading a transcript must never have to work out which voice was a
 person, and the AI mark rides on the portrait rather than the document.
 
+**The clinician writes back, once, and the profile is caught up.** Opening the
+one-time link mints a **reply token** at that same moment, so the summary link
+stays burnt while exactly one note can come back. The note is sealed in the PDI
+vault under a `qrme/{profile}/clinical/…` key — the same treatment source
+material gets, content in the vault and only a key reference held locally.
+
+The point is the handover: somebody arriving at the specialist after seeing a
+clinician should not have to retell the whole thing, and the profile should
+already know where the matter stands.
+
+It is deliberately **not a `source_items` row**, and that is the load-bearing
+decision. Source material is what a profile recalls *as its own*, and it is
+what `workflows._scoped_items` feeds to a `research` phase — so a clinical
+opinion filed there could be recited as the profile's own knowledge, or drafted
+from into a letter. Instead the note reaches the prompt in its own block that
+names the clinician and says the words are theirs: attribute them, never
+present them as your own assessment, never extend them into advice they did not
+give, and for anything they do not cover, point back. Notes are scoped to
+(profile, interactor) — it is that person's medical information and appears in
+no other conversation.
+
 **JIM matches; it never signs.** `jim/referral.py` maps a condition to an area,
 searches near a coarse self-declared locality (a town — deliberately not the
 consented live-location feed, which is a stream where a place name is wanted),
@@ -88,6 +142,40 @@ travels from the user's device to QRME directly: a guardian product standing in
 the middle of the exchange that proves its own user was present would defeat
 the point of collecting it. JIM stores a handle and not the summary, the
 signature, or the link.
+
+### A second ear — the same wearable, two consent questions
+
+A phone has one microphone and one foreground claim on it. On a call, or while
+speaking in a live room, the agent is deaf — precisely when somebody might want
+to ask it something. A watch already on the wrist has a microphone nothing else
+is using.
+
+Both products lend it, and **what lives in the service is permission and state,
+never audio** — capture is on the device, and nothing in either module touches a
+sample. What the backend owns is whether the agent may listen right now, on what,
+and the record of when it did.
+
+The interesting part is that the same hardware raises a *different* question on
+each side.
+
+* **`jim/mic.py` — a one-to-one call.** Refuses **speakerphone** outright: on an
+  earpiece the wearable hears the wearer, on speaker it hears the other party as
+  well, and they are not a user of this product. They were never asked and
+  cannot revoke anything, so the only safe answer is not to capture. Also
+  refuses when others are in earshot, requires the primary to be genuinely
+  occupied (a second ear with no reason is just a second ear), accepts only a
+  registered **wearable** — a stationary console is a room microphone, a
+  different decision — and closes each handover out with its reason recorded.
+* **`qrme/roommic.py` — a live room.** The others *are* participants, so they
+  can be told, and telling them is the price of the feature: the disclosure is
+  readable by anyone in the room rather than by the lender alone. The grant is
+  per participant and never becomes the room's microphone, because nobody can
+  consent for the people they can hear. Refused in a text room, where no primary
+  is occupied at all. Every grant closes when the room does.
+
+The profile's prompt states the limit rather than assuming it: *you hear them,
+not the other people in this room, who have not lent you anything and may not
+realise you could hear them.*
 
 ## qrme / jim-mini ✕ pdi
 

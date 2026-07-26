@@ -95,6 +95,22 @@ class GuidanceFeedback(BaseModel):
     note: str | None = None
 
 
+class MicAttach(BaseModel):
+    """Nominate a registered wearable as the agent's secondary microphone."""
+    device_name: str                   # e.g. smart_watch
+
+
+class MicHandover(BaseModel):
+    """Lend it, while the primary microphone is occupied (see jim/mic.py)."""
+    reason: Literal["voice_call", "video_call", "recording", "dictation",
+                    "live_room"]
+    # How the occupying call is being heard. Required, not defaulted: on
+    # speaker the wearable hears the other party too, and picking a default
+    # would make that choice on the user's behalf.
+    route: Literal["earpiece", "headset", "bluetooth_headset", "speaker"]
+    others_present: bool = False       # anyone else in earshot
+
+
 class LocalitySet(BaseModel):
     """The town a referral searches near. Coarse and self-declared — not the
     consented live-location source. None clears it."""
