@@ -6,6 +6,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The video at the top of the README is no longer the whole header.** A bare
+  user-attachments URL becomes a full-width player, which on this page meant a
+  large black rectangle with a play button sitting above everything the README
+  is actually about — it read as the header rather than as one thing offered in
+  it. There is no width attribute to set, because GitHub generates the element;
+  the only handle is the width of the box it lands in, so it now sits in a
+  narrow table cell with the cover illustration beside it. Playback is
+  untouched: it still opens full screen with audio, which is what a small frame
+  is for.
+
 ### Added
 
 - **Channel 2: a second microphone, for the agent** — `jim/mic.py`, 9 routes,

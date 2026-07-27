@@ -13,11 +13,39 @@ one number names one combination of all three.
      H.264/AAC rather than the HEVC original, because Chrome and Firefox
      cannot decode HEVC and it would be a dead black box for most visitors.
      Outside github.com this degrades to a link, which is why the cover
-     illustration below stays. -->
+     illustration below stays.
+
+     The table is what keeps it small. On its own the bare URL becomes a
+     full-width player — a large black rectangle with a play button, sitting
+     above everything the page is actually about, and reading as the whole
+     header rather than as one thing offered in it. There is no width
+     attribute to set, because the element is generated: the only handle is
+     the width of the box it lands in, so it goes in a narrow cell with the
+     cover illustration beside it.
+
+     The blank lines around the URL inside the <td> are load-bearing. GitHub
+     only processes markdown inside an HTML block when it is separated that
+     way, and without them the line stays a literal URL and no player is made
+     at all.
+
+     Nothing here shrinks the *playback*: it still opens full screen with
+     audio on click, which is what the small frame is for — an invitation,
+     not the thing itself. -->
+
+<table>
+  <tr>
+    <td width="42%" valign="middle">
 
 https://github.com/user-attachments/assets/eab7d192-7b18-464d-9b67-bd512ae87957
 
+</td>
+    <td width="58%" valign="middle">
+
 ![JIM-mini — Guardian](assets/cover.svg)
+
+</td>
+  </tr>
+</table>
 
 A standalone personal-guidance system enabling seamless support for future AI agent services (**JAN2024 NETWORKED RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending**): it monitors
 a user's biometric and contextual signals, detects known conditions, delivers
