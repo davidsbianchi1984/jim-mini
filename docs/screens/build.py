@@ -1364,6 +1364,37 @@ SCREENS = [
         dict(icon="link", color="teal", k="Dr Whitcomb", s="three of four phases done"),
         dict(icon="eye", color="amber", k="The lights follow you", s="the work stays where it is"),
     ]),
+    # The price list. Card three is the one that has to lead on a health
+    # product: the first question anybody asks a paywall here is whether it
+    # stands in front of the alarm.
+    dict(num=69, title="Choose a Plan", sub="Basic guards, Pro looks ahead",
+         accent="brand", tab=0, cards=[
+        dict(icon="shield", color="teal", k="Basic · $20/month",
+             s="the Guardian and every alarm"),
+        dict(icon="bolt", color="brand", k="Pro · $130/month",
+             s="watch, early warning, agents"),
+        dict(icon="heart", color="red", k="Emergencies never gated",
+             s="on any plan, even a lapsed one"),
+        dict(icon="watch", color="amber", k="The wrist is Pro",
+             s="pairing, the face, channel 2"),
+        dict(icon="warn", color="green", k="Billing is simulated",
+             s="no real funds move"),
+    ], button=("Go Pro", "brand")),
+    # What Pro adds, and the distinction that decides the whole design: a
+    # reading you just submitted is answered on every plan.
+    dict(num=70, title="What Pro Adds", sub="Looking ahead, not looking now",
+         accent="teal", tab=0, cards=[
+        dict(icon="chart", color="teal", k="Early warning",
+             s="a trend, before a threshold"),
+        dict(icon="heart", color="green", k="This reading still answers",
+             s="on Basic, and with no plan"),
+        dict(icon="watch", color="amber", k="Watch and channel 2",
+             s="pair it, wear it, lend it"),
+        dict(icon="brain", color="brand", k="Specialists and agents",
+             s="summoned through QRME"),
+        dict(icon="shield", color="red", k="The alarm is not a feature",
+             s="it is never something you buy"),
+    ], button=("Compare plans", "brand")),
 ]
 
 

@@ -98,6 +98,17 @@ LESSONS: tuple[dict, ...] = (
               "does this need me right now — answered on the wrist and in the "
               "app.",
          screens=(67, 68), try_it="Open Agents and find the amber one."),
+    dict(key="plans", chapter="Beyond the app", title="What it costs",
+         what="Basic is $20 a month: the Guardian itself — your conditions, "
+              "guidance, the journal, habits and goals — and every emergency "
+              "path. Pro is $130 a month and adds the watch, early warning "
+              "that looks ahead of a threshold, specialists and synthetic "
+              "agents. Nothing on the alarm path is ever behind either price: "
+              "a reading you submit is answered, an escalation still fires, "
+              "and a responder can still read your medical ID, on any plan or "
+              "none. Billing here is simulated and no real funds move.",
+         screens=(69, 70),
+         try_it="Open Choose a Plan and read what is never gated."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

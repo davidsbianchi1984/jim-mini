@@ -59,7 +59,7 @@ def _app(fake, tmp_path, monkeypatch):
 def _enroll(client, birthdate):
     r = client.post("/enroll", json={
         "display_name": "U", "birthdate": birthdate, "terms_consent": True,
-        "guardian_consent": True, "resting_heart_rate": 60})
+        "guardian_consent": True, "resting_heart_rate": 60, "plan": "pro"})
     body = r.json()
     client.headers["authorization"] = f"Bearer {body['user_token']}"
     return body["id"]

@@ -22,6 +22,11 @@ Source = Literal[
 ]
 
 
+class PlanChoice(BaseModel):
+    """Joining a plan, or moving between them (jim/tiers.py)."""
+    plan: str                               # basic | pro
+
+
 class Enroll(BaseModel):
     display_name: str
     birthdate: date | None = None
@@ -35,6 +40,9 @@ class Enroll(BaseModel):
     contact_consent: bool = False
     language: str | None = None             # chosen at the setup gateway
     device_paired: bool = False
+    # The plan this person joins on. Omitted means Basic — which includes
+    # every emergency path, so the cheapest plan is never the unsafe one.
+    plan: str | None = None
     resting_heart_rate: int | None = None
     # Deprecated: free-text goals from early enrollments. Use the
     # /goals endpoints for tracked goals instead.

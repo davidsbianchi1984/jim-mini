@@ -515,6 +515,24 @@ CREATE TABLE IF NOT EXISTS relay_pages (
     sent_at     TEXT
 );
 
+-- What a person has paid for (see jim/tiers.py). Keyed on the user, who here
+-- *is* the account — unlike QRME, where an owner token's subject is a profile.
+--
+-- One live row per account, enforced by ending the previous one rather than by
+-- a unique index, so the history survives a change of plan.
+--
+-- Billing is simulated: there is no processor and no token, and the row is the
+-- subscription. Nothing on the emergency path consults this table at all.
+CREATE TABLE IF NOT EXISTS memberships (
+    id         TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    plan       TEXT NOT NULL,          -- basic | pro
+    started_at TEXT NOT NULL,
+    ended_at   TEXT
+);
+CREATE INDEX IF NOT EXISTS memberships_live
+    ON memberships (account_id, ended_at);
+
 CREATE TABLE IF NOT EXISTS robots (
     id           TEXT PRIMARY KEY,
     user_id      TEXT NOT NULL REFERENCES users(id),

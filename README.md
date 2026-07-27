@@ -191,6 +191,13 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/66-second-ear.svg" width="160" alt="66 Second Ear"><br><sub>66 · Second Ear</sub></td>
 <td align="center" width="25%"><img src="docs/screens/67-agents.svg" width="160" alt="67 Agents"><br><sub>67 · Agents</sub></td>
 <td align="center" width="25%"><img src="docs/screens/68-chat.svg" width="160" alt="68 Chat with the agent overlay"><br><sub>68 · Chat · overlay</sub></td>
+<td align="center" width="25%"><img src="docs/screens/69-choose-a-plan.svg" width="160" alt="69 Choose a Plan"><br><sub>69 · Choose a Plan</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/70-what-pro-adds.svg" width="160" alt="70 What Pro Adds"><br><sub>70 · What Pro Adds</sub></td>
+<td align="center" width="25%"></td>
+<td align="center" width="25%"></td>
+<td align="center" width="25%"></td>
 </tr>
 </table>
 
@@ -348,6 +355,59 @@ journal, a provider-shareable summary. Identity is proven by a bearer
 - **Open (no token):** `GET /health`, `GET /cloud/status`, `POST /enroll`,
   and `POST /specialists` (service setup).
 - `DELETE /data/{user_id}` erases the user **and** revokes their token.
+
+## Membership
+
+`jim/tiers.py`, 4 routes, 25 tests, screens **69** and **70**.
+
+| | | |
+| --- | --- | --- |
+| **Visitor** | free | read a shared page or a scanned medical ID |
+| **Basic** | **$20/month** | the Guardian itself — conditions, guidance, journal, habits, goals, **and every emergency path** |
+| **Pro** | **$130/month** | the watch, early warning, specialists, and synthetic agents summoned through the QRME tandem |
+
+**Nothing that answers an emergency is ever behind a paywall**, and that is the
+rule this module exists to keep rather than a caveat on it. A lapsed card is a
+billing event; a seizure is not.
+
+`tiers.NEVER_GATED` names the alarm path, escalation, the medical ID a
+paramedic scans, incident history, waivers, and the guidance a person receives
+*during* an alarm. `capability_for` consults it **first**, so a pattern added
+to the gated table later cannot reach any of them — and a test plants exactly
+that mistake, adding a hostile pattern covering every path, and asserts each
+safety route still comes back ungated.
+
+**The first implementation had this bug**, and it is worth recording rather
+than quietly fixing. `/monitor` was listed as the "proactive monitoring"
+capability — which reads correctly and is wrong. `/monitor` is not the
+predictive feature; it is the **ingest**. A sample arrives there,
+`jim/conditions.py` asks *is something wrong right now*, and a critical reading
+escalates to the emergency contact. Gating it meant a Basic member submitting a
+blood oxygen of 84 received a 402 instead of an escalation: the paywall
+standing between somebody and an emergency, indirectly but completely. The
+suite caught it in `test_critical_escalates_to_emergency_contact`.
+
+So the line moved to where it belongs. What Pro buys is `jim/earlywarning.py`
+— the trend model that projects a vital toward its threshold and says something
+is *about to* go wrong before anything has been crossed. That is a real feature
+and a fair thing to charge for. Evaluating a reading somebody just submitted is
+not, and it is **skipped rather than refused**: a Basic member gets a real
+answer about that reading, with `predictive: false` saying plainly what they
+did not get. The trend point is still recorded on every plan, because a history
+with holes in it would make the forecast wrong for somebody the day they
+upgrade.
+
+`/insights` is the one GET gated anywhere in these three products. Everywhere
+else reading stays open so somebody can see what they would be buying — but an
+insight is not a shop window, it *is* the predictive product, and the only door
+it has.
+
+**A refusal says so.** Every 402 here carries `emergency_unaffected: true`,
+because somebody who has just hit a paywall on a health app should not have to
+wonder whether they have also lost the alarm. **Money is simulated**, as in the
+other two products: the row is the subscription, and a test asserts nothing
+reaches a payment processor. **Cancelling keeps the record**, the conditions,
+and every emergency path.
 
 ## Your data promise
 
