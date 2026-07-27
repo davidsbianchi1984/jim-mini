@@ -88,6 +88,55 @@ def row(x, y, w, ic, col, k, s):
             + text(x + 38, y + 30, s, 9, C["t2"]))
 
 
+def agent_light(x, y, colour, label):
+    """The agent status light on a watch — green working, amber needs you,
+    red stopped.
+
+    A wrist is the surface this matters most on: it is glanced at, not read.
+    The dot carries the answer and the word confirms it, because a colour
+    alone cannot separate "still going" from "finished" — and a watch is
+    exactly where somebody would guess wrong and walk away.
+    """
+    col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+    return (f'<circle cx="{x}" cy="{y}" r="9" fill="{A(col, 0.18)}"/>'
+            + f'<circle cx="{x}" cy="{y}" r="4.2" fill="{col}"/>'
+            + text(x + 14, y + 4, label, 10, col, 700))
+
+
+def light_board(cx, y, counts):
+    """The ambient agent board: three lights, three counts, no names.
+
+    This face exists for the moment the phone is busy and the wrist is the
+    only surface free. Naming the agents here was the first cut and was wrong
+    — a name is something you *read*, and reading is the thing a glance cannot
+    do. What a person needs off the wrist is whether anything has gone amber
+    or red; which agent it was is a question for the app, where there is room
+    to answer it.
+
+    It is also the reason this face carries no tap targets. A wrist showing
+    three numbers can be understood without being touched, and a control that
+    invites a tap invites looking away from whatever the phone was for.
+    """
+    out = []
+    rows = (("green", "running", counts[0]),
+            ("amber", "need help", counts[1]),
+            ("red", "stopped", counts[2]))
+    yy = y
+    for colour, label, n in rows:
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        dim = n == 0
+        a = 0.22 if not dim else 0.07
+        out.append(f'<circle cx="{cx-52}" cy="{yy}" r="17" fill="{A(col, a)}"/>')
+        op = ' opacity="0.28"' if dim else ""
+        out.append(f'<circle cx="{cx-52}" cy="{yy}" r="8.5" fill="{col}"{op}/>')
+        out.append(text(cx - 22, yy + 9, str(n), 26, col if not dim else C["t3"],
+                        800))
+        out.append(text(cx + 6, yy + 8, label, 11,
+                        C["t2"] if not dim else C["t3"], 600))
+        yy += 48
+    return out
+
+
 def wbtn(x, y, w, label, kind="brand", h=34):
     fill = "url(#gBrand)" if kind == "brand" else ("url(#gEmer)" if kind == "emer" else "rgba(255,255,255,0.07)")
     st = C["line"] if kind == "ghost" else None
@@ -120,6 +169,12 @@ def render(s):
     cx = W / 2
     y = SYY + 44
     h = s.get("hero")
+
+    # The status light, when this face is showing an agent at work.
+    if s.get("light"):
+        colour, label = s["light"]
+        o.append(agent_light(PADX + 9, y - 12, colour, label))
+        y += 18
 
     if h == "home":
         o.append(orb(cx, y + 30, 26))
@@ -298,6 +353,11 @@ def render(s):
         o.append(text(cx, y + 107, "this device", 11.5, C["txt"], 650, "middle"))
         o.append(f'<g transform="translate({cx-14},{y+120})">' + wtoggle(0, 0, True) + '</g>')
 
+    elif h == "lightboard":
+        o += light_board(cx, y + 26, s.get("counts", (0, 0, 0)))
+        o.append(text(cx, y + 168, "open on your phone", 9.5, C["t3"], 500,
+                      "middle"))
+
     else:  # compact rows
         yy = y
         for r in s.get("rows", []):
@@ -367,7 +427,8 @@ SCREENS = [
     dict(num=27, title="Baseline", hero="baseline", accent="green"),
     dict(num=28, title="Sources", hero="sources", accent="cyan"),
     dict(num=29, title="Privacy", hero="privacy", accent="green"),
-    dict(num=30, title="Handoff", hero="handoff", accent="red"),
+    dict(num=30, title="Handoff", hero="handoff", accent="red",
+         light=("amber", "needs you")),
     dict(num=31, title="Offline", hero="offline", accent="green"),
     dict(num=32, title="Conditions", accent="violet", rows=[
         ("brain", "violet", "Anxiety / panic", "detection sensitized"),
@@ -385,9 +446,13 @@ SCREENS = [
     ]),
     dict(num=35, title="Family", accent="amber", rows=[
         ("heart", "green", "Riley · 8", "quiet · full oversight"),
-        ("warn", "red", "Sam · 15", "escalated 21:40 · tap to open"),
-        ("bell", "amber", "Quiet hours", "21:00–07:00 · safety never pauses"),
+        ("warn", "red", "Sam · 15", "escalated 21:40 · open"),
+        ("bell", "amber", "Quiet hours", "21:00–07:00 · safety on"),
     ]),
+    # The ambient face: what is running, while the phone is busy being a phone.
+    # No agent names and no buttons — see light_board() for why.
+    dict(num=36, title="Agents", hero="lightboard", accent="green",
+         counts=(3, 1, 1)),
 ]
 
 

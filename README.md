@@ -74,6 +74,41 @@ A wide, multi-panel desktop form of Jim Mini — sidebar nav and an operator wor
   </tr>
 </table>
 
+## The agent status light
+
+An agent working on its own raises one question, and it is not *what phase is
+it in* — it is **does this need me right now?** Three colours answer it.
+
+| | | |
+| --- | --- | --- |
+| 🟢 **green** | working · done | in progress, or finished. Nothing wanted from you |
+| 🟡 **amber** | needs you | it has stopped and is waiting on a person |
+| 🔴 **red** | stopped | it hit an error or was cancelled, and will not continue |
+
+**Derived, never stored.** There is no `light` column and nothing sets one — it
+is computed from the status the work already keeps. A second field naming the
+same fact is a second field that can disagree with the first, and the one a
+screen reads would be the one nobody remembers to update.
+
+**The word rides with the colour**, because green alone cannot separate an
+agent that is still going from one that has finished, and those call for
+opposite reactions. On a watch face the word is doing most of the reading
+anyway.
+
+**An unrecognised state raises rather than defaulting.** A default would paint
+an unknown status green, and green is the colour that means *ignore me* — the
+one failure this must not have.
+
+Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrme/blob/main/qrme/agentlight.py), for all three products.
+
+**Where you actually see it.** Three surfaces, doing three different jobs.
+
+| Surface | What it shows | Why that shape |
+| --- | --- | --- |
+| **Watch** — *36 Agents* | three lights and three counts, and **no agent names** | a wrist is glanced at, not read. Naming the agents was the first cut and was wrong: a name is something you read, and reading is the thing a glance cannot do. Which agent went amber is a question for the app |
+| **App** — *67 Agents* | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed |
+| **Overlay** — *68 Chat · overlay*, and every desktop view | a small translucent box in the bottom-right corner — the same three rows as the wrist, each its own way in | an agent that reports only on its own screen is one you have to remember to check. On desktop it rides on **every** view, because those users have no wrist to glance at |
+
 ## Platforms
 
 Every screen ships in each platform's native chrome — mobile in **iOS** (`docs/screens/`) and **Android** (`docs/screens/android/`); desktop in **macOS** (`docs/desktop/`) and **Windows** (`docs/desktop/windows/`). iOS's Dynamic Island + home indicator vs Android's punch-hole + gesture nav; macOS traffic-lights vs the Windows caption bar. (The watch is watchOS-only.)
@@ -191,6 +226,8 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/63-find-a-clinician.svg" width="160" alt="63 Find a Clinician"><br><sub>63 · Find a Clinician</sub></td>
 <td align="center" width="25%"><img src="docs/screens/64-sign-to-release.svg" width="160" alt="64 Sign to Release"><br><sub>64 · Sign to Release</sub></td>
+<td align="center" width="25%"><img src="docs/screens/67-agents.svg" width="160" alt="67 Agents"><br><sub>67 · Agents</sub></td>
+<td align="center" width="25%"><img src="docs/screens/68-chat.svg" width="160" alt="68 Chat with the agent overlay"><br><sub>68 · Chat · overlay</sub></td>
 </tr>
 </table>
 
@@ -249,8 +286,18 @@ The same system on the wrist — glanceable Apple-Watch faces, one per capabilit
 <td align="center" width="20%"><img src="docs/watch/33-style.svg" width="120" alt="33 Style"><br><sub>33 · Style</sub></td>
 <td align="center" width="20%"><img src="docs/watch/34-history.svg" width="120" alt="34 History"><br><sub>34 · History</sub></td>
 <td align="center" width="20%"><img src="docs/watch/35-family.svg" width="120" alt="35 Family"><br><sub>35 · Family</sub></td>
+<td align="center" width="20%"><img src="docs/watch/36-agents.svg" width="120" alt="36 Agents"><br><sub>36 · Agents</sub></td>
 </tr>
 </table>
+
+**36 · Agents** is the status light on the surface it matters most. A wrist is
+glanced at, not read: **green** the agent is working and wants nothing,
+**amber** it has stopped and needs a person, **red** it will not continue. The
+word rides with the colour because green alone cannot say whether an agent is
+mid-task or finished, and those call for opposite reactions. The colour is
+derived from the task's own status — see `qrme/agentlight.py`, which defines it
+once for all three products — never stored, so it cannot disagree with the
+status it claims to describe.
 
 ## Run
 

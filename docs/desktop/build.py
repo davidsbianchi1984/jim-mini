@@ -503,9 +503,45 @@ VIEWS = [
 ]
 
 
+def agent_overlay(counts):
+    """The agent lights, pinned to every desktop view.
+
+    A watch answers this for the people who wear one. Desktop users have no
+    wrist to glance at, so the same information has to live somewhere that
+    does not depend on remembering to open a page — and amber and red are
+    precisely the states nobody thinks to go looking for.
+
+    Bottom-right, above the content and clear of the sidebar: the corner a
+    dashboard convention already reserves for status, and the one place a
+    persistent strip does not cover something a person is reading.
+    """
+    w, h = 132, 116
+    x = WIN_X + WIN_W - w - 24
+    y = WIN_Y + WIN_H - h - 24
+    o = [rrect(x, y, w, h, 15, "rgba(8,12,22,0.62)", A(C["brandA"], 0.5), 1)]
+    yy = y + 26
+    rows = (("green", "running"), ("amber", "need help"), ("red", "stopped"))
+    for (colour, word), n in zip(rows, counts):
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        dim = n == 0
+        o.append(f'<circle cx="{x+18}" cy="{yy}" r="5.5" fill="{col}"'
+                 + (' opacity="0.28"' if dim else "") + "/>")
+        o.append(text(x + 32, yy + 5, str(n), 14,
+                      col if not dim else C["t3"], 800))
+        o.append(text(x + 46, yy + 5, word, 9.5,
+                      C["t2"] if not dim else C["t3"], 600))
+        yy += 28
+    o.append(text(x + w / 2, y + h - 12, "open \u203a", 9,
+                  C["brandA"], 700, "middle"))
+    return o
+
+
 def render(title, nav, fn):
     o = frame(title, nav)
     o += fn()
+    # On every view, not just Home: the whole point is that it is there while
+    # you are doing something else.
+    o += agent_overlay((2, 1, 1))
     o += close()
     return "".join(o)
 

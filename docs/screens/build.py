@@ -183,6 +183,90 @@ def qrmini(qx, qy, qs, seed=5):
     return "".join(out)
 
 
+def agent_light(x, y, colour, label):
+    """The agent status light — green working, amber needs you, red stopped.
+
+    One question, answered at a glance: does this need me right now? The word
+    rides with the dot because a colour alone cannot separate an agent that is
+    still going from one that has finished, and those call for opposite
+    reactions. Mapped from the task status; see qrme/agentlight.py, which is
+    where the meaning is defined for both products.
+    """
+    col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+    return (f'<circle cx="{x}" cy="{y}" r="10" fill="{A(col, 0.16)}"/>'
+            + f'<circle cx="{x}" cy="{y}" r="4.6" fill="{col}"/>'
+            + text(x + 15, y + 4, label, 10.5, col, 700))
+
+
+def agent_groups(y, groups):
+    """Three tappable groups, one per light. The whole task list, folded.
+
+    A flat list of every running task is the wrong shape for the screen
+    somebody opens *because* a light went amber: it makes them scan for the
+    one that changed. Grouping by light puts the answer first and the roster
+    second, so the amber group is the one your thumb lands on.
+    """
+    out, yy = [], y
+    for colour, label, n, sub in groups:
+        # The chevron owns the right edge of the row. A sub that runs under it
+        # reads as a rendering fault, so it is caught here rather than in a
+        # screenshot somebody sends back weeks later.
+        if len(sub) > 30:
+            raise ValueError(f"agent group sub runs under the chevron: {sub!r}")
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        h = 66
+        out.append(rrect(CX, yy, CW, h, 16, "url(#gCard)", C["line"], 1))
+        out.append(f'<circle cx="{CX+34}" cy="{yy+33}" r="17" fill="{A(col, 0.18)}"/>')
+        out.append(f'<circle cx="{CX+34}" cy="{yy+33}" r="8" fill="{col}"/>')
+        out.append(text(CX + 62, yy + 28, f"{n} {label}", 14.5, C["txt"], 700))
+        out.append(text(CX + 62, yy + 46, sub, 10, C["t2"], 500))
+        # The chevron is the whole affordance: these rows go somewhere.
+        out.append(f'<path d="M{CX+CW-30} {yy+26} l8 7 -8 7" fill="none" '
+                   f'stroke="{C["t3"]}" stroke-width="2" stroke-linecap="round"/>')
+        yy += h + 10
+    return out, yy
+
+
+OVERLAY_ROWS = (("green", "running"), ("amber", "need help"), ("red", "stopped"))
+# The floor the overlay sits on — clear of the tab bar, so it is never the
+# thing a thumb hits by accident on the way to a tab.
+OVERLAY_FLOOR = SY + SH - 52 - 12
+
+
+def agent_overlay(counts):
+    """The lights, floating over whatever screen you are actually on.
+
+    This is the piece that makes the rest useful. A task that only reports on
+    its own screen is one you have to remember to go and check, and the states
+    worth knowing about — amber and red — are exactly the ones nobody thinks
+    to look for.
+
+    Shaped like the watch face rather than as a full-width bar: a small
+    translucent box in the bottom-right corner, three stacked rows, each its
+    own tap target. A bar spanning the screen reads as chrome and cuts the
+    content in half; a corner box reads as something floating above the work,
+    which is what it is. Same three words as the wrist, so the two surfaces
+    are never saying the same thing differently.
+    """
+    w, h = 112, 100
+    x = SX + SW - w - 12
+    y = OVERLAY_FLOOR - h
+    out = [rrect(x, y, w, h, 14, "rgba(8,12,22,0.62)", A(C["brandA"], 0.5), 1)]
+    yy = y + 22
+    for (colour, word), n in zip(OVERLAY_ROWS, counts):
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        dim = n == 0
+        out.append(f'<circle cx="{x+16}" cy="{yy}" r="5" fill="{col}"'
+                   + (' opacity="0.28"' if dim else "") + "/>")
+        out.append(text(x + 28, yy + 4, str(n), 12.5,
+                        col if not dim else C["t3"], 800))
+        out.append(text(x + 40, yy + 4, word, 8.5,
+                        C["t2"] if not dim else C["t3"], 600))
+        yy += 24
+    out.append(text(x + w / 2, y + h - 10, "open ›", 8, C["brandA"], 700, "middle"))
+    return out
+
+
 def meter(x, y, w, pct, grad):
     return (rrect(x, y, w, 7, 4, "#0d1526", C["line"], 1)
             + rrect(x, y, max(6, w * pct), 7, 4, f"url(#{grad})"))
@@ -403,6 +487,19 @@ def render(spec):
     out = head(f"{num:02d}", spec["title"], spec.get("sub", ""), spec.get("accent", "brand"))
     y = SY + 100
     hero = spec.get("hero")
+
+    # The agent's status light, when this screen shows one at work. Directly
+    # under the subtitle: "does this need me" is the first question, and it
+    # should not be something you scroll to find.
+    if spec.get("light"):
+        colour, label = spec["light"]
+        out.append(agent_light(CX + 8, y - 6, colour, label))
+        y += 22
+
+    if spec.get("groups"):
+        block, y = agent_groups(y, spec["groups"])
+        out += block
+        y += 4
 
     if hero == "welcome":
         out.append(orb(W / 2, y + 44, 34))
@@ -957,7 +1054,7 @@ def render(spec):
             y += 42
 
     else:  # generic stacked cards
-        for c in spec["cards"]:
+        for c in spec.get("cards", []):
             s, y = card_block(y, c)
             out.append(s)
         if spec.get("button"):
@@ -965,6 +1062,11 @@ def render(spec):
 
     out += tabbar(spec.get("tab", 0))
     out += navbar()
+    # Drawn after the tab bar so nothing sits on top of it, and before close()
+    # because close() emits the closing tag — appending past it produces a
+    # valid-looking file that no renderer will parse.
+    if spec.get("overlay_agents"):
+        out += agent_overlay(spec["overlay_agents"])
     out += close()
     return "".join(out)
 
@@ -1199,7 +1301,8 @@ SCREENS = [
         dict(icon="shield", color="red", k="Never sent", s="ids, names, notes, raw biometrics"),
     ], button=("Stop sharing & delete", "emer")),
     dict(num=62, title="Specialist Working", sub="A task, not a reply", hero=None,
-         accent="teal", tab=0, cards=[
+         accent="teal", tab=0, light=("amber", "needs you — confirm before it goes"),
+         cards=[
         dict(icon="link", color="teal", k="Dr Whitcomb", s="summarize last month for my GP"),
         dict(icon="chart", color="green", k="Phases done", s="research · draft · review", pill=("3/4", "good")),
         dict(icon="bell", color="amber", k="Waiting on you", s="confirm before it goes", pill=("PAUSED", "warn")),
@@ -1222,6 +1325,22 @@ SCREENS = [
         dict(icon="shield", color="green", k="Nothing else goes", s="no ids, no notes, no biometrics"),
         dict(icon="eye", color="amber", k="Opens once", s="then the link is dead"),
     ], button=("Face ID to release", "emer")),
+    # 65 and 66 are held. The agent-light screens continue at 67 so the held
+    # numbers stay free and nothing has to be renumbered when they land.
+    dict(num=67, title="Agents", sub="What they need, at a glance",
+         accent="green", tab=0, groups=[
+        ("green", "working", 2, "summarizing · referral prep"),
+        ("amber", "need you", 1, "waiting on your confirm"),
+        ("red", "stopped", 1, "it hit an error"),
+    ]),
+    # The overlay, over an ordinary screen. This is the point of the feature:
+    # amber and red are exactly the states nobody thinks to go and check.
+    dict(num=68, title="Chat", sub="Tasks keep running behind you",
+         accent="brand", tab=1, overlay_agents=(2, 1, 1), cards=[
+        dict(icon="chat", color="brand", k="You", s="how did the referral go?"),
+        dict(icon="link", color="teal", k="Dr Whitcomb", s="three of four phases done"),
+        dict(icon="eye", color="amber", k="The lights follow you", s="the work stays where it is"),
+    ]),
 ]
 
 
