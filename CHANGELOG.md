@@ -6,6 +6,90 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-07-27
+
+### Added
+
+- **Membership: Basic $20/month, Pro $130/month** — `jim/tiers.py`, 4 routes,
+  25 tests, screens 69 and 70. Basic is the Guardian itself — conditions,
+  guidance, journal, habits, goals — and every emergency path. Pro adds the
+  watch, early warning, specialists and synthetic agents.
+
+  **Nothing that answers an emergency is ever behind a paywall**, and that is
+  the rule the module exists to keep rather than a caveat on it. A lapsed card
+  is a billing event; a seizure is not. `NEVER_GATED` names the alarm path,
+  escalation, the medical ID a paramedic scans, incident history and the
+  guidance given during an alarm — consulted **first**, so a pattern added
+  later cannot reach them, and a test plants exactly that mistake and asserts
+  each safety route still comes back ungated.
+
+  **The first implementation had that bug.** `/monitor` was listed as the
+  "proactive monitoring" capability, which reads correctly and is wrong:
+  `/monitor` is the *ingest*. A Basic member submitting a blood oxygen of 84
+  received a 402 instead of an escalation — the paywall standing between
+  somebody and an emergency, indirectly but completely. The suite caught it.
+  What Pro buys is `jim/earlywarning.py`, the trend model that looks *ahead* of
+  a threshold, and it is **skipped rather than refused**: a Basic member gets a
+  real answer about the reading they submitted, with `predictive: false` saying
+  plainly what they did not get.
+
+  Every 402 carries `emergency_unaffected: true`. Money is simulated.
+
+- **The helper dock** — `jim/dock.py`, 5 routes, 15 tests, screen 71. The
+  glances a watch face would carry, in a pane in the corner — which matters
+  here because the watch is a Pro capability. **An active alarm opens it
+  whatever it was set to**, and the alarm face cannot be configured out of the
+  pane: this is the one place the rule deliberately departs from QRME's, whose
+  dock hides itself during a broadcast. The same rule here would hide the thing
+  a person most needs to see, and JIM-mini has no broadcast surface to leak an
+  alarm into.
+
+- **The Guardian gives the tour** — `jim/tutorial.py`, eleven lessons in the
+  Guardian's own voice, because here the Guardian already *is* somebody to the
+  user. Channel 2's screens 65 and 66 came back in the same change, found by
+  the walkthrough's coverage test on its first run.
+
+
+- **The Guardian gives a guided walkthrough** — `jim/tutorial.py`, 6 routes,
+  11 tests. Eleven steps across four chapters, `?mode=voice` to be spoken —
+  which matters more here than in QRME, because this is a product used
+  hands-free by somebody who may not be well.
+
+  **The Guardian gives it, rather than a faceless guide**, and that is the one
+  place this deliberately differs from QRME's version. QRME's subject is
+  synthetic people, so a guide with a persona would be the most convincing one
+  on the platform. JIM-mini has exactly one voice and is not pretending to be
+  anybody — a separate guide would be a *second* voice in a product built on
+  there being one, and the first thing a new user learned would be that JIM
+  talks to them from two places.
+
+  **It never fires anything for you.** No lesson triggers an escalation,
+  reaches an emergency contact or files a condition "to show you how" — in a
+  product whose actions reach a real person's phone at three in the morning, a
+  demonstration that fires for real is not a demonstration. Tests assert it,
+  along with writing nothing but the learner's own progress and needing no
+  model configured.
+
+### Fixed
+
+- **Screens 65 and 66 were missing.** The hold that pulled channel 2 before
+  0.3.1 removed them, and green-lighting the feature restored QRME's screen 81
+  without restoring these — so the microphone shipped with routes, tests and a
+  README section, and no pictures. Found by the walkthrough's own coverage
+  test on its first run, which is the argument for that test in one line.
+
+### Changed
+
+- **The video at the top of the README is no longer the whole header.** A bare
+  user-attachments URL becomes a full-width player, which on this page meant a
+  large black rectangle with a play button sitting above everything the README
+  is actually about — it read as the header rather than as one thing offered in
+  it. There is no width attribute to set, because GitHub generates the element;
+  the only handle is the width of the box it lands in, so it now sits in a
+  narrow table cell with the cover illustration beside it. Playback is
+  untouched: it still opens full screen with audio, which is what a small frame
+  is for.
+
 ### Added
 
 - **Channel 2: a second microphone, for the agent** — `jim/mic.py`, 9 routes,

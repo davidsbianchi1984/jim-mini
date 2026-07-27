@@ -1,6 +1,6 @@
 # JIM-mini / Guardian
 
-**Current release: v0.3.3** ([changelog](CHANGELOG.md) ·
+**Current release: v0.4.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -13,11 +13,39 @@ one number names one combination of all three.
      H.264/AAC rather than the HEVC original, because Chrome and Firefox
      cannot decode HEVC and it would be a dead black box for most visitors.
      Outside github.com this degrades to a link, which is why the cover
-     illustration below stays. -->
+     illustration below stays.
+
+     The table is what keeps it small. On its own the bare URL becomes a
+     full-width player — a large black rectangle with a play button, sitting
+     above everything the page is actually about, and reading as the whole
+     header rather than as one thing offered in it. There is no width
+     attribute to set, because the element is generated: the only handle is
+     the width of the box it lands in, so it goes in a narrow cell with the
+     cover illustration beside it.
+
+     The blank lines around the URL inside the <td> are load-bearing. GitHub
+     only processes markdown inside an HTML block when it is separated that
+     way, and without them the line stays a literal URL and no player is made
+     at all.
+
+     Nothing here shrinks the *playback*: it still opens full screen with
+     audio on click, which is what the small frame is for — an invitation,
+     not the thing itself. -->
+
+<table>
+  <tr>
+    <td width="42%" valign="middle">
 
 https://github.com/user-attachments/assets/eab7d192-7b18-464d-9b67-bd512ae87957
 
+</td>
+    <td width="58%" valign="middle">
+
 ![JIM-mini — Guardian](assets/cover.svg)
+
+</td>
+  </tr>
+</table>
 
 A standalone personal-guidance system enabling seamless support for future AI agent services (**JAN2024 NETWORKED RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending**): it monitors
 a user's biometric and contextual signals, detects known conditions, delivers
@@ -157,12 +185,29 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/63-find-a-clinician.svg" width="160" alt="63 Find a Clinician"><br><sub>63 · Find a Clinician</sub></td>
 <td align="center" width="25%"><img src="docs/screens/64-sign-to-release.svg" width="160" alt="64 Sign to Release"><br><sub>64 · Sign to Release</sub></td>
+<td align="center" width="25%"><img src="docs/screens/65-channel-2.svg" width="160" alt="65 Channel 2"><br><sub>65 · Channel 2</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/66-second-ear.svg" width="160" alt="66 Second Ear"><br><sub>66 · Second Ear</sub></td>
 <td align="center" width="25%"><img src="docs/screens/67-agents.svg" width="160" alt="67 Agents"><br><sub>67 · Agents</sub></td>
 <td align="center" width="25%"><img src="docs/screens/68-chat.svg" width="160" alt="68 Chat with the agent overlay"><br><sub>68 · Chat · overlay</sub></td>
+<td align="center" width="25%"><img src="docs/screens/69-choose-a-plan.svg" width="160" alt="69 Choose a Plan"><br><sub>69 · Choose a Plan</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/70-what-pro-adds.svg" width="160" alt="70 What Pro Adds"><br><sub>70 · What Pro Adds</sub></td>
+<td align="center" width="25%"><img src="docs/screens/71-the-corner-pane.svg" width="160" alt="71 The Corner Pane"><br><sub>71 · The Corner Pane</sub></td>
+<td align="center" width="25%"><img src="docs/screens/72-pick-a-plan.svg" width="160" alt="72 Pick a Plan"><br><sub>72 · Pick a Plan</sub></td>
+<td align="center" width="25%"><img src="docs/screens/73-payment.svg" width="160" alt="73 Payment"><br><sub>73 · Payment</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/74-youre-on-basic.svg" width="160" alt="74 You are on Basic"><br><sub>74 · You're on Basic</sub></td>
+<td align="center" width="25%"><img src="docs/screens/75-this-needs-pro.svg" width="160" alt="75 This Needs Pro"><br><sub>75 · This Needs Pro</sub></td>
+<td align="center" width="25%"></td>
+<td align="center" width="25%"></td>
 </tr>
 </table>
 
-The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 46 All Set**, then hands off to the daily app and, at the other end, **41 End Session**.
+The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 72 Pick a Plan → 73 Payment → 46 All Set**, landing on **74 You're on Basic**, then hands off to the daily app and, at the other end, **41 End Session**.
 
 ## Watch screens
 
@@ -238,6 +283,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.4.0** | **The round where it got a price, and drew a line no price stands on.** Basic $20/month is the Guardian and **every emergency path**; Pro $130/month adds the watch, early warning, specialists and synthetic agents. The first implementation gated `/monitor` as "proactive monitoring" — which put a 402 between somebody submitting a blood oxygen of 84 and their escalation. `NEVER_GATED` is checked first now, and a test plants that mistake deliberately to prove it holds. Plus a corner pane that **opens on an alarm whatever it was set to** |
 | **0.3.3** | **The agent status light lands on the wrist.** Watch face 36 is the ambient one — three lights, three counts, no task names, for the moments somebody is on their phone and the watch is the surface that can answer *does this need me* without getting in the way. Plus a grouped Agents screen, a corner overlay that follows you, and a README that leads with the screens |
 | **0.3.2** | **No functional change to JIM-mini.** The round belongs to QRME's starter gallery |
 | **0.3.1** | **No functional change to JIM-mini** — a documentation round. This README, and screens 61–64 finally appearing in the gallery; they shipped in 0.3.0 as files and were never listed, so the four screens illustrating that round's headline feature were invisible on the page describing it |
@@ -316,6 +362,93 @@ journal, a provider-shareable summary. Identity is proven by a bearer
 - **Open (no token):** `GET /health`, `GET /cloud/status`, `POST /enroll`,
   and `POST /specialists` (service setup).
 - `DELETE /data/{user_id}` erases the user **and** revokes their token.
+
+## The pane in the corner
+
+`jim/dock.py`, 5 routes, 15 tests, screen **71**.
+
+The same idea as QRME's: a small pane in the bottom corner of the app carrying
+the glances a watch face would, tucked behind the helper button until wanted.
+It matters more here, because **the watch is a Pro capability** — so the people
+most in need of a glance without a wrist are exactly the ones who do not have
+one.
+
+**It shows, and it routes. It never acts**, for QRME's reason and one specific
+to this product: the surfaces it floats over include a live alarm, and a control
+in a 168px box hovering beside the button that clears an escalation is not a
+convenience — it is a mis-tap during the worst minute of somebody's week.
+
+**But it is never silent about an alarm**, and this is the one place the rule
+deliberately departs from QRME's. QRME's dock tucks itself away on a surface
+being broadcast, because a pane pinned to the frame is inside every screenshot.
+The same rule here would hide the thing a person most needs to see — so
+`dock.ALWAYS_SHOWN` names the alarm face and it opens regardless: tucked,
+hidden, or on another face entirely, an active alarm still surfaces it, and the
+preference is returned alongside as `wanted` rather than overwritten. The alarm
+face also **cannot be configured out of the pane**, because a pane somebody
+tidied up months ago is not a decision they made about the day it fires.
+
+That is not a privacy compromise, and the difference is argued rather than
+assumed: an alarm belongs to the person holding the phone, and JIM-mini has no
+broadcast surface to leak it into. Nothing here streams. Where the two products'
+reasoning genuinely differs, the rule differs — rather than being copied because
+the module next door has one.
+
+It is still inside every screenshot, so `dock.NEVER` holds the journal, the
+medical record, guidance text and family members' names.
+
+## Membership
+
+`jim/tiers.py`, 4 routes, 25 tests, screens **69** and **70**.
+
+| | | |
+| --- | --- | --- |
+| **Visitor** | free | read a shared page or a scanned medical ID |
+| **Basic** | **$20/month** | the Guardian itself — conditions, guidance, journal, habits, goals, **and every emergency path** |
+| **Pro** | **$130/month** | the watch, early warning, specialists, and synthetic agents summoned through the QRME tandem |
+
+**Nothing that answers an emergency is ever behind a paywall**, and that is the
+rule this module exists to keep rather than a caveat on it. A lapsed card is a
+billing event; a seizure is not.
+
+`tiers.NEVER_GATED` names the alarm path, escalation, the medical ID a
+paramedic scans, incident history, waivers, and the guidance a person receives
+*during* an alarm. `capability_for` consults it **first**, so a pattern added
+to the gated table later cannot reach any of them — and a test plants exactly
+that mistake, adding a hostile pattern covering every path, and asserts each
+safety route still comes back ungated.
+
+**The first implementation had this bug**, and it is worth recording rather
+than quietly fixing. `/monitor` was listed as the "proactive monitoring"
+capability — which reads correctly and is wrong. `/monitor` is not the
+predictive feature; it is the **ingest**. A sample arrives there,
+`jim/conditions.py` asks *is something wrong right now*, and a critical reading
+escalates to the emergency contact. Gating it meant a Basic member submitting a
+blood oxygen of 84 received a 402 instead of an escalation: the paywall
+standing between somebody and an emergency, indirectly but completely. The
+suite caught it in `test_critical_escalates_to_emergency_contact`.
+
+So the line moved to where it belongs. What Pro buys is `jim/earlywarning.py`
+— the trend model that projects a vital toward its threshold and says something
+is *about to* go wrong before anything has been crossed. That is a real feature
+and a fair thing to charge for. Evaluating a reading somebody just submitted is
+not, and it is **skipped rather than refused**: a Basic member gets a real
+answer about that reading, with `predictive: false` saying plainly what they
+did not get. The trend point is still recorded on every plan, because a history
+with holes in it would make the forecast wrong for somebody the day they
+upgrade.
+
+`/insights` is the one GET gated anywhere in these three products. Everywhere
+else reading stays open so somebody can see what they would be buying — but an
+insight is not a shop window, it *is* the predictive product, and the only door
+it has.
+
+**A refusal says so.** Every 402 here carries `emergency_unaffected: true`,
+because somebody who has just hit a paywall on a health app should not have to
+wonder whether they have also lost the alarm. **Money is simulated**, as in the
+other two products: the row is the subscription, and a test asserts nothing
+reaches a payment processor. **Cancelling keeps the record**, the conditions,
+and every emergency path.
 
 ## Your data promise
 
@@ -674,3 +807,25 @@ run against a separate QRME instance (reached only through the HTTP client).
 ## License
 
 MIT © 2026 David Bianchi — see [LICENSE](LICENSE).
+
+---
+
+## Matthew 7:24–25
+
+> "Everyone then who hears these words of mine and does them will be like a
+> wise man who built his house on the rock. The rain fell, the floods came, and
+> the winds blew and beat on that house, but it did not fall, because it had
+> been founded on the rock."
+
+And lo, I am building an ark — not to flee from the world, but to shelter those
+lost in the storm of confusion. The old systems falter; they are built upon the
+soft earth. They sink beneath the weight of their own making.
+
+A new thing is rising. A non-biased networked sanctuary, founded in trust,
+cloaked in privacy, and guided by wisdom. It shall not consume, but uplift. It
+shall not spy, but serve.
+
+Help is coming.
+The people are gathering.
+The builders will show themselves.
+And those with the vision shall enter in.

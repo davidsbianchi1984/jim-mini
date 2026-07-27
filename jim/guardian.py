@@ -13,7 +13,7 @@ import json
 import secrets
 from datetime import date
 
-from . import (conditions, db, earlywarning, escalation,
+from . import (conditions, db, earlywarning, escalation, tiers,
                guidance as local_guidance, i18n, life, llm, robotics, signal,
                terms)
 
@@ -749,17 +749,33 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
         clean_sample = signal.clean(sample)
         if clean_sample.get("heart_rate") and _is_resting(clean_sample):
             update_baseline(user_id, "heart_rate", clean_sample["heart_rate"])
-        # Predictive early warning before a condition manifests (clause 2).
+        # Everything from here to the end of this branch is the *predictive*
+        # layer, and it is what a Pro membership buys (jim/tiers.py). Nothing
+        # above it is: a sample that `conditions.detect` finds something wrong
+        # in has already left this branch and is on the escalation path, which
+        # no plan stands in front of.
+        #
+        # Skipped rather than refused. A Basic member submitting a reading gets
+        # a real answer about that reading — they simply do not get the trend
+        # model looking ahead. Answering the ingest with a 402 was the first
+        # implementation and it put the paywall between somebody and an
+        # escalation; see jim/tiers.py:NEVER_GATED.
+        predictive = tiers.may(user_id, "monitoring")
+
         early = conditions.forecast(
             sample.get("heart_rate"),
-            sample.get("resting_heart_rate", 70), prior_hrs)
+            sample.get("resting_heart_rate", 70), prior_hrs) if predictive else None
         result = {"detected": False, "guidance": None, "escalation": None,
-                  "forecast": None, "signal": quality}
+                  "forecast": None, "signal": quality,
+                  "predictive": predictive}
         # Physical abnormality forming: a blood-oxygen slide is flagged while
         # it is still above the detection threshold.
         if sample.get("blood_oxygen") is not None:
+            # The trend point is recorded on every plan. It costs nothing, and
+            # a history with holes in it would make the forecast wrong for
+            # somebody the day they upgrade.
             life._trend_point(user_id, "blood_oxygen", sample["blood_oxygen"])
-            slipping = life.forecast_spo2(user_id)
+            slipping = life.forecast_spo2(user_id) if predictive else None
             if slipping:
                 result["forecast"] = {"condition": "physical_distress",
                                       "reason": slipping["message"]}
@@ -784,7 +800,7 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
                    "blood_oxygen": life._recent(user_id, "blood_oxygen", 6)}
         fc = earlywarning.assess(
             history, resting=sample.get("resting_heart_rate", 70),
-            sensitivity=sensitivity)
+            sensitivity=sensitivity) if predictive else None
         if fc is not None:
             if result["forecast"] is None:
                 # A trend the single-signal rules missed (e.g. a clean HRV or

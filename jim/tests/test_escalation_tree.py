@@ -6,7 +6,7 @@ from jim import earlywarning, escalation
 
 def _enroll(client, **extra):
     body = {"display_name": "Jordan", "birthdate": "1995-05-05",
-            "terms_consent": True, "resting_heart_rate": 60}
+            "terms_consent": True, "resting_heart_rate": 60, "plan": "pro"}
     body.update(extra)
     r = client.post("/enroll", json=body, headers={})
     assert r.status_code == 201, r.text

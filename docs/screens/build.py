@@ -1327,6 +1327,29 @@ SCREENS = [
     ], button=("Face ID to release", "emer")),
     # 65 and 66 are held. The agent-light screens continue at 67 so the held
     # numbers stay free and nothing has to be renumbered when they land.
+    # Channel 2, off hold. The phone has one microphone and one foreground
+    # claim on it, so while somebody is on a call the Guardian is deaf — which
+    # is precisely when they might want to ask it something.
+    dict(num=65, title="Channel 2", sub="A second microphone, for Jim",
+         hero=None, accent="cyan", tab=2, cards=[
+        dict(icon="watch", color="cyan", k="Smart watch", s="earbuds, lapel, glasses too",
+             pill=("READY", "good")),
+        dict(icon="shield", color="green", k="Attached, not listening", s="only while your main mic is busy"),
+        dict(icon="mic", color="violet", k="Keys on your voice", s="drops the TV, the next table"),
+        dict(icon="eye", color="amber", k="Never on speakerphone", s="they never agreed to be heard"),
+    ], button=("Hand it over", "brand")),
+    # The live state. The gain row is the one that matters — it shows the
+    # setting *and* what it is actually running at, because those differ
+    # exactly when somebody else's voice is in the air.
+    dict(num=66, title="Second Ear", sub="It hears you, not your call",
+         hero=None, accent="violet", tab=2, cards=[
+        dict(icon="mic", color="cyan", k="On your watch", s="while you take the call",
+             pill=("LIVE", "good")),
+        dict(icon="chart", color="violet", k="Set to wide", s="running near-field",
+             pill=("CAPPED", "warn")),
+        dict(icon="person", color="green", k="You, not the room", s="comes back when the call ends"),
+        dict(icon="clip", color="amber", k="Every handover logged", s="what, why, and for how long"),
+    ], button=("Take it back", "emer")),
     dict(num=67, title="Agents", sub="What they need, at a glance",
          accent="green", tab=0, groups=[
         ("green", "working", 2, "summarizing · referral prep"),
@@ -1341,6 +1364,106 @@ SCREENS = [
         dict(icon="link", color="teal", k="Dr Whitcomb", s="three of four phases done"),
         dict(icon="eye", color="amber", k="The lights follow you", s="the work stays where it is"),
     ]),
+    # The price list. Card three is the one that has to lead on a health
+    # product: the first question anybody asks a paywall here is whether it
+    # stands in front of the alarm.
+    dict(num=69, title="Choose a Plan", sub="Basic guards, Pro looks ahead",
+         accent="brand", tab=0, cards=[
+        dict(icon="shield", color="teal", k="Basic · $20/month",
+             s="the Guardian and every alarm"),
+        dict(icon="bolt", color="brand", k="Pro · $130/month",
+             s="watch, early warning, agents"),
+        dict(icon="heart", color="red", k="Emergencies never gated",
+             s="on any plan, even a lapsed one"),
+        dict(icon="watch", color="amber", k="The wrist is Pro",
+             s="pairing, the face, channel 2"),
+        dict(icon="warn", color="green", k="Billing is simulated",
+             s="no real funds move"),
+    ], button=("Go Pro", "brand")),
+    # What Pro adds, and the distinction that decides the whole design: a
+    # reading you just submitted is answered on every plan.
+    dict(num=70, title="What Pro Adds", sub="Looking ahead, not looking now",
+         accent="teal", tab=0, cards=[
+        dict(icon="chart", color="teal", k="Early warning",
+             s="a trend, before a threshold"),
+        dict(icon="heart", color="green", k="This reading still answers",
+             s="on Basic, and with no plan"),
+        dict(icon="watch", color="amber", k="Watch and channel 2",
+             s="pair it, wear it, lend it"),
+        dict(icon="brain", color="brand", k="Specialists and agents",
+             s="summoned through QRME"),
+        dict(icon="shield", color="red", k="The alarm is not a feature",
+             s="it is never something you buy"),
+    ], button=("Compare plans", "brand")),
+    # The pane in the corner. Card two is where this differs from QRME's: the
+    # rule that hides a pane during a broadcast would hide the one thing a
+    # person most needs to see.
+    dict(num=71, title="The Corner Pane", sub="The watch faces, without a watch",
+         accent="brand", tab=0, cards=[
+        dict(icon="eye", color="brand", k="Tap to tuck it away",
+             s="the helper button is the handle"),
+        dict(icon="bell", color="red", k="An alarm opens it anyway",
+             s="whatever you set it to"),
+        dict(icon="warn", color="amber", k="It shows, it never acts",
+             s="the real screen is one tap away"),
+        dict(icon="watch", color="teal", k="No wrist required",
+             s="the watch is a Pro thing"),
+        dict(icon="shield", color="green", k="Not your journal",
+             s="a pane is in every screenshot"),
+    ], button=("Move it left", "brand")),
+    # ---- first-run: the plan step ----
+    #
+    # Sits between Emergency Contacts and All Set, and the order is the
+    # argument: somebody has just given us the number to ring if they collapse,
+    # so the very next screen has to say that no plan withholds that.
+    dict(num=72, title="Pick a Plan", sub="Step 5 of 6",
+         accent="brand", tab=0, cards=[
+        dict(icon="shield", color="teal", k="Basic · $20/month",
+             s="the Guardian and every alarm"),
+        dict(icon="bolt", color="brand", k="Pro · $130/month",
+             s="watch, early warning, agents"),
+        dict(icon="heart", color="red", k="Alarms are in both",
+             s="and in neither, if you lapse"),
+        dict(icon="warn", color="green", k="Billing is simulated",
+             s="no real funds move"),
+    ], button=("Continue with Basic", "brand")),
+    dict(num=73, title="Payment", sub="Step 6 of 6",
+         accent="teal", tab=0, cards=[
+        dict(icon="heart", color="teal", k="Basic · $20 a month",
+             s="first charge today"),
+        dict(icon="lock", color="green", k="Card details",
+             s="nothing is sent anywhere"),
+        dict(icon="warn", color="red", k="No processor is called",
+             s="the subscription is a row"),
+        dict(icon="shield", color="brand", k="Cancel and keep it all",
+             s="your record, and the alarms"),
+    ], button=("Confirm — simulated", "brand")),
+    # Where signup lands. Card one first, deliberately: on a health product the
+    # thing to say before anything about features is what still works.
+    dict(num=74, title="You're on Basic", sub="Here is what that means",
+         accent="green", tab=0, cards=[
+        dict(icon="heart", color="red", k="Every alarm path works",
+             s="on this plan and with none", pill=("ON", "good")),
+        dict(icon="shield", color="green", k="The Guardian is yours",
+             s="conditions, guidance, journal"),
+        dict(icon="watch", color="amber", k="The watch is Pro",
+             s="pairing, the face, channel 2"),
+        dict(icon="chart", color="amber", k="Looking ahead is Pro",
+             s="this reading still answers"),
+    ], button=("Start", "brand")),
+    # The 402 moment. Card three is the one that has to be on a health app's
+    # paywall: somebody who has just hit a wall should not have to wonder.
+    dict(num=75, title="This Needs Pro", sub="What you tapped, and why",
+         accent="amber", tab=0, cards=[
+        dict(icon="watch", color="amber", k="Pairing a watch",
+             s="needs Pro · $130/month"),
+        dict(icon="person", color="teal", k="You are on Basic",
+             s="nothing changes on its own"),
+        dict(icon="heart", color="red", k="Your alarms are unaffected",
+             s="they were never part of this"),
+        dict(icon="warn", color="green", k="Billing is simulated",
+             s="no real funds move"),
+    ], button=("Upgrade to Pro", "brand")),
 ]
 
 

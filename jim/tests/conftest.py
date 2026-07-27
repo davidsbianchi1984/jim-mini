@@ -96,8 +96,13 @@ def make_tandem(tmp_path, monkeypatch):
 
 
 def enroll(client, **extra):
+    # Pro, where the product default is Basic, and deliberately so: most tests
+    # here exercise paid capabilities — the watch, early warning, specialists,
+    # the QRME tandem — and an account entitled to them is what a real user of
+    # those features holds. The gate itself is tested in test_tiers.py, on
+    # accounts that are explicitly Basic. Pass plan="basic" to opt back down.
     body = {"display_name": "Jordan", "birthdate": "1995-05-05",
-            "terms_consent": True, "resting_heart_rate": 60}
+            "terms_consent": True, "resting_heart_rate": 60, "plan": "pro"}
     body.update(extra)
     r = client.post("/enroll", json=body)
     assert r.status_code == 201, r.text

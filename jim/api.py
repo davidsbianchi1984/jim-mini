@@ -13,7 +13,8 @@ from fastapi.responses import HTMLResponse
 from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
-               rota, social, terms as terms_mod)
+               rota, social, terms as terms_mod, tiers, tutorial)
+from . import dock as dock_mod
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
@@ -28,6 +29,7 @@ from .models import (
     TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
+    DockConfig, PlanChoice, TutorialMark,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -44,7 +46,12 @@ def _age(birthdate: date) -> int:
 def create_app(qrme_client: QRMEClient | None = None,
                pdi_client: PDIClient | None = None,
                cloud_client: CloudModelClient | None = None) -> FastAPI:
-    app = FastAPI(title="JIM-mini / Guardian", version="0.3.3")
+    # The membership gate is an application-wide dependency rather than a
+    # call at the top of each paid handler: one table, one chokepoint, and no
+    # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
+    # plan may ever stand in front of.
+    app = FastAPI(title="JIM-mini / Guardian", version="0.4.0",
+                  dependencies=[Depends(tiers.gate)])
 
     # Optional CORS for a packaged guardian-console front-end (app/) calling the
     # API from another origin. Off by default; set JIM_CORS_ORIGINS to a
@@ -122,6 +129,52 @@ def create_app(qrme_client: QRMEClient | None = None,
             buf, kind="svg", scale=8, border=2,
             dark="#0b1120", light="#ffffff")
         return Response(content=buf.getvalue(), media_type="image/svg+xml")
+
+    # -- the Guardian's walkthrough -----------------------------------------
+    #
+    # Reads only, apart from the learner's own progress. Nothing here triggers
+    # an escalation, reaches an emergency contact or files a condition "to show
+    # you how" — in a product whose actions reach a real person's phone at
+    # three in the morning, a demonstration that fires for real is not one.
+
+    @app.get("/tutorial")
+    def tutorial_outline(mode: str = "text") -> dict:
+        """The whole walkthrough, chaptered. `?mode=voice` to be spoken."""
+        try:
+            return tutorial.outline(mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/tutorial/steps/{key}")
+    def tutorial_step(key: str, mode: str = "text") -> dict:
+        try:
+            return tutorial.step(key, mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.get("/tutorial/for-screen/{number}")
+    def tutorial_for_screen(number: int, mode: str = "text") -> dict:
+        """The lesson covering a given screen, so a screen can explain
+        itself instead of opening the tour at the beginning."""
+        found = tutorial.for_screen(number, mode)
+        if found is None:
+            raise HTTPException(404, "no lesson covers that screen")
+        return found
+
+    @app.post("/tutorial/start")
+    def tutorial_start(body: TutorialMark) -> dict:
+        return tutorial.start(body.learner_id, body.mode)
+
+    @app.get("/tutorial/progress/{learner_id}")
+    def tutorial_progress(learner_id: str, mode: str = "text") -> dict:
+        return tutorial.where(learner_id, mode)
+
+    @app.post("/tutorial/done")
+    def tutorial_done(body: TutorialMark) -> dict:
+        try:
+            return tutorial.mark(body.learner_id, body.lesson, body.mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(404, str(exc)) from None
 
     @app.get("/connectors/catalog")
     def connector_catalog() -> dict:
@@ -234,9 +287,90 @@ def create_app(qrme_client: QRMEClient | None = None,
                     f"language must be one of {', '.join(i18n.SUPPORTED)}")
             i18n.set_language(user["id"], body.language)
             user["language"] = body.language
+        # Signing up is where a membership starts. Basic unless a plan is
+        # named — the cheaper of two prices is the honest default for somebody
+        # who has not chosen, and every emergency path is in Basic.
+        tiers.subscribe(user["id"], body.plan or tiers.DEFAULT_PLAN)
+        user["membership"] = tiers.membership(user["id"])
         # The user token is shown exactly once, here.
         user["user_token"] = auth.issue("user", user["id"])
         return user
+
+    # ---- the pane in the corner -------------------------------------------
+
+    @app.get("/dock/faces")
+    def dock_vocabulary() -> dict:
+        """Everything needed to draw the pane. Public — the product's shape,
+        not anybody's data."""
+        return dock_mod.vocabulary()
+
+    @app.get("/dock/where/{face}")
+    def dock_where(face: str) -> dict:
+        """The screen that can actually do this face's job."""
+        try:
+            return dock_mod.route(face)
+        except dock_mod.DockError as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.get("/dock/{user_id}")
+    def dock_settings(user_id: str, request: Request,
+                      alarm_active: bool = False) -> dict:
+        auth.require(request, "user", user_id)
+        return dock_mod.opens_as(user_id, alarm_active)
+
+    @app.put("/dock/{user_id}")
+    def dock_configure(user_id: str, body: DockConfig,
+                       request: Request) -> dict:
+        auth.require(request, "user", user_id)
+        try:
+            return dock_mod.configure(user_id, body.corner, body.state,
+                                      body.face, body.faces)
+        except dock_mod.DockError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/dock/{user_id}/face/{name}")
+    def dock_face(user_id: str, name: str, request: Request,
+                  surface_id: str | None = None) -> dict:
+        auth.require(request, "user", user_id)
+        try:
+            return dock_mod.face(user_id, name, surface_id)
+        except dock_mod.DockError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    # ---- membership -------------------------------------------------------
+
+    @app.get("/plans")
+    def plans() -> dict:
+        """The price list. Public — a paywall whose terms nobody can read
+        before signing in is one people bounce off.
+
+        Generated from the same table the gate reads, and it carries the
+        never-gated list by name, because "will this stop my alarm working"
+        is the first question worth answering here.
+        """
+        return tiers.catalogue()
+
+    @app.get("/memberships/{account_id}")
+    def membership(account_id: str, request: Request) -> dict:
+        auth.require(request, "user", account_id)
+        return tiers.membership(account_id)
+
+    @app.post("/memberships/{account_id}")
+    def subscribe(account_id: str, body: PlanChoice, request: Request) -> dict:
+        """Join a plan or move between them. Billing is simulated and the
+        response says so."""
+        auth.require(request, "user", account_id)
+        try:
+            return tiers.subscribe(account_id, body.plan)
+        except tiers.TierError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.delete("/memberships/{account_id}")
+    def cancel_membership(account_id: str, request: Request) -> dict:
+        """End it. The person keeps their record, their conditions and every
+        emergency path."""
+        auth.require(request, "user", account_id)
+        return tiers.cancel(account_id)
 
     # ---- family: a parent sets up and watches over a child's account ------
 

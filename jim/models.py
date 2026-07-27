@@ -22,6 +22,19 @@ Source = Literal[
 ]
 
 
+class DockConfig(BaseModel):
+    """Where the helper pane sits and what it carries (jim/dock.py)."""
+    corner: str | None = None           # bottom_right | bottom_left
+    state: str | None = None            # hidden | handle | open
+    face: str | None = None
+    faces: list[str] | None = None
+
+
+class PlanChoice(BaseModel):
+    """Joining a plan, or moving between them (jim/tiers.py)."""
+    plan: str                               # basic | pro
+
+
 class Enroll(BaseModel):
     display_name: str
     birthdate: date | None = None
@@ -35,6 +48,9 @@ class Enroll(BaseModel):
     contact_consent: bool = False
     language: str | None = None             # chosen at the setup gateway
     device_paired: bool = False
+    # The plan this person joins on. Omitted means Basic — which includes
+    # every emergency path, so the cheapest plan is never the unsafe one.
+    plan: str | None = None
     resting_heart_rate: int | None = None
     # Deprecated: free-text goals from early enrollments. Use the
     # /goals endpoints for tracked goals instead.
@@ -363,3 +379,16 @@ class RelayAccept(BaseModel):
 
 class RelayQuestion(BaseModel):
     question: str
+
+
+class TutorialMark(BaseModel):
+    """Where a learner is in the Guardian's walkthrough.
+
+    `lesson` is optional because `/tutorial/start` needs only who is asking —
+    requiring a step id to begin at the beginning would be a field somebody
+    has to invent a value for.
+    """
+
+    learner_id: str
+    lesson: str = ""
+    mode: str = "text"

@@ -9,6 +9,16 @@ import uuid
 from datetime import datetime, timezone
 
 _SCHEMA = """
+-- How far somebody has got through the Guardian's walkthrough. One row per
+-- step rather than a cursor, so a learner who skipped ahead and came back is
+-- not told they finished things they never saw.
+CREATE TABLE IF NOT EXISTS tutorial_progress (
+    learner_id TEXT NOT NULL,
+    lesson     TEXT NOT NULL,
+    done_at    TEXT NOT NULL,
+    PRIMARY KEY (learner_id, lesson)
+);
+
 CREATE TABLE IF NOT EXISTS users (
     id                 TEXT PRIMARY KEY,
     display_name       TEXT NOT NULL,
@@ -504,6 +514,36 @@ CREATE TABLE IF NOT EXISTS relay_pages (
     created_at  TEXT NOT NULL,
     sent_at     TEXT
 );
+
+-- Where the helper dock sits and what it is showing (see jim/dock.py).
+-- Preferences only; the pane shows and routes and cannot be granted anything,
+-- because there is nothing to grant.
+CREATE TABLE IF NOT EXISTS dock_prefs (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    corner     TEXT NOT NULL DEFAULT 'bottom_right',
+    state      TEXT NOT NULL DEFAULT 'handle',
+    face       TEXT NOT NULL DEFAULT 'helper',
+    faces      TEXT NOT NULL,                        -- JSON array
+    updated_at TEXT NOT NULL
+);
+
+-- What a person has paid for (see jim/tiers.py). Keyed on the user, who here
+-- *is* the account — unlike QRME, where an owner token's subject is a profile.
+--
+-- One live row per account, enforced by ending the previous one rather than by
+-- a unique index, so the history survives a change of plan.
+--
+-- Billing is simulated: there is no processor and no token, and the row is the
+-- subscription. Nothing on the emergency path consults this table at all.
+CREATE TABLE IF NOT EXISTS memberships (
+    id         TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    plan       TEXT NOT NULL,          -- basic | pro
+    started_at TEXT NOT NULL,
+    ended_at   TEXT
+);
+CREATE INDEX IF NOT EXISTS memberships_live
+    ON memberships (account_id, ended_at);
 
 CREATE TABLE IF NOT EXISTS robots (
     id           TEXT PRIMARY KEY,
