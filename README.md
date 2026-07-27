@@ -202,8 +202,8 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/74-youre-on-basic.svg" width="160" alt="74 You are on Basic"><br><sub>74 · You're on Basic</sub></td>
 <td align="center" width="25%"><img src="docs/screens/75-this-needs-pro.svg" width="160" alt="75 This Needs Pro"><br><sub>75 · This Needs Pro</sub></td>
-<td align="center" width="25%"></td>
-<td align="center" width="25%"></td>
+<td align="center" width="25%"><img src="docs/screens/76-show-it.svg" width="160" alt="76 Show It"><br><sub>76 · Show It</sub></td>
+<td align="center" width="25%"><img src="docs/screens/77-what-jim-sees.svg" width="160" alt="77 What Jim Sees"><br><sub>77 · What Jim Sees</sub></td>
 </tr>
 </table>
 
@@ -396,6 +396,74 @@ the module next door has one.
 
 It is still inside every screenshot, so `dock.NEVER` holds the journal, the
 medical record, guidance text and family members' names.
+
+## Showing it, rather than describing it
+
+`jim/capture.py`, 6 routes, 27 tests, screens **76** and **77**.
+
+A rash, a wound that is not closing, swelling, a bruise spreading, the colour of
+something. These are the parts of a condition that text loses — *"it's a bit
+red"* is the same sentence for a heat rash and for cellulitis. This lets
+somebody photograph it (or film it, when the thing only shows in motion — a
+tremor, a gait), attach it to a condition, and have it reach a real clinician
+through the referral flow that already exists.
+
+**This is the most sensitive payload either product will ever hold**: a
+photograph of somebody's body, taken at home, of the thing they are frightened
+about. Four rules follow from that, and each is asserted rather than intended.
+
+### A synthetic agent never receives the image
+
+It is told a capture exists, where on the body, and when — enough to say *"there
+is a photograph of your forearm from Tuesday attached to this, and a clinician
+should look at it"*. That is a **routing** decision, which is the thing an agent
+may make. It never gets the bytes, on any plan or setting.
+
+This is [`pdi/gate.py`](https://github.com/davidsbianchi1984/pdi)'s ceiling —
+*whatever a wrong answer cannot undo* — arriving where it matters most. A model
+that looks at a mole and says *"that looks fine"* has made a diagnosis, with no
+license, no examination and no accountability, to somebody frightened enough to
+photograph it. A missed melanoma is not undone by the next sentence.
+
+`for_agent()` is the only shape an agent can receive, and a test parses it to
+assert no path inside reaches the vault.
+
+### Never for a child
+
+An image of an intimate area is refused outright for an account belonging to a
+minor. **No override, no guardian consent path, no setting.** The refusal points
+at a clinician or a paediatric service, because a flat "no" to a frightened
+parent is a product failing twice.
+
+Intimate sites are allowed for adults — a rash does not respect modesty, and a
+product that refused would push somebody to a worse tool — behind an explicit
+confirmation, omitted from the agent view **entirely** rather than summarised
+(*"there is a photograph of their groin"* is itself the disclosure), and never
+swept into an assembled referral.
+
+### The pixels never touch JIM's own database
+
+They go to the PDI vault, sealed. The table keeps metadata and a vault key, and
+a test asserts the schema has **no column that could hold an image** — a
+`content` field here is one somebody eventually writes to.
+
+There is no fallback. With no vault configured, capture is **refused**, not
+degraded to a local file: the graceful version is an unencrypted photograph of
+somebody's skin in a SQLite file on a laptop. Colocation is free, which is what
+makes requiring a vault cost nobody anything — and the refusal says so, because
+otherwise it reads as an upsell.
+
+### Location is stripped, not promised absent
+
+`strip_metadata()` parses the JPEG segment structure and drops APP1 (Exif/XMP),
+APP2 (ICC), APP13 (IPTC) and the comment marker. **GPS lives in the Exif IFD**,
+so a photo taken at home would otherwise geotag the person's address into a
+referral package and a vault record that outlives the rash.
+
+The test checks the coordinate is gone from the bytes that were actually sealed,
+not that a flag was set. A format the function does not parse is **reported as
+unparsed** rather than claimed clean — saying "stripped" about a PNG would be
+the exact false assurance the rest of this is written against.
 
 ## Membership
 

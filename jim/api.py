@@ -14,6 +14,7 @@ from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
                rota, social, terms as terms_mod, tiers, tutorial)
+from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
@@ -29,7 +30,7 @@ from .models import (
     TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
-    DockConfig, PlanChoice, TutorialMark,
+    CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -295,6 +296,87 @@ def create_app(qrme_client: QRMEClient | None = None,
         # The user token is shown exactly once, here.
         user["user_token"] = auth.issue("user", user["id"])
         return user
+
+    # ---- showing it, rather than describing it ----------------------------
+
+    @app.get("/captures/vocabulary")
+    def capture_vocabulary() -> dict:
+        """Kinds, body sites, which are intimate, and what an agent may see.
+        Public — a client has to draw the picker, and the limits are worth
+        reading before you take the photograph rather than after."""
+        return capture_mod.vocabulary()
+
+    @app.post("/users/{user_id}/captures", status_code=201)
+    def take_capture(user_id: str, body: CaptureTake, request: Request) -> dict:
+        """Seal a photograph, clip or sound of the body.
+
+        The bytes go to the vault; this returns the record, never the image.
+        Refused outright if no vault is configured — see jim/capture.py.
+        """
+        user = _user_or_404(user_id, request)
+        try:
+            return capture_mod.take(
+                user, body.kind, body.site, body.content,
+                body.provenance, body.note, body.condition,
+                body.intimate_consent, pdi=app.state.pdi)
+        except capture_mod.VaultRequired as exc:
+            # 503, not 422: the request was fine and the deployment is not.
+            raise HTTPException(503, str(exc)) from None
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/users/{user_id}/captures")
+    def list_captures(user_id: str, request: Request,
+                      condition: str | None = None) -> list[dict]:
+        """The records. Metadata only — the image needs its own call."""
+        _user_or_404(user_id, request)
+        return capture_mod.for_user(user_id, condition)
+
+    @app.get("/users/{user_id}/captures/{capture_id}/image")
+    def capture_image(user_id: str, capture_id: str,
+                      request: Request) -> dict:
+        """The sealed bytes, for the person they belong to.
+
+        Separate from the listing on purpose: reading *that* a photograph
+        exists and reading the photograph are different acts, and only the
+        second should need the vault to answer.
+        """
+        _user_or_404(user_id, request)
+        cap = capture_mod.read(capture_id)
+        if cap["user_id"] != user_id:
+            raise HTTPException(403, "that capture belongs to somebody else")
+        try:
+            content = capture_mod.content_for_care(capture_id, app.state.pdi)
+        except capture_mod.VaultRequired as exc:
+            raise HTTPException(503, str(exc)) from None
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(404, str(exc)) from None
+        return {"id": capture_id, "kind": cap["kind"], "content": content}
+
+    @app.post("/users/{user_id}/captures/attach")
+    def attach_captures(user_id: str, body: CaptureAttach,
+                        request: Request) -> dict:
+        """Choose which captures a referral releases.
+
+        Intimate-site captures are never swept in by a match; they come back
+        under `explicit` and have to be named one at a time.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return capture_mod.attach_to_referral(body.capture_ids, user_id)
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.delete("/users/{user_id}/captures/{capture_id}")
+    def delete_capture(user_id: str, capture_id: str,
+                       request: Request) -> dict:
+        """Withdraw it. The vault record is destroyed; a tombstone remains so
+        a clinician who was shown it sees it was withdrawn."""
+        _user_or_404(user_id, request)
+        try:
+            return capture_mod.delete(capture_id, user_id, app.state.pdi)
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(422, str(exc)) from None
 
     # ---- the pane in the corner -------------------------------------------
 

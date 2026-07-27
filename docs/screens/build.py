@@ -1464,6 +1464,37 @@ SCREENS = [
         dict(icon="warn", color="green", k="Billing is simulated",
              s="no real funds move"),
     ], button=("Upgrade to Pro", "brand")),
+    # Showing rather than describing. Card two is the reason the feature
+    # exists: "it's a bit red" is the same sentence for a heat rash and for
+    # cellulitis.
+    dict(num=76, title="Show It", sub="Some things text cannot carry",
+         accent="teal", tab=1, cards=[
+        dict(icon="eye", color="teal", k="Photograph the rash",
+             s="or a clip, if it only shows in motion"),
+        dict(icon="person", color="brand", k="Mark where on the body",
+             s="a clinician routes on it"),
+        dict(icon="lock", color="green", k="Sealed in the vault",
+             s="never in the app's own store"),
+        dict(icon="shield", color="amber", k="Location is stripped",
+             s="a home photo carries your address"),
+        dict(icon="warn", color="red", k="No agent ever sees it",
+             s="a person looks, or nobody does"),
+    ], button=("Take a photo", "brand")),
+    # What the synthetic agent gets instead. This screen is the boundary drawn
+    # where a user can see it, which is the point.
+    dict(num=77, title="What Jim Sees", sub="That it exists, not what it shows",
+         accent="brand", tab=1, cards=[
+        dict(icon="chat", color="brand", k="A photo of your forearm",
+             s="from Tuesday, attached to this"),
+        dict(icon="person", color="teal", k="It routes, it does not read",
+             s="a clinician should look at this"),
+        dict(icon="warn", color="red", k="It will not tell you it is fine",
+             s="that would be a diagnosis"),
+        dict(icon="lock", color="green", k="Intimate areas are not listed",
+             s="saying so is the disclosure"),
+        dict(icon="heart", color="amber", k="A person opens it",
+             s="through the referral you sign"),
+    ]),
 ]
 
 

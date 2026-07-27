@@ -515,6 +515,40 @@ CREATE TABLE IF NOT EXISTS relay_pages (
     sent_at     TEXT
 );
 
+-- Clinical captures: a photograph, clip or sound of the body (jim/capture.py).
+--
+-- Metadata only. The pixels live in the PDI vault under `vault_key`, and there
+-- is deliberately no column that could hold them — a schema with a `content`
+-- field here is one somebody eventually writes to, and the thing they would be
+-- writing is an unencrypted photograph of somebody's skin.
+--
+-- `digest` and `bytes` describe what was sealed so a clinician can tell that
+-- what they opened is what was taken. `stripped` records which metadata
+-- segments were removed (EXIF/GPS among them) rather than claiming none
+-- existed.
+--
+-- `deleted_at` is a tombstone: the vault record is destroyed, the row survives
+-- so a clinician who was shown something sees it was withdrawn rather than
+-- finding a dangling reference.
+CREATE TABLE IF NOT EXISTS captures (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    kind        TEXT NOT NULL,          -- photo | video | audio
+    site        TEXT NOT NULL,          -- capture.SITES key
+    provenance  TEXT NOT NULL,          -- captured | imported
+    note        TEXT,
+    condition   TEXT,
+    intimate    INTEGER NOT NULL DEFAULT 0,
+    vault_key   TEXT NOT NULL,
+    digest      TEXT NOT NULL,          -- sha256 of the sealed bytes
+    bytes       INTEGER NOT NULL,
+    stripped    TEXT NOT NULL DEFAULT '[]',   -- JSON array
+    captured_at TEXT NOT NULL,
+    released_at TEXT,
+    deleted_at  TEXT
+);
+CREATE INDEX IF NOT EXISTS captures_by_user ON captures (user_id, captured_at);
+
 -- Where the helper dock sits and what it is showing (see jim/dock.py).
 -- Preferences only; the pane shows and routes and cannot be granted anything,
 -- because there is nothing to grant.
