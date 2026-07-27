@@ -1,6 +1,6 @@
 # JIM-mini / Guardian
 
-**Current release: v0.3.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.3.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -35,25 +35,6 @@ to QRME specialist profiles over HTTP. See [docs/tandem.md](docs/tandem.md).
 specialist → moderated guidance, escalating to an emergency contact on critical
 events.*
 
-## What's in the current release
-
-The sections below describe every capability in detail. This is the short
-version of how it got here — what each release actually added, newest first.
-Full detail in [CHANGELOG.md](CHANGELOG.md).
-
-| Release | What landed |
-|---|---|
-| **0.3.2** | **No functional change to JIM-mini.** The round belongs to QRME's starter gallery |
-| **0.3.1** | **No functional change to JIM-mini** — a documentation round. This README, and screens 61–64 finally appearing in the gallery; they shipped in 0.3.0 as files and were never listed, so the four screens illustrating that round's headline feature were invisible on the page describing it |
-| **0.3.0** | **The round where the Guardian reaches a person.** It could delegate a condition to a synthetic specialist; now it can **hand over a task** that outlives the app being closed, and **find a real clinician** near the user — without ever holding the credential or relaying the assertion, because the Face ID prompt belongs to QRME and the signature travels from the device to QRME directly. Locality is a town you type once, deliberately not the consented live-position feed. Plus a **contribution preview and revoke** that finally does both halves the settings screen had been promising |
-| **0.2.2** | A documentation release — no code changed in any of the three products. Corrections to things that described themselves inaccurately, plus the release checklist explaining why those kept happening |
-| **0.2.1** | **How much to trust a reading.** The escalation decision had been advisory while raw severity sat in the channel underneath it; sensor confidence became something the decision actually reasons about |
-| **0.2.0**–**0.1.9** | A rota, and an escalation that **actually sends something** — signed HMAC delivery, with the escalation saying plainly when nobody was reached. Care beacons and the workplace relay built, and a phone that scans a care beacon lands on a page |
-| **0.1.8**–**0.1.7** | Release-link repairs, and the point at which the three products began being **cut as one release** |
-| **0.1.6**–**0.1.5** | Version aligned across the suite. Native apps compiled in CI, published deployments, one-container deploy |
-| **0.1.4**–**0.1.2** | `python -m jim` launcher, running it on your phone, Terms of Service, macOS notarization |
-| **0.1.1** | Native iOS / Android / Windows apps at parity. First-run onboarding. **Predictive early warning**, robots as guardian responders, family oversight, and provable custody |
-| **0.1.0** | First public release — **monitor → predict → guide → escalate**, tunable sensitivity, the life layer, Medical ID, provider handoff, and the QRME tandem |
 
 ## Desktop app
 
@@ -71,56 +52,6 @@ A wide, multi-panel desktop form of Jim Mini — sidebar nav and an operator wor
   <tr>
     <td align="center" width="50%"><a href="docs/desktop/05-coach-life.svg"><img src="docs/desktop/05-coach-life.svg" width="460" alt="Coach & Life"></a><br><sub><b>05</b> · Coach & Life</sub></td>
     <td align="center" width="50%"><a href="docs/desktop/06-privacy-data.svg"><img src="docs/desktop/06-privacy-data.svg" width="460" alt="Privacy & Data"></a><br><sub><b>06</b> · Privacy & Data</sub></td>
-  </tr>
-</table>
-
-## The agent status light
-
-An agent working on its own raises one question, and it is not *what phase is
-it in* — it is **does this need me right now?** Three colours answer it.
-
-| | | |
-| --- | --- | --- |
-| 🟢 **green** | working · done | in progress, or finished. Nothing wanted from you |
-| 🟡 **amber** | needs you | it has stopped and is waiting on a person |
-| 🔴 **red** | stopped | it hit an error or was cancelled, and will not continue |
-
-**Derived, never stored.** There is no `light` column and nothing sets one — it
-is computed from the status the work already keeps. A second field naming the
-same fact is a second field that can disagree with the first, and the one a
-screen reads would be the one nobody remembers to update.
-
-**The word rides with the colour**, because green alone cannot separate an
-agent that is still going from one that has finished, and those call for
-opposite reactions. On a watch face the word is doing most of the reading
-anyway.
-
-**An unrecognised state raises rather than defaulting.** A default would paint
-an unknown status green, and green is the colour that means *ignore me* — the
-one failure this must not have.
-
-Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrme/blob/main/qrme/agentlight.py), for all three products.
-
-**Where you actually see it.** Three surfaces, doing three different jobs.
-
-| Surface | What it shows | Why that shape |
-| --- | --- | --- |
-| **Watch** — *36 Agents* | three lights and three counts, and **no agent names** | a wrist is glanced at, not read. Naming the agents was the first cut and was wrong: a name is something you read, and reading is the thing a glance cannot do. Which agent went amber is a question for the app |
-| **App** — *67 Agents* | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed |
-| **Overlay** — *68 Chat · overlay*, and every desktop view | a small translucent box in the bottom-right corner — the same three rows as the wrist, each its own way in | an agent that reports only on its own screen is one you have to remember to check. On desktop it rides on **every** view, because those users have no wrist to glance at |
-
-## Platforms
-
-Every screen ships in each platform's native chrome — mobile in **iOS** (`docs/screens/`) and **Android** (`docs/screens/android/`); desktop in **macOS** (`docs/desktop/`) and **Windows** (`docs/desktop/windows/`). iOS's Dynamic Island + home indicator vs Android's punch-hole + gesture nav; macOS traffic-lights vs the Windows caption bar. (The watch is watchOS-only.)
-
-<table>
-  <tr>
-    <td align="center" width="50%"><a href="docs/screens/02-home.svg"><img src="docs/screens/02-home.svg" width="210" alt="iOS"></a><br><sub>Mobile · <b>iOS</b></sub></td>
-    <td align="center" width="50%"><a href="docs/screens/android/02-home.svg"><img src="docs/screens/android/02-home.svg" width="210" alt="Android"></a><br><sub>Mobile · <b>Android</b></sub></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="docs/desktop/01-overview.svg"><img src="docs/desktop/01-overview.svg" width="440" alt="macOS"></a><br><sub>Desktop · <b>macOS</b></sub></td>
-    <td align="center"><a href="docs/desktop/windows/01-overview.svg"><img src="docs/desktop/windows/01-overview.svg" width="440" alt="Windows"></a><br><sub>Desktop · <b>Windows</b></sub></td>
   </tr>
 </table>
 
@@ -299,145 +230,76 @@ derived from the task's own status — see `qrme/agentlight.py`, which defines i
 once for all three products — never stored, so it cannot disagree with the
 status it claims to describe.
 
-## Run
+## What's in the current release
 
-```bash
-pip install -e .[dev]
-uvicorn jim.api:app            # standalone
-JIM_QRME_URL=http://localhost:8000 uvicorn jim.api:app   # tandem with QRME
-JIM_PDI_URL=http://localhost:8100 JIM_PDI_TOKEN=pdi_... uvicorn jim.api:app  # + PDI vault
-```
+The sections below describe every capability in detail. This is the short
+version of how it got here — what each release actually added, newest first.
+Full detail in [CHANGELOG.md](CHANGELOG.md).
 
-`JIM_DB` sets the SQLite path (default `jim.db`). Set `ANTHROPIC_API_KEY` for
-real `claude-opus-4-8` guidance; otherwise (or with `JIM_LLM=stub`) a
-deterministic stub answers offline. `JIM_MODEL` overrides the model.
-
-## Run it on your phone
-
-The console is a web app, so a phone on the same Wi-Fi runs it straight from
-this backend — no app store, no second server, nothing to configure on the
-phone.
-
-```bash
-python -m jim          # the launcher menu: choose your device
-python -m jim phone    # straight to the phone flow
-```
-
-Bare `python -m jim` prints the launcher menu — every way to run the
-Guardian, one command each, so you pick per device: **phone** (this
-section), **desktop** (`python -m jim desktop`, the Electron app on this
-PC), **packaged installer** (`.dmg`/`.exe`/`.AppImage` from the releases
-page — no toolchain needed), or **headless API** (`python -m jim serve`).
-Same backend, same data, same token checks in every form.
-
-`python -m jim phone` builds the console if it's missing (first run installs the
-npm dependencies too), prints the phone URL **with a QR code right in the
-terminal**, and starts the API on the network — scan, Add to Home Screen,
-done. Flags: `--port`, `--rebuild`, `--no-build`, `--print-only`.
-
-The manual equivalent, if you prefer the steps separately:
-
-```bash
-npm --prefix app install && npm --prefix app run build   # build the console once
-uvicorn jim.api:app --host 0.0.0.0                       # listen on the network
-curl localhost:8000/pair                                 # what to open on the phone
-```
-
-`GET /pair` answers with the console's URL on your local network (and
-`GET /pair/qr.svg` is the same URL as a QR code — the Privacy screen shows
-both, so you can scan it off the laptop). Open that URL on the phone, then
-**Add to Home Screen**: it installs as a standalone app with its own icon,
-runs full-screen, and keeps working through a brief drop in connectivity.
-
-Why it needs no setup: the API serves the console at `/app`, so the UI and
-the API share one origin — the console simply calls the address it was loaded
-from. The phone layout follows: the sidebar becomes a thumb-reachable bottom
-tab bar, inputs stay at 16px so iOS doesn't zoom, and the layout respects the
-notch and home indicator.
-
-### Published deployments
-
-The same code serves a laptop on Wi-Fi and an instance you host for
-yourself and colleagues to reach from anywhere — useful for troubleshooting
-from a phone when you are not on the same network:
-
-| Variable | Effect |
+| Release | What landed |
 |---|---|
-| `JIM_PUBLIC_URL` | `GET /pair` advertises this address (QR included) instead of a LAN one, so the phone flow works over the internet. **Serve it over HTTPS** — user tokens travel in headers and this is health data. |
-| `JIM_SIGNUP_KEY` | Enrolling requires this key as the `x-signup-key` header, so a published instance stays yours rather than open registration. Unset = open, the right default on a LAN. |
+| **0.3.3** | **The agent status light lands on the wrist.** Watch face 36 is the ambient one — three lights, three counts, no task names, for the moments somebody is on their phone and the watch is the surface that can answer *does this need me* without getting in the way. Plus a grouped Agents screen, a corner overlay that follows you, and a README that leads with the screens |
+| **0.3.2** | **No functional change to JIM-mini.** The round belongs to QRME's starter gallery |
+| **0.3.1** | **No functional change to JIM-mini** — a documentation round. This README, and screens 61–64 finally appearing in the gallery; they shipped in 0.3.0 as files and were never listed, so the four screens illustrating that round's headline feature were invisible on the page describing it |
+| **0.3.0** | **The round where the Guardian reaches a person.** It could delegate a condition to a synthetic specialist; now it can **hand over a task** that outlives the app being closed, and **find a real clinician** near the user — without ever holding the credential or relaying the assertion, because the Face ID prompt belongs to QRME and the signature travels from the device to QRME directly. Locality is a town you type once, deliberately not the consented live-position feed. Plus a **contribution preview and revoke** that finally does both halves the settings screen had been promising |
+| **0.2.2** | A documentation release — no code changed in any of the three products. Corrections to things that described themselves inaccurately, plus the release checklist explaining why those kept happening |
+| **0.2.1** | **How much to trust a reading.** The escalation decision had been advisory while raw severity sat in the channel underneath it; sensor confidence became something the decision actually reasons about |
+| **0.2.0**–**0.1.9** | A rota, and an escalation that **actually sends something** — signed HMAC delivery, with the escalation saying plainly when nobody was reached. Care beacons and the workplace relay built, and a phone that scans a care beacon lands on a page |
+| **0.1.8**–**0.1.7** | Release-link repairs, and the point at which the three products began being **cut as one release** |
+| **0.1.6**–**0.1.5** | Version aligned across the suite. Native apps compiled in CI, published deployments, one-container deploy |
+| **0.1.4**–**0.1.2** | `python -m jim` launcher, running it on your phone, Terms of Service, macOS notarization |
+| **0.1.1** | Native iOS / Android / Windows apps at parity. First-run onboarding. **Predictive early warning**, robots as guardian responders, family oversight, and provable custody |
+| **0.1.0** | First public release — **monitor → predict → guide → escalate**, tunable sensitivity, the life layer, Medical ID, provider handoff, and the QRME tandem |
 
-The key gates *creating an account here*: anyone already enrolled keeps
-working, and a parent adding a child is authorized by their own token.
+## The agent status light
 
-The `Dockerfile` packages the console and the API into one image so a hosted
-instance serves both from the same origin, exactly like the phone flow does:
+An agent working on its own raises one question, and it is not *what phase is
+it in* — it is **does this need me right now?** Three colours answer it.
 
-```bash
-docker build -t jim-mini .
-docker run -p 8200:8200 -v jim-data:/data \
-  -e JIM_PUBLIC_URL=https://guardian.example.com \
-  -e JIM_SIGNUP_KEY="$(openssl rand -base64 24)" jim-mini
-```
+| | | |
+| --- | --- | --- |
+| 🟢 **green** | working · done | in progress, or finished. Nothing wanted from you |
+| 🟡 **amber** | needs you | it has stopped and is waiting on a person |
+| 🔴 **red** | stopped | it hit an error or was cancelled, and will not continue |
 
-[docs/hosting.md](docs/hosting.md) covers the rest — TLS (browsers refuse
-geolocation without it, so escalation needs it), what mounting `/data`
-protects, and what holding other people's health data commits you to.
+**Derived, never stored.** There is no `light` column and nothing sets one — it
+is computed from the status the work already keeps. A second field naming the
+same fact is a second field that can disagree with the first, and the one a
+screen reads would be the one nobody remembers to update.
 
-Without `JIM_PUBLIC_URL`, the address is local-network only and deliberately
-not reachable from the internet — your health data stays on your own
-network. Everything still
-requires your bearer token; a phone on the LAN is exactly as authorized as a
-laptop on the LAN. If `/pair` reports `reachable: false`, it could only find
-loopback (which on a phone means the phone itself): set `JIM_LAN_HOST` to
-this machine's address and restart.
+**The word rides with the colour**, because green alone cannot separate an
+agent that is still going from one that has finished, and those call for
+opposite reactions. On a watch face the word is doing most of the reading
+anyway.
 
-## API
+**An unrecognised state raises rather than defaulting.** A default would paint
+an unknown status green, and green is the colour that means *ignore me* — the
+one failure this must not have.
 
-| Endpoint | Purpose |
-|---|---|
-| `GET /health` | Status + whether tandem is configured |
-| `POST /enroll` | Enroll a user: terms/guardian consent, emergency contact (+ consent), devices, resting-HR baseline, goals, declared known conditions |
-| `POST /guardians/{gid}/children`, `GET …/children`, `GET`/`DELETE …/children/{cid}` | **Family** (`jim/family.py`): a verified-adult guardian enrolls their child — consent recorded as a relationship (who, as what, when, on the child's timeline), protective defaults (cautious sensitivity, the guardian as consented emergency contact, cloud/provider sharing hard-off), and the child's device token shown once. Oversight is sized by age: **full** under 13 (condition-level timeline, never raw notes), **alerts-only** 13–17 (escalations reach the parent; a teen's check-ins and everyday guidance stay private), and it **ends by itself at 18**. The autonomous-resuscitation waiver can never be signed for a minor — not by the minor and not by a guardian |
-| `PUT …/children/{cid}/controls`, `GET /guardians/{gid}/watch` | **Family controls & the parent's wrist**: pause and quiet hours (HH:MM, midnight-wrapping) hold *everyday* guidance only — detection, crisis escalation, and the emergency path never pause, and a held delivery is an audited `guidance_held` event. The guardian watch face shows one light per child from the last 24h of alert-level events (green quiet · orange escalated · red critical) with `haptic: alert` when a child needs someone — alert-level only, so teen privacy holds by construction. With a PDI vault configured, the guardian-consent record is sealed there (`jim/{child}/family/consent/…`) for provable custody |
-| `POST /conditions/{user_id}` | Declare a known condition after enrollment ("receiving an indication of a known condition"); detection is sensitized for it |
-| `PUT /personality/{user_id}` | Adapt the counselor from user input — tone and free-text preferences shape every guidance and coach prompt |
-| `PUT /sensitivity/{user_id}` | Tune escalation readiness: `cautious` (lower HR thresholds; a declared condition reaches the emergency contact even at guidance level) / `balanced` (default) / `assertive` (stronger signals required) |
-| `GET /baseline/{user_id}` | The user's rolling per-metric EMA baselines; each is provisional until enough resting samples accrue |
-| `POST /specialists` | Register a condition specialist — `local` (JIM's own guidance) or `tandem` (a QRME `qrme_profile_id`) |
-| `GET /specialists`, `POST /specialists/seed` | List the registry, or seed the **starter specialists** — a named domain expert for every condition (`jim/seed.py`, also `python -m jim.seed`), so guidance carries a `specialist` attribution from day one. Idempotent: covered conditions are skipped, operator overrides survive re-seeding |
-| `POST /specialists/seed/tandem` | The **tandem hookup**: wire starter specialists to their QRME Starter Collection counterparts (`financial_stress` → `@marcus_bell`, `physical_distress` → `@dr_amara_osei`, `anxiety` → `@dr_lena_whitcomb`, `depression` → `@dr_marcus_adeyemi`, `relationship` → `@dr_priya_nair`), resolving each @handle live against the connected QRME deployment — ids differ per deployment, handles are the stable cross-product names. Existing tandem links are kept; unresolved handles stay local; crisis escalation always runs through JIM's own tree regardless of routing; 409 without `JIM_QRME_URL`. `python -m jim.seed` runs it automatically when `JIM_QRME_URL` is set |
-| `POST /monitor/{user_id}` | Ingest a biometric/context sample (optionally tagged with its `source_device` — smart watch, stationary system, neural sensor, gesture interface); runs detect → guide → escalate, with predictive early warning when nothing has manifested yet. Physical emergencies carry **step-by-step first aid**: CPR with the proper pace (30:2, 110/min, cued by green/red lights + a metronome tick), AED guidance on a fibrillation rhythm, the low-blood-oxygen playbook (breathe deeply, fresh air, medical attention), environmental hazards (smoke/CO — leave now), and ergonomic-strain nudges; critical escalations dispatch alerts to every registered connected device |
-| `POST /sessions/{user_id}`, `POST …/{session_id}/end` | Login sessions per device; starting one returns the remembered interaction state, so any device resumes the same conversational thread and counseling routes to the session's device. **Cross-product continuity**: if the user already has a thread with a QRME specialist, the session's `continuity` block carries its recent turns (read back with the stored QRME interactor token) — a chat begun in QRME picks up on any JIM embodiment, same thread, same memory |
-| `POST`/`GET /devices/{user_id}` | Physical embodiments: wearables, stationary systems, and networked autonomous devices — transport (e.g. Bluetooth, relayed through a linked device) and an optional on-device LLM; guidance reports how and where it was delivered |
-| `GET /custody/{user_id}`, `GET …/provenance?key=` | The **custody viewer**: list the user's sealed tandem exchanges (QRME specialist chats sealed in the PDI vault) with the audit-chain status, and read PDI's full provenance trail for any one of them — origin, seal details, audit history. Scoped strictly to the user's own `jim/{user}/tandem/…` records; 409 without a PDI vault configured |
-| `POST /emergency/{user_id}` | **Emergency mode** — one coordinated response (the watch's Emergency screen): reach **emergency services**, **share location** with family and responders, **contact family** (the registered emergency contact), surface the **Medical ID** (age, known conditions, resting-HR baseline, recent detections, contact — condition-level facts only), deliver step-by-step **AI first aid** from an optional live `sample`/`situation` (CPR/AED/low-oxygen playbooks), and **alert every connected device**. Logged to the event timeline |
-| `POST`/`DELETE /medical-id/qr/{user_id}` | **Shareable Medical ID QR**: mint (or rotate) a printable / lock-screen QR, or revoke it. Returns the card token + its `view_url` and `qr_svg_url` |
-| `GET /medical-id/{token}`, `GET …/{token}/qr.svg` | **Scan-to-view** (public): a first responder scans the code and reads the Medical ID with **no auth token** — the phone is locked in an emergency, so the card itself is the credential. Condition-level facts only; the token is opaque, rotatable, revocable, and stored only as a hash |
-| `POST`/`GET /users/{id}/beacons`, `DELETE /beacons/{id}` | **Care beacons** ([docs/beacons.md](docs/beacons.md)): a printed QR on the *things around* a watched person — a fridge door, a wristband, a walker. Distinct from the Medical ID above, which travels with the person and is *read*; a beacon stays with a place and is **rung**. A minor's is guardian-issued only |
-| `GET /c/{id}`, `GET …/qr.svg` | **Stage one** (public): a first name, one sentence, and a button. **Never** how the person is and never where they are — *is this person OK right now* is precisely what a stalker is asking, so a beacon reports watch status and never subject status |
-| `POST /c/{id}/alarm` | **The bell** (public). Raising the alarm is what turns a passer-by into a responder, and **that** is what earns them the Medical ID — the order QRME's desk beacon runs in reverse, because health is not a shop sign. Capped at `notify_contact`: a stranger's tap must never dispatch an ambulance. Inside the cooldown a second finder **joins** the open alarm rather than being dropped. A minor's beacon never opens the clinical stage, to anyone |
-| `GET /users/{id}/alarms`, `POST …/clear` | Who rang while they were away — their token only |
-| `GET /relay/roster`, `GET /users/{id}/incidents` | **Workplace relay** for lone and remote workers: `notify_contact` assumes a contact who answers, which at 2am on a single-staffed site may be nobody. Incidents are **incident scope, never person scope** — the employer bought the deployment, which does not entitle them to what is inside it |
-| `POST …/alarms/{id}/escalate`, `…/accept` | Works the rota — **whoever is on shift first** — and confirms a human **accepted**; accepting means attending, not resolved. Actually sends the page, and when it did not land says `reached_somebody: false` and `escalate_again_now` rather than waiting on an acceptance that cannot come. Rota exhausted is reported, not silent, and still no dispatch |
-| `GET /relay/rota`, `GET /relay/channel`, `GET /users/{id}/pages` | Who would be paged **right now**, whether a page can go out at all, and which pages never landed. Shifts crossing midnight belong to the day they started — the 18:00–06:00 case the flat roster always got wrong |
-| `POST /alarms/{id}/guidance` | What to tell whoever is waiting — routed to a QRME first-aid specialist when tandem is configured, else the one instruction that never depends on a model being reachable |
-| `POST /activity/{user_id}` | **Ambient observation** (the "Jiminy Cricket" jump-in): report what the user is *doing* — activity + signals (`retries`/`errors`, `idle_seconds`, `duration_min`) + what they said — and JIM offers help **proactively** when a struggle is building, before being asked. Crisis language still escalates; a calm signal is logged but never interrupts |
-| `GET /events/{user_id}` | Event timeline (biometric/activity → detection → guidance → escalation) |
-| `GET`/`PUT /sources/{user_id}` | Per-source consent (wearable, health, calendar, spending, bank, messages, location) — nothing is read from a source the user hasn't allowed |
-| `POST /context/{user_id}` | Ingest an event from a consented source (403 otherwise); transparent rules turn it into insights |
-| `POST /checkin/{user_id}` | Mood & energy check-in; a worrying note still runs the full Guardian detect → escalate pipeline |
-| `GET`/`POST /goals/{user_id}`, `PATCH /goals/{user_id}/{goal_id}` | Smart goals with progress; completion earns a praise insight |
-| `GET`/`POST /habits/{user_id}`, `POST …/{habit_id}/log` | Habit tracking with streaks; milestones (7/30/100 days) earn insights |
-| `POST`/`GET /coach/{user_id}` | 24/7 life coach across `mental_health`, `health_fitness`, `career`, `finance`, `relationships`, `personal_growth`, grounded in recent check-ins and active goals |
-| `POST /companion/{user_id}` | Ambient companion check-in: the coach reaches out first, grounded in the latest mood, goals, and personality preferences — invoked explicitly, never on a hidden schedule |
-| `GET /insights/{user_id}` | Proactive nudges: spending alerts, sleep praise, interview prep, mindful-break suggestions, milestones |
-| `POST`/`GET /journal/{user_id}` | Journaling; entries are vaulted under PDI tandem and run the same crisis pipeline as check-in notes |
-| `POST /feedback/{user_id}` | Continuous-improvement loop: rate guidance up/down with an optional note |
-| `POST`/`GET /improve` | **Help us improve**: product feedback on the app itself (idea/improvement/bug/praise + optional 1–5 rating), open to anyone; a submitter sees only their own words plus the public per-category tally |
-| `GET /report/{user_id}` | Progress report & insights: mood/energy averages, goals, streaks, detection counts, feedback tallies |
-| `GET /access-log/{user_id}` | **See who accessed my data**: every access to the user's sealed vault records (stored/read/erased + scope + time), filtered to their own `jim/{user}/…` namespace and verifiable against PDI's tamper-evident audit chain; says so plainly when no vault is configured (data local-only) |
-| `GET /provider/{user_id}` | Consent-gated provider portal: condition-level summary only (declared conditions, detection history, escalations) — never notes or raw biometrics |
-| `DELETE /data/{user_id}` | Delete anything, anytime — erases every trace of the user |
+Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrme/blob/main/qrme/agentlight.py), for all three products.
+
+**Where you actually see it.** Three surfaces, doing three different jobs.
+
+| Surface | What it shows | Why that shape |
+| --- | --- | --- |
+| **Watch** — *36 Agents* | three lights and three counts, and **no agent names** | a wrist is glanced at, not read. Naming the agents was the first cut and was wrong: a name is something you read, and reading is the thing a glance cannot do. Which agent went amber is a question for the app |
+| **App** — *67 Agents* | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed |
+| **Overlay** — *68 Chat · overlay*, and every desktop view | a small translucent box in the bottom-right corner — the same three rows as the wrist, each its own way in | an agent that reports only on its own screen is one you have to remember to check. On desktop it rides on **every** view, because those users have no wrist to glance at |
+
+## Platforms
+
+Every screen ships in each platform's native chrome — mobile in **iOS** (`docs/screens/`) and **Android** (`docs/screens/android/`); desktop in **macOS** (`docs/desktop/`) and **Windows** (`docs/desktop/windows/`). iOS's Dynamic Island + home indicator vs Android's punch-hole + gesture nav; macOS traffic-lights vs the Windows caption bar. (The watch is watchOS-only.)
+
+<table>
+  <tr>
+    <td align="center" width="50%"><a href="docs/screens/02-home.svg"><img src="docs/screens/02-home.svg" width="210" alt="iOS"></a><br><sub>Mobile · <b>iOS</b></sub></td>
+    <td align="center" width="50%"><a href="docs/screens/android/02-home.svg"><img src="docs/screens/android/02-home.svg" width="210" alt="Android"></a><br><sub>Mobile · <b>Android</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="docs/desktop/01-overview.svg"><img src="docs/desktop/01-overview.svg" width="440" alt="macOS"></a><br><sub>Desktop · <b>macOS</b></sub></td>
+    <td align="center"><a href="docs/desktop/windows/01-overview.svg"><img src="docs/desktop/windows/01-overview.svg" width="440" alt="Windows"></a><br><sub>Desktop · <b>Windows</b></sub></td>
+  </tr>
+</table>
 
 ## Authentication & access control
 
@@ -536,21 +398,6 @@ lands in PDI's tamper-evident audit chain. Without PDI configured, JIM stores
 data locally exactly as before. QRME runs the same pattern on its side,
 vaulting profile source material — see [docs/tandem.md](docs/tandem.md).
 
-## Configuration
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `JIM_DB` | `jim.db` | SQLite database path |
-| `JIM_LLM` | auto | `stub` forces the offline deterministic provider; `anthropic` forces the SDK |
-| `JIM_MODEL` | `claude-opus-4-8` | Model used for guidance and coaching |
-| `ANTHROPIC_API_KEY` | — | Enables real model replies |
-| `JIM_QRME_URL` | — | QRME tandem: delegate specialist guidance over HTTP |
-| `JIM_PDI_URL` / `JIM_PDI_TOKEN` | — | PDI tandem: seal medical, **financial** and context payloads in the encrypted vault — every consented source goes through one namespace and one gate ([docs/tandem.md](docs/tandem.md#qrme--jim-mini--pdi)) |
-| `JIM_CLOUD_URL` / `JIM_CLOUD_TOKEN` | — | Cloud Model Gateway: greater-model guidance with local fallback + opt-in contribution ([docs/cloud-model.md](docs/cloud-model.md)) |
-| `JIM_SITE_ROTA` / `JIM_SITE_TZ` | — / `UTC` | Workplace relay: who is on shift, in JSON, evaluated in the site's own timezone ([docs/beacons.md](docs/beacons.md#who-is-on-and-reaching-them)) |
-| `JIM_SITE_ROSTER` | — | The older, flat form — plain names, always on. Still supported |
-| `JIM_NOTIFY_URL` / `JIM_NOTIFY_SECRET` | — | Where an escalation is actually delivered; signed HMAC-SHA256. Unset = queued, and the escalation says nobody was reached |
-
 ## Cloud model — use a greater model, and contribute to it
 
 With a [Cloud Model Gateway](docs/cloud-model.md) configured, guidance and
@@ -609,15 +456,6 @@ and your capability token. A specialist whose owner has not enabled delegation
 answers plainly rather than failing, and a narrower policy narrows the plan
 rather than refusing it.
 
-## Test
-
-```bash
-pytest jim/tests
-```
-
-Covers standalone detection/guidance/escalation and a real in-process tandem
-run against a separate QRME instance (reached only through the HTTP client).
-
 ## Physical embodiments & sessions
 
 ![JIM-mini physical embodiments](assets/embodiments.svg)
@@ -659,6 +497,179 @@ see [docs/tandem.md](docs/tandem.md) for the full architecture:
   specialist guidance to QRME.
 - [**pdi**](https://github.com/davidsbianchi1984/pdi) — Private Data
   Infrastructure: the encrypted vault both AI systems can run on top of.
+
+## Reference
+
+Everything below is lookup material — how to run it, what to configure, what
+the endpoints are. It is at the bottom on purpose: if you see a command in one
+of the screens above and want to know what it does, this is where to find it.
+
+### Run
+
+```bash
+pip install -e .[dev]
+uvicorn jim.api:app            # standalone
+JIM_QRME_URL=http://localhost:8000 uvicorn jim.api:app   # tandem with QRME
+JIM_PDI_URL=http://localhost:8100 JIM_PDI_TOKEN=pdi_... uvicorn jim.api:app  # + PDI vault
+```
+
+`JIM_DB` sets the SQLite path (default `jim.db`). Set `ANTHROPIC_API_KEY` for
+real `claude-opus-4-8` guidance; otherwise (or with `JIM_LLM=stub`) a
+deterministic stub answers offline. `JIM_MODEL` overrides the model.
+
+### Run it on your phone
+
+The console is a web app, so a phone on the same Wi-Fi runs it straight from
+this backend — no app store, no second server, nothing to configure on the
+phone.
+
+```bash
+python -m jim          # the launcher menu: choose your device
+python -m jim phone    # straight to the phone flow
+```
+
+Bare `python -m jim` prints the launcher menu — every way to run the
+Guardian, one command each, so you pick per device: **phone** (this
+section), **desktop** (`python -m jim desktop`, the Electron app on this
+PC), **packaged installer** (`.dmg`/`.exe`/`.AppImage` from the releases
+page — no toolchain needed), or **headless API** (`python -m jim serve`).
+Same backend, same data, same token checks in every form.
+
+`python -m jim phone` builds the console if it's missing (first run installs the
+npm dependencies too), prints the phone URL **with a QR code right in the
+terminal**, and starts the API on the network — scan, Add to Home Screen,
+done. Flags: `--port`, `--rebuild`, `--no-build`, `--print-only`.
+
+The manual equivalent, if you prefer the steps separately:
+
+```bash
+npm --prefix app install && npm --prefix app run build   # build the console once
+uvicorn jim.api:app --host 0.0.0.0                       # listen on the network
+curl localhost:8000/pair                                 # what to open on the phone
+```
+
+`GET /pair` answers with the console's URL on your local network (and
+`GET /pair/qr.svg` is the same URL as a QR code — the Privacy screen shows
+both, so you can scan it off the laptop). Open that URL on the phone, then
+**Add to Home Screen**: it installs as a standalone app with its own icon,
+runs full-screen, and keeps working through a brief drop in connectivity.
+
+Why it needs no setup: the API serves the console at `/app`, so the UI and
+the API share one origin — the console simply calls the address it was loaded
+from. The phone layout follows: the sidebar becomes a thumb-reachable bottom
+tab bar, inputs stay at 16px so iOS doesn't zoom, and the layout respects the
+notch and home indicator.
+
+#### Published deployments
+
+The same code serves a laptop on Wi-Fi and an instance you host for
+yourself and colleagues to reach from anywhere — useful for troubleshooting
+from a phone when you are not on the same network:
+
+<table>
+<tr><th align="left"><sub>Variable</sub></th><th align="left"><sub>Effect</sub></th></tr>
+<tr><td valign="top"><sub><code>JIM_PUBLIC_URL</code></sub></td><td valign="top"><sub><code>GET /pair</code> advertises this address (QR included) instead of a LAN one, so the phone flow works over the internet. <b>Serve it over HTTPS</b> — user tokens travel in headers and this is health data.</sub></td></tr>
+<tr><td valign="top"><sub><code>JIM_SIGNUP_KEY</code></sub></td><td valign="top"><sub>Enrolling requires this key as the <code>x-signup-key</code> header, so a published instance stays yours rather than open registration. Unset = open, the right default on a LAN.</sub></td></tr>
+</table>
+
+The key gates *creating an account here*: anyone already enrolled keeps
+working, and a parent adding a child is authorized by their own token.
+
+The `Dockerfile` packages the console and the API into one image so a hosted
+instance serves both from the same origin, exactly like the phone flow does:
+
+```bash
+docker build -t jim-mini .
+docker run -p 8200:8200 -v jim-data:/data \
+  -e JIM_PUBLIC_URL=https://guardian.example.com \
+  -e JIM_SIGNUP_KEY="$(openssl rand -base64 24)" jim-mini
+```
+
+[docs/hosting.md](docs/hosting.md) covers the rest — TLS (browsers refuse
+geolocation without it, so escalation needs it), what mounting `/data`
+protects, and what holding other people's health data commits you to.
+
+Without `JIM_PUBLIC_URL`, the address is local-network only and deliberately
+not reachable from the internet — your health data stays on your own
+network. Everything still
+requires your bearer token; a phone on the LAN is exactly as authorized as a
+laptop on the LAN. If `/pair` reports `reachable: false`, it could only find
+loopback (which on a phone means the phone itself): set `JIM_LAN_HOST` to
+this machine's address and restart.
+
+### API
+
+<table>
+<tr><th align="left"><sub>Endpoint</sub></th><th align="left"><sub>Purpose</sub></th></tr>
+<tr><td valign="top"><sub><code>GET /health</code></sub></td><td valign="top"><sub>Status + whether tandem is configured</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /enroll</code></sub></td><td valign="top"><sub>Enroll a user: terms/guardian consent, emergency contact (+ consent), devices, resting-HR baseline, goals, declared known conditions</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /guardians/{gid}/children</code>, <code>GET …/children</code>, <code>GET</code>/<code>DELETE …/children/{cid}</code></sub></td><td valign="top"><sub><b>Family</b> (<code>jim/family.py</code>): a verified-adult guardian enrolls their child — consent recorded as a relationship (who, as what, when, on the child's timeline), protective defaults (cautious sensitivity, the guardian as consented emergency contact, cloud/provider sharing hard-off), and the child's device token shown once. Oversight is sized by age: <b>full</b> under 13 (condition-level timeline, never raw notes), <b>alerts-only</b> 13–17 (escalations reach the parent; a teen's check-ins and everyday guidance stay private), and it <b>ends by itself at 18</b>. The autonomous-resuscitation waiver can never be signed for a minor — not by the minor and not by a guardian</sub></td></tr>
+<tr><td valign="top"><sub><code>PUT …/children/{cid}/controls</code>, <code>GET /guardians/{gid}/watch</code></sub></td><td valign="top"><sub><b>Family controls & the parent's wrist</b>: pause and quiet hours (HH:MM, midnight-wrapping) hold <i>everyday</i> guidance only — detection, crisis escalation, and the emergency path never pause, and a held delivery is an audited <code>guidance_held</code> event. The guardian watch face shows one light per child from the last 24h of alert-level events (green quiet · orange escalated · red critical) with <code>haptic: alert</code> when a child needs someone — alert-level only, so teen privacy holds by construction. With a PDI vault configured, the guardian-consent record is sealed there (<code>jim/{child}/family/consent/…</code>) for provable custody</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /conditions/{user_id}</code></sub></td><td valign="top"><sub>Declare a known condition after enrollment ("receiving an indication of a known condition"); detection is sensitized for it</sub></td></tr>
+<tr><td valign="top"><sub><code>PUT /personality/{user_id}</code></sub></td><td valign="top"><sub>Adapt the counselor from user input — tone and free-text preferences shape every guidance and coach prompt</sub></td></tr>
+<tr><td valign="top"><sub><code>PUT /sensitivity/{user_id}</code></sub></td><td valign="top"><sub>Tune escalation readiness: <code>cautious</code> (lower HR thresholds; a declared condition reaches the emergency contact even at guidance level) / <code>balanced</code> (default) / <code>assertive</code> (stronger signals required)</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /baseline/{user_id}</code></sub></td><td valign="top"><sub>The user's rolling per-metric EMA baselines; each is provisional until enough resting samples accrue</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /specialists</code></sub></td><td valign="top"><sub>Register a condition specialist — <code>local</code> (JIM's own guidance) or <code>tandem</code> (a QRME <code>qrme_profile_id</code>)</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /specialists</code>, <code>POST /specialists/seed</code></sub></td><td valign="top"><sub>List the registry, or seed the <b>starter specialists</b> — a named domain expert for every condition (<code>jim/seed.py</code>, also <code>python -m jim.seed</code>), so guidance carries a <code>specialist</code> attribution from day one. Idempotent: covered conditions are skipped, operator overrides survive re-seeding</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /specialists/seed/tandem</code></sub></td><td valign="top"><sub>The <b>tandem hookup</b>: wire starter specialists to their QRME Starter Collection counterparts (<code>financial_stress</code> → <code>@marcus_bell</code>, <code>physical_distress</code> → <code>@dr_amara_osei</code>, <code>anxiety</code> → <code>@dr_lena_whitcomb</code>, <code>depression</code> → <code>@dr_marcus_adeyemi</code>, <code>relationship</code> → <code>@dr_priya_nair</code>), resolving each @handle live against the connected QRME deployment — ids differ per deployment, handles are the stable cross-product names. Existing tandem links are kept; unresolved handles stay local; crisis escalation always runs through JIM's own tree regardless of routing; 409 without <code>JIM_QRME_URL</code>. <code>python -m jim.seed</code> runs it automatically when <code>JIM_QRME_URL</code> is set</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /monitor/{user_id}</code></sub></td><td valign="top"><sub>Ingest a biometric/context sample (optionally tagged with its <code>source_device</code> — smart watch, stationary system, neural sensor, gesture interface); runs detect → guide → escalate, with predictive early warning when nothing has manifested yet. Physical emergencies carry <b>step-by-step first aid</b>: CPR with the proper pace (30:2, 110/min, cued by green/red lights + a metronome tick), AED guidance on a fibrillation rhythm, the low-blood-oxygen playbook (breathe deeply, fresh air, medical attention), environmental hazards (smoke/CO — leave now), and ergonomic-strain nudges; critical escalations dispatch alerts to every registered connected device</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /sessions/{user_id}</code>, <code>POST …/{session_id}/end</code></sub></td><td valign="top"><sub>Login sessions per device; starting one returns the remembered interaction state, so any device resumes the same conversational thread and counseling routes to the session's device. <b>Cross-product continuity</b>: if the user already has a thread with a QRME specialist, the session's <code>continuity</code> block carries its recent turns (read back with the stored QRME interactor token) — a chat begun in QRME picks up on any JIM embodiment, same thread, same memory</sub></td></tr>
+<tr><td valign="top"><sub><code>POST</code>/<code>GET /devices/{user_id}</code></sub></td><td valign="top"><sub>Physical embodiments: wearables, stationary systems, and networked autonomous devices — transport (e.g. Bluetooth, relayed through a linked device) and an optional on-device LLM; guidance reports how and where it was delivered</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /custody/{user_id}</code>, <code>GET …/provenance?key=</code></sub></td><td valign="top"><sub>The <b>custody viewer</b>: list the user's sealed tandem exchanges (QRME specialist chats sealed in the PDI vault) with the audit-chain status, and read PDI's full provenance trail for any one of them — origin, seal details, audit history. Scoped strictly to the user's own <code>jim/{user}/tandem/…</code> records; 409 without a PDI vault configured</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /emergency/{user_id}</code></sub></td><td valign="top"><sub><b>Emergency mode</b> — one coordinated response (the watch's Emergency screen): reach <b>emergency services</b>, <b>share location</b> with family and responders, <b>contact family</b> (the registered emergency contact), surface the <b>Medical ID</b> (age, known conditions, resting-HR baseline, recent detections, contact — condition-level facts only), deliver step-by-step <b>AI first aid</b> from an optional live <code>sample</code>/<code>situation</code> (CPR/AED/low-oxygen playbooks), and <b>alert every connected device</b>. Logged to the event timeline</sub></td></tr>
+<tr><td valign="top"><sub><code>POST</code>/<code>DELETE /medical-id/qr/{user_id}</code></sub></td><td valign="top"><sub><b>Shareable Medical ID QR</b>: mint (or rotate) a printable / lock-screen QR, or revoke it. Returns the card token + its <code>view_url</code> and <code>qr_svg_url</code></sub></td></tr>
+<tr><td valign="top"><sub><code>GET /medical-id/{token}</code>, <code>GET …/{token}/qr.svg</code></sub></td><td valign="top"><sub><b>Scan-to-view</b> (public): a first responder scans the code and reads the Medical ID with <b>no auth token</b> — the phone is locked in an emergency, so the card itself is the credential. Condition-level facts only; the token is opaque, rotatable, revocable, and stored only as a hash</sub></td></tr>
+<tr><td valign="top"><sub><code>POST</code>/<code>GET /users/{id}/beacons</code>, <code>DELETE /beacons/{id}</code></sub></td><td valign="top"><sub><b>Care beacons</b> (<a href="docs/beacons.md">docs/beacons.md</a>): a printed QR on the <i>things around</i> a watched person — a fridge door, a wristband, a walker. Distinct from the Medical ID above, which travels with the person and is <i>read</i>; a beacon stays with a place and is <b>rung</b>. A minor's is guardian-issued only</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /c/{id}</code>, <code>GET …/qr.svg</code></sub></td><td valign="top"><sub><b>Stage one</b> (public): a first name, one sentence, and a button. <b>Never</b> how the person is and never where they are — <i>is this person OK right now</i> is precisely what a stalker is asking, so a beacon reports watch status and never subject status</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /c/{id}/alarm</code></sub></td><td valign="top"><sub><b>The bell</b> (public). Raising the alarm is what turns a passer-by into a responder, and <b>that</b> is what earns them the Medical ID — the order QRME's desk beacon runs in reverse, because health is not a shop sign. Capped at <code>notify_contact</code>: a stranger's tap must never dispatch an ambulance. Inside the cooldown a second finder <b>joins</b> the open alarm rather than being dropped. A minor's beacon never opens the clinical stage, to anyone</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /users/{id}/alarms</code>, <code>POST …/clear</code></sub></td><td valign="top"><sub>Who rang while they were away — their token only</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /relay/roster</code>, <code>GET /users/{id}/incidents</code></sub></td><td valign="top"><sub><b>Workplace relay</b> for lone and remote workers: <code>notify_contact</code> assumes a contact who answers, which at 2am on a single-staffed site may be nobody. Incidents are <b>incident scope, never person scope</b> — the employer bought the deployment, which does not entitle them to what is inside it</sub></td></tr>
+<tr><td valign="top"><sub><code>POST …/alarms/{id}/escalate</code>, <code>…/accept</code></sub></td><td valign="top"><sub>Works the rota — <b>whoever is on shift first</b> — and confirms a human <b>accepted</b>; accepting means attending, not resolved. Actually sends the page, and when it did not land says <code>reached_somebody: false</code> and <code>escalate_again_now</code> rather than waiting on an acceptance that cannot come. Rota exhausted is reported, not silent, and still no dispatch</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /relay/rota</code>, <code>GET /relay/channel</code>, <code>GET /users/{id}/pages</code></sub></td><td valign="top"><sub>Who would be paged <b>right now</b>, whether a page can go out at all, and which pages never landed. Shifts crossing midnight belong to the day they started — the 18:00–06:00 case the flat roster always got wrong</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /alarms/{id}/guidance</code></sub></td><td valign="top"><sub>What to tell whoever is waiting — routed to a QRME first-aid specialist when tandem is configured, else the one instruction that never depends on a model being reachable</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /activity/{user_id}</code></sub></td><td valign="top"><sub><b>Ambient observation</b> (the "Jiminy Cricket" jump-in): report what the user is <i>doing</i> — activity + signals (<code>retries</code>/<code>errors</code>, <code>idle_seconds</code>, <code>duration_min</code>) + what they said — and JIM offers help <b>proactively</b> when a struggle is building, before being asked. Crisis language still escalates; a calm signal is logged but never interrupts</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /events/{user_id}</code></sub></td><td valign="top"><sub>Event timeline (biometric/activity → detection → guidance → escalation)</sub></td></tr>
+<tr><td valign="top"><sub><code>GET</code>/<code>PUT /sources/{user_id}</code></sub></td><td valign="top"><sub>Per-source consent (wearable, health, calendar, spending, bank, messages, location) — nothing is read from a source the user hasn't allowed</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /context/{user_id}</code></sub></td><td valign="top"><sub>Ingest an event from a consented source (403 otherwise); transparent rules turn it into insights</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /checkin/{user_id}</code></sub></td><td valign="top"><sub>Mood & energy check-in; a worrying note still runs the full Guardian detect → escalate pipeline</sub></td></tr>
+<tr><td valign="top"><sub><code>GET</code>/<code>POST /goals/{user_id}</code>, <code>PATCH /goals/{user_id}/{goal_id}</code></sub></td><td valign="top"><sub>Smart goals with progress; completion earns a praise insight</sub></td></tr>
+<tr><td valign="top"><sub><code>GET</code>/<code>POST /habits/{user_id}</code>, <code>POST …/{habit_id}/log</code></sub></td><td valign="top"><sub>Habit tracking with streaks; milestones (7/30/100 days) earn insights</sub></td></tr>
+<tr><td valign="top"><sub><code>POST</code>/<code>GET /coach/{user_id}</code></sub></td><td valign="top"><sub>24/7 life coach across <code>mental_health</code>, <code>health_fitness</code>, <code>career</code>, <code>finance</code>, <code>relationships</code>, <code>personal_growth</code>, grounded in recent check-ins and active goals</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /companion/{user_id}</code></sub></td><td valign="top"><sub>Ambient companion check-in: the coach reaches out first, grounded in the latest mood, goals, and personality preferences — invoked explicitly, never on a hidden schedule</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /insights/{user_id}</code></sub></td><td valign="top"><sub>Proactive nudges: spending alerts, sleep praise, interview prep, mindful-break suggestions, milestones</sub></td></tr>
+<tr><td valign="top"><sub><code>POST</code>/<code>GET /journal/{user_id}</code></sub></td><td valign="top"><sub>Journaling; entries are vaulted under PDI tandem and run the same crisis pipeline as check-in notes</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /feedback/{user_id}</code></sub></td><td valign="top"><sub>Continuous-improvement loop: rate guidance up/down with an optional note</sub></td></tr>
+<tr><td valign="top"><sub><code>POST</code>/<code>GET /improve</code></sub></td><td valign="top"><sub><b>Help us improve</b>: product feedback on the app itself (idea/improvement/bug/praise + optional 1–5 rating), open to anyone; a submitter sees only their own words plus the public per-category tally</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /report/{user_id}</code></sub></td><td valign="top"><sub>Progress report & insights: mood/energy averages, goals, streaks, detection counts, feedback tallies</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /access-log/{user_id}</code></sub></td><td valign="top"><sub><b>See who accessed my data</b>: every access to the user's sealed vault records (stored/read/erased + scope + time), filtered to their own <code>jim/{user}/…</code> namespace and verifiable against PDI's tamper-evident audit chain; says so plainly when no vault is configured (data local-only)</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /provider/{user_id}</code></sub></td><td valign="top"><sub>Consent-gated provider portal: condition-level summary only (declared conditions, detection history, escalations) — never notes or raw biometrics</sub></td></tr>
+<tr><td valign="top"><sub><code>DELETE /data/{user_id}</code></sub></td><td valign="top"><sub>Delete anything, anytime — erases every trace of the user</sub></td></tr>
+</table>
+
+### Configuration
+
+<table>
+<tr><th align="left"><sub>Variable</sub></th><th align="left"><sub>Default</sub></th><th align="left"><sub>Purpose</sub></th></tr>
+<tr><td valign="top"><sub><code>JIM_DB</code></sub></td><td valign="top"><sub><code>jim.db</code></sub></td><td valign="top"><sub>SQLite database path</sub></td></tr>
+<tr><td valign="top"><sub><code>JIM_LLM</code></sub></td><td valign="top"><sub>auto</sub></td><td valign="top"><sub><code>stub</code> forces the offline deterministic provider; <code>anthropic</code> forces the SDK</sub></td></tr>
+<tr><td valign="top"><sub><code>JIM_MODEL</code></sub></td><td valign="top"><sub><code>claude-opus-4-8</code></sub></td><td valign="top"><sub>Model used for guidance and coaching</sub></td></tr>
+<tr><td valign="top"><sub><code>ANTHROPIC_API_KEY</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Enables real model replies</sub></td></tr>
+<tr><td valign="top"><sub><code>JIM_QRME_URL</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>QRME tandem: delegate specialist guidance over HTTP</sub></td></tr>
+<tr><td valign="top"><sub><code>JIM_PDI_URL</code> / <code>JIM_PDI_TOKEN</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>PDI tandem: seal medical, <b>financial</b> and context payloads in the encrypted vault — every consented source goes through one namespace and one gate (<a href="docs/tandem.md#qrme--jim-mini--pdi">docs/tandem.md</a>)</sub></td></tr>
+<tr><td valign="top"><sub><code>JIM_CLOUD_URL</code> / <code>JIM_CLOUD_TOKEN</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Cloud Model Gateway: greater-model guidance with local fallback + opt-in contribution (<a href="docs/cloud-model.md">docs/cloud-model.md</a>)</sub></td></tr>
+<tr><td valign="top"><sub><code>JIM_SITE_ROTA</code> / <code>JIM_SITE_TZ</code></sub></td><td valign="top"><sub>— / <code>UTC</code></sub></td><td valign="top"><sub>Workplace relay: who is on shift, in JSON, evaluated in the site's own timezone (<a href="docs/beacons.md#who-is-on-and-reaching-them">docs/beacons.md</a>)</sub></td></tr>
+<tr><td valign="top"><sub><code>JIM_SITE_ROSTER</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>The older, flat form — plain names, always on. Still supported</sub></td></tr>
+<tr><td valign="top"><sub><code>JIM_NOTIFY_URL</code> / <code>JIM_NOTIFY_SECRET</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Where an escalation is actually delivered; signed HMAC-SHA256. Unset = queued, and the escalation says nobody was reached</sub></td></tr>
+</table>
+
+### Test
+
+```bash
+pytest jim/tests
+```
+
+Covers standalone detection/guidance/escalation and a real in-process tandem
+run against a separate QRME instance (reached only through the HTTP client).
 
 ## License
 
