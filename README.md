@@ -106,8 +106,8 @@ Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrm
 | Surface | What it shows | Why that shape |
 | --- | --- | --- |
 | **Watch** — *36 Agents* | three lights and three counts, and **no agent names** | a wrist is glanced at, not read. Naming the agents was the first cut and was wrong: a name is something you read, and reading is the thing a glance cannot do. Which agent went amber is a question for the app |
-| **App** | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed |
-| **Overlay** | a pinned strip with the three counts and a way in | an agent that reports only on its own screen is one you have to remember to check. On desktop it rides on **every** view, because those users have no wrist to glance at |
+| **App** — *67 Agents* | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed |
+| **Overlay** — *68 Chat · overlay*, and every desktop view | a pinned strip with the three counts and a way in | an agent that reports only on its own screen is one you have to remember to check. On desktop it rides on **every** view, because those users have no wrist to glance at |
 
 ## Platforms
 
@@ -226,6 +226,8 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/63-find-a-clinician.svg" width="160" alt="63 Find a Clinician"><br><sub>63 · Find a Clinician</sub></td>
 <td align="center" width="25%"><img src="docs/screens/64-sign-to-release.svg" width="160" alt="64 Sign to Release"><br><sub>64 · Sign to Release</sub></td>
+<td align="center" width="25%"><img src="docs/screens/67-agents.svg" width="160" alt="67 Agents"><br><sub>67 · Agents</sub></td>
+<td align="center" width="25%"><img src="docs/screens/68-chat.svg" width="160" alt="68 Chat with the agent overlay"><br><sub>68 · Chat · overlay</sub></td>
 </tr>
 </table>
 
