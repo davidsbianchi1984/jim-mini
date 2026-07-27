@@ -9,6 +9,16 @@ import uuid
 from datetime import datetime, timezone
 
 _SCHEMA = """
+-- How far somebody has got through the Guardian's walkthrough. One row per
+-- step rather than a cursor, so a learner who skipped ahead and came back is
+-- not told they finished things they never saw.
+CREATE TABLE IF NOT EXISTS tutorial_progress (
+    learner_id TEXT NOT NULL,
+    lesson     TEXT NOT NULL,
+    done_at    TEXT NOT NULL,
+    PRIMARY KEY (learner_id, lesson)
+);
+
 CREATE TABLE IF NOT EXISTS users (
     id                 TEXT PRIMARY KEY,
     display_name       TEXT NOT NULL,

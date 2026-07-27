@@ -1327,6 +1327,29 @@ SCREENS = [
     ], button=("Face ID to release", "emer")),
     # 65 and 66 are held. The agent-light screens continue at 67 so the held
     # numbers stay free and nothing has to be renumbered when they land.
+    # Channel 2, off hold. The phone has one microphone and one foreground
+    # claim on it, so while somebody is on a call the Guardian is deaf — which
+    # is precisely when they might want to ask it something.
+    dict(num=65, title="Channel 2", sub="A second microphone, for Jim",
+         hero=None, accent="cyan", tab=2, cards=[
+        dict(icon="watch", color="cyan", k="Smart watch", s="earbuds, lapel, glasses too",
+             pill=("READY", "good")),
+        dict(icon="shield", color="green", k="Attached, not listening", s="only while your main mic is busy"),
+        dict(icon="mic", color="violet", k="Keys on your voice", s="drops the TV, the next table"),
+        dict(icon="eye", color="amber", k="Never on speakerphone", s="they never agreed to be heard"),
+    ], button=("Hand it over", "brand")),
+    # The live state. The gain row is the one that matters — it shows the
+    # setting *and* what it is actually running at, because those differ
+    # exactly when somebody else's voice is in the air.
+    dict(num=66, title="Second Ear", sub="It hears you, not your call",
+         hero=None, accent="violet", tab=2, cards=[
+        dict(icon="mic", color="cyan", k="On your watch", s="while you take the call",
+             pill=("LIVE", "good")),
+        dict(icon="chart", color="violet", k="Set to wide", s="running near-field",
+             pill=("CAPPED", "warn")),
+        dict(icon="person", color="green", k="You, not the room", s="comes back when the call ends"),
+        dict(icon="clip", color="amber", k="Every handover logged", s="what, why, and for how long"),
+    ], button=("Take it back", "emer")),
     dict(num=67, title="Agents", sub="What they need, at a glance",
          accent="green", tab=0, groups=[
         ("green", "working", 2, "summarizing · referral prep"),

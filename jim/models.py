@@ -363,3 +363,16 @@ class RelayAccept(BaseModel):
 
 class RelayQuestion(BaseModel):
     question: str
+
+
+class TutorialMark(BaseModel):
+    """Where a learner is in the Guardian's walkthrough.
+
+    `lesson` is optional because `/tutorial/start` needs only who is asking —
+    requiring a step id to begin at the beginning would be a field somebody
+    has to invent a value for.
+    """
+
+    learner_id: str
+    lesson: str = ""
+    mode: str = "text"

@@ -185,6 +185,10 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/63-find-a-clinician.svg" width="160" alt="63 Find a Clinician"><br><sub>63 · Find a Clinician</sub></td>
 <td align="center" width="25%"><img src="docs/screens/64-sign-to-release.svg" width="160" alt="64 Sign to Release"><br><sub>64 · Sign to Release</sub></td>
+<td align="center" width="25%"><img src="docs/screens/65-channel-2.svg" width="160" alt="65 Channel 2"><br><sub>65 · Channel 2</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/66-second-ear.svg" width="160" alt="66 Second Ear"><br><sub>66 · Second Ear</sub></td>
 <td align="center" width="25%"><img src="docs/screens/67-agents.svg" width="160" alt="67 Agents"><br><sub>67 · Agents</sub></td>
 <td align="center" width="25%"><img src="docs/screens/68-chat.svg" width="160" alt="68 Chat with the agent overlay"><br><sub>68 · Chat · overlay</sub></td>
 </tr>

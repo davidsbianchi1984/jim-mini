@@ -6,6 +6,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- **The Guardian gives a guided walkthrough** — `jim/tutorial.py`, 6 routes,
+  11 tests. Eleven steps across four chapters, `?mode=voice` to be spoken —
+  which matters more here than in QRME, because this is a product used
+  hands-free by somebody who may not be well.
+
+  **The Guardian gives it, rather than a faceless guide**, and that is the one
+  place this deliberately differs from QRME's version. QRME's subject is
+  synthetic people, so a guide with a persona would be the most convincing one
+  on the platform. JIM-mini has exactly one voice and is not pretending to be
+  anybody — a separate guide would be a *second* voice in a product built on
+  there being one, and the first thing a new user learned would be that JIM
+  talks to them from two places.
+
+  **It never fires anything for you.** No lesson triggers an escalation,
+  reaches an emergency contact or files a condition "to show you how" — in a
+  product whose actions reach a real person's phone at three in the morning, a
+  demonstration that fires for real is not a demonstration. Tests assert it,
+  along with writing nothing but the learner's own progress and needing no
+  model configured.
+
+### Fixed
+
+- **Screens 65 and 66 were missing.** The hold that pulled channel 2 before
+  0.3.1 removed them, and green-lighting the feature restored QRME's screen 81
+  without restoring these — so the microphone shipped with routes, tests and a
+  README section, and no pictures. Found by the walkthrough's own coverage
+  test on its first run, which is the argument for that test in one line.
+
 ### Changed
 
 - **The video at the top of the README is no longer the whole header.** A bare

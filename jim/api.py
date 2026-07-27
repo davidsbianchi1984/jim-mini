@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse
 from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
-               rota, social, terms as terms_mod)
+               rota, social, terms as terms_mod, tutorial)
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
@@ -28,6 +28,7 @@ from .models import (
     TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
+    TutorialMark,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -122,6 +123,52 @@ def create_app(qrme_client: QRMEClient | None = None,
             buf, kind="svg", scale=8, border=2,
             dark="#0b1120", light="#ffffff")
         return Response(content=buf.getvalue(), media_type="image/svg+xml")
+
+    # -- the Guardian's walkthrough -----------------------------------------
+    #
+    # Reads only, apart from the learner's own progress. Nothing here triggers
+    # an escalation, reaches an emergency contact or files a condition "to show
+    # you how" — in a product whose actions reach a real person's phone at
+    # three in the morning, a demonstration that fires for real is not one.
+
+    @app.get("/tutorial")
+    def tutorial_outline(mode: str = "text") -> dict:
+        """The whole walkthrough, chaptered. `?mode=voice` to be spoken."""
+        try:
+            return tutorial.outline(mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/tutorial/steps/{key}")
+    def tutorial_step(key: str, mode: str = "text") -> dict:
+        try:
+            return tutorial.step(key, mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.get("/tutorial/for-screen/{number}")
+    def tutorial_for_screen(number: int, mode: str = "text") -> dict:
+        """The lesson covering a given screen, so a screen can explain
+        itself instead of opening the tour at the beginning."""
+        found = tutorial.for_screen(number, mode)
+        if found is None:
+            raise HTTPException(404, "no lesson covers that screen")
+        return found
+
+    @app.post("/tutorial/start")
+    def tutorial_start(body: TutorialMark) -> dict:
+        return tutorial.start(body.learner_id, body.mode)
+
+    @app.get("/tutorial/progress/{learner_id}")
+    def tutorial_progress(learner_id: str, mode: str = "text") -> dict:
+        return tutorial.where(learner_id, mode)
+
+    @app.post("/tutorial/done")
+    def tutorial_done(body: TutorialMark) -> dict:
+        try:
+            return tutorial.mark(body.learner_id, body.lesson, body.mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(404, str(exc)) from None
 
     @app.get("/connectors/catalog")
     def connector_catalog() -> dict:
