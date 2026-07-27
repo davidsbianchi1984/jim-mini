@@ -74,6 +74,33 @@ A wide, multi-panel desktop form of Jim Mini — sidebar nav and an operator wor
   </tr>
 </table>
 
+## The agent status light
+
+An agent working on its own raises one question, and it is not *what phase is
+it in* — it is **does this need me right now?** Three colours answer it.
+
+| | | |
+| --- | --- | --- |
+| 🟢 **green** | working · done | in progress, or finished. Nothing wanted from you |
+| 🟡 **amber** | needs you | it has stopped and is waiting on a person |
+| 🔴 **red** | stopped | it hit an error or was cancelled, and will not continue |
+
+**Derived, never stored.** There is no `light` column and nothing sets one — it
+is computed from the status the work already keeps. A second field naming the
+same fact is a second field that can disagree with the first, and the one a
+screen reads would be the one nobody remembers to update.
+
+**The word rides with the colour**, because green alone cannot separate an
+agent that is still going from one that has finished, and those call for
+opposite reactions. On a watch face the word is doing most of the reading
+anyway.
+
+**An unrecognised state raises rather than defaulting.** A default would paint
+an unknown status green, and green is the colour that means *ignore me* — the
+one failure this must not have.
+
+Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrme/blob/main/qrme/agentlight.py), for all three products.
+
 ## Platforms
 
 Every screen ships in each platform's native chrome — mobile in **iOS** (`docs/screens/`) and **Android** (`docs/screens/android/`); desktop in **macOS** (`docs/desktop/`) and **Windows** (`docs/desktop/windows/`). iOS's Dynamic Island + home indicator vs Android's punch-hole + gesture nav; macOS traffic-lights vs the Windows caption bar. (The watch is watchOS-only.)
@@ -249,8 +276,18 @@ The same system on the wrist — glanceable Apple-Watch faces, one per capabilit
 <td align="center" width="20%"><img src="docs/watch/33-style.svg" width="120" alt="33 Style"><br><sub>33 · Style</sub></td>
 <td align="center" width="20%"><img src="docs/watch/34-history.svg" width="120" alt="34 History"><br><sub>34 · History</sub></td>
 <td align="center" width="20%"><img src="docs/watch/35-family.svg" width="120" alt="35 Family"><br><sub>35 · Family</sub></td>
+<td align="center" width="20%"><img src="docs/watch/36-agents.svg" width="120" alt="36 Agents"><br><sub>36 · Agents</sub></td>
 </tr>
 </table>
+
+**36 · Agents** is the status light on the surface it matters most. A wrist is
+glanced at, not read: **green** the agent is working and wants nothing,
+**amber** it has stopped and needs a person, **red** it will not continue. The
+word rides with the colour because green alone cannot say whether an agent is
+mid-task or finished, and those call for opposite reactions. The colour is
+derived from the task's own status — see `qrme/agentlight.py`, which defines it
+once for all three products — never stored, so it cannot disagree with the
+status it claims to describe.
 
 ## Run
 

@@ -88,6 +88,21 @@ def row(x, y, w, ic, col, k, s):
             + text(x + 38, y + 30, s, 9, C["t2"]))
 
 
+def agent_light(x, y, colour, label):
+    """The agent status light on a watch — green working, amber needs you,
+    red stopped.
+
+    A wrist is the surface this matters most on: it is glanced at, not read.
+    The dot carries the answer and the word confirms it, because a colour
+    alone cannot separate "still going" from "finished" — and a watch is
+    exactly where somebody would guess wrong and walk away.
+    """
+    col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+    return (f'<circle cx="{x}" cy="{y}" r="9" fill="{A(col, 0.18)}"/>'
+            + f'<circle cx="{x}" cy="{y}" r="4.2" fill="{col}"/>'
+            + text(x + 14, y + 4, label, 10, col, 700))
+
+
 def wbtn(x, y, w, label, kind="brand", h=34):
     fill = "url(#gBrand)" if kind == "brand" else ("url(#gEmer)" if kind == "emer" else "rgba(255,255,255,0.07)")
     st = C["line"] if kind == "ghost" else None
@@ -120,6 +135,12 @@ def render(s):
     cx = W / 2
     y = SYY + 44
     h = s.get("hero")
+
+    # The status light, when this face is showing an agent at work.
+    if s.get("light"):
+        colour, label = s["light"]
+        o.append(agent_light(PADX + 9, y - 12, colour, label))
+        y += 18
 
     if h == "home":
         o.append(orb(cx, y + 30, 26))
@@ -367,7 +388,8 @@ SCREENS = [
     dict(num=27, title="Baseline", hero="baseline", accent="green"),
     dict(num=28, title="Sources", hero="sources", accent="cyan"),
     dict(num=29, title="Privacy", hero="privacy", accent="green"),
-    dict(num=30, title="Handoff", hero="handoff", accent="red"),
+    dict(num=30, title="Handoff", hero="handoff", accent="red",
+         light=("amber", "needs you")),
     dict(num=31, title="Offline", hero="offline", accent="green"),
     dict(num=32, title="Conditions", accent="violet", rows=[
         ("brain", "violet", "Anxiety / panic", "detection sensitized"),
@@ -385,8 +407,17 @@ SCREENS = [
     ]),
     dict(num=35, title="Family", accent="amber", rows=[
         ("heart", "green", "Riley · 8", "quiet · full oversight"),
-        ("warn", "red", "Sam · 15", "escalated 21:40 · tap to open"),
-        ("bell", "amber", "Quiet hours", "21:00–07:00 · safety never pauses"),
+        ("warn", "red", "Sam · 15", "escalated 21:40 · open"),
+        ("bell", "amber", "Quiet hours", "21:00–07:00 · safety on"),
+    ]),
+    # The whole point of the light, on the surface it matters most: a wrist is
+    # glanced at, and three colours answer "does anything need me" without
+    # reading a word. The words are there anyway, because green cannot say by
+    # itself whether an agent is mid-task or finished.
+    dict(num=36, title="Agents", accent="green", rows=[
+        ("clip", "green", "Ship the notes", "working · phase draft"),
+        ("clip", "amber", "Research brief", "needs you · confirm"),
+        ("clip", "red", "Second job", "stopped · cancelled"),
     ]),
 ]
 

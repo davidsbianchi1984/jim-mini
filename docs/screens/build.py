@@ -183,6 +183,21 @@ def qrmini(qx, qy, qs, seed=5):
     return "".join(out)
 
 
+def agent_light(x, y, colour, label):
+    """The agent status light — green working, amber needs you, red stopped.
+
+    One question, answered at a glance: does this need me right now? The word
+    rides with the dot because a colour alone cannot separate an agent that is
+    still going from one that has finished, and those call for opposite
+    reactions. Mapped from the task status; see qrme/agentlight.py, which is
+    where the meaning is defined for both products.
+    """
+    col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+    return (f'<circle cx="{x}" cy="{y}" r="10" fill="{A(col, 0.16)}"/>'
+            + f'<circle cx="{x}" cy="{y}" r="4.6" fill="{col}"/>'
+            + text(x + 15, y + 4, label, 10.5, col, 700))
+
+
 def meter(x, y, w, pct, grad):
     return (rrect(x, y, w, 7, 4, "#0d1526", C["line"], 1)
             + rrect(x, y, max(6, w * pct), 7, 4, f"url(#{grad})"))
@@ -403,6 +418,14 @@ def render(spec):
     out = head(f"{num:02d}", spec["title"], spec.get("sub", ""), spec.get("accent", "brand"))
     y = SY + 100
     hero = spec.get("hero")
+
+    # The agent's status light, when this screen shows one at work. Directly
+    # under the subtitle: "does this need me" is the first question, and it
+    # should not be something you scroll to find.
+    if spec.get("light"):
+        colour, label = spec["light"]
+        out.append(agent_light(CX + 8, y - 6, colour, label))
+        y += 22
 
     if hero == "welcome":
         out.append(orb(W / 2, y + 44, 34))
@@ -1199,7 +1222,8 @@ SCREENS = [
         dict(icon="shield", color="red", k="Never sent", s="ids, names, notes, raw biometrics"),
     ], button=("Stop sharing & delete", "emer")),
     dict(num=62, title="Specialist Working", sub="A task, not a reply", hero=None,
-         accent="teal", tab=0, cards=[
+         accent="teal", tab=0, light=("amber", "needs you — confirm before it goes"),
+         cards=[
         dict(icon="link", color="teal", k="Dr Whitcomb", s="summarize last month for my GP"),
         dict(icon="chart", color="green", k="Phases done", s="research · draft · review", pill=("3/4", "good")),
         dict(icon="bell", color="amber", k="Waiting on you", s="confirm before it goes", pill=("PAUSED", "warn")),
