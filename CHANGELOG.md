@@ -91,6 +91,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   room's profiles — where the others *are* participants and can therefore be
   told, which is why that side discloses rather than refuses.
 
+## [0.3.2] — 2026-07-27
+
+There are no functional changes to JIM-mini in this release — no new routes,
+no schema, no behaviour. The version moves because the three products are
+cut as one release, and a number naming one combination of three is only
+useful if it never skips one.
+
+### What changed in the siblings
+
+- QRME's starter gallery now shows each of the 34 profiles as the card the app actually gives it, and the one starter that had no source material finally has a Field Pack of its own.
+
 ## [0.3.1] — 2026-07-26
 
 **A documentation round for JIM-mini.** There are no functional changes to
@@ -727,7 +738,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.3.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.3.2...HEAD
+[0.3.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.2
 [0.3.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.1
 [0.3.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.0
 [0.2.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.2.2
