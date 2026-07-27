@@ -1395,6 +1395,22 @@ SCREENS = [
         dict(icon="shield", color="red", k="The alarm is not a feature",
              s="it is never something you buy"),
     ], button=("Compare plans", "brand")),
+    # The pane in the corner. Card two is where this differs from QRME's: the
+    # rule that hides a pane during a broadcast would hide the one thing a
+    # person most needs to see.
+    dict(num=71, title="The Corner Pane", sub="The watch faces, without a watch",
+         accent="brand", tab=0, cards=[
+        dict(icon="eye", color="brand", k="Tap to tuck it away",
+             s="the helper button is the handle"),
+        dict(icon="bell", color="red", k="An alarm opens it anyway",
+             s="whatever you set it to"),
+        dict(icon="warn", color="amber", k="It shows, it never acts",
+             s="the real screen is one tap away"),
+        dict(icon="watch", color="teal", k="No wrist required",
+             s="the watch is a Pro thing"),
+        dict(icon="shield", color="green", k="Not your journal",
+             s="a pane is in every screenshot"),
+    ], button=("Move it left", "brand")),
 ]
 
 

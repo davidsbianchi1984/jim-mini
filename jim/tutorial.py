@@ -109,6 +109,15 @@ LESSONS: tuple[dict, ...] = (
               "none. Billing here is simulated and no real funds move.",
          screens=(69, 70),
          try_it="Open Choose a Plan and read what is never gated."),
+    dict(key="dock", chapter="Beyond the app", title="The pane in the corner",
+         what="A small pane in the bottom corner of the app carrying the "
+              "glances a watch would — the last reading, what is running, "
+              "whether channel 2 is lent — for the people who do not have a "
+              "wrist, which on Basic is everyone. It shows and it points at "
+              "the real screen; it never acts. And when an alarm is live it "
+              "opens on the alarm whatever you had it set to.",
+         screens=(71,),
+         try_it="Tap the helper button and cycle the faces."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

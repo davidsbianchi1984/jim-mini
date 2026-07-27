@@ -14,6 +14,7 @@ from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
                rota, social, terms as terms_mod, tiers, tutorial)
+from . import dock as dock_mod
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
@@ -28,7 +29,7 @@ from .models import (
     TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
-    PlanChoice, TutorialMark,
+    DockConfig, PlanChoice, TutorialMark,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -294,6 +295,47 @@ def create_app(qrme_client: QRMEClient | None = None,
         # The user token is shown exactly once, here.
         user["user_token"] = auth.issue("user", user["id"])
         return user
+
+    # ---- the pane in the corner -------------------------------------------
+
+    @app.get("/dock/faces")
+    def dock_vocabulary() -> dict:
+        """Everything needed to draw the pane. Public — the product's shape,
+        not anybody's data."""
+        return dock_mod.vocabulary()
+
+    @app.get("/dock/where/{face}")
+    def dock_where(face: str) -> dict:
+        """The screen that can actually do this face's job."""
+        try:
+            return dock_mod.route(face)
+        except dock_mod.DockError as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.get("/dock/{user_id}")
+    def dock_settings(user_id: str, request: Request,
+                      alarm_active: bool = False) -> dict:
+        auth.require(request, "user", user_id)
+        return dock_mod.opens_as(user_id, alarm_active)
+
+    @app.put("/dock/{user_id}")
+    def dock_configure(user_id: str, body: DockConfig,
+                       request: Request) -> dict:
+        auth.require(request, "user", user_id)
+        try:
+            return dock_mod.configure(user_id, body.corner, body.state,
+                                      body.face, body.faces)
+        except dock_mod.DockError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/dock/{user_id}/face/{name}")
+    def dock_face(user_id: str, name: str, request: Request,
+                  surface_id: str | None = None) -> dict:
+        auth.require(request, "user", user_id)
+        try:
+            return dock_mod.face(user_id, name, surface_id)
+        except dock_mod.DockError as exc:
+            raise HTTPException(422, str(exc)) from None
 
     # ---- membership -------------------------------------------------------
 

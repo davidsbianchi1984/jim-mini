@@ -6,6 +6,50 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-07-27
+
+### Added
+
+- **Membership: Basic $20/month, Pro $130/month** — `jim/tiers.py`, 4 routes,
+  25 tests, screens 69 and 70. Basic is the Guardian itself — conditions,
+  guidance, journal, habits, goals — and every emergency path. Pro adds the
+  watch, early warning, specialists and synthetic agents.
+
+  **Nothing that answers an emergency is ever behind a paywall**, and that is
+  the rule the module exists to keep rather than a caveat on it. A lapsed card
+  is a billing event; a seizure is not. `NEVER_GATED` names the alarm path,
+  escalation, the medical ID a paramedic scans, incident history and the
+  guidance given during an alarm — consulted **first**, so a pattern added
+  later cannot reach them, and a test plants exactly that mistake and asserts
+  each safety route still comes back ungated.
+
+  **The first implementation had that bug.** `/monitor` was listed as the
+  "proactive monitoring" capability, which reads correctly and is wrong:
+  `/monitor` is the *ingest*. A Basic member submitting a blood oxygen of 84
+  received a 402 instead of an escalation — the paywall standing between
+  somebody and an emergency, indirectly but completely. The suite caught it.
+  What Pro buys is `jim/earlywarning.py`, the trend model that looks *ahead* of
+  a threshold, and it is **skipped rather than refused**: a Basic member gets a
+  real answer about the reading they submitted, with `predictive: false` saying
+  plainly what they did not get.
+
+  Every 402 carries `emergency_unaffected: true`. Money is simulated.
+
+- **The helper dock** — `jim/dock.py`, 5 routes, 15 tests, screen 71. The
+  glances a watch face would carry, in a pane in the corner — which matters
+  here because the watch is a Pro capability. **An active alarm opens it
+  whatever it was set to**, and the alarm face cannot be configured out of the
+  pane: this is the one place the rule deliberately departs from QRME's, whose
+  dock hides itself during a broadcast. The same rule here would hide the thing
+  a person most needs to see, and JIM-mini has no broadcast surface to leak an
+  alarm into.
+
+- **The Guardian gives the tour** — `jim/tutorial.py`, eleven lessons in the
+  Guardian's own voice, because here the Guardian already *is* somebody to the
+  user. Channel 2's screens 65 and 66 came back in the same change, found by
+  the walkthrough's coverage test on its first run.
+
+
 - **The Guardian gives a guided walkthrough** — `jim/tutorial.py`, 6 routes,
   11 tests. Eleven steps across four chapters, `?mode=voice` to be spoken —
   which matters more here than in QRME, because this is a product used

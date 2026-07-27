@@ -22,6 +22,14 @@ Source = Literal[
 ]
 
 
+class DockConfig(BaseModel):
+    """Where the helper pane sits and what it carries (jim/dock.py)."""
+    corner: str | None = None           # bottom_right | bottom_left
+    state: str | None = None            # hidden | handle | open
+    face: str | None = None
+    faces: list[str] | None = None
+
+
 class PlanChoice(BaseModel):
     """Joining a plan, or moving between them (jim/tiers.py)."""
     plan: str                               # basic | pro

@@ -515,6 +515,18 @@ CREATE TABLE IF NOT EXISTS relay_pages (
     sent_at     TEXT
 );
 
+-- Where the helper dock sits and what it is showing (see jim/dock.py).
+-- Preferences only; the pane shows and routes and cannot be granted anything,
+-- because there is nothing to grant.
+CREATE TABLE IF NOT EXISTS dock_prefs (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    corner     TEXT NOT NULL DEFAULT 'bottom_right',
+    state      TEXT NOT NULL DEFAULT 'handle',
+    face       TEXT NOT NULL DEFAULT 'helper',
+    faces      TEXT NOT NULL,                        -- JSON array
+    updated_at TEXT NOT NULL
+);
+
 -- What a person has paid for (see jim/tiers.py). Keyed on the user, who here
 -- *is* the account — unlike QRME, where an owner token's subject is a profile.
 --

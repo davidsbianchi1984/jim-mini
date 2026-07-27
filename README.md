@@ -1,6 +1,6 @@
 # JIM-mini / Guardian
 
-**Current release: v0.3.3** ([changelog](CHANGELOG.md) ·
+**Current release: v0.4.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -195,7 +195,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 </tr>
 <tr>
 <td align="center" width="25%"><img src="docs/screens/70-what-pro-adds.svg" width="160" alt="70 What Pro Adds"><br><sub>70 · What Pro Adds</sub></td>
-<td align="center" width="25%"></td>
+<td align="center" width="25%"><img src="docs/screens/71-the-corner-pane.svg" width="160" alt="71 The Corner Pane"><br><sub>71 · The Corner Pane</sub></td>
 <td align="center" width="25%"></td>
 <td align="center" width="25%"></td>
 </tr>
@@ -277,6 +277,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.4.0** | **The round where it got a price, and drew a line no price stands on.** Basic $20/month is the Guardian and **every emergency path**; Pro $130/month adds the watch, early warning, specialists and synthetic agents. The first implementation gated `/monitor` as "proactive monitoring" — which put a 402 between somebody submitting a blood oxygen of 84 and their escalation. `NEVER_GATED` is checked first now, and a test plants that mistake deliberately to prove it holds. Plus a corner pane that **opens on an alarm whatever it was set to** |
 | **0.3.3** | **The agent status light lands on the wrist.** Watch face 36 is the ambient one — three lights, three counts, no task names, for the moments somebody is on their phone and the watch is the surface that can answer *does this need me* without getting in the way. Plus a grouped Agents screen, a corner overlay that follows you, and a README that leads with the screens |
 | **0.3.2** | **No functional change to JIM-mini.** The round belongs to QRME's starter gallery |
 | **0.3.1** | **No functional change to JIM-mini** — a documentation round. This README, and screens 61–64 finally appearing in the gallery; they shipped in 0.3.0 as files and were never listed, so the four screens illustrating that round's headline feature were invisible on the page describing it |
@@ -355,6 +356,40 @@ journal, a provider-shareable summary. Identity is proven by a bearer
 - **Open (no token):** `GET /health`, `GET /cloud/status`, `POST /enroll`,
   and `POST /specialists` (service setup).
 - `DELETE /data/{user_id}` erases the user **and** revokes their token.
+
+## The pane in the corner
+
+`jim/dock.py`, 5 routes, 15 tests, screen **71**.
+
+The same idea as QRME's: a small pane in the bottom corner of the app carrying
+the glances a watch face would, tucked behind the helper button until wanted.
+It matters more here, because **the watch is a Pro capability** — so the people
+most in need of a glance without a wrist are exactly the ones who do not have
+one.
+
+**It shows, and it routes. It never acts**, for QRME's reason and one specific
+to this product: the surfaces it floats over include a live alarm, and a control
+in a 168px box hovering beside the button that clears an escalation is not a
+convenience — it is a mis-tap during the worst minute of somebody's week.
+
+**But it is never silent about an alarm**, and this is the one place the rule
+deliberately departs from QRME's. QRME's dock tucks itself away on a surface
+being broadcast, because a pane pinned to the frame is inside every screenshot.
+The same rule here would hide the thing a person most needs to see — so
+`dock.ALWAYS_SHOWN` names the alarm face and it opens regardless: tucked,
+hidden, or on another face entirely, an active alarm still surfaces it, and the
+preference is returned alongside as `wanted` rather than overwritten. The alarm
+face also **cannot be configured out of the pane**, because a pane somebody
+tidied up months ago is not a decision they made about the day it fires.
+
+That is not a privacy compromise, and the difference is argued rather than
+assumed: an alarm belongs to the person holding the phone, and JIM-mini has no
+broadcast surface to leak it into. Nothing here streams. Where the two products'
+reasoning genuinely differs, the rule differs — rather than being copied because
+the module next door has one.
+
+It is still inside every screenshot, so `dock.NEVER` holds the journal, the
+medical record, guidance text and family members' names.
 
 ## Membership
 
@@ -766,3 +801,25 @@ run against a separate QRME instance (reached only through the HTTP client).
 ## License
 
 MIT © 2026 David Bianchi — see [LICENSE](LICENSE).
+
+---
+
+## Matthew 7:24–25
+
+> "Everyone then who hears these words of mine and does them will be like a
+> wise man who built his house on the rock. The rain fell, the floods came, and
+> the winds blew and beat on that house, but it did not fall, because it had
+> been founded on the rock."
+
+And lo, I am building an ark — not to flee from the world, but to shelter those
+lost in the storm of confusion. The old systems falter; they are built upon the
+soft earth. They sink beneath the weight of their own making.
+
+A new thing is rising. A non-biased networked sanctuary, founded in trust,
+cloaked in privacy, and guided by wisdom. It shall not consume, but uplift. It
+shall not spy, but serve.
+
+Help is coming.
+The people are gathering.
+The builders will show themselves.
+And those with the vision shall enter in.
