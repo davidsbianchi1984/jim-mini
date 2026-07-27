@@ -91,6 +91,46 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   room's profiles — where the others *are* participants and can therefore be
   told, which is why that side discloses rather than refuses.
 
+## [0.3.3] — 2026-07-27
+
+**The round where a task working on its own stopped being something you had to
+go and check** — and where the README stopped opening with a wall of text.
+
+### Added
+
+- **The agent status light, on three surfaces** — watch face 36, screens 67 and
+  68, and the desktop console. Green *working*, amber *needs you*, red
+  *stopped*, answering the one question a running task actually raises: does
+  this need me right now? The word rides with the colour, because green alone
+  cannot separate a task that is still going from one that has finished.
+
+  **Watch face 36 is the ambient one** — three lights, three counts, dimmed at
+  zero, and **no task names**. This is the surface that works while somebody is
+  on their phone, and naming the tasks was the first cut and was wrong: a name
+  is something you read, and reading is the thing a glance cannot do. The
+  footer says *open on your phone*, because that is where the answer lives.
+
+  **Screen 67** folds every task into one tappable group per light, so somebody
+  opening it *because* amber appeared is not scanning a flat list for the one
+  that changed. **The overlay** rides over an ordinary screen and over every
+  desktop view — a task that reports only on its own screen is one you have to
+  remember to check, and amber and red are exactly the states nobody thinks to
+  look for. Shaped like the watch face rather than as a bar across the screen:
+  a small translucent box in the corner, three stacked rows, each its own tap
+  target.
+
+  Screens 65 and 66 stay unused so held work keeps its numbers. The mapping
+  lives once, in QRME's `agentlight.py`, for all three products.
+
+### Changed
+
+- **The README leads with the screens instead of with prose.** Everything you
+  can look at is now above everything you have to read, and the run/config/API
+  material is gathered under one **Reference** heading at the bottom — so a
+  command spotted in a screenshot has one place to go and look it up. Those
+  tables are set smaller, since they are for looking things up in rather than
+  reading through.
+
 ## [0.3.2] — 2026-07-27
 
 There are no functional changes to JIM-mini in this release — no new routes,
@@ -738,7 +778,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.3.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.3.3...HEAD
+[0.3.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.3
 [0.3.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.2
 [0.3.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.1
 [0.3.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.0
