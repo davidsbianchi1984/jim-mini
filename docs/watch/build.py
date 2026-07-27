@@ -103,6 +103,40 @@ def agent_light(x, y, colour, label):
             + text(x + 14, y + 4, label, 10, col, 700))
 
 
+def light_board(cx, y, counts):
+    """The ambient agent board: three lights, three counts, no names.
+
+    This face exists for the moment the phone is busy and the wrist is the
+    only surface free. Naming the agents here was the first cut and was wrong
+    — a name is something you *read*, and reading is the thing a glance cannot
+    do. What a person needs off the wrist is whether anything has gone amber
+    or red; which agent it was is a question for the app, where there is room
+    to answer it.
+
+    It is also the reason this face carries no tap targets. A wrist showing
+    three numbers can be understood without being touched, and a control that
+    invites a tap invites looking away from whatever the phone was for.
+    """
+    out = []
+    rows = (("green", "running", counts[0]),
+            ("amber", "need help", counts[1]),
+            ("red", "stopped", counts[2]))
+    yy = y
+    for colour, label, n in rows:
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        dim = n == 0
+        a = 0.22 if not dim else 0.07
+        out.append(f'<circle cx="{cx-52}" cy="{yy}" r="17" fill="{A(col, a)}"/>')
+        op = ' opacity="0.28"' if dim else ""
+        out.append(f'<circle cx="{cx-52}" cy="{yy}" r="8.5" fill="{col}"{op}/>')
+        out.append(text(cx - 22, yy + 9, str(n), 26, col if not dim else C["t3"],
+                        800))
+        out.append(text(cx + 6, yy + 8, label, 11,
+                        C["t2"] if not dim else C["t3"], 600))
+        yy += 48
+    return out
+
+
 def wbtn(x, y, w, label, kind="brand", h=34):
     fill = "url(#gBrand)" if kind == "brand" else ("url(#gEmer)" if kind == "emer" else "rgba(255,255,255,0.07)")
     st = C["line"] if kind == "ghost" else None
@@ -319,6 +353,11 @@ def render(s):
         o.append(text(cx, y + 107, "this device", 11.5, C["txt"], 650, "middle"))
         o.append(f'<g transform="translate({cx-14},{y+120})">' + wtoggle(0, 0, True) + '</g>')
 
+    elif h == "lightboard":
+        o += light_board(cx, y + 26, s.get("counts", (0, 0, 0)))
+        o.append(text(cx, y + 168, "open on your phone", 9.5, C["t3"], 500,
+                      "middle"))
+
     else:  # compact rows
         yy = y
         for r in s.get("rows", []):
@@ -410,15 +449,10 @@ SCREENS = [
         ("warn", "red", "Sam · 15", "escalated 21:40 · open"),
         ("bell", "amber", "Quiet hours", "21:00–07:00 · safety on"),
     ]),
-    # The whole point of the light, on the surface it matters most: a wrist is
-    # glanced at, and three colours answer "does anything need me" without
-    # reading a word. The words are there anyway, because green cannot say by
-    # itself whether an agent is mid-task or finished.
-    dict(num=36, title="Agents", accent="green", rows=[
-        ("clip", "green", "Ship the notes", "working · phase draft"),
-        ("clip", "amber", "Research brief", "needs you · confirm"),
-        ("clip", "red", "Second job", "stopped · cancelled"),
-    ]),
+    # The ambient face: what is running, while the phone is busy being a phone.
+    # No agent names and no buttons — see light_board() for why.
+    dict(num=36, title="Agents", hero="lightboard", accent="green",
+         counts=(3, 1, 1)),
 ]
 
 
