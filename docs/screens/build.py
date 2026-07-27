@@ -1411,6 +1411,59 @@ SCREENS = [
         dict(icon="shield", color="green", k="Not your journal",
              s="a pane is in every screenshot"),
     ], button=("Move it left", "brand")),
+    # ---- first-run: the plan step ----
+    #
+    # Sits between Emergency Contacts and All Set, and the order is the
+    # argument: somebody has just given us the number to ring if they collapse,
+    # so the very next screen has to say that no plan withholds that.
+    dict(num=72, title="Pick a Plan", sub="Step 5 of 6",
+         accent="brand", tab=0, cards=[
+        dict(icon="shield", color="teal", k="Basic · $20/month",
+             s="the Guardian and every alarm"),
+        dict(icon="bolt", color="brand", k="Pro · $130/month",
+             s="watch, early warning, agents"),
+        dict(icon="heart", color="red", k="Alarms are in both",
+             s="and in neither, if you lapse"),
+        dict(icon="warn", color="green", k="Billing is simulated",
+             s="no real funds move"),
+    ], button=("Continue with Basic", "brand")),
+    dict(num=73, title="Payment", sub="Step 6 of 6",
+         accent="teal", tab=0, cards=[
+        dict(icon="heart", color="teal", k="Basic · $20 a month",
+             s="first charge today"),
+        dict(icon="lock", color="green", k="Card details",
+             s="nothing is sent anywhere"),
+        dict(icon="warn", color="red", k="No processor is called",
+             s="the subscription is a row"),
+        dict(icon="shield", color="brand", k="Cancel and keep it all",
+             s="your record, and the alarms"),
+    ], button=("Confirm — simulated", "brand")),
+    # Where signup lands. Card one first, deliberately: on a health product the
+    # thing to say before anything about features is what still works.
+    dict(num=74, title="You're on Basic", sub="Here is what that means",
+         accent="green", tab=0, cards=[
+        dict(icon="heart", color="red", k="Every alarm path works",
+             s="on this plan and with none", pill=("ON", "good")),
+        dict(icon="shield", color="green", k="The Guardian is yours",
+             s="conditions, guidance, journal"),
+        dict(icon="watch", color="amber", k="The watch is Pro",
+             s="pairing, the face, channel 2"),
+        dict(icon="chart", color="amber", k="Looking ahead is Pro",
+             s="this reading still answers"),
+    ], button=("Start", "brand")),
+    # The 402 moment. Card three is the one that has to be on a health app's
+    # paywall: somebody who has just hit a wall should not have to wonder.
+    dict(num=75, title="This Needs Pro", sub="What you tapped, and why",
+         accent="amber", tab=0, cards=[
+        dict(icon="watch", color="amber", k="Pairing a watch",
+             s="needs Pro · $130/month"),
+        dict(icon="person", color="teal", k="You are on Basic",
+             s="nothing changes on its own"),
+        dict(icon="heart", color="red", k="Your alarms are unaffected",
+             s="they were never part of this"),
+        dict(icon="warn", color="green", k="Billing is simulated",
+             s="no real funds move"),
+    ], button=("Upgrade to Pro", "brand")),
 ]
 
 

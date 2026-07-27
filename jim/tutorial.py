@@ -42,6 +42,16 @@ LESSONS: tuple[dict, ...] = (
               "starting, and says something before it becomes an emergency.",
          screens=(1, 2, 3, 4, 5), try_it="Open the home screen and read the "
                                          "signals it is using."),
+    dict(key="signup", chapter="Getting started", title="Signing up",
+         what="Your name, your birthdate, what the Guardian may see, who to "
+              "ring if something is wrong — and then a plan. Basic is the "
+              "Guardian itself and every emergency path; Pro adds the watch "
+              "and the model that looks ahead. The plan step comes straight "
+              "after the emergency contacts on purpose: you have just told us "
+              "who to ring, so the next screen says plainly that no plan "
+              "withholds that. Billing is simulated and no real funds move.",
+         screens=(72, 73, 74, 75),
+         try_it="Open Pick a Plan and read the third card."),
     dict(key="consent", chapter="Getting started", title="What it may see",
          what="Every source is one you turned on, and every one can be turned "
               "off in the same place. Nothing is read that you did not hand "

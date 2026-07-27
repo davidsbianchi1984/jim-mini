@@ -196,12 +196,18 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/70-what-pro-adds.svg" width="160" alt="70 What Pro Adds"><br><sub>70 · What Pro Adds</sub></td>
 <td align="center" width="25%"><img src="docs/screens/71-the-corner-pane.svg" width="160" alt="71 The Corner Pane"><br><sub>71 · The Corner Pane</sub></td>
+<td align="center" width="25%"><img src="docs/screens/72-pick-a-plan.svg" width="160" alt="72 Pick a Plan"><br><sub>72 · Pick a Plan</sub></td>
+<td align="center" width="25%"><img src="docs/screens/73-payment.svg" width="160" alt="73 Payment"><br><sub>73 · Payment</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/74-youre-on-basic.svg" width="160" alt="74 You are on Basic"><br><sub>74 · You're on Basic</sub></td>
+<td align="center" width="25%"><img src="docs/screens/75-this-needs-pro.svg" width="160" alt="75 This Needs Pro"><br><sub>75 · This Needs Pro</sub></td>
 <td align="center" width="25%"></td>
 <td align="center" width="25%"></td>
 </tr>
 </table>
 
-The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 46 All Set**, then hands off to the daily app and, at the other end, **41 End Session**.
+The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 72 Pick a Plan → 73 Payment → 46 All Set**, landing on **74 You're on Basic**, then hands off to the daily app and, at the other end, **41 End Session**.
 
 ## Watch screens
 
