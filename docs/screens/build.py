@@ -227,29 +227,43 @@ def agent_groups(y, groups):
     return out, yy
 
 
-def agent_overlay(y, counts):
+OVERLAY_ROWS = (("green", "running"), ("amber", "need help"), ("red", "stopped"))
+# The floor the overlay sits on — clear of the tab bar, so it is never the
+# thing a thumb hits by accident on the way to a tab.
+OVERLAY_FLOOR = SY + SH - 52 - 12
+
+
+def agent_overlay(counts):
     """The lights, floating over whatever screen you are actually on.
 
     This is the piece that makes the rest useful. A task that only reports on
     its own screen is one you have to remember to go and check, and the states
     worth knowing about — amber and red — are exactly the ones nobody thinks
-    to look for. It rides above the tab bar so it is never the thing you tap
-    by accident, and each light is its own target.
+    to look for.
+
+    Shaped like the watch face rather than as a full-width bar: a small
+    translucent box in the bottom-right corner, three stacked rows, each its
+    own tap target. A bar spanning the screen reads as chrome and cuts the
+    content in half; a corner box reads as something floating above the work,
+    which is what it is. Same three words as the wrist, so the two surfaces
+    are never saying the same thing differently.
     """
-    out = []
-    w, h = CW, 46
-    out.append(rrect(CX, y, w, h, 15, "url(#gCard)", C["brandA"], 1.4))
-    out.append(text(CX + 16, y + 28, "AGENTS", 9, C["t3"], 700, "start", 0.7))
-    x = CX + 74
-    for colour, n in zip(("green", "amber", "red"), counts):
+    w, h = 112, 100
+    x = SX + SW - w - 12
+    y = OVERLAY_FLOOR - h
+    out = [rrect(x, y, w, h, 14, "rgba(8,12,22,0.62)", A(C["brandA"], 0.5), 1)]
+    yy = y + 22
+    for (colour, word), n in zip(OVERLAY_ROWS, counts):
         col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
         dim = n == 0
-        out.append(f'<circle cx="{x}" cy="{y+23}" r="6" fill="{col}"'
-                   + (' opacity="0.25"' if dim else "") + "/>")
-        out.append(text(x + 12, y + 28, str(n), 14,
+        out.append(f'<circle cx="{x+16}" cy="{yy}" r="5" fill="{col}"'
+                   + (' opacity="0.28"' if dim else "") + "/>")
+        out.append(text(x + 28, yy + 4, str(n), 12.5,
                         col if not dim else C["t3"], 800))
-        x += 46
-    out.append(text(CX + w - 16, y + 28, "open ›", 10.5, C["brandA"], 700, "end"))
+        out.append(text(x + 40, yy + 4, word, 8.5,
+                        C["t2"] if not dim else C["t3"], 600))
+        yy += 24
+    out.append(text(x + w / 2, y + h - 10, "open ›", 8, C["brandA"], 700, "middle"))
     return out
 
 
@@ -1052,7 +1066,7 @@ def render(spec):
     # because close() emits the closing tag — appending past it produces a
     # valid-looking file that no renderer will parse.
     if spec.get("overlay_agents"):
-        out += agent_overlay(SY + SH - 52 - 58, spec["overlay_agents"])
+        out += agent_overlay(spec["overlay_agents"])
     out += close()
     return "".join(out)
 
@@ -1325,7 +1339,7 @@ SCREENS = [
          accent="brand", tab=1, overlay_agents=(2, 1, 1), cards=[
         dict(icon="chat", color="brand", k="You", s="how did the referral go?"),
         dict(icon="link", color="teal", k="Dr Whitcomb", s="three of four phases done"),
-        dict(icon="eye", color="amber", k="The bar follows you", s="the work stays where it is"),
+        dict(icon="eye", color="amber", k="The lights follow you", s="the work stays where it is"),
     ]),
 ]
 

@@ -515,21 +515,24 @@ def agent_overlay(counts):
     dashboard convention already reserves for status, and the one place a
     persistent strip does not cover something a person is reading.
     """
-    w, h = 250, 42
+    w, h = 132, 116
     x = WIN_X + WIN_W - w - 24
-    y = WIN_Y + WIN_H - h - 22
-    o = [rrect(x, y, w, h, 13, "url(#gCard)", C["brandA"], 1.3)]
-    o.append(text(x + 14, y + 26, "AGENTS", 8.5, C["t3"], 700, "start", 0.7))
-    cx = x + 72
-    for colour, n in zip(("green", "amber", "red"), counts):
+    y = WIN_Y + WIN_H - h - 24
+    o = [rrect(x, y, w, h, 15, "rgba(8,12,22,0.62)", A(C["brandA"], 0.5), 1)]
+    yy = y + 26
+    rows = (("green", "running"), ("amber", "need help"), ("red", "stopped"))
+    for (colour, word), n in zip(rows, counts):
         col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
         dim = n == 0
-        o.append(f'<circle cx="{cx}" cy="{y+21}" r="5.2" fill="{col}"'
-                 + (' opacity="0.25"' if dim else "") + "/>")
-        o.append(text(cx + 10, y + 26, str(n), 13,
+        o.append(f'<circle cx="{x+18}" cy="{yy}" r="5.5" fill="{col}"'
+                 + (' opacity="0.28"' if dim else "") + "/>")
+        o.append(text(x + 32, yy + 5, str(n), 14,
                       col if not dim else C["t3"], 800))
-        cx += 40
-    o.append(text(x + w - 14, y + 26, "open ›", 10, C["brandA"], 700, "end"))
+        o.append(text(x + 46, yy + 5, word, 9.5,
+                      C["t2"] if not dim else C["t3"], 600))
+        yy += 28
+    o.append(text(x + w / 2, y + h - 12, "open \u203a", 9,
+                  C["brandA"], 700, "middle"))
     return o
 
 
