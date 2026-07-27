@@ -1467,6 +1467,33 @@ SCREENS = [
 ]
 
 
+# Characters that must not reach a filename, because the filename becomes a URL
+# in the README's <img src>. A "?" starts a query string and a "#" a fragment;
+# an apostrophe survives the URL but is escaped to %27 by GitHub's raw host, so
+# a README written with the plain character resolves to nothing.
+#
+# This shipped: screen 74 "You're on Basic" produced `74-you're-on-basic.svg`
+# while the README pointed at `74-youre-on-basic.svg`, and the gallery drew a
+# broken icon. QRME had already been bitten twice (a comma, then a "?") and
+# gained this function; jim-mini did not, which is precisely why nothing here
+# caught it.
+_UNSAFE = str.maketrans({c: None for c in "?#,:!'\"()[]{}<>|\\^`*$&+;@="})
+
+
+def slug(title: str) -> str:
+    """The filename part of a screen's title, safe to put in a URL."""
+    out = (title.lower().replace(" & ", "-").replace(" ", "-")
+                .replace("\u00e9", "e").translate(_UNSAFE))
+    while "--" in out:
+        out = out.replace("--", "-")
+    return out.strip("-")
+
+
+def filename(screen: dict) -> str:
+    """The one place a screen's file is named."""
+    return f'{screen["num"]:02d}-{slug(screen["title"])}.svg'
+
+
 def main():
     global PLATFORM
     total = 0
@@ -1475,8 +1502,7 @@ def main():
         outdir = OUT if not sub else os.path.join(OUT, sub)
         os.makedirs(outdir, exist_ok=True)
         for s in SCREENS:
-            slug = s["title"].lower().replace(" & ", "-").replace(" ", "-")
-            fn = f'{s["num"]:02d}-{slug}.svg'
+            fn = filename(s)
             with open(os.path.join(outdir, fn), "w") as f:
                 f.write(render(s))
             total += 1
