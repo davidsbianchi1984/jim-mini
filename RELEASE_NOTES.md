@@ -1,11 +1,11 @@
-# JIM-mini v0.4.5 — release notes
+# JIM-mini v0.4.6 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.4.5` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.4.6` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.4.5** — the round where verification matched the deployment.
+**JIM-mini v0.4.6** — the round where verification matched the deployment.
 One of three interoperating products, all three cut together at this
 version.
 
@@ -40,7 +40,7 @@ sign-in.
 ### Install
 
 Download the installer for your OS from the assets below (built by the
-`desktop-release` workflow from the `app-v0.4.5` tag) and double-click —
+`desktop-release` workflow from the `app-v0.4.6` tag) and double-click —
 create your account and you are in.
 
 **Full changelog:** https://github.com/davidsbianchi1984/jim-mini/blob/main/CHANGELOG.md
