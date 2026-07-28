@@ -111,7 +111,7 @@ PROVENANCE: dict[str, str] = {
 # is an image. See `for_agent`.
 AGENT_FIELDS: tuple[str, ...] = ("id", "kind", "site", "site_label",
                                  "captured_at", "provenance", "note",
-                                 "intimate", "seen_by_clinician")
+                                 "intimate", "released_to_clinician")
 
 MAX_BYTES = 25 * 1024 * 1024        # a phone photo or a short clip
 VAULT_SCOPE = "medical/capture"
@@ -300,7 +300,11 @@ def read(capture_id: str) -> dict:
     d["site_label"] = SITES.get(d["site"], d["site"])
     d["stripped"] = json.loads(d["stripped"])
     d["provenance_note"] = PROVENANCE.get(d["provenance"], "")
-    d["seen_by_clinician"] = bool(d.get("released_at"))
+    # "released", not "seen". JIM stamps this when a referral releases
+    # the capture; it has no way to observe a clinician opening it, and a
+    # field claiming otherwise would be inventing a fact about somebody
+    # else's behaviour.
+    d["released_to_clinician"] = bool(d.get("released_at"))
     return d
 
 
@@ -379,6 +383,23 @@ def attach_to_referral(capture_ids: list[str], user_id: str) -> dict:
                  "release each one deliberately or leave it out"
                  if excluded else None),
     }
+
+
+# What a *clinician* is told when a referral carries a capture. A person, not
+# a model, so the ceiling in `for_agent` does not apply — but still not the
+# bytes, which come out of the vault through `content_for_care` when they open
+# it deliberately. Kept as its own list so the agent view and the clinician
+# view can never drift into each other by sharing one.
+CLINICIAN_FIELDS: tuple[str, ...] = ("id", "kind", "site", "site_label",
+                                     "captured_at", "provenance",
+                                     "provenance_note", "note", "intimate",
+                                     "released_to_clinician")
+
+
+def for_clinician(capture_id: str) -> dict:
+    """The metadata that travels with a referral. Never an image."""
+    cap = read(capture_id)
+    return {k: cap[k] for k in CLINICIAN_FIELDS if k in cap}
 
 
 def mark_released(capture_id: str) -> dict:

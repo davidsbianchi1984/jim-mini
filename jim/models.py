@@ -179,6 +179,9 @@ class LocalitySet(BaseModel):
 class ReferralPrepare(BaseModel):
     condition: str                     # picks the specialist and the area
     provider_id: str                   # the clinician, from /referral/clinicians
+    # Chosen deliberately, never swept in by a condition match. Intimate sites
+    # are filtered out again on the way through — see capture.attach_to_referral.
+    capture_ids: list[str] = []
 
 
 class SpecialistTaskStart(BaseModel):

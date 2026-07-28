@@ -18,6 +18,7 @@ import pytest
 
 from jim import capture
 from jim.tests.conftest import enroll
+from jim.tests.test_referral import tandem  # noqa: F401
 
 
 # A minimal JPEG carrying an APP1 (Exif) segment with a recognisable payload,
@@ -416,3 +417,134 @@ def test_another_user_cannot_read_your_captures(client):
 
     as_user(client, my_token)
     assert client.get(f"/users/{mine}/captures").status_code == 200
+
+
+# -- 5. the claim that a photograph reaches a clinician ------------------------
+#
+# `capture.py` said from its first line that a photograph could "reach a real
+# clinician through the referral flow that already exists". For one release
+# that sentence was true of nothing: `attach_to_referral` returned a decision
+# no caller consumed, `mark_released` was dead code, and `referral.prepare`
+# had no idea captures existed. The README, the walkthrough and the pull
+# request all repeated it. These tests are the join.
+
+def _tandem_with_capture(tandem, site="forearm"):
+    """A live tandem link and one capture on it.
+
+    Uses `test_referral.py`'s fixture rather than the plain tandem factory,
+    because `referral.prepare` needs a *linked* specialist — a registered
+    tandem specialist plus one turn of guidance to mint the interactor token.
+    The first version of this helper skipped instead, and a skip on the test
+    that proves the whole feature works is not a pass.
+    """
+    from jim import capture as cap_mod
+
+    client, user, fake = tandem()
+    v = FakeVault()
+    client.app.state.pdi = v
+    c = cap_mod.take({"id": user, "birthdate": "1990-01-01"}, "photo", site,
+                     _b64(_jpeg_with_exif()), condition="physical_distress",
+                     pdi=v, intimate_consent=True)
+    return client, user, c
+
+
+def test_a_prepared_referral_carries_the_captures(tandem):
+    """The join itself. Without it the whole feature is a docstring."""
+    client, user, c = _tandem_with_capture(tandem)
+    out = client.post(f"/users/{user}/referral/prepare", json={
+        "condition": "physical_distress", "provider_id": "prv_1",
+        "capture_ids": [c["id"]]})
+    body = out.json()
+    assert body["prepared"] is True, body
+    assert [x["id"] for x in body["captures"]] == [c["id"]]
+    assert body["referral_request_id"]
+
+
+def test_a_referral_with_no_captures_carries_none(tandem):
+    """The default. Nothing is swept in by matching a condition."""
+    client, user, c = _tandem_with_capture(tandem)
+    body = client.post(f"/users/{user}/referral/prepare", json={
+        "condition": "physical_distress", "provider_id": "prv_1"}).json()
+    assert body["prepared"] is True
+    assert body["captures"] == []
+
+
+def test_releasing_a_referral_stamps_only_its_own_captures(tandem):
+    """And `mark_released` is finally reachable from a route."""
+    from jim import capture as cap_mod
+
+    client, user, c = _tandem_with_capture(tandem)
+    body = client.post(f"/users/{user}/referral/prepare", json={
+        "condition": "physical_distress", "provider_id": "prv_1",
+        "capture_ids": [c["id"]]}).json()
+    assert cap_mod.read(c["id"])["released_to_clinician"] is False
+    out = client.post(
+        f"/users/{user}/referral/requests/{body['referral_request_id']}"
+        "/released")
+    assert out.status_code == 200, out.text
+    assert out.json()["released"] == [c["id"]]
+    assert cap_mod.read(c["id"])["released_to_clinician"] is True
+
+
+def test_somebody_elses_referral_cannot_be_released(tandem):
+    client, user, c = _tandem_with_capture(tandem)
+    body = client.post(f"/users/{user}/referral/prepare", json={
+        "condition": "physical_distress", "provider_id": "prv_1",
+        "capture_ids": [c["id"]]}).json()
+    from jim.tests.conftest import enroll
+
+    other = enroll(client, plan="pro", display_name="Rae")
+    out = client.post(
+        f"/users/{other}/referral/requests/{body['referral_request_id']}"
+        "/released")
+    assert out.status_code == 404, out.text
+
+
+def test_the_package_never_carries_the_image(tandem):
+    """A user reads this package on screen and a clinician receives it. The
+    bytes stay in the vault and come out through `content_for_care`."""
+    from jim import capture as cap_mod
+
+    client, user, c = _tandem_with_capture(tandem)
+    shown = cap_mod.for_clinician(c["id"])
+    for forbidden in ("content", "image", "data", "blob", "bytes_b64",
+                      "vault_key", "digest"):
+        assert forbidden not in shown, f"{forbidden!r} reached a clinician view"
+    assert shown["id"] == c["id"] and shown["site"] == "forearm"
+
+
+def test_an_intimate_capture_never_rides_in_on_a_referral(tandem):
+    """Same rule as everywhere else it appears, enforced on this path by
+    going through `attach_to_referral` rather than re-deciding here."""
+    from jim import capture as cap_mod
+
+    client, user, c = _tandem_with_capture(tandem, site="groin")
+    decision = cap_mod.attach_to_referral([c["id"]], user)
+    assert decision["release"] == []
+    assert decision["explicit"] == [c["id"]]
+
+
+def test_releasing_stamps_the_captures_and_says_what_it_cannot_know(client):
+    """`mark_released` was dead code. And the field it sets is
+    `released_to_clinician`, not `seen_by_clinician`: released is not opened,
+    and JIM has no way to observe the second."""
+    from jim import capture as cap_mod
+    from jim.tests.conftest import enroll
+
+    user = enroll(client, plan="pro")
+    v = FakeVault()
+    c = cap_mod.take({"id": user, "birthdate": "1990-01-01"}, "photo",
+                     "forearm", _b64(_jpeg_with_exif()), pdi=v)
+    assert cap_mod.read(c["id"])["released_to_clinician"] is False
+    cap_mod.mark_released(c["id"])
+    assert cap_mod.read(c["id"])["released_to_clinician"] is True
+
+
+def test_no_capture_view_claims_a_clinician_has_seen_it(client):
+    """The field used to be called `seen_by_clinician`, which is a claim about
+    somebody else's behaviour that this app cannot check."""
+    from jim import capture as cap_mod
+
+    assert "seen_by_clinician" not in cap_mod.AGENT_FIELDS
+    assert "seen_by_clinician" not in cap_mod.CLINICIAN_FIELDS
+    assert "released_to_clinician" in cap_mod.CLINICIAN_FIELDS

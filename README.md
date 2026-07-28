@@ -414,6 +414,30 @@ somebody photograph it (or film it, when the thing only shows in motion — a
 tremor, a gait), attach it to a condition, and have it reach a real clinician
 through the referral flow that already exists.
 
+**That last clause was a claim with nothing behind it for one release**, and it
+is worth recording rather than quietly fixing. `attach_to_referral` returned a
+decision no caller consumed, `mark_released` was never called by anything, and
+`referral.prepare` had no idea captures existed — while this README, the
+walkthrough and the module docstring all said a photograph could travel with a
+referral. `POST …/referral/prepare` now takes `capture_ids`, the package it
+returns carries their **metadata** so the person reads exactly what would go
+before signing, and `POST …/referral/requests/{id}/released` stamps them.
+`test_a_prepared_referral_carries_the_captures` is the join, and it is
+mutation-checked.
+
+**The bytes never ride along**, on that path either: what travels is kind,
+site, when and provenance — enough for a clinician to know a photograph exists
+and open it deliberately through `content_for_care`. Intimate sites are
+filtered out again on the way through, by going back through
+`attach_to_referral` rather than re-deciding, so there is one place that rule
+lives.
+
+**And the field is `released_to_clinician`, not `seen_by_clinician`.** It used
+to be the second, which is a claim about somebody else's behaviour that this
+app has no way to check — the signing ceremony belongs to QRME and JIM never
+sees the clinician open anything. Released is not opened, and on a record a
+clinician might later be asked about, the difference is not decoration.
+
 **This is the most sensitive payload either product will ever hold**: a
 photograph of somebody's body, taken at home, of the thing they are frightened
 about. Four rules follow from that, and each is asserted rather than intended.

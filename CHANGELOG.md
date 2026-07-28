@@ -19,6 +19,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A photograph never actually reached a clinician.** `jim/capture.py` said
+  from its first line that one could "reach a real clinician through the
+  referral flow that already exists", and for a release that sentence was true
+  of nothing: `attach_to_referral` returned a decision no caller consumed,
+  `mark_released` was dead code, and `referral.prepare` had no idea captures
+  existed. The README, the walkthrough and the pull request all repeated the
+  claim. `POST …/referral/prepare` now takes `capture_ids`; the package it
+  returns carries their metadata — never bytes — so the person reads exactly
+  what would go before signing; and `POST …/referral/requests/{id}/released`
+  stamps them. Mutation-checked.
+
+- **`seen_by_clinician` claimed something the app cannot know.** The signing
+  ceremony belongs to QRME and JIM never observes a clinician opening
+  anything, so the field is now `released_to_clinician`. Released is not
+  opened, and on a record a clinician might later be asked about that is not
+  a distinction worth blurring.
+
+- **A skipped test on the feature's own join.** The first version of
+  `test_a_prepared_referral_carries_the_captures` used a fixture with no
+  tandem link and skipped rather than failed. A skip on the test that proves
+  the whole feature works is not a pass; it now builds a real linked
+  specialist.
+
 - **The walkthrough and screen 79 described encryption but not custody**,
   which is the part the free plan is actually about. Both now say we hold it
   and you have access to it.

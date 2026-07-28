@@ -1521,8 +1521,25 @@ def create_app(qrme_client: QRMEClient | None = None,
         """
         _user_or_404(user_id, request)
         spec = guardian._specialist(body.condition)
-        return referral.prepare(user_id, body.condition, body.provider_id,
-                                spec, app.state.qrme)
+        try:
+            return referral.prepare(user_id, body.condition, body.provider_id,
+                                    spec, app.state.qrme, body.capture_ids)
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.post("/users/{user_id}/referral/requests/{request_id}/released")
+    def confirm_referral_release(user_id: str, request_id: str,
+                                 request: Request) -> dict:
+        """The client reports that the QRME signing ceremony completed.
+
+        JIM cannot observe it — the signature is raised against QRME's relying
+        party — so this is a report, and `jim/referral.py` says so plainly.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return referral.mark_released(user_id, request_id)
+        except referral.ReferralError as exc:
+            raise HTTPException(404, str(exc)) from None
 
     @app.get("/users/{user_id}/referral/requests")
     def referral_requests(user_id: str, request: Request) -> list[dict]:

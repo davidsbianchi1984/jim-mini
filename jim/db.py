@@ -357,6 +357,19 @@ CREATE TABLE IF NOT EXISTS referral_requests (
     created_at       TEXT NOT NULL
 );
 
+-- Which captures a referral request is releasing.
+--
+-- A separate table rather than a column on `referral_requests`, because this
+-- schema has no migrations — every statement here is CREATE TABLE IF NOT
+-- EXISTS, so an added column never reaches a database that already exists.
+-- A new table does.
+CREATE TABLE IF NOT EXISTS referral_captures (
+    referral_request_id TEXT NOT NULL REFERENCES referral_requests(id),
+    capture_id          TEXT NOT NULL REFERENCES captures(id),
+    created_at          TEXT NOT NULL,
+    PRIMARY KEY (referral_request_id, capture_id)
+);
+
 CREATE TABLE IF NOT EXISTS specialist_tasks (
     id               TEXT PRIMARY KEY,
     user_id          TEXT NOT NULL REFERENCES users(id),

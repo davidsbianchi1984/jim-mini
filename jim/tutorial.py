@@ -111,7 +111,7 @@ LESSONS: tuple[dict, ...] = (
     dict(key="capture", chapter="Beyond the app", title="Showing it",
          what="Some things text loses — a rash, a wound that is not closing, "
               "a tremor. Photograph it, mark where on the body, and it is "
-              "sealed in the encrypted vault and can travel with a referral "
+              "sealed in the encrypted vault and travels with a referral "
               "to a real clinician. Location data is stripped out of the "
               "image first, because a photo taken at home carries your "
               "address. And the Guardian is told a photograph exists and "
