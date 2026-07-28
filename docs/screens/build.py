@@ -1523,14 +1523,14 @@ SCREENS = [
     # The two postures side by side. The last two cards are the ones a pricing
     # page normally leaves out, and leaving them out is how a product ends up
     # selling absolution rather than encryption.
-    dict(num=79, title="Where It Lives", sub="Open cloud, or sealed vault",
+    dict(num=79, title="Where It Lives", sub="Who holds it, and how",
          accent="teal", tab=0, cards=[
-        dict(icon="cloud", color="amber", k="Free · open cloud",
-             s="JIM's own database, in the clear"),
+        dict(icon="cloud", color="amber", k="Free · we hold it",
+             s="we host it, you have access"),
         dict(icon="eye", color="red", k="Operators can read it",
              s="so can a lawful request"),
-        dict(icon="lock", color="green", k="Basic · sealed vault",
-             s="under a key you can hold"),
+        dict(icon="lock", color="green", k="Basic · you hold it",
+             s="sealed to you, not to us"),
         dict(icon="shield", color="teal", k="Upgrading seals ahead",
              s="it cannot un-expose the past"),
         dict(icon="warn", color="brand", k="A lapse unseals none",

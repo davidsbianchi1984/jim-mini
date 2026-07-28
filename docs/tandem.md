@@ -206,6 +206,24 @@ own client and token — both integrations are live:
 
   JIM's own database keeps only key references, prediction reads prior samples
   back from the vault, and `DELETE /data/{user_id}` purges it.
+**All of the above describes a paid plan, and that qualifier is new.** Both
+products now have a free tier whose storage posture is an **open cloud**:
+JIM-mini and QRME hold the record themselves, over ordinary HTTPS, and it never
+reaches PDI at all. The person has access to their data; they do not hold it.
+See `jim/storage.py` and `qrme/storage.py`, which name the two arrangements and
+carry the difference on every surface that states a plan.
+
+The gate is `storage.vault_for(plan, pdi)`, and it asks about the **plan**
+rather than the deployment. It used to ask the other question — every seal
+point read `if pdi is not None` — so on a PDI-backed deployment a free account's
+records were being sealed into a vault it was not paying for and could not hold
+a key to. Reads and deletions deliberately still reach the real vault, so an
+account that moved down from a paid plan can read its sealed history back and
+have it purged on request.
+
+Nothing on this page is weaker as a result. A vault has one posture; what
+changed is which accounts put anything in it.
+
 - **qrme** (`qrme/pdi_client.py`, `QRME_PDI_URL` + `QRME_PDI_TOKEN`) seals under
   `qrme/{profile}/…`: `sources/…` (life stories, writings, conversations, voice
   transcripts), `rated/events/…` (placement earnings on the rated tier, held to

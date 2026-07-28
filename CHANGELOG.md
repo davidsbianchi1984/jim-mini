@@ -19,6 +19,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The walkthrough and screen 79 described encryption but not custody**,
+  which is the part the free plan is actually about. Both now say we hold it
+  and you have access to it.
+
+- **`docs/tandem.md` described sealing as unconditional.** It was written when
+  a paid plan was the only kind. Now says which plans reach PDI at all —
+  byte-identical in all three repositories, as that file always is.
+
+- A guard ported from QRME rejecting user-facing copy that hardcodes a count
+  of refusals disagreeing with `len(SENSITIVE)`. JIM-mini's count is right
+  today; this is here for the day somebody adds a third.
+
 - **A free account's record was being sealed into the vault.** Every seal
   point read `if pdi is not None` — whether the *deployment* has a vault, not
   whether the *account* is on a plan that uses one. On a PDI-backed deployment

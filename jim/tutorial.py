@@ -134,12 +134,14 @@ LESSONS: tuple[dict, ...] = (
          try_it="Open Choose a Plan and read what is never gated."),
     dict(key="storage", chapter="Beyond the app",
          title="Where your record lives",
-         what="On the free plan nothing is private. Your record — the "
-              "journal, your check-in notes, your health readings — sits in "
-              "this app's own database in the clear, where the people who run "
-              "it can read it and a lawful request reaches it. Basic seals "
-              "all of it in the encrypted vault under a key you can hold, and "
-              "that is the only thing the $20 buys: the features are "
+         what="On the free plan nothing is private, and we hold it. Your "
+              "record — the journal, your check-in notes, your health "
+              "readings — reaches us over an ordinary connection, sits in "
+              "this app's own database in the clear, and never goes through a "
+              "vault. The people who run it can read it and a lawful request "
+              "reaches it, and you have access to it for as long as you have "
+              "an account. Basic seals all of it under a key you can hold, "
+              "and that is the only thing the $20 buys: the features are "
               "identical. Two things are never stored in the clear whatever "
               "you have chosen — a photograph of a body, and a child's record "
               "on a guardian's account, because the child did not pick the "

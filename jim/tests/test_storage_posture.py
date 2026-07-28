@@ -638,3 +638,66 @@ def test_erasure_still_purges_the_vault_after_a_downgrade(counted):
     out = counted.delete(f"/data/{user}")
     assert out.status_code == 200, out.text
     assert counted.vault.store == {}, "sealed records survived erasure"
+
+
+# -- the copy cannot go stale behind the list ----------------------------------
+
+_COUNT_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+                "six": 6, "seven": 7, "eight": 8}
+
+
+def test_no_copy_hardcodes_a_stale_count_of_refusals(client):
+    """Ported from QRME, where this drift actually shipped.
+
+    `SENSITIVE` gained a third entry there and four pieces of user-facing copy
+    went on saying **two** — a screen card, a screen subtitle, the walkthrough
+    lesson and a README heading. A number written into prose is a duplicate of
+    a list, and duplicates drift silently: nothing fails when a dict grows.
+
+    JIM-mini's count happens to be right today. This is here so it stays right
+    the day somebody adds a third.
+    """
+    import re
+
+    n = len(storage.SENSITIVE)
+    root = pathlib.Path(__file__).resolve().parents[2]
+    pattern = re.compile(
+        # No em dash and a short window: the first version reached across
+        # "all three products — never stored, so it cannot disagree", which is
+        # a sentence about the agent light. A guard with a false positive gets
+        # loosened until it catches nothing.
+        r"\b(one|two|three|four|five|six|seven|eight)\b[^.\n\u2014]{0,25}?"
+        r"(we refuse|are refused|refused rather|never stored|"
+        r"will not leave open|the open store will not hold)",
+        re.IGNORECASE)
+    for rel in ("jim/tutorial.py", "docs/screens/build.py", "README.md"):
+        text = (root / rel).read_text()
+        for m in pattern.finditer(text):
+            said = _COUNT_WORDS[m.group(1).lower()]
+            assert said == n, (
+                f"{rel} says {m.group(1)!r} where SENSITIVE holds {n}: "
+                f"{m.group(0)!r}")
+
+
+def test_the_refusal_screen_names_every_kind_on_the_list(client):
+    build = (pathlib.Path(__file__).resolve().parents[2]
+             / "docs" / "screens" / "build.py").read_text()
+    start = build.index("num=80")
+    screen = build[start:build.index("], button=", start)].lower()
+    for kind, hint in [("body_image", "photo of a body"),
+                       ("dependant_record", "child's record")]:
+        assert kind in storage.SENSITIVE
+        assert hint in screen, (
+            f"screen 80 does not name {kind!r} (looked for {hint!r})")
+
+
+def test_the_walkthrough_says_who_holds_it(client):
+    """The custody framing is the point of the plan, so the lesson has to
+    carry it rather than only describing encryption."""
+    from jim import tutorial
+
+    lesson = next(le for le in tutorial.LESSONS if le["key"] == "storage")
+    what = lesson["what"].lower()
+    assert "we hold it" in what
+    assert "never goes through a vault" in what
+    assert "access to it" in what
