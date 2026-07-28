@@ -81,6 +81,39 @@ class Enroll(BaseModel):
     devices: list[str] = Field(default_factory=list)   # e.g. ["smart_watch"]
 
 
+class Signup(Enroll):
+    """Creating an account: everything enrollment takes, plus the email that
+    will be verified before any of it exists, and a password."""
+    email: str
+    password: str
+
+
+class SignIn(BaseModel):
+    """Returning to an account (jim/accounts.py)."""
+    email: str
+    password: str
+
+
+class VerifyEmail(BaseModel):
+    """Presenting the emailed code proves the caller holds the inbox."""
+    email: str
+    code: str
+
+
+class ResendCode(BaseModel):
+    email: str
+
+
+class ResetRequest(BaseModel):
+    email: str
+
+
+class ResetPassword(BaseModel):
+    email: str
+    code: str
+    new_password: str
+
+
 class SpecialistRegister(BaseModel):
     condition: Condition
     mode: Literal["local", "tandem"] = "local"

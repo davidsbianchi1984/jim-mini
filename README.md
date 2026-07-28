@@ -1,6 +1,6 @@
 # JIM-mini / Guardian
 
-**Current release: v0.4.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.4.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -289,6 +289,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.4.3** | **The round where the app got a front door and a key of your own.** Email + password accounts with the address proven by a 6-digit emailed code **before the user exists** — a mistyped address never grows a record nobody can reach; resets revoke every session; neither login nor reset can fish for who has an account. Bring-your-own model key: paste your credential in Settings and your Guardian's replies run on it, never stored server-side, the deployment's key as the lent fallback. And the installer finally runs itself: the whole Python backend ships frozen inside it and the app spawns it at launch — double-click-and-done |
 | **0.4.2** | **The round where the installer you download actually gets you running.** A first-run bug report from a real Windows install drove all of it: the enrollment form stops pre-filling a developer's sample name and birthdate, *"Failed to fetch"* becomes a screen that names the missing backend and takes a URL, `python -m jim serve` answers the packaged console by default instead of dying cross-origin, the window stops calling itself QRME, the installers stop being labelled 0.3.3 (all five version strings now guarded together), and the Anthropic provider defaults to `claude-opus-5` |
 | **0.4.1** | **The round where a photograph really reached a clinician, and free got honest.** Clinical capture — a rash, a tremor, a wound — sealed in the vault, location stripped from the bytes, never shown to an agent, never an intimate site for a child; and the referral join that made "it travels with a referral" true instead of written. Plus a free plan under **platform custody** — JIM-mini holds the record, you have access, no vault at any point — with every alarm path identical, a child's record and a body photograph refused from the open store, and a vault gate that finally asks about the plan rather than the deployment |
 | **0.4.0** | **The round where it got a price, and drew a line no price stands on.** Basic $20/month is the Guardian and **every emergency path**; Pro $130/month adds the watch, early warning, specialists and synthetic agents. The first implementation gated `/monitor` as "proactive monitoring" — which put a 402 between somebody submitting a blood oxygen of 84 and their escalation. `NEVER_GATED` is checked first now, and a test plants that mistake deliberately to prove it holds. Plus a corner pane that **opens on an alarm whatever it was set to** |
@@ -363,11 +364,28 @@ journal, a provider-shareable summary. Identity is proven by a bearer
 
 - `POST /enroll` returns a `user_token` **once**. Send it as
   `Authorization: Bearer <token>` on every `/{user_id}` endpoint.
+- **Accounts** (`jim/accounts.py`): `POST /signup` takes email + password +
+  the enrollment fields and **creates nothing yet** — a 6-digit code goes to
+  the address (SMTP when `JIM_SMTP_HOST` is configured, printed to the
+  server terminal otherwise), and only `POST /verify-email` enrolls the user
+  and mints the first token, so a mistyped address never grows a record
+  nobody can reach. `POST /signin` (email + password) mints fresh tokens
+  afterwards and refuses unverified addresses; `POST /verify-email/resend`
+  retires the old code; `POST /password/reset/request` +
+  `POST /password/reset` change a forgotten password by the same emailed-code
+  proof and revoke every existing session. Passwords are PBKDF2-hashed with
+  per-account salts; codes are hashed at rest, single-use, and expire in 15
+  minutes; unknown-address and wrong-password answers are indistinguishable.
+- **Bring your own model key:** send `x-llm-api-key` on any request (the
+  console's Settings stores it device-side) and that request's generations
+  run on your credential — never persisted, never logged. Without one, the
+  deployment's env key answers (an operator lending theirs out).
 - Every per-user surface is PHI, so **all** of them are gated: a missing or
   invalid token is **401**; a valid token for a different user is **403**.
 - Only the SHA-256 hash of a token is stored (`api_tokens`), so a database
   leak never yields a usable credential.
 - **Open (no token):** `GET /health`, `GET /cloud/status`, `POST /enroll`,
+  the account routes above (they are how a token is first obtained),
   and `POST /specialists` (service setup).
 - `DELETE /data/{user_id}` erases the user **and** revokes their token.
 
@@ -884,6 +902,13 @@ section), **desktop** (`python -m jim desktop`, the Electron app on this
 PC), **packaged installer** (`.dmg`/`.exe`/`.AppImage` from the releases
 page — no toolchain needed), or **headless API** (`python -m jim serve`).
 Same backend, same data, same token checks in every form.
+
+The packaged installer is **double-click-and-done**: it ships the whole
+Python backend as a frozen binary (`packaging/backend_entry.py`, built by
+PyInstaller in the release workflow) and the app spawns it at launch when no
+backend is already answering — no Python install, no terminal, data under
+the app's own user-data directory, and the spawned backend dies with the
+window. A backend you already run yourself is left alone.
 
 `python -m jim phone` builds the console if it's missing (first run installs the
 npm dependencies too), prints the phone URL **with a QR code right in the

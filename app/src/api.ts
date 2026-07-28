@@ -15,9 +15,20 @@ function defaultBase(): string {
 export function getBase(): string { return localStorage.getItem("jim.base") || defaultBase(); }
 export function setBase(url: string) { localStorage.setItem("jim.base", url.replace(/\/+$/, "")); }
 
+// Bring-your-own model key: stored on this device only, sent per-request as
+// x-llm-api-key so generations run on the user's own credential. The backend
+// never persists it; without one, the deployment's key (if any) answers.
+export function getLlmKey(): string { return localStorage.getItem("jim.llmKey") || ""; }
+export function setLlmKey(key: string) {
+  if (key.trim()) localStorage.setItem("jim.llmKey", key.trim());
+  else localStorage.removeItem("jim.llmKey");
+}
+
 async function req<T>(path: string, opts: { method?: string; body?: unknown; token?: string } = {}): Promise<T> {
   const headers: Record<string, string> = { "content-type": "application/json" };
   if (opts.token) headers["authorization"] = `Bearer ${opts.token}`;
+  const llmKey = getLlmKey();
+  if (llmKey) headers["x-llm-api-key"] = llmKey;
   let res: Response;
   try {
     res = await fetch(getBase() + path, {
@@ -62,6 +73,25 @@ export const api = {
   pair: () => req<PairInfo>("/pair"),
   enroll: (body: { display_name: string; birthdate: string; terms_consent: boolean }) =>
     req<{ id: string; display_name: string; user_token: string }>("/enroll", { method: "POST", body }),
+  // Accounts: the email is verified (emailed code) before the user exists.
+  signup: (body: { email: string; password: string; display_name: string; birthdate: string; terms_consent: boolean }) =>
+    req<{ account_id: string; email: string; verified: boolean; code_delivery: string }>(
+      "/signup", { method: "POST", body }),
+  verifyEmail: (body: { email: string; code: string }) =>
+    req<{ id: string; display_name: string; user_token: string }>(
+      "/verify-email", { method: "POST", body }),
+  resendCode: (email: string) =>
+    req<{ email: string; code_delivery: string }>(
+      "/verify-email/resend", { method: "POST", body: { email } }),
+  signin: (body: { email: string; password: string }) =>
+    req<{ user_id: string; user_token: string; email: string; display_name?: string }>(
+      "/signin", { method: "POST", body }),
+  requestReset: (email: string) =>
+    req<{ email: string; code_delivery: string }>(
+      "/password/reset/request", { method: "POST", body: { email } }),
+  resetPassword: (body: { email: string; code: string; new_password: string }) =>
+    req<{ email: string; reset: boolean }>(
+      "/password/reset", { method: "POST", body }),
   monitor: (uid: string, body: { heart_rate: number; respiration?: number; stress_level?: number }, token: string) =>
     req<MonitorResult>(`/monitor/${uid}`, { method: "POST", body, token }),
   checkin: (uid: string, body: { mood: number; energy: number; note?: string }, token: string) =>

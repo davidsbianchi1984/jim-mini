@@ -10,7 +10,8 @@ from datetime import date, datetime
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
-from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
+from . import (accounts, app_connectors, auth, beacons, catalog, coach,
+               contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
                rota, social, storage, terms as terms_mod, tiers, tutorial)
@@ -26,8 +27,9 @@ from .models import (
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     LanguageChoice, LocalitySet, MicAttach, MicGain, MicHandover,
-    ReferralPrepare, RobotCommand,
-    TranslateRequest, WaiverSign,
+    ReferralPrepare, ResendCode, ResetPassword, ResetRequest, RobotCommand,
+    SignIn, Signup,
+    TranslateRequest, VerifyEmail, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
     CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark,
@@ -51,7 +53,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.4.2",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.4.3",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -85,6 +87,18 @@ def create_app(qrme_client: QRMEClient | None = None,
         app.add_middleware(
             CORSMiddleware, allow_origins=_allow, allow_credentials=False,
             allow_methods=["*"], allow_headers=["*"])
+
+    # Bring-your-own model key: ``x-llm-api-key`` rides the request into a
+    # context variable the provider layer reads — the caller's generations run
+    # on their credential, which is never persisted and never logged. Requests
+    # without one use the deployment's env key (the operator lending theirs).
+    @app.middleware("http")
+    async def _llm_request_key(request: Request, call_next):
+        token = llm.set_request_key(request.headers.get("x-llm-api-key"))
+        try:
+            return await call_next(request)
+        finally:
+            llm.reset_request_key(token)
 
     # Tandem is optional: injected client (tests) > JIM_QRME_URL env > none.
     if qrme_client is None and os.environ.get("JIM_QRME_URL"):
@@ -336,6 +350,78 @@ def create_app(qrme_client: QRMEClient | None = None,
         # The user token is shown exactly once, here.
         user["user_token"] = auth.issue("user", user["id"])
         return user
+
+    # ---- accounts: email + password, address verified first ---------------
+
+    @app.post("/signup", status_code=201,
+              dependencies=[Depends(auth.require_signup_key)])
+    def signup(body: Signup) -> dict:
+        """Create an account. The enrollment is validated now but held
+        pending: nothing exists — no user, no token, no membership — until
+        the emailed code proves the caller holds the address. The response
+        says how the code travelled (``smtp``, or ``console`` — printed to
+        the server terminal when no mail is configured), never the code."""
+        if not body.terms_consent:
+            raise HTTPException(403, "consent to terms of use is required to enroll")
+        if body.birthdate and _age(body.birthdate) < 18 and not body.guardian_consent:
+            raise HTTPException(403, "minors require parent/guardian consent")
+        if body.language and body.language not in i18n.SUPPORTED:
+            raise HTTPException(
+                422, f"language must be one of {', '.join(i18n.SUPPORTED)}")
+        try:
+            return accounts.signup(
+                body.email, body.password,
+                body.model_dump(mode="json", exclude={"email", "password"}))
+        except accounts.AccountError as exc:
+            raise HTTPException(exc.status, exc.detail)
+
+    @app.post("/verify-email")
+    def verify_email(body: VerifyEmail) -> dict:
+        """Trade the emailed code for the account's first session: the user
+        is enrolled here (not at signup), and the token is shown once."""
+        try:
+            return accounts.verify(body.email, body.code)
+        except accounts.AccountError as exc:
+            raise HTTPException(exc.status, exc.detail)
+
+    @app.post("/verify-email/resend")
+    def resend_code(body: ResendCode) -> dict:
+        """Send a fresh code, retiring the previous ones. Answers the same
+        whether or not the address has an account — this endpoint is not an
+        address oracle."""
+        try:
+            return accounts.resend(body.email)
+        except accounts.AccountError as exc:
+            raise HTTPException(exc.status, exc.detail)
+
+    @app.post("/password/reset/request")
+    def request_password_reset(body: ResetRequest) -> dict:
+        """Email a reset code. Same answer whether or not the address has an
+        account — not an address oracle."""
+        try:
+            return accounts.request_reset(body.email)
+        except accounts.AccountError as exc:
+            raise HTTPException(exc.status, exc.detail)
+
+    @app.post("/password/reset")
+    def reset_password(body: ResetPassword) -> dict:
+        """Trade the emailed code for a new password. Every existing session
+        dies with the old password; sign in again with the new one."""
+        try:
+            return accounts.reset_password(body.email, body.code,
+                                           body.new_password)
+        except accounts.AccountError as exc:
+            raise HTTPException(exc.status, exc.detail)
+
+    @app.post("/signin")
+    def signin(body: SignIn) -> dict:
+        """Email + password for a fresh session token. Unknown address and
+        wrong password get the same answer; an unverified address cannot
+        sign in at all."""
+        try:
+            return accounts.signin(body.email, body.password)
+        except accounts.AccountError as exc:
+            raise HTTPException(exc.status, exc.detail)
 
     # ---- showing it, rather than describing it ----------------------------
 
