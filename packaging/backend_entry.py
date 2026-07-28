@@ -45,6 +45,11 @@ def _default_db() -> str:
 
 
 def main() -> None:
+    # The frozen Windows backend inherits a cp1252 stdout; any print of a
+    # character outside it would raise mid-request. Replace, never raise.
+    for stream in (sys.stdout, sys.stderr):
+        if stream and hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
     os.environ.setdefault("JIM_CORS_ORIGINS", "*")
     os.environ["JIM_DB"] = _default_db()
     port = int(os.environ.get("JIM_PORT", "8000"))

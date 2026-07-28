@@ -6,6 +6,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.4] — 2026-07-28
+
+### Fixed
+
+- **Signup answered 500 on the frozen Windows backend.** With no mail server
+  configured, the verification code is printed to the server console — in a
+  banner drawn with box characters that Windows' cp1252 stdout cannot
+  encode. The print raised mid-request and every signup died on the one
+  platform the console transport serves most. The banner is ASCII now, the
+  frozen entry point reconfigures stdout/stderr to replace rather than
+  raise, and a test encodes the console delivery to cp1252 forever
+  (mutation-checked).
+
+- **The console showed a JSON-parse crash instead of the server's words.**
+  A crashed server answers plain text ("Internal Server Error"), and
+  `req()` assumed every body was JSON — so the person saw
+  *Unexpected token 'I' … is not valid JSON* instead of the actual error.
+  Non-JSON bodies now surface as-is.
+
 ## [0.4.3] — 2026-07-28
 
 ### Added
@@ -1074,7 +1093,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.4...HEAD
+[0.4.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.4
 [0.4.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.3
 [0.4.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.2
 [0.4.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.1

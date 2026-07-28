@@ -244,6 +244,20 @@ def test_reset_request_is_not_an_address_oracle(client, monkeypatch):
     assert r.json()["code_delivery"] == "none"
 
 
+def test_console_mail_survives_a_cp1252_stdout(capsys, monkeypatch):
+    """The frozen Windows backend's stdout is cp1252. The first shipped
+    banner used box-drawing characters that encoding cannot represent, so
+    printing the verification code raised — and every signup answered 500 on
+    the one platform the console transport serves most. The banner must be
+    encodable there, forever."""
+    monkeypatch.delenv("JIM_SMTP_HOST", raising=False)
+    assert mailer.deliver("dana@example.test", "Your code",
+                          "Your verification code is: 123456") == "console"
+    out = capsys.readouterr().out
+    assert "123456" in out
+    out.encode("cp1252")   # raises if the banner regresses
+
+
 def test_minor_without_guardian_consent_is_refused_at_signup(client, monkeypatch):
     sent = _capture_mail(monkeypatch)
     r = client.post("/signup", json={

@@ -46,7 +46,10 @@ def deliver(to: str, subject: str, body: str) -> str:
         return "smtp"
     # Console delivery: deliberately print()ed rather than logged, so it shows
     # at every log level, in the terminal the operator is already watching.
-    print(f"\n═══ JIM mail (no SMTP configured) ═══\n"
+    # ASCII only: the frozen Windows backend's stdout is cp1252, and a banner
+    # drawn with box characters raised UnicodeEncodeError — which turned
+    # every signup into a 500 on the one platform this path serves most.
+    print(f"\n=== JIM mail (no SMTP configured) ===\n"
           f"To: {to}\nSubject: {subject}\n\n{body}\n"
-          f"═════════════════════════════════════\n")
+          f"=====================================\n")
     return "console"
