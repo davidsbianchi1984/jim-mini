@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse
 from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
-               rota, social, terms as terms_mod, tiers, tutorial)
+               rota, social, storage, terms as terms_mod, tiers, tutorial)
 from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
@@ -53,6 +53,26 @@ def create_app(qrme_client: QRMEClient | None = None,
     # plan may ever stand in front of.
     app = FastAPI(title="JIM-mini / Guardian", version="0.4.0",
                   dependencies=[Depends(tiers.gate)])
+
+    # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
+    # Registered application-wide rather than wrapped at each write, because
+    # the payloads it guards are reached from several routes and the failure
+    # of a missed one is silent: the write succeeds and lands in the clear.
+    # Starlette matches handlers along the exception's MRO, so this catches
+    # StorageError and nothing else — plain ValueError is unaffected.
+    @app.exception_handler(storage.StorageError)
+    def _storage_refusal(request: Request, exc: storage.StorageError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=402, content={
+            "detail": str(exc),
+            "reason": "storage_posture",
+            "have": tiers.plan_of(tiers.account_of(request) or ""),
+            "needs": "basic",
+            "price_usd": tiers.PLANS["basic"]["price_usd"],
+            "period": tiers.PLANS["basic"]["period"],
+            "billing": "simulated — no real funds move",
+            "emergency_unaffected": True,
+        })
 
     # Optional CORS for a packaged guardian-console front-end (app/) calling the
     # API from another origin. Off by default; set JIM_CORS_ORIGINS to a
@@ -311,7 +331,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         """Seal a photograph, clip or sound of the body.
 
         The bytes go to the vault; this returns the record, never the image.
-        Refused outright if no vault is configured — see jim/capture.py.
+        Refused outright if no vault is configured — see jim/capture.py — and
+        refused on the free plan, whose store is in the clear.
         """
         user = _user_or_404(user_id, request)
         try:
@@ -322,6 +343,11 @@ def create_app(qrme_client: QRMEClient | None = None,
         except capture_mod.VaultRequired as exc:
             # 503, not 422: the request was fine and the deployment is not.
             raise HTTPException(503, str(exc)) from None
+        except storage.StorageError:
+            # Answered 402 by the application-wide handler. Named here only so
+            # it is not swallowed by the CaptureError arm below, and distinct
+            # from the 503 above, which no amount of money fixes.
+            raise
         except capture_mod.CaptureError as exc:
             raise HTTPException(422, str(exc)) from None
 
@@ -468,6 +494,11 @@ def create_app(qrme_client: QRMEClient | None = None,
             child = family.enroll_child(
                 guardian_user, body.model_dump(exclude={"language"}),
                 pdi=app.state.pdi)
+        except storage.StorageError:
+            # Ahead of the ValueError arm below, which it subclasses, so the
+            # setup is not reported as malformed. Answered 402 by the
+            # application-wide handler.
+            raise
         except ValueError as e:
             raise HTTPException(
                 403 if "verified-adult" in str(e) else 422, str(e))

@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from datetime import date, timedelta
 
-from . import db
+from . import db, tiers
 
 # Streak lengths worth celebrating.
 _MILESTONES = {7, 30, 100}
@@ -105,6 +105,9 @@ def insights(user_id: str) -> list[dict]:
 
 def add_context(user_id: str, source: str, kind: str, data: dict,
                 pdi=None) -> dict:
+    # A linked minor's everyday record does not land in an open store. See
+    # `tiers.guard_dependant_write`; the emergency stream is untouched.
+    tiers.guard_dependant_write(user_id)
     conn = db.connect()
     event_id = db.new_id("ctx")
     stored = data
@@ -261,6 +264,7 @@ def forecast_spo2(user_id: str) -> dict | None:
 
 def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
              pdi=None) -> dict:
+    tiers.guard_dependant_write(user_id)
     conn = db.connect()
     checkin_id = db.new_id("chk")
     stored_note = note
@@ -431,6 +435,7 @@ def habits(user_id: str) -> list[dict]:
 # --------------------------------------------------------------------------- #
 
 def add_journal(user_id: str, text: str, pdi=None) -> dict:
+    tiers.guard_dependant_write(user_id)
     conn = db.connect()
     entry_id = db.new_id("jrn")
     stored = text

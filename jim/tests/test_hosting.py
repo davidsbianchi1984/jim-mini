@@ -70,9 +70,12 @@ def test_gate_does_not_block_an_enrolled_user_or_their_child(client, monkeypatch
     keeps working, and a parent adding a child is authorized by their own
     token — not asked for the key again."""
     monkeypatch.delenv("JIM_SIGNUP_KEY", raising=False)
+    # Basic, not the free default: this test is about the signup key, and a
+    # child's record does not go in the open store (jim/storage.py), so free
+    # would fail it for an unrelated reason.
     parent = client.post("/enroll", json={
         "display_name": "Parent", "birthdate": "1984-05-02",
-        "terms_consent": True}).json()
+        "terms_consent": True, "plan": "basic"}).json()
     auth = {"authorization": f"Bearer {parent['user_token']}"}
 
     monkeypatch.setenv("JIM_SIGNUP_KEY", "let-me-in")

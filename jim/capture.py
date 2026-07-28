@@ -54,7 +54,7 @@ import hashlib
 import json
 from datetime import date, datetime, timezone
 
-from . import db
+from . import db, storage, tiers
 
 # What can be captured. Video and audio are here because some things are only
 # visible in motion — a tremor, a gait, a wheeze — and a still frame loses
@@ -255,6 +255,22 @@ def take(user: dict, kind: str, site: str, content_b64: str,
             "and this deployment has none configured. Nothing was saved. "
             "Colocation is free — see the hosting options — and everything "
             "else in the app works without it.")
+
+    # And no open store either. The free plan keeps the record in the clear
+    # (see `jim/storage.py`); a photograph of somebody's body is the one
+    # payload here that does not get to sit there.
+    #
+    # Checked **after** the vault, deliberately. In a deployment with no PDI
+    # at all, telling somebody on the free plan to pay $20 for the vault would
+    # be selling what this deployment cannot deliver — Basic would seal it in
+    # a vault that does not exist. The absence of a vault is the deeper cause
+    # and gets said first.
+    #
+    # The governing plan is the guardian's when this is a child's account: a
+    # parent on Basic bought the vault precisely so their child's record would
+    # be in it, and resolving to the child's own (absent) membership would
+    # refuse them.
+    storage.require(tiers.governing_plan(user_id), "body_image")
 
     capture_id = db.new_id("cap")
     key = f"jim/{user_id}/{VAULT_SCOPE}/{capture_id}"

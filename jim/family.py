@@ -22,7 +22,7 @@ from __future__ import annotations
 import json
 from datetime import date, datetime, timedelta
 
-from . import db, guardian
+from . import db, guardian, storage, tiers
 
 RELATIONSHIPS = ("parent", "legal_guardian")
 
@@ -59,6 +59,18 @@ def enroll_child(guardian_user: dict, body: dict, pdi=None) -> dict:
     relationship = body.get("relationship", "parent")
     if relationship not in RELATIONSHIPS:
         raise ValueError("relationship must be parent or legal_guardian")
+
+    # A child's record does not go in the open store. The guardian chose the
+    # plan; the child cannot read a pricing page, has no card, and will be an
+    # adult one day with a medical history somebody else left in the clear.
+    # That is the whole test for `storage.SENSITIVE` — whose exposure is it —
+    # and this is the sharpest case in the product.
+    #
+    # Checked *before* the account is created, so a refusal leaves nothing
+    # behind: no half-enrolled child, no orphan link, no consent event.
+    # `storage.StorageError` is a ValueError, so the route catches it ahead of
+    # the generic handler and answers 402 rather than 422.
+    storage.require(tiers.plan_of(guardian_user["id"]), "dependant_record")
 
     child = guardian.enroll({
         "display_name": body["display_name"],

@@ -120,16 +120,37 @@ LESSONS: tuple[dict, ...] = (
          screens=(76, 77),
          try_it="Open Show It and read what Jim is and is not told."),
     dict(key="plans", chapter="Beyond the app", title="What it costs",
-         what="Basic is $20 a month: the Guardian itself — your conditions, "
-              "guidance, the journal, habits and goals — and every emergency "
-              "path. Pro is $130 a month and adds the watch, early warning "
-              "that looks ahead of a threshold, specialists and synthetic "
-              "agents. Nothing on the alarm path is ever behind either price: "
-              "a reading you submit is answered, an escalation still fires, "
-              "and a responder can still read your medical ID, on any plan or "
-              "none. Billing here is simulated and no real funds move.",
+         what="Free is the whole Guardian — your conditions, guidance, the "
+              "journal, habits and goals — with your record stored in the "
+              "clear. Basic is $20 a month and is the same Guardian with that "
+              "record sealed in the encrypted vault. Pro is $130 a month and "
+              "adds the watch, early warning that looks ahead of a threshold, "
+              "specialists and synthetic agents. Nothing on the alarm path is "
+              "ever behind any of them: a reading you submit is answered, an "
+              "escalation still fires, and a responder can still read your "
+              "medical ID, on any plan or none. Billing here is simulated and "
+              "no real funds move.",
          screens=(69, 70),
          try_it="Open Choose a Plan and read what is never gated."),
+    dict(key="storage", chapter="Beyond the app",
+         title="Where your record lives",
+         what="On the free plan nothing is private. Your record — the "
+              "journal, your check-in notes, your health readings — sits in "
+              "this app's own database in the clear, where the people who run "
+              "it can read it and a lawful request reaches it. Basic seals "
+              "all of it in the encrypted vault under a key you can hold, and "
+              "that is the only thing the $20 buys: the features are "
+              "identical. Two things are never stored in the clear whatever "
+              "you have chosen — a photograph of a body, and a child's record "
+              "on a guardian's account, because the child did not pick the "
+              "plan. Your health readings are not on that list, deliberately: "
+              "refusing to store one would mean refusing the escalation it "
+              "triggers, and no alarm in this product waits on a payment. "
+              "Moving up seals what you write from then on and cannot "
+              "un-expose what was already open; moving down never unseals "
+              "anything already in the vault.",
+         screens=(78, 79, 80),
+         try_it="Open Where It Lives and read who can read a free record."),
     dict(key="dock", chapter="Beyond the app", title="The pane in the corner",
          what="A small pane in the bottom corner of the app carrying the "
               "glances a watch would — the last reading, what is running, "

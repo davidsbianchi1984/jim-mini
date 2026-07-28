@@ -6,6 +6,57 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A free plan, with nothing private about it** — `jim/storage.py`, 36 tests,
+  screens 78, 79 and 80. Two storage postures: **open cloud** (Free — JIM's own
+  database, in the clear) and **encrypted vault** (Basic and Pro — journal
+  entries, check-in notes, detection detail and every capture sealed in PDI
+  under a key you can hold). `DEFAULT_PLAN` is now `free`, and the ladder runs
+  visitor → free → basic → pro.
+
+  **Free and Basic reach identical capabilities** — `guardian` and `emergency`
+  both start at `free`, and `includes("free") == includes("basic")` is asserted
+  by test. What $20 buys is the vault, not a feature.
+
+  **This is partly an admission of an old behaviour.** JIM has always degraded
+  gracefully when no PDI was configured — `life.add_journal`, `life.check_in`
+  and `guardian._event` each fall back to writing the payload straight into the
+  local table. A deployment without a vault has been storing check-in notes and
+  medical event details in the clear the whole time and never said so on any
+  screen. The free plan makes that a documented posture with a disclosure
+  attached.
+
+  **Two payloads the open store will not hold**: a photograph of a body
+  (`jim/capture.py`), and a child's record on a guardian's account
+  (`family.enroll_child`, plus `tiers.guard_dependant_write` for the diary
+  afterwards — enrolling on Basic and moving to Free the next day is one API
+  call, and the enrolment check alone would not have held).
+
+  **And what is deliberately not on that list, which is the whole argument.**
+  Blood oxygen, seizure detections, alarm history and the medical ID are the
+  most medically sensitive rows in the product, and Free stores every one of
+  them in the clear. Refusing them would mean refusing the emergency path,
+  because they *are* the emergency path — a storage rule that declined to write
+  a blood oxygen of 84 is a paywall in front of an alarm wearing a privacy
+  argument as a disguise. `NEVER_GATED` exists because this codebase shipped
+  that bug once already; `storage.py` does not get to reintroduce it one layer
+  down. `guardian._event` is therefore left unguarded, and a test asserts it
+  stays that way.
+
+  A capture refusal reports the **missing vault (503) before the plan (402)**,
+  deliberately: in a deployment with no PDI at all, telling somebody to pay $20
+  for the vault would be selling what cannot be delivered there.
+
+### Changed
+
+- `POST /enroll` with no `plan` now lands on **Free** rather than Basic, and
+  the response says what that means before anything has been written.
+
+- **README: "No raw user data ever leaves your vault" now says on which
+  plans.** It was true when every account had one; it is a claim about Basic
+  and Pro, and the free plan is what it is being sold against.
+
 ## [0.4.0] — 2026-07-27
 
 ### Added

@@ -215,12 +215,17 @@ def test_what_a_plan_includes_is_computed_not_typed(client):
 
 # -- joining, moving, leaving --------------------------------------------------
 
-def test_enrolling_puts_a_new_person_on_basic(client):
+def test_enrolling_puts_a_new_person_on_free(client):
+    """And the response says what free means before they have written
+    anything — see `test_storage_posture.py`. Nobody is asked for a card to
+    reach the Guardian; what $20 buys is the vault."""
     r = client.post("/enroll", json={"display_name": "Sam",
                                      "birthdate": "1990-01-01",
                                      "terms_consent": True})
     assert r.status_code == 201, r.text
-    assert r.json()["membership"]["plan"] == "basic"
+    membership = r.json()["membership"]
+    assert membership["plan"] == "free"
+    assert membership["storage"]["not_private"] is True
 
 
 def test_moving_plan_replaces_rather_than_stacks(client):

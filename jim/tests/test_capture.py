@@ -30,6 +30,22 @@ def _jpeg_with_exif(secret: bytes = b"GPSLatitude53.8008N") -> bytes:
     return b"\xff\xd8" + seg + sof + b"\xff\xda\x00\x08pixels\xff\xd9"
 
 
+def _person(client, birthdate: str = "1990-01-01", plan: str = "basic") -> dict:
+    """A real enrolled account, as a row dict for `capture.take`.
+
+    Fabricated ids used to be fine here. They are not any more: `take`
+    resolves the *governing plan* from the memberships table, an id nobody
+    enrolled comes back a visitor, and a visitor's posture is the open cloud —
+    which is exactly where a photograph of a body may not go. See
+    `jim/storage.py` and `test_storage_posture.py`.
+    """
+    body = {"birthdate": birthdate, "plan": plan}
+    if birthdate >= "2008":
+        body["guardian_consent"] = True
+    uid = enroll(client, **body)
+    return {"id": uid, "birthdate": birthdate}
+
+
 def _b64(raw: bytes) -> str:
     return base64.b64encode(raw).decode()
 
@@ -132,7 +148,7 @@ def test_an_intimate_site_is_refused_for_a_minor_with_no_override(client):
     guardian product that could be talked into storing that image is one whose
     other guarantees do not matter."""
     v = FakeVault()
-    child = {"id": "usr_child", "birthdate": "2015-01-01"}
+    child = _person(client, "2015-01-01")
     for site in sorted(capture.INTIMATE):
         with pytest.raises(capture.CaptureError) as exc:
             capture.take(child, "photo", site, _b64(_jpeg_with_exif()),
@@ -144,7 +160,7 @@ def test_an_intimate_site_is_refused_for_a_minor_with_no_override(client):
 def test_the_refusal_points_somewhere_useful(client):
     """A flat "no" to a frightened parent is a product failing twice."""
     v = FakeVault()
-    child = {"id": "usr_child", "birthdate": "2015-01-01"}
+    child = _person(client, "2015-01-01")
     with pytest.raises(capture.CaptureError) as exc:
         capture.take(child, "photo", "genital", _b64(_jpeg_with_exif()),
                      intimate_consent=True, pdi=v)
@@ -155,7 +171,7 @@ def test_a_non_intimate_site_is_fine_for_a_child(client):
     """A child's rash on the forearm is an ordinary thing to photograph, and
     refusing it would push a parent to a worse tool."""
     v = FakeVault()
-    child = {"id": "usr_child2", "birthdate": "2015-01-01"}
+    child = _person(client, "2015-01-01")
     out = capture.take(child, "photo", "forearm", _b64(_jpeg_with_exif()),
                        pdi=v)
     assert out["site"] == "forearm" and len(v.store) == 1
@@ -163,7 +179,7 @@ def test_a_non_intimate_site_is_fine_for_a_child(client):
 
 def test_an_adult_still_confirms_an_intimate_site(client):
     v = FakeVault()
-    adult = {"id": "usr_adult", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     with pytest.raises(capture.CaptureError) as exc:
         capture.take(adult, "photo", "breast", _b64(_jpeg_with_exif()), pdi=v)
     assert "confirmation" in str(exc.value)
@@ -190,7 +206,7 @@ def test_the_schema_has_nowhere_to_put_an_image(client):
 def test_no_vault_means_no_capture_rather_than_a_local_file(client):
     """Degrading gracefully is right almost everywhere and wrong here: the
     graceful version is an unencrypted photograph on a laptop."""
-    adult = {"id": "usr_nv", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     with pytest.raises(capture.VaultRequired) as exc:
         capture.take(adult, "photo", "forearm", _b64(_jpeg_with_exif()),
                      pdi=None)
@@ -204,7 +220,7 @@ def test_no_vault_means_no_capture_rather_than_a_local_file(client):
 def test_the_refusal_names_the_free_option(client):
     """Requiring a vault costs nobody anything, because colocation is free —
     and a refusal that did not say so would read as an upsell."""
-    adult = {"id": "usr_nv2", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     with pytest.raises(capture.VaultRequired) as exc:
         capture.take(adult, "photo", "forearm", _b64(_jpeg_with_exif()),
                      pdi=None)
@@ -213,7 +229,7 @@ def test_the_refusal_names_the_free_option(client):
 
 def test_the_image_comes_back_only_through_the_vault(client):
     v = FakeVault()
-    adult = {"id": "usr_rt", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     cap = capture.take(adult, "photo", "back", _b64(_jpeg_with_exif()), pdi=v)
     assert capture.content_for_care(cap["id"], v)
     with pytest.raises(capture.VaultRequired):
@@ -234,7 +250,7 @@ def test_gps_is_gone_from_the_sealed_bytes(client):
     actually stored. A rash photographed at home geotags the person's house,
     and that coordinate outlives the rash."""
     v = FakeVault()
-    adult = {"id": "usr_gps", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     raw = _jpeg_with_exif(b"GPSLatitude53.8008N")
     assert b"GPSLatitude" in raw                     # it is really in there
 
@@ -247,7 +263,7 @@ def test_gps_is_gone_from_the_sealed_bytes(client):
 
 def test_what_was_stripped_is_recorded(client):
     v = FakeVault()
-    adult = {"id": "usr_str", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     cap = capture.take(adult, "photo", "leg", _b64(_jpeg_with_exif()), pdi=v)
     assert "exif/xmp" in cap["stripped"]
 
@@ -273,7 +289,7 @@ def test_provenance_says_whether_the_app_can_vouch_for_it(client):
     """An imported photograph may be months old or of somebody else. The
     file's own timestamp is whatever the device felt like writing."""
     v = FakeVault()
-    adult = {"id": "usr_prov", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     imported = capture.take(adult, "photo", "hand", _b64(_jpeg_with_exif()),
                             provenance="imported", pdi=v)
     assert "cannot verify" in imported["provenance_note"]
@@ -283,7 +299,7 @@ def test_video_and_audio_are_capturable(client):
     """Some things are only visible in motion — a tremor, a gait, a wheeze —
     and a still frame loses exactly the thing being asked about."""
     v = FakeVault()
-    adult = {"id": "usr_av", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     for kind in ("video", "audio"):
         out = capture.take(adult, kind, "whole_body", _b64(b"\x00clip"), pdi=v)
         assert out["kind"] == kind
@@ -291,7 +307,7 @@ def test_video_and_audio_are_capturable(client):
 
 def test_an_unknown_kind_or_site_is_refused(client):
     v = FakeVault()
-    adult = {"id": "usr_bad", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     for kwargs in ({"kind": "hologram", "site": "hand"},
                    {"kind": "photo", "site": "aura"}):
         with pytest.raises(capture.CaptureError):
@@ -301,7 +317,7 @@ def test_an_unknown_kind_or_site_is_refused(client):
 
 def test_junk_and_oversize_are_refused(client):
     v = FakeVault()
-    adult = {"id": "usr_junk", "birthdate": "1990-01-01"}
+    adult = _person(client, "1990-01-01")
     with pytest.raises(capture.CaptureError):
         capture.take(adult, "photo", "hand", "not base64!!", pdi=v)
     with pytest.raises(capture.CaptureError):
@@ -333,7 +349,7 @@ def test_intimate_captures_are_never_swept_into_a_referral(client):
 
 def test_you_cannot_attach_somebody_elses_capture(client):
     v = FakeVault()
-    mine = capture.take({"id": "usr_a", "birthdate": "1990-01-01"},
+    mine = capture.take(_person(client, "1990-01-01"),
                         "photo", "hand", _b64(_jpeg_with_exif()), pdi=v)
     with pytest.raises(capture.CaptureError):
         capture.attach_to_referral([mine["id"]], "usr_b")
@@ -357,7 +373,7 @@ def test_deleting_destroys_the_vault_record_and_leaves_a_tombstone(client):
 
 def test_you_cannot_delete_somebody_elses(client):
     v = FakeVault()
-    cap = capture.take({"id": "usr_x", "birthdate": "1990-01-01"},
+    cap = capture.take(_person(client, "1990-01-01"),
                        "photo", "hand", _b64(_jpeg_with_exif()), pdi=v)
     with pytest.raises(capture.CaptureError):
         capture.delete(cap["id"], "usr_y", v)
