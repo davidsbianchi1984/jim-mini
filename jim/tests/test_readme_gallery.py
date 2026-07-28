@@ -160,10 +160,24 @@ def test_the_desktop_app_version_matches_the_api():
     root = pathlib.Path(__file__).resolve()
     while not (root / "app" / "package.json").exists():
         root = root.parent
-    desktop = json.loads((root / "app" / "package.json").read_text())["version"]
     api_src = (root / "jim/api.py").read_text()
-    api = re.search(r'version="([\d.]+)"', api_src).group(1)
-    assert desktop == api, (
-        f"app/package.json says {desktop}, jim/api.py says {api} — the "
-        "installer filenames and the auto-updater follow the first, the "
-        "release tag follows the second")
+    lock = json.loads((root / "app" / "package-lock.json").read_text())
+    # The releasing checklist names five places a cut must move; each has
+    # drifted at least once (pyproject sat at 0.4.0 through the 0.4.1 cut,
+    # the lockfile roots at 0.3.3 through two). Check all five against each
+    # other, not one pair.
+    versions = {
+        "jim/api.py": re.search(r'version="([\d.]+)"', api_src).group(1),
+        "app/package.json":
+            json.loads((root / "app" / "package.json").read_text())["version"],
+        "app/package-lock.json (root)": lock["version"],
+        "app/package-lock.json (packages.'')":
+            lock["packages"][""]["version"],
+        "pyproject.toml": re.search(
+            r'^version = "([\d.]+)"',
+            (root / "pyproject.toml").read_text(), re.M).group(1),
+    }
+    assert len(set(versions.values())) == 1, (
+        f"version strings disagree: {versions} — the installer filenames and "
+        "the auto-updater follow app/package.json, the release tag follows "
+        "jim/api.py, and pip follows pyproject.toml")
