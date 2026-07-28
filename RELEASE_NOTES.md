@@ -1,66 +1,73 @@
-# JIM-mini v0.3.3 — release notes
+# JIM-mini v0.4.1 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.3.3` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.4.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.3.3** — the release where a task working on its own stopped being
-something you had to go and check. One of three interoperating products (with
+**JIM-mini v0.4.1** — the release where a photograph really reached a
+clinician, and free got honest. One of three interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
-[pdi](https://github.com/davidsbianchi1984/pdi)), all three cut together at this
-version.
+[pdi](https://github.com/davidsbianchi1984/pdi)), all three cut together at
+this version.
 
-### The watch face is the ambient one
+### Show it, rather than describe it
 
-Three lights, three counts, dimmed at zero — and **no task names**.
+*"It's a bit red"* is the same sentence for a heat rash and for cellulitis.
+Clinical capture lets somebody photograph the thing — or film it, when it
+only shows in motion — mark where on the body, and send it through a referral
+to a real clinician. Four rules, each asserted and mutation-checked:
 
-This is the surface the round exists for. While somebody is on their phone, the
-watch is the one place that can show several tasks at once without getting in
-the way. Naming them was the first cut and was wrong: a name is something you
-read, and reading is the thing a glance cannot do. The footer says *open on
-your phone*, because that is where the answer lives.
+- **A synthetic agent never receives the image.** It is told one exists,
+  where and when — routing, never diagnosis. A model that looks at a mole and
+  says "that looks fine" has made a diagnosis with no license and no
+  accountability, and a missed melanoma is not undone by the next sentence.
+- **Never an intimate site for a child.** No override, no guardian consent
+  path, no setting.
+- **The pixels never touch JIM's own database.** Vault only; the schema has
+  no column that could hold an image; no vault means refused, not degraded.
+- **Location is stripped, not promised absent** — a real JPEG parser drops
+  the metadata segments, checked against the bytes actually sealed.
 
-| | | |
-| --- | --- | --- |
-| 🟢 **green** | working · done | in progress, or finished. Nothing wanted from you |
-| 🟡 **amber** | needs you | it has stopped and is waiting on a person |
-| 🔴 **red** | stopped | it hit an error or was cancelled, and will not continue |
+And the sentence "it travels with a referral" is now *true*: the referral
+package carries the capture's metadata (never bytes) so you read exactly what
+would go before signing, intimate sites never ride in on a match, and the
+field is `released_to_clinician` — released is not opened, and this app
+cannot see the second.
 
-The word rides with the colour, because green alone cannot separate a task that
-is still going from one that has finished — and those call for opposite
-reactions.
+### A free plan, with nothing private about it
 
-### Screen 67, and an overlay that follows you
+Free is the whole Guardian — conditions, guidance, journal, habits, goals,
+**and every emergency path** — with the record under **platform custody**:
+JIM-mini holds it, you have access, ordinary HTTPS, no vault at any point.
+Basic ($20/mo) is the same Guardian sealed under a key you can hold. The
+features are identical; the difference is who holds your record, and every
+surface that names a plan says so.
 
-**Screen 67** folds every task into one tappable group per light. Somebody
-opening it *because* amber appeared should not have to scan a flat list for the
-one that changed.
+Two things the open store refuses — a photograph of a body, and a child's
+record on a guardian's account — because the person exposed did not pick the
+plan. The health readings are deliberately *not* refused: they are the
+emergency path, and a storage refusal in front of an escalation is a paywall
+in front of an alarm wearing a privacy argument. **Nothing that answers an
+emergency is ever behind a paywall, on any plan, still.**
 
-**The overlay** rides over an ordinary screen, and over **every** desktop view —
-a task that reports only on its own screen is one you have to remember to go
-and check. It is shaped like the watch face rather than as a bar across the
-screen: a small translucent box in the corner, three stacked rows, each its own
-tap target.
-
-The mapping lives once, in QRME's `agentlight.py`, for all three products.
-
-### The README leads with the screens now
-
-Everything you can look at is above everything you have to read, and the
-run / config / API material is gathered under one **Reference** heading at the
-bottom — so a command spotted in a screenshot has one place to go and look it
-up. Those tables are set smaller, because they are for looking things up in
-rather than reading through.
+The vault gate now asks about the *plan* rather than the deployment — a free
+account's journal and detections were being sealed into a vault it was not
+paying for. Reads and erasure keep the real vault, so a downgraded account
+can still read its sealed history and have it purged. And the access log
+stopped telling a comfortable lie: on an open plan, an empty list means
+nothing was recorded, not that nothing was read — it now says which.
 
 ### Verification
 
-380 tests green. Screens regenerated for iOS and Android, the watch for
-watchOS, and the desktop console for macOS and Windows.
+525 tests green. Screens 76–80 new, tier and signup screens redrawn for the
+free plan, every guard above mutation-checked — one at a time, after checking
+them together masked two.
 
 ### Install
 
 Download the installer for your OS from the assets below (built by the
-`desktop-release` workflow from the `app-v0.3.3` tag), or run `python -m jim`.
+`desktop-release` workflow from the `app-v0.4.1` tag), run `python -m jim`,
+or open it on your phone — see the README.
 
 **Full changelog:** https://github.com/davidsbianchi1984/jim-mini/blob/main/CHANGELOG.md
