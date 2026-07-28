@@ -22,6 +22,28 @@ Source = Literal[
 ]
 
 
+class CaptureTake(BaseModel):
+    """A photograph, clip or sound of the body (jim/capture.py).
+
+    `content` is base64. It is stripped of EXIF and sealed in the vault; no
+    field here reaches JIM's own database with pixels in it.
+    """
+    kind: str = "photo"                 # photo | video | audio
+    site: str                           # capture.SITES key
+    content: str                        # base64
+    provenance: str = "captured"        # captured | imported
+    note: str | None = None
+    condition: str | None = None
+    # Required for an intimate site, and refused outright for a minor
+    # whatever this says.
+    intimate_consent: bool = False
+
+
+class CaptureAttach(BaseModel):
+    """Which captures a referral releases."""
+    capture_ids: list[str] = []
+
+
 class DockConfig(BaseModel):
     """Where the helper pane sits and what it carries (jim/dock.py)."""
     corner: str | None = None           # bottom_right | bottom_left
@@ -157,6 +179,9 @@ class LocalitySet(BaseModel):
 class ReferralPrepare(BaseModel):
     condition: str                     # picks the specialist and the area
     provider_id: str                   # the clinician, from /referral/clinicians
+    # Chosen deliberately, never swept in by a condition match. Intimate sites
+    # are filtered out again on the way through — see capture.attach_to_referral.
+    capture_ids: list[str] = []
 
 
 class SpecialistTaskStart(BaseModel):

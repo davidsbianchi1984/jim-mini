@@ -22,10 +22,12 @@ from jim import beacons, escalation, relay
 
 
 def _adult(client, name="Ada Byron", **extra):
+    # Basic rather than the free default: two tests below enrol a child, and a
+    # child's record does not go in the open store. See jim/storage.py.
     body = {"display_name": name, "birthdate": "1970-04-02",
             "terms_consent": True, "resting_heart_rate": 60,
             "emergency_name": "Kin", "emergency_phone": "+15555550123",
-            "contact_consent": True}
+            "contact_consent": True, "plan": "basic"}
     body.update(extra)
     r = client.post("/enroll", json=body, headers={})
     assert r.status_code == 201, r.text

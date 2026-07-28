@@ -13,7 +13,8 @@ from fastapi.responses import HTMLResponse
 from . import (app_connectors, auth, beacons, catalog, coach, contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
-               rota, social, terms as terms_mod, tiers, tutorial)
+               rota, social, storage, terms as terms_mod, tiers, tutorial)
+from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
@@ -29,7 +30,7 @@ from .models import (
     TranslateRequest, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
-    DockConfig, PlanChoice, TutorialMark,
+    CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -52,6 +53,26 @@ def create_app(qrme_client: QRMEClient | None = None,
     # plan may ever stand in front of.
     app = FastAPI(title="JIM-mini / Guardian", version="0.4.0",
                   dependencies=[Depends(tiers.gate)])
+
+    # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
+    # Registered application-wide rather than wrapped at each write, because
+    # the payloads it guards are reached from several routes and the failure
+    # of a missed one is silent: the write succeeds and lands in the clear.
+    # Starlette matches handlers along the exception's MRO, so this catches
+    # StorageError and nothing else — plain ValueError is unaffected.
+    @app.exception_handler(storage.StorageError)
+    def _storage_refusal(request: Request, exc: storage.StorageError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=402, content={
+            "detail": str(exc),
+            "reason": "storage_posture",
+            "have": tiers.plan_of(tiers.account_of(request) or ""),
+            "needs": "basic",
+            "price_usd": tiers.PLANS["basic"]["price_usd"],
+            "period": tiers.PLANS["basic"]["period"],
+            "billing": "simulated — no real funds move",
+            "emergency_unaffected": True,
+        })
 
     # Optional CORS for a packaged guardian-console front-end (app/) calling the
     # API from another origin. Off by default; set JIM_CORS_ORIGINS to a
@@ -93,6 +114,26 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(404, "user not found")
         auth.require(request, "user", user_id)
         return user
+
+    def _vault(user_id: str):
+        """The vault this user's **writes** go to, or None on an open plan.
+
+        Every seal point used to receive `app.state.pdi` directly, which asks
+        whether the *deployment* has a vault rather than whether the *account*
+        is on a plan that uses one — so a free account on a PDI-backed
+        deployment had its journal, check-in notes and detection detail sealed
+        into a vault it was not paying for and could not hold a key to. Free is
+        platform custody over plain HTTPS; see `jim/storage.py`.
+
+        **Writes only.** Reads (`journal_entries`, `content_for_care`,
+        `access_log`, the audit surfaces) and deletions (`delete_user_data`,
+        `capture.delete`) keep `app.state.pdi` unchanged, because somebody who
+        was on Basic for a year and moved to Free still has a year of sealed
+        records to read back and, if they ask, to have purged. A plan-gated
+        vault on a read strands somebody's history behind a billing change; on
+        a delete it leaves records nobody can reach and calls that erasure.
+        """
+        return storage.vault_for(tiers.governing_plan(user_id), app.state.pdi)
 
     @app.get("/terms")
     def terms() -> dict:
@@ -296,6 +337,97 @@ def create_app(qrme_client: QRMEClient | None = None,
         user["user_token"] = auth.issue("user", user["id"])
         return user
 
+    # ---- showing it, rather than describing it ----------------------------
+
+    @app.get("/captures/vocabulary")
+    def capture_vocabulary() -> dict:
+        """Kinds, body sites, which are intimate, and what an agent may see.
+        Public — a client has to draw the picker, and the limits are worth
+        reading before you take the photograph rather than after."""
+        return capture_mod.vocabulary()
+
+    @app.post("/users/{user_id}/captures", status_code=201)
+    def take_capture(user_id: str, body: CaptureTake, request: Request) -> dict:
+        """Seal a photograph, clip or sound of the body.
+
+        The bytes go to the vault; this returns the record, never the image.
+        Refused outright if no vault is configured — see jim/capture.py — and
+        refused on the free plan, whose store is in the clear.
+        """
+        user = _user_or_404(user_id, request)
+        try:
+            # `app.state.pdi`, not `_vault(...)`, and deliberately: on an open
+            # plan a capture is refused outright (402), and handing this the
+            # plan-gated None would surface "this deployment has no vault"
+            # (503) instead — a true statement about the wrong thing.
+            return capture_mod.take(
+                user, body.kind, body.site, body.content,
+                body.provenance, body.note, body.condition,
+                body.intimate_consent, pdi=app.state.pdi)
+        except capture_mod.VaultRequired as exc:
+            # 503, not 422: the request was fine and the deployment is not.
+            raise HTTPException(503, str(exc)) from None
+        except storage.StorageError:
+            # Answered 402 by the application-wide handler. Named here only so
+            # it is not swallowed by the CaptureError arm below, and distinct
+            # from the 503 above, which no amount of money fixes.
+            raise
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/users/{user_id}/captures")
+    def list_captures(user_id: str, request: Request,
+                      condition: str | None = None) -> list[dict]:
+        """The records. Metadata only — the image needs its own call."""
+        _user_or_404(user_id, request)
+        return capture_mod.for_user(user_id, condition)
+
+    @app.get("/users/{user_id}/captures/{capture_id}/image")
+    def capture_image(user_id: str, capture_id: str,
+                      request: Request) -> dict:
+        """The sealed bytes, for the person they belong to.
+
+        Separate from the listing on purpose: reading *that* a photograph
+        exists and reading the photograph are different acts, and only the
+        second should need the vault to answer.
+        """
+        _user_or_404(user_id, request)
+        cap = capture_mod.read(capture_id)
+        if cap["user_id"] != user_id:
+            raise HTTPException(403, "that capture belongs to somebody else")
+        try:
+            content = capture_mod.content_for_care(capture_id, app.state.pdi)
+        except capture_mod.VaultRequired as exc:
+            raise HTTPException(503, str(exc)) from None
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(404, str(exc)) from None
+        return {"id": capture_id, "kind": cap["kind"], "content": content}
+
+    @app.post("/users/{user_id}/captures/attach")
+    def attach_captures(user_id: str, body: CaptureAttach,
+                        request: Request) -> dict:
+        """Choose which captures a referral releases.
+
+        Intimate-site captures are never swept in by a match; they come back
+        under `explicit` and have to be named one at a time.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return capture_mod.attach_to_referral(body.capture_ids, user_id)
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.delete("/users/{user_id}/captures/{capture_id}")
+    def delete_capture(user_id: str, capture_id: str,
+                       request: Request) -> dict:
+        """Withdraw it. The vault record is destroyed; a tombstone remains so
+        a clinician who was shown it sees it was withdrawn."""
+        _user_or_404(user_id, request)
+        try:
+            return capture_mod.delete(capture_id, user_id, app.state.pdi)
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(422, str(exc)) from None
+
     # ---- the pane in the corner -------------------------------------------
 
     @app.get("/dock/faces")
@@ -385,7 +517,12 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             child = family.enroll_child(
                 guardian_user, body.model_dump(exclude={"language"}),
-                pdi=app.state.pdi)
+                pdi=_vault(guardian_id))
+        except storage.StorageError:
+            # Ahead of the ValueError arm below, which it subclasses, so the
+            # setup is not reported as malformed. Answered 402 by the
+            # application-wide handler.
+            raise
         except ValueError as e:
             raise HTTPException(
                 403 if "verified-adult" in str(e) else 422, str(e))
@@ -496,7 +633,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         sample = body.model_dump(exclude_none=True)
         note = sample.pop("note", None)
         return guardian.monitor(user_id, sample, note, qrme=app.state.qrme,
-                                pdi=app.state.pdi)
+                                pdi=_vault(user_id))
 
     @app.get("/events/{user_id}")
     def events(user_id: str, request: Request) -> list[dict]:
@@ -729,7 +866,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         sample = body.sample.model_dump(exclude_none=True) if body.sample else None
         return guardian.emergency(user_id, body.situation, body.location,
-                                  sample, qrme=app.state.qrme, pdi=app.state.pdi)
+                                  sample, qrme=app.state.qrme,
+                                  pdi=_vault(user_id))
 
     @app.post("/activity/{user_id}", status_code=201)
     def observe_activity(user_id: str, body: ActivityObserve,
@@ -739,7 +877,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return guardian.observe_activity(
             user_id, body.activity, body.signals, body.note,
-            qrme=app.state.qrme, pdi=app.state.pdi)
+            qrme=app.state.qrme, pdi=_vault(user_id))
 
     # ---- physical embodiments (clause 16) ---------------------------------
 
@@ -931,7 +1069,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(
                 403, f"source '{body.source}' is not consented for this user")
         return life.add_context(user_id, body.source, body.kind, body.data,
-                                pdi=app.state.pdi)
+                                pdi=_vault(user_id))
 
     # ---- social-platform connections --------------------------------------
     # collect posts to inform guidance, or publish an update reachable by QR.
@@ -966,7 +1104,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         if row["status"] != "active":
             raise HTTPException(409, "connection has been revoked")
         return social.collect(row, [i.model_dump() for i in body.items],
-                              pdi=app.state.pdi)
+                              pdi=_vault(row["user_id"]))
 
     @app.post("/social/connection/{cid}/publish", status_code=201)
     def social_publish(cid: str, body: SocialPublish, request: Request) -> dict:
@@ -1036,7 +1174,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         if row["status"] != "active":
             raise HTTPException(409, "connector has been revoked")
         return app_connectors.collect(row, [i.model_dump() for i in body.items],
-                                      pdi=app.state.pdi)
+                                      pdi=_vault(row["user_id"]))
 
     @app.post("/apps/connector/{cid}/invoke", status_code=201)
     def app_invoke(cid: str, body: AppInvoke, request: Request) -> dict:
@@ -1105,7 +1243,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             return {"learned": True, "already_learned": True}
         life.add_context(row["user_id"], "research", "knowledge",
                          {"topic": row["topic"], "content": row["findings"]},
-                         pdi=app.state.pdi)
+                         pdi=_vault(row["user_id"]))
         db.connect().execute("UPDATE excursions SET learned=1 WHERE id=?", (cid,))
         db.connect().commit()
         return {"learned": True, "already_learned": False,
@@ -1117,12 +1255,13 @@ def create_app(qrme_client: QRMEClient | None = None,
     def check_in(user_id: str, body: CheckIn, request: Request) -> dict:
         _user_or_404(user_id, request)
         result = life.check_in(user_id, body.mood, body.energy, body.note,
-                               pdi=app.state.pdi)
+                               pdi=_vault(user_id))
         # A worrying note still goes through the Guardian pipeline so crisis
         # language escalates exactly as it does from /monitor.
         if body.note:
             result["guardian"] = guardian.monitor(
-                user_id, {}, body.note, qrme=app.state.qrme, pdi=app.state.pdi)
+                user_id, {}, body.note, qrme=app.state.qrme,
+                pdi=_vault(user_id))
         return result
 
     # ---- smart goals ------------------------------------------------------
@@ -1197,10 +1336,10 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.post("/journal/{user_id}", status_code=201)
     def add_journal(user_id: str, body: JournalEntry, request: Request) -> dict:
         _user_or_404(user_id, request)
-        result = life.add_journal(user_id, body.text, pdi=app.state.pdi)
+        result = life.add_journal(user_id, body.text, pdi=_vault(user_id))
         # Journal text runs the same crisis pipeline as check-in notes.
         result["guardian"] = guardian.monitor(
-            user_id, {}, body.text, qrme=app.state.qrme, pdi=app.state.pdi)
+            user_id, {}, body.text, qrme=app.state.qrme, pdi=_vault(user_id))
         return result
 
     @app.get("/journal/{user_id}")
@@ -1382,8 +1521,25 @@ def create_app(qrme_client: QRMEClient | None = None,
         """
         _user_or_404(user_id, request)
         spec = guardian._specialist(body.condition)
-        return referral.prepare(user_id, body.condition, body.provider_id,
-                                spec, app.state.qrme)
+        try:
+            return referral.prepare(user_id, body.condition, body.provider_id,
+                                    spec, app.state.qrme, body.capture_ids)
+        except capture_mod.CaptureError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.post("/users/{user_id}/referral/requests/{request_id}/released")
+    def confirm_referral_release(user_id: str, request_id: str,
+                                 request: Request) -> dict:
+        """The client reports that the QRME signing ceremony completed.
+
+        JIM cannot observe it — the signature is raised against QRME's relying
+        party — so this is a report, and `jim/referral.py` says so plainly.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return referral.mark_released(user_id, request_id)
+        except referral.ReferralError as exc:
+            raise HTTPException(404, str(exc)) from None
 
     @app.get("/users/{user_id}/referral/requests")
     def referral_requests(user_id: str, request: Request) -> list[dict]:

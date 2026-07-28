@@ -1,10 +1,18 @@
 """Membership: what a person has paid for, and what that entitles them to.
 
-The same two plans as QRME, drawn on a line that suits this product. **Basic**
-($20/month) is the Guardian itself: conditions, guidance, the journal, habits
-and goals. **Pro** ($130/month) adds the wrist, proactive monitoring, the
-specialist marketplace, and the synthetic agents summoned through the QRME
-tandem.
+The same plans as QRME, drawn on a line that suits this product. **Free** is
+the whole Guardian — conditions, guidance, the journal, habits and goals —
+with the record stored in the clear. **Basic** ($20/month) is that same
+Guardian with the record sealed in the PDI vault. **Pro** ($130/month) adds
+the wrist, proactive monitoring, the specialist marketplace, and the synthetic
+agents summoned through the QRME tandem.
+
+**Free and Basic reach identical capabilities on purpose.** `includes("free")`
+and `includes("basic")` are the same list, and a test asserts it. What $20
+buys is `jim/storage.py`'s vault posture, not a feature — a free tier crippled
+into uselessness teaches nobody anything about the product, and a free tier
+that is honestly *not private* teaches somebody exactly what they are choosing
+between.
 
 **Nothing that answers an emergency is ever behind a paywall**, and that is
 the rule this module exists to keep rather than a caveat on it.
@@ -38,7 +46,7 @@ from __future__ import annotations
 
 from fastapi import HTTPException, Request
 
-from . import db
+from . import db, storage
 
 PLANS: dict[str, dict] = {
     "visitor": {
@@ -48,12 +56,19 @@ PLANS: dict[str, dict] = {
         "means": "read a shared page or a scanned medical ID. No account "
                  "needed, and none is asked for.",
     },
+    "free": {
+        "price_usd": 0,
+        "period": None,
+        "title": "Free",
+        "means": "the whole Guardian, with your record stored in the clear. "
+                 "Same features as Basic; no vault, and nothing private.",
+    },
     "basic": {
         "price_usd": 20,
         "period": "month",
         "title": "Basic",
-        "means": "the Guardian itself — conditions, guidance, the journal, "
-                 "habits, goals, and every emergency path.",
+        "means": "the same Guardian as Free, with your record sealed in the "
+                 "encrypted vault under a key you can hold yourself.",
     },
     "pro": {
         "price_usd": 130,
@@ -63,20 +78,23 @@ PLANS: dict[str, dict] = {
                  "the specialist marketplace, and synthetic agents.",
     },
 }
-ORDER = ("visitor", "basic", "pro")
-DEFAULT_PLAN = "basic"
+ORDER = ("visitor", "free", "basic", "pro")
+DEFAULT_PLAN = "free"
 
 CAPABILITIES: dict[str, dict] = {
+    # `guardian` and `emergency` both start at **free**, and that is the whole
+    # shape of the free tier: it reaches exactly what Basic reaches. Twenty
+    # dollars buys the vault, not a feature — see `jim/storage.py`.
     "guardian": {
-        "from": "basic",
+        "from": "free",
         "is": "the Guardian — conditions, guidance, journal, habits and goals",
     },
     "emergency": {
-        # Basic, and it would be visitor if a stranger could raise an alarm on
+        # Free, and it would be visitor if a stranger could raise an alarm on
         # somebody else's behalf. Listed as a capability rather than left out
         # so that the pricing page states it: every plan that exists includes
         # the emergency path, and a reader should not have to infer that.
-        "from": "basic",
+        "from": "free",
         "is": "alarms, escalation, the medical ID and incident history — "
               "never withheld for non-payment",
     },
@@ -198,6 +216,65 @@ def plan_of(account_id: str) -> str:
         "SELECT plan FROM memberships WHERE account_id=? AND ended_at IS NULL",
         (account_id,)).fetchone()
     return row["plan"] if row else "visitor"
+
+
+def governing_plan(user_id: str) -> str:
+    """Whose plan decides what may be stored for this user.
+
+    Their own, unless they are a child with no membership of their own — in
+    which case it is the guardian's, because the guardian is the one who
+    chose it. A child account has no card and no pricing page; resolving it to
+    `plan_of(child)` would return "visitor", collapse the posture to the open
+    cloud, and refuse a parent on Basic the ability to photograph their own
+    child's rash. That is exactly backwards: the guardian paid for the vault
+    precisely so the child's record would be in it.
+
+    The mirror of :func:`account_of`, which resolves a *request* to the adult
+    who pays rather than to the child being acted for.
+    """
+    plan = plan_of(user_id)
+    if plan != "visitor":
+        return plan
+    row = db.connect().execute(
+        "SELECT guardian_id FROM guardian_links WHERE child_id=?"
+        " ORDER BY created_at", (user_id,)).fetchone()
+    if row is None:
+        return plan
+    return plan_of(row["guardian_id"])
+
+
+def is_dependant(user_id: str) -> bool:
+    """Whether this account is a minor linked to a guardian."""
+    return db.connect().execute(
+        "SELECT 1 FROM guardian_links WHERE child_id=?",
+        (user_id,)).fetchone() is not None
+
+
+def guard_dependant_write(user_id: str) -> None:
+    """Refuse an everyday write to a linked minor's record on an open store.
+
+    The enrolment refusal in `family.enroll_child` is not enough on its own,
+    because a guardian can enrol on Basic and move to Free the next day. That
+    is a real path, not a hypothetical: it is one API call, and without this
+    the rule would hold only for people who never changed their mind.
+
+    What it covers is the child's *diary* — journal entries, check-in notes,
+    context events. What it deliberately does not cover is
+    `guardian._event`: biometrics, detections and escalations are the
+    emergency path, and refusing to write one is a paywall in front of an
+    alarm however it is dressed up. See the note in `jim/storage.py`; that
+    argument is the reason `NEVER_GATED` exists and this module does not get
+    to reintroduce the bug one layer down.
+
+    A guardian is never trapped into paying. They can move to Free whenever
+    they like — the vault keeps everything already in it (see
+    :func:`storage.downgrade_effect`), and what stops is new everyday writing
+    to a child's record, not their access to it and not their ability to call
+    for help.
+    """
+    if not is_dependant(user_id):
+        return
+    storage.require(governing_plan(user_id), "dependant_record")
 
 
 def entitles(plan: str, capability: str) -> bool:
@@ -341,6 +418,10 @@ def membership(account_id: str) -> dict:
         "period": spec["period"],
         "includes": includes(plan),
         "locked": [c for c in CAPABILITIES if not entitles(plan, c)],
+        # A field, not a footnote. See `jim/storage.py`: a privacy claim that
+        # lives in a Terms of Service and not in the response body is a claim
+        # nobody reads at the moment it matters.
+        "storage": storage.describe(plan),
         "billing": "simulated — no real funds move; the subscription is a row",
         "emergency": "never withheld for non-payment, on any plan",
     }
@@ -350,10 +431,14 @@ def catalogue() -> dict:
     return {
         "plans": [
             {"plan": p, **PLANS[p], "includes": includes(p),
-             "locked": [c for c in CAPABILITIES if not entitles(p, c)]}
+             "locked": [c for c in CAPABILITIES if not entitles(p, c)],
+             "storage": storage.describe(p)}
             for p in ORDER],
         "capabilities": CAPABILITIES,
         "never_gated": list(NEVER_GATED_SAMPLES),
+        "storage": storage.vocabulary(),
+        "the_difference": "Free and Basic run the same app. The difference is "
+                          "where your data lives.",
         "billing": "simulated — no real funds move; the subscription is a row",
         "emergency": "never withheld for non-payment, on any plan",
     }

@@ -6,6 +6,130 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Platform custody, and a vault gate that asks about the plan** —
+  `storage.CUSTODY`, `storage.vault_for`. The free plan is the familiar
+  hosted-assistant arrangement: JIM-mini holds the record and the person has
+  access to it, over ordinary HTTPS, never through a vault. Named as **custody
+  rather than ownership**, deliberately — a product decides who holds and
+  operates a record, and does not get to decide away somebody's statutory
+  rights over their own personal data. On a product holding medical data that
+  distinction would be tested.
+
+### Fixed
+
+- **The README's own arithmetic was wrong** in three places — `jim/capture.py`
+  claimed 27 tests against 35, `jim/tiers.py` 25 against 26, `jim/storage.py`
+  36 against 51. A guard now verifies every "`module.py`, N tests" claim
+  against the files, because nothing fails when a file grows a test.
+
+- **A photograph never actually reached a clinician.** `jim/capture.py` said
+  from its first line that one could "reach a real clinician through the
+  referral flow that already exists", and for a release that sentence was true
+  of nothing: `attach_to_referral` returned a decision no caller consumed,
+  `mark_released` was dead code, and `referral.prepare` had no idea captures
+  existed. The README, the walkthrough and the pull request all repeated the
+  claim. `POST …/referral/prepare` now takes `capture_ids`; the package it
+  returns carries their metadata — never bytes — so the person reads exactly
+  what would go before signing; and `POST …/referral/requests/{id}/released`
+  stamps them. Mutation-checked.
+
+- **`seen_by_clinician` claimed something the app cannot know.** The signing
+  ceremony belongs to QRME and JIM never observes a clinician opening
+  anything, so the field is now `released_to_clinician`. Released is not
+  opened, and on a record a clinician might later be asked about that is not
+  a distinction worth blurring.
+
+- **A skipped test on the feature's own join.** The first version of
+  `test_a_prepared_referral_carries_the_captures` used a fixture with no
+  tandem link and skipped rather than failed. A skip on the test that proves
+  the whole feature works is not a pass; it now builds a real linked
+  specialist.
+
+- **The walkthrough and screen 79 described encryption but not custody**,
+  which is the part the free plan is actually about. Both now say we hold it
+  and you have access to it.
+
+- **`docs/tandem.md` described sealing as unconditional.** It was written when
+  a paid plan was the only kind. Now says which plans reach PDI at all —
+  byte-identical in all three repositories, as that file always is.
+
+- A guard ported from QRME rejecting user-facing copy that hardcodes a count
+  of refusals disagreeing with `len(SENSITIVE)`. JIM-mini's count is right
+  today; this is here for the day somebody adds a third.
+
+- **A free account's record was being sealed into the vault.** Every seal
+  point read `if pdi is not None` — whether the *deployment* has a vault, not
+  whether the *account* is on a plan that uses one. On a PDI-backed deployment
+  that put a free account's journal, check-in notes and detection detail in a
+  vault it was not paying for and could not hold a key to. Twelve write sites
+  now resolve through `_vault(user_id)`; guarded by counting vault writes
+  rather than by reading call sites, because reading call sites is how they
+  all stayed wrong.
+
+  Reads and deletions deliberately keep the real vault: a plan-gated vault on
+  a read strands a downgraded account's history behind a billing change, and
+  on a delete it leaves records nobody can reach and calls that erasure. Both
+  are asserted.
+
+- **The access log told a free account a comfortable lie.** On a vault plan an
+  empty list means nobody touched the records and the chain proves it. On an
+  open plan there is no chain, so an empty list means nothing was *recorded* —
+  and a bare `[]` reads as the first. `GET /access-log/{user_id}` now carries
+  `access_record_kept` and says which of the two it is, including the awkward
+  middle where an account downgraded off Basic has real earlier entries and
+  nothing recorded since.
+
+- **A free plan, with nothing private about it** — `jim/storage.py`, 36 tests,
+  screens 78, 79 and 80. Two storage postures: **open cloud** (Free — JIM's own
+  database, in the clear) and **encrypted vault** (Basic and Pro — journal
+  entries, check-in notes, detection detail and every capture sealed in PDI
+  under a key you can hold). `DEFAULT_PLAN` is now `free`, and the ladder runs
+  visitor → free → basic → pro.
+
+  **Free and Basic reach identical capabilities** — `guardian` and `emergency`
+  both start at `free`, and `includes("free") == includes("basic")` is asserted
+  by test. What $20 buys is the vault, not a feature.
+
+  **This is partly an admission of an old behaviour.** JIM has always degraded
+  gracefully when no PDI was configured — `life.add_journal`, `life.check_in`
+  and `guardian._event` each fall back to writing the payload straight into the
+  local table. A deployment without a vault has been storing check-in notes and
+  medical event details in the clear the whole time and never said so on any
+  screen. The free plan makes that a documented posture with a disclosure
+  attached.
+
+  **Two payloads the open store will not hold**: a photograph of a body
+  (`jim/capture.py`), and a child's record on a guardian's account
+  (`family.enroll_child`, plus `tiers.guard_dependant_write` for the diary
+  afterwards — enrolling on Basic and moving to Free the next day is one API
+  call, and the enrolment check alone would not have held).
+
+  **And what is deliberately not on that list, which is the whole argument.**
+  Blood oxygen, seizure detections, alarm history and the medical ID are the
+  most medically sensitive rows in the product, and Free stores every one of
+  them in the clear. Refusing them would mean refusing the emergency path,
+  because they *are* the emergency path — a storage rule that declined to write
+  a blood oxygen of 84 is a paywall in front of an alarm wearing a privacy
+  argument as a disguise. `NEVER_GATED` exists because this codebase shipped
+  that bug once already; `storage.py` does not get to reintroduce it one layer
+  down. `guardian._event` is therefore left unguarded, and a test asserts it
+  stays that way.
+
+  A capture refusal reports the **missing vault (503) before the plan (402)**,
+  deliberately: in a deployment with no PDI at all, telling somebody to pay $20
+  for the vault would be selling what cannot be delivered there.
+
+### Changed
+
+- `POST /enroll` with no `plan` now lands on **Free** rather than Basic, and
+  the response says what that means before anything has been written.
+
+- **README: "No raw user data ever leaves your vault" now says on which
+  plans.** It was true when every account had one; it is a claim about Basic
+  and Pro, and the free plan is what it is being sold against.
+
 ## [0.4.0] — 2026-07-27
 
 ### Added

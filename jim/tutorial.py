@@ -108,17 +108,51 @@ LESSONS: tuple[dict, ...] = (
               "does this need me right now — answered on the wrist and in the "
               "app.",
          screens=(67, 68), try_it="Open Agents and find the amber one."),
+    dict(key="capture", chapter="Beyond the app", title="Showing it",
+         what="Some things text loses — a rash, a wound that is not closing, "
+              "a tremor. Photograph it, mark where on the body, and it is "
+              "sealed in the encrypted vault and travels with a referral "
+              "to a real clinician. Location data is stripped out of the "
+              "image first, because a photo taken at home carries your "
+              "address. And the Guardian is told a photograph exists and "
+              "where — never what it shows. It routes you to a person; it "
+              "will not look at a mole and tell you it is fine.",
+         screens=(76, 77),
+         try_it="Open Show It and read what Jim is and is not told."),
     dict(key="plans", chapter="Beyond the app", title="What it costs",
-         what="Basic is $20 a month: the Guardian itself — your conditions, "
-              "guidance, the journal, habits and goals — and every emergency "
-              "path. Pro is $130 a month and adds the watch, early warning "
-              "that looks ahead of a threshold, specialists and synthetic "
-              "agents. Nothing on the alarm path is ever behind either price: "
-              "a reading you submit is answered, an escalation still fires, "
-              "and a responder can still read your medical ID, on any plan or "
-              "none. Billing here is simulated and no real funds move.",
+         what="Free is the whole Guardian — your conditions, guidance, the "
+              "journal, habits and goals — with your record stored in the "
+              "clear. Basic is $20 a month and is the same Guardian with that "
+              "record sealed in the encrypted vault. Pro is $130 a month and "
+              "adds the watch, early warning that looks ahead of a threshold, "
+              "specialists and synthetic agents. Nothing on the alarm path is "
+              "ever behind any of them: a reading you submit is answered, an "
+              "escalation still fires, and a responder can still read your "
+              "medical ID, on any plan or none. Billing here is simulated and "
+              "no real funds move.",
          screens=(69, 70),
          try_it="Open Choose a Plan and read what is never gated."),
+    dict(key="storage", chapter="Beyond the app",
+         title="Where your record lives",
+         what="On the free plan nothing is private, and we hold it. Your "
+              "record — the journal, your check-in notes, your health "
+              "readings — reaches us over an ordinary connection, sits in "
+              "this app's own database in the clear, and never goes through a "
+              "vault. The people who run it can read it and a lawful request "
+              "reaches it, and you have access to it for as long as you have "
+              "an account. Basic seals all of it under a key you can hold, "
+              "and that is the only thing the $20 buys: the features are "
+              "identical. Two things are never stored in the clear whatever "
+              "you have chosen — a photograph of a body, and a child's record "
+              "on a guardian's account, because the child did not pick the "
+              "plan. Your health readings are not on that list, deliberately: "
+              "refusing to store one would mean refusing the escalation it "
+              "triggers, and no alarm in this product waits on a payment. "
+              "Moving up seals what you write from then on and cannot "
+              "un-expose what was already open; moving down never unseals "
+              "anything already in the vault.",
+         screens=(78, 79, 80),
+         try_it="Open Where It Lives and read who can read a free record."),
     dict(key="dock", chapter="Beyond the app", title="The pane in the corner",
          what="A small pane in the bottom corner of the app carrying the "
               "glances a watch would — the last reading, what is running, "

@@ -202,12 +202,18 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/74-youre-on-basic.svg" width="160" alt="74 You are on Basic"><br><sub>74 · You're on Basic</sub></td>
 <td align="center" width="25%"><img src="docs/screens/75-this-needs-pro.svg" width="160" alt="75 This Needs Pro"><br><sub>75 · This Needs Pro</sub></td>
-<td align="center" width="25%"></td>
+<td align="center" width="25%"><img src="docs/screens/76-show-it.svg" width="160" alt="76 Show It"><br><sub>76 · Show It</sub></td>
+<td align="center" width="25%"><img src="docs/screens/77-what-jim-sees.svg" width="160" alt="77 What Jim Sees"><br><sub>77 · What Jim Sees</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/78-youre-on-free.svg" width="160" alt="78 You are on Free"><br><sub>78 · You're on Free</sub></td>
+<td align="center" width="25%"><img src="docs/screens/79-where-it-lives.svg" width="160" alt="79 Where It Lives"><br><sub>79 · Where It Lives</sub></td>
+<td align="center" width="25%"><img src="docs/screens/80-not-on-free.svg" width="160" alt="80 Not On Free"><br><sub>80 · Not On Free</sub></td>
 <td align="center" width="25%"></td>
 </tr>
 </table>
 
-The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 72 Pick a Plan → 73 Payment → 46 All Set**, landing on **74 You're on Basic**, then hands off to the daily app and, at the other end, **41 End Session**.
+The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 72 Pick a Plan → 73 Payment → 46 All Set**, landing on **78 You're on Free** — or **74 You're on Basic** if the plan step was paid — then hands off to the daily app and, at the other end, **41 End Session**.
 
 ## Watch screens
 
@@ -397,15 +403,113 @@ the module next door has one.
 It is still inside every screenshot, so `dock.NEVER` holds the journal, the
 medical record, guidance text and family members' names.
 
+## Showing it, rather than describing it
+
+`jim/capture.py`, 6 routes, 35 tests, screens **76** and **77**.
+
+A rash, a wound that is not closing, swelling, a bruise spreading, the colour of
+something. These are the parts of a condition that text loses — *"it's a bit
+red"* is the same sentence for a heat rash and for cellulitis. This lets
+somebody photograph it (or film it, when the thing only shows in motion — a
+tremor, a gait), attach it to a condition, and have it reach a real clinician
+through the referral flow that already exists.
+
+**That last clause was a claim with nothing behind it for one release**, and it
+is worth recording rather than quietly fixing. `attach_to_referral` returned a
+decision no caller consumed, `mark_released` was never called by anything, and
+`referral.prepare` had no idea captures existed — while this README, the
+walkthrough and the module docstring all said a photograph could travel with a
+referral. `POST …/referral/prepare` now takes `capture_ids`, the package it
+returns carries their **metadata** so the person reads exactly what would go
+before signing, and `POST …/referral/requests/{id}/released` stamps them.
+`test_a_prepared_referral_carries_the_captures` is the join, and it is
+mutation-checked.
+
+**The bytes never ride along**, on that path either: what travels is kind,
+site, when and provenance — enough for a clinician to know a photograph exists
+and open it deliberately through `content_for_care`. Intimate sites are
+filtered out again on the way through, by going back through
+`attach_to_referral` rather than re-deciding, so there is one place that rule
+lives.
+
+**And the field is `released_to_clinician`, not `seen_by_clinician`.** It used
+to be the second, which is a claim about somebody else's behaviour that this
+app has no way to check — the signing ceremony belongs to QRME and JIM never
+sees the clinician open anything. Released is not opened, and on a record a
+clinician might later be asked about, the difference is not decoration.
+
+**This is the most sensitive payload either product will ever hold**: a
+photograph of somebody's body, taken at home, of the thing they are frightened
+about. Four rules follow from that, and each is asserted rather than intended.
+
+### A synthetic agent never receives the image
+
+It is told a capture exists, where on the body, and when — enough to say *"there
+is a photograph of your forearm from Tuesday attached to this, and a clinician
+should look at it"*. That is a **routing** decision, which is the thing an agent
+may make. It never gets the bytes, on any plan or setting.
+
+This is [`pdi/gate.py`](https://github.com/davidsbianchi1984/pdi)'s ceiling —
+*whatever a wrong answer cannot undo* — arriving where it matters most. A model
+that looks at a mole and says *"that looks fine"* has made a diagnosis, with no
+license, no examination and no accountability, to somebody frightened enough to
+photograph it. A missed melanoma is not undone by the next sentence.
+
+`for_agent()` is the only shape an agent can receive, and a test parses it to
+assert no path inside reaches the vault.
+
+### Never for a child
+
+An image of an intimate area is refused outright for an account belonging to a
+minor. **No override, no guardian consent path, no setting.** The refusal points
+at a clinician or a paediatric service, because a flat "no" to a frightened
+parent is a product failing twice.
+
+Intimate sites are allowed for adults — a rash does not respect modesty, and a
+product that refused would push somebody to a worse tool — behind an explicit
+confirmation, omitted from the agent view **entirely** rather than summarised
+(*"there is a photograph of their groin"* is itself the disclosure), and never
+swept into an assembled referral.
+
+### The pixels never touch JIM's own database
+
+They go to the PDI vault, sealed. The table keeps metadata and a vault key, and
+a test asserts the schema has **no column that could hold an image** — a
+`content` field here is one somebody eventually writes to.
+
+There is no fallback. With no vault configured, capture is **refused**, not
+degraded to a local file: the graceful version is an unencrypted photograph of
+somebody's skin in a SQLite file on a laptop. Colocation is free, which is what
+makes requiring a vault cost nobody anything — and the refusal says so, because
+otherwise it reads as an upsell.
+
+### Location is stripped, not promised absent
+
+`strip_metadata()` parses the JPEG segment structure and drops APP1 (Exif/XMP),
+APP2 (ICC), APP13 (IPTC) and the comment marker. **GPS lives in the Exif IFD**,
+so a photo taken at home would otherwise geotag the person's address into a
+referral package and a vault record that outlives the rash.
+
+The test checks the coordinate is gone from the bytes that were actually sealed,
+not that a flag was set. A format the function does not parse is **reported as
+unparsed** rather than claimed clean — saying "stripped" about a PNG would be
+the exact false assurance the rest of this is written against.
+
 ## Membership
 
-`jim/tiers.py`, 4 routes, 25 tests, screens **69** and **70**.
+`jim/tiers.py`, 4 routes, 26 tests, screens **69** and **70**.
 
 | | | |
 | --- | --- | --- |
 | **Visitor** | free | read a shared page or a scanned medical ID |
-| **Basic** | **$20/month** | the Guardian itself — conditions, guidance, journal, habits, goals, **and every emergency path** |
+| **Free** | **$0** | the Guardian itself — conditions, guidance, journal, habits, goals, **and every emergency path** — stored in the clear |
+| **Basic** | **$20/month** | the same Guardian, sealed in the encrypted vault under a key you can hold |
 | **Pro** | **$130/month** | the watch, early warning, specialists, and synthetic agents summoned through the QRME tandem |
+
+**Free and Basic reach identical capabilities, and that is deliberate** —
+`includes("free") == includes("basic")`, asserted by test. What $20 buys is
+`jim/storage.py`'s vault posture, not a feature. See *[Where your record
+lives](#where-your-record-lives)* below.
 
 **Nothing that answers an emergency is ever behind a paywall**, and that is the
 rule this module exists to keep rather than a caveat on it. A lapsed card is a
@@ -450,9 +554,120 @@ other two products: the row is the subscription, and a test asserts nothing
 reaches a payment processor. **Cancelling keeps the record**, the conditions,
 and every emergency path.
 
+## Where your record lives
+
+`jim/storage.py`, 51 tests, screens **78**, **79** and **80**.
+
+Two postures, and the difference between them is the whole of what Basic buys.
+
+| | | |
+| --- | --- | --- |
+| **Open cloud** | Free | JIM's own database, in the clear. The operator can read it, a backup contains it, a subpoena reaches it |
+| **Encrypted vault** | Basic, Pro | journal entries, check-in notes, detection detail and every capture sealed in PDI before they land, under a key you can hold |
+
+### Who holds it
+
+The other half of the same question, and the one the free plan is really
+about. `storage.CUSTODY` names two arrangements:
+
+| | | |
+| --- | --- | --- |
+| **Platform custody** | Free | JIM-mini holds your record and you have access to it — the familiar hosted-assistant arrangement. It reaches us over ordinary HTTPS, sits in our own database, and never goes through a vault |
+| **Your custody** | Basic, Pro | sealed in PDI before it lands, under a key you can hold. We operate the service; we do not hold the contents |
+
+**Custody, not ownership, and the word is deliberate.** A product gets to
+decide who *holds and operates* a record. It does not get to decide away
+somebody's statutory rights over their own personal data — access,
+rectification, erasure and portability survive whatever a plan says. A tier
+table claiming "the platform owns your data" would claim what no court would
+honour, and on a product holding medical data that claim would be tested.
+
+**The vault gate asks about the plan, not the deployment — and it did not
+used to.** Every seal point read `if pdi is not None`, which is whether the
+*operator* configured a vault. So a free account on a PDI-backed deployment
+had its journal, its check-in notes and its detection detail sealed into a
+vault it was not paying for and could not hold a key to.
+`storage.vault_for(plan, pdi)` is now the one place that question is asked,
+and `test_a_free_account_puts_nothing_in_the_vault` counts writes rather than
+reading call sites — because reading call sites is how twenty of them stayed
+wrong.
+
+**Writes only. Reads and deletions keep the real vault, always.** Somebody who
+was on Basic for a year and moved to Free still has a year of sealed records:
+they have to be able to read them back, and `DELETE /data/{user_id}` has to be
+able to purge them. A plan-gated vault on a read strands somebody's history
+behind a billing change; on a delete it leaves records nobody can reach and
+calls that erasure. Both are asserted.
+
+**And the access log stopped telling a comfortable lie.** On a vault plan an
+empty list means nobody touched the records and the chain proves it. On an
+open plan there is no chain — nothing is recorded, so nobody could prove
+either way — and returning a bare `[]` reads as the first. `GET
+/access-log/{user_id}` now carries `access_record_kept` and says which of the
+two it is. An account that was on Basic and moved to Free is the awkward
+middle: real entries exist for what was sealed then, nothing since is
+recorded, and both halves get said.
+
+**This is not a new behaviour so much as an admission of an old one.** JIM has
+always degraded gracefully when no PDI was configured — `life.add_journal`,
+`life.check_in` and `guardian._event` each read `if pdi is not None` and fall
+back to writing the payload straight into the local table. A deployment without
+a vault has been storing check-in notes and medical event details in the clear
+the whole time and never said so on any screen. The free plan makes that a
+documented posture with a disclosure attached, rather than an undocumented
+fallback.
+
+**The disclosure is structural.** `storage.describe()` is carried on `GET
+/plans`, `GET /memberships/{id}` and the body returned by `POST /enroll`, and
+`not_private` is a **field**, not a footnote. It also names the health readings
+specifically, because burying blood oxygen and seizure detections under "your
+data" would be the disclosure doing the opposite of its job.
+
+**Two things the open store will not hold**, and the test for the list is not
+*would the account holder mind* — it is **whose exposure is it**:
+
+- **a photograph of a body.** `jim/capture.py` already refuses to write one
+  without a vault; on Free it refuses for the same reason with a different
+  remedy. The 503 for *this deployment has no vault* is raised **before** the
+  402 for *this plan is open*, deliberately: telling somebody to pay $20 for a
+  vault that does not exist here would be selling what cannot be delivered.
+- **a child's record on a guardian's account.** The child did not pick the
+  plan, cannot read a pricing page, and will be an adult one day with a medical
+  history somebody else left in the clear. Refused at enrolment, before the
+  account is created, so a refusal leaves no half-enrolled child behind.
+
+The enrolment check alone would not hold, because enrolling on Basic and moving
+to Free the next day is one API call. So `tiers.guard_dependant_write` covers
+the child's **diary** — journal, check-in notes, context events — for as long
+as the link exists.
+
+**And what is deliberately *not* on that list, which is the whole argument.**
+Blood oxygen, seizure detections, alarm history, the medical ID a paramedic
+scans. These are the most medically sensitive rows in the product and the free
+plan stores every one of them in the clear, openly, and says so.
+
+Refusing them would mean refusing the emergency path, because they *are* the
+emergency path: a sample arrives at `/monitor`, `jim/conditions.py` asks whether
+something is wrong right now, and a critical reading escalates. A storage rule
+that declined to write the sample is a paywall in front of an alarm wearing a
+privacy argument as a disguise — exactly what `NEVER_GATED` exists to prevent,
+and `storage.py` does not get to reintroduce it one layer down. `_event` is
+therefore **not** guarded, and a test asserts it stays that way.
+
+Somebody in trouble gets an escalation. That is the trade, it is made
+deliberately, and `test_a_free_account_is_never_refused_an_emergency_write` is
+what keeps it.
+
+**A downgrade never unseals anything**, and **an upgrade does not un-expose**
+what was already open — the same two rules as QRME, for the same reason: a
+billing event that declassified a year of somebody's medical history would be
+the worst thing this module could do.
+
 ## Your data promise
 
-**No raw user data ever leaves your vault.**
+**On Basic and Pro, no raw user data ever leaves your vault.** On the free
+plan there is no vault at all, and the section above says exactly what that
+means — this promise is what $20 buys.
 
 - Biometric samples, crisis notes, journal entries, and consented context are
   sealed in your on-prem PDI vault (AES-256-GCM, tenant-isolated,

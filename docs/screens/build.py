@@ -1367,16 +1367,16 @@ SCREENS = [
     # The price list. Card three is the one that has to lead on a health
     # product: the first question anybody asks a paywall here is whether it
     # stands in front of the alarm.
-    dict(num=69, title="Choose a Plan", sub="Basic guards, Pro looks ahead",
+    dict(num=69, title="Choose a Plan", sub="Free guards too — $20 seals it",
          accent="brand", tab=0, cards=[
-        dict(icon="shield", color="teal", k="Basic · $20/month",
-             s="the Guardian and every alarm"),
+        dict(icon="cloud", color="amber", k="Free · $0",
+             s="the Guardian, in the clear"),
+        dict(icon="lock", color="teal", k="Basic · $20/month",
+             s="the same, sealed in a vault"),
         dict(icon="bolt", color="brand", k="Pro · $130/month",
              s="watch, early warning, agents"),
         dict(icon="heart", color="red", k="Emergencies never gated",
              s="on any plan, even a lapsed one"),
-        dict(icon="watch", color="amber", k="The wrist is Pro",
-             s="pairing, the face, channel 2"),
         dict(icon="warn", color="green", k="Billing is simulated",
              s="no real funds move"),
     ], button=("Go Pro", "brand")),
@@ -1418,15 +1418,17 @@ SCREENS = [
     # so the very next screen has to say that no plan withholds that.
     dict(num=72, title="Pick a Plan", sub="Step 5 of 6",
          accent="brand", tab=0, cards=[
-        dict(icon="shield", color="teal", k="Basic · $20/month",
-             s="the Guardian and every alarm"),
+        dict(icon="cloud", color="amber", k="Free · $0",
+             s="the Guardian, stored in the clear"),
+        dict(icon="lock", color="teal", k="Basic · $20/month",
+             s="the same, sealed in a vault"),
         dict(icon="bolt", color="brand", k="Pro · $130/month",
              s="watch, early warning, agents"),
-        dict(icon="heart", color="red", k="Alarms are in both",
-             s="and in neither, if you lapse"),
+        dict(icon="heart", color="red", k="Alarms are in all three",
+             s="and after you cancel"),
         dict(icon="warn", color="green", k="Billing is simulated",
              s="no real funds move"),
-    ], button=("Continue with Basic", "brand")),
+    ], button=("Start free", "brand")),
     dict(num=73, title="Payment", sub="Step 6 of 6",
          accent="teal", tab=0, cards=[
         dict(icon="heart", color="teal", k="Basic · $20 a month",
@@ -1446,6 +1448,8 @@ SCREENS = [
              s="on this plan and with none", pill=("ON", "good")),
         dict(icon="shield", color="green", k="The Guardian is yours",
              s="conditions, guidance, journal"),
+        dict(icon="lock", color="teal", k="Sealed in the vault",
+             s="that is what the $20 bought"),
         dict(icon="watch", color="amber", k="The watch is Pro",
              s="pairing, the face, channel 2"),
         dict(icon="chart", color="amber", k="Looking ahead is Pro",
@@ -1464,6 +1468,90 @@ SCREENS = [
         dict(icon="warn", color="green", k="Billing is simulated",
              s="no real funds move"),
     ], button=("Upgrade to Pro", "brand")),
+    # Showing rather than describing. Card two is the reason the feature
+    # exists: "it's a bit red" is the same sentence for a heat rash and for
+    # cellulitis.
+    dict(num=76, title="Show It", sub="Some things text cannot carry",
+         accent="teal", tab=1, cards=[
+        dict(icon="eye", color="teal", k="Photograph the rash",
+             s="or a clip, if it only shows in motion"),
+        dict(icon="person", color="brand", k="Mark where on the body",
+             s="a clinician routes on it"),
+        dict(icon="lock", color="green", k="Sealed in the vault",
+             s="never in the app's own store"),
+        dict(icon="shield", color="amber", k="Location is stripped",
+             s="a home photo carries your address"),
+        dict(icon="warn", color="red", k="No agent ever sees it",
+             s="a person looks, or nobody does"),
+    ], button=("Take a photo", "brand")),
+    # What the synthetic agent gets instead. This screen is the boundary drawn
+    # where a user can see it, which is the point.
+    dict(num=77, title="What Jim Sees", sub="That it exists, not what it shows",
+         accent="brand", tab=1, cards=[
+        dict(icon="chat", color="brand", k="A photo of your forearm",
+             s="from Tuesday, attached to this"),
+        dict(icon="person", color="teal", k="It routes, it does not read",
+             s="a clinician should look at this"),
+        dict(icon="warn", color="red", k="It will not tell you it is fine",
+             s="that would be a diagnosis"),
+        dict(icon="lock", color="green", k="Intimate areas are not listed",
+             s="saying so is the disclosure"),
+        dict(icon="heart", color="amber", k="A person opens it",
+             s="through the referral you sign"),
+    ]),
+    # ---- the free plan ----
+    #
+    # Where signup lands now. Card one before card two, deliberately: what is
+    # not private is said before anything about what the plan can do, because
+    # a disclosure that arrives after the pitch is a disclosure nobody reads
+    # at the moment it matters. Card two is second and not lower, because this
+    # is a health product and "does the alarm still work" is the question
+    # somebody actually has.
+    dict(num=78, title="You're on Free", sub="The same Guardian, in the clear",
+         accent="amber", tab=0, cards=[
+        dict(icon="eye", color="red", k="Not private",
+             s="no vault, no key, no audit trail", pill=("OPEN", "warn")),
+        dict(icon="heart", color="green", k="Every alarm works",
+             s="readings, escalation, medical ID", pill=("ON", "good")),
+        dict(icon="shield", color="teal", k="All that Basic does",
+             s="conditions, guidance, journal"),
+        dict(icon="lock", color="brand", k="$20 buys the vault",
+             s="not one extra feature"),
+        dict(icon="warn", color="amber", k="Two things we refuse",
+             s="a body photo, a child's record"),
+    ], button=("Seal it for $20", "brand")),
+    # The two postures side by side. The last two cards are the ones a pricing
+    # page normally leaves out, and leaving them out is how a product ends up
+    # selling absolution rather than encryption.
+    dict(num=79, title="Where It Lives", sub="Who holds it, and how",
+         accent="teal", tab=0, cards=[
+        dict(icon="cloud", color="amber", k="Free · we hold it",
+             s="we host it, you have access"),
+        dict(icon="eye", color="red", k="Operators can read it",
+             s="so can a lawful request"),
+        dict(icon="lock", color="green", k="Basic · you hold it",
+             s="sealed to you, not to us"),
+        dict(icon="shield", color="teal", k="Upgrading seals ahead",
+             s="it cannot un-expose the past"),
+        dict(icon="warn", color="brand", k="A lapse unseals none",
+             s="your history stays sealed"),
+    ], button=("Move to Basic", "brand")),
+    # What the open store will not hold — and, in card three, what it *will*,
+    # which is the least obvious decision in the whole design and the one most
+    # likely to be "fixed" by somebody reading quickly.
+    dict(num=80, title="Not On Free", sub="Two things we will not leave open",
+         accent="red", tab=1, cards=[
+        dict(icon="eye", color="red", k="A photo of a body",
+             s="not in a store others can open"),
+        dict(icon="person", color="amber", k="A child's record",
+             s="they did not pick this plan"),
+        dict(icon="heart", color="green", k="Readings are not on it",
+             s="refusing one is a paywall"),
+        dict(icon="lock", color="teal", k="Basic · $20 a month",
+             s="the vault is free to host"),
+        dict(icon="warn", color="brand", k="Billing is simulated",
+             s="no real funds move"),
+    ], button=("Seal it for $20", "brand")),
 ]
 
 
