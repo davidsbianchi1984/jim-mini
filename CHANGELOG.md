@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The desktop installers were labelled 0.3.3.** `app/package.json` carries
+  its own version and no cut ever bumped it, so the 0.4.0 and 0.4.1 releases
+  both attached installers stamped with the stale number — built from the
+  right tag, named for the wrong release, and invisible to the auto-updater,
+  which compares package versions and saw nothing newer. Now 0.4.1, with a
+  test asserting it always matches the API version, because a duplicated
+  number with nothing to fail is how the last three of these happened.
+
 ## [0.4.1] — 2026-07-28
 
 ### Added
