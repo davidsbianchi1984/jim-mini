@@ -19,6 +19,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The README's own arithmetic was wrong** in three places — `jim/capture.py`
+  claimed 27 tests against 35, `jim/tiers.py` 25 against 26, `jim/storage.py`
+  36 against 51. A guard now verifies every "`module.py`, N tests" claim
+  against the files, because nothing fails when a file grows a test.
+
 - **A photograph never actually reached a clinician.** `jim/capture.py` said
   from its first line that one could "reach a real clinician through the
   referral flow that already exists", and for a release that sentence was true

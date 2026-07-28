@@ -405,7 +405,7 @@ medical record, guidance text and family members' names.
 
 ## Showing it, rather than describing it
 
-`jim/capture.py`, 6 routes, 27 tests, screens **76** and **77**.
+`jim/capture.py`, 6 routes, 35 tests, screens **76** and **77**.
 
 A rash, a wound that is not closing, swelling, a bruise spreading, the colour of
 something. These are the parts of a condition that text loses — *"it's a bit
@@ -497,7 +497,7 @@ the exact false assurance the rest of this is written against.
 
 ## Membership
 
-`jim/tiers.py`, 4 routes, 25 tests, screens **69** and **70**.
+`jim/tiers.py`, 4 routes, 26 tests, screens **69** and **70**.
 
 | | | |
 | --- | --- | --- |
@@ -556,7 +556,7 @@ and every emergency path.
 
 ## Where your record lives
 
-`jim/storage.py`, 36 tests, screens **78**, **79** and **80**.
+`jim/storage.py`, 51 tests, screens **78**, **79** and **80**.
 
 Two postures, and the difference between them is the whole of what Basic buys.
 
