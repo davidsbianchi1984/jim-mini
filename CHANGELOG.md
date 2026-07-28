@@ -6,15 +6,55 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.2] — 2026-07-28
+
+### Changed
+
+- **The Anthropic provider defaults to `claude-opus-5`.** The default model
+  string in `jim/llm.py` (and the README lines quoting it) still named the
+  previous Opus generation. `JIM_MODEL` still overrides, and every other
+  provider default is untouched. Mirrors the same change in QRME — the two
+  provider layers deliberately share no code.
+
+- **`python -m jim serve` answers the packaged console by default.** The
+  installer ships only the console; the Guardian API it calls is started by
+  hand — and a loopback `serve` never set `JIM_CORS_ORIGINS`, so every
+  console request died as *"Failed to fetch"* against a backend that was
+  running fine, including for a user following the app's own recovery
+  instructions. A loopback serve now defaults CORS open (the posture the
+  in-app hint has always instructed), announced on stdout, with `--no-cors`
+  to keep it closed — and never when binding beyond loopback or when an
+  explicit allowlist is set. Personal endpoints still require the user's
+  bearer token. Four tests, mutation-checked.
+
 ### Fixed
 
 - **The desktop installers were labelled 0.3.3.** `app/package.json` carries
   its own version and no cut ever bumped it, so the 0.4.0 and 0.4.1 releases
   both attached installers stamped with the stale number — built from the
   right tag, named for the wrong release, and invisible to the auto-updater,
-  which compares package versions and saw nothing newer. Now 0.4.1, with a
+  which compares package versions and saw nothing newer. Bumped, with a
   test asserting it always matches the API version, because a duplicated
-  number with nothing to fail is how the last three of these happened.
+  number with nothing to fail is how the last three of these happened. This
+  release is the first whose installers come out named for it.
+
+- **The enrollment form shipped with a developer's sample name and birthdate
+  in the boxes** — reported from a real Windows install, by a user whose
+  own name it happened to collide with. Identity fields start empty now, and
+  Get Started stays disabled until name, birthdate and consent are all
+  given: a pre-filled birthdate in an age field is a wrong answer already
+  submitted.
+
+- **"Failed to fetch" told a fresh install nothing.** Onboarding now checks
+  for the Guardian backend before the form is filled in and, when
+  unreachable, says exactly that — with the command to start one and an
+  editable backend URL with retry. Every API call names the backend and the
+  fix instead of surfacing the raw fetch error, and the command is the right
+  one now: `python -m jim serve` (bare `python -m jim` only prints the
+  launcher menu).
+
+- **The desktop window was titled "QRME".** Retitled *JIM Guardian*, and the
+  preload bridge renamed `jimDesktop` to match.
 
 ## [0.4.1] — 2026-07-28
 
@@ -998,7 +1038,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.2...HEAD
+[0.4.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.2
 [0.4.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.1
 [0.4.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.0
 [0.3.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.3.3
