@@ -10,7 +10,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 640,
     backgroundColor: "#0d0a20",
-    title: "QRME",
+    title: "JIM Guardian",
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,

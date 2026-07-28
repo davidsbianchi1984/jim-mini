@@ -18,10 +18,20 @@ export function setBase(url: string) { localStorage.setItem("jim.base", url.repl
 async function req<T>(path: string, opts: { method?: string; body?: unknown; token?: string } = {}): Promise<T> {
   const headers: Record<string, string> = { "content-type": "application/json" };
   if (opts.token) headers["authorization"] = `Bearer ${opts.token}`;
-  const res = await fetch(getBase() + path, {
-    method: opts.method || "GET", headers,
-    body: opts.body ? JSON.stringify(opts.body) : undefined,
-  });
+  let res: Response;
+  try {
+    res = await fetch(getBase() + path, {
+      method: opts.method || "GET", headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+  } catch {
+    // A network-level failure surfaces as "Failed to fetch", which tells the
+    // user nothing. Name the actual problem: no Guardian backend answering.
+    throw new Error(
+      `Can't reach the Guardian backend at ${getBase()}. ` +
+      `Start it with "python -m jim", or set the backend URL in Settings.`,
+    );
+  }
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
   if (!res.ok) {
