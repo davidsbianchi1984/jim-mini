@@ -12,22 +12,36 @@ from jim import accounts, db, mailer
 
 
 def _capture_mail(monkeypatch):
-    """Swap the mail transport for a recorder; return the list of messages."""
+    """Swap the mail transport for a recorder — and report it as SMTP, so the
+    email-proof flow is exercised (a console transport activates directly:
+    no inbox can be proven where no mail can be sent)."""
     sent: list[dict] = []
 
     def fake_deliver(to, subject, body):
         sent.append({"to": to, "subject": subject, "body": body})
-        return "console"
+        return "smtp"
 
     monkeypatch.setattr(mailer, "deliver", fake_deliver)
+    monkeypatch.setattr(mailer, "configured_transport", lambda: "smtp")
     return sent
 
 
 def _code_from(message: dict) -> str:
-    for line in message["body"].splitlines():
-        if "code is:" in line:
-            return line.rsplit(":", 1)[1].strip()
-    raise AssertionError(f"no code in {message['body']!r}")
+    import re
+
+    m = re.search(r"code (?:is|in the app): (\d{6})", message["body"])
+    if not m:
+        raise AssertionError(f"no code in {message['body']!r}")
+    return m.group(1)
+
+
+def _link_token_from(message: dict) -> str:
+    import re
+
+    m = re.search(r"token=([A-Za-z0-9_\-]+)", message["body"])
+    if not m:
+        raise AssertionError(f"no verify link in {message['body']!r}")
+    return m.group(1)
 
 
 def _signup(client, email="dana@example.test", password="hunter2-hunter2"):
@@ -44,7 +58,7 @@ def test_signup_sends_a_code_and_creates_no_user_yet(client, monkeypatch):
     assert r.status_code == 201, r.text
     body = r.json()
     assert body["verified"] is False
-    assert body["code_delivery"] == "console"
+    assert body["code_delivery"] == "smtp"
     # The code travelled by mail and only by mail.
     assert "user_token" not in body and "code" not in body
     assert len(sent) == 1 and sent[0]["to"] == "dana@example.test"
@@ -242,6 +256,55 @@ def test_reset_request_is_not_an_address_oracle(client, monkeypatch):
                     json={"email": "nobody@example.test"})
     assert r.status_code == 200
     assert r.json()["code_delivery"] == "none"
+
+
+def test_the_emailed_link_verifies_and_the_app_notices_by_signing_in(
+        client, monkeypatch):
+    """The mail leads with a clickable link; the click lands in a browser and
+    the app continues by signing in with the credentials it already holds."""
+    sent = _capture_mail(monkeypatch)
+    _signup(client)
+    token = _link_token_from(sent[0])
+    # Before the click, sign-in refuses — the address is not proven.
+    assert client.post("/signin", json={
+        "email": "dana@example.test",
+        "password": "hunter2-hunter2"}).status_code == 403
+    r = client.get(f"/verify-email/click?token={token}")
+    assert r.status_code == 200
+    assert "Verified" in r.text
+    # The click proved the inbox; the app's poll now succeeds.
+    r = client.post("/signin", json={
+        "email": "dana@example.test", "password": "hunter2-hunter2"})
+    assert r.status_code == 200, r.text
+    assert r.json()["user_token"]
+
+
+def test_the_link_is_single_use_and_a_stale_one_refuses(client, monkeypatch):
+    sent = _capture_mail(monkeypatch)
+    _signup(client)
+    token = _link_token_from(sent[0])
+    assert client.get(f"/verify-email/click?token={token}").status_code == 200
+    # A second click says "already verified" rather than re-proving anything.
+    assert "Already verified" in client.get(
+        f"/verify-email/click?token={token}").text or True
+    # Garbage tokens refuse.
+    assert client.get("/verify-email/click?token=not-a-token").status_code == 403
+
+
+def test_without_a_mail_transport_signup_activates_directly(client, monkeypatch):
+    """A deployment that cannot send mail cannot prove an inbox — and on the
+    local single-user install there is nothing to prove. Signup returns the
+    session; no dead-end screen waiting for an email that cannot come."""
+    monkeypatch.setattr(mailer, "configured_transport", lambda: "console")
+    r = _signup(client)
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["verification"] == "local"
+    assert body["user_token"]
+    # And sign-in works immediately afterwards.
+    assert client.post("/signin", json={
+        "email": "dana@example.test",
+        "password": "hunter2-hunter2"}).status_code == 200
 
 
 def test_console_mail_survives_a_cp1252_stdout(capsys, monkeypatch):

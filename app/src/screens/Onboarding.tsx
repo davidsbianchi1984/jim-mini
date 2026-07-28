@@ -60,6 +60,22 @@ export function Onboarding() {
   useEffect(() => { checkBackend(); }, []);
   function saveBase() { setBase(base); checkBackend(); }
 
+  // On the code screen, the person may verify by clicking the emailed link
+  // in their browser instead of typing the code. The app holds the email and
+  // password, so it notices on its own: poll sign-in until the address is
+  // proven, then continue without another keystroke.
+  useEffect(() => {
+    if (mode !== "code" || !password) return;
+    const timer = setInterval(async () => {
+      try {
+        const u = await api.signin({ email: email.trim(), password });
+        setSession({ userId: u.user_id, userToken: u.user_token, displayName: u.display_name || "" });
+      } catch { /* not verified yet — keep waiting */ }
+    }, 3000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, email, password]);
+
   function switchMode(m: Mode) {
     setMode(m); setError(null); setNotice(null); setCode("");
     setPassword(""); setConfirm("");
@@ -74,10 +90,37 @@ export function Onboarding() {
 
   const passwordsMatch = password === confirm;
 
-  const signup = () => run(
-    () => api.signup({ email: email.trim(), password, display_name: name.trim(), birthdate, terms_consent: consent }),
-    (r) => { setDelivery(r.code_delivery); setMode("code"); },
-  );
+  const signup = async () => {
+    setBusy(true); setError(null); setNotice(null);
+    try {
+      const r = await api.signup({ email: email.trim(), password, display_name: name.trim(), birthdate, terms_consent: consent });
+      if (r.verification === "local" && r.user_token) {
+        // No mail transport on this deployment (the desktop install): the
+        // machine owner is trusted, the account is already active.
+        setSession({ userId: r.id!, userToken: r.user_token, displayName: r.display_name });
+        return;
+      }
+      setDelivery(r.code_delivery || null); setMode("code");
+    } catch (e) {
+      const msg = (e as Error).message;
+      if (msg.includes("already pending")) {
+        // A signup that crashed mid-flight (0.4.3 did exactly this) leaves a
+        // pending account. Never strand the person on the form for that —
+        // go to the code screen and issue a fresh code.
+        setMode("code");
+        try {
+          const r = await api.resendCode(email.trim());
+          setDelivery(r.code_delivery);
+          setNotice("This address already had a signup in progress — we've sent a fresh code.");
+        } catch (e2) { setError((e2 as Error).message); }
+      } else if (msg.includes("already exists")) {
+        setMode("signin");
+        setNotice("This address already has an account — sign in (or use Forgot password).");
+      } else {
+        setError(msg);
+      }
+    } finally { setBusy(false); }
+  };
   const verify = () => run(
     () => api.verifyEmail({ email: email.trim(), code: code.trim() }),
     (u) => setSession({ userId: u.id, userToken: u.user_token, displayName: u.display_name }),
@@ -99,8 +142,11 @@ export function Onboarding() {
     () => { switchMode("signin"); setNotice("Password changed — sign in with the new one."); },
   );
 
+  const isDesktop = Boolean((window as unknown as { jimDesktop?: unknown }).jimDesktop);
   const whereIsTheCode = delivery === "console"
-    ? <> — this deployment has no mail service configured, so the code was <b>printed in the terminal running the backend</b></>
+    ? (isDesktop
+        ? <> — this deployment has no mail service configured, so the code was <b>written to the app's backend log</b> (button below opens it)</>
+        : <> — this deployment has no mail service configured, so the code was <b>printed in the terminal running the backend</b></>)
     : null;
 
   return (
@@ -140,9 +186,16 @@ export function Onboarding() {
 
         {mode === "code" && (<>
           <p className="muted">
-            We sent a 6-digit code to <b>{email}</b>{whereIsTheCode}.
-            Enter it to prove the address is yours; your account exists only after that.
+            We emailed a verification link to <b>{email}</b>{whereIsTheCode}.
+            <b> Click the link and this screen continues on its own.</b> Prefer
+            typing? Enter the 6-digit code from the same email instead. Your
+            account exists only after one or the other.
           </p>
+          {delivery === "console" && (window as unknown as { jimDesktop?: { openBackendLog?: () => void } }).jimDesktop?.openBackendLog && (
+            <button className="linkish" onClick={() =>
+              (window as unknown as { jimDesktop: { openBackendLog: () => void } }).jimDesktop.openBackendLog()
+            }>Open the log with the code</button>
+          )}
           <label>Verification code
             <input value={code} inputMode="numeric" placeholder="123456" onChange={(e) => setCode(e.target.value)} />
           </label>

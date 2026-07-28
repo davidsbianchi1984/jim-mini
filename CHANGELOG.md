@@ -6,6 +6,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.5] — 2026-07-28
+
+### Changed
+
+- **Verification matches the deployment, and the email got a link.** A
+  desktop install has no mail service, so no email can ever arrive — yet
+  0.4.4's code screen sat waiting for one: a locked door in an empty house.
+  Now, with no mail transport configured, signup activates the account
+  directly (the machine owner is trusted on a single-user local install —
+  there is no inbox to prove and nothing to prove it to). A deployment
+  **with** SMTP configured enforces the real proof, and its email now leads
+  with a **clickable verification link** (`GET /verify-email/click`) — the
+  shape every mainstream flow uses — with the 6-digit code as the fallback
+  for a mail client on another device. The app finishes on its own after
+  the click: it holds the email and password, so it polls sign-in until the
+  address is proven.
+
+### Fixed
+
+- **A crashed signup no longer strands the retry.** 0.4.3's mid-flight crash
+  left pending accounts; retrying signup answered 409 and parked the person
+  on the form. A pending-account signup now routes straight to the
+  verification screen and issues a fresh code; an already-verified address
+  routes to sign-in.
+
+- **The packaged app can show you its own log.** The "console" mail
+  transport writes to the spawned backend's log file, which the window
+  never named and could not open. An "Open the log" button (Electron
+  bridge) does now — relevant to resends on deployments without mail.
+
 ## [0.4.4] — 2026-07-28
 
 ### Fixed
@@ -1093,7 +1123,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.4...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.5...HEAD
+[0.4.5]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.5
 [0.4.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.4
 [0.4.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.3
 [0.4.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.2
