@@ -72,6 +72,16 @@ jobs:
           mkdir -p app/backend-bin
           cp dist/jim-backend* app/backend-bin/
 
+      # No installer ships a first run that was not performed. The exact
+      # frozen binary that will be packaged runs the whole flow — signup,
+      # code from the console log, verify, personal route, sign-in — on this
+      # runner's real OS. 0.4.3 shipped a Windows-only signup 500 this step
+      # would have refused to package.
+      - name: Smoke-test the frozen backend (real first run)
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: python packaging/smoke_test.py dist/jim-backend*
+
       - name: Install dependencies
         run: npm ci
 
