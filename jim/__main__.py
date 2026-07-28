@@ -134,7 +134,22 @@ def run_desktop(args: argparse.Namespace) -> int:
 
 
 def run_serve(args: argparse.Namespace) -> int:
+    import os
+
     import uvicorn
+
+    # The packaged console (the installer's .exe/.dmg window) calls this API
+    # from its own origin, so a serve meant to stand behind it needs CORS —
+    # off, the console's every request dies as "Failed to fetch". Default it
+    # open for a loopback bind: the in-app hint has always said
+    # ``JIM_CORS_ORIGINS=* uvicorn jim.api:app``, so this is the documented
+    # posture made the default, and every personal endpoint still requires
+    # the user's bearer token. ``--no-cors`` restores the closed posture.
+    if not args.no_cors and not os.environ.get("JIM_CORS_ORIGINS") \
+            and args.host in {"127.0.0.1", "localhost", "::1"}:
+        os.environ["JIM_CORS_ORIGINS"] = "*"
+        print("• CORS open for the local console (JIM_CORS_ORIGINS=*); "
+              "pass --no-cors or set JIM_CORS_ORIGINS to restrict.")
     uvicorn.run("jim.api:app", host=args.host, port=args.port)
     return 0
 
@@ -164,6 +179,9 @@ def main(argv: list[str] | None = None) -> int:
     serve = sub.add_parser("serve", help="run the headless API alone")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
+    serve.add_argument("--no-cors", action="store_true",
+                       help="keep CORS closed even on loopback (the packaged "
+                            "console will not be able to connect)")
 
     args = parser.parse_args(argv)
     if args.command == "phone":

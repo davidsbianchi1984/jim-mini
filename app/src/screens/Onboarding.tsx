@@ -60,8 +60,7 @@ export function Onboarding() {
             ⚠ The Guardian backend isn't reachable at <code>{getBase()}</code>.
             <p className="muted small" style={{ margin: "8px 0" }}>
               This window is only the console — the Guardian runs as a local
-              service. Start it with <code>python -m jim</code> (or{" "}
-              <code>JIM_CORS_ORIGINS=* uvicorn jim.api:app</code>), or point
+              service. Start it with <code>python -m jim serve</code>, or point
               this console at a machine already running one:
             </p>
             <label>Backend URL<input value={base} onChange={(e) => setBaseInput(e.target.value)} /></label>

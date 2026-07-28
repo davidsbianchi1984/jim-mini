@@ -29,7 +29,7 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
     // user nothing. Name the actual problem: no Guardian backend answering.
     throw new Error(
       `Can't reach the Guardian backend at ${getBase()}. ` +
-      `Start it with "python -m jim", or set the backend URL in Settings.`,
+      `Start it with "python -m jim serve", or set the backend URL in Settings.`,
     );
   }
   const text = await res.text();
