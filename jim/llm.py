@@ -31,7 +31,7 @@ from typing import Protocol
 
 logger = logging.getLogger("jim.llm")
 
-MODEL = os.environ.get("JIM_MODEL", "claude-opus-4-8")
+MODEL = os.environ.get("JIM_MODEL", "claude-opus-5")
 
 _OPENAI_MODEL = os.environ.get("JIM_OPENAI_MODEL", "gpt-4o")
 _GROK_MODEL = os.environ.get("JIM_GROK_MODEL", "grok-2-latest")
