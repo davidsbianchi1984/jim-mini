@@ -140,3 +140,30 @@ def test_every_test_count_the_readme_claims_is_true():
         assert actual == int(claimed), (
             f"README says {module} has {claimed} tests; "
             f"{', '.join(f.name for f in files)} hold {actual}")
+
+
+def test_the_desktop_app_version_matches_the_api():
+    """Three releases shipped installers labelled 0.3.3 from 0.4.x tags.
+
+    `app/package.json` carries its own version and no cut ever bumped it — the
+    0.4.0 and 0.4.1 releases both attached installers named 0.3.3, built from
+    the right tag but stamped with the stale number. The filename and the
+    About box are cosmetic; the auto-updater is not, because it compares
+    package versions and will tell an installed app there is nothing newer.
+
+    Same disease as the stale test counts: a duplicated number with nothing to
+    fail when the other copy moves. The versions must move together now.
+    """
+    import json
+    import re
+
+    root = pathlib.Path(__file__).resolve()
+    while not (root / "app" / "package.json").exists():
+        root = root.parent
+    desktop = json.loads((root / "app" / "package.json").read_text())["version"]
+    api_src = (root / "jim/api.py").read_text()
+    api = re.search(r'version="([\d.]+)"', api_src).group(1)
+    assert desktop == api, (
+        f"app/package.json says {desktop}, jim/api.py says {api} — the "
+        "installer filenames and the auto-updater follow the first, the "
+        "release tag follows the second")
