@@ -7,7 +7,7 @@
 // when nothing answers, wait for /health, then open the window, and take the
 // child down again on quit. A backend the user already runs (or a dev
 // checkout without the binary) is left exactly alone.
-const { app, BrowserWindow, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const { spawn } = require("child_process");
 const fs = require("fs");
 const http = require("http");
@@ -87,6 +87,14 @@ function createWindow() {
     win.loadFile(path.join(__dirname, "..", "dist", "index.html"));
   }
 }
+
+// The "console" mail transport writes the verification code to the spawned
+// backend's log; this is the packaged app's way to actually show it.
+ipcMain.handle("open-backend-log", () => {
+  const logPath = path.join(app.getPath("userData"), "backend.log");
+  if (fs.existsSync(logPath)) return shell.openPath(logPath);
+  return "no backend log yet — is a separately-run backend serving this app?";
+});
 
 app.whenReady().then(async () => {
   await ensureBackend();

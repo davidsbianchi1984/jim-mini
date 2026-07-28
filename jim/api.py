@@ -53,7 +53,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.4.4",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.4.5",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -383,6 +383,29 @@ def create_app(qrme_client: QRMEClient | None = None,
             return accounts.verify(body.email, body.code)
         except accounts.AccountError as exc:
             raise HTTPException(exc.status, exc.detail)
+
+    @app.get("/verify-email/click", response_class=HTMLResponse)
+    def verify_email_click(token: str = "") -> HTMLResponse:
+        """The emailed link lands here, in a browser. The app finishes on
+        its own: it holds the email and password, so it signs in the moment
+        the address is proven."""
+        page = ("<html><body style='font-family:sans-serif;background:#0d0a20;"
+                "color:#e6edf3;display:grid;place-items:center;height:95vh'>"
+                "<div style='text-align:center'><h1>{title}</h1><p>{body}</p>"
+                "</div></body></html>")
+        try:
+            result = accounts.verify_link(token)
+        except accounts.AccountError as exc:
+            return HTMLResponse(page.format(
+                title="That link didn't work", body=exc.detail), 403)
+        if result["already"]:
+            return HTMLResponse(page.format(
+                title="Already verified",
+                body="This address was verified earlier — just sign in."))
+        return HTMLResponse(page.format(
+            title="✓ Verified",
+            body="Your account is active. Go back to JIM Guardian — "
+                 "it will continue on its own."))
 
     @app.post("/verify-email/resend")
     def resend_code(body: ResendCode) -> dict:

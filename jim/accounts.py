@@ -57,15 +57,22 @@ def _hash_code(code: str) -> str:
     return hashlib.sha256(code.encode()).hexdigest()
 
 
+def _public_url() -> str:
+    import os
+    return os.environ.get("JIM_PUBLIC_URL", "http://127.0.0.1:8000").rstrip("/")
+
+
 def _send_code(email: str, purpose: str = "verify") -> str:
     """Issue a fresh code for ``email`` (retiring any previous ones for the
     same purpose), deliver it, and return the transport name — never the
-    code."""
+    code. Verification mail leads with a **clickable link** (the shape every
+    mainstream flow uses); the 6-digit code rides along as the fallback for
+    a mail client on a different device than the app."""
     conn = db.connect()
     conn.execute(
-        "UPDATE email_codes SET consumed_at=? WHERE email=? AND purpose=?"
+        "UPDATE email_codes SET consumed_at=? WHERE email=? AND purpose IN (?,?)"
         " AND consumed_at IS NULL",
-        (db.utcnow(), email, purpose),
+        (db.utcnow(), email, purpose, purpose + "-link"),
     )
     code = f"{secrets.randbelow(1_000_000):06d}"
     expires = (datetime.now(timezone.utc)
@@ -75,6 +82,13 @@ def _send_code(email: str, purpose: str = "verify") -> str:
         " VALUES (?,?,?,?,?)",
         (email, _hash_code(code), purpose, expires, db.utcnow()),
     )
+    if purpose == "verify":
+        link_token = secrets.token_urlsafe(32)
+        conn.execute(
+            "INSERT INTO email_codes (email, code_hash, purpose, expires_at,"
+            " created_at) VALUES (?,?,?,?,?)",
+            (email, _hash_code(link_token), "verify-link", expires, db.utcnow()),
+        )
     conn.commit()
     if purpose == "reset":
         return mailer.deliver(
@@ -87,10 +101,12 @@ def _send_code(email: str, purpose: str = "verify") -> str:
         )
     return mailer.deliver(
         email,
-        "Your JIM Guardian verification code",
-        f"Your verification code is: {code}\n\n"
-        f"It expires in {CODE_TTL_MINUTES} minutes. If you did not create a "
-        "JIM Guardian account, ignore this message — without this code the "
+        "Verify your JIM Guardian account",
+        f"Click to verify your account:\n\n"
+        f"{_public_url()}/verify-email/click?token={link_token}\n\n"
+        f"Or enter this code in the app: {code}\n\n"
+        f"Both expire in {CODE_TTL_MINUTES} minutes. If you did not create a "
+        "JIM Guardian account, ignore this message — without this the "
         "account cannot be activated.",
     )
 
@@ -138,9 +154,21 @@ def signup(email: str, password: str, enroll_payload: dict) -> dict:
          json.dumps(enroll_payload), db.utcnow()),
     )
     conn.commit()
+    # No mail transport means no inbox can ever be proven — and on a local
+    # single-user install (the packaged desktop app) there is nothing to
+    # prove: the person owns the machine and the database. Waiting on an
+    # email that cannot arrive is a locked door in an empty house; activate
+    # directly. A deployment with SMTP configured enforces the real proof.
+    if mailer.configured_transport() == "console":
+        account = conn.execute(
+            "SELECT * FROM accounts WHERE id=?", (account_id,)).fetchone()
+        user = _activate(account)
+        user["verified"] = True
+        user["verification"] = "local"
+        return user
     delivery = _send_code(email)
     return {"account_id": account_id, "email": email, "verified": False,
-            "code_delivery": delivery}
+            "code_delivery": delivery, "verification": "email"}
 
 
 def resend(email: str) -> dict:
@@ -155,21 +183,15 @@ def resend(email: str) -> dict:
     return {"email": email, "code_delivery": _send_code(email)}
 
 
-def verify(email: str, code: str) -> dict:
-    """Prove the inbox, then actually enroll the pending user."""
-    email = _normalize(email)
-    conn = db.connect()
-    account = conn.execute(
-        "SELECT * FROM accounts WHERE email=?", (email,)
-    ).fetchone()
-    if account is None:
-        raise AccountError(403, "no pending account for this address")
-    if account["verified_at"]:
-        raise AccountError(409, "this address is already verified — sign in")
-    _consume_code(email, code, "verify")
+def _activate(account) -> dict:
+    """Enroll the pending user and mint the first session — the step that
+    only happens once the address is proven (or, on a local install with no
+    mail transport, trusted: see ``signup``)."""
+    import json as _json
 
     from . import auth, guardian, i18n, tiers
-    payload = json.loads(account["pending_profile"] or "{}")
+    conn = db.connect()
+    payload = _json.loads(account["pending_profile"] or "{}")
     user = guardian.enroll(_revive(payload))
     if payload.get("language") in i18n.SUPPORTED:
         i18n.set_language(user["id"], payload["language"])
@@ -184,8 +206,53 @@ def verify(email: str, code: str) -> dict:
     conn.commit()
     user["user_token"] = auth.issue("user", user["id"])
     user["account_id"] = account["id"]
-    user["email"] = email
+    user["email"] = account["email"]
     return user
+
+
+def verify(email: str, code: str) -> dict:
+    """Prove the inbox with the 6-digit code, then enroll the pending user."""
+    email = _normalize(email)
+    account = db.connect().execute(
+        "SELECT * FROM accounts WHERE email=?", (email,)
+    ).fetchone()
+    if account is None:
+        raise AccountError(403, "no pending account for this address")
+    if account["verified_at"]:
+        raise AccountError(409, "this address is already verified — sign in")
+    _consume_code(email, code, "verify")
+    return _activate(account)
+
+
+def verify_link(token: str) -> dict:
+    """Prove the inbox with the emailed link's token. The click lands in a
+    browser, not the app — the app learns of it by signing in (it holds the
+    email and password already), so this returns only what a human-facing
+    page needs."""
+    row = db.connect().execute(
+        "SELECT rowid, * FROM email_codes WHERE code_hash=?"
+        " AND purpose='verify-link' AND consumed_at IS NULL",
+        (_hash_code(token.strip()),),
+    ).fetchone()
+    if row is None:
+        raise AccountError(403, "this link is not valid — it may have been "
+                                "replaced by a newer email or already used")
+    if row["expires_at"] < datetime.now(timezone.utc).isoformat():
+        raise AccountError(403, "this link has expired — request a new one "
+                                "from the app")
+    account = db.connect().execute(
+        "SELECT * FROM accounts WHERE email=?", (row["email"],)
+    ).fetchone()
+    if account is None:
+        raise AccountError(403, "no pending account for this address")
+    if account["verified_at"]:
+        return {"email": row["email"], "already": True}
+    conn = db.connect()
+    conn.execute("UPDATE email_codes SET consumed_at=? WHERE rowid=?",
+                 (db.utcnow(), row["rowid"]))
+    conn.commit()
+    _activate(account)
+    return {"email": row["email"], "already": False}
 
 
 def signin(email: str, password: str) -> dict:
