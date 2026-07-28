@@ -48,6 +48,30 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The installer ships the whole Guardian backend as a PyInstaller
+      # one-file binary; the Electron main process spawns it at launch when no
+      # backend answers, which is what makes the installer double-click-and-
+      # done — no Python on the machine, no terminal. `anthropic` rides along
+      # so a pasted API key reaches a real model, not the offline stub.
+      - name: Bundle the Guardian backend (PyInstaller)
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install . anthropic pyinstaller
+          pyinstaller --onefile --name jim-backend \
+            --collect-submodules jim \
+            --collect-data jim \
+            --collect-all anthropic \
+            --copy-metadata anthropic \
+            packaging/backend_entry.py
+          mkdir -p app/backend-bin
+          cp dist/jim-backend* app/backend-bin/
+
       - name: Install dependencies
         run: npm ci
 

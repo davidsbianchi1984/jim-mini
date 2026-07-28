@@ -55,6 +55,20 @@ nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .onboard-card label:not(.check) { text-align: left; }
 .hint { font-size: 11px; color: var(--t3); margin-top: 12px; } .hint code { color: var(--amber); }
 
+.tabs { display: flex; gap: 8px; margin: 6px 0 14px; }
+.tabs .tab { flex: 1; background: rgba(255,255,255,0.04); color: var(--t2);
+  border: 1px solid var(--line); border-radius: 10px; padding: 9px 0; font-weight: 600; }
+.tabs .tab.active { background: rgba(255,255,255,0.10); color: var(--txt); border-color: var(--brand); }
+button.linkish { background: none; border: 0; color: var(--brand); font-weight: 600;
+  margin-top: 10px; text-decoration: underline; cursor: pointer; }
+.pw-wrap { position: relative; display: block; }
+.pw-wrap input { width: 100%; padding-right: 56px; box-sizing: border-box; }
+.pw-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; border: 0; color: var(--t3); font-size: 11px; font-weight: 700;
+  cursor: pointer; padding: 4px 6px; }
+.pw-toggle:hover { color: var(--txt); }
+.field-hint { font-size: 11px; color: var(--t3); text-align: left; margin: 4px 0 0; }
+
 .profile-hero { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
 .profile-hero h3 { margin: 0; font-size: 20px; }
 .card { background: linear-gradient(160deg, var(--card), var(--card2)); border: 1px solid var(--line);

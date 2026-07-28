@@ -67,6 +67,33 @@ CREATE TABLE IF NOT EXISTS api_tokens (
     created_at TEXT NOT NULL
 );
 
+-- Sign-in accounts. An account is an email + password that *owns* a user;
+-- the user (and its capability token) is only created once the email is
+-- verified, so a mistyped address never grows a record nobody can reach.
+-- Password: PBKDF2-HMAC-SHA256, per-account salt; only hashes at rest.
+CREATE TABLE IF NOT EXISTS accounts (
+    id              TEXT PRIMARY KEY,
+    email           TEXT NOT NULL UNIQUE,   -- normalized lower-case
+    password_hash   TEXT NOT NULL,
+    salt            TEXT NOT NULL,
+    pending_profile TEXT,                   -- Enroll payload, until verified
+    user_id         TEXT,                   -- set at verification
+    verified_at     TEXT,
+    created_at      TEXT NOT NULL
+);
+
+-- Emailed verification codes. Hashed at rest (a database read must not be a
+-- verification bypass), single-use, short-lived; issuing a new code retires
+-- the previous ones for that address.
+CREATE TABLE IF NOT EXISTS email_codes (
+    email       TEXT NOT NULL,
+    code_hash   TEXT NOT NULL,
+    purpose     TEXT NOT NULL,              -- verify
+    expires_at  TEXT NOT NULL,
+    consumed_at TEXT,
+    created_at  TEXT NOT NULL
+);
+
 -- Shareable Medical ID card: an opaque, rotatable token behind a printable /
 -- lock-screen QR code. Scanning it resolves to the user's condition-level
 -- Medical ID *without* their auth token — the phone is locked in an emergency,

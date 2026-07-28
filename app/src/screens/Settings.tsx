@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, getBase, setBase, type PairInfo } from "../api";
+import { api, getBase, getLlmKey, setBase, setLlmKey, type PairInfo } from "../api";
 import { useSession } from "../store";
 
 export function Settings() {
@@ -7,6 +7,8 @@ export function Settings() {
   const [base, setBaseInput] = useState(getBase());
   const [health, setHealth] = useState<string>("…");
   const [saved, setSaved] = useState(false);
+  const [llmKey, setLlmKeyInput] = useState(getLlmKey());
+  const [keySaved, setKeySaved] = useState(false);
   const [pair, setPair] = useState<PairInfo | null>(null);
 
   useEffect(() => {
@@ -27,6 +29,23 @@ export function Settings() {
         <label>Backend base URL<input value={base} onChange={(e) => setBaseInput(e.target.value)} /></label>
         <button className="primary" onClick={save}>{saved ? "Saved ✓" : "Save"}</button>
         <div className="muted small" style={{ marginTop: 10 }}>Backend: {health}</div>
+      </div>
+      <div className="card">
+        <h3>Your model API key</h3>
+        <p className="muted small">
+          Paste your own key (Anthropic <code>sk-ant-…</code>, or OpenAI / xAI /
+          Gemini for those providers) and your Guardian's replies run on your
+          credential. It stays on this device and rides only your own requests —
+          the server never stores it. Leave it empty to use whatever key the
+          deployment lends.
+        </p>
+        <label>API key
+          <input type="password" value={llmKey} placeholder="sk-…"
+                 onChange={(e) => setLlmKeyInput(e.target.value)} />
+        </label>
+        <button className="primary" onClick={() => {
+          setLlmKey(llmKey); setKeySaved(true); setTimeout(() => setKeySaved(false), 1500);
+        }}>{keySaved ? "Saved ✓" : llmKey.trim() ? "Save key" : "Clear key"}</button>
       </div>
       {pair && (
         <div className="card">

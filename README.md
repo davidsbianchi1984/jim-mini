@@ -363,11 +363,28 @@ journal, a provider-shareable summary. Identity is proven by a bearer
 
 - `POST /enroll` returns a `user_token` **once**. Send it as
   `Authorization: Bearer <token>` on every `/{user_id}` endpoint.
+- **Accounts** (`jim/accounts.py`): `POST /signup` takes email + password +
+  the enrollment fields and **creates nothing yet** — a 6-digit code goes to
+  the address (SMTP when `JIM_SMTP_HOST` is configured, printed to the
+  server terminal otherwise), and only `POST /verify-email` enrolls the user
+  and mints the first token, so a mistyped address never grows a record
+  nobody can reach. `POST /signin` (email + password) mints fresh tokens
+  afterwards and refuses unverified addresses; `POST /verify-email/resend`
+  retires the old code; `POST /password/reset/request` +
+  `POST /password/reset` change a forgotten password by the same emailed-code
+  proof and revoke every existing session. Passwords are PBKDF2-hashed with
+  per-account salts; codes are hashed at rest, single-use, and expire in 15
+  minutes; unknown-address and wrong-password answers are indistinguishable.
+- **Bring your own model key:** send `x-llm-api-key` on any request (the
+  console's Settings stores it device-side) and that request's generations
+  run on your credential — never persisted, never logged. Without one, the
+  deployment's env key answers (an operator lending theirs out).
 - Every per-user surface is PHI, so **all** of them are gated: a missing or
   invalid token is **401**; a valid token for a different user is **403**.
 - Only the SHA-256 hash of a token is stored (`api_tokens`), so a database
   leak never yields a usable credential.
 - **Open (no token):** `GET /health`, `GET /cloud/status`, `POST /enroll`,
+  the account routes above (they are how a token is first obtained),
   and `POST /specialists` (service setup).
 - `DELETE /data/{user_id}` erases the user **and** revokes their token.
 
@@ -884,6 +901,13 @@ section), **desktop** (`python -m jim desktop`, the Electron app on this
 PC), **packaged installer** (`.dmg`/`.exe`/`.AppImage` from the releases
 page — no toolchain needed), or **headless API** (`python -m jim serve`).
 Same backend, same data, same token checks in every form.
+
+The packaged installer is **double-click-and-done**: it ships the whole
+Python backend as a frozen binary (`packaging/backend_entry.py`, built by
+PyInstaller in the release workflow) and the app spawns it at launch when no
+backend is already answering — no Python install, no terminal, data under
+the app's own user-data directory, and the spawned backend dies with the
+window. A backend you already run yourself is left alone.
 
 `python -m jim phone` builds the console if it's missing (first run installs the
 npm dependencies too), prints the phone URL **with a QR code right in the
