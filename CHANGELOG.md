@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.6] — 2026-07-28
+
+### Fixed
+
+- **A stranded pending account can no longer resurrect the email screen on
+  a desktop install.** Databases from older builds hold half-made accounts
+  (0.4.3 crashed mid-signup) that nothing can ever verify where no mail can
+  be sent. Retrying signup on a no-mail deployment now finishes the pending
+  account on the spot, under the newly-typed password — the machine owner
+  is the only person there. A **verified** account is never overwritten
+  this way, on any deployment; SMTP deployments still require the emailed
+  proof.
+
 ## [0.4.5] — 2026-07-28
 
 ### Changed
@@ -1123,7 +1136,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.5...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.6...HEAD
+[0.4.6]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.6
 [0.4.5]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.5
 [0.4.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.4
 [0.4.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.3

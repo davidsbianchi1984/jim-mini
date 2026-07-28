@@ -136,15 +136,37 @@ def signup(email: str, password: str, enroll_payload: dict) -> dict:
         raise AccountError(422, "password must be at least 8 characters")
     conn = db.connect()
     existing = conn.execute(
-        "SELECT verified_at FROM accounts WHERE email=?", (email,)
+        "SELECT * FROM accounts WHERE email=?", (email,)
     ).fetchone()
     if existing:
+        if existing["verified_at"]:
+            raise AccountError(
+                409, "an account already exists for this address — sign in "
+                     "instead")
+        if mailer.configured_transport() == "console":
+            # A pending half-account (a crashed or abandoned earlier signup)
+            # on a machine with no mail transport: nothing can ever verify
+            # it, and the machine owner is the only person here. Finish it
+            # now, under the credentials just typed — the earlier attempt's
+            # password may be lost to the crash that stranded it.
+            salt = secrets.token_hex(16)
+            conn.execute(
+                "UPDATE accounts SET password_hash=?, salt=?,"
+                " pending_profile=? WHERE id=?",
+                (_hash_password(password, salt), salt,
+                 json.dumps(enroll_payload), existing["id"]),
+            )
+            conn.commit()
+            account = conn.execute(
+                "SELECT * FROM accounts WHERE id=?", (existing["id"],)
+            ).fetchone()
+            user = _activate(account)
+            user["verified"] = True
+            user["verification"] = "local"
+            return user
         raise AccountError(
-            409,
-            "an account already exists for this address — sign in instead"
-            if existing["verified_at"]
-            else "an account is already pending for this address — verify the "
-                 "emailed code, or resend it")
+            409, "an account is already pending for this address — verify "
+                 "the emailed code, or resend it")
     salt = secrets.token_hex(16)
     account_id = db.new_id("acc")
     conn.execute(
