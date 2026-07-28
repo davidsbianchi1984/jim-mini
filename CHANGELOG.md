@@ -6,6 +6,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.3] — 2026-07-28
+
+### Added
+
+- **Accounts: email + password, the address verified before anything
+  exists** (`jim/accounts.py`, `jim/mailer.py`). `POST /signup` takes email +
+  password + the enrollment fields and creates nothing yet — a 6-digit code
+  goes to the address (SMTP when `JIM_SMTP_HOST` is configured, printed to
+  the server terminal otherwise), and only `POST /verify-email` enrolls the
+  user and mints the first token, so a mistyped address never grows a record
+  nobody can reach. `POST /signin` refuses unverified addresses and answers
+  unknown-address and wrong-password identically;
+  `POST /password/reset/request` + `POST /password/reset` change a forgotten
+  password by the same emailed-code proof and revoke every existing session.
+  Passwords are PBKDF2 with per-account salts; codes hashed at rest,
+  single-use, 15-minute expiry. The console onboarding is now the
+  conventional flow: create-account / emailed-code / sign-in tabs, show/hide
+  password toggles, a re-enter field checked live, the requirement stated up
+  front, and Forgot password.
+
+- **Bring your own model key.** `x-llm-api-key` rides any request into a
+  request-scoped context variable the provider layer reads — that request's
+  generations run on the caller's credential, never persisted, never
+  logged, gone when the request ends. An explicit provider choice plus a
+  caller key counts as configured; a key on auto defaults to Claude rather
+  than the stub; the deployment's env key remains the fallback (an operator
+  lending theirs out). Settings stores the key device-side only.
+
+- **The installer runs itself.** `packaging/backend_entry.py` freezes the
+  whole backend with PyInstaller (CORS on, loopback only, data under the
+  app's user-data directory); the release workflow builds it per-OS and
+  ships it inside the installer; Electron probes `/health`, spawns the
+  bundled backend when nothing answers, waits for it, and kills it on
+  quit — double-click-and-done, no Python on the machine. A backend the
+  user already runs is left alone.
+
 ## [0.4.2] — 2026-07-28
 
 ### Changed
@@ -1038,7 +1074,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.3...HEAD
+[0.4.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.3
 [0.4.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.2
 [0.4.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.1
 [0.4.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.0

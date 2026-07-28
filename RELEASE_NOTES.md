@@ -1,69 +1,68 @@
-# JIM-mini v0.4.2 — release notes
+# JIM-mini v0.4.3 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.4.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.4.3` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.4.2** — the release where the installer you download actually
-gets you running. One of three interoperating products (with
+**JIM-mini v0.4.3** — the release where the app got a front door, and the
+installer got legs. One of three interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
 [pdi](https://github.com/davidsbianchi1984/pdi)), all three cut together at
-this version. Every change in it came from one first-run bug report against
-a real Windows install of the .exe.
+this version.
 
-### The first run stops lying
+### Accounts — the address is proven before anything exists
 
-- **The enrollment form pre-filled a developer's sample name and birthdate**
-  — which the reporting user's own name happened to collide with. Identity
-  fields start empty now, and Get Started stays disabled until name,
-  birthdate and consent are all really given: a pre-filled birthdate in an
-  age-verification field is a wrong answer already submitted.
-- **"Failed to fetch" told a fresh install nothing.** The installer ships
-  only the console; the Guardian runs as a local service. Onboarding now
-  checks for it before the form is filled in and, when unreachable, says
-  exactly that — with the command to start one and an editable backend URL
-  with retry. Every API error names the backend and the fix.
-- **The window was titled "QRME".** It says *JIM Guardian* now.
+Email + password, in the shape every mainstream flow has taught people,
+built as our own screens: create-account and sign-in tabs, show/hide
+password toggles, the password typed twice with a live match check, the
+requirement stated up front, and **Forgot password**. Behind it, the
+security spine:
 
-### `python -m jim serve` answers the packaged console
+- `POST /signup` takes email + password + the enrollment fields and
+  **creates nothing yet** — a 6-digit code goes to the address (SMTP when
+  configured, printed to the server terminal otherwise), and only
+  `POST /verify-email` enrolls the user and mints the first token. A
+  mistyped address never grows a record nobody can reach — on a product
+  holding medical data, that matters twice.
+- Password reset by the same emailed-code proof — and a reset **revokes
+  every existing session**, so whoever prompted it, only the inbox holder
+  stays signed in.
+- Unknown-address and wrong-password answer identically, and neither resend
+  nor reset-request reveals who has an account.
+- Passwords PBKDF2 with per-account salts; codes hashed at rest, single-use,
+  15-minute expiry, purpose-bound (a signup code cannot reset a password).
 
-Even the app's own recovery instructions dead-ended: the console calls the
-API cross-origin, and `serve` never set `JIM_CORS_ORIGINS` — so every
-request died as *"Failed to fetch"* against a backend that was running
-fine. A loopback serve now defaults CORS open (the posture the in-app hint
-always instructed), announced on stdout, `--no-cors` to close it, never on
-a non-loopback bind. Personal endpoints still require the user's bearer
-token. And the command the console recommends is the right one now — bare
-`python -m jim` only prints the launcher menu.
+### Bring your own model key
 
-### The installers are named for their release now
+Paste your credential (Anthropic, OpenAI, xAI, Gemini) in Settings: it stays
+on your device, rides only your requests as `x-llm-api-key`, and the server
+**never stores or logs it** — a test dumps the whole database and asserts
+the key is not in it. A key makes your explicit provider choice usable with
+no deployment credentials at all, and on auto it defaults to Claude rather
+than the stub. The deployment's env key remains the fallback: an operator
+lending theirs out.
 
-0.4.0 and 0.4.1 both attached installers stamped **0.3.3** — built from the
-right tag, named for the wrong release, invisible to the auto-updater. This
-is the first release whose installers come out named for it, and the guard
-got wider: **all five version strings must now agree** (pyproject had
-quietly sat at 0.4.0, the lockfile roots at 0.3.3).
+### The installer runs itself
 
-### The default model is current
-
-The Anthropic provider defaults to **`claude-opus-5`** (`JIM_MODEL` still
-overrides), matching QRME — the user can still route guidance through
-ChatGPT, Grok, Perplexity, Gemini, or the offline stub via
-`PUT /model/{user_id}`.
+The whole Python backend ships **frozen inside the installer** (PyInstaller,
+per-OS) and the app spawns it at launch when nothing answers `/health` —
+double-click-and-done: no Python install, no terminal, data under the app's
+own user-data directory, the backend dying with the window. A backend you
+already run is left alone.
 
 ### Verification
 
-530 tests green. The serve-CORS default and the five-way version agreement
-are both guarded, the CORS guard mutation-checked; the fixed console was
-driven end-to-end in a real browser against a bare `python -m jim serve` —
-no env vars, panel clears, enrollment lands on Overview.
+552 tests green (22 new this round). The frozen binary was built and booted
+on Linux, and the full signup flow was driven end-to-end against it in a
+real browser — form, code read from the backend terminal, verified, into
+Overview.
 
 ### Install
 
 Download the installer for your OS from the assets below (built by the
-`desktop-release` workflow from the `app-v0.4.2` tag — and named 0.4.2,
-which is the point), run `python -m jim`, or open it on your phone — see
-the README.
+`desktop-release` workflow from the `app-v0.4.3` tag) and double-click —
+this is the first release where that is the whole instruction. Or run
+`python -m jim`, or open it on your phone — see the README.
 
 **Full changelog:** https://github.com/davidsbianchi1984/jim-mini/blob/main/CHANGELOG.md
