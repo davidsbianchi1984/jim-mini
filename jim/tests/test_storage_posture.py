@@ -45,6 +45,13 @@ class FakeVault:
     def delete(self, key):
         return self.store.pop(key, None) is not None
 
+    def audit(self):
+        return [{"action": "put", "ref": k, "at": "2026-07-28T00:00:00Z"}
+                for k in self.store]
+
+    def audit_verify(self):
+        return True
+
 
 @pytest.fixture()
 def vaulted(tmp_path, monkeypatch):
@@ -429,3 +436,205 @@ def test_free_is_still_refused_the_paid_capabilities(client):
                                               "label": "Wrist"})
     assert r.status_code == 402, r.text
     assert r.json()["detail"]["needs"] == "pro"
+
+
+# -- platform custody: free never reaches the vault ----------------------------
+
+class CountingVault(FakeVault):
+    """A vault that records every write, so a test can assert there were none."""
+
+    def __init__(self):
+        super().__init__()
+        self.writes: list[str] = []
+
+    def put(self, key, value):
+        self.writes.append(key)
+        return super().put(key, value)
+
+
+@pytest.fixture()
+def counted(tmp_path, monkeypatch):
+    """JIM with a vault that counts writes — a PDI-backed deployment."""
+    from fastapi.testclient import TestClient
+
+    from jim import db as jim_db
+
+    monkeypatch.setenv("JIM_DB", str(tmp_path / "jim-counted.db"))
+    monkeypatch.setenv("JIM_LLM", "stub")
+    monkeypatch.delenv("JIM_QRME_URL", raising=False)
+    jim_db.reset()
+    from jim.api import create_app
+
+    vault = CountingVault()
+    with TestClient(create_app(pdi_client=vault)) as c:
+        c.vault = vault
+        yield c
+    jim_db.reset()
+
+
+def _exercise(client, user):
+    """Everything an ordinary day writes. Each of these used to seal."""
+    client.post(f"/monitor/{user}", json={"heart_rate": 72})
+    client.post(f"/journal/{user}", json={"text": "slept badly"})
+    client.post(f"/checkin/{user}", json={"mood": 3, "energy": 2,
+                                          "note": "flat today"})
+    client.post(f"/sources/{user}", json={"source": "calendar",
+                                          "consented": True})
+    client.post(f"/context/{user}", json={"source": "calendar", "kind": "event",
+                                          "data": {"title": "dentist"}})
+
+
+def test_a_free_account_puts_nothing_in_the_vault(counted):
+    """The bug this whole round is about.
+
+    Every seal point read `if pdi is not None` — whether the *deployment* has
+    a vault, not whether the *account* is on a plan that uses one. So a free
+    account on a PDI-backed deployment had its journal, its check-in notes and
+    its detection detail sealed into a vault it was not paying for and could
+    not hold a key to. Free is platform custody over plain HTTPS.
+
+    Asserted by counting writes rather than by reading call sites, because
+    reading call sites is how twenty of them stayed wrong.
+    """
+    user = enroll(counted, plan="free")
+    _exercise(counted, user)
+    assert counted.vault.writes == [], (
+        "a free account reached the vault at: "
+        + ", ".join(counted.vault.writes))
+
+
+def test_the_same_day_on_basic_fills_the_vault(counted):
+    """The other half — otherwise the test above passes if sealing broke
+    entirely, which is a different bug wearing the same green tick."""
+    user = enroll(counted, plan="basic")
+    _exercise(counted, user)
+    assert counted.vault.writes, "nothing sealed on a vault plan"
+    assert all(k.startswith(f"jim/{user}/") for k in counted.vault.writes)
+
+
+def test_a_free_account_still_records_everything_locally(counted):
+    """Platform custody is not amnesia. The point of the free plan is that we
+    hold the record and the person has returning access to it."""
+    user = enroll(counted, plan="free")
+    _exercise(counted, user)
+    entries = counted.get(f"/journal/{user}").json()
+    assert entries and any("slept badly" in str(e) for e in entries)
+
+
+def test_the_vault_gate_asks_about_the_plan_not_the_deployment(client):
+    fake = FakeVault()
+    assert storage.vault_for("basic", fake) is fake
+    assert storage.vault_for("pro", fake) is fake
+    assert storage.vault_for("free", fake) is None
+    assert storage.vault_for("visitor", fake) is None
+    assert storage.vault_for("basic", None) is None
+
+
+# -- custody is named, and it is custody rather than ownership -----------------
+
+def test_free_is_platform_custody_and_paid_is_the_users(client):
+    assert storage.custody_of("free") == "platform"
+    assert storage.custody_of("basic") == "user"
+    platform = storage.CUSTODY["platform"]
+    assert platform["goes_through_a_vault"] is False
+    assert platform["user_holds_a_key"] is False
+    assert platform["returning_access"] is True
+    assert "HTTPS" in platform["transport"]
+
+
+def test_the_membership_says_who_holds_it(client):
+    user = enroll(client, plan="free")
+    out = client.get(f"/memberships/{user}").json()
+    assert out["storage"]["custody"]["who"] == "platform"
+    assert out["storage"]["custody"]["held_by"] == "JIM-mini"
+    assert out["storage"]["custody"]["goes_through_a_vault"] is False
+
+
+def test_custody_is_never_described_as_ownership(client):
+    """A product decides who *holds* a record. It does not get to decide away
+    somebody's statutory rights over their own personal data — access,
+    rectification, erasure, portability survive whatever a plan says — so the
+    tier table claims custody and never ownership.
+
+    Checked against the **values a user is shown**, not the module source. The
+    first version swept `inspect.getsource(storage)` for ownership phrases and
+    failed on the comment that explains why ownership is the wrong word: it
+    quotes the phrase in order to reject it. That is the fourth time in this
+    session a substring guard has tripped on its own explanation, and the
+    lesson has not changed — a guard that punishes documenting the invariant is
+    one somebody deletes.
+    """
+    shown = " ".join(
+        str(v) for spec in storage.CUSTODY.values() for v in spec.values()
+    ).lower()
+    for phrase in ("we own your", "the platform owns", "you do not own",
+                   "owns your data", "our property"):
+        assert phrase not in shown, (
+            f"{phrase!r} is an ownership claim, not a custody one")
+    assert "host your record" in shown and "access to it" in shown
+
+    # And the reasoning is written down, so the next person knows it was a
+    # decision rather than an oversight.
+    assert "statutory rights" in inspect.getsource(storage)
+
+
+def test_an_open_plan_never_claims_an_empty_access_log_means_nothing_was_read(counted):
+    """The comfortable lie this round removed.
+
+    On a vault plan an empty list means nobody touched the records and the
+    chain proves it. On an open plan there is no chain, so an empty list means
+    nothing was *recorded* — and returning a bare `[]` would read as the first.
+    """
+    user = enroll(counted, plan="free")
+    _exercise(counted, user)
+    log = counted.get(f"/access-log/{user}").json()
+    assert log["entries"] == []
+    assert log["access_record_kept"] is False
+    assert log["custody"] == "platform"
+    assert "not that" in log["note"] and "nothing was read" in log["note"]
+
+
+def test_a_vault_plan_still_gets_its_provable_access_log(counted):
+    user = enroll(counted, plan="basic")
+    _exercise(counted, user)
+    log = counted.get(f"/access-log/{user}").json()
+    assert log["access_record_kept"] is True
+    assert log["custody"] == "user"
+    assert log["count"] >= 1
+
+
+def test_a_downgrade_leaves_the_earlier_chain_readable_and_says_so(counted):
+    """The awkward middle: real entries exist for what was sealed on Basic,
+    and nothing since is recorded. Both halves get said."""
+    user = enroll(counted, plan="basic")
+    _exercise(counted, user)
+    sealed = list(counted.vault.writes)
+    assert sealed
+
+    tiers.subscribe(user, "free")
+    log = counted.get(f"/access-log/{user}").json()
+    assert log["access_record_kept"] is False
+    assert log["sealed_under_a_previous_plan"] is True
+    assert "still sealed" in log["note"]
+
+
+def test_a_downgraded_account_can_still_read_what_was_sealed(counted):
+    """Reads keep the real vault. Stranding somebody's history behind a
+    billing change would be worse than the bug the write gate fixed."""
+    user = enroll(counted, plan="basic")
+    counted.post(f"/journal/{user}", json={"text": "sealed while paying"})
+    tiers.subscribe(user, "free")
+    entries = counted.get(f"/journal/{user}").json()
+    assert any("sealed while paying" in str(e) for e in entries)
+
+
+def test_erasure_still_purges_the_vault_after_a_downgrade(counted):
+    """Deletes keep the real vault too. A plan-gated None here would leave
+    records nobody can reach and call that erasure."""
+    user = enroll(counted, plan="basic")
+    _exercise(counted, user)
+    assert counted.vault.store
+    tiers.subscribe(user, "free")
+    out = counted.delete(f"/data/{user}")
+    assert out.status_code == 200, out.text
+    assert counted.vault.store == {}, "sealed records survived erasure"

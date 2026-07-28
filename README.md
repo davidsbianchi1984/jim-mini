@@ -541,6 +541,49 @@ Two postures, and the difference between them is the whole of what Basic buys.
 | **Open cloud** | Free | JIM's own database, in the clear. The operator can read it, a backup contains it, a subpoena reaches it |
 | **Encrypted vault** | Basic, Pro | journal entries, check-in notes, detection detail and every capture sealed in PDI before they land, under a key you can hold |
 
+### Who holds it
+
+The other half of the same question, and the one the free plan is really
+about. `storage.CUSTODY` names two arrangements:
+
+| | | |
+| --- | --- | --- |
+| **Platform custody** | Free | JIM-mini holds your record and you have access to it — the familiar hosted-assistant arrangement. It reaches us over ordinary HTTPS, sits in our own database, and never goes through a vault |
+| **Your custody** | Basic, Pro | sealed in PDI before it lands, under a key you can hold. We operate the service; we do not hold the contents |
+
+**Custody, not ownership, and the word is deliberate.** A product gets to
+decide who *holds and operates* a record. It does not get to decide away
+somebody's statutory rights over their own personal data — access,
+rectification, erasure and portability survive whatever a plan says. A tier
+table claiming "the platform owns your data" would claim what no court would
+honour, and on a product holding medical data that claim would be tested.
+
+**The vault gate asks about the plan, not the deployment — and it did not
+used to.** Every seal point read `if pdi is not None`, which is whether the
+*operator* configured a vault. So a free account on a PDI-backed deployment
+had its journal, its check-in notes and its detection detail sealed into a
+vault it was not paying for and could not hold a key to.
+`storage.vault_for(plan, pdi)` is now the one place that question is asked,
+and `test_a_free_account_puts_nothing_in_the_vault` counts writes rather than
+reading call sites — because reading call sites is how twenty of them stayed
+wrong.
+
+**Writes only. Reads and deletions keep the real vault, always.** Somebody who
+was on Basic for a year and moved to Free still has a year of sealed records:
+they have to be able to read them back, and `DELETE /data/{user_id}` has to be
+able to purge them. A plan-gated vault on a read strands somebody's history
+behind a billing change; on a delete it leaves records nobody can reach and
+calls that erasure. Both are asserted.
+
+**And the access log stopped telling a comfortable lie.** On a vault plan an
+empty list means nobody touched the records and the chain proves it. On an
+open plan there is no chain — nothing is recorded, so nobody could prove
+either way — and returning a bare `[]` reads as the first. `GET
+/access-log/{user_id}` now carries `access_record_kept` and says which of the
+two it is. An account that was on Basic and moved to Free is the awkward
+middle: real entries exist for what was sealed then, nothing since is
+recorded, and both halves get said.
+
 **This is not a new behaviour so much as an admission of an old one.** JIM has
 always degraded gracefully when no PDI was configured — `life.add_journal`,
 `life.check_in` and `guardian._event` each read `if pdi is not None` and fall

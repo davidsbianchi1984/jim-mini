@@ -125,12 +125,15 @@ SENSITIVE: dict[str, str] = {
 # Free stores them in the clear, and the disclosure says so in those words.
 
 FREE_DISCLOSURE = (
-    "This account is on the free plan. Your record is stored in the clear — "
-    "no vault, no encryption you hold the key to, and the people who run this "
-    "deployment can read it. That includes your journal, your check-in notes "
-    "and your health readings. Every alarm, escalation and emergency path "
-    "works exactly the same, and so does everything else: the only difference "
-    "from Basic is where your data lives."
+    "This account is on the free plan. JIM-mini holds your record and you "
+    "have access to it — it reaches us over ordinary HTTPS, sits in our own "
+    "database in the clear, and never goes through a vault. Nothing on this "
+    "plan is private: no encryption you hold the key to, no record of who "
+    "read what, "
+    "and the people who run this deployment can read all of it. That includes "
+    "your journal, your check-in notes and your health readings. Every alarm, "
+    "escalation and emergency path works exactly the same, and so does "
+    "everything else — the only difference from Basic is who holds it."
 )
 
 # The one sentence that has to survive being skimmed.
@@ -138,6 +141,58 @@ EMERGENCY_NOTE = (
     "Emergency paths are never withheld and never refused for storage "
     "reasons, on any plan."
 )
+
+
+# Who holds the record — a separate question from whether it is encrypted, and
+# the one the free plan is really about.
+#
+# On an open-cloud plan the arrangement is the familiar hosted-assistant one:
+# **JIM-mini holds the data and the person has access to it.** It reaches the
+# platform over ordinary HTTPS, lands in the platform's own database, and stays
+# there. The account can read it back for as long as the account exists. It is
+# not sealed under a key they hold, there is no chain proving what was read,
+# and no vault is involved at any point.
+#
+# "Custody", not "ownership", and the word is chosen carefully. A product gets
+# to decide who *holds and operates* a record. It does not get to decide away
+# somebody's statutory rights over their own personal data — access,
+# rectification, erasure and portability survive whatever a plan says, in
+# every jurisdiction that has them. Writing "the platform owns your data" into
+# a tier table would claim something the law does not grant, and this
+# repository does not put claims in tables it cannot keep.
+CUSTODY: dict[str, dict] = {
+    "platform": {
+        "held_by": "JIM-mini",
+        "means": "we host your record and you have access to it, the way a "
+                 "hosted assistant works. It is ours to operate; it is not "
+                 "sealed to you.",
+        "transport": "ordinary HTTPS to this platform's API",
+        "user_holds_a_key": False,
+        "returning_access": True,
+        "goes_through_a_vault": False,
+        "access_record": "none is kept — there is no audit chain on this plan",
+        "erasure": "ask and we delete it. Best effort, and no proof is issued "
+                   "— backups and logs roll off on their own schedule.",
+    },
+    "user": {
+        "held_by": "you",
+        "means": "sealed in PDI before it lands, under a key you can hold "
+                 "yourself. We operate the service; we do not hold the "
+                 "contents.",
+        "transport": "sealed to the PDI vault, which may be your own device",
+        "user_holds_a_key": True,
+        "returning_access": True,
+        "goes_through_a_vault": True,
+        "access_record": "every store, read and erase lands in a "
+                         "tamper-evident chain you can verify",
+        "erasure": "real and provable — the vault record is purged and the "
+                   "chain shows it happened",
+    },
+}
+
+# Posture -> custody. They move together by construction rather than as two
+# tables somebody has to keep in step.
+CUSTODY_OF: dict[str, str] = {"open_cloud": "platform", "vault": "user"}
 
 
 class StorageError(ValueError):
@@ -151,6 +206,35 @@ def posture_of(plan: str) -> str:
 
 def is_private(plan: str) -> bool:
     return POSTURES[posture_of(plan)]["private"]
+
+
+def custody_of(plan: str) -> str:
+    """Who holds this account's record."""
+    return CUSTODY_OF[posture_of(plan)]
+
+
+def vault_for(plan: str, pdi):
+    """The vault this account's **writes** go to, or None.
+
+    The one place the question is asked, and it asks about the *plan* rather
+    than the deployment. Every seal point in this codebase used to read
+    `if pdi is not None`, which is whether the operator configured a vault —
+    so a free account on a PDI-backed deployment had its journal, its check-in
+    notes and its detection detail sealed into a vault it was not paying for
+    and could not hold a key to. Free is platform custody over plain HTTPS;
+    that gate was asking the wrong question.
+
+    **Writes only. Reads and deletions keep the real vault, always.** Somebody
+    who was on Basic for a year and moved to Free still has a year of sealed
+    records. They have to be able to read them back, and `delete_user_data`
+    has to be able to purge them. A plan-gated vault on a read would strand
+    somebody's history behind a billing change; on a delete it would leave
+    records nobody can reach and call that erasure. Both are worse than the
+    bug this function exists to fix.
+    """
+    if pdi is None:
+        return None
+    return pdi if is_private(plan) else None
 
 
 def describe(plan: str) -> dict:
@@ -175,6 +259,8 @@ def describe(plan: str) -> dict:
         "disclosure": FREE_DISCLOSURE if not spec["private"] else None,
         "refused_here": sorted(SENSITIVE) if not spec["private"] else [],
         "emergency": EMERGENCY_NOTE,
+        # Who holds it, which is the question the free plan is really about.
+        "custody": {"who": custody_of(plan), **CUSTODY[custody_of(plan)]},
     }
 
 
@@ -250,9 +336,11 @@ def vocabulary() -> dict:
     return {
         "postures": POSTURES,
         "by_plan": BY_PLAN,
+        "custody": CUSTODY,
+        "custody_of": CUSTODY_OF,
         "sensitive": SENSITIVE,
         "free_disclosure": FREE_DISCLOSURE,
         "emergency": EMERGENCY_NOTE,
         "the_difference": "Free and Basic run the same app. The difference is "
-                          "where your data lives.",
+                          "where your data lives, and who holds it.",
     }

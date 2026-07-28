@@ -115,6 +115,26 @@ def create_app(qrme_client: QRMEClient | None = None,
         auth.require(request, "user", user_id)
         return user
 
+    def _vault(user_id: str):
+        """The vault this user's **writes** go to, or None on an open plan.
+
+        Every seal point used to receive `app.state.pdi` directly, which asks
+        whether the *deployment* has a vault rather than whether the *account*
+        is on a plan that uses one — so a free account on a PDI-backed
+        deployment had its journal, check-in notes and detection detail sealed
+        into a vault it was not paying for and could not hold a key to. Free is
+        platform custody over plain HTTPS; see `jim/storage.py`.
+
+        **Writes only.** Reads (`journal_entries`, `content_for_care`,
+        `access_log`, the audit surfaces) and deletions (`delete_user_data`,
+        `capture.delete`) keep `app.state.pdi` unchanged, because somebody who
+        was on Basic for a year and moved to Free still has a year of sealed
+        records to read back and, if they ask, to have purged. A plan-gated
+        vault on a read strands somebody's history behind a billing change; on
+        a delete it leaves records nobody can reach and calls that erasure.
+        """
+        return storage.vault_for(tiers.governing_plan(user_id), app.state.pdi)
+
     @app.get("/terms")
     def terms() -> dict:
         """The Terms of Service every client displays at the gateway:
@@ -336,6 +356,10 @@ def create_app(qrme_client: QRMEClient | None = None,
         """
         user = _user_or_404(user_id, request)
         try:
+            # `app.state.pdi`, not `_vault(...)`, and deliberately: on an open
+            # plan a capture is refused outright (402), and handing this the
+            # plan-gated None would surface "this deployment has no vault"
+            # (503) instead — a true statement about the wrong thing.
             return capture_mod.take(
                 user, body.kind, body.site, body.content,
                 body.provenance, body.note, body.condition,
@@ -493,7 +517,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             child = family.enroll_child(
                 guardian_user, body.model_dump(exclude={"language"}),
-                pdi=app.state.pdi)
+                pdi=_vault(guardian_id))
         except storage.StorageError:
             # Ahead of the ValueError arm below, which it subclasses, so the
             # setup is not reported as malformed. Answered 402 by the
@@ -609,7 +633,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         sample = body.model_dump(exclude_none=True)
         note = sample.pop("note", None)
         return guardian.monitor(user_id, sample, note, qrme=app.state.qrme,
-                                pdi=app.state.pdi)
+                                pdi=_vault(user_id))
 
     @app.get("/events/{user_id}")
     def events(user_id: str, request: Request) -> list[dict]:
@@ -842,7 +866,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         sample = body.sample.model_dump(exclude_none=True) if body.sample else None
         return guardian.emergency(user_id, body.situation, body.location,
-                                  sample, qrme=app.state.qrme, pdi=app.state.pdi)
+                                  sample, qrme=app.state.qrme,
+                                  pdi=_vault(user_id))
 
     @app.post("/activity/{user_id}", status_code=201)
     def observe_activity(user_id: str, body: ActivityObserve,
@@ -852,7 +877,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return guardian.observe_activity(
             user_id, body.activity, body.signals, body.note,
-            qrme=app.state.qrme, pdi=app.state.pdi)
+            qrme=app.state.qrme, pdi=_vault(user_id))
 
     # ---- physical embodiments (clause 16) ---------------------------------
 
@@ -1044,7 +1069,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(
                 403, f"source '{body.source}' is not consented for this user")
         return life.add_context(user_id, body.source, body.kind, body.data,
-                                pdi=app.state.pdi)
+                                pdi=_vault(user_id))
 
     # ---- social-platform connections --------------------------------------
     # collect posts to inform guidance, or publish an update reachable by QR.
@@ -1079,7 +1104,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         if row["status"] != "active":
             raise HTTPException(409, "connection has been revoked")
         return social.collect(row, [i.model_dump() for i in body.items],
-                              pdi=app.state.pdi)
+                              pdi=_vault(row["user_id"]))
 
     @app.post("/social/connection/{cid}/publish", status_code=201)
     def social_publish(cid: str, body: SocialPublish, request: Request) -> dict:
@@ -1149,7 +1174,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         if row["status"] != "active":
             raise HTTPException(409, "connector has been revoked")
         return app_connectors.collect(row, [i.model_dump() for i in body.items],
-                                      pdi=app.state.pdi)
+                                      pdi=_vault(row["user_id"]))
 
     @app.post("/apps/connector/{cid}/invoke", status_code=201)
     def app_invoke(cid: str, body: AppInvoke, request: Request) -> dict:
@@ -1218,7 +1243,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             return {"learned": True, "already_learned": True}
         life.add_context(row["user_id"], "research", "knowledge",
                          {"topic": row["topic"], "content": row["findings"]},
-                         pdi=app.state.pdi)
+                         pdi=_vault(row["user_id"]))
         db.connect().execute("UPDATE excursions SET learned=1 WHERE id=?", (cid,))
         db.connect().commit()
         return {"learned": True, "already_learned": False,
@@ -1230,12 +1255,13 @@ def create_app(qrme_client: QRMEClient | None = None,
     def check_in(user_id: str, body: CheckIn, request: Request) -> dict:
         _user_or_404(user_id, request)
         result = life.check_in(user_id, body.mood, body.energy, body.note,
-                               pdi=app.state.pdi)
+                               pdi=_vault(user_id))
         # A worrying note still goes through the Guardian pipeline so crisis
         # language escalates exactly as it does from /monitor.
         if body.note:
             result["guardian"] = guardian.monitor(
-                user_id, {}, body.note, qrme=app.state.qrme, pdi=app.state.pdi)
+                user_id, {}, body.note, qrme=app.state.qrme,
+                pdi=_vault(user_id))
         return result
 
     # ---- smart goals ------------------------------------------------------
@@ -1310,10 +1336,10 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.post("/journal/{user_id}", status_code=201)
     def add_journal(user_id: str, body: JournalEntry, request: Request) -> dict:
         _user_or_404(user_id, request)
-        result = life.add_journal(user_id, body.text, pdi=app.state.pdi)
+        result = life.add_journal(user_id, body.text, pdi=_vault(user_id))
         # Journal text runs the same crisis pipeline as check-in notes.
         result["guardian"] = guardian.monitor(
-            user_id, {}, body.text, qrme=app.state.qrme, pdi=app.state.pdi)
+            user_id, {}, body.text, qrme=app.state.qrme, pdi=_vault(user_id))
         return result
 
     @app.get("/journal/{user_id}")

@@ -8,6 +8,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Platform custody, and a vault gate that asks about the plan** —
+  `storage.CUSTODY`, `storage.vault_for`. The free plan is the familiar
+  hosted-assistant arrangement: JIM-mini holds the record and the person has
+  access to it, over ordinary HTTPS, never through a vault. Named as **custody
+  rather than ownership**, deliberately — a product decides who holds and
+  operates a record, and does not get to decide away somebody's statutory
+  rights over their own personal data. On a product holding medical data that
+  distinction would be tested.
+
+### Fixed
+
+- **A free account's record was being sealed into the vault.** Every seal
+  point read `if pdi is not None` — whether the *deployment* has a vault, not
+  whether the *account* is on a plan that uses one. On a PDI-backed deployment
+  that put a free account's journal, check-in notes and detection detail in a
+  vault it was not paying for and could not hold a key to. Twelve write sites
+  now resolve through `_vault(user_id)`; guarded by counting vault writes
+  rather than by reading call sites, because reading call sites is how they
+  all stayed wrong.
+
+  Reads and deletions deliberately keep the real vault: a plan-gated vault on
+  a read strands a downgraded account's history behind a billing change, and
+  on a delete it leaves records nobody can reach and calls that erasure. Both
+  are asserted.
+
+- **The access log told a free account a comfortable lie.** On a vault plan an
+  empty list means nobody touched the records and the chain proves it. On an
+  open plan there is no chain, so an empty list means nothing was *recorded* —
+  and a bare `[]` reads as the first. `GET /access-log/{user_id}` now carries
+  `access_record_kept` and says which of the two it is, including the awkward
+  middle where an account downgraded off Basic has real earlier entries and
+  nothing recorded since.
+
 - **A free plan, with nothing private about it** — `jim/storage.py`, 36 tests,
   screens 78, 79 and 80. Two storage postures: **open cloud** (Free — JIM's own
   database, in the clear) and **encrypted vault** (Basic and Pro — journal

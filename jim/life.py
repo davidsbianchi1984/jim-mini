@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from datetime import date, timedelta
 
-from . import db, tiers
+from . import db, storage, tiers
 
 # Streak lengths worth celebrating.
 _MILESTONES = {7, 30, 100}
@@ -544,10 +544,43 @@ _ACCESS_VERB = {"put": "stored", "get": "read", "delete": "erased"}
 def access_log(user_id: str, pdi=None) -> dict:
     """A user-facing view of every access to *their* vaulted data. Reads PDI's
     tamper-evident audit chain and filters it to this user's key namespace
-    (`jim/{user}/…`), so one user can never see another's. When no vault is
-    configured, the user's data never left this system, and we say so."""
+    (`jim/{user}/…`), so one user can never see another's.
+
+    **An empty list here has two completely different meanings, and saying the
+    wrong one is worse than saying nothing.** On a vault plan, no entries means
+    nobody touched the records and the chain proves it. On an open plan there
+    is no chain at all — nothing is recorded, so nobody could prove either way.
+    Returning a bare `[]` for the second case would read as the first: a
+    reassurance the platform is in no position to give.
+
+    So the plan is checked before the chain is read, and the response says
+    which of the two it is. An account that was on Basic and moved to Free is
+    the awkward middle: real entries exist for what was sealed then, and
+    nothing since is recorded. Both halves get said.
+    """
+    plan = tiers.governing_plan(user_id)
+    if not storage.is_private(plan):
+        held = storage.CUSTODY["platform"]
+        sealed_before = db.connect().execute(
+            "SELECT 1 FROM vault_keys WHERE user_id=?", (user_id,)).fetchone()
+        out = {
+            "vaulted": False,
+            "access_record_kept": False,
+            "custody": "platform",
+            "entries": [],
+            "note": "this account is on the free plan. " + held["means"] +
+                    " No record of who read what is kept on this plan, so an "
+                    "empty list here means nothing was recorded — not that "
+                    "nothing was read.",
+        }
+        if sealed_before and pdi is not None:
+            out["note"] += (" You do have records sealed under an earlier paid "
+                            "plan; those are still sealed, still yours to "
+                            "read, and their chain entries are unaffected.")
+            out["sealed_under_a_previous_plan"] = True
+        return out
     if pdi is None:
-        return {"vaulted": False, "entries": [],
+        return {"vaulted": False, "access_record_kept": False, "entries": [],
                 "note": "no vault configured — your data is stored locally on "
                         "this system only; nothing is shared externally"}
     raw = pdi.audit()
@@ -565,6 +598,8 @@ def access_log(user_id: str, pdi=None) -> dict:
                         "scope": scope, "at": e["at"]})
     return {
         "vaulted": True, "available": True,
+        "access_record_kept": True,
+        "custody": "user",
         "tamper_evident": pdi.audit_verify(),
         "count": len(entries),
         "entries": entries,
