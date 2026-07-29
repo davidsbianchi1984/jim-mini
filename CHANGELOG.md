@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Sign in with Google / Apple, the Guardian's way.** The provider
+vouches for the inbox, never for the consent questions: signing *up*
+with Google still carries the full enrollment (name, birthdate, terms),
+parked on the flow's state by the console; a brand-new account activates
+the moment the provider vouches, and a returning one signs straight in.
+Configuration decides whether the buttons are live (`JIM_GOOGLE_CLIENT_ID`
+and friends) — an unconfigured door is grey with its setup note.
+
 **Stress joins the check-in.** The field promise was "track your mood
 *and stress levels* over time", and stress had no field anywhere. Check-ins
 take an optional stress reading (1 calm — 5 overwhelmed) alongside mood and

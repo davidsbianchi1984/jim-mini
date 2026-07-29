@@ -8,6 +8,7 @@ import os
 from datetime import date, datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 
 from . import (accounts, app_connectors, auth, bands, beacons, careteam,
@@ -16,7 +17,8 @@ from . import (accounts, app_connectors, auth, bands, beacons, careteam,
                mailer,
                contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
-               meds, mic, mobile, notify, referral, relay, research, robotics,
+               meds, mic, mobile, notify, oauth, referral, relay, research,
+               robotics,
                rota, social, storage, terms as terms_mod, tiers, tutorial,
                vigil, voice, watch)
 from . import crashwatch
@@ -34,7 +36,7 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate,
-    CrashWatchArm, HelpAsk, MealPlanAsk, WorkoutAsk,
+    CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     BandSet,
@@ -686,6 +688,49 @@ def create_app(qrme_client: QRMEClient | None = None,
                                            body.new_password)
         except accounts.AccountError as exc:
             raise HTTPException(exc.status, exc.detail)
+
+    # ---- Sign in with Google / Apple (jim/oauth.py) -----------------------
+
+    @app.get("/auth/oauth/providers")
+    def oauth_providers() -> dict:
+        """Which sign-in doors are live here, and how to open the rest."""
+        return oauth.providers()
+
+    @app.post("/auth/oauth/{provider}/start",
+              dependencies=[Depends(auth.require_signup_key)])
+    def oauth_start(provider: str, body: OAuthStart,
+                    request: Request) -> dict:
+        redirect = body.redirect_uri or str(
+            request.url_for("oauth_callback", provider=provider))
+        try:
+            return oauth.start(provider, redirect, enroll=body.enroll)
+        except oauth.OAuthError as exc:
+            raise HTTPException(exc.status, exc.message) from None
+
+    @app.get("/auth/oauth/{provider}/callback", response_class=HTMLResponse)
+    def oauth_callback(provider: str, code: str = "", state: str = "",
+                       error: str = "") -> HTMLResponse:
+        if error or not code:
+            return HTMLResponse(
+                f"<h2>Sign-in was not completed</h2>"
+                f"<p>{error or 'no code came back'} — you can close this "
+                "window and try again.</p>", status_code=400)
+        try:
+            done = oauth.callback(provider, code, state)
+        except oauth.OAuthError as exc:
+            return HTMLResponse(
+                f"<h2>Sign-in failed</h2><p>{exc.message}</p>",
+                status_code=exc.status)
+        return HTMLResponse(
+            f"<h2>Signed in as {done['email']}</h2>"
+            "<p>You can close this window and return to the app.</p>")
+
+    @app.get("/auth/oauth/claim")
+    def oauth_claim(state: str) -> dict:
+        try:
+            return oauth.claim(state)
+        except oauth.OAuthError as exc:
+            raise HTTPException(exc.status, exc.message) from None
 
     @app.post("/signin")
     def signin(body: SignIn) -> dict:

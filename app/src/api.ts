@@ -203,6 +203,16 @@ export const api = {
   enroll: (body: { display_name: string; birthdate: string; terms_consent: boolean }) =>
     req<{ id: string; display_name: string; user_token: string }>("/enroll", { method: "POST", body }),
   // Accounts: the email is verified (emailed code) before the user exists.
+  oauthProviders: () =>
+    req<{ providers: { provider: string; name: string; configured: boolean;
+                       setup?: string }[] }>("/auth/oauth/providers"),
+  oauthStart: (provider: string, enroll?: Record<string, unknown>) =>
+    req<{ url: string; state: string }>(
+      `/auth/oauth/${provider}/start`, { method: "POST", body: { enroll } }),
+  oauthClaim: (state: string) =>
+    req<{ ready: boolean; id?: string; user_id?: string; email?: string;
+          display_name?: string; user_token?: string }>(
+      `/auth/oauth/claim?state=${encodeURIComponent(state)}`),
   signup: (body: { email: string; password: string; display_name: string; birthdate: string; terms_consent: boolean }) =>
     req<{ account_id: string; email: string; verified: boolean; code_delivery?: string;
           verification: "local" | "email";

@@ -45,6 +45,44 @@ export function Onboarding() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [oauthDoors, setOauthDoors] = useState<
+    { provider: string; name: string; configured: boolean; setup?: string }[]>([]);
+  const [oauthWaiting, setOauthWaiting] = useState(false);
+
+  useEffect(() => {
+    api.oauthProviders().then((r) => setOauthDoors(r.providers)).catch(() => {});
+  }, []);
+
+  async function signInWith(provider: string) {
+    setError(null); setNotice(null); setOauthWaiting(true);
+    try {
+      // On the signup tab the enrollment rides along: the provider vouches
+      // for the inbox, never for the consent questions.
+      const enroll = mode === "signup"
+        ? { display_name: name.trim(), birthdate, terms_consent: consent }
+        : undefined;
+      if (mode === "signup" && (!name.trim() || !consent)) {
+        setError("Fill in your name and consent first — Google or Apple can vouch for your email, not your answers.");
+        setOauthWaiting(false);
+        return;
+      }
+      const started = await api.oauthStart(provider, enroll);
+      window.open(started.url, "_blank");
+      setNotice("Finish signing in with the browser window that just opened…");
+      const until = Date.now() + 120000;
+      while (Date.now() < until) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const got = await api.oauthClaim(started.state).catch(() => null);
+        if (got === null) { setError("Sign-in was not completed — try again."); break; }
+        if (got.ready && got.user_token) {
+          setSession({ userId: (got.id || got.user_id)!, userToken: got.user_token,
+                       displayName: got.display_name || "" });
+          return;
+        }
+      }
+    } catch (e) { setError((e as Error).message); }
+    finally { setOauthWaiting(false); }
+  }
 
   // The desktop shell is only the console; the Guardian itself is the local
   // backend. Check for it up front so the form never turns a missing backend
@@ -162,6 +200,19 @@ export function Onboarding() {
                     onClick={() => switchMode("signup")}>Create account</button>
             <button className={mode === "signin" ? "tab active" : "tab"}
                     onClick={() => switchMode("signin")}>Sign in</button>
+          </div>
+        )}
+
+        {(mode === "signup" || mode === "signin") && oauthDoors.length > 0 && (
+          <div className="oauth-doors">
+            {oauthDoors.map((d) => (
+              <button key={d.provider} disabled={!d.configured || oauthWaiting}
+                      title={d.configured ? undefined : d.setup}
+                      onClick={() => signInWith(d.provider)}>
+                Sign {mode === "signup" ? "up" : "in"} with {d.name}
+                {!d.configured && <span className="muted small"> · not configured here</span>}
+              </button>
+            ))}
           </div>
         )}
 

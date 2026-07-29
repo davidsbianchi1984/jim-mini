@@ -269,3 +269,10 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .calm-run { margin-top: 12px; padding: 18px; border: 1px solid var(--line);
   border-radius: 14px; text-align: center; }
 .calm-say { font-size: 18px; margin-bottom: 6px; }
+
+/* "Sign in with ..." — grey with the reason when the deployment has no
+   OAuth client registered; a working-looking dead end would be worse. */
+.oauth-doors { display: flex; flex-direction: column; gap: 8px; margin: 0 0 14px; }
+.oauth-doors button { background: rgba(255,255,255,0.05); color: var(--txt);
+  border: 1px solid var(--line); border-radius: 12px; padding: 11px; font-weight: 600; }
+.oauth-doors button:disabled { opacity: 0.55; cursor: default; }

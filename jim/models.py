@@ -88,6 +88,14 @@ class Signup(Enroll):
     password: str
 
 
+class OAuthStart(BaseModel):
+    """Opening the "Sign in with ..." door (jim/oauth.py). ``enroll`` is the
+    Guardian's signup payload for a brand-new account — the provider vouches
+    for the inbox, never for the consent questions."""
+    redirect_uri: str | None = None
+    enroll: dict | None = None
+
+
 class SignIn(BaseModel):
     """Returning to an account (jim/accounts.py)."""
     email: str
