@@ -200,12 +200,25 @@ function ModelPanel() {
       <p className="muted small">
         Your Guardian's replies can run on any of these. Pick one and every
         reply uses it; <b>Automatic</b> uses whichever is configured.
-        {effective && chosen !== effective && (
-          <> Right now it resolves to <b>{effective}</b> — the one you picked
-          has no key on this deployment yet.</>)}
       </p>
       <ProviderTiles providers={providers} chosen={chosen}
                      effective={effective} onPick={pick} busy={busy} />
+      {/* The truth about what will actually answer. The silent case was the
+          bad one: Automatic quietly resolving to the stub while the screen
+          full of logos implied a real model was on. */}
+      {effective === "stub" && chosen !== "stub" ? (
+        <div className="degraded">
+          ⚠ Right now replies come from the <b>built-in offline helper</b> —
+          no online model has a working key on this machine. Pick a provider
+          above and add its key (“Your model API key” below works for all of
+          them).
+        </div>
+      ) : effective && chosen !== "auto" && chosen !== effective && (
+        <div className="degraded">
+          ⚠ Right now it resolves to <b>{effective}</b> — the one you picked
+          has no key on this machine yet.
+        </div>
+      )}
       {error && <div className="error">⚠ {error}</div>}
     </div>
   );

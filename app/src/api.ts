@@ -80,7 +80,8 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
   return data as T;
 }
 
-export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[] }
+export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[];
+  provenance?: { generated_by?: string; degraded?: boolean; degraded_reason?: string | null } }
 export interface DriftCrossing {
   metric: string; label: string; unit: string; direction: "above" | "below";
   value: number; baseline: number; edge: number; delta: number; note: string;
