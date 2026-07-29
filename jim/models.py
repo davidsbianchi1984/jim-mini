@@ -13,7 +13,7 @@ Condition = Literal[
 ]
 
 LifeArea = Literal[
-    "mental_health", "health_fitness", "career", "finance",
+    "mental_health", "health_fitness", "nutrition", "career", "finance",
     "relationships", "personal_growth",
 ]
 
@@ -514,6 +514,21 @@ class VigilArm(BaseModel):
     steward_channel: str
     quiet_days: float = 3.0
     note: str | None = None
+
+
+class WorkoutAsk(BaseModel):
+    """The three adaptation inputs the field named: your minutes, your
+    level, your focus."""
+
+    minutes: int = 15
+    level: str = "beginner"
+    focus: str = "full_body"
+
+
+class MealPlanAsk(BaseModel):
+    goal: str
+    preferences: list[str] = []
+    days: int = 1
 
 
 class HelpAsk(BaseModel):

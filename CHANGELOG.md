@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Guided wellness — the on-purpose half of guidance.** From the field
+videos, built as protocols rather than generations: guided calm
+sessions (quick reset, box breathing, 4-7-8, a ten-minute sit) with
+timed steps the console paces and can speak; workout plans shaped to
+the minutes you have, your level and focus, warm-up and cool-down
+non-negotiable; and meal plans shaped to goal and dietary preferences
+with the honesty rails stated on the plan. Nutrition becomes a
+first-class Coach area. All three land in the events stream, so the
+insights layer sees practice the way it sees check-ins. New Wellness
+tab in the console.
+
 ## [0.14.5] — 2026-07-29
 
 **A fall reaches the Guardian.** The watch drip carried only numbers,

@@ -13,7 +13,9 @@ from .guidance import _DENY, personalize
 
 AREAS = {
     "mental_health": "mental health — support, coping strategies, resources",
-    "health_fitness": "health & fitness — workouts, nutrition, sleep, recovery",
+    "health_fitness": "health & fitness — workouts, sleep, recovery",
+    "nutrition": "nutrition — meal planning, eating patterns, hydration; "
+                 "never a diet prescription",
     "career": "career & growth — resume feedback, skills, interview prep",
     "finance": "finance — budgeting, saving, and general money habits",
     "relationships": "relationships — communication and connection",
