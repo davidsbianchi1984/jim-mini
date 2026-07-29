@@ -3,14 +3,16 @@ import { useSession } from "./store";
 import { Onboarding } from "./screens/Onboarding";
 import { Home } from "./screens/Home";
 import { Monitor } from "./screens/Monitor";
+import { Baseline } from "./screens/Baseline";
 import { Coach } from "./screens/Coach";
 import { Checkin } from "./screens/Checkin";
 import { Settings } from "./screens/Settings";
 
-type Tab = "home" | "monitor" | "coach" | "checkin" | "settings";
+type Tab = "home" | "monitor" | "baseline" | "coach" | "checkin" | "settings";
 const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "home", label: "Overview", icon: "◎" },
   { id: "monitor", label: "Live Monitoring", icon: "❤" },
+  { id: "baseline", label: "Your Baseline", icon: "📈" },
   { id: "coach", label: "Coach", icon: "🧠" },
   { id: "checkin", label: "Check-in", icon: "🌿" },
   { id: "settings", label: "Privacy", icon: "🛡" },
@@ -43,6 +45,7 @@ export function App() {
       <main className="content">
         {tab === "home" && <Home go={setTab} />}
         {tab === "monitor" && <Monitor />}
+        {tab === "baseline" && <Baseline />}
         {tab === "coach" && <Coach />}
         {tab === "checkin" && <Checkin />}
         {tab === "settings" && <Settings />}

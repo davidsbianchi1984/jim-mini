@@ -10,12 +10,14 @@ from datetime import date, datetime
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
-from . import (accounts, app_connectors, auth, beacons, catalog, coach,
+from . import (accounts, app_connectors, auth, bands, beacons, catalog,
+               coach,
                mailer,
                contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
-               rota, social, storage, terms as terms_mod, tiers, tutorial)
+               rota, social, storage, terms as terms_mod, tiers, tutorial,
+               voice)
 from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
@@ -27,11 +29,13 @@ from .models import (
     GuidanceFeedback, HabitCreate,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
+    BandSet,
     LanguageChoice, LocalitySet, MailSettings, MailTest,
     MicAttach, MicGain, MicHandover,
     ReferralPrepare, ResendCode, ResetPassword, ResetRequest, RobotCommand,
     SignIn, Signup,
-    TranslateRequest, VerifyEmail, WaiverSign,
+    TranslateRequest, VerifyEmail,
+    VoiceSettings, VoiceSpeak, VoiceTranscribe, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
     CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark,
@@ -55,7 +59,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.4.8",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.5.0",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -414,6 +418,95 @@ def create_app(qrme_client: QRMEClient | None = None,
             title="✓ Verified",
             body="Your account is active. Go back to JIM Guardian — "
                  "it will continue on its own."))
+
+    # ---- speaking and listening -------------------------------------------
+
+    @app.get("/settings/voice")
+    def get_voice_settings() -> dict:
+        """Which voice this deployment speaks in, and what it can offer."""
+        return voice.describe_settings()
+
+    @app.put("/settings/voice",
+             dependencies=[Depends(auth.require_signup_key)])
+    def put_voice_settings(body: VoiceSettings) -> dict:
+        try:
+            return voice.save_settings(
+                provider=body.provider, api_key=body.api_key or "",
+                voice_id=body.voice_id or "", speak_replies=body.speak_replies)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/settings/voice",
+                dependencies=[Depends(auth.require_signup_key)])
+    def delete_voice_settings() -> dict:
+        return voice.clear_settings()
+
+    @app.post("/voice/speak")
+    def voice_speak(body: VoiceSpeak) -> Response:
+        """Say something aloud: text in, audio out. A deployment with no
+        speaking service answers 503 and the app reads the text with the
+        device's own voice — silence would be the wrong failure."""
+        if not body.text.strip():
+            raise HTTPException(422, "nothing to say")
+        try:
+            audio, media_type = voice.speak(body.text, body.voice_id)
+        except voice.VoiceUnavailable as exc:
+            raise HTTPException(503, str(exc))
+        except voice.VoiceError as exc:
+            raise HTTPException(502, str(exc))
+        return Response(content=audio, media_type=media_type)
+
+    @app.post("/voice/transcribe")
+    def voice_transcribe(body: VoiceTranscribe) -> dict:
+        """Recorded speech in, words out. The audio is not stored."""
+        import base64 as _b64
+
+        try:
+            raw = _b64.b64decode(body.audio_base64, validate=True)
+        except Exception:
+            raise HTTPException(422, "audio_base64 is not valid base64")
+        if not raw:
+            raise HTTPException(422, "no audio")
+        try:
+            return {"text": voice.transcribe(raw, body.filename or "speech.webm")}
+        except voice.VoiceUnavailable as exc:
+            raise HTTPException(503, str(exc))
+        except voice.VoiceError as exc:
+            raise HTTPException(502, str(exc))
+
+    # ---- your own normal, and how far from it counts ----------------------
+
+    @app.get("/bands/{user_id}")
+    def get_bands(user_id: str, request: Request) -> dict:
+        """Every metric's band, the learned baseline, and where the two edges
+        sit — so a screen can show *your normal* rather than a bare number.
+        Edges appear only once the baseline is established."""
+        user = _user_or_404(user_id, request)
+        return {"user_id": user_id,
+                "sensitivity": user.get("sensitivity") or "balanced",
+                "bands": bands.overview(
+                    user_id, user.get("sensitivity") or "balanced")}
+
+    @app.put("/bands/{user_id}/{metric}")
+    def put_band(user_id: str, metric: str, body: BandSet,
+                 request: Request) -> dict:
+        """Widen, narrow, or switch off a direction. Crossing a band is a
+        check-in, never an escalation."""
+        _user_or_404(user_id, request)
+        try:
+            return bands.set_band(user_id, metric, margin=body.margin,
+                                  watch_high=body.watch_high,
+                                  watch_low=body.watch_low)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/bands/{user_id}/{metric}")
+    def delete_band(user_id: str, metric: str, request: Request) -> dict:
+        """Back to the default width for this metric."""
+        _user_or_404(user_id, request)
+        if metric not in bands.DEFAULTS:
+            raise HTTPException(422, f"unknown metric {metric!r}")
+        return bands.reset_band(user_id, metric)
 
     # ---- where this deployment sends mail through -------------------------
 

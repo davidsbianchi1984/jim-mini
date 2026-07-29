@@ -81,9 +81,16 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
 }
 
 export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[] }
+export interface DriftCrossing {
+  metric: string; label: string; unit: string; direction: "above" | "below";
+  value: number; baseline: number; edge: number; delta: number; note: string;
+}
 export interface MonitorResult {
   detected: boolean; condition?: string; severity?: string; reason?: string;
   guidance?: Guidance | null; escalation?: unknown; forecast?: unknown;
+  // Not an episode — a drift from this person's own baseline, which earns a
+  // question rather than an alarm (jim/bands.py).
+  drift?: { crossings: DriftCrossing[]; question: string } | null;
 }
 export interface CheckinResult {
   id: string; mood: number; energy: number; insights: unknown[];
@@ -118,6 +125,46 @@ export const api = {
   signin: (body: { email: string; password: string }) =>
     req<{ user_id: string; user_token: string; email: string; display_name?: string }>(
       "/signin", { method: "POST", body }),
+  // Which model answers, as a picker rather than a config file.
+  listModels: () =>
+    req<{ providers: { name: string; label: string; configured: boolean;
+                       model: string; network: boolean }[]; default: string }>("/models"),
+  getModelChoice: (uid: string, token: string) =>
+    req<{ provider: string; effective: string }>(`/model/${uid}`, { token }),
+  setModelChoice: (uid: string, provider: string, token: string) =>
+    req<{ provider: string; effective: string }>(
+      `/model/${uid}`, { method: "PUT", body: { provider }, token }),
+
+  // Your own normal, and the edges around it.
+  getBands: (uid: string, token: string) =>
+    req<{ sensitivity: string; bands: {
+      metric: string; label: string; unit: string; margin: number;
+      watch_high: boolean; watch_low: boolean; source: string;
+      baseline: number | null; samples: number; provisional: boolean;
+      low_edge: number | null; high_edge: number | null }[] }>(
+      `/bands/${uid}`, { token }),
+  setBand: (uid: string, metric: string,
+            body: { margin?: number; watch_high?: boolean; watch_low?: boolean },
+            token: string) =>
+    req<{ metric: string; margin: number }>(
+      `/bands/${uid}/${metric}`, { method: "PUT", body, token }),
+  resetBand: (uid: string, metric: string, token: string) =>
+    req<{ metric: string; margin: number }>(
+      `/bands/${uid}/${metric}`, { method: "DELETE", token }),
+
+  // Speaking and listening.
+  getVoiceSettings: () =>
+    req<{ provider: string; voice_id: string; speak_replies: boolean;
+          key_set: boolean; key_source: string; device_fallback: boolean;
+          voices: { id: string; name: string; gender: string; note: string }[] }>(
+      "/settings/voice"),
+  saveVoiceSettings: (body: { provider: string; api_key?: string;
+                              voice_id?: string; speak_replies?: boolean }) =>
+    req<{ provider: string }>("/settings/voice", { method: "PUT", body }),
+  transcribe: (audio_base64: string) =>
+    req<{ text: string }>("/voice/transcribe",
+      { method: "POST", body: { audio_base64 } }),
+
   // Mail settings: what makes verification emails real instead of a line in
   // a log file. The password goes up; it never comes back down.
   getMailSettings: () =>

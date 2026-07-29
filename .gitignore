@@ -23,6 +23,8 @@ htmlcov/
 
 # Local databases & secrets — never commit runtime data
 *.db
+*.db-shm
+*.db-wal
 *.sqlite3
 .env
 .env.*
