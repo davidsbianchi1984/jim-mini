@@ -121,7 +121,8 @@ export interface VigilStatus {
   tripped?: boolean; tripped_at?: string | null;
 }
 export interface WatchChannel {
-  drip_url: string; last_drip_at: string | null; drips: number;
+  drip_url: string; phone_reachable: boolean;
+  last_drip_at: string | null; drips: number;
   shortcut: string[]; seed_hint: string;
 }
 export interface SeedReport {

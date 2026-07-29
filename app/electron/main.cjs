@@ -93,6 +93,9 @@ async function ensureBackend() {
       ...process.env,
       JIM_DB: path.join(app.getPath("userData"), "jim.db"),
       JIM_PORT: String(backendPort),
+      // "Let my phone reach JIM on this Wi-Fi": loopback until the user
+      // flips it in Settings → Apple Watch. The flag survives restarts.
+      JIM_HOST: lanAccessEnabled() ? "0.0.0.0" : "127.0.0.1",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -150,6 +153,32 @@ ipcMain.handle("open-backend-log", () => {
   const logPath = path.join(app.getPath("userData"), "backend.log");
   if (fs.existsSync(logPath)) return shell.openPath(logPath);
   return "no backend log yet — is a separately-run backend serving this app?";
+});
+
+// The Wi-Fi reachability flag: a marker file, because it must be read
+// before any window (and its localStorage) exists.
+function lanFlagPath() {
+  return path.join(app.getPath("userData"), "lan-access");
+}
+function lanAccessEnabled() {
+  return fs.existsSync(lanFlagPath());
+}
+
+ipcMain.handle("lan-access", () => lanAccessEnabled());
+
+ipcMain.handle("set-lan-access", async (_evt, enabled) => {
+  if (enabled) fs.writeFileSync(lanFlagPath(), "on");
+  else if (lanAccessEnabled()) fs.unlinkSync(lanFlagPath());
+  // Rebind by restart: kill ours, start again with the new JIM_HOST. Only
+  // a backend we spawned can be rebound — a separately-run one is the
+  // user's own business, and ensureBackend will simply find it again.
+  if (backendProc) {
+    killBackend();
+    await new Promise((r) => setTimeout(r, 500));
+    await ensureBackend();
+  }
+  return { enabled: lanAccessEnabled(),
+           restarted: true, port: backendPort };
 });
 
 // Keep the install current. On launch, ask GitHub Releases whether a newer

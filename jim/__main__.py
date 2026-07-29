@@ -23,6 +23,7 @@ only, and every personal endpoint still requires the user's bearer token.
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -108,6 +109,7 @@ def run_phone(args: argparse.Namespace) -> int:
     import uvicorn
     # Import string (not an app object) so the console mount happens after
     # the build above — the app factory checks app/dist at creation time.
+    os.environ["JIM_HOST"] = "0.0.0.0"   # so /watch/channel reports reachable
     uvicorn.run("jim.api:app", host="0.0.0.0", port=args.port)
     return 0
 
@@ -150,6 +152,7 @@ def run_serve(args: argparse.Namespace) -> int:
         os.environ["JIM_CORS_ORIGINS"] = "*"
         print("• CORS open for the local console (JIM_CORS_ORIGINS=*); "
               "pass --no-cors or set JIM_CORS_ORIGINS to restrict.")
+    os.environ["JIM_HOST"] = args.host   # so /watch/channel reports reachable
     uvicorn.run("jim.api:app", host=args.host, port=args.port)
     return 0
 
