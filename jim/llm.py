@@ -61,6 +61,11 @@ _OPENAI_MODEL = os.environ.get("JIM_OPENAI_MODEL", "gpt-4o")
 _GROK_MODEL = os.environ.get("JIM_GROK_MODEL", "grok-2-latest")
 _PPLX_MODEL = os.environ.get("JIM_PERPLEXITY_MODEL", "sonar")
 _GEMINI_MODEL = os.environ.get("JIM_GEMINI_MODEL", "gemini-2.0-flash")
+# The local model: whatever the user pulled into Ollama. deepseek-r1:1.5b
+# is small enough for most machines; JIM_OLLAMA_MODEL overrides.
+_OLLAMA_MODEL = os.environ.get("JIM_OLLAMA_MODEL", "deepseek-r1:1.5b")
+_OLLAMA_BASE = os.environ.get("JIM_OLLAMA_URL",
+                              "http://127.0.0.1:11434") + "/v1"
 
 _TIMEOUT = int(os.environ.get("JIM_LLM_TIMEOUT", "30"))
 
@@ -163,9 +168,11 @@ class StubProvider:
             # reaches the prompt.)
             text = (
                 "I'm the built-in offline helper, so I can't give you a real "
-                "coaching reply — no online model answered this request. "
-                "Your message is saved. To get full answers, open Settings → "
-                "Model, pick a provider, and add its API key."
+                "coaching reply — no model answered this request. Your "
+                "message is saved. Two ways to get full answers: open "
+                "Settings → Model and add a provider's API key, or install "
+                "Ollama (ollama.com) and pull a model like deepseek-r1:1.5b "
+                "— free, offline, and JIM will find it on its own."
             )
             return text + (f" (tone: {tone})" if tone else "")
         text = (
@@ -226,6 +233,13 @@ _REGISTRY: dict[str, dict] = {
                    "base": "https://api.perplexity.ai", "model": _PPLX_MODEL},
     "gemini": {"label": "Gemini (Google)", "kind": "gemini", "network": True,
                "env": ["GEMINI_API_KEY", "GOOGLE_API_KEY"], "model": _GEMINI_MODEL},
+    # A real offline model, not the canned stub: Ollama (ollama.com) runs
+    # models like deepseek-r1:1.5b or llama3.2 on the user's own machine —
+    # free, no key, no internet once the model is pulled. JIM treats a
+    # running Ollama as a configured provider; "network": False because no
+    # request leaves the machine, which also means offline mode allows it.
+    "ollama": {"label": "Local (Ollama)", "kind": "openai", "network": False,
+               "env": [], "base": _OLLAMA_BASE, "model": _OLLAMA_MODEL},
 }
 
 CHOICES = ("auto", *_REGISTRY.keys())
@@ -239,11 +253,35 @@ def _env_value(name: str) -> str | None:
     return None
 
 
+_OLLAMA_PROBE: dict = {"at": 0.0, "alive": False}
+
+
+def _ollama_alive() -> bool:
+    """Is a local Ollama daemon answering? Probed, because there is no key
+    to check — the daemon running IS the configuration. Cached briefly so
+    the settings screen doesn't knock on the port for every tile."""
+    import time
+    if time.monotonic() - _OLLAMA_PROBE["at"] < 10:
+        return _OLLAMA_PROBE["alive"]
+    alive = False
+    try:
+        req = urllib.request.Request(
+            _OLLAMA_BASE.rsplit("/v1", 1)[0] + "/api/version")
+        with urllib.request.urlopen(req, timeout=0.5) as r:
+            alive = r.status == 200
+    except Exception:  # noqa: BLE001 — not running is the common case
+        alive = False
+    _OLLAMA_PROBE.update(at=time.monotonic(), alive=alive)
+    return alive
+
+
 def is_configured(name: str) -> bool:
     if name == "stub":
         return True
     if name == "anthropic" and os.environ.get("JIM_LLM") == "anthropic":
         return True
+    if name == "ollama":
+        return _ollama_alive()
     if name not in _REGISTRY:
         return False
     return _env_value(name) is not None
@@ -265,6 +303,10 @@ def default_name() -> str:
     # product's default model is Claude.
     if is_configured("anthropic") or request_key():
         return "anthropic"
+    # No key anywhere, but a local model is running: a real answer beats a
+    # canned one, and it never leaves the machine.
+    if is_configured("ollama"):
+        return "ollama"
     return "stub"
 
 
@@ -314,6 +356,11 @@ def get_provider(cloud=None, choice: str | None = None) -> Provider:
       greater model with local fallback (unchanged behavior).
     """
     if _offline():
+        # Offline is absolute for the network — but Ollama IS offline: it
+        # answers on loopback and nothing leaves the machine. A running
+        # local model is exactly what offline mode wants.
+        if is_configured("ollama"):
+            return _build("ollama")   # already stub-backed via FallbackProvider
         return StubProvider()
 
     explicit = bool(choice) and choice != "auto"

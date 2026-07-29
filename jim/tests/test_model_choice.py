@@ -158,3 +158,44 @@ def test_choosing_the_stub_on_purpose_is_not_a_degrade(client):
                     headers=_auth(u)).json()
     assert r["provenance"]["generated_by"] == "stub"
     assert r["provenance"]["degraded"] is False
+
+
+# --------------------------------------------------------------------------- #
+# A real offline model: Ollama as a first-class provider
+# --------------------------------------------------------------------------- #
+
+def test_ollama_is_in_the_catalog_and_honest_about_absence(client):
+    """The tile exists even when the daemon doesn't — configured says which."""
+    body = client.get("/models").json()
+    ollama = next(p for p in body["providers"] if p["name"] == "ollama")
+    assert ollama["network"] is False          # nothing leaves the machine
+    assert ollama["configured"] is False       # no daemon in the test env
+
+
+def test_a_running_local_model_wins_auto_over_the_stub(client, monkeypatch):
+    from jim import llm
+    monkeypatch.delenv("JIM_LLM", raising=False)   # conftest pins the stub
+    monkeypatch.setattr(llm, "_ollama_alive", lambda: True)
+    assert llm.default_name() == "ollama"
+
+
+def test_offline_mode_still_uses_a_running_local_model(client, monkeypatch):
+    """JIM_OFFLINE forbids the network — and Ollama isn't network: it
+    answers on loopback. A real local answer beats a canned one."""
+    from jim import llm
+    monkeypatch.setenv("JIM_OFFLINE", "1")
+    monkeypatch.setattr(llm, "_ollama_alive", lambda: True)
+    provider = llm.get_provider()
+    assert isinstance(provider, llm.FallbackProvider)
+    assert provider.name == "ollama"
+    monkeypatch.setattr(llm, "_ollama_alive", lambda: False)
+    assert isinstance(llm.get_provider(), llm.StubProvider)
+
+
+def test_the_stub_now_points_at_the_free_local_option(client):
+    u = _enroll(client)
+    r = client.post(f"/coach/{u['id']}",
+                    json={"area": "career", "message": "any tips?"},
+                    headers=_auth(u)).json()
+    assert "ollama.com" in r["content"]
+    assert "offline" in r["content"]

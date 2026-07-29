@@ -14,13 +14,13 @@ export function Settings() {
   const [pair, setPair] = useState<PairInfo | null>(null);
 
   useEffect(() => {
-    api.health().then((h) => setHealth(`ok · tandem ${h.tandem ? "on" : "off"}`)).catch(() => setHealth("unreachable"));
+    api.health().then((h) => setHealth(`ok · vault tandem: ${h.tandem ? "connected" : "not configured (set by the deployment, not a switch)"}`)).catch(() => setHealth("unreachable"));
     api.pair().then(setPair).catch(() => setPair(null));
   }, []);
 
   function save() {
     setBase(base); setSaved(true); setTimeout(() => setSaved(false), 1500);
-    api.health().then((h) => setHealth(`ok · tandem ${h.tandem ? "on" : "off"}`)).catch(() => setHealth("unreachable"));
+    api.health().then((h) => setHealth(`ok · vault tandem: ${h.tandem ? "connected" : "not configured (set by the deployment, not a switch)"}`)).catch(() => setHealth("unreachable"));
   }
 
   return (
@@ -33,14 +33,6 @@ export function Settings() {
         <div className="muted small" style={{ marginTop: 10 }}>Backend: {health}</div>
       </div>
       <ModelPanel />
-
-      <VoicePanel />
-
-      <WatchPanel />
-
-      <VigilPanel />
-
-      <MailPanel />
 
       <div className="card">
         <h3>Your model API key</h3>
@@ -59,6 +51,15 @@ export function Settings() {
           setLlmKey(llmKey); setKeySaved(true); setTimeout(() => setKeySaved(false), 1500);
         }}>{keySaved ? "Saved ✓" : llmKey.trim() ? "Save key" : "Clear key"}</button>
       </div>
+
+      <VoicePanel />
+
+      <WatchPanel />
+
+      <VigilPanel />
+
+      <MailPanel />
+
       {pair && (
         <div className="card">
           <h3>Open on your phone</h3>

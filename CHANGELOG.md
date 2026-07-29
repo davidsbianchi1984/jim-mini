@@ -6,6 +6,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-07-29
+
+### Added
+
+- **A real offline model** (`jim/llm.py`; the *Local (Ollama)* tile).
+  The offline helper was a canned fallback and said so; now there is a
+  door to actual local intelligence: install Ollama (ollama.com), pull a
+  model like `deepseek-r1:1.5b`, and JIM finds the daemon on its own —
+  the tile lights up configured, no key, and nothing ever leaves the
+  machine. Automatic prefers it over the stub when no cloud key exists,
+  and **offline mode uses it too**: `JIM_OFFLINE` forbids the network,
+  and a loopback model isn't network. `JIM_OLLAMA_MODEL` /
+  `JIM_OLLAMA_URL` override the defaults. The stub's chat reply now
+  names both ways out: add a key, or install Ollama.
+
+### Fixed
+
+- **Settings stopped implying a tandem switch** — the backend status
+  line read "tandem off" as if a button existed; it now says plainly the
+  vault tandem is set by the deployment, not a switch. And **Your model
+  API key** moved to sit directly under *Which model answers*, where it
+  belongs, instead of stranded below Email delivery.
+
+### Changed
+
+- Version aligned to 0.10.0 across the API, the desktop app and the
+  Python package — cut together with qrme and pdi at this version.
+
 ## [0.9.1] — 2026-07-29
 
 ### Fixed
@@ -1387,7 +1415,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.9.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.10.0...HEAD
+[0.10.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.10.0
 [0.9.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.9.1
 [0.9.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.9.0
 [0.8.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.8.0
