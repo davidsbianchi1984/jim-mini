@@ -1,5 +1,13 @@
 # JIM-mini / Guardian
 
+**Network Responsive Personal Guidance System for Known Conditions.**
+JIM-Mini continuously watches the vital signs of a person managing known
+health conditions and responds when they cannot — a check-in first, and
+when readings collapse or the questions go unanswered, the help they
+programmed in advance. The goal is to give seniors and their families
+greater safety, independence, and peace of mind — 24/7, even during
+sleep.
+
 **Current release: v0.14.4** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
