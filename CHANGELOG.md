@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.14.4] — 2026-07-29
+
 **The voice orb, and the help box.** Talking with the Coach now looks
 like talking: a breathing orb takes the screen while JIM listens
 (green) or speaks (violet) — tap anywhere to end it. And JIM gets its
@@ -1520,7 +1522,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.14.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.14.4...HEAD
+[0.14.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.4
 [0.14.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.3
 [0.14.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.2
 [0.14.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.1

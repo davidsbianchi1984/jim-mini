@@ -1,6 +1,6 @@
 # JIM-mini / Guardian
 
-**Current release: v0.14.3** ([changelog](CHANGELOG.md) ·
+**Current release: v0.14.4** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -301,6 +301,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.14.4** | **The crash watch** — unanswered "are you okay?" summons pre-programmed help; plus the Journal tab (typed or spoken), the voice orb, the help box, and the version-mismatch banner |
 | **0.14.3** | **Every README ends on the rock** — the Matthew 7:24–25 passage closes every README, test-enforced |
 | **0.14.2** | **Cut with the siblings** — the tandem contract documents suite mode; QRME's gateway seals coordinations again |
 | **0.14.1** | **The coach knows a care plan landed** — one context line, the goal, never the plan text |
