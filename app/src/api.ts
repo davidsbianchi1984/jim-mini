@@ -129,6 +129,22 @@ export interface SeedReport {
   seeded: Record<string, { days: number; baseline: number; provisional: boolean }>;
 }
 
+export interface CareTeamStatus {
+  linked: boolean;
+  org_id?: string;
+  department_id?: string;
+  credential_held?: boolean;
+  latest_plan?: CarePlan | null;
+}
+export interface CarePlan {
+  id: string;
+  goal: string;
+  plan?: string | null;
+  trigger: Record<string, unknown>;
+  sealed_in_qrme_vault: boolean;
+  created_at: string;
+}
+
 export const api = {
   health: () => req<{ status: string; tandem: boolean; console?: boolean }>("/health"),
   // How to open this console on a phone: its URL on the local network.
@@ -193,6 +209,20 @@ export const api = {
       { method: "POST", body: { audio_base64 } }),
 
   // The medicine cabinet: tracked in your words, never a pharmacist.
+  // The care team is an organization (jim/careteam.py).
+  careTeamStatus: (uid: string, token: string) =>
+    req<CareTeamStatus>(`/users/${uid}/care-team`, { token }),
+  careTeamLink: (uid: string, token: string,
+                 body: { org_id: string; department_id: string; owner_token: string }) =>
+    req<CareTeamStatus>(`/users/${uid}/care-team`, { method: "PUT", body, token }),
+  careTeamUnlink: (uid: string, token: string) =>
+    req<unknown>(`/users/${uid}/care-team`, { method: "DELETE", token }),
+  careTeamCoordinate: (uid: string, token: string, goal: string) =>
+    req<CarePlan>(`/users/${uid}/care-team/coordinate`,
+      { method: "POST", body: { goal }, token }),
+  careTeamPlans: (uid: string, token: string) =>
+    req<CarePlan[]>(`/users/${uid}/care-team/plans`, { token }),
+
   medsBoard: (uid: string, token: string) =>
     req<MedBoard>(`/meds/${uid}`, { token }),
   medsAdd: (uid: string, token: string, body: { name: string; dose: string;

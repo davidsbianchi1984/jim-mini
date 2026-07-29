@@ -5,16 +5,18 @@ import { Home } from "./screens/Home";
 import { Monitor } from "./screens/Monitor";
 import { Baseline } from "./screens/Baseline";
 import { Meds } from "./screens/Meds";
+import { CareTeam } from "./screens/CareTeam";
 import { Coach } from "./screens/Coach";
 import { Checkin } from "./screens/Checkin";
 import { Settings } from "./screens/Settings";
 
-type Tab = "home" | "monitor" | "baseline" | "meds" | "coach" | "checkin" | "settings";
+type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "checkin" | "settings";
 const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "home", label: "Overview", icon: "◎" },
   { id: "monitor", label: "Live Monitoring", icon: "❤" },
   { id: "baseline", label: "Your Baseline", icon: "📈" },
   { id: "meds", label: "Medications", icon: "💊" },
+  { id: "careteam", label: "Care Team", icon: "👥" },
   { id: "coach", label: "Coach", icon: "🧠" },
   { id: "checkin", label: "Check-in", icon: "🌿" },
   { id: "settings", label: "Privacy", icon: "🛡" },
@@ -47,6 +49,7 @@ export function App() {
       <main className="content">
         {tab === "home" && <Home go={setTab} />}
         {tab === "meds" && <Meds />}
+        {tab === "careteam" && <CareTeam />}
         {tab === "monitor" && <Monitor />}
         {tab === "baseline" && <Baseline />}
         {tab === "coach" && <Coach />}
