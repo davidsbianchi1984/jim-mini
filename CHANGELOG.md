@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.12.0] — 2026-07-29
+
+**No functional changes here**: cut with the siblings. In QRME, the
+filed patent specification was mined for everything the apps did
+not yet do: hybrid profiles blended from several people, real-time
+simulation of the represented person's likely decisions, and
+replies that adapt to where the person actually is — backend and
+console both.
+
 ## [0.11.1] — 2026-07-29
 
 **No functional changes here**: cut with the siblings. In PDI, the
@@ -1428,7 +1437,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.11.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.12.0...HEAD
+[0.12.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.12.0
 [0.11.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.11.1
 [0.11.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.11.0
 [0.10.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.10.0

@@ -1,6 +1,6 @@
 # JIM-mini / Guardian
 
-**Current release: v0.11.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.12.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -295,6 +295,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.12.0** | **Cut with the siblings** — no functional change; QRME mined its filed patent spec: hybrid profiles, real-time simulation, environmental adaptation |
 | **0.11.1** | **Cut with the siblings** — no functional change; PDI's desktop app finally carries its own vault |
 | **0.11.0** | **Cut with the siblings** — no functional change; QRME's console caught up with its backend |
 | **0.10.0** | **A real offline model** — install Ollama, pull deepseek-r1:1.5b, and JIM finds it on its own: a Local tile, no key, nothing leaves the machine; Automatic prefers it over the canned stub, and offline mode uses it too. Plus Settings honesty: no phantom tandem switch, and the API-key card lives beside the model picker |
