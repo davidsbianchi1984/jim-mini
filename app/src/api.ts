@@ -12,7 +12,29 @@ function defaultBase(): string {
   if (pathname.startsWith("/app")) return origin;   // served by the API itself
   return LOOPBACK;                                   // vite dev on :5173
 }
-export function getBase(): string { return localStorage.getItem("jim.base") || defaultBase(); }
+// The desktop shell starts its own backend and tells us where it is. That
+// address wins over any stored loopback one: a saved "127.0.0.1:8000" from an
+// earlier install would otherwise point at a leftover backend of an older
+// version — which is exactly how an upgraded app kept meeting an old signup.
+function desktopBackendUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  const bridge = (window as { jimDesktop?: { backendUrl?: string | null } }).jimDesktop;
+  return bridge?.backendUrl || null;
+}
+
+export function getBase(): string {
+  const stored = localStorage.getItem("jim.base");
+  const desktop = desktopBackendUrl();
+  if (desktop) {
+    // Only a remote address survives on the desktop; a loopback one is this
+    // app's own business and must match the backend it started.
+    if (stored && !/^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])(:|\/|$)/.test(stored)) {
+      return stored;
+    }
+    return desktop;
+  }
+  return stored || defaultBase();
+}
 export function setBase(url: string) { localStorage.setItem("jim.base", url.replace(/\/+$/, "")); }
 
 // Bring-your-own model key: stored on this device only, sent per-request as
