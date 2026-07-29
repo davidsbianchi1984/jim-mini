@@ -6,6 +6,46 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-07-29
+
+### Added
+
+- **The Apple Watch bridge** (`jim/watch.py`; Settings → *Apple Watch*;
+  `GET /watch/channel/{user_id}`, `POST …/rotate`,
+  `POST /watch/drip/{token}`, `POST /watch/seed/{user_id}`). HealthKit only
+  talks to App-Store apps, and JIM does not have one — but every iPhone has
+  two free doors out, and both now lead here.
+  - **The drip.** A Shortcuts personal automation POSTs Health samples to a
+    per-user tokened URL on a schedule. The payload is forgiving on purpose
+    (`heart_rate`, `heartRate`, `"72 count/min"`, SpO₂ as HealthKit's
+    fraction or a typed percent — all one reading), and every drip runs the
+    full detect → drift → escalate pipeline, exactly as if typed on the
+    Monitor screen. The reply is deposit-only — received count and a
+    noticed flag, never guidance — because the token rides in a URL and a
+    URL-bearer credential must not read health guidance back out. A wrong
+    token is a 404, not a 403: confirming a channel exists would itself be
+    information. Rotating mints a new address and retires the old one
+    immediately.
+  - **The seed.** The Health app's *Export All Health Data* zip uploads
+    straight in; per-day medians fold into the baselines chronologically —
+    resting heart rate, HRV, oxygen, respiration, temperature — so months
+    of history the watch already recorded become an **established baseline
+    on day one** instead of five quiet days of "learning". History is
+    context, not news: the seed writes no events and raises no check-ins,
+    and raw heart-rate records without the sedentary motion context are
+    excluded so exercise never teaches the bands a resting rate that
+    isn't. Oxygen's fraction becomes a percent; `degF` becomes °C.
+  - The new `watch_channels` table stores the drip token in the clear —
+    deliberately, against the house never-return-the-secret rule — because
+    this credential can only deposit readings and the setup screen must
+    keep showing the URL for a person retyping it into a Shortcut weeks
+    later. The comment on the table says so.
+
+### Changed
+
+- Version aligned to 0.6.0 across the API, the desktop app and the Python
+  package — cut together with qrme and pdi at this version.
+
 ## [0.5.0] — 2026-07-29
 
 ### Added
@@ -1207,7 +1247,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.5.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.6.0...HEAD
+[0.6.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.6.0
 [0.5.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.5.0
 [0.4.8]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.8
 [0.4.7]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.7

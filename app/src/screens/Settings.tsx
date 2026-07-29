@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, getBase, getLlmKey, setBase, setLlmKey, type PairInfo } from "../api";
+import { api, getBase, getLlmKey, setBase, setLlmKey, type PairInfo, type SeedReport, type WatchChannel } from "../api";
 import { ProviderTiles } from "../ProviderTiles";
 import { say } from "../speech";
 import { useSession } from "../store";
@@ -35,6 +35,8 @@ export function Settings() {
       <ModelPanel />
 
       <VoicePanel />
+
+      <WatchPanel />
 
       <MailPanel />
 
@@ -293,6 +295,92 @@ function VoicePanel() {
         </button>
       )}
       {note && <div className="muted small">{note}</div>}
+      {error && <div className="error">⚠ {error}</div>}
+    </div>
+  );
+}
+
+function WatchPanel() {
+  const { session } = useSession();
+  const [ch, setCh] = useState<WatchChannel | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [report, setReport] = useState<SeedReport | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  function load() {
+    if (!session.userId || !session.userToken) return;
+    api.getWatchChannel(session.userId, session.userToken)
+      .then(setCh).catch(() => setCh(null));
+  }
+  useEffect(load, [session.userId]);
+
+  if (!session.userId || !session.userToken) return null;
+
+  async function rotate() {
+    setBusy(true); setError(null);
+    try { setCh(await api.rotateWatchChannel(session.userId!, session.userToken!)); }
+    catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  async function upload(file: File) {
+    setBusy(true); setError(null); setReport(null);
+    try {
+      setReport(await api.seedWatchExport(session.userId!, session.userToken!, file));
+      load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="card">
+      <h3>Apple Watch</h3>
+      <p className="muted small">
+        No app to install. An iPhone <b>Shortcuts automation</b> drips readings
+        to the address below, and the Health app's <b>export</b> teaches JIM
+        your baseline from the history your watch already recorded.
+      </p>
+      {ch ? (<>
+        <label>Drip address (paste into the Shortcut)
+          <input readOnly value={ch.drip_url} onFocus={(e) => e.currentTarget.select()} />
+        </label>
+        <div className="actions">
+          <button className="primary" onClick={() => {
+            navigator.clipboard?.writeText(ch.drip_url);
+            setCopied(true); setTimeout(() => setCopied(false), 1500);
+          }}>{copied ? "Copied ✓" : "Copy address"}</button>
+          <button disabled={busy} onClick={rotate}>New address</button>
+        </div>
+        <div className="muted small" style={{ marginTop: 8 }}>
+          {ch.drips > 0
+            ? <>Received <b>{ch.drips}</b> reading{ch.drips === 1 ? "" : "s"} · last {ch.last_drip_at ? new Date(ch.last_drip_at).toLocaleString() : "—"}</>
+            : "Nothing has arrived yet — run the Shortcut once by hand to test it."}
+        </div>
+        <details style={{ marginTop: 10 }}>
+          <summary className="muted small">Set up the Shortcut (one time)</summary>
+          <ol className="muted small">
+            {ch.shortcut.map((s, i) => <li key={i}>{s}</li>)}
+          </ol>
+        </details>
+        <div style={{ marginTop: 12 }}>
+          <label>Seed the baseline from a Health export
+            <input type="file" accept=".zip,.xml" disabled={busy}
+                   onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          </label>
+          <div className="muted small">{ch.seed_hint}</div>
+        </div>
+        {report && (
+          <div className="muted small" style={{ marginTop: 8 }}>
+            {Object.entries(report.seeded).map(([metric, r]) => (
+              <div key={metric}>
+                <b>{metric.replace(/_/g, " ")}</b>: {r.days} day{r.days === 1 ? "" : "s"} folded,
+                baseline {r.baseline}{r.provisional ? " (still learning)" : " — established"}
+              </div>
+            ))}
+          </div>
+        )}
+      </>) : <div className="muted small">Sign in to mint your drip address.</div>}
       {error && <div className="error">⚠ {error}</div>}
     </div>
   );

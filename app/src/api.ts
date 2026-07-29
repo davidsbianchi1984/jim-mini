@@ -101,6 +101,13 @@ export interface PairInfo {
   console_url: string; api_url: string; console_built: boolean;
   qr_svg: string; how: string[]; note: string;
 }
+export interface WatchChannel {
+  drip_url: string; last_drip_at: string | null; drips: number;
+  shortcut: string[]; seed_hint: string;
+}
+export interface SeedReport {
+  seeded: Record<string, { days: number; baseline: number; provisional: boolean }>;
+}
 
 export const api = {
   health: () => req<{ status: string; tandem: boolean; console?: boolean }>("/health"),
@@ -164,6 +171,30 @@ export const api = {
   transcribe: (audio_base64: string) =>
     req<{ text: string }>("/voice/transcribe",
       { method: "POST", body: { audio_base64 } }),
+
+  // The Apple Watch bridge: a Shortcuts automation drips readings at a
+  // tokened URL; the Health app's export seeds the baseline from history.
+  getWatchChannel: (uid: string, token: string) =>
+    req<WatchChannel>(`/watch/channel/${uid}`, { token }),
+  rotateWatchChannel: (uid: string, token: string) =>
+    req<WatchChannel>(`/watch/channel/${uid}/rotate`, { method: "POST", token }),
+  seedWatchExport: async (uid: string, token: string, file: File) => {
+    // The export.zip goes up as raw bytes — req() would JSON-encode it.
+    const res = await fetch(getBase() + `/watch/seed/${uid}`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}` },
+      body: file,
+    });
+    const text = await res.text();
+    let data: unknown = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+    if (!res.ok) {
+      const body = data as { detail?: unknown } | null;
+      const d = (body && body.detail) || text.trim() || res.statusText;
+      throw new Error(typeof d === "string" ? d : JSON.stringify(d));
+    }
+    return data as SeedReport;
+  },
 
   // Mail settings: what makes verification emails real instead of a line in
   // a log file. The password goes up; it never comes back down.

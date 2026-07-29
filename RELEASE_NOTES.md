@@ -1,64 +1,50 @@
-# JIM-mini v0.5.0 — release notes
+# JIM-mini v0.6.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.5.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.6.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.5.0** — the round where JIM notices, speaks, and lets you
-choose who is thinking. One of three interoperating products, all three
-cut together at this version.
+**JIM-mini v0.6.0** — the round where the Apple Watch found its way in.
+One of three interoperating products, all three cut together at this
+version.
 
-### A threshold around your baseline, not around a textbook
+### Your watch reaches JIM — no App-Store app required
 
-A baseline is only useful if something happens when you leave it. JIM now
-keeps a **personal drift band** for every metric it tracks — heart rate,
-resting heart rate, HRV, blood oxygen, respiratory rate, body temperature
-— expressed as a distance from *your* learned baseline rather than a
-population range.
+HealthKit only talks to apps installed from the App Store, and JIM does
+not have one. But every iPhone ships two free doors out, and **Settings →
+Apple Watch** now opens both:
 
-Each band has a low edge and a high edge, and each edge can be watched or
-ignored: HRV and blood oxygen only watch the low side by default, because
-a high number there is good news. **Settings → Baseline** shows every band
-with a slider, the current baseline, and how many samples it rests on. A
-band whose baseline is still provisional says *learning* and stays quiet —
-JIM will not raise a threshold against a number it has barely seen.
+**The drip.** A Shortcuts personal automation — built once, from the
+numbered recipe on the setup card — POSTs Health readings to your personal
+drip address on a schedule. Every arrival runs the full pipeline:
+detection, your drift bands, escalation — exactly as if you had typed the
+numbers yourself. The payload is forgiving on purpose: `heart_rate`,
+`heartRate`, `"72 count/min"`, oxygen as HealthKit's fraction or a typed
+percent — all one reading.
 
-When a reading crosses a watched edge, the check-in is a question, not a
-verdict: what crossed, which direction, by how much, and *"How have you
-been feeling?"* One sensitivity dial — cautious, balanced, assertive —
-widens or narrows every band at once.
+The drip address is deposit-only. Its reply is a count and a noticed flag,
+never guidance — a credential that rides in a URL must not be able to read
+health information back out. If the address ever leaks, **New address**
+retires it in one tap.
 
-### Talking to JIM out loud
-
-The coach screen has a **microphone** and a **read-aloud** button. Speak a
-question, JIM transcribes it, answers it, and speaks the answer back. Type
-it instead and it stays quiet — the reply is spoken only when the question
-was.
-
-Voice is a provider layer like everything else: **ElevenLabs** (male
-voices first — Daniel is the default, with Adam, Josh, Arnold and George)
-or **OpenAI** (onyx, echo). Choose the service and the voice in
-**Settings → Voice**, or configure nothing and the app falls back to the
-browser's own speech, preferring a male voice where the system offers one.
-The key is stored on the machine it was typed on and is never returned by
-the API.
-
-### Pick your model, by its own logo
-
-The model picker is no longer a dropdown of strings. **Settings → Model**
-shows a tile per provider — Claude, ChatGPT, Grok, Perplexity, Gemini —
-each with its own glyph, drawn here rather than copied, so you can see at
-a glance which one is answering and switch with one click. *Auto* stays
-available for "whichever is configured."
+**The seed.** The Health app already holds months of what your watch
+recorded. Export it (Health → your picture → *Export All Health Data*),
+upload the zip, and per-day medians fold into your baselines
+chronologically — resting heart rate, HRV, oxygen, respiration,
+temperature. **Your baseline is established on day one** instead of five
+quiet days of "learning", and the drift bands arm the same afternoon.
+History is context, not news: the seed writes no events and raises no
+check-ins, and exercise heart-rate readings are excluded by motion context
+so a workout never teaches the bands a resting rate that isn't.
 
 ### Verification
 
-585 tests green, including that a provisional baseline raises nothing,
-that assertive narrows the band while cautious widens it, that an ignored
-edge is never reported, that the voice key never comes back out of the
-API, and that an unconfigured voice service degrades to browser speech
-instead of failing the request.
+604 tests green, including that a seeded history raises not a single
+event, that the drip reply carries no guidance or identity, that a rotated
+address stops working immediately, that a wrong token is a 404 rather than
+a confirmation, that exercise readings never reach the resting baseline,
+and that a seeded baseline arms the drift bands the same day.
 
 ### Install
 

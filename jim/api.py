@@ -17,7 +17,7 @@ from . import (accounts, app_connectors, auth, bands, beacons, catalog,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
                rota, social, storage, terms as terms_mod, tiers, tutorial,
-               voice)
+               voice, watch)
 from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
@@ -59,7 +59,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.5.0",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.6.0",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -81,6 +81,14 @@ def create_app(qrme_client: QRMEClient | None = None,
             "billing": "simulated — no real funds move",
             "emergency_unaffected": True,
         })
+
+    # The watch bridge speaks in refusals a Shortcut author can act on —
+    # carry the status it chose (404 wrong channel, 422 unusable payload).
+    @app.exception_handler(watch.WatchError)
+    def _watch_refusal(request: Request, exc: watch.WatchError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=exc.status,
+                            content={"detail": exc.message})
 
     # Optional CORS for a packaged guardian-console front-end (app/) calling the
     # API from another origin. Off by default; set JIM_CORS_ORIGINS to a
@@ -897,6 +905,41 @@ def create_app(qrme_client: QRMEClient | None = None,
     def events(user_id: str, request: Request) -> list[dict]:
         _user_or_404(user_id, request)
         return guardian.events(user_id)
+
+    # -- the Apple Watch bridge (jim/watch.py) ------------------------------
+    # Readings reach JIM from an iPhone with no App-Store app: a Shortcuts
+    # automation drips live samples at a tokened URL, and the Health app's
+    # export.zip seeds the baseline from history the watch already recorded.
+
+    @app.get("/watch/channel/{user_id}")
+    def watch_channel(user_id: str, request: Request) -> dict:
+        """The setup card: drip URL, Shortcut recipe, arrivals so far."""
+        _user_or_404(user_id, request)
+        base = mobile.pairing(port=request.url.port or 8000)["api_url"]
+        return watch.setup(user_id, base)
+
+    @app.post("/watch/channel/{user_id}/rotate")
+    def watch_rotate(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        watch.rotate(user_id)
+        base = mobile.pairing(port=request.url.port or 8000)["api_url"]
+        return watch.setup(user_id, base)
+
+    @app.post("/watch/drip/{token}")
+    def watch_drip(token: str, payload: dict) -> dict:
+        """The Shortcut's POST. The token in the path is the whole
+        credential — see jim/watch.py for why the reply carries counts and
+        nothing else."""
+        return watch.drip(token, payload, qrme=app.state.qrme,
+                          vault_for=_vault)
+
+    @app.post("/watch/seed/{user_id}")
+    async def watch_seed(user_id: str, request: Request) -> dict:
+        """Upload the Health app's export.zip (or bare export.xml) as the
+        request body. History folds into baselines only — no events, no
+        check-ins; enrollment day should be quiet."""
+        _user_or_404(user_id, request)
+        return watch.seed(user_id, await request.body())
 
     def _public_base() -> str:
         return os.environ.get("JIM_PUBLIC_URL", "https://jim.app").rstrip("/")
