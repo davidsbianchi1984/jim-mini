@@ -252,3 +252,24 @@ def test_seeded_history_arms_the_drift_bands(client):
     client.post(f"/watch/seed/{u['id']}", headers=_auth(u), content=xml)
     crossings = watch.drip(watch.channel(u["id"])["token"], {"hrv": 20})
     assert crossings["noticed"] is True        # the drop from 45 was seen
+
+
+def test_the_setup_card_tells_the_truth_about_reachability(client, monkeypatch):
+    """A loopback-bound backend serves a Wi-Fi URL nothing answers on; the
+    card must say so rather than hand a phone a dead address."""
+    u = _enroll(client)
+    monkeypatch.delenv("JIM_HOST", raising=False)
+    card = client.get(f"/watch/channel/{u['id']}", headers=_auth(u)).json()
+    assert card["phone_reachable"] is False
+    monkeypatch.setenv("JIM_HOST", "0.0.0.0")
+    card = client.get(f"/watch/channel/{u['id']}", headers=_auth(u)).json()
+    assert card["phone_reachable"] is True
+
+
+def test_the_recipe_names_the_paste_spot(client):
+    """The field the drip address goes into is the one question every
+    first-time user asks; the recipe answers it in capitals."""
+    u = _enroll(client)
+    card = client.get(f"/watch/channel/{u['id']}", headers=_auth(u)).json()
+    assert any("Get Contents of URL" in step and "THIS is where it goes"
+               in step for step in card["shortcut"])

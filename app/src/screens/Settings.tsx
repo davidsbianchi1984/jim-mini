@@ -339,6 +339,22 @@ function WatchPanel() {
     finally { setBusy(false); }
   }
 
+  function desktop(): boolean {
+    return Boolean((window as { jimDesktop?: { setLanAccess?: unknown } }).jimDesktop?.setLanAccess);
+  }
+
+  async function enableLan() {
+    setBusy(true); setError(null);
+    try {
+      const bridge = (window as unknown as { jimDesktop: { setLanAccess: (on: boolean) => Promise<unknown> } }).jimDesktop;
+      await bridge.setLanAccess(true);
+      // The backend restarted on the new interface; give it a beat, reload.
+      await new Promise((r) => setTimeout(r, 1500));
+      load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
   async function upload(file: File) {
     setBusy(true); setError(null); setReport(null);
     try {
@@ -357,7 +373,35 @@ function WatchPanel() {
         your baseline from the history your watch already recorded.
       </p>
       {ch ? (<>
-        <label>Drip address (paste into the Shortcut)
+        {/* The truth about the address below: a loopback-bound backend
+            serves a Wi-Fi URL nothing answers on. On the desktop the fix
+            is one switch away; elsewhere, the card says what to run. */}
+        {!ch.phone_reachable && (
+          <div className="degraded">
+            ⚠ Your phone can't reach this address yet — JIM is only
+            listening on this computer.
+            {desktop() ? (
+              <div style={{ marginTop: 8 }}>
+                <button className="primary" disabled={busy} onClick={enableLan}>
+                  Let my phone reach JIM on this Wi-Fi
+                </button>
+                <div className="muted small" style={{ marginTop: 6 }}>
+                  Restarts JIM listening on your network. Windows may ask to
+                  allow it through the firewall — say yes. Everything personal
+                  still requires your sign-in.
+                </div>
+              </div>
+            ) : (
+              <div className="muted small" style={{ marginTop: 6 }}>
+                Start the backend with network access: python -m jim phone
+              </div>
+            )}
+          </div>
+        )}
+        {ch.phone_reachable && (
+          <div className="muted small">✓ Reachable from your phone on this Wi-Fi.</div>
+        )}
+        <label>Drip address (paste into the Shortcut's “Get Contents of URL” field)
           <input readOnly value={ch.drip_url} onFocus={(e) => e.currentTarget.select()} />
         </label>
         <div className="actions">

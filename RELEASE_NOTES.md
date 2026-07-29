@@ -1,55 +1,41 @@
-# JIM-mini v0.9.0 — release notes
+# JIM-mini v0.9.1 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.9.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.9.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.9.0** — the medicine cabinet. One of three interoperating
-products, all three cut together at this version.
+**JIM-mini v0.9.1** — the drip address now answers. One of three
+interoperating products, all three cut together at this version.
 
-### What you take, in your words
+### The bug, as reported
 
-A new **Medications** screen. Add what you take exactly as you'd say it —
-*"the little white one, 10 mg"* is a valid name and dose — with a
-schedule (8:00 and 20:00) or as-needed, what it's for, and whether
-missing it is worth a check-in.
+The Apple Watch panel handed out a Wi-Fi drip address
+(`http://192.168.x.x:8000/…`) — but the desktop app's bundled backend
+listened only on the computer itself. A phone POSTing to that address got
+"could not connect", and the card never said so.
 
-### A board with humane grace
+### What 0.9.1 does
 
-The day's board knows **done, due, later, and missed** — and it is
-generous on purpose: 9:07 is not "missed" for the 8:00 pill, because a
-board that scolds seven minutes teaches you to ignore it. One tap takes
-or skips; one slot has exactly one answer and it's correctable — skipped
-becomes taken when you find the pill in your pocket. Adherence bars cover
-whole past days only, so an afternoon dose is never counted against you
-at noon.
-
-### The lines it will not cross
-
-- An as-needed ceiling **refuses to log past itself** — it won't record
-  the fourth ibuprofen of a three-max day; it points at your prescriber
-  instead. Recording the overage would be complicity.
-- A missed dose — even one marked critical — is a **question, never an
-  alarm**: an amber note on the board and a gentle line in the coach's
-  awareness ("worth asking about, never scolding"). There is no path from
-  this feature into the escalation ladder.
-- **JIM is not a pharmacist.** There is no interaction checker, because a
-  toy one would be trusted; the board says on its face that interactions
-  are your pharmacist's call.
-
-### And it keeps watch
-
-Every dose you log is a sign of life the vigil counts — for someone whose
-only daily interaction is their pillbox, taking their medication quietly
-keeps the steward unalarmed.
+- **The card tells the truth.** If your phone can't reach the address
+  yet, an amber notice says so — instead of letting you build a Shortcut
+  against a dead URL.
+- **One press opens the door**: *"Let my phone reach JIM on this
+  Wi-Fi"* restarts the backend listening on your network, permanently
+  until you turn it off. Loopback stays the default — private until
+  asked. Windows may ask once to allow it through the firewall; say yes.
+  Everything personal behind the port still requires your sign-in.
+- **The recipe names the paste spot**: the drip address goes into the
+  Shortcut's **Get Contents of URL → URL** field — the step now says THIS
+  in capitals. And it no longer promises an hourly trigger Shortcuts
+  doesn't have: use Time of Day, repeat daily (add an evening automation
+  if you like).
 
 ### Verification
 
-630 tests green, including that the ceiling refuses rather than records,
-that a skipped dose can become taken, that a missed critical dose writes
-no escalation event, that adherence never counts the unfinished day, and
-that logging a dose stands a tripped vigil down.
+632 tests green, including that the setup card reports unreachable on a
+loopback bind and reachable on a network bind, and that the recipe names
+the paste spot.
 
 ### Install
 

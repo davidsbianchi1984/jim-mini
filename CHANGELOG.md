@@ -6,6 +6,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.9.1] — 2026-07-29
+
+### Fixed
+
+- **The drip address is now an address something answers on** (Settings →
+  *Apple Watch*; `app/electron/main.cjs`, `packaging/backend_entry.py`,
+  `jim/watch.py`). Reported from the field: the setup card showed the
+  machine's Wi-Fi address while the desktop backend listened only on
+  loopback — a phone POSTing to it got "could not connect", and the card
+  never said so.
+  - The card now tells the truth: `phone_reachable` rides the setup
+    response, and an amber notice explains when the phone cannot reach
+    the address yet.
+  - One press fixes it: **"Let my phone reach JIM on this Wi-Fi"**
+    restarts the bundled backend listening on the network
+    (`JIM_HOST=0.0.0.0`), persistently. Loopback remains the default —
+    private until asked, and asked in the exact place the need arises.
+    Everything per-user behind the port still requires that user's token.
+  - The Shortcut recipe now names the paste spot in capitals — the drip
+    address goes in **Get Contents of URL → URL** — and no longer
+    promises an hourly trigger Shortcuts doesn't have: Time of Day,
+    repeat daily, with a second automation for the evening if wanted.
+
+### Changed
+
+- Version aligned to 0.9.1 across the API, the desktop app and the Python
+  package — cut together with qrme and pdi at this version.
+
 ## [0.9.0] — 2026-07-29
 
 ### Added
@@ -1359,7 +1387,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.9.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.9.1...HEAD
+[0.9.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.9.1
 [0.9.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.9.0
 [0.8.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.8.0
 [0.7.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.7.0

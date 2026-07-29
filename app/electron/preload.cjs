@@ -14,4 +14,8 @@ contextBridge.exposeInMainWorld("jimDesktop", {
   // must not guess a port an older install's leftover process may hold.
   backendUrl: backendArg ? backendArg.split("=").slice(1).join("=") : null,
   openBackendLog: () => ipcRenderer.invoke("open-backend-log"),
+  // "Let my phone reach JIM on this Wi-Fi" — read and flip the loopback
+  // posture. Flipping restarts the spawned backend on the new interface.
+  lanAccess: () => ipcRenderer.invoke("lan-access"),
+  setLanAccess: (enabled) => ipcRenderer.invoke("set-lan-access", enabled),
 });

@@ -289,23 +289,41 @@ def setup(user_id: str, base_url: str) -> dict:
     steps live here rather than in the console so the phone-browser
     console, the desktop app, and anyone curl-ing the API read the same
     instructions."""
+    import os
+
+    from . import mobile as _mobile
     ch = channel(user_id)
     drip_url = f"{base_url.rstrip('/')}/watch/drip/{ch['token']}"
+    # The truth about whether a phone can actually reach that address: a
+    # loopback-bound backend serves a LAN URL nothing answers on. The
+    # desktop shell sets JIM_HOST when the user flips Wi-Fi access on;
+    # the CLI's phone/serve modes set it to how they actually bound.
+    reachable = (os.environ.get("JIM_HOST") == "0.0.0.0"
+                 or bool(_mobile.public_base()))
     return {
         "drip_url": drip_url,
+        "phone_reachable": reachable,
         "last_drip_at": ch["last_drip_at"],
         "drips": ch["drips"],
         "shortcut": [
-            "On the iPhone, open Shortcuts → Automation → New Automation.",
-            "Pick a schedule (every hour works well) and 'Run Immediately'.",
-            "Add action: Find Health Samples — Heart Rate, sorted latest, "
-            "limit 1.",
-            "Add action: Dictionary — key heart_rate, value: the Health "
-            "sample from the step above. Add blood_oxygen, "
-            "respiratory_rate the same way if the watch records them.",
-            "Add action: Get Contents of URL — paste the drip URL, method "
-            "POST, request body JSON: the Dictionary.",
-            "Run it once by hand; this screen shows the arrival.",
+            "On the iPhone, open the Shortcuts app → Automation tab → "
+            "+ New Automation.",
+            "Pick 'Time of Day' → a time you're usually up (say 9:00 AM) → "
+            "Repeat Daily → 'Run Immediately'. (Add a second automation at "
+            "an evening time later if you like — Shortcuts has no hourly "
+            "trigger.)",
+            "Choose 'New Blank Automation' → Add Action → search 'Find "
+            "Health Samples' → set type Heart Rate, sorted by Start Date "
+            "latest first, limit 1.",
+            "Add Action → 'Dictionary' → add key heart_rate, and for its "
+            "value pick the Health Samples variable from the step above. "
+            "Add blood_oxygen and respiratory_rate the same way if the "
+            "watch records them.",
+            "Add Action → 'Get Contents of URL' → paste the drip address "
+            "into the URL field (THIS is where it goes) → show more → "
+            "Method POST → Request Body JSON → add the Dictionary.",
+            "Tap the automation and Run it once by hand — this screen "
+            "shows the arrival.",
         ],
         "seed_hint": "Health app → your picture → Export All Health Data, "
                      "then upload the export.zip here. Months of watch "

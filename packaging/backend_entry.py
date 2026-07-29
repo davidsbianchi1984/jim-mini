@@ -10,9 +10,11 @@ Defaults are chosen for that launch and only that launch:
 
 * **CORS open** — the console calls from its own origin; without this every
   request dies as "Failed to fetch". Same posture as ``python -m jim serve``.
-* **Loopback only** — the spawned backend binds 127.0.0.1 and is not
-  reachable from the network. (Run ``python -m jim phone`` for that, on
-  purpose.)
+* **Loopback by default** — the spawned backend binds 127.0.0.1 and is
+  not reachable from the network, until the user flips "Let my phone
+  reach JIM on this Wi-Fi" in Settings → Apple Watch (the shell then
+  passes ``JIM_HOST=0.0.0.0`` and restarts it). Deliberate both ways:
+  private until asked, and asked in the exact place the need arises.
 * **Data under the app's user-data directory** — Electron passes ``JIM_DB``;
   an unset one falls back to the platform's per-user app-data location, so a
   double-clicked backend never scatters ``jim.db`` into whatever directory
@@ -53,14 +55,19 @@ def main() -> None:
     os.environ.setdefault("JIM_CORS_ORIGINS", "*")
     os.environ["JIM_DB"] = _default_db()
     port = int(os.environ.get("JIM_PORT", "8000"))
+    # Loopback unless the user flipped "Let my phone reach JIM on this
+    # Wi-Fi" in the app (the shell passes JIM_HOST=0.0.0.0 then). The watch
+    # drip and the phone console both need a network-reachable backend;
+    # everything per-user behind it still requires that user's token.
+    host = os.environ.get("JIM_HOST", "127.0.0.1")
 
     import uvicorn
 
     from jim.api import app
 
-    print(f"JIM Guardian backend — http://127.0.0.1:{port} "
+    print(f"JIM Guardian backend — http://{host}:{port} "
           f"(db: {os.environ['JIM_DB']})", flush=True)
-    uvicorn.run(app, host="127.0.0.1", port=port, log_level="info")
+    uvicorn.run(app, host=host, port=port, log_level="info")
 
 
 if __name__ == "__main__":
