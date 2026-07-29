@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Docs: suite mode enters the tandem contract.** `docs/tandem.md`
+(byte-identical across the three repos) now describes how the suite
+gateway wires both tandem joints itself — JIM's QRME client and QRME's
+vault tenant (`suite:qrme-vault`) — and how the operations provenance
+view re-draws PDI's per-tenant isolation by owner when every suite
+identity's seals share the one tenant.
+
 ## [0.14.1] — 2026-07-29
 
 **The coach knows a care plan landed.** One context line when the
