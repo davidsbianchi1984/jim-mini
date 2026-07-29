@@ -1,16 +1,15 @@
-# JIM-mini v0.14.0 — release notes
+# JIM-mini v0.14.1 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.14.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.14.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.14.0** — Home and the pane learn the care team.
+**JIM-mini v0.14.1** — the coach knows a care plan landed.
 
-The Overview's action row gains Medications and Care Team, and the
-corner pane gains a careteam face — whether a joint plan is waiting to
-be read, never its contents; plan text is guidance-shaped and stays off
-captured surfaces.
+The coach mentions a fresh joint plan the way it mentions missed pills:
+one line, the goal only, worth walking through together — never the
+plan text, never presented as homework, and silent after a week.
 
 ### Verification
 
