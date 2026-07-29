@@ -6,6 +6,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.1] — 2026-07-29
+
+### Fixed
+
+- **The coach no longer performs distress it never detected, and the reply
+  says who actually wrote it** (`jim/llm.py`, `jim/coach.py`, coach screen,
+  Settings → *Which model answers*). Reported from the field: a career
+  question got *"I'm here with you [stub guidance for distress]… let's take
+  one slow breath together"* — every time, word for word.
+  Three stacked causes, three fixes:
+  - The deterministic stub keyed on a `condition:` line that chat prompts
+    never carry and **defaulted to "distress"** — crisis phrasing in what
+    was just a conversation. In chat the stub now explains itself honestly
+    ("I'm the built-in offline helper… open Settings → Model") instead of
+    playing a counselor.
+  - Any model failure — missing key, missing SDK, network, a 529 —
+    **silently degraded to the stub with only a server-side log line**,
+    while the reply's `generated_by` named the provider that was *picked*,
+    not the one that answered. `llm.generate_for_user()` now reports who
+    actually produced the words, whether that was a degrade, and why in
+    words a user can act on; the coach reply carries it and the console
+    shows it — "Answered by anthropic", or an amber warning naming the
+    fallback and the reason.
+  - Settings said nothing in the worst case: **Automatic quietly resolving
+    to the stub** under a screen full of provider logos. The model panel
+    now says plainly when replies will come from the built-in helper and
+    what to do about it.
+
+### Changed
+
+- Version aligned to 0.6.1 across the API, the desktop app and the Python
+  package — cut together with qrme and pdi at this version.
+
 ## [0.6.0] — 2026-07-29
 
 ### Added
@@ -1247,7 +1280,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.6.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.6.1...HEAD
+[0.6.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.6.1
 [0.6.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.6.0
 [0.5.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.5.0
 [0.4.8]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.8

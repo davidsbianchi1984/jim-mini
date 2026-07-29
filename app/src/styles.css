@@ -179,3 +179,7 @@ button.danger { background: rgba(255,77,94,0.14) !important; color: var(--red) !
 button.mic { background: rgba(255,255,255,0.06); border: 1px solid var(--line);
   border-radius: 999px; padding: 10px 16px; font-weight: 600; color: var(--txt); }
 button.mic.listening { background: rgba(248,81,73,0.18); border-color: var(--red, #f85149); }
+
+/* An honest amber: the reply arrived, but not from who the user picked.
+   Distinct from .error (red) — nothing failed to deliver; it degraded. */
+.degraded { background: rgba(255,184,60,0.10); color: #ffb83c; border: 1px solid rgba(255,184,60,0.5); border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 10px 0; }

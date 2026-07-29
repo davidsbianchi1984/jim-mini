@@ -86,6 +86,18 @@ export function Coach() {
         <div className="card guidance">
           <div className="guidance-src">{area.replace("_", " ")} · guidance</div>
           <p>{reply.content}</p>
+          {/* Who actually answered. When the model layer degraded, say so in
+              amber — canned fallback text presented as the chosen model is a
+              lie the user has no way to detect from the words alone. */}
+          {reply.provenance?.degraded ? (
+            <div className="degraded">
+              ⚠ This is the built-in fallback, not {" "}
+              {reply.provenance.generated_by === "stub" ? "an online model" : reply.provenance.generated_by} —{" "}
+              {reply.provenance.degraded_reason || "the model could not be reached"}.
+            </div>
+          ) : reply.provenance?.generated_by && reply.provenance.generated_by !== "stub" && (
+            <div className="muted small">Answered by {reply.provenance.generated_by}</div>
+          )}
         </div>
       )}
     </div>

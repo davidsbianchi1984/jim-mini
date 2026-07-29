@@ -150,12 +150,28 @@ class GeminiProvider:
 
 class StubProvider:
     def generate(self, system: str, user: str) -> str:
-        label = _extract(system, "condition: ") or "distress"
+        label = _extract(system, "condition: ")
+        tone = _extract(system, "tone: ")
+        if label is None:
+            # No condition line means this is conversation — coaching, a
+            # check-in — not the medical-guidance path. The stub used to
+            # answer chat with crisis language ("stub guidance for
+            # distress... one slow breath together"), which read as the
+            # coach diagnosing distress that was never there. In chat the
+            # only honest stub reply is an explanation of itself. (The tone
+            # marker still rides along — it is how tests prove personality
+            # reaches the prompt.)
+            text = (
+                "I'm the built-in offline helper, so I can't give you a real "
+                "coaching reply — no online model answered this request. "
+                "Your message is saved. To get full answers, open Settings → "
+                "Model, pick a provider, and add its API key."
+            )
+            return text + (f" (tone: {tone})" if tone else "")
         text = (
             f"I'm here with you. [stub guidance for {label}] "
             "Let's take one slow breath together, and tell me what feels most urgent."
         )
-        tone = _extract(system, "tone: ")
         if tone:
             text += f" (tone: {tone})"
         return text
@@ -163,19 +179,29 @@ class StubProvider:
 
 class FallbackProvider:
     """Degrade any network provider to a local fallback (the stub) on failure,
-    logging the degrade. A health app must never go dark on a model outage."""
+    logging the degrade. A health app must never go dark on a model outage.
+
+    The degrade is recorded on the instance (``answered_by``, ``failure``) so
+    a caller can tell the user the truth about who actually answered —
+    a log line the user will never read is not disclosure."""
 
     def __init__(self, name: str, primary: Provider, fallback: Provider) -> None:
         self.name = name
         self._primary = primary
         self._fallback = fallback
+        self.answered_by = name
+        self.failure: str | None = None
 
     def generate(self, system: str, user: str) -> str:
         try:
-            return self._primary.generate(system, user)
+            text = self._primary.generate(system, user)
+            self.answered_by, self.failure = self.name, None
+            return text
         except Exception as exc:  # noqa: BLE001
             logger.warning("provider %s failed, using local fallback: %s",
                            self.name, exc)
+            self.answered_by = "stub"
+            self.failure = f"{self.name} did not answer: {exc}"
             return self._fallback.generate(system, user)
 
 
@@ -335,6 +361,44 @@ def set_choice(user_id: str, provider: str) -> str:
 
 def provider_for_user(user_id: str, cloud=None) -> Provider:
     return get_provider(cloud=cloud, choice=get_choice(user_id))
+
+
+def generate_for_user(user_id: str, system: str, user: str, cloud=None) -> dict:
+    """Generate a reply and report honestly who produced the words.
+
+    ``provider_for_user().generate()`` answers, but it cannot say *who*
+    answered: a network failure, a missing key or a missing SDK all degrade
+    to the stub with only a server-side log line — so a user whose Claude
+    was never reachable saw stub text under a screen that said Claude.
+    This wrapper is the disclosure: ``provider`` is whoever actually
+    generated the text, ``degraded`` says it wasn't who they meant, and
+    ``reason`` says why in words a user can act on.
+    """
+    choice = get_choice(user_id)
+    intended = resolve_choice(choice)
+    provider = get_provider(cloud=cloud, choice=choice)
+    text = provider.generate(system, user)
+
+    actual, reason = intended, None
+    if isinstance(provider, FallbackProvider):
+        actual, reason = provider.answered_by, provider.failure
+    elif isinstance(provider, StubProvider):
+        actual = "stub"
+
+    degraded = actual == "stub" and choice != "stub"
+    if degraded and reason is None:
+        if _offline():
+            reason = "offline mode is on, so no request leaves this machine"
+        elif choice != "auto":
+            reason = (f"{choice} has no API key on this machine — add one "
+                      "in Settings → Model")
+        elif intended == "stub":
+            reason = ("no online model is configured on this machine — add "
+                      "an API key in Settings → Model")
+        else:
+            reason = f"{intended} could not start on this machine"
+    return {"text": text, "provider": actual, "degraded": degraded,
+            "reason": reason}
 
 
 def _extract(text: str, marker: str) -> str | None:

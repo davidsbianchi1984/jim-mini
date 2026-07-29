@@ -54,7 +54,8 @@ def reply(user_id: str, area: str, message: str) -> dict:
     system += personalize(guardian.get_user(user_id))
     language = i18n.effective_language(user_id)
     system += i18n.directive(language)
-    text = llm.provider_for_user(user_id).generate(system, message)
+    gen = llm.generate_for_user(user_id, system, message)
+    text = gen["text"]
 
     safe = not _DENY.search(text)
     conn = db.connect()
@@ -81,7 +82,13 @@ def reply(user_id: str, area: str, message: str) -> dict:
                 "method": "model-generated coaching grounded in this user's "
                           "own check-ins and goals — general habits advice, "
                           "not professional counsel",
-                "generated_by": llm.resolve_choice(llm.get_choice(user_id)),
+                # Who actually answered — not who was picked. The distinction
+                # is the whole point: a silent degrade to the stub under a
+                # screen that says Claude is how a founder demos canned text
+                # to their testers without knowing it.
+                "generated_by": gen["provider"],
+                "degraded": gen["degraded"],
+                "degraded_reason": gen["reason"],
                 "evidence": [],
                 "disclaimer": "For medical, legal, or investment decisions, "
                               "consult a qualified professional.",

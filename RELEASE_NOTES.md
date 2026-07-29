@@ -1,50 +1,55 @@
-# JIM-mini v0.6.0 — release notes
+# JIM-mini v0.6.1 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.6.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.6.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.6.0** — the round where the Apple Watch found its way in.
-One of three interoperating products, all three cut together at this
-version.
+**JIM-mini v0.6.1** — the round where the coach stopped performing distress
+it never detected. One of three interoperating products, all three cut
+together at this version.
 
-### Your watch reaches JIM — no App-Store app required
+### The bug, as reported
 
-HealthKit only talks to apps installed from the App Store, and JIM does
-not have one. But every iPhone ships two free doors out, and **Settings →
-Apple Watch** now opens both:
+A career question — *"I want this app I built to be successful"* — was
+answered with *"I'm here with you [stub guidance for distress]… let's take
+one slow breath together."* Every time. Word for word.
 
-**The drip.** A Shortcuts personal automation — built once, from the
-numbered recipe on the setup card — POSTs Health readings to your personal
-drip address on a schedule. Every arrival runs the full pipeline:
-detection, your drift bands, escalation — exactly as if you had typed the
-numbers yourself. The payload is forgiving on purpose: `heart_rate`,
-`heartRate`, `"72 count/min"`, oxygen as HealthKit's fraction or a typed
-percent — all one reading.
+### What was actually wrong
 
-The drip address is deposit-only. Its reply is a count and a noticed flag,
-never guidance — a credential that rides in a URL must not be able to read
-health information back out. If the address ever leaks, **New address**
-retires it in one tap.
+Three things, stacked:
 
-**The seed.** The Health app already holds months of what your watch
-recorded. Export it (Health → your picture → *Export All Health Data*),
-upload the zip, and per-day medians fold into your baselines
-chronologically — resting heart rate, HRV, oxygen, respiration,
-temperature. **Your baseline is established on day one** instead of five
-quiet days of "learning", and the drift bands arm the same afternoon.
-History is context, not news: the seed writes no events and raises no
-check-ins, and exercise heart-rate readings are excluded by motion context
-so a workout never teaches the bands a resting rate that isn't.
+1. When no online model answers, JIM falls back to a deterministic
+   built-in helper (so a health app never goes dark). That helper's script
+   was written for the *medical guidance* path and **defaulted to
+   "distress"** when chat gave it no condition — crisis phrasing in what
+   was just a conversation.
+2. Any model failure — a missing key, a network error, an overloaded
+   provider — **degraded silently**. The only record was a server-side log
+   line, and the reply's provenance named the model you *picked*, not the
+   one that answered. Canned text under Claude's name.
+3. Settings said nothing in the worst case: *Automatic* quietly resolving
+   to the built-in helper, under a screen full of provider logos.
+
+### What 0.6.1 does about it
+
+- In chat, the built-in helper now **explains itself honestly**: it says it
+  is the offline fallback, that your message is saved, and exactly where to
+  add a key — instead of playing a counselor.
+- Every coach reply **names who actually wrote it**. A real model answer
+  shows "Answered by anthropic"; a degrade shows an amber warning naming
+  the fallback and the reason ("anthropic did not answer: …", "no API key
+  on this machine — add one in Settings → Model").
+- **Settings → Which model answers** now says plainly when replies will
+  come from the built-in helper, and what to do about it.
 
 ### Verification
 
-604 tests green, including that a seeded history raises not a single
-event, that the drip reply carries no guidance or identity, that a rotated
-address stops working immediately, that a wrong token is a 404 rather than
-a confirmation, that exercise readings never reach the resting baseline,
-and that a seeded baseline arms the drift bands the same day.
+609 tests green, including that the reply's `generated_by` is the provider
+that produced the words rather than the one that was picked, that a
+mid-request failure is disclosed with its reason, that chat stub text
+contains no crisis language, and that choosing the offline helper on
+purpose is not reported as a degrade.
 
 ### Install
 
