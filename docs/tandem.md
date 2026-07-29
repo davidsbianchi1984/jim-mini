@@ -266,6 +266,37 @@ infrastructure layer they integrate with when deployed in a private
 environment. Every vault access lands in PDI's hash-chained audit log, and
 `GET /audit/verify` detects any retroactive edit.
 
+### Suite mode — the gateway wires the tandems itself **[implemented]**
+
+Standalone, each tandem is the operator's configuration (`JIM_QRME_URL`,
+`QRME_PDI_URL` + tokens). Behind the suite gateway (`suite/gateway.py` in the
+qrme repo) all three apps share one process, so the gateway wires both joints
+at startup:
+
+- **jim → qrme**: JIM's `QRMEClient` bridges to the mounted QRME app
+  in-process — the care team and the specialist handoffs work with no second
+  server and no `JIM_QRME_URL`.
+- **qrme → pdi**: the gateway finds (or mints once, by name) a dedicated
+  vault tenant, `suite:qrme-vault`, and injects QRME's own `PDIClient` over
+  the same in-process bridge — so coordinations seal in suite mode instead of
+  quietly not. The tenant token is a **deployment credential** (exactly what
+  `QRME_PDI_TOKEN` is standalone), held in-process and never returned to any
+  caller. A deployment that already configured `QRME_PDI_URL` keeps its own
+  wiring, and a PDI running with `PDI_ADMIN_TOKEN` refuses the self-mint —
+  the operator configures the tenant explicitly, as they would standalone.
+
+`GET /suite/health` reports both joints (`tandems.jim_qrme`,
+`tandems.qrme_pdi`); false means that joint runs degraded — no care team, no
+sealing — not that a product is down.
+
+Because every suite identity's coordination seals share the one tenant, the
+per-tenant isolation PDI provides standalone has to be **re-drawn by owner**
+at the gateway: `POST /suite/operations` authenticates with the caller's own
+QRME owner token, collects the ids of *their* coordinations from QRME, and
+returns only the vault journal entries that are theirs. The journal read
+itself still runs through PDI's ordinary audited path — the scoping narrows
+what the caller sees, never how the vault is read.
+
 ## pdi ✕ qrme — the agent at the gate
 
 A custody beacon can go on a carrier — a records box, a decommissioned drive,
