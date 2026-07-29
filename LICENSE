@@ -1,21 +1,25 @@
-MIT License
+Proprietary License — All Rights Reserved
 
 Copyright (c) 2026 David Bianchi
 
-Permission is hereby not granted until signed off on paper by David Bianchi and any other party interested in using must be noterised. Reguarding any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software, its source code, documentation, designs, screen layouts,
+and associated files (the "Software") are the property of David Bianchi.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+No permission is granted — and none shall be implied from the public
+availability of this repository — to use, copy, modify, merge, publish,
+distribute, sublicense, sell, or create derivative works of the Software,
+or to reimplement its distinctive processes and designs, in whole or in
+part, except under a written agreement signed by David Bianchi and the
+receiving party, with signatures notarized.
+
+This repository is published for reference, evaluation by invited testers,
+and as a dated public record of authorship and priority of invention
+(see docs/invention-disclosure.md). Publication is not a license.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+AUTHOR OR COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
