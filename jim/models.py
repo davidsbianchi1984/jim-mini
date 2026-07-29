@@ -104,6 +104,20 @@ class ResendCode(BaseModel):
     email: str
 
 
+class MailSettings(BaseModel):
+    """Where this deployment sends mail through (jim/mailer.py)."""
+    host: str
+    port: int = 587
+    username: str | None = None
+    password: str | None = None
+    sender: str | None = None
+    public_url: str | None = None    # what verification links point at
+
+
+class MailTest(BaseModel):
+    to: str
+
+
 class ResetRequest(BaseModel):
     email: str
 

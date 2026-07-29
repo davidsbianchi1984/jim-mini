@@ -11,6 +11,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
 from . import (accounts, app_connectors, auth, beacons, catalog, coach,
+               mailer,
                contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
@@ -26,7 +27,8 @@ from .models import (
     GuidanceFeedback, HabitCreate,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
-    LanguageChoice, LocalitySet, MicAttach, MicGain, MicHandover,
+    LanguageChoice, LocalitySet, MailSettings, MailTest,
+    MicAttach, MicGain, MicHandover,
     ReferralPrepare, ResendCode, ResetPassword, ResetRequest, RobotCommand,
     SignIn, Signup,
     TranslateRequest, VerifyEmail, WaiverSign,
@@ -53,7 +55,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.4.7",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.4.8",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -412,6 +414,54 @@ def create_app(qrme_client: QRMEClient | None = None,
             title="✓ Verified",
             body="Your account is active. Go back to JIM Guardian — "
                  "it will continue on its own."))
+
+    # ---- where this deployment sends mail through -------------------------
+
+    @app.get("/settings/mail")
+    def get_mail_settings() -> dict:
+        """The mail configuration, never its password. Until a host is set,
+        no verification email can be sent to anybody — which is why local
+        signup does not wait for one."""
+        return mailer.describe_settings()
+
+    @app.put("/settings/mail",
+             dependencies=[Depends(auth.require_signup_key)])
+    def put_mail_settings(body: MailSettings) -> dict:
+        """Point this deployment at a mail server, from the app itself.
+        Environment variables still win when set."""
+        try:
+            return mailer.save_settings(
+                host=body.host, port=body.port, username=body.username or "",
+                password=body.password or "", sender=body.sender or "",
+                public_url=body.public_url or "")
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/settings/mail",
+                dependencies=[Depends(auth.require_signup_key)])
+    def delete_mail_settings() -> dict:
+        """Forget the mail server; delivery falls back to the console."""
+        return mailer.clear_settings()
+
+    @app.post("/settings/mail/test",
+              dependencies=[Depends(auth.require_signup_key)])
+    def test_mail_settings(body: MailTest) -> dict:
+        """Send a real message now, and say plainly what the server said.
+        A settings screen that saves without ever proving it can deliver is
+        how an app ends up insisting it emailed somebody."""
+        if mailer.configured_transport() != "smtp":
+            raise HTTPException(
+                422, "no mail server is configured — save one first")
+        try:
+            mailer.deliver(
+                body.to,
+                "JIM Guardian test message",
+                "This is a test from JIM Guardian.\n\nIf you are reading it "
+                "in your inbox, verification emails will reach your users "
+                "too.")
+        except Exception as exc:  # noqa: BLE001 — smtplib raises many kinds
+            raise HTTPException(502, f"the mail server refused it: {exc}")
+        return {"sent": True, "to": body.to}
 
     @app.post("/verify-email/resend")
     def resend_code(body: ResendCode) -> dict:

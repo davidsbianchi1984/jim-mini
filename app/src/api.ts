@@ -118,6 +118,20 @@ export const api = {
   signin: (body: { email: string; password: string }) =>
     req<{ user_id: string; user_token: string; email: string; display_name?: string }>(
       "/signin", { method: "POST", body }),
+  // Mail settings: what makes verification emails real instead of a line in
+  // a log file. The password goes up; it never comes back down.
+  getMailSettings: () =>
+    req<{ transport: "smtp" | "console"; source: string; host: string | null;
+          port: number; username: string | null; sender: string | null;
+          public_url: string; password_set: boolean }>("/settings/mail"),
+  saveMailSettings: (body: { host: string; port: number; username?: string;
+                             password?: string; sender?: string; public_url?: string }) =>
+    req<{ transport: string }>("/settings/mail", { method: "PUT", body }),
+  clearMailSettings: () =>
+    req<{ transport: string }>("/settings/mail", { method: "DELETE" }),
+  testMailSettings: (to: string) =>
+    req<{ sent: boolean; to: string }>("/settings/mail/test",
+      { method: "POST", body: { to } }),
   requestReset: (email: string) =>
     req<{ email: string; code_delivery: string }>(
       "/password/reset/request", { method: "POST", body: { email } }),
