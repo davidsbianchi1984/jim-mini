@@ -48,6 +48,10 @@ def _context(user_id: str) -> str:
     # heart pills isn't paying attention (jim/meds.py). Context, not alarm.
     from . import meds
     lines.extend(meds.coach_context(user_id))
+    # Same stance for the care team (jim/careteam.py): a joint plan the
+    # whole team wrote deserves a mention, never an assignment.
+    from . import careteam
+    lines.extend(careteam.coach_context(user_id))
     return "\n".join(lines) if lines else "no recent check-ins or goals"
 
 

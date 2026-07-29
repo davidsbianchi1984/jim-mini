@@ -164,3 +164,26 @@ def test_no_slipping_meds_means_no_coordination(make_tandem):
         "owner_token": "own_good"})
     drifts = [{"metric": "resting_heart_rate", "direction": "high"}]
     assert careteam.consider(user, drifts, qrme) is None
+
+
+def test_the_coach_knows_a_plan_landed(make_tandem):
+    client = make_tandem()
+    fake = FakeOrgQRME()
+    qrme = QRMEClient(client=fake)
+    client.app.state.qrme = qrme
+    user = enroll(client)
+    assert careteam.coach_context(user) == []      # nothing yet, no line
+    client.put(f"/users/{user}/care-team", json={
+        "org_id": "org_1", "department_id": "dep_0",
+        "owner_token": "own_good"})
+    client.post(f"/users/{user}/care-team/coordinate",
+                json={"goal": "plan the recovery week"})
+    lines = careteam.coach_context(user)
+    assert len(lines) == 1
+    assert "plan the recovery week" in lines[0]
+    assert "today" in lines[0]
+    # The plan text itself never rides into the coach prompt.
+    assert "Desk 1 reviews the doses" not in lines[0]
+    # And a plan older than a week goes quiet.
+    stale = datetime.now() + timedelta(days=8)
+    assert careteam.coach_context(user, now=stale) == []
