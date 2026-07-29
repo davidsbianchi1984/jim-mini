@@ -82,6 +82,33 @@ CREATE TABLE IF NOT EXISTS accounts (
     created_at      TEXT NOT NULL
 );
 
+-- How this deployment speaks and listens (jim/voice.py). One row, set from
+-- the Settings screen. Without it the app uses the device's own voice and
+-- recogniser, which need no account and no key.
+CREATE TABLE IF NOT EXISTS voice_settings (
+    id            INTEGER PRIMARY KEY CHECK (id = 1),
+    provider      TEXT NOT NULL,          -- elevenlabs | openai | device
+    api_key       TEXT,
+    voice_id      TEXT,
+    speak_replies INTEGER NOT NULL DEFAULT 1,
+    updated_at    TEXT NOT NULL
+);
+
+-- Personal drift bands: how far from *this person's own* baseline a metric
+-- may wander before it is worth a check-in. One row per user per metric,
+-- absent until they adjust it (jim/bands.py supplies the default). A band
+-- has a width and two independent edges, because which direction matters
+-- differs by metric — HRV falling and heart rate climbing are both news.
+CREATE TABLE IF NOT EXISTS drift_bands (
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    metric     TEXT NOT NULL,
+    margin     REAL NOT NULL,
+    watch_high INTEGER NOT NULL DEFAULT 1,
+    watch_low  INTEGER NOT NULL DEFAULT 1,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, metric)
+);
+
 -- Where this deployment sends mail through. One row, set from the app's
 -- own settings screen so an operator never has to touch environment
 -- variables — an app that cannot send mail is the whole reason a

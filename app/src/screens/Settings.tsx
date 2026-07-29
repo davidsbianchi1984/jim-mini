@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, getBase, getLlmKey, setBase, setLlmKey, type PairInfo } from "../api";
+import { ProviderTiles } from "../ProviderTiles";
+import { say } from "../speech";
 import { useSession } from "../store";
 
 export function Settings() {
@@ -30,6 +32,10 @@ export function Settings() {
         <button className="primary" onClick={save}>{saved ? "Saved ✓" : "Save"}</button>
         <div className="muted small" style={{ marginTop: 10 }}>Backend: {health}</div>
       </div>
+      <ModelPanel />
+
+      <VoicePanel />
+
       <MailPanel />
 
       <div className="card">
@@ -149,6 +155,143 @@ function MailPanel() {
           {busy ? "Sending…" : "Send test email"}
         </button>
       </>)}
+      {note && <div className="muted small">{note}</div>}
+      {error && <div className="error">⚠ {error}</div>}
+    </div>
+  );
+}
+
+
+// Which model answers — click a tile. The switchboard has always been in the
+// backend; a person should not have to know that a PUT exists.
+function ModelPanel() {
+  const { session } = useSession();
+  const [providers, setProviders] = useState<Awaited<ReturnType<typeof api.listModels>>["providers"]>([]);
+  const [chosen, setChosen] = useState("auto");
+  const [effective, setEffective] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function load() {
+    api.listModels().then((m) => setProviders(m.providers)).catch(() => setProviders([]));
+    if (session.userId && session.userToken) {
+      api.getModelChoice(session.userId, session.userToken)
+        .then((c) => { setChosen(c.provider); setEffective(c.effective); })
+        .catch(() => undefined);
+    }
+  }
+  useEffect(load, [session.userId]);
+
+  async function pick(name: string) {
+    if (!session.userId || !session.userToken) return;
+    setBusy(true); setError(null);
+    try {
+      const r = await api.setModelChoice(session.userId, name, session.userToken);
+      setChosen(r.provider); setEffective(r.effective);
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="card">
+      <h3>Which model answers</h3>
+      <p className="muted small">
+        Your Guardian's replies can run on any of these. Pick one and every
+        reply uses it; <b>Automatic</b> uses whichever is configured.
+        {effective && chosen !== effective && (
+          <> Right now it resolves to <b>{effective}</b> — the one you picked
+          has no key on this deployment yet.</>)}
+      </p>
+      <ProviderTiles providers={providers} chosen={chosen}
+                     effective={effective} onPick={pick} busy={busy} />
+      {error && <div className="error">⚠ {error}</div>}
+    </div>
+  );
+}
+
+// The Guardian's voice. Without a service the device's own voice reads
+// replies aloud — free, no account — so this panel is about *upgrading* the
+// voice, never about switching speech on.
+function VoicePanel() {
+  const [cfg, setCfg] = useState<Awaited<ReturnType<typeof api.getVoiceSettings>> | null>(null);
+  const [provider, setProvider] = useState("device");
+  const [apiKey, setApiKey] = useState("");
+  const [voiceId, setVoiceId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  function load() {
+    api.getVoiceSettings().then((c) => {
+      setCfg(c); setProvider(c.provider); setVoiceId(c.voice_id || "");
+    }).catch(() => setCfg(null));
+  }
+  useEffect(load, []);
+
+  async function save(next?: Partial<{ provider: string; voice_id: string; speak_replies: boolean }>) {
+    setBusy(true); setError(null); setNote(null);
+    try {
+      await api.saveVoiceSettings({
+        provider: next?.provider ?? provider,
+        api_key: apiKey || undefined,
+        voice_id: next?.voice_id ?? voiceId,
+        speak_replies: next?.speak_replies,
+      });
+      setApiKey(""); setNote("Saved."); load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  const voices = cfg?.voices || [];
+  return (
+    <div className="card">
+      <h3>Voice</h3>
+      <p className="muted small">
+        {cfg?.provider === "device"
+          ? <>Replies are read aloud in <b>your device's own voice</b> — no account needed. Add an ElevenLabs or OpenAI key for a natural one, and to talk back by microphone.</>
+          : <>Speaking through <b>{cfg?.provider}</b>{cfg?.key_source === "environment" && " (key from the environment)"}. Talking back by microphone works too.</>}
+      </p>
+      <div className="voice-row">
+        {["device", "elevenlabs", "openai"].map((p) => (
+          <button key={p} className={provider === p ? "primary" : ""}
+                  disabled={busy}
+                  onClick={() => { setProvider(p); if (p === "device") save({ provider: p }); }}>
+            {p === "device" ? "Device voice" : p === "elevenlabs" ? "ElevenLabs" : "OpenAI"}
+          </button>
+        ))}
+      </div>
+      {provider !== "device" && (<>
+        <label>API key {cfg?.key_set && <span className="muted small">(saved — type to replace)</span>}
+          <input type="password" value={apiKey} placeholder={provider === "elevenlabs" ? "ElevenLabs key" : "sk-…"}
+                 onChange={(e) => setApiKey(e.target.value)} />
+        </label>
+        {voices.length > 0 && (
+          <label>Voice
+            <select value={voiceId} onChange={(e) => { setVoiceId(e.target.value); save({ voice_id: e.target.value }); }}>
+              {voices.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name} — {v.gender}, {v.note}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <div className="actions">
+          <button className="primary" disabled={busy} onClick={() => save()}>
+            {busy ? "Saving…" : "Save voice settings"}
+          </button>
+          <button disabled={busy}
+                  onClick={() => say("Hello — this is the voice your Guardian will speak in.")}>
+            Hear it
+          </button>
+        </div>
+      </>)}
+      {provider === "device" && (
+        <button disabled={busy}
+                onClick={() => say("Hello — this is your device's own voice.")}>
+          Hear it
+        </button>
+      )}
       {note && <div className="muted small">{note}</div>}
       {error && <div className="error">⚠ {error}</div>}
     </div>

@@ -104,6 +104,32 @@ class ResendCode(BaseModel):
     email: str
 
 
+class BandSet(BaseModel):
+    """Adjusting a personal drift band (jim/bands.py). Omitted fields keep
+    whatever is in force."""
+    margin: float | None = None       # half-width, in the metric's own unit
+    watch_high: bool | None = None
+    watch_low: bool | None = None
+
+
+class VoiceSettings(BaseModel):
+    """How this deployment speaks (jim/voice.py)."""
+    provider: Literal["elevenlabs", "openai", "device"]
+    api_key: str | None = None
+    voice_id: str | None = None
+    speak_replies: bool | None = None
+
+
+class VoiceSpeak(BaseModel):
+    text: str
+    voice_id: str | None = None      # override, e.g. to sample a voice
+
+
+class VoiceTranscribe(BaseModel):
+    audio_base64: str
+    filename: str | None = None
+
+
 class MailSettings(BaseModel):
     """Where this deployment sends mail through (jim/mailer.py)."""
     host: str

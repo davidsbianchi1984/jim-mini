@@ -149,3 +149,33 @@ button.danger { background: rgba(255,77,94,0.14) !important; color: var(--red) !
   input, textarea, select { font-size: 16px; }
   button { min-height: 44px; }
 }
+
+/* Pick which model answers, and which voice speaks — tiles, not dropdowns. */
+.provider-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px; margin-top: 12px; }
+.provider-tile { position: relative; display: flex; flex-direction: column; gap: 4px;
+  align-items: flex-start; text-align: left; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; }
+.provider-tile:hover:not(:disabled) { background: rgba(255,255,255,0.08); }
+.provider-tile.active { background: rgba(255,255,255,0.10); border-width: 2px; }
+.provider-tile:disabled { opacity: 0.6; cursor: default; }
+.provider-glyph { display: inline-flex; }
+.provider-name { color: var(--txt); font-weight: 700; font-size: 13px; }
+.provider-note { color: var(--t3); font-size: 11px; line-height: 1.35; }
+.provider-check { position: absolute; top: 10px; right: 12px; font-weight: 700; }
+
+/* Your own normal, and the edges around it. */
+.band-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--line); }
+.band-row:last-child { border-bottom: 0; }
+.band-name { font-weight: 600; font-size: 13px; }
+.band-scale { position: relative; height: 8px; border-radius: 4px;
+  background: rgba(255,255,255,0.07); margin-top: 8px; }
+.band-inner { position: absolute; top: 0; bottom: 0; border-radius: 4px;
+  background: linear-gradient(90deg, rgba(126,231,135,0.35), rgba(126,231,135,0.55)); }
+.band-figures { font-size: 11px; color: var(--t3); margin-top: 6px; }
+.band-figures b { color: var(--txt); }
+.voice-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+button.mic { background: rgba(255,255,255,0.06); border: 1px solid var(--line);
+  border-radius: 999px; padding: 10px 16px; font-weight: 600; color: var(--txt); }
+button.mic.listening { background: rgba(248,81,73,0.18); border-color: var(--red, #f85149); }

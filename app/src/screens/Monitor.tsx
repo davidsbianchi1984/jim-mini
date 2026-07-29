@@ -45,6 +45,20 @@ export function Monitor() {
               : <span className="tag ok">all calm</span>}
           </div>
           {result.reason && <div className="muted small">{result.reason}</div>}
+          {result.drift?.crossings?.length ? (
+            <div className="guidance">
+              <div className="guidance-src">drift from your baseline — a check-in, not an alarm</div>
+              <p>{result.drift.question}</p>
+              <ul className="refs">
+                {result.drift.crossings.map((c) => (
+                  <li key={c.metric}>
+                    {c.label}: <b>{c.value}{c.unit}</b> — {c.direction} your usual{" "}
+                    {c.baseline}{c.unit} (edge {c.edge}{c.unit})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           {result.guidance?.content && (
             <div className="guidance">
               <div className="guidance-src">{result.guidance.source} guidance</div>

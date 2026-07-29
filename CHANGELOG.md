@@ -6,6 +6,44 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-07-29
+
+### Added
+
+- **Your own normal, and how far from it counts** (`jim/bands.py`, screen
+  *Your Baseline*, `GET /bands/{user_id}`, `PUT|DELETE /bands/{id}/{metric}`).
+  Detection has always answered *is this an episode?* against rules that hold
+  for anybody. This answers the question a person actually asks of a watch
+  they sleep in: **am I drifting from my own baseline, either way?** Every
+  resting reading now folds into a per-metric baseline — heart rate, HRV,
+  oxygen, respiration, temperature, not heart rate alone — and a **band**
+  around it marks how far is far enough to say something. Crossing one
+  produces a **check-in with the numbers in it**, never an escalation: the
+  emergency ladder remains the alarm layer's alone. Bands wait for a
+  non-provisional baseline (a threshold drawn around two samples is a line
+  on noise), watch **both directions** independently (HRV falling and heart
+  rate climbing are both news, and the default for HRV watches only the
+  fall), scale with the sensitivity dial, and are adjustable per metric from
+  the app.
+
+- **Talk to it, and be answered out loud** (`jim/voice.py`,
+  `GET|PUT|DELETE /settings/voice`, `POST /voice/speak`,
+  `POST /voice/transcribe`). Typing at a wrist mid-panic is not a plausible
+  interaction. **ElevenLabs** (five male voices offered, Daniel by default)
+  or **OpenAI** `tts-1` speak the replies; recorded speech goes to Whisper
+  or ElevenLabs to come back as words. Neither is required: **without a key
+  the device's own voice reads replies aloud** — an app that goes mute
+  because a key is missing has chosen the wrong failure. Audio is never
+  stored, and the key is never returned by the API.
+
+- **A picker for which model answers** (`app/src/ProviderTiles.tsx`). The
+  switchboard has been in the backend since 0.4.3 and nowhere in the app:
+  Claude, ChatGPT, Grok, Perplexity, Gemini and the offline stub are now
+  tiles you click, each marked in its own colour, each saying whether it is
+  configured here and what it resolves to if not. The marks are drawn in the
+  app rather than fetched — an installer that reaches out to six vendors'
+  CDNs is one that leaks which product you opened.
+
 ## [0.4.8] — 2026-07-28
 
 ### Added
@@ -1169,7 +1207,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.8...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.5.0...HEAD
+[0.5.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.5.0
 [0.4.8]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.8
 [0.4.7]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.7
 [0.4.6]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.6

@@ -13,7 +13,7 @@ import json
 import secrets
 from datetime import date
 
-from . import (conditions, db, earlywarning, escalation, tiers,
+from . import (bands, conditions, db, earlywarning, escalation, tiers,
                guidance as local_guidance, i18n, life, llm, robotics, signal,
                terms)
 
@@ -747,8 +747,15 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
         # every future comparison. It is the one place dropping a reading is
         # clearly right: a baseline has no urgency and can wait for a good one.
         clean_sample = signal.clean(sample)
-        if clean_sample.get("heart_rate") and _is_resting(clean_sample):
-            update_baseline(user_id, "heart_rate", clean_sample["heart_rate"])
+        if _is_resting(clean_sample):
+            # Every metric with a band gets a baseline, not heart rate alone —
+            # a drift band can only exist around a number the Guardian has
+            # actually learned, and "am I drifting?" is asked of HRV, oxygen,
+            # respiration and temperature at least as often as of pulse.
+            for _metric in bands.METRICS:
+                _value = clean_sample.get(_metric)
+                if _value is not None:
+                    update_baseline(user_id, _metric, _value)
         # Everything from here to the end of this branch is the *predictive*
         # layer, and it is what a Pro membership buys (jim/tiers.py). Nothing
         # above it is: a sample that `conditions.detect` finds something wrong
@@ -768,6 +775,19 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
         result = {"detected": False, "guidance": None, "escalation": None,
                   "forecast": None, "signal": quality,
                   "predictive": predictive}
+        # Personal drift: nothing here is an alarm — conditions.detect already
+        # said this sample is not one — but a metric outside *this person's
+        # own* band is what a wearable is for. It becomes a question, never an
+        # escalation, and only once the baseline is established (jim/bands.py).
+        drifts = bands.check(user_id, clean_sample, sensitivity)
+        if drifts:
+            result["drift"] = {"crossings": drifts,
+                               "question": bands.question(drifts)}
+            _event(user_id, "drift", severity="checkin",
+                   detail={"crossings": drifts},
+                   pdi=pdi, vault_scope="medical/biometric")
+            life._insight(user_id, "observation", bands.question(drifts),
+                          area="health_fitness", source="drift")
         # Physical abnormality forming: a blood-oxygen slide is flagged while
         # it is still above the detection threshold.
         if sample.get("blood_oxygen") is not None:
