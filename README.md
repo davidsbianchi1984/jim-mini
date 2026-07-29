@@ -1,6 +1,6 @@
 # JIM-mini / Guardian
 
-**Current release: v0.13.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.13.1** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -301,6 +301,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.13.1** | **Cut with the siblings** — docs caught up; QRME demo org + hardening |
 | **0.13.0** | **The care team is an organization** — link your QRME org, and when a drift crossing arrives while doses slip, the Guardian coordinates the whole team into one joint plan (screen 86) |
 | **0.12.0** | **Cut with the siblings** — no functional change; QRME mined its filed patent spec: hybrid profiles, real-time simulation, environmental adaptation |
 | **0.11.1** | **Cut with the siblings** — no functional change; PDI's desktop app finally carries its own vault |
