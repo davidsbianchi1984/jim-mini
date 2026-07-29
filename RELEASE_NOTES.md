@@ -1,15 +1,16 @@
-# JIM-mini v0.14.2 — release notes
+# JIM-mini v0.14.3 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.14.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.14.3` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.14.2** — **docs only in this release**: cut with the
-siblings. The tandem contract (docs/tandem.md, byte-identical across
-the three repos) now documents suite mode — the gateway wires JIM's
-QRME client and QRME's vault tenant itself, and re-draws PDI's
-per-tenant isolation by owner in the operations provenance view.
+**JIM-mini v0.14.3** — every README ends on the rock.
+
+The Matthew 7:24–25 passage that closes the root README now closes
+every README in the repo (app and the native shells), byte-identical,
+at the very end — enforced by a binding test so the next README added
+cannot forget the rule.
 
 ### Verification
 
