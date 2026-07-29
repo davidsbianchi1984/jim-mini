@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { api, type BaselineMetric } from "../api";
 import { useSession } from "../store";
 
-export function Home({ go }: { go: (t: "monitor" | "coach" | "checkin") => void }) {
+export function Home({ go }: {
+  go: (t: "monitor" | "coach" | "checkin" | "meds" | "careteam") => void;
+}) {
   const { session } = useSession();
   const [baseline, setBaseline] = useState<BaselineMetric[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +54,8 @@ export function Home({ go }: { go: (t: "monitor" | "coach" | "checkin") => void 
         <button className="primary" onClick={() => go("monitor")}>Live Monitoring</button>
         <button onClick={() => go("coach")}>Coach</button>
         <button onClick={() => go("checkin")}>Check-in</button>
+        <button onClick={() => go("meds")}>💊 Medications</button>
+        <button onClick={() => go("careteam")}>👥 Care Team</button>
       </div>
     </div>
   );

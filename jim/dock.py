@@ -59,6 +59,8 @@ FACES: dict[str, str] = {
     "agents": "the status lights and their counts — no agent names",
     "today": "what the Guardian has suggested today",
     "mic": "whether channel 2 is lent, and the way back",
+    "careteam": "whether a joint care plan is waiting to be read — never "
+                "its contents",
 }
 DEFAULT_FACE = "helper"
 
@@ -89,6 +91,7 @@ ROUTES: dict[str, dict] = {
     "agents": {"screen": 67, "path": "/agents", "title": "Agents"},
     "today": {"screen": 10, "path": "/today", "title": "Today"},
     "mic": {"screen": 65, "path": "/mic", "title": "Channel 2"},
+    "careteam": {"screen": 86, "path": "/care-team", "title": "Care Team"},
 }
 
 
