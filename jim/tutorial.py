@@ -188,6 +188,17 @@ LESSONS: tuple[dict, ...] = (
               "canned text wear a model's name.",
          screens=(83,),
          try_it="Open Which Model Answers and read which tile is active."),
+    dict(key="meds", chapter="Being watched over", title="The medicine cabinet",
+         what="What you take, in your own words — 'the little white one, "
+              "10 mg' is a valid name and dose. The board knows done, due, "
+              "and missed (with humane grace: 9:07 is not 'missed' for the "
+              "8:00 pill), one slot has one correctable answer, and an "
+              "as-needed ceiling refuses to log past itself. A missed dose "
+              "is a question, never an alarm, and JIM is not a pharmacist — "
+              "interactions are your pharmacist's call, and the board says "
+              "so on its face.",
+         screens=(85,),
+         try_it="Add one medication and tap Take on today's dose."),
     dict(key="watch", chapter="Beyond the app", title="The watch finds a way",
          what="No app store needed: an iPhone Shortcut drips Health "
               "readings to your personal deposit-only address on a "

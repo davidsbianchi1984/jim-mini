@@ -1596,6 +1596,17 @@ SCREENS = [
         dict(icon="heart", color="red", k="62 days folded",
              s="resting heart rate \u00b7 established", extra=("meter", 1.0, "mG")),
     ]),
+    dict(num=85, title="Medications", sub="Your words, your board",
+         accent="pink", tab=0, cards=[
+        dict(icon="heart", color="red", k="Lisinopril \u00b7 10 mg",
+             s="blood pressure \u00b7 08:00 taken", pill=("DONE", "good")),
+        dict(icon="bell", color="amber", k="20:00 dose",
+             s="due in an hour \u00b7 take or skip", pill=("DUE", "warn")),
+        dict(icon="drop", color="cyan", k="Ibuprofen \u00b7 as needed",
+             s="1 of 2 today \u00b7 ceiling refuses"),
+        dict(icon="shield", color="violet", k="Not a pharmacist",
+             s="interactions are your pharmacist's call"),
+    ]),
 ]
 
 

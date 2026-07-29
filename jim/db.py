@@ -109,6 +109,39 @@ CREATE TABLE IF NOT EXISTS drift_bands (
     PRIMARY KEY (user_id, metric)
 );
 
+-- The medicine cabinet (jim/meds.py): what the user takes, in their own
+-- words — name, dose, why — and when. JIM is not a pharmacist: it tracks
+-- what it is told, it never claims to check interactions, and a missed
+-- dose earns a check-in, never an alarm. ``schedule`` is JSON: either
+-- {"times": ["08:00","20:00"]} or {"as_needed": true, "max_per_day": N}.
+CREATE TABLE IF NOT EXISTS medications (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    name        TEXT NOT NULL,
+    dose        TEXT NOT NULL,   -- "10 mg", the user's words
+    purpose     TEXT,            -- why, in the user's words
+    schedule    TEXT NOT NULL,
+    critical    INTEGER NOT NULL DEFAULT 0,  -- missing it is worth a check-in
+    notes       TEXT,
+    archived_at TEXT,
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
+
+-- One row per answer to one slot on one day (or one as-needed take), so
+-- "did I take it?" has exactly one answer that can be corrected — logging
+-- again for the same slot replaces, it does not duplicate.
+CREATE TABLE IF NOT EXISTS med_logs (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    med_id     TEXT NOT NULL REFERENCES medications(id),
+    action     TEXT NOT NULL,   -- taken | skipped
+    slot       TEXT,            -- schedule time answered ("08:00"); NULL = as-needed
+    on_date    TEXT NOT NULL,   -- YYYY-MM-DD the slot belongs to
+    note       TEXT,            -- "with food" / "felt dizzy, skipped"
+    created_at TEXT NOT NULL
+);
+
 -- The vigil (jim/vigil.py): a steward who is told when the signals STOP.
 -- Every other alarm in the product fires on a reading; this one fires on
 -- the absence of readings — the watch that went quiet, the check-in that

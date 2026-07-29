@@ -1,51 +1,60 @@
-# JIM-mini v0.8.0 — release notes
+# JIM-mini v0.9.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.8.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.9.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.8.0** — the round where the Guardian learned to notice
-absence. One of three interoperating products, all three cut together at
-this version.
+**JIM-mini v0.9.0** — the medicine cabinet. One of three interoperating
+products, all three cut together at this version.
 
-### The vigil
+### What you take, in your words
 
-Every other alarm in this product fires on a reading — a heart rate that
-climbed, an oxygen number that fell. The vigil fires on the **absence** of
-readings: the watch that went quiet, the check-in that never came, the
-person living alone whom no threshold can see because nothing is arriving
-to measure.
+A new **Medications** screen. Add what you take exactly as you'd say it —
+*"the little white one, 10 mg"* is a valid name and dose — with a
+schedule (8:00 and 20:00) or as-needed, what it's for, and whether
+missing it is worth a check-in.
 
-In **Settings → The vigil** you name a steward, choose a quiet period, and
-write — now, while you are fine — the words they will read. If nothing is
-heard from you for longer than that period, they are asked to check on
-you, in your words, with the honest framing that no reading triggered
-this: it is the absence of readings.
+### A board with humane grace
 
-Three deliberate limits: it never rings past the steward (silence is weak
-evidence — the right response is a person who cares knocking on a door,
-not an ambulance); it trips at most once per silence; and any sign of life
-stands it down automatically, because showing up *is* the all-clear.
+The day's board knows **done, due, later, and missed** — and it is
+generous on purpose: 9:07 is not "missed" for the 8:00 pill, because a
+board that scolds seven minutes teaches you to ignore it. One tap takes
+or skips; one slot has exactly one answer and it's correctable — skipped
+becomes taken when you find the pill in your pocket. Adherence bars cover
+whole past days only, so an afternoon dose is never counted against you
+at noon.
 
-### One absence, three products
+### The lines it will not cross
 
-The vigil's event id is an attestation reference the siblings accept:
-QRME's reviewer-gated ownership succession (a profile passes to its named
-successor, or sunsets to a frozen memorial) and PDI's new **bequests**
-(named scopes of the vault unlock to a named person — see PDI's notes).
-Continuity, end to end.
+- An as-needed ceiling **refuses to log past itself** — it won't record
+  the fourth ibuprofen of a three-max day; it points at your prescriber
+  instead. Recording the overage would be complicity.
+- A missed dose — even one marked critical — is a **question, never an
+  alarm**: an amber note on the board and a gentle line in the coach's
+  awareness ("worth asking about, never scolding"). There is no path from
+  this feature into the escalation ladder.
+- **JIM is not a pharmacist.** There is no interaction checker, because a
+  toy one would be trusted; the board says on its face that interactions
+  are your pharmacist's call.
+
+### And it keeps watch
+
+Every dose you log is a sign of life the vigil counts — for someone whose
+only daily interaction is their pillbox, taking their medication quietly
+keeps the steward unalarmed.
 
 ### Verification
 
-619 tests green, including that the vigil's own trip never counts as a
-sign of life, that a brand-new user who was never heard from cannot trip
-it, that it trips exactly once, that no escalation event is ever written,
-and that the steward's message says plainly it is not an emergency.
+630 tests green, including that the ceiling refuses rather than records,
+that a skipped dose can become taken, that a missed critical dose writes
+no escalation event, that adherence never counts the unfinished day, and
+that logging a dose stands a tripped vigil down.
 
 ### Install
 
-If you have 0.7.0, this arrives on its own — one restart when prompted.
-Otherwise, download the installer for your OS from the assets below.
+If you have 0.7.0 or later, this arrives on its own — one restart when
+prompted. Otherwise, download the installer for your OS from the assets
+below.
 
 **Full changelog:** https://github.com/davidsbianchi1984/jim-mini/blob/main/CHANGELOG.md

@@ -500,3 +500,31 @@ class VigilArm(BaseModel):
     steward_channel: str
     quiet_days: float = 3.0
     note: str | None = None
+
+
+class MedCreate(BaseModel):
+    """A medication in the user's own words — 'the little white one, 10 mg'
+    is a valid name and dose. schedule: {"times": ["08:00","20:00"]} or
+    {"as_needed": true, "max_per_day": 3}."""
+
+    name: str
+    dose: str
+    schedule: dict
+    purpose: str | None = None
+    critical: bool = False
+    notes: str | None = None
+
+
+class MedUpdate(BaseModel):
+    name: str | None = None
+    dose: str | None = None
+    schedule: dict | None = None
+    purpose: str | None = None
+    critical: bool | None = None
+    notes: str | None = None
+
+
+class MedLog(BaseModel):
+    action: str                 # taken | skipped
+    slot: str | None = None     # required for scheduled meds
+    note: str | None = None
