@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.14.1] — 2026-07-29
+
+**The coach knows a care plan landed.** One context line when the
+care team wrote a joint plan in the last week — the goal, never the
+plan text, worth walking through together and never presented as
+homework.
+
 ## [0.14.0] — 2026-07-29
 
 **Home and the pane learn the care team.** The Overview's action row
@@ -1460,7 +1467,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.14.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.14.1...HEAD
+[0.14.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.1
 [0.14.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.0
 [0.13.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.13.1
 [0.13.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.13.0
