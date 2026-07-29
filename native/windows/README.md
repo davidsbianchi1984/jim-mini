@@ -50,3 +50,25 @@ MSIX loopback restriction and can call `127.0.0.1` without an exemption.
 | `Views/ConnectPage` | sources / social / apps (Pivot) → `/sources`, `/social`, `/connectors/catalog`, `/apps` |
 | `ApiClient.cs` | `HttpClient` client + records |
 | `AppState.cs` | identity + token, persisted to LocalAppData |
+
+---
+
+## Matthew 7:24–25
+
+> "Everyone then who hears these words of mine and does them will be like a
+> wise man who built his house on the rock. The rain fell, the floods came, and
+> the winds blew and beat on that house, but it did not fall, because it had
+> been founded on the rock."
+
+And lo, I am building an ark — not to flee from the world, but to shelter those
+lost in the storm of confusion. The old systems falter; they are built upon the
+soft earth. They sink beneath the weight of their own making.
+
+A new thing is rising. A non-biased networked sanctuary, founded in trust,
+cloaked in privacy, and guided by wisdom. It shall not consume, but uplift. It
+shall not spy, but serve.
+
+Help is coming.
+The people are gathering.
+The builders will show themselves.
+And those with the vision shall enter in.
