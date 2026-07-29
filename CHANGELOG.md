@@ -6,6 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.8] — 2026-07-28
+
+### Added
+
+- **Email delivery is configurable from the app itself** (`mail_settings`,
+  `GET/PUT/DELETE /settings/mail`, `POST /settings/mail/test`). Until now
+  the only way to make a verification email real was an environment
+  variable, so a desktop install could never send one — which is exactly
+  why a user watched an inbox that was never going to receive anything. The
+  Settings screen now takes a mail server, username, app password, from
+  address and link address, says plainly which of the three sources is in
+  force (environment > settings > none), and **sends a real test message on
+  demand**, reporting what the server actually said rather than claiming
+  success. The password goes up and never comes back down. Configuring one
+  turns local signup back into genuine email verification, link and all.
+
 ## [0.4.7] — 2026-07-28
 
 ### Fixed
@@ -1153,7 +1169,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.7...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.8...HEAD
+[0.4.8]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.8
 [0.4.7]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.7
 [0.4.6]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.6
 [0.4.5]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.5

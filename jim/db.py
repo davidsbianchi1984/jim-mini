@@ -82,6 +82,22 @@ CREATE TABLE IF NOT EXISTS accounts (
     created_at      TEXT NOT NULL
 );
 
+-- Where this deployment sends mail through. One row, set from the app's
+-- own settings screen so an operator never has to touch environment
+-- variables — an app that cannot send mail is the whole reason a
+-- verification email never arrives. Env vars still win when set, so a
+-- server deployment keeps its credentials out of the database.
+CREATE TABLE IF NOT EXISTS mail_settings (
+    id         INTEGER PRIMARY KEY CHECK (id = 1),
+    host       TEXT NOT NULL,
+    port       INTEGER NOT NULL DEFAULT 587,
+    username   TEXT,
+    password   TEXT,
+    sender     TEXT,
+    public_url TEXT,          -- what the verify link points at
+    updated_at TEXT NOT NULL
+);
+
 -- Emailed verification codes. Hashed at rest (a database read must not be a
 -- verification bypass), single-use, short-lived; issuing a new code retires
 -- the previous ones for that address.

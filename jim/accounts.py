@@ -58,8 +58,7 @@ def _hash_code(code: str) -> str:
 
 
 def _public_url() -> str:
-    import os
-    return os.environ.get("JIM_PUBLIC_URL", "http://127.0.0.1:8000").rstrip("/")
+    return mailer.public_url()
 
 
 def _send_code(email: str, purpose: str = "verify") -> str:
