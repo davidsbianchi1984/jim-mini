@@ -1,15 +1,15 @@
-# JIM-mini v0.14.1 — release notes
+# JIM-mini v0.14.2 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.14.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.14.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.14.1** — the coach knows a care plan landed.
-
-The coach mentions a fresh joint plan the way it mentions missed pills:
-one line, the goal only, worth walking through together — never the
-plan text, never presented as homework, and silent after a week.
+**JIM-mini v0.14.2** — **docs only in this release**: cut with the
+siblings. The tandem contract (docs/tandem.md, byte-identical across
+the three repos) now documents suite mode — the gateway wires JIM's
+QRME client and QRME's vault tenant itself, and re-draws PDI's
+per-tenant isolation by owner in the operations provenance view.
 
 ### Verification
 
