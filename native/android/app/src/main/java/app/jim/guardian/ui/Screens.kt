@@ -584,7 +584,7 @@ private fun CrashWatchPanel(vm: GuardianViewModel) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("Crash watch", color = Jim.Txt, fontSize = 16.sp,
                 fontWeight = FontWeight.Bold)
-            Text("Off by default, programmed by you: a critical reading opens " +
+            Text("Off by default, programmed by you: a critical reading (a fall the watch felt, a collapsing pulse) opens " +
                  "\"are you okay?\" — unanswered attempts contact your trusted " +
                  "person, and emergency services only if you tick the box. " +
                  "Gentle drift check-ins can never trigger it.",

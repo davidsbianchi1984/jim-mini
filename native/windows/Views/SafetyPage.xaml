@@ -72,7 +72,7 @@
                         <StackPanel Spacing="10">
                             <TextBlock Text="Crash watch" FontWeight="Bold"
                                        Foreground="{StaticResource JimTxtBrush}" />
-                            <TextBlock Text="Off by default, programmed by you: a critical reading opens &#x201C;are you okay?&#x201D; &#x2014; unanswered attempts contact your trusted person, and emergency services only if you tick the box. Gentle drift check-ins can never trigger this."
+                            <TextBlock Text="Off by default, programmed by you: a critical reading (a fall the watch felt, a collapsing pulse) opens &#x201C;are you okay?&#x201D; &#x2014; unanswered attempts contact your trusted person, and emergency services only if you tick the box. Gentle drift check-ins can never trigger this."
                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
                             <TextBox x:Name="CrashName" Header="Trusted person" PlaceholderText="Rosa" />
                             <TextBox x:Name="CrashChannel" Header="How to reach them"

@@ -64,7 +64,7 @@ private struct CrashWatchSection: View {
             }
             VStack(alignment: .leading, spacing: 10) {
                 Text("Crash watch").font(.headline).foregroundStyle(Theme.txt)
-                Text("Off by default, programmed by you: a critical reading opens “are you okay?” — unanswered attempts contact your trusted person, and emergency services only if you tick it. Gentle drift check-ins can never trigger this.")
+                Text("Off by default, programmed by you: a critical reading (a fall the watch felt, a collapsing pulse) opens “are you okay?” — unanswered attempts contact your trusted person, and emergency services only if you tick it. Gentle drift check-ins can never trigger this.")
                     .font(.caption).foregroundStyle(Theme.t2)
                 TextField("Trusted person", text: $name)
                     .textFieldStyle(.roundedBorder)

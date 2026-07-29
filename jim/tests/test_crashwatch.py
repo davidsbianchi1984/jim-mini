@@ -129,3 +129,41 @@ def test_disarm_stands_everything_down(client):
     # Silence after disarm trips nothing.
     later = datetime.now(timezone.utc) + timedelta(hours=1)
     assert crashwatch.sweep(user, now=later)["tripped"] is False
+
+
+def _drip_path(client, user):
+    r = client.get(f"/watch/channel/{user}")
+    assert r.status_code == 200, r.text
+    return "/watch/drip/" + r.json()["drip_url"].rsplit("/", 1)[1]
+
+
+def test_a_fall_through_the_watch_opens_the_question(client):
+    """The senior scenario, end to end: the watch feels the fall, the drip
+    carries it (words, not numbers), the detector calls it critical, and
+    the armed crash watch asks — silence from here summons the programmed
+    help. Before this test the drip dropped non-numeric readings, which
+    silently excluded exactly this event."""
+    user = enroll(client)
+    _arm(client, user)
+    drip = _drip_path(client, user)
+    r = client.post(drip, json={"movement": "fall"})
+    assert r.status_code == 200 and r.json()["noticed"] is True
+    st = client.get(f"/crash-watch/{user}").json()
+    assert st["asking"] is True
+
+    # Shortcuts' boolean shape works too, and so does the arrest pattern.
+    client.post(f"/crash-watch/{user}/respond")
+    r = client.post(drip, json={"fall_detected": True, "pulse": "absent"})
+    assert r.status_code == 200 and r.json()["noticed"] is True
+    st = client.get(f"/crash-watch/{user}").json()
+    assert st["asking"] is True and st["concern"] == "cardiac_event"
+
+
+def test_free_text_never_rides_the_drip(client):
+    """The whitelist holds: an unknown word in movement is ignored, and a
+    payload with nothing recognizable is refused with the fall hint."""
+    user = enroll(client)
+    drip = _drip_path(client, user)
+    r = client.post(drip, json={"movement": "dancing"})
+    assert r.status_code == 422
+    assert "movement: fall" in r.json()["detail"]
