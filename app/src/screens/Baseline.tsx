@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api";
+import { api, type CrashWatchStatus } from "../api";
 import { useSession } from "../store";
 
 type Band = Awaited<ReturnType<typeof api.getBands>>["bands"][number];
@@ -17,14 +17,62 @@ export function Baseline() {
   const [bands, setBands] = useState<Band[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cw, setCw] = useState<CrashWatchStatus | null>(null);
+  const [cwName, setCwName] = useState("");
+  const [cwChannel, setCwChannel] = useState("");
+  const [cwAttempts, setCwAttempts] = useState(3);
+  const [cwWindow, setCwWindow] = useState(5);
+  const [cwEms, setCwEms] = useState(false);
 
   function load() {
     if (!session.userId || !session.userToken) return;
     api.getBands(session.userId, session.userToken)
       .then((r) => setBands(r.bands))
       .catch((e) => setError((e as Error).message));
+    api.crashWatch(session.userId, session.userToken)
+      .then((st) => {
+        setCw(st);
+        if (st.trusted_name) setCwName(st.trusted_name);
+        if (st.trusted_channel) setCwChannel(st.trusted_channel);
+        if (st.attempts) setCwAttempts(st.attempts);
+        if (st.window_minutes) setCwWindow(st.window_minutes);
+        setCwEms(Boolean(st.contact_emergency_services));
+      })
+      .catch(() => setCw(null));
   }
   useEffect(load, [session.userId]);
+  // The status read is also the clock: polling is what re-asks the question
+  // when a deadline passes, so an open question stays live on screen.
+  useEffect(() => {
+    if (!cw?.asking) return;
+    const t = setInterval(load, 20000);
+    return () => clearInterval(t);
+  }, [cw?.asking]);
+
+  async function armCrashWatch() {
+    if (!session.userId || !session.userToken) return;
+    setBusy("crashwatch"); setError(null);
+    try {
+      setCw(await api.armCrashWatch(session.userId, {
+        trusted_name: cwName, trusted_channel: cwChannel,
+        attempts: cwAttempts, window_minutes: cwWindow,
+        contact_emergency_services: cwEms,
+      }, session.userToken));
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(null); }
+  }
+
+  async function disarmCrashWatch() {
+    if (!session.userId || !session.userToken) return;
+    setBusy("crashwatch");
+    try { setCw(await api.disarmCrashWatch(session.userId, session.userToken)); }
+    finally { setBusy(null); }
+  }
+
+  async function imOkay() {
+    if (!session.userId || !session.userToken) return;
+    setCw(await api.imOkay(session.userId, session.userToken));
+  }
 
   async function change(metric: string, body: Parameters<typeof api.setBand>[2]) {
     if (!session.userId || !session.userToken) return;
@@ -62,8 +110,10 @@ export function Baseline() {
           Every resting reading nudges your own average for each metric. Once
           a metric has enough of them, a <b>band</b> is drawn around it — and
           when a reading lands outside that band, in <b>either direction</b>,
-          your Guardian checks in and asks how you are. It never calls
-          anybody: that stays the emergency path's job, unchanged.
+          your Guardian checks in and asks how you are. A drift check-in on
+          its own never calls anybody — but the <b>crash watch</b> below is
+          exactly the "call somebody" you can program: if a reading turns
+          critical and you stop answering, help gets sent.
         </p>
         <p className="muted small">
           The widths below are yours to set. Narrow one to be told sooner;
@@ -72,6 +122,76 @@ export function Baseline() {
       </div>
 
       {error && <div className="error">⚠ {error}</div>}
+
+      {cw?.asking && (
+        <div className="card" style={{ borderColor: "#ffb84d" }}>
+          <h3>JIM is asking: are you okay?</h3>
+          <p className="muted small">
+            A concerning reading came in ({cw.concern}). This is attempt{" "}
+            {cw.attempt} of {cw.attempts} — after that, your crash watch
+            contacts {cw.trusted_name}
+            {cw.contact_emergency_services ? " and requests emergency services" : ""}.
+          </p>
+          <button className="primary" onClick={imOkay}>I'm okay</button>
+        </div>
+      )}
+      {cw?.tripped && (
+        <div className="error">
+          ⚠ The crash watch tripped: {cw.trusted_name} was contacted
+          {cw.contact_emergency_services ? " and an emergency-services dispatch was requested" : ""}.
+          Any normal reading — or the button above — stands it down.
+        </div>
+      )}
+
+      <div className="card">
+        <h3>Crash watch — if you stop answering, help gets sent</h3>
+        <p className="muted small">
+          Off by default, programmed by you: when a reading turns{" "}
+          <b>critical</b> (a collapsing pulse, oxygen falling) JIM asks{" "}
+          "are you okay?" — and if {cwAttempts} attempts over{" "}
+          {(cwAttempts * cwWindow).toFixed(0)} minutes all go unanswered, it
+          contacts your trusted person{cwEms ? " and requests emergency services" : ""}.
+          Any sign of you — the button, a normal reading — calls it off.
+          Drift check-ins stay calm and never trigger this.
+        </p>
+        <label>Trusted person
+          <input value={cwName} onChange={(e) => setCwName(e.target.value)}
+                 placeholder="Rosa" /></label>
+        <label>How to reach them (email or phone)
+          <input value={cwChannel} onChange={(e) => setCwChannel(e.target.value)}
+                 placeholder="rosa@example.com" /></label>
+        <div className="voice-row">
+          <label>Attempts
+            <input type="number" min={1} max={10} value={cwAttempts}
+                   onChange={(e) => setCwAttempts(Number(e.target.value))} /></label>
+          <label>Minutes per attempt
+            <input type="number" min={1} max={60} value={cwWindow}
+                   onChange={(e) => setCwWindow(Number(e.target.value))} /></label>
+        </div>
+        <label className="check">
+          <input type="checkbox" checked={cwEms}
+                 onChange={(e) => setCwEms(e.target.checked)} />
+          May request emergency services (this app relays the request to
+          every connected system — it cannot itself place a call)
+        </label>
+        <div className="voice-row">
+          <button className="primary" disabled={busy === "crashwatch"}
+                  onClick={armCrashWatch}>
+            {cw?.armed ? "Update the crash watch" : "Arm the crash watch"}
+          </button>
+          {cw?.armed && (
+            <button disabled={busy === "crashwatch"} onClick={disarmCrashWatch}>
+              Disarm
+            </button>
+          )}
+        </div>
+        {cw?.armed && !cw.asking && !cw.tripped && (
+          <p className="muted small">
+            Armed — {cw.trusted_name} will be contacted after{" "}
+            {cw.attempts} unanswered attempts.
+          </p>
+        )}
+      </div>
 
       <div className="card">
         <h3>Your metrics</h3>

@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The crash watch, and the journal's door.** Field request, verbatim
+in spirit: "if pulse gets shallow and stops and JIM gets too many
+non-responsive attempts, contact emergency services and a trusted
+person." The crash watch (jim/crashwatch.py) is the vigil's acute
+sibling — armed in advance by the user, off by default: a critical
+reading opens "are you okay?", N unanswered attempts (each with its
+window, deadlines marching from the moment the concern opened) trip
+it, the trusted person is contacted (emailed for real when mail is
+configured) and, only if the box was ticked, an emergency-services
+dispatch request is recorded and relayed — worded as a request,
+because a local app cannot itself place a call. Any sign of the
+person ends it; drift check-ins stay calm and can never trigger it,
+and the Baseline screen now says so accurately. And the journal the
+backend always had finally gets its console tab — typed or spoken
+(the mic transcribes into the box for the user to fix before saving),
+newest first, sealed on private plans.
+
 **Two versions answering is no longer a mystery.** Field report: a
 fresh console over a stale backend answers "Not Found" on every newer
 screen while looking otherwise alive — the shell refuses to adopt a

@@ -9,9 +9,10 @@ import { Meds } from "./screens/Meds";
 import { CareTeam } from "./screens/CareTeam";
 import { Coach } from "./screens/Coach";
 import { Checkin } from "./screens/Checkin";
+import { Journal } from "./screens/Journal";
 import { Settings } from "./screens/Settings";
 
-type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "checkin" | "settings";
+type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "checkin" | "journal" | "settings";
 const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "home", label: "Overview", icon: "◎" },
   { id: "monitor", label: "Live Monitoring", icon: "❤" },
@@ -20,6 +21,7 @@ const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "careteam", label: "Care Team", icon: "👥" },
   { id: "coach", label: "Coach", icon: "🧠" },
   { id: "checkin", label: "Check-in", icon: "🌿" },
+  { id: "journal", label: "Journal", icon: "📖" },
   { id: "settings", label: "Privacy", icon: "🛡" },
 ];
 
@@ -58,6 +60,7 @@ export function App() {
         {tab === "baseline" && <Baseline />}
         {tab === "coach" && <Coach />}
         {tab === "checkin" && <Checkin />}
+        {tab === "journal" && <Journal />}
         {tab === "settings" && <Settings />}
       </main>
     </div>

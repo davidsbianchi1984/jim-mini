@@ -19,6 +19,7 @@ from . import (accounts, app_connectors, auth, bands, beacons, careteam,
                meds, mic, mobile, notify, referral, relay, research, robotics,
                rota, social, storage, terms as terms_mod, tiers, tutorial,
                vigil, voice, watch)
+from . import crashwatch
 from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
@@ -29,6 +30,7 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate,
+    CrashWatchArm,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     BandSet,
@@ -90,6 +92,12 @@ def create_app(qrme_client: QRMEClient | None = None,
     # carry the status it chose (404 wrong channel, 422 unusable payload).
     @app.exception_handler(watch.WatchError)
     def _watch_refusal(request: Request, exc: watch.WatchError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=exc.status,
+                            content={"detail": exc.message})
+
+    @app.exception_handler(crashwatch.CrashWatchError)
+    def _crashwatch_refusal(request: Request, exc: crashwatch.CrashWatchError):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=exc.status,
                             content={"detail": exc.message})
@@ -1031,6 +1039,41 @@ def create_app(qrme_client: QRMEClient | None = None,
         """The "I'm okay" button."""
         _user_or_404(user_id, request)
         return vigil.resolve(user_id)
+
+    # -- the crash watch (jim/crashwatch.py) --------------------------------
+    # The vigil's acute sibling: a critical reading opens "are you okay?",
+    # and N unanswered attempts summon the help the user programmed in
+    # advance — a trusted person, and (only if the box was ticked) an
+    # emergency-services dispatch request.
+
+    @app.get("/crash-watch/{user_id}")
+    def crash_watch_status(user_id: str, request: Request) -> dict:
+        """Status — and the clock: a status read advances expired
+        attempts, so the console polling is what re-asks the question."""
+        _user_or_404(user_id, request)
+        crashwatch.sweep(user_id)
+        return crashwatch.status(user_id)
+
+    @app.put("/crash-watch/{user_id}")
+    def crash_watch_arm(user_id: str, body: CrashWatchArm,
+                        request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return crashwatch.arm(
+            user_id, body.trusted_name, body.trusted_channel,
+            attempts=body.attempts, window_minutes=body.window_minutes,
+            contact_emergency_services=body.contact_emergency_services)
+
+    @app.delete("/crash-watch/{user_id}")
+    def crash_watch_disarm(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return crashwatch.disarm(user_id)
+
+    @app.post("/crash-watch/{user_id}/respond")
+    def crash_watch_respond(user_id: str, request: Request) -> dict:
+        """The "I'm okay" button — the all-clear, from the only voice
+        that can give it."""
+        _user_or_404(user_id, request)
+        return crashwatch.respond(user_id)
 
     # -- the medicine cabinet (jim/meds.py) ---------------------------------
     # What the user takes, in their words. JIM is not a pharmacist: it

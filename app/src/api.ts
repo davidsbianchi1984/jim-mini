@@ -155,6 +155,24 @@ export interface CarePlan {
   created_at: string;
 }
 
+export interface CrashWatchStatus {
+  armed: boolean;
+  trusted_name?: string;
+  trusted_channel?: string;
+  attempts?: number;
+  window_minutes?: number;
+  contact_emergency_services?: boolean;
+  asking?: boolean;
+  attempt?: number;
+  deadline_at?: string | null;
+  concern?: string | null;
+  tripped?: boolean;
+  tripped_at?: string | null;
+}
+export interface JournalRow {
+  id: string; text: string; created_at: string; vaulted?: boolean;
+}
+
 export const api = {
   health: () => req<{ status: string; version?: string; tandem: boolean;
                       console?: boolean }>("/health"),
@@ -248,6 +266,27 @@ export const api = {
     req<{ days: number; medications: { id: string; name: string;
           expected: number; taken: number; rate: number | null }[] }>(
       `/meds/${uid}/adherence?days=${days}`, { token }),
+
+  // The crash watch: the vigil's acute sibling — a critical reading opens
+  // "are you okay?", N unanswered attempts summon the programmed help.
+  crashWatch: (uid: string, token: string) =>
+    req<CrashWatchStatus>(`/crash-watch/${uid}`, { token }),
+  armCrashWatch: (uid: string, body: {
+    trusted_name: string; trusted_channel: string; attempts: number;
+    window_minutes: number; contact_emergency_services: boolean;
+  }, token: string) =>
+    req<CrashWatchStatus>(`/crash-watch/${uid}`, { method: "PUT", body, token }),
+  disarmCrashWatch: (uid: string, token: string) =>
+    req<CrashWatchStatus>(`/crash-watch/${uid}`, { method: "DELETE", token }),
+  imOkay: (uid: string, token: string) =>
+    req<CrashWatchStatus>(`/crash-watch/${uid}/respond`, { method: "POST", token }),
+
+  // The journal: text or spoken, sealed on private plans.
+  addJournal: (uid: string, text: string, token: string) =>
+    req<{ id: string; vaulted: boolean }>(
+      `/journal/${uid}`, { method: "POST", body: { text }, token }),
+  journal: (uid: string, token: string) =>
+    req<JournalRow[]>(`/journal/${uid}`, { token }),
 
   // The vigil: the alarm that fires when the signals stop.
   getVigil: (uid: string, token: string) =>
