@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.11.1] — 2026-07-29
+
+**No functional changes here**: cut with the siblings. In PDI, the
+desktop app finally carries its own vault — bundled backend, persistent
+master key, and a release gate that proves the first run.
+
 ## [0.11.0] — 2026-07-29
 
 **There are no functional changes to JIM-mini in this release**: cut with
@@ -1422,7 +1428,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.11.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.11.1...HEAD
+[0.11.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.11.1
 [0.11.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.11.0
 [0.10.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.10.0
 [0.9.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.9.1

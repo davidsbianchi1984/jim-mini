@@ -1,15 +1,15 @@
-# JIM-mini v0.11.0 — release notes
+# JIM-mini v0.11.1 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.11.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.11.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.11.0** — **no functional change in this release**: cut with
-the siblings. In QRME, the console caught up with its backend — Discover
-(marketplace + starter collection), Friends with the founder pinned
-first, Rooms (2D/AR/VR + live desks), a memory vault that names names,
-and a chat fallback that stopped performing a character.
+**JIM-mini v0.11.1** — **no functional change in this release**: cut
+with the siblings. In PDI, the desktop app finally carries its own vault:
+a bundled backend (no more "Failed to fetch" on first run), a master key
+generated once and persisted, and a release gate that creates a tenant,
+seals, restarts and reads back on every OS before packaging.
 
 ### Verification
 
