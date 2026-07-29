@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The voice orb, and the help box.** Talking with the Coach now looks
+like talking: a breathing orb takes the screen while JIM listens
+(green) or speaks (violet) — tap anywhere to end it. And JIM gets its
+own help box on every screen, matching QRME's: written directions
+about where each door lives (never a model call, so it cannot invent
+a feature), handing anything beyond the app itself to the Coach —
+which is JIM.
+
 **The crash watch, and the journal's door.** Field request, verbatim
 in spirit: "if pulse gets shallow and stops and JIM gets too many
 non-responsive attempts, contact emergency services and a trusted

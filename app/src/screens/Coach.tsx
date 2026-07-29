@@ -52,6 +52,16 @@ export function Coach() {
 
   return (
     <div className="screen">
+      {(listening || speaking) && (
+        <div className="voice-orb-veil" role="status"
+             aria-label={listening ? "Listening" : "Speaking"}
+             onClick={() => { if (listening) toggleMic(); else { hush(); setSpeaking(false); } }}>
+          <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+          <div className="voice-orb-label">
+            {listening ? "listening — tap to stop" : "speaking — tap to hush"}
+          </div>
+        </div>
+      )}
       <header className="screen-head">
         <h2>Coach</h2>
         <span className="muted small">24/7 across your life</span>
