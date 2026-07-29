@@ -1577,7 +1577,7 @@ the three-product suite (with
 
 [Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.15.0...HEAD
 [0.15.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.15.0
-[0.14.5]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.5
+[0.14.5]: https://github.com/davidsbianchi1984/jim-mini/commit/cc2b6daf0e7b4c6fa11d9dc9af5d11570e2bf89d
 [0.14.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.4
 [0.14.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.3
 [0.14.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.2
