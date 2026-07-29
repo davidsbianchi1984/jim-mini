@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Stress joins the check-in.** The field promise was "track your mood
+*and stress levels* over time", and stress had no field anywhere. Check-ins
+take an optional stress reading (1 calm — 5 overwhelmed) alongside mood and
+energy; the progress report averages it; and three climbing readings ending
+high produce a forecast that points at a concrete strategy — two minutes of
+box breathing in Wellness, and the mental-health coach — not just the bad
+news. Existing databases gain the column on first launch (the schema now
+carries a proper add-column migration), and a check-in without stress stays
+exactly what it was. On a phone, the help button now rides above the tab
+bar instead of sitting on the right-most tabs.
+
 ## [0.15.0] — 2026-07-29
 
 **Guided wellness — the on-purpose half of guidance.** From the field

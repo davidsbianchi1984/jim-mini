@@ -6,6 +6,7 @@ export function Checkin() {
   const { session } = useSession();
   const [mood, setMood] = useState(4);
   const [energy, setEnergy] = useState(3);
+  const [stress, setStress] = useState(2);
   const [note, setNote] = useState("");
   const [result, setResult] = useState<CheckinResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -14,7 +15,7 @@ export function Checkin() {
   async function save() {
     if (!session.userId || !session.userToken) return;
     setBusy(true); setError(null);
-    try { setResult(await api.checkin(session.userId, { mood, energy, note }, session.userToken)); }
+    try { setResult(await api.checkin(session.userId, { mood, energy, stress, note }, session.userToken)); }
     catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
 
@@ -22,13 +23,15 @@ export function Checkin() {
     <div className="screen">
       <header className="screen-head">
         <h2>Check-in</h2>
-        <span className="muted small">mood &amp; energy · a worrying note runs the crisis check</span>
+        <span className="muted small">mood, energy &amp; stress · a worrying note runs the crisis check</span>
       </header>
       <div className="card">
         <label>Mood: <b className="green">{mood}</b> / 5
           <input type="range" min="1" max="5" value={mood} onChange={(e) => setMood(+e.target.value)} /></label>
         <label>Energy: <b className="amber">{energy}</b> / 5
           <input type="range" min="1" max="5" value={energy} onChange={(e) => setEnergy(+e.target.value)} /></label>
+        <label>Stress: <b className="red">{stress}</b> / 5
+          <input type="range" min="1" max="5" value={stress} onChange={(e) => setStress(+e.target.value)} /></label>
         <label>Note (optional)<textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} /></label>
         <button className="primary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save check-in"}</button>
         {error && <div className="error">⚠ {error}</div>}
@@ -36,7 +39,7 @@ export function Checkin() {
       {result && (
         <div className="card">
           <h3>Logged</h3>
-          <div className="muted small">mood {result.mood} · energy {result.energy}</div>
+          <div className="muted small">mood {result.mood} · energy {result.energy} · stress {result.stress ?? stress}</div>
           {result.guardian?.detected ? (
             <div className="detect hit" style={{ marginTop: 10 }}>
               <div className="detect-head"><span className="tag warn">guardian</span> flagged</div>

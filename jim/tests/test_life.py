@@ -58,6 +58,37 @@ def test_low_mood_checkin_nudges(client):
     assert fine["insights"] == []
 
 
+def test_stress_rides_the_checkin_and_climbing_stress_speaks_up(client):
+    """The field promise, second half: "track your mood AND stress levels
+    over time". Stress is optional on every check-in, lands in the progress
+    report's averages, and three climbing readings ending high produce a
+    forecast that points at a concrete strategy — the guided calm sessions —
+    not just the bad news."""
+    user = enroll(client)
+    body = client.post(f"/checkin/{user}", json={
+        "mood": 4, "energy": 3, "stress": 2}).json()
+    assert body["stress"] == 2 and body["insights"] == []
+
+    client.post(f"/checkin/{user}", json={"mood": 4, "stress": 3})
+    body = client.post(f"/checkin/{user}", json={"mood": 4, "stress": 5}).json()
+    climbing = [i for i in body["insights"] if "climbing" in i["message"]]
+    assert climbing and "box breathing" in climbing[0]["message"]
+
+    report = client.get(f"/report/{user}").json()
+    assert report["checkins"]["avg_stress"] == round((2 + 3 + 5) / 3, 2)
+
+
+def test_a_stressless_checkin_stays_exactly_what_it_was(client):
+    """Optional means optional: the old two-slider check-in, and DBs from
+    before the column, keep working untouched."""
+    user = enroll(client)
+    body = client.post(f"/checkin/{user}", json={"mood": 4, "energy": 3}).json()
+    assert body["stress"] is None
+    assert client.get(f"/report/{user}").json()["checkins"]["avg_stress"] is None
+    r = client.post(f"/checkin/{user}", json={"mood": 4, "stress": 9})
+    assert r.status_code == 422
+
+
 def test_crisis_note_in_checkin_escalates(client):
     user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100",
                   contact_consent=True)

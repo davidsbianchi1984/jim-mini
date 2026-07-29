@@ -1803,7 +1803,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     def check_in(user_id: str, body: CheckIn, request: Request) -> dict:
         _user_or_404(user_id, request)
         result = life.check_in(user_id, body.mood, body.energy, body.note,
-                               pdi=_vault(user_id))
+                               pdi=_vault(user_id), stress=body.stress)
         # A worrying note still goes through the Guardian pipeline so crisis
         # language escalates exactly as it does from /monitor.
         if body.note:
