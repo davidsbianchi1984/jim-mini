@@ -102,6 +102,18 @@ export interface PairInfo {
   console_url: string; api_url: string; console_built: boolean;
   qr_svg: string; how: string[]; note: string;
 }
+export interface MedSchedule { times?: string[]; as_needed?: boolean; max_per_day?: number }
+export interface MedOut {
+  id: string; name: string; dose: string; purpose?: string | null;
+  schedule: MedSchedule; critical: boolean; archived: boolean;
+}
+export interface MedBoard {
+  date: string; disclaimer: string;
+  missed_critical: { name: string; slot: string }[];
+  medications: (MedOut & { kind: "scheduled" | "as_needed";
+    slots?: { slot: string; status: string; note?: string | null }[];
+    taken_today?: number; max_per_day?: number | null })[];
+}
 export interface VigilStatus {
   armed: boolean; steward_name?: string; steward_channel?: string;
   quiet_days?: number; note?: string | null; last_heard_at?: string | null;
@@ -178,6 +190,22 @@ export const api = {
   transcribe: (audio_base64: string) =>
     req<{ text: string }>("/voice/transcribe",
       { method: "POST", body: { audio_base64 } }),
+
+  // The medicine cabinet: tracked in your words, never a pharmacist.
+  medsBoard: (uid: string, token: string) =>
+    req<MedBoard>(`/meds/${uid}`, { token }),
+  medsAdd: (uid: string, token: string, body: { name: string; dose: string;
+            schedule: MedSchedule; purpose?: string; critical?: boolean }) =>
+    req<MedOut>(`/meds/${uid}`, { method: "POST", body, token }),
+  medsArchive: (uid: string, mid: string, token: string) =>
+    req<MedOut>(`/meds/${uid}/${mid}`, { method: "DELETE", token }),
+  medsLog: (uid: string, mid: string, token: string,
+            body: { action: "taken" | "skipped"; slot?: string; note?: string }) =>
+    req<MedBoard>(`/meds/${uid}/${mid}/log`, { method: "POST", body, token }),
+  medsAdherence: (uid: string, token: string, days = 7) =>
+    req<{ days: number; medications: { id: string; name: string;
+          expected: number; taken: number; rate: number | null }[] }>(
+      `/meds/${uid}/adherence?days=${days}`, { token }),
 
   // The vigil: the alarm that fires when the signals stop.
   getVigil: (uid: string, token: string) =>

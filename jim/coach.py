@@ -44,6 +44,10 @@ def _context(user_id: str) -> str:
     if prior:
         lines.append(f"{len(prior)} prior coach message(s) on record — keep "
                      "continuity with earlier sessions")
+    # A coach who chats about your week without noticing you stopped your
+    # heart pills isn't paying attention (jim/meds.py). Context, not alarm.
+    from . import meds
+    lines.extend(meds.coach_context(user_id))
     return "\n".join(lines) if lines else "no recent check-ins or goals"
 
 

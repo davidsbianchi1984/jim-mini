@@ -183,3 +183,20 @@ button.mic.listening { background: rgba(248,81,73,0.18); border-color: var(--red
 /* An honest amber: the reply arrived, but not from who the user picked.
    Distinct from .error (red) — nothing failed to deliver; it degraded. */
 .degraded { background: rgba(255,184,60,0.10); color: #ffb83c; border: 1px solid rgba(255,184,60,0.5); border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 10px 0; }
+
+/* The medicine cabinet */
+.med-row { border-top: 1px solid var(--line); padding: 10px 0; }
+.med-row:first-of-type { border-top: none; }
+.med-head { display: flex; align-items: baseline; gap: 8px; }
+.med-archive { margin-left: auto; font-size: 11px; padding: 4px 10px; }
+.med-slots { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.med-slot { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.med-slot.missed .med-status { color: #ffb83c; font-weight: 600; }
+.med-slot.taken .med-status { color: var(--green, #43e08a); }
+.med-slot.due .med-status { color: var(--t2); font-weight: 600; }
+.med-slot .actions { display: flex; gap: 6px; }
+.med-slot button { font-size: 12px; padding: 5px 12px; }
+.med-adherence { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; }
+.med-bar { flex: 1; height: 7px; border-radius: 4px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.med-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--brandA, #7c5cff), var(--brandB, #3aa0ff)); }
+label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }

@@ -15,7 +15,7 @@ from . import (accounts, app_connectors, auth, bands, beacons, catalog,
                mailer,
                contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
-               mic, mobile, notify, referral, relay, research, robotics,
+               meds, mic, mobile, notify, referral, relay, research, robotics,
                rota, social, storage, terms as terms_mod, tiers, tutorial,
                vigil, voice, watch)
 from . import capture as capture_mod
@@ -31,6 +31,7 @@ from .models import (
     RobotBind, RelayAccept, RelayQuestion,
     BandSet,
     LanguageChoice, LocalitySet, MailSettings, MailTest,
+    MedCreate, MedLog, MedUpdate,
     MicAttach, MicGain, MicHandover,
     ReferralPrepare, ResendCode, ResetPassword, ResetRequest, RobotCommand,
     SignIn, Signup,
@@ -60,7 +61,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.8.0",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.9.0",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -93,6 +94,12 @@ def create_app(qrme_client: QRMEClient | None = None,
 
     @app.exception_handler(vigil.VigilError)
     def _vigil_refusal(request: Request, exc: vigil.VigilError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=exc.status,
+                            content={"detail": exc.message})
+
+    @app.exception_handler(meds.MedError)
+    def _med_refusal(request: Request, exc: meds.MedError):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=exc.status,
                             content={"detail": exc.message})
@@ -980,6 +987,49 @@ def create_app(qrme_client: QRMEClient | None = None,
         """The "I'm okay" button."""
         _user_or_404(user_id, request)
         return vigil.resolve(user_id)
+
+    # -- the medicine cabinet (jim/meds.py) ---------------------------------
+    # What the user takes, in their words. JIM is not a pharmacist: it
+    # tracks what it is told, and a missed dose is a check-in, never an
+    # alarm.
+
+    @app.get("/meds/{user_id}")
+    def meds_board(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return meds.board(user_id)
+
+    @app.post("/meds/{user_id}", status_code=201)
+    def meds_add(user_id: str, body: MedCreate, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return meds.add(user_id, body.name, body.dose, body.schedule,
+                        purpose=body.purpose, critical=body.critical,
+                        notes=body.notes)
+
+    @app.put("/meds/{user_id}/{med_id}")
+    def meds_update(user_id: str, med_id: str, body: MedUpdate,
+                    request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return meds.update(user_id, med_id,
+                           **body.model_dump(exclude_none=True))
+
+    @app.delete("/meds/{user_id}/{med_id}")
+    def meds_archive(user_id: str, med_id: str, request: Request) -> dict:
+        """Stopped, not deleted — the history stays honest."""
+        _user_or_404(user_id, request)
+        return meds.archive(user_id, med_id)
+
+    @app.post("/meds/{user_id}/{med_id}/log")
+    def meds_log(user_id: str, med_id: str, body: MedLog,
+                 request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return meds.log(user_id, med_id, body.action, slot=body.slot,
+                        note=body.note)
+
+    @app.get("/meds/{user_id}/adherence")
+    def meds_adherence(user_id: str, request: Request,
+                       days: int = 7) -> dict:
+        _user_or_404(user_id, request)
+        return meds.adherence(user_id, days=days)
 
     def _public_base() -> str:
         return os.environ.get("JIM_PUBLIC_URL", "https://jim.app").rstrip("/")

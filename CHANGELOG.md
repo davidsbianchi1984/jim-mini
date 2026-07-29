@@ -6,6 +6,41 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.9.0] — 2026-07-29
+
+### Added
+
+- **The medicine cabinet** (`jim/meds.py`; nav → *Medications*;
+  `GET|POST /meds/{user_id}`, `PUT|DELETE …/{med_id}`,
+  `POST …/{med_id}/log`, `GET …/adherence`). What the user takes, in
+  their own words — "the little white one, 10 mg" is a valid name and
+  dose.
+  - The day's board knows done, due, upcoming and missed — with humane
+    grace: 9:07 is not "missed" for the 8:00 pill; a board that says so
+    teaches the person to ignore it.
+  - One slot has one correctable answer: logging again replaces
+    (skipped → taken happens; people find the pill in their pocket).
+    Adherence counts whole past days only, so an afternoon dose is never
+    "missed" at noon.
+  - An as-needed medication can carry a per-day ceiling that **refuses
+    to log past itself** and points at the prescriber — recording the
+    overage would be complicity.
+  - A missed dose — even one marked critical — is a check-in on the
+    board and a line in the coach's context ("worth asking about gently,
+    never scolding"), never an alarm: this module has no path into the
+    escalation ladder.
+  - Every dose logged is a sign of life the vigil counts: for the person
+    whose only daily interaction is their pillbox, taking their
+    medication quietly keeps the vigil stood down.
+  - JIM is not a pharmacist: no interaction checker — a toy one would be
+    trusted — and the board carries the line "your pharmacist does that"
+    on its face.
+
+### Changed
+
+- Version aligned to 0.9.0 across the API, the desktop app and the Python
+  package — cut together with qrme and pdi at this version.
+
 ## [0.8.0] — 2026-07-29
 
 ### Added
@@ -1324,7 +1359,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.8.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.9.0...HEAD
+[0.9.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.9.0
 [0.8.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.8.0
 [0.7.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.7.0
 [0.6.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.6.1
