@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.13.0] — 2026-07-29
+
+**The care team is an organization.** Link your own QRME org and name
+the desk that speaks for the Guardian; when concerns stack — a
+drift-band crossing while a medication's adherence is below 75% — the
+Guardian takes the situation to the whole team as one coordination
+goal, and the joint plan lands back as a care plan. Your own
+credential, pasted knowingly; summaries cross, never raw readings;
+once a day at most, calm path only. Screen 86, and the console's Care
+Team tab. Proved end-to-end against live QRME and PDI processes.
+
 ## [0.12.0] — 2026-07-29
 
 **No functional changes here**: cut with the siblings. In QRME, the
@@ -1437,7 +1448,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.12.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.13.0...HEAD
+[0.13.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.13.0
 [0.12.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.12.0
 [0.11.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.11.1
 [0.11.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.11.0
