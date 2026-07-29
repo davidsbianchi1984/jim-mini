@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.7] — 2026-07-28
+
+### Fixed
+
+- **An upgraded app kept meeting the first version's signup.** The desktop
+  shell adopted whatever backend answered its port — and on Windows, killing
+  the frozen backend's bootloader left the real process alive, so a zombie
+  from an early install held port 8000 across every later upgrade and served
+  its old API to every new console. Three changes make it impossible:
+  `/health` now reports the backend's **version**; the shell adopts a running
+  backend **only when that version is its own**, otherwise it takes a free
+  port and starts its own there and tells the window which address to use
+  (a stored loopback address never overrides it); and quitting kills the
+  backend's **whole process tree** (`taskkill /T` on Windows) rather than
+  just the launcher. The release gate now also asserts the frozen backend
+  reports the version being packaged.
+
 ## [0.4.6] — 2026-07-28
 
 ### Fixed
@@ -1136,7 +1153,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.6...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.4.7...HEAD
+[0.4.7]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.7
 [0.4.6]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.6
 [0.4.5]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.5
 [0.4.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.4.4

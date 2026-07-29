@@ -1,46 +1,47 @@
-# JIM-mini v0.4.6 — release notes
+# JIM-mini v0.4.7 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.4.6` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.4.7` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.4.6** — the round where verification matched the deployment.
-One of three interoperating products, all three cut together at this
+**JIM-mini v0.4.7** — the round where an upgrade actually replaced the old
+app. One of three interoperating products, all three cut together at this
 version.
 
-### Signup that fits where it runs
+### The upgrade that never took
 
-A desktop install has no mail service, so no email can ever arrive — yet
-0.4.4's code screen sat waiting for one. Now:
+Three releases in a row fixed signup, and a real install kept meeting the
+*first* version's screen anyway. The cause was not in signup at all: the
+desktop shell adopted whatever backend answered its port, and on Windows
+quitting the app killed the frozen backend's launcher while leaving the
+real process alive. So a zombie from an early install kept port 8000 across
+every upgrade, and each new console dutifully talked to it.
 
-- **Desktop (no mail transport): signup goes straight in.** The machine
-  owner is trusted on a single-user local install — there is no inbox to
-  prove and nothing to prove it to. Create account → you're in.
-- **Hosted (SMTP configured): a real email with a clickable verify link**,
-  the shape every mainstream flow uses, with the 6-digit code as fallback.
-  Click the link in your mail and **the app continues on its own** — it
-  holds your email and password, so it signs in the moment the address is
-  proven.
+Three changes make that impossible:
 
-### Also fixed
+- **`/health` reports the backend's version**, so the shell can tell its
+  own backend from a stranger's.
+- **The shell adopts a running backend only when that version matches its
+  own** — otherwise it takes a free port, starts its own there, and tells
+  the window that exact address (a stored loopback address never overrides
+  it).
+- **Quitting kills the backend's whole process tree** (`taskkill /T` on
+  Windows), so nothing survives to squat the port.
 
-- A signup that crashed mid-flight (0.4.3) no longer strands the retry: a
-  pending account routes straight to verification with a fresh code; an
-  already-verified address routes to sign-in.
-- The packaged app can open its own backend log from the verification
-  screen (Electron bridge) — relevant on deployments without mail.
+The release gate now also asserts the frozen backend reports the version
+being packaged, and the fix was verified against a simulated impostor: an
+old backend answering 8000, the shell refusing it, starting its own on a
+free port, and signup going straight through.
 
 ### Verification
 
-556 tests green. The frozen binaries were rebuilt and the full first
-run driven against them — signup straight into a session, personal routes,
-sign-in.
+558 tests green.
 
 ### Install
 
-Download the installer for your OS from the assets below (built by the
-`desktop-release` workflow from the `app-v0.4.6` tag) and double-click —
-create your account and you are in.
+Download the installer for your OS from the assets below and double-click.
+If an older version is still running, close it (or just install over it) —
+this build no longer trusts it.
 
 **Full changelog:** https://github.com/davidsbianchi1984/jim-mini/blob/main/CHANGELOG.md

@@ -78,7 +78,18 @@ def main() -> int:
         else:
             print("FAIL: backend never answered /health")
             return 1
-        print("ok: /health")
+        # The shell adopts a running backend only when its version matches
+        # the app's; a mismatch here means the two halves of the installer
+        # disagree, and a desktop shell would go looking for another port.
+        expected = json.loads(
+            (Path(__file__).resolve().parent.parent / "app" / "package.json")
+            .read_text())["version"]
+        _, health = call("GET", "/health")
+        if health.get("version") != expected:
+            print(f"FAIL: /health version {health.get('version')!r} != "
+                  f"app/package.json {expected!r}")
+            return 1
+        print(f"ok: /health reports version {expected}")
 
         # This deployment has no mail transport, so signup activates the
         # account directly — the packaged desktop experience.

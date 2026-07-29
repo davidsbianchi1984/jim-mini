@@ -13,18 +13,59 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 
-const BACKEND_PORT = process.env.JIM_PORT || "8000";
+const DEFAULT_PORT = Number(process.env.JIM_PORT || 8000);
+let backendPort = DEFAULT_PORT;
 let backendProc = null;
 
-function probeHealth() {
+// Ask the backend on `port` who it is. Returns null when nothing answers.
+function probeHealth(port) {
   return new Promise((resolve) => {
     const req = http.get(
-      { host: "127.0.0.1", port: BACKEND_PORT, path: "/health", timeout: 1500 },
-      (res) => { res.resume(); resolve(res.statusCode === 200); },
+      { host: "127.0.0.1", port, path: "/health", timeout: 1500 },
+      (res) => {
+        let body = "";
+        res.on("data", (c) => { body += c; });
+        res.on("end", () => {
+          if (res.statusCode !== 200) return resolve(null);
+          try { resolve(JSON.parse(body)); } catch { resolve({}); }
+        });
+      },
     );
-    req.on("error", () => resolve(false));
-    req.on("timeout", () => { req.destroy(); resolve(false); });
+    req.on("error", () => resolve(null));
+    req.on("timeout", () => { req.destroy(); resolve(null); });
   });
+}
+
+// A port nothing is listening on, for when the default one is held by a
+// backend that is not ours.
+function freePort() {
+  return new Promise((resolve) => {
+    const net = require("net");
+    const srv = net.createServer();
+    srv.listen(0, "127.0.0.1", () => {
+      const { port } = srv.address();
+      srv.close(() => resolve(port));
+    });
+  });
+}
+
+// On Windows the frozen backend is a bootloader that spawns the real Python
+// process as a child; killing the parent leaves the child holding the port
+// forever. That zombie then answers every future launch — including after
+// an upgrade — which is how one install's signup outlived three releases.
+// Take the whole tree.
+function killBackend() {
+  if (!backendProc) return;
+  const pid = backendProc.pid;
+  backendProc = null;
+  if (process.platform === "win32") {
+    try {
+      require("child_process").execFileSync(
+        "taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore" });
+      return;
+    } catch { /* fall through to the plain kill */ }
+  }
+  try { process.kill(pid); } catch { /* already gone */ }
 }
 
 function bundledBackend() {
@@ -34,17 +75,24 @@ function bundledBackend() {
 }
 
 async function ensureBackend() {
-  if (await probeHealth()) return;          // somebody already runs one
+  const running = await probeHealth(backendPort);
+  if (running && running.version === app.getVersion()) return;  // ours already
   const bin = bundledBackend();
   if (!bin) return;                          // dev checkout — the console's own
                                              // connection panel says what to do
+  if (running) {
+    // Something answers the default port but is not this version: a zombie
+    // from an older install, or another product. Never adopt it — it serves
+    // an older API. Take a port of our own instead.
+    backendPort = await freePort();
+  }
   const log = fs.createWriteStream(
     path.join(app.getPath("userData"), "backend.log"), { flags: "a" });
   backendProc = spawn(bin, [], {
     env: {
       ...process.env,
       JIM_DB: path.join(app.getPath("userData"), "jim.db"),
-      JIM_PORT: String(BACKEND_PORT),
+      JIM_PORT: String(backendPort),
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -54,7 +102,8 @@ async function ensureBackend() {
   // A frozen backend cold-starts in a few seconds; don't open a window that
   // reports "unreachable" for a backend we are busy starting.
   for (let i = 0; i < 40; i++) {
-    if (await probeHealth()) return;
+    const up = await probeHealth(backendPort);
+    if (up) return;
     await new Promise((r) => setTimeout(r, 500));
   }
 }
@@ -71,6 +120,10 @@ function createWindow() {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
+      // The window is created after the backend is up, so the renderer is
+      // told the exact address of *this* app's backend — never a guess at
+      // the default port, which an older install's zombie may still hold.
+      additionalArguments: [`--jim-backend-url=http://127.0.0.1:${backendPort}`],
     },
   });
 
@@ -90,6 +143,9 @@ function createWindow() {
 
 // The "console" mail transport writes the verification code to the spawned
 // backend's log; this is the packaged app's way to actually show it.
+// The renderer must talk to *our* backend, whatever port it ended up on.
+ipcMain.handle("backend-url", () => `http://127.0.0.1:${backendPort}`);
+
 ipcMain.handle("open-backend-log", () => {
   const logPath = path.join(app.getPath("userData"), "backend.log");
   if (fs.existsSync(logPath)) return shell.openPath(logPath);
@@ -108,7 +164,7 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-// The spawned backend belongs to this app instance: it dies with the window.
-app.on("will-quit", () => {
-  if (backendProc) backendProc.kill();
-});
+// The spawned backend belongs to this app instance: it dies with the window,
+// process tree and all.
+app.on("will-quit", killBackend);
+process.on("exit", killBackend);

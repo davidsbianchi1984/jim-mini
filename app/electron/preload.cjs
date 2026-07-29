@@ -5,8 +5,13 @@
 // configured, and a packaged app has no terminal for a user to look at.
 const { contextBridge, ipcRenderer } = require("electron");
 
+const backendArg = process.argv.find((a) => a.startsWith("--jim-backend-url="));
+
 contextBridge.exposeInMainWorld("jimDesktop", {
   isElectron: true,
   platform: process.platform,
+  // The address of the backend this app actually started — the renderer
+  // must not guess a port an older install's leftover process may hold.
+  backendUrl: backendArg ? backendArg.split("=").slice(1).join("=") : null,
   openBackendLog: () => ipcRenderer.invoke("open-backend-log"),
 });

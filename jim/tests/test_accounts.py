@@ -363,3 +363,14 @@ def test_minor_without_guardian_consent_is_refused_at_signup(client, monkeypatch
     })
     assert r.status_code == 403
     assert sent == []
+
+
+def test_health_reports_the_version(client):
+    """The desktop shell adopts a backend on its port only when the version
+    matches its own. Without this field it cannot tell a leftover backend
+    from an older install apart from its own — which is how an upgraded app
+    kept meeting the first version's signup."""
+    from jim.api import app as _app
+
+    body = client.get("/health").json()
+    assert body["version"] == _app.version

@@ -53,7 +53,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.4.6",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.4.7",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -161,7 +161,13 @@ def create_app(qrme_client: QRMEClient | None = None,
 
     @app.get("/health")
     def health() -> dict:
-        return {"status": "ok", "tandem": app.state.qrme is not None,
+        # The version is here so a desktop shell can tell whether the backend
+        # answering the port is its own. A stale backend from an older
+        # install answers /health perfectly well and then serves an older
+        # API — which is how a user who installed three upgrades kept
+        # meeting the first version's signup.
+        return {"status": "ok", "version": app.version,
+                "tandem": app.state.qrme is not None,
                 "pdi": app.state.pdi is not None,
                 "cloud": app.state.cloud is not None,
                 "console": mobile.console_dir() is not None}
