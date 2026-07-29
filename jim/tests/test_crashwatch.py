@@ -167,3 +167,25 @@ def test_free_text_never_rides_the_drip(client):
     r = client.post(drip, json={"movement": "dancing"})
     assert r.status_code == 422
     assert "movement: fall" in r.json()["detail"]
+
+
+def test_conscious_but_deteriorating_still_gets_help(client):
+    """Field clarification, pinned: answering "I'm okay" closes the
+    question, but it never silences the clinical ladder — a conscious
+    person whose oxygen keeps falling below threshold still escalates on
+    every critical reading, and the next one re-opens the question too."""
+    user = enroll(client)
+    _arm(client, user)
+    client.post(f"/monitor/{user}", json={"blood_oxygen": 85})
+    client.post(f"/crash-watch/{user}/respond")          # "I'm okay"
+    assert client.get(f"/crash-watch/{user}").json()["asking"] is False
+
+    # Oxygen keeps falling: the escalation ladder fires immediately —
+    # feeling okay is not a veto over a collapsing number —
+    r = client.post(f"/monitor/{user}", json={"blood_oxygen": 83})
+    body = r.json()
+    assert body["detected"] is True and body["escalation"]
+    assert body["escalation"]["escalated"] is True
+    # — and the crash watch asks again, from attempt one.
+    st = client.get(f"/crash-watch/{user}").json()
+    assert st["asking"] is True and st["attempt"] == 1
