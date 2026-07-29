@@ -177,6 +177,28 @@ The profile's prompt states the limit rather than assuming it: *you hear them,
 not the other people in this room, who have not lent you anything and may not
 realise you could hear them.*
 
+### The care team is an organization
+
+QRME's operational ecosystem gives an account departments staffed by role
+agents that coordinate on one goal (`POST /organizations/{id}/coordinate`).
+JIM joins it from the guardian's side (`jim/careteam.py`): the user links
+their own QRME organization and names the desk that speaks for the Guardian
+(`PUT /users/{id}/care-team`), pasting **their own QRME owner token** —
+QRME's organization routes are owner-only on purpose, and JIM never sneaks
+around that. The token is stored like the tandem interactor token, never
+echoed back, and unlinking deletes it.
+
+The trigger is **stacking**, not severity: a drift-band crossing arriving
+while a medication's 7-day adherence is below 75% means one reading is no
+longer one question, and the Guardian takes the situation to the whole team
+as a coordination goal. Three limits hold: summaries cross, never raw
+readings (the goal names the adherence percentage and the drifted band, not
+the sample stream); at most one coordination per day; and the calm path
+only — anything `conditions.detect` flags is already on the escalation
+ladder, which no coordination replaces. The joint plan lands back in JIM as
+a care plan (`GET /users/{id}/care-team/plans`), carrying the sealed-in-
+vault mark when the tandem stored it.
+
 ## qrme / jim-mini ✕ pdi
 
 PDI is a separate secure-hosting product: a private, encrypted data vault with
@@ -230,6 +252,14 @@ changed is which accounts put anything in it.
   the same custody standard as a tandem exchange), and `adaptation/…` (steering
   runs). Resolved on read for persona prompts and exports, and purged when the
   profile is deleted.
+
+- **qrme coordinations** seal under `qrme/coordination/{id}` — the joint
+  plan and every department's contribution, written at coordination time when
+  the tandem is configured. PDI answers with the **operations journal**
+  (`GET /operations`): the same records listed back to the tenant, decrypted
+  with the tenant's own token, through the ordinary audited read path — a
+  view, never a side door, so every journal read lands on the hash-chained
+  audit log like any other read.
 
 The AI systems do not depend on PDI to function; PDI is the "run on top of"
 infrastructure layer they integrate with when deployed in a private

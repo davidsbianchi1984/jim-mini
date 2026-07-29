@@ -101,6 +101,19 @@ exchanges with auditable custody, and per-plan custody postures. (See
 the sibling repositories' disclosures; convention documented in each
 CHANGELOG since v0.1.6.)
 
+## The care-team stacking rule
+
+**The process:** a guardian system that escalates to cross-agent
+coordination on *stacked* signals rather than severity — a personal
+drift-band crossing arriving while medication adherence is below a
+floor — taking the situation to the user's own organization of
+role-specific agents as one goal, under three structural limits:
+summaries cross but raw readings never do; at most one coordination per
+cooldown period; calm path only, with the escalation ladder untouched.
+The user's own credential authorizes it, stored like the tandem token,
+never echoed, deleted on unlink (`jim/careteam.py`; shipped v0.13.0,
+recorded 2026-07-29).
+
 ---
 
 *Attorney notes: repository first became public before this disclosure;
