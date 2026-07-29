@@ -209,6 +209,12 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/78-youre-on-free.svg" width="160" alt="78 You are on Free"><br><sub>78 · You're on Free</sub></td>
 <td align="center" width="25%"><img src="docs/screens/79-where-it-lives.svg" width="160" alt="79 Where It Lives"><br><sub>79 · Where It Lives</sub></td>
 <td align="center" width="25%"><img src="docs/screens/80-not-on-free.svg" width="160" alt="80 Not On Free"><br><sub>80 · Not On Free</sub></td>
+<td align="center" width="25%"><img src="docs/screens/81-your-baseline.svg" width="160" alt="81 Your Baseline"><br><sub>81 · Your Baseline</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/82-coach-out-loud.svg" width="160" alt="82 Coach Out Loud"><br><sub>82 · Coach, Out Loud</sub></td>
+<td align="center" width="25%"><img src="docs/screens/83-which-model-answers.svg" width="160" alt="83 Which Model Answers"><br><sub>83 · Which Model Answers</sub></td>
+<td align="center" width="25%"><img src="docs/screens/84-apple-watch.svg" width="160" alt="84 Apple Watch"><br><sub>84 · Apple Watch</sub></td>
 <td align="center" width="25%"></td>
 </tr>
 </table>
