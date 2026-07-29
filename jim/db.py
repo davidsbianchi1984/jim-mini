@@ -233,6 +233,30 @@ CREATE TABLE IF NOT EXISTS tandem_links (
     created_at           TEXT NOT NULL
 );
 
+-- The care team is an organization (QRME's operational ecosystem): the
+-- user's own org, the department that speaks for the Guardian, and the
+-- owner token they pasted to let JIM act on their behalf. Unlinking
+-- deletes the credential.
+CREATE TABLE IF NOT EXISTS care_teams (
+    user_id       TEXT PRIMARY KEY REFERENCES users(id),
+    org_id        TEXT NOT NULL,
+    department_id TEXT NOT NULL,
+    owner_token   TEXT NOT NULL,
+    created_at    TEXT NOT NULL
+);
+
+-- Joint plans that came back from a coordination, with what triggered them.
+CREATE TABLE IF NOT EXISTS care_plans (
+    id              TEXT PRIMARY KEY,
+    user_id         TEXT NOT NULL REFERENCES users(id),
+    coordination_id TEXT,
+    goal            TEXT NOT NULL,
+    plan            TEXT,
+    trigger         TEXT NOT NULL DEFAULT '{}',
+    sealed          INTEGER NOT NULL DEFAULT 0,
+    created_at      TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS events (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

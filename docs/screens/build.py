@@ -1607,6 +1607,17 @@ SCREENS = [
         dict(icon="shield", color="violet", k="Not a pharmacist",
              s="interactions are your pharmacist's call"),
     ]),
+    dict(num=86, title="Care Team", sub="The household, coordinated",
+         accent="cyan", tab=0, cards=[
+        dict(icon="people", color="brand", k="Your own QRME org",
+             s="linked with your credential"),
+        dict(icon="chart", color="amber", k="Concerns stacking",
+             s="drift + doses slipping", pill=("RULE", "warn")),
+        dict(icon="doc", color="green", k="One joint plan",
+             s="each desk's part, this week"),
+        dict(icon="clock", color="cyan", k="Once a day at most",
+             s="calm path only, never an alarm"),
+    ]),
 ]
 
 

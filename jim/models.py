@@ -154,6 +154,20 @@ class ResetPassword(BaseModel):
     new_password: str
 
 
+class CareTeamLink(BaseModel):
+    """Link the user's own QRME organization as their care team. The owner
+    token is the user's own QRME credential, pasted knowingly — QRME's org
+    routes are owner-only and JIM never sneaks around that."""
+
+    org_id: str
+    department_id: str                 # the desk that speaks for the Guardian
+    owner_token: str
+
+
+class CareTeamGoal(BaseModel):
+    goal: str
+
+
 class SpecialistRegister(BaseModel):
     condition: Condition
     mode: Literal["local", "tandem"] = "local"
