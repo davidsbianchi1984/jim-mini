@@ -1618,6 +1618,28 @@ SCREENS = [
         dict(icon="clock", color="cyan", k="Once a day at most",
              s="calm path only, never an alarm"),
     ]),
+    dict(num=87, title="Journal", sub="Your words, typed or spoken",
+         accent="green", tab=0, cards=[
+        dict(icon="mic", color="green", k="Speak it",
+             s="the mic writes into the box first"),
+        dict(icon="lock", color="violet", k="Sealed on a plan",
+             s="vaulted · key reference only"),
+        dict(icon="heart", color="red", k="Read like a reading",
+             s="danger in an entry escalates"),
+        dict(icon="clock", color="cyan", k="Newest first",
+             s="one sentence counts"),
+    ]),
+    dict(num=88, title="Crash Watch", sub="If you stop answering",
+         accent="red", tab=0, cards=[
+        dict(icon="bell", color="amber", k="Are you okay?",
+             s="a critical reading asks", pill=("ASKING", "warn")),
+        dict(icon="people", color="brand", k="Your trusted person",
+             s="contacted after 3 silences"),
+        dict(icon="shield", color="red", k="EMS only if ticked",
+             s="a request — never a fake call"),
+        dict(icon="heart", color="green", k="Any sign of you ends it",
+             s="a normal reading is the all-clear"),
+    ]),
 ]
 
 
