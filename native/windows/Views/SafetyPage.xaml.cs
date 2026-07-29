@@ -45,6 +45,76 @@ public sealed partial class SafetyPage : Page
     {
         await LoadPolicy();
         await LoadRobots();
+        await LoadCrashWatch();
+    }
+
+    // -- crash watch --
+
+    private void ShowCrashWatch(CrashWatchStatus st)
+    {
+        if (!string.IsNullOrEmpty(st.TrustedName)) CrashName.Text = st.TrustedName;
+        if (st.Attempts is int a) CrashAttempts.Value = a;
+        if (st.WindowMinutes is double w) CrashWindow.Value = w;
+        CrashEms.IsChecked = st.ContactEms ?? false;
+        CrashArmButton.Content = st.Armed ? "Update" : "Arm the crash watch";
+        CrashDisarmButton.Visibility = st.Armed ? Visibility.Visible : Visibility.Collapsed;
+        var asking = st.Asking ?? false;
+        CrashAskingCard.Visibility = asking ? Visibility.Visible : Visibility.Collapsed;
+        if (asking)
+            CrashAskingDetail.Text =
+                $"A concerning reading came in ({st.Concern}). Attempt {st.Attempt} " +
+                $"of {st.Attempts} — silence sends help.";
+        var tripped = st.Tripped ?? false;
+        CrashTrippedNote.Visibility = tripped ? Visibility.Visible : Visibility.Collapsed;
+        if (tripped)
+            CrashTrippedNote.Text =
+                $"The crash watch tripped: {st.TrustedName} was contacted. " +
+                "Any normal reading stands it down.";
+        var armedQuiet = st.Armed && !asking && !tripped;
+        CrashArmedNote.Visibility = armedQuiet ? Visibility.Visible : Visibility.Collapsed;
+        if (armedQuiet)
+            CrashArmedNote.Text =
+                $"Armed — {st.TrustedName} will be contacted after " +
+                $"{st.Attempts} unanswered attempts.";
+    }
+
+    private async System.Threading.Tasks.Task LoadCrashWatch()
+    {
+        var s = AppState.Current;
+        try { ShowCrashWatch(await ApiClient.Shared.CrashWatch(s.Uid!, s.Token!)); }
+        catch { /* backend offline — leave the defaults */ }
+    }
+
+    private async void OnCrashArm(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        CrashError.Visibility = Visibility.Collapsed;
+        try
+        {
+            ShowCrashWatch(await ApiClient.Shared.ArmCrashWatch(
+                s.Uid!, s.Token!, CrashName.Text, CrashChannel.Text,
+                (int)CrashAttempts.Value, CrashWindow.Value,
+                CrashEms.IsChecked ?? false));
+        }
+        catch (Exception ex)
+        {
+            CrashError.Text = ex.Message;
+            CrashError.Visibility = Visibility.Visible;
+        }
+    }
+
+    private async void OnCrashDisarm(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try { ShowCrashWatch(await ApiClient.Shared.DisarmCrashWatch(s.Uid!, s.Token!)); }
+        catch { }
+    }
+
+    private async void OnImOkay(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try { ShowCrashWatch(await ApiClient.Shared.ImOkay(s.Uid!, s.Token!)); }
+        catch { }
     }
 
     // -- SOS --

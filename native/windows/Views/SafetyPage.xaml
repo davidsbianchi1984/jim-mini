@@ -49,6 +49,55 @@
             </ScrollViewer>
         </PivotItem>
 
+        <!-- Crash watch -->
+        <PivotItem Header="Crash">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border x:Name="CrashAskingCard" Visibility="Collapsed"
+                            Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimAmberBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="JIM is asking: are you okay?" FontWeight="Bold"
+                                       Foreground="{StaticResource JimAmberBrush}" />
+                            <TextBlock x:Name="CrashAskingDetail" Foreground="{StaticResource JimT2Brush}"
+                                       FontSize="12" TextWrapping="Wrap" />
+                            <Button Content="I'm okay" Click="OnImOkay" HorizontalAlignment="Stretch"
+                                    Background="{StaticResource JimGreenBrush}" Foreground="Black" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="CrashTrippedNote" Visibility="Collapsed" FontSize="12"
+                               Foreground="{StaticResource JimRedBrush}" TextWrapping="Wrap" />
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Crash watch" FontWeight="Bold"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock Text="Off by default, programmed by you: a critical reading (a fall the watch felt, a collapsing pulse) opens &#x201C;are you okay?&#x201D; &#x2014; unanswered attempts contact your trusted person, and emergency services only if you tick the box. Gentle drift check-ins can never trigger this."
+                                       Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                            <TextBox x:Name="CrashName" Header="Trusted person" PlaceholderText="Rosa" />
+                            <TextBox x:Name="CrashChannel" Header="How to reach them"
+                                     PlaceholderText="rosa@example.com" />
+                            <NumberBox x:Name="CrashAttempts" Header="Attempts (1&#x2013;10)" Value="3"
+                                       Minimum="1" Maximum="10" SpinButtonPlacementMode="Inline" />
+                            <NumberBox x:Name="CrashWindow" Header="Minutes per attempt" Value="5"
+                                       Minimum="1" Maximum="60" SpinButtonPlacementMode="Inline" />
+                            <CheckBox x:Name="CrashEms"
+                                      Content="May request emergency services (a relayed request &#x2014; this app cannot itself place a call)" />
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button x:Name="CrashArmButton" Content="Arm the crash watch" Click="OnCrashArm" />
+                                <Button x:Name="CrashDisarmButton" Content="Disarm" Click="OnCrashDisarm"
+                                        Visibility="Collapsed" Foreground="{StaticResource JimRedBrush}" />
+                            </StackPanel>
+                            <TextBlock x:Name="CrashArmedNote" Visibility="Collapsed" FontSize="12"
+                                       Foreground="{StaticResource JimGreenBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="CrashError" Visibility="Collapsed" FontSize="12"
+                               Foreground="{StaticResource JimRedBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+
         <!-- Medical ID -->
         <PivotItem Header="Med ID">
             <ScrollViewer>

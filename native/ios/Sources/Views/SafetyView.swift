@@ -4,8 +4,8 @@ import SwiftUI
 /// sensitivity dial), and the robot helpers — behind a segmented switcher.
 struct SafetyView: View {
     enum Tab: String, CaseIterable {
-        case sos = "SOS", medical = "Med ID", policy = "Policy",
-             robots = "Robots", vault = "Vault"
+        case sos = "SOS", crash = "Crash", medical = "Med ID",
+             policy = "Policy", robots = "Robots", vault = "Vault"
     }
     @State private var tab: Tab = .sos
 
@@ -18,12 +18,133 @@ struct SafetyView: View {
 
                 switch tab {
                 case .sos: SOSSection()
+                case .crash: CrashWatchSection()
                 case .medical: MedicalSection()
                 case .policy: PolicySection()
                 case .robots: RobotsSection()
                 case .vault: CustodySection()
                 }
             }.padding(20)
+        }
+    }
+}
+
+// MARK: Crash watch — armed in advance; unanswered questions send help
+
+private struct CrashWatchSection: View {
+    @EnvironmentObject var state: AppState
+    @State private var st: CrashWatchStatus?
+    @State private var name = ""
+    @State private var channel = ""
+    @State private var attempts = 3
+    @State private var window = 5.0
+    @State private var ems = false
+    @State private var busy = false
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if st?.asking == true {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("JIM is asking: are you okay?")
+                        .font(.headline).foregroundStyle(Theme.amber)
+                    Text("A concerning reading came in (\(st?.concern ?? "")). Attempt \(st?.attempt ?? 1) of \(st?.attempts ?? 3) — silence sends help.")
+                        .font(.caption).foregroundStyle(Theme.t2)
+                    Button(action: respond) {
+                        Text("I'm okay").bold()
+                            .frame(maxWidth: .infinity).padding(.vertical, 12)
+                            .background(Theme.green).foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }.card()
+            }
+            if st?.tripped == true {
+                Text("The crash watch tripped: \(st?.trusted_name ?? "your trusted person") was contacted. Any normal reading stands it down.")
+                    .font(.footnote).foregroundStyle(Theme.red)
+            }
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Crash watch").font(.headline).foregroundStyle(Theme.txt)
+                Text("Off by default, programmed by you: a critical reading (a fall the watch felt, a collapsing pulse) opens “are you okay?” — unanswered attempts contact your trusted person, and emergency services only if you tick it. Gentle drift check-ins can never trigger this.")
+                    .font(.caption).foregroundStyle(Theme.t2)
+                TextField("Trusted person", text: $name)
+                    .textFieldStyle(.roundedBorder)
+                TextField("How to reach them (email or phone)", text: $channel)
+                    .textFieldStyle(.roundedBorder)
+                Stepper("Attempts: \(attempts)", value: $attempts, in: 1...10)
+                    .foregroundStyle(Theme.txt)
+                Stepper("Minutes per attempt: \(Int(window))", value: $window,
+                        in: 1...60, step: 1)
+                    .foregroundStyle(Theme.txt)
+                Toggle("May request emergency services (relayed as a request — this app cannot itself place a call)", isOn: $ems)
+                    .font(.caption).foregroundStyle(Theme.t2)
+                HStack {
+                    Button(action: arm) {
+                        HStack { if busy { ProgressView().tint(.white) }
+                                 Text(st?.armed == true ? "Update" : "Arm the crash watch").bold() }
+                            .frame(maxWidth: .infinity).padding(.vertical, 12)
+                            .background(Theme.brand).foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }.disabled(busy)
+                    if st?.armed == true {
+                        Button("Disarm") { disarm() }
+                            .font(.caption.bold()).foregroundStyle(Theme.red)
+                    }
+                }
+                if st?.armed == true && st?.asking != true && st?.tripped != true {
+                    Text("Armed — \(st?.trusted_name ?? "") will be contacted after \(st?.attempts ?? 3) unanswered attempts.")
+                        .font(.caption).foregroundStyle(Theme.green)
+                }
+            }.card()
+            if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
+        }
+        .onAppear(perform: refresh)
+    }
+
+    private func took(_ r: CrashWatchStatus) {
+        st = r
+        if let n = r.trusted_name, !n.isEmpty { name = n }
+        if let a = r.attempts { attempts = a }
+        if let w = r.window_minutes { window = w }
+        ems = r.contact_emergency_services ?? false
+    }
+
+    private func refresh() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            if let r = try? await ApiClient.shared.crashWatch(uid: uid, token: token) {
+                took(r)
+            }
+        }
+    }
+
+    private func arm() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                took(try await ApiClient.shared.armCrashWatch(
+                    uid: uid, token: token, name: name, channel: channel,
+                    attempts: attempts, windowMinutes: window, ems: ems))
+            } catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    private func disarm() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            if let r = try? await ApiClient.shared.disarmCrashWatch(uid: uid, token: token) {
+                took(r)
+            }
+        }
+    }
+
+    private func respond() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            if let r = try? await ApiClient.shared.imOkay(uid: uid, token: token) {
+                took(r)
+            }
         }
     }
 }

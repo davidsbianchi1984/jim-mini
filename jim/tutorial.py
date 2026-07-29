@@ -224,7 +224,7 @@ LESSONS: tuple[dict, ...] = (
          what="Armed by you, in advance, off by default: name a trusted "
               "person, how many unanswered “are you okay?” "
               "attempts is too many, and whether emergency services may be "
-              "asked for. A critical reading opens the question; silence "
+              "asked for. A critical reading — a fall the watch felt, a collapsing pulse — opens the question; silence "
               "through every attempt sends the help you programmed; any "
               "sign of you — the button, a normal reading — calls "
               "it off. Gentle drift check-ins can never trigger it.",

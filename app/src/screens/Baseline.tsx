@@ -147,7 +147,8 @@ export function Baseline() {
         <h3>Crash watch — if you stop answering, help gets sent</h3>
         <p className="muted small">
           Off by default, programmed by you: when a reading turns{" "}
-          <b>critical</b> (a collapsing pulse, oxygen falling) JIM asks{" "}
+          <b>critical</b> — <b>a fall the watch felt</b>, a collapsing
+          pulse, oxygen falling — JIM asks{" "}
           "are you okay?" — and if {cwAttempts} attempts over{" "}
           {(cwAttempts * cwWindow).toFixed(0)} minutes all go unanswered, it
           contacts your trusted person{cwEms ? " and requests emergency services" : ""}.

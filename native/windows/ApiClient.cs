@@ -193,6 +193,17 @@ public record ModelChoice(
     [property: JsonPropertyName("provider")] string Provider,
     [property: JsonPropertyName("effective")] string Effective);
 
+public record CrashWatchStatus(
+    [property: JsonPropertyName("armed")] bool Armed,
+    [property: JsonPropertyName("trusted_name")] string? TrustedName,
+    [property: JsonPropertyName("attempts")] int? Attempts,
+    [property: JsonPropertyName("window_minutes")] double? WindowMinutes,
+    [property: JsonPropertyName("contact_emergency_services")] bool? ContactEms,
+    [property: JsonPropertyName("asking")] bool? Asking,
+    [property: JsonPropertyName("attempt")] int? Attempt,
+    [property: JsonPropertyName("concern")] string? Concern,
+    [property: JsonPropertyName("tripped")] bool? Tripped);
+
 public record EscalationPolicy(
     [property: JsonPropertyName("sensitivity")] string Sensitivity,
     [property: JsonPropertyName("ladder")] string[] Ladder,
@@ -322,6 +333,13 @@ public sealed class ApiClient
             throw new HttpRequestException(detail ?? $"HTTP {(int)res.StatusCode}");
         }
         return JsonSerializer.Deserialize<T>(body)!;
+    }
+
+    private static HttpRequestMessage Put(string path, object body, string? token = null)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Put, path) { Content = JsonContent.Create(body) };
+        if (token is not null) req.Headers.Add("authorization", $"Bearer {token}");
+        return req;
     }
 
     private static HttpRequestMessage Post(string path, object body, string? token = null)
@@ -481,6 +499,34 @@ public sealed class ApiClient
         Send<TranslateResult>(Post($"/translate/{uid}", new { text }, token));
 
     // -- safety: escalation policy, Emergency, robots --
+
+    // The crash watch: armed in advance, off by default. The status read is
+    // also the clock — polling is what re-asks the question.
+    public Task<CrashWatchStatus> CrashWatch(string uid, string token) =>
+        Send<CrashWatchStatus>(Get($"/crash-watch/{uid}", token));
+
+    public Task<CrashWatchStatus> ArmCrashWatch(
+        string uid, string token, string name, string channel,
+        int attempts, double windowMinutes, bool ems) =>
+        Send<CrashWatchStatus>(Put($"/crash-watch/{uid}", new
+        {
+            trusted_name = name,
+            trusted_channel = channel,
+            attempts,
+            window_minutes = windowMinutes,
+            contact_emergency_services = ems,
+        }, token));
+
+    public Task<CrashWatchStatus> DisarmCrashWatch(string uid, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete, $"/crash-watch/{uid}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<CrashWatchStatus>(req);
+    }
+
+    public Task<CrashWatchStatus> ImOkay(string uid, string token) =>
+        Send<CrashWatchStatus>(Post($"/crash-watch/{uid}/respond",
+            new { }, token));
 
     public Task<EscalationPolicy> EscalationPolicy(string uid, string token) =>
         Send<EscalationPolicy>(Get($"/escalation-policy/{uid}", token));

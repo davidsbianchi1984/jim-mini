@@ -124,6 +124,14 @@ _ALIAS_INDEX = {alias: metric for metric, names in _ALIASES.items()
 
 _NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
 
+# The words a watch's sensors may deposit alongside the numbers. A fall
+# detection arrives as an event, not a measurement, and the numeric pipeline
+# below would drop exactly the reading that most needs to arrive — a senior
+# on the floor. Whitelisted vocabulary only (the detector's own), never free
+# text: the drip is a URL-bearer credential and must stay deposit-only.
+_MOVEMENT_EVENTS = {"fall", "collapse", "immobile"}
+_PULSE_EVENTS = {"absent", "weak"}
+
 
 def _to_number(value) -> float | None:
     """``72``, ``"72"``, ``"72 count/min"``, ``"97%"`` — one reading."""
@@ -146,7 +154,24 @@ def _normalize(metric: str, value: float) -> float:
 def _clean_sample(payload: dict) -> dict:
     sample: dict = {}
     for key, raw in payload.items():
-        metric = _ALIAS_INDEX.get(str(key).strip().lower().replace(" ", "_"))
+        norm = str(key).strip().lower().replace(" ", "_")
+        # The fall path (see _MOVEMENT_EVENTS above). "movement": "fall",
+        # or the boolean shape Shortcuts produces ("fall_detected": true) —
+        # both reach the detector, which already treats a fall as critical
+        # and, with the crash watch armed, opens "are you okay?".
+        if norm in ("movement", "motion"):
+            word = str(raw).strip().lower()
+            if word in _MOVEMENT_EVENTS:
+                sample["movement"] = word
+            continue
+        if norm in ("fall", "fall_detected", "falldetected"):
+            if raw in (True, 1, "1") or str(raw).strip().lower() in ("true", "yes"):
+                sample["movement"] = "fall"
+            continue
+        if norm == "pulse" and str(raw).strip().lower() in _PULSE_EVENTS:
+            sample["pulse"] = str(raw).strip().lower()
+            continue
+        metric = _ALIAS_INDEX.get(norm)
         if metric is None:
             continue        # unknown keys are ignored, never an error
         value = _to_number(raw)
@@ -186,7 +211,8 @@ def drip(token: str, payload: dict, qrme=None, vault_for=None) -> dict:
             noticed = True
     if received == 0:
         raise WatchError(422, "no readings recognized — use keys like "
-                              "heart_rate, blood_oxygen, respiratory_rate")
+                              "heart_rate, blood_oxygen, respiratory_rate, "
+                              "or movement: fall")
     conn = db.connect()
     conn.execute(
         "UPDATE watch_channels SET last_drip_at=?, drips=drips+? WHERE"

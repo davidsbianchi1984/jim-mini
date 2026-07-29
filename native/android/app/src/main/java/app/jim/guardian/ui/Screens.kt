@@ -25,6 +25,7 @@ import app.jim.guardian.BaselineMetric
 import app.jim.guardian.CatalogApp
 import app.jim.guardian.L10n
 import app.jim.guardian.CheckinResult
+import app.jim.guardian.CrashWatch
 import app.jim.guardian.ChildCreated
 import app.jim.guardian.ChildOverview
 import app.jim.guardian.ChildSummary
@@ -532,10 +533,108 @@ private fun JournalPanel(vm: GuardianViewModel) {
 
 // ---- Safety: Emergency (SOS), escalation policy, robot helpers ----
 
+// The crash watch: the vigil's acute sibling, armed here in advance. The
+// status read is also the clock, so refreshing is what re-asks the question.
+@Composable
+private fun CrashWatchPanel(vm: GuardianViewModel) {
+    var st by remember { mutableStateOf<CrashWatch?>(null) }
+    var name by remember { mutableStateOf("") }
+    var channel by remember { mutableStateOf("") }
+    var attempts by remember { mutableStateOf("3") }
+    var window by remember { mutableStateOf("5") }
+    var ems by remember { mutableStateOf(false) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun took(r: Result<CrashWatch>) {
+        busy = false
+        r.onSuccess {
+            st = it
+            if (it.trustedName.isNotBlank()) name = it.trustedName
+            attempts = it.attempts.toString()
+            window = it.windowMinutes.toInt().toString()
+            ems = it.contactEms
+        }.onFailure { error = it.message }
+    }
+
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.crashWatch(vm.uid!!, vm.token!!) }) { took(it) }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (st?.asking == true) {
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("JIM is asking: are you okay?", color = Jim.Amber,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("A concerning reading came in (${st?.concern}). Attempt " +
+                     "${st?.attempt} of ${st?.attempts} — silence sends help.",
+                    color = Jim.T2, fontSize = 12.sp)
+                Button(onClick = {
+                    vm.call({ ApiClient.imOkay(vm.uid!!, vm.token!!) }) { took(it) }
+                }, colors = ButtonDefaults.buttonColors(containerColor = Jim.Green)) {
+                    Text("I'm okay")
+                }
+            }
+        }
+        if (st?.tripped == true) {
+            Text("The crash watch tripped: ${st?.trustedName} was contacted. " +
+                 "Any normal reading stands it down.",
+                color = Jim.Red, fontSize = 13.sp)
+        }
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Crash watch", color = Jim.Txt, fontSize = 16.sp,
+                fontWeight = FontWeight.Bold)
+            Text("Off by default, programmed by you: a critical reading (a fall the watch felt, a collapsing pulse) opens " +
+                 "\"are you okay?\" — unanswered attempts contact your trusted " +
+                 "person, and emergency services only if you tick the box. " +
+                 "Gentle drift check-ins can never trigger it.",
+                color = Jim.T2, fontSize = 12.sp)
+            labeledField("Trusted person", name, "Rosa") { name = it }
+            labeledField("How to reach them", channel, "rosa@example.com") { channel = it }
+            labeledField("Attempts (1\u201310)", attempts, "3") { attempts = it }
+            labeledField("Minutes per attempt", window, "5") { window = it }
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Checkbox(checked = ems, onCheckedChange = { ems = it },
+                    colors = CheckboxDefaults.colors(checkedColor = Jim.Red))
+                Text("May request emergency services (relayed as a request " +
+                     "\u2014 this app cannot itself place a call)",
+                    color = Jim.T2, fontSize = 12.sp)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(enabled = !busy, onClick = {
+                    busy = true; error = null
+                    vm.call({
+                        ApiClient.armCrashWatch(vm.uid!!, vm.token!!, name,
+                            channel, attempts.toIntOrNull() ?: 3,
+                            window.toDoubleOrNull() ?: 5.0, ems)
+                    }) { took(it) }
+                }) { Text(if (st?.armed == true) "Update" else "Arm the crash watch") }
+                if (st?.armed == true) {
+                    Button(enabled = !busy, onClick = {
+                        busy = true
+                        vm.call({ ApiClient.disarmCrashWatch(vm.uid!!, vm.token!!) }) { took(it) }
+                    }, colors = ButtonDefaults.buttonColors(containerColor = Jim.Card)) {
+                        Text("Disarm", color = Jim.Red)
+                    }
+                }
+            }
+            if (st?.armed == true && st?.asking != true && st?.tripped != true) {
+                Text("Armed \u2014 ${st?.trustedName} will be contacted after " +
+                     "${st?.attempts} unanswered attempts.",
+                    color = Jim.Green, fontSize = 12.sp)
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
+    }
+}
+
+
+
 @Composable
 fun SafetyScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("SOS", "Med ID", "Policy", "Robots", "Vault")
+    val tabs = listOf("SOS", "Crash", "Med ID", "Policy", "Robots", "Vault")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -546,9 +645,10 @@ fun SafetyScreen(vm: GuardianViewModel) {
         }
         when (tab) {
             0 -> SOSPanel(vm)
-            1 -> MedicalPanel(vm)
-            2 -> PolicyPanel(vm)
-            3 -> RobotsPanel(vm)
+            1 -> CrashWatchPanel(vm)
+            2 -> MedicalPanel(vm)
+            3 -> PolicyPanel(vm)
+            4 -> RobotsPanel(vm)
             else -> CustodyPanel(vm)
         }
     }

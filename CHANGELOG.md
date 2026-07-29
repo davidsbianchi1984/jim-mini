@@ -6,6 +6,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**A fall reaches the Guardian.** The watch drip carried only numbers,
+which silently dropped the one reading a senior on the floor most
+needs delivered: the fall event. The drip now accepts the detector's
+own vocabulary — `movement: fall/collapse/immobile`, Shortcuts'
+`fall_detected: true`, `pulse: absent/weak` — whitelisted words, never
+free text, so the deposit-only posture holds. A fall was already a
+critical detection, so with the crash watch armed the whole senior
+chain now runs end to end: the watch feels the fall, JIM asks "are
+you okay?", and silence summons the programmed help. Every surface's
+copy now names the fall.
+
+**The crash watch reaches the native shells.** iOS (SwiftUI), Android
+(Compose) and Windows (WinUI 3) each gain a Crash tab on Safety: the
+arming form (trusted person, attempts, minutes per attempt, and the
+emergency-services box worded as the request it is), the live "JIM is
+asking: are you okay?" card with the I'm-okay button, the tripped
+note, and the armed-quietly line — against the same
+/crash-watch routes the console uses.
+
 **The docs web catches the field round.** The crash watch and the
 journal enter every binding the repo keeps: drawn screens 87 (Journal)
 and 88 (Crash Watch), tutorial lessons claiming them, README gallery
