@@ -423,6 +423,13 @@ class ExcursionStart(BaseModel):
     private: list[str] = Field(default_factory=list)
 
 
+class BudgetSet(BaseModel):
+    """A budgeting plan (jim/life.py): this much per month for this
+    category — '*' is the whole month's plan."""
+    category: str = "*"
+    monthly_limit: float = Field(gt=0)
+
+
 class CheckIn(BaseModel):
     mood: int = Field(ge=1, le=5)  # 1 low .. 5 great
     energy: int | None = Field(default=None, ge=1, le=5)

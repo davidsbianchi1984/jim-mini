@@ -276,3 +276,17 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .oauth-doors button { background: rgba(255,255,255,0.05); color: var(--txt);
   border: 1px solid var(--line); border-radius: 12px; padding: 11px; font-weight: 600; }
 .oauth-doors button:disabled { opacity: 0.55; cursor: default; }
+
+/* The CPR pace cue: green flash per compression beat, tick with it; a
+   stopped metronome mid-emergency shows red, because stopped IS off pace. */
+.pace-cue { display: flex; gap: 14px; align-items: center; margin: 12px 0; }
+.pace-light { width: 92px; height: 92px; border-radius: 50%; flex: none;
+  border: 3px solid var(--line); background: #0c1424; color: var(--txt);
+  font-weight: 800; font-size: 15px; cursor: pointer;
+  transition: background 60ms linear, border-color 60ms linear; }
+.pace-light.on { background: var(--green); border-color: var(--green);
+  color: #04160c; box-shadow: 0 0 26px rgba(67,224,138,0.75); }
+.pace-light.stopped { border-color: var(--red); color: var(--red); }
+.pace-notes { font-size: 13px; }
+.pace-red { color: var(--red); font-size: 12px; font-weight: 700; }
+.first-aid { margin-top: 10px; }

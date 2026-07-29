@@ -50,6 +50,42 @@ def test_sleep_and_calendar_insights(client):
     assert "10AM" in tip["insights"][0]["message"]
 
 
+def test_budgeting_plans_speak_when_spending_crosses_them(client):
+    """The financial brand card, made real: an AI companion that keeps
+    spending aligned with *budgeting plans* — the user's own monthly limits,
+    per category and overall — not just a hardcoded alarm."""
+    user = enroll(client)
+    client.put(f"/sources/{user}", json={"source": "spending", "consented": True})
+    r = client.put(f"/budgets/{user}", json={"category": "groceries",
+                                             "monthly_limit": 100})
+    assert r.status_code == 200 and r.json()["standing"] == "on plan"
+    client.put(f"/budgets/{user}", json={"monthly_limit": 500})   # overall
+
+    # 85 of 100: heading past the plan, said with the days left.
+    body = client.post(f"/context/{user}", json={
+        "source": "spending", "kind": "transaction",
+        "data": {"amount": 85, "category": "Groceries"}}).json()
+    heads = [i for i in body["insights"] if i["source"] == "budget"]
+    assert len(heads) == 1 and "85%" in heads[0]["message"]
+
+    # 20 more crosses the plan itself — an alert, pointing at the coach.
+    body = client.post(f"/context/{user}", json={
+        "source": "spending", "kind": "transaction",
+        "data": {"amount": 20, "category": "groceries"}}).json()
+    past = [i for i in body["insights"] if i["source"] == "budget"]
+    assert len(past) == 1 and past[0]["kind"] == "alert"
+    assert "finance coach" in past[0]["message"]
+
+    view = client.get(f"/budgets/{user}").json()
+    by_cat = {b["category"]: b for b in view["budgets"]}
+    assert by_cat["groceries"]["standing"] == "past the plan"
+    assert by_cat["groceries"]["spent"] == 105
+    # The overall plan saw both purchases and is quietly on plan.
+    assert by_cat["*"]["spent"] == 105 and by_cat["*"]["standing"] == "on plan"
+
+    assert client.delete(f"/budgets/{user}/groceries").json()["removed"] is True
+
+
 def test_low_mood_checkin_nudges(client):
     user = enroll(client)
     body = client.post(f"/checkin/{user}", json={"mood": 2, "energy": 2}).json()

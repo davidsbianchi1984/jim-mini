@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api, type MonitorResult } from "../api";
+import { PaceCue } from "../PaceCue";
 import { useSession } from "../store";
 
 export function Monitor() {
@@ -63,6 +64,15 @@ export function Monitor() {
             <div className="guidance">
               <div className="guidance-src">{result.guidance.source} guidance</div>
               <p>{result.guidance.content}</p>
+              {result.guidance.first_aid && (
+                <div className="first-aid">
+                  <b>{result.guidance.first_aid.title || "First aid, step by step"}</b>
+                  <ol className="refs">
+                    {result.guidance.first_aid.steps.map((s, i) => <li key={i}>{s}</li>)}
+                  </ol>
+                  <PaceCue aid={result.guidance.first_aid} />
+                </div>
+              )}
               {result.guidance.references?.length ? (
                 <ul className="refs">{result.guidance.references.map((r, i) => <li key={i}>{r}</li>)}</ul>
               ) : null}

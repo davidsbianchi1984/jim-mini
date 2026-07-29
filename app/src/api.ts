@@ -90,7 +90,13 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
   return data as T;
 }
 
+export interface FirstAid {
+  kind: string; title?: string; steps: string[];
+  pace?: { compressions_per_minute: number; compression_to_breath_ratio: string;
+           cue: { light: string; audio: string } };
+}
 export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[];
+  first_aid?: FirstAid | null;
   provenance?: { generated_by?: string; degraded?: boolean; degraded_reason?: string | null } }
 export interface DriftCrossing {
   metric: string; label: string; unit: string; direction: "above" | "below";

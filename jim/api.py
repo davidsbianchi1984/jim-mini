@@ -36,7 +36,7 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate,
-    CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
+    BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     BandSet,
@@ -1841,6 +1841,26 @@ def create_app(qrme_client: QRMEClient | None = None,
         db.connect().commit()
         return {"learned": True, "already_learned": False,
                 "note": "findings folded into guidance context; the local model now uses them"}
+
+    # ---- budgeting plans ----------------------------------------------------
+
+    @app.put("/budgets/{user_id}")
+    def set_budget(user_id: str, body: BudgetSet, request: Request) -> dict:
+        """The financial card's promise: guidance that keeps spending aligned
+        with a *plan*, not just a hardcoded alarm. Consented spending events
+        consume the plan; crossing 80% or the plan itself speaks up."""
+        _user_or_404(user_id, request)
+        return life.set_budget(user_id, body.category, body.monthly_limit)
+
+    @app.get("/budgets/{user_id}")
+    def budgets(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return life.budgets_view(user_id)
+
+    @app.delete("/budgets/{user_id}/{category}")
+    def remove_budget(user_id: str, category: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return life.remove_budget(user_id, category)
 
     # ---- mood & energy check-ins ------------------------------------------
 

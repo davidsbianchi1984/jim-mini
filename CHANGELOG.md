@@ -14,6 +14,20 @@ the moment the provider vouches, and a returning one signs straight in.
 Configuration decides whether the buttons are live (`JIM_GOOGLE_CLIENT_ID`
 and friends) — an unconfigured door is grey with its setup note.
 
+**The pace cue reaches the screen, and spending gets a plan.** From the
+full pre-publish sweep of both patent filings and the brand cards. The
+CPR playbook always promised its pace "cued visually and audibly" —
+the console now renders it: first-aid steps on the Monitor card and a
+metronome that flashes green on every compression beat at the
+playbook's 110/min with an audible tick, 30:2 called out, and a stopped
+metronome shown red, because stopped is off pace. And the financial
+card's "alignment with budgeting plans" stops being a hardcoded $200
+alarm: users set monthly limits per category and overall
+(`PUT /budgets/{user}`), consented spending consumes them (the tally
+keeps only an amount, category and month — the transaction's story
+stays vaulted), and crossing 80% or the plan itself speaks up with the
+days left in the month.
+
 **Stress joins the check-in.** The field promise was "track your mood
 *and stress levels* over time", and stress had no field anywhere. Check-ins
 take an optional stress reading (1 calm — 5 overwhelmed) alongside mood and
