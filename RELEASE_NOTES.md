@@ -1,21 +1,22 @@
-# JIM-mini v0.12.0 — release notes
+# JIM-mini v0.13.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.12.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.13.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.12.0** — **no functional change in this release**: cut
-with the siblings. In QRME, the filed patent specification was mined for
-everything the apps did not yet do: hybrid profiles blended from several
-people (both grandparents at once, in the shares you choose), real-time
-simulation of the represented person's likely decisions with confidence
-earned from real evidence, and chat replies that adapt to where the
-person actually is — backend and console both.
+**JIM-mini v0.13.0** — the care team is an organization.
+
+Link your own QRME organization and name the desk that speaks for the
+Guardian. When concerns stack — a reading drifting outside your band
+while doses slip — JIM takes the situation to the whole team as one
+goal, and the joint plan comes back for you to read. Your own
+credential, pasted knowingly; summaries cross, never raw readings; at
+most once a day, on the calm path only.
 
 ### Verification
 
-Test suite green, unchanged in behaviour.
+Full suite green.
 
 ### Install
 
