@@ -164,6 +164,30 @@ def run(user_id: str, goal: str, trigger: dict, qrme) -> dict:
         "SELECT * FROM care_plans WHERE id=?", (plan_id,)).fetchone())
 
 
+def coach_context(user_id: str,
+                  now: "datetime | None" = None) -> list[str]:
+    """What the coach should know, one line — a guardian who chats about
+    your week without mentioning that your whole care team just wrote you
+    a plan isn't paying attention. Context only: the goal, never the plan
+    text, and nothing older than a week."""
+    now = now or datetime.now()
+    latest = db.connect().execute(
+        "SELECT goal, created_at FROM care_plans WHERE user_id=?"
+        " ORDER BY created_at DESC, rowid DESC LIMIT 1",
+        (user_id,)).fetchone()
+    if latest is None:
+        return []
+    landed = datetime.fromisoformat(
+        latest["created_at"].replace("Z", "+00:00")).replace(tzinfo=None)
+    age = now - landed
+    if age > timedelta(days=7):
+        return []
+    when = "today" if age < timedelta(days=1) else f"{age.days} day(s) ago"
+    return [f"their care team wrote a joint plan {when} (goal: "
+            f"{latest['goal'][:120]}) — worth walking through together if "
+            "it hasn't come up, never presented as homework"]
+
+
 def consider(user_id: str, drifts: list[dict], qrme,
              now: datetime | None = None) -> dict | None:
     """The stacking rule, called from the Guardian's calm path.
