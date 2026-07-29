@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The crash watch reaches the native shells.** iOS (SwiftUI), Android
+(Compose) and Windows (WinUI 3) each gain a Crash tab on Safety: the
+arming form (trusted person, attempts, minutes per attempt, and the
+emergency-services box worded as the request it is), the live "JIM is
+asking: are you okay?" card with the I'm-okay button, the tripped
+note, and the armed-quietly line — against the same
+/crash-watch routes the console uses.
+
 **The docs web catches the field round.** The crash watch and the
 journal enter every binding the repo keeps: drawn screens 87 (Journal)
 and 88 (Crash Watch), tutorial lessons claiming them, README gallery

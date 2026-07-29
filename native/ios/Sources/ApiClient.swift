@@ -219,6 +219,18 @@ struct EscalationPolicy: Decodable {
     let by_severity: [String: String]
 }
 
+struct CrashWatchStatus: Decodable {
+    let armed: Bool
+    let trusted_name: String?
+    let attempts: Int?
+    let window_minutes: Double?
+    let contact_emergency_services: Bool?
+    let asking: Bool?
+    let attempt: Int?
+    let concern: String?
+    let tripped: Bool?
+}
+
 struct FlowStep: Decodable { let step: String; let label: String; let detail: String }
 
 struct RobotDirective: Decodable { let robot: String; let directive: String }
@@ -450,6 +462,33 @@ actor ApiClient {
     }
 
     // MARK: Safety — escalation policy, Emergency, robots
+
+    // The crash watch: armed in advance, off by default. The status read is
+    // also the clock — polling is what re-asks the question.
+    func crashWatch(uid: String, token: String) async throws -> CrashWatchStatus {
+        try await request("/crash-watch/\(uid)", token: token)
+    }
+
+    func armCrashWatch(uid: String, token: String, name: String,
+                       channel: String, attempts: Int, windowMinutes: Double,
+                       ems: Bool) async throws -> CrashWatchStatus {
+        try await request("/crash-watch/\(uid)", method: "PUT",
+                          body: ["trusted_name": name,
+                                 "trusted_channel": channel,
+                                 "attempts": attempts,
+                                 "window_minutes": windowMinutes,
+                                 "contact_emergency_services": ems],
+                          token: token)
+    }
+
+    func disarmCrashWatch(uid: String, token: String) async throws -> CrashWatchStatus {
+        try await request("/crash-watch/\(uid)", method: "DELETE", token: token)
+    }
+
+    func imOkay(uid: String, token: String) async throws -> CrashWatchStatus {
+        try await request("/crash-watch/\(uid)/respond", method: "POST",
+                          body: [:], token: token)
+    }
 
     func escalationPolicy(uid: String, token: String) async throws -> EscalationPolicy {
         try await request("/escalation-policy/\(uid)", token: token)

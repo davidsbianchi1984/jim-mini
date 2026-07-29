@@ -54,6 +54,12 @@ data class FlowStep(val step: String, val label: String, val detail: String)
 data class RobotDirective(val robot: String, val directive: String)
 data class EmergencyResult(val flow: List<FlowStep>, val directives: List<RobotDirective>)
 data class EscalationPolicy(val sensitivity: String, val bySeverity: Map<String, String>)
+data class CrashWatch(
+    val armed: Boolean, val trustedName: String, val attempts: Int,
+    val windowMinutes: Double, val contactEms: Boolean,
+    val asking: Boolean, val attempt: Int, val concern: String,
+    val tripped: Boolean,
+)
 data class RobotSpec(val model: String, val label: String, val maker: String,
                      val firstAid: String?)
 data class Robot(val id: String, val model: String, val name: String, val status: String?,
@@ -384,6 +390,38 @@ object ApiClient {
     }
 
     // ---- safety: escalation policy, Emergency, robots ----
+
+    // The crash watch: armed in advance, off by default — a critical reading
+    // opens "are you okay?", and silence through every attempt sends the
+    // help the user programmed. The status read is also the clock.
+    suspend fun crashWatch(uid: String, token: String): CrashWatch =
+        crashWatchOf(request("/crash-watch/$uid", token = token))
+
+    suspend fun armCrashWatch(uid: String, token: String, name: String,
+                              channel: String, attempts: Int,
+                              windowMinutes: Double, ems: Boolean): CrashWatch {
+        val body = JSONObject().put("trusted_name", name)
+            .put("trusted_channel", channel).put("attempts", attempts)
+            .put("window_minutes", windowMinutes)
+            .put("contact_emergency_services", ems)
+        return crashWatchOf(request("/crash-watch/$uid", "PUT", body, token))
+    }
+
+    suspend fun disarmCrashWatch(uid: String, token: String): CrashWatch =
+        crashWatchOf(request("/crash-watch/$uid", "DELETE", token = token))
+
+    suspend fun imOkay(uid: String, token: String): CrashWatch =
+        crashWatchOf(request("/crash-watch/$uid/respond", "POST",
+            JSONObject(), token))
+
+    private fun crashWatchOf(o: JSONObject) = CrashWatch(
+        o.optBoolean("armed", false), o.optString("trusted_name", ""),
+        o.optInt("attempts", 3), o.optDouble("window_minutes", 5.0),
+        o.optBoolean("contact_emergency_services", false),
+        o.optBoolean("asking", false), o.optInt("attempt", 0),
+        o.optString("concern", ""), o.optBoolean("tripped", false),
+    )
+
 
     suspend fun escalationPolicy(uid: String, token: String): EscalationPolicy {
         val o = request("/escalation-policy/$uid", token = token)
