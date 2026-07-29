@@ -66,6 +66,16 @@ const MARKS: Record<string, { color: string; glyph: JSX.Element; blurb: string }
       </svg>
     ),
   },
+  ollama: {
+    color: "#22c55e",
+    blurb: "A real local model (DeepSeek, Llama) via Ollama — free, offline",
+    glyph: (
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden>
+        <path d="M12 3c3.9 0 7 3.1 7 7v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7c0-3.9 3.1-7 7-7Zm-3 8.5a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6Zm6 0a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6ZM9 14c.6 1.2 1.6 1.8 3 1.8s2.4-.6 3-1.8"
+              fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
   stub: {
     color: "#8b949e",
     blurb: "Offline — no network, no key, deterministic",
