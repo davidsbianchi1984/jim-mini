@@ -173,6 +173,22 @@ export interface JournalRow {
   id: string; text: string; created_at: string; vaulted?: boolean;
 }
 
+export interface CalmSession {
+  kind: string; title: string; what: string; total_seconds: number;
+  steps: { say: string; seconds: number }[];
+}
+export interface WorkoutPlan {
+  minutes_asked: number; level: string; focus: string;
+  rest_seconds_between_blocks: number; total_seconds: number; note: string;
+  blocks: { name: string; seconds: number; cue: string }[];
+}
+export interface MealPlan {
+  goal: string; preferences: string[];
+  shape: { meals_per_day: number; orientation_calories: number; why: string };
+  days: { day: number; meals: { slot: string; name: string }[] }[];
+  disclaimer: string;
+}
+
 export const api = {
   // The help box — written directions about the app itself; no token, so a
   // lost person can ask before they have an account.
@@ -293,6 +309,16 @@ export const api = {
       `/journal/${uid}`, { method: "POST", body: { text }, token }),
   journal: (uid: string, token: string) =>
     req<JournalRow[]>(`/journal/${uid}`, { token }),
+
+  // Guided wellness: calm protocols, workout plans, meal plans.
+  calmCatalog: () =>
+    req<{ sessions: { kind: string; title: string; minutes: number; what: string }[] }>("/calm"),
+  startCalm: (uid: string, kind: string, token: string) =>
+    req<CalmSession>(`/calm/${uid}/${kind}`, { method: "POST", token }),
+  workoutPlan: (uid: string, body: { minutes: number; level: string; focus: string }, token: string) =>
+    req<WorkoutPlan>(`/fitness/${uid}/plan`, { method: "POST", body, token }),
+  mealPlan: (uid: string, body: { goal: string; preferences: string[]; days: number }, token: string) =>
+    req<MealPlan>(`/nutrition/${uid}/plan`, { method: "POST", body, token }),
 
   // The vigil: the alarm that fires when the signals stop.
   getVigil: (uid: string, token: string) =>

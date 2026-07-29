@@ -21,6 +21,9 @@ from . import (accounts, app_connectors, auth, bands, beacons, careteam,
                vigil, voice, watch)
 from . import crashwatch
 from . import help as help_mod
+from . import calm as calm_mod
+from . import fitness as fitness_mod
+from . import nutrition as nutrition_mod
 from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
@@ -31,7 +34,7 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate,
-    CrashWatchArm, HelpAsk,
+    CrashWatchArm, HelpAsk, MealPlanAsk, WorkoutAsk,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     BandSet,
@@ -99,6 +102,25 @@ def create_app(qrme_client: QRMEClient | None = None,
 
     @app.exception_handler(crashwatch.CrashWatchError)
     def _crashwatch_refusal(request: Request, exc: crashwatch.CrashWatchError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=exc.status,
+                            content={"detail": exc.message})
+
+    @app.exception_handler(calm_mod.CalmError)
+    def _calm_refusal(request: Request, exc: calm_mod.CalmError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=exc.status,
+                            content={"detail": exc.message})
+
+    @app.exception_handler(fitness_mod.FitnessError)
+    def _fitness_refusal(request: Request, exc: fitness_mod.FitnessError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=exc.status,
+                            content={"detail": exc.message})
+
+    @app.exception_handler(nutrition_mod.NutritionError)
+    def _nutrition_refusal(request: Request,
+                           exc: nutrition_mod.NutritionError):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=exc.status,
                             content={"detail": exc.message})
@@ -236,6 +258,41 @@ def create_app(qrme_client: QRMEClient | None = None,
     # an escalation, reaches an emergency contact or files a condition "to show
     # you how" — in a product whose actions reach a real person's phone at
     # three in the morning, a demonstration that fires for real is not one.
+
+    # -- guided wellness: calm sessions, workout plans, meal plans --------
+    # The on-purpose half of guidance: nobody has to be in trouble to use
+    # any of these. All three are deterministic protocols and tables — the
+    # Coach is where the conversation about them happens.
+
+    @app.get("/calm")
+    def calm_catalog() -> dict:
+        """The guided sessions on offer. Public like /help: a breathing
+        exercise should not require an account to browse."""
+        return {"sessions": calm_mod.catalog()}
+
+    @app.post("/calm/{user_id}/{kind}", status_code=201)
+    def calm_start(user_id: str, kind: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return calm_mod.start(user_id, kind)
+
+    @app.get("/calm/{user_id}/history")
+    def calm_history(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return calm_mod.history(user_id)
+
+    @app.post("/fitness/{user_id}/plan", status_code=201)
+    def workout_plan(user_id: str, body: WorkoutAsk,
+                     request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return fitness_mod.plan(user_id, body.minutes, body.level,
+                                body.focus)
+
+    @app.post("/nutrition/{user_id}/plan", status_code=201)
+    def meal_plan(user_id: str, body: MealPlanAsk,
+                  request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return nutrition_mod.plan(user_id, body.goal, body.preferences,
+                                  body.days)
 
     @app.get("/help/topics")
     def help_topics() -> dict:

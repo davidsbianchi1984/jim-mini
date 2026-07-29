@@ -257,3 +257,9 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .help-note { margin: 0; font-size: 11px; color: var(--muted); }
 .help-ask { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--line); }
 .help-ask input { flex: 1; }
+
+/* Guided calm, running: one instruction at a time, big enough to follow
+   with soft eyes. */
+.calm-run { margin-top: 12px; padding: 18px; border: 1px solid var(--line);
+  border-radius: 14px; text-align: center; }
+.calm-say { font-size: 18px; margin-bottom: 6px; }
