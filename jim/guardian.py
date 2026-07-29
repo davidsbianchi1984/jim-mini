@@ -716,6 +716,11 @@ def _delivery_channel(user: dict | None, source_device: str | None = None) -> st
 def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
             pdi=None) -> dict:
     """Ingest one sample; run detection → guidance → escalation."""
+    # A reading arriving is a sign of life: it stands down a tripped vigil
+    # (jim/vigil.py) before anything else — the person showing up IS the
+    # all-clear, whatever the reading says.
+    from . import vigil as _vigil
+    _vigil.note_signal(user_id)
     user = get_user(user_id)
     resting = _effective_resting_hr(user_id, user, sample)
     if resting is not None and "resting_heart_rate" not in sample:

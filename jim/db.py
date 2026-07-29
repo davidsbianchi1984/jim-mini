@@ -109,6 +109,24 @@ CREATE TABLE IF NOT EXISTS drift_bands (
     PRIMARY KEY (user_id, metric)
 );
 
+-- The vigil (jim/vigil.py): a steward who is told when the signals STOP.
+-- Every other alarm in the product fires on a reading; this one fires on
+-- the absence of readings — the watch that went quiet, the check-in that
+-- never came. One row per user; silence is measured against the events
+-- table, so any sign of life resets it without bookkeeping.
+CREATE TABLE IF NOT EXISTS vigils (
+    user_id         TEXT PRIMARY KEY REFERENCES users(id),
+    steward_name    TEXT NOT NULL,
+    steward_channel TEXT NOT NULL,   -- email or phone, the user's words
+    quiet_days      REAL NOT NULL DEFAULT 3,
+    note            TEXT,            -- what the steward is told, pre-written
+    enabled         INTEGER NOT NULL DEFAULT 1,
+    tripped_at      TEXT,
+    resolved_at     TEXT,
+    created_at      TEXT NOT NULL,
+    updated_at      TEXT NOT NULL
+);
+
 -- The Apple Watch bridge (jim/watch.py): one drip channel per user, the
 -- address an iPhone Shortcut deposits readings at. The token is stored in
 -- the clear, deliberately breaking the never-return-the-secret house rule,

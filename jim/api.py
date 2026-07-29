@@ -17,7 +17,7 @@ from . import (accounts, app_connectors, auth, bands, beacons, catalog,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
                mic, mobile, notify, referral, relay, research, robotics,
                rota, social, storage, terms as terms_mod, tiers, tutorial,
-               voice, watch)
+               vigil, voice, watch)
 from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
@@ -35,6 +35,7 @@ from .models import (
     ReferralPrepare, ResendCode, ResetPassword, ResetRequest, RobotCommand,
     SignIn, Signup,
     TranslateRequest, VerifyEmail,
+    VigilArm,
     VoiceSettings, VoiceSpeak, VoiceTranscribe, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
@@ -59,7 +60,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.7.0",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.8.0",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -86,6 +87,12 @@ def create_app(qrme_client: QRMEClient | None = None,
     # carry the status it chose (404 wrong channel, 422 unusable payload).
     @app.exception_handler(watch.WatchError)
     def _watch_refusal(request: Request, exc: watch.WatchError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=exc.status,
+                            content={"detail": exc.message})
+
+    @app.exception_handler(vigil.VigilError)
+    def _vigil_refusal(request: Request, exc: vigil.VigilError):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=exc.status,
                             content={"detail": exc.message})
@@ -940,6 +947,39 @@ def create_app(qrme_client: QRMEClient | None = None,
         check-ins; enrollment day should be quiet."""
         _user_or_404(user_id, request)
         return watch.seed(user_id, await request.body())
+
+    # -- the vigil (jim/vigil.py) -------------------------------------------
+    # The alarm that fires on the ABSENCE of readings: a steward, chosen and
+    # worded in advance, is told when the signals stop.
+
+    @app.get("/vigil/{user_id}")
+    def vigil_status(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return vigil.status(user_id)
+
+    @app.put("/vigil/{user_id}")
+    def vigil_arm(user_id: str, body: VigilArm, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return vigil.arm(user_id, body.steward_name, body.steward_channel,
+                         quiet_days=body.quiet_days, note=body.note)
+
+    @app.delete("/vigil/{user_id}")
+    def vigil_disarm(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return vigil.disarm(user_id)
+
+    @app.post("/vigil/{user_id}/sweep")
+    def vigil_sweep(user_id: str, request: Request) -> dict:
+        """Idempotent silence check — the console calls it on open; anything
+        else may too. Trips at most once per silence."""
+        _user_or_404(user_id, request)
+        return vigil.sweep(user_id)
+
+    @app.post("/vigil/{user_id}/resolve")
+    def vigil_resolve(user_id: str, request: Request) -> dict:
+        """The "I'm okay" button."""
+        _user_or_404(user_id, request)
+        return vigil.resolve(user_id)
 
     def _public_base() -> str:
         return os.environ.get("JIM_PUBLIC_URL", "https://jim.app").rstrip("/")
