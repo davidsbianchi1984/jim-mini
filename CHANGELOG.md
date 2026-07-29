@@ -28,6 +28,24 @@ keeps only an amount, category and month — the transaction's story
 stays vaulted), and crossing 80% or the plan itself speaks up with the
 days left in the month.
 
+**The companion splits in two, and the assistant learns to answer
+offline.** At the top escalation tier the companion now works both
+hands: guiding the person through the life-saving steps in the
+foreground — the pace cue gains a vibration on every compression beat
+and the word PUSH on the light, 2 BREATHS called every thirtieth —
+while relaying a dispatcher-ready briefing in the background (who,
+known conditions, critical medications, latest vitals, what's being
+done), re-relayed with every new reading and honest that an app
+cannot itself place a voice call. The coach gains an **offline
+knowledge pack**: fifteen curated, referenced entries across the six
+areas and the sensor-borne conditions (racing pulse, low SpO2, falling
+HRV, fever, blood pressure, sleep, panic, phobias, budgets, burnout,
+CO exposure …) that answer when no model key is configured — the floor
+under the coach, never a pretender, and silent rather than
+wrong-topic. The wordmark-and-pulse logo lands as-is at the top of
+this README, and `docs/showcase.html` is a share-ready page for the
+founder's social audience.
+
 **Stress joins the check-in.** The field promise was "track your mood
 *and stress levels* over time", and stress had no field anywhere. Check-ins
 take an optional stress reading (1 calm — 5 overwhelmed) alongside mood and

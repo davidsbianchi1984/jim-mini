@@ -1298,6 +1298,49 @@ def _tandem_guidance(user_id, user, detection, note, spec, qrme,
     return out
 
 
+def _companion_briefing(user_id, user, detection) -> dict:
+    """The companion's two hands during an emergency: the foreground one
+    guides the person through the life-saving steps out loud, and this one
+    works the phone lines — a dispatcher-ready situation report relayed
+    through every configured channel and re-relayed as readings arrive, so
+    responders walk in already briefed.
+
+    Honest to the crash watch's standard: *prepared and relayed* — this app
+    cannot itself place a voice call, and the record never claims one.
+    """
+    from . import guidance as guidance_mod
+    row = db.connect().execute(
+        "SELECT detail FROM events WHERE user_id=? AND type='biometric'"
+        " ORDER BY created_at DESC, rowid DESC LIMIT 1", (user_id,)).fetchone()
+    latest = json.loads(row["detail"]) if row else {}
+    latest.pop("note", None)
+    meds = [f"{m['name']} {m['dose']}" for m in db.connect().execute(
+        "SELECT name, dose FROM medications WHERE user_id=? AND critical=1"
+        " AND archived_at IS NULL", (user_id,)).fetchall()]
+    aid = guidance_mod.first_aid_for(detection)
+    return {
+        "guiding": "walking the user through the life-saving steps out loud"
+                   " — pace cue, breaths, fresh air — in the foreground",
+        "relaying": {
+            "briefing": {
+                "who": (user or {}).get("display_name"),
+                "birthdate": (user or {}).get("birthdate"),
+                "known_conditions": (user or {}).get("known_conditions") or [],
+                "critical_medications": meds,
+                "situation": {"condition": detection.condition,
+                              "severity": detection.severity,
+                              "reason": detection.reason},
+                "latest_vitals": latest,
+                "life_saving_in_progress": (aid or {}).get("title"),
+            },
+            "channels": [d["name"] for d in devices_for(user_id)],
+            "updated": "re-relayed with every new reading",
+            "note": "prepared and relayed through configured channels — this "
+                    "app cannot itself place a voice call",
+        },
+    }
+
+
 def _escalate(user_id, user, detection, decision=None) -> dict:
     contact = None
     if user and user.get("contact_consent") and user.get("emergency_phone"):
@@ -1331,6 +1374,10 @@ def _escalate(user_id, user, detection, decision=None) -> dict:
         "rationale": decision["rationale"],
         "decision_path": decision["path"],
     }
+    # At the top tier the companion splits in two: guiding in the foreground,
+    # relaying the dispatcher briefing in the background.
+    if decision.get("call_emergency_services"):
+        result["companion"] = _companion_briefing(user_id, user, detection)
     _event(user_id, "escalation", condition=detection.condition,
            severity="critical", detail=result)
     return result

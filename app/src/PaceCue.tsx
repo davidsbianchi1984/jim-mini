@@ -30,6 +30,9 @@ export function PaceCue({ aid }: { aid: FirstAid }) {
     setBeat((b) => b + 1);
     setFlash(true);
     setTimeout(() => setFlash(false), Math.min(140, interval / 2));
+    // The wrist speaks too: a short buzz on every compression beat, where
+    // the hardware has a motor (phones do; most desktops don't, harmlessly).
+    try { navigator.vibrate?.(60); } catch { /* no motor */ }
     try {
       const ctx = (audio.current ??=
         new (window.AudioContext ||
@@ -67,7 +70,9 @@ export function PaceCue({ aid }: { aid: FirstAid }) {
       <button className={"pace-light" + (running ? (flash ? " on" : "") : " stopped")}
               onClick={toggle}
               aria-label={running ? "Stop the pace cue" : "Start the pace cue"}>
-        {running ? (breaths ? "2 breaths" : inCycle || 30) : "▶ pace"}
+        {running
+          ? (breaths ? "2 BREATHS" : <>PUSH<br />{inCycle || 30}</>)
+          : "▶ pace"}
       </button>
       <div className="pace-notes">
         <b>{pace.compressions_per_minute}/min · {pace.compression_to_breath_ratio}</b>

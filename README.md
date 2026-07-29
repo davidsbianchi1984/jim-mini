@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/brand/jim-mini-logo.jpg" alt="JIM-Mini — the wordmark with the pulse" width="520">
+</p>
+
 # JIM-mini / Guardian
 
 **Network Responsive Personal Guidance System for Known Conditions.**
@@ -9,7 +13,8 @@ greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
 **Current release: v0.15.0** ([changelog](CHANGELOG.md) ·
-[release notes](RELEASE_NOTES.md)) — one of three products
+[release notes](RELEASE_NOTES.md) ·
+[showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
 one number names one combination of all three.

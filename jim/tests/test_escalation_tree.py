@@ -153,3 +153,30 @@ def test_emergency_button_flow(client):
     d = r["escalation_decision"]
     assert d["tier"] == "emergency_services"     # deliberate press = top tier
     assert any("crisis" in p for p in d["path"])
+
+
+def test_the_companion_splits_in_two_at_the_top_tier(client):
+    """The field ask, pinned: while the person's hands do compressions, the
+    companion guides in the foreground AND relays a dispatcher briefing in
+    the background — who, known conditions, critical meds, latest vitals,
+    what's being done — honest that an app cannot itself place a voice call."""
+    from jim.tests.conftest import enroll
+    user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100",
+                  contact_consent=True, known_conditions=["physical_distress"])
+    client.post(f"/meds/{user}", json={
+        "name": "Warfarin", "dose": "5 mg", "critical": True,
+        "schedule": {"times": ["08:00"]}})
+    body = client.post(f"/monitor/{user}", json={"blood_oxygen": 85}).json()
+    companion = body["escalation"]["companion"]
+    briefing = companion["relaying"]["briefing"]
+    assert briefing["who"] == "Jordan"
+    assert briefing["known_conditions"] == ["physical_distress"]
+    assert any("Warfarin" in m for m in briefing["critical_medications"])
+    assert briefing["latest_vitals"]["blood_oxygen"] == 85
+    assert briefing["situation"]["severity"] == "critical"
+    assert "cannot itself place a voice call" in companion["relaying"]["note"]
+
+    # Below the top tier the companion stays one-handed: no dispatcher relay.
+    calm = client.post(f"/monitor/{user}", json={"heart_rate": 62}).json()
+    assert calm.get("escalation") in (None, {}) or \
+        "companion" not in (calm.get("escalation") or {})

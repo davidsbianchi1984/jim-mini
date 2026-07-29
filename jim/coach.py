@@ -67,6 +67,18 @@ def reply(user_id: str, area: str, message: str) -> dict:
     gen = llm.generate_for_user(user_id, system, message)
     text = gen["text"]
 
+    # When the stub is what answered, the offline knowledge pack answers
+    # better: curated, referenced remedies across the six areas and the
+    # sensor-borne conditions — the floor under the coach until a model key
+    # is configured. A real model keeps its nuance; the pack never overrides
+    # one.
+    knowledge_entry = None
+    if gen["provider"] == "stub" or gen.get("degraded"):
+        from . import knowledge
+        knowledge_entry = knowledge.search(message, area)
+        if knowledge_entry is not None:
+            text = knowledge_entry["guidance"]
+
     safe = not _DENY.search(text)
     conn = db.connect()
     now = db.utcnow()
@@ -89,7 +101,11 @@ def reply(user_id: str, area: str, message: str) -> dict:
     return {"delivered": True, "area": area, "content": text,
             "language": language,
             "provenance": {
-                "method": "model-generated coaching grounded in this user's "
+                "method": ("offline knowledge pack — curated, deterministic, "
+                           "referenced; a configured model key replaces this "
+                           "with real conversation")
+                          if knowledge_entry is not None else
+                          "model-generated coaching grounded in this user's "
                           "own check-ins and goals — general habits advice, "
                           "not professional counsel",
                 # Who actually answered — not who was picked. The distinction
@@ -99,7 +115,7 @@ def reply(user_id: str, area: str, message: str) -> dict:
                 "generated_by": gen["provider"],
                 "degraded": gen["degraded"],
                 "degraded_reason": gen["reason"],
-                "evidence": [],
+                "evidence": (knowledge_entry or {}).get("references", []),
                 "disclaimer": "For medical, legal, or investment decisions, "
                               "consult a qualified professional.",
             }}

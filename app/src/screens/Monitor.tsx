@@ -78,6 +78,20 @@ export function Monitor() {
               ) : null}
             </div>
           )}
+          {(result.escalation as { companion?: { relaying?: { note?: string } } } | null)?.companion && (
+            <div className="guidance">
+              <div className="guidance-src">companion, in the background</div>
+              <p>
+                Relaying a dispatcher briefing — who you are, your known
+                conditions and critical medications, the latest readings, and
+                what's being done — through every configured channel, updated
+                with each new reading.{" "}
+                <span className="muted small">
+                  {(result.escalation as { companion: { relaying: { note: string } } }).companion.relaying.note}
+                </span>
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

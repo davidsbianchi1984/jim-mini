@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JIM-Mini — Showcase</title>
+<!-- A share-ready page for the founder's social audience: open it, screenshot
+     any card, post it. Self-contained on purpose — inline styles, repo-local
+     logo — so it renders anywhere the repo does. -->
+<style>
+  :root { --bg:#0a1120; --card:#182238; --card2:#1f2b45; --line:#26314e;
+          --txt:#eef1f7; --t2:#8a94ad; --green:#43e08a; --blue:#3aa0ff; }
+  * { box-sizing:border-box; margin:0; }
+  body { font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;
+         background:radial-gradient(120% 100% at 20% 0%,#10203a 0%,#0a1120 60%,#070b16 100%);
+         color:var(--txt); padding:40px 20px; }
+  .wrap { max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:22px; }
+  .logo { text-align:center; }
+  .logo img { max-width:480px; width:100%; border-radius:16px; }
+  .tagline { text-align:center; color:var(--t2); font-size:15px; letter-spacing:.4px; }
+  .card { background:linear-gradient(160deg,var(--card),var(--card2));
+          border:1px solid var(--line); border-radius:18px; padding:26px; }
+  .card h2 { font-size:19px; margin-bottom:10px; }
+  .card h2 .dot { color:var(--green); }
+  .card p { color:var(--txt); line-height:1.65; font-size:15px; }
+  .card .foot { margin-top:14px; color:var(--t2); font-size:12px;
+                border-top:1px solid var(--line); padding-top:10px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .grid .mini { background:rgba(255,255,255,.04); border:1px solid var(--line);
+                border-radius:14px; padding:16px; font-size:13.5px; line-height:1.5; }
+  .grid .mini b { display:block; margin-bottom:5px; font-size:14px; }
+  @media (max-width:620px){ .grid { grid-template-columns:1fr; } }
+  .cta { text-align:center; color:var(--t2); font-size:13px; line-height:1.7; }
+  a { color:var(--blue); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo"><img src="../assets/brand/jim-mini-logo.jpg" alt="JIM-Mini"></div>
+  <div class="tagline">Network Responsive Personal Guidance System for Known Conditions · Patent Pending 19/038,196</div>
+
+  <div class="card">
+    <h2><span class="dot">●</span> For seniors and their families</h2>
+    <p>JIM-Mini is a wearable personal health guidance system designed for
+    individuals with known medical conditions. It continuously monitors vital
+    signs and summons the help its owner programmed in advance when abnormal
+    readings are detected — 24/7 protection, even during sleep.</p>
+    <p style="margin-top:10px">A fall reaches the Guardian. Silence after
+    "are you okay?" summons the trusted person and, when the box is ticked,
+    an emergency-services request — while the companion guides the hands on
+    the scene through CPR at a paced, flashing, ticking 110 a minute, and
+    relays a dispatcher-ready briefing in the background.</p>
+    <div class="foot">Crash watch · fall detection · escalation ladder · care team</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot">●</span> For continuous mental-health support</h2>
+    <p>The wearable recognizes patterns of elevated stress related to known
+    mental-health conditions and responds with calming protocols or alerts —
+    guided breathing the app paces and speaks, a mood-and-stress journal
+    that notices climbs before they become crises, and a coach that knows
+    your own baseline.</p>
+    <div class="foot">Guided calm · stress tracking · sliding-mood forecasts · crisis path</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot">●</span> For proactive financial management</h2>
+    <p>An AI companion tracks spending behavior and offers guidance to keep
+    it aligned with your budgeting plans — monthly limits per category, a
+    heads-up at 80% while the month can still be saved, and a finance coach
+    for the re-plan.</p>
+    <div class="foot">Budgets · spending insights · early financial-stress forecasts</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot">●</span> What ships today</h2>
+    <div class="grid">
+      <div class="mini"><b>Watch to Guardian</b>Apple Watch drip via Shortcuts;
+        drift bands around your own baseline, never a stranger's average.</div>
+      <div class="mini"><b>Wellness on purpose</b>Calm protocols, workout plans
+        for the minutes you have, meal plans that fit your goal.</div>
+      <div class="mini"><b>Honest AI</b>Every reply names the model that wrote
+        it; offline, a referenced knowledge pack answers — never a pretender.</div>
+      <div class="mini"><b>Private by architecture</b>Health data seals into
+        the PDI vault — AES-256-GCM, tamper-evident audit chain, your keys.</div>
+    </div>
+  </div>
+
+  <div class="cta">
+    One of three interoperating products — JIM-Mini · QRME · PDI — versioned
+    and cut together.<br>
+    github.com/davidsbianchi1984/jim-mini
+  </div>
+
+</div>
+</body>
+</html>
