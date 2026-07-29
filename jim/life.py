@@ -209,6 +209,26 @@ def forecast_mood(user_id: str) -> dict | None:
     return None
 
 
+def forecast_stress(user_id: str) -> dict | None:
+    """Mood's mirror: three strictly climbing stress readings ending high.
+    The strategy offered is concrete — the guided calm sessions exist for
+    exactly this reader, and a pattern noticed without a next step is just
+    bad news."""
+    rows = db.connect().execute(
+        "SELECT stress FROM checkins WHERE user_id=? AND stress IS NOT NULL"
+        " ORDER BY created_at DESC, rowid DESC LIMIT 3", (user_id,)).fetchall()
+    levels = [r["stress"] for r in reversed(rows)]
+    if len(levels) == 3 and levels[0] < levels[1] < levels[2] and levels[2] >= 4:
+        return _insight(
+            user_id, "forecast",
+            f"Your stress has been climbing ({' → '.join(map(str, levels))}). "
+            "Two minutes of box breathing in Wellness is a real circuit "
+            "breaker — and the mental-health coach can help you unpack "
+            "what's driving it.",
+            area="mental_health", source="forecast")
+    return None
+
+
 def forecast_sleep_debt(user_id: str) -> dict | None:
     """Accumulating sleep debt: three consecutive short nights — flag the
     debt before exhaustion shows up in mood or biometrics."""
@@ -263,7 +283,7 @@ def forecast_spo2(user_id: str) -> dict | None:
 # --------------------------------------------------------------------------- #
 
 def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
-             pdi=None) -> dict:
+             pdi=None, stress: int | None = None) -> dict:
     tiers.guard_dependant_write(user_id)
     conn = db.connect()
     checkin_id = db.new_id("chk")
@@ -275,9 +295,9 @@ def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
                           {"note": note})
         stored_note = f"pdi:{key}"
     conn.execute(
-        "INSERT INTO checkins (id, user_id, mood, energy, note, created_at)"
-        " VALUES (?,?,?,?,?,?)",
-        (checkin_id, user_id, mood, energy, stored_note, db.utcnow()),
+        "INSERT INTO checkins (id, user_id, mood, energy, stress, note,"
+        " created_at) VALUES (?,?,?,?,?,?,?)",
+        (checkin_id, user_id, mood, energy, stress, stored_note, db.utcnow()),
     )
     conn.commit()
     generated = []
@@ -290,8 +310,11 @@ def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
     sliding = forecast_mood(user_id)
     if sliding:
         generated.append(sliding)
+    climbing = forecast_stress(user_id)
+    if climbing:
+        generated.append(climbing)
     return {"id": checkin_id, "mood": mood, "energy": energy,
-            "insights": generated}
+            "stress": stress, "insights": generated}
 
 
 def checkins(user_id: str) -> list[dict]:
@@ -482,7 +505,8 @@ def progress_report(user_id: str) -> dict:
     """Progress reports & insights: one condensed view of how it's going."""
     conn = db.connect()
     moods = conn.execute(
-        "SELECT COUNT(*) AS n, AVG(mood) AS mood, AVG(energy) AS energy"
+        "SELECT COUNT(*) AS n, AVG(mood) AS mood, AVG(energy) AS energy,"
+        " AVG(stress) AS stress"
         " FROM checkins WHERE user_id=?", (user_id,)).fetchone()
     detections = conn.execute(
         "SELECT severity, COUNT(*) AS n FROM events"
@@ -494,7 +518,8 @@ def progress_report(user_id: str) -> dict:
     return {
         "checkins": {"count": moods["n"],
                      "avg_mood": round(moods["mood"], 2) if moods["mood"] else None,
-                     "avg_energy": round(moods["energy"], 2) if moods["energy"] else None},
+                     "avg_energy": round(moods["energy"], 2) if moods["energy"] else None,
+                     "avg_stress": round(moods["stress"], 2) if moods["stress"] else None},
         "goals": [{"title": g["title"], "area": g["area"],
                    "progress": g["progress"], "status": g["status"]}
                   for g in goals(user_id)],

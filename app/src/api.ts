@@ -104,7 +104,7 @@ export interface MonitorResult {
   drift?: { crossings: DriftCrossing[]; question: string } | null;
 }
 export interface CheckinResult {
-  id: string; mood: number; energy: number; insights: unknown[];
+  id: string; mood: number; energy: number; stress?: number | null; insights: unknown[];
   guardian: { detected: boolean; guidance?: Guidance | null; escalation?: unknown; forecast?: unknown };
 }
 export interface BaselineMetric { metric: string; value?: number; state?: string; samples?: number }
@@ -379,7 +379,7 @@ export const api = {
       "/password/reset", { method: "POST", body }),
   monitor: (uid: string, body: { heart_rate: number; respiration?: number; stress_level?: number }, token: string) =>
     req<MonitorResult>(`/monitor/${uid}`, { method: "POST", body, token }),
-  checkin: (uid: string, body: { mood: number; energy: number; note?: string }, token: string) =>
+  checkin: (uid: string, body: { mood: number; energy: number; stress?: number; note?: string }, token: string) =>
     req<CheckinResult>(`/checkin/${uid}`, { method: "POST", body, token }),
   coach: (uid: string, body: { area: string; message: string }, token: string) =>
     req<Guidance>(`/coach/${uid}`, { method: "POST", body, token }),

@@ -363,6 +363,7 @@ CREATE TABLE IF NOT EXISTS checkins (
     user_id    TEXT NOT NULL REFERENCES users(id),
     mood       INTEGER NOT NULL,   -- 1 (low) .. 5 (great)
     energy     INTEGER,            -- 1 .. 5
+    stress     INTEGER,            -- 1 (calm) .. 5 (overwhelmed)
     note       TEXT,
     created_at TEXT NOT NULL
 );
@@ -794,6 +795,14 @@ def db_path() -> str:
     return os.environ.get("JIM_DB", "jim.db")
 
 
+# Columns added to tables that already exist on somebody's disk. CREATE TABLE
+# IF NOT EXISTS never revisits an existing table, so a new column needs this
+# second list — (table, column, type) — applied by connect() when missing.
+_NEW_COLUMNS = [
+    ("checkins", "stress", "INTEGER"),
+]
+
+
 def connect() -> sqlite3.Connection:
     conn = getattr(_local, "conn", None)
     if conn is None or getattr(_local, "path", None) != db_path():
@@ -801,6 +810,12 @@ def connect() -> sqlite3.Connection:
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA journal_mode=WAL")  # concurrent readers
         conn.executescript(_SCHEMA)
+        for table, column, kind in _NEW_COLUMNS:
+            have = {r["name"] for r in
+                    conn.execute(f"PRAGMA table_info({table})")}
+            if column not in have:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {kind}")
+        conn.commit()
         _local.conn = conn
         _local.path = db_path()
     return conn

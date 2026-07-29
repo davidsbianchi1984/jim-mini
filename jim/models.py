@@ -418,6 +418,7 @@ class ExcursionStart(BaseModel):
 class CheckIn(BaseModel):
     mood: int = Field(ge=1, le=5)  # 1 low .. 5 great
     energy: int | None = Field(default=None, ge=1, le=5)
+    stress: int | None = Field(default=None, ge=1, le=5)  # 1 calm .. 5 overwhelmed
     note: str | None = None
 
 
