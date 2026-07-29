@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, getBase, getLlmKey, setBase, setLlmKey, type PairInfo, type SeedReport, type WatchChannel } from "../api";
+import { api, getBase, getLlmKey, setBase, setLlmKey, type PairInfo, type SeedReport, type VigilStatus, type WatchChannel } from "../api";
 import { ProviderTiles } from "../ProviderTiles";
 import { say } from "../speech";
 import { useSession } from "../store";
@@ -37,6 +37,8 @@ export function Settings() {
       <VoicePanel />
 
       <WatchPanel />
+
+      <VigilPanel />
 
       <MailPanel />
 
@@ -394,6 +396,92 @@ function WatchPanel() {
           </div>
         )}
       </>) : <div className="muted small">Sign in to mint your drip address.</div>}
+      {error && <div className="error">⚠ {error}</div>}
+    </div>
+  );
+}
+
+function VigilPanel() {
+  const { session } = useSession();
+  const [st, setSt] = useState<VigilStatus | null>(null);
+  const [name, setName] = useState("");
+  const [channel, setChannel] = useState("");
+  const [days, setDays] = useState(3);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function load() {
+    if (!session.userId || !session.userToken) return;
+    // sweep, not just read: opening the app is the natural moment to ask
+    // "has anyone gone quiet?" — it is idempotent and trips at most once.
+    api.sweepVigil(session.userId, session.userToken).then((s) => {
+      setSt(s);
+      if (s.armed) {
+        setName(s.steward_name || ""); setChannel(s.steward_channel || "");
+        setDays(s.quiet_days || 3); setNote(s.note || "");
+      }
+    }).catch(() => setSt(null));
+  }
+  useEffect(load, [session.userId]);
+
+  if (!session.userId || !session.userToken) return null;
+
+  async function run(fn: () => Promise<VigilStatus>) {
+    setBusy(true); setError(null);
+    try { setSt(await fn()); } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="card">
+      <h3>The vigil</h3>
+      <p className="muted small">
+        Every other alarm fires on a reading. This one fires on the <b>absence</b> of
+        readings: name someone, and if nothing is heard from you for longer than
+        the quiet period, they are asked to check on you. Any reading stands it
+        down. It never calls emergency services — it knocks on a door.
+      </p>
+      {st?.tripped && (
+        <div className="degraded">
+          ⚠ The vigil has tripped — {st.steward_name} was asked to check on you
+          {st.silent_hours != null && <> after {Math.round((st.silent_hours) / 24 * 10) / 10} quiet days</>}.
+          <div style={{ marginTop: 8 }}>
+            <button className="primary" disabled={busy}
+                    onClick={() => run(() => api.resolveVigil(session.userId!, session.userToken!))}>
+              I'm okay
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="row">
+        <label>Steward's name<input value={name} placeholder="Who to tell" onChange={(e) => setName(e.target.value)} /></label>
+        <label>How to reach them<input value={channel} placeholder="their@email.com" onChange={(e) => setChannel(e.target.value)} /></label>
+      </div>
+      <label>Quiet days before they're told
+        <input type="number" min={1} max={60} value={days} onChange={(e) => setDays(Number(e.target.value))} />
+      </label>
+      <label>In your own words <span className="muted small">— what they'll read, written now</span>
+        <input value={note} placeholder="I live alone — please knock." onChange={(e) => setNote(e.target.value)} />
+      </label>
+      <div className="actions">
+        <button className="primary" disabled={busy || !name.trim() || !channel.trim()}
+                onClick={() => run(() => api.armVigil(session.userId!, session.userToken!,
+                  { steward_name: name, steward_channel: channel, quiet_days: days, note: note || undefined }))}>
+          {st?.armed ? "Update the vigil" : "Arm the vigil"}
+        </button>
+        {st?.armed && (
+          <button disabled={busy}
+                  onClick={() => run(() => api.disarmVigil(session.userId!, session.userToken!))}>
+            Disarm
+          </button>
+        )}
+      </div>
+      {st?.armed && st.last_heard_at && !st.tripped && (
+        <div className="muted small">
+          Armed · last heard from you {st.silent_hours != null ? `${st.silent_hours}h ago` : "recently"} · steward: {st.steward_name}
+        </div>
+      )}
       {error && <div className="error">⚠ {error}</div>}
     </div>
   );

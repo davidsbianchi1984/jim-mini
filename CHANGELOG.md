@@ -6,6 +6,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-07-29
+
+### Added
+
+- **The vigil — the alarm that fires when the signals stop** (`jim/vigil.py`;
+  Settings → *The vigil*; `GET|PUT|DELETE /vigil/{user_id}`,
+  `POST …/sweep`, `POST …/resolve`). Every other alarm fires on a
+  reading; this one fires on the *absence* of readings — the watch that
+  went quiet, the check-in that never came.
+  - The steward is chosen, and the message they will read is written, by
+    the user in advance — a vigil that composes its own words speaks for
+    someone at the exact moment they cannot correct it.
+  - Silence is measured against the events table, so any sign of life
+    resets it without bookkeeping — and the vigil's own trip is excluded,
+    or every trip would reset the very silence it measured.
+  - It never escalates past the steward: no emergency services, no
+    ladder. Silence is weak evidence; the right response is a person who
+    cares knocking on a door.
+  - The trip is idempotent (the console sweeps on open; anything else
+    may too), emails the steward when mail is configured (degrades to a
+    loud console notice when not), and the next reading stands it down —
+    showing up IS the all-clear.
+  - Cross-product: the trip's event id serves as the attestation
+    reference for QRME ownership succession and PDI bequest activation —
+    one attested absence carries through all three products.
+
+### Changed
+
+- Version aligned to 0.8.0 across the API, the desktop app and the Python
+  package — cut together with qrme and pdi at this version.
+
 ## [0.7.0] — 2026-07-29
 
 ### Added
@@ -1293,7 +1324,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.7.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.8.0...HEAD
+[0.8.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.8.0
 [0.7.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.7.0
 [0.6.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.6.1
 [0.6.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.6.0

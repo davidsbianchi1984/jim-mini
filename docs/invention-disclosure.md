@@ -80,7 +80,19 @@ eliminating the class of upgrade bug where a stale resident backend
 serves an old API to a new UI. (`app/electron/main.cjs`, `/health`
 version handshake; shipped v0.4.7.)
 
-## 6. Interoperating three-product architecture
+## 6. The vigil — an alarm on the absence of signals
+
+**The process:** every monitored-person product alarms on readings; this
+alarms on their *absence*. A steward is named, and the message they will
+receive is authored, by the user in advance; silence is measured against
+the product's own event stream (any sign of life resets it without
+bookkeeping, and the vigil's own trip is excluded from the measurement);
+the trip is idempotent, never escalates past the steward, and is stood
+down automatically by the next reading. Cross-product: the trip's event
+id serves as the attestation reference for ownership succession (QRME)
+and bequest activation (PDI). (`jim/vigil.py`; shipped v0.8.0.)
+
+## 7. Interoperating three-product architecture
 
 **The process:** a guardian (JIM-mini), a synthetic-profile studio
 (QRME), and an encrypted personal-data vault (PDI) cut as one versioned

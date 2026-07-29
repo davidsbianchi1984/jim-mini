@@ -102,6 +102,12 @@ export interface PairInfo {
   console_url: string; api_url: string; console_built: boolean;
   qr_svg: string; how: string[]; note: string;
 }
+export interface VigilStatus {
+  armed: boolean; steward_name?: string; steward_channel?: string;
+  quiet_days?: number; note?: string | null; last_heard_at?: string | null;
+  silent_hours?: number | null; threshold_hours?: number;
+  tripped?: boolean; tripped_at?: string | null;
+}
 export interface WatchChannel {
   drip_url: string; last_drip_at: string | null; drips: number;
   shortcut: string[]; seed_hint: string;
@@ -172,6 +178,19 @@ export const api = {
   transcribe: (audio_base64: string) =>
     req<{ text: string }>("/voice/transcribe",
       { method: "POST", body: { audio_base64 } }),
+
+  // The vigil: the alarm that fires when the signals stop.
+  getVigil: (uid: string, token: string) =>
+    req<VigilStatus>(`/vigil/${uid}`, { token }),
+  armVigil: (uid: string, token: string, body: { steward_name: string;
+             steward_channel: string; quiet_days: number; note?: string }) =>
+    req<VigilStatus>(`/vigil/${uid}`, { method: "PUT", body, token }),
+  disarmVigil: (uid: string, token: string) =>
+    req<VigilStatus>(`/vigil/${uid}`, { method: "DELETE", token }),
+  sweepVigil: (uid: string, token: string) =>
+    req<VigilStatus>(`/vigil/${uid}/sweep`, { method: "POST", token }),
+  resolveVigil: (uid: string, token: string) =>
+    req<VigilStatus>(`/vigil/${uid}/resolve`, { method: "POST", token }),
 
   // The Apple Watch bridge: a Shortcuts automation drips readings at a
   // tokened URL; the Health app's export seeds the baseline from history.

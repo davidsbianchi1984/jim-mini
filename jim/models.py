@@ -490,3 +490,13 @@ class TutorialMark(BaseModel):
     learner_id: str
     lesson: str = ""
     mode: str = "text"
+
+
+class VigilArm(BaseModel):
+    """Naming the steward, and the words they will read — written now,
+    while the person is fine."""
+
+    steward_name: str
+    steward_channel: str
+    quiet_days: float = 3.0
+    note: str | None = None
