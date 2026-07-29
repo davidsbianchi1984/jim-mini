@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.14.2] — 2026-07-29
+
 **Docs: suite mode enters the tandem contract.** `docs/tandem.md`
 (byte-identical across the three repos) now describes how the suite
 gateway wires both tandem joints itself — JIM's QRME client and QRME's
@@ -1474,7 +1476,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.14.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.14.2...HEAD
+[0.14.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.2
 [0.14.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.1
 [0.14.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.0
 [0.13.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.13.1

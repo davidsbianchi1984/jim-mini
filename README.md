@@ -1,6 +1,6 @@
 # JIM-mini / Guardian
 
-**Current release: v0.14.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.14.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -301,6 +301,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.14.2** | **Cut with the siblings** — the tandem contract documents suite mode; QRME's gateway seals coordinations again |
 | **0.14.1** | **The coach knows a care plan landed** — one context line, the goal, never the plan text |
 | **0.14.0** | **Home and the pane learn the care team** — Overview buttons + a careteam pane face (plan waiting, never the plan) |
 | **0.13.1** | **Cut with the siblings** — docs caught up; QRME demo org + hardening |
