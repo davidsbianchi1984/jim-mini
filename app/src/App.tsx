@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSession } from "./store";
+import { VersionGuard } from "./VersionGuard";
 import { Onboarding } from "./screens/Onboarding";
 import { Home } from "./screens/Home";
 import { Monitor } from "./screens/Monitor";
@@ -25,9 +26,12 @@ const NAV: { id: Tab; label: string; icon: string }[] = [
 export function App() {
   const { session, signOut } = useSession();
   const [tab, setTab] = useState<Tab>("home");
-  if (!session.userId) return <Onboarding />;
+  // The guard wraps onboarding too: a mismatched backend at sign-up is
+  // the same trap, one screen earlier.
+  if (!session.userId) return <><VersionGuard /><Onboarding /></>;
   return (
     <div className="app">
+      <VersionGuard />
       <aside className="sidebar">
         <div className="brand">
           <span className="orb" />

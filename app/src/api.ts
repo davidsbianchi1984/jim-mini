@@ -36,6 +36,16 @@ export function getBase(): string {
   return stored || defaultBase();
 }
 export function setBase(url: string) { localStorage.setItem("jim.base", url.replace(/\/+$/, "")); }
+export function clearBase() { localStorage.removeItem("jim.base"); }
+
+// The console's own version, injected at build time (vite.config.ts). The
+// backend states its version in /health for exactly this comparison — a
+// stale backend from an older install answers /health perfectly well and
+// then serves an older API, and "Not Found" on every new screen is the
+// symptom. VersionGuard.tsx turns that into a sentence with a fix.
+declare const __APP_VERSION__: string;
+export const CONSOLE_VERSION: string =
+  typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
 
 // Bring-your-own model key: stored on this device only, sent per-request as
 // x-llm-api-key so generations run on the user's own credential. The backend
@@ -146,7 +156,8 @@ export interface CarePlan {
 }
 
 export const api = {
-  health: () => req<{ status: string; tandem: boolean; console?: boolean }>("/health"),
+  health: () => req<{ status: string; version?: string; tandem: boolean;
+                      console?: boolean }>("/health"),
   // How to open this console on a phone: its URL on the local network.
   pair: () => req<PairInfo>("/pair"),
   enroll: (body: { display_name: string; birthdate: string; terms_consent: boolean }) =>

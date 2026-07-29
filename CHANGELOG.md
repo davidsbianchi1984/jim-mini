@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Two versions answering is no longer a mystery.** Field report: a
+fresh console over a stale backend answers "Not Found" on every newer
+screen while looking otherwise alive — the shell refuses to adopt a
+version-mismatched backend on its own port, but a stored base address
+(for example the LAN address saved for the phone bridge) can still
+steer the console to an old process. The console now performs the
+version handshake itself: it compares its build version against
+/health's on launch and, on mismatch, shows a banner naming both
+versions and the address — with a one-click "use this app's own
+backend" when a stored address is the culprit.
+
 ## [0.14.3] — 2026-07-29
 
 **Every README ends on the rock.** The Matthew 7:24-25 passage that
