@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The docs web catches the field round.** The crash watch and the
+journal enter every binding the repo keeps: drawn screens 87 (Journal)
+and 88 (Crash Watch), tutorial lessons claiming them, README gallery
+rows, and a `crashwatch` dock face — the question and the attempt
+count, never the reading. The journal stays out of the pane on
+purpose: what somebody wrote about their own day is not a glance
+(the NEVER list said so before the tab existed).
+
 ## [0.14.4] — 2026-07-29
 
 **The voice orb, and the help box.** Talking with the Coach now looks

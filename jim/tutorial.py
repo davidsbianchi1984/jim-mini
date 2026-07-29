@@ -210,6 +210,26 @@ LESSONS: tuple[dict, ...] = (
               "at most, on the calm path only.",
          screens=(86,),
          try_it="Link your org and read the latest plan."),
+    dict(key="journal", chapter="Being watched over",
+         title="The journal, in your own words",
+         what="Type an entry or speak it — the mic writes into the box "
+              "first, so a transcription slip is yours to fix before it "
+              "becomes the record. Entries are sealed in your vault on a "
+              "private plan, and an entry that says you're in danger is "
+              "read exactly like a reading that says so.",
+         screens=(87,),
+         try_it="Open Journal and write one sentence about today."),
+    dict(key="crashwatch", chapter="Being watched over",
+         title="The crash watch",
+         what="Armed by you, in advance, off by default: name a trusted "
+              "person, how many unanswered “are you okay?” "
+              "attempts is too many, and whether emergency services may be "
+              "asked for. A critical reading opens the question; silence "
+              "through every attempt sends the help you programmed; any "
+              "sign of you — the button, a normal reading — calls "
+              "it off. Gentle drift check-ins can never trigger it.",
+         screens=(88,),
+         try_it="Open Your Baseline and arm the crash watch."),
     dict(key="watch", chapter="Beyond the app", title="The watch finds a way",
          what="No app store needed: an iPhone Shortcut drips Health "
               "readings to your personal deposit-only address on a "

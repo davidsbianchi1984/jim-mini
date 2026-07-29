@@ -219,8 +219,8 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 </tr>
 <tr>
 <td align="center" width="25%"><img src="docs/screens/86-care-team.svg" width="160" alt="86 Care Team"><br><sub>86 · Care Team</sub></td>
-<td align="center" width="25%"></td>
-<td align="center" width="25%"></td>
+<td align="center" width="25%"><img src="docs/screens/87-journal.svg" width="160" alt="87 Journal"><br><sub>87 · Journal</sub></td>
+<td align="center" width="25%"><img src="docs/screens/88-crash-watch.svg" width="160" alt="88 Crash Watch"><br><sub>88 · Crash Watch</sub></td>
 <td align="center" width="25%"></td>
 </tr>
 </table>
