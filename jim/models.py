@@ -516,6 +516,10 @@ class VigilArm(BaseModel):
     note: str | None = None
 
 
+class HelpAsk(BaseModel):
+    question: str = ""
+
+
 class CrashWatchArm(BaseModel):
     """Programming the crash watch in advance: who is contacted when the
     person cannot answer, after how many unanswered attempts, and whether

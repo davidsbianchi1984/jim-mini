@@ -20,6 +20,7 @@ from . import (accounts, app_connectors, auth, bands, beacons, careteam,
                rota, social, storage, terms as terms_mod, tiers, tutorial,
                vigil, voice, watch)
 from . import crashwatch
+from . import help as help_mod
 from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
@@ -30,7 +31,7 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate,
-    CrashWatchArm,
+    CrashWatchArm, HelpAsk,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     BandSet,
@@ -235,6 +236,18 @@ def create_app(qrme_client: QRMEClient | None = None,
     # an escalation, reaches an emergency contact or files a condition "to show
     # you how" — in a product whose actions reach a real person's phone at
     # three in the morning, a demonstration that fires for real is not one.
+
+    @app.get("/help/topics")
+    def help_topics() -> dict:
+        """What the help box can answer, so a UI can offer them."""
+        return {"topics": help_mod.topics(),
+                "disclosure": help_mod.DISCLOSURE}
+
+    @app.post("/help")
+    def ask_help(body: HelpAsk) -> dict:
+        """The help box on every screen. Public on purpose — "where is
+        the thing?" arrives before a sign-in does. It writes nothing."""
+        return help_mod.ask(body.question)
 
     @app.get("/tutorial")
     def tutorial_outline(mode: str = "text") -> dict:

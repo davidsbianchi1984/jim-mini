@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSession } from "./store";
 import { VersionGuard } from "./VersionGuard";
+import { Help } from "./Help";
 import { Onboarding } from "./screens/Onboarding";
 import { Home } from "./screens/Home";
 import { Monitor } from "./screens/Monitor";
@@ -30,7 +31,7 @@ export function App() {
   const [tab, setTab] = useState<Tab>("home");
   // The guard wraps onboarding too: a mismatched backend at sign-up is
   // the same trap, one screen earlier.
-  if (!session.userId) return <><VersionGuard /><Onboarding /></>;
+  if (!session.userId) return <><VersionGuard /><Onboarding /><Help /></>;
   return (
     <div className="app">
       <VersionGuard />
@@ -63,6 +64,10 @@ export function App() {
         {tab === "journal" && <Journal />}
         {tab === "settings" && <Settings />}
       </main>
+      {/* Part of the shell: the help box is on every screen, like the
+          version guard — the one screen without it is the one somebody is
+          lost on. */}
+      <Help />
     </div>
   );
 }

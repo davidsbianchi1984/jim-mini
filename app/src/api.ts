@@ -174,6 +174,12 @@ export interface JournalRow {
 }
 
 export const api = {
+  // The help box — written directions about the app itself; no token, so a
+  // lost person can ask before they have an account.
+  help: (question: string) =>
+    req<{ answer: string; ai: boolean; disclosure: string }>(
+      "/help", { method: "POST", body: { question } }),
+
   health: () => req<{ status: string; version?: string; tandem: boolean;
                       console?: boolean }>("/health"),
   // How to open this console on a phone: its URL on the local network.
