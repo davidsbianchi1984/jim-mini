@@ -162,6 +162,40 @@ LESSONS: tuple[dict, ...] = (
               "opens on the alarm whatever you had it set to.",
          screens=(71,),
          try_it="Tap the helper button and cycle the faces."),
+    dict(key="bands", chapter="Being watched over", title="Your own normal",
+         what="Beside the alarm layer sits a quieter question: are you "
+              "drifting from your own baseline? Each metric has a band "
+              "around the number JIM learned from you — not from a textbook "
+              "— and crossing a watched edge earns a question, never an "
+              "alarm. A band still learning says so and stays silent. One "
+              "dial makes every band tighter or looser at once.",
+         screens=(81,),
+         try_it="Open Your Baseline and find the band that is still "
+                "learning."),
+    dict(key="speak", chapter="The life layer", title="Talking out loud",
+         what="The coach has a microphone and a voice. Speak a question and "
+              "the answer comes back spoken — through ElevenLabs or OpenAI "
+              "if a key is set, in your device's own voice if not. Type "
+              "instead and it stays quiet: a spoken question gets a spoken "
+              "answer, a typed one gets text.",
+         screens=(82,),
+         try_it="Hold the microphone on the coach screen and ask anything."),
+    dict(key="model", chapter="Beyond the app", title="Who is answering",
+         what="Every reply comes from a model you can see and change — a "
+              "tile per provider, one click to swap. The reply names who "
+              "actually wrote it, and if the built-in offline helper had to "
+              "step in, an amber notice says so and why instead of letting "
+              "canned text wear a model's name.",
+         screens=(83,),
+         try_it="Open Which Model Answers and read which tile is active."),
+    dict(key="watch", chapter="Beyond the app", title="The watch finds a way",
+         what="No app store needed: an iPhone Shortcut drips Health "
+              "readings to your personal deposit-only address on a "
+              "schedule, and uploading the Health app's export teaches JIM "
+              "your baseline from months of history in one step — armed the "
+              "same day, raising nothing about the past.",
+         screens=(84,),
+         try_it="Open Settings → Apple Watch and copy your drip address."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))
