@@ -109,6 +109,23 @@ CREATE TABLE IF NOT EXISTS drift_bands (
     PRIMARY KEY (user_id, metric)
 );
 
+-- The Apple Watch bridge (jim/watch.py): one drip channel per user, the
+-- address an iPhone Shortcut deposits readings at. The token is stored in
+-- the clear, deliberately breaking the never-return-the-secret house rule,
+-- because this credential is the opposite shape of an API key: it can only
+-- *deposit* readings into one user's stream and can never read anything
+-- out, and the setup screen must be able to keep showing the URL — a
+-- Shortcut is configured by a person retyping it, sometimes weeks later.
+-- Rotation is the recovery from a leak, and rotation is one tap.
+CREATE TABLE IF NOT EXISTS watch_channels (
+    user_id      TEXT PRIMARY KEY REFERENCES users(id),
+    token        TEXT NOT NULL UNIQUE,
+    created_at   TEXT NOT NULL,
+    rotated_at   TEXT,
+    last_drip_at TEXT,
+    drips        INTEGER NOT NULL DEFAULT 0
+);
+
 -- Where this deployment sends mail through. One row, set from the app's
 -- own settings screen so an operator never has to touch environment
 -- variables — an app that cannot send mail is the whole reason a
