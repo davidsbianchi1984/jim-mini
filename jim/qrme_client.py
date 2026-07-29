@@ -218,6 +218,32 @@ class QRMEClient:
             return None
         return r.json() if r.status_code < 300 else None
 
+    def org_view(self, org_id: str, owner_token: str) -> dict | None:
+        """The user's QRME organization — departments and their agents.
+        Owner-only in QRME; read with the token the user pasted at link
+        time. None when unreadable."""
+        try:
+            r = self._client.get(
+                f"/organizations/{org_id}",
+                headers={"authorization": f"Bearer {owner_token}"})
+        except Exception:
+            return None
+        return r.json() if r.status_code < 300 else None
+
+    def coordinate(self, org_id: str, goal: str, from_department: str,
+                   owner_token: str) -> dict | None:
+        """Take one goal across the care team's departments; returns the
+        coordination record (joint plan, contributions, sealed flag) or
+        None when QRME refused or is unreachable."""
+        try:
+            r = self._client.post(
+                f"/organizations/{org_id}/coordinate",
+                json={"goal": goal, "from_department": from_department},
+                headers={"authorization": f"Bearer {owner_token}"})
+        except Exception:
+            return None
+        return r.json() if r.status_code < 300 else None
+
     def workflow_status(self, profile_id: str, workflow_id: str,
                         token: str | None) -> dict | None:
         """Where a handed-off task has got to. None if unreadable."""

@@ -793,6 +793,15 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
                    pdi=pdi, vault_scope="medical/biometric")
             life._insight(user_id, "observation", bands.question(drifts),
                           area="health_fitness", source="drift")
+            # Concerns stacking: a drift crossing while medication
+            # adherence is slipping is more than one question, and if the
+            # user linked a care team, the Guardian takes it to them as a
+            # coordination goal (jim/careteam.py). Calm path only, at most
+            # once a day, and never allowed to break biometric ingest.
+            from . import careteam
+            care_plan = careteam.consider(user_id, drifts, qrme)
+            if care_plan:
+                result["care_team"] = care_plan
         # Physical abnormality forming: a blood-oxygen slide is flagged while
         # it is still above the detection threshold.
         if sample.get("blood_oxygen") is not None:

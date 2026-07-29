@@ -199,6 +199,17 @@ LESSONS: tuple[dict, ...] = (
               "so on its face.",
          screens=(85,),
          try_it="Add one medication and tap Take on today's dose."),
+    dict(key="careteam", chapter="Being watched over",
+         title="The care team, coordinated",
+         what="Link your own QRME organization and name the desk that "
+              "speaks for the Guardian. When concerns stack — a reading "
+              "drifting outside your band while doses slip — JIM takes the "
+              "situation to the whole team as one goal, and the joint plan "
+              "comes back for you to read. Your own credential, pasted "
+              "knowingly; summaries cross, never raw readings; once a day "
+              "at most, on the calm path only.",
+         screens=(86,),
+         try_it="Link your org and read the latest plan."),
     dict(key="watch", chapter="Beyond the app", title="The watch finds a way",
          what="No app store needed: an iPhone Shortcut drips Health "
               "readings to your personal deposit-only address on a "

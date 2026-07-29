@@ -10,7 +10,8 @@ from datetime import date, datetime
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
-from . import (accounts, app_connectors, auth, bands, beacons, catalog,
+from . import (accounts, app_connectors, auth, bands, beacons, careteam,
+               catalog,
                coach,
                mailer,
                contribution, db,
@@ -24,6 +25,7 @@ from .models import (
     ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
     ChildEnroll,
+    CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate,
@@ -919,6 +921,48 @@ def create_app(qrme_client: QRMEClient | None = None,
     def events(user_id: str, request: Request) -> list[dict]:
         _user_or_404(user_id, request)
         return guardian.events(user_id)
+
+    # -- the care team is an organization (jim/careteam.py) -----------------
+    # The user links their own QRME org; when concerns stack (drift while
+    # adherence slips) the Guardian takes the situation to the whole team
+    # as one coordination goal, and the joint plan lands back here.
+
+    @app.put("/users/{user_id}/care-team")
+    def link_care_team(user_id: str, body: CareTeamLink,
+                       request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return careteam.link(user_id, body.org_id, body.department_id,
+                                 body.owner_token, app.state.qrme)
+        except careteam.CareTeamError as e:
+            raise HTTPException(422, str(e))
+
+    @app.get("/users/{user_id}/care-team")
+    def care_team_status(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return careteam.status(user_id)
+
+    @app.delete("/users/{user_id}/care-team", status_code=204)
+    def unlink_care_team(user_id: str, request: Request) -> None:
+        _user_or_404(user_id, request)
+        careteam.unlink(user_id)
+
+    @app.post("/users/{user_id}/care-team/coordinate", status_code=201)
+    def coordinate_care_team(user_id: str, body: CareTeamGoal,
+                             request: Request) -> dict:
+        """Take a goal to the care team by hand — the same path the
+        stacking rule uses, minus the rule."""
+        _user_or_404(user_id, request)
+        try:
+            return careteam.run(user_id, body.goal, {"manual": True},
+                                app.state.qrme)
+        except careteam.CareTeamError as e:
+            raise HTTPException(422, str(e))
+
+    @app.get("/users/{user_id}/care-team/plans")
+    def care_team_plans(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return careteam.plans(user_id)
 
     # -- the Apple Watch bridge (jim/watch.py) ------------------------------
     # Readings reach JIM from an iPhone with no App-Store app: a Shortcuts
