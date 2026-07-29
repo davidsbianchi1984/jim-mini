@@ -746,6 +746,20 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
     sensitivity = (user or {}).get("sensitivity") or "balanced"
     detection = conditions.detect(sample, note, known=known,
                                   sensitivity=sensitivity)
+    # The crash watch (jim/crashwatch.py) rides the ingest clock: expired
+    # attempts advance (and may trip) on every reading, a normal reading
+    # answers an open question, and a critical/urgent finding opens one.
+    # Never allowed to break biometric ingest.
+    from . import crashwatch as _crashwatch
+    try:
+        _crashwatch.sweep(user_id)
+        if detection is None:
+            _crashwatch.note_signal(user_id, None)
+        else:
+            _crashwatch.note_concern(user_id, detection.condition,
+                                     detection.severity)
+    except Exception:  # noqa: BLE001
+        pass
     if detection is None:
         # A calm resting-state reading nudges the rolling baseline (clause 2).
         # A rolling baseline is long-lived, so a fault let into it corrupts

@@ -160,6 +160,28 @@ CREATE TABLE IF NOT EXISTS vigils (
     updated_at      TEXT NOT NULL
 );
 
+-- The crash watch (jim/crashwatch.py): the vigil's acute sibling. Armed in
+-- advance by the user; a critical reading opens a question, N unanswered
+-- attempts become a trip that contacts the trusted person (and, only if
+-- consented, records an emergency-services dispatch request).
+CREATE TABLE IF NOT EXISTS crash_watches (
+    user_id           TEXT PRIMARY KEY REFERENCES users(id),
+    trusted_name      TEXT NOT NULL,
+    trusted_channel   TEXT NOT NULL,  -- email or phone, the user's words
+    attempts          INTEGER NOT NULL DEFAULT 3,
+    window_minutes    REAL NOT NULL DEFAULT 5,
+    contact_ems       INTEGER NOT NULL DEFAULT 0,  -- pre-authorized, or never
+    enabled           INTEGER NOT NULL DEFAULT 1,
+    concern_opened_at TEXT,           -- a question is open
+    concern           TEXT,           -- which condition opened it
+    attempt           INTEGER NOT NULL DEFAULT 0,
+    deadline_at       TEXT,           -- when the current attempt expires
+    tripped_at        TEXT,
+    resolved_at       TEXT,
+    created_at        TEXT NOT NULL,
+    updated_at        TEXT NOT NULL
+);
+
 -- The Apple Watch bridge (jim/watch.py): one drip channel per user, the
 -- address an iPhone Shortcut deposits readings at. The token is stored in
 -- the clear, deliberately breaking the never-return-the-secret house rule,

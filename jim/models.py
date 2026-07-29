@@ -516,6 +516,18 @@ class VigilArm(BaseModel):
     note: str | None = None
 
 
+class CrashWatchArm(BaseModel):
+    """Programming the crash watch in advance: who is contacted when the
+    person cannot answer, after how many unanswered attempts, and whether
+    emergency services may be asked for — consent given while fine."""
+
+    trusted_name: str
+    trusted_channel: str
+    attempts: int = 3
+    window_minutes: float = 5.0
+    contact_emergency_services: bool = False
+
+
 class MedCreate(BaseModel):
     """A medication in the user's own words — 'the little white one, 10 mg'
     is a valid name and dose. schedule: {"times": ["08:00","20:00"]} or
