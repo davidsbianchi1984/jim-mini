@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.15.0] — 2026-07-29
+
 **Guided wellness — the on-purpose half of guidance.** From the field
 videos, built as protocols rather than generations: guided calm
 sessions (quick reset, box breathing, 4-7-8, a ten-minute sit) with
@@ -1562,7 +1564,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.14.5...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.15.0...HEAD
+[0.15.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.15.0
 [0.14.5]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.5
 [0.14.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.4
 [0.14.3]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.3
