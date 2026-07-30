@@ -60,7 +60,7 @@ https://github.com/user-attachments/assets/eab7d192-7b18-464d-9b67-bd512ae87957
   </tr>
 </table>
 
-A standalone personal-guidance system enabling seamless support for future AI agent services (**JAN2024 NETWORKED RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending**): it monitors
+A standalone personal-guidance system enabling seamless support for future AI agent services (**JAN2024 NETWORKED RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending — published as US 2025/0246290 A1 on July 31, 2025**): it monitors
 a user's biometric and contextual signals, detects known conditions, delivers
 guidance, and escalates to an emergency contact / live help on critical events.
 Around that core sits a **life layer** — consented data sources, mood/energy
