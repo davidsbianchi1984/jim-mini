@@ -88,6 +88,14 @@ class Signup(Enroll):
     password: str
 
 
+class OAuthStart(BaseModel):
+    """Opening the "Sign in with ..." door (jim/oauth.py). ``enroll`` is the
+    Guardian's signup payload for a brand-new account — the provider vouches
+    for the inbox, never for the consent questions."""
+    redirect_uri: str | None = None
+    enroll: dict | None = None
+
+
 class SignIn(BaseModel):
     """Returning to an account (jim/accounts.py)."""
     email: str
@@ -413,6 +421,13 @@ class ExcursionStart(BaseModel):
     topic: str
     question: str
     private: list[str] = Field(default_factory=list)
+
+
+class BudgetSet(BaseModel):
+    """A budgeting plan (jim/life.py): this much per month for this
+    category — '*' is the whole month's plan."""
+    category: str = "*"
+    monthly_limit: float = Field(gt=0)
 
 
 class CheckIn(BaseModel):

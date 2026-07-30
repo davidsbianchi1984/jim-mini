@@ -90,7 +90,13 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
   return data as T;
 }
 
+export interface FirstAid {
+  kind: string; title?: string; steps: string[];
+  pace?: { compressions_per_minute: number; compression_to_breath_ratio: string;
+           cue: { light: string; audio: string } };
+}
 export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[];
+  first_aid?: FirstAid | null;
   provenance?: { generated_by?: string; degraded?: boolean; degraded_reason?: string | null } }
 export interface DriftCrossing {
   metric: string; label: string; unit: string; direction: "above" | "below";
@@ -203,6 +209,16 @@ export const api = {
   enroll: (body: { display_name: string; birthdate: string; terms_consent: boolean }) =>
     req<{ id: string; display_name: string; user_token: string }>("/enroll", { method: "POST", body }),
   // Accounts: the email is verified (emailed code) before the user exists.
+  oauthProviders: () =>
+    req<{ providers: { provider: string; name: string; configured: boolean;
+                       setup?: string }[] }>("/auth/oauth/providers"),
+  oauthStart: (provider: string, enroll?: Record<string, unknown>) =>
+    req<{ url: string; state: string }>(
+      `/auth/oauth/${provider}/start`, { method: "POST", body: { enroll } }),
+  oauthClaim: (state: string) =>
+    req<{ ready: boolean; id?: string; user_id?: string; email?: string;
+          display_name?: string; user_token?: string }>(
+      `/auth/oauth/claim?state=${encodeURIComponent(state)}`),
   signup: (body: { email: string; password: string; display_name: string; birthdate: string; terms_consent: boolean }) =>
     req<{ account_id: string; email: string; verified: boolean; code_delivery?: string;
           verification: "local" | "email";
@@ -261,6 +277,19 @@ export const api = {
 
   // The medicine cabinet: tracked in your words, never a pharmacist.
   // The care team is an organization (jim/careteam.py).
+  specialistsCatalog: () =>
+    req<{ qrme_url: string | null;
+          conditions: { condition: string;
+                        attached: { mode: string; label?: string | null;
+                                    qrme_profile_id?: string | null } | null }[];
+          starters: { profile_id: string; display_name: string; blurb?: string;
+                      tags: string[]; avatar?: string | null;
+                      avatar_kind?: string | null }[];
+          note: string }>("/specialists/catalog"),
+  attachSpecialist: (body: { condition: string; mode: "tandem";
+                             label?: string; qrme_profile_id: string }) =>
+    req<{ condition: string; label?: string }>(
+      "/specialists", { method: "POST", body }),
   careTeamStatus: (uid: string, token: string) =>
     req<CareTeamStatus>(`/users/${uid}/care-team`, { token }),
   careTeamLink: (uid: string, token: string,

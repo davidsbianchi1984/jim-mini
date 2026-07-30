@@ -199,3 +199,24 @@ def test_the_stub_now_points_at_the_free_local_option(client):
                     headers=_auth(u)).json()
     assert "ollama.com" in r["content"]
     assert "offline" in r["content"]
+
+
+def test_deepseek_and_the_founders_own_algorithm_are_on_the_menu(client):
+    """The field ask: "implement deepseek for the time being until I can
+    upload my algorithm … or any others on the market … to where they can
+    pick and choose". Both new doors show on the menu."""
+    by_name = {p["name"]: p for p in client.get("/models").json()["providers"]}
+    assert by_name["deepseek"]["label"] == "DeepSeek"
+    assert by_name["custom"]["label"] == "Your own algorithm"
+
+
+def test_custom_provider_stays_dark_until_its_url_is_set(monkeypatch):
+    """A key alone points at nothing: the plug-in-your-algorithm tile only
+    lights once JIM_CUSTOM_LLM_URL names the endpoint."""
+    from jim import llm
+    monkeypatch.setenv("JIM_CUSTOM_LLM_KEY", "sk-somekey")
+    monkeypatch.setitem(llm._REGISTRY["custom"], "base", "")
+    assert llm.is_configured("custom") is False
+    monkeypatch.setitem(llm._REGISTRY["custom"], "base",
+                        "http://127.0.0.1:9999/v1")
+    assert llm.is_configured("custom") is True

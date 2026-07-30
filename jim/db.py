@@ -82,6 +82,19 @@ CREATE TABLE IF NOT EXISTS accounts (
     created_at      TEXT NOT NULL
 );
 
+-- One row per attempted "Sign in with ..." (jim/oauth.py). enroll parks the
+-- Guardian's signup payload for a brand-new account; result holds the
+-- finished session until the console claims it, exactly once.
+CREATE TABLE IF NOT EXISTS oauth_states (
+    state        TEXT PRIMARY KEY,
+    provider     TEXT NOT NULL,
+    redirect_uri TEXT NOT NULL,
+    enroll       TEXT,
+    result       TEXT,
+    claimed_at   TEXT,
+    created_at   TEXT NOT NULL
+);
+
 -- How this deployment speaks and listens (jim/voice.py). One row, set from
 -- the Settings screen. Without it the app uses the device's own voice and
 -- recogniser, which need no account and no key.
@@ -349,6 +362,27 @@ CREATE TABLE IF NOT EXISTS social_connections (
 );
 
 -- Events ingested from consented sources (a calendar entry, a transaction, …).
+-- Budgeting plans (jim/life.py): the user's own monthly limits, per
+-- category or overall ('*'). budget_spend keeps only what the math needs —
+-- an amount, a category, a month — while the transaction's story stays in
+-- the vault with the rest of the context event.
+CREATE TABLE IF NOT EXISTS budgets (
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    category      TEXT NOT NULL,        -- lowercase; '*' = everything
+    monthly_limit REAL NOT NULL,
+    updated_at    TEXT NOT NULL,
+    PRIMARY KEY (user_id, category)
+);
+
+CREATE TABLE IF NOT EXISTS budget_spend (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    category   TEXT NOT NULL,
+    amount     REAL NOT NULL,
+    month      TEXT NOT NULL,            -- YYYY-MM
+    created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS context_events (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

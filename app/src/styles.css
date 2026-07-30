@@ -269,3 +269,32 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .calm-run { margin-top: 12px; padding: 18px; border: 1px solid var(--line);
   border-radius: 14px; text-align: center; }
 .calm-say { font-size: 18px; margin-bottom: 6px; }
+
+/* "Sign in with ..." — grey with the reason when the deployment has no
+   OAuth client registered; a working-looking dead end would be worse. */
+.oauth-doors { display: flex; flex-direction: column; gap: 8px; margin: 0 0 14px; }
+.oauth-doors button { background: rgba(255,255,255,0.05); color: var(--txt);
+  border: 1px solid var(--line); border-radius: 12px; padding: 11px; font-weight: 600; }
+.oauth-doors button:disabled { opacity: 0.55; cursor: default; }
+
+/* The CPR pace cue: green flash per compression beat, tick with it; a
+   stopped metronome mid-emergency shows red, because stopped IS off pace. */
+.pace-cue { display: flex; gap: 14px; align-items: center; margin: 12px 0; }
+.pace-light { width: 92px; height: 92px; border-radius: 50%; flex: none;
+  border: 3px solid var(--line); background: #0c1424; color: var(--txt);
+  font-weight: 800; font-size: 15px; cursor: pointer;
+  transition: background 60ms linear, border-color 60ms linear; }
+.pace-light.on { background: var(--green); border-color: var(--green);
+  color: #04160c; box-shadow: 0 0 26px rgba(67,224,138,0.75); }
+.pace-light.stopped { border-color: var(--red); color: var(--red); }
+.pace-notes { font-size: 13px; }
+.pace-red { color: var(--red); font-size: 12px; font-weight: 700; }
+.first-aid { margin-top: 10px; }
+
+/* The specialist attach bracket: condition · who stands behind it · picker. */
+.spec-row { display: grid; grid-template-columns: 130px 1fr 1fr auto;
+  gap: 10px; align-items: center; padding: 8px 0;
+  border-bottom: 1px solid rgba(38,49,78,0.6); }
+.spec-cond { font-size: 13px; text-transform: capitalize; }
+.spec-row select, .spec-row button { margin-top: 0; }
+@media (max-width: 760px) { .spec-row { grid-template-columns: 1fr 1fr; } }

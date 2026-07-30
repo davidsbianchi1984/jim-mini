@@ -69,6 +69,15 @@ class FakeQRME:
                     "profile_id": f"prf_{handle}",
                     "display_name": handle, "chat": True}})
             return _Resp(404, {"detail": "unknown handle"})
+        if path == "/marketplace" or path.startswith("/marketplace?"):
+            # Discovery cards shaped like QRME's real /marketplace response.
+            return _Resp(200, [
+                {"profile_id": f"prf_{h}", "display_name": h,
+                 "purpose": "starter specialist", "tags": ["mental_health"],
+                 "blurb": "a QRME Starter Collection expert",
+                 "avatar": f"/photos/starters/{h}.png",
+                 "avatar_kind": "ai"}
+                for h in self.starter_handles])
         return _Resp(404, {})
 
 

@@ -8,6 +8,7 @@ import os
 from datetime import date, datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 
 from . import (accounts, app_connectors, auth, bands, beacons, careteam,
@@ -16,7 +17,8 @@ from . import (accounts, app_connectors, auth, bands, beacons, careteam,
                mailer,
                contribution, db,
                escalation, family, guardian, handoff, i18n, landing, life, llm,
-               meds, mic, mobile, notify, referral, relay, research, robotics,
+               meds, mic, mobile, notify, oauth, referral, relay, research,
+               robotics,
                rota, social, storage, terms as terms_mod, tiers, tutorial,
                vigil, voice, watch)
 from . import crashwatch
@@ -34,7 +36,7 @@ from .models import (
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     GuidanceFeedback, HabitCreate,
-    CrashWatchArm, HelpAsk, MealPlanAsk, WorkoutAsk,
+    BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     BandSet,
@@ -687,6 +689,49 @@ def create_app(qrme_client: QRMEClient | None = None,
         except accounts.AccountError as exc:
             raise HTTPException(exc.status, exc.detail)
 
+    # ---- Sign in with Google / Apple (jim/oauth.py) -----------------------
+
+    @app.get("/auth/oauth/providers")
+    def oauth_providers() -> dict:
+        """Which sign-in doors are live here, and how to open the rest."""
+        return oauth.providers()
+
+    @app.post("/auth/oauth/{provider}/start",
+              dependencies=[Depends(auth.require_signup_key)])
+    def oauth_start(provider: str, body: OAuthStart,
+                    request: Request) -> dict:
+        redirect = body.redirect_uri or str(
+            request.url_for("oauth_callback", provider=provider))
+        try:
+            return oauth.start(provider, redirect, enroll=body.enroll)
+        except oauth.OAuthError as exc:
+            raise HTTPException(exc.status, exc.message) from None
+
+    @app.get("/auth/oauth/{provider}/callback", response_class=HTMLResponse)
+    def oauth_callback(provider: str, code: str = "", state: str = "",
+                       error: str = "") -> HTMLResponse:
+        if error or not code:
+            return HTMLResponse(
+                f"<h2>Sign-in was not completed</h2>"
+                f"<p>{error or 'no code came back'} — you can close this "
+                "window and try again.</p>", status_code=400)
+        try:
+            done = oauth.callback(provider, code, state)
+        except oauth.OAuthError as exc:
+            return HTMLResponse(
+                f"<h2>Sign-in failed</h2><p>{exc.message}</p>",
+                status_code=exc.status)
+        return HTMLResponse(
+            f"<h2>Signed in as {done['email']}</h2>"
+            "<p>You can close this window and return to the app.</p>")
+
+    @app.get("/auth/oauth/claim")
+    def oauth_claim(state: str) -> dict:
+        try:
+            return oauth.claim(state)
+        except oauth.OAuthError as exc:
+            raise HTTPException(exc.status, exc.message) from None
+
     @app.post("/signin")
     def signin(body: SignIn) -> dict:
         """Email + password for a fresh session token. Unknown address and
@@ -980,6 +1025,31 @@ def create_app(qrme_client: QRMEClient | None = None,
                 409, "no QRME endpoint configured (set JIM_QRME_URL)")
         from . import seed
         return seed.seed_tandem(app.state.qrme)
+
+    @app.get("/specialists/catalog")
+    def specialists_catalog() -> dict:
+        """The attach bracket's stock: the QRME Starter Collection — 33
+        industry experts plus the mental-health trio, each already carrying
+        its industry's knowledge pack profile-side — beside what is attached
+        today, so the console can offer click-to-attach per condition."""
+        if app.state.qrme is None:
+            raise HTTPException(
+                409, "no QRME endpoint configured (set JIM_QRME_URL)")
+        attached = {r["condition"]: dict(r) for r in db.connect().execute(
+            "SELECT condition, mode, label, qrme_profile_id FROM specialists"
+        ).fetchall()}
+        from .models import Condition as _Condition
+        import typing as _typing
+        return {
+            "qrme_url": getattr(app.state.qrme, "base_url", None),
+            "conditions": [
+                {"condition": c, "attached": attached.get(c)}
+                for c in _typing.get_args(_Condition)],
+            "starters": app.state.qrme.marketplace(),
+            "note": "each starter carries its industry's knowledge pack on "
+                    "the QRME side; attaching one routes that condition's "
+                    "guidance through it in tandem",
+        }
 
     @app.post("/specialists")
     def register_specialist(body: SpecialistRegister) -> dict:
@@ -1796,6 +1866,26 @@ def create_app(qrme_client: QRMEClient | None = None,
         db.connect().commit()
         return {"learned": True, "already_learned": False,
                 "note": "findings folded into guidance context; the local model now uses them"}
+
+    # ---- budgeting plans ----------------------------------------------------
+
+    @app.put("/budgets/{user_id}")
+    def set_budget(user_id: str, body: BudgetSet, request: Request) -> dict:
+        """The financial card's promise: guidance that keeps spending aligned
+        with a *plan*, not just a hardcoded alarm. Consented spending events
+        consume the plan; crossing 80% or the plan itself speaks up."""
+        _user_or_404(user_id, request)
+        return life.set_budget(user_id, body.category, body.monthly_limit)
+
+    @app.get("/budgets/{user_id}")
+    def budgets(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return life.budgets_view(user_id)
+
+    @app.delete("/budgets/{user_id}/{category}")
+    def remove_budget(user_id: str, category: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return life.remove_budget(user_id, category)
 
     # ---- mood & energy check-ins ------------------------------------------
 

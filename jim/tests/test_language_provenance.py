@@ -134,7 +134,13 @@ def test_coach_reply_carries_provenance(client):
     r = client.post(f"/coach/{uid}", json={
         "area": "finance", "message": "How do I start budgeting?"}).json()
     p = r["provenance"]
-    assert "model-generated" in p["method"]
+    # Two honest answers exist on a keyless deployment: the offline knowledge
+    # pack (this question matches its budgeting entry) or the model path.
+    # Either way the method says which, and the disclaimer rides along.
+    assert ("model-generated" in p["method"]
+            or "knowledge pack" in p["method"])
+    if "knowledge pack" in p["method"]:
+        assert p["evidence"]                 # referenced, not asserted
     assert p["generated_by"]
     assert "qualified professional" in p["disclaimer"]
 

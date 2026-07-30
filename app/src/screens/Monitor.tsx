@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api, type MonitorResult } from "../api";
+import { PaceCue } from "../PaceCue";
 import { useSession } from "../store";
 
 export function Monitor() {
@@ -63,9 +64,32 @@ export function Monitor() {
             <div className="guidance">
               <div className="guidance-src">{result.guidance.source} guidance</div>
               <p>{result.guidance.content}</p>
+              {result.guidance.first_aid && (
+                <div className="first-aid">
+                  <b>{result.guidance.first_aid.title || "First aid, step by step"}</b>
+                  <ol className="refs">
+                    {result.guidance.first_aid.steps.map((s, i) => <li key={i}>{s}</li>)}
+                  </ol>
+                  <PaceCue aid={result.guidance.first_aid} />
+                </div>
+              )}
               {result.guidance.references?.length ? (
                 <ul className="refs">{result.guidance.references.map((r, i) => <li key={i}>{r}</li>)}</ul>
               ) : null}
+            </div>
+          )}
+          {(result.escalation as { companion?: { relaying?: { note?: string } } } | null)?.companion && (
+            <div className="guidance">
+              <div className="guidance-src">companion, in the background</div>
+              <p>
+                Relaying a dispatcher briefing — who you are, your known
+                conditions and critical medications, the latest readings, and
+                what's being done — through every configured channel, updated
+                with each new reading.{" "}
+                <span className="muted small">
+                  {(result.escalation as { companion: { relaying: { note: string } } }).companion.relaying.note}
+                </span>
+              </p>
             </div>
           )}
         </div>

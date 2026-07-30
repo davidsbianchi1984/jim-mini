@@ -127,12 +127,136 @@ def add_context(user_id: str, source: str, kind: str, data: dict,
             "insights": generated}
 
 
+def _month() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).strftime("%Y-%m")
+
+
+def _days_left_in_month() -> int:
+    import calendar
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    return calendar.monthrange(now.year, now.month)[1] - now.day
+
+
+def set_budget(user_id: str, category: str, monthly_limit: float) -> dict:
+    """A budgeting plan in the user's own words: this much for this, per
+    month. '*' is the whole month's plan."""
+    category = (category or "*").strip().lower() or "*"
+    conn = db.connect()
+    conn.execute(
+        "INSERT INTO budgets (user_id, category, monthly_limit, updated_at)"
+        " VALUES (?,?,?,?) ON CONFLICT (user_id, category) DO UPDATE SET"
+        " monthly_limit=excluded.monthly_limit, updated_at=excluded.updated_at",
+        (user_id, category, float(monthly_limit), db.utcnow()))
+    conn.commit()
+    return _budget_standing(user_id, category)
+
+
+def remove_budget(user_id: str, category: str) -> dict:
+    conn = db.connect()
+    gone = conn.execute(
+        "DELETE FROM budgets WHERE user_id=? AND category=?",
+        (user_id, (category or "*").strip().lower() or "*")).rowcount
+    conn.commit()
+    return {"removed": bool(gone)}
+
+
+def _month_spend(user_id: str, category: str) -> float:
+    conn = db.connect()
+    if category == "*":
+        row = conn.execute(
+            "SELECT COALESCE(SUM(amount),0) AS s FROM budget_spend"
+            " WHERE user_id=? AND month=?", (user_id, _month())).fetchone()
+    else:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(amount),0) AS s FROM budget_spend"
+            " WHERE user_id=? AND month=? AND category=?",
+            (user_id, _month(), category)).fetchone()
+    return float(row["s"])
+
+
+def _standing(share: float) -> str:
+    if share >= 1.0:
+        return "past the plan"
+    if share >= 0.8:
+        return "heading past the plan"
+    return "on plan"
+
+
+def _budget_standing(user_id: str, category: str) -> dict:
+    row = db.connect().execute(
+        "SELECT * FROM budgets WHERE user_id=? AND category=?",
+        (user_id, category)).fetchone()
+    if row is None:
+        return {}
+    spent = _month_spend(user_id, category)
+    share = spent / row["monthly_limit"] if row["monthly_limit"] else 0.0
+    return {"category": category, "monthly_limit": row["monthly_limit"],
+            "spent": round(spent, 2), "share": round(share, 2),
+            "standing": _standing(share),
+            "days_left": _days_left_in_month(), "month": _month()}
+
+
+def budgets_view(user_id: str) -> dict:
+    rows = db.connect().execute(
+        "SELECT category FROM budgets WHERE user_id=? ORDER BY category",
+        (user_id,)).fetchall()
+    return {"month": _month(), "days_left": _days_left_in_month(),
+            "budgets": [_budget_standing(user_id, r["category"])
+                        for r in rows]}
+
+
+def _budget_insights(user_id: str, category: str, amount: float) -> list[dict]:
+    """Alignment with the plan, spoken when a purchase crosses a line —
+    80% while the month still has days in it, and the plan itself."""
+    out = []
+    conn = db.connect()
+    for scope in dict.fromkeys([category, "*"]):
+        row = conn.execute(
+            "SELECT monthly_limit FROM budgets WHERE user_id=? AND category=?",
+            (user_id, scope)).fetchone()
+        if row is None or not row["monthly_limit"]:
+            continue
+        spent = _month_spend(user_id, scope)
+        before = (spent - amount) / row["monthly_limit"]
+        after = spent / row["monthly_limit"]
+        label = "overall" if scope == "*" else scope
+        if before < 1.0 <= after:
+            out.append(_insight(
+                user_id, "alert",
+                f"That puts {label} past its plan: "
+                f"{spent:.0f} of {row['monthly_limit']:.0f} this month, with "
+                f"{_days_left_in_month()} days left. Worth a pause before "
+                "the next one — the finance coach can help re-plan.",
+                area="finance", source="budget"))
+        elif before < 0.8 <= after:
+            out.append(_insight(
+                user_id, "suggestion",
+                f"Heads-up: {label} is at {after:.0%} of its plan with "
+                f"{_days_left_in_month()} days left in the month.",
+                area="finance", source="budget"))
+    return out
+
+
 def _context_rules(user_id, source, kind, data) -> list[dict]:
     out = []
     if kind == "transaction":
         amount = float(data.get("amount", 0))
         if amount:
             _trend_point(user_id, "spend_amount", amount)
+            # The budget tally keeps only what the math needs — an amount, a
+            # category, a month. The transaction's story stays vaulted with
+            # the context event.
+            category = str(data.get("category") or "uncategorized").lower()
+            conn = db.connect()
+            conn.execute(
+                "INSERT INTO budget_spend (id, user_id, category, amount,"
+                " month, created_at) VALUES (?,?,?,?,?,?)",
+                (db.new_id("bsp"), user_id, category, amount, _month(),
+                 db.utcnow()))
+            conn.commit()
+            out.extend(_budget_insights(user_id, category, amount))
             spend_ahead = forecast_spending(user_id)
             if spend_ahead:
                 out.append(spend_ahead)

@@ -66,6 +66,26 @@ const MARKS: Record<string, { color: string; glyph: JSX.Element; blurb: string }
       </svg>
     ),
   },
+  deepseek: {
+    color: "#4d6bfe",
+    blurb: "DeepSeek — capable and inexpensive",
+    glyph: (
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden>
+        <path d="M4 14c1.2-4.6 5-7.5 9.4-7.5 2.3 0 4.3.8 6.6 2.5-1.5.2-2.5.7-3.3 1.6 1.3 1 2.1 2.3 2.3 4.1-2.1-.6-3.7-.6-5.5.2-2.2 1-4.3 1.1-6.3.4L4 18.6V14Zm11.5-3.4a.9.9 0 1 0 0-1.8.9.9 0 0 0 0 1.8Z"
+              fill="currentColor" />
+      </svg>
+    ),
+  },
+  custom: {
+    color: "#f7b731",
+    blurb: "Plug in your own algorithm — any endpoint speaking the OpenAI dialect",
+    glyph: (
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden>
+        <path d="M9 4v4H6a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h3v4h2v-4h2v4h2v-4h3a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-3V4h-2v4h-2V4H9Zm-3 6h12v4H6v-4Z"
+              fill="currentColor" />
+      </svg>
+    ),
+  },
   ollama: {
     color: "#22c55e",
     blurb: "A real local model (DeepSeek, Llama) via Ollama — free, offline",

@@ -6,6 +6,46 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Sign in with Google / Apple, the Guardian's way.** The provider
+vouches for the inbox, never for the consent questions: signing *up*
+with Google still carries the full enrollment (name, birthdate, terms),
+parked on the flow's state by the console; a brand-new account activates
+the moment the provider vouches, and a returning one signs straight in.
+Configuration decides whether the buttons are live (`JIM_GOOGLE_CLIENT_ID`
+and friends) — an unconfigured door is grey with its setup note.
+
+**The pace cue reaches the screen, and spending gets a plan.** From the
+full pre-publish sweep of both patent filings and the brand cards. The
+CPR playbook always promised its pace "cued visually and audibly" —
+the console now renders it: first-aid steps on the Monitor card and a
+metronome that flashes green on every compression beat at the
+playbook's 110/min with an audible tick, 30:2 called out, and a stopped
+metronome shown red, because stopped is off pace. And the financial
+card's "alignment with budgeting plans" stops being a hardcoded $200
+alarm: users set monthly limits per category and overall
+(`PUT /budgets/{user}`), consented spending consumes them (the tally
+keeps only an amount, category and month — the transaction's story
+stays vaulted), and crossing 80% or the plan itself speaks up with the
+days left in the month.
+
+**The companion splits in two, and the assistant learns to answer
+offline.** At the top escalation tier the companion now works both
+hands: guiding the person through the life-saving steps in the
+foreground — the pace cue gains a vibration on every compression beat
+and the word PUSH on the light, 2 BREATHS called every thirtieth —
+while relaying a dispatcher-ready briefing in the background (who,
+known conditions, critical medications, latest vitals, what's being
+done), re-relayed with every new reading and honest that an app
+cannot itself place a voice call. The coach gains an **offline
+knowledge pack**: fifteen curated, referenced entries across the six
+areas and the sensor-borne conditions (racing pulse, low SpO2, falling
+HRV, fever, blood pressure, sleep, panic, phobias, budgets, burnout,
+CO exposure …) that answer when no model key is configured — the floor
+under the coach, never a pretender, and silent rather than
+wrong-topic. The wordmark-and-pulse logo lands as-is at the top of
+this README, and `docs/showcase.html` is a share-ready page for the
+founder's social audience.
+
 **Stress joins the check-in.** The field promise was "track your mood
 *and stress levels* over time", and stress had no field anywhere. Check-ins
 take an optional stress reading (1 calm — 5 overwhelmed) alongside mood and
@@ -16,6 +56,26 @@ news. Existing databases gain the column on first launch (the schema now
 carries a proper add-column migration), and a check-in without stress stays
 exactly what it was. On a phone, the help button now rides above the tab
 bar instead of sitting on the right-most tabs.
+
+**The attach bracket: click a QRME starter onto a condition.** Care Team
+gains a "Specialists" card that lists every condition the Guardian routes
+guidance for beside who holds it today, with the QRME Starter Collection —
+the 33 preloaded industry experts, each already carrying its industry's
+knowledge pack profile-side — as the shelf to pick from. One click attaches
+a starter in tandem mode and that condition's guidance routes through it.
+The catalog rides `GET /specialists/catalog` (a clear 409 pointing at
+`JIM_QRME_URL` when no tandem is configured, and a quiet empty shelf when
+QRME's marketplace can't be reached — never an error page).
+
+**Two more doors on the model menu: DeepSeek, and your own algorithm.**
+DeepSeek joins the provider registry as a first-class tile
+(`JIM_DEEPSEEK_API_KEY` or `DEEPSEEK_API_KEY`), an interim guide until the
+founder's algorithm takes over — and that plug now exists too: a **custom**
+provider pointing at any endpoint speaking the OpenAI dialect
+(`JIM_CUSTOM_LLM_URL` + `JIM_CUSTOM_LLM_KEY`, optional model and label
+overrides). The custom tile stays dark until its URL is set — a key alone
+points at nothing — and both degrade to the stub like every other
+unconfigured provider, never breaking guidance.
 
 ## [0.15.0] — 2026-07-29
 
