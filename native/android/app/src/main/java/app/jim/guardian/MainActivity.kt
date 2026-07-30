@@ -39,6 +39,12 @@ import app.jim.guardian.ui.WelcomeScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // The recorder holds the application context so `record` can keep the
+        // same three arguments it takes on iOS and Windows. Attaching is the
+        // price of that: without this line the Android shell would record
+        // nothing at all, and record it quietly — the recorder refuses to
+        // crash over a diagnostic, so a missing attach has no symptom.
+        Problems.attach(this)
         enableEdgeToEdge()
         setContent {
             JimTheme {

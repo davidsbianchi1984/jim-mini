@@ -485,9 +485,25 @@ actor ApiClient {
         if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization") }
         if let body { req.httpBody = try JSONSerialization.data(withJSONObject: body) }
 
-        let (data, resp) = try await URLSession.shared.data(for: req)
-        guard let http = resp as? HTTPURLResponse else { throw ApiError.http("No response") }
+        let data: Data
+        let resp: URLResponse
+        do {
+            (data, resp) = try await URLSession.shared.data(for: req)
+        } catch {
+            // Never reached a server. Recorded as status 0; the thrown error
+            // still carries its message to the person, who owns it.
+            Problems.record(method: method, path: path, status: 0)
+            throw error
+        }
+        guard let http = resp as? HTTPURLResponse else {
+            Problems.record(method: method, path: path, status: 0)
+            throw ApiError.http("No response")
+        }
         guard (200..<300).contains(http.statusCode) else {
+            // The status and the operation, never the detail below: these
+            // messages quote what the person typed, which is theirs to read
+            // and nobody's to keep.
+            Problems.record(method: method, path: path, status: http.statusCode)
             let detail = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["detail"] as? String
             throw ApiError.http(detail ?? "HTTP \(http.statusCode)")
         }

@@ -178,11 +178,22 @@ object ApiClient {
                 outputStream.use { it.write(body.toString().toByteArray()) }
             }
         }
-        val code = conn.responseCode
+        val code = try {
+            conn.responseCode
+        } catch (e: Exception) {
+            // Never reached a server. Recorded as status 0; the thrown error
+            // still carries its message to the person, who owns it.
+            Problems.record(method, path, 0)
+            throw e
+        }
         val text = (if (code in 200..299) conn.inputStream else conn.errorStream)
             ?.bufferedReader()?.use { it.readText() } ?: ""
         conn.disconnect()
         if (code !in 200..299) {
+            // The status and the operation, never the detail below: these
+            // messages quote what the person typed, which is theirs to read
+            // and nobody's to keep.
+            Problems.record(method, path, code)
             val detail = runCatching { JSONObject(text).optString("detail") }.getOrNull()
             throw ApiException(if (detail.isNullOrBlank()) "HTTP $code" else detail)
         }
