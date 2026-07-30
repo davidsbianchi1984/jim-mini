@@ -6,6 +6,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**JIM's four client surfaces now have the guard QRME got after its Wall
+bug.** In the sibling, every like, comment and share on the community wall
+returned 404 for as long as the buttons had existed: the console asked for a
+singular path segment the routes only map in the plural. The backend tests
+passed because they used the reachable form, the console compiled because a
+template literal is only a string, and nobody was comparing the two halves.
+
+JIM had the same exposure and none of the checking. The console builds 33
+paths in template literals; the iOS, Android and Windows shells build about
+45 each in Swift, Kotlin and C#, where `native.yml` proves they *compile* and
+cannot say whether they *resolve*. All four surfaces are now checked against
+the real route table.
+
+Two tests guard the guard. One fails if a language's extraction pattern stops
+matching, because a scan that silently finds nothing reads exactly like a scan
+that finds nothing wrong. The other pins a real defect found in the sibling's
+extractor: it cut a path at its first interpolation whenever a query followed,
+which turns `/meds/${uid}/adherence?days=${d}` into bare `/meds` — a prefix
+that resolves for the wrong reason. JIM's medication adherence board is that
+exact shape, so it is the fixture.
+
+No field bug came out of this: every path JIM's four surfaces build resolves.
+The checks were verified by injecting a broken path and watching each one
+fail.
+
 ## [0.18.0] — 2026-07-30
 
 **Four features get drawn, taught and findable.** The community door, the
