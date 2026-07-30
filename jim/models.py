@@ -59,6 +59,12 @@ class PlanChoice(BaseModel):
 
 class Enroll(BaseModel):
     display_name: str
+    # Spec [0031] / FIG. 2 box 212, "choose name (anonymized)": enroll under a
+    # pseudonym instead. The typed display_name is then discarded — the app
+    # never learns the real one — and `legal_name`, if given, is used only in
+    # an emergency briefing (see jim/identity.py).
+    anonymous: bool = False
+    legal_name: str | None = None
     birthdate: date | None = None
     terms_consent: bool
     provider_consent: bool = False          # allow a care provider's summary view
@@ -303,6 +309,31 @@ class ConditionDeclare(BaseModel):
 class PersonalityUpdate(BaseModel):
     tone: str | None = None                 # e.g. "direct and brief"
     instructions: str | None = None         # free-text preference
+    # Spec [0019]: guidance "may be structured to be neutral to a person's
+    # background or beliefs, such as religion, politics, sexual orientation,
+    # or the like, and in other examples may be derived with sensitivity to
+    # the user's beliefs taken into account." The user picks which; neutral
+    # is the default, because assuming someone's beliefs is worse than
+    # leaving them out of it.
+    beliefs_posture: Literal["neutral", "sensitive"] | None = None
+    beliefs: str | None = None              # only consulted when "sensitive"
+    # Spec [0019], same sentence: "as may a user's general intelligence or
+    # ability to quickly grasp and apply guidance."
+    explain_level: Literal["plain", "standard", "technical"] | None = None
+    # Clause 11: user-specific models "that adapt to professional roles,
+    # workflows, or collaborative environments" — the user's own words for
+    # what they do, so stress guidance can land in the life they actually
+    # live (a night-shift nurse and a long-haul driver need different advice
+    # about sleep). Optional, like everything else here.
+    occupation: str | None = None
+
+
+class FollowupAnswer(BaseModel):
+    """Spec [0039]: whether the counseling that was delivered actually
+    worked. ``helped=False`` escalates toward a live person."""
+
+    helped: bool
+    note: str | None = None                 # the user's own words, optional
 
 
 class SensitivitySet(BaseModel):

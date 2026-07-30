@@ -40,17 +40,24 @@ def _event(user_id, type_, *, condition=None, severity=None, detail=None,
 
 
 def enroll(body: dict) -> dict:
+    from . import identity
+
     conn = db.connect()
     user_id = db.new_id("usr")
+    # Spec [0031] / FIG. 2 box 212: an anonymous user name is a first-class
+    # choice. When taken, the typed name is discarded and a pseudonym stands
+    # in its place — the app never learns the real one.
+    display_name, legal_name, anonymous = identity.resolve(body)
     conn.execute(
-        "INSERT INTO users (id, display_name, birthdate, terms_consent,"
+        "INSERT INTO users (id, display_name, anonymous, legal_name,"
+        " birthdate, terms_consent,"
         " terms_version, terms_accepted_at,"
         " provider_consent, cloud_contribution, guardian_consent,"
         " emergency_name, emergency_phone, contact_consent, device_paired,"
         " resting_heart_rate, goals, known_conditions, devices, created_at)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (
-            user_id, body["display_name"],
+            user_id, display_name, int(anonymous), legal_name,
             body.get("birthdate").isoformat() if body.get("birthdate") else None,
             int(body["terms_consent"]),
             terms.TERMS_VERSION if body["terms_consent"] else None,
@@ -84,6 +91,7 @@ def get_user(user_id: str) -> dict | None:
     user["known_conditions"] = json.loads(user.get("known_conditions") or "[]")
     user["devices"] = json.loads(user.get("devices") or "[]")
     user["personality"] = json.loads(user["personality"]) if user.get("personality") else None
+    user["anonymous"] = bool(user.get("anonymous"))
     return user
 
 
@@ -895,6 +903,14 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
         result["guidance"] = _deliver(user_id, user, detection, note, qrme,
                                       source_device=sample.get("source_device"),
                                       pdi=pdi)
+        # Spec [0039]: guidance that went out gets asked about. The loop's
+        # closing edge — "did that help?" — opens here and is answered at
+        # POST /followup/{user_id} (jim/followup.py). An unhelped answer
+        # escalates toward a live person instead of repeating the advice.
+        if result["guidance"].get("delivered", True):
+            from . import followup
+            result["followup"] = followup.record(
+                user_id, detection.condition, detection.severity)
 
     # The escalation decision tree (jim.escalation) resolves this detection to a
     # tier for the user's sensitivity — surfaced on every detection so the UI
@@ -1309,6 +1325,7 @@ def _companion_briefing(user_id, user, detection) -> dict:
     cannot itself place a voice call, and the record never claims one.
     """
     from . import guidance as guidance_mod
+    from . import identity as identity_mod
     row = db.connect().execute(
         "SELECT detail FROM events WHERE user_id=? AND type='biometric'"
         " ORDER BY created_at DESC, rowid DESC LIMIT 1", (user_id,)).fetchone()
@@ -1318,12 +1335,19 @@ def _companion_briefing(user_id, user, detection) -> dict:
         "SELECT name, dose FROM medications WHERE user_id=? AND critical=1"
         " AND archived_at IS NULL", (user_id,)).fetchall()]
     aid = guidance_mod.first_aid_for(detection)
+    _who = identity_mod.briefing_name(user)
     return {
         "guiding": "walking the user through the life-saving steps out loud"
                    " — pace cue, breaths, fresh air — in the foreground",
         "relaying": {
             "briefing": {
-                "who": (user or {}).get("display_name"),
+                # An anonymous user is briefed honestly: their legal name if
+                # they left one for exactly this, otherwise None with the
+                # reason beside it — never a pseudonym passed off as an
+                # identity (jim/identity.py). `who` stays the plain name a
+                # dispatcher would be told; `identity` carries the rest.
+                "who": _who["name"],
+                "identity": _who,
                 "birthdate": (user or {}).get("birthdate"),
                 "known_conditions": (user or {}).get("known_conditions") or [],
                 "critical_medications": meds,

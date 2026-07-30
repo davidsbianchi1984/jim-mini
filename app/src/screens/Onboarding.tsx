@@ -40,6 +40,9 @@ export function Onboarding() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [consent, setConsent] = useState(false);
+  // Spec [0031] box 212: enroll under a pseudonym instead of a name.
+  const [anonymous, setAnonymous] = useState(false);
+  const [legalName, setLegalName] = useState("");
   const [code, setCode] = useState("");
   const [delivery, setDelivery] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -59,7 +62,8 @@ export function Onboarding() {
       // On the signup tab the enrollment rides along: the provider vouches
       // for the inbox, never for the consent questions.
       const enroll = mode === "signup"
-        ? { display_name: name.trim(), birthdate, terms_consent: consent }
+        ? { display_name: name.trim(), birthdate, terms_consent: consent, anonymous,
+            legal_name: anonymous && legalName.trim() ? legalName.trim() : undefined }
         : undefined;
       if (mode === "signup" && (!name.trim() || !consent)) {
         setError("Fill in your name and consent first — Google or Apple can vouch for your email, not your answers.");
@@ -131,7 +135,9 @@ export function Onboarding() {
   const signup = async () => {
     setBusy(true); setError(null); setNotice(null);
     try {
-      const r = await api.signup({ email: email.trim(), password, display_name: name.trim(), birthdate, terms_consent: consent });
+      const r = await api.signup({ email: email.trim(), password, display_name: name.trim(),
+                                   birthdate, terms_consent: consent, anonymous,
+                                   legal_name: anonymous && legalName.trim() ? legalName.trim() : undefined });
       if (r.verification === "local" && r.user_token) {
         // No mail transport on this deployment (the desktop install): the
         // machine owner is trusted, the account is already active.
@@ -218,6 +224,24 @@ export function Onboarding() {
 
         {mode === "signup" && (<>
           <label>Name<input value={name} placeholder="Your name" onChange={(e) => setName(e.target.value)} /></label>
+          {/* Spec [0031] box 212: an anonymous user name is a first-class
+              choice, and the tradeoff is stated where the choice is made. */}
+          <label className="check">
+            <input type="checkbox" checked={anonymous}
+                   onChange={(e) => setAnonymous(e.target.checked)} />
+            Keep me anonymous — use a pseudonym instead of my name
+          </label>
+          {anonymous && (<>
+            <p className="field-hint">
+              JIM won't keep the name above. Every emergency path works exactly
+              the same; the one difference is that a dispatcher briefing can't
+              give responders a legal name. Leave one below only if you want it
+              used for that.
+            </p>
+            <label>Legal name, for emergencies only (optional)
+              <input value={legalName} placeholder="leaving this blank is fine"
+                     onChange={(e) => setLegalName(e.target.value)} /></label>
+          </>)}
           <label>Birthdate<input type="date" value={birthdate} onChange={(e) => setBirthdate(e.target.value)} /></label>
           <label>Email<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
           <PasswordField label="Password" value={password} placeholder="At least 8 characters" onChange={setPassword} />

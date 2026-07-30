@@ -270,7 +270,63 @@ def personalize(user: dict | None) -> str:
         lines.append(f"tone: {personality['tone']}")
     if personality.get("instructions"):
         lines.append(f"user preference: {personality['instructions']}")
+    if personality.get("occupation"):
+        # Clause 11's professional role: a night-shift nurse and a long-haul
+        # driver need different advice about the same bad night's sleep.
+        lines.append(f"what this person does: {personality['occupation']} — "
+                     "fit guidance to the demands and hours of that work")
+    lines.extend(_posture_lines(personality))
     return ("\n" + "\n".join(lines)) if lines else ""
+
+
+# Spec [0019], read as written: guidance "may be structured to be neutral to
+# a person's background or beliefs, such as religion, politics, sexual
+# orientation, or the like, and in other examples may be derived with
+# sensitivity to the user's beliefs taken into account. A user's age and
+# maturity level may similarly be taken into account, as may a user's
+# general intelligence or ability to quickly grasp and apply guidance."
+#
+# Neutral is the default and the *stated* posture either way, because a
+# companion that quietly guesses somebody's religion from their name is the
+# failure mode this passage exists to prevent. Age and maturity already ride
+# the base prompt; these two dials are the rest of the sentence.
+_BELIEF_POSTURES = {
+    "neutral": ("Stay neutral to this person's background and beliefs — "
+                "religion, politics, sexual orientation and the like. Give "
+                "the same factual guidance you would give anyone; never "
+                "infer their beliefs, and never let an assumption about "
+                "them shape the advice."),
+    "sensitive": ("This person asked you to take their beliefs into "
+                  "account: {beliefs}. Honor them in how guidance is "
+                  "framed — the facts do not bend, the framing may."),
+}
+
+_EXPLAIN_LEVELS = {
+    "plain": "Explain in plain language: short sentences, everyday words, "
+             "one step at a time, no jargon and no assumed background.",
+    "standard": "Explain at a general-audience level — clear, unhurried, "
+                "defining any term that is not everyday.",
+    "technical": "This person grasps and applies guidance quickly: you may "
+                 "use precise clinical or technical terms and skip the "
+                 "basics, staying brief.",
+}
+
+
+def _posture_lines(personality: dict) -> list[str]:
+    lines: list[str] = []
+    posture = personality.get("beliefs_posture") or "neutral"
+    frame = _BELIEF_POSTURES.get(posture, _BELIEF_POSTURES["neutral"])
+    beliefs = (personality.get("beliefs") or "").strip()
+    if posture == "sensitive" and beliefs:
+        lines.append(frame.format(beliefs=beliefs))
+    else:
+        # Sensitive with nothing declared falls back to neutral rather than
+        # inviting the model to guess what the beliefs might be.
+        lines.append(_BELIEF_POSTURES["neutral"])
+    level = personality.get("explain_level")
+    if level in _EXPLAIN_LEVELS:
+        lines.append(_EXPLAIN_LEVELS[level])
+    return lines
 
 
 def provenance_for(condition: str, provider_name: str,
