@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { api, getBase, getLlmKey, setBase, setLlmKey, type PairInfo, type SeedReport, type VigilStatus, type WatchChannel } from "../api";
+import { api, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile,
+         type AnonymityPosture, type PairInfo, type SeedReport, type VigilStatus,
+         type WatchChannel } from "../api";
 import { ProviderTiles } from "../ProviderTiles";
 import { say } from "../speech";
 import { useSession } from "../store";
@@ -7,6 +9,10 @@ import { useSession } from "../store";
 export function Settings() {
   const { session, signOut } = useSession();
   const [base, setBaseInput] = useState(getBase());
+  // Claim 11's user-specific model, and spec [0031]'s anonymity posture.
+  const [adapt, setAdapt] = useState<AdaptationProfile | null>(null);
+  const [anon, setAnon] = useState<AnonymityPosture | null>(null);
+  const [adaptBusy, setAdaptBusy] = useState(false);
   const [health, setHealth] = useState<string>("…");
   const [saved, setSaved] = useState(false);
   const [llmKey, setLlmKeyInput] = useState(getLlmKey());
@@ -16,7 +22,12 @@ export function Settings() {
   useEffect(() => {
     api.health().then((h) => setHealth(`ok · vault tandem: ${h.tandem ? "connected" : "not configured (set by the deployment, not a switch)"}`)).catch(() => setHealth("unreachable"));
     api.pair().then(setPair).catch(() => setPair(null));
-  }, []);
+    if (session.userId && session.userToken) {
+      api.adaptation(session.userId, session.userToken).then(setAdapt).catch(() => {});
+      api.anonymity(session.userId, session.userToken).then(setAnon).catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.userId]);
 
   function save() {
     setBase(base); setSaved(true); setTimeout(() => setSaved(false), 1500);
@@ -73,6 +84,77 @@ export function Settings() {
           </div>
         </div>
       )}
+      <div className="card">
+        <h3>What JIM has learned about you</h3>
+        <p className="muted small">
+          A profile derived from your own history — the conditions you
+          declared, how your check-ins trend, what you bring up, and which
+          guidance has actually helped. It shapes how the coach answers.
+          Nothing is sent to a model vendor to build it.
+        </p>
+        {adapt?.built && adapt.profile ? (
+          <>
+            <div className="spec-row">
+              <div>
+                <b>{Math.round((adapt.confidence || 0) * 100)}% confidence</b>
+                <div className="muted small">
+                  from {adapt.evidence_items} pieces of your own history
+                  {adapt.vaulted ? " · sealed in the vault" : ""}
+                </div>
+              </div>
+              <button disabled={adaptBusy} onClick={async () => {
+                if (!session.userId || !session.userToken) return;
+                setAdaptBusy(true);
+                try { setAdapt(await api.rebuildAdaptation(session.userId, session.userToken)); }
+                finally { setAdaptBusy(false); }
+              }}>Rebuild</button>
+            </div>
+            <ul className="refs">
+              {Object.entries(adapt.profile.what_helps).map(([cond, t]) => (
+                <li key={cond}>
+                  {cond}: guidance helped {t.helped} of {t.answered} times
+                </li>
+              ))}
+              {adapt.profile.occupation && (
+                <li>work: {adapt.profile.occupation}</li>
+              )}
+              {adapt.profile.tone && <li>tone you asked for: {adapt.profile.tone}</li>}
+            </ul>
+            <p className="muted small">{adapt.profile.method}</p>
+          </>
+        ) : (
+          <>
+            <p className="muted small">{adapt?.note || "Nothing built yet."}</p>
+            <button disabled={adaptBusy} onClick={async () => {
+              if (!session.userId || !session.userToken) return;
+              setAdaptBusy(true);
+              try { setAdapt(await api.rebuildAdaptation(session.userId, session.userToken)); }
+              finally { setAdaptBusy(false); }
+            }}>Build it from my history</button>
+          </>
+        )}
+      </div>
+
+      <div className="card">
+        <h3>Your name here</h3>
+        {anon ? (anon.anonymous ? (
+          <>
+            <p>
+              You use JIM as <b>{anon.known_as}</b> — a pseudonym. JIM never
+              learned your real name.
+            </p>
+            <ul className="refs">
+              {anon.keeps.map((k, i) => <li key={i}>Keeps: {k}</li>)}
+              {anon.costs.map((c, i) => <li key={`c${i}`}>Costs: {c}</li>)}
+            </ul>
+          </>
+        ) : (
+          <p className="muted small">
+            You use JIM under your own name ({anon.known_as}).
+          </p>
+        )) : <p className="muted small">…</p>}
+      </div>
+
       <div className="card">
         <h3>Your data</h3>
         <p className="muted small">Guidance runs on-device; sensitive payloads seal into the PDI vault when the tandem is on. User: {session.userId}</p>

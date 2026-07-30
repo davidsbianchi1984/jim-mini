@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Two things JIM knew but never showed you.** The user-specific model
+and the anonymity posture were both real in the backend and invisible in
+the app. Settings now carries them. **What JIM has learned about you**
+shows the claim-11 profile in plain terms — the confidence it has earned
+from your own history, which guidance has actually helped and how often,
+the work you named, the tone you asked for — with a Rebuild button and
+the reminder that nothing was sent to a model vendor to build it. **Your
+name here** states your anonymity posture: the pseudonym you are known
+by, what the choice keeps (every emergency path, your own records) and
+what it costs (a legal name for responders, unless you left one).
+
 **The community door: JIM points, QRME hosts.** FIG. 2 boxes 222–226
 describe community inside the guidance product — interact with others,
 moderate content, store it for community interaction — and [0020]
