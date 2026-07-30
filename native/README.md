@@ -149,8 +149,13 @@ which is exactly how QRME's community wall shipped with dead like, comment and
 share buttons in every release that had them.
 
 [`jim/tests/test_client_routes_exist.py`](../jim/tests/test_client_routes_exist.py)
-extracts every API path literal from `native/` — about 45 per shell — and asks
-the real router about each one. The console is held to the same check, so the
+extracts every API path literal from `native/` — about 45 per shell — with the
+HTTP method each is sent with, and asks the real router whether that *pair* is
+accepted. Method matters as much as address: a shell sending POST where only
+GET is mounted gets a 405, which is the same dead button as a 404. Each
+language states its verb differently — Swift labels it, Kotlin passes it
+positionally, C# encodes it in the helper's name — so the check reads all three
+rather than assuming GET. The console is held to the same check, so the
 two halves of the contract are compared with each other rather than each with
 itself.
 
