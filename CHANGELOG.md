@@ -6,6 +6,44 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Channel 2 and the clinical camera reach a person.** Both had complete
+backends and no caller anywhere. The microphone could be attached to a device,
+metered, handed to a call and released, and its whole history read back; the
+camera could seal a photograph into the vault, release a chosen few to a
+clinician and withdraw one afterwards. None of it was reachable from the
+console or from any shell.
+
+**Devices had to come first**, because they are the precondition rather than a
+separate feature: a microphone attaches to a device the account already knows,
+never to a name typed in the moment. What is listening is therefore always
+something registered on purpose.
+
+Every vocabulary on the new **Channel & camera** screen is fetched, not typed
+out — the microphone types, the gain levels, the twenty-one capture sites, the
+three kinds, and the list of which sites count as intimate. Two reasons, and
+the second is the one that matters: a picker built from the server's own list
+cannot offer a value the handler will refuse, and the *rules* travel with the
+options instead of being restated in the client where they would drift.
+
+Three details are the server's judgement rendered rather than the console's
+invention:
+
+- **Ambient microphones are shown as refused, with the reason.** A conference
+  phone or a room array cannot be channel 2, because everyone it picks up would
+  be lending their voice without being asked. Listing them as unavailable
+  answers the question that a missing option would raise.
+- **Gain is not volume.** Every level is the owner at a different distance, and
+  the server says per level whether it `reaches_others` — so the buttons say it
+  too. While somebody else's voice is in the air the agent narrows itself
+  regardless of the setting, and the screen says the setting comes back
+  afterwards rather than leaving a silent override to be discovered.
+- **An intimate site needs its own tick before a file can be chosen**, and
+  attaching to a referral reports how many had to be named one at a time —
+  intimate captures are never swept in by a condition match.
+
+Seventeen routes came off the doorless list, 90 → 73.
+
+
 **The crash watch can now be answered.** JIM could already raise an alarm — an
 unanswered check-in, a scanned beacon, a fall through the watch drip — and every
 route for *resolving* one had existed for versions with nothing calling it.

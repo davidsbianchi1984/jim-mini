@@ -308,6 +308,103 @@ export type CloudContribution = {
 };
 
 
+/** A device on the account. A microphone can only be attached to one of these. */
+export type DeviceRow = {
+  id: string;
+  user_id: string;
+  name: string;
+  kind: string;
+  transport?: string | null;
+  has_llm: boolean;
+  linked_to?: string | null;
+  created_at: string;
+};
+
+/** Which microphones may become channel 2, and why the ambient ones may not. */
+export type MicTypes = {
+  personal: string[];
+  ambient: string[];
+  rule: string;
+};
+
+/** Gain is not volume. Every level is the owner at a different distance, and
+ *  `reaches_others` says plainly whether anyone else falls inside it. */
+export type MicGains = {
+  levels: { gain: string; reaches_others: boolean; describes: string }[];
+  default: string;
+  capped_during: string[];
+  voice_focus: boolean;
+  rule: string;
+};
+
+/** Channel 2's current state. `capped` means a call is in progress and the
+ *  agent has narrowed itself regardless of the owner's setting. */
+export type MicState = {
+  listening: boolean;
+  attached?: boolean;
+  device?: string | null;
+  mic_type?: string | null;
+  gain?: string | null;
+  effective_gain?: string | null;
+  capped?: boolean;
+  hears?: string;
+  because?: string;
+  reason?: string | null;
+  route?: string | null;
+  since?: string | null;
+  note?: string;
+  channel?: number;
+  voice_focus?: boolean;
+  describes?: string;
+  id?: string;
+};
+
+export type MicEvent = {
+  id: string;
+  device: string;
+  mic_type: string;
+  gain: string;
+  reason?: string | null;
+  route?: string | null;
+  live: boolean;
+  started_at: string;
+  ended_at?: string | null;
+  ended_because?: string | null;
+};
+
+/** The server describes the whole capture form: what may be photographed,
+ *  which of those sites are intimate, and how big a file may be. */
+export type CaptureVocabulary = {
+  kinds: Record<string, string>;
+  sites: Record<string, string>;
+  provenance: Record<string, string>;
+  intimate: string[];
+  minors?: string;
+  agent_sees?: string;
+  agent_never_sees?: string;
+  vault_required: boolean;
+  max_bytes: number;
+};
+
+export type CaptureRow = {
+  id: string;
+  kind: string;
+  site: string;
+  provenance: string;
+  note?: string | null;
+  condition?: string | null;
+  intimate?: boolean;
+  sealed?: boolean;
+  created_at?: string;
+  [key: string]: unknown;
+};
+
+export type CaptureAttachResult = {
+  attached?: string[];
+  explicit?: string[];
+  [key: string]: unknown;
+};
+
 export const api = {
   // The help box — written directions about the app itself; no token, so a
   // lost person can ask before they have an account.
@@ -587,4 +684,57 @@ export const api = {
   setLocality: (uid: string, locality: string | null, token: string) =>
     req<{ locality: string | null }>(`/users/${uid}/locality`,
       { method: "PUT", body: { locality }, token }),
+
+  // Devices come first because channel 2 depends on them: a microphone
+  // attaches to a device the account already knows, never to a typed name.
+  devices: (uid: string, token: string) =>
+    req<DeviceRow[]>(`/devices/${uid}`, { token }),
+  registerDevice: (uid: string, body: { name: string; kind: string;
+    transport?: string; has_llm?: boolean }, token: string) =>
+    req<DeviceRow>(`/devices/${uid}`, { method: "POST", body, token }),
+
+  // Channel 2 — the microphone JIM listens through. Both vocabularies come
+  // from the server so the picker cannot offer a value the handler refuses,
+  // and so the rules travel with the options rather than being retyped here.
+  micTypes: () => req<MicTypes>(`/mic/types`),
+  micGains: () => req<MicGains>(`/mic/gains`),
+  micState: (uid: string, token: string) =>
+    req<MicState>(`/users/${uid}/mic`, { token }),
+  attachMic: (uid: string, body: { device_name: string; mic_type: string },
+    token: string) =>
+    req<MicState>(`/users/${uid}/mic`, { method: "PUT", body, token }),
+  detachMic: (uid: string, token: string) =>
+    req<MicState>(`/users/${uid}/mic`, { method: "DELETE", token }),
+  setMicGain: (uid: string, gain: string, token: string) =>
+    req<MicState>(`/users/${uid}/mic/gain`,
+      { method: "PUT", body: { gain }, token }),
+  handOverMic: (uid: string, body: { reason: string; route: string;
+    others_present?: boolean; primary_device?: string }, token: string) =>
+    req<MicState>(`/users/${uid}/mic/handover`, { method: "POST", body, token }),
+  releaseMic: (uid: string, token: string) =>
+    req<MicState>(`/users/${uid}/mic/release`, { method: "POST", token }),
+  micHistory: (uid: string, token: string) =>
+    req<MicEvent[]>(`/users/${uid}/mic/history`, { token }),
+
+  // Clinical capture. The vocabulary is the form: 21 sites, three kinds, and
+  // the list of which sites count as intimate — read rather than duplicated,
+  // because a site list that drifts out of step is a 422 at the worst moment.
+  captureVocabulary: () => req<CaptureVocabulary>(`/captures/vocabulary`),
+  captures: (uid: string, token: string, condition?: string) =>
+    req<CaptureRow[]>(`/users/${uid}/captures`
+      + (condition ? `?condition=${encodeURIComponent(condition)}` : ""),
+      { token }),
+  takeCapture: (uid: string, body: { kind?: string; site: string;
+    content: string; provenance?: string; note?: string; condition?: string;
+    intimate_consent?: boolean }, token: string) =>
+    req<CaptureRow>(`/users/${uid}/captures`, { method: "POST", body, token }),
+  captureImage: (uid: string, captureId: string, token: string) =>
+    req<{ content: string; kind: string }>(
+      `/users/${uid}/captures/${captureId}/image`, { token }),
+  attachCaptures: (uid: string, capture_ids: string[], token: string) =>
+    req<CaptureAttachResult>(`/users/${uid}/captures/attach`,
+      { method: "POST", body: { capture_ids }, token }),
+  deleteCapture: (uid: string, captureId: string, token: string) =>
+    req<{ withdrawn: boolean }>(`/users/${uid}/captures/${captureId}`,
+      { method: "DELETE", token }),
 };

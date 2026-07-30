@@ -5,8 +5,6 @@ DELETE /memberships/{account_id}
 DELETE /robots/{user_id}/{robot_id}
 DELETE /settings/voice
 DELETE /social/connection/{cid}
-DELETE /users/{user_id}/captures/{capture_id}
-DELETE /users/{user_id}/mic
 GET /access-log/{user_id}
 GET /auth/oauth/{provider}/callback
 GET /budgets/{user_id}
@@ -14,11 +12,9 @@ GET /c/{bid}
 GET /c/{bid}/card
 GET /c/{bid}/qr.svg
 GET /calm/{user_id}/history
-GET /captures/vocabulary
 GET /cloud/status
 GET /coach/{user_id}
 GET /community/{user_id}/visits
-GET /devices/{user_id}
 GET /dock/faces
 GET /dock/where/{face}
 GET /dock/{user_id}
@@ -29,8 +25,6 @@ GET /excursions/{user_id}
 GET /help/topics
 GET /insights/{user_id}
 GET /memberships/{account_id}
-GET /mic/gains
-GET /mic/types
 GET /plans
 GET /provider/{user_id}
 GET /relay/channel
@@ -44,10 +38,6 @@ GET /tutorial
 GET /tutorial/for-screen/{number}
 GET /tutorial/progress/{learner_id}
 GET /tutorial/steps/{key}
-GET /users/{user_id}/captures
-GET /users/{user_id}/captures/{capture_id}/image
-GET /users/{user_id}/mic
-GET /users/{user_id}/mic/history
 GET /users/{user_id}/referral/clinicians
 GET /users/{user_id}/referral/requests
 GET /users/{user_id}/specialist-tasks
@@ -60,7 +50,6 @@ POST /c/{bid}/alarm
 POST /companion/{user_id}
 POST /conditions/{user_id}
 POST /context/{user_id}
-POST /devices/{user_id}
 POST /excursions/entry/{cid}/learn
 POST /excursions/{user_id}
 POST /feedback/{user_id}
@@ -71,10 +60,6 @@ POST /specialists/seed
 POST /specialists/seed/tandem
 POST /tutorial/done
 POST /tutorial/start
-POST /users/{user_id}/captures
-POST /users/{user_id}/captures/attach
-POST /users/{user_id}/mic/handover
-POST /users/{user_id}/mic/release
 POST /users/{user_id}/referral/prepare
 POST /users/{user_id}/referral/requests/{request_id}/released
 POST /users/{user_id}/specialist-tasks
@@ -86,5 +71,3 @@ PUT /budgets/{user_id}
 PUT /dock/{user_id}
 PUT /meds/{user_id}/{med_id}
 PUT /personality/{user_id}
-PUT /users/{user_id}/mic
-PUT /users/{user_id}/mic/gain
