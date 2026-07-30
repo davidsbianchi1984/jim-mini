@@ -278,6 +278,16 @@ LESSONS: tuple[dict, ...] = (
               "timeline and nothing from inside it.",
          screens=(92,),
          try_it="Open Connect → Community and read what JIM will not do."),
+    dict(key="problems", chapter="Beyond the app", title="What went wrong",
+         what="When a request fails, JIM writes down the operation and the "
+              "status code and nothing else. Not the error message, because "
+              "those messages quote what you typed — a device in your home, a "
+              "site on your body. Not the path as it was called, because a "
+              "capture id names a photograph of you. You read the message when "
+              "it happens: it is yours. Before a single report is sent, JIM "
+              "asks, and shows you the exact thing it would send.",
+         screens=(93, 94),
+         try_it="Open Privacy and press 'Show me exactly what would be shared'."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

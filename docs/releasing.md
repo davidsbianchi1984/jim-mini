@@ -78,6 +78,20 @@ anything.
    git push origin app-v0.1.0
    ```
 
+   **Tag creation is the maintainer's step, and it needs a link.** Claude
+   cannot push tags here — the attempt is refused — so the hand-off has to be
+   one click rather than a commit SHA to copy and a form to fill in. Every
+   time a cut is ready, give a prefilled release link per repository:
+
+   ```
+   https://github.com/davidsbianchi1984/jim-mini/releases/new?tag=app-v0.19.0&target=<sha>&title=app-v0.19.0
+   ```
+
+   `target` takes the full SHA of the release-prep commit — the same one rule
+   two above says to tag, not the tip of `main` if anything landed after it.
+   The tag is created on publish, and a tag created this way *does* emit the
+   `push` event, so both workflows fire exactly as they would from a terminal.
+
 The `app-v*` tag triggers `.github/workflows/desktop-release.yml`, which builds
 the console into per-OS installers (`.dmg` / `.exe` / `.AppImage`) on real
 macOS / Windows / Linux runners and attaches them to a GitHub Release, with

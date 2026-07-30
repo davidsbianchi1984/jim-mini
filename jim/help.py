@@ -77,6 +77,16 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "Connect → Community. The rooms and local events live in QRME and "
         "JIM opens the door; nothing is mirrored back, nothing posts as "
         "you, and no health data crosses over.",
+    # The words somebody uses when something has just broken, and the ones
+    # they use when they have noticed the reporting and want it stopped.
+    ("what went wrong", "error", "errors", "it failed", "something broke",
+     "bug", "report a bug", "crash", "stop sending", "stop reporting",
+     "opt out", "diagnostics"):
+        "Privacy → What went wrong. Failed requests are kept as the operation "
+        "and the status code — never the error message, which quotes what you "
+        "typed, and never an id, which would name a capture of you. The card "
+        "shows the exact payload before anything leaves, and the switch beside "
+        "it stops the sending for good.",
 }
 
 
