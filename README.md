@@ -240,6 +240,12 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/90-what-jim-learned.svg" width="160" alt="90 What JIM Learned"><br><sub>90 · What JIM Learned</sub></td>
 <td align="center" width="25%"><img src="docs/screens/91-your-name-here.svg" width="160" alt="91 Your Name Here"><br><sub>91 · Your Name Here</sub></td>
 <td align="center" width="25%"><img src="docs/screens/92-community.svg" width="160" alt="92 Community"><br><sub>92 · Community</sub></td>
+<td align="center" width="25%"><img src="docs/screens/93-what-went-wrong.svg" width="160" alt="93 What Went Wrong"><br><sub>93 · What Went Wrong</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/94-before-anything-is-sent.svg" width="160" alt="94 Before Anything Is Sent"><br><sub>94 · Before Anything Is Sent</sub></td>
+<td align="center" width="25%"></td>
+<td align="center" width="25%"></td>
 <td align="center" width="25%"></td>
 </tr>
 </table>

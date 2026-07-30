@@ -20,7 +20,7 @@
 # `undrawn` is a ratchet: the count may fall and must never rise. Adding a
 # surface without a drawing therefore fails, which is the whole point.
 #
-# ceiling: undrawn=2 unaudited=6
+# ceiling: undrawn=0 unaudited=6
 #
 # `unaudited` is the honest seed. These components predate the file and their
 # screens were not confirmed one by one — matching a component name against a
@@ -48,5 +48,5 @@ Wellness        unaudited
 PaceCue         unaudited
 ProviderTiles   unaudited
 
-Problems        undrawn
-ProblemNotice   undrawn
+Problems        93
+ProblemNotice   94

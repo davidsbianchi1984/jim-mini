@@ -1687,6 +1687,32 @@ SCREENS = [
         dict(icon="clip", color="cyan", k="The visit only",
              s="your timeline notes the door"),
     ]),
+    # 93 and 94 are the error report and the notice before it. In a health
+    # product the redaction is the feature: the unredacted form of the path on
+    # 93 names a photograph of somebody's body and whose it is.
+    dict(num=93, title="What Went Wrong", sub="The operation, not the instance",
+         accent="cyan", tab=4, cards=[
+        dict(icon="warn", color="amber", k="GET /users/{id}/meds",
+             s="500 · twice · 30 Jul"),
+        dict(icon="link", color="cyan", k="POST /monitor",
+             s="no answer · once · 30 Jul"),
+        dict(icon="shield", color="green", k="No message kept",
+             s="it names a site on you"),
+        dict(icon="eye", color="brand", k="No id kept",
+             s="a capture is a photograph",
+             pill=("REDACTED", "good")),
+    ]),
+    dict(num=94, title="Before Anything Is Sent", sub="Asked once, answerable forever",
+         accent="green", tab=4, cards=[
+        dict(icon="info", color="cyan", k="When it fails",
+             s="we would like to know"),
+        dict(icon="shield", color="green", k="Never the message",
+             s="never who you are"),
+        dict(icon="clip", color="brand", k="See the payload",
+             s="the same object we post"),
+        dict(icon="gear", color="amber", k="Change it later",
+             s="the switch is in Privacy"),
+    ]),
 ]
 
 
