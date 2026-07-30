@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// Connect: what feeds the Guardian — consented data sources, social-platform
-/// connections, and the connected-apps catalog — behind one tab.
+/// connections, the connected-apps catalog, and the door out to QRME's
+/// community — behind one tab.
 struct ConnectView: View {
-    enum Tab: String, CaseIterable { case sources = "Sources", social = "Social", apps = "Apps" }
+    enum Tab: String, CaseIterable { case sources = "Sources", social = "Social", apps = "Apps", community = "Community" }
     @State private var tab: Tab = .sources
 
     var body: some View {
@@ -17,6 +18,7 @@ struct ConnectView: View {
                 case .sources: SourcesSection()
                 case .social: SocialSection()
                 case .apps: AppsSection()
+                case .community: CommunitySection()
                 }
             }.padding(20)
         }
@@ -237,6 +239,143 @@ private struct AppsSection: View {
                 try await ApiClient.shared.appCollect(
                     cid: c.id, token: token, content: "sample context from \(c.app)")
                 status = "collected from \(c.app)"
+            } catch { self.error = error.localizedDescription }
+        }
+    }
+}
+
+// MARK: Community — the door out, and what stays behind it
+
+/// FIG. 2 boxes 222–226: interact with others, moderated storage, community
+/// interaction, local events and forums in every language.
+///
+/// None of that is built a second time here. It exists in QRME — with the
+/// moderation, the rooms and the languages already in place — so this screen
+/// is a door rather than a copy, and it says so in the same breath as it
+/// opens. The posture is rendered from the server's own booleans instead of
+/// being retyped as reassurance, so the screen cannot claim more than the
+/// bridge actually does.
+private struct CommunitySection: View {
+    @EnvironmentObject var state: AppState
+    @State private var view: CommunityView?
+    @State private var opened: String?
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Community").font(.headline).foregroundStyle(Theme.txt)
+                if let v = view {
+                    Text(v.note).font(.caption).foregroundStyle(Theme.t2)
+                    if let lang = v.language {
+                        Text("Rooms are listed as QRME serves them; you read \(lang).")
+                            .font(.caption2).foregroundStyle(Theme.t3)
+                    }
+                } else {
+                    Text("Loading the door…").font(.caption).foregroundStyle(Theme.t3)
+                }
+            }.card()
+
+            if let v = view {
+                // The posture, from the server's booleans rather than prose.
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("What JIM does not do").font(.subheadline.bold())
+                        .foregroundStyle(Theme.txt)
+                    postureRow("Mirror the conversation here", v.posture.mirrored_here)
+                    postureRow("Post on your behalf", v.posture.posts_on_your_behalf)
+                    postureRow("Share your health data", v.posture.health_data_shared)
+                }.card()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Rooms").font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                    if v.rooms.isEmpty {
+                        Text("No rooms open right now. A community shelf that "
+                             + "cannot load is a quiet screen, not an error.")
+                            .font(.caption).foregroundStyle(Theme.t3)
+                    }
+                    ForEach(v.rooms) { room in
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(room.topic ?? room.id)
+                                    .font(.subheadline).foregroundStyle(Theme.txt)
+                                Text(roomDetail(room)).font(.caption2)
+                                    .foregroundStyle(Theme.t3)
+                            }
+                            Spacer()
+                            if let raw = room.url, let url = URL(string: raw) {
+                                Link("Open", destination: url)
+                                    .font(.caption.bold()).foregroundStyle(Theme.brandA)
+                                    .simultaneousGesture(TapGesture().onEnded {
+                                        note(room.id)
+                                    })
+                            }
+                        }
+                    }
+                }.card()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Near you").font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                    if v.places.isEmpty {
+                        Text("No places claimed yet.").font(.caption)
+                            .foregroundStyle(Theme.t3)
+                    }
+                    ForEach(v.places) { place in
+                        HStack {
+                            Text(placeName(place)).font(.subheadline)
+                                .foregroundStyle(Theme.txt)
+                            Spacer()
+                            if let n = place.listings {
+                                Text("\(n)").font(.caption).monospacedDigit()
+                                    .foregroundStyle(Theme.t2)
+                            }
+                        }
+                    }
+                }.card()
+            }
+
+            if let opened {
+                Text("Noted that you opened \(opened) — the visit, and nothing "
+                     + "from inside it.")
+                    .font(.caption).foregroundStyle(Theme.green)
+            }
+            if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
+        }
+        .task { await load() }
+    }
+
+    private func postureRow(_ label: String, _ happens: Bool) -> some View {
+        HStack(spacing: 8) {
+            Text(happens ? "•" : "✓")
+                .foregroundStyle(happens ? Theme.amber : Theme.green)
+            Text(label).font(.caption).foregroundStyle(Theme.t2)
+        }
+    }
+
+    private func roomDetail(_ room: CommunityRoom) -> String {
+        var bits: [String] = []
+        if let channel = room.channel { bits.append(channel) }
+        if let heads = room.participants { bits.append("\(heads) here") }
+        return bits.isEmpty ? room.id : bits.joined(separator: " · ")
+    }
+
+    private func placeName(_ place: CommunityPlace) -> String {
+        guard let region = place.region, !region.isEmpty else { return place.locality }
+        return "\(place.locality), \(region)"
+    }
+
+    private func load() async {
+        guard let uid = state.uid, let token = state.token else { return }
+        do { view = try await ApiClient.shared.community(uid: uid, token: token) }
+        catch { self.error = error.localizedDescription }
+    }
+
+    private func note(_ roomId: String) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            do {
+                try await ApiClient.shared.noteCommunityVisit(
+                    uid: uid, token: token, roomId: roomId)
+                opened = roomId
             } catch { self.error = error.localizedDescription }
         }
     }

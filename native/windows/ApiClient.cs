@@ -313,6 +313,35 @@ public record ImproveState(
 /// Async client for the JIM Guardian backend. Windows reaches the local dev
 /// server directly on 127.0.0.1.
 /// </summary>
+// MARK: the community door (FIG. 2 boxes 222-226)
+
+public record CommunityRoom(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("topic")] string? Topic,
+    [property: JsonPropertyName("channel")] string? Channel,
+    [property: JsonPropertyName("participants")] int Participants,
+    [property: JsonPropertyName("url")] string? Url);
+
+public record CommunityPlace(
+    [property: JsonPropertyName("locality")] string Locality,
+    [property: JsonPropertyName("region")] string? Region,
+    [property: JsonPropertyName("listings")] int Listings);
+
+// What JIM will and will not do with the community it points at, as data
+// rather than prose, so a screen cannot claim more than the bridge does.
+public record CommunityPosture(
+    [property: JsonPropertyName("mirrored_here")] bool MirroredHere,
+    [property: JsonPropertyName("posts_on_your_behalf")] bool PostsOnYourBehalf,
+    [property: JsonPropertyName("health_data_shared")] bool HealthDataShared);
+
+public record CommunityView(
+    [property: JsonPropertyName("qrme_url")] string? QrmeUrl,
+    [property: JsonPropertyName("language")] string? Language,
+    [property: JsonPropertyName("rooms")] CommunityRoom[] Rooms,
+    [property: JsonPropertyName("places")] CommunityPlace[] Places,
+    [property: JsonPropertyName("note")] string Note,
+    [property: JsonPropertyName("posture")] CommunityPosture Posture);
+
 public sealed class ApiClient
 {
     public static ApiClient Shared { get; } = new();
@@ -684,4 +713,24 @@ public sealed class ApiClient
         if (token is { Length: > 0 }) req.Headers.Add("authorization", $"Bearer {token}");
         return Send<ImproveState>(req);
     }
+
+    // MARK: Community — the door into QRME, and the visit note
+
+    /// <summary>
+    /// Rooms and places as QRME serves them, plus the language JIM knows this
+    /// user reads. JIM never mirrors the conversation; the posture in the reply
+    /// says so, and the page renders those booleans rather than restating them.
+    /// </summary>
+    public Task<CommunityView> Community(string uid, string token) =>
+        Send<CommunityView>(Get($"/community/{uid}", token));
+
+    /// <summary>Record that a door was opened — the visit, and nothing from
+    /// inside it.</summary>
+    public async Task NoteCommunityVisit(string uid, string token, string roomId)
+    {
+        var res = await _http.SendAsync(
+            Post($"/community/{uid}/visits", new { room_id = roomId }, token));
+        res.EnsureSuccessStatusCode();
+    }
+
 }
