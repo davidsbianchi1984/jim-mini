@@ -79,12 +79,19 @@ def test_the_recorder_has_nowhere_to_put_a_message():
 
 
 def test_the_stored_record_has_no_field_that_could_hold_content():
-    """What the buffer may contain, checked against the interface itself."""
+    """What the buffer may contain, checked against the interface itself.
+
+    `sent` joined the four originals when sending was added: it counts how much
+    of `count` has already gone, so relaunching an app does not report the same
+    failure again. It is a number derived from another number and has no way to
+    hold anything of anybody's — but it still had to be added here on purpose,
+    which is exactly what this test is for.
+    """
     src = _source()
     match = re.search(r"export interface Problem \{(.*?)\n\}", src, re.S)
     assert match, "the Problem interface is gone or has been renamed"
     fields = set(re.findall(r"^\s*(\w+)\??:", match.group(1), re.M))
-    assert fields == {"op", "status", "count", "day", "fingerprint"}, (
+    assert fields == {"op", "status", "count", "day", "fingerprint", "sent"}, (
         f"Problem now has {sorted(fields)}"
     )
     leaked = sorted(f for f in fields if f in FORBIDDEN_FIELDS)
@@ -94,18 +101,141 @@ def test_the_stored_record_has_no_field_that_could_hold_content():
 def test_the_report_sends_only_what_the_screen_shows():
     """The payload's keys, pinned.
 
-    The screen renders this exact object, so a key added here is a key shown to
-    the user — but only if somebody looks. Pinning it means a new key has to be
-    a decision.
+    The screen renders this exact object and the sender posts it, so a key
+    added here is a key that leaves the device — shown to the user, but only if
+    they look. Pinning it means a new key has to be a decision.
     """
     src = _source()
-    match = re.search(r"export function problemReport\(.*?\{\s*return \{(.*?)\n  \};",
+    match = re.search(r"export function problemReport\(.*?\n  return \{(.*?)\n  \};",
                       src, re.S)
     assert match, "problemReport is gone or has been restructured"
     keys = set(re.findall(r"^\s*(\w+):", match.group(1), re.M))
-    assert keys == {"app_version", "platform", "language", "problems"}, (
-        f"the report now carries {sorted(keys)}"
-    )
+    assert keys == {"source", "app_version", "platform", "language",
+                    "problems"}, f"the report now carries {sorted(keys)}"
+
+
+def _outgoing_problem_fields() -> set[str]:
+    """The per-problem object `problemReport` builds, which is not the stored
+    row: `sent` is this device's bookkeeping and deliberately stays home."""
+    match = re.search(r"\.map\(\(r\) => \(\{(.*?)\n    \}\)\)", _source(), re.S)
+    assert match, "problemReport no longer builds its problems by mapping"
+    return set(re.findall(r"^\s*(\w+):", match.group(1), re.M))
+
+
+def test_the_outgoing_problem_carries_only_the_five():
+    """Pinned here, without the gateway.
+
+    The cross-check against `cloudgw/problems.py` below is the stronger test,
+    but it only runs in the repo that ships the gateway — and JIM and PDI are
+    where a leak would cost the most. This states the five names locally so
+    all three repos catch a sixth appearing, whatever it is called.
+    """
+    fields = _outgoing_problem_fields()
+    assert fields == {"op", "status", "count", "day", "fingerprint"}, (
+        f"the wire now carries {sorted(fields)}")
+    leaked = sorted(f for f in fields if f in FORBIDDEN_FIELDS)
+    assert not leaked, f"these fields can hold user content: {leaked}"
+
+
+def test_the_wire_shape_matches_what_the_gateway_will_accept():
+    """The two halves of the contract, checked against each other.
+
+    `cloudgw/problems.py` refuses any key it does not expect, so a field added
+    to the payload here and not there turns every report from the next release
+    into a 422 — silently, since the sender swallows failures. Only QRME ships
+    the gateway; in the other two repos there is nothing to compare against and
+    this is skipped rather than faked.
+    """
+    gateway = REPO / "cloudgw" / "problems.py"
+    if not gateway.exists():
+        pytest.skip("this repo does not ship the gateway")
+    src = gateway.read_text(encoding="utf-8")
+    top = set(re.findall(r'"(\w+)"',
+                         re.search(r"TOP_LEVEL = \{(.*?)\}", src, re.S).group(1)))
+    fields = set(re.findall(
+        r'"(\w+)"',
+        re.search(r"PROBLEM_FIELDS = \{(.*?)\}", src, re.S).group(1)))
+
+    ts = _source()
+    sent_top = set(re.findall(
+        r"^\s*(\w+):",
+        re.search(r"export function problemReport\(.*?\n  return \{(.*?)\n  \};",
+                  ts, re.S).group(1), re.M))
+    assert sent_top == top, (
+        f"the console sends {sorted(sent_top)} and the gateway accepts "
+        f"{sorted(top)}; the mismatch would 422 every report")
+
+    sent_fields = _outgoing_problem_fields()
+    assert sent_fields == fields, (
+        f"the console sends problems shaped {sorted(sent_fields)} and the "
+        f"gateway accepts {sorted(fields)}")
+    assert "sent" not in sent_fields, (
+        "the watermark is this device's bookkeeping and has no business on "
+        "the wire")
+
+
+def test_a_build_that_forgot_to_name_itself_cannot_impersonate_a_product():
+    """The fallback source, which is not a product.
+
+    `errors.ts` is byte-identical in three repos and learns which one it is
+    from a build constant. If a vite.config.ts loses that define, a fallback
+    naming any real product would file this app's bugs under that one, and the
+    aggregate would look fine while being wrong — the worst kind of wrong,
+    because there is no symptom. A source the gateway refuses turns it into a
+    422 on the first report.
+    """
+    src = _source()
+    match = re.search(r'__APP_SOURCE__ !== "undefined" \? __APP_SOURCE__\s*'
+                      r': "([^"]*)"', src)
+    assert match, "the source fallback is gone or has been restructured"
+    assert match.group(1) not in {"qrme", "jim-mini", "pdi"}, (
+        f"the fallback names {match.group(1)!r}, a real product — a repo that "
+        "forgot its define would report as that one and nothing would notice")
+
+    gateway = REPO / "cloudgw" / "problems.py"
+    if gateway.exists():
+        sources = re.search(r"SOURCES = \{(.*?)\}",
+                            gateway.read_text(encoding="utf-8"), re.S).group(1)
+        assert f'"{match.group(1)}"' not in sources, (
+            "the gateway accepts the fallback source, so a misbuilt console "
+            "would be recorded rather than refused")
+
+
+def test_sending_is_impossible_without_an_address_somebody_configured():
+    """Off by absence, not by flag.
+
+    A default that lives in a build constant cannot be switched on by a
+    mistake in a later release the way a boolean can — there is no address for
+    the mistake to reach. This checks the early return is still the first
+    thing `sendProblems` does.
+    """
+    src = _source()
+    body = re.search(r"export async function sendProblems\(.*?\n\}", src, re.S)
+    assert body, "sendProblems is gone or has been renamed"
+    first = [ln.strip() for ln in body.group(0).splitlines()
+             if ln.strip().startswith(("if ", "return", "const"))][:3]
+    assert any('return "no-collector"' in ln for ln in first), (
+        f"the collector check is no longer at the top of sendProblems: {first}")
+    assert 'localStorage.getItem(COLLECTOR_KEY)' in src, (
+        "the collector can no longer be overridden or emptied by the person "
+        "whose device it is")
+
+
+def test_the_sender_does_not_report_its_own_failures():
+    """No feedback loop.
+
+    `req()` records a failure whenever it fails, so a send routed through it
+    would write a new row every launch the collector was unreachable — a log
+    that fills up with the story of its own delivery. The send uses raw fetch,
+    and this is the test that says so.
+    """
+    src = _source()
+    body = re.search(r"export async function sendProblems\(.*?\n\}",
+                     src, re.S).group(0)
+    assert "fetch(" in body, "the sender no longer posts anything"
+    assert "req(" not in body and "recordProblem" not in body, (
+        "the sender is recording its own failures, which makes the buffer "
+        "fill with delivery attempts instead of bugs")
 
 
 def test_the_client_never_hands_the_recorder_a_message():
