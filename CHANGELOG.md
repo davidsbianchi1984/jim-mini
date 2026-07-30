@@ -6,6 +6,52 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The crash watch can now be answered.** JIM could already raise an alarm — an
+unanswered check-in, a scanned beacon, a fall through the watch drip — and every
+route for *resolving* one had existed for versions with nothing calling it.
+Accepting an alarm, clearing it, escalating it, seeing which pages went out and
+which incidents were recorded: all reachable from the backend, none reachable
+from a person. An alarm nobody can answer is worse than no alarm at all, because
+the system has already told somebody that help is coming.
+
+A new **Safety** screen sits directly under Live Monitoring — the same
+emergency, seen from the answering end rather than the raising end. Open alarms
+come first and separately, because on arrival during an emergency the only
+question is what still needs a human; history is below the fold rather than
+mixed in. Accepting an alarm **names a responder**, which the backend requires
+and which is the right requirement: "someone is coming" is not a state, it is a
+person. Escalation is one press with no confirm — in the moment it is needed a
+modal is an obstacle — while *clearing* asks, because clearing is the
+irreversible direction. Beacons are placed and listed here too, and the pages
+JIM sent on the user's behalf are shown with whether they arrived, since a
+message that failed to deliver is the one most worth knowing about.
+
+Two more doors in Privacy. **What you contribute** shows whether anything has
+gone to the shared model and how much, with the button that stops it — counts
+from the server rather than described in prose, because "some anonymised
+signals" is the kind of reassurance that survives the behaviour changing
+underneath it. **Where to look** sets the locality the community door searches
+near, entered rather than inferred from an IP address: a guess about where
+somebody lives is not a thing to make quietly.
+
+Eleven routes came off the doorless list, 101 → 90.
+
+**Scope, stated rather than implied.** Four families in the same block still
+have no door — the channel-2 microphone, clinical captures, the medical referral
+flow, and specialist tasks. Each needs real discovery first (the mic attaches
+only to an already-registered device, captures validate against a site
+vocabulary, referrals and specialist tasks want a configured tandem), and
+half-wiring them would have been worse than leaving them listed. They stay on
+the backlog, where the test keeps them visible.
+
+**A limitation of the audit, found by using it.** The doorless check counts call
+sites, so a binding added to `api.ts` and wired to no screen counts as a door
+and takes its route off the list — while the capability stays unreachable. This
+round's first pass added all 31 bindings before any screen existed, which would
+have reported 31 doors built and delivered none. The 20 unwired ones were
+removed rather than left to flatter the number, and the rule is now written into
+the audit: add the binding in the same change as the screen that calls it.
+
 **101 of JIM's 219 routes cannot be reached from any client.** The route guard
 asks whether every call reaches a route. This asks the inverse — whether every
 route is reachable from a door a user can open — and it is the quieter of the

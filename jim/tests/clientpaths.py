@@ -355,6 +355,15 @@ def doorless(app, surfaces=None) -> list[str]:
 
     Documentation endpoints and the browser-facing paths in
     :data:`NOT_A_CLIENT_CALL` are excluded; everything else is reported.
+
+    Know what "door" means here, because the word is doing less work than it
+    looks like. This counts *call sites*, so a binding added to `api.ts` and
+    wired to no screen counts as a door and takes its route off the list — the
+    capability is still unreachable, and the number says otherwise. The rule
+    that follows is a discipline rather than something the test can enforce:
+    add the binding in the same change as the screen that calls it. A round
+    that adds thirty bindings and five screens will report thirty doors and
+    have built five.
     """
     langs = surfaces if surfaces is not None else (CONSOLE, *NATIVE)
     made: set[tuple[str, str]] = set()

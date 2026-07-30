@@ -44,15 +44,10 @@ GET /tutorial
 GET /tutorial/for-screen/{number}
 GET /tutorial/progress/{learner_id}
 GET /tutorial/steps/{key}
-GET /users/{user_id}/alarms
-GET /users/{user_id}/beacons
 GET /users/{user_id}/captures
 GET /users/{user_id}/captures/{capture_id}/image
-GET /users/{user_id}/cloud-contribution
-GET /users/{user_id}/incidents
 GET /users/{user_id}/mic
 GET /users/{user_id}/mic/history
-GET /users/{user_id}/pages
 GET /users/{user_id}/referral/clinicians
 GET /users/{user_id}/referral/requests
 GET /users/{user_id}/specialist-tasks
@@ -76,13 +71,8 @@ POST /specialists/seed
 POST /specialists/seed/tandem
 POST /tutorial/done
 POST /tutorial/start
-POST /users/{user_id}/alarms/{alarm_id}/accept
-POST /users/{user_id}/alarms/{alarm_id}/clear
-POST /users/{user_id}/alarms/{alarm_id}/escalate
-POST /users/{user_id}/beacons
 POST /users/{user_id}/captures
 POST /users/{user_id}/captures/attach
-POST /users/{user_id}/cloud-contribution/revoke
 POST /users/{user_id}/mic/handover
 POST /users/{user_id}/mic/release
 POST /users/{user_id}/referral/prepare
@@ -96,6 +86,5 @@ PUT /budgets/{user_id}
 PUT /dock/{user_id}
 PUT /meds/{user_id}/{med_id}
 PUT /personality/{user_id}
-PUT /users/{user_id}/locality
 PUT /users/{user_id}/mic
 PUT /users/{user_id}/mic/gain

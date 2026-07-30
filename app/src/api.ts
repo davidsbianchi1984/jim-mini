@@ -241,6 +241,73 @@ export interface MealPlan {
   disclaimer: string;
 }
 
+// ---------------------------------------------------------------------
+// Shapes for the doors below. Every field here was read off a live response
+// rather than inferred from the handler, because a field name guessed from
+// the Python side is exactly the kind of thing that compiles and then finds
+// nothing at runtime.
+// ---------------------------------------------------------------------
+
+/** An alarm raised by a beacon scan or by the crash watch. */
+export type AlarmRow = {
+  id: string;
+  state: string;
+  tier: string;
+  beacon_id?: string | null;
+  accepted_by?: string | null;
+  created_at?: string;
+  cleared_at?: string | null;
+  messages?: { from?: string; text?: string; at?: string }[];
+};
+
+/** What accept / escalate / clear answer with. The three differ, so the
+ *  fields they do not share are optional rather than invented. */
+export type AlarmAction = {
+  state?: string;
+  id?: string;
+  alarm?: Record<string, unknown>;
+  accepted_by?: string | null;
+  note?: string;
+};
+
+export type IncidentRow = {
+  id?: string;
+  kind?: string;
+  at?: string;
+  detail?: string;
+  [key: string]: unknown;
+};
+
+export type PageRow = {
+  id?: string;
+  to?: string;
+  sent_at?: string;
+  delivered?: boolean;
+  [key: string]: unknown;
+};
+
+export type BeaconRow = {
+  id: string;
+  user_id: string;
+  label: string;
+  placement?: string | null;
+  kind: string;
+  active: boolean;
+  scans: number;
+  scan_url: string;
+  qr_svg: string;
+  created_at: string;
+};
+
+export type CloudContribution = {
+  opted_in: boolean;
+  contributed: number;
+  policy?: string;
+  preview_next?: unknown;
+  preview_note?: string;
+};
+
+
 export const api = {
   // The help box — written directions about the app itself; no token, so a
   // lost person can ask before they have an account.
@@ -479,4 +546,45 @@ export const api = {
     req<Guidance>(`/coach/${uid}`, { method: "POST", body, token }),
   baseline: (uid: string, token: string) =>
     req<BaselineMetric[]>(`/baseline/${uid}`, { token }),
+
+  // ---------------------------------------------------------------------
+  // Doors the backend had been holding open with nobody on the other side.
+  // Everything below reaches a route that has existed for versions and was
+  // called by no client at all — the console, the shells, or anything else.
+  // ---------------------------------------------------------------------
+
+  // The crash watch can raise an alarm; until now nothing could answer one.
+  // `open_only` is the view that matters on arrival: what still needs a human.
+  alarms: (uid: string, token: string, openOnly = false) =>
+    req<AlarmRow[]>(`/users/${uid}/alarms` + (openOnly ? "?open_only=true" : ""),
+      { token }),
+  acceptAlarm: (uid: string, alarmId: string, responder: string, token: string) =>
+    req<AlarmAction>(`/users/${uid}/alarms/${alarmId}/accept`,
+      { method: "POST", body: { responder }, token }),
+  clearAlarm: (uid: string, alarmId: string, token: string) =>
+    req<AlarmAction>(`/users/${uid}/alarms/${alarmId}/clear`,
+      { method: "POST", token }),
+  escalateAlarm: (uid: string, alarmId: string, token: string) =>
+    req<AlarmAction>(`/users/${uid}/alarms/${alarmId}/escalate`,
+      { method: "POST", token }),
+  incidents: (uid: string, token: string) =>
+    req<IncidentRow[]>(`/users/${uid}/incidents`, { token }),
+  pages: (uid: string, token: string, undeliveredOnly = false) =>
+    req<PageRow[]>(`/users/${uid}/pages`
+      + (undeliveredOnly ? "?undelivered_only=true" : ""), { token }),
+  beacons: (uid: string, token: string) =>
+    req<BeaconRow[]>(`/users/${uid}/beacons`, { token }),
+  placeBeacon: (uid: string, body: { label: string; placement?: string;
+    kind?: "personal" | "site" }, token: string) =>
+    req<BeaconRow>(`/users/${uid}/beacons`, { method: "POST", body, token }),
+
+  // What left this device for the shared model, and the button that stops it.
+  cloudContribution: (uid: string, token: string) =>
+    req<CloudContribution>(`/users/${uid}/cloud-contribution`, { token }),
+  revokeCloudContribution: (uid: string, token: string) =>
+    req<CloudContribution>(`/users/${uid}/cloud-contribution/revoke`,
+      { method: "POST", token }),
+  setLocality: (uid: string, locality: string | null, token: string) =>
+    req<{ locality: string | null }>(`/users/${uid}/locality`,
+      { method: "PUT", body: { locality }, token }),
 };
