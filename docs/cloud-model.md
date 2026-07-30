@@ -92,6 +92,32 @@ CLOUDGW_PDI_URL=https://vault.example.com CLOUDGW_PDI_TOKEN=pdi_... \
 python -m cloudgw --port 8300
 ```
 
+### In a container
+
+```bash
+docker build -f cloudgw/Dockerfile -t cloudgw .
+docker run -d -p 8300:8300 -v cloudgw-data:/data \
+  -e ANTHROPIC_API_KEY=sk-ant-... \
+  -e CLOUDGW_TOKENS="consoles:$(openssl rand -hex 24)" \
+  -e CLOUDGW_PROBLEM_READERS=me \
+  cloudgw
+```
+
+A separate image from the QRME app on purpose: the gateway is the component
+several deployments share, so it has a different lifecycle and no reason to
+carry a Node toolchain or a studio build. It runs as a non-root user, writes
+exactly one file, and reads none of yours. `CLOUDGW_PROBLEMS_PATH` defaults to
+`/data/problems.json` inside the image, so the named volume is what makes the
+error counters survive a redeploy.
+
+The token in `CLOUDGW_TOKENS` under the name `consoles` is the one you compile
+into installers as `PROBLEM_TOKEN`. It is public the moment somebody unzips an
+installer, which is why it can post reports and not read them — give your own
+name to `CLOUDGW_PROBLEM_READERS` and use a second token for that.
+
+`/health` needs no token, deliberately: a health check an orchestrator cannot
+run without a secret is one it will not run.
+
 It prints what it is actually configured for at boot — an operator who thinks
 they are serving a hosted model from a stub, or collecting into a vault that
 isn't there, finds out immediately rather than from a quiet corpus later.

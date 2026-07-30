@@ -411,10 +411,35 @@ public sealed class ApiClient
 
     private async Task<T> Send<T>(HttpRequestMessage req)
     {
-        var res = await _http.SendAsync(req);
+        // The path as written, for the recorder. Read before the send, which
+        // consumes `req`. Absolute and relative are both handled: these calls
+        // build relative URIs against BaseAddress, but a `RequestUri` that
+        // ever arrived absolute would otherwise put the host in the log —
+        // not private, but not the operation either.
+        var method = req.Method.Method;
+        var path = req.RequestUri is { IsAbsoluteUri: true } abs
+            ? abs.AbsolutePath
+            : req.RequestUri?.ToString() ?? "";
+
+        HttpResponseMessage res;
+        try
+        {
+            res = await _http.SendAsync(req);
+        }
+        catch
+        {
+            // Never reached a server. Recorded as status 0; the thrown error
+            // still carries its message to the person, who owns it.
+            Problems.Record(method, path, 0);
+            throw;
+        }
         var body = await res.Content.ReadAsStringAsync();
         if (!res.IsSuccessStatusCode)
         {
+            // The status and the operation, never the detail below: these
+            // messages quote what the person typed, which is theirs to read
+            // and nobody's to keep.
+            Problems.Record(method, path, (int)res.StatusCode);
             string? detail = null;
             try { detail = JsonDocument.Parse(body).RootElement.GetProperty("detail").GetString(); }
             catch { /* non-JSON error body */ }

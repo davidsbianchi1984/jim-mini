@@ -165,6 +165,44 @@ runtime, rather than written as one literal, is invisible to any static scan.
 
 ---
 
+## What breaks, recorded the same way in three languages
+
+The shells record every failed request the way `app/src/errors.ts` does in the
+console: the operation and the status, never the message, never the path as it
+was actually called. `POST /checkin/{id} → 500` identifies a bug;
+`POST /checkin/usr_0de08e794ed0` identifies a person. Redaction happens
+on the way *in*, so the buffer never holds a value that would later have to be
+scrubbed.
+
+The backends put user input straight into their error messages — a device
+name, a body site, a language code. Good messages for the person reading them
+and the wrong thing to write down, so they are shown and not kept.
+
+| | |
+|---|---|
+| `native/ios/Sources/Problems.swift` | `UserDefaults`, `Codable` rows |
+| `native/android/…/Problems.kt` | `SharedPreferences`, JSON rows |
+| `native/windows/Problems.cs` | `%APPDATA%`, `System.Text.Json` |
+
+One rule with four implementations drifts, and it drifts silently — a
+redaction narrowed on Android leaks nothing on the desktop. There is no test
+runner for these sources here (the native workflow compiles them and stops), so
+`test_native_shells_record_nothing_private.py` reads them structurally instead:
+the three-argument signature, the stored fields, the four redaction patterns at
+full width, the FNV-1a constants, and both failure kinds at the call sites.
+
+Android needs one extra wire the other two do not: `Problems.attach(this)` in
+`MainActivity.onCreate`, because the recorder holds the application context so
+that `record` can keep the same three arguments everywhere. A shell that forgets
+it records nothing and says nothing — the recorder refuses to crash over a
+diagnostic. That silence is why the guard checks for the call and not just for
+the function.
+
+None of this leaves the device on its own. Sending is the console's job and
+happens only where a collector was compiled in; see `docs/cloud-model.md`.
+
+---
+
 ## Matthew 7:24–25
 
 > "Everyone then who hears these words of mine and does them will be like a
