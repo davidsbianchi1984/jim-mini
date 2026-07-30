@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**101 of JIM's 219 routes cannot be reached from any client.** The route guard
+asks whether every call reaches a route. This asks the inverse — whether every
+route is reachable from a door a user can open — and it is the quieter of the
+two failures. A client calling a route that does not exist produces a 404
+somebody reports. A route no client calls produces nothing at all: the code is
+present, its tests pass, and the capability is simply unreachable.
+
+The gap is not evenly spread. Thirty-one of them sit under `/users/{id}/`, and
+they are not obscure: the **channel-2 microphone** (set, gain, handover,
+release, history), **clinical captures** (create, attach, image, delete), the
+**medical referral** flow (clinicians, prepare, requests, released),
+**specialist tasks**, **cloud-contribution** preview and revoke, **alarms**
+(accept, clear, escalate), **incidents**, **beacons**, **locality**. The helper
+**dock** and the **tutorial** are two more families with routes and no caller.
+
+Several of those have drawn screens in `docs/screens/` and rows in the README
+gallery. Drawn, documented, and unreachable in every shipping client — which is
+worth saying plainly, because the gallery is the thing that made them look done.
+
+The count is recorded in `jim/tests/doorless_routes.txt`. The list is a backlog
+rather than an approval: it cannot grow, because a new route with no door fails
+the test; and it must shrink deliberately, because building a door fails the
+test too, telling you to strike the line.
+
 **Every option JIM offers, JIM now has to accept.** A catalog endpoint is a
 menu — the console and the three shells render it directly, so whatever it lists
 is what a user can pick. If the endpoint that *consumes* the choice refuses one
