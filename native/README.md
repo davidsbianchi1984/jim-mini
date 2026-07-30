@@ -141,6 +141,23 @@ been verified by reading and by brace/XML well-formedness checks, which catch
 a typo and nothing else. Treat a green run as the first real evidence, not a
 long-standing guarantee.
 
+## Do the paths resolve?
+
+Compiling is not the same as working. A path is a string in all three
+languages, so a mistyped one compiles perfectly, ships, and 404s in the field —
+which is exactly how QRME's community wall shipped with dead like, comment and
+share buttons in every release that had them.
+
+[`jim/tests/test_client_routes_exist.py`](../jim/tests/test_client_routes_exist.py)
+extracts every API path literal from `native/` — about 45 per shell — and asks
+the real router about each one. The console is held to the same check, so the
+two halves of the contract are compared with each other rather than each with
+itself.
+
+Two limits worth stating. Routing-level matching cannot see a refusal that
+happens *after* dispatch, inside a handler. And a path assembled from pieces at
+runtime, rather than written as one literal, is invisible to any static scan.
+
 ---
 
 ## Matthew 7:24–25
