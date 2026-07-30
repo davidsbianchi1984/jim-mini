@@ -304,6 +304,10 @@ NOT_A_CLIENT_CALL = (
     "/pair/qr.svg",
     "/verify-email/click",
     "/medical-id/{token}/qr.svg",
+    # Rendered in an `<img src>`, not fetched by the API client. A desk's
+    # view and a desk beacon's QR are pictures the browser asks for directly.
+    "/desks/{desk_id}/view.webp",
+    "/desk-beacons/{beacon_id}/qr.svg",
 )
 
 
