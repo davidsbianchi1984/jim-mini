@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.17.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.18.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -320,6 +320,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.18.0** | **The rest of what JIM knew, on every shell and finally drawn** — the effectiveness loop, the adaptation profile and the anonymity posture reach iOS/Android/Windows, with screens and lessons for all four new doors |
 | **0.17.0** | **The community door opens on every shell** — the QRME bridge on iOS/Android/Windows, plus the adaptation profile and anonymity posture given screens |
 | **0.16.0** | **The loop closes** — did the counseling work, a user-specific model sealed in the vault, the attach bracket, anonymous by choice, pace cue, budgets, stress, knowledge pack |
 | **0.15.0** | **Guided wellness** — calm protocols, workout plans, meal plans, nutrition Coach area, the Wellness tab |

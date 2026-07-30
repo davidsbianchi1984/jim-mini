@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.18.0] — 2026-07-30
+
 **Four features get drawn, taught and findable.** The community door, the
 effectiveness loop, the adaptation profile and the anonymity posture all
 had code and screens in the app — and no drawing, no lesson, and no way
