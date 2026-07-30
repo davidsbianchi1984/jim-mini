@@ -6,6 +6,40 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The apps now record what fails, without recording anything private.** Every
+failed request passes through one function in the console, so one call there
+catches the lot — but the obvious version of this feature would have quietly
+undone what every other screen promises.
+
+The backends put user input straight into their error messages: *no device
+called 'Pixel Buds' on this account*, *unknown site 'knee'*, *unknown language
+'xx'*. Those are good messages for the person reading them and bad things to
+keep. In JIM those messages can be health content, which is why the rule is absolute rather than a judgement call per message. So the message is shown to the user, who owns it, and is **never
+written to the log**. The same reasoning rules out the path:
+`/profiles/prf_0de08e794ed0/chat` identifies a person, `POST /profiles/{id}/chat`
+identifies a bug, and only the second is recorded.
+
+What a report contains is the operation, the status, the app version, platform
+and language, a count and a date — no ids, no messages, no bodies, no
+timestamps finer than a day. The redaction happens on the way *in*, so there is
+no moment at which the buffer holds something that would have to be scrubbed
+later.
+
+**Nothing is transmitted.** The buffer is local and capped, and a Settings card
+shows the exact payload — the same object the copy button produces, from one
+function, so the preview cannot drift from what is copied. Getting a report to a
+developer is a copy and a paste somebody chooses to make. That is not a
+shortcoming to apologise for: the backend ships inside the installer, so for a
+desktop user there is no server on the other end to send to.
+
+Twelve tests hold the shape in place — that `recordProblem` has no parameter a
+message could arrive through, that the stored record has no field one could sit
+in, that the redaction catches short ids as well as long ones, and that it never
+eats a real route name. Two leaks were injected to prove they fail: a `detail`
+parameter added to the recorder, and the redaction narrowed back to
+six-hex-character ids. Both were caught.
+
+
 **Channel 2 and the clinical camera reach a person.** Both had complete
 backends and no caller anywhere. The microphone could be attached to a device,
 metered, handed to a call and released, and its whole history read back; the
