@@ -727,6 +727,24 @@ def create_app(qrme_client: QRMEClient | None = None,
             f"<h2>Signed in as {done['email']}</h2>"
             "<p>You can close this window and return to the app.</p>")
 
+    @app.post("/auth/oauth/{provider}/callback", response_class=HTMLResponse)
+    async def oauth_callback_post(provider: str,
+                                  request: Request) -> HTMLResponse:
+        """Apple's half of the door.
+
+        Apple's rule is that requesting any scope forces
+        ``response_mode=form_post``, so the browser comes back as a POST with
+        the code in a urlencoded body rather than the query string. Parsed
+        from the raw body on purpose — the same trick the media upload uses,
+        so no python-multipart dependency is added for one form.
+        """
+        import urllib.parse as _up
+        form = _up.parse_qs((await request.body()).decode("utf-8", "replace"))
+        return oauth_callback(provider,
+                              code=(form.get("code") or [""])[0],
+                              state=(form.get("state") or [""])[0],
+                              error=(form.get("error") or [""])[0])
+
     @app.get("/auth/oauth/claim")
     def oauth_claim(state: str) -> dict:
         try:
