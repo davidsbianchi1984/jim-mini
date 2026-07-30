@@ -4,6 +4,45 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.1] — 2026-07-30
+
+**A feature can no longer ship with nothing drawn.** The gallery tests all
+check screens against the README — a reference with no file, a file with no
+reference, a gap in the numbering. Every one of them starts from the screens,
+and none asks the opposite question: does this surface have a screen at all?
+So a feature could ship with nothing drawn, nothing taught and nothing for the
+in-app helper to point at, and the suite stayed green.
+
+That had happened three times, most recently to 0.19.0's own error-reporting
+card and its first-run notice — undrawn while the release notes described them
+at length. It is the same shape of flaw found twice before in this suite: a
+guard that only walks the relation in the direction where the answers already
+exist, like the doorless audit before it counted call sites, or the redaction
+check that read a shrinking snapshot and would have gone vacuous the day it
+emptied.
+
+`ui_screens.txt` is the missing direction. Every console surface now carries a
+screen number, `undrawn`, or `unaudited`, so a surface nobody has classified
+fails the suite in the round that introduces it. The mapping is declared rather
+than inferred on purpose: matching component names against screen titles
+resolved only ten of twenty-four, because titles are written for the person
+using the app and component names for the person editing it, and guessing the
+rest would have produced a mapping that looked complete and was not.
+
+Both backlogs are ratcheted against a ceiling each repository declares for
+itself — one hardcoded number would be the largest of the three and leave the
+other two slack to grow into. A ceiling left high after the backlog falls fails
+too, because a ratchet that stops ratcheting re-opens the ground it gained.
+Verified by injecting five failures, including the one that gives the check its
+teeth: silencing it by writing `undrawn` fails the ratchet.
+
+**And the two surfaces it caught are drawn.** Screens **93 What Went Wrong** and **94 Before Anything Is Sent** join the gallery, each
+with a lesson and with phrasings that reach it by asking the helper in the
+words somebody actually types when something has broken — "it failed",
+"something broke", "stop sending", "opt out". The card draws an operation and a
+status and nothing else, because that is all the log holds; drawing a message
+there would depict a product that does not exist.
+
 ## [0.19.0] — 2026-07-30
 
 **The apps now record what fails, without recording anything private.** Every
@@ -2053,6 +2092,7 @@ the three-product suite (with
   release workflow.
 
 [Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.16.0...HEAD
+[0.19.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.19.1
 [0.19.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.19.0
 [0.18.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.18.0
 [0.17.0]: https://github.com/davidsbianchi1984/jim-mini/commit/1cb6e04
