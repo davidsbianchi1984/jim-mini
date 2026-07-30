@@ -69,6 +69,29 @@ data class RobotCmdResult(val status: String, val note: String?, val instruction
                           val pacePerMinute: Int?)
 data class WaiverState(val signed: Boolean, val signature: String?, val terms: List<String>)
 data class MedicalCardIssued(val token: String, val qrSvgUrl: String)
+// ---- the effectiveness loop, the user-specific model, and the name ----
+
+/** Spec [0039]: guidance that went out gets asked about. */
+data class OpenFollowup(val id: String, val condition: String,
+                        val severity: String?, val question: String)
+data class LiveOption(val kind: String, val name: String?, val channel: String?,
+                      val note: String?)
+data class FollowupAnswered(val answered: Boolean, val reason: String?,
+                            val helped: Boolean?, val next: String?,
+                            val options: List<LiveOption>, val liveNote: String?)
+data class HelpTally(val helped: Int, val answered: Int)
+/** Claim 11's user-specific model, derived locally from this user's own
+ *  stored history — nothing was sent to a model vendor to build it. */
+data class AdaptationProfile(val built: Boolean, val note: String?,
+                             val evidenceItems: Int, val confidence: Double,
+                             val vaulted: Boolean, val whatHelps: Map<String, HelpTally>,
+                             val tone: String?, val occupation: String?,
+                             val method: String?)
+/** What anonymity keeps and what it costs, said out loud. */
+data class AnonymityPosture(val anonymous: Boolean, val knownAs: String?,
+                            val legalNameOnRecord: Boolean,
+                            val keeps: List<String>, val costs: List<String>)
+
 // ---- the community door (FIG. 2 boxes 222-226) ----
 
 data class CommunityRoom(val id: String, val topic: String?, val channel: String?,
@@ -694,6 +717,84 @@ object ApiClient {
     suspend fun noteCommunityVisit(uid: String, token: String, roomId: String) {
         request("/community/$uid/visits", "POST",
             JSONObject().put("room_id", roomId), token)
+    }
+
+
+    // ---- followup, adaptation and anonymity ----
+
+    suspend fun openFollowups(uid: String, token: String): List<OpenFollowup> {
+        val o = request("/followup/$uid", token = token)
+        val arr = o.optJSONArray("open")
+        return (0 until (arr?.length() ?: 0)).map { i ->
+            val f = arr!!.getJSONObject(i)
+            OpenFollowup(f.getString("id"), f.optString("condition", ""),
+                if (f.isNull("severity")) null else f.optString("severity"),
+                f.optString("question", "Did that help?"))
+        }
+    }
+
+    /**
+     * `helped = false` is not a complaint filed away: it re-runs the escalation
+     * ladder with the ineffective-guidance rung and returns the people who can
+     * help right now.
+     */
+    suspend fun answerFollowup(uid: String, token: String, helped: Boolean,
+                               note: String? = null): FollowupAnswered {
+        val body = JSONObject().put("helped", helped)
+        if (!note.isNullOrBlank()) body.put("note", note)
+        val o = request("/followup/$uid", "POST", body, token)
+        val live = o.optJSONObject("live_assistance")
+        val optArr = live?.optJSONArray("options")
+        val options = (0 until (optArr?.length() ?: 0)).map { i ->
+            val op = optArr!!.getJSONObject(i)
+            LiveOption(op.optString("kind", ""),
+                if (op.isNull("name")) null else op.optString("name"),
+                if (op.isNull("channel")) null else op.optString("channel"),
+                if (op.isNull("note")) null else op.optString("note"))
+        }
+        return FollowupAnswered(
+            o.optBoolean("answered"),
+            if (o.isNull("reason")) null else o.optString("reason"),
+            if (o.isNull("helped")) null else o.optBoolean("helped"),
+            if (o.isNull("next")) null else o.optString("next"),
+            options,
+            if (live == null || live.isNull("note")) null else live.optString("note"))
+    }
+
+    private fun adaptationOf(o: JSONObject): AdaptationProfile {
+        val prof = o.optJSONObject("profile") ?: JSONObject()
+        val helpsObj = prof.optJSONObject("what_helps") ?: JSONObject()
+        val helps = helpsObj.keys().asSequence().associateWith { k ->
+            val t = helpsObj.getJSONObject(k)
+            HelpTally(t.optInt("helped"), t.optInt("answered"))
+        }
+        return AdaptationProfile(
+            o.optBoolean("built"),
+            if (o.isNull("note")) null else o.optString("note"),
+            o.optInt("evidence_items"), o.optDouble("confidence", 0.0),
+            o.optBoolean("vaulted"), helps,
+            if (prof.isNull("tone")) null else prof.optString("tone"),
+            if (prof.isNull("occupation")) null else prof.optString("occupation"),
+            if (prof.isNull("method")) null else prof.optString("method"))
+    }
+
+    suspend fun adaptation(uid: String, token: String): AdaptationProfile =
+        adaptationOf(request("/adaptation/$uid", token = token))
+
+    /** Rebuild from the history already on record — local work only. */
+    suspend fun rebuildAdaptation(uid: String, token: String): AdaptationProfile =
+        adaptationOf(request("/adaptation/$uid", "POST", null, token))
+
+    suspend fun anonymity(uid: String, token: String): AnonymityPosture {
+        val o = request("/anonymity/$uid", token = token)
+        fun list(key: String): List<String> {
+            val a = o.optJSONArray(key)
+            return (0 until (a?.length() ?: 0)).map { a!!.getString(it) }
+        }
+        return AnonymityPosture(
+            o.optBoolean("anonymous"),
+            if (o.isNull("known_as")) null else o.optString("known_as"),
+            o.optBoolean("legal_name_on_record"), list("keeps"), list("costs"))
     }
 
 }

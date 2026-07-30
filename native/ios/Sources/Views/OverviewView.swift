@@ -106,6 +106,9 @@ struct OverviewView: View {
                     }
                 }.card()
 
+                AdaptationCard()
+                AnonymityCard()
+
                 ImproveCard()
 
                 Button(L10n.t("action.sign_out", state.language)) { state.signOut() }
@@ -157,5 +160,129 @@ struct OverviewView: View {
             state.rememberLanguage(l.language)   // chrome follows the user
         }
         loading = false
+    }
+}
+
+// MARK: What JIM has learned about you (claim 11)
+
+/// The user-specific adaptation profile, in plain terms.
+///
+/// Shown as counts off this user's own history rather than a score, and it says
+/// where the profile came from: nothing was sent to a model vendor to build it,
+/// and the sealed copy lives in their own vault.
+private struct AdaptationCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var profile: AdaptationProfile?
+    @State private var busy = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("What JIM has learned about you").font(.headline)
+                .foregroundStyle(Theme.txt)
+            if let p = profile, p.built, let d = p.profile {
+                if let confidence = p.confidence, let evidence = p.evidence_items {
+                    Text("Confidence \(Int(confidence * 100))% — earned from "
+                         + "\(evidence) things already on your record.")
+                        .font(.caption).foregroundStyle(Theme.t2)
+                }
+                // Only conditions with enough answers to mean anything: a
+                // coincidence is not a finding, and the backend says so too.
+                ForEach(d.what_helps.sorted(by: { $0.key < $1.key }), id: \.key) { entry in
+                    if entry.value.answered > 0 {
+                        HStack {
+                            Text(entry.key.replacingOccurrences(of: "_", with: " "))
+                                .font(.subheadline).foregroundStyle(Theme.txt)
+                            Spacer()
+                            Text("helped \(entry.value.helped) of \(entry.value.answered)")
+                                .font(.caption).monospacedDigit()
+                                .foregroundStyle(entry.value.helped * 2 >= entry.value.answered
+                                                 ? Theme.green : Theme.amber)
+                        }
+                    }
+                }
+                if let tone = d.tone {
+                    Text("Tone you asked for: \(tone)").font(.caption)
+                        .foregroundStyle(Theme.t3)
+                }
+                if let job = d.occupation {
+                    Text("Work you named: \(job)").font(.caption)
+                        .foregroundStyle(Theme.t3)
+                }
+                if p.vaulted == true {
+                    Text("Sealed in your own vault.").font(.caption2)
+                        .foregroundStyle(Theme.green)
+                }
+                if let method = d.method {
+                    Text(method).font(.caption2).foregroundStyle(Theme.t3)
+                }
+            } else {
+                Text(profile?.note
+                     ?? "No profile yet — it is built from the history already "
+                      + "on record, here on your own device's backend.")
+                    .font(.caption).foregroundStyle(Theme.t2)
+            }
+            Button(busy ? "Rebuilding…" : "Rebuild from my history") { rebuild() }
+                .font(.caption.bold()).foregroundStyle(.white)
+                .padding(.horizontal, 12).padding(.vertical, 9)
+                .background(Theme.brandA).clipShape(Capsule())
+                .disabled(busy)
+        }
+        .card()
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let uid = state.uid, let token = state.token else { return }
+        profile = try? await ApiClient.shared.adaptation(uid: uid, token: token)
+    }
+
+    private func rebuild() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true
+        Task {
+            profile = try? await ApiClient.shared.rebuildAdaptation(uid: uid,
+                                                                    token: token)
+            busy = false
+        }
+    }
+}
+
+// MARK: Your name here (spec [0031] / box 212)
+
+/// The anonymity posture, stated as a tradeoff rather than a switch: what the
+/// choice keeps and what it costs, so it is a decision and not a surprise.
+private struct AnonymityCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var posture: AnonymityPosture?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Your name here").font(.headline).foregroundStyle(Theme.txt)
+            if let p = posture {
+                Text(p.anonymous
+                     ? "You are known here as \(p.known_as ?? "a pseudonym")."
+                     : "You are enrolled under your own name.")
+                    .font(.subheadline).foregroundStyle(Theme.txt)
+                ForEach(p.keeps, id: \.self) { line in
+                    Text("✓ " + line).font(.caption).foregroundStyle(Theme.green)
+                }
+                ForEach(p.costs, id: \.self) { line in
+                    Text("• " + line).font(.caption).foregroundStyle(Theme.amber)
+                }
+                if p.costs.isEmpty && p.anonymous {
+                    Text("A legal name is on record for responders.")
+                        .font(.caption2).foregroundStyle(Theme.t3)
+                }
+            } else {
+                Text("Loading…").font(.caption).foregroundStyle(Theme.t3)
+            }
+        }
+        .card()
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let uid = state.uid, let token = state.token else { return }
+        posture = try? await ApiClient.shared.anonymity(uid: uid, token: token)
     }
 }

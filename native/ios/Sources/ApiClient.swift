@@ -313,6 +313,104 @@ struct MedicalCard: Decodable {
     struct EmergencyContact: Decodable { let name: String?; let phone: String? }
 }
 
+// MARK: The effectiveness loop, the user-specific model, and the name
+
+/// Spec [0039]: guidance that went out gets asked about.
+struct OpenFollowup: Decodable, Identifiable {
+    let id: String
+    let condition: String
+    let severity: String?
+    let asked_at: String?
+    let question: String
+}
+
+struct FollowupRecord: Decodable, Identifiable {
+    let id: String
+    let condition: String
+    let severity: String?
+    let asked_at: String?
+    let answered_at: String?
+    let helped: Bool?
+    let note: String?
+    let escalated_to: String?
+}
+
+struct FollowupState: Decodable {
+    let open: [OpenFollowup]
+    let history: [FollowupRecord]
+}
+
+struct LiveAssistanceOption: Decodable, Identifiable {
+    let kind: String
+    let name: String?
+    let channel: String?
+    let note: String?
+    var id: String { kind + (name ?? "") }
+}
+
+struct LiveAssistance: Decodable {
+    let options: [LiveAssistanceOption]
+    let contact_alerted: Bool
+    let note: String?
+}
+
+/// "It helped" resumes monitoring; "it did not" runs the ladder again with the
+/// ineffective-guidance rung and names the humans reachable right now.
+struct FollowupAnswered: Decodable {
+    let answered: Bool
+    let reason: String?
+    let helped: Bool?
+    let next: String?
+    let live_assistance: LiveAssistance?
+}
+
+struct HelpTally: Decodable {
+    let helped: Int
+    let did_not: Int
+    let answered: Int
+    let hit_rate: Double?
+}
+
+struct CheckinTrend: Decodable {
+    let count: Int
+    let avg_mood: Double?
+    let avg_stress: Double?
+}
+
+/// Claim 11's user-specific model, derived locally from this user's own stored
+/// history. Nothing was sent to a model vendor to build it.
+struct AdaptationDetail: Decodable {
+    let known_conditions: [String]
+    let what_helps: [String: HelpTally]
+    let areas_brought: [String: Int]
+    let checkins: CheckinTrend
+    let tone: String?
+    let explain_level: String?
+    let beliefs_posture: String?
+    let occupation: String?
+    let method: String?
+}
+
+struct AdaptationProfile: Decodable {
+    let built: Bool
+    let note: String?
+    let evidence_items: Int?
+    let confidence: Double?
+    let vaulted: Bool?
+    let rebuilt_at: String?
+    let profile: AdaptationDetail?
+}
+
+/// What anonymity costs and does not cost, said out loud, so the tradeoff is a
+/// choice rather than a surprise.
+struct AnonymityPosture: Decodable {
+    let anonymous: Bool
+    let known_as: String?
+    let legal_name_on_record: Bool
+    let keeps: [String]
+    let costs: [String]
+}
+
 // MARK: The community door (FIG. 2 boxes 222–226)
 
 struct CommunityRoom: Decodable, Identifiable {
@@ -754,6 +852,38 @@ actor ApiClient {
         struct Ok: Decodable {}
         let _: Ok = try await request("/community/\(uid)/visits", method: "POST",
                                      body: ["room_id": roomId], token: token)
+    }
+
+
+    // MARK: Followup, adaptation and anonymity
+
+    func followups(uid: String, token: String) async throws -> FollowupState {
+        try await request("/followup/\(uid)", token: token)
+    }
+
+    /// `helped: false` is not a complaint filed away — it re-runs the
+    /// escalation ladder and returns the humans who can help now.
+    func answerFollowup(uid: String, token: String, helped: Bool,
+                        note: String? = nil) async throws -> FollowupAnswered {
+        var body: [String: Any] = ["helped": helped]
+        if let note, !note.isEmpty { body["note"] = note }
+        return try await request("/followup/\(uid)", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func adaptation(uid: String, token: String) async throws -> AdaptationProfile {
+        try await request("/adaptation/\(uid)", token: token)
+    }
+
+    /// Rebuild from the history already on record. Local work: no history
+    /// leaves the device's backend to produce it.
+    func rebuildAdaptation(uid: String,
+                           token: String) async throws -> AdaptationProfile {
+        try await request("/adaptation/\(uid)", method: "POST", token: token)
+    }
+
+    func anonymity(uid: String, token: String) async throws -> AnonymityPosture {
+        try await request("/anonymity/\(uid)", token: token)
     }
 
 }

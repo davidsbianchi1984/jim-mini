@@ -9,6 +9,11 @@ struct MonitorView: View {
     @State private var result: MonitorResult?
     @State private var busy = false
     @State private var error: String?
+    // Spec [0039]: guidance that went out gets asked about, and "it did not
+    // help" is not filed away — it re-runs the ladder and names people.
+    @State private var followups: FollowupState?
+    @State private var answered: FollowupAnswered?
+    @State private var note = ""
 
     var body: some View {
         ScrollView {
@@ -55,7 +60,95 @@ struct MonitorView: View {
                         }
                     }.card()
                 }
+
+                followupCard
             }.padding(20)
+        }
+        .task { await loadFollowups() }
+    }
+
+    // MARK: [0039] — the effectiveness loop
+
+    /// Shown whenever guidance is waiting on an answer, whether it arrived in
+    /// this session or an earlier one: a question the app dropped is a question
+    /// nobody ever answers.
+    @ViewBuilder private var followupCard: some View {
+        if let open = followups?.open.first {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(open.question).font(.headline).foregroundStyle(Theme.txt)
+                Text("About the guidance for \(open.condition).")
+                    .font(.caption).foregroundStyle(Theme.t2)
+                TextField("Anything you want to add (optional)", text: $note)
+                    .font(.subheadline).foregroundStyle(Theme.txt)
+                    .padding(10).background(Theme.scrBot)
+                    .clipShape(RoundedRectangle(cornerRadius: 11))
+                HStack(spacing: 10) {
+                    answerButton("It helped", helped: true, tint: Theme.green)
+                    answerButton("It did not", helped: false, tint: Theme.amber)
+                }
+            }.card()
+        }
+
+        if let a = answered {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(a.helped == true ? "Monitoring resumes"
+                                      : "Bringing in a person")
+                    .font(.headline)
+                    .foregroundStyle(a.helped == true ? Theme.green : Theme.amber)
+                if let next = a.next {
+                    Text(next).font(.caption).foregroundStyle(Theme.t2)
+                }
+                // The spec's second door: not a tier, a list of people.
+                if let live = a.live_assistance {
+                    ForEach(live.options) { option in
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(option.name ?? option.kind.replacingOccurrences(
+                                of: "_", with: " "))
+                                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                            if let channel = option.channel, !channel.isEmpty {
+                                Text(channel).font(.caption).foregroundStyle(Theme.brandA)
+                            }
+                            if let note = option.note {
+                                Text(note).font(.caption2).foregroundStyle(Theme.t3)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                    Text(live.note ?? "").font(.caption2).foregroundStyle(Theme.t3)
+                }
+                if let reason = a.reason {
+                    Text(reason).font(.caption).foregroundStyle(Theme.t3)
+                }
+            }.card()
+        }
+    }
+
+    private func answerButton(_ label: String, helped: Bool,
+                              tint: Color) -> some View {
+        Button(label) { answer(helped) }
+            .font(.caption.bold()).foregroundStyle(.white)
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(tint).clipShape(Capsule())
+            .disabled(busy)
+    }
+
+    private func loadFollowups() async {
+        guard let uid = state.uid, let token = state.token else { return }
+        followups = try? await ApiClient.shared.followups(uid: uid, token: token)
+    }
+
+    private func answer(_ helped: Bool) {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                answered = try await ApiClient.shared.answerFollowup(
+                    uid: uid, token: token, helped: helped,
+                    note: note.trimmingCharacters(in: .whitespaces))
+                note = ""
+                await loadFollowups()
+            } catch { self.error = error.localizedDescription }
+            busy = false
         }
     }
 

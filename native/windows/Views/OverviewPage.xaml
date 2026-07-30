@@ -109,6 +109,62 @@
                     </ItemsControl>
                 </StackPanel>
             </Border>
+
+            <!-- Claim 11's user-specific model, in plain terms. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="What JIM has learned about you" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="AdaptationSummary" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="12" TextWrapping="Wrap" />
+                    <ItemsControl x:Name="AdaptationHelps">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Condition}"
+                                               Foreground="{StaticResource JimTxtBrush}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Tally}" FontSize="12"
+                                               Foreground="{StaticResource JimT2Brush}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="AdaptationDials" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <TextBlock x:Name="AdaptationVaulted" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource JimGreenBrush}"
+                               Text="Sealed in your own vault." />
+                    <TextBlock x:Name="AdaptationMethod" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <Button x:Name="RebuildButton" Content="Rebuild from my history"
+                            Click="OnRebuildAdaptation"
+                            Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                </StackPanel>
+            </Border>
+
+            <!-- Spec [0031] / box 212: the tradeoff, not a switch. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Your name here" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="AnonymityKnownAs" FontSize="14" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <ItemsControl x:Name="AnonymityLines">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Line}" FontSize="12" TextWrapping="Wrap"
+                                           Foreground="{StaticResource JimT2Brush}" Margin="0,1" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

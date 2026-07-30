@@ -34,6 +34,28 @@ collect/publish), the connected-apps catalog (`/connectors/catalog`,
 `/apps/{uid}` + collect), and **Community** — the door out to QRME's rooms
 and local places (`/community/{uid}` + visits, below)
 
+### The effectiveness loop, the model, and the name
+
+Three things the backend had always answered but only the web console asked
+for. All three now have native doors:
+
+- **"Did that help?"** sits on Monitor (`/followup/{uid}`), spec [0039]. It is
+  read from the route rather than from the monitor reply, so a question opened
+  in an *earlier* session is still asked — a question the app drops is a
+  question nobody ever answers. Answering "it did not" is not a complaint filed
+  away: the escalation ladder runs again with the ineffective-guidance rung and
+  the screen names the people reachable right now, which is the spec's second
+  door (a support person **or** the emergency contact, shown as people rather
+  than as a tier).
+- **What JIM has learned about you** on Overview (`/adaptation/{uid}`), claim
+  11's user-specific model. Rendered as counts off this user's own history —
+  which guidance actually helped and how often — never a score, and it says
+  plainly that nothing was sent to a model vendor to build it.
+- **Your name here** on Overview (`/anonymity/{uid}`), spec [0031] / box 212.
+  The posture as a tradeoff rather than a switch: what the choice keeps (every
+  emergency path, your own records) beside what it costs (no legal name for
+  responders unless you left one), both taken from the server's own lists.
+
 ### Community — a door, not a copy
 
 The **Community** panel is the filing's FIG. 2 boxes 222–226: interact with

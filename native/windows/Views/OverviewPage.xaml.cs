@@ -39,10 +39,97 @@ public sealed partial class OverviewPage : Page
 
     private async void OnRefresh(object sender, RoutedEventArgs e) => await Load();
 
+    // MARK: Claim 11's user-specific model, and the name
+
+    public sealed class HelpVm
+    {
+        public string Condition { get; init; } = "";
+        public string Tally { get; init; } = "";
+    }
+
+    public sealed class LineVm { public string Line { get; init; } = ""; }
+
+    /// <summary>
+    /// Counts off this user's own history rather than a score, plus where the
+    /// profile came from: nothing was sent to a model vendor to build it.
+    /// </summary>
+    private async System.Threading.Tasks.Task LoadAdaptation()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try { Render(await ApiClient.Shared.Adaptation(s.Uid, s.Token)); }
+        catch (Exception) { AdaptationSummary.Text = ""; }
+    }
+
+    private void Render(AdaptationProfile p)
+    {
+        if (!p.Built)
+        {
+            AdaptationSummary.Text = p.Note
+                ?? "No profile yet — it is built from the history already on record.";
+            AdaptationHelps.ItemsSource = null;
+            AdaptationDials.Text = "";
+            AdaptationMethod.Text = "";
+            AdaptationVaulted.Visibility = Visibility.Collapsed;
+            return;
+        }
+        AdaptationSummary.Text =
+            $"Confidence {(int)Math.Round(p.Confidence * 100)}% — earned from "
+          + $"{p.EvidenceItems} things already on your record.";
+
+        var helps = p.Profile?.WhatHelps ?? new System.Collections.Generic.Dictionary<string, HelpTally>();
+        AdaptationHelps.ItemsSource = helps
+            .Where(kv => kv.Value.Answered > 0)
+            .OrderBy(kv => kv.Key)
+            .Select(kv => new HelpVm
+            {
+                Condition = kv.Key.Replace('_', ' '),
+                Tally = $"helped {kv.Value.Helped} of {kv.Value.Answered}",
+            }).ToList();
+
+        var dials = new System.Collections.Generic.List<string>();
+        if (p.Profile?.Tone is { Length: > 0 } tone) dials.Add($"Tone you asked for: {tone}");
+        if (p.Profile?.Occupation is { Length: > 0 } job) dials.Add($"Work you named: {job}");
+        AdaptationDials.Text = string.Join(" · ", dials);
+        AdaptationMethod.Text = p.Profile?.Method ?? "";
+        AdaptationVaulted.Visibility = p.Vaulted ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private async void OnRebuildAdaptation(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        RebuildButton.IsEnabled = false;
+        try { Render(await ApiClient.Shared.RebuildAdaptation(s.Uid, s.Token)); }
+        catch (Exception) { /* leave the previous reading in place */ }
+        finally { RebuildButton.IsEnabled = true; }
+    }
+
+    /// <summary>The tradeoff, not a switch: what the choice keeps and costs.</summary>
+    private async System.Threading.Tasks.Task LoadAnonymity()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var p = await ApiClient.Shared.Anonymity(s.Uid, s.Token);
+            AnonymityKnownAs.Text = p.Anonymous
+                ? $"You are known here as {p.KnownAs ?? "a pseudonym"}."
+                : "You are enrolled under your own name.";
+            AnonymityLines.ItemsSource =
+                p.Keeps.Select(k => new LineVm { Line = "\u2713 " + k })
+                 .Concat(p.Costs.Select(c => new LineVm { Line = "• " + c }))
+                 .ToList();
+        }
+        catch (Exception) { AnonymityKnownAs.Text = ""; }
+    }
+
     private async System.Threading.Tasks.Task Load()
     {
         var s = AppState.Current;
         Greeting.Text = $"Hi, {s.DisplayName}";
+        await LoadAdaptation();
+        await LoadAnonymity();
         try
         {
             var metrics = await ApiClient.Shared.Baseline(s.Uid!, s.Token!);

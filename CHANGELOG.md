@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Three more things JIM knew but only the web console asked about.** The
+effectiveness loop, the user-specific model and the anonymity posture all
+reach iOS, Android and Windows. This finishes a native round that shipped
+the community bridge and stopped there — the other three features named
+in its own scope had no native door at all, which is the same
+"door nobody can open" failure this project keeps relearning.
+
+**"Did that help?"** now sits on Monitor in all three shells (spec
+[0039]). It reads from `/followup/{uid}` rather than from the monitor
+reply, so a question opened in an *earlier* session is still asked instead
+of being silently dropped. Answering "it did not" is not a complaint filed
+away: the escalation ladder runs again with the ineffective-guidance rung
+and the screen names the humans reachable right now — the spec's second
+door, shown as people rather than as a tier.
+
+**What JIM has learned about you** and **Your name here** join Overview,
+which is where these shells already keep the baseline, model and language
+settings. The adaptation profile is rendered as counts off the user's own
+history — which guidance helped and how often — never a score, with the
+statement that nothing was sent to a model vendor to build it and a note
+when the sealed copy is in their own vault. The anonymity posture is
+rendered from the server's own `keeps` and `costs` lists, so the tradeoff
+on screen cannot drift from the one in the code.
+
 ## [0.17.0] — 2026-07-30
 
 **The community bridge reaches the native shells.** The door out to
