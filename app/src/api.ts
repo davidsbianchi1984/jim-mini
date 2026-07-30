@@ -123,6 +123,29 @@ export interface CommunityView {
   posture: { mirrored_here: boolean; posts_on_your_behalf: boolean;
              health_data_shared: boolean };
 }
+// Claim 11's user-specific model, derived from this user's own history.
+export interface AdaptationProfile {
+  built: boolean; note?: string; version?: number;
+  evidence_items?: number; confidence?: number; vaulted?: boolean;
+  rebuilt_at?: string;
+  profile?: {
+    known_conditions: string[];
+    what_helps: Record<string, { helped: number; did_not: number;
+                                 answered: number; hit_rate: number | null }>;
+    areas_brought: Record<string, number>;
+    checkins: { count: number; avg_mood?: number | null;
+                avg_stress?: number | null };
+    tone: string | null; explain_level: string | null;
+    beliefs_posture: string; occupation: string | null;
+    method: string;
+  } | null;
+  sealed_key?: string | null;
+}
+// Spec [0031]: what anonymity keeps and what it costs.
+export interface AnonymityPosture {
+  anonymous: boolean; known_as?: string; legal_name_on_record: boolean;
+  keeps: string[]; costs: string[];
+}
 export interface MonitorResult {
   detected: boolean; condition?: string; severity?: string; reason?: string;
   guidance?: Guidance | null; escalation?: unknown; forecast?: unknown;
@@ -443,6 +466,13 @@ export const api = {
   communityVisit: (uid: string, room_id: string, token: string) =>
     req<{ noted: boolean; room_id: string; stored: string }>(
       `/community/${uid}/visits`, { method: "POST", body: { room_id }, token }),
+  // Claim 11: the user-specific model, derived and (with a tandem) sealed.
+  adaptation: (uid: string, token: string) =>
+    req<AdaptationProfile>(`/adaptation/${uid}`, { token }),
+  rebuildAdaptation: (uid: string, token: string) =>
+    req<AdaptationProfile>(`/adaptation/${uid}`, { method: "POST", token }),
+  anonymity: (uid: string, token: string) =>
+    req<AnonymityPosture>(`/anonymity/${uid}`, { token }),
   checkin: (uid: string, body: { mood: number; energy: number; stress?: number; note?: string }, token: string) =>
     req<CheckinResult>(`/checkin/${uid}`, { method: "POST", body, token }),
   coach: (uid: string, body: { area: string; message: string }, token: string) =>
