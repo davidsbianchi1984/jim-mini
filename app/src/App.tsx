@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSession } from "./store";
+import { ProblemNotice } from "./ProblemNotice";
 import { VersionGuard } from "./VersionGuard";
 import { Help } from "./Help";
 import { Onboarding } from "./screens/Onboarding";
@@ -62,6 +63,7 @@ export function App() {
         <button className="signout" onClick={signOut}>Sign out</button>
       </aside>
       <main className="content">
+        <ProblemNotice />
         {tab === "home" && <Home go={setTab} />}
         {tab === "meds" && <Meds />}
         {tab === "careteam" && <CareTeam />}

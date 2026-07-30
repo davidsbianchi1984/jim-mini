@@ -22,11 +22,27 @@
 // step, so a private value never enters storage in the first place — there is
 // no moment at which the buffer holds something that would have to be scrubbed.
 //
-// Nothing is transmitted. The buffer is local, capped, and readable by the
-// person it belongs to; getting a report to a developer is a copy and a paste
-// they choose to make.
+// ── Sending ───────────────────────────────────────────────────────────────
+//
+// The buffer is sent once at launch, to a gateway whose address is compiled
+// into the build (`__PROBLEM_COLLECTOR__`). A build with no address has
+// nowhere to send and no code path that could acquire one at runtime beyond a
+// key the user sets themselves — which is a stronger "off by default" than a
+// flag, because it cannot be flipped by a mistake in a later release.
+//
+// Counts are sent as *deltas*, not totals. Each row remembers how much of it
+// has already been reported, so relaunching an app twenty times does not turn
+// one broken screen into twenty. Nothing is deleted after a send: the row is
+// the user's own history and stays until they clear it.
+//
+// The send is fire-and-forget and swallows every failure. A diagnostic that
+// can delay a launch, or produce an error of its own, has stopped being worth
+// having.
 
 const KEY = "app.problems";
+const COLLECTOR_KEY = "app.problems.collector";
+const SEND_KEY = "app.problems.send";
+const NOTICE_KEY = "app.problems.notice";
 const LIMIT = 50;
 
 /** One failure, with nothing in it that belongs to anybody. */
@@ -41,7 +57,35 @@ export interface Problem {
   day: string;
   /** Stable across occurrences, so duplicates group without a message. */
   fingerprint: string;
+  /**
+   * How much of `count` has already been reported.
+   *
+   * A number, never a flag: a row goes on accumulating after it is sent, and
+   * the next report owes the difference. Absent on rows written by an older
+   * build, which read as zero and are reported once in full.
+   */
+  sent?: number;
 }
+
+// Which product this console is, and where its reports go. Injected at build
+// time (vite.config.ts) — the source because a file that is byte-identical in
+// three repos cannot know which one it is in, and the collector because the
+// address is a decision made when the installer is built, not one a user
+// should have to hold an opinion about.
+declare const __APP_SOURCE__: string;
+declare const __PROBLEM_COLLECTOR__: string;
+declare const __PROBLEM_TOKEN__: string;
+// Not a product name. A repo whose vite.config.ts forgot the define would
+// otherwise file its reports under whichever product this fallback named, and
+// nothing would ever look wrong — the aggregate would just quietly attribute
+// one app's bugs to another. "unknown" is a source the gateway refuses, so the
+// mistake surfaces as a 422 on the first report instead.
+const SOURCE: string =
+  typeof __APP_SOURCE__ !== "undefined" ? __APP_SOURCE__ : "unknown";
+const BUILT_COLLECTOR: string =
+  typeof __PROBLEM_COLLECTOR__ !== "undefined" ? __PROBLEM_COLLECTOR__ : "";
+const BUILT_TOKEN: string =
+  typeof __PROBLEM_TOKEN__ !== "undefined" ? __PROBLEM_TOKEN__ : "";
 
 // A segment that identifies a *thing* rather than naming a route. The id
 // formats these products mint (`prf_0de08e794ed0`, `usr_…`, `dev_…`) are the
@@ -123,7 +167,7 @@ export function recordProblem(method: string, path: string,
     write([hit, ...rows.filter((r) => r !== hit)]);
     return;
   }
-  write([{ op, status, count: 1, day, fingerprint }, ...rows]);
+  write([{ op, status, count: 1, day, fingerprint, sent: 0 }, ...rows]);
 }
 
 export function problems(): Problem[] {
@@ -139,17 +183,160 @@ export function clearProblems(): void {
 }
 
 /**
- * Exactly what a copied report contains — the same object the screen shows.
+ * Where reports go, or "" for nowhere.
  *
- * One function rather than two so the preview cannot drift from the payload.
- * A screen that showed one thing and copied another would be worse than no
+ * The stored key wins over the built-in address so a self-hoster can point
+ * their own install at their own gateway — and so anyone can point it at
+ * nothing by setting it empty, without waiting for a release.
+ */
+export function collectorUrl(): string {
+  try {
+    const stored = localStorage.getItem(COLLECTOR_KEY);
+    if (stored !== null) return stored.trim().replace(/\/+$/, "");
+  } catch {
+    /* fall through to the built-in */
+  }
+  return BUILT_COLLECTOR.trim().replace(/\/+$/, "");
+}
+
+export function setCollectorUrl(url: string | null): void {
+  try {
+    if (url === null) localStorage.removeItem(COLLECTOR_KEY);
+    else localStorage.setItem(COLLECTOR_KEY, url.trim());
+  } catch {
+    /* the switch below still works; this one just will not persist */
+  }
+}
+
+/** Sending is on where a collector exists, and off the moment anyone says so. */
+export function sendingEnabled(): boolean {
+  try {
+    return localStorage.getItem(SEND_KEY) !== "off";
+  } catch {
+    return true;
+  }
+}
+
+export function setSending(on: boolean): void {
+  try {
+    if (on) localStorage.removeItem(SEND_KEY);
+    else localStorage.setItem(SEND_KEY, "off");
+  } catch {
+    /* nothing to do */
+  }
+}
+
+/**
+ * Whether this person has been told that reports are sent.
+ *
+ * A switch nobody knows about is not a choice. Sending is opt-*out*, which
+ * only means anything if the opting-out is possible before the first report
+ * rather than after it — so nothing goes until this returns true, and the
+ * notice that sets it says what would leave and offers to stop.
+ *
+ * One launch of delay, at most, and only ever the first. After that the
+ * answer is remembered and the switch on the Settings card is the way back.
+ */
+export function noticeAnswered(): boolean {
+  try {
+    return localStorage.getItem(NOTICE_KEY) !== null;
+  } catch {
+    // Storage is unavailable, so an answer could not be remembered and the
+    // notice would return every launch. Treat that as answered and leave
+    // sending to the switch: nagging somebody forever is its own harm.
+    return true;
+  }
+}
+
+export function answerNotice(send: boolean): void {
+  try {
+    localStorage.setItem(NOTICE_KEY, send ? "yes" : "no");
+  } catch {
+    /* the choice below still takes effect for this session */
+  }
+  setSending(send);
+}
+
+/**
+ * Exactly what a report contains — shown on screen, copied by the button, and
+ * posted by the sender, all from here.
+ *
+ * One function rather than three so the preview cannot drift from the payload.
+ * A screen that showed one thing and sent another would be worse than no
  * preview at all, because it would look like a promise.
+ *
+ * `count` is the unreported remainder, and rows with nothing left to report
+ * are absent. So this is not a view of the log — it is the message, and after
+ * a successful send it is legitimately empty.
  */
 export function problemReport(appVersion: string): Record<string, unknown> {
+  const unsent = read()
+    .map((r) => ({
+      op: r.op,
+      status: r.status,
+      count: r.count - (r.sent || 0),
+      day: r.day,
+      fingerprint: r.fingerprint,
+    }))
+    .filter((r) => r.count > 0);
   return {
+    source: SOURCE,
     app_version: appVersion,
     platform: typeof navigator === "undefined" ? "unknown" : navigator.platform,
     language: typeof navigator === "undefined" ? "unknown" : navigator.language,
-    problems: read(),
+    problems: unsent,
   };
+}
+
+/** Move the watermark up by what a report just carried. */
+function markReported(report: Record<string, unknown>): void {
+  const carried = new Map<string, number>();
+  for (const p of (report.problems as Problem[]) || []) {
+    carried.set(p.fingerprint, p.count);
+  }
+  write(read().map((r) => {
+    const n = carried.get(r.fingerprint);
+    // `(r.sent || 0) + n` rather than `r.count`: the row may have grown while
+    // the request was in flight, and that growth has not been reported.
+    return n === undefined ? r : { ...r, sent: (r.sent || 0) + n };
+  }));
+}
+
+export type SendOutcome = "sent" | "nothing-to-send" | "turned-off"
+  | "no-collector" | "awaiting-notice" | "failed";
+
+/**
+ * Post the unreported failures. Never throws, never blocks anything.
+ *
+ * The gateway answers 422 when a report does not have exactly the shape it
+ * expects — which would mean this build's redaction has stopped working. That
+ * is a refusal, not a retry: the watermark stays put, nothing is marked sent,
+ * and the next launch tries again with whatever the fix ships.
+ *
+ * Raw `fetch`, not `req()`, and that is not laziness. `req()` calls
+ * `recordProblem` when it fails, so routing the send through it would make a
+ * failing collector write a new row every launch — a log that fills up with
+ * the story of its own delivery and nothing else.
+ */
+export async function sendProblems(appVersion: string): Promise<SendOutcome> {
+  const base = collectorUrl();
+  if (!base) return "no-collector";
+  if (!sendingEnabled()) return "turned-off";
+  if (!noticeAnswered()) return "awaiting-notice";
+  const report = problemReport(appVersion);
+  if (!(report.problems as unknown[]).length) return "nothing-to-send";
+  try {
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+    };
+    if (BUILT_TOKEN) headers.authorization = `Bearer ${BUILT_TOKEN}`;
+    const res = await fetch(`${base}/v1/problems`, {
+      method: "POST", headers, body: JSON.stringify(report),
+    });
+    if (!res.ok) return "failed";
+  } catch {
+    return "failed";
+  }
+  markReported(report);
+  return "sent";
 }

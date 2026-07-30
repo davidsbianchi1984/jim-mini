@@ -25,19 +25,55 @@ timestamps finer than a day. The redaction happens on the way *in*, so there is
 no moment at which the buffer holds something that would have to be scrubbed
 later.
 
-**Nothing is transmitted.** The buffer is local and capped, and a Settings card
-shows the exact payload — the same object the copy button produces, from one
-function, so the preview cannot drift from what is copied. Getting a report to a
-developer is a copy and a paste somebody chooses to make. That is not a
-shortcoming to apologise for: the backend ships inside the installer, so for a
-desktop user there is no server on the other end to send to.
+**Sent once at launch, if the build has anywhere to send.** A Settings card
+shows the exact payload — the same object the copy button produces and the
+sender posts, from one function, so the preview cannot drift from what leaves.
+The address is compiled in at build time and unset by default, which is a
+stronger "off" than a flag: with no address there is nothing for a later
+mistake to switch on. Where one is set, the console posts alongside the update
+check and swallows every failure, because a diagnostic that can delay a launch
+has stopped being worth having. Anyone who would rather it did not happen can
+turn it off on the same card.
 
-Twelve tests hold the shape in place — that `recordProblem` has no parameter a
-message could arrive through, that the stored record has no field one could sit
-in, that the redaction catches short ids as well as long ones, and that it never
-eats a real route name. Two leaks were injected to prove they fail: a `detail`
-parameter added to the recorder, and the redaction narrowed back to
-six-hex-character ids. Both were caught.
+Counts go as **deltas** — each row remembers how much of itself has been
+reported, so reopening the app twenty times does not turn one broken screen
+into twenty. A failed send moves nothing and the next launch tries again.
+
+The gateway that receives them, `cloudgw` in QRME's repository, accepts exactly
+five top-level keys and five per problem and **422s on anything else**: an
+unknown field, a `platform` string long enough to hide a sentence, a `day`
+carrying a time of day, or a path with an unredacted id still in it. It could
+redact that path itself — the pattern is right there — but then a build whose
+redaction had broken would keep working and nobody would learn that every
+report from those users had been arriving with an id in it. For JIM that matters more than anywhere else in the suite: `cap_` is a clinical capture, and a path naming one is a photograph of somebody's body. What survives is
+less than what arrives: reports fold into counters keyed by product, version,
+platform, operation and status, locale is validated and then dropped, and
+nothing records that a particular install sent anything. Reading that aggregate
+needs a narrower permission than writing to it, because the posting token ships
+inside every installer and is public the moment somebody unzips one.
+
+**Nothing goes before you have been asked.** Sending is opt-*out*, which only
+means something if the opting-out can happen before the first report rather
+than being discovered afterwards in a settings panel nobody opened. So the
+sender refuses until a first-run notice has been answered — and that notice
+shows the actual payload rather than describing it, from the same function
+that posts it, so it cannot go stale while still looking honest. Both answers
+are offered, the answer is remembered, and the switch on the Settings card is
+that same answer, changeable whenever. It only appears where a build has a
+collector at all: interrupting somebody to explain a thing that cannot happen
+teaches them these notices are noise.
+
+Seventeen tests hold the shape in place here, with twenty-two more on the
+gateway — that `recordProblem` has no parameter a message could arrive through,
+that the stored record has no field one could sit in, that the wire shape and
+the gateway's whitelist still agree, that the redaction catches short ids as
+well as long ones, and that it never eats a real route name. Four leaks were
+injected to prove they fail: a `detail` parameter on the recorder, the
+redaction narrowed back to six-hex-character ids, a `detail` field added to the
+outgoing report, and the send routed back through the recording client so it
+would log its own delivery attempts. All four were caught — and the third
+exposed a real gap while doing it, since that check only ran in the repo
+shipping the gateway rather than here.
 
 
 **Channel 2 and the clinical camera reach a person.** Both had complete
