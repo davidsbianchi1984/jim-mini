@@ -6,8 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-**JIM's four client surfaces now have the guard QRME got after its Wall
-bug.** In the sibling, every like, comment and share on the community wall
+**The guard now checks the verb, not just the address.** Matching a path while
+ignoring the method accepts a client that sends POST where only GET is mounted.
+The answer is a 405 rather than a 404, and from the user's side that is the same
+dead button. The check now requires a full router match, method included, and
+reads the verb the way each language actually writes it: labelled in TypeScript
+and Swift (`method: "PUT"`), positional in Kotlin, encoded in the helper's own
+name in C# (`Post(...)`, `HttpMethod.Get`).
+
+Scoping the check to the enclosing *call* rather than to loose path-shaped
+strings is what made that possible, and it widened the net at the same time:
+double-quoted paths, the ones written without interpolation, had been skipped
+entirely, so JIM's console went from 33 checked paths to 65 verb-and-path pairs.
+
+Each language's verb reader gets its own liveness test, because they are
+separate code and they fail quietly. If one stops matching, every call from that
+surface silently becomes a GET — and since most routes do serve a GET, the suite
+would stay green while checking almost nothing.
+
+All 243 verb-and-path pairs across JIM's four surfaces are accepted; no field
+bug came out of this. Method-awareness was verified by injecting the mistake it
+exists to catch and watching the check name the verb the route really accepts.
+
+Earlier in this cycle, the guard arrived at all: **JIM's four client surfaces
+now have what QRME got after its Wall bug.** In the sibling, every like, comment and share on the community wall
 returned 404 for as long as the buttons had existed: the console asked for a
 singular path segment the routes only map in the plural. The backend tests
 passed because they used the reachable form, the console compiled because a

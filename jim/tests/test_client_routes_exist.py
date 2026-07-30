@@ -21,7 +21,8 @@ from __future__ import annotations
 from jim.api import app
 
 from . import clientpaths
-from .clientpaths import CONSOLE, NATIVE, normalise, paths
+from .clientpaths import (CONSOLE, NATIVE, VERBS, accepts, calls,
+                          methods_for, normalise, paths)
 
 # Low enough to allow a shell to shed a screen, high enough that a pattern which
 # has stopped matching altogether cannot pass as coverage.
@@ -29,17 +30,35 @@ _MIN_CONSOLE_PATHS = 20
 _MIN_NATIVE_PATHS = 30
 
 
-def test_every_console_path_reaches_a_route():
-    missing = clientpaths.unresolved(app, CONSOLE)
+def test_every_console_call_reaches_a_route():
+    """Method and path together, for every request the console makes.
+
+    Checking the path alone accepts a client sending POST where only GET is
+    mounted. That is a 405, and from the user's side it is the same dead button
+    as a 404 — so the assertion is a FULL router match, not a partial one.
+
+    Scoping to the enclosing call is what makes that possible, and it also keeps
+    path-shaped literals that are not requests out of the result: `"/app"` is
+    tested against `window.location.pathname` to work out where the console is
+    being served, not sent to anything.
+    """
+    missing = clientpaths.refused(app, CONSOLE)
     assert not missing, (
-        "the console builds these paths and no route accepts them:\n  "
+        "the console makes these requests and no route accepts them:\n  "
         + "\n  ".join(missing)
-        + "\n(a 404 the user meets as a button that does nothing)"
+        + "\n(a 404 or 405 the user meets as a button that does nothing)"
     )
 
 
-def test_every_native_path_reaches_a_route():
-    """All three shells reported together.
+def test_every_native_call_reaches_a_route():
+    """Method and path together, on all three shells.
+
+    Each language says the verb its own way — Swift labels it
+    (`method: "PUT"`), Kotlin passes it positionally, C# encodes it in the
+    helper's name (`Post(...)`) or an `HttpMethod` constant — so the check reads
+    it rather than assuming GET.
+
+    All three shells reported together.
 
     A path added to two shells and mistyped in the third is the likely shape of
     this failure, so the message should name the platform rather than making the
@@ -47,10 +66,10 @@ def test_every_native_path_reaches_a_route():
     """
     missing: list[str] = []
     for lang in NATIVE:
-        for line in clientpaths.unresolved(app, lang):
+        for line in clientpaths.refused(app, lang):
             missing.append(f"[{lang.name}] {line}")
     assert not missing, (
-        "the native shells build these paths and no route accepts them:\n  "
+        "the native shells make these requests and no route accepts them:\n  "
         + "\n  ".join(missing)
     )
 
@@ -92,3 +111,34 @@ def test_an_interpolated_query_does_not_truncate_the_path():
     )
     # A query written after a constant path still ends where it always did.
     assert normalise("/checkins?limit=${n}", CONSOLE) == "/checkins"
+
+
+def test_the_check_is_really_method_aware():
+    """Pinned against the live app, so it cannot quietly relax to path-only.
+
+    An earlier version of this guard accepted a partial router match — path
+    right, method ignored. That passes a client sending the wrong verb, which
+    answers 405 and looks to the user exactly like the 404 the guard exists to
+    prevent.
+
+    Each surface's verb reader is checked for life separately, because they are
+    separate code: Swift labels the method, Kotlin passes it positionally, C#
+    encodes it in the helper's name. If one stops matching, every call from that
+    surface silently becomes a GET — and since most routes do serve a GET, the
+    suite would stay green while checking almost nothing.
+    """
+    for lang in (CONSOLE,) + NATIVE:
+        made = calls(lang)
+        assert made, f"{lang.name}: no calls extracted at all"
+        verbs = {method for method, _ in made}
+        assert verbs <= set(VERBS), f"{lang.name}: unexpected verbs {verbs}"
+        assert len(verbs) > 1, (
+            f"{lang.name} reports only {verbs} across {len(made)} calls — its "
+            "verb reader has probably stopped matching, which would turn every "
+            "call into an unchecked GET"
+        )
+
+    # A real verb difference on a real route: the health check is read-only.
+    assert accepts(app, "GET", "/health")
+    assert not accepts(app, "POST", "/health")
+    assert methods_for(app, "/health") == ["GET"]
