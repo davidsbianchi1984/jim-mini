@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile,
-         type AnonymityPosture, type PairInfo, type SeedReport, type VigilStatus,
+         type AnonymityPosture, type CloudContribution, type PairInfo,
+         type SeedReport, type VigilStatus,
          type WatchChannel } from "../api";
 import { ProviderTiles } from "../ProviderTiles";
 import { say } from "../speech";
@@ -155,11 +156,110 @@ export function Settings() {
         )) : <p className="muted small">…</p>}
       </div>
 
+      <CloudContributionCard />
+      <LocalityCard />
+
       <div className="card">
         <h3>Your data</h3>
         <p className="muted small">Guidance runs on-device; sensitive payloads seal into the PDI vault when the tandem is on. User: {session.userId}</p>
         <button className="danger" onClick={signOut}>Sign out &amp; end session</button>
       </div>
+    </div>
+  );
+}
+
+
+// What has left this device for the shared model, and the button that stops
+// it. The backend has answered both questions for versions; nothing asked.
+//
+// The counts come from the server rather than being described in prose here,
+// because "some anonymised signals" is the kind of reassurance that survives
+// the behaviour changing underneath it. A number cannot.
+function CloudContributionCard() {
+  const { session } = useSession();
+  const [state, setState] = useState<CloudContribution | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const uid = session.userId, token = session.userToken;
+  function load() {
+    if (!uid || !token) return;
+    api.cloudContribution(uid, token).then(setState).catch(() => setState(null));
+  }
+  useEffect(load, [uid]);
+  if (!uid || !token || !state) return null;
+
+  return (
+    <div className="card">
+      <h3>What you contribute</h3>
+      <p className="muted small">
+        {state.opted_in
+          ? `Contributing. ${state.contributed} item${state.contributed === 1 ? "" : "s"} have gone to the shared model.`
+          : "Not contributing. Nothing from this account has gone to the shared model."}
+      </p>
+      {state.policy && <p className="muted small">{state.policy}</p>}
+      {state.preview_note && <p className="muted small">{state.preview_note}</p>}
+      {error && <p className="error">{error}</p>}
+      {state.opted_in && (
+        <button
+          className="danger"
+          disabled={busy}
+          onClick={async () => {
+            if (!confirm("Stop contributing? What has already gone cannot be recalled."))
+              return;
+            setBusy(true); setError(null);
+            try { setState(await api.revokeCloudContribution(uid, token)); }
+            catch (e) { setError((e as Error).message); }
+            finally { setBusy(false); }
+          }}>
+          Stop contributing
+        </button>
+      )}
+    </div>
+  );
+}
+
+
+// Locality is what the community door searches near, and nothing more. It is
+// set here rather than inferred from an IP address on purpose: a guess about
+// where somebody lives is not a thing to make quietly.
+function LocalityCard() {
+  const { session } = useSession();
+  const [locality, setLocality] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const uid = session.userId, token = session.userToken;
+  if (!uid || !token) return null;
+
+  async function save(value: string | null) {
+    setBusy(true); setError(null); setNote(null);
+    try {
+      await api.setLocality(uid!, value, token!);
+      setNote(value ? `Searching near ${value}.` : "Cleared.");
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="card">
+      <h3>Where to look</h3>
+      <p className="muted small">
+        Used only to find local rooms and events through the community door.
+        Leave it empty and nothing local is searched for.
+      </p>
+      <div className="row">
+        <input
+          value={locality}
+          placeholder="Town or city"
+          onChange={(e) => setLocality(e.target.value)} />
+        <button disabled={busy || !locality.trim()}
+          onClick={() => save(locality.trim())}>Save</button>
+        <button disabled={busy}
+          onClick={() => { setLocality(""); save(null); }}>Clear</button>
+      </div>
+      {note && <p className="muted small">{note}</p>}
+      {error && <p className="error">{error}</p>}
     </div>
   );
 }

@@ -6,6 +6,103 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The crash watch can now be answered.** JIM could already raise an alarm — an
+unanswered check-in, a scanned beacon, a fall through the watch drip — and every
+route for *resolving* one had existed for versions with nothing calling it.
+Accepting an alarm, clearing it, escalating it, seeing which pages went out and
+which incidents were recorded: all reachable from the backend, none reachable
+from a person. An alarm nobody can answer is worse than no alarm at all, because
+the system has already told somebody that help is coming.
+
+A new **Safety** screen sits directly under Live Monitoring — the same
+emergency, seen from the answering end rather than the raising end. Open alarms
+come first and separately, because on arrival during an emergency the only
+question is what still needs a human; history is below the fold rather than
+mixed in. Accepting an alarm **names a responder**, which the backend requires
+and which is the right requirement: "someone is coming" is not a state, it is a
+person. Escalation is one press with no confirm — in the moment it is needed a
+modal is an obstacle — while *clearing* asks, because clearing is the
+irreversible direction. Beacons are placed and listed here too, and the pages
+JIM sent on the user's behalf are shown with whether they arrived, since a
+message that failed to deliver is the one most worth knowing about.
+
+Two more doors in Privacy. **What you contribute** shows whether anything has
+gone to the shared model and how much, with the button that stops it — counts
+from the server rather than described in prose, because "some anonymised
+signals" is the kind of reassurance that survives the behaviour changing
+underneath it. **Where to look** sets the locality the community door searches
+near, entered rather than inferred from an IP address: a guess about where
+somebody lives is not a thing to make quietly.
+
+Eleven routes came off the doorless list, 101 → 90.
+
+**Scope, stated rather than implied.** Four families in the same block still
+have no door — the channel-2 microphone, clinical captures, the medical referral
+flow, and specialist tasks. Each needs real discovery first (the mic attaches
+only to an already-registered device, captures validate against a site
+vocabulary, referrals and specialist tasks want a configured tandem), and
+half-wiring them would have been worse than leaving them listed. They stay on
+the backlog, where the test keeps them visible.
+
+**A limitation of the audit, found by using it.** The doorless check counts call
+sites, so a binding added to `api.ts` and wired to no screen counts as a door
+and takes its route off the list — while the capability stays unreachable. This
+round's first pass added all 31 bindings before any screen existed, which would
+have reported 31 doors built and delivered none. The 20 unwired ones were
+removed rather than left to flatter the number, and the rule is now written into
+the audit: add the binding in the same change as the screen that calls it.
+
+**101 of JIM's 219 routes cannot be reached from any client.** The route guard
+asks whether every call reaches a route. This asks the inverse — whether every
+route is reachable from a door a user can open — and it is the quieter of the
+two failures. A client calling a route that does not exist produces a 404
+somebody reports. A route no client calls produces nothing at all: the code is
+present, its tests pass, and the capability is simply unreachable.
+
+The gap is not evenly spread. Thirty-one of them sit under `/users/{id}/`, and
+they are not obscure: the **channel-2 microphone** (set, gain, handover,
+release, history), **clinical captures** (create, attach, image, delete), the
+**medical referral** flow (clinicians, prepare, requests, released),
+**specialist tasks**, **cloud-contribution** preview and revoke, **alarms**
+(accept, clear, escalate), **incidents**, **beacons**, **locality**. The helper
+**dock** and the **tutorial** are two more families with routes and no caller.
+
+Several of those have drawn screens in `docs/screens/` and rows in the README
+gallery. Drawn, documented, and unreachable in every shipping client — which is
+worth saying plainly, because the gallery is the thing that made them look done.
+
+The count is recorded in `jim/tests/doorless_routes.txt`. The list is a backlog
+rather than an approval: it cannot grow, because a new route with no door fails
+the test; and it must shrink deliberately, because building a door fails the
+test too, telling you to strike the line.
+
+**Every option JIM offers, JIM now has to accept.** A catalog endpoint is a
+menu — the console and the three shells render it directly, so whatever it lists
+is what a user can pick. If the endpoint that *consumes* the choice refuses one
+of those values, the user gets an error for doing exactly what they were
+offered. That is the shape of the bug that left a sibling's community wall with
+dead buttons, and the one the route guard says plainly it cannot see: the
+request routes perfectly and the refusal happens inside the handler, after
+dispatch.
+
+Six checks now send the request rather than read the source — languages in both
+delivery modes, the providers on the model menu, the robots in the catalog, the
+connectors — plus one that is not about a dead button at all.
+
+**`/languages` promises translated safety content per language, and now has to
+keep it.** The flag tells a user whether the CPR and AED playbooks and the
+waiver terms arrive in their language or fall back to English. The trap is
+structural rather than present: `HAND_TRANSLATED` is *derived* — every supported
+language except the default is flagged `true` automatically — while the strings
+themselves live in a hand-written table of twenty. Adding a tenth language would
+therefore promise translated resuscitation steps in the very commit that gives
+it none, and nothing would have said so. The table is complete today; this keeps
+it that way. Verified by adding Korean and watching the check name all twenty
+missing strings.
+
+**No field bug came out of this** — every advertised value is accepted, and
+every language claiming translated safety content has all of it.
+
 **The guard now checks the verb, not just the address.** Matching a path while
 ignoring the method accepts a client that sends POST where only GET is mounted.
 The answer is a 405 rather than a 404, and from the user's side that is the same

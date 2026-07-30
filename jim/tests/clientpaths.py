@@ -293,3 +293,101 @@ def refused(app, lang: Language) -> list[str]:
                else "no route is mounted at this path")
         out.append(f"{method} {path}  ({source}, from {literal!r}) — {why}")
     return out
+
+
+# Paths served for a browser or a camera rather than for an API client: a QR
+# image used as an `<img src>`, a landing page reached by scanning or by
+# following a link, a form post a provider redirects into. No client builds
+# these, and none should.
+NOT_A_CLIENT_CALL = (
+    "/terms",
+    "/pair/qr.svg",
+    "/verify-email/click",
+    "/medical-id/{token}/qr.svg",
+)
+
+
+def all_routes(app) -> list:
+    """Every route with a path and methods, including those inside routers.
+
+    `app.routes` is not the flat list it looks like. FastAPI wraps each
+    `include_router` in an `_IncludedRouter`, which carries no `path` or
+    `methods` of its own and delegates matching to the router it wrapped. Walking
+    the top level alone therefore sees only the handful of routes declared
+    directly on the app — 8 of QRME's, against more than two hundred real ones —
+    and any audit built on that count is not wrong so much as vacuous.
+
+    Route *matching* is unaffected, which is why the guards that call
+    `route.matches()` were never misled: the wrapper implements `matches` and
+    delegates. Only enumeration needs this.
+    """
+    out, seen = [], set()
+
+    def walk(routes):
+        for route in routes:
+            inner = getattr(route, "original_router", None)
+            if inner is not None:
+                walk(inner.routes)
+                continue
+            nested = getattr(route, "routes", None)
+            if nested and not getattr(route, "methods", None):
+                walk(nested)
+                continue
+            path = getattr(route, "path", None)
+            methods = getattr(route, "methods", None)
+            if path and methods and (path, tuple(sorted(methods))) not in seen:
+                seen.add((path, tuple(sorted(methods))))
+                out.append(route)
+
+    walk(app.routes)
+    return out
+
+
+def doorless(app, surfaces=None) -> list[str]:
+    """Every route+method the backend serves that no client ever calls.
+
+    The inverse of :func:`refused`. That one asks whether every call reaches a
+    route; this asks whether every route is reachable from a door a user can
+    open. A feature with no door reads, in the field, as a feature that does not
+    exist — and it is the quieter failure of the two, because nothing errors and
+    no test goes red. The code is present, the tests pass, and the capability is
+    simply unreachable.
+
+    Documentation endpoints and the browser-facing paths in
+    :data:`NOT_A_CLIENT_CALL` are excluded; everything else is reported.
+
+    Know what "door" means here, because the word is doing less work than it
+    looks like. This counts *call sites*, so a binding added to `api.ts` and
+    wired to no screen counts as a door and takes its route off the list — the
+    capability is still unreachable, and the number says otherwise. The rule
+    that follows is a discipline rather than something the test can enforce:
+    add the binding in the same change as the screen that calls it. A round
+    that adds thirty bindings and five screens will report thirty doors and
+    have built five.
+    """
+    langs = surfaces if surfaces is not None else (CONSOLE, *NATIVE)
+    made: set[tuple[str, str]] = set()
+    for lang in langs:
+        made |= set(calls(lang))
+
+    out: list[str] = []
+    for route in all_routes(app):
+        path = route.path
+        methods = route.methods
+        if path.startswith(("/openapi", "/docs", "/redoc", "/app")):
+            continue
+        if path in NOT_A_CLIENT_CALL:
+            continue
+        for method in sorted(methods - {"HEAD", "OPTIONS"}):
+            reached = False
+            for m, p in made:
+                if m != method:
+                    continue
+                scope = {"type": "http", "method": m, "path": p,
+                         "root_path": "", "headers": []}
+                if route.matches(scope)[0] == Match.FULL:
+                    reached = True
+                    break
+            if not reached:
+                out.append(f"{method} {path}")
+    return sorted(out)

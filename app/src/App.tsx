@@ -13,12 +13,14 @@ import { Coach } from "./screens/Coach";
 import { Checkin } from "./screens/Checkin";
 import { Journal } from "./screens/Journal";
 import { Wellness } from "./screens/Wellness";
+import { Safety } from "./screens/Safety";
 import { Settings } from "./screens/Settings";
 
-type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "wellness" | "checkin" | "journal" | "community" | "settings";
+type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "wellness" | "checkin" | "journal" | "community" | "safety" | "settings";
 const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "home", label: "Overview", icon: "◎" },
   { id: "monitor", label: "Live Monitoring", icon: "❤" },
+  { id: "safety", label: "Safety", icon: "🆘" },
   { id: "baseline", label: "Your Baseline", icon: "📈" },
   { id: "meds", label: "Medications", icon: "💊" },
   { id: "careteam", label: "Care Team", icon: "👥" },
@@ -68,6 +70,7 @@ export function App() {
         {tab === "checkin" && <Checkin />}
         {tab === "journal" && <Journal />}
         {tab === "community" && <Community />}
+        {tab === "safety" && <Safety />}
         {tab === "settings" && <Settings />}
       </main>
       {/* Part of the shell: the help box is on every screen, like the
