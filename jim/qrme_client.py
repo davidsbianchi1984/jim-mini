@@ -108,6 +108,32 @@ class QRMEClient:
         out = r.json()
         return out.get("profile") if out.get("type") == "handle" else None
 
+    def rooms(self) -> list[dict]:
+        """QRME's active rooms — the forums and gatherings P001's spec text
+        promises JIM users ("our chat engines, your local events, and forums
+        in all languages"). Empty list when unreachable: a community shelf
+        that cannot load is a quiet screen, never an error page."""
+        try:
+            r = self._client.get("/rooms")
+        except Exception:
+            return []
+        if r.status_code >= 300:
+            return []
+        out = r.json()
+        return out if isinstance(out, list) else []
+
+    def localities(self) -> list[dict]:
+        """Places QRME's listings actually claim, with counts — the "local"
+        in local events, drawn from what exists rather than a typed guess."""
+        try:
+            r = self._client.get("/marketplace/localities")
+        except Exception:
+            return []
+        if r.status_code >= 300:
+            return []
+        out = r.json()
+        return out if isinstance(out, list) else []
+
     def marketplace(self) -> list[dict]:
         """The QRME discovery cards — the Starter Collection with faces,
         industries and blurbs. Empty list when unreachable: an attach

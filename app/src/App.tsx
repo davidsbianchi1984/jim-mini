@@ -8,13 +8,14 @@ import { Monitor } from "./screens/Monitor";
 import { Baseline } from "./screens/Baseline";
 import { Meds } from "./screens/Meds";
 import { CareTeam } from "./screens/CareTeam";
+import { Community } from "./screens/Community";
 import { Coach } from "./screens/Coach";
 import { Checkin } from "./screens/Checkin";
 import { Journal } from "./screens/Journal";
 import { Wellness } from "./screens/Wellness";
 import { Settings } from "./screens/Settings";
 
-type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "wellness" | "checkin" | "journal" | "settings";
+type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "wellness" | "checkin" | "journal" | "community" | "settings";
 const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "home", label: "Overview", icon: "◎" },
   { id: "monitor", label: "Live Monitoring", icon: "❤" },
@@ -25,6 +26,7 @@ const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "wellness", label: "Wellness", icon: "🧘" },
   { id: "checkin", label: "Check-in", icon: "🌿" },
   { id: "journal", label: "Journal", icon: "📖" },
+  { id: "community", label: "Community", icon: "🗣" },
   { id: "settings", label: "Privacy", icon: "🛡" },
 ];
 
@@ -65,6 +67,7 @@ export function App() {
         {tab === "wellness" && <Wellness />}
         {tab === "checkin" && <Checkin />}
         {tab === "journal" && <Journal />}
+        {tab === "community" && <Community />}
         {tab === "settings" && <Settings />}
       </main>
       {/* Part of the shell: the help box is on every screen, like the

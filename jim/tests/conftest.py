@@ -69,6 +69,19 @@ class FakeQRME:
                     "profile_id": f"prf_{handle}",
                     "display_name": handle, "chat": True}})
             return _Resp(404, {"detail": "unknown handle"})
+        if path == "/rooms":
+            # Shaped like QRME's real GET /rooms.
+            return _Resp(200, [
+                {"id": "rm_night", "topic": "Night shift, still awake",
+                 "channel": "chat", "participants": 4,
+                 "created_at": "2026-07-30T00:00:00+00:00"},
+                {"id": "rm_walk", "topic": "Tuesday walking group — Bend",
+                 "channel": "voice", "participants": 7,
+                 "created_at": "2026-07-29T00:00:00+00:00"},
+            ])
+        if path == "/marketplace/localities":
+            return _Resp(200, [{"locality": "Bend, OR", "listings": 3},
+                               {"locality": "Portland, OR", "listings": 11}])
         if path == "/marketplace" or path.startswith("/marketplace?"):
             # Discovery cards shaped like QRME's real /marketplace response.
             return _Resp(200, [

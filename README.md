@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.15.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.16.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -60,7 +60,7 @@ https://github.com/user-attachments/assets/eab7d192-7b18-464d-9b67-bd512ae87957
   </tr>
 </table>
 
-A standalone personal-guidance system enabling seamless support for future AI agent services (**JAN2024 NETWORKED RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending**): it monitors
+A standalone personal-guidance system enabling seamless support for future AI agent services (**JAN2024 NETWORKED RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending — published as US 2025/0246290 A1 on July 31, 2025**): it monitors
 a user's biometric and contextual signals, detects known conditions, delivers
 guidance, and escalates to an emergency contact / live help on critical events.
 Around that core sits a **life layer** — consented data sources, mood/energy
@@ -314,6 +314,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.16.0** | **The loop closes** — did the counseling work, a user-specific model sealed in the vault, the attach bracket, anonymous by choice, pace cue, budgets, stress, knowledge pack |
 | **0.15.0** | **Guided wellness** — calm protocols, workout plans, meal plans, nutrition Coach area, the Wellness tab |
 | **0.14.5** | **A fall reaches the Guardian** — the drip carries fall events, the crash watch on iOS/Android/Windows, screens 87–88 + lessons + dock face, the campaign masthead |
 | **0.14.4** | **The crash watch** — unanswered "are you okay?" summons pre-programmed help; plus the Journal tab (typed or spoken), the voice orb, the help box, and the version-mismatch banner |
@@ -1028,6 +1029,7 @@ this machine's address and restart.
 <tr><th align="left"><sub>Endpoint</sub></th><th align="left"><sub>Purpose</sub></th></tr>
 <tr><td valign="top"><sub><code>GET /health</code></sub></td><td valign="top"><sub>Status + whether tandem is configured</sub></td></tr>
 <tr><td valign="top"><sub><code>POST /enroll</code></sub></td><td valign="top"><sub>Enroll a user: terms/guardian consent, emergency contact (+ consent), devices, resting-HR baseline, goals, declared known conditions. <code>anonymous: true</code> enrolls under a <b>pseudonym</b> and the typed name is discarded — the app never learns it (spec [0031] / FIG. 2 box 212). An optional <code>legal_name</code> is then used <i>only</i> in an emergency briefing; without one the briefing says no legal name is on record rather than passing a pseudonym off as an identity</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /community/{user_id}</code>, <code>POST</code>/<code>GET …/visits</code></sub></td><td valign="top"><sub>The <b>community door</b> — FIG. 2 boxes 222–226 and [0020]'s "chat engines, your local events, and forums in all languages". All of it lives in <b>QRME</b>, where the moderation, the rooms and the languages already are, so JIM shows the door rather than growing a second social network inside a private health guardian: QRME's active rooms (topic, channel, heads, an openable URL) and the places its listings actually claim, filtered by <code>?locality=</code>, in the language this user reads. Nothing is mirrored here, nothing is posted on your behalf, and no health data crosses over — the reply says so in its own <code>posture</code> block. Opening a door records <b>the fact only</b> on your timeline, never anything from inside the room. 409 without <code>JIM_QRME_URL</code>; an unreachable QRME is a quiet screen. Console: the <b>Community</b> tab</sub></td></tr>
 <tr><td valign="top"><sub><code>GET /anonymity/{user_id}</code></sub></td><td valign="top"><sub>What anonymity keeps (every emergency path, your own history and vault records) and what it costs (a legal name for responders, unless you left one) — so the checkbox is an informed choice, not a surprise</sub></td></tr>
 <tr><td valign="top"><sub><code>POST /guardians/{gid}/children</code>, <code>GET …/children</code>, <code>GET</code>/<code>DELETE …/children/{cid}</code></sub></td><td valign="top"><sub><b>Family</b> (<code>jim/family.py</code>): a verified-adult guardian enrolls their child — consent recorded as a relationship (who, as what, when, on the child's timeline), protective defaults (cautious sensitivity, the guardian as consented emergency contact, cloud/provider sharing hard-off), and the child's device token shown once. Oversight is sized by age: <b>full</b> under 13 (condition-level timeline, never raw notes), <b>alerts-only</b> 13–17 (escalations reach the parent; a teen's check-ins and everyday guidance stay private), and it <b>ends by itself at 18</b>. The autonomous-resuscitation waiver can never be signed for a minor — not by the minor and not by a guardian</sub></td></tr>
 <tr><td valign="top"><sub><code>PUT …/children/{cid}/controls</code>, <code>GET /guardians/{gid}/watch</code></sub></td><td valign="top"><sub><b>Family controls & the parent's wrist</b>: pause and quiet hours (HH:MM, midnight-wrapping) hold <i>everyday</i> guidance only — detection, crisis escalation, and the emergency path never pause, and a held delivery is an audited <code>guidance_held</code> event. The guardian watch face shows one light per child from the last 24h of alert-level events (green quiet · orange escalated · red critical) with <code>haptic: alert</code> when a child needs someone — alert-level only, so teen privacy holds by construction. With a PDI vault configured, the guardian-consent record is sealed there (<code>jim/{child}/family/consent/…</code>) for provable custody</sub></td></tr>

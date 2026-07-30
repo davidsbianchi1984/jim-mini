@@ -6,6 +6,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The community door: JIM points, QRME hosts.** FIG. 2 boxes 222–226
+describe community inside the guidance product — interact with others,
+moderate content, store it for community interaction — and [0020]
+promises "our chat engines, your local events, and forums in all
+languages". Every piece of that already exists in QRME, and the two
+products are built to run in tandem, so the honest way to keep the
+promise is a **door, not a second implementation**: `GET
+/community/{user}` serves QRME's active rooms (topic, channel, heads,
+an openable URL) and the places its listings actually claim
+(`?locality=` filters them), in the language this user reads. A second
+social network inside a private health guardian would duplicate a
+moderation stack that is hard to get right once, and would put someone's
+health data and their public posting in the same database — the exact
+separation the suite exists to preserve. So nothing is mirrored into
+JIM, nothing is ever posted on the user's behalf, no health data crosses
+over, and the reply states all three in its own `posture` block.
+Opening a door records **the fact only** on the user's timeline
+(`POST /community/{user}/visits`) — never a word from inside the room.
+409 without `JIM_QRME_URL`, and an unreachable QRME is a quiet screen
+rather than an error page. Console: the new **Community** tab.
+
+## [0.16.0] — 2026-07-30
+
 **Anonymous by choice.** FIG. 2 box 212 of the filing says "choose name
 (anonymized)", and spec [0031] spells it out: the user name "may be an
 anonymous user name, the user's real name, or left to the user to
@@ -1712,7 +1735,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.15.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.16.0...HEAD
+[0.16.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.16.0
 [0.15.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.15.0
 [0.14.5]: https://github.com/davidsbianchi1984/jim-mini/commit/cc2b6daf0e7b4c6fa11d9dc9af5d11570e2bf89d
 [0.14.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.4

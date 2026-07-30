@@ -1,6 +1,6 @@
 """JIM-mini / Guardian — Networked Responsive Personal Guidance System.
 
-A standalone personal-guidance product (patent app 19/038,196): it monitors a
+A standalone personal-guidance product (patent app 19/038,196, published as US 2025/0246290 A1): it monitors a
 user's biometric and contextual signals, detects known conditions, delivers
 guidance, and escalates on critical events.
 
