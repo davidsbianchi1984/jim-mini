@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.16.0] — 2026-07-30
+
 **Anonymous by choice.** FIG. 2 box 212 of the filing says "choose name
 (anonymized)", and spec [0031] spells it out: the user name "may be an
 anonymous user name, the user's real name, or left to the user to
@@ -1712,7 +1714,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.15.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.16.0...HEAD
+[0.16.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.16.0
 [0.15.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.15.0
 [0.14.5]: https://github.com/davidsbianchi1984/jim-mini/commit/cc2b6daf0e7b4c6fa11d9dc9af5d11570e2bf89d
 [0.14.4]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.14.4
