@@ -216,6 +216,15 @@ class FallbackProvider:
 # Registry
 # --------------------------------------------------------------------------- #
 
+_DEEPSEEK_MODEL = os.environ.get("JIM_DEEPSEEK_MODEL", "deepseek-chat")
+# The founder's own algorithm, or anything speaking the OpenAI dialect: point
+# JIM_CUSTOM_LLM_URL at it and it becomes a first-class provider tile. This
+# is the plug David asked for — "the option to plug in my algorithm" — built
+# as configuration so the day the algorithm exists, no release is needed.
+_CUSTOM_BASE = os.environ.get("JIM_CUSTOM_LLM_URL", "")
+_CUSTOM_MODEL = os.environ.get("JIM_CUSTOM_LLM_MODEL", "default")
+_CUSTOM_LABEL = os.environ.get("JIM_CUSTOM_LLM_LABEL", "Your own algorithm")
+
 _REGISTRY: dict[str, dict] = {
     "stub": {"label": "Deterministic stub (offline)", "kind": "stub",
              "network": False, "env": [], "model": "stub"},
@@ -233,6 +242,15 @@ _REGISTRY: dict[str, dict] = {
                    "base": "https://api.perplexity.ai", "model": _PPLX_MODEL},
     "gemini": {"label": "Gemini (Google)", "kind": "gemini", "network": True,
                "env": ["GEMINI_API_KEY", "GOOGLE_API_KEY"], "model": _GEMINI_MODEL},
+    "deepseek": {"label": "DeepSeek", "kind": "openai", "network": True,
+                 "env": ["JIM_DEEPSEEK_API_KEY", "DEEPSEEK_API_KEY"],
+                 "base": "https://api.deepseek.com/v1",
+                 "model": _DEEPSEEK_MODEL},
+    # See _CUSTOM_BASE above: any OpenAI-dialect endpoint, the founder's own
+    # algorithm first among them. Configured when the URL is set.
+    "custom": {"label": _CUSTOM_LABEL, "kind": "openai", "network": True,
+               "env": ["JIM_CUSTOM_LLM_KEY"], "base": _CUSTOM_BASE,
+               "model": _CUSTOM_MODEL, "needs_base": True},
     # A real offline model, not the canned stub: Ollama (ollama.com) runs
     # models like deepseek-r1:1.5b or llama3.2 on the user's own machine —
     # free, no key, no internet once the model is pulled. JIM treats a
@@ -283,6 +301,11 @@ def is_configured(name: str) -> bool:
     if name == "ollama":
         return _ollama_alive()
     if name not in _REGISTRY:
+        return False
+    # A provider whose whole point is a user-supplied endpoint (the
+    # founder's own algorithm) is configured only once the URL is set —
+    # a key alone points at nothing.
+    if _REGISTRY[name].get("needs_base") and not _REGISTRY[name].get("base"):
         return False
     return _env_value(name) is not None
 

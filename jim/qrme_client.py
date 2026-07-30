@@ -60,6 +60,9 @@ class QRMEClient:
                 raise ValueError("QRMEClient needs base_url or an injected client")
             client = _UrllibClient(base_url)
         self._client = client
+        # Kept for callers that must hand a browser an absolute URL — the
+        # console prefixes QRME-relative avatar paths with this.
+        self.base_url = (base_url or "").rstrip("/") or None
 
     def ensure_interactor(self, display_name: str,
                           birthdate: str | None = None) -> tuple[str, str | None]:
@@ -104,6 +107,19 @@ class QRMEClient:
             return None
         out = r.json()
         return out.get("profile") if out.get("type") == "handle" else None
+
+    def marketplace(self) -> list[dict]:
+        """The QRME discovery cards — the Starter Collection with faces,
+        industries and blurbs. Empty list when unreachable: an attach
+        catalog that cannot load is a quiet screen, never an error page."""
+        try:
+            r = self._client.get("/marketplace")
+        except Exception:
+            return []
+        if r.status_code >= 300:
+            return []
+        out = r.json()
+        return out if isinstance(out, list) else []
 
     def profile_info(self, profile_id: str) -> dict | None:
         """Fetch a QRME profile's public card (includes ``adult_mode`` and

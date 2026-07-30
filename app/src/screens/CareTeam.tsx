@@ -16,6 +16,10 @@ export function CareTeam() {
   const [goal, setGoal] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [catalog, setCatalog] =
+    useState<Awaited<ReturnType<typeof api.specialistsCatalog>> | null>(null);
+  const [picks, setPicks] = useState<Record<string, string>>({});
+  const [note, setNote] = useState<string | null>(null);
 
   const uid = session.userId!;
   const token = session.userToken!;
@@ -51,6 +55,25 @@ export function CareTeam() {
     try {
       await api.careTeamCoordinate(uid, token, goal.trim());
       setGoal(""); load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  function loadCatalog() {
+    api.specialistsCatalog().then(setCatalog).catch(() => setCatalog(null));
+  }
+  useEffect(loadCatalog, []);
+
+  async function attach(condition: string) {
+    const pid = picks[condition];
+    const starter = catalog?.starters.find((s) => s.profile_id === pid);
+    if (!pid || !starter) return;
+    setBusy(true); setError(null); setNote(null);
+    try {
+      await api.attachSpecialist({ condition, mode: "tandem",
+        qrme_profile_id: pid, label: starter.display_name });
+      setNote(`${starter.display_name} now stands behind ${condition.replace("_", " ")} — their industry knowledge pack rides along.`);
+      loadCatalog();
     } catch (e) { setError((e as Error).message); }
     finally { setBusy(false); }
   }
@@ -128,6 +151,46 @@ export function CareTeam() {
         </>
       )}
 
+      {catalog && (
+        <div className="card">
+          <h3>Specialists — attach a QRME expert</h3>
+          <p className="muted small">
+            The Starter Collection: one expert per industry, each already
+            carrying its industry's knowledge pack. Pick who stands behind
+            each condition — guidance for it then routes through them in
+            tandem. The mental-health trio is played straight on purpose.
+          </p>
+          {catalog.conditions.map((c) => (
+            <div key={c.condition} className="spec-row">
+              <b className="spec-cond">{c.condition.replace("_", " ")}</b>
+              <span className="muted small spec-now">
+                {c.attached
+                  ? `${c.attached.label || "attached"} (${c.attached.mode})`
+                  : "nobody yet"}
+              </span>
+              <select value={picks[c.condition] || ""}
+                      onChange={(e) => setPicks((cur) => ({ ...cur, [c.condition]: e.target.value }))}>
+                <option value="">choose an expert…</option>
+                {catalog.starters.map((st) => (
+                  <option key={st.profile_id} value={st.profile_id}>
+                    {st.display_name}{st.tags?.[0] ? ` — ${st.tags[0]}` : ""}
+                  </option>
+                ))}
+              </select>
+              <button disabled={busy || !picks[c.condition]}
+                      onClick={() => attach(c.condition)}>Attach</button>
+            </div>
+          ))}
+          {catalog.starters.length === 0 && (
+            <p className="muted small">
+              The QRME tandem answered with an empty shelf — install the
+              Starter Collection there (Discover → Install), then reload.
+            </p>
+          )}
+        </div>
+      )}
+
+      {note && <div className="ok-note">{note}</div>}
       {error && <div className="error">⚠ {error}</div>}
     </div>
   );

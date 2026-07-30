@@ -57,6 +57,26 @@ carries a proper add-column migration), and a check-in without stress stays
 exactly what it was. On a phone, the help button now rides above the tab
 bar instead of sitting on the right-most tabs.
 
+**The attach bracket: click a QRME starter onto a condition.** Care Team
+gains a "Specialists" card that lists every condition the Guardian routes
+guidance for beside who holds it today, with the QRME Starter Collection —
+the 33 preloaded industry experts, each already carrying its industry's
+knowledge pack profile-side — as the shelf to pick from. One click attaches
+a starter in tandem mode and that condition's guidance routes through it.
+The catalog rides `GET /specialists/catalog` (a clear 409 pointing at
+`JIM_QRME_URL` when no tandem is configured, and a quiet empty shelf when
+QRME's marketplace can't be reached — never an error page).
+
+**Two more doors on the model menu: DeepSeek, and your own algorithm.**
+DeepSeek joins the provider registry as a first-class tile
+(`JIM_DEEPSEEK_API_KEY` or `DEEPSEEK_API_KEY`), an interim guide until the
+founder's algorithm takes over — and that plug now exists too: a **custom**
+provider pointing at any endpoint speaking the OpenAI dialect
+(`JIM_CUSTOM_LLM_URL` + `JIM_CUSTOM_LLM_KEY`, optional model and label
+overrides). The custom tile stays dark until its URL is set — a key alone
+points at nothing — and both degrade to the stub like every other
+unconfigured provider, never breaking guidance.
+
 ## [0.15.0] — 2026-07-29
 
 **Guided wellness — the on-purpose half of guidance.** From the field

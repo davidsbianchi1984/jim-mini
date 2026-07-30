@@ -1026,6 +1026,31 @@ def create_app(qrme_client: QRMEClient | None = None,
         from . import seed
         return seed.seed_tandem(app.state.qrme)
 
+    @app.get("/specialists/catalog")
+    def specialists_catalog() -> dict:
+        """The attach bracket's stock: the QRME Starter Collection — 33
+        industry experts plus the mental-health trio, each already carrying
+        its industry's knowledge pack profile-side — beside what is attached
+        today, so the console can offer click-to-attach per condition."""
+        if app.state.qrme is None:
+            raise HTTPException(
+                409, "no QRME endpoint configured (set JIM_QRME_URL)")
+        attached = {r["condition"]: dict(r) for r in db.connect().execute(
+            "SELECT condition, mode, label, qrme_profile_id FROM specialists"
+        ).fetchall()}
+        from .models import Condition as _Condition
+        import typing as _typing
+        return {
+            "qrme_url": getattr(app.state.qrme, "base_url", None),
+            "conditions": [
+                {"condition": c, "attached": attached.get(c)}
+                for c in _typing.get_args(_Condition)],
+            "starters": app.state.qrme.marketplace(),
+            "note": "each starter carries its industry's knowledge pack on "
+                    "the QRME side; attaching one routes that condition's "
+                    "guidance through it in tandem",
+        }
+
     @app.post("/specialists")
     def register_specialist(body: SpecialistRegister) -> dict:
         if body.mode == "tandem" and not body.qrme_profile_id:

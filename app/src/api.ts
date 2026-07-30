@@ -277,6 +277,19 @@ export const api = {
 
   // The medicine cabinet: tracked in your words, never a pharmacist.
   // The care team is an organization (jim/careteam.py).
+  specialistsCatalog: () =>
+    req<{ qrme_url: string | null;
+          conditions: { condition: string;
+                        attached: { mode: string; label?: string | null;
+                                    qrme_profile_id?: string | null } | null }[];
+          starters: { profile_id: string; display_name: string; blurb?: string;
+                      tags: string[]; avatar?: string | null;
+                      avatar_kind?: string | null }[];
+          note: string }>("/specialists/catalog"),
+  attachSpecialist: (body: { condition: string; mode: "tandem";
+                             label?: string; qrme_profile_id: string }) =>
+    req<{ condition: string; label?: string }>(
+      "/specialists", { method: "POST", body }),
   careTeamStatus: (uid: string, token: string) =>
     req<CareTeamStatus>(`/users/${uid}/care-team`, { token }),
   careTeamLink: (uid: string, token: string,

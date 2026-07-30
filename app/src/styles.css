@@ -290,3 +290,11 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .pace-notes { font-size: 13px; }
 .pace-red { color: var(--red); font-size: 12px; font-weight: 700; }
 .first-aid { margin-top: 10px; }
+
+/* The specialist attach bracket: condition · who stands behind it · picker. */
+.spec-row { display: grid; grid-template-columns: 130px 1fr 1fr auto;
+  gap: 10px; align-items: center; padding: 8px 0;
+  border-bottom: 1px solid rgba(38,49,78,0.6); }
+.spec-cond { font-size: 13px; text-transform: capitalize; }
+.spec-row select, .spec-row button { margin-top: 0; }
+@media (max-width: 760px) { .spec-row { grid-template-columns: 1fr 1fr; } }
