@@ -1,4 +1,5 @@
 // Thin typed client for the JIM-mini / Guardian API.
+import { recordProblem } from "./errors";
 //
 // Default base: when the console is served *by* the API (the phone case —
 // http://<machine>:8000/app/), the backend is the origin we came from, so
@@ -68,6 +69,9 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
       body: opts.body ? JSON.stringify(opts.body) : undefined,
     });
   } catch {
+    // Never reached a server. Recorded as status 0, which is a different
+    // failure from anything the backend answered and worth telling apart.
+    recordProblem(opts.method || "GET", path, 0);
     // A network-level failure surfaces as "Failed to fetch", which tells the
     // user nothing. Name the actual problem: no Guardian backend answering.
     throw new Error(
@@ -83,6 +87,9 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
   try { data = text ? JSON.parse(text) : null; }
   catch { data = null; }
   if (!res.ok) {
+    // The status and the operation, never the detail below: that string
+    // carries whatever the user typed.
+    recordProblem(opts.method || "GET", path, res.status);
     const body = data as { detail?: unknown; message?: unknown } | null;
     const d = (body && (body.detail || body.message)) || text.trim() || res.statusText;
     throw new Error(typeof d === "string" ? d : JSON.stringify(d));

@@ -3,6 +3,7 @@ import { api, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile,
          type AnonymityPosture, type CloudContribution, type PairInfo,
          type SeedReport, type VigilStatus,
          type WatchChannel } from "../api";
+import { Problems } from "../Problems";
 import { ProviderTiles } from "../ProviderTiles";
 import { say } from "../speech";
 import { useSession } from "../store";
@@ -164,6 +165,7 @@ export function Settings() {
         <p className="muted small">Guidance runs on-device; sensitive payloads seal into the PDI vault when the tandem is on. User: {session.userId}</p>
         <button className="danger" onClick={signOut}>Sign out &amp; end session</button>
       </div>
+      <Problems />
     </div>
   );
 }
