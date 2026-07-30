@@ -102,9 +102,20 @@ export interface DriftCrossing {
   metric: string; label: string; unit: string; direction: "above" | "below";
   value: number; baseline: number; edge: number; delta: number; note: string;
 }
+export interface LiveAssistanceOption {
+  kind: string; name: string; channel?: string; note?: string;
+}
+export interface FollowupResult {
+  answered: boolean; reason?: string; helped?: boolean; next?: string;
+  escalation_decision?: { tier: string; rationale?: string } | null;
+  live_assistance?: { options: LiveAssistanceOption[]; contact_alerted: boolean;
+    note: string } | null;
+}
 export interface MonitorResult {
   detected: boolean; condition?: string; severity?: string; reason?: string;
   guidance?: Guidance | null; escalation?: unknown; forecast?: unknown;
+  // Spec [0039]: guidance that went out gets asked about.
+  followup?: { id: string; question: string } | null;
   // Not an episode — a drift from this person's own baseline, which earns a
   // question rather than an alarm (jim/bands.py).
   drift?: { crossings: DriftCrossing[]; question: string } | null;
@@ -408,6 +419,10 @@ export const api = {
       "/password/reset", { method: "POST", body }),
   monitor: (uid: string, body: { heart_rate: number; respiration?: number; stress_level?: number }, token: string) =>
     req<MonitorResult>(`/monitor/${uid}`, { method: "POST", body, token }),
+  // Spec [0039]: whether the guidance actually worked. "No" escalates toward
+  // a live person and comes back with the humans reachable right now.
+  answerFollowup: (uid: string, body: { helped: boolean; note?: string }, token: string) =>
+    req<FollowupResult>(`/followup/${uid}`, { method: "POST", body, token }),
   checkin: (uid: string, body: { mood: number; energy: number; stress?: number; note?: string }, token: string) =>
     req<CheckinResult>(`/checkin/${uid}`, { method: "POST", body, token }),
   coach: (uid: string, body: { area: string; message: string }, token: string) =>

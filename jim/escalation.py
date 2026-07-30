@@ -65,7 +65,8 @@ def _clamp(i: int) -> int:
 def decide(severity: str, sensitivity: str = "balanced", *,
            condition: str | None = None, known: list[str] | None = None,
            confidence: float = 1.0, contactable: bool = False,
-           crisis: bool = False, ceiling: str | None = None) -> dict:
+           crisis: bool = False, ceiling: str | None = None,
+           guidance_ineffective: bool = False) -> dict:
     """Resolve a situation to an escalation tier + concrete actions.
 
     Parameters
@@ -80,6 +81,10 @@ def decide(severity: str, sensitivity: str = "balanced", *,
     ceiling       a tier this decision may not exceed, for a caller who is not
                   the user (an anonymous beacon alarm). Applied after the
                   floors, and recorded when it clips one.
+    guidance_ineffective
+                  the user has told us the guidance we already delivered did
+                  not help (jim/followup.py). Spec [0039]: unhelped counseling
+                  escalates toward a live person rather than repeating itself.
     """
     known = known or []
     path: list[str] = []
@@ -119,6 +124,21 @@ def decide(severity: str, sensitivity: str = "balanced", *,
         idx = min(idx, 2)
         path.append(f"low signal confidence {confidence:.2f} caps at check_in — "
                     f"ask rather than escalate on a reading we do not trust")
+
+    # Guidance we already gave, that the person tells us did not help. Spec
+    # [0039]: the answer is a live human, not the same advice louder. One rung
+    # up from wherever this event landed, floored at check_in — so an unhelped
+    # guidance-level event reaches out, and an unhelped critical one (already
+    # at notify_contact) goes all the way to emergency services.
+    #
+    # Deliberately a rung and not a jump to the top: "the breathing exercise
+    # didn't settle me" is a real signal and must be answered by a person, but
+    # it is not a reason to dispatch an ambulance on its own.
+    if guidance_ineffective:
+        idx = _clamp(max(idx + 1, 2))
+        path.append("the user says the guidance did not help: +1 rung, floor "
+                    f"at check_in → {TIERS[idx]} (a live person, not the same "
+                    "advice again)")
 
     # Safety floors — applied last so nothing above can undercut them.
     if severity == "critical" and not unbelieved:

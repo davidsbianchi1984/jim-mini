@@ -11,12 +11,14 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 
-from . import (accounts, app_connectors, auth, bands, beacons, careteam,
+from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
+               careteam,
                catalog,
                coach,
                mailer,
                contribution, db,
-               escalation, family, guardian, handoff, i18n, landing, life, llm,
+               escalation, family, followup, guardian, handoff, i18n, landing,
+               life, llm,
                meds, mic, mobile, notify, oauth, referral, relay, research,
                robotics,
                rota, social, storage, terms as terms_mod, tiers, tutorial,
@@ -35,7 +37,7 @@ from .models import (
     CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
-    GuidanceFeedback, HabitCreate,
+    FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
@@ -1642,6 +1644,40 @@ def create_app(qrme_client: QRMEClient | None = None,
                         request: Request) -> dict:
         _user_or_404(user_id, request)
         return guardian.set_personality(user_id, body.model_dump())
+
+    # ---- the user-specific model (clause 11) ------------------------------
+
+    @app.post("/adaptation/{user_id}")
+    def rebuild_adaptation(user_id: str, request: Request) -> dict:
+        """Run the offline pass: recompute this user's adaptation profile from
+        their own stored history and seal it in the vault when configured.
+        Nothing is transmitted to any model vendor."""
+        _user_or_404(user_id, request)
+        return adaptation.rebuild(user_id, pdi=app.state.pdi)
+
+    @app.get("/adaptation/{user_id}")
+    def read_adaptation(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return adaptation.get(user_id)
+
+    # ---- did the counseling work? (spec [0039]) ---------------------------
+
+    @app.get("/followup/{user_id}")
+    def open_followups(user_id: str, request: Request) -> dict:
+        """What the app should be asking: guidance delivered and not yet
+        reported on, plus the recent record of what worked."""
+        _user_or_404(user_id, request)
+        return {"open": followup.open_for(user_id),
+                "history": followup.history(user_id)}
+
+    @app.post("/followup/{user_id}")
+    def answer_followup(user_id: str, body: FollowupAnswer,
+                        request: Request) -> dict:
+        """"It helped" resumes monitoring; "it did not" runs the escalation
+        ladder again with the ineffective-guidance rung, and names the humans
+        who can help right now."""
+        _user_or_404(user_id, request)
+        return followup.answer(user_id, body.helped, body.note)
 
     @app.put("/sensitivity/{user_id}")
     def set_sensitivity(user_id: str, body: SensitivitySet,

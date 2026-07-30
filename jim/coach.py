@@ -57,11 +57,51 @@ def _context(user_id: str) -> str:
     return "\n".join(lines) if lines else "no recent check-ins or goals"
 
 
+# Clause 12, second half: the system "may autonomously refine its tone
+# and or voice interaction style to align with user preferences". PUT
+# /personality is the explicit door; this is the autonomous one — when the
+# prompt itself states a style preference, the coach keeps it from that turn
+# on. A transparent phrase table, never a hidden model read, and the reply
+# reports what it learned so the adaptation is visible rather than uncanny.
+_TONE_CUES: tuple[tuple[tuple[str, ...], str], ...] = (
+    (("keep it short", "be brief", "shorter answers", "get to the point",
+      "be direct", "less detail", "too wordy"), "direct and brief"),
+    (("be gentle", "be kind", "softer", "go easy on me", "gentler",
+      "less blunt"), "gentle and encouraging"),
+    (("more detail", "explain more", "be thorough", "in depth",
+      "go deeper"), "thorough and detailed"),
+    (("plain language", "simpler words", "no jargon", "explain like i",
+      "in simple terms"), "plain language, no jargon"),
+)
+
+
+def tone_from_prompt(message: str) -> str | None:
+    """The autonomous read of clause 12: a style preference stated in the
+    prompt. None when the prompt says nothing about how to answer."""
+    text = (message or "").lower()
+    for cues, tone in _TONE_CUES:
+        if any(cue in text for cue in cues):
+            return tone
+    return None
+
+
 def reply(user_id: str, area: str, message: str) -> dict:
     from . import i18n
 
+    # Autonomous refinement happens *before* the prompt is built, so the very
+    # turn that asked for a shorter answer already gets one.
+    adapted_tone = tone_from_prompt(message)
+    if adapted_tone:
+        guardian.set_personality(user_id, {"tone": adapted_tone})
+
     system = _SYSTEM.format(area=AREAS[area], context=_context(user_id))
     system += personalize(guardian.get_user(user_id))
+    # The user-specific adaptation profile (jim/adaptation.py, clause 11):
+    # what has actually helped this person, derived from their own history.
+    from . import adaptation
+    learned = adaptation.prompt_lines(user_id)
+    if learned:
+        system += "\n" + "\n".join(learned)
     language = i18n.effective_language(user_id)
     system += i18n.directive(language)
     gen = llm.generate_for_user(user_id, system, message)
@@ -100,6 +140,9 @@ def reply(user_id: str, area: str, message: str) -> dict:
                 "reason": "coach reply failed safety check", "content": None}
     return {"delivered": True, "area": area, "content": text,
             "language": language,
+            # What the coach taught itself from this turn (clause 12), so the
+            # adaptation is announced rather than silently applied forever.
+            "adapted_tone": adapted_tone,
             "provenance": {
                 "method": ("offline knowledge pack — curated, deterministic, "
                            "referenced; a configured model key replaces this "

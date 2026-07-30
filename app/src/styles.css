@@ -298,3 +298,11 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .spec-cond { font-size: 13px; text-transform: capitalize; }
 .spec-row select, .spec-row button { margin-top: 0; }
 @media (max-width: 760px) { .spec-row { grid-template-columns: 1fr 1fr; } }
+
+/* Spec [0039]: "did that help?" and, when it didn't, the humans reachable
+   now. Lives inside the guidance card — the question belongs beside the
+   advice it is asking about. */
+.followup { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+.followup-buttons { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.followup-buttons button { flex: 1 1 auto; min-width: 140px; }
+.followup-buttons button.warn { border-color: #c0562f; color: #ffb99a; }

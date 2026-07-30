@@ -173,6 +173,47 @@ CREATE TABLE IF NOT EXISTS vigils (
     updated_at      TEXT NOT NULL
 );
 
+-- The user-specific model artifact (jim/adaptation.py, clause 11).
+--
+-- One row per user: the adaptation profile derived offline from that user's
+-- own stored history, its evidence count and earned confidence, and the vault
+-- key when a PDI tandem sealed it. The profile conditions prompts; it is not
+-- a weight file, and `profile.method` says so in its own words.
+CREATE TABLE IF NOT EXISTS user_models (
+    user_id        TEXT PRIMARY KEY REFERENCES users(id),
+    version        INTEGER NOT NULL,
+    profile        TEXT NOT NULL,       -- JSON
+    evidence_items INTEGER NOT NULL DEFAULT 0,
+    confidence     REAL NOT NULL DEFAULT 0,
+    pdi_key        TEXT,                -- set when sealed in the vault
+    rebuilt_at     TEXT NOT NULL
+);
+
+-- Did the counseling actually work? (jim/followup.py)
+--
+-- Spec [0039] closes the loop the product was missing: "If the counseling is
+-- effective in managing the known condition … resume monitoring. If the
+-- counseling provided is not effective, the personal guidance system may
+-- alert a person to provide live assistance to the user … by connecting the
+-- user to a support person associated with the personal guidance system or
+-- by connecting the user with an emergency contact."
+--
+-- One row per delivered guidance: opened when guidance goes out, answered
+-- when the user says whether it helped. `helped=0` re-runs the escalation
+-- ladder with the ineffective-guidance rung applied, and the tier it lands
+-- on is recorded here so the decision can be replayed later.
+CREATE TABLE IF NOT EXISTS guidance_followups (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id),
+    condition    TEXT NOT NULL,
+    severity     TEXT NOT NULL,
+    asked_at     TEXT NOT NULL,
+    answered_at  TEXT,
+    helped       INTEGER,             -- NULL until answered
+    note         TEXT,                -- the user's own words, optional
+    escalated_to TEXT                 -- tier reached when it did not help
+);
+
 -- The crash watch (jim/crashwatch.py): the vigil's acute sibling. Armed in
 -- advance by the user; a critical reading opens a question, N unanswered
 -- attempts become a trip that contacts the trusted person (and, only if

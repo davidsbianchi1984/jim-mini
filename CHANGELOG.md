@@ -6,6 +6,66 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The loop closes: did the counseling actually work?** A verbatim
+re-read of 526.P001 found four sentences of the filing with no code
+behind them, and this is the largest. Spec [0039] describes what
+happens *after* guidance: effective counseling resumes monitoring, and
+counseling that is **not** effective "may alert a person to provide
+live assistance". JIM delivered guidance and never asked. Now every
+delivered guidance opens a follow-up (`GET/POST /followup/{user}`):
+"it helped" is recorded and monitoring resumes, and "it didn't"
+re-runs the escalation ladder with a new **ineffective-guidance
+rung** — one tier up, floored at `check_in` — then names the humans
+reachable right now: the deployment's own support person
+(`JIM_LIVE_SUPPORT_NAME`/`_CHANNEL`), the 988 crisis line for a
+psychological condition, whoever is on shift, and the emergency
+contact. A rung and not a jump, deliberately: a breathing exercise
+that didn't land must reach a person and must not dispatch an
+ambulance on its own — while an unhelped *critical* event, already at
+`notify_contact`, goes all the way to emergency services.
+
+**A user-specific model, and an honest account of what that is.**
+Claim 11 describes "training a user-specific version of the large
+language model based on the received input … secure, decentralized
+methods". JIM had only the last mile of that — live preferences
+rendered into a prompt. Now there is an artifact: `POST
+/adaptation/{user}` derives a versioned adaptation profile from this
+user's own stored history — declared conditions, check-in trend, the
+life areas they actually bring, the tone they asked for, and the
+follow-up record of **what has actually helped them** — and seals it
+into the PDI vault when a tandem is configured, keys the user's,
+nothing to any model vendor. Confidence is earned from evidence
+volume rather than fluency; the profile conditions prompts only where
+the evidence supports it (three answered follow-ups before "this
+works for you" is a claim, and guidance that keeps missing tells the
+coach to change approach and offer a human); and the profile says in
+its own `method` field that the transformer's weights belong to the
+vendor and are not modified here.
+
+**The coach learns your tone without being sent to a settings
+screen.** Clause 12's second half — the system "may autonomously
+refine its tone … to align with user preferences". "Keep it short" in
+a coach prompt is now kept as a preference from that turn on (the
+turn that asked already gets the shorter answer), via a transparent
+phrase table rather than a hidden model read, and the reply reports
+what it learned (`adapted_tone`) instead of silently changing
+character.
+
+**Neutral by default, and it says so.** Spec [0019] asks for guidance
+"structured to be neutral to a person's background or beliefs, such
+as religion, politics, sexual orientation … and in other examples …
+derived with sensitivity to the user's beliefs", and tailored to "a
+user's general intelligence or ability to quickly grasp and apply
+guidance". Age and maturity already rode the prompt; the rest of that
+sentence had no field anywhere. `PUT /personality` gains
+`beliefs_posture` (`neutral` — the default, stated explicitly in
+every prompt, with an instruction never to infer beliefs — or
+`sensitive`, which honors only what the user themself declared and
+falls back to neutral when nothing is) and `explain_level` (`plain` /
+`standard` / `technical`). It also takes an `occupation` — claim 11's
+"professional roles" — because a night-shift nurse and a long-haul
+driver need different advice about the same bad night's sleep.
+
 **Sign in with Google / Apple, the Guardian's way.** The provider
 vouches for the inbox, never for the consent questions: signing *up*
 with Google still carries the full enrollment (name, birthdate, terms),

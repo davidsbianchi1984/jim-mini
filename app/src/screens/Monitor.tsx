@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api, type MonitorResult } from "../api";
+import { api, type FollowupResult, type MonitorResult } from "../api";
 import { PaceCue } from "../PaceCue";
 import { useSession } from "../store";
 
@@ -11,13 +11,24 @@ export function Monitor() {
   const [result, setResult] = useState<MonitorResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [answer, setAnswer] = useState<FollowupResult | null>(null);
+  const [asking, setAsking] = useState(false);
 
   async function submit() {
     if (!session.userId || !session.userToken) return;
-    setBusy(true); setError(null);
+    setBusy(true); setError(null); setAnswer(null);
     try {
       setResult(await api.monitor(session.userId, { heart_rate: hr, respiration: resp, stress_level: stress }, session.userToken));
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  }
+
+  // Spec [0039]: "did that help?" — and if it didn't, a live person.
+  async function say(helped: boolean) {
+    if (!session.userId || !session.userToken) return;
+    setAsking(true); setError(null);
+    try {
+      setAnswer(await api.answerFollowup(session.userId, { helped }, session.userToken));
+    } catch (e) { setError((e as Error).message); } finally { setAsking(false); }
   }
 
   return (
@@ -76,6 +87,42 @@ export function Monitor() {
               {result.guidance.references?.length ? (
                 <ul className="refs">{result.guidance.references.map((r, i) => <li key={i}>{r}</li>)}</ul>
               ) : null}
+              {/* Spec [0039]: the loop's closing edge. Guidance that didn't
+                  land reaches a person instead of repeating itself. */}
+              {result.followup && !answer && (
+                <div className="followup">
+                  <b>{result.followup.question}</b>
+                  <div className="followup-buttons">
+                    <button onClick={() => say(true)} disabled={asking}>Yes, that helped</button>
+                    <button className="warn" onClick={() => say(false)} disabled={asking}>
+                      No, it didn't
+                    </button>
+                  </div>
+                </div>
+              )}
+              {answer?.helped && (
+                <div className="followup"><span className="muted small">
+                  Noted — monitoring resumes, and the Guardian remembers that
+                  this worked for you.
+                </span></div>
+              )}
+              {answer && answer.helped === false && answer.live_assistance && (
+                <div className="followup">
+                  <b>Reaching a person</b>
+                  <div className="muted small">
+                    escalated to {answer.escalation_decision?.tier.replace(/_/g, " ")}
+                  </div>
+                  <ul className="refs">
+                    {answer.live_assistance.options.map((o, i) => (
+                      <li key={i}>
+                        {o.name}{o.channel ? ` — ${o.channel}` : ""}
+                        {o.note ? <span className="muted small"> ({o.note})</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="muted small">{answer.live_assistance.note}</div>
+                </div>
+              )}
             </div>
           )}
           {(result.escalation as { companion?: { relaying?: { note?: string } } } | null)?.companion && (

@@ -895,6 +895,14 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
         result["guidance"] = _deliver(user_id, user, detection, note, qrme,
                                       source_device=sample.get("source_device"),
                                       pdi=pdi)
+        # Spec [0039]: guidance that went out gets asked about. The loop's
+        # closing edge — "did that help?" — opens here and is answered at
+        # POST /followup/{user_id} (jim/followup.py). An unhelped answer
+        # escalates toward a live person instead of repeating the advice.
+        if result["guidance"].get("delivered", True):
+            from . import followup
+            result["followup"] = followup.record(
+                user_id, detection.condition, detection.severity)
 
     # The escalation decision tree (jim.escalation) resolves this detection to a
     # tier for the user's sensitivity — surfaced on every detection so the UI
