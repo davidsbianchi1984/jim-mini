@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Four features get drawn, taught and findable.** The community door, the
+effectiveness loop, the adaptation profile and the anonymity posture all
+had code and screens in the app — and no drawing, no lesson, and no way
+for the help assistant to point anybody at them.
+
+Four screens join the gallery: **89 Did That Help?**, **90 What JIM
+Learned**, **91 Your Name Here** and **92 Community**. Each gets a lesson,
+and each is reachable by asking the assistant in ordinary words — "it did
+not help", "what JIM knows about me", "pseudonym", "rooms" — rather than
+by knowing which tab to open.
+
 **Three more things JIM knew but only the web console asked about.** The
 effectiveness loop, the user-specific model and the anonymity posture all
 reach iOS, Android and Windows. This finishes a native round that shipped
