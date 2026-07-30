@@ -57,6 +57,26 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "If screens answer “Not Found”, two versions of JIM are "
         "probably running — the red banner names them; quit the older app "
         "or press “Use this app's own backend”.",
+    ("did that help", "follow up", "followup", "it did not help",
+     "guidance did not work", "ask me again"):
+        "Guidance that goes out gets one question on Monitor: did that "
+        "help? Saying it did not runs the escalation ladder again and names "
+        "the people reachable now — it is not filed away as a complaint.",
+    ("what it learned", "what jim knows about me", "my profile",
+     "adaptation", "personalised", "personalized", "learned about me"):
+        "Settings → What JIM has learned about you: which guidance has "
+        "actually worked for you and how often, shown as counts rather than "
+        "a score. Built here from your own history — no vendor saw it.",
+    ("anonymous", "pseudonym", "my name", "hide my name", "real name",
+     "legal name"):
+        "Settings → Your name here. You can be known by a pseudonym; every "
+        "emergency path still works, and the one cost — no legal name for "
+        "responders unless you leave one — is stated there.",
+    ("community", "rooms", "forum", "local events", "meet people",
+     "other people"):
+        "Connect → Community. The rooms and local events live in QRME and "
+        "JIM opens the door; nothing is mirrored back, nothing posts as "
+        "you, and no health data crosses over.",
 }
 
 

@@ -238,6 +238,46 @@ LESSONS: tuple[dict, ...] = (
               "same day, raising nothing about the past.",
          screens=(84,),
          try_it="Open Settings → Apple Watch and copy your drip address."),
+    dict(key="followup", chapter="Being watched over",
+         title="Did that help?",
+         what="Guidance that goes out gets asked about. Saying it helped "
+              "resumes monitoring; saying it did not is not filed away as a "
+              "complaint — the escalation ladder runs again with that fact in "
+              "it, and the screen names the people who can help right now: a "
+              "support line, your emergency contact, whoever is on shift. The "
+              "question waits for you rather than expiring, so one you missed "
+              "is still there next time you open the app.",
+         screens=(89,),
+         try_it="Answer an open follow-up honestly, even if it did not help."),
+    dict(key="adaptation", chapter="Being watched over",
+         title="What JIM has learned about you",
+         what="A profile of you built from your own history: which guidance "
+              "has actually worked, how often, the tone you asked for, the "
+              "work you named. It is shown as counts rather than a score, and "
+              "its confidence is earned from how much you have on record — a "
+              "thin history says so instead of pretending. Nothing was sent "
+              "to a model vendor to build it; the sealed copy lives in your "
+              "own vault.",
+         screens=(90,),
+         try_it="Open Settings and read what it thinks helps you."),
+    dict(key="anonymity", chapter="Getting started", title="Your name here",
+         what="You can enroll under a pseudonym. Every emergency path still "
+              "works exactly the same — detection, guidance, escalation, the "
+              "emergency contact — and your own baselines and records stay "
+              "yours. The one cost is stated plainly: an emergency briefing "
+              "cannot hand responders a legal name unless you left one for "
+              "that purpose alone.",
+         screens=(91,),
+         try_it="Read the keeps and costs before you choose."),
+    dict(key="community", chapter="Beyond the app", title="Community",
+         what="Rooms, forums and local events live in QRME, and JIM opens the "
+              "door rather than building a second one. Nothing is mirrored "
+              "back here, nothing is ever posted on your behalf, and no health "
+              "data crosses over — the screen states all three from what the "
+              "bridge actually reports. Opening a room notes the visit on your "
+              "timeline and nothing from inside it.",
+         screens=(92,),
+         try_it="Open Connect → Community and read what JIM will not do."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

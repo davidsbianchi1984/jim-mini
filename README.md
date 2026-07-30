@@ -234,6 +234,12 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/86-care-team.svg" width="160" alt="86 Care Team"><br><sub>86 · Care Team</sub></td>
 <td align="center" width="25%"><img src="docs/screens/87-journal.svg" width="160" alt="87 Journal"><br><sub>87 · Journal</sub></td>
 <td align="center" width="25%"><img src="docs/screens/88-crash-watch.svg" width="160" alt="88 Crash Watch"><br><sub>88 · Crash Watch</sub></td>
+<td align="center" width="25%"><img src="docs/screens/89-did-that-help.svg" width="160" alt="89 Did That Help"><br><sub>89 · Did That Help</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/90-what-jim-learned.svg" width="160" alt="90 What JIM Learned"><br><sub>90 · What JIM Learned</sub></td>
+<td align="center" width="25%"><img src="docs/screens/91-your-name-here.svg" width="160" alt="91 Your Name Here"><br><sub>91 · Your Name Here</sub></td>
+<td align="center" width="25%"><img src="docs/screens/92-community.svg" width="160" alt="92 Community"><br><sub>92 · Community</sub></td>
 <td align="center" width="25%"></td>
 </tr>
 </table>
