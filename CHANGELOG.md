@@ -6,6 +6,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Every option JIM offers, JIM now has to accept.** A catalog endpoint is a
+menu — the console and the three shells render it directly, so whatever it lists
+is what a user can pick. If the endpoint that *consumes* the choice refuses one
+of those values, the user gets an error for doing exactly what they were
+offered. That is the shape of the bug that left a sibling's community wall with
+dead buttons, and the one the route guard says plainly it cannot see: the
+request routes perfectly and the refusal happens inside the handler, after
+dispatch.
+
+Six checks now send the request rather than read the source — languages in both
+delivery modes, the providers on the model menu, the robots in the catalog, the
+connectors — plus one that is not about a dead button at all.
+
+**`/languages` promises translated safety content per language, and now has to
+keep it.** The flag tells a user whether the CPR and AED playbooks and the
+waiver terms arrive in their language or fall back to English. The trap is
+structural rather than present: `HAND_TRANSLATED` is *derived* — every supported
+language except the default is flagged `true` automatically — while the strings
+themselves live in a hand-written table of twenty. Adding a tenth language would
+therefore promise translated resuscitation steps in the very commit that gives
+it none, and nothing would have said so. The table is complete today; this keeps
+it that way. Verified by adding Korean and watching the check name all twenty
+missing strings.
+
+**No field bug came out of this** — every advertised value is accepted, and
+every language claiming translated safety content has all of it.
+
 **The guard now checks the verb, not just the address.** Matching a path while
 ignoring the method accepts a client that sends POST where only GET is mounted.
 The answer is a 405 rather than a 404, and from the user's side that is the same
