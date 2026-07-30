@@ -78,10 +78,18 @@ class Language:
 # double quotes in TypeScript, and skipping those left a third of each console's
 # call sites outside the check — 33 of QRME's, on a guard that claimed to cover
 # the console.
+# A template literal may nest another inside an interpolation —
+# `` `/marketplace${tag ? `?tag=${enc(tag)}` : ""}` `` — so the backtick
+# alternative cannot be `` [^`]* ``: that stops at the *inner* opening
+# backtick and captures `/marketplace${tag ? `, a path no route matches.
+# Matching the interpolation by its braces instead lets the nested backticks
+# pass through, because they are inside `${ … }` where only braces count.
+_TS_TEMPLATE = r"`(/(?:\$\{(?:[^{}]|\{[^{}]*\})*\}|[^`$]|\$(?!\{))*)`"
+
 CONSOLE = Language(
     "console", REPO / "app" / "src", (".ts", ".tsx"),
     re.compile(r"\$\{[^{}]*\}"),
-    re.compile(r"`(/[^`]*)`|\"(/[^\"\n]*)\""),
+    re.compile(_TS_TEMPLATE + r"|\"(/[^\"\n]*)\""),
     (CallForm(re.compile(r"\breq\s*(?:<.*?>)?\s*\(", re.S),
               verb_in_body=re.compile(r'method:\s*"([A-Z]+)"')),),
 )
@@ -139,14 +147,84 @@ def normalise(raw: str, lang: Language) -> str:
     One interpolation genuinely does belong to the query — the optional-parameter
     idiom, `${adult ? "?adult=true" : ""}`, whose value is a suffix rather than a
     segment. A quoted `?` inside the braces marks it, and everything from there
-    on is dropped.
+    on is dropped. The quote may be a backtick: the same idiom is often written
+    with a nested template, `${tag ? `?tag=${enc(tag)}` : ""}`, and reading only
+    `"` and `'` missed it.
+
+    Interpolations are found by :func:`_spans` rather than by the language's
+    regex alone, because that regex cannot span a nested one — see there.
     """
-    for m in lang.interpolation.finditer(raw):
-        if '"?' in m.group(0) or "'?" in m.group(0):
-            raw = raw[: m.start()]
+    for start, end in _spans(raw, lang):
+        chunk = raw[start:end]
+        if '"?' in chunk or "'?" in chunk or "`?" in chunk:
+            raw = raw[:start]
             break
-    filled = lang.interpolation.sub("x", raw)
+    filled = raw
+    for start, end in reversed(_spans(filled, lang)):
+        filled = filled[:start] + "x" + filled[end:]
     return filled.split("?", 1)[0].rstrip("/") or "/"
+
+
+def _spans(raw: str, lang: Language) -> list[tuple[int, int]]:
+    """Every interpolation in `raw`, as (start, end) — nesting included.
+
+    The language patterns match one flat interpolation each, which is right
+    until somebody nests one. `${tag ? `?tag=${enc(tag)}` : ""}` has an inner
+    `${…}` with no braces of its own, so `\$\{[^{}]*\}` matches *that* and
+    leaves the outer opener stranded; the leftover `${tag ` then survives into
+    the path, the query cut lands on the literal `?` inside it, and the call
+    normalises to `/marketplace${tag ` — a path no route matches.
+
+    The cost was not a missed leak but a **false positive**: `GET /marketplace`
+    was reported as having no client door while `api.marketplace()` had been
+    calling it all along, and a door-building round was aimed at it. A guard
+    that invents work is a quieter failure than one that misses some, and a
+    harder one to notice, because the work looks real until you go to do it.
+
+    So `${`-style interpolations are matched by counting braces instead. The
+    other syntaxes — Swift's `\(…)`, C#'s `{…}` — keep their patterns, which
+    already handle the nesting each of them actually shows.
+    """
+    if "${" not in lang.interpolation.pattern.replace("\\", ""):
+        return [m.span() for m in lang.interpolation.finditer(raw)]
+    out, i = [], 0
+    while (i := raw.find("${", i)) != -1:
+        depth, j = 0, i + 1
+        while j < len(raw):
+            if raw[j] == "{":
+                depth += 1
+            elif raw[j] == "}":
+                depth -= 1
+                if depth == 0:
+                    out.append((i, j + 1))
+                    break
+            j += 1
+        else:
+            break  # unbalanced: leave the rest alone rather than guess
+        i = j + 1
+    return out
+
+
+# ---------------------------------------------------------------------------
+# A note on what this file is for, after it produced its first false positive.
+#
+# Every earlier defect here made the guard too *lenient*: a truncated path, a
+# verb read off the wrong call, a route table read flat instead of recursed.
+# Those are the failures you expect from a checker, and the ones its own
+# guard-on-guard was written to catch.
+#
+# The nested-template bug was the other kind. `GET /marketplace` had a door —
+# `api.marketplace()`, called by Discover since it was written — and the guard
+# said it did not, because the literal regex stopped at a backtick nested
+# inside an interpolation. Nothing failed. The suite stayed green. The route
+# simply sat on the backlog looking like work, and a door-building round was
+# aimed at it before anyone noticed the door was already there.
+#
+# One route out of 218, so the guard was substantially right. But a checker
+# that invents work fails more quietly than one that misses some: a miss is
+# found by the bug it let through, while an invention is found only by
+# somebody going to do the work and finding it done.
+# ---------------------------------------------------------------------------
 
 
 def paths(lang: Language) -> dict[str, tuple[str, str]]:
