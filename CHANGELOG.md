@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.17.0] — 2026-07-30
+
 **The community bridge reaches the native shells.** The door out to
 QRME's rooms and local places shipped in the web console only; iOS,
 Android and Windows had no way to it at all. All three gain a

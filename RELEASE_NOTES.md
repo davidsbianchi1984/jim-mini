@@ -1,39 +1,33 @@
-# JIM-mini v0.16.0 — release notes
+# JIM-mini v0.17.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.16.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.17.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.16.0** — the round the filing was read verbatim, and the
-loop finally closed.
+**JIM-mini v0.17.0** — the community door opens on every shell.
 
-Guidance that goes out now gets asked about. "It helped" resumes
-monitoring; "it didn't" escalates one rung toward a **live person** and
-names the humans reachable now — support, crisis line, whoever is on
-shift, the emergency contact. A **user-specific model** is derived from
-your own history (including what has actually helped you) and sealed in
-the PDI vault, honest that the transformer's weights stay the vendor's.
-You can now be **anonymous by choice**: a pseudonym, the typed name
-discarded, every emergency path untouched, and a dispatcher briefing that
-will not invent an identity.
+The door out to QRME's rooms and local places reaches iOS, Android and
+Windows — FIG. 2's boxes 222–226 as a fourth **Community** panel in
+Connect, opened rather than reimplemented, because the moderation, the
+rooms and the languages already live in QRME.
 
-Plus: the CPR **pace cue** on screen (metronome, vibration, PUSH, 2
-BREATHS, red when stopped) with the companion relaying a dispatcher
-briefing in the background; **budgets** with 80%-and-past warnings;
-**stress** on the check-in with climbing forecasts; an **offline
-knowledge pack** of fifteen referenced entries; the **attach bracket**
-for QRME's starter specialists; DeepSeek and your own algorithm on the
-model menu; Google/Apple sign-in; and belief-neutral, comprehension-
-tailored guidance.
+Two details are deliberate. The "what JIM does not do" list — mirror the
+conversation here, post on your behalf, share your health data — is
+rendered from the booleans the server returns rather than typed out as
+reassurance, so the screen cannot drift from what the bridge does. And
+opening a room records the visit *before* launching the browser: that note
+is the part that belongs to JIM, an event on the user's own timeline
+saying a door was opened and nothing from inside it.
 
-### Verification
+Two things JIM already knew also got screens. **What JIM has learned about
+you** shows the claim-11 adaptation profile in plain terms — the
+confidence earned from your own history, which guidance actually helped
+and how often — with the reminder that nothing was sent to a model vendor
+to build it. **Your name here** states your anonymity posture: what the
+choice keeps, and what it costs.
 
-Full suite green.
-
-### Install
-
-If you have 0.7.0 or later, this arrives on its own — one restart when
-prompted.
-
-**Full changelog:** https://github.com/davidsbianchi1984/jim-mini/blob/main/CHANGELOG.md
+**Fixed** — the Windows palette had no `JimT3Brush`. The dimmest text tier
+exists in the Android and iOS themes but the desktop resources stopped at
+`T2`, so a page reaching for it would have failed to load its resources
+rather than merely looking wrong.
