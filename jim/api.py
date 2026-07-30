@@ -17,8 +17,8 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                coach,
                mailer,
                contribution, db,
-               escalation, family, followup, guardian, handoff, i18n, landing,
-               life, llm,
+               escalation, family, followup, guardian, handoff, i18n, identity,
+               landing, life, llm,
                meds, mic, mobile, notify, oauth, referral, relay, research,
                robotics,
                rota, social, storage, terms as terms_mod, tiers, tutorial,
@@ -1644,6 +1644,14 @@ def create_app(qrme_client: QRMEClient | None = None,
                         request: Request) -> dict:
         _user_or_404(user_id, request)
         return guardian.set_personality(user_id, body.model_dump())
+
+    @app.get("/anonymity/{user_id}")
+    def anonymity(user_id: str, request: Request) -> dict:
+        """What anonymity keeps and what it costs, said out loud — spec
+        [0031]'s "anonymous user name" as an informed choice rather than a
+        checkbox with hidden consequences."""
+        _user_or_404(user_id, request)
+        return identity.posture(guardian.get_user(user_id))
 
     # ---- the user-specific model (clause 11) ------------------------------
 

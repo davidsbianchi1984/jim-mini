@@ -21,7 +21,12 @@ CREATE TABLE IF NOT EXISTS tutorial_progress (
 
 CREATE TABLE IF NOT EXISTS users (
     id                 TEXT PRIMARY KEY,
+    -- A pseudonym when `anonymous` is set (jim/identity.py): the app never
+    -- learns the real name in that case. `legal_name` is what the user chose
+    -- to leave for emergency briefings only, and may be NULL even then.
     display_name       TEXT NOT NULL,
+    anonymous          INTEGER NOT NULL DEFAULT 0,
+    legal_name         TEXT,
     birthdate          TEXT,
     terms_consent      INTEGER NOT NULL DEFAULT 0,
     terms_version      TEXT,             -- ToS version accepted at enrollment
@@ -875,6 +880,12 @@ def db_path() -> str:
 # second list — (table, column, type) — applied by connect() when missing.
 _NEW_COLUMNS = [
     ("checkins", "stress", "INTEGER"),
+    # Anonymous enrollment (jim/identity.py, spec [0031] / FIG. 2 box 212):
+    # `display_name` holds a pseudonym when `anonymous` is set, and
+    # `legal_name` is the name — if any — the user chose to leave for
+    # emergencies only. Never shown in the app.
+    ("users", "anonymous", "INTEGER NOT NULL DEFAULT 0"),
+    ("users", "legal_name", "TEXT"),
 ]
 
 

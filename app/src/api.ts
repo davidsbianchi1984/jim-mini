@@ -230,7 +230,8 @@ export const api = {
     req<{ ready: boolean; id?: string; user_id?: string; email?: string;
           display_name?: string; user_token?: string }>(
       `/auth/oauth/claim?state=${encodeURIComponent(state)}`),
-  signup: (body: { email: string; password: string; display_name: string; birthdate: string; terms_consent: boolean }) =>
+  signup: (body: { email: string; password: string; display_name: string; birthdate: string; terms_consent: boolean;
+                   anonymous?: boolean; legal_name?: string }) =>
     req<{ account_id: string; email: string; verified: boolean; code_delivery?: string;
           verification: "local" | "email";
           // Present when verification is "local" (no mail transport — the

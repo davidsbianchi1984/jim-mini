@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Anonymous by choice.** FIG. 2 box 212 of the filing says "choose name
+(anonymized)", and spec [0031] spells it out: the user name "may be an
+anonymous user name, the user's real name, or left to the user to
+decide". QRME has had anonymity since its first round; JIM took a
+`display_name` and that was your identity — which quietly excluded the
+person the product most wants, somebody willing to tell a machine about
+their panic attacks precisely because they are not ready to put their
+name on it. Enrollment now takes `anonymous: true`: JIM mints a
+pseudonym, **discards the typed name**, and never learns the real one.
+Every emergency path is untouched. The one honest cost is a dispatcher
+briefing, and it is handled rather than hidden: an anonymous user may
+leave a `legal_name` used *only* in an emergency briefing, and if they
+don't, the briefing states plainly that no legal name is on record
+instead of passing a pseudonym off as an identity. `GET
+/anonymity/{user}` says what the choice keeps and what it costs, and the
+signup form says the same where the box is ticked.
+
 **The loop closes: did the counseling actually work?** A verbatim
 re-read of 526.P001 found four sentences of the filing with no code
 behind them, and this is the largest. Spec [0039] describes what

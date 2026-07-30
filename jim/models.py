@@ -59,6 +59,12 @@ class PlanChoice(BaseModel):
 
 class Enroll(BaseModel):
     display_name: str
+    # Spec [0031] / FIG. 2 box 212, "choose name (anonymized)": enroll under a
+    # pseudonym instead. The typed display_name is then discarded — the app
+    # never learns the real one — and `legal_name`, if given, is used only in
+    # an emergency briefing (see jim/identity.py).
+    anonymous: bool = False
+    legal_name: str | None = None
     birthdate: date | None = None
     terms_consent: bool
     provider_consent: bool = False          # allow a care provider's summary view
