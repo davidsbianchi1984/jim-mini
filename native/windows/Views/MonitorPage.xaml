@@ -52,6 +52,54 @@
                                FontSize="11" TextWrapping="Wrap" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
+
+            <!-- [0039]: guidance that went out gets asked about. Read from
+                 /followup rather than the monitor reply, so a question opened
+                 in an earlier session is still asked. -->
+            <Border x:Name="FollowupCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1" CornerRadius="16"
+                    Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="FollowupQuestion" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="FollowupAbout" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="12" TextWrapping="Wrap" />
+                    <TextBox x:Name="FollowupNote" PlaceholderText="Anything you want to add (optional)" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Content="It helped" Click="OnFollowupHelped"
+                                Background="{StaticResource JimGreenBrush}" Foreground="Black" />
+                        <Button Content="It did not" Click="OnFollowupDidNot"
+                                Background="{StaticResource JimAmberBrush}" Foreground="Black" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="AnsweredCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1" CornerRadius="16"
+                    Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="AnsweredTitle" FontWeight="Bold" FontSize="16" />
+                    <TextBlock x:Name="AnsweredNext" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="12" TextWrapping="Wrap" />
+                    <!-- The spec's second door: not a tier, a list of people. -->
+                    <ItemsControl x:Name="LiveOptions">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,3">
+                                    <TextBlock Text="{Binding Who}" FontWeight="Bold" FontSize="14"
+                                               Foreground="{StaticResource JimTxtBrush}" />
+                                    <TextBlock Text="{Binding Channel}" FontSize="12"
+                                               Foreground="{StaticResource JimBrandABrush}" />
+                                    <TextBlock Text="{Binding Note}" FontSize="11" TextWrapping="Wrap"
+                                               Foreground="{StaticResource JimT3Brush}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="LiveNote" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

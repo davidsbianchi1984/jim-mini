@@ -44,6 +44,10 @@ import app.jim.guardian.ApiClient
 import app.jim.guardian.Goal
 import app.jim.guardian.Habit
 import app.jim.guardian.LanguageInfo
+import app.jim.guardian.AdaptationProfile
+import app.jim.guardian.AnonymityPosture
+import app.jim.guardian.FollowupAnswered
+import app.jim.guardian.OpenFollowup
 import app.jim.guardian.CommunityPlace
 import app.jim.guardian.CommunityRoom
 import app.jim.guardian.CommunityView
@@ -236,6 +240,8 @@ fun OverviewScreen(vm: GuardianViewModel) {
         }
         ModelCard(vm)
         LanguageCard(vm)
+        AdaptationCard(vm)
+        AnonymityCard(vm)
         ImproveCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Jim.Line)) {
@@ -253,6 +259,21 @@ fun MonitorScreen(vm: GuardianViewModel) {
     var stress by remember { mutableFloatStateOf(0.2f) }
     var busy by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<MonitorResult?>(null) }
+    // Spec [0039]: guidance that went out gets asked about. Read from
+    // /followup rather than the monitor reply, so a question opened in an
+    // earlier session is still asked instead of being silently dropped.
+    var open by remember { mutableStateOf<List<OpenFollowup>>(emptyList()) }
+    var answered by remember { mutableStateOf<FollowupAnswered?>(null) }
+    var note by remember { mutableStateOf("") }
+
+    fun reloadFollowups() {
+        val uid = vm.uid ?: return
+        val token = vm.token ?: return
+        vm.call({ ApiClient.openFollowups(uid, token) }) { r ->
+            open = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) { reloadFollowups() }
 
     screenScroll {
         Text("Live Monitoring", color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -280,6 +301,54 @@ fun MonitorScreen(vm: GuardianViewModel) {
                     Text(it.content, color = Jim.Txt, fontSize = 14.sp)
                     GuidanceExtras(it)
                 }
+            }
+        }
+
+        // ---- [0039]: did that help? ----
+        open.firstOrNull()?.let { f ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(f.question, color = Jim.Txt, fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold)
+                Text("About the guidance for ${f.condition}.",
+                    color = Jim.T2, fontSize = 12.sp)
+                labeledField("", note, "Anything you want to add (optional)") { note = it }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    listOf("It helped" to true, "It did not" to false).forEach { (label, helped) ->
+                        SmallAction(label, enabled = !busy) {
+                            val uid = vm.uid ?: return@SmallAction
+                            val token = vm.token ?: return@SmallAction
+                            busy = true
+                            vm.call({ ApiClient.answerFollowup(uid, token, helped, note) }) { r ->
+                                busy = false
+                                answered = r.getOrNull()
+                                note = ""
+                                reloadFollowups()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        answered?.let { a ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(if (a.helped == true) "Monitoring resumes" else "Bringing in a person",
+                    color = if (a.helped == true) Jim.Green else Jim.Amber,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                a.next?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
+                // The spec's second door: not a tier, a list of people.
+                a.options.forEach { op ->
+                    Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                        Text(op.name ?: op.kind.replace('_', ' '),
+                            color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        op.channel?.takeIf { it.isNotBlank() }?.let {
+                            Text(it, color = Jim.BrandA, fontSize = 12.sp)
+                        }
+                        op.note?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
+                    }
+                }
+                a.liveNote?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
+                a.reason?.let { Text(it, color = Jim.T3, fontSize = 12.sp) }
             }
         }
     }
@@ -1878,3 +1947,105 @@ private fun roomDetail(room: CommunityRoom): String {
 private fun placeName(place: CommunityPlace): String =
     if (place.region.isNullOrBlank()) place.locality
     else "${place.locality}, ${place.region}"
+
+// ---- What JIM has learned about you (claim 11) ----
+
+/**
+ * The user-specific adaptation profile, in plain terms: counts off this user's
+ * own history rather than a score, and a statement of where it came from —
+ * nothing was sent to a model vendor to build it, and the sealed copy lives in
+ * their own vault.
+ */
+@Composable
+private fun AdaptationCard(vm: GuardianViewModel) {
+    var profile by remember { mutableStateOf<AdaptationProfile?>(null) }
+    var busy by remember { mutableStateOf(false) }
+
+    fun reload() {
+        val uid = vm.uid ?: return
+        val token = vm.token ?: return
+        vm.call({ ApiClient.adaptation(uid, token) }) { r -> profile = r.getOrNull() }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("What JIM has learned about you", color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        val p = profile
+        if (p != null && p.built) {
+            Text("Confidence ${(p.confidence * 100).roundToInt()}% — earned from " +
+                 "${p.evidenceItems} things already on your record.",
+                color = Jim.T2, fontSize = 12.sp)
+            p.whatHelps.entries.sortedBy { it.key }.forEach { (condition, tally) ->
+                if (tally.answered > 0) {
+                    Row(Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(condition.replace('_', ' '), color = Jim.Txt, fontSize = 14.sp)
+                        Text("helped ${tally.helped} of ${tally.answered}",
+                            color = if (tally.helped * 2 >= tally.answered) Jim.Green
+                                    else Jim.Amber,
+                            fontSize = 12.sp)
+                    }
+                }
+            }
+            p.tone?.let { Text("Tone you asked for: $it", color = Jim.T3, fontSize = 11.sp) }
+            p.occupation?.let { Text("Work you named: $it", color = Jim.T3, fontSize = 11.sp) }
+            if (p.vaulted) {
+                Text("Sealed in your own vault.", color = Jim.Green, fontSize = 11.sp)
+            }
+            p.method?.let { Text(it, color = Jim.T3, fontSize = 10.sp) }
+        } else {
+            Text(p?.note ?: "No profile yet — it is built from the history already " +
+                 "on record, here on your own device's backend.",
+                color = Jim.T2, fontSize = 12.sp)
+        }
+        SmallAction(if (busy) "Rebuilding…" else "Rebuild from my history",
+            enabled = !busy) {
+            val uid = vm.uid ?: return@SmallAction
+            val token = vm.token ?: return@SmallAction
+            busy = true
+            vm.call({ ApiClient.rebuildAdaptation(uid, token) }) { r ->
+                busy = false
+                profile = r.getOrNull() ?: profile
+            }
+        }
+    }
+}
+
+// ---- Your name here (spec [0031] / box 212) ----
+
+/**
+ * The anonymity posture as a tradeoff rather than a switch: what the choice
+ * keeps and what it costs, so it reads as a decision and not a surprise.
+ */
+@Composable
+private fun AnonymityCard(vm: GuardianViewModel) {
+    var posture by remember { mutableStateOf<AnonymityPosture?>(null) }
+
+    LaunchedEffect(Unit) {
+        val uid = vm.uid
+        val token = vm.token
+        if (uid != null && token != null) {
+            vm.call({ ApiClient.anonymity(uid, token) }) { r -> posture = r.getOrNull() }
+        }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Your name here", color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        val p = posture
+        if (p == null) {
+            Text("Loading…", color = Jim.T3, fontSize = 12.sp)
+        } else {
+            Text(if (p.anonymous) "You are known here as ${p.knownAs ?: "a pseudonym"}."
+                 else "You are enrolled under your own name.",
+                color = Jim.Txt, fontSize = 14.sp)
+            p.keeps.forEach { Text("✓ $it", color = Jim.Green, fontSize = 12.sp) }
+            p.costs.forEach { Text("• $it", color = Jim.Amber, fontSize = 12.sp) }
+            if (p.costs.isEmpty() && p.anonymous) {
+                Text("A legal name is on record for responders.",
+                    color = Jim.T3, fontSize = 11.sp)
+            }
+        }
+    }
+}

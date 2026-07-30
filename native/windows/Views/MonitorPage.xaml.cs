@@ -3,12 +3,91 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace JimGuardian.Views;
 
 public sealed partial class MonitorPage : Page
 {
+    public sealed class LiveOptionVm
+    {
+        public string Who { get; init; } = "";
+        public string Channel { get; init; } = "";
+        public string Note { get; init; } = "";
+    }
+
     public MonitorPage() => InitializeComponent();
+
+    protected override async void OnNavigatedTo(NavigationEventArgs e) =>
+        await LoadFollowups();
+
+    // MARK: [0039] — the effectiveness loop
+
+    /// <summary>
+    /// Ask about guidance that is still waiting on an answer, whether it went
+    /// out in this session or an earlier one — a question the app drops is a
+    /// question nobody ever answers.
+    /// </summary>
+    private async System.Threading.Tasks.Task LoadFollowups()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var state = await ApiClient.Shared.Followups(s.Uid, s.Token);
+            var open = state.Open.FirstOrDefault();
+            if (open is null)
+            {
+                FollowupCard.Visibility = Visibility.Collapsed;
+                return;
+            }
+            FollowupQuestion.Text = open.Question;
+            FollowupAbout.Text = $"About the guidance for {open.Condition}.";
+            FollowupCard.Visibility = Visibility.Visible;
+        }
+        catch (Exception) { FollowupCard.Visibility = Visibility.Collapsed; }
+    }
+
+    private async void OnFollowupHelped(object sender, RoutedEventArgs e) =>
+        await Answer(true);
+
+    private async void OnFollowupDidNot(object sender, RoutedEventArgs e) =>
+        await Answer(false);
+
+    /// "It did not" is not a complaint filed away: the ladder runs again and the
+    /// people who can help are named.
+    private async System.Threading.Tasks.Task Answer(bool helped)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var a = await ApiClient.Shared.AnswerFollowup(
+                s.Uid, s.Token, helped, FollowupNote.Text);
+            FollowupNote.Text = "";
+
+            AnsweredTitle.Text = a.Helped == true
+                ? "Monitoring resumes" : "Bringing in a person";
+            AnsweredTitle.Foreground = new SolidColorBrush(a.Helped == true
+                ? Microsoft.UI.Colors.MediumSpringGreen
+                : Microsoft.UI.Colors.Orange);
+            AnsweredNext.Text = a.Next ?? a.Reason ?? "";
+
+            LiveOptions.ItemsSource = (a.Live?.Options ?? Array.Empty<LiveOption>())
+                .Select(o => new LiveOptionVm
+                {
+                    Who = string.IsNullOrEmpty(o.Name)
+                        ? o.Kind.Replace('_', ' ') : o.Name!,
+                    Channel = o.Channel ?? "",
+                    Note = o.Note ?? "",
+                }).ToList();
+            LiveNote.Text = a.Live?.Note ?? "";
+            AnsweredCard.Visibility = Visibility.Visible;
+
+            await LoadFollowups();
+        }
+        catch (Exception) { /* the send path already surfaces errors */ }
+    }
 
     private async void OnSend(object sender, RoutedEventArgs e)
     {

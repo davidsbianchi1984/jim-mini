@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -313,6 +314,64 @@ public record ImproveState(
 /// Async client for the JIM Guardian backend. Windows reaches the local dev
 /// server directly on 127.0.0.1.
 /// </summary>
+// MARK: the effectiveness loop, the user-specific model, and the name
+
+/// Spec [0039]: guidance that went out gets asked about.
+public record OpenFollowup(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("condition")] string Condition,
+    [property: JsonPropertyName("severity")] string? Severity,
+    [property: JsonPropertyName("question")] string Question);
+
+public record FollowupState(
+    [property: JsonPropertyName("open")] OpenFollowup[] Open);
+
+public record LiveOption(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("name")] string? Name,
+    [property: JsonPropertyName("channel")] string? Channel,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record LiveAssistance(
+    [property: JsonPropertyName("options")] LiveOption[] Options,
+    [property: JsonPropertyName("contact_alerted")] bool ContactAlerted,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record FollowupAnswered(
+    [property: JsonPropertyName("answered")] bool Answered,
+    [property: JsonPropertyName("reason")] string? Reason,
+    [property: JsonPropertyName("helped")] bool? Helped,
+    [property: JsonPropertyName("next")] string? Next,
+    [property: JsonPropertyName("live_assistance")] LiveAssistance? Live);
+
+public record HelpTally(
+    [property: JsonPropertyName("helped")] int Helped,
+    [property: JsonPropertyName("answered")] int Answered);
+
+public record AdaptationDetail(
+    [property: JsonPropertyName("what_helps")] Dictionary<string, HelpTally>? WhatHelps,
+    [property: JsonPropertyName("tone")] string? Tone,
+    [property: JsonPropertyName("occupation")] string? Occupation,
+    [property: JsonPropertyName("method")] string? Method);
+
+/// Claim 11's user-specific model, derived locally from this user's own stored
+/// history — nothing was sent to a model vendor to build it.
+public record AdaptationProfile(
+    [property: JsonPropertyName("built")] bool Built,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("evidence_items")] int EvidenceItems,
+    [property: JsonPropertyName("confidence")] double Confidence,
+    [property: JsonPropertyName("vaulted")] bool Vaulted,
+    [property: JsonPropertyName("profile")] AdaptationDetail? Profile);
+
+/// What anonymity keeps and what it costs, said out loud.
+public record AnonymityPosture(
+    [property: JsonPropertyName("anonymous")] bool Anonymous,
+    [property: JsonPropertyName("known_as")] string? KnownAs,
+    [property: JsonPropertyName("legal_name_on_record")] bool LegalNameOnRecord,
+    [property: JsonPropertyName("keeps")] string[] Keeps,
+    [property: JsonPropertyName("costs")] string[] Costs);
+
 // MARK: the community door (FIG. 2 boxes 222-226)
 
 public record CommunityRoom(
@@ -732,5 +791,32 @@ public sealed class ApiClient
             Post($"/community/{uid}/visits", new { room_id = roomId }, token));
         res.EnsureSuccessStatusCode();
     }
+
+
+    // MARK: Followup, adaptation and anonymity
+
+    public Task<FollowupState> Followups(string uid, string token) =>
+        Send<FollowupState>(Get($"/followup/{uid}", token));
+
+    /// <summary>
+    /// helped=false is not a complaint filed away: it re-runs the escalation
+    /// ladder with the ineffective-guidance rung and returns the people who can
+    /// help right now.
+    /// </summary>
+    public Task<FollowupAnswered> AnswerFollowup(string uid, string token,
+                                                 bool helped, string? note) =>
+        Send<FollowupAnswered>(Post($"/followup/{uid}",
+            string.IsNullOrWhiteSpace(note)
+                ? new { helped } : new { helped, note }, token));
+
+    public Task<AdaptationProfile> Adaptation(string uid, string token) =>
+        Send<AdaptationProfile>(Get($"/adaptation/{uid}", token));
+
+    /// <summary>Rebuild from the history already on record — local work only.</summary>
+    public Task<AdaptationProfile> RebuildAdaptation(string uid, string token) =>
+        Send<AdaptationProfile>(Post($"/adaptation/{uid}", new { }, token));
+
+    public Task<AnonymityPosture> Anonymity(string uid, string token) =>
+        Send<AnonymityPosture>(Get($"/anonymity/{uid}", token));
 
 }
