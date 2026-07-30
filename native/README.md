@@ -30,8 +30,26 @@ confirm-gated and no shock is ever delivered — and even with it, a shock
 only ever follows the AED's analysis, never the robot's judgement), and the
 Medical ID card (`/medical-id/qr/{uid}`) · **Connect** — consented data
 sources (`/sources/{uid}`), social-platform connections (`/social/{uid}` +
-collect/publish), and the connected-apps catalog (`/connectors/catalog`,
-`/apps/{uid}` + collect)
+collect/publish), the connected-apps catalog (`/connectors/catalog`,
+`/apps/{uid}` + collect), and **Community** — the door out to QRME's rooms
+and local places (`/community/{uid}` + visits, below)
+
+### Community — a door, not a copy
+
+The **Community** panel is the filing's FIG. 2 boxes 222–226: interact with
+others, moderated storage, community interaction, local events and forums in
+every language. None of it is built a second time in the shells. It exists in
+QRME, where the moderation, the rooms and the languages already are, so the
+panel opens a door and says so in the same breath — rooms link out to QRME
+under the user's own QRME identity, and the conversation stays there.
+
+Two details are deliberate. The **posture** list ("what JIM does not do":
+mirror the conversation here, post on your behalf, share your health data) is
+rendered from the booleans the server returns rather than typed out as
+reassurance, so the screen cannot drift from what the bridge does. And opening
+a room posts to `/community/{uid}/visits` **before** launching the browser: the
+visit note is the part that belongs to JIM, an event on the user's own
+timeline, and it records that a door was opened and nothing from inside it.
 
 On the phone form factors, Monitor, Check-in, and Coach sit behind a single
 **Care** tab (segmented on iOS, a `TabRow` on Android) so the bottom bar stays

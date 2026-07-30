@@ -313,6 +313,40 @@ struct MedicalCard: Decodable {
     struct EmergencyContact: Decodable { let name: String?; let phone: String? }
 }
 
+// MARK: The community door (FIG. 2 boxes 222–226)
+
+struct CommunityRoom: Decodable, Identifiable {
+    let id: String
+    let topic: String?
+    let channel: String?
+    let participants: Int?
+    let url: String?
+}
+
+struct CommunityPlace: Decodable, Identifiable {
+    let locality: String
+    let region: String?
+    let listings: Int?
+    var id: String { locality + (region ?? "") }
+}
+
+/// What JIM will and will not do with the community it points at. Stated as
+/// data rather than prose so the screen cannot drift from the behaviour.
+struct CommunityPosture: Decodable {
+    let mirrored_here: Bool
+    let posts_on_your_behalf: Bool
+    let health_data_shared: Bool
+}
+
+struct CommunityView: Decodable {
+    let qrme_url: String?
+    let language: String?
+    let rooms: [CommunityRoom]
+    let places: [CommunityPlace]
+    let note: String
+    let posture: CommunityPosture
+}
+
 struct ImproveReceipt: Decodable { let id: String; let status: String }
 
 struct ImproveItem: Decodable, Identifiable {
@@ -705,4 +739,21 @@ actor ApiClient {
             throw ApiError.http("revoke failed")
         }
     }
+
+    // MARK: Community — the door into QRME, and the visit note
+
+    /// Rooms and places as QRME serves them. JIM adds the language it knows
+    /// this user reads and the posture; it never mirrors the conversation.
+    func community(uid: String, token: String) async throws -> CommunityView {
+        try await request("/community/\(uid)", token: token)
+    }
+
+    /// Record that a door was opened — an event on the user's own timeline
+    /// and nothing else. No room contents cross back into JIM.
+    func noteCommunityVisit(uid: String, token: String, roomId: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/community/\(uid)/visits", method: "POST",
+                                     body: ["room_id": roomId], token: token)
+    }
+
 }

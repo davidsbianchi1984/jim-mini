@@ -1,5 +1,7 @@
 package app.jim.guardian.ui
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -41,6 +44,9 @@ import app.jim.guardian.ApiClient
 import app.jim.guardian.Goal
 import app.jim.guardian.Habit
 import app.jim.guardian.LanguageInfo
+import app.jim.guardian.CommunityPlace
+import app.jim.guardian.CommunityRoom
+import app.jim.guardian.CommunityView
 import app.jim.guardian.JournalItem
 import app.jim.guardian.MedicalCard
 import app.jim.guardian.MedicalCardIssued
@@ -1583,7 +1589,7 @@ private fun FamilyPanel(vm: GuardianViewModel) {
 @Composable
 fun ConnectScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Sources", "Social", "Apps")
+    val tabs = listOf("Sources", "Social", "Apps", "Community")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -1595,7 +1601,8 @@ fun ConnectScreen(vm: GuardianViewModel) {
         when (tab) {
             0 -> SourcesPanel(vm)
             1 -> SocialPanel(vm)
-            else -> AppsPanel(vm)
+            2 -> AppsPanel(vm)
+            else -> CommunityPanel(vm)
         }
     }
 }
@@ -1748,3 +1755,126 @@ private fun smallAction(text: String, onClick: () -> Unit) {
         Text(text, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }
+
+// ---- Community: the door out, and what stays behind it ----
+
+/**
+ * FIG. 2 boxes 222-226: interact with others, moderated storage, community
+ * interaction, local events and forums in every language.
+ *
+ * None of that is built a second time here. It exists in QRME, with the
+ * moderation, the rooms and the languages already in place, so this panel is a
+ * door rather than a copy and says so in the same breath as it opens. The
+ * posture is rendered from the server's own booleans instead of being retyped
+ * as reassurance, so the screen cannot claim more than the bridge does.
+ */
+@Composable
+private fun CommunityPanel(vm: GuardianViewModel) {
+    val context = LocalContext.current
+    var view by remember { mutableStateOf<CommunityView?>(null) }
+    var opened by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        val uid = vm.uid ?: return
+        val token = vm.token ?: return
+        vm.call({ ApiClient.community(uid, token) }) { r ->
+            r.fold({ view = it }, { error = it.message })
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Community", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        val v = view
+        if (v == null) {
+            Text("Loading the door…", color = Jim.T3, fontSize = 12.sp)
+        } else {
+            Text(v.note, color = Jim.T2, fontSize = 12.sp)
+            v.language?.let {
+                Text("Rooms are listed as QRME serves them; you read $it.",
+                    color = Jim.T3, fontSize = 11.sp)
+            }
+        }
+    }
+
+    view?.let { v ->
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("What JIM does not do", color = Jim.Txt, fontSize = 14.sp,
+                fontWeight = FontWeight.Bold)
+            PostureRow("Mirror the conversation here", v.posture.mirroredHere)
+            PostureRow("Post on your behalf", v.posture.postsOnYourBehalf)
+            PostureRow("Share your health data", v.posture.healthDataShared)
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Rooms", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            if (v.rooms.isEmpty()) {
+                Text("No rooms open right now. A community shelf that cannot " +
+                     "load is a quiet screen, not an error.",
+                    color = Jim.T3, fontSize = 12.sp)
+            }
+            v.rooms.forEach { room ->
+                Row(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(room.topic ?: room.id, color = Jim.Txt, fontSize = 13.sp)
+                        Text(roomDetail(room), color = Jim.T3, fontSize = 10.sp)
+                    }
+                    room.url?.let { url ->
+                        SmallAction("Open") {
+                            val uid = vm.uid
+                            val token = vm.token
+                            if (uid != null && token != null) {
+                                vm.call({ ApiClient.noteCommunityVisit(uid, token, room.id) }) { r ->
+                                    r.fold({ opened = room.id }, { error = it.message })
+                                }
+                            }
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        }
+                    }
+                }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Near you", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            if (v.places.isEmpty()) {
+                Text("No places claimed yet.", color = Jim.T3, fontSize = 12.sp)
+            }
+            v.places.forEach { place ->
+                Row(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(placeName(place), color = Jim.Txt, fontSize = 13.sp)
+                    Text("${place.listings}", color = Jim.T2, fontSize = 12.sp)
+                }
+            }
+        }
+    }
+
+    opened?.let {
+        Text("Noted that you opened $it — the visit, and nothing from inside it.",
+            color = Jim.Green, fontSize = 12.sp)
+    }
+    error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+}
+
+@Composable
+private fun PostureRow(label: String, happens: Boolean) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(if (happens) "•" else "✓",
+            color = if (happens) Jim.Amber else Jim.Green, fontSize = 12.sp)
+        Text(label, color = Jim.T2, fontSize = 12.sp)
+    }
+}
+
+private fun roomDetail(room: CommunityRoom): String {
+    val bits = mutableListOf<String>()
+    room.channel?.let { bits.add(it) }
+    if (room.participants > 0) bits.add("${room.participants} here")
+    return if (bits.isEmpty()) room.id else bits.joinToString(" · ")
+}
+
+private fun placeName(place: CommunityPlace): String =
+    if (place.region.isNullOrBlank()) place.locality
+    else "${place.locality}, ${place.region}"

@@ -6,6 +6,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The community bridge reaches the native shells.** The door out to
+QRME's rooms and local places shipped in the web console only; iOS,
+Android and Windows had no way to it at all. All three gain a
+**Community** panel alongside Sources / Social / Apps in Connect —
+FIG. 2's boxes 222–226, opened rather than reimplemented.
+
+Two details are deliberate. The "what JIM does not do" list — mirror the
+conversation here, post on your behalf, share your health data — is
+rendered from the booleans the server returns rather than typed out as
+reassurance, so the screen cannot drift from what the bridge actually
+does. And opening a room posts the visit to `/community/{uid}/visits`
+*before* launching the browser: the note is the part that belongs to JIM,
+an event on the user's own timeline recording that a door was opened and
+nothing from inside it.
+
+**Fixed** — the Windows palette had no `JimT3Brush`. The dimmest text
+tier exists in the Android and iOS themes but the desktop resources
+stopped at `T2`, so any page reaching for it would have failed to load
+its resources rather than merely looking wrong. Added, matching the
+other two shells.
+
 **Two things JIM knew but never showed you.** The user-specific model
 and the anonymity posture were both real in the backend and invisible in
 the app. Settings now carries them. **What JIM has learned about you**

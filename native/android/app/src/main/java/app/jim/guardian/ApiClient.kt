@@ -69,6 +69,19 @@ data class RobotCmdResult(val status: String, val note: String?, val instruction
                           val pacePerMinute: Int?)
 data class WaiverState(val signed: Boolean, val signature: String?, val terms: List<String>)
 data class MedicalCardIssued(val token: String, val qrSvgUrl: String)
+// ---- the community door (FIG. 2 boxes 222-226) ----
+
+data class CommunityRoom(val id: String, val topic: String?, val channel: String?,
+                         val participants: Int, val url: String?)
+data class CommunityPlace(val locality: String, val region: String?, val listings: Int)
+/** What JIM will and will not do with the community it points at, as data
+ *  rather than prose, so a screen cannot claim more than the bridge does. */
+data class CommunityPosture(val mirroredHere: Boolean, val postsOnYourBehalf: Boolean,
+                            val healthDataShared: Boolean)
+data class CommunityView(val qrmeUrl: String?, val language: String?,
+                         val rooms: List<CommunityRoom>, val places: List<CommunityPlace>,
+                         val note: String, val posture: CommunityPosture)
+
 data class SourceRow(val source: String, val consented: Boolean)
 data class SocialConn(val id: String, val platform: String, val direction: String, val handle: String?)
 data class CatalogApp(val provider: String, val app: String, val label: String)
@@ -641,4 +654,46 @@ object ApiClient {
         val tally = tallyObj.keys().asSequence().associateWith { tallyObj.optInt(it) }
         return ImproveState(mine, tally, o.optInt("total"))
     }
+
+    // ---- community: the door into QRME, and the visit note ----
+
+    /**
+     * Rooms and places as QRME serves them, plus the language JIM knows this
+     * user reads. JIM never mirrors the conversation — the posture in the
+     * reply says so, and this maps it through rather than restating it.
+     */
+    suspend fun community(uid: String, token: String): CommunityView {
+        val o = request("/community/$uid", token = token)
+        val roomArr = o.optJSONArray("rooms")
+        val rooms = (0 until (roomArr?.length() ?: 0)).map { i ->
+            val r = roomArr!!.getJSONObject(i)
+            CommunityRoom(r.getString("id"),
+                if (r.isNull("topic")) null else r.optString("topic"),
+                if (r.isNull("channel")) null else r.optString("channel"),
+                r.optInt("participants"),
+                if (r.isNull("url")) null else r.optString("url"))
+        }
+        val placeArr = o.optJSONArray("places")
+        val places = (0 until (placeArr?.length() ?: 0)).map { i ->
+            val pl = placeArr!!.getJSONObject(i)
+            CommunityPlace(pl.optString("locality", ""),
+                if (pl.isNull("region")) null else pl.optString("region"),
+                pl.optInt("listings"))
+        }
+        val po = o.optJSONObject("posture") ?: JSONObject()
+        return CommunityView(
+            if (o.isNull("qrme_url")) null else o.optString("qrme_url"),
+            if (o.isNull("language")) null else o.optString("language"),
+            rooms, places, o.optString("note", ""),
+            CommunityPosture(po.optBoolean("mirrored_here"),
+                po.optBoolean("posts_on_your_behalf"),
+                po.optBoolean("health_data_shared")))
+    }
+
+    /** Record that a door was opened — the visit, and nothing from inside it. */
+    suspend fun noteCommunityVisit(uid: String, token: String, roomId: String) {
+        request("/community/$uid/visits", "POST",
+            JSONObject().put("room_id", roomId), token)
+    }
+
 }

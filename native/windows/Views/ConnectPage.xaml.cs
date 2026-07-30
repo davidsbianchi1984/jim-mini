@@ -27,6 +27,27 @@ public sealed partial class ConnectPage : Page
             Collect ? Visibility.Collapsed : Visibility.Visible;
     }
 
+    public sealed class PostureVm
+    {
+        public string Line { get; init; } = "";
+    }
+
+    public sealed class RoomVm
+    {
+        public string Id { get; init; } = "";
+        public string Title { get; init; } = "";
+        public string Detail { get; init; } = "";
+        public string? Url { get; init; }
+        public Visibility OpenVisibility =>
+            string.IsNullOrEmpty(Url) ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    public sealed class PlaceVm
+    {
+        public string Name { get; init; } = "";
+        public int Listings { get; init; }
+    }
+
     public sealed class CatalogVm
     {
         public string Provider { get; init; } = "";
@@ -61,6 +82,7 @@ public sealed partial class ConnectPage : Page
         await ReloadSources();
         await ReloadSocial();
         await ReloadApps();
+        await ReloadCommunity();
     }
 
     // -- Sources --
@@ -246,4 +268,100 @@ public sealed partial class ConnectPage : Page
 
     private static string Pretty(string s) =>
         string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s[1..].Replace('_', ' ');
+
+    // -- Community: the door into QRME, and the visit note --
+
+    /// <summary>
+    /// FIG. 2 boxes 222-226 — interact with others, moderated storage,
+    /// community interaction, local events and forums in every language.
+    ///
+    /// None of it is rebuilt here. It lives in QRME, where the moderation, the
+    /// rooms and the languages already are, so this pivot is a door rather than
+    /// a copy. The posture list is generated from the server's own booleans
+    /// instead of being typed out as reassurance, so the page cannot claim more
+    /// than the bridge actually does.
+    /// </summary>
+    private async System.Threading.Tasks.Task ReloadCommunity()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var v = await ApiClient.Shared.Community(s.Uid, s.Token);
+            CommunityNote.Text = v.Note;
+            CommunityLanguage.Text = v.Language is { Length: > 0 } lang
+                ? $"Rooms are listed as QRME serves them; you read {lang}."
+                : "";
+
+            PostureList.ItemsSource = new[]
+            {
+                Posture("Mirror the conversation here", v.Posture.MirroredHere),
+                Posture("Post on your behalf", v.Posture.PostsOnYourBehalf),
+                Posture("Share your health data", v.Posture.HealthDataShared),
+            };
+
+            var rooms = v.Rooms.Select(r => new RoomVm
+            {
+                Id = r.Id,
+                Title = string.IsNullOrEmpty(r.Topic) ? r.Id : r.Topic!,
+                Detail = RoomDetail(r),
+                Url = r.Url,
+            }).ToList();
+            RoomList.ItemsSource = rooms;
+            RoomsEmpty.Visibility = rooms.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            var places = v.Places.Select(pl => new PlaceVm
+            {
+                Name = string.IsNullOrEmpty(pl.Region)
+                    ? pl.Locality : $"{pl.Locality}, {pl.Region}",
+                Listings = pl.Listings,
+            }).ToList();
+            PlaceList.ItemsSource = places;
+            PlacesEmpty.Visibility = places.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch (Exception ex) { ShowCommunityError(ex.Message); }
+    }
+
+    private static PostureVm Posture(string label, bool happens) =>
+        new() { Line = (happens ? "• " : "\u2713 ") + label };
+
+    private static string RoomDetail(CommunityRoom room)
+    {
+        var bits = new System.Collections.Generic.List<string>();
+        if (!string.IsNullOrEmpty(room.Channel)) bits.Add(room.Channel!);
+        if (room.Participants > 0) bits.Add($"{room.Participants} here");
+        return bits.Count == 0 ? room.Id : string.Join(" · ", bits);
+    }
+
+    /// The visit is noted first, then the browser opens — the note is the part
+    /// that belongs to JIM, and it should not depend on the launch succeeding.
+    private async void OnOpenRoom(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button b || b.Tag is not string roomId) return;
+        if (RoomList.ItemsSource is not System.Collections.Generic.List<RoomVm> rooms) return;
+        var room = rooms.FirstOrDefault(r => r.Id == roomId);
+        if (room?.Url is null) return;
+
+        var s = AppState.Current;
+        if (s.Uid is not null && s.Token is not null)
+        {
+            try
+            {
+                await ApiClient.Shared.NoteCommunityVisit(s.Uid, s.Token, roomId);
+                VisitStatus.Text = $"Noted that you opened {roomId} — the visit, "
+                                 + "and nothing from inside it.";
+                VisitStatus.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex) { ShowCommunityError(ex.Message); }
+        }
+        if (Uri.TryCreate(room.Url, UriKind.Absolute, out var uri))
+            await Windows.System.Launcher.LaunchUriAsync(uri);
+    }
+
+    private void ShowCommunityError(string message)
+    {
+        CommunityError.Text = message;
+        CommunityError.Visibility = Visibility.Visible;
+    }
+
 }

@@ -15,6 +15,10 @@
             <Color x:Key="JimLine">#FF26314E</Color>
             <Color x:Key="JimTxt">#FFEEF1F7</Color>
             <Color x:Key="JimT2">#FF8A94AD</Color>
+            <!-- The dimmest text tier, matching Jim.T3 in the Android theme
+                 and Theme.t3 on iOS. The other two shells always had it; the
+                 desktop palette stopped at T2. -->
+            <Color x:Key="JimT3">#FF626D88</Color>
             <Color x:Key="JimBrandA">#FF7C5CFF</Color>
             <Color x:Key="JimGreen">#FF43E08A</Color>
             <Color x:Key="JimAmber">#FFF7B731</Color>
@@ -24,6 +28,7 @@
             <SolidColorBrush x:Key="JimLineBrush" Color="{StaticResource JimLine}" />
             <SolidColorBrush x:Key="JimTxtBrush" Color="{StaticResource JimTxt}" />
             <SolidColorBrush x:Key="JimT2Brush" Color="{StaticResource JimT2}" />
+            <SolidColorBrush x:Key="JimT3Brush" Color="{StaticResource JimT3}" />
             <SolidColorBrush x:Key="JimBrandABrush" Color="{StaticResource JimBrandA}" />
             <SolidColorBrush x:Key="JimGreenBrush" Color="{StaticResource JimGreen}" />
             <SolidColorBrush x:Key="JimAmberBrush" Color="{StaticResource JimAmber}" />
