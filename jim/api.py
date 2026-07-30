@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 
 from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
-               careteam,
+               careteam, community,
                catalog,
                coach,
                mailer,
@@ -37,7 +37,7 @@ from .models import (
     CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
-    FollowupAnswer, GuidanceFeedback, HabitCreate,
+    CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
@@ -1644,6 +1644,34 @@ def create_app(qrme_client: QRMEClient | None = None,
                         request: Request) -> dict:
         _user_or_404(user_id, request)
         return guardian.set_personality(user_id, body.model_dump())
+
+    # ---- the community door (FIG. 2 boxes 222–226) -------------------------
+
+    @app.get("/community/{user_id}")
+    def community_view(user_id: str, request: Request,
+                       locality: str | None = None) -> dict:
+        """QRME's rooms, forums and places, shown through the tandem — the
+        community P001's spec text promises, kept where its moderation and
+        its languages already live. 409 without a QRME endpoint."""
+        _user_or_404(user_id, request)
+        if app.state.qrme is None:
+            raise HTTPException(
+                409, "no QRME endpoint configured (set JIM_QRME_URL) — the "
+                     "community lives in QRME and JIM shows the door")
+        return community.view(user_id, app.state.qrme, locality=locality)
+
+    @app.post("/community/{user_id}/visits", status_code=201)
+    def community_visit(user_id: str, body: CommunityVisit,
+                        request: Request) -> dict:
+        """Note that a door was opened: the fact, on your own timeline, and
+        never anything from inside the room."""
+        _user_or_404(user_id, request)
+        return community.note_visit(user_id, body.room_id)
+
+    @app.get("/community/{user_id}/visits")
+    def community_visits(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return community.history(user_id)
 
     @app.get("/anonymity/{user_id}")
     def anonymity(user_id: str, request: Request) -> dict:

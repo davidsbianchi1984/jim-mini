@@ -328,6 +328,13 @@ class PersonalityUpdate(BaseModel):
     occupation: str | None = None
 
 
+class CommunityVisit(BaseModel):
+    """FIG. 2 boxes 222–226: a community door was opened. Only the fact is
+    kept — the conversation itself stays in QRME (jim/community.py)."""
+
+    room_id: str
+
+
 class FollowupAnswer(BaseModel):
     """Spec [0039]: whether the counseling that was delivered actually
     worked. ``helped=False`` escalates toward a live person."""

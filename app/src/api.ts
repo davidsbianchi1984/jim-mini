@@ -111,6 +111,18 @@ export interface FollowupResult {
   live_assistance?: { options: LiveAssistanceOption[]; contact_alerted: boolean;
     note: string } | null;
 }
+export interface CommunityRoom {
+  id: string; topic: string; channel: string; participants: number;
+  url: string | null;
+}
+export interface CommunityView {
+  qrme_url: string | null; language: string;
+  rooms: CommunityRoom[];
+  places: { locality: string; listings: number }[];
+  note: string;
+  posture: { mirrored_here: boolean; posts_on_your_behalf: boolean;
+             health_data_shared: boolean };
+}
 export interface MonitorResult {
   detected: boolean; condition?: string; severity?: string; reason?: string;
   guidance?: Guidance | null; escalation?: unknown; forecast?: unknown;
@@ -424,6 +436,13 @@ export const api = {
   // a live person and comes back with the humans reachable right now.
   answerFollowup: (uid: string, body: { helped: boolean; note?: string }, token: string) =>
     req<FollowupResult>(`/followup/${uid}`, { method: "POST", body, token }),
+  // FIG. 2 boxes 222-226: the community door. Rooms and places come from
+  // QRME through the tandem; nothing is mirrored into JIM.
+  community: (uid: string, token: string, locality?: string) =>
+    req<CommunityView>(`/community/${uid}` + (locality ? `?locality=${encodeURIComponent(locality)}` : ""), { token }),
+  communityVisit: (uid: string, room_id: string, token: string) =>
+    req<{ noted: boolean; room_id: string; stored: string }>(
+      `/community/${uid}/visits`, { method: "POST", body: { room_id }, token }),
   checkin: (uid: string, body: { mood: number; energy: number; stress?: number; note?: string }, token: string) =>
     req<CheckinResult>(`/checkin/${uid}`, { method: "POST", body, token }),
   coach: (uid: string, body: { area: string; message: string }, token: string) =>
