@@ -222,6 +222,18 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .vg-close { margin-left: auto; background: none; border: 0; color: #ffb3c0;
   font-size: 18px; line-height: 1; cursor: pointer; }
 
+/* The error-reporting notice: shown once, before anything is sent. Calm on
+   purpose — the version guard above is an alarm, this is a question. */
+.problem-notice { margin: 12px 0; padding: 14px 16px; border-radius: 12px;
+  background: #14213a; border: 1px solid #2f4a72; color: #dbe6f7;
+  font-size: 13px; line-height: 1.5; }
+.problem-notice p { margin: 0 0 10px; }
+.problem-notice code { background: #0d1729; padding: 1px 5px;
+  border-radius: 5px; }
+.problem-notice pre { margin-top: 10px; max-height: 260px; overflow: auto;
+  background: #0d1729; padding: 10px; border-radius: 8px; }
+.pn-yes { font-weight: 700; }
+
 /* The voice orb — the conversation made visible, ChatGPT-style: one
    breathing sphere while JIM listens, a second colour while it speaks.
    A veil rather than a corner widget, because a voice conversation IS the

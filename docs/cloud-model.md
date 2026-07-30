@@ -145,9 +145,20 @@ Unset, and the installer has nowhere to send. That is a stronger default than a
 flag — there is no address for a later mistake to switch on. When an address is
 set, the console posts once at launch, alongside the update check, and swallows
 every failure; a diagnostic that can delay a launch has stopped being worth
-having. The Settings card shows the exact payload before it goes, from the same
-function that builds it, and turns sending off for anyone who would rather it
-did not happen.
+having.
+
+**Nothing is sent before the person has been asked.** Sending is opt-*out*,
+which only means something if the opting-out can happen before the first
+report rather than being discovered afterwards in a panel nobody opened. So
+`sendProblems` refuses until a first-run notice has been answered, and that
+notice renders the actual payload rather than describing it — the claim and
+the object are the same thing, so the notice cannot go stale while still
+looking honest. Both answers are offered, the answer is remembered, and the
+switch on the Settings card is the same answer, changeable at any time.
+
+Only where a collector exists. A build with nowhere to send has nothing to
+explain, and interrupting somebody to describe something that cannot happen
+teaches them these notices are noise.
 
 Counts go as **deltas**. Each row remembers how much of itself has been
 reported, so reopening the app twenty times does not turn one broken screen into

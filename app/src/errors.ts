@@ -42,6 +42,7 @@
 const KEY = "app.problems";
 const COLLECTOR_KEY = "app.problems.collector";
 const SEND_KEY = "app.problems.send";
+const NOTICE_KEY = "app.problems.notice";
 const LIMIT = 50;
 
 /** One failure, with nothing in it that belongs to anybody. */
@@ -226,6 +227,37 @@ export function setSending(on: boolean): void {
 }
 
 /**
+ * Whether this person has been told that reports are sent.
+ *
+ * A switch nobody knows about is not a choice. Sending is opt-*out*, which
+ * only means anything if the opting-out is possible before the first report
+ * rather than after it — so nothing goes until this returns true, and the
+ * notice that sets it says what would leave and offers to stop.
+ *
+ * One launch of delay, at most, and only ever the first. After that the
+ * answer is remembered and the switch on the Settings card is the way back.
+ */
+export function noticeAnswered(): boolean {
+  try {
+    return localStorage.getItem(NOTICE_KEY) !== null;
+  } catch {
+    // Storage is unavailable, so an answer could not be remembered and the
+    // notice would return every launch. Treat that as answered and leave
+    // sending to the switch: nagging somebody forever is its own harm.
+    return true;
+  }
+}
+
+export function answerNotice(send: boolean): void {
+  try {
+    localStorage.setItem(NOTICE_KEY, send ? "yes" : "no");
+  } catch {
+    /* the choice below still takes effect for this session */
+  }
+  setSending(send);
+}
+
+/**
  * Exactly what a report contains — shown on screen, copied by the button, and
  * posted by the sender, all from here.
  *
@@ -270,8 +302,8 @@ function markReported(report: Record<string, unknown>): void {
   }));
 }
 
-export type SendOutcome =
-  | "sent" | "nothing-to-send" | "turned-off" | "no-collector" | "failed";
+export type SendOutcome = "sent" | "nothing-to-send" | "turned-off"
+  | "no-collector" | "awaiting-notice" | "failed";
 
 /**
  * Post the unreported failures. Never throws, never blocks anything.
@@ -290,6 +322,7 @@ export async function sendProblems(appVersion: string): Promise<SendOutcome> {
   const base = collectorUrl();
   if (!base) return "no-collector";
   if (!sendingEnabled()) return "turned-off";
+  if (!noticeAnswered()) return "awaiting-notice";
   const report = problemReport(appVersion);
   if (!(report.problems as unknown[]).length) return "nothing-to-send";
   try {

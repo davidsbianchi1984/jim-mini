@@ -52,6 +52,17 @@ nothing records that a particular install sent anything. Reading that aggregate
 needs a narrower permission than writing to it, because the posting token ships
 inside every installer and is public the moment somebody unzips one.
 
+**Nothing goes before you have been asked.** Sending is opt-*out*, which only
+means something if the opting-out can happen before the first report rather
+than being discovered afterwards in a settings panel nobody opened. So the
+sender refuses until a first-run notice has been answered — and that notice
+shows the actual payload rather than describing it, from the same function
+that posts it, so it cannot go stale while still looking honest. Both answers
+are offered, the answer is remembered, and the switch on the Settings card is
+that same answer, changeable whenever. It only appears where a build has a
+collector at all: interrupting somebody to explain a thing that cannot happen
+teaches them these notices are noise.
+
 Seventeen tests hold the shape in place here, with twenty-two more on the
 gateway — that `recordProblem` has no parameter a message could arrive through,
 that the stored record has no field one could sit in, that the wire shape and

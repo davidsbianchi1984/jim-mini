@@ -221,6 +221,50 @@ def test_sending_is_impossible_without_an_address_somebody_configured():
         "whose device it is")
 
 
+NOTICE_TSX = REPO / "app" / "src" / "ProblemNotice.tsx"
+
+
+def test_nothing_is_sent_before_the_person_has_been_asked():
+    """The gate, checked in the sender rather than trusted to the screen.
+
+    Sending is opt-*out*, which is only a real choice if the opting-out can
+    happen before the first report rather than being discovered afterwards in
+    a settings panel nobody opened. So `sendProblems` refuses until the notice
+    has been answered — and it has to be that function, not the component,
+    because the launch-time send in main.tsx never renders anything.
+    """
+    src = _source()
+    body = re.search(r"export async function sendProblems\(.*?\n\}",
+                     src, re.S).group(0)
+    assert 'return "awaiting-notice"' in body, (
+        "the sender no longer waits for the notice to be answered — reports "
+        "would go before anybody had been told they would")
+
+    # Ordering matters as much as presence: a check after the fetch is not a
+    # check. Everything that can refuse must come before anything is posted.
+    guard = body.index('return "awaiting-notice"')
+    assert guard < body.index("fetch("), (
+        "the notice is checked after the report has already been posted")
+
+
+def test_the_notice_shows_the_payload_rather_than_describing_it():
+    """A promise the code keeps, not one the copy makes.
+
+    The notice could say "we only send error codes" in prose and be believed.
+    Rendering `problemReport` means the claim and the payload are the same
+    object, so the notice cannot become untrue while still looking honest.
+    """
+    src = NOTICE_TSX.read_text(encoding="utf-8")
+    assert "problemReport" in src, (
+        "the notice no longer shows the real payload, so its description of "
+        "what leaves is now just text that could drift")
+    assert "answerNotice" in src, "the notice no longer records an answer"
+    # Both answers must be offered. A notice with only an acknowledge button
+    # is a notification wearing a question's clothes.
+    assert "decide(true)" in src and "decide(false)" in src, (
+        "the notice does not offer both answers")
+
+
 def test_the_sender_does_not_report_its_own_failures():
     """No feedback loop.
 

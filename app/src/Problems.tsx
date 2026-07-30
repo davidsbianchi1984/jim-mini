@@ -23,6 +23,7 @@ const OUTCOME: Record<SendOutcome, string> = {
   "nothing-to-send": "Nothing new to send.",
   "turned-off": "Sending is off.",
   "no-collector": "This build has nowhere to send.",
+  "awaiting-notice": "Waiting for you to answer the notice first.",
   "failed": "Could not reach the collector — it will try again next time.",
 };
 
@@ -70,7 +71,9 @@ export function Problems() {
           ? <>Sent to <code>{collector}</code> when the app opens, so the
             people fixing these can see them. Only what the preview below
             shows, and only the part that has not been sent already —
-            reopening the app does not send the same failure twice.</>
+            reopening the app does not send the same failure twice. Nothing
+            went anywhere before you answered the notice on first run, and
+            this switch is the same answer, changeable whenever you like.</>
           : <>This build has no collector configured, so nothing is sent
             anywhere. The report below exists for you to copy if you want to
             pass it on.</>}
