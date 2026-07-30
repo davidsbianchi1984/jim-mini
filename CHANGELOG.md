@@ -4,7 +4,7 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.19.0] — 2026-07-30
 
 **The apps now record what fails, without recording anything private.** Every
 failed request passes through one function in the console, so one call there
@@ -2053,6 +2053,8 @@ the three-product suite (with
   release workflow.
 
 [Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.16.0...HEAD
+[0.19.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.19.0
+[0.18.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.18.0
 [0.16.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.16.0
 [0.15.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.15.0
 [0.14.5]: https://github.com/davidsbianchi1984/jim-mini/commit/cc2b6daf0e7b4c6fa11d9dc9af5d11570e2bf89d
