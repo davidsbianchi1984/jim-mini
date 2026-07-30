@@ -109,7 +109,10 @@ def start(provider: str, redirect_uri: str,
         "state": state,
     }
     if provider == "apple":
-        params["response_mode"] = "query"
+        # Apple's rule, not a preference: "if you request any scopes, the
+        # value must be form_post". We ask for email, so the browser comes
+        # back as a POST — which is why the callback accepts both verbs.
+        params["response_mode"] = "form_post"
     return {"provider": provider, "state": state,
             "url": f"{spec['authorize']}?{urllib.parse.urlencode(params)}"}
 

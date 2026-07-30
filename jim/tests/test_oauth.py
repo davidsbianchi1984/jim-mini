@@ -85,3 +85,34 @@ def test_an_enrolled_account_signs_straight_in(client, monkeypatch):
         "SELECT COUNT(*) AS n FROM accounts WHERE email='back@example.com'"
     ).fetchone()
     assert users["n"] == 1
+
+
+def test_apple_asks_for_form_post_and_the_door_accepts_it(client, monkeypatch):
+    """Apple's rule, not our preference: requesting any scope forces
+    response_mode=form_post, so the browser returns as a POST. Sending
+    response_mode=query with a scope is rejected by Apple outright — which
+    would have surfaced as "sign-in is broken" on the very first attempt with
+    a freshly registered client."""
+    from jim import oauth
+    monkeypatch.setenv("JIM_APPLE_CLIENT_ID", "com.example.jim")
+    monkeypatch.setenv("JIM_APPLE_CLIENT_SECRET", "secret-jwt")
+    started = oauth.start("apple", "http://127.0.0.1:8000/auth/oauth/apple/callback")
+    assert "response_mode=form_post" in started["url"]
+    assert "scope=email" in started["url"]
+
+    # The POST door exists and reads the urlencoded body Apple sends.
+    r = client.post("/auth/oauth/apple/callback",
+                    content="error=user_cancelled_authorize",
+                    headers={"content-type": "application/x-www-form-urlencoded"})
+    assert r.status_code == 400
+    assert "user_cancelled_authorize" in r.text
+
+
+def test_google_still_comes_back_on_the_query_string(client, monkeypatch):
+    from jim import oauth
+    monkeypatch.setenv("JIM_GOOGLE_CLIENT_ID", "gid")
+    monkeypatch.setenv("JIM_GOOGLE_CLIENT_SECRET", "gsecret")
+    started = oauth.start("google", "http://127.0.0.1:8000/auth/oauth/google/callback")
+    assert "response_mode" not in started["url"]
+    r = client.get("/auth/oauth/google/callback", params={"error": "access_denied"})
+    assert r.status_code == 400 and "access_denied" in r.text
