@@ -491,7 +491,411 @@ _STRINGS: dict[str, dict[str, str]] = {
         "hi": "मैं इस छूट-पत्र को किसी भी समय रद्द कर सकता/सकती हूँ, जिससे पुष्टि-आधारित संचालन बहाल हो जाएगा।",
         "ar": "يمكنني إلغاء هذا التنازل في أي وقت، فيعود التشغيل المشروط بالتأكيد.",
     },
+
+    # ---- the scanned care beacon (jim/landing.py) ----------------------
+    #
+    # Safety text on the one page in this product read by somebody with no
+    # account, chosen from their own Accept-Language rather than from a
+    # setting they have never had. Hand-translated like every other string
+    # here, and for the same reason: a person reading instructions about a
+    # body on the floor is the last person who should be handed a machine
+    # translation.
+    # `relay.STANDING` — the answer the guidance route gives when no
+    # specialist is reachable. The most-read sentence in the product on the
+    # worst day somebody has, and the one a machine translation is least
+    # welcome in.
+    "Call your local emergency number if you have not already. Do not move "
+    "them unless they are in danger where they are. Stay with them until "
+    "someone arrives.": {
+        "es": "Llame al número de emergencias local si aún no lo ha hecho. No "
+              "les mueva salvo que corran peligro donde están. Quédese con "
+              "ellos hasta que llegue alguien.",
+        "fr": "Appelez votre numéro d'urgence local si ce n'est pas déjà "
+              "fait. Ne les déplacez pas sauf s'ils sont en danger là où ils "
+              "sont. Restez avec eux jusqu'à l'arrivée des secours.",
+        "de": "Rufen Sie den örtlichen Notruf an, falls noch nicht geschehen. "
+              "Bewegen Sie die Person nicht, außer sie ist dort in Gefahr. "
+              "Bleiben Sie bei ihr, bis Hilfe eintrifft.",
+        "pt": "Ligue para o número de emergência local se ainda não o fez. "
+              "Não os mova, a menos que estejam em perigo onde estão. Fique "
+              "com eles até alguém chegar.",
+        "it": "Chiama il numero di emergenza locale se non l'hai già fatto. "
+              "Non spostarli, a meno che non siano in pericolo dove si "
+              "trovano. Resta con loro finché non arriva qualcuno.",
+        "ja": "まだであれば地域の緊急通報番号に電話してください。その場に危険がない限り"
+              "動かさないでください。誰かが到着するまでそばにいてください。",
+        "zh": "若尚未拨打，请拨打当地急救电话。除非原地有危险，否则不要移动对方。"
+              "请陪在他们身边，直到有人到达。",
+        "hi": "यदि अभी तक नहीं किया है तो अपने स्थानीय आपातकालीन नंबर पर कॉल करें। जब तक "
+              "वे वहाँ खतरे में न हों, उन्हें हिलाएँ नहीं। किसी के आने तक उनके साथ रहें।",
+        "ar": "اتصل برقم الطوارئ المحلي إن لم تكن قد فعلت. لا تحرّكهم إلا إذا كانوا في "
+              "خطر في مكانهم. ابقَ معهم حتى يصل أحد.",
+    },
+    "standing guidance — no specialist was reachable": {
+        "es": "orientación estándar: no se pudo contactar con un especialista",
+        "fr": "conseils par défaut — aucun spécialiste joignable",
+        "de": "Standardhinweise — kein Fachdienst erreichbar",
+        "pt": "orientação padrão — nenhum especialista contactável",
+        "it": "indicazioni standard — nessuno specialista raggiungibile",
+        "ja": "標準の案内 — 専門家に接続できませんでした",
+        "zh": "标准指引 — 未能联系到专业人员",
+        "hi": "मानक मार्गदर्शन — कोई विशेषज्ञ उपलब्ध नहीं था",
+        "ar": "إرشادات قياسية — تعذّر الوصول إلى مختص",
+    },
+    "This code doesn't resolve to anything": {
+        "es": "Este código no corresponde a nada",
+        "fr": "Ce code ne correspond à rien",
+        "de": "Dieser Code führt zu nichts",
+        "pt": "Este código não corresponde a nada",
+        "it": "Questo codice non corrisponde a nulla",
+        "ja": "このコードは何にも対応していません",
+        "zh": "此二维码没有对应的内容",
+        "hi": "यह कोड किसी से मेल नहीं खाता",
+        "ar": "هذا الرمز لا يشير إلى شيء",
+    },
+    "It may have been removed, or it may never have been one of ours. If "
+    "someone in front of you needs help, call your local emergency number — "
+    "this page cannot.": {
+        "es": "Puede haberse retirado, o puede que nunca fuera nuestro. Si "
+              "alguien delante de usted necesita ayuda, llame al número de "
+              "emergencias local: esta página no puede.",
+        "fr": "Il a pu être retiré, ou n'a peut-être jamais été le nôtre. Si "
+              "quelqu'un devant vous a besoin d'aide, appelez votre numéro "
+              "d'urgence local — cette page ne le peut pas.",
+        "de": "Er wurde vielleicht entfernt oder war nie einer von unseren. "
+              "Wenn jemand vor Ihnen Hilfe braucht, rufen Sie den örtlichen "
+              "Notruf — diese Seite kann das nicht.",
+        "pt": "Pode ter sido removido, ou pode nunca ter sido nosso. Se "
+              "alguém à sua frente precisa de ajuda, ligue para o número de "
+              "emergência local — esta página não pode.",
+        "it": "Può essere stato rimosso, o non essere mai stato nostro. Se "
+              "qualcuno davanti a te ha bisogno di aiuto, chiama il numero "
+              "di emergenza locale — questa pagina non può farlo.",
+        "ja": "取り外されたか、もともと当方のものではない可能性があります。"
+              "目の前の人に助けが必要なら、地域の緊急通報番号に電話してください — "
+              "このページにはできません。",
+        "zh": "它可能已被取下，也可能从来就不是我们的。如果你面前的人需要帮助，"
+              "请拨打当地急救电话 — 本页面做不到。",
+        "hi": "हो सकता है इसे हटा दिया गया हो, या यह कभी हमारा रहा ही न हो। यदि आपके "
+              "सामने किसी को मदद चाहिए, तो अपने स्थानीय आपातकालीन नंबर पर कॉल करें — "
+              "यह पृष्ठ ऐसा नहीं कर सकता।",
+        "ar": "ربما أُزيل، أو ربما لم يكن لنا أصلًا. إذا كان أمامك شخص يحتاج المساعدة، "
+              "فاتصل برقم الطوارئ المحلي — هذه الصفحة لا تستطيع.",
+    },
+    "You've found someone.": {
+        "es": "Has encontrado a alguien.",
+        "fr": "Vous avez trouvé quelqu'un.",
+        "de": "Sie haben jemanden gefunden.",
+        "pt": "Encontrou alguém.",
+        "it": "Hai trovato qualcuno.",
+        "ja": "誰かを見つけました。",
+        "zh": "你发现了一个人。",
+        "hi": "आपको कोई मिला है।",
+        "ar": "لقد وجدت شخصًا ما.",
+    },
+    "If this is an emergency, call your local emergency number first.": {
+        "es": "Si es una emergencia, llame primero al número de emergencias "
+              "local.",
+        "fr": "En cas d'urgence, appelez d'abord votre numéro d'urgence "
+              "local.",
+        "de": "Rufen Sie im Notfall zuerst Ihren örtlichen Notruf an.",
+        "pt": "Se for uma emergência, ligue primeiro para o número de "
+              "emergência local.",
+        "it": "Se è un'emergenza, chiama prima il numero di emergenza "
+              "locale.",
+        "ja": "緊急の場合は、まず地域の緊急通報番号に電話してください。",
+        "zh": "如果情况紧急，请先拨打当地急救电话。",
+        "hi": "यदि यह आपात स्थिति है, तो पहले अपने स्थानीय आपातकालीन नंबर पर कॉल करें।",
+        "ar": "إذا كانت هذه حالة طارئة، اتصل أولًا برقم الطوارئ المحلي.",
+    },
+    "This page cannot call anyone for you, and it is not an emergency "
+    "service.": {
+        "es": "Esta página no puede llamar a nadie por usted y no es un "
+              "servicio de emergencias.",
+        "fr": "Cette page ne peut appeler personne à votre place et n'est "
+              "pas un service d'urgence.",
+        "de": "Diese Seite kann für Sie niemanden anrufen und ist kein "
+              "Notdienst.",
+        "pt": "Esta página não pode ligar para ninguém por si e não é um "
+              "serviço de emergência.",
+        "it": "Questa pagina non può chiamare nessuno per te e non è un "
+              "servizio di emergenza.",
+        "ja": "このページはあなたの代わりに電話をかけることはできず、緊急サービスでもありません。",
+        "zh": "本页面无法替你拨打电话，也不是急救服务。",
+        "hi": "यह पृष्ठ आपकी ओर से किसी को कॉल नहीं कर सकता, और यह आपातकालीन सेवा नहीं है।",
+        "ar": "لا يمكن لهذه الصفحة الاتصال بأحد نيابة عنك، وهي ليست خدمة طوارئ.",
+    },
+    "Anything you can tell them? (optional)": {
+        "es": "¿Algo que pueda decirles? (opcional)",
+        "fr": "Quelque chose à leur dire ? (facultatif)",
+        "de": "Etwas, das Sie ihnen sagen können? (optional)",
+        "pt": "Algo que lhes possa dizer? (opcional)",
+        "it": "Qualcosa da dire loro? (facoltativo)",
+        "ja": "伝えられることはありますか？（任意）",
+        "zh": "有什么可以告诉他们的吗？（可选）",
+        "hi": "कुछ बता सकते हैं? (वैकल्पिक)",
+        "ar": "هل من شيء يمكنك إخبارهم به؟ (اختياري)",
+    },
+    "where you are, what you can see": {
+        "es": "dónde está, qué puede ver",
+        "fr": "où vous êtes, ce que vous voyez",
+        "de": "wo Sie sind, was Sie sehen",
+        "pt": "onde está, o que consegue ver",
+        "it": "dove sei, cosa vedi",
+        "ja": "どこにいるか、何が見えるか",
+        "zh": "你在哪里，你看到了什么",
+        "hi": "आप कहाँ हैं, आपको क्या दिख रहा है",
+        "ar": "أين أنت، وما الذي تراه",
+    },
+    "Raise the alarm": {
+        "es": "Dar la alarma",
+        "fr": "Donner l'alerte",
+        "de": "Alarm auslösen",
+        "pt": "Dar o alarme",
+        "it": "Dai l'allarme",
+        "ja": "通報する",
+        "zh": "发出警报",
+        "hi": "अलार्म बजाएँ",
+        "ar": "أطلق الإنذار",
+    },
+    "Raising…": {
+        "es": "Enviando…",
+        "fr": "Envoi…",
+        "de": "Wird ausgelöst…",
+        "pt": "A enviar…",
+        "it": "Invio…",
+        "ja": "通報中…",
+        "zh": "正在发出…",
+        "hi": "भेजा जा रहा है…",
+        "ar": "جارٍ الإرسال…",
+    },
+    "That did not go through.": {
+        "es": "No se ha podido enviar.",
+        "fr": "L'envoi n'a pas abouti.",
+        "de": "Das hat nicht funktioniert.",
+        "pt": "Não foi possível enviar.",
+        "it": "Non è andato a buon fine.",
+        "ja": "送信できませんでした。",
+        "zh": "未能发送。",
+        "hi": "यह नहीं भेजा जा सका।",
+        "ar": "لم يتم الإرسال.",
+    },
+    "No connection — call your local emergency number.": {
+        "es": "Sin conexión: llame al número de emergencias local.",
+        "fr": "Pas de connexion — appelez votre numéro d'urgence local.",
+        "de": "Keine Verbindung — rufen Sie Ihren örtlichen Notruf an.",
+        "pt": "Sem ligação — ligue para o número de emergência local.",
+        "it": "Nessuna connessione — chiama il numero di emergenza locale.",
+        "ja": "接続がありません — 地域の緊急通報番号に電話してください。",
+        "zh": "没有网络连接 — 请拨打当地急救电话。",
+        "hi": "कोई कनेक्शन नहीं — अपने स्थानीय आपातकालीन नंबर पर कॉल करें।",
+        "ar": "لا يوجد اتصال — اتصل برقم الطوارئ المحلي.",
+    },
+    "MEDICAL ID": {
+        "es": "IDENTIFICACIÓN MÉDICA",
+        "fr": "FICHE MÉDICALE",
+        "de": "NOTFALLPASS",
+        "pt": "IDENTIFICAÇÃO MÉDICA",
+        "it": "SCHEDA MEDICA",
+        "ja": "メディカルID",
+        "zh": "医疗卡",
+        "hi": "मेडिकल आईडी",
+        "ar": "البطاقة الطبية",
+    },
+    "Name": {
+        "es": "Nombre", "fr": "Nom", "de": "Name", "pt": "Nome",
+        "it": "Nome", "ja": "氏名", "zh": "姓名", "hi": "नाम",
+        "ar": "الاسم",
+    },
+    "Age": {
+        "es": "Edad", "fr": "Âge", "de": "Alter", "pt": "Idade",
+        "it": "Età", "ja": "年齢", "zh": "年龄", "hi": "आयु",
+        "ar": "العمر",
+    },
+    "Known conditions": {
+        "es": "Afecciones conocidas",
+        "fr": "Pathologies connues",
+        "de": "Bekannte Erkrankungen",
+        "pt": "Condições conhecidas",
+        "it": "Patologie note",
+        "ja": "既往症",
+        "zh": "已知病症",
+        "hi": "ज्ञात स्थितियाँ",
+        "ar": "حالات معروفة",
+    },
+    "Resting heart rate": {
+        "es": "Frecuencia cardíaca en reposo",
+        "fr": "Fréquence cardiaque au repos",
+        "de": "Ruhepuls",
+        "pt": "Frequência cardíaca em repouso",
+        "it": "Frequenza cardiaca a riposo",
+        "ja": "安静時心拍数",
+        "zh": "静息心率",
+        "hi": "विश्राम हृदय गति",
+        "ar": "معدل ضربات القلب أثناء الراحة",
+    },
+    "Emergency contact": {
+        "es": "Contacto de emergencia",
+        "fr": "Contact d'urgence",
+        "de": "Notfallkontakt",
+        "pt": "Contacto de emergência",
+        "it": "Contatto di emergenza",
+        "ja": "緊急連絡先",
+        "zh": "紧急联系人",
+        "hi": "आपातकालीन संपर्क",
+        "ar": "جهة اتصال للطوارئ",
+    },
+    "What do I do while you wait?": {
+        "es": "¿Qué hago mientras espera?",
+        "fr": "Que faire en attendant ?",
+        "de": "Was tue ich, während Sie warten?",
+        "pt": "O que faço enquanto espera?",
+        "it": "Cosa faccio nell'attesa?",
+        "ja": "待っている間、何をすればよいですか？",
+        "zh": "等待期间我该做什么？",
+        "hi": "प्रतीक्षा के दौरान मैं क्या करूँ?",
+        "ar": "ماذا أفعل في أثناء الانتظار؟",
+    },
+    "Guidance, not a clinician — it cannot see them, and it cannot call "
+    "anyone.": {
+        "es": "Orientación, no un profesional sanitario: no puede verles ni "
+              "llamar a nadie.",
+        "fr": "Des conseils, pas un soignant — il ne les voit pas et ne peut "
+              "appeler personne.",
+        "de": "Hinweise, keine ärztliche Beratung — sie sieht die Person "
+              "nicht und kann niemanden anrufen.",
+        "pt": "Orientação, não um clínico — não os vê nem pode ligar a "
+              "ninguém.",
+        "it": "Indicazioni, non un medico — non può vederli né chiamare "
+              "nessuno.",
+        "ja": "案内であり、医療者ではありません。相手を見ることも、電話をかけることもできません。",
+        "zh": "这是指引，不是临床医生 — 它看不到对方，也无法拨打电话。",
+        "hi": "मार्गदर्शन, चिकित्सक नहीं — यह उन्हें देख नहीं सकता, और किसी को कॉल नहीं कर सकता।",
+        "ar": "إرشادات، وليست طبيبًا — لا يمكنها رؤيتهم ولا الاتصال بأحد.",
+    },
+    "What is happening?": {
+        "es": "¿Qué está pasando?",
+        "fr": "Que se passe-t-il ?",
+        "de": "Was ist passiert?",
+        "pt": "O que está a acontecer?",
+        "it": "Cosa sta succedendo?",
+        "ja": "何が起きていますか？",
+        "zh": "发生了什么？",
+        "hi": "क्या हो रहा है?",
+        "ar": "ماذا يحدث؟",
+    },
+    "breathing, but will not wake up": {
+        "es": "respira, pero no despierta",
+        "fr": "respire, mais ne se réveille pas",
+        "de": "atmet, wacht aber nicht auf",
+        "pt": "respira, mas não acorda",
+        "it": "respira, ma non si sveglia",
+        "ja": "呼吸はあるが、目を覚まさない",
+        "zh": "有呼吸，但叫不醒",
+        "hi": "साँस चल रही है, पर होश नहीं आ रहा",
+        "ar": "يتنفّس، لكنه لا يستيقظ",
+    },
+    "Ask": {
+        "es": "Preguntar", "fr": "Demander", "de": "Fragen",
+        "pt": "Perguntar", "it": "Chiedi", "ja": "きく", "zh": "询问",
+        "hi": "पूछें", "ar": "اسأل",
+    },
+    "Ask again": {
+        "es": "Preguntar otra vez",
+        "fr": "Redemander",
+        "de": "Erneut fragen",
+        "pt": "Perguntar de novo",
+        "it": "Chiedi di nuovo",
+        "ja": "もう一度きく",
+        "zh": "再次询问",
+        "hi": "फिर पूछें",
+        "ar": "اسأل مرة أخرى",
+    },
+    "Asking…": {
+        "es": "Preguntando…", "fr": "Envoi…", "de": "Wird gefragt…",
+        "pt": "A perguntar…", "it": "Invio…", "ja": "問い合わせ中…",
+        "zh": "正在询问…", "hi": "पूछा जा रहा है…", "ar": "جارٍ السؤال…",
+    },
+    # The offline answer. Identical in meaning to relay.guidance's fallback,
+    # and it has to be, because this is the copy shown when the network is
+    # gone and the server's version cannot arrive.
+    "No connection. Call your local emergency number if you have not "
+    "already. Do not move them unless they are in danger where they are. "
+    "Stay with them until someone arrives.": {
+        "es": "Sin conexión. Llame al número de emergencias local si aún no "
+              "lo ha hecho. No les mueva salvo que corran peligro donde "
+              "están. Quédese con ellos hasta que llegue alguien.",
+        "fr": "Pas de connexion. Appelez votre numéro d'urgence local si ce "
+              "n'est pas déjà fait. Ne les déplacez pas sauf s'ils sont en "
+              "danger là où ils sont. Restez avec eux jusqu'à l'arrivée des "
+              "secours.",
+        "de": "Keine Verbindung. Rufen Sie den örtlichen Notruf an, falls "
+              "noch nicht geschehen. Bewegen Sie die Person nicht, außer sie "
+              "ist dort in Gefahr. Bleiben Sie bei ihr, bis Hilfe eintrifft.",
+        "pt": "Sem ligação. Ligue para o número de emergência local se ainda "
+              "não o fez. Não os mova, a menos que estejam em perigo onde "
+              "estão. Fique com eles até alguém chegar.",
+        "it": "Nessuna connessione. Chiama il numero di emergenza locale se "
+              "non l'hai già fatto. Non spostarli, a meno che non siano in "
+              "pericolo dove si trovano. Resta con loro finché non arriva "
+              "qualcuno.",
+        "ja": "接続がありません。まだであれば地域の緊急通報番号に電話してください。"
+              "その場に危険がない限り動かさないでください。誰かが到着するまで"
+              "そばにいてください。",
+        "zh": "没有网络连接。若尚未拨打，请拨打当地急救电话。除非原地有危险，"
+              "否则不要移动对方。请陪在他们身边，直到有人到达。",
+        "hi": "कोई कनेक्शन नहीं। यदि अभी तक नहीं किया है तो अपने स्थानीय आपातकालीन नंबर पर "
+              "कॉल करें। जब तक वे वहाँ खतरे में न हों, उन्हें हिलाएँ नहीं। किसी के आने तक "
+              "उनके साथ रहें।",
+        "ar": "لا يوجد اتصال. اتصل برقم الطوارئ المحلي إن لم تكن قد فعلت. لا تحرّكهم "
+              "إلا إذا كانوا في خطر في مكانهم. ابقَ معهم حتى يصل أحد.",
+    },
 }
+
+
+def negotiate(header: str | None) -> str:
+    """Pick a supported language from an ``Accept-Language`` header.
+
+    Every other localization path in this product keys off an account
+    setting — :func:`get_language` takes a ``user_id``. That is right for
+    everything a user reads, and useless for the one page written for
+    somebody who has no account: the stranger who scanned a care beacon.
+
+    Their browser has been sending the answer on every request. Nothing read
+    it, so a passer-by in Madrid was told in English that they had ninety
+    seconds and what to do for the person on the ground.
+
+    Deliberately small: quality values are honoured, the region is dropped
+    (``es-419`` and ``es-ES`` are both ``es``), and anything unrecognised
+    falls back to English rather than guessing. It chooses **the finder's**
+    language, not the watched person's — the text is for whoever is holding
+    the phone, and they are by definition not the subject.
+    """
+    if not header:
+        return DEFAULT
+    ranked: list[tuple[float, int, str]] = []
+    for index, part in enumerate(header.split(",")):
+        piece = part.strip()
+        if not piece:
+            continue
+        tag, _, params = piece.partition(";")
+        quality = 1.0
+        for param in params.split(";"):
+            key, _, value = param.partition("=")
+            if key.strip() == "q":
+                try:
+                    quality = float(value)
+                except ValueError:
+                    quality = 0.0
+        base = tag.strip().split("-")[0].lower()
+        if base in SUPPORTED:
+            # `-index` keeps the header's own order as the tie-break, which
+            # is what a client means by listing one tag before another at
+            # the same q.
+            ranked.append((quality, -index, base))
+    if not ranked:
+        return DEFAULT
+    return max(ranked)[2]
 
 
 def tr(text: str, language: str) -> str:

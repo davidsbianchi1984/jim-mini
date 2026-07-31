@@ -46,7 +46,7 @@ from __future__ import annotations
 import json
 import os
 
-from . import beacons, db, guardian, notify, rota
+from . import beacons, db, guardian, i18n, notify, rota
 
 # The site's escalation order when nothing is configured. Per deployment
 # rather than per user: it describes who is on shift, a property of the site.
@@ -237,21 +237,37 @@ def accept(user_id: str, alarm_id: str, responder: str) -> dict | None:
             "note": "still open — accepted means attending, not resolved"}
 
 
+#: The standing answer. Hand-translated in `i18n` like every other piece of
+#: safety text, because this is what a person reads when nothing else is
+#: reachable — the moment a machine translation is least acceptable.
+STANDING = ("Call your local emergency number if you have not already. "
+            "Do not move them unless they are in danger where they are. "
+            "Stay with them until someone arrives.")
+
+STANDING_NOTE = "standing guidance — no specialist was reachable"
+
+
 def guidance(alarm_id: str, question: str, qrme=None,
-             profile_handle: str | None = None) -> dict:
+             profile_handle: str | None = None,
+             language: str = "en") -> dict:
     """What to tell the person waiting.
 
     Routed through QRME's existing first-aid specialists when tandem is
     configured, and otherwise answered with the one instruction that is always
     right and never depends on a model being reachable.
+
+    ``language`` is the **finder's**, negotiated from their own
+    ``Accept-Language`` by the route. Every other localization path in this
+    product takes a ``user_id``; the person asking this question is the one
+    who has none. The standing answer is hand-translated; the specialist path
+    is asked to reply in-language through `i18n.directive`, which is how every
+    other model-generated text in this product is localized.
     """
     fallback = {
         "alarm": alarm_id,
         "source": "local",
-        "answer": ("Call your local emergency number if you have not already. "
-                   "Do not move them unless they are in danger where they "
-                   "are. Stay with them until someone arrives."),
-        "note": "standing guidance — no specialist was reachable",
+        "answer": i18n.tr(STANDING, language),
+        "note": i18n.tr(STANDING_NOTE, language),
     }
     handle = profile_handle or os.environ.get("JIM_SITE_FIRSTAID_PROFILE")
     if qrme is None or not handle:
@@ -264,7 +280,7 @@ def guidance(alarm_id: str, question: str, qrme=None,
             return fallback
         interactor, _token = qrme.ensure_interactor("site responder")
         reply = qrme.specialist_reply(profile["profile_id"], interactor,
-                                      question)
+                                      question + i18n.directive(language))
     except Exception:
         return fallback
     content = (reply or {}).get("content")

@@ -30,6 +30,8 @@ from __future__ import annotations
 import html
 import json
 
+from . import i18n
+
 # Dark slate with the Medical ID's own red — a printed code on a person's
 # things should look like the other printed code on a person's things.
 _CSS = """
@@ -91,9 +93,14 @@ a.tel{color:#43e08a;font-weight:700;text-decoration:none}
 """
 
 
-def _page(title: str, body: str) -> str:
+def _page(title: str, body: str, language: str = "en") -> str:
+    # `lang` is not decoration: it is what a screen reader picks a voice from,
+    # and this page may well be read aloud by somebody whose hands are busy.
+    # `dir` because Arabic is one of the ten languages this product supports.
+    direction = "rtl" if language == "ar" else "ltr"
     return (
-        '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        f'<!doctype html><html lang="{language}" dir="{direction}">'
+        '<head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1,'
         'viewport-fit=cover"><meta name="theme-color" content="#0a0f1c">'
         f"<title>{html.escape(title)}</title><style>{_CSS}</style></head>"
@@ -104,31 +111,42 @@ def _js(value: str) -> str:
     return json.dumps(value)
 
 
-def gone() -> str:
+def gone(language: str = "en") -> str:
     """A code that never existed, or has been peeled off. One page for both —
-    somebody at a dead sticker should not learn which."""
+    somebody at a dead sticker should not learn which.
+
+    Localized for the same reason the live page is, and it matters here too:
+    a dead sticker is still somebody standing over a person, and the sentence
+    that tells them to call anyway is the only useful thing on this page.
+    """
     return _page("Nothing here", (
         '<div class="panel">'
-        "<h1>This code doesn't resolve to anything</h1>"
-        '<p class="watched">It may have been removed, or it may never have '
-        "been one of ours. If someone in front of you needs help, call your "
-        "local emergency number — this page cannot.</p></div>"))
+        f"<h1>{html.escape(i18n.tr(GONE_TITLE, language))}</h1>"
+        f'<p class="watched">{html.escape(i18n.tr(GONE_BODY, language))}</p>'
+        "</div>"), language)
+
+
+GONE_TITLE = "This code doesn't resolve to anything"
+GONE_BODY = ("It may have been removed, or it may never have been one of "
+             "ours. If someone in front of you needs help, call your local "
+             "emergency number — this page cannot.")
 
 
 _ALARM_JS = """
 (function(){
+ var S=%(strings)s;
  var f=document.getElementById('f'),b=document.getElementById('go'),
      s=document.getElementById('st');
  if(!f)return;
  f.addEventListener('submit',function(e){
-  e.preventDefault();b.disabled=true;b.textContent='Raising\\u2026';
+  e.preventDefault();b.disabled=true;b.textContent=S.raising;
   fetch(%(endpoint)s,{method:'POST',
    headers:{'content-type':'application/json'},
    body:JSON.stringify({message:document.getElementById('m').value||null})})
   .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
   .then(function(o){
-   if(!o.ok){b.disabled=false;b.textContent='Raise the alarm';
-    s.textContent=(o.j&&o.j.detail)||'That did not go through.';return;}
+   if(!o.ok){b.disabled=false;b.textContent=S.raise_;
+    s.textContent=(o.j&&o.j.detail)||S.failed;return;}
    var j=o.j;
    b.remove();document.getElementById('m').parentNode.removeChild(
      document.getElementById('m'));
@@ -138,16 +156,16 @@ _ALARM_JS = """
    var m=j.medical_id;
    if(m){
     var d=document.createElement('div');d.className='med';
-    var h='<h2>MEDICAL ID</h2>';
-    if(m.name)h+=row('Name',esc(m.name));
-    if(m.age!==null&&m.age!==undefined)h+=row('Age',String(m.age));
+    var h='<h2>'+esc(S.medid)+'</h2>';
+    if(m.name)h+=row(esc(S.name),esc(m.name));
+    if(m.age!==null&&m.age!==undefined)h+=row(esc(S.age),String(m.age));
     if(m.known_conditions&&m.known_conditions.length){
-     h+=row('Known conditions','<span class="conds">'+m.known_conditions.map(
+     h+=row(esc(S.conds),'<span class="conds">'+m.known_conditions.map(
        function(c){return '<span class="cond">'+esc(c)+'</span>';}).join('')
        +'</span>');}
-    if(m.resting_heart_rate)h+=row('Resting heart rate',m.resting_heart_rate+' bpm');
+    if(m.resting_heart_rate)h+=row(esc(S.hr),m.resting_heart_rate+' bpm');
     if(m.emergency_contact&&m.emergency_contact.phone){
-     h+=row('Emergency contact','<a class="tel" href="tel:'
+     h+=row(esc(S.contact),'<a class="tel" href="tel:'
        +esc(m.emergency_contact.phone)+'">'
        +esc(m.emergency_contact.name||m.emergency_contact.phone)+'</a>');}
     d.innerHTML=h;f.parentNode.appendChild(d);}
@@ -156,42 +174,39 @@ _ALARM_JS = """
    // over a child needs to know what to do more than anyone, not less.
    ask(j.alarm);
   }).catch(function(){b.disabled=false;b.textContent='Raise the alarm';
-   s.textContent='No connection \\u2014 call your local emergency number.';});
+   s.textContent=S.noconn;});
  });
  function ask(id){
   if(!id)return;
   var w=document.createElement('div');w.className='ask';
-  w.innerHTML='<h2>What do I do while you wait?</h2>'
-   +'<p class="lead">Guidance, not a clinician \\u2014 it cannot see them, '
-   +'and it cannot call anyone.</p>'
-   +'<label for="q">What is happening?</label>'
-   +'<textarea id="q" rows="2" placeholder="breathing, but will not wake up">'
-   +'</textarea><button id="qb" type="button">Ask</button>'
+  w.innerHTML='<h2>'+esc(S.whatdo)+'</h2>'
+   +'<p class="lead">'+esc(S.notclin)+'</p>'
+   +'<label for="q">'+esc(S.whathap)+'</label>'
+   +'<textarea id="q" rows="2" placeholder="'+esc(S.egq)+'">'
+   +'</textarea><button id="qb" type="button">'+esc(S.ask)+'</button>'
    +'<div id="qa"></div>';
   f.parentNode.appendChild(w);
   var qb=document.getElementById('qb'),qa=document.getElementById('qa');
   qb.addEventListener('click',function(){
    var q=document.getElementById('q').value.trim();
    if(!q)return;
-   qb.disabled=true;qb.textContent='Asking\\u2026';
+   qb.disabled=true;qb.textContent=S.asking;
    fetch(%(guidance)s+encodeURIComponent(id)+'/guidance',{method:'POST',
     headers:{'content-type':'application/json'},
     body:JSON.stringify({question:q})})
    .then(function(r){return r.json();})
    .then(function(g){
-    qb.disabled=false;qb.textContent='Ask again';
+    qb.disabled=false;qb.textContent=S.askagain;
     var a=document.createElement('div');a.className='ans';
     a.textContent=g.answer||'';
     if(g.note){var n=document.createElement('span');n.className='src';
      n.textContent=g.note;a.appendChild(n);}
     qa.appendChild(a);})
    .catch(function(){
-    qb.disabled=false;qb.textContent='Ask';
+    qb.disabled=false;qb.textContent=S.ask;
     var a=document.createElement('div');a.className='ans';
     // The one instruction that is always right and never needs a network.
-    a.textContent='No connection. Call your local emergency number if you '
-     +'have not already. Do not move them unless they are in danger where '
-     +'they are. Stay with them until someone arrives.';
+    a.textContent=S.offline;
     qa.appendChild(a);});
   });
  }
@@ -203,30 +218,50 @@ _ALARM_JS = """
 """
 
 
-def care_page(card: dict) -> str:
+def care_page(card: dict, language: str = "en") -> str:
     """Stage one, and the button that buys stage two.
 
     Renders only what ``beacons.card`` returned — a first name and a sentence.
     The Medical ID is not on this page at any point before the alarm; it
     arrives in the alarm's own response, so there is nothing here to reveal
     early even by mistake.
+
+    ``language`` is **the finder's**, negotiated from their own
+    ``Accept-Language`` by :func:`i18n.negotiate`, not the watched person's.
+    Every other localization path in this product takes a ``user_id``, which
+    is exactly the thing the reader of this page does not have — so until
+    this argument existed, a passer-by anywhere in the world was told in
+    English that somebody was being watched over and what to do about it.
+
+    Unknown strings fall back to English through :func:`i18n.tr` rather than
+    being machine-translated, which is the same rule the CPR playbooks and
+    the waiver terms already follow. A stranger reading instructions about a
+    person on the floor is the last reader who should get a guess.
     """
+    def t(text: str) -> str:
+        return i18n.tr(text, language)
+
     first = card.get("first_name")
     who = (f"You've found {html.escape(first)}." if first
-           else "You've found someone.")
+           else t("You've found someone."))
     site = card.get("site")
     body = (
         '<div class="panel">'
         f"<h1>{who}</h1>"
         f'<p class="watched">{html.escape(card.get("note") or "")}</p>'
-        '<div class="first"><b>If this is an emergency, call your local '
-        "emergency number first.</b> This page cannot call anyone for you, "
-        "and it is not an emergency service.</div>"
+        '<div class="first"><b>'
+        + html.escape(t("If this is an emergency, call your local emergency "
+                        "number first."))
+        + "</b> "
+        + html.escape(t("This page cannot call anyone for you, and it is not "
+                        "an emergency service."))
+        + "</div>"
         '<form id="f">'
-        '<label id="ml" for="m">Anything you can tell them? (optional)</label>'
+        f'<label id="ml" for="m">{html.escape(t("Anything you can tell them? (optional)"))}</label>'
         '<textarea id="m" name="m" rows="3" '
-        'placeholder="where you are, what you can see"></textarea>'
-        '<button id="go" type="submit">Raise the alarm</button>'
+        f'placeholder="{html.escape(t("where you are, what you can see"))}">'
+        "</textarea>"
+        f'<button id="go" type="submit">{html.escape(t("Raise the alarm"))}</button>'
         "</form>"
         '<div class="status" id="st"></div>'
         f'<div class="badge" id="bg">{html.escape(card.get("badge") or "")}'
@@ -243,6 +278,42 @@ def care_page(card: dict) -> str:
                        # the alarm has been raised. Relative, for the same
                        # reason the alarm endpoint is — an absolute one baked
                        # from JIM_PUBLIC_URL breaks every scan on a LAN.
-                       "guidance": _js("/alarms/")}
+                       "guidance": _js("/alarms/"),
+                       # Every string the script writes after the page has
+                       # loaded. Handed in already translated rather than
+                       # looked up in the browser: there is no second request
+                       # on this page by design, and a dictionary shipped
+                       # inline costs nothing next to a font.
+                       # `ensure_ascii=False` because the document declares
+                       # UTF-8 and this page is deliberately one small file:
+                       # \u-escaping every accented character roughly doubles
+                       # the blob for a reader on cellular in a hurry.
+                       "strings": json.dumps(ensure_ascii=False, obj={
+                           "raising": t("Raising…"),
+                           "raise_": t("Raise the alarm"),
+                           "failed": t("That did not go through."),
+                           "noconn": t("No connection — call your local "
+                                       "emergency number."),
+                           "medid": t("MEDICAL ID"),
+                           "name": t("Name"),
+                           "age": t("Age"),
+                           "conds": t("Known conditions"),
+                           "hr": t("Resting heart rate"),
+                           "contact": t("Emergency contact"),
+                           "whatdo": t("What do I do while you wait?"),
+                           "notclin": t("Guidance, not a clinician — it "
+                                        "cannot see them, and it cannot call "
+                                        "anyone."),
+                           "whathap": t("What is happening?"),
+                           "egq": t("breathing, but will not wake up"),
+                           "ask": t("Ask"),
+                           "askagain": t("Ask again"),
+                           "asking": t("Asking…"),
+                           "offline": t(
+                               "No connection. Call your local emergency "
+                               "number if you have not already. Do not move "
+                               "them unless they are in danger where they "
+                               "are. Stay with them until someone arrives."),
+                       })}
         + "</script>")
-    return _page("Someone is watching over this person", body)
+    return _page("Someone is watching over this person", body, language)

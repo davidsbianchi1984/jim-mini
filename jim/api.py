@@ -1378,18 +1378,26 @@ def create_app(qrme_client: QRMEClient | None = None,
     # exactly the caller this exists for.
 
     @app.get("/c/{bid}", response_class=HTMLResponse)
-    def beacon_page(bid: str) -> HTMLResponse:
+    def beacon_page(bid: str, request: Request) -> HTMLResponse:
         """What a phone's camera app opens when somebody scans the sticker.
 
         HTML, because a QR is pointed at by a person holding a phone — this
         used to answer JSON and show a neighbour a wall of braces. The JSON is
         still served at ``/c/{id}/card`` for anything reading it
         programmatically.
+
+        The language is **the finder's**, negotiated from their own
+        ``Accept-Language``. Every other localization path in this product
+        takes a ``user_id``, and the reader of this page is the one person in
+        it who has no account — so until this line existed they were told in
+        English, wherever they were standing, that somebody was being watched
+        over and what to do about it.
         """
         card = beacons.card(bid)
+        language = i18n.negotiate(request.headers.get("accept-language"))
         if card is None:
-            return HTMLResponse(landing.gone(), status_code=404)
-        return HTMLResponse(landing.care_page(card))
+            return HTMLResponse(landing.gone(language), status_code=404)
+        return HTMLResponse(landing.care_page(card, language))
 
     @app.get("/c/{bid}/card")
     def beacon_card(bid: str) -> dict:
@@ -1490,10 +1498,18 @@ def create_app(qrme_client: QRMEClient | None = None,
         return out
 
     @app.post("/alarms/{alarm_id}/guidance")
-    def relay_guidance(alarm_id: str, body: RelayQuestion) -> dict:
+    def relay_guidance(alarm_id: str, body: RelayQuestion,
+                       request: Request) -> dict:
         """What to tell whoever is waiting. Public: the person standing over a
-        colleague has no account and needs an answer in ninety seconds."""
-        return relay.guidance(alarm_id, body.question, qrme=app.state.qrme)
+        colleague has no account and needs an answer in ninety seconds.
+
+        And in their own language, from their own Accept-Language — the one
+        localization path in this product that cannot key off a user id,
+        because this caller has none.
+        """
+        return relay.guidance(
+            alarm_id, body.question, qrme=app.state.qrme,
+            language=i18n.negotiate(request.headers.get("accept-language")))
 
     @app.post("/emergency/{user_id}", status_code=201)
     def emergency(user_id: str, body: EmergencyRequest,
