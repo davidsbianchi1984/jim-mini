@@ -111,6 +111,15 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The address the launch-time error report is sent to, compiled into
+          # the bundle by vite. Absent, `errors.ts` has nowhere to send and no
+          # runtime path that could acquire one — which is the intended
+          # "off by default", but it also meant every installer this workflow
+          # has ever produced reported nothing, however the secrets were set.
+          # The define existed, the docs said to rebuild with it, and the step
+          # that does the building dropped it on the floor.
+          PROBLEM_COLLECTOR: ${{ secrets.PROBLEM_COLLECTOR }}
+          PROBLEM_TOKEN: ${{ secrets.PROBLEM_TOKEN }}
 
       - name: Build & package — Windows signed
         if: runner.os == 'Windows' && steps.signing.outputs.enabled == 'true'
@@ -119,6 +128,8 @@ jobs:
           CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROBLEM_COLLECTOR: ${{ secrets.PROBLEM_COLLECTOR }}
+          PROBLEM_TOKEN: ${{ secrets.PROBLEM_TOKEN }}
 
       - name: Build & package — unsigned
         if: steps.signing.outputs.enabled != 'true'
@@ -126,6 +137,8 @@ jobs:
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"   # don't attempt macOS signing
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROBLEM_COLLECTOR: ${{ secrets.PROBLEM_COLLECTOR }}
+          PROBLEM_TOKEN: ${{ secrets.PROBLEM_TOKEN }}
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4

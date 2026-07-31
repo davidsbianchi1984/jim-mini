@@ -167,8 +167,21 @@ A build sends only if it was built with an address:
 PROBLEM_COLLECTOR=https://gw.example.com PROBLEM_TOKEN=… npm run build
 ```
 
+For a release built by CI, those two are repository **secrets** of the same
+names — `desktop-release.yml` passes them into every packaging step. They were
+missing from that workflow until 0.20.1, which is worth stating plainly: the
+define existed, this page said to rebuild with the variables set, and the step
+that ran the build did not pass them. Every installer produced before that fix
+compiled an empty address and reported nothing, whatever the secrets were set
+to, and nothing anywhere failed. A test now asserts every step that runs the
+packaging command carries both, and it covers steps that do not exist yet.
+
 Unset, and the installer has nowhere to send. That is a stronger default than a
-flag — there is no address for a later mistake to switch on. When an address is
+flag — there is no address for a later mistake to switch on. Passing an unset
+secret is the same thing: it arrives as an empty string, which is exactly the
+state the source already reads as *no collector*, so a fork with nothing
+configured keeps building installers that report nothing rather than failing
+its release. When an address is
 set, the console posts once at launch, alongside the update check, and swallows
 every failure; a diagnostic that can delay a launch has stopped being worth
 having.
