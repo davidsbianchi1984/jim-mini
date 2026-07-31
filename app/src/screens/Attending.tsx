@@ -271,8 +271,12 @@ export function Attending() {
                  onChange={(e) => setQuestion(e.target.value)} />
           <button disabled={busy || !alarmId.trim() || !question.trim()}
                   onClick={() => run(async () => {
+                    // No token: the route is public on purpose, and the
+                    // person it was written for has no account. This screen
+                    // is the Guardian's side of the same alarm; the door for
+                    // the person kneeling is the scanned beacon page.
                     setGuidance(await api.alarmGuidance(alarmId.trim(),
-                      { question: question.trim() }, token!));
+                      { question: question.trim() }));
                   })}>Ask</button>
         </div>
         {guidance != null && (

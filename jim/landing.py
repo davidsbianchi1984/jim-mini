@@ -80,6 +80,14 @@ textarea:focus{outline:2px solid #ff4d5e;outline-offset:-1px}
  border:1px solid rgba(247,183,49,.5);border-radius:999px;padding:3px 9px}
 a.tel{color:#43e08a;font-weight:700;text-decoration:none}
 .foot{color:#626d88;font-size:12px;text-align:center;margin-top:18px}
+.ask{margin-top:18px;border-top:1px solid #26314e;padding-top:15px}
+.ask h2{font-size:15px;color:#eef1f7;margin-bottom:4px}
+.ask .lead{color:#8a94ad;font-size:13px}
+.ans{margin-top:14px;background:#0f1626;border:1px solid #26314e;
+ border-radius:12px;padding:13px 15px;font-size:15px;line-height:1.5;
+ white-space:pre-wrap}
+.ans .src{display:block;margin-top:10px;font-size:11.5px;font-weight:700;
+ color:#8a94ad;letter-spacing:.2px;white-space:normal}
 """
 
 
@@ -128,24 +136,65 @@ _ALARM_JS = """
    s.textContent=j.note||'';
    var bd=document.getElementById('bg');if(bd)bd.textContent=j.badge||'';
    var m=j.medical_id;
-   if(!m)return;
-   var d=document.createElement('div');d.className='med';
-   var h='<h2>MEDICAL ID</h2>';
-   if(m.name)h+=row('Name',esc(m.name));
-   if(m.age!==null&&m.age!==undefined)h+=row('Age',String(m.age));
-   if(m.known_conditions&&m.known_conditions.length){
-    h+=row('Known conditions','<span class="conds">'+m.known_conditions.map(
-      function(c){return '<span class="cond">'+esc(c)+'</span>';}).join('')
-      +'</span>');}
-   if(m.resting_heart_rate)h+=row('Resting heart rate',m.resting_heart_rate+' bpm');
-   if(m.emergency_contact&&m.emergency_contact.phone){
-    h+=row('Emergency contact','<a class="tel" href="tel:'
-      +esc(m.emergency_contact.phone)+'">'
-      +esc(m.emergency_contact.name||m.emergency_contact.phone)+'</a>');}
-   d.innerHTML=h;f.parentNode.appendChild(d);
+   if(m){
+    var d=document.createElement('div');d.className='med';
+    var h='<h2>MEDICAL ID</h2>';
+    if(m.name)h+=row('Name',esc(m.name));
+    if(m.age!==null&&m.age!==undefined)h+=row('Age',String(m.age));
+    if(m.known_conditions&&m.known_conditions.length){
+     h+=row('Known conditions','<span class="conds">'+m.known_conditions.map(
+       function(c){return '<span class="cond">'+esc(c)+'</span>';}).join('')
+       +'</span>');}
+    if(m.resting_heart_rate)h+=row('Resting heart rate',m.resting_heart_rate+' bpm');
+    if(m.emergency_contact&&m.emergency_contact.phone){
+     h+=row('Emergency contact','<a class="tel" href="tel:'
+       +esc(m.emergency_contact.phone)+'">'
+       +esc(m.emergency_contact.name||m.emergency_contact.phone)+'</a>');}
+    d.innerHTML=h;f.parentNode.appendChild(d);}
+   // Unconditional, and deliberately outside the block above: a minor's
+   // beacon opens no clinical stage to anybody, and the person kneeling
+   // over a child needs to know what to do more than anyone, not less.
+   ask(j.alarm);
   }).catch(function(){b.disabled=false;b.textContent='Raise the alarm';
    s.textContent='No connection \\u2014 call your local emergency number.';});
  });
+ function ask(id){
+  if(!id)return;
+  var w=document.createElement('div');w.className='ask';
+  w.innerHTML='<h2>What do I do while you wait?</h2>'
+   +'<p class="lead">Guidance, not a clinician \\u2014 it cannot see them, '
+   +'and it cannot call anyone.</p>'
+   +'<label for="q">What is happening?</label>'
+   +'<textarea id="q" rows="2" placeholder="breathing, but will not wake up">'
+   +'</textarea><button id="qb" type="button">Ask</button>'
+   +'<div id="qa"></div>';
+  f.parentNode.appendChild(w);
+  var qb=document.getElementById('qb'),qa=document.getElementById('qa');
+  qb.addEventListener('click',function(){
+   var q=document.getElementById('q').value.trim();
+   if(!q)return;
+   qb.disabled=true;qb.textContent='Asking\\u2026';
+   fetch(%(guidance)s+encodeURIComponent(id)+'/guidance',{method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({question:q})})
+   .then(function(r){return r.json();})
+   .then(function(g){
+    qb.disabled=false;qb.textContent='Ask again';
+    var a=document.createElement('div');a.className='ans';
+    a.textContent=g.answer||'';
+    if(g.note){var n=document.createElement('span');n.className='src';
+     n.textContent=g.note;a.appendChild(n);}
+    qa.appendChild(a);})
+   .catch(function(){
+    qb.disabled=false;qb.textContent='Ask';
+    var a=document.createElement('div');a.className='ans';
+    // The one instruction that is always right and never needs a network.
+    a.textContent='No connection. Call your local emergency number if you '
+     +'have not already. Do not move them unless they are in danger where '
+     +'they are. Stay with them until someone arrives.';
+    qa.appendChild(a);});
+  });
+ }
  function row(k,v){return '<div class="row"><span>'+k+'</span><span>'+v
   +'</span></div>';}
  function esc(t){var d=document.createElement('div');d.textContent=t;
@@ -189,6 +238,11 @@ def care_page(card: dict) -> str:
            "over this person. It does not tell you how they are, and nothing "
            "on this page says where they live.</p>")
         + "<script>"
-        + _ALARM_JS % {"endpoint": _js(f"/c/{card['beacon']}/alarm")}
+        + _ALARM_JS % {"endpoint": _js(f"/c/{card['beacon']}/alarm"),
+                       # A prefix, not a URL: the alarm id only exists once
+                       # the alarm has been raised. Relative, for the same
+                       # reason the alarm endpoint is — an absolute one baked
+                       # from JIM_PUBLIC_URL breaks every scan on a LAN.
+                       "guidance": _js("/alarms/")}
         + "</script>")
     return _page("Someone is watching over this person", body)

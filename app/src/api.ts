@@ -1211,8 +1211,20 @@ export const api = {
     req<Row>(`/companion/${uid}`, { method: "POST", body, token }),
   updateMed: (uid: string, medId: string, body: Body, token: string) =>
     req<Row>(`/meds/${uid}/${medId}`, { method: "PUT", body, token }),
-  alarmGuidance: (alarmId: string, body: Body, token: string) =>
-    req<Row>(`/alarms/${alarmId}/guidance`, { method: "POST", body, token }),
+  // **No token, and that is the route's whole design.** Its docstring says
+  // so: "Public: the person standing over a colleague has no account and
+  // needs an answer in ninety seconds." This binding sent one anyway, which
+  // made a route written for a stranger callable only by an account holder —
+  // and the only screen calling it was Attending, which is the Guardian's
+  // side of an alarm, not the side of the person kneeling on the floor.
+  //
+  // The door that matters for that person is not in this console at all: it
+  // is the beacon page the server renders at `GET /c/{id}`, which they reach
+  // by pointing a camera at a sticker. This binding stays because a Guardian
+  // watching an alarm from a desk wants the same answer; it just stops
+  // pretending a credential was ever required.
+  alarmGuidance: (alarmId: string, body: Body) =>
+    req<Row>(`/alarms/${alarmId}/guidance`, { method: "POST", body }),
   // This one **does** take a credential, and the first version of this
   // binding did not — written from the reasonable-sounding premise that an
   // emergency is the moment a person is least able to produce a token.
