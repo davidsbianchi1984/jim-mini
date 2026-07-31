@@ -84,13 +84,26 @@ anything.
    time a cut is ready, give a prefilled release link per repository:
 
    ```
-   https://github.com/davidsbianchi1984/jim-mini/releases/new?tag=app-v0.19.0&target=<sha>&title=app-v0.19.0
+   https://github.com/davidsbianchi1984/jim-mini/releases/new?tag=app-v0.19.0&target=<sha>&title=JIM-mini%20app-v0.19.0
    ```
 
    `target` takes the full SHA of the release-prep commit — the same one rule
    two above says to tag, not the tip of `main` if anything landed after it.
    The tag is created on publish, and a tag created this way *does* emit the
    `push` event, so both workflows fire exactly as they would from a terminal.
+
+   **The title carries the product name**: `JIM-mini app-v0.19.0`, not
+   `app-v0.19.0`. Three repositories cut the same number in the same pass, so
+   a release list, a notification and a search result all show three entries
+   reading `app-v0.20.1` with nothing to tell them apart. The name is the
+   only thing in the title that says which product this is.
+
+   **A draft creates no tag.** Saving the form as a draft stores the release
+   and leaves the tag unmade — the draft's URL says `untagged-…` — so neither
+   workflow fires, no installers are built, and the notes are not laid over
+   the body, because the thing they all listen for is the tag push. That is
+   also why *Generate release notes* has nothing to offer on a draft. Publish
+   and all of it happens; until then the release exists and the tag does not.
 
 The `app-v*` tag triggers `.github/workflows/desktop-release.yml`, which builds
 the console into per-OS installers (`.dmg` / `.exe` / `.AppImage`) on real
