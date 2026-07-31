@@ -54,6 +54,24 @@ data class FlowStep(val step: String, val label: String, val detail: String)
 data class RobotDirective(val robot: String, val directive: String)
 data class EmergencyResult(val flow: List<FlowStep>, val directives: List<RobotDirective>)
 data class EscalationPolicy(val sensitivity: String, val bySeverity: Map<String, String>)
+/// An open alarm, raised when somebody scanned a care code on a door.
+///
+/// `acceptedBy` is the point of the type. Accepting and clearing are separate
+/// acts and the backend keeps them apart on purpose — accepting says somebody
+/// is coming, clearing says it is over. An accepted alarm is still `open`, and
+/// this shell shows it that way, because conflating them is how an alarm gets
+/// marked handled by the act of being seen.
+data class AlarmRow(
+    val id: String, val beaconId: String, val messages: List<String>,
+    val state: String, val tier: String, val acceptedBy: String?,
+    val createdAt: String,
+)
+
+data class AlarmAck(val alarm: String, val acceptedBy: String?,
+                    val state: String?, val note: String?)
+
+data class AlarmGuidance(val answer: String, val note: String?)
+
 data class CrashWatch(
     val armed: Boolean, val trustedName: String, val attempts: Int,
     val windowMinutes: Double, val contactEms: Boolean,
@@ -437,6 +455,67 @@ object ApiClient {
     }
 
     // ---- safety: escalation policy, Emergency, robots ----
+
+    // The alarms. Routes this shell could not reach at all until 0.23.0 —
+    // there was no occurrence of the word "alarm" anywhere in it. A responder
+    // is paged on their phone and, holding that phone, had no way to answer;
+    // accepting is what stops the ladder climbing to emergency services.
+
+    suspend fun alarms(uid: String, token: String): List<AlarmRow> {
+        val arr = withContext(Dispatchers.IO) {
+            val conn = (URL("$base/users/$uid/alarms").openConnection()
+                as HttpURLConnection).apply {
+                setRequestProperty("authorization", "Bearer $token")
+                connectTimeout = 8000; readTimeout = 8000
+            }
+            val text = conn.inputStream.bufferedReader().use { it.readText() }
+            conn.disconnect(); org.json.JSONArray(text)
+        }
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            val msgs = o.optJSONArray("messages")
+            AlarmRow(
+                o.getString("id"), o.optString("beacon_id", ""),
+                (0 until (msgs?.length() ?: 0)).map { msgs!!.getString(it) },
+                o.optString("state", "open"), o.optString("tier", ""),
+                if (o.isNull("accepted_by")) null else o.optString("accepted_by"),
+                o.optString("created_at", ""),
+            )
+        }
+    }
+
+    /** [responder] must be a name — the backend refuses an empty one, because
+     *  "someone accepted it" is the thing this relay exists to stop being
+     *  enough. */
+    suspend fun acceptAlarm(uid: String, alarmId: String, responder: String,
+                            token: String): AlarmAck =
+        ackOf(request("/users/$uid/alarms/$alarmId/accept", "POST",
+            JSONObject().put("responder", responder), token))
+
+    suspend fun clearAlarm(uid: String, alarmId: String, token: String): AlarmAck =
+        ackOf(request("/users/$uid/alarms/$alarmId/clear", "POST",
+            JSONObject(), token))
+
+    suspend fun escalateAlarm(uid: String, alarmId: String, token: String): AlarmAck =
+        ackOf(request("/users/$uid/alarms/$alarmId/escalate", "POST",
+            JSONObject(), token))
+
+    /** Answers even with no specialist reachable — the standing instruction is
+     *  the one that is always right and never depends on a model. */
+    suspend fun alarmGuidance(alarmId: String, question: String,
+                              token: String): AlarmGuidance {
+        val o = request("/alarms/$alarmId/guidance", "POST",
+            JSONObject().put("question", question), token)
+        return AlarmGuidance(o.optString("answer", ""),
+            if (o.isNull("note")) null else o.optString("note"))
+    }
+
+    private fun ackOf(o: JSONObject) = AlarmAck(
+        o.optString("alarm", ""),
+        if (o.isNull("accepted_by")) null else o.optString("accepted_by"),
+        if (o.isNull("state")) null else o.optString("state"),
+        if (o.isNull("note")) null else o.optString("note"),
+    )
 
     // The crash watch: armed in advance, off by default — a critical reading
     // opens "are you okay?", and silence through every attempt sends the

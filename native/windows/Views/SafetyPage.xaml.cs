@@ -43,9 +43,115 @@ public sealed partial class SafetyPage : Page
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
+        await LoadAlarms();
         await LoadPolicy();
         await LoadRobots();
         await LoadCrashWatch();
+    }
+
+    // -- alarms --
+    //
+    // The gap this closes: this shell could raise an emergency and command a
+    // bound robot to perform CPR, and could not answer the alarm about it.
+    // There was no occurrence of the word "alarm" anywhere in it.
+    //
+    // An alarm is raised when a stranger scans the care code on somebody's
+    // door, and the household relay pages a responder — a neighbour, an
+    // on-call carer. Accepting is the act that stops the ladder climbing to
+    // emergency services, so a responder who cannot accept leaves only the
+    // path that ends in an ambulance.
+
+    private string? _openAlarmId;
+
+    private sealed record AlarmCard(string Said, string Attending);
+
+    private async System.Threading.Tasks.Task LoadAlarms()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var rows = await ApiClient.Shared.Alarms(s.Uid, s.Token);
+            var open = rows.Where(a => a.State == "open").ToList();
+            _openAlarmId = open.FirstOrDefault()?.Id;
+            AlarmsEmpty.Visibility = open.Count == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            AlarmsList.ItemsSource = open.Select(a => new AlarmCard(
+                string.Join("  ", a.Messages ?? System.Array.Empty<string>()),
+                // Accepted is not cleared — the alarm stays open and the card
+                // has to say which of the two happened.
+                a.AcceptedBy is null
+                    ? ""
+                    : $"{a.AcceptedBy} is attending — still open, not resolved.")
+            ).ToList();
+            AcceptButton.IsEnabled = _openAlarmId is not null;
+            EscalateButton.IsEnabled = _openAlarmId is not null;
+            ClearAlarmButton.IsEnabled = _openAlarmId is not null;
+        }
+        catch (System.Exception ex) { AlarmSaid.Text = ex.Message; }
+    }
+
+    private async void OnAcceptAlarm(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null || _openAlarmId is null) return;
+        // The backend refuses an empty responder, and it is right to: "someone
+        // accepted it" is the thing this relay exists to stop being enough.
+        if (string.IsNullOrWhiteSpace(ResponderBox.Text))
+        {
+            AlarmSaid.Text = "A responder needs a name.";
+            return;
+        }
+        try
+        {
+            var ack = await ApiClient.Shared.AcceptAlarm(
+                s.Uid, _openAlarmId, ResponderBox.Text.Trim(), s.Token);
+            AlarmSaid.Text = ack.Note ?? "";
+            await LoadAlarms();
+        }
+        catch (System.Exception ex) { AlarmSaid.Text = ex.Message; }
+    }
+
+    private async void OnEscalateAlarm(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null || _openAlarmId is null) return;
+        try
+        {
+            var ack = await ApiClient.Shared.EscalateAlarm(
+                s.Uid, _openAlarmId, s.Token);
+            AlarmSaid.Text = ack.Note ?? "";
+            await LoadAlarms();
+        }
+        catch (System.Exception ex) { AlarmSaid.Text = ex.Message; }
+    }
+
+    private async void OnClearAlarm(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null || _openAlarmId is null) return;
+        try
+        {
+            var ack = await ApiClient.Shared.ClearAlarm(
+                s.Uid, _openAlarmId, s.Token);
+            AlarmSaid.Text = ack.Note ?? "";
+            await LoadAlarms();
+        }
+        catch (System.Exception ex) { AlarmSaid.Text = ex.Message; }
+    }
+
+    private async void OnAskAlarmGuidance(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Token is null || _openAlarmId is null) return;
+        try
+        {
+            var g = await ApiClient.Shared.AlarmGuidance(
+                _openAlarmId, AlarmQuestionBox.Text, s.Token);
+            AlarmGuidanceText.Text = g.Note is null
+                ? g.Answer : $"{g.Answer}\n\n{g.Note}";
+        }
+        catch (System.Exception ex) { AlarmSaid.Text = ex.Message; }
     }
 
     // -- crash watch --

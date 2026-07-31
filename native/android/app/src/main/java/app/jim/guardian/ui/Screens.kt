@@ -609,6 +609,105 @@ private fun JournalPanel(vm: GuardianViewModel) {
 // ---- Safety: Emergency (SOS), escalation policy, robot helpers ----
 
 // The crash watch: the vigil's acute sibling, armed here in advance. The
+// Alarms — somebody scanned a care code, and somebody has to answer.
+//
+// The gap this closes: this shell could raise an emergency and command a bound
+// robot to perform CPR, and could not answer the alarm about it. There was no
+// occurrence of the word "alarm" anywhere in it.
+//
+// An alarm is raised when a stranger scans the care code on somebody's door,
+// and the household relay pages a responder — a neighbour, an on-call carer.
+// They are paged on their phone. Accepting is the act that stops the ladder
+// climbing to emergency services, so a responder who cannot accept on the
+// device they were paged on leaves only the path that ends in an ambulance.
+@Composable
+private fun AlarmsPanel(vm: GuardianViewModel) {
+    var rows by remember { mutableStateOf<List<AlarmRow>>(emptyList()) }
+    var responder by remember { mutableStateOf("") }
+    var question by remember { mutableStateOf("") }
+    var guidance by remember { mutableStateOf<AlarmGuidance?>(null) }
+    var said by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun load() {
+        vm.call({ ApiClient.alarms(vm.uid!!, vm.token!!) }) { rows = it }
+    }
+    LaunchedEffect(Unit) { load() }
+
+    val open = rows.filter { it.state == "open" }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (open.isEmpty()) {
+            Text("Nothing open.", color = Jim.T2, fontSize = 14.sp)
+            Text("An alarm appears here when somebody scans the care code on " +
+                 "your door. Scanning it does not call an ambulance — it wakes " +
+                 "the people watching over you, and one of them has to answer.",
+                color = Jim.T2, fontSize = 12.sp)
+        }
+        open.forEach { a ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Someone raised this", color = Jim.Red,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                a.messages.forEach { m ->
+                    Text("\u201c$m\u201d", color = Jim.Txt, fontSize = 14.sp)
+                }
+                if (a.acceptedBy != null) {
+                    // Accepted is not cleared. The server says so in its own
+                    // response and this shell repeats it rather than greying
+                    // the card out.
+                    Text("${a.acceptedBy} is attending — still open, not resolved.",
+                        color = Jim.Amber, fontSize = 12.sp)
+                } else {
+                    // A named responder, because the backend refuses an empty
+                    // one: "someone accepted it" is the thing this relay
+                    // exists to stop being enough.
+                    OutlinedTextField(value = responder,
+                        onValueChange = { responder = it },
+                        label = { Text("Your name") })
+                    Button(onClick = {
+                        vm.call({ ApiClient.acceptAlarm(vm.uid!!, a.id,
+                            responder, vm.token!!) }) { said = it.note; load() }
+                    }, enabled = responder.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Jim.BrandA)) {
+                        Text("I have this \u2014 I'm going")
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.escalateAlarm(vm.uid!!, a.id,
+                            vm.token!!) }) { said = it.note; load() }
+                    }) { Text("Nobody can go \u2014 escalate", color = Jim.Red) }
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.clearAlarm(vm.uid!!, a.id,
+                            vm.token!!) }) { said = it.note; load() }
+                    }) { Text("It's over \u2014 clear it", color = Jim.T2) }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(value = question,
+                        onValueChange = { question = it },
+                        label = { Text("What do I do?") },
+                        modifier = Modifier.weight(1f))
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.alarmGuidance(a.id, question,
+                            vm.token!!) }) { guidance = it }
+                    }, enabled = question.isNotBlank()) { Text("Ask") }
+                }
+            }
+        }
+        guidance?.let { g ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(g.answer, color = Jim.Txt, fontSize = 14.sp)
+                g.note?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+            }
+        }
+        said?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+        Text("This is not an emergency service. If it is one, call your local " +
+             "emergency number \u2014 this screen cannot.",
+            color = Jim.T2, fontSize = 11.sp)
+    }
+}
+
 // status read is also the clock, so refreshing is what re-asks the question.
 @Composable
 private fun CrashWatchPanel(vm: GuardianViewModel) {
@@ -709,7 +808,10 @@ private fun CrashWatchPanel(vm: GuardianViewModel) {
 @Composable
 fun SafetyScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("SOS", "Crash", "Med ID", "Policy", "Robots", "Vault")
+    // Alarms first and selected by default: somebody opening this screen has
+    // usually just been paged, and the thing they were paged about should not
+    // be behind a tab they have to go looking for.
+    val tabs = listOf("Alarms", "SOS", "Crash", "Med ID", "Policy", "Robots", "Vault")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -719,11 +821,12 @@ fun SafetyScreen(vm: GuardianViewModel) {
             }
         }
         when (tab) {
-            0 -> SOSPanel(vm)
-            1 -> CrashWatchPanel(vm)
-            2 -> MedicalPanel(vm)
-            3 -> PolicyPanel(vm)
-            4 -> RobotsPanel(vm)
+            0 -> AlarmsPanel(vm)
+            1 -> SOSPanel(vm)
+            2 -> CrashWatchPanel(vm)
+            3 -> MedicalPanel(vm)
+            4 -> PolicyPanel(vm)
+            5 -> RobotsPanel(vm)
             else -> CustodyPanel(vm)
         }
     }

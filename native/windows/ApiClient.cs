@@ -194,6 +194,32 @@ public record ModelChoice(
     [property: JsonPropertyName("provider")] string Provider,
     [property: JsonPropertyName("effective")] string Effective);
 
+/// <summary>An open alarm, raised when somebody scanned a care code on a door.
+///
+/// <para><c>AcceptedBy</c> is the point of the record. Accepting and clearing
+/// are separate acts and the backend keeps them apart deliberately — accepting
+/// says somebody is coming, clearing says it is over. An accepted alarm is
+/// still <c>open</c>, and this shell shows it that way: conflating them is how
+/// an alarm gets marked handled by the act of being seen.</para></summary>
+public record AlarmRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("beacon_id")] string? BeaconId,
+    [property: JsonPropertyName("messages")] string[]? Messages,
+    [property: JsonPropertyName("state")] string State,
+    [property: JsonPropertyName("tier")] string? Tier,
+    [property: JsonPropertyName("accepted_by")] string? AcceptedBy,
+    [property: JsonPropertyName("created_at")] string? CreatedAt);
+
+public record AlarmAck(
+    [property: JsonPropertyName("alarm")] string? Alarm,
+    [property: JsonPropertyName("accepted_by")] string? AcceptedBy,
+    [property: JsonPropertyName("state")] string? State,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record AlarmGuidance(
+    [property: JsonPropertyName("answer")] string Answer,
+    [property: JsonPropertyName("note")] string? Note);
+
 public record CrashWatchStatus(
     [property: JsonPropertyName("armed")] bool Armed,
     [property: JsonPropertyName("trusted_name")] string? TrustedName,
@@ -612,6 +638,37 @@ public sealed class ApiClient
         Send<TranslateResult>(Post($"/translate/{uid}", new { text }, token));
 
     // -- safety: escalation policy, Emergency, robots --
+
+    // The alarms. Routes this shell could not reach at all until 0.23.0 —
+    // there was no occurrence of the word "alarm" anywhere in it. A responder
+    // is paged on their phone and, holding it, had no way to answer; accepting
+    // is what stops the ladder climbing to emergency services.
+    public Task<AlarmRow[]> Alarms(string uid, string token) =>
+        Send<AlarmRow[]>(Get($"/users/{uid}/alarms", token));
+
+    /// <summary>The responder must be named. The backend refuses an empty one,
+    /// because "someone accepted it" is the thing this relay exists to stop
+    /// being enough.</summary>
+    public Task<AlarmAck> AcceptAlarm(string uid, string alarmId,
+                                      string responder, string token) =>
+        Send<AlarmAck>(Post($"/users/{uid}/alarms/{alarmId}/accept",
+            new { responder }, token));
+
+    public Task<AlarmAck> ClearAlarm(string uid, string alarmId, string token) =>
+        Send<AlarmAck>(Post($"/users/{uid}/alarms/{alarmId}/clear",
+            new { }, token));
+
+    public Task<AlarmAck> EscalateAlarm(string uid, string alarmId, string token) =>
+        Send<AlarmAck>(Post($"/users/{uid}/alarms/{alarmId}/escalate",
+            new { }, token));
+
+    /// <summary>Answers even with no specialist reachable — the standing
+    /// instruction is the one that is always right and never depends on a
+    /// model being up.</summary>
+    public Task<AlarmGuidance> AlarmGuidance(string alarmId, string question,
+                                             string token) =>
+        Send<AlarmGuidance>(Post($"/alarms/{alarmId}/guidance",
+            new { question }, token));
 
     // The crash watch: armed in advance, off by default. The status read is
     // also the clock — polling is what re-asks the question.

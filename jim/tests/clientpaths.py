@@ -156,10 +156,24 @@ IOS = Language(
 ANDROID = Language(
     "android", REPO / "native" / "android", (".kt",),
     re.compile(r"\$\{[^{}]*\}|\$[A-Za-z_][A-Za-z0-9_]*"),
-    re.compile(r'"(/[^"\n]*)"'),
+    # Two literal shapes. The shared `request()` helper is handed a bare
+    # path — `"/users/$uid/meds"` — but a route answering a JSON **array**
+    # cannot use that helper, because it returns a JSONObject. Those open the
+    # connection directly and build the whole URL in the literal:
+    # `URL("$base/baseline/$uid")`. That form starts with `$`, not `/`, so
+    # the original pattern could not see it.
+    #
+    # `GET /baseline/{user_id}` proves the cost: the Android shell has had a
+    # working door for it since the baseline round, and this audit counted it
+    # doorless the entire time. A false positive produces busywork rather than
+    # a dead button, but it is still the guard being wrong.
+    re.compile(r'"\$base(/[^"\n]*)"|"(/[^"\n]*)"'),
     (CallForm(re.compile(r"\brequest\s*\("),
               verb_in_body=re.compile(
-                  r'"/[^"\n]*"\s*,\s*"(GET|POST|PUT|PATCH|DELETE)"')),),
+                  r'"/[^"\n]*"\s*,\s*"(GET|POST|PUT|PATCH|DELETE)"')),
+     # The direct-connection form above. Always a read: it exists because the
+     # response is an array, and every array route in this shell is a GET.
+     CallForm(re.compile(r"\bURL\s*\("), verb="GET"),),
 )
 # C# names the verb in the helper. `Send<Post>(Post(...))` is not ambiguous
 # here: the model type is followed by `>`, never by `(`.

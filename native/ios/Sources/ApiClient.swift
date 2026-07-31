@@ -219,6 +219,39 @@ struct EscalationPolicy: Decodable {
     let by_severity: [String: String]
 }
 
+/// An open alarm, raised when somebody scanned a care code on a door.
+///
+/// `accepted_by` is the whole point of the type. `accept` and `clear` are
+/// different acts and the backend keeps them apart deliberately — accepting
+/// says somebody is coming, clearing says it is over. An alarm that has been
+/// accepted is still `open`, and this shell must show it that way, because
+/// conflating the two is how an alarm gets marked handled by the act of being
+/// seen.
+struct AlarmRow: Decodable, Identifiable {
+    let id: String
+    let beacon_id: String?
+    let messages: [String]?
+    let state: String
+    let tier: String?
+    let accepted_by: String?
+    let created_at: String?
+    let cleared_at: String?
+}
+
+struct AlarmAck: Decodable {
+    let alarm: String?
+    let accepted_by: String?
+    let state: String?
+    let note: String?
+}
+
+struct AlarmGuidance: Decodable {
+    let alarm: String?
+    let source: String?
+    let answer: String
+    let note: String?
+}
+
 struct CrashWatchStatus: Decodable {
     let armed: Bool
     let trusted_name: String?
@@ -613,6 +646,47 @@ actor ApiClient {
 
     // The crash watch: armed in advance, off by default. The status read is
     // also the clock — polling is what re-asks the question.
+    // MARK: - Alarms
+    //
+    // The routes this shell could not reach at all until 0.23.0. A responder
+    // is paged on their phone and, holding that phone, had no way to answer:
+    // accepting is what stops the ladder climbing to emergency services.
+
+    func alarms(uid: String, token: String) async throws -> [AlarmRow] {
+        try await request("/users/\(uid)/alarms", token: token)
+    }
+
+    /// `responder` must be a name. The backend refuses an empty one, and its
+    /// reason is worth carrying up to the button: *"a responder needs a name
+    /// — 'someone accepted it' is the thing this relay exists to stop being
+    /// enough."*
+    func acceptAlarm(uid: String, alarmId: String, responder: String,
+                     token: String) async throws -> AlarmAck {
+        try await request("/users/\(uid)/alarms/\(alarmId)/accept",
+                          method: "POST", body: ["responder": responder],
+                          token: token)
+    }
+
+    func clearAlarm(uid: String, alarmId: String,
+                    token: String) async throws -> AlarmAck {
+        try await request("/users/\(uid)/alarms/\(alarmId)/clear",
+                          method: "POST", body: [:], token: token)
+    }
+
+    func escalateAlarm(uid: String, alarmId: String,
+                       token: String) async throws -> AlarmAck {
+        try await request("/users/\(uid)/alarms/\(alarmId)/escalate",
+                          method: "POST", body: [:], token: token)
+    }
+
+    /// Answers even with no specialist reachable — the standing instruction
+    /// is the one that is always right and never depends on a model.
+    func alarmGuidance(alarmId: String, question: String,
+                       token: String) async throws -> AlarmGuidance {
+        try await request("/alarms/\(alarmId)/guidance", method: "POST",
+                          body: ["question": question], token: token)
+    }
+
     func crashWatch(uid: String, token: String) async throws -> CrashWatchStatus {
         try await request("/crash-watch/\(uid)", token: token)
     }

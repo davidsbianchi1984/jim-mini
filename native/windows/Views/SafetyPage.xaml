@@ -7,6 +7,67 @@
 
     <Pivot MaxWidth="680" Margin="20,12" Foreground="{StaticResource JimTxtBrush}">
 
+        <!-- Alarms. First, and therefore the pivot that opens: somebody
+             reaching this page has usually just been paged, and the thing they
+             were paged about should not be behind a header they have to find. -->
+        <PivotItem Header="Alarms">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <TextBlock x:Name="AlarmsEmpty" TextWrapping="Wrap" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}"
+                               Text="Nothing open. An alarm appears here when somebody scans the care code on your door. Scanning it does not call an ambulance — it wakes the people watching over you, and one of them has to answer." />
+
+                    <ItemsControl x:Name="AlarmsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource JimCardBrush}"
+                                        CornerRadius="10" Padding="14" Margin="0,0,0,10">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Someone raised this" FontWeight="Bold"
+                                                   Foreground="{StaticResource JimRedBrush}" />
+                                        <TextBlock Text="{Binding Said}" TextWrapping="Wrap"
+                                                   Foreground="{StaticResource JimTxtBrush}" />
+                                        <!-- Accepted is not cleared: the server says
+                                             so and this shell repeats it rather than
+                                             greying the card out. -->
+                                        <TextBlock Text="{Binding Attending}" FontSize="12"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{StaticResource JimAmberBrush}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- A named responder, because the backend refuses an empty
+                         one: "someone accepted it" is the thing this relay
+                         exists to stop being enough. -->
+                    <TextBox x:Name="ResponderBox" Header="Your name"
+                             PlaceholderText="Dana next door" />
+                    <Button x:Name="AcceptButton" Click="OnAcceptAlarm"
+                            HorizontalAlignment="Stretch"
+                            Content="I have this — I'm going" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="EscalateButton" Click="OnEscalateAlarm"
+                                Content="Nobody can go — escalate" />
+                        <Button x:Name="ClearAlarmButton" Click="OnClearAlarm"
+                                Content="It's over — clear it" />
+                    </StackPanel>
+
+                    <TextBox x:Name="AlarmQuestionBox" Header="What do I do?" />
+                    <Button x:Name="AskAlarmButton" Click="OnAskAlarmGuidance"
+                            Content="Ask" />
+                    <TextBlock x:Name="AlarmGuidanceText" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="AlarmSaid" TextWrapping="Wrap" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock TextWrapping="Wrap" FontSize="11"
+                               Foreground="{StaticResource JimT2Brush}"
+                               Text="This is not an emergency service. If it is one, call your local emergency number — this screen cannot." />
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+
         <!-- SOS -->
         <PivotItem Header="SOS">
             <ScrollViewer>

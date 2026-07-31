@@ -4,10 +4,14 @@ import SwiftUI
 /// sensitivity dial), and the robot helpers — behind a segmented switcher.
 struct SafetyView: View {
     enum Tab: String, CaseIterable {
-        case sos = "SOS", crash = "Crash", medical = "Med ID",
-             policy = "Policy", robots = "Robots", vault = "Vault"
+        case alarms = "Alarms", sos = "SOS", crash = "Crash",
+             medical = "Med ID", policy = "Policy", robots = "Robots",
+             vault = "Vault"
     }
-    @State private var tab: Tab = .sos
+    // Alarms first, and the default. Somebody opening this screen has usually
+    // been paged; the thing they were paged about should not be behind a tab
+    // they have to find.
+    @State private var tab: Tab = .alarms
 
     var body: some View {
         ScrollView {
@@ -17,6 +21,7 @@ struct SafetyView: View {
                 }.pickerStyle(.segmented)
 
                 switch tab {
+                case .alarms: AlarmsSection()
                 case .sos: SOSSection()
                 case .crash: CrashWatchSection()
                 case .medical: MedicalSection()
@@ -25,6 +30,155 @@ struct SafetyView: View {
                 case .vault: CustodySection()
                 }
             }.padding(20)
+        }
+    }
+}
+
+// MARK: Alarms — somebody scanned a care code, and somebody has to answer
+
+/// The gap this section closes: JIM's phones could *raise* an emergency and
+/// even command a bound robot to perform CPR, and could not answer the alarm
+/// about it. There was no occurrence of the word "alarm" anywhere in this
+/// shell.
+///
+/// That matters more here than the same gap would on a desktop. An alarm is
+/// raised when a stranger scans the care code on somebody's door, and the
+/// household relay pages a responder — a neighbour, an on-call carer. They
+/// are paged on their phone. Accepting is the act that stops the escalation
+/// ladder climbing to emergency services, so a responder who cannot accept
+/// on the device they were paged on leaves only the path that ends in an
+/// ambulance.
+private struct AlarmsSection: View {
+    @EnvironmentObject var state: AppState
+    @State private var rows: [AlarmRow] = []
+    @State private var responder = ""
+    @State private var question = ""
+    @State private var guidance: AlarmGuidance?
+    @State private var said: String?
+    @State private var busy = false
+    @State private var error: String?
+
+    private var open: [AlarmRow] { rows.filter { $0.state == "open" } }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if open.isEmpty {
+                Text("Nothing open.")
+                    .font(.subheadline).foregroundStyle(Theme.t2)
+                Text("An alarm appears here when somebody scans the care code on your door. Scanning it does not call an ambulance — it wakes the people watching over you, and one of them has to answer.")
+                    .font(.caption).foregroundStyle(Theme.t2)
+            }
+
+            ForEach(open) { a in
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text("Someone raised this")
+                            .font(.headline).foregroundStyle(Theme.red)
+                        Spacer()
+                        Text(a.tier ?? "").font(.caption2).foregroundStyle(Theme.t2)
+                    }
+                    ForEach(a.messages ?? [], id: \.self) { m in
+                        Text("“\(m)”").font(.subheadline)
+                    }
+
+                    if let who = a.accepted_by {
+                        // Accepted is not cleared. The server says so in its
+                        // own response and this shell repeats it rather than
+                        // greying the card out.
+                        Text("\(who) is attending — still open, not resolved.")
+                            .font(.caption).foregroundStyle(Theme.amber)
+                    } else {
+                        // A named responder, because the backend refuses an
+                        // empty one: "someone accepted it" is the thing this
+                        // relay exists to stop being enough.
+                        TextField("Your name", text: $responder)
+                            .textFieldStyle(.roundedBorder)
+                        Button {
+                            act { try await Api.shared.acceptAlarm(
+                                uid: state.userId ?? "", alarmId: a.id,
+                                responder: responder, token: state.token ?? "") }
+                        } label: {
+                            Text("I have this — I'm going").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent).tint(Theme.brandA)
+                        .disabled(busy || responder.trimmingCharacters(
+                            in: .whitespaces).isEmpty)
+                    }
+
+                    HStack {
+                        Button("Nobody can go — escalate") {
+                            act { try await Api.shared.escalateAlarm(
+                                uid: state.userId ?? "", alarmId: a.id,
+                                token: state.token ?? "") }
+                        }.tint(Theme.red).disabled(busy)
+                        Spacer()
+                        Button("It's over — clear it") {
+                            act { try await Api.shared.clearAlarm(
+                                uid: state.userId ?? "", alarmId: a.id,
+                                token: state.token ?? "") }
+                        }.disabled(busy)
+                    }.font(.caption)
+
+                    HStack {
+                        TextField("What do I do?", text: $question)
+                            .textFieldStyle(.roundedBorder)
+                        Button("Ask") {
+                            Task {
+                                busy = true; error = nil
+                                do {
+                                    guidance = try await Api.shared.alarmGuidance(
+                                        alarmId: a.id, question: question,
+                                        token: state.token ?? "")
+                                } catch { self.error = error.localizedDescription }
+                                busy = false
+                            }
+                        }.disabled(busy || question.trimmingCharacters(
+                            in: .whitespaces).isEmpty)
+                    }
+                }
+                .padding(14)
+                .background(Theme.card).clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+
+            if let g = guidance {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(g.answer).font(.subheadline)
+                    if let n = g.note {
+                        Text(n).font(.caption2).foregroundStyle(Theme.t2)
+                    }
+                }
+                .padding(14)
+                .background(Theme.card).clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+
+            if let s = said {
+                Text(s).font(.caption).foregroundStyle(Theme.t2)
+            }
+            if let e = error {
+                Text(e).font(.caption).foregroundStyle(Theme.red)
+            }
+
+            Text("This is not an emergency service. If it is one, call your local emergency number — this screen cannot.")
+                .font(.caption2).foregroundStyle(Theme.t2)
+        }
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let uid = state.userId, let token = state.token else { return }
+        do { rows = try await Api.shared.alarms(uid: uid, token: token) }
+        catch { self.error = error.localizedDescription }
+    }
+
+    private func act(_ work: @escaping () async throws -> AlarmAck) {
+        Task {
+            busy = true; error = nil; said = nil
+            do {
+                let out = try await work()
+                said = out.note
+                await load()
+            } catch { self.error = error.localizedDescription }
+            busy = false
         }
     }
 }
