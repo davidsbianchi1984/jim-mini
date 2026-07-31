@@ -1,46 +1,55 @@
-# JIM-mini v0.20.0 — release notes
+# JIM-mini v0.20.1 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.20.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.20.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.20.0 — the native shells record what breaks, and the route guard
-stopped inventing work.**
+**JIM-mini v0.20.1 — the union hid a surface.**
 
-## Failures from the phone and the desktop shell
+`clientpaths.doorless` unions the console with the iOS, Android and Windows
+shells, so a route only the phone calls counts as doored. The union backlog
+reads **69**; the console alone cannot reach **109 routes**. The guard
+was answering *some client can reach this*, which was true, in place of *this
+client can reach this*, which was not.
 
-The consoles have recorded failures content-free since 0.19.0 — the operation
-and the status, never the message, never the path as it was typed. That is the
-governing constraint: a crash report is worth having only if nothing private
-travels in it, and the safest way to guarantee that is to have nothing private
-to send.
+That is the shape of every defect this audit has produced: a checker answering
+a question slightly to the left of the one that matters, and passing. In QRME
+the gap turned out to be the entire seller's side of the product — post a
+licence offer, see who holds one, revoke it, read what it earned, ask to be
+paid — all present on the phone, all absent from the desk.
 
-The web console has done it since 0.19.0; **iOS, Android and the desktop shell
-had not**, so a failure that happened only on a phone happened only in silence.
-All three now record on the same terms and post to the same gateway.
+## Two new guards
 
-`docs/cloud-model.md` — byte-identical across the three repositories — gains
-the gateway's container deploy path. The gateway lives in QRME's tree, but
-every product's console posts to it, so the instructions belong wherever
-somebody is reading about the contract.
+- **`test_the_console_is_a_client_too.py`** — the console's own backlog, in
+  `console_doorless.txt`, checked in both directions and ratcheted so it cannot
+  grow past where it started. The union guard stays; a route no client anywhere
+  calls is still worse. A phone-only capability is a legitimate design choice,
+  which is what the snapshot is for: deferring one takes a deliberate edit and
+  shows up in a diff.
+- **`test_a_binding_is_not_a_door.py`** — the same mistake one level down. A
+  function in `api.ts` that no screen calls is not a door, and `doorless`
+  counted it as one. The docstring on `doorless` had said this was *"a
+  discipline rather than something the test can enforce"*; it is enforceable in
+  about twenty lines. *The test cannot check this* is a claim worth testing.
+  This repository has **four**.
 
-## A guard that invented work
+## Fixed
 
-Every earlier defect in `clientpaths.py` made it too **lenient**: a truncated
-path, a verb read off a neighbouring call, a route table read flat instead of
-recursed. Those are the failures you expect from a checker.
+- **`clientpaths.py` was not byte-identical across the three repositories**,
+  though it says it is. This copy never received the `fetch`, `window.open`,
+  `<img src>` and `<a href>` call forms from 0.20.0, so its backlog counted
+  doors that already existed. Restored, and the backlog dropped **73 → 69**: `POST /voice/speak` and `POST /watch/seed/{user_id}` found by the new forms, and both OAuth callbacks correctly exempted.
+- **The pairing QR is built from a literal.** `Settings.tsx` rendered it as
+  `getBase() + pair.qr_svg`, where the path arrives in a response body — a real
+  door no static check can see. `GET /pair/qr.svg` sat in `NOT_A_CLIENT_CALL`
+  for exactly that reason, which is an exemption made out of a blind spot; the
+  last one of those turned out to have no door at all. Same request, now
+  visible to the audit.
 
-This one was the other kind. A template literal may nest another inside an
-interpolation, and the extraction pattern's backtick alternative stopped at the
-*inner* opening backtick — so a call normalised to a path no route matches, and
-a route with a working door was reported as having none.
+## Cut together
 
-Nothing failed. The suite stayed green. The route sat on the backlog looking
-like work, and a door-building round was aimed at it before anybody noticed the
-door was already there. **A checker that invents work fails more quietly than
-one that misses some:** a miss is found by the bug it let through, while an
-invention is found only by somebody going to do the work and finding it done.
-
-Interpolations are now matched by counting braces, so a nested one passes
-through intact.
+QRME, JIM-mini and PDI move on one version number. QRME's 0.20.1 additionally
+carries the seller's-side console screen and three money defects the building
+of it exposed — including a marketplace sale credited to a profile id while the
+statement reads by account id. See [QRME's notes](https://github.com/davidsbianchi1984/qrme/blob/main/RELEASE_NOTES.md).
