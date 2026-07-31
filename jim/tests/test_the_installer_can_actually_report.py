@@ -38,7 +38,6 @@ import re
 from pathlib import Path
 
 import pytest
-import yaml
 
 
 def _repo_root() -> Path:
@@ -57,19 +56,38 @@ WORKFLOW = REPO / ".github/workflows/desktop-release.yml"
 NEEDED = ("PROBLEM_COLLECTOR", "PROBLEM_TOKEN")
 
 
-def _steps() -> list[dict]:
-    spec = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
-    return [s for job in spec["jobs"].values() for s in job.get("steps", [])]
+def _steps() -> list[tuple[str, str]]:
+    """Each `- name:` step in the workflow, as (name, its whole text).
+
+    Split textually rather than parsed with a YAML library. This file exists
+    to check a build pipeline, and making it depend on a package that three
+    repositories would each have to declare is a heavier ask than the check
+    is worth — the first version did exactly that and failed in CI on two of
+    the three, which is a tidy demonstration of the point.
+
+    The shape being read is a list of steps at a fixed indent, which splitting
+    handles exactly. Nothing here needs to understand YAML; it needs to answer
+    "is this key inside this step", which is what a person checking by hand
+    would read too.
+    """
+    text = WORKFLOW.read_text(encoding="utf-8")
+    chunks = re.split(r"^      - (?=name:|uses:|run:)", text, flags=re.M)[1:]
+    out = []
+    for chunk in chunks:
+        first = chunk.splitlines()[0] if chunk.splitlines() else ""
+        name = first.split("name:", 1)[-1].strip() if "name:" in first else "<unnamed>"
+        out.append((name, chunk))
+    return out
 
 
-def _build_steps() -> list[dict]:
+def _build_steps() -> list[tuple[str, str]]:
     """Every step that actually runs the packaging command.
 
     Selected by what the step *does*, not by what it is called. Matching on
     the name would let a step called anything else slip past, and the name is
     the part most likely to change.
     """
-    return [s for s in _steps() if "npm run dist" in str(s.get("run", ""))]
+    return [(n, c) for n, c in _steps() if "npm run dist" in c]
 
 
 # --- the chain, one link at a time ------------------------------------------
@@ -108,8 +126,8 @@ def test_every_build_step_passes_it_through(name):
     a variable threaded through two of the three still ships one silent
     platform.
     """
-    missing = [s.get("name", "<unnamed>") for s in _build_steps()
-               if name not in (s.get("env") or {})]
+    missing = [n for n, chunk in _build_steps()
+               if not re.search(rf"^\s+{name}:", chunk, re.M)]
     assert not missing, (
         f"{name} is not passed to: {', '.join(missing)}.\n"
         "  Those builds compile an empty address into the bundle, so the "
