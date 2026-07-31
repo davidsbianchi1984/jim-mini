@@ -78,7 +78,13 @@ export function Settings() {
           <h3>Open on your phone</h3>
           <p className="muted small">{pair.note}</p>
           <div className="pair">
-            <img className="pair-qr" src={getBase() + pair.qr_svg} alt="QR code for the console URL on this network" />
+            {/* The literal rather than `pair.qr_svg`, which holds this exact
+                    string from the server. Same request, and the route audit
+                    can see it: a path that only exists in a response body is a
+                    door no static check can find, and the last one of those got
+                    itself exempted as "not a client call" and then went years
+                    without anybody noticing it rendered nowhere. */}
+            <img className="pair-qr" src={getBase() + "/pair/qr.svg"} alt="QR code for the console URL on this network" />
             <div>
               <div className="mono pair-url">{pair.console_url}</div>
               <ol className="pair-steps">{pair.how.map((s) => <li key={s}>{s}</li>)}</ol>

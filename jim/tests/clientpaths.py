@@ -60,6 +60,10 @@ class CallForm:
     verb: str | None = None
     verb_in_body: re.Pattern[str] | None = None
     default: str = "GET"
+    #: The bracket pair enclosing the call's arguments. Parentheses for every
+    #: function call, braces for a JSX attribute — `src={…}` is a request the
+    #: browser makes with no function anywhere in it.
+    delims: str = "()"
 
 
 @dataclass(frozen=True)
@@ -91,7 +95,32 @@ CONSOLE = Language(
     re.compile(r"\$\{[^{}]*\}"),
     re.compile(_TS_TEMPLATE + r"|\"(/[^\"\n]*)\""),
     (CallForm(re.compile(r"\breq\s*(?:<.*?>)?\s*\(", re.S),
-              verb_in_body=re.compile(r'method:\s*"([A-Z]+)"')),),
+              verb_in_body=re.compile(r'method:\s*"([A-Z]+)"')),
+     # `req()` serialises JSON, so anything that cannot — a raw-bytes upload
+     # — reaches for `fetch` directly. Without this form the audit is blind
+     # to exactly those calls: `POST /profiles/{id}/media` had a working
+     # door and still counted as doorless, which is the guard failing in the
+     # direction that produces busywork rather than the one that hides a
+     # dead button, but failing either way.
+     CallForm(re.compile(r"\bfetch\s*\("),
+              verb_in_body=re.compile(r'method:\s*"([A-Z]+)"')),
+     # A page the browser navigates to is still a door, and the WebAuthn
+     # ceremony has to be one: it is served from the relying party's own
+     # origin because an opaque origin has no `rpId` to match. The audit
+     # counted it doorless in every client that opens it.
+     CallForm(re.compile(r"\bwindow\.open\s*\("), verb="GET"),
+     # The two requests with no function call in them at all. A QR code is an
+     # `<img src>` and a scanned page is an `<a href>`; the browser fetches
+     # both, and neither passes through `req()` or `fetch()` on the way. The
+     # audit could not see either, which is why `/beacons/{id}/qr.svg` and
+     # `/b/{id}` sat on the doorless backlog while Placements had been
+     # rendering both since it was written — the same false-positive failure
+     # the nested-template bug produced, from a different direction.
+     #
+     # Braces rather than parentheses: a JSX attribute is not a call, and
+     # scanning it for `(` finds the wrong span or none.
+     CallForm(re.compile(r"\bsrc=\{"), verb="GET", delims="{}"),
+     CallForm(re.compile(r"\bhref=\{"), verb="GET", delims="{}"),),
 )
 # Swift's `\(…)` may hold one level of nested parentheses — `\(f(x))` — which is
 # as deep as these clients go.
@@ -166,7 +195,7 @@ def normalise(raw: str, lang: Language) -> str:
 
 
 def _spans(raw: str, lang: Language) -> list[tuple[int, int]]:
-    """Every interpolation in `raw`, as (start, end) — nesting included.
+    r"""Every interpolation in `raw`, as (start, end) — nesting included.
 
     The language patterns match one flat interpolation each, which is right
     until somebody nests one. `${tag ? `?tag=${enc(tag)}` : ""}` has an inner
@@ -263,14 +292,18 @@ def _usable(path: str) -> bool:
     return (path != "/" and path.startswith("/") and bool(_URLSAFE.match(path)))
 
 
-def _call_body(text: str, open_paren: int) -> str:
-    """The text between a call's parentheses, respecting nesting and strings.
+def _call_body(text: str, opener: int, delims: str = "()") -> str:
+    """The text between a call's brackets, respecting nesting and strings.
 
     Scanning forward to some delimiter instead is what made the first version of
     this wrong: it let a *neighbouring* call's `method:` be read as this call's,
     because the neighbour wrote its path in a form the scan skipped over.
+
+    `delims` is the bracket pair, because not every request is a function call:
+    a JSX `src={…}` fetches a URL with no callee at all.
     """
-    depth, i, n, quote = 0, open_paren, len(text), None
+    lo, hi = delims
+    depth, i, n, quote = 0, opener, len(text), None
     while i < n:
         c = text[i]
         if quote:
@@ -281,12 +314,12 @@ def _call_body(text: str, open_paren: int) -> str:
                 quote = None
         elif c in "\"'`":
             quote = c
-        elif c == "(":
+        elif c == lo:
             depth += 1
-        elif c == ")":
+        elif c == hi:
             depth -= 1
             if depth == 0:
-                return text[open_paren + 1:i]
+                return text[opener + 1:i]
         i += 1
     return ""
 
@@ -307,7 +340,7 @@ def calls(lang: Language) -> dict[tuple[str, str], tuple[str, str]]:
         text = _COMMENTS.sub("", f.read_text(encoding="utf-8"))
         for form in lang.calls:
             for m in form.opener.finditer(text):
-                body = _call_body(text, m.end() - 1)
+                body = _call_body(text, m.end() - 1, form.delims)
                 if not body:
                     continue
                 lit = lang.literal.search(body)
@@ -373,19 +406,38 @@ def refused(app, lang: Language) -> list[str]:
     return out
 
 
-# Paths served for a browser or a camera rather than for an API client: a QR
-# image used as an `<img src>`, a landing page reached by scanning or by
-# following a link, a form post a provider redirects into. No client builds
-# these, and none should.
+# Paths nothing in this product ever asks for: a page somebody is *sent* to
+# from outside — a link in an email, a provider's redirect back. No client
+# builds these, and none should.
+#
+# This list used to be longer, and the extra entries were a different thing
+# wearing the same coat. `/pair/qr.svg`, `/desks/{id}/view.webp` and
+# `/desk-beacons/{id}/qr.svg` were all exempted as "rendered in an `<img
+# src>`, not fetched by the API client" — but an `<img src>` *is* a fetch,
+# and a door. They were on this list because the extractor could not see
+# them, which made an exemption out of a blind spot: the guard stopped
+# asking, and one of the three turned out to have no door at all. A desk's
+# view frame was never rendered anywhere in the console, and the honesty
+# note attached to it — *not live, and not claimed to be* — was therefore
+# being shown to nobody.
+#
+# So the rule this list now holds to: exempt a path because nothing should
+# ever call it, never because the audit cannot see the call.
 NOT_A_CLIENT_CALL = (
     "/terms",
-    "/pair/qr.svg",
     "/verify-email/click",
     "/medical-id/{token}/qr.svg",
-    # Rendered in an `<img src>`, not fetched by the API client. A desk's
-    # view and a desk beacon's QR are pictures the browser asks for directly.
-    "/desks/{desk_id}/view.webp",
-    "/desk-beacons/{beacon_id}/qr.svg",
+    # Where Google and Apple send the browser back. The console starts the
+    # flow at `/auth/oauth/{provider}/start` and claims the session at
+    # `/auth/oauth/claim`; the address in between is built by the **API**
+    # (`request.url_for`) and handed to the provider, so no client of this
+    # product ever constructs it — and none should, because a redirect_uri a
+    # client could choose is a redirect_uri an attacker could choose.
+    #
+    # Two of them because Apple requires `response_mode=form_post` whenever
+    # a scope is requested, so its half of the door arrives as a POST with
+    # the code in a urlencoded body.
+    "/auth/oauth/{provider}/callback",
 )
 
 
@@ -441,11 +493,21 @@ def doorless(app, surfaces=None) -> list[str]:
     Know what "door" means here, because the word is doing less work than it
     looks like. This counts *call sites*, so a binding added to `api.ts` and
     wired to no screen counts as a door and takes its route off the list — the
-    capability is still unreachable, and the number says otherwise. The rule
-    that follows is a discipline rather than something the test can enforce:
-    add the binding in the same change as the screen that calls it. A round
+    capability is still unreachable, and the number says otherwise. A round
     that adds thirty bindings and five screens will report thirty doors and
     have built five.
+
+    That paragraph used to end "a discipline rather than something the test
+    can enforce", and it was wrong. `test_a_binding_is_not_a_door.py` enforces
+    it in about twenty lines, and found twenty-five bindings that nothing
+    called. *The test cannot check this* is a claim worth testing.
+
+    ``surfaces`` is the other half of the same caution. It defaults to the
+    union of all four clients, which answers *some client can reach this* — a
+    weaker question than *this client can*, and the difference is a route only
+    the phone calls. Pass a single language to ask the narrower one:
+    `test_the_console_is_a_client_too.py` does, and the union read zero while
+    the console alone could not reach sixty-four routes.
     """
     langs = surfaces if surfaces is not None else (CONSOLE, *NATIVE)
     made: set[tuple[str, str]] = set()

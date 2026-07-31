@@ -1,0 +1,4 @@
+api.captureImage
+api.enroll
+api.getVigil
+api.handOverMic

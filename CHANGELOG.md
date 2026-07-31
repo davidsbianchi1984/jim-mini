@@ -4,6 +4,42 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+**The union hid a surface.** `clientpaths.doorless` unions the console with the
+iOS, Android and Windows shells, so a route only the phone calls counts as
+doored — the union backlog said 69 while the console alone could not reach
+**109 routes**. The guard was answering *some client can reach this*,
+which was true, in place of *this client can reach this*, which was not.
+
+### Added
+
+- **`test_the_console_is_a_client_too.py`** — the console's own backlog, in
+  `console_doorless.txt`, checked in both directions and ratcheted so it cannot
+  grow past where it started. The union guard stays; a route no client anywhere
+  calls is still worse. A phone-only capability is a legitimate design choice,
+  which is what the snapshot is for: deferring one takes a deliberate edit and
+  shows up in a diff.
+- **`test_a_binding_is_not_a_door.py`** — a function in `api.ts` that no screen
+  calls is not a door, and `doorless` counts it as one. The docstring on
+  `doorless` had said this was "a discipline rather than something the test can
+  enforce"; it turned out to be enforceable in about twenty lines. *The test
+  cannot check this* is a claim worth testing.
+
+### Fixed
+
+- **`clientpaths.py` was not byte-identical across the three repositories**,
+  though it says it is. This repository never received the `fetch`,
+  `window.open`, `<img src>` and `<a href>` call forms from the previous
+  round, so its backlog counted doors that existed and reported work already
+  done. Restored. The backlog dropped 73 → 69 as a result.
+- **The pairing QR is built from a literal.** `Settings.tsx` rendered it as
+  `getBase() + pair.qr_svg`, where the path arrives in a response body — a
+  real door no static check can see. `GET /pair/qr.svg` had been sitting in
+  `NOT_A_CLIENT_CALL` for exactly that reason, which is an exemption made out
+  of a blind spot; the last one of those turned out to have no door at all.
+  Same request, now visible to the audit.
+
 ## [0.20.0] — 2026-07-31
 
 **The native shells record what breaks, and the route guard stopped inventing
