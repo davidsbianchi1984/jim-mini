@@ -1,42 +1,46 @@
-# JIM-mini v0.19.1 — release notes
+# JIM-mini v0.20.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.19.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.20.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**JIM-mini v0.19.1** — a feature can no longer ship with nothing drawn.
+**JIM-mini v0.20.0 — the native shells record what breaks, and the route guard
+stopped inventing work.**
 
-The gallery tests all check screens against the README: a reference with no
-file, a file with no reference, a gap in the numbering. Every one of them
-starts from the screens. **None asked the opposite question — does this surface
-have a screen at all?** So a feature could ship undrawn, untaught and
-unreachable from the in-app helper, and the suite stayed green.
+## Failures from the phone and the desktop shell
 
-That had happened three times, most recently to 0.19.0's own error-reporting
-card and its first-run notice, which went out undrawn while the release notes
-described them at length. It is the same shape of flaw found twice before here:
-a guard that only walks the relation in the direction where the answers already
-exist.
+The consoles have recorded failures content-free since 0.19.0 — the operation
+and the status, never the message, never the path as it was typed. That is the
+governing constraint: a crash report is worth having only if nothing private
+travels in it, and the safest way to guarantee that is to have nothing private
+to send.
 
-`ui_screens.txt` is the missing direction. Every console surface carries a
-screen number, `undrawn`, or `unaudited`, so a surface nobody has classified
-fails in the round that introduces it. The mapping is declared rather than
-guessed — matching component names to screen titles resolved only a fraction of
-them, because titles are written for the person using the app and component
-names for the person editing it.
+The web console has done it since 0.19.0; **iOS, Android and the desktop shell
+had not**, so a failure that happened only on a phone happened only in silence.
+All three now record on the same terms and post to the same gateway.
 
-Both backlogs are ratcheted against a ceiling each repository declares for
-itself, and a ceiling left high after the backlog falls fails too: a ratchet
-that stops ratcheting re-opens the ground it gained. Five failures were injected
-to prove it bites, including the one that matters — silencing the check by
-writing `undrawn` fails the ratchet.
+`docs/cloud-model.md` — byte-identical across the three repositories — gains
+the gateway's container deploy path. The gateway lives in QRME's tree, but
+every product's console posts to it, so the instructions belong wherever
+somebody is reading about the contract.
 
-**And the two surfaces it caught are drawn.** Screens **93 What Went Wrong** and **94 Before Anything Is Sent** join the gallery, each
-with a lesson and with phrasings that reach it in the words somebody actually
-types when something has broken: "it failed", "something broke", "stop
-sending", "opt out". The card draws an operation and a status and nothing else,
-because that is all the log holds.
+## A guard that invented work
 
-**No application behaviour changes in this release** — screens, gallery,
-lessons, helper phrasings, and the guard that will keep them honest.
+Every earlier defect in `clientpaths.py` made it too **lenient**: a truncated
+path, a verb read off a neighbouring call, a route table read flat instead of
+recursed. Those are the failures you expect from a checker.
+
+This one was the other kind. A template literal may nest another inside an
+interpolation, and the extraction pattern's backtick alternative stopped at the
+*inner* opening backtick — so a call normalised to a path no route matches, and
+a route with a working door was reported as having none.
+
+Nothing failed. The suite stayed green. The route sat on the backlog looking
+like work, and a door-building round was aimed at it before anybody noticed the
+door was already there. **A checker that invents work fails more quietly than
+one that misses some:** a miss is found by the bug it let through, while an
+invention is found only by somebody going to do the work and finding it done.
+
+Interpolations are now matched by counting braces, so a nested one passes
+through intact.
