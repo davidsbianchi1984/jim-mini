@@ -85,20 +85,35 @@ def test_the_backlog_only_shrinks():
         "it started at — routes are being added faster than doors")
 
 
-def test_the_union_is_still_wider_than_the_console():
-    """A guard on the guard, and on the premise.
+def test_the_union_is_never_worse_than_the_console():
+    """The union cannot exceed the console's backlog, because the console is
+    one of the surfaces the union is taken over. A route the console reaches
+    is reached by *some* client by definition.
 
-    If these two ever returned the same list, one of them would be redundant
-    — and the likelier cause is an extractor that stopped reading the native
-    shells, not a console that caught up. This fails loudly in that case
-    rather than quietly agreeing with itself.
+    This used to assert the union was **strictly** smaller, on the reasoning
+    that if the two ever agreed, the likelier cause was an extractor that had
+    stopped reading the native shells rather than a console that had caught
+    up. That reasoning was sound while catching up was hypothetical. It is
+    not any more: the console backlog is zero, so the two agree at zero,
+    which is the outcome the whole audit was for rather than a fault in it.
+
+    The liveness half of the old guard was always the weaker half — it
+    counted *console* call sites, and the console alone covers most routes,
+    so a dead Swift or Kotlin pattern would barely move it.
+    `test_each_native_shell_is_still_being_read` checks that directly, per
+    shell, and is where that concern belongs.
     """
     console = clientpaths.doorless(app, surfaces=(clientpaths.CONSOLE,))
     union = clientpaths.doorless(app)
-    assert len(union) < len(console), (
-        f"the union backlog ({len(union)}) is no smaller than the console's "
-        f"({len(console)}) — either every console gap is now a gap "
-        "everywhere, or the native extractors have stopped finding calls")
+    assert len(union) <= len(console), (
+        f"the union backlog ({len(union)}) is larger than the console's "
+        f"({len(console)}), which is arithmetically impossible unless the "
+        "surface list has drifted — the console is one of the union's own "
+        "surfaces")
+    assert set(union) <= set(console), (
+        "a route is doorless for every client but reachable from the "
+        "console, which means the two are being computed over different "
+        "route tables")
 
 
 def test_each_native_shell_is_still_being_read():

@@ -4,6 +4,68 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+**The console backlog reaches zero.** The 109 routes the desktop app could
+not reach now all have doors, and so do the four `api.ts` bindings nothing
+called. All three record files — `console_doorless.txt`,
+`doorless_routes.txt`, `unused_bindings.txt` — are empty rather than short,
+and the tests that read them assert emptiness.
+
+### Added
+
+- **Six console screens** for the six families the routes fell into.
+  *What you're working on* (goals, habits, budgets), *Who you watch*
+  (a child's account and its limits), *What's held about you* (custody,
+  access, plan, erasure), *Who else is looking* (specialists, referrals,
+  the escalation ladder), *What reaches out* (a robot, a placed code, an
+  account elsewhere, an excursion), and *Bearing* (how it speaks, what it
+  was told, what it made of that). Screens 95–100, with lessons and help
+  directions for each.
+- **Starting without an email address.** `POST /enroll` has always taken a
+  name, a birthdate and a consent — every screen in front of it demanded an
+  address and a password, so the only way to reach it was a phone. An email
+  address is a thing a person may not have, may not control, or may share
+  with somebody they are trying not to be watched by. The trade is stated
+  rather than buried: no address means no recovery.
+- **Looking at a clinical capture.** The console listed a person's own body
+  photographs with no way to see what was in them; the image is on its own
+  route and is now fetched on request, one press per capture.
+- **Handing channel 2 over**, with the reason, the route, and whether
+  anybody else was in the room.
+- **Reading the vigil without sweeping it.** Opening Privacy sweeps, which
+  can *trip* the vigil and send somebody to a person's door — a write. There
+  is now a way to look without acting.
+
+### Fixed
+
+- **`raiseEmergency` sent no credential.** The server requires one, and the
+  reason is better than the premise the binding was written on: an
+  uncredentialed `POST /emergency/{id}` lets anybody reach
+  `emergency_services` against anybody's account. The uncredentialed door for
+  a bystander already existed and is a different one — a scanned care code,
+  capped at `notify_contact`. The escalation policy said so in a field the
+  client already reads.
+- **`accessLog` was typed as a list.** It answers an object whose other three
+  fields say whether anything is being recorded at all. Typed as a list, the
+  screen would have shown a person an empty access log when the truth was
+  that no log exists.
+- **`custodyProvenance` and `referralClinicians`** were bound without the
+  query parameters they require, so both were a 422 every time.
+- **The scan page and the QR routes** were bound through the JSON helper,
+  which falls back to `null` on a body it cannot parse. All three came back
+  as `null`.
+- **The social beacon and its code** need the owner's token, unlike the
+  placed-code pair they resemble.
+- **`clientpaths` read one shape of call.** Adding the text helper made three
+  working doors invisible to the audit — the third false positive from an
+  extractor after the nested template and the `<img src>`.
+- **Two guards that could only pass while the problem existed.** The union
+  guard asserted its backlog was *strictly* smaller than the console's; the
+  liveness guard asserted the snapshot file was non-empty. Both have been
+  rewritten to check what they were for rather than what they happened to
+  measure.
+
 ## [0.21.0] — 2026-07-31
 
 Cut in step with QRME, which ran four door-audit rounds this

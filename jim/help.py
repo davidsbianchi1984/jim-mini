@@ -87,6 +87,38 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "typed, and never an id, which would name a capture of you. The card "
         "shows the exact payload before anything leaves, and the switch beside "
         "it stops the sending for good.",
+    # Six doors that existed only on the phone until 0.22.0. A person who
+    # went looking for one of these on the desktop was told, correctly, that
+    # it was beyond the app's own doors — which it was.
+    ("goal", "goals", "habit", "habits", "budget", "spending", "streak"):
+        "What you're working on: goals, habits and a monthly budget. A goal "
+        "is read by the Coach and the daily suggestion, and a budget is how "
+        "the Guardian learns the shape of financial stress.",
+    ("child", "children", "my kid", "my son", "my daughter", "guardian of",
+     "parental", "quiet hours"):
+        "Who you watch: link a child, see their light and their events, and "
+        "set quiet hours. Pausing holds everyday guidance only — monitoring, "
+        "crisis escalation and the emergency path never pause.",
+    ("who has read", "access log", "custody", "provenance", "my record",
+     "what do you have on me", "erase everything", "consent a source"):
+        "What's held about you: whether it is sealed, whether anybody's "
+        "reading of it is even being written down, which sources you have "
+        "allowed, and the erase-everything door.",
+    ("specialist", "specialists", "referral", "clinician", "relay", "rota",
+     "on call", "ladder", "escalation"):
+        "Who else is looking: the specialists a thing can be handed to, the "
+        "clinicians a referral reaches, and the full escalation ladder with "
+        "its floors and its one ceiling.",
+    ("robot", "robots", "humanoid", "care code", "beacon", "qr", "mastodon",
+     "excursion", "post for me"):
+        "What reaches out: a bound robot and its first-aid rating, a placed "
+        "code a stranger can scan, accounts on platforms JIM does not run, "
+        "and excursions — which report what was redacted on the way out.",
+    ("tone", "how it talks", "sensitivity", "language", "translate",
+     "what it made of me", "insights", "my report", "the dock", "corner"):
+        "Bearing: what you set (language, tone, sensitivity), what you told "
+        "it (conditions, context, sources), and what it made of that — the "
+        "insights and follow-ups it wrote about you.",
 }
 
 

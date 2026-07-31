@@ -244,8 +244,14 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 </tr>
 <tr>
 <td align="center" width="25%"><img src="docs/screens/94-before-anything-is-sent.svg" width="160" alt="94 Before Anything Is Sent"><br><sub>94 · Before Anything Is Sent</sub></td>
-<td align="center" width="25%"></td>
-<td align="center" width="25%"></td>
+<td align="center" width="25%"><img src="docs/screens/95-what-youre-working-on.svg" width="160" alt="95 What You're Working On"><br><sub>95 · What You're Working On</sub></td>
+<td align="center" width="25%"><img src="docs/screens/96-who-you-watch.svg" width="160" alt="96 Who You Watch"><br><sub>96 · Who You Watch</sub></td>
+<td align="center" width="25%"><img src="docs/screens/97-whats-held-about-you.svg" width="160" alt="97 What's Held About You"><br><sub>97 · What's Held About You</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/98-who-else-is-looking.svg" width="160" alt="98 Who Else Is Looking"><br><sub>98 · Who Else Is Looking</sub></td>
+<td align="center" width="25%"><img src="docs/screens/99-what-reaches-out.svg" width="160" alt="99 What Reaches Out"><br><sub>99 · What Reaches Out</sub></td>
+<td align="center" width="25%"><img src="docs/screens/100-bearing.svg" width="160" alt="100 Bearing"><br><sub>100 · Bearing</sub></td>
 <td align="center" width="25%"></td>
 </tr>
 </table>

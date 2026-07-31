@@ -17,8 +17,14 @@ import { Wellness } from "./screens/Wellness";
 import { Channel } from "./screens/Channel";
 import { Safety } from "./screens/Safety";
 import { Settings } from "./screens/Settings";
+import { Aims } from "./screens/Aims";
+import { Wards } from "./screens/Wards";
+import { Attending } from "./screens/Attending";
+import { Reach } from "./screens/Reach";
+import { Bearing } from "./screens/Bearing";
+import { Held } from "./screens/Held";
 
-type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "settings";
+type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "settings";
 const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "home", label: "Overview", icon: "◎" },
   { id: "monitor", label: "Live Monitoring", icon: "❤" },
@@ -30,8 +36,14 @@ const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "wellness", label: "Wellness", icon: "🧘" },
   { id: "checkin", label: "Check-in", icon: "🌿" },
   { id: "journal", label: "Journal", icon: "📖" },
+  { id: "aims", label: "What you're working on", icon: "🎯" },
+  { id: "wards", label: "Who you watch", icon: "🧒" },
+  { id: "attending", label: "Who else is looking", icon: "🩺" },
+  { id: "reach", label: "What reaches out", icon: "🤖" },
+  { id: "bearing", label: "Bearing", icon: "🧭" },
   { id: "community", label: "Community", icon: "🗣" },
   { id: "channel", label: "Channel & camera", icon: "🎙" },
+  { id: "held", label: "What's held about you", icon: "🗄" },
   { id: "settings", label: "Privacy", icon: "🛡" },
 ];
 
@@ -76,6 +88,12 @@ export function App() {
         {tab === "community" && <Community />}
         {tab === "safety" && <Safety />}
         {tab === "channel" && <Channel />}
+        {tab === "aims" && <Aims />}
+        {tab === "wards" && <Wards />}
+        {tab === "attending" && <Attending />}
+        {tab === "reach" && <Reach />}
+        {tab === "bearing" && <Bearing />}
+        {tab === "held" && <Held />}
         {tab === "settings" && <Settings />}
       </main>
       {/* Part of the shell: the help box is on every screen, like the

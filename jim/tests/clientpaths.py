@@ -94,7 +94,26 @@ CONSOLE = Language(
     "console", REPO / "app" / "src", (".ts", ".tsx"),
     re.compile(r"\$\{[^{}]*\}"),
     re.compile(_TS_TEMPLATE + r"|\"(/[^\"\n]*)\""),
-    (CallForm(re.compile(r"\breq\s*(?:<.*?>)?\s*\(", re.S),
+    # `req` and its sibling `reqText`, matched as one form. The sibling
+    # exists because `req` parses the body as JSON and falls back to `null`
+    # on anything it cannot — right for a crashed server answering plain
+    # text, wrong for a route whose job is to return a page. Three of them
+    # do: the scan page at `/c/{bid}` is HTML and two `qr.svg` routes are
+    # SVG.
+    #
+    # Adding the helper made those three doors **invisible to this audit**,
+    # which reported them as newly doorless while the console had just
+    # gained working buttons for all three. That is the third time an
+    # extractor has produced a false positive here — after the nested
+    # template and the `<img src>` — and it is the same lesson each time:
+    # the audit reads one shape of call, so a new shape of call reads as no
+    # call.
+    #
+    # The alternation is spelled out rather than written `req\w*`, which
+    # would also swallow `api.requestReset(` — harmless today, because that
+    # call holds no path literal to find, and exactly the kind of accidental
+    # match that turns into a phantom door the first time one does.
+    (CallForm(re.compile(r"\breq(?:Text)?\s*(?:<.*?>)?\s*\(", re.S),
               verb_in_body=re.compile(r'method:\s*"([A-Z]+)"')),
      # `req()` serialises JSON, so anything that cannot — a raw-bytes upload
      # — reaches for `fetch` directly. Without this form the audit is blind

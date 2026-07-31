@@ -67,8 +67,8 @@ def test_the_doorless_backlog_matches_the_record():
 def test_the_audit_is_actually_looking_at_something():
     """A guard on the guard.
 
-    An empty route table would make the comparison meaningless, and an empty
-    snapshot would hide that the backlog exists at all.
+    An empty route table would make the comparison meaningless, and so would a
+    client whose calls stopped being extracted.
 
     It counts through `all_routes`, not `app.routes`, and the difference is the
     reason this test exists. FastAPI hides routes inside `_IncludedRouter`
@@ -76,8 +76,34 @@ def test_the_audit_is_actually_looking_at_something():
     QRME's 409. The first version of this audit reported zero doorless routes on
     that basis and passed — which is exactly the vacuous green a guard on the
     guard is for.
+
+    The snapshot used to be asserted non-empty for the same reason. It is empty
+    now, on purpose, so the liveness check moved to where the meaning actually
+    lives: **the console must still be producing calls.** If the extractor
+    broke, `calls()` would collapse and every route would read as doorless —
+    loudly, in the test above. If instead it were quietly narrowed to a handful
+    of forms, the count here is what would notice.
+
+    Asserting the snapshot non-empty was the same shape of mistake as the
+    union guard next door: a check that could only be satisfied by the
+    problem still existing. It passed for as long as the backlog did.
     """
     routed = clientpaths.all_routes(app)
     assert len(routed) > 50, (
         f"only {len(routed)} routes found — the app did not build properly")
-    assert _recorded(), f"{SNAPSHOT.name} is empty; the audit records nothing"
+    made = clientpaths.calls(clientpaths.CONSOLE)
+    assert len(made) > 200, (
+        f"only {len(made)} console call sites extracted — the audit is "
+        "reading almost nothing, so an empty backlog means nothing either")
+
+
+def test_the_backlog_is_empty():
+    """It reached zero, and that is a thing worth failing over.
+
+    Separate from the record comparison above so the message is plain when it
+    goes. That one says *strike this line*; this one says *the number is no
+    longer zero*, which is the sentence somebody adding a route wants to read.
+    """
+    assert clientpaths.doorless(app) == [], (
+        "the doorless backlog is no longer empty:\n    "
+        + "\n    ".join(clientpaths.doorless(app)))

@@ -23,6 +23,170 @@ function desktopBackendUrl(): string | null {
   return bridge?.backendUrl || null;
 }
 
+
+/** Honest looseness. See the note over the block of bindings at the bottom of
+ *  this file: where a response is a large nested catalogue the screen reads a
+ *  few fields from, it is typed permissively rather than precisely, because a
+ *  loose type that is true beats a narrow one that is a guess. */
+export type Row = Record<string, unknown>;
+export type Body = Record<string, unknown>;
+
+// --- shapes read off a running backend -------------------------------------
+// Everything below was driven, not inferred. Where the server names a closed
+// set of values in its own 422 body, that set is written out as a union: a
+// wrong literal fails the build, where a wrong string fails a user.
+
+/** The seven areas a goal can belong to. The server rejects anything else. */
+export type GoalArea =
+  | "mental_health" | "health_fitness" | "nutrition" | "career"
+  | "finance" | "relationships" | "personal_growth";
+
+/** The eight conditions JIM will take on. Also a closed set, also enforced. */
+export type ConditionName =
+  | "anxiety" | "depression" | "stress" | "phobia"
+  | "financial_stress" | "relationship" | "physical_distress"
+  | "physical_injury";
+
+export type GoalRow = {
+  id: string; user_id?: string; area: GoalArea; title: string;
+  target?: string | null; progress: number; status: string;
+  created_at?: string; updated_at?: string;
+};
+
+/** `POST /habits` answers with the short form — id, name, streak — and the
+ *  listing with the long one. Optional fields are the difference. */
+export type HabitRow = {
+  id: string; name: string; streak: number;
+  user_id?: string; created_at?: string;
+};
+
+export type BudgetLine = {
+  category: string; monthly_limit: number; spent: number; share: number;
+  standing: string; days_left: number; month: string;
+};
+
+/** The board wraps the lines — `budgets` is where they live. */
+export type BudgetBoard = {
+  month: string; days_left: number; budgets: BudgetLine[];
+};
+
+export type ActivityResult = {
+  activity: string; proactive: boolean; watching: boolean;
+  intervention?: { content?: string } | null;
+};
+
+export type ChildRow = {
+  child_id: string; display_name: string; age?: number; oversight?: string;
+  relationship?: string; light?: string; critical_24h?: number;
+  escalations_24h?: number; paused?: boolean; quiet_hours?: string | null;
+};
+
+export type ChildDetail = {
+  child_id: string; display_name: string; age: number; oversight: string;
+  relationship: string; sensitivity: string; critical_events: number;
+  events: { type: string; condition?: string | null;
+            severity?: string | null; created_at: string }[];
+  privacy_note?: string | null;
+};
+
+export type ChildControls = {
+  child_id: string; paused: boolean;
+  quiet_start?: string | null; quiet_end?: string | null; note: string;
+};
+
+export type GuardianWatch = {
+  guardian_id: string; children: ChildRow[]; haptic?: unknown;
+};
+
+/** `GET /access-log` is an **object**, not the array its name suggests — the
+ *  entries are one field of it, and the other three are the answer to
+ *  "is anything even being recorded". Driving this is what found it. */
+export type AccessLog = {
+  vaulted: boolean; access_record_kept: boolean; entries: Row[]; note: string;
+};
+
+export type EscalationPolicy = {
+  sensitivity: string; ladder: string[];
+  by_severity: Record<string, string>;
+  safety_floors: Record<string, string>;
+  ceilings: Record<string, string>;
+};
+
+export type WaiverOffer = {
+  id?: string; kind: string; terms: string[]; language?: string;
+  signature?: string; signed?: boolean;
+};
+
+export type SessionRow = {
+  id: string; device?: string | null; prior_sessions: number;
+  memory?: unknown; continuity?: unknown;
+};
+
+export type SpecialistRow = {
+  condition: string; mode: string; label: string;
+  qrme_profile_id?: string | null;
+};
+
+export type MedicalIdCode = {
+  token: string; view_url: string; qr_svg_url: string;
+};
+
+export type RobotModel = {
+  model: string; label: string; maker: string; kind: string;
+  capabilities: string[]; llm_capable: boolean; first_aid: string;
+};
+
+export type RelayChannel = {
+  configured: boolean; signed: boolean; envelope: string; note?: string;
+};
+
+export type RelayRoster = {
+  configured: boolean; roster: string[]; ceiling: string; note?: string;
+};
+
+export type RelayRota = {
+  configured: boolean; timezone: string; timezone_valid: boolean;
+  evaluated_at: string; on_now: string[]; escalation_order: string[];
+  anybody_on_shift: boolean; shifts: Row[]; note?: string;
+};
+
+export type LanguageOption = {
+  code: string; label: string; safety_content_translated: boolean;
+};
+
+export type ImproveBoard = {
+  mine: Row[]; tally: Record<string, number>; total: number;
+  categories: string[];
+};
+
+export type CloudStatus = {
+  cloud: boolean; model?: string | null; fallback: string;
+  contribution: string;
+};
+
+export type DockState = {
+  user_id: string; corner: string; state: string; face: string;
+  faces: string[]; set: boolean; wanted: string; forced: boolean;
+  why?: string | null;
+};
+
+export type SocialBeacon = {
+  connection: string; platform: string; handle?: string | null;
+  presence_url?: string | null; qr_svg: string;
+};
+
+export type PlacedCodeCard = {
+  beacon: string; first_name: string; watched: boolean; note: string;
+  call_first: string; badge: string; alarm_url: string;
+  status?: string | null; location?: string | null;
+};
+
+export type DockCatalog = {
+  faces: Record<string, string>;
+  corners: Record<string, string>;
+  states: Record<string, string>;
+};
+
 export function getBase(): string {
   const stored = localStorage.getItem("jim.base");
   const desktop = desktopBackendUrl();
@@ -55,6 +219,38 @@ export function getLlmKey(): string { return localStorage.getItem("jim.llmKey") 
 export function setLlmKey(key: string) {
   if (key.trim()) localStorage.setItem("jim.llmKey", key.trim());
   else localStorage.removeItem("jim.llmKey");
+}
+
+/** For routes that answer **markup**, not JSON.
+ *
+ *  `req` parses the body as JSON and falls back to `null` when it is not —
+ *  which is right for a crashed server answering "Internal Server Error", and
+ *  wrong for a route whose whole job is to return a page. `GET /c/{bid}`
+ *  serves the HTML a phone camera lands on and `…/qr.svg` serves an SVG;
+ *  bound through `req` both came back as `null`, silently, and the console
+ *  would have rendered the word "null" where a printable code belonged.
+ *
+ *  Driving them is what showed this. A route's content type is part of its
+ *  shape and is not visible in its signature. */
+async function reqText(path: string, opts: { token?: string } = {}): Promise<string> {
+  const headers: Record<string, string> = {};
+  if (opts.token) headers["authorization"] = `Bearer ${opts.token}`;
+  let res: Response;
+  try {
+    res = await fetch(getBase() + path, { headers });
+  } catch {
+    recordProblem("GET", path, 0);
+    throw new Error(
+      `Can't reach the Guardian backend at ${getBase()}. ` +
+      `Start it with "python -m jim serve", or set the backend URL in Settings.`,
+    );
+  }
+  const text = await res.text();
+  if (!res.ok) {
+    recordProblem("GET", path, res.status);
+    throw new Error(`That didn't work (${res.status}).`);
+  }
+  return text;
 }
 
 async function req<T>(path: string, opts: { method?: string; body?: unknown; token?: string } = {}): Promise<T> {
@@ -744,4 +940,319 @@ export const api = {
   deleteCapture: (uid: string, captureId: string, token: string) =>
     req<{ withdrawn: boolean }>(`/users/${uid}/captures/${captureId}`,
       { method: "DELETE", token }),
+
+  // =====================================================================
+  // The rest of the API.
+  //
+  // One hundred and nine routes that the desktop console could not reach on
+  // its own. The per-client audit found them: the union guard had been
+  // answering *some client can reach this*, and the phone shells could, so
+  // the number looked healthy while a desktop user could not do any of it.
+  //
+  // **On the types below.** The house rule is that shapes are read off a
+  // running server rather than off route signatures. These were: a backend
+  // was started on 8791 and every family below was called against it.
+  //
+  // Driving is not a formality. It caught three bindings written from the
+  // route table that were wrong about the wire:
+  //
+  //   * `GET /access-log/{uid}` returns an **object** — `{vaulted,
+  //     access_record_kept, entries, note}` — not the array of entries the
+  //     name suggests. Typed `Row[]`, the screen would have mapped over an
+  //     object and rendered nothing, silently, which is the worst way for a
+  //     privacy log to fail.
+  //   * `GET /custody/{uid}/provenance` requires a `key` query parameter.
+  //     Without it the call is a 422 every time.
+  //   * `GET /users/{uid}/referral/clinicians` requires `condition`. Same.
+  //
+  // It also produced the enums: a goal's `area` and a condition's name are
+  // closed sets, and the server names its members in the 422 body. Those are
+  // written out below rather than left as `string`, because a typo in a
+  // literal union is caught at build time and a typo in a string is caught
+  // by a user.
+  //
+  // Where a response is a large nested document that the screen only reads
+  // a few fields from — the plan catalogue, the connector catalogue, the
+  // tutorial — it stays `Row`. A loose type that is true is worth more than
+  // a narrow one that is a guess: the guess is what put `waiting.length` on
+  // a number.
+  // =====================================================================
+
+  // -- guardianship: a child's account, and what an adult may see ---------
+  children: (guardianId: string, token: string) =>
+    req<ChildRow[]>(`/guardians/${guardianId}/children`, { token }),
+  child: (guardianId: string, childId: string, token: string) =>
+    req<ChildDetail>(`/guardians/${guardianId}/children/${childId}`, { token }),
+  // `relationship` is the *adult's* relationship to the child — the server
+  // accepts `parent` or `legal_guardian` and nothing else. Naming the child's
+  // side of it ("daughter") is a 422.
+  addChild: (guardianId: string, body: { display_name: string;
+               birthdate: string; relationship?: "parent" | "legal_guardian";
+               guardian_phone?: string; resting_heart_rate?: number;
+               known_conditions?: string[]; language?: string },
+             token: string) =>
+    req<Row>(`/guardians/${guardianId}/children`,
+      { method: "POST", body, token }),
+  removeChild: (guardianId: string, childId: string, token: string) =>
+    req<Row>(`/guardians/${guardianId}/children/${childId}`,
+      { method: "DELETE", token }),
+  setChildControls: (guardianId: string, childId: string,
+                     body: { paused?: boolean; quiet_start?: string;
+                             quiet_end?: string }, token: string) =>
+    req<ChildControls>(`/guardians/${guardianId}/children/${childId}/controls`,
+      { method: "PUT", body, token }),
+  guardianWatch: (guardianId: string, token: string) =>
+    req<GuardianWatch>(`/guardians/${guardianId}/watch`, { token }),
+
+  // -- what somebody is trying to do: goals, habits, budgets, activity ----
+  goals: (uid: string, token: string) =>
+    req<GoalRow[]>(`/goals/${uid}`, { token }),
+  addGoal: (uid: string, body: { area: GoalArea; title: string;
+                                 target?: string }, token: string) =>
+    req<GoalRow>(`/goals/${uid}`, { method: "POST", body, token }),
+  updateGoal: (uid: string, goalId: string,
+               body: { progress?: number; status?: string }, token: string) =>
+    req<GoalRow>(`/goals/${uid}/${goalId}`, { method: "PATCH", body, token }),
+  habits: (uid: string, token: string) =>
+    req<HabitRow[]>(`/habits/${uid}`, { token }),
+  addHabit: (uid: string, body: { name: string }, token: string) =>
+    req<HabitRow>(`/habits/${uid}`, { method: "POST", body, token }),
+  logHabit: (uid: string, habitId: string, token: string) =>
+    req<HabitRow>(`/habits/${uid}/${habitId}/log`,
+      { method: "POST", token }),
+  budgets: (uid: string, token: string) =>
+    req<BudgetBoard>(`/budgets/${uid}`, { token }),
+  setBudget: (uid: string, body: { category?: string;
+                                   monthly_limit: number }, token: string) =>
+    req<BudgetLine>(`/budgets/${uid}`, { method: "PUT", body, token }),
+  clearBudget: (uid: string, category: string, token: string) =>
+    req<Row>(`/budgets/${uid}/${category}`, { method: "DELETE", token }),
+  logActivity: (uid: string, body: { activity?: string; signals?: Row;
+                                     note?: string }, token: string) =>
+    req<ActivityResult>(`/activity/${uid}`, { method: "POST", body, token }),
+
+  // -- the guide, and the dock it lives in --------------------------------
+  tutorial: () => req<Row>("/tutorial"),
+  tutorialStep: (key: string) => req<Row>(`/tutorial/steps/${key}`),
+  tutorialForScreen: (screen: number) =>
+    req<Row>(`/tutorial/for-screen/${screen}`),
+  tutorialProgress: (learnerId: string) =>
+    req<Row>(`/tutorial/progress/${learnerId}`),
+  startTutorial: (body: Body) =>
+    req<Row>("/tutorial/start", { method: "POST", body }),
+  finishTutorialStep: (body: Body) =>
+    req<Row>("/tutorial/done", { method: "POST", body }),
+  helpTopics: () => req<{ topics: string[] }>("/help/topics"),
+  dockFaces: () => req<DockCatalog>("/dock/faces"),
+  dockWhere: (face: string) => req<Row>(`/dock/where/${face}`),
+  dock: (uid: string, token: string, alarmActive?: boolean) =>
+    req<DockState>(`/dock/${uid}`
+      + (alarmActive ? "?alarm_active=true" : ""), { token }),
+  dockFace: (uid: string, name: string, token: string) =>
+    req<Row>(`/dock/${uid}/face/${name}`, { token }),
+  setDock: (uid: string, body: Body, token: string) =>
+    req<Row>(`/dock/${uid}`, { method: "PUT", body, token }),
+
+  // -- social accounts, the codes that reach them, and excursions ---------
+  socialAccounts: (uid: string, token: string) =>
+    req<Row[]>(`/social/${uid}`, { token }),
+  connectSocialAccount: (uid: string, body: Body, token: string) =>
+    req<Row>(`/social/${uid}`, { method: "POST", body, token }),
+  // Both of these want the owner's token, unlike the placed-code pair above.
+  // That asymmetry is right — a care code on a front door is *for* strangers,
+  // and the address of somebody's Mastodon account is not — but it is not
+  // visible in either signature. Driving them is what produced it.
+  socialBeaconCard: (cid: string, token: string) =>
+    req<SocialBeacon>(`/social/connection/${cid}/beacon`, { token }),
+  socialQr: (cid: string, token: string) =>
+    reqText(`/social/connection/${cid}/qr.svg`, { token }),
+  collectFromSocial: (cid: string, body: Body, token: string) =>
+    req<Row>(`/social/connection/${cid}/collect`,
+      { method: "POST", body, token }),
+  publishToSocial: (cid: string, body: Body, token: string) =>
+    req<Row>(`/social/connection/${cid}/publish`,
+      { method: "POST", body, token }),
+  disconnectSocialAccount: (cid: string, token: string) =>
+    req<Row>(`/social/connection/${cid}`, { method: "DELETE", token }),
+  // A placed code. `/c/…` is the scan path a phone camera lands on.
+  // The page a phone camera lands on — HTML, not JSON.
+  placedCode: (bid: string) => reqText(`/c/${bid}`),
+  placedCodeCard: (bid: string) => req<PlacedCodeCard>(`/c/${bid}/card`),
+  placedCodeQr: (bid: string) => reqText(`/c/${bid}/qr.svg`),
+  raiseFromCode: (bid: string, body: Body) =>
+    req<Row>(`/c/${bid}/alarm`, { method: "POST", body }),
+  pickUpCode: (bid: string, token: string) =>
+    req<Row>(`/beacons/${bid}`, { method: "DELETE", token }),
+  excursions: (uid: string, token: string) =>
+    req<Row[]>(`/excursions/${uid}`, { token }),
+  startExcursion: (uid: string, body: Body, token: string) =>
+    req<Row>(`/excursions/${uid}`, { method: "POST", body, token }),
+  excursionEntry: (cid: string) => req<Row>(`/excursions/entry/${cid}`),
+  learnFromExcursion: (cid: string, token: string) =>
+    req<Row>(`/excursions/entry/${cid}/learn`, { method: "POST", token }),
+
+  // -- specialists, referrals, and work handed to one ---------------------
+  specialists: () => req<SpecialistRow[]>("/specialists"),
+  seedSpecialists: (token: string) =>
+    req<Row>("/specialists/seed", { method: "POST", token }),
+  seedTandemSpecialists: (token: string) =>
+    req<Row>("/specialists/seed/tandem", { method: "POST", token }),
+  referralClinicians: (uid: string, condition: string, token: string) =>
+    req<Row[]>(`/users/${uid}/referral/clinicians`
+      + `?condition=${encodeURIComponent(condition)}`, { token }),
+  referralRequests: (uid: string, token: string) =>
+    req<Row[]>(`/users/${uid}/referral/requests`, { token }),
+  prepareReferral: (uid: string, body: Body, token: string) =>
+    req<Row>(`/users/${uid}/referral/prepare`,
+      { method: "POST", body, token }),
+  markReferralReleased: (uid: string, requestId: string, body: Body,
+                         token: string) =>
+    req<Row>(`/users/${uid}/referral/requests/${requestId}/released`,
+      { method: "POST", body, token }),
+  specialistTasks: (uid: string, token: string) =>
+    req<Row[]>(`/users/${uid}/specialist-tasks`, { token }),
+  specialistTask: (uid: string, taskId: string, token: string) =>
+    req<Row>(`/users/${uid}/specialist-tasks/${taskId}`, { token }),
+  handToSpecialist: (uid: string, body: Body, token: string) =>
+    req<Row>(`/users/${uid}/specialist-tasks`,
+      { method: "POST", body, token }),
+  advanceSpecialistTask: (uid: string, taskId: string, token: string) =>
+    req<Row>(`/users/${uid}/specialist-tasks/${taskId}/advance`,
+      { method: "POST", token }),
+
+  // -- a body to move through the house -----------------------------------
+  roboticsCatalog: () => req<{ robots: RobotModel[] }>("/robotics/catalog"),
+  robots: (uid: string, token: string) =>
+    req<Row[]>(`/robots/${uid}`, { token }),
+  bindRobot: (uid: string, body: { model: string; name?: string;
+                                   llm_provider?: string }, token: string) =>
+    req<Row>(`/robots/${uid}`, { method: "POST", body, token }),
+  commandRobot: (uid: string, robotId: string, body: Body, token: string) =>
+    req<Row>(`/robots/${uid}/${robotId}/command`,
+      { method: "POST", body, token }),
+  unbindRobot: (uid: string, robotId: string, token: string) =>
+    req<Row>(`/robots/${uid}/${robotId}`, { method: "DELETE", token }),
+
+  // -- the plan, and what is held about you -------------------------------
+  plans: () => req<Row>("/plans"),
+  membership: (accountId: string, token: string) =>
+    req<Row>(`/memberships/${accountId}`, { token }),
+  setMembership: (accountId: string, body: Body, token: string) =>
+    req<Row>(`/memberships/${accountId}`, { method: "POST", body, token }),
+  cancelMembership: (accountId: string, token: string) =>
+    req<Row>(`/memberships/${accountId}`, { method: "DELETE", token }),
+  waivers: (uid: string, token: string) =>
+    req<WaiverOffer>(`/waivers/${uid}`, { token }),
+  signWaiver: (uid: string, body: { signature: string; accept?: boolean },
+               token: string) =>
+    req<WaiverOffer>(`/waivers/${uid}`, { method: "POST", body, token }),
+  withdrawWaiver: (uid: string, token: string) =>
+    req<Row>(`/waivers/${uid}`, { method: "DELETE", token }),
+  custody: (uid: string, token: string) =>
+    req<Row>(`/custody/${uid}`, { token }),
+  custodyProvenance: (uid: string, key: string, token: string) =>
+    req<Row>(`/custody/${uid}/provenance?key=${encodeURIComponent(key)}`,
+      { token }),
+  // Erases everything held about a person. There is no undo, which is the
+  // point of it.
+  eraseEverything: (uid: string, token: string) =>
+    req<Row>(`/data/${uid}`, { method: "DELETE", token }),
+  accessLog: (uid: string, token: string) =>
+    req<AccessLog>(`/access-log/${uid}`, { token }),
+
+  // -- how it speaks, and how it is tuned ---------------------------------
+  languages: () => req<{ languages: LanguageOption[] }>("/languages"),
+  userLanguage: (uid: string, token: string) =>
+    req<Row>(`/language/${uid}`, { token }),
+  setUserLanguage: (uid: string, body: Body, token: string) =>
+    req<Row>(`/language/${uid}`, { method: "PUT", body, token }),
+  translate: (uid: string, body: Body, token: string) =>
+    req<Row>(`/translate/${uid}`, { method: "POST", body, token }),
+  setPersonality: (uid: string, body: Body, token: string) =>
+    req<Row>(`/personality/${uid}`, { method: "PUT", body, token }),
+  setSensitivity: (uid: string, body: Body, token: string) =>
+    req<Row>(`/sensitivity/${uid}`, { method: "PUT", body, token }),
+  providerFor: (uid: string, token: string) =>
+    req<Row>(`/provider/${uid}`, { token }),
+  clearVoice: (token: string) =>
+    req<Row>("/settings/voice", { method: "DELETE", token }),
+  connectorsCatalog: () => req<Row>("/connectors/catalog"),
+  cloudStatus: () => req<CloudStatus>("/cloud/status"),
+
+  // -- being looked after -------------------------------------------------
+  coachHistory: (uid: string, token: string, area?: string) =>
+    req<Row[]>(`/coach/${uid}`
+      + (area ? `?area=${encodeURIComponent(area)}` : ""), { token }),
+  insights: (uid: string, token: string) =>
+    req<Row[]>(`/insights/${uid}`, { token }),
+  report: (uid: string, token: string) => req<Row>(`/report/${uid}`, { token }),
+  events: (uid: string, token: string) =>
+    req<Row[]>(`/events/${uid}`, { token }),
+  followup: (uid: string, token: string) =>
+    req<Row>(`/followup/${uid}`, { token }),
+  calmHistory: (uid: string, token: string) =>
+    req<Row[]>(`/calm/${uid}/history`, { token }),
+  escalationPolicy: (uid: string, token: string) =>
+    req<EscalationPolicy>(`/escalation-policy/${uid}`, { token }),
+  communityVisits: (uid: string, token: string) =>
+    req<Row[]>(`/community/${uid}/visits`, { token }),
+  sources: (uid: string, token: string) =>
+    req<Row[]>(`/sources/${uid}`, { token }),
+  setSources: (uid: string, body: { source: string; consented: boolean },
+               token: string) =>
+    req<{ source: string; consented: boolean }>(`/sources/${uid}`,
+      { method: "PUT", body, token }),
+  recordCondition: (uid: string, body: { condition: ConditionName;
+                                         note?: string }, token: string) =>
+    req<Row>(`/conditions/${uid}`, { method: "POST", body, token }),
+  giveContext: (uid: string, body: Body, token: string) =>
+    req<Row>(`/context/${uid}`, { method: "POST", body, token }),
+  askCompanion: (uid: string, body: Body, token: string) =>
+    req<Row>(`/companion/${uid}`, { method: "POST", body, token }),
+  updateMed: (uid: string, medId: string, body: Body, token: string) =>
+    req<Row>(`/meds/${uid}/${medId}`, { method: "PUT", body, token }),
+  alarmGuidance: (alarmId: string, body: Body, token: string) =>
+    req<Row>(`/alarms/${alarmId}/guidance`, { method: "POST", body, token }),
+  // This one **does** take a credential, and the first version of this
+  // binding did not — written from the reasonable-sounding premise that an
+  // emergency is the moment a person is least able to produce a token.
+  // The server disagrees, for a reason that is better than the premise: an
+  // uncredentialed `POST /emergency/{uid}` lets anybody raise an emergency
+  // against anybody's account, and the tier it reaches is `emergency_services`.
+  //
+  // The uncredentialed door for a stranger already exists and is a different
+  // one: `POST /c/{bid}/alarm`, off a scanned code, capped at
+  // `notify_contact`. A bystander wakes the household; only the account
+  // holder's own credential reaches an ambulance. That is the right split
+  // and it was already built — the binding was wrong about it, not the app.
+  raiseEmergency: (uid: string, body: { situation?: string;
+                                        location?: string; sample?: Row },
+                   token: string) =>
+    req<Row>(`/emergency/${uid}`, { method: "POST", body, token }),
+  medicalId: (token: string) => req<Row>(`/medical-id/${token}`),
+  makeMedicalIdQr: (uid: string, token: string) =>
+    req<MedicalIdCode>(`/medical-id/qr/${uid}`, { method: "POST", token }),
+  revokeMedicalIdQr: (uid: string, token: string) =>
+    req<Row>(`/medical-id/qr/${uid}`, { method: "DELETE", token }),
+
+  // -- the household relay, sessions, and the wrist -----------------------
+  relayChannel: (token: string) => req<RelayChannel>("/relay/channel", { token }),
+  relayRoster: (token: string) => req<RelayRoster>("/relay/roster", { token }),
+  relayRota: (token: string) => req<RelayRota>("/relay/rota", { token }),
+  startSession: (uid: string, body: { device?: string }, token: string) =>
+    req<SessionRow>(`/sessions/${uid}`, { method: "POST", body, token }),
+  endSession: (uid: string, sessionId: string, token: string) =>
+    req<Row>(`/sessions/${uid}/${sessionId}/end`, { method: "POST", token }),
+  // The watch posts readings against a drip token rather than an account
+  // credential, because a watch cannot hold one.
+  watchDrip: (dripToken: string, body: Body) =>
+    req<Row>(`/watch/drip/${dripToken}`, { method: "POST", body }),
+
+  // -- telling us about the app -------------------------------------------
+  improvements: () => req<ImproveBoard>("/improve"),
+  suggestImprovement: (body: Body) =>
+    req<Row>("/improve", { method: "POST", body }),
+  sendFeedback: (uid: string, body: { rating: "up" | "down"; note?: string },
+                 token: string) =>
+    req<Row>(`/feedback/${uid}`, { method: "POST", body, token }),
 };

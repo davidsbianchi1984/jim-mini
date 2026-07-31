@@ -288,6 +288,83 @@ LESSONS: tuple[dict, ...] = (
               "asks, and shows you the exact thing it would send.",
          screens=(93, 94),
          try_it="Open Privacy and press 'Show me exactly what would be shared'."),
+
+    # The six that closed the console backlog. A route the desktop app could
+    # not reach was, for a desktop user, a feature that did not exist — and a
+    # walkthrough that skipped them would have gone on teaching the phone.
+    dict(key="aims", chapter="Day to day", title="What you're working on",
+         what="Goals, habits and a monthly budget. None of it is a list for "
+              "its own sake: a goal is read by the coach and by the daily "
+              "suggestion, a habit's streak is one of the signals a quiet "
+              "week shows up in, and a budget is how JIM learns the shape of "
+              "financial stress — which is one of the eight conditions it "
+              "will take on rather than a footnote to the others. Telling it "
+              "what you did is context, not a reading: it explains a heart "
+              "rate before JIM has to guess at one.",
+         screens=(95,),
+         try_it="Set one goal and one habit, then log something you did."),
+    dict(key="wards", chapter="Looking after somebody", title="Who you watch",
+         what="A child linked here gets their own account and their own "
+              "token. You are linked to it; you do not hold it. What an adult "
+              "can see is a board — a light, an age, how many critical events "
+              "and escalations in the last day — and a history of events, "
+              "never the readings behind them. The controls pause everyday "
+              "guidance and set quiet hours, and JIM says the limit in its "
+              "own words every time you use one: monitoring, crisis "
+              "escalation and the emergency path never pause. A guardian who "
+              "believed otherwise would have been told something false.",
+         screens=(96,),
+         try_it="Link a child, then press Pause and read what it says it did."),
+    dict(key="held", chapter="What is yours", title="What's held about you",
+         what="Four questions on one screen: is it sealed, is anybody's "
+              "reading of it being written down, what sources may it look at, "
+              "and what does your plan actually buy. The access log answers "
+              "the second one first and deliberately — on a deployment with "
+              "no vault the list of readers is empty because nothing is "
+              "recorded, not because nobody looked, and those are opposite "
+              "facts. Consent for a source is enforced rather than asked: "
+              "giving JIM context from a source you have not allowed is "
+              "refused by the server, not politely skipped.",
+         screens=(97,),
+         try_it="Read the access log, then allow a source and give it context."),
+    dict(key="attending", chapter="Looking after somebody",
+         title="Who else is looking",
+         what="The specialists JIM can hand a thing to, the clinicians a "
+              "referral can reach, the people a relay would wake, and the "
+              "ladder it climbs to reach them — log, self-guidance, check in, "
+              "notify a contact, emergency services, with the floors and the "
+              "one ceiling shown. The ceiling is the part worth reading: a "
+              "stranger who scanned your care code can wake the people "
+              "watching over you and stops there. Only your own credential "
+              "reaches an ambulance, which is why the emergency button on "
+              "this screen is yours and the one on a scanned code is not.",
+         screens=(98,),
+         try_it="Read the ladder, then look at where the ceiling sits."),
+    dict(key="reach", chapter="Beyond the app", title="What reaches out",
+         what="Everything here crosses a boundary, so everything here shows "
+              "what the crossing costs. A robot's first-aid rating says "
+              "whether it performs compressions or talks a person through "
+              "them — the machine's rating, not your plan's. A placed code is "
+              "for strangers by design and says so on the card it serves "
+              "them. Words published to another platform have left the "
+              "building. An excursion that asks the open web carries back how "
+              "many redactions it took to send and whether it left this host "
+              "at all: the findings without that is half an answer.",
+         screens=(99,),
+         try_it="Place a code, then look at the card a stranger would see."),
+    dict(key="bearing", chapter="What is yours", title="Bearing",
+         what="Three things kept apart on purpose. What you set — language, "
+              "tone, sensitivity, the voice. What you told it — conditions, "
+              "context, consented sources. And what it made of that: the "
+              "insights it wrote, the events it logged, the follow-ups it "
+              "asked that you have not answered. The third is the half of a "
+              "guardian product easiest to leave out, because nobody "
+              "complains about not being shown what a thing thinks of them. "
+              "The guide and the corner dock live here too — a walkthrough "
+              "whose own job is explaining the app had no door of its own "
+              "until this screen.",
+         screens=(100,),
+         try_it="Read what JIM has written about you, then set the tone."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

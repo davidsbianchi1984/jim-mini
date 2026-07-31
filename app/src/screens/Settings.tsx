@@ -711,6 +711,16 @@ function VigilPanel() {
             Disarm
           </button>
         )}
+        {/* A read, not a sweep. Opening this screen sweeps — which is the
+            right default, because opening the app is the natural moment to
+            ask whether anybody has gone quiet — but a sweep can *trip* the
+            vigil and send a stranger to somebody's door. That makes it a
+            write, and a write should not be the only way to look at a
+            thing. This is the way to look without acting. */}
+        <button disabled={busy}
+                onClick={() => run(() => api.getVigil(session.userId!, session.userToken!))}>
+          Just check it
+        </button>
       </div>
       {st?.armed && st.last_heard_at && !st.tripped && (
         <div className="muted small">

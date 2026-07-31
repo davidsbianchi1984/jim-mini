@@ -312,14 +312,45 @@ export function Onboarding() {
         {error && <div className="error">⚠ {error}</div>}
         {notice && <div className="muted small">{notice}</div>}
 
-        {mode === "signup" && (
+        {mode === "signup" && (<>
           <button className="primary"
                   disabled={busy || !consent || !name.trim() || !birthdate || !email.trim()
                             || !password || !passwordsMatch || backendUp === false}
                   onClick={signup}>
             {busy ? "Creating…" : "Create account"}
           </button>
-        )}
+          {/* Starting without an email address.
+
+              The backend has carried `POST /enroll` since the beginning — a
+              name, a birthdate, a consent, and you are in. Every screen in
+              front of it asked for an email and a password anyway, so the
+              only way to reach it was a phone or a curl command.
+
+              That is not a cosmetic gap. An email address is a thing a
+              person might not have, might not control, or might share with
+              somebody they are trying not to be watched by. A guardian
+              product that makes one mandatory to begin has quietly decided
+              who gets a guardian. This deployment's own backend never
+              decided that; the console did, by omission.
+
+              The trade is real and is stated rather than buried: no address
+              means no way to recover the account, and the token below is
+              the only key to it. */}
+          <div className="muted small" style={{ marginTop: 12 }}>
+            No email address? You can start without one. There is no way to
+            recover an account made this way — this device holds the only key
+            to it — but you do not have to have an address to be looked after.
+          </div>
+          <button disabled={busy || !consent || !name.trim() || !birthdate
+                            || backendUp === false}
+                  onClick={() => run(
+                    () => api.enroll({ display_name: name.trim(), birthdate,
+                                       terms_consent: consent }),
+                    (u) => setSession({ userId: u.id, userToken: u.user_token,
+                                        displayName: u.display_name }))}>
+            Start without an email address
+          </button>
+        </>)}
         {mode === "code" && (<>
           <button className="primary" disabled={busy || code.trim().length !== 6} onClick={verify}>
             {busy ? "Checking…" : "Verify & get started"}

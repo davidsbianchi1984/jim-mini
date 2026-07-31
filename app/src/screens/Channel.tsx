@@ -44,6 +44,10 @@ export function Channel() {
   const [condition, setCondition] = useState("");
   const [consent, setConsent] = useState(false);
   const [chosen, setChosen] = useState<string[]>([]);
+  // Capture id → the image bytes, once somebody has asked to see it. Not
+  // preloaded: these are photographs of a body and they are fetched when
+  // the person whose body it is presses the button.
+  const [shown, setShown] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [said, setSaid] = useState<string | null>(null);
@@ -127,6 +131,25 @@ export function Channel() {
             </div>
             {mic.hears && <p>{mic.hears}</p>}
             {mic.because && <p className="muted">{mic.because}</p>}
+            <div className="row">
+              {/* Lending channel 2 is not the same act as attaching it, and
+                  the backend has always kept them apart: a handover records
+                  *why* and *to where*, and whether anybody else was in the
+                  room. That last flag is the one that matters — a second ear
+                  in a room with other people in it is a different thing from
+                  one in an empty room, and the server wants to be told which
+                  it is rather than to guess. The console has never asked. */}
+              <button disabled={busy}
+                onClick={() => run(() => api.handOverMic(uid, {
+                  reason: "clinician on the line",
+                  route: "care_team",
+                  others_present: confirm(
+                    "Is anybody else in the room? OK for yes."),
+                  primary_device: mic.device ?? undefined,
+                }, token), "Handed over.")}>
+                Hand channel 2 over
+              </button>
+            </div>
             {mic.capped && (
               <p className="muted">
                 Narrowed for the moment — a call is in progress. Your setting
@@ -240,14 +263,33 @@ export function Channel() {
             {intimate.has(c.site) && <span className="pill">intimate</span>}
           </div>
           {c.note && <p className="muted">{c.note}</p>}
-          <button disabled={busy}
-            onClick={() => {
-              if (confirm("Withdraw this? The vault record is destroyed. A "
-                + "clinician who was shown it will see it was withdrawn."))
-                run(() => api.deleteCapture(uid, c.id, token), "Withdrawn.");
-            }}>
-            Withdraw
-          </button>
+          {shown[c.id] && (
+            <img src={shown[c.id]} alt={vocab?.sites?.[c.site] ?? c.site}
+                 style={{ maxWidth: "100%", borderRadius: 8 }} />
+          )}
+          <div className="row">
+            {/* The image comes back on its own route, not with the listing.
+                That is the right shape — a list of body photographs should
+                not stream every one of them to draw a row — but it left the
+                console showing a person a list of records of their own body
+                with no way to see what was in them. Fetching on request is
+                the door; it is deliberately one press per capture. */}
+            <button disabled={busy || !!shown[c.id]}
+              onClick={() => run(async () => {
+                const img = await api.captureImage(uid, c.id, token);
+                setShown((m) => ({ ...m, [c.id]: img.content }));
+              }, "")}>
+              {shown[c.id] ? "Shown" : "Look at it"}
+            </button>
+            <button disabled={busy}
+              onClick={() => {
+                if (confirm("Withdraw this? The vault record is destroyed. A "
+                  + "clinician who was shown it will see it was withdrawn."))
+                  run(() => api.deleteCapture(uid, c.id, token), "Withdrawn.");
+              }}>
+              Withdraw
+            </button>
+          </div>
         </div>
       ))}
       {captures.length > 0 && (
