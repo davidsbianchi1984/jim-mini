@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.0] — 2026-07-31
+
+Cut in step with QRME, which ran four door-audit rounds this
+release. No JIM-mini feature work: version strings, and the
+release-title convention recorded in `docs/releasing.md` — release
+titles now carry the product name.
+
+The console-only backlog here stands at **109 routes** and is
+unchanged; the ratchet holds it from rising.
+
 ## [0.20.1] — 2026-07-31
 
 **The union hid a surface.** `clientpaths.doorless` unions the console with the
