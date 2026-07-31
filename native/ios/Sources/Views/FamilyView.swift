@@ -18,6 +18,8 @@ struct FamilyView: View {
     @State private var quietStart = ""
     @State private var quietEnd = ""
     @State private var controlsNote: String?
+    @State private var unlinking: String?
+    @State private var unlinkNote: String?
     @State private var busy = false
     @State private var error: String?
 
@@ -125,6 +127,25 @@ struct FamilyView: View {
                         if let controlsNote {
                             Text(controlsNote).font(.caption2).foregroundStyle(Theme.green)
                         }
+
+                        // Ending the link. This screen could begin one and not
+                        // end one: `enrollChild` was wired and `unlinkChild`
+                        // was written and called by nothing.
+                        //
+                        // A guardian link is a standing relationship — one
+                        // adult able to see another person's events, light and
+                        // escalations — and it outlives the reason for it.
+                        // Children grow up, custody changes, households end.
+                        // The surface that creates it has to be able to end
+                        // it, or the person who set it up has to find a
+                        // desktop to undo it on.
+                        Divider().background(Theme.line)
+                        Button(role: .destructive) { unlinking = openKid } label: {
+                            Text("Unlink this child").font(.caption.bold())
+                        }
+                        if let unlinkNote {
+                            Text(unlinkNote).font(.caption2).foregroundStyle(Theme.t2)
+                        }
                     }.card()
                 }
 
@@ -166,6 +187,22 @@ struct FamilyView: View {
             }.padding(20)
         }
         .task { await load() }
+        // Attached to the ScrollView rather than the button: a
+        // confirmationDialog on a row inside a ForEach is dismissed with the
+        // row when the list reloads, which is exactly when this one fires.
+        .confirmationDialog("Unlink this child?",
+                            isPresented: .constant(unlinking != nil),
+                            titleVisibility: .visible) {
+            Button("Unlink", role: .destructive) {
+                if let c = unlinking { unlink(c) }
+                unlinking = nil
+            }
+            Button("Keep the link", role: .cancel) { unlinking = nil }
+        } message: {
+            Text("Their account, their guardian, and their own record are not "
+                 + "deleted — this ends your ability to see their events and "
+                 + "set their controls.")
+        }
     }
 
     private func faceLight(_ light: String) -> Color {
@@ -231,6 +268,22 @@ struct FamilyView: View {
                     gid: uid, token: token, name: name, birthdate: birthdate,
                     guardianPhone: phone)
                 name = ""; birthdate = ""; phone = ""
+            } catch { self.error = error.localizedDescription }
+            busy = false
+            await load()
+        }
+    }
+
+    private func unlink(_ cid: String) {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                try await ApiClient.shared.unlinkChild(gid: uid, cid: cid,
+                                                       token: token)
+                openKid = nil
+                unlinkNote = "Unlinked. Their account and their own record "
+                    + "stay theirs — this ends your view of it."
             } catch { self.error = error.localizedDescription }
             busy = false
             await load()
