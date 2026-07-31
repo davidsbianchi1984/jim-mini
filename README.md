@@ -332,6 +332,13 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.23.0** | **The ninety seconds belonged to somebody who could not reach them** — `guidance` says its caller is *the person standing over a colleague, who has no account*, and its only door was inside a signed-in Guardian screen. It is now on the scanned beacon page itself, offered whether or not the Medical ID opened, because a minor's beacon opens no clinical stage and the person kneeling needs it most. That page also speaks the finder's language now, from their own browser — forty-seven strings, hand-translated, in all ten. And a guardian's phone can unlink a child it linked |
+| **0.22.0** | **Cut with the siblings** — the console backlog run to zero alongside QRME's audit, and the fixes the audit turned up on the way |
+| **0.21.0** | **Cut with the siblings** — four door-audit rounds across the three products, and the defects found behind the doors they built |
+| **0.20.1** | **The union hid a surface** — *some* client reaching a route was being counted as *this* client reaching it, so the console's own gaps were invisible. A guard per client, and the console doors that answered it |
+| **0.20.0** | **Failures from the phone and the desktop shell** — error capture reaches the native shells, and a guard that invented work is corrected: it demanded doors for routes that already had them |
+| **0.19.1** | **Cut with the siblings** — the drawings and lessons the error-reporting surface shipped without |
+| **0.19.0** | **It can tell you it broke without telling anybody what you said** — content-free error capture in the console and on every native shell, sent to a collector that never receives a word of your content |
 | **0.18.0** | **The rest of what JIM knew, on every shell and finally drawn** — the effectiveness loop, the adaptation profile and the anonymity posture reach iOS/Android/Windows, with screens and lessons for all four new doors |
 | **0.17.0** | **The community door opens on every shell** — the QRME bridge on iOS/Android/Windows, plus the adaptation profile and anonymity posture given screens |
 | **0.16.0** | **The loop closes** — did the counseling work, a user-specific model sealed in the vault, the attach bracket, anonymous by choice, pace cue, budgets, stress, knowledge pack |
