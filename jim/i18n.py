@@ -1211,6 +1211,17 @@ def localize_detail(detail, language: str):
         return {**detail, "detail": tr_refusal(detail["detail"], language)}
     if isinstance(detail, dict) and isinstance(detail.get("message"), str):
         return {**detail, "message": tr_refusal(detail["message"], language)}
+    # One level further in. `api.py` wraps every `HTTPException` as
+    # `{"detail": exc.detail}` before this runs, so a structured refusal — the
+    # plan gate — arrives as a dict inside a dict, and the branches above see
+    # an outer dict whose `detail` is neither a string nor carrying a
+    # `message`. Its sentence went out untranslated in every language.
+    #
+    #     asked     is a structured refusal localized
+    #     mattered  is it localized where the wrapper actually puts it
+    if isinstance(detail, dict) and isinstance(detail.get("detail"), dict):
+        return {**detail,
+                "detail": localize_detail(detail["detail"], language)}
     return detail
 
 
@@ -1234,6 +1245,33 @@ def refusal_language(request) -> str:
         return DEFAULT
 
 
+def sentence_of(detail) -> str | None:
+    """The part of a refusal a person is meant to read, whatever shape it has.
+
+    `detail` is a string for most refusals, a dict for the plan gate, and a
+    list of rows for a 422. Three shapes, and every client had to know which
+    one it was looking at — which is why the plan gate reached three of the
+    four as a bare status code.
+
+        asked     does the sentence ride beside the structure
+        mattered  does every structured refusal put it in the same place
+
+    Returns `None` when there is nothing readable rather than inventing
+    something: a bare status is more honest than a sentence this module made
+    up.
+
+    The 422's list is deliberately not handled here. Its sentence needs the
+    reader's language and the field-name rules, which is `validation_message`'s
+    job, and its handler passes the result in directly.
+    """
+    if isinstance(detail, str):
+        return detail or None
+    if isinstance(detail, dict):
+        said = detail.get("message")
+        return said if isinstance(said, str) and said else None
+    return None
+
+
 def refuse(request, status: int, content, headers: dict | None = None):
     """The one place a refusal becomes a response.
 
@@ -1246,10 +1284,27 @@ def refuse(request, status: int, content, headers: dict | None = None):
     for a 401 to stop saying how to authenticate.
     """
     from fastapi.responses import JSONResponse
-    return JSONResponse(
-        status_code=status,
-        content=localize_detail(content, refusal_language(request)),
-        headers=headers)
+    body = localize_detail(content, refusal_language(request))
+    # One place the sentence is, whatever shape the structure has.
+    #
+    # The plan gate raises a dict whose `message` sits *inside* it, and the
+    # handler wraps that as `{"detail": {...}}`. The three native shells look
+    # for a top-level `message` and then for a string `detail`; a dict is
+    # neither, so the one refusal that stands between somebody and a decision
+    # to pay rendered as the status code alone — no price, no plan name.
+    #
+    #     asked     does the sentence ride beside the structure
+    #     mattered  does every structured refusal put it in the same place
+    #
+    # Lifted here rather than at each raise site, for the reason this function
+    # exists at all: a refusal shape added later cannot forget to do it.
+    # `detail` is untouched — the console reads the dict to build the upgrade
+    # card with its price and button.
+    if isinstance(body, dict) and not isinstance(body.get("message"), str):
+        said = sentence_of(body.get("detail"))
+        if said is not None:
+            body = {**body, "message": said}
+    return JSONResponse(status_code=status, content=body, headers=headers)
 
 
 #: Keyed on the English source, so editing the English falls back loudly to
