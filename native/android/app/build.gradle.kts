@@ -14,6 +14,19 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
+
+        // Where content-free problem reports go, and the token to post them
+        // with. The console's equivalent is the `define` block in
+        // app/vite.config.ts. Empty is the default and the stronger one: an
+        // install with no address has nowhere to send, and there is no flag
+        // for a later mistake to switch on.
+        //
+        //   ./gradlew assembleRelease -PproblemCollector=https://gw.example.com \
+        //                             -PproblemToken=...
+        buildConfigField("String", "PROBLEM_COLLECTOR",
+            "\"${project.findProperty("problemCollector") ?: ""}\"")
+        buildConfigField("String", "PROBLEM_TOKEN",
+            "\"${project.findProperty("problemToken") ?: ""}\"")
     }
 
     buildTypes {
@@ -27,7 +40,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true }
+    buildFeatures { compose = true; buildConfig = true }
 }
 
 dependencies {

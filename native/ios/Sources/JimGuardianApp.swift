@@ -9,6 +9,12 @@ struct JimGuardianApp: App {
             RootView()
                 .environmentObject(state)
                 .preferredColorScheme(.dark)
+                // What the buffer is for. Detached and unawaited: a
+                // diagnostic must never be the reason a launch is slow, and
+                // `send` returns an outcome rather than throwing, so there is
+                // nothing here to handle. It answers `.awaitingNotice` until
+                // somebody has been told and chosen.
+                .task { await Problems.send() }
         }
     }
 }

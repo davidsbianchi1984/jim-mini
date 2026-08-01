@@ -4,6 +4,62 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### The drawer nobody empties
+
+Task #110 gave all three native shells content-free error capture, and it did
+that part well: `record` templates the route, drops the message, keeps the day
+and not the time, and redacts on the way *in* so the buffer never holds
+something that would later have to be scrubbed.
+
+Then nothing sent it anywhere.
+
+Nine shells across three products recorded failures into a fifty-row buffer
+that filled and rolled over. Only the desktop console ever had the second
+half. The tell was in the model the whole time: every shell declares a `sent`
+field documented as *"how much of `count` has already been reported"*, and
+nothing in any of them ever read it, because nothing ever reported. The
+comment described behaviour that was not in the file.
+
+    asked     is the failure recorded without recording anything private
+    mattered  does the failure reach anybody
+
+Written per shell rather than as a union — the console having both halves is
+exactly what made this invisible for four releases. "Error reporting works"
+was true of one client in four, per product.
+
+Each of the nine now has a report builder, a watermark that advances **by
+amount and not by a flag** (a row goes on counting while the request is in
+flight, and a flag drops every occurrence that happened during the send), a
+collector address that is empty until a release stamps one, a notice gate, and
+a call at launch. The address comes from the build — `Info.plist` on iOS, a
+gradle `buildConfigField` on Android, `AssemblyMetadata` on Windows — for the
+same reason the console's does: an install with no address has nowhere to
+send, and there is no flag for a later mistake to switch on.
+
+**Nothing sends yet, deliberately.** `send` answers `awaitingNotice` until
+somebody has been told what a report contains and chosen. The notice and the
+off-switch need a surface on each shell's settings screen, and that is the
+next round; until it lands the mechanism is inert by its own gate rather than
+by omission.
+
+### Two things the round turned up on its way through
+
+**A path that belongs to another service.** The existing route guard refused
+the new call: `/v1/problems` is on the Cloud Model Gateway, not on this
+product's API. `NOT_A_CLIENT_CALL` was the wrong home for it — that list is
+for paths *nothing should ever call*, and its own comment says to exempt a
+path only for that reason and never because the audit cannot see the call. So
+`ANOTHER_SERVICE` is a separate list with a separate rule: a different
+deployment owns this path.
+
+**The same guard in three repos disagrees about what it can see.** JIM's
+extractor found the Android literal; QRME's and PDI's did not, and none of the
+three sees the iOS or Windows equivalents. Recorded rather than fixed here —
+three copies of one guard with three different blind spots is its own round,
+and it is the audit's shape applied to the audit.
+
 ## [0.25.0] — 2026-08-01
 
 Aligned with QRME 0.25.0. The three products carry one version, so a release

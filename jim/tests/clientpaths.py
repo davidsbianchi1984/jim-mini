@@ -432,6 +432,11 @@ def refused(app, lang: Language) -> list[str]:
     for (method, path), (source, literal) in sorted(calls(lang).items()):
         if accepts(app, method, path):
             continue
+        # Addressed to a different deployment — see ANOTHER_SERVICE below.
+        # Checked here rather than by dropping the literal at extraction time,
+        # so the call stays visible to everything else that reads `calls()`.
+        if path in ANOTHER_SERVICE:
+            continue
         ok = methods_for(app, path)
         why = (f"accepted here: {', '.join(ok)}" if ok
                else "no route is mounted at this path")
@@ -471,6 +476,24 @@ NOT_A_CLIENT_CALL = (
     # a scope is requested, so its half of the door arrives as a POST with
     # the code in a urlencoded body.
     "/auth/oauth/{provider}/callback",
+)
+
+
+# Paths that belong to **another service**, so this product's router is the
+# wrong table to check them against.
+#
+# Not the same thing as NOT_A_CLIENT_CALL above, and kept apart on purpose.
+# That list is for paths nothing should ever call; these are called, on every
+# launch, deliberately — just not here. The Cloud Model Gateway (`cloudgw/`)
+# is a separate deployment with its own address, and the shells reach it with
+# the collector URL a release stamps in, never with this product's base URL.
+#
+# The rule for this list: a path goes here only when a *different* service
+# owns it and something in this repo can be pointed at that service. If the
+# path could ever be served by this app, it does not belong here — it belongs
+# in the router.
+ANOTHER_SERVICE = (
+    "/v1/problems",
 )
 
 

@@ -45,6 +45,11 @@ class MainActivity : ComponentActivity() {
         // nothing at all, and record it quietly — the recorder refuses to
         // crash over a diagnostic, so a missing attach has no symptom.
         Problems.attach(this)
+        // What the buffer is for. Off the main thread because `send` blocks on
+        // a socket, and fire-and-forget because a diagnostic must never be the
+        // reason a launch is slow. It answers AWAITING_NOTICE until somebody
+        // has been told and chosen.
+        Thread { Problems.send(BuildConfig.VERSION_NAME) }.start()
         enableEdgeToEdge()
         setContent {
             JimTheme {
