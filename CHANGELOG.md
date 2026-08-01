@@ -4,6 +4,60 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.5] — 2026-08-01
+
+### The plan gate said HTTP 402
+
+0.30.4 left the plan gate open as the one refusal deliberately not translated,
+because its message interpolates prose. Going back to translate it turned up
+something else first: on three of the four client families it was not arriving
+at all.
+
+`detail` has three shapes in this product — a **string** for most refusals, a
+**dict** for the plan gate, a **list** for a 422. 0.30.3 gave the list a
+top-level `message` and taught every client to read it. The plan gate's
+`message` stayed nested inside its dict.
+
+    asked     does the sentence ride beside the structure
+    mattered  does every structured refusal put it in the same place
+
+The three native shells look for a top-level `message`, then for a string
+`detail`. A dict is neither, so the one refusal in this product that stands
+between somebody and a decision to pay rendered as the bare status code: no
+price, no plan name, no reason.
+
+| Client | Before | After |
+|---|---|---|
+| iOS | `HTTP 402` | the sentence, with price and plan |
+| Android | `HTTP 402` | the sentence, with price and plan |
+| Windows | `HTTP 402` | the sentence, with price and plan |
+| Console | correct | unchanged |
+
+**One of those was a regression from 0.30.3.** Android had been coercing the
+dict through `toString()` and showing its raw JSON — ugly, but it contained the
+price. Teaching it to read the top-level key first is what dropped it to the
+status code. iOS and Windows had always been broken.
+
+**The fix is not a third special case.** Every refusal now carries a top-level
+`message` holding the sentence a person reads, whichever shape `detail` is, so
+a client never has to know the shape and a structured refusal added later
+cannot repeat this. `detail` is untouched: the console still reads the dict to
+draw the upgrade card with its price and button. `sentence_of` returns nothing
+when there is nothing readable rather than inventing a sentence — a bare status
+is more honest than one this codebase made up, and would be indistinguishable
+from a real one.
+
+**A second defect underneath it.** `localize_detail` looked one level down, and
+`api.py` wraps every `HTTPException` as `{"detail": exc.detail}` before it
+runs — so a structured refusal arrives two levels down and its sentence went
+out **untranslated in every language**.
+
+    asked     is a structured refusal localized
+    mattered  is it localized where the wrapper actually puts it
+
+Found because the new translation check failed rather than passed, which is
+what it was written to do.
+
 ## [0.30.4] — 2026-08-01
 
 ### A refusal whose English is not a constant
