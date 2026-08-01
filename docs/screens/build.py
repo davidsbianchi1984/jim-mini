@@ -1784,6 +1784,19 @@ SCREENS = [
         dict(icon="book", color="green", k="Step 1 of 29",
              s="the guide, with a door at last"),
     ]),
+    dict(num=101, title="Your own profile", sub="What it may know about you",
+         accent="violet", cards=[
+             dict(icon="shield", color="violet", k="Linked",
+                  s="prf_… · your own QRME profile", pill=("SELF", "good")),
+             dict(icon="check", color="green", k="Language · Wellbeing",
+                  s="passed on", pill=("ON", "good")),
+             dict(icon="pill", color="amber", k="Medication",
+                  s="your own words for the names", pill=("ON", "warn")),
+             dict(icon="lock", color="cyan", k="Conditions · Continuity",
+                  s="not passed on"),
+             dict(icon="doc", color="brand", k="Exactly what would be sent",
+                  s="the message itself, before it goes"),
+         ]),
 ]
 
 

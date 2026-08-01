@@ -159,6 +159,38 @@ class QRMEClient:
             return None
         return r.json()
 
+    def brief_self(self, profile_id: str, owner_token: str,
+                   brief: dict) -> dict | None:
+        """Hand the Guardian's standing to the person's own self profile.
+
+        Posted as **source material**, with the owner's token, to the route
+        QRME already gates on ownership — so it lands where the persona is
+        grounded and, when QRME has a PDI vault configured, is sealed into it
+        rather than left beside it. `add_source` writes only the reference
+        locally in that case.
+
+        `kind` is `knowledge` because that is what this is: something the
+        profile knows about itself, not a conversation it had or a thing it
+        wrote. The title is fixed and says where it came from, so an owner
+        reading their own source list can tell this apart from anything they
+        added by hand — and can delete it.
+
+        Returns None when QRME cannot be reached. The caller reports that as a
+        refusal rather than a silent success: a brief that did not arrive must
+        not read as one that did.
+        """
+        try:
+            r = self._client.post(
+                f"/profiles/{profile_id}/sources",
+                json={"kind": "knowledge",
+                      "title": "JIM-mini — the Guardian's standing",
+                      "content": json.dumps(brief, ensure_ascii=False,
+                                            sort_keys=True)},
+                headers={"authorization": f"Bearer {owner_token}"})
+        except Exception:
+            return None
+        return r.json() if r.status_code < 300 else None
+
     # -- referrals: reaching a real clinician --------------------------------
 
     def match_clinicians(self, area: str, location: str | None = None,

@@ -6,6 +6,7 @@ DELETE /guardians/{guardian_id}/children/{child_id}
 DELETE /meds/{user_id}/{med_id}
 DELETE /memberships/{account_id}
 DELETE /robots/{user_id}/{robot_id}
+DELETE /self-profile/{user_id}
 DELETE /settings/mail
 DELETE /settings/voice
 DELETE /social/connection/{cid}
@@ -51,6 +52,8 @@ GET /relay/channel
 GET /relay/roster
 GET /relay/rota
 GET /report/{user_id}
+GET /self-profile/{user_id}
+GET /self-profile/{user_id}/preview
 GET /settings/mail
 GET /settings/voice
 GET /social/connection/{cid}/beacon
@@ -97,6 +100,8 @@ POST /memberships/{account_id}
 POST /nutrition/{user_id}/plan
 POST /password/reset
 POST /password/reset/request
+POST /self-profile/{user_id}
+POST /self-profile/{user_id}/brief
 POST /sessions/{user_id}
 POST /sessions/{user_id}/{session_id}/end
 POST /settings/mail/test
@@ -132,6 +137,7 @@ PUT /budgets/{user_id}
 PUT /dock/{user_id}
 PUT /meds/{user_id}/{med_id}
 PUT /personality/{user_id}
+PUT /self-profile/{user_id}/consent
 PUT /settings/mail
 PUT /settings/voice
 PUT /users/{user_id}/care-team

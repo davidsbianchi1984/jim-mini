@@ -247,10 +247,22 @@ by default**:
 * a category not in the allowlist cannot cross by any route, including a future
   one, because the composer builds the brief from the allowlist rather than
   filtering a payload down to it;
-* the brief carries **no free text from the user** — no journal entry, no
-  check-in note, no transcript. Those are the fields whose contents nobody can
-  predict, and a synthetic self that can be asked an open question is exactly
-  where an unpredictable string should not be.
+* the brief carries **no free text from the user except what a consented
+  category is made of**. Journal entries, check-in notes and transcripts never
+  cross, under any consent, by any route: those are open fields whose contents
+  nobody can predict, and a synthetic self that can be asked an open question
+  is exactly where an unpredictable string should not be.
+
+  The one category made of the person's own words is **medication**, and it is
+  named here rather than hidden in an implementation. `meds.py` refuses a
+  medication that has no name and invites the person to use their own wording
+  — *"the little white one, 10 mg"* — so the names in a cabinet are free text
+  by design, and a name can carry more than a name: *"the pill for my HIV"* is
+  a diagnosis somebody typed into a field asking for a drug. Consenting to the
+  medication category is therefore consenting to a self-profile that can be
+  asked about those names by anyone it talks to. That is a decision worth
+  making with the preview open, which is why the preview shows the exact
+  strings and not a count of them.
 
 The composer's signature is the safeguard, the way `Problems.record` takes a
 method and a path and has no parameter a message could arrive through. It takes

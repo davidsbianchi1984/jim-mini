@@ -304,6 +304,20 @@ CREATE TABLE IF NOT EXISTS specialists (
     created_at      TEXT NOT NULL
 );
 
+-- The user's own synthetic profile in QRME — the one that speaks *as* them,
+-- as opposed to the specialists above, which belong to other people. Held with
+-- an OWNER token, not an interactor token: this profile is not a stranger to
+-- them. `consented` is a JSON array of category names from
+-- synthetic_self.CATEGORIES, empty until the person has seen the brief and
+-- answered. Unlinking deletes the credential and the consent together.
+CREATE TABLE IF NOT EXISTS self_links (
+    user_id         TEXT PRIMARY KEY REFERENCES users(id),
+    qrme_profile_id TEXT NOT NULL,
+    owner_token     TEXT NOT NULL,
+    consented       TEXT NOT NULL DEFAULT '[]',
+    created_at      TEXT NOT NULL
+);
+
 -- Per-user mapping to a QRME interactor, created lazily for tandem guidance.
 CREATE TABLE IF NOT EXISTS tandem_links (
     user_id              TEXT PRIMARY KEY REFERENCES users(id),

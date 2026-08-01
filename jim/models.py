@@ -627,3 +627,24 @@ class MedLog(BaseModel):
     action: str                 # taken | skipped
     slot: str | None = None     # required for scheduled meds
     note: str | None = None
+
+class SelfProfileLink(BaseModel):
+    """Binding a user to their own QRME `self` profile.
+
+    An **owner** token. Not the interactor token `tandem_links` holds — the
+    whole point of a self-profile is that it is not a stranger to them.
+    """
+
+    profile_id: str
+    owner_token: str
+
+
+class SelfProfileConsent(BaseModel):
+    """Which categories the Guardian may tell that profile about.
+
+    A list, replaced wholesale, empty by default and empty as a valid answer.
+    Names are checked against `synthetic_self.CATEGORIES` in the module rather
+    than typed here, so the allowlist has one home.
+    """
+
+    categories: list[str] = Field(default_factory=list)

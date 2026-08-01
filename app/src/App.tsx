@@ -10,6 +10,7 @@ import { Monitor } from "./screens/Monitor";
 import { Baseline } from "./screens/Baseline";
 import { Meds } from "./screens/Meds";
 import { CareTeam } from "./screens/CareTeam";
+import { SelfProfile } from "./screens/SelfProfile";
 import { Community } from "./screens/Community";
 import { Coach } from "./screens/Coach";
 import { Checkin } from "./screens/Checkin";
@@ -25,7 +26,7 @@ import { Reach } from "./screens/Reach";
 import { Bearing } from "./screens/Bearing";
 import { Held } from "./screens/Held";
 
-type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "settings";
+type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "settings";
 // Labels live in `l10n.ts` and are looked up by id — see `nav.*` there.
 //
 // They used to sit here as English literals, which made the console's own
@@ -39,6 +40,7 @@ const NAV: { id: Tab; icon: string }[] = [
   { id: "baseline", icon: "📈" },
   { id: "meds", icon: "💊" },
   { id: "careteam", icon: "👥" },
+  { id: "selfprofile", icon: "🪞" },
   { id: "coach", icon: "🧠" },
   { id: "wellness", icon: "🧘" },
   { id: "checkin", icon: "🌿" },
@@ -86,6 +88,7 @@ export function App() {
         {tab === "home" && <Home go={setTab} />}
         {tab === "meds" && <Meds />}
         {tab === "careteam" && <CareTeam />}
+        {tab === "selfprofile" && <SelfProfile />}
         {tab === "monitor" && <Monitor />}
         {tab === "baseline" && <Baseline />}
         {tab === "coach" && <Coach />}

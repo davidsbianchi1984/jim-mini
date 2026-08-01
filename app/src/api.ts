@@ -717,6 +717,27 @@ export const api = {
   careTeamPlans: (uid: string, token: string) =>
     req<CarePlan[]>(`/users/${uid}/care-team/plans`, { token }),
 
+  // The one QRME profile that is this person (jim/synthetic_self.py). Every
+  // other QRME binding above reaches somebody else's profile; this reaches
+  // their own, and the preview is the payload — see docs/tandem.md.
+  selfProfile: (uid: string, token: string) =>
+    req<SelfProfileStatus>(`/self-profile/${uid}`, { token }),
+  selfProfileLink: (uid: string, token: string,
+                    body: { profile_id: string; owner_token: string }) =>
+    req<SelfProfileStatus>(`/self-profile/${uid}`,
+      { method: "POST", body, token }),
+  selfProfileUnlink: (uid: string, token: string) =>
+    req<{ linked: boolean; was_linked: boolean }>(`/self-profile/${uid}`,
+      { method: "DELETE", token }),
+  selfProfileConsent: (uid: string, token: string, categories: string[]) =>
+    req<SelfProfileStatus>(`/self-profile/${uid}/consent`,
+      { method: "PUT", body: { categories }, token }),
+  selfProfilePreview: (uid: string, token: string) =>
+    req<SelfProfilePreview>(`/self-profile/${uid}/preview`, { token }),
+  selfProfileBrief: (uid: string, token: string) =>
+    req<{ sent: boolean; brief: Record<string, unknown> }>(
+      `/self-profile/${uid}/brief`, { method: "POST", token }),
+
   medsBoard: (uid: string, token: string) =>
     req<MedBoard>(`/meds/${uid}`, { token }),
   medsAdd: (uid: string, token: string, body: { name: string; dose: string;
@@ -1267,4 +1288,20 @@ export const api = {
   sendFeedback: (uid: string, body: { rating: "up" | "down"; note?: string },
                  token: string) =>
     req<Row>(`/feedback/${uid}`, { method: "POST", body, token }),
+};
+
+export type SelfProfileStatus = {
+  linked: boolean;
+  profile_id?: string;
+  consented: string[];
+  categories: Record<string, string>;
+  created_at?: string;
+};
+
+export type SelfProfilePreview = {
+  linked: boolean;
+  profile_id?: string;
+  consented?: string[];
+  brief: Record<string, unknown> | null;
+  empty?: boolean;
 };

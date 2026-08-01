@@ -23,7 +23,7 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                landing, life, llm,
                meds, mic, mobile, notify, oauth, referral, relay, research,
                robotics,
-               rota, social, storage, terms as terms_mod, tiers, tutorial,
+               rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
                vigil, voice, watch)
 from . import crashwatch
 from . import help as help_mod
@@ -43,6 +43,7 @@ from .models import (
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
+    SelfProfileConsent, SelfProfileLink,
     BandSet,
     LanguageChoice, LocalitySet, MailSettings, MailTest,
     MedCreate, MedLog, MedUpdate,
@@ -157,6 +158,11 @@ def create_app(qrme_client: QRMEClient | None = None,
                            exc: nutrition_mod.NutritionError):
         return i18n.refuse(request, exc.status, {"detail": exc.message})
 
+    @app.exception_handler(synthetic_self.SelfLinkError)
+    def _self_link_refusal(request: Request,
+                           exc: synthetic_self.SelfLinkError):
+        return i18n.refuse(request, exc.status, {"detail": exc.message})
+
     @app.exception_handler(vigil.VigilError)
     def _vigil_refusal(request: Request, exc: vigil.VigilError):
         return i18n.refuse(request, exc.status, {"detail": exc.message})
@@ -164,6 +170,54 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.exception_handler(meds.MedError)
     def _med_refusal(request: Request, exc: meds.MedError):
         return i18n.refuse(request, exc.status, {"detail": exc.message})
+
+
+    # -- the synthetic self: the one QRME profile that is this person ---------
+    #
+    # Everything else in this file that touches QRME reaches somebody else's
+    # profile. See jim/synthetic_self.py and docs/tandem.md for the boundary
+    # these five routes exist to hold.
+
+    @app.get("/self-profile/{user_id}")
+    def self_profile(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return synthetic_self.status(user_id)
+
+    @app.post("/self-profile/{user_id}", status_code=201)
+    def link_self_profile(user_id: str, body: SelfProfileLink,
+                          request: Request) -> dict:
+        """Bind this user to their own QRME `self` profile.
+
+        The owner token is theirs and stays here. QRME is asked what kind of
+        profile it is and the link is refused unless the answer is `self`.
+        """
+        _user_or_404(user_id, request)
+        return synthetic_self.link(user_id, body.profile_id,
+                                   body.owner_token, app.state.qrme)
+
+    @app.delete("/self-profile/{user_id}")
+    def unlink_self_profile(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return synthetic_self.unlink(user_id)
+
+    @app.put("/self-profile/{user_id}/consent")
+    def consent_self_profile(user_id: str, body: SelfProfileConsent,
+                             request: Request) -> dict:
+        """Replace the consented categories. Empty is a valid answer and the
+        default; it is how somebody says *not this any more*."""
+        _user_or_404(user_id, request)
+        return synthetic_self.consent(user_id, body.categories)
+
+    @app.get("/self-profile/{user_id}/preview")
+    def preview_self_profile(user_id: str, request: Request) -> dict:
+        """Exactly what would be sent, composed by the code that sends it."""
+        _user_or_404(user_id, request)
+        return synthetic_self.preview(user_id)
+
+    @app.post("/self-profile/{user_id}/brief")
+    def brief_self_profile(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return synthetic_self.send(user_id, app.state.qrme)
 
     # Optional CORS for a packaged guardian-console front-end (app/) calling the
     # API from another origin. Off by default; set JIM_CORS_ORIGINS to a

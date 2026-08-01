@@ -252,7 +252,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/98-who-else-is-looking.svg" width="160" alt="98 Who Else Is Looking"><br><sub>98 · Who Else Is Looking</sub></td>
 <td align="center" width="25%"><img src="docs/screens/99-what-reaches-out.svg" width="160" alt="99 What Reaches Out"><br><sub>99 · What Reaches Out</sub></td>
 <td align="center" width="25%"><img src="docs/screens/100-bearing.svg" width="160" alt="100 Bearing"><br><sub>100 · Bearing</sub></td>
-<td align="center" width="25%"></td>
+<td align="center" width="25%"><img src="docs/screens/101-your-own-profile.svg" width="160" alt="101 Your Own Profile"><br><sub>101 · Your Own Profile</sub></td>
 </tr>
 </table>
 

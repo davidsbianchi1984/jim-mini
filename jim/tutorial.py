@@ -365,6 +365,21 @@ LESSONS: tuple[dict, ...] = (
               "until this screen.",
          screens=(100,),
          try_it="Read what JIM has written about you, then set the tone."),
+    dict(key="selfprofile", chapter="Beyond the app",
+         title="Your own profile",
+         what="QRME has a profile that is you — not a specialist somebody "
+              "else owns, but the one that speaks as you to whoever it "
+              "meets. Until you link it, the Guardian has never heard of "
+              "it, and after you link it the Guardian still says nothing: "
+              "every category starts off, and the screen shows the message "
+              "itself before it goes rather than a description of it. "
+              "Medication is the one part made of your own words, so it "
+              "shows the names as you typed them — because a name you chose "
+              "can say more than a name, and that is a decision to make with "
+              "it in front of you. Journal entries, check-in notes and "
+              "transcripts never cross at any setting.",
+         screens=(101,),
+         try_it="Link the profile, tick nothing, and read the empty brief."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

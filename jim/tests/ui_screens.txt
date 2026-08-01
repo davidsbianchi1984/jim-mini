@@ -59,3 +59,4 @@ Held            97
 Attending       98
 Reach           99
 Bearing         100
+SelfProfile     101
