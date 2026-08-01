@@ -7,7 +7,8 @@ import json
 import os
 from datetime import date, datetime
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi import (Depends, FastAPI, Header, HTTPException, Request,
+                     Response)
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 
@@ -1423,12 +1424,35 @@ def create_app(qrme_client: QRMEClient | None = None,
         return Response(content=buf.getvalue(), media_type="image/svg+xml")
 
     @app.post("/c/{bid}/alarm", status_code=201)
-    def raise_alarm(bid: str, body: BeaconAlarm) -> dict:
+    def raise_alarm(bid: str, body: BeaconAlarm,
+                    accept_language: str = Header(default="")) -> dict:
         """Stage two. Raising the alarm is what turns a passer-by into a
-        responder, and what earns them the Medical ID — never for a minor."""
+        responder, and what earns them the Medical ID — never for a minor.
+
+        **In the finder's language.** The page they pressed the button on has
+        been negotiating `Accept-Language` since the round that localized it;
+        this route was not, so the two sentences it answers with arrived in
+        English on a Spanish page — the badge saying the alarm is raised and
+        this is not an emergency service, and the note telling them to call an
+        ambulance themselves because this page cannot. Those are the two
+        sentences on the whole surface that most need to be understood, and
+        they land at the moment somebody is kneeling over a person deciding
+        what to do next.
+
+        Two keys by name rather than a walk over the response. The Medical ID
+        rides in the same object, and a person's conditions, their contact's
+        name and their resting heart rate are facts rather than copy —
+        translating a clinical value is how a responder gets misled. `note`
+        and `badge` are the only sentences here that this product wrote.
+        """
+        language = i18n.negotiate(accept_language)
         out = beacons.alarm(bid, body.message, qrme=app.state.qrme)
         if out is None:
-            raise HTTPException(404, "this code does not resolve to anything")
+            raise HTTPException(404, i18n.tr(
+                "this code does not resolve to anything", language))
+        for key in ("note", "badge"):
+            if isinstance(out.get(key), str):
+                out[key] = i18n.tr(out[key], language)
         return out
 
     # -- the workplace relay: the agent that answers when nobody does -------

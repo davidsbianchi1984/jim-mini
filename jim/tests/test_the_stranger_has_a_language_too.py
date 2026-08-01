@@ -351,3 +351,85 @@ def test_every_template_keeps_its_hole_in_every_language():
     assert not broken, (
         "these translations do not carry the same named values as their "
         "English:\n    " + "\n    ".join(broken))
+
+
+# --- what the alarm answers -------------------------------------------------
+#
+# The page is the first half. The second is the response to the button, and
+# the checks above cannot see it: `note` and `badge` are rendered onto the
+# page *by the script*, from JSON, after the fetch. Both were English however
+# the page around them had been negotiated.
+#
+# They are the two sentences on the whole surface that most need to be
+# understood — "the alarm is raised, this is not an emergency service" and
+# "call your local emergency number yourself, this page cannot" — and they
+# arrive at the moment somebody is kneeling over a person deciding what to do
+# next.
+
+
+def _alarm(client, bid, language=None):
+    head = {"Accept-Language": language} if language else {}
+    return client.post(f"/c/{bid}/alarm", json={"message": None}, headers=head)
+
+
+def test_the_alarms_answer_arrives_in_the_finders_language(client):
+    """Driven through the route, because the function taking a `language` is
+    not the same as anything passing one — the mistake this audit has made
+    most often."""
+    from .conftest import enroll
+
+    uid = enroll(client)
+    made = client.post(f"/users/{uid}/beacons", json={"label": "fridge"})
+    assert made.status_code == 201, made.text
+    bid = made.json()["id"]
+
+    english = _alarm(client, bid)
+    assert english.status_code == 201, english.text
+    plain = english.json()
+
+    for language in ("es", "ja", "ar"):
+        said = _alarm(client, bid, language).json()
+        for key in ("note", "badge"):
+            assert said[key] == i18n.tr(plain[key], language), (
+                f"the alarm's {key} is still English for a {language} "
+                f"finder: {said[key][:60]!r}")
+            assert said[key] != plain[key], (
+                f"{key} came back unchanged — the table has no {language} row "
+                "for it, so the sentence a responder acts on is English")
+
+
+def test_a_dead_sticker_refuses_in_the_finders_language(client):
+    """The POST, not the page. Somebody at a peeled-off code who presses the
+    button gets this, and it was English under a translated document."""
+    refused = _alarm(client, "bcn_neverexisted", "fr")
+    assert refused.status_code == 404
+    assert refused.json()["detail"] == i18n.tr(
+        "this code does not resolve to anything", "fr")
+
+
+def test_the_medical_id_is_never_translated(client):
+    """The line this round does not cross.
+
+    A person's conditions, their emergency contact's name and their resting
+    heart rate are facts. Running them through a translation table would be
+    inventing, and on a Medical ID an invented fact is how a responder is
+    misled — which is worse than an English one they can still read.
+    """
+    from .conftest import enroll
+
+    uid = enroll(client, emergency_name="Alex Ruiz",
+                 emergency_phone="+15555550123", contact_consent=True,
+                 conditions=["Type 1 diabetes"])
+    made = client.post(f"/users/{uid}/beacons", json={"label": "fridge"})
+    assert made.status_code == 201, made.text
+    bid = made.json()["id"]
+
+    said = _alarm(client, bid, "es").json()
+    medical = said.get("medical_id") or {}
+    flat = json.dumps(medical, ensure_ascii=False)
+    if "Type 1 diabetes" in json.dumps(_alarm(client, bid).json(),
+                                       ensure_ascii=False):
+        assert "Type 1 diabetes" in flat, (
+            "a clinical condition was translated — that is inventing a fact "
+            "on the one card a responder acts from")
+        assert "Alex Ruiz" in flat, "the contact's name was altered"
