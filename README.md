@@ -332,6 +332,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.24.0** | **The page was translated; the answer to the button was not** — a Spanish finder read a Spanish page, pressed a Spanish button, and was told in English that this page cannot call anyone and they have to. Five more strings had never gone through `tr` at all, including the greeting whenever a beacon carries a name and both feet. The Medical ID stays untranslated on purpose. A header refusing Arabic was answered in Arabic; one conformance table now holds all three products to the same reading |
 | **0.23.0** | **The ninety seconds belonged to somebody who could not reach them** — `guidance` says its caller is *the person standing over a colleague, who has no account*, and its only door was inside a signed-in Guardian screen. It is now on the scanned beacon page itself, offered whether or not the Medical ID opened, because a minor's beacon opens no clinical stage and the person kneeling needs it most. That page also speaks the finder's language now, from their own browser — forty-seven strings, hand-translated, in all ten. And a guardian's phone can unlink a child it linked |
 | **0.22.0** | **Cut with the siblings** — the console backlog run to zero alongside QRME's audit, and the fixes the audit turned up on the way |
 | **0.21.0** | **Cut with the siblings** — four door-audit rounds across the three products, and the defects found behind the doors they built |
