@@ -4,6 +4,58 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.0] — 2026-08-01
+
+Two rounds, both the same question: can the person this was built for reach it?
+
+### The ninety-second door
+
+`relay_guidance` states its own audience in one sentence: *"What to tell
+whoever is waiting. Public: the person standing over a colleague has no account
+and needs an answer in ninety seconds."*
+
+Three things were true of that route and false of the product. The console
+binding sent a credential, so a route written for somebody with no account
+could only be called by somebody with one. Its only caller was `Attending.tsx`,
+behind the sign-in gate — and Attending is the *Guardian's* side of an alarm,
+the person watching from a desk deciding whether to escalate, not the person on
+the floor. And the surface the passer-by actually reaches, the page a camera
+app opens when somebody scans a sticker, raised the alarm, showed the Medical
+ID, and stopped.
+
+The ninety seconds were being counted by somebody who could not get to the
+thing being counted. The guidance box is now on that page, built from the alarm
+id the alarm's own response carries, on a relative URL for the same reason the
+alarm endpoint is relative. It renders whether or not the Medical ID opened: a
+minor's beacon opens no clinical stage to anybody, and the person kneeling over
+a child needs to know what to do more than anyone, not less.
+
+### The stranger's language
+
+Every localization path here takes a `user_id` — right for everything a user
+reads, and useless for the one reader who has none. `landing.py` had known
+since the day it was written that its reader is *"a stranger with no account"*,
+kneeling next to somebody on the floor, and served them English everywhere in
+the world: the sentence telling them to call an ambulance, and the instruction
+not to move the person.
+
+`Accept-Language` rides on every one of those requests and nothing read it.
+`i18n.negotiate` now picks the **finder's** language — not the watched
+person's, whose is known and is the wrong one, because the text is for whoever
+is holding the phone. Forty-seven strings across nine languages, hand
+translated, because `i18n.py` set that rule before this round: *safety text is
+never machine-mangled*. The guidance answer itself is localized too, not just
+the frame.
+
+### Fixed
+
+- `FamilyView` on iOS can unlink a child it linked. A guardian link is a
+  surveillance relationship that outlives its reason — children grow up,
+  custody changes, households end — and the surface that creates it could not
+  end it.
+- The console's `alarmGuidance` binding no longer sends a credential to a route
+  whose documented caller has none.
+
 ## [0.22.0] — 2026-07-31
 
 **The console backlog reaches zero.** The 109 routes the desktop app could
