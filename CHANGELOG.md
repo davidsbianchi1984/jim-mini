@@ -6,6 +6,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### The notice that makes it real
+
+Last round's sender answered `awaitingNotice` on every launch, because there
+was no surface to answer it on. That is the safe direction to be wrong in and
+it is still wrong: a mechanism nobody can reach is a mechanism nobody chose.
+
+Nine shells now carry a reporting card — on the screen each product already
+uses for data posture. Two rules it exists to keep:
+
+* **Show the report, do not describe it.** The preview is built by
+  `Problems.report`, the same call the sender posts, so what is on screen is
+  the payload. A card that said "we collect anonymous diagnostics" would be
+  asking somebody to take our word for it, and would drift the first time the
+  payload changed — silently, in the direction of a promise nobody is keeping.
+* **No pre-ticked answer.** Neither button is painted as the expected one. A
+  notice with a bright Yes and a grey No has made the choice already, and that
+  is not consent — it is a layout that looks like consent.
+
+Answering yes sends immediately rather than waiting for the next launch, so
+the person who just agreed watches the buffer drain instead of being told
+something happened later. A build with no address compiled in says so plainly
+rather than asking for permission it has no use for.
+
+The guard grew two checks that both caught the guard itself first. The
+emphasis check searched whole files and failed on a button three sections up
+that belongs to a different card; scoped to the answers, it then read one line
+at a time and missed its own injection, because Swift puts the style on a
+wrapped modifier below the label.
+
+    asked     does this file mention the brand colour anywhere
+    mattered  do the two answers differ in emphasis
+
 ### The drawer nobody empties
 
 Task #110 gave all three native shells content-free error capture, and it did

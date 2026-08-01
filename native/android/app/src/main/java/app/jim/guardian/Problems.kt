@@ -225,7 +225,7 @@ object Problems {
      * are absent. This is not a view of the log; it is the message, and after
      * a successful send it is legitimately empty.
      */
-    fun report(appVersion: String): JSONObject {
+    fun report(appVersion: String = BuildConfig.VERSION_NAME): JSONObject {
         val owed = JSONArray()
         for (row in read()) {
             val remainder = row.optInt("count") - row.optInt("sent")

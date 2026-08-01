@@ -269,10 +269,10 @@ public static class Problems
     /// owing are absent. This is not a view of the log; it is the message, and
     /// after a successful send it is legitimately empty.
     /// </summary>
-    public static Dictionary<string, object> Report(string appVersion) => new()
+    public static Dictionary<string, object> Report(string? appVersion = null) => new()
     {
         ["source"] = Source,
-        ["app_version"] = appVersion,
+        ["app_version"] = appVersion ?? AppVersion,
         ["platform"] = "windows",
         ["language"] = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName,
         ["problems"] = Read()

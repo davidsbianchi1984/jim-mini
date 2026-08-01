@@ -40,6 +40,31 @@
 
             <Button Content="Refresh" Height="40" Click="OnRefresh"
                     Foreground="White" Background="{StaticResource JimBrandABrush}" />
+            <!-- The notice that has to be answered before anything leaves this
+                 machine, and the switch that turns it off afterwards. The
+                 preview below is built by Problems.Report — the same function
+                 the sender posts — so what is shown is the payload rather than
+                 a description of it. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="When something breaks" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="ProblemsExplain" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel x:Name="ProblemsAsk" Orientation="Horizontal" Spacing="10">
+                        <Button x:Name="ProblemsYes" Content="Send counts" Click="OnProblemsYes" />
+                        <Button x:Name="ProblemsNo" Content="Do not send" Click="OnProblemsNo" />
+                    </StackPanel>
+                    <ToggleSwitch x:Name="ProblemsSwitch" Header="Send failure counts"
+                                  Toggled="OnProblemsToggled" Visibility="Collapsed" />
+                    <HyperlinkButton x:Name="ProblemsPreviewButton" Content="Show what would be sent"
+                                     Click="OnProblemsPreview" />
+                    <TextBlock x:Name="ProblemsPreview" FontSize="11" TextWrapping="Wrap"
+                               FontFamily="Consolas" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

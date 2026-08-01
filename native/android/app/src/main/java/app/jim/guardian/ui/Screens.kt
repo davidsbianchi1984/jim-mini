@@ -814,6 +814,7 @@ fun SafetyScreen(vm: GuardianViewModel) {
     val tabs = listOf("Alarms", "SOS", "Crash", "Med ID", "Policy", "Robots", "Vault")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        ProblemReportingCard()
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
             tabs.forEachIndexed { i, t ->
                 Tab(selected = tab == i, onClick = { tab = i },
@@ -2148,6 +2149,96 @@ private fun AnonymityCard(vm: GuardianViewModel) {
             if (p.costs.isEmpty() && p.anonymous) {
                 Text("A legal name is on record for responders.",
                     color = Jim.T3, fontSize = 11.sp)
+            }
+        }
+    }
+}
+
+/**
+ * The notice that has to be answered before anything leaves the device, and
+ * the switch that turns it off afterwards.
+ *
+ * The sending half landed last round and answers AWAITING_NOTICE on every
+ * launch, because there was no surface to answer it on. Safe to be wrong in
+ * that direction, and still wrong: a mechanism nobody can reach is a
+ * mechanism nobody chose.
+ *
+ * Two rules this card keeps:
+ *
+ *  * **Show the report, do not describe it.** A card that says "we collect
+ *    anonymous diagnostics" asks somebody to take our word for it.
+ *    `Problems.report` is the same function the sender posts, so what is on
+ *    screen is the payload. A preview that could drift from the message would
+ *    be worse than none, because it would look like a promise.
+ *  * **No pre-ticked answer.** Neither button is the emphasised one. A dialog
+ *    with a bright Yes and a grey No has made the choice already.
+ */
+@Composable
+fun ProblemReportingCard() {
+    var answered by remember { mutableStateOf(Problems.noticeAnswered()) }
+    var sending by remember { mutableStateOf(Problems.sendingEnabled()) }
+    var showing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val owed = remember(showing, answered, sending) {
+        val arr = Problems.report().optJSONArray("problems")
+        (0 until (arr?.length() ?: 0)).mapNotNull { arr?.optJSONObject(it) }
+    }
+
+    Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("When something breaks", style = MaterialTheme.typography.titleSmall)
+
+            if (Problems.collectorUrl().isEmpty()) {
+                // Not a failure and not a thing to hide: this build has no
+                // address compiled in, so there is nothing to consent to.
+                Text("This build reports nowhere. Failures are counted on this " +
+                     "device and never leave it.",
+                     style = MaterialTheme.typography.bodySmall)
+            } else if (!answered) {
+                Text("This app can send a count of what failed — the operation " +
+                     "and the HTTP status, the day, and how many times. Not " +
+                     "what you typed, not who you are, not which profile. " +
+                     "Nothing that identifies you or anyone else.",
+                     style = MaterialTheme.typography.bodySmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedButton(onClick = {
+                        Problems.answerNotice(true); answered = true; sending = true
+                        // The first moment a send is permitted. Doing it now
+                        // rather than at the next launch means the person who
+                        // just agreed watches the buffer drain, instead of
+                        // being told something happened later.
+                        scope.launch(Dispatchers.IO) { Problems.send() }
+                    }) { Text("Send counts") }
+                    OutlinedButton(onClick = {
+                        Problems.answerNotice(false); answered = true; sending = false
+                    }) { Text("Do not send") }
+                }
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Send failure counts", Modifier.weight(1f),
+                         style = MaterialTheme.typography.bodyMedium)
+                    Switch(checked = sending, onCheckedChange = {
+                        sending = it; Problems.setSending(it)
+                    })
+                }
+            }
+
+            TextButton(onClick = { showing = !showing }) {
+                Text(if (showing) "Hide what would be sent"
+                     else "Show what would be sent")
+            }
+            if (showing) {
+                if (owed.isEmpty()) {
+                    Text("Nothing is owed. Either nothing has failed, or " +
+                         "everything that has was already reported.",
+                         style = MaterialTheme.typography.bodySmall)
+                } else {
+                    owed.forEach { r ->
+                        Text("${r.optString("op")} → ${r.optInt("status")}  " +
+                             "×${r.optInt("count")}  ${r.optString("day")}",
+                             style = MaterialTheme.typography.bodySmall)
+                    }
+                }
             }
         }
     }

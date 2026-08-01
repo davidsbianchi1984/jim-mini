@@ -70,7 +70,7 @@ REQUIRED = {
     "android": ["fun report(appVersion", "fun markReported(",
                 "fun collectorUrl(", "fun noticeAnswered(", "fun send(",
                 "HttpURLConnection"],
-    "windows": ["Report(string appVersion", "MarkReported(", "CollectorUrl(",
+    "windows": ["Report(string", "MarkReported(", "CollectorUrl(",
                 "NoticeAnswered(", "Send(", "HttpClient"],
 }
 
@@ -205,3 +205,90 @@ def test_the_watermark_advances_by_amount_and_not_by_a_flag():
                          re.I), (
             f"{shell} does not advance its watermark by the amount reported. "
             "A flag here loses every failure that happens mid-send.")
+
+
+# --- the notice surface, per shell -----------------------------------------
+#
+# (shell, the file holding the card, the screen that must call it)
+NOTICE = (
+    ("ios", "native/ios/Sources/Views/ProblemReportingCard.swift",
+     "native/ios/Sources/Views/CustodyView.swift", "ProblemReportingCard()"),
+    ("android", "native/android/app/src/main/java/app/jim/guardian/ui/Screens.kt", "native/android/app/src/main/java/app/jim/guardian/ui/Screens.kt", "ProblemReportingCard()"),
+    ("windows", "native/windows/Views/CustodyPage.xaml.cs", "native/windows/Views/CustodyPage.xaml", "ProblemsExplain"),
+)
+
+
+@pytest.mark.parametrize("shell,card,host,call", NOTICE)
+def test_the_notice_exists_and_is_reachable(shell, card, host, call):
+    """A gate with no way to answer it is a feature nobody chose.
+
+    The sending half shipped answering `awaitingNotice` on every launch —
+    the safe direction to be wrong in, and still wrong. This asserts both
+    halves per shell: the card exists, and a screen somebody can reach
+    actually calls it.
+    """
+    body = _code(REPO / card)
+    assert "answerNotice" in body or "AnswerNotice" in body, (
+        f"{shell}'s reporting card never answers the notice, so the gate it "
+        "exists to open stays shut")
+    assert call in _code(REPO / host), (
+        f"{shell} has a notice card that no screen shows. The sender will go "
+        "on answering awaiting-notice forever.")
+
+
+@pytest.mark.parametrize("shell,card,host,call", NOTICE)
+def test_the_notice_shows_the_report_rather_than_describing_it(shell, card,
+                                                               host, call):
+    """The preview has to be built by the same call the sender posts.
+
+    A card that prints a hand-written summary of what a report contains is
+    asking somebody to take our word for it, and it drifts the first time the
+    payload changes — silently, and in the direction of a promise nobody is
+    keeping. So the screen calls `report()`, the function `send` posts.
+
+        asked     does the notice describe what is sent
+        mattered  does the notice show what is sent
+    """
+    body = _code(REPO / card)
+    assert ("Problems.report(" in body or "Problems.Report(" in body), (
+        f"{shell}'s card does not build its preview from the report the "
+        "sender posts, so the two can disagree and only one of them is true")
+
+
+@pytest.mark.parametrize("shell,card,host,call", NOTICE)
+def test_neither_answer_is_the_pre_picked_one(shell, card, host, call):
+    """Both answers exist, and neither is painted as the expected one.
+
+    A notice with a bright Yes and a grey No has made the choice already, and
+    that is not consent — it is a layout that looks like consent.
+
+    Scoped to the two answer elements themselves. The first version searched
+    the whole file for a brand colour and failed on a button belonging to a
+    different card three sections up, which is this audit's shape occurring
+    inside a check about consent:
+
+        asked     does this file mention the brand colour anywhere
+        mattered  do the two answers differ in emphasis
+    """
+    body = _code(REPO / card) + _code(REPO / host)
+    for wording in ("Send counts", "Do not send"):
+        assert wording in body, (
+            f"{shell}'s card is missing the {wording!r} answer")
+
+    # Everything on the line that declares each answer — the style it is given
+    # and nothing belonging to anything else.
+    lines = body.splitlines()
+    marks = [i for i, line in enumerate(lines)
+             if "Send counts" in line or "Do not send" in line
+             or "ProblemsYes" in line or "ProblemsNo" in line]
+    # Two lines, not one: Swift puts the style on a wrapped modifier below the
+    # label, and a one-line window missed exactly the injection this test was
+    # written for — the styling sat on the next line and the guard passed.
+    answers = [line for i in marks for line in lines[i:i + 2]]
+    assert answers, f"{shell}: could not locate the answer controls"
+    painted = [line.strip() for line in answers
+               if re.search(r"BrandABrush|borderedProminent|Background=", line)]
+    assert not painted, (
+        f"{shell} paints one answer differently from the other:\n    "
+        + "\n    ".join(painted)
+        + "\n  Neither answer may be the pre-picked one.")

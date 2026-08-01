@@ -207,7 +207,7 @@ enum Problems {
     /// `count` is the *unreported remainder*, and rows with nothing left owing
     /// are absent. So this is not a view of the log; it is the message, and
     /// after a successful send it is legitimately empty.
-    static func report(appVersion: String) -> [String: Any] {
+    static func report(appVersion: String = appVersion) -> [String: Any] {
         let owed = read().compactMap { row -> [String: Any]? in
             let remainder = row.count - row.sent
             guard remainder > 0 else { return nil }
