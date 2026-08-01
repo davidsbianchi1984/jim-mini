@@ -49,7 +49,23 @@ def _repo_root() -> Path:
 
 REPO = _repo_root()
 SNAPSHOT = Path(__file__).resolve().parent / "console_untranslated.txt"
-PRE_SESSION = ("screens/Onboarding.tsx",)
+#: Every screen the console renders, not just the pre-session one.
+#:
+#: This file measured `Onboarding.tsx` alone for two releases, which is how
+#: seven hundred English strings on nineteen gated screens stayed out of the
+#: count while the record said the console's backlog was thirty-five.
+#:
+#:     asked     is the pre-session screen localized
+#:     mattered  is the console localized
+#:
+#: The gated screens are a different argument from the accountless one — their
+#: reader has a language setting the server already honours — which is why the
+#: nav is localized this round and the screen bodies are recorded rather than
+#: half-done.
+PRE_SESSION = tuple(
+    f"screens/{p.name}" for p in
+    sorted((Path(__file__).resolve().parents[2] / "app" / "src"
+            / "screens").glob("*.tsx")))
 
 
 def _prose() -> list[str]:
@@ -66,7 +82,11 @@ def _prose() -> list[str]:
         "the JSX text extractor failed, so this check would report a "
         f"comfortable zero:\n{proc.stderr}")
     found = json.loads(proc.stdout)
-    return sorted({text for screen in PRE_SESSION
+    # Prefixed by screen, the way QRME's record is. With one screen the bare
+    # string was enough; across twenty it is the difference between a record
+    # somebody can act on and six hundred lines of loose sentences.
+    return sorted({f"{screen.split('/')[-1].removesuffix('.tsx')}: {text}"
+                   for screen in PRE_SESSION
                    for text in found[f"src/{screen}"]})
 
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSession } from "./store";
+import { t as tr, visitorLang } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
 import { VersionGuard } from "./VersionGuard";
 import { Help } from "./Help";
@@ -25,26 +26,32 @@ import { Bearing } from "./screens/Bearing";
 import { Held } from "./screens/Held";
 
 type Tab = "home" | "monitor" | "baseline" | "meds" | "careteam" | "coach" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "settings";
-const NAV: { id: Tab; label: string; icon: string }[] = [
-  { id: "home", label: "Overview", icon: "◎" },
-  { id: "monitor", label: "Live Monitoring", icon: "❤" },
-  { id: "safety", label: "Safety", icon: "🆘" },
-  { id: "baseline", label: "Your Baseline", icon: "📈" },
-  { id: "meds", label: "Medications", icon: "💊" },
-  { id: "careteam", label: "Care Team", icon: "👥" },
-  { id: "coach", label: "Coach", icon: "🧠" },
-  { id: "wellness", label: "Wellness", icon: "🧘" },
-  { id: "checkin", label: "Check-in", icon: "🌿" },
-  { id: "journal", label: "Journal", icon: "📖" },
-  { id: "aims", label: "What you're working on", icon: "🎯" },
-  { id: "wards", label: "Who you watch", icon: "🧒" },
-  { id: "attending", label: "Who else is looking", icon: "🩺" },
-  { id: "reach", label: "What reaches out", icon: "🤖" },
-  { id: "bearing", label: "Bearing", icon: "🧭" },
-  { id: "community", label: "Community", icon: "🗣" },
-  { id: "channel", label: "Channel & camera", icon: "🎙" },
-  { id: "held", label: "What's held about you", icon: "🗄" },
-  { id: "settings", label: "Privacy", icon: "🛡" },
+// Labels live in `l10n.ts` and are looked up by id — see `nav.*` there.
+//
+// They used to sit here as English literals, which made the console's own
+// navigation the one surface no language could reach: the phones carry ten,
+// the server answers in the reader's, and the frame around both was English
+// whatever anybody chose.
+const NAV: { id: Tab; icon: string }[] = [
+  { id: "home", icon: "◎" },
+  { id: "monitor", icon: "❤" },
+  { id: "safety", icon: "🆘" },
+  { id: "baseline", icon: "📈" },
+  { id: "meds", icon: "💊" },
+  { id: "careteam", icon: "👥" },
+  { id: "coach", icon: "🧠" },
+  { id: "wellness", icon: "🧘" },
+  { id: "checkin", icon: "🌿" },
+  { id: "journal", icon: "📖" },
+  { id: "aims", icon: "🎯" },
+  { id: "wards", icon: "🧒" },
+  { id: "attending", icon: "🩺" },
+  { id: "reach", icon: "🤖" },
+  { id: "bearing", icon: "🧭" },
+  { id: "community", icon: "🗣" },
+  { id: "channel", icon: "🎙" },
+  { id: "held", icon: "🗄" },
+  { id: "settings", icon: "🛡" },
 ];
 
 export function App() {
@@ -67,7 +74,7 @@ export function App() {
         <nav>
           {NAV.map((n) => (
             <button key={n.id} className={"nav-item" + (tab === n.id ? " active" : "")} onClick={() => setTab(n.id)}>
-              <span className="nav-icon">{n.icon}</span>{n.label}
+              <span className="nav-icon">{n.icon}</span>{tr(`nav.${n.id}`, visitorLang())}
             </button>
           ))}
         </nav>

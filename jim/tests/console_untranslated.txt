@@ -1,14 +1,685 @@
-# English on the JIM console's pre-session surface — the screen a person
-# meets before any account exists. Checked by
+# English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
-# ceiling: 7
-# What is left is not prose: punctuation, an example address, an
-# example code, a shell command, and two fragments of a sentence the
-# extractor splits around an inline <code>. This is the floor.
-.
-123456
-Sign
-python -m jim serve
-with
-you@example.com
-⚠
+#
+# The pre-session screen is done: what is left of it is punctuation, a shell
+# command and example values. The rest of the console is not — 700-odd
+# strings across nineteen gated screens, recorded here so the remainder is a
+# decision somebody wrote down rather than a surface nobody looked at.
+# ceiling: 677
+Aims: %
+Aims: 400
+Aims: Add
+Aims: An ordinary activity is context, not a reading. It tells the Guardian why a heart rate moved before it has to guess.
+Aims: Budget
+Aims: Did it today
+Aims: Goals
+Aims: Habits
+Aims: Log it
+Aims: Mark done
+Aims: No limits set. Financial stress is one of the eight conditions JIM will take on, and a budget is how it learns the shape of yours.
+Aims: None yet.
+Aims: Nothing set. A goal here is a thing the coach and the daily suggestion both read — it is not a list for its own sake.
+Aims: Remove
+Aims: Set a limit
+Aims: Tell it what you did
+Aims: Walk thirty minutes
+Aims: Water at eight
+Aims: What you're working on
+Aims: daily
+Aims: goals, habits, and what the month costs
+Aims: groceries
+Aims: of
+Aims: streak
+Aims: walk
+Aims: ·
+Aims: ⚠
+Attending: Advance
+Attending: An alarm, and the way out
+Attending: Ask
+Attending: Ceiling —
+Attending: Channel
+Attending: End it
+Attending: Floors —
+Attending: Get through the week
+Attending: Hand it over
+Attending: Hand something over
+Attending: Install the QRME-hosted set
+Attending: Install the local set
+Attending: Make a code
+Attending: Mark released
+Attending: Medical ID
+Attending: No referral has been prepared.
+Attending: None installed. Without one, handing a thing over answers
+Attending: Open
+Attending: Prepare one for
+Attending: Raise an emergency
+Attending: Referrals
+Attending: Revoke
+Attending: Roster:
+Attending: See what a stranger sees
+Attending: Sensitivity
+Attending: Specialists
+Attending: Start a session
+Attending: The ladder
+Attending: The relay
+Attending: This is the door that reaches emergency services, and it takes your own credential. The uncredentialed one is a scanned care code — a bystander at your front door can wake the people watching over you, and stops there. Only you can send an ambulance to yourself.
+Attending: This sitting
+Attending: What is happening
+Attending: What should I do right now?
+Attending: Who could see me for this?
+Attending: Who else is looking
+Attending: alarm id
+Attending: and does nothing — a refusal, not a silent drop.
+Attending: no tandem specialist
+Attending: sittings before this one
+Attending: specialists, clinicians, and the ladder
+Attending: ·
+Attending: · ceiling
+Attending: · the printable code is at
+Attending: —
+Attending: ⚠
+Baseline: "are you okay?" — and if
+Baseline: ). This is attempt
+Baseline: , a collapsing pulse, oxygen falling — JIM asks
+Baseline: , checked in below
+Baseline: , your Guardian checks in and asks how you are. A drift check-in on its own never calls anybody — but the
+Baseline: .
+Baseline: . Any normal reading — or the button above — stands it down.
+Baseline: . Any sign of you — the button, a normal reading — calls it off. Drift check-ins stay calm and never trigger this.
+Baseline: A concerning reading came in (
+Baseline: Armed —
+Baseline: Attempts
+Baseline: Crash watch — if you stop answering, help gets sent
+Baseline: Disarm
+Baseline: Every resting reading nudges your own average for each metric. Once a metric has enough of them, a
+Baseline: How to reach them (email or phone)
+Baseline: I'm okay
+Baseline: JIM is asking: are you okay?
+Baseline: May request emergency services (this app relays the request to every connected system — it cannot itself place a call)
+Baseline: Minutes per attempt
+Baseline: Nothing yet.
+Baseline: Off by default, programmed by you: when a reading turns
+Baseline: Reset
+Baseline: Rosa
+Baseline: The widths below are yours to set. Narrow one to be told sooner; widen it if a metric of yours naturally wanders.
+Baseline: Trusted person
+Baseline: What this is
+Baseline: Your baseline
+Baseline: Your metrics
+Baseline: a fall the watch felt
+Baseline: attempts over
+Baseline: band
+Baseline: below is exactly the "call somebody" you can program: if a reading turns critical and you stop answering, help gets sent.
+Baseline: crash watch
+Baseline: critical
+Baseline: either direction
+Baseline: is drawn around it — and when a reading lands outside that band, in
+Baseline: learning —
+Baseline: minutes all go unanswered, it contacts your trusted person
+Baseline: of
+Baseline: or above
+Baseline: resting reading
+Baseline: rosa@example.com
+Baseline: so far
+Baseline: tell me when it climbs
+Baseline: tell me when it drops
+Baseline: unanswered attempts.
+Baseline: was contacted
+Baseline: will be contacted after
+Baseline: your usual
+Baseline: ±
+Baseline: —
+Baseline: — after that, your crash watch contacts
+Baseline: ⚠
+Baseline: ⚠ The crash watch tripped:
+Bearing: Bad answer
+Bearing: Bearing
+Bearing: Correct a medication
+Bearing: Forget the voice
+Bearing: Give it context from here
+Bearing: Good answer
+Bearing: Help topics
+Bearing: How it speaks
+Bearing: In your own words
+Bearing: Mark it done
+Bearing: Move it to the other corner
+Bearing: Plainly. No cheerleading.
+Bearing: Read a step
+Bearing: Refused:
+Bearing: Say something unprompted
+Bearing: Send it
+Bearing: Set sensitivity
+Bearing: Set the tone
+Bearing: Something to translate
+Bearing: Speak this
+Bearing: Start the tour
+Bearing: Tell it
+Bearing: Tell us about the app
+Bearing: The dock in the corner
+Bearing: The guide
+Bearing: Translate
+Bearing: What is this screen?
+Bearing: What it made of that
+Bearing: What it was told
+Bearing: What would make this better?
+Bearing: balanced
+Bearing: calendar
+Bearing: calm sessions ·
+Bearing: cautious
+Bearing: check-ins · average mood
+Bearing: coach exchanges
+Bearing: direct
+Bearing: done
+Bearing: events ·
+Bearing: follow-up
+Bearing: how it speaks, and what it made of you
+Bearing: in all ·
+Bearing: insights ·
+Bearing: medication id
+Bearing: new dose
+Bearing: now:
+Bearing: of
+Bearing: of them yours
+Bearing: question
+Bearing: still open — it asked and has not been answered.
+Bearing: suggestion
+Bearing: ·
+Bearing: · showing
+Bearing: —
+Bearing: — consent the source over in What's Held first. The check is on the server; this screen is only reporting what it said.
+Bearing: ⚠
+CareTeam: Attach
+CareTeam: Care Team
+CareTeam: Department id
+CareTeam: Found the org and staff its desks in QRME first, then paste its id, the desk that speaks for JIM, and your own QRME owner token. The token is stored for coordinations only and deleted when you unlink; it is never shown again.
+CareTeam: Link
+CareTeam: Link your organization
+CareTeam: Linked
+CareTeam: No joint plans yet.
+CareTeam: Org id
+CareTeam: Specialists — attach a QRME expert
+CareTeam: Take a goal to the team by hand
+CareTeam: The QRME tandem answered with an empty shelf — install the Starter Collection there (Discover → Install), then reload.
+CareTeam: The Starter Collection: one expert per industry, each already carrying its industry's knowledge pack. Pick who stands behind each condition — guidance for it then routes through them in tandem. The mental-health trio is played straight on purpose.
+CareTeam: Unlink
+CareTeam: When a reading drifts outside your band while doses slip, the Guardian takes it to the whole team — once a day at most, on the calm path only. Summaries cross, never raw readings.
+CareTeam: Your QRME owner token
+CareTeam: choose an expert…
+CareTeam: dep_…
+CareTeam: e.g. plan the recovery week
+CareTeam: org
+CareTeam: org_…
+CareTeam: pasted, never echoed
+CareTeam: your own QRME organization, coordinated by the Guardian
+CareTeam: · credential held
+CareTeam: · desk
+CareTeam: ⚠
+Channel: ) comes back afterwards.
+Channel: A microphone attaches to a device this account already knows, never to a name typed in the moment — so what is listening is always something you registered on purpose.
+Channel: Attach
+Channel: Channel &amp; camera
+Channel: Channel 2 — what JIM hears
+Channel: Choose a site first.
+Channel: Clinical camera
+Channel: Detach
+Channel: Device name
+Channel: Devices
+Channel: Hand channel 2 over
+Channel: Narrowed for the moment — a call is in progress. Your setting (
+Channel: Not offered:
+Channel: Note (optional)
+Channel: Nothing attached. JIM is not listening.
+Channel: Register
+Channel: Release
+Channel: Sign in to set up the channel.
+Channel: This is an intimate site and I am choosing to record it.
+Channel: Tick the box before choosing a file.
+Channel: What it is for (optional)
+Channel: What kind of microphone…
+Channel: When it was open
+Channel: Where on the body…
+Channel: Which device…
+Channel: Withdraw
+Channel: intimate
+Channel: live
+Channel: phone
+Channel: runs a model
+Channel: stationary
+Channel: to a referral
+Channel: wearable
+Channel: ·
+Channel: —
+Checkin: / 5
+Checkin: Check-in
+Checkin: Energy:
+Checkin: Logged
+Checkin: Mood:
+Checkin: No concern detected — logged to your day.
+Checkin: Note (optional)
+Checkin: Stress:
+Checkin: flagged
+Checkin: guardian
+Checkin: mood
+Checkin: mood, energy &amp; stress · a worrying note runs the crisis check
+Checkin: · energy
+Checkin: · stress
+Checkin: ⚠
+Coach: .
+Coach: 24/7 across your life
+Coach: Answered by
+Coach: Area
+Coach: Coach
+Coach: What's on your mind?
+Coach: · guidance
+Coach: —
+Coach: ⚠
+Coach: ⚠ This is the built-in fallback, not
+Community: (
+Community: ) and the doors appear here.
+Community: Community
+Community: Community lives in QRME. Point this Guardian at your QRME deployment (
+Community: Filter by place
+Community: JIM_QRME_URL
+Community: Local events
+Community: No health data crosses over.
+Community: No rooms open right now. Start one in QRME — Rooms → new topic.
+Community: Nothing claimed for that place yet.
+Community: Nothing from a room is copied into JIM.
+Community: Nothing is ever posted on your behalf.
+Community: Open in QRME
+Community: Rooms &amp; forums
+Community: Rooms you can read in:
+Community: Where this happens
+Community: e.g. Bend
+Community: forums, rooms and local events — in QRME
+Community: here
+Community: listed)
+Community: ·
+Community: ⚠
+Held: $
+Held: Allow
+Held: An access record is being kept:
+Held: Can read it:
+Held: Cancel
+Held: Cloud model:
+Held: Custody
+Held: End it
+Held: Erase everything
+Held: Erases everything held about you on this deployment. There is no undo, which is the point of it. Type
+Held: Nothing consented. Until a source is consented here, giving JIM context from it is refused — the server checks, it does not merely ask nicely.
+Held: Provenance is asked one key at a time — the route requires the key, which is a small thing that a binding written from the route table would have got wrong and a call against a running server did not.
+Held: Provider for this account:
+Held: Sealed in a vault:
+Held: The list below is empty because nothing is being recorded — not because nobody has looked. Those are different facts and this screen will not let them look the same.
+Held: What it may look at
+Held: What's held about you
+Held: Where did this come from?
+Held: Where the answers come from
+Held: Who has read your record
+Held: Your plan
+Held: connector
+Held: erase
+Held: falls back to
+Held: journal
+Held: providers catalogued — Apple, Google and the rest, each with the apps and directions it can be asked for.
+Held: to arm the button.
+Held: who holds it, who has read it
+Held: · $
+Held: —
+Held: ⚠
+Home: Check-in
+Home: Coach
+Home: Hi,
+Home: Learned baseline
+Home: Live Monitoring
+Home: No baseline yet — it builds from calm samples in Live Monitoring.
+Home: Overview
+Home: Your Guardian is watching — rules are transparent.
+Home: metric
+Home: samples
+Home: state
+Home: value
+Home: ● Guardian on
+Home: ⚠
+Home: 👥 Care Team
+Home: 💊 Medications
+Journal: Entries
+Journal: Entries are sealed in your vault on a private plan. If an entry says you're in danger, your Guardian treats it exactly like a reading that says so.
+Journal: How was today, really?
+Journal: Journal
+Journal: New entry
+Journal: Nothing yet — the first entry can be one sentence.
+Journal: your words, typed or spoken
+Journal: ⚠
+Meds: (optional — JIM will refuse to log past it)
+Meds: (optional)
+Meds: 08:00, 20:00
+Meds: 10 mg
+Meds: Actually took it
+Meds: Add a medication
+Meds: As needed, not on a schedule
+Meds: Ceiling per day
+Meds: Dose
+Meds: Last
+Meds: Lisinopril
+Meds: Medications
+Meds: Missing this one is worth a check-in
+Meds: Name
+Meds: Nothing here yet — add what you take below, in your own words.
+Meds: Skip
+Meds: Take
+Meds: Times
+Meds: Today
+Meds: Took one
+Meds: What it's for
+Meds: Your words are fine — “the little white one, 10 mg” is a valid name and dose.
+Meds: as needed ·
+Meds: blood pressure
+Meds: days
+Meds: of
+Meds: stop
+Meds: today
+Meds: — comma-separated, 24h
+Meds: — marked critical and not logged today. If you took it, tap it below; if you didn't, that's worth a moment.
+Meds: “
+Meds: ”
+Meds: ⚠
+Monitor: (
+Monitor: (edge
+Monitor: )
+Monitor: :
+Monitor: Heart rate (bpm)
+Monitor: Live Monitoring
+Monitor: No, it didn't
+Monitor: Noted — monitoring resumes, and the Guardian remembers that this worked for you.
+Monitor: Reaching a person
+Monitor: Relaying a dispatcher briefing — who you are, your known conditions and critical medications, the latest readings, and what's being done — through every configured channel, updated with each new reading.
+Monitor: Respiration (/min)
+Monitor: Stress (0–1)
+Monitor: Submit a biometric sample
+Monitor: Yes, that helped
+Monitor: all calm
+Monitor: companion, in the background
+Monitor: detect → guide → escalate
+Monitor: drift from your baseline — a check-in, not an alarm
+Monitor: escalated to
+Monitor: guidance
+Monitor: your usual
+Monitor: —
+Monitor: ⚠
+Onboarding: .
+Onboarding: 123456
+Onboarding: Sign
+Onboarding: python -m jim serve
+Onboarding: with
+Onboarding: you@example.com
+Onboarding: ⚠
+Reach: .
+Reach: /c/
+Reach: @you
+Reach: A body in the house
+Reach: A code somebody can scan
+Reach: A model rated
+Reach: Accounts elsewhere
+Reach: Beacon
+Reach: Bind it
+Reach: Code
+Reach: Collect
+Reach: Connect
+Reach: Disconnect
+Reach: Elsewhere and the wrist
+Reach: Go
+Reach: Keep what it learned
+Reach: Pick a model…
+Reach: Printable
+Reach: Publish
+Reach: Raise it as a stranger would
+Reach: Raising from a scanned code takes no account. It reaches the people watching and stops there — a stranger at a door can wake a household, never an ambulance.
+Reach: Read
+Reach: Redactions
+Reach: Say something
+Reach: Send
+Reach: Send a reading
+Reach: Send it to go and ask
+Reach: Take the code down
+Reach: The card
+Reach: The scan page is
+Reach: The watch posts against a drip token rather than an account credential, because a watch cannot hold one.
+Reach: Topic
+Reach: Unbind
+Reach: What a scanner sees
+Reach: What do you want to know?
+Reach: What reaches out
+Reach: What you call it
+Reach: a body, a code, an account, an errand
+Reach: assist
+Reach: beacon id
+Reach: characters of HTML — it is a page for a stranger's phone, not a document for this console. It is served at
+Reach: collect — words come in
+Reach: community visit
+Reach: is how much of you was taken out before the question left, and
+Reach: is whether it left at all. A screen that showed the findings and hid those two would be showing the answer and hiding what it cost.
+Reach: left this host
+Reach: mastodon
+Reach: perform
+Reach: publish — words go out
+Reach: recorded — JIM points at QRME's rooms, QRME hosts them.
+Reach: the printable code
+Reach: watch drip token
+Reach: will do compressions itself once the automatic waiver is signed; one rated
+Reach: will talk a person through them and nothing more. The rating is the machine's, not the plan's.
+Reach: ·
+Reach: · first aid:
+Reach: —
+Reach: — the printable code for it is behind your own token, not a public link.
+Reach: ⚠
+Safety: :
+Safety: A sticker someone can scan to reach help on your behalf. The scanner needs no account and sees only what you chose to put on the card.
+Safety: Beacons
+Safety: Clear
+Safety: Escalate
+Safety: Every page JIM sent on your behalf, and whether it arrived. Shown because a message that failed to deliver is the one you most need to know about.
+Safety: History
+Safety: I'm going
+Safety: Label (Front door)
+Safety: Needs a person
+Safety: No pages sent.
+Safety: Nothing has happened yet.
+Safety: Nothing open. Nobody is waiting.
+Safety: Place a beacon
+Safety: Safety
+Safety: Sign in to see safety.
+Safety: What went out
+Safety: Where it is (optional)
+Safety: Who is going?
+Safety: answered by
+Safety: cleared
+Safety: is on the way.
+Safety: retired
+Safety: scan
+Settings: % confidence
+Settings: (saved — type to replace)
+Settings: ).
+Settings: ,
+Settings: , or OpenAI / xAI / Gemini for those providers) and your Guardian's replies run on your credential. It stays on this device and rides only your own requests — the server never stores it. Leave it empty to use whatever key the deployment lends.
+Settings: .
+Settings: . New accounts must verify by email.
+Settings: . Talking back by microphone works too.
+Settings: :
+Settings: : guidance helped
+Settings: ; paste that here, not your normal password.
+Settings: A profile derived from your own history — the conditions you declared, how your check-ins trend, what you bring up, and which guidance has actually helped. It shapes how the coach answers. Nothing is sent to a model vendor to build it.
+Settings: API connection
+Settings: API key
+Settings: App password
+Settings: Apple Watch
+Settings: Armed · last heard from you
+Settings: Automatic
+Settings: Backend base URL
+Settings: Backend:
+Settings: Build it from my history
+Settings: Clear
+Settings: Costs:
+Settings: Disarm
+Settings: Drip address (paste into the Shortcut's “Get Contents of URL” field)
+Settings: Email delivery
+Settings: Every other alarm fires on a reading. This one fires on the
+Settings: From address
+Settings: Guidance runs on-device; sensitive payloads seal into the PDI vault when the tandem is on. User:
+Settings: Hear it
+Settings: How to reach them
+Settings: I live alone — please knock.
+Settings: I'm okay
+Settings: In your own words
+Settings: Just check it
+Settings: Keeps:
+Settings: Let my phone reach JIM on this Wi-Fi
+Settings: Link address
+Settings: Mail goes out through
+Settings: Mail server
+Settings: New address
+Settings: No app to install. An iPhone
+Settings: No mail server configured, so
+Settings: Open on your phone
+Settings: Password
+Settings: Paste your own key (Anthropic
+Settings: Port
+Settings: Privacy &amp; Connection
+Settings: QR code for the console URL on this network
+Settings: Quiet days before they're told
+Settings: Rebuild
+Settings: Received
+Settings: Replies are read aloud in
+Settings: Restarts JIM listening on your network. Windows may ask to allow it through the firewall — say yes. Everything personal still requires your sign-in.
+Settings: Save
+Settings: Seed the baseline from a Health export
+Settings: Send a test message to
+Settings: Set up the Shortcut (one time)
+Settings: Shortcuts automation
+Settings: Sign in to mint your drip address.
+Settings: Sign out &amp; end session
+Settings: Speaking through
+Settings: Start the backend with network access: python -m jim phone
+Settings: Steward's name
+Settings: Stop contributing
+Settings: The vigil
+Settings: Town or city
+Settings: Used only to find local rooms and events through the community door. Leave it empty and nothing local is searched for.
+Settings: Username
+Settings: Voice
+Settings: What JIM has learned about you
+Settings: What you contribute
+Settings: Where to look
+Settings: Which model answers
+Settings: Who to tell
+Settings: You use JIM as
+Settings: You use JIM under your own name (
+Settings: Your Guardian's replies can run on any of these. Pick one and every reply uses it;
+Settings: Your data
+Settings: Your model API key
+Settings: Your name here
+Settings: absence
+Settings: after
+Settings: app password
+Settings: built-in offline helper
+Settings: day
+Settings: drips readings to the address below, and the Health app's
+Settings: export
+Settings: folded, baseline
+Settings: from
+Settings: http://127.0.0.1:8000
+Settings: nothing can be emailed
+Settings: of
+Settings: of readings: name someone, and if nothing is heard from you for longer than the quiet period, they are asked to check on you. Any reading stands it down. It never calls emergency services — it knocks on a door.
+Settings: pieces of your own history
+Settings: quiet days
+Settings: reading
+Settings: sk-ant-…
+Settings: sk-…
+Settings: smtp.gmail.com
+Settings: teaches JIM your baseline from the history your watch already recorded.
+Settings: their@email.com
+Settings: times
+Settings: tone you asked for:
+Settings: uses whichever is configured.
+Settings: was asked to check on you
+Settings: work:
+Settings: you@example.com
+Settings: you@gmail.com
+Settings: your device's own voice
+Settings: · last
+Settings: · steward:
+Settings: —
+Settings: — a pseudonym. JIM never learned your real name.
+Settings: — no account needed. Add an ElevenLabs or OpenAI key for a natural one, and to talk back by microphone.
+Settings: — no online model has a working key on this machine. Pick a provider above and add its key (“Your model API key” below works for all of them).
+Settings: — the one you picked has no key on this machine yet.
+Settings: — verification messages are written to this app's log and signup on this machine simply goes straight in. Point it at a mail account below to send real verification links. For Gmail, turn on 2-Step Verification and create an
+Settings: — what they'll read, written now
+Settings: — what verification links point at
+Settings: …
+Settings: ⚠
+Settings: ⚠ Right now it resolves to
+Settings: ⚠ Right now replies come from the
+Settings: ⚠ The vigil has tripped —
+Settings: ⚠ Your phone can't reach this address yet — JIM is only listening on this computer.
+Settings: ✓ Reachable from your phone on this Wi-Fi.
+Wards: . Withdrawing restores the confirm-gated behaviour immediately.
+Wards: A bound, CPR-rated robot will not begin without somebody on scene saying so — unless you sign this, and then it will. Read all of it.
+Wards: I am their legal guardian
+Wards: I am their parent
+Wards: Link
+Wards: Link a child
+Wards: Nobody linked.
+Wards: Open
+Wards: Quiet 9pm–7am
+Wards: Sign
+Wards: Signed as
+Wards: The board
+Wards: The child gets their own account and their own token — this links you to it, it does not make their record yours to read line by line. What you can see is on this page and nothing else.
+Wards: Their name
+Wards: Type your full name
+Wards: Unlink
+Wards: Who you watch
+Wards: Withdraw
+Wards: children linked to this account
+Wards: critical events on record
+Wards: critical ·
+Wards: escalations in the last day
+Wards: oversight
+Wards: oversight ·
+Wards: sensitivity ·
+Wards: ·
+Wards: ●
+Wards: ⚠
+Wellness: .
+Wellness: :
+Wellness: A day of meals that fits you
+Wellness: A workout for the time you have
+Wellness: Build it
+Wellness: Day
+Wellness: Days
+Wellness: End early
+Wellness: Focus
+Wellness: Goal
+Wellness: Guided calm
+Wellness: Level
+Wellness: Minutes
+Wellness: Plan it
+Wellness: Protocols, not generations — the counts never vary. Pick one; the app paces it
+Wellness: Session complete. Carry the pace with you.
+Wellness: Speak the steps out loud
+Wellness: Wellness
+Wellness: calm · movement · meals — on purpose, any hour
+Wellness: eat healthier
+Wellness: gain muscle
+Wellness: kcal/day for orientation
+Wellness: lose weight
+Wellness: min
+Wellness: of
+Wellness: s
+Wellness: s —
+Wellness: step
+Wellness: ·
+Wellness: · about
+Wellness: ⚠

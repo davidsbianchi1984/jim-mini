@@ -6,6 +6,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### The frame around both
+
+The nav is the console's own surface: the phones carry ten languages, the
+server answers in the reader's, and the frame around both was English whatever
+anybody chose. Its labels sat in `App.tsx` as literals in a `NAV` table, which
+made them the one thing no language setting could reach.
+
+Nineteen `nav.*` keys, looked up by id — `` t(`nav.${n.id}`, lang) `` — the
+same shape QRME's console has used since its chrome round.
+
+### And what is not done, counted
+
+`console_untranslated.txt` measured `Onboarding.tsx` alone for two releases.
+That is how **677 English strings across nineteen gated screens** stayed out
+of a record whose header said the backlog was thirty-five.
+
+    asked     is the pre-session screen localized
+    mattered  is the console localized
+
+The record now covers every screen the console renders. The gated ones are a
+different argument from the accountless one — their reader *has* a language
+setting, and the server already honours it — which is why the nav is done this
+round and the screen bodies are written down rather than half-translated.
+
+
 ### The console backlog reaches its floor, and eight dead keys
 
 47 → 35 → **7**, and the seven are punctuation, a shell command and example
