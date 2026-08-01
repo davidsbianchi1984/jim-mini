@@ -4,6 +4,85 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.2] — 2026-08-01
+
+### The synthetic self: the one QRME profile that is the user
+
+Every other link between these products reaches *somebody else's* profile. A
+tandem specialist belongs to a clinician; a coordination runs in the care-team
+org; a delegated workflow has an owner who is not the JIM user. In all of it
+the JIM user meets QRME as an **interactor** — `tandem_links` maps them to a
+`usr_` id and a capability token — which is to say, as a stranger.
+
+QRME's `ProfileKind` is `self | other_person | fictional | hybrid`, and a
+`self` profile speaks *as* the person. JIM had no column, module or route that
+knew it existed, and QRME held nothing pointing back.
+
+    asked     does JIM reference synthetic profiles
+    mattered  does JIM reference this person's own
+
+`docs/tandem.md` carries the contract, byte-identical in three repositories,
+and was written **before** this code so the boundary could not be settled by
+whatever the first implementation happened to do. `jim/synthetic_self.py`
+implements it: an owner token rather than an interactor token; the link refused
+unless QRME reports `kind == "self"`; an enumerated allowlist consented per
+category and empty by default; the brief composed **from** the allowlist rather
+than filtered down to it, so a category nobody wrote a builder for cannot cross
+by a future route; and a standing rather than a history, replaced on each brief.
+
+**Medication carries the person's own words, by decision, and the contract says
+so** rather than leaving it to the code. `meds.py` refuses a medication with no
+name and invites their wording — *"the little white one, 10 mg"* — so names are
+free text by design, and a name can be a diagnosis: *"the pill for my HIV"* is
+one typed into a field asking for a drug. The preview shows the strings and not
+a count of them, because that is the only form in which the decision is real.
+Journal entries, check-in notes and transcripts never cross under any consent:
+there is no builder for them, which is the enforcement.
+
+The preview **is** the payload — same function, asserted. A preview composed
+separately is a preview free to drift from what goes, which is the shape of
+every *we only share anonymous data* claim that turned out to be false.
+
+The brief is posted as source material to QRME's own owner-gated
+`/profiles/{id}/sources`, so it lands where the persona is grounded and is
+sealed into PDI when QRME has a vault configured.
+
+Doors on all four clients: console screen 101, localized into ten languages
+from the start, and a screen on iOS, Android and Windows with a real
+`ApiClient` method behind each.
+
+
+### A screen that calls the localizer, and a localizer with nothing to say
+
+The three native screens were written, the suite went green, and the twenty
+`L10n` keys had gone into the console's `app/src/l10n.ts` and **none of the
+three native tables**.
+
+    asked     does the screen call the localizer
+    mattered  does the localizer have anything to say
+
+Every existing guard passed, for a reason worth naming: `native_untranslated.txt`
+records English strings that are *present*, and those screens held no English to
+find — only key names. The door audits passed because the bindings were called.
+On a device, `L10n.t("self.title")` with no row returns the key, so the heading
+would have read `self.title` in every language, on all three phones, on the
+screen about what a person's medication may say about them.
+
+`test_a_shell_asks_for_a_key_it_has.py` checks both directions **per shell** —
+a union tells you *some* client is fine, which is this suite's oldest lesson.
+Injecting the original state reproduces it: *"ios asks for 20 key(s) its L10n
+table does not hold"*.
+
+Run backwards it found four rows nobody had noticed — `action.refresh`,
+`action.save`, `action.send`, `action.translate`: generic verbs added for
+screens never written, translated into ten languages and read by nobody. The
+console gained that check in 0.27.0 after two dead keys shipped; the shells
+never had it. Recorded in `native_dead_keys.txt` and ratcheted rather than
+deleted.
+
+The `self.*` rows were lifted from the console table programmatically, not
+retyped, and a test asserts the four surfaces still say the same thing.
+
 ## [0.30.1] — 2026-08-01
 
 ### The refusal that handed the body back
