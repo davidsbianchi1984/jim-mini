@@ -52,6 +52,9 @@ correct constraint and it is left in place.
 
 from __future__ import annotations
 
+import json
+import re
+
 import pytest
 
 from jim import i18n, landing
@@ -179,3 +182,172 @@ def test_the_page_asks_for_a_language_it_was_given():
         "gets the default no matter what their phone asked for")
     assert "negotiate" in code, (
         "the route is not negotiating the language through i18n.negotiate")
+
+
+# --- the exhaustive half ----------------------------------------------------
+#
+# Everything above this line names a string and checks it appears. That is a
+# spot check, and it passed for as long as five strings on these pages were
+# never translated at all: the `<title>` of both pages, both foot paragraphs,
+# and the named greeting — which was run through `tr` only in its *anonymous*
+# branch, so a finder holding a beacon that carries a first name got the
+# largest sentence on the page in English.
+#
+# A named check can only find what somebody thought to name. These two ask
+# the question the other way round, and derive the list from the page.
+
+CARD = {"beacon": "bcn_1", "first_name": "Dana", "note": "wears a hearing aid",
+        "badge": "UNDER CARE", "site": "Building 4"}
+
+OTHERS = tuple(code for code in i18n.SUPPORTED if code != "en")
+
+
+def _pages(language):
+    """Both branches of the care page, and the dead sticker.
+
+    The workplace/home foot is a real fork and each side is a different
+    sentence — testing one branch is how one of them stayed English.
+    """
+    home = {k: v for k, v in CARD.items() if k != "site"}
+    anon = {k: v for k, v in home.items() if k != "first_name"}
+    return {
+        "care, workplace": landing.care_page(CARD, language),
+        "care, home": landing.care_page(home, language),
+        "care, no name": landing.care_page(anon, language),
+        "dead sticker": landing.gone(language),
+    }
+
+
+def _readable(page):
+    """The page as a person meets it: no markup, no script, no entities."""
+    import html as _html
+
+    body = re.sub(r"<script>.*?</script>", " ", page, flags=re.S)
+    body = re.sub(r"<style>.*?</style>", " ", body, flags=re.S)
+    return _html.unescape(re.sub(r"<[^>]+>", " ", body))
+
+
+def _blobs(page):
+    """The `var S={...}` object the alarm script reads its words from."""
+    return [json.loads(m) for m in
+            re.findall(r"var S\s*=\s*(\{.*?\});", page, flags=re.S)]
+
+
+def _as_pattern(known):
+    """A table key as a regex, with `{name}` standing for whatever was put
+    there. `"You've found {name}."` must match `You've found Dana.`"""
+    return re.compile("".join(
+        ".+?" if part.startswith("{") and part.endswith("}")
+        else re.escape(part)
+        for part in re.split(r"(\{\w+\})", known)))
+
+
+def test_every_word_on_these_pages_is_in_the_table():
+    """The check that found five untranslated strings the named ones missed.
+
+    Renders in English, removes the card's own data and every sentence the
+    table knows, and asks what is left. Anything still there is English that
+    no reader outside the anglosphere will ever stop seeing, and that no
+    amount of adding translations fixes, because nothing looks it up.
+    """
+    leftover = []
+    for name, page in _pages("en").items():
+        text = _readable(page)
+        for value in CARD.values():
+            if value:
+                text = text.replace(str(value), " ")
+        # Longest first: a short key that is a substring of a long one would
+        # otherwise punch a hole in the middle of the long one and leave two
+        # fragments behind, which reads as a defect and is not.
+        for known in sorted(i18n._STRINGS, key=len, reverse=True):
+            text = _as_pattern(known).sub(" ", text)
+        for fragment in re.split(r"\s{2,}|\n", text):
+            fragment = fragment.strip()
+            if re.search(r"[A-Za-z]{3}", fragment):
+                leftover.append(f"{name}: {fragment[:70]!r}")
+    assert not leftover, (
+        "these strings are on a page a stranger reads and are not in the "
+        "translation table at all, so no language reaches them:\n    "
+        + "\n    ".join(leftover))
+
+
+def test_the_scripts_words_are_all_in_the_table_too():
+    """The half that only exists after the button is pressed.
+
+    A page that is Spanish until somebody acts on it, then turns English at
+    the moment it starts giving instructions about a person on the floor, is
+    the worst version of this defect rather than a lesser one.
+    """
+    missing = []
+    for name, page in _pages("en").items():
+        for blob in _blobs(page):
+            missing += [f"{name}: {key}={value[:44]!r}"
+                        for key, value in blob.items()
+                        if isinstance(value, str) and value not in i18n._STRINGS]
+    assert not missing, (
+        "the alarm script writes these words and the table does not have "
+        "them:\n    " + "\n    ".join(missing))
+
+
+def test_no_english_survives_a_translation():
+    """Derived rather than named: every sentence that shows up on the English
+    page must be gone from the translated one, in all nine languages.
+
+    **Templates are included, and that is the whole point.** The first draft
+    of this skipped any key containing a `{hole}` — and so passed the exact
+    defect this round exists for. `You've found {name}.` was in the table and
+    the code built the sentence with an f-string instead of looking it up, so
+    a Spanish finder saw "You've found Dana." at the top of the page. Both of
+    the other checks called it covered, because the table did have the
+    sentence. Only asking *what does the translated page actually say* finds
+    it. That is the audit's own shape, one more time, inside a test written
+    against it.
+    """
+    english = {name: _readable(page) for name, page in _pages("en").items()}
+    english_script = {value for page in _pages("en").values()
+                      for blob in _blobs(page) for value in blob.values()
+                      if isinstance(value, str)}
+    left = []
+    for language in OTHERS:
+        for name, page in _pages(language).items():
+            readable = _readable(page)
+            for known in i18n._STRINGS:
+                # A translation identical to its English is a coincidence for
+                # short words — German "Name" is the English one — not a
+                # missed lookup, so only flag rows that actually differ.
+                if i18n.tr(known, language) == known:
+                    continue
+                pattern = _as_pattern(known)
+                if not pattern.search(english[name]):
+                    continue
+                if pattern.search(readable):
+                    left.append(f"{language} / {name}: {known[:52]!r}")
+            for blob in _blobs(page):
+                for key, value in blob.items():
+                    if (isinstance(value, str) and value in english_script
+                            and i18n.tr(value, language) != value):
+                        left.append(f"{language} / {name}: script {key}")
+    assert not left, (
+        "these pages still say English to somebody whose phone asked for "
+        "another language:\n    " + "\n    ".join(left)
+        + "\n  A sentence being in the table is not the same as the code "
+          "looking it up.")
+
+
+def test_every_template_keeps_its_hole_in_every_language():
+    """`You've found {name}.` is filled by name substitution. A translation
+    that loses `{name}` loses the person's name out of the sentence at the
+    top of the page, in that language only."""
+    broken = []
+    for source, row in i18n._STRINGS.items():
+        holes = set(re.findall(r"\{(\w+)\}", source))
+        if not holes:
+            continue
+        for language, text in row.items():
+            got = set(re.findall(r"\{(\w+)\}", text))
+            if got != holes:
+                broken.append(f"{source[:40]!r}/{language}: {sorted(got)} "
+                              f"!= {sorted(holes)}")
+    assert not broken, (
+        "these translations do not carry the same named values as their "
+        "English:\n    " + "\n    ".join(broken))

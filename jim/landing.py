@@ -119,12 +119,28 @@ def gone(language: str = "en") -> str:
     a dead sticker is still somebody standing over a person, and the sentence
     that tells them to call anyway is the only useful thing on this page.
     """
-    return _page("Nothing here", (
+    return _page(i18n.tr(GONE_PAGE_TITLE, language), (
         '<div class="panel">'
         f"<h1>{html.escape(i18n.tr(GONE_TITLE, language))}</h1>"
         f'<p class="watched">{html.escape(i18n.tr(GONE_BODY, language))}</p>'
         "</div>"), language)
 
+
+#: The `<title>`. Not decoration: it is what a phone shows in the tab, what
+#: a shared link previews as, and what a screen reader announces first — and
+#: it was English on both pages while everything under it was translated.
+GONE_PAGE_TITLE = "Nothing here"
+CARE_TITLE = "Someone is watching over this person"
+
+#: Whole sentences with named holes, so each language puts the name where its
+#: own grammar wants it instead of being handed "You've found".
+FOUND_NAMED = "You've found {name}."
+
+FOOT_SITE = ("This is a workplace site. Raising the alarm reaches whoever is "
+             "on call.")
+FOOT_HOME = ("Raising the alarm alerts the people who watch over this "
+             "person. It does not tell you how they are, and nothing on this "
+             "page says where they live.")
 
 GONE_TITLE = "This code doesn't resolve to anything"
 GONE_BODY = ("It may have been removed, or it may never have been one of "
@@ -242,7 +258,13 @@ def care_page(card: dict, language: str = "en") -> str:
         return i18n.tr(text, language)
 
     first = card.get("first_name")
-    who = (f"You've found {html.escape(first)}." if first
+    # Both branches translated, and the named one as a whole sentence with
+    # its hole named rather than an f-string around a fragment. Only the
+    # anonymous branch went through `t` until now, so a Spanish finder
+    # holding a beacon for somebody with a first name on it got the one
+    # sentence at the top of the page in English — the greeting, on the
+    # page's largest type, above everything else.
+    who = (t(FOUND_NAMED).replace("{name}", html.escape(first)) if first
            else t("You've found someone."))
     site = card.get("site")
     body = (
@@ -267,11 +289,11 @@ def care_page(card: dict, language: str = "en") -> str:
         f'<div class="badge" id="bg">{html.escape(card.get("badge") or "")}'
         "</div>"
         "</div>"
-        + ('<p class="foot">This is a workplace site. Raising the alarm '
-           "reaches whoever is on call.</p>" if site else
-           '<p class="foot">Raising the alarm alerts the people who watch '
-           "over this person. It does not tell you how they are, and nothing "
-           "on this page says where they live.</p>")
+        # Neither foot went through `t` before this round. They are the
+        # sentence that tells a finder what pressing the button will and will
+        # not do, which is the thing somebody hesitating most needs.
+        + f'<p class="foot">{html.escape(t(FOOT_SITE if site else FOOT_HOME))}'
+          "</p>"
         + "<script>"
         + _ALARM_JS % {"endpoint": _js(f"/c/{card['beacon']}/alarm"),
                        # A prefix, not a URL: the alarm id only exists once
@@ -316,4 +338,4 @@ def care_page(card: dict, language: str = "en") -> str:
                                "are. Stay with them until someone arrives."),
                        })}
         + "</script>")
-    return _page("Someone is watching over this person", body, language)
+    return _page(t(CARE_TITLE), body, language)
