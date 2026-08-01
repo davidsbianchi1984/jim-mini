@@ -4,6 +4,24 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.0] — 2026-08-01
+
+Aligned with QRME 0.25.0. The three products carry one version, so a release
+that only moves in one of them still moves in all three — otherwise a support
+question about "0.25" has three different answers depending on which app is
+being asked about.
+
+Nothing in JIM's own code changed this cut. QRME's round covered the two
+outstanding console-credential tasks and the Windows Hello field test, and
+found a real defect writing each one up: a WebAuthn relying party id must be a
+domain, so the ceremony could never have run from a loopback origin; and the
+Apple client secret is a JWT that expires within six months with no warning of
+any kind.
+
+Neither finding reaches JIM — it has no signing ceremony and no Apple sign-in
+door. Recorded here so the version's contents are legible from this repo
+without opening another one.
+
 ## [0.24.0] — 2026-08-01
 
 Three rounds, one question: **when a passer-by does reach the page built for
