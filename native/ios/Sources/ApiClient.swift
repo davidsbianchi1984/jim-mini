@@ -564,8 +564,13 @@ actor ApiClient {
             // messages quote what the person typed, which is theirs to read
             // and nobody's to keep.
             Problems.record(method: method, path: path, status: http.statusCode)
-            let detail = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["detail"] as? String
-            throw ApiError.http(detail ?? "HTTP \(http.statusCode)")
+            // A 422 answers with a *list* of rows, not a string, so `as? String`
+            // gave nil and the person saw the status code — less than they saw
+            // before their language was ever considered. `message` is the
+            // sentence the backend composes beside the rows; read it first.
+            let body = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+            let said = (body?["message"] as? String) ?? (body?["detail"] as? String)
+            throw ApiError.http(said ?? "HTTP \(http.statusCode)")
         }
         return try JSONDecoder().decode(T.self, from: data)
     }

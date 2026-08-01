@@ -479,10 +479,20 @@ public sealed class ApiClient
             // messages quote what the person typed, which is theirs to read
             // and nobody's to keep.
             Problems.Record(method, path, (int)res.StatusCode);
-            string? detail = null;
-            try { detail = JsonDocument.Parse(body).RootElement.GetProperty("detail").GetString(); }
+            // GetString() throws on an array, which a 422's `detail` is, so the
+            // catch swallowed it and the person saw the status code. `message`
+            // is the sentence the backend composes beside the rows.
+            string? said = null;
+            try
+            {
+                var root = JsonDocument.Parse(body).RootElement;
+                if (root.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
+                    said = m.GetString();
+                else if (root.TryGetProperty("detail", out var d) && d.ValueKind == JsonValueKind.String)
+                    said = d.GetString();
+            }
             catch { /* non-JSON error body */ }
-            throw new HttpRequestException(detail ?? $"HTTP {(int)res.StatusCode}");
+            throw new HttpRequestException(said ?? $"HTTP {(int)res.StatusCode}");
         }
         return JsonSerializer.Deserialize<T>(body)!;
     }
@@ -798,10 +808,20 @@ public sealed class ApiClient
         if (!res.IsSuccessStatusCode)
         {
             var body = await res.Content.ReadAsStringAsync();
-            string? detail = null;
-            try { detail = JsonDocument.Parse(body).RootElement.GetProperty("detail").GetString(); }
+            // GetString() throws on an array, which a 422's `detail` is, so the
+            // catch swallowed it and the person saw the status code. `message`
+            // is the sentence the backend composes beside the rows.
+            string? said = null;
+            try
+            {
+                var root = JsonDocument.Parse(body).RootElement;
+                if (root.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
+                    said = m.GetString();
+                else if (root.TryGetProperty("detail", out var d) && d.ValueKind == JsonValueKind.String)
+                    said = d.GetString();
+            }
             catch { /* non-JSON error body */ }
-            throw new HttpRequestException(detail ?? $"HTTP {(int)res.StatusCode}");
+            throw new HttpRequestException(said ?? $"HTTP {(int)res.StatusCode}");
         }
     }
 

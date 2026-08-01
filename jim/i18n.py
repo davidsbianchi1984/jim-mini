@@ -1577,12 +1577,81 @@ def validation_detail(errors, language: str) -> list[dict]:
     return rows
 
 
+#: The first element of a pydantic `loc`, naming which part of the request the
+#: field was in rather than naming a field. Dropped when composing the
+#: sentence: a person reading "body.display_name" learns nothing from "body"
+#: that the form they are looking at has not already told them.
+_WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
+
+
+def validation_message(rows: list[dict], language: str) -> str:
+    """One sentence, from rows a person was never going to read.
+
+    `validation_detail` above puts pydantic's rows into the reader's language.
+    Nine clients then rendered them: the three consoles printed the array as
+    JSON, the three Android shells did the same by coercion, and the iOS and
+    Windows shells asked for a string, got an array, and fell back to the
+    status code. So a mistyped form said either `[{"type":"missing",...}]` or
+    `HTTP 422`.
+
+        asked     is the refusal translated
+        mattered  is the refusal a sentence
+
+    Composed here rather than in each client for the reason the refusal
+    handler is one handler: nine renderings of one thing are nine chances to
+    render it differently, and six of these are in languages with no test
+    runner in this repository.
+
+    ## What stays an identifier
+
+    The field name is not translated and is not meant to read as a word. It is
+    the API's name for the field — `display_name` — which is the same string in
+    every language, and it is joined to the sentence with an em dash rather
+    than declined into it, so nothing here is half in one language and half in
+    another — the one thing `tests/refusals_untranslated.txt` will not record
+    its way out of.
+
+    Mapping those names to the labels a form actually shows — *"Nome de
+    exibição"* rather than `display_name` — is a per-client table this does not
+    have, and is recorded as the remaining gap rather than guessed at.
+
+    Carries nothing `detail` does not: the same `loc` and the same already
+    redacted `msg`, which is what `test_the_sentence_says_no_more_than_the_rows`
+    holds it to.
+    """
+    parts = []
+    for row in rows:
+        where = [str(p) for p in row.get("loc", ())]
+        if where and where[0] in _WHERE_MARKERS:
+            where = where[1:]
+        name = ".".join(tr_refusal(p, language) if p == UNRECOGNISED_FIELD
+                        else p for p in where)
+        said = str(row.get("msg", ""))
+        parts.append(f"{name} — {said}" if name else said)
+    return "; ".join(p for p in parts if p)
+
+
 #: Pydantic's own catalogue, for the messages this product's forms can
 #: produce. Safe to pass through untranslated as well as translated: these
 #: sentences interpolate limits, never the value that failed. Anything not
 #: here falls through as English, which is a visible gap rather than a
 #: confident error.
 _VALIDATION: dict[str, dict[str, str]] = {
+    # Not a message but a field name, and the one field name that is prose:
+    # `validation_detail` substitutes it where a caller's own key would
+    # otherwise be echoed, so it lands in the sentence `validation_message`
+    # composes and has to be readable there.
+    UNRECOGNISED_FIELD: {
+        'es': '<campo no reconocido>',
+        'fr': '<champ non reconnu>',
+        'de': '<unbekanntes Feld>',
+        'pt': '<campo não reconhecido>',
+        'it': '<campo non riconosciuto>',
+        'ja': '<認識できない項目>',
+        'zh': '<无法识别的字段>',
+        'hi': '<अपरिचित फ़ील्ड>',
+        'ar': '<حقل غير معروف>',
+    },
     UNSPECIFIED_VALUE_ERROR: {
         'es': 'ese valor no es aceptable aquí',
         'fr': "cette valeur n'est pas acceptable ici",

@@ -119,8 +119,21 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.exception_handler(RequestValidationError)
     async def _rejected_input_stays_with_its_sender(
             request: Request, invalid: RequestValidationError):
-        return i18n.refuse(request, 422, {"detail": i18n.validation_detail(
-            invalid.errors(), i18n.refusal_language(request))})
+        # `message` rides alongside because `detail` is a list, and a list is
+        # not something any of this product's clients could show a person: the
+        # console printed it as JSON, Android did the same by coercion, and
+        # iOS and Windows asked for a string, got an array, and fell back to
+        # "HTTP 422".
+        #
+        #     asked     is the refusal translated
+        #     mattered  is the refusal a sentence
+        #
+        # `detail` keeps its shape — it is the FastAPI contract and what the
+        # driven tests read. The sentence carries nothing the rows do not.
+        language = i18n.refusal_language(request)
+        rows = i18n.validation_detail(invalid.errors(), language)
+        return i18n.refuse(request, 422, {
+            "detail": rows, "message": i18n.validation_message(rows, language)})
 
     @app.exception_handler(storage.StorageError)
     def _storage_refusal(request: Request, exc: storage.StorageError):

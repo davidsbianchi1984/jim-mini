@@ -213,8 +213,17 @@ object ApiClient {
             // messages quote what the person typed, which is theirs to read
             // and nobody's to keep.
             Problems.record(method, path, code)
-            val detail = runCatching { JSONObject(text).optString("detail") }.getOrNull()
-            throw ApiException(if (detail.isNullOrBlank()) "HTTP $code" else detail)
+            // `optString` coerces a JSONArray through toString(), so a 422 —
+            // whose `detail` is pydantic's list of rows — reached the person
+            // as raw JSON. `message` is the sentence the backend composes
+            // beside the rows; a string `detail` still wins for everything else.
+            val said = runCatching {
+                val body = JSONObject(text)
+                body.optString("message").ifBlank {
+                    if (body.opt("detail") is String) body.optString("detail") else ""
+                }
+            }.getOrNull()
+            throw ApiException(if (said.isNullOrBlank()) "HTTP $code" else said)
         }
         if (text.isBlank()) JSONObject() else JSONObject(text)
     }

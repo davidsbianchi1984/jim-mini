@@ -287,7 +287,14 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
     // carries whatever the user typed.
     recordProblem(opts.method || "GET", path, res.status);
     const body = data as { detail?: unknown; message?: unknown } | null;
-    const d = (body && (body.detail || body.message)) || text.trim() || res.statusText;
+    // The sentence first. A 422's `detail` is pydantic's list of rows, and
+    // `JSON.stringify` on a list is exactly what the person used to read:
+    // `[{"type":"missing","loc":["body","display_name"],...}]`. Every other
+    // refusal carries a string `detail` and still comes through below.
+    const said = body && typeof body.message === "string" && body.message
+      ? body.message : null;
+    const d = said ?? ((body && (body.detail || body.message)) || text.trim()
+      || res.statusText);
     throw new Error(typeof d === "string" ? d : JSON.stringify(d));
   }
   return data as T;
@@ -814,8 +821,14 @@ export const api = {
     let data: unknown = null;
     try { data = text ? JSON.parse(text) : null; } catch { data = null; }
     if (!res.ok) {
-      const body = data as { detail?: unknown } | null;
-      const d = (body && body.detail) || text.trim() || res.statusText;
+      const body = data as { detail?: unknown; message?: unknown } | null;
+      // The sentence first. A 422's `detail` is pydantic's list of rows, and
+      // `JSON.stringify` on a list is exactly what the person used to read:
+      // `[{"type":"missing","loc":["body","display_name"],...}]`. Every other
+      // refusal carries a string `detail` and still comes through below.
+      const said = body && typeof body.message === "string" && body.message
+        ? body.message : null;
+      const d = said ?? ((body && body.detail) || text.trim() || res.statusText);
       throw new Error(typeof d === "string" ? d : JSON.stringify(d));
     }
     return data as SeedReport;
