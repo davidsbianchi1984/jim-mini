@@ -182,3 +182,111 @@ def test_the_english_default_is_untouched():
     said = i18n.fill(i18n.MUST_BE_ONE_OF, field="mode",
                      choices=", ".join(i18n.MODES))
     assert i18n.localize_detail(said, i18n.DEFAULT) == said
+
+
+# --- the plan gate, which the record named as the thing it would not do -----
+#
+# `refusals_untranslated.txt` carried it as an exception: a template whose
+# slots were English prose, where translating the frame alone would produce a
+# sentence half in each language at the one moment in this product that stands
+# between somebody and a decision to pay.
+#
+#     asked     can the frame be translated
+#     mattered  can the slots be
+#
+# They can. Six capability descriptions and one period word are a closed set
+# this product authors, so they are `Term`s with translations rather than
+# strangers — and `Term` is exempt from the whitespace rule for exactly that
+# reason.
+
+def test_the_plan_gate_arrives_whole_in_one_language():
+    """Whole is the assertion that matters. A half-translated version of this
+    is worse than the English one it replaced."""
+    from jim import tiers
+    said = tiers.refusal("free", "monitoring")
+    english = str(said)
+    for language in ("pt", "es", "de", "fr", "it", "ja", "zh", "hi", "ar"):
+        out = i18n.localize_detail(said, language)
+        assert out != english, f"the plan gate is still English for {language}"
+        for fragment in ("needs", "This account is on", "Billing here",
+                         "early warning", "month", "Emergency paths"):
+            assert fragment not in out, (
+                f"{language} kept the English fragment {fragment!r}, so the "
+                f"sentence is half in each language:\n{out}")
+
+
+def test_the_emergency_clause_survives_every_translation():
+    """The one sentence in this refusal that is not about money.
+
+    A person told they cannot have the trend model needs to know the alarm
+    still works. It is part of the frame rather than appended to it, so it
+    cannot be translated away — and it cannot be the English tail on a
+    translated sentence either.
+    """
+    from jim import tiers
+    said = tiers.refusal("free", "monitoring")
+    for language, expected in (("pt", "emergência"), ("es", "emergencia"),
+                               ("de", "Notfallwege"), ("ja", "緊急"),
+                               ("ar", "الطوارئ")):
+        out = i18n.localize_detail(said, language)
+        assert expected in out, (
+            f"the emergency reassurance is missing from the {language} "
+            f"refusal:\n{out}")
+
+
+def test_the_plan_titles_stay_as_they_are_printed_everywhere_else():
+    from jim import tiers
+    for language in ("pt", "ja", "ar"):
+        out = i18n.localize_detail(tiers.refusal("free", "monitoring"),
+                                   language)
+        assert "Pro" in out and "Free" in out, (
+            f"a plan title was translated in {language}: {out}")
+
+
+def test_every_capability_the_gate_names_has_a_translation():
+    """The vocabulary against the table it is drawn from.
+
+    A capability added to `tiers.CAPABILITIES` without a translation keeps the
+    whole refusal English — safe, but silently.
+    """
+    from jim import tiers
+    missing = sorted(spec["is"] for spec in tiers.CAPABILITIES.values()
+                     if spec["is"] not in i18n._VOCABULARY)
+    assert not missing, (
+        f"{len(missing)} capability description(s) have no translation:\n    "
+        + "\n    ".join(missing))
+
+
+def test_every_refusable_plan_has_a_billing_period():
+    """`refusal()` quotes `(${price}/{period})`, and a plan with no period
+    would read `$0/None`. Held where it cannot bite rather than given a second
+    sentence for a case nobody can receive."""
+    from jim import tiers
+    reachable = [name for name in tiers.CAPABILITIES
+                 if not tiers.entitles(tiers.DEFAULT_PLAN, name)]
+    unpriced = [n for n in reachable
+                if tiers.PLANS[tiers.CAPABILITIES[n]["from"]]["period"] is None]
+    assert not unpriced, (
+        f"{unpriced} can be refused and its plan has no billing period, so the "
+        "refusal would read '$0/None'")
+
+
+def test_a_term_is_exempt_from_the_whitespace_rule_and_a_stranger_is_not():
+    """The distinction the mechanism turns on. Whitespace is a proxy for
+    *prose nobody wrote a translation for*, and a `Term` is prose this product
+    authored — so the proxy does not apply, and the vocabulary check pays for
+    the exemption."""
+    authored = i18n.fill(i18n.MUST_BE_ONE_OF, field="x",
+                         choices=i18n.Term("month"))
+    assert authored.translatable
+
+    stranger = i18n.fill(i18n.MUST_BE_ONE_OF, field="x",
+                         choices="the mail server refused the connection")
+    assert not stranger.translatable
+
+    unmapped = i18n.fill(i18n.MUST_BE_ONE_OF, field="x",
+                         choices=i18n.Term("a phrase nobody translated"))
+    assert unmapped.translatable, "a Term is exempt from the whitespace rule"
+    assert i18n.localize_detail(unmapped, "pt") == str(unmapped), (
+        "an unmapped Term reached a translated frame — the exemption has to be "
+        "paid for by the vocabulary check, or it is just a hole")

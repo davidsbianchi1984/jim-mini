@@ -1132,11 +1132,28 @@ class Templated(str):
     translatable: bool
 
     def __new__(cls, template: str, **slots):
-        text = template.format(**slots)
+        # `Opening` applies here too, not only at translation. This value *is*
+        # the English sentence — the one an English reader gets and the one
+        # every driven test reads.
+        english = {k: _open(v) if isinstance(v, Opening) else v
+                   for k, v in slots.items()}
+        text = template.format(**english)
         self = super().__new__(cls, text)
         self.template = template
         self.slots = slots
-        self.translatable = all(_is_token(v) for v in slots.values())
+        # A `Term` is exempt from the whitespace rule, and that is the point
+        # of it. The rule exists to catch prose *this product did not author*,
+        # which cannot be translated because nobody wrote a translation. A
+        # `Term` is drawn from a closed set this product does author, so its
+        # whitespace is not a warning sign.
+        #
+        #     asked     does this slot contain whitespace
+        #     mattered  is this slot something we have a translation for
+        #
+        # Safe by construction either way: an unmapped `Term` keeps the whole
+        # refusal English in `localize_detail`, the same as a prose slot.
+        self.translatable = all(isinstance(v, Term) or _is_token(v)
+                                for v in slots.values())
         return self
 
 
@@ -1154,10 +1171,65 @@ def fill(template: str, **slots) -> Templated:
 #: same string in every language.
 MUST_BE_ONE_OF = "{field} must be one of {choices}"
 
+#: The refusal `refusals_untranslated.txt` named as the one thing it would not
+#: half-do. Its slots are prose — a capability description and a billing period
+#: — so translating the frame alone would have produced a sentence half in each
+#: language at the one moment in this product that stands between somebody and
+#: a decision to pay. Both are `Term`s, so the whole sentence arrives in one
+#: language or none of it does.
+#:
+#: The plan titles are deliberately not translated: `Basic` and `Pro` are what
+#: the product is called on the pricing page and on a receipt.
+#:
+#: The emergency clause is part of the frame rather than an afterthought. A
+#: person meeting this refusal needs to know the alarm still works, and that
+#: reassurance arriving in English on a Portuguese sentence is the shape this
+#: whole mechanism exists to prevent.
+PLAN_GATE = ("{capability} needs {needs} (${price}/{period}). "
+             "This account is on {have}. Billing here is simulated — "
+             "subscribing records a row and moves no real funds. "
+             "Emergency paths are never affected.")
+
 #: Derived from the table below rather than repeated.
-TEMPLATES = (MUST_BE_ONE_OF,)
+TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE)
 
 _TEMPLATES: dict[str, dict[str, str]] = {
+    PLAN_GATE: {
+        'es': '{capability} requiere {needs} (${price}/{period}). Esta cuenta '
+              'está en {have}. La facturación aquí es simulada: suscribirse '
+              'registra una fila y no mueve fondos reales. Las vías de '
+              'emergencia nunca se ven afectadas.',
+        'fr': '{capability} nécessite {needs} ({price} $/{period}). Ce compte '
+              'est en {have}. La facturation est simulée ici : souscrire '
+              "enregistre une ligne et ne déplace aucun fonds réel. Les voies "
+              "d'urgence ne sont jamais affectées.",
+        'de': '{capability} erfordert {needs} ({price} $/{period}). Dieses '
+              'Konto ist auf {have}. Die Abrechnung ist hier simuliert — ein '
+              'Abo legt eine Zeile an und bewegt kein echtes Geld. Notfallwege '
+              'sind davon nie betroffen.',
+        'pt': '{capability} requer {needs} (${price}/{period}). Esta conta '
+              'está no {have}. A cobrança aqui é simulada: assinar regista uma '
+              'linha e não movimenta fundos reais. As vias de emergência nunca '
+              'são afetadas.',
+        'it': '{capability} richiede {needs} ({price} $/{period}). Questo '
+              'account è su {have}. La fatturazione qui è simulata: abbonarsi '
+              'registra una riga e non muove fondi reali. I percorsi di '
+              'emergenza non sono mai interessati.',
+        'ja': '{capability}には{needs}が必要です（${price}／{period}）。'
+              'このアカウントは{have}です。ここでの課金はシミュレーションです — '
+              '購読しても記録が残るだけで、実際の資金は動きません。'
+              '緊急時の経路が影響を受けることはありません。',
+        'zh': '{capability}需要 {needs}（${price}/{period}）。'
+              '此账户当前为 {have}。此处的计费为模拟 — 订阅只会记录一行，'
+              '不会转移真实资金。紧急通路始终不受影响。',
+        'hi': '{capability} के लिए {needs} चाहिए (${price}/{period})। '
+              'यह खाता {have} पर है। यहाँ बिलिंग नकली है — सदस्यता लेने पर '
+              'केवल एक पंक्ति दर्ज होती है, असली पैसा नहीं जाता। '
+              'आपातकालीन रास्ते कभी प्रभावित नहीं होते।',
+        'ar': '{capability} يتطلب {needs} (${price}/{period}). هذا الحساب على '
+              '{have}. الفوترة هنا محاكاة — الاشتراك يسجل صفًا ولا ينقل '
+              'أموالًا حقيقية. مسارات الطوارئ لا تتأثر أبدًا.',
+    },
     MUST_BE_ONE_OF: {
         'es': '{field} debe ser uno de {choices}',
         'fr': "{field} doit être l'un de {choices}",
@@ -1170,6 +1242,55 @@ _TEMPLATES: dict[str, dict[str, str]] = {
         'ar': '{field} يجب أن يكون أحد التالي: {choices}',
     },
 }
+
+
+class Term(str):
+    """A slot drawn from the product's own closed vocabulary.
+
+    `f"objection is already {obj['status']}"` has a slot holding `open`,
+    `upheld` or `dismissed` — the API's words, which a client branches on. They
+    stay those words on the wire. But inside a sentence a person reads, an
+    English key in a Portuguese frame is the mixed sentence this whole
+    mechanism exists to prevent, and `_SLOT_TOKEN` cannot catch it: `upheld` is
+    one word with no whitespace, indistinguishable from an identifier.
+
+    So the author marks it, and the marking is what makes it translatable:
+
+        i18n.fill(i18n.OBJECTION_ALREADY, status=i18n.Term(obj["status"]))
+
+    Translated at render, not at raise: the reader's language is not known at
+    the raise site, which is the reason the handler does this work at all.
+    """
+
+
+class Opening(Term):
+    """A `Term` that begins its sentence, and so is capitalised.
+
+    After translation, never before. The vocabulary holds one form of each
+    phrase — `create and run your own synthetic profiles` — and each language
+    raises its own first letter from that; a capitalised table would need a
+    second copy of every entry, free to drift from the first.
+
+    `str.capitalize()` is wrong here: it lower-cases everything after the first
+    character, which would turn German's `im Marktplatz einstellen` into
+    something with its nouns flattened. Only the first character moves.
+    """
+
+
+def _open(text: str) -> str:
+    return text[:1].upper() + text[1:]
+
+
+def term(word: str, language: str) -> str:
+    """One vocabulary word in the reader's language.
+
+    Unknown words come back unchanged, which is a visible gap rather than a
+    confident error — and `test_every_state_a_refusal_can_name_has_a_word`
+    fails on any this product can actually reach.
+    """
+    if language == DEFAULT:
+        return word
+    return _VOCABULARY.get(word, {}).get(language, word)
 
 
 def tr_refusal(text: str, language: str) -> str:
@@ -1197,9 +1318,24 @@ def localize_detail(detail, language: str):
     if isinstance(detail, Templated):
         if not detail.translatable:
             return str(detail)
+        # A vocabulary word with no translation would land in the frame as an
+        # English key — the mixed sentence `Term` exists to prevent, arriving
+        # through the mechanism built to prevent it. Structural rather than
+        # enumerated.
+        vocabulary = [v for v in detail.slots.values() if isinstance(v, Term)]
+        if any(str(v) not in _VOCABULARY for v in vocabulary):
+            return str(detail)
         frame = tr_refusal(detail.template, language)
+        filling = {}
+        for key, value in detail.slots.items():
+            if isinstance(value, Opening):
+                filling[key] = _open(term(value, language))
+            elif isinstance(value, Term):
+                filling[key] = term(value, language)
+            else:
+                filling[key] = value
         try:
-            return frame.format(**detail.slots)
+            return frame.format(**filling)
         except (KeyError, IndexError, ValueError):
             # A translation whose braces do not match the template's. The
             # English sentence is correct and complete; a half-formatted one
@@ -1243,6 +1379,118 @@ def refusal_language(request) -> str:
         return negotiate(request.headers.get("accept-language"))
     except Exception:
         return DEFAULT
+
+
+#: The product's own closed sets, for the moment one lands inside a sentence a
+#: person reads. `Term` marks them at the raise site; `term()` resolves them at
+#: render, when the reader's language is finally known.
+#:
+#: The keys are the exact strings in `tiers.CAPABILITIES`, and
+#: `test_every_capability_the_gate_names_has_a_translation` holds them to it —
+#: a description edited there and not here keeps the refusal English rather
+#: than mixing, but silently, which is the state this table exists to leave.
+_VOCABULARY: dict[str, dict[str, str]] = {
+    'month': {'es': 'mes', 'fr': 'mois', 'de': 'Monat', 'pt': 'mês',
+              'it': 'mese', 'ja': '月', 'zh': '月', 'hi': 'माह', 'ar': 'شهر'},
+    'the Guardian — conditions, guidance, journal, habits and goals': {
+        'es': 'el Guardián: afecciones, orientación, diario, hábitos y objetivos',
+        'fr': 'le Gardien — pathologies, conseils, journal, habitudes et objectifs',
+        'de': 'der Guardian — Beschwerden, Hinweise, Journal, Gewohnheiten und Ziele',
+        'pt': 'o Guardião — condições, orientação, diário, hábitos e objetivos',
+        'it': 'il Guardiano — condizioni, indicazioni, diario, abitudini e obiettivi',
+        'ja': 'ガーディアン — 症状、ガイダンス、ジャーナル、習慣、目標',
+        'zh': '守护者 — 状况、指导、日志、习惯与目标',
+        'hi': 'गार्जियन — स्थितियाँ, मार्गदर्शन, जर्नल, आदतें और लक्ष्य',
+        'ar': 'الحارس — الحالات والإرشاد واليوميات والعادات والأهداف'},
+    'alarms, escalation, the medical ID and incident history — never withheld '
+    'for non-payment': {
+        'es': 'alarmas, escalado, la identificación médica y el historial de '
+              'incidentes: nunca se retienen por falta de pago',
+        'fr': "alarmes, escalade, l'identité médicale et l'historique des "
+              'incidents — jamais retenus pour défaut de paiement',
+        'de': 'Alarme, Eskalation, der medizinische Ausweis und die '
+              'Vorfallhistorie — werden nie wegen Nichtzahlung vorenthalten',
+        'pt': 'alarmes, escalonamento, a identificação médica e o histórico de '
+              'incidentes — nunca retidos por falta de pagamento',
+        'it': "allarmi, escalation, l'identificativo medico e lo storico degli "
+              'incidenti — mai trattenuti per mancato pagamento',
+        'ja': 'アラーム、エスカレーション、医療IDおよびインシデント履歴 — '
+              '未払いを理由に止められることはありません',
+        'zh': '警报、升级、医疗身份标识与事件历史 — 绝不会因未付款而被扣留',
+        'hi': 'अलार्म, एस्केलेशन, मेडिकल आईडी और घटना इतिहास — भुगतान न होने पर '
+              'कभी रोके नहीं जाते',
+        'ar': 'التنبيهات والتصعيد والهوية الطبية وسجل الحوادث — لا تُحجب أبدًا '
+              'بسبب عدم الدفع'},
+    'paired wearables, the watch face, and lending the Guardian your '
+    'microphone': {
+        'es': 'dispositivos vinculados, la esfera del reloj y prestar el '
+              'micrófono al Guardián',
+        'fr': 'objets connectés appairés, le cadran de la montre et le prêt de '
+              'votre microphone au Gardien',
+        'de': 'gekoppelte Wearables, das Zifferblatt und das Verleihen Ihres '
+              'Mikrofons an den Guardian',
+        'pt': 'dispositivos emparelhados, o mostrador do relógio e emprestar o '
+              'microfone ao Guardião',
+        'it': "dispositivi indossabili accoppiati, il quadrante dell'orologio e "
+              'il prestito del microfono al Guardiano',
+        'ja': 'ペアリングしたウェアラブル、ウォッチフェイス、'
+              'ガーディアンへのマイクの貸与',
+        'zh': '已配对的可穿戴设备、表盘，以及把麦克风借给守护者',
+        'hi': 'युग्मित पहनने योग्य उपकरण, वॉच फ़ेस, और गार्जियन को अपना माइक्रोफ़ोन देना',
+        'ar': 'الأجهزة القابلة للارتداء المقترنة وواجهة الساعة وإعارة الميكروفون '
+              'للحارس'},
+    'early warning — the trend model that says something is about to go wrong '
+    'before any threshold is crossed. Evaluating a sample you just submitted '
+    'is not this, and is never withheld': {
+        'es': 'aviso temprano: el modelo de tendencia que anuncia que algo va '
+              'a ir mal antes de que se cruce cualquier umbral. Evaluar una '
+              'muestra que acabas de enviar no es esto, y nunca se retiene',
+        'fr': "alerte précoce — le modèle de tendance qui signale qu'un "
+              'problème approche avant tout franchissement de seuil. Évaluer '
+              "un échantillon que vous venez d'envoyer n'est pas cela, et "
+              "n'est jamais retenu",
+        'de': 'Frühwarnung — das Trendmodell, das meldet, dass etwas schiefgeht, '
+              'bevor ein Schwellenwert überschritten ist. Die Auswertung einer '
+              'gerade eingereichten Probe ist das nicht und wird nie '
+              'vorenthalten',
+        'pt': 'aviso precoce — o modelo de tendência que diz que algo vai '
+              'correr mal antes de qualquer limiar ser ultrapassado. Avaliar '
+              'uma amostra que acabou de enviar não é isto, e nunca é retido',
+        'it': 'allerta precoce — il modello di tendenza che segnala che '
+              'qualcosa sta per andare storto prima che una soglia venga '
+              'superata. Valutare un campione appena inviato non è questo, e '
+              'non viene mai trattenuto',
+        'ja': '早期警告 — しきい値を超える前に異常の兆しを知らせる傾向モデル。'
+              '送信したばかりのサンプルの評価はこれには当たらず、'
+              '止められることはありません',
+        'zh': '早期预警 — 在任何阈值被跨越之前就指出情况将要变糟的趋势模型。'
+              '评估你刚提交的样本不属于此项，且绝不会被扣留',
+        'hi': 'प्रारंभिक चेतावनी — वह प्रवृत्ति मॉडल जो किसी सीमा के पार होने से पहले '
+              'बताता है कि कुछ बिगड़ने वाला है। अभी भेजे गए नमूने का मूल्यांकन '
+              'यह नहीं है, और कभी रोका नहीं जाता',
+        'ar': 'الإنذار المبكر — نموذج الاتجاه الذي ينبه إلى وقوع خلل قبل تجاوز '
+              'أي عتبة. تقييم عينة أرسلتها للتو ليس هذا، ولا يُحجب أبدًا'},
+    'specialists and the connected-apps marketplace': {
+        'es': 'especialistas y el mercado de aplicaciones conectadas',
+        'fr': 'spécialistes et la place de marché des applications connectées',
+        'de': 'Spezialisten und der Marktplatz für verbundene Apps',
+        'pt': 'especialistas e o mercado de aplicações ligadas',
+        'it': 'specialisti e il marketplace delle app collegate',
+        'ja': 'スペシャリストと連携アプリのマーケットプレイス',
+        'zh': '专家与已连接应用的市场',
+        'hi': 'विशेषज्ञ और कनेक्टेड-ऐप्स मार्केटप्लेस',
+        'ar': 'المتخصصون وسوق التطبيقات المتصلة'},
+    'summoning a QRME synthetic agent, and excursions': {
+        'es': 'convocar un agente sintético de QRME, y las excursiones',
+        'fr': 'convoquer un agent synthétique QRME, et les excursions',
+        'de': 'einen synthetischen QRME-Agenten rufen und Ausflüge',
+        'pt': 'convocar um agente sintético QRME, e as excursões',
+        'it': 'convocare un agente sintetico QRME e le escursioni',
+        'ja': 'QRMEの合成エージェントの召喚と外出',
+        'zh': '召唤 QRME 合成代理，以及外出行程',
+        'hi': 'QRME सिंथेटिक एजेंट को बुलाना, और भ्रमण',
+        'ar': 'استدعاء وكيل QRME الاصطناعي والرحلات'},
+}
 
 
 def sentence_of(detail) -> str | None:

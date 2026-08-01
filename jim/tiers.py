@@ -291,14 +291,38 @@ def may(account_id: str, capability: str) -> bool:
     return entitles(plan_of(account_id), capability)
 
 
-def refusal(plan: str, capability: str) -> str:
+def refusal(plan: str, capability: str):
+    """Why this was refused, what would fix it, and that the alarm still works.
+
+    `tests/refusals_untranslated.txt` named this as the one sentence it would
+    not half-do: an f-string whose slots are a capability description and a
+    billing period, both English prose, so translating the frame alone would
+    have produced a sentence half in each language at the one moment in this
+    product that stands between somebody and a decision to pay.
+
+        asked     can the frame be translated
+        mattered  can the slots be
+
+    Both are `i18n.Term` now — a closed set this product authors, so each has a
+    translation and none of it is guessed. An unmapped one keeps the whole
+    sentence English rather than mixing.
+
+    The emergency clause is part of the frame rather than appended to it. A
+    person meeting this refusal needs to know the alarm still works, and that
+    reassurance arriving in English at the end of a Portuguese sentence is
+    exactly the shape this mechanism exists to prevent.
+
+    The plan titles stay untranslated: `Basic` and `Pro` are what the product
+    is called on the pricing page and on a receipt.
+    """
+    from . import i18n
     need = CAPABILITIES[capability]["from"]
     spec = PLANS[need]
-    return (f"{CAPABILITIES[capability]['is'].capitalize()} needs "
-            f"{spec['title']} (${spec['price_usd']}/{spec['period']}). "
-            f"This account is on {PLANS[plan]['title']}. "
-            "Billing here is simulated — subscribing records a row and moves "
-            "no real funds. Emergency paths are never affected.")
+    return i18n.fill(
+        i18n.PLAN_GATE,
+        capability=i18n.Opening(CAPABILITIES[capability]["is"]),
+        needs=spec["title"], price=spec["price_usd"],
+        period=i18n.Term(spec["period"]), have=PLANS[plan]["title"])
 
 
 def require(account_id: str, capability: str) -> None:
