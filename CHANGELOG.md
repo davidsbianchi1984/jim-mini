@@ -4,6 +4,36 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### The console gets a language, and a tripwire fires exactly as designed
+
+Last release measured the gap: JIM's native shells carry ten-language `L10n`
+tables and the desktop console had none at all. This is the layer — a
+`l10n.ts` with `visitorLang()`, twenty keys across all ten languages, and the
+pre-session screen wired to it. The pre-session backlog is **47 → 35**;
+`visitorLang` reads what the browser asked for rather than a stored setting,
+because the reader of that screen has no account for a setting to live in.
+
+Two guards broke on the way, both the same shape, and one of them had been
+left there on purpose.
+
+`test_a_promise_is_not_a_door.py` carried a tripwire whose docstring said, in
+so many words, *"JIM's console has no such table yet… When it arrives, this
+fails and says what to do, instead of `test_no_gated_screen_both_promises_and
+_carries` going silently blind on the day the copy starts moving."* It fired
+on the first build. `_prose` now resolves keys through the table the way
+QRME's `_shown_text` does, and the tripwire is deleted as its own message
+instructed.
+
+`test_the_door_and_the_wire.py` broke without warning for the same reason: it
+asserted a sentence was in a screen's file, and the sentence had moved.
+
+    asked     does this file contain this English sentence
+    mattered  does this screen say this to the person reading it
+
+Both now read what the screen *shows*, whatever file the words live in.
+
 ## [0.27.0] — 2026-08-01
 
 ### The console speaks one language. Its own phones speak ten.

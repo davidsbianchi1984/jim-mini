@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, getBase, setBase } from "../api";
 import { useSession } from "../store";
+import { t as tr, visitorLang } from "../l10n";
 
 type Mode = "signup" | "code" | "signin" | "reset";
 
@@ -197,15 +198,15 @@ export function Onboarding() {
     <div className="onboarding">
       <div className="onboard-card">
         <div className="orb big" />
-        <h1>Your Guardian, always here</h1>
+        <h1>{tr("onb.tagline", visitorLang())}</h1>
         <p className="muted">Monitor, predict, guide, escalate — grounded in your baseline, on your device.</p>
 
         {(mode === "signup" || mode === "signin") && (
           <div className="tabs">
             <button className={mode === "signup" ? "tab active" : "tab"}
-                    onClick={() => switchMode("signup")}>Create account</button>
+                    onClick={() => switchMode("signup")}>{tr("onb.create", visitorLang())}</button>
             <button className={mode === "signin" ? "tab active" : "tab"}
-                    onClick={() => switchMode("signin")}>Sign in</button>
+                    onClick={() => switchMode("signin")}>{tr("onb.signin", visitorLang())}</button>
           </div>
         )}
 
@@ -238,24 +239,24 @@ export function Onboarding() {
               give responders a legal name. Leave one below only if you want it
               used for that.
             </p>
-            <label>Legal name, for emergencies only (optional)
+            <label>{tr("onb.legalname", visitorLang())}
               <input value={legalName} placeholder="leaving this blank is fine"
                      onChange={(e) => setLegalName(e.target.value)} /></label>
           </>)}
           <label>Birthdate<input type="date" value={birthdate} onChange={(e) => setBirthdate(e.target.value)} /></label>
           <label>Email<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
-          <PasswordField label="Password" value={password} placeholder="At least 8 characters" onChange={setPassword} />
+          <PasswordField label="Password" value={password} placeholder={tr("onb.password.min", visitorLang())} onChange={setPassword} />
           <p className="field-hint">At least 8 characters.</p>
           {/* Typed twice on purpose: hidden characters are how a typo gets
               remembered wrong with total confidence. The match check is
               instant, before anything is submitted. */}
-          <PasswordField label="Re-enter password" value={confirm} placeholder="Same password again" onChange={setConfirm} />
+          <PasswordField label="Re-enter password" value={confirm} placeholder={tr("onb.password.same", visitorLang())} onChange={setConfirm} />
           {confirm && !passwordsMatch && (
             <div className="error">⚠ The passwords don't match yet.</div>
           )}
           <label className="check">
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-            I consent to the terms of use
+            {tr("onb.consent", visitorLang())}
           </label>
         </>)}
 
@@ -285,13 +286,13 @@ export function Onboarding() {
           <p className="muted">Enter your account's email; we'll send a 6-digit reset code{whereIsTheCode}.</p>
           <label>Email<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
           <div className="actions" style={{ justifyContent: "center" }}>
-            <button disabled={busy || !email.trim()} onClick={startReset}>Send reset code</button>
+            <button disabled={busy || !email.trim()} onClick={startReset}>{tr("onb.reset.send", visitorLang())}</button>
           </div>
           <label>Reset code
             <input value={code} inputMode="numeric" placeholder="123456" onChange={(e) => setCode(e.target.value)} />
           </label>
-          <PasswordField label="New password" value={password} placeholder="At least 8 characters" onChange={setPassword} />
-          <PasswordField label="Re-enter new password" value={confirm} placeholder="Same password again" onChange={setConfirm} />
+          <PasswordField label="New password" value={password} placeholder={tr("onb.password.min", visitorLang())} onChange={setPassword} />
+          <PasswordField label="Re-enter new password" value={confirm} placeholder={tr("onb.password.same", visitorLang())} onChange={setConfirm} />
           {confirm && !passwordsMatch && (
             <div className="error">⚠ The passwords don't match yet.</div>
           )}
@@ -348,14 +349,14 @@ export function Onboarding() {
                                        terms_consent: consent }),
                     (u) => setSession({ userId: u.id, userToken: u.user_token,
                                         displayName: u.display_name }))}>
-            Start without an email address
+            {tr("onb.noemail", visitorLang())}
           </button>
         </>)}
         {mode === "code" && (<>
           <button className="primary" disabled={busy || code.trim().length !== 6} onClick={verify}>
             {busy ? "Checking…" : "Verify & get started"}
           </button>
-          <button className="linkish" disabled={busy} onClick={resend}>Resend code</button>
+          <button className="linkish" disabled={busy} onClick={resend}>{tr("onb.code.resend", visitorLang())}</button>
         </>)}
         {mode === "signin" && (<>
           <button className="primary"
@@ -363,7 +364,7 @@ export function Onboarding() {
                   onClick={signin}>
             {busy ? "Signing in…" : "Sign in"}
           </button>
-          <button className="linkish" onClick={() => switchMode("reset")}>Forgot password?</button>
+          <button className="linkish" onClick={() => switchMode("reset")}>{tr("onb.forgot", visitorLang())}</button>
         </>)}
         {mode === "reset" && (<>
           <button className="primary"
@@ -372,7 +373,7 @@ export function Onboarding() {
                   onClick={finishReset}>
             {busy ? "Resetting…" : "Set new password"}
           </button>
-          <button className="linkish" onClick={() => switchMode("signin")}>Back to sign in</button>
+          <button className="linkish" onClick={() => switchMode("signin")}>{tr("onb.back", visitorLang())}</button>
         </>)}
       </div>
     </div>

@@ -102,7 +102,33 @@ def _api() -> str:
 
 
 def _screen(name: str) -> str:
-    return (SCREENS / name).read_text(encoding="utf-8")
+    """A screen's source, plus the English behind every key it looks up.
+
+    Reading the raw file was right until the console gained a language table.
+    The moment a sentence moves from the JSX into `l10n.ts`, a check searching
+    the file finds nothing and reports the door gone — while the door is there
+    and now works in ten languages. QRME's audit hit this exact shape when its
+    accountless screen was localized:
+
+        asked     does this file contain this English sentence
+        mattered  does this screen say this to the person reading it
+
+    So the keys are resolved. What comes back is what the screen *shows*, in
+    English, whatever file the words live in.
+    """
+    source = (SCREENS / name).read_text(encoding="utf-8")
+    table = SCREENS.parent / "l10n.ts"
+    if not table.exists():
+        return source
+    text = table.read_text(encoding="utf-8")
+    english = {}
+    for key, row in re.findall(r'^  "([\w.]+)":\s*\{(.*?)^  \},', text,
+                               re.S | re.M):
+        hit = re.search(r'\ben:\s*"((?:[^"\\]|\\.)*)"', row)
+        if hit:
+            english[key] = hit.group(1)
+    looked_up = re.findall(r'\b(?:t|tr)\(\s*"([\w.]+)"', source)
+    return "\n".join([source] + [english[k] for k in looked_up if k in english])
 
 
 # --- the three records reach zero -------------------------------------------

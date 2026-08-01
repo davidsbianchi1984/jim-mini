@@ -147,3 +147,66 @@ def test_the_shells_that_do_have_a_table_still_have_one():
         f"only {len(present)} of the three shells still carry an L10n table "
         f"({present}). This file's whole premise is that the phones speak ten "
         "languages and the console speaks one.")
+
+
+# --- the layer this round added -------------------------------------------
+
+SRC = REPO / "app" / "src"
+
+
+def _languages() -> list[str]:
+    text = (SRC / "l10n.ts").read_text(encoding="utf-8")
+    union = re.search(r"export type Lang =([^;]+);", text).group(1)
+    return re.findall(r'"(\w+)"', union)
+
+
+def test_every_key_is_translated_everywhere():
+    """No partial rows.
+
+    The reader of this screen has no account to fall back to a setting from,
+    so English here is not a default — it is a guess about who is reading.
+    """
+    text = (SRC / "l10n.ts").read_text(encoding="utf-8")
+    langs = _languages()
+    gaps = {}
+    for match in re.finditer(r'"([\w.]+)":\s*\{(.*?)\n  \},', text, re.S):
+        present = set(re.findall(r"(\w+):", match.group(2)))
+        missing = [c for c in langs if c not in present]
+        if missing:
+            gaps[match.group(1)] = missing
+    assert not gaps, (
+        "these console strings are missing languages:\n    "
+        + "\n    ".join(f"{k}: {', '.join(v)}" for k, v in sorted(gaps.items())))
+
+
+def test_there_are_keys_at_all():
+    """A guard on the guard: an empty table reports a perfect zero."""
+    keys = re.findall(r'^  "([\w.]+)":', (SRC / "l10n.ts").read_text("utf-8"),
+                      re.M)
+    assert len(keys) >= 15, (
+        f"only {len(keys)} keys found — the pattern has stopped matching, so "
+        "the completeness check above would pass on nothing")
+    assert len(_languages()) == 10
+
+
+def test_the_screen_asks_the_visitor_and_not_a_stored_setting():
+    """The whole reason this layer exists.
+
+    Every other localization path in this product takes a user id. The screen
+    a person meets before they have one is exactly where that cannot work, and
+    reading a stored language here would read the default every time.
+    """
+    code = re.sub(r"/\*.*?\*/|//[^\n]*", "",
+                  (SRC / "screens" / "Onboarding.tsx").read_text("utf-8"),
+                  flags=re.S)
+    assert "visitorLang(" in code, (
+        "Onboarding no longer asks visitorLang() — every visitor is back to "
+        "English no matter what their browser asked for")
+    fn = (SRC / "l10n.ts").read_text("utf-8")
+    fn = fn[fn.index("export function visitorLang"):]
+    assert 'split("-")' in fn, (
+        "visitorLang no longer drops the region, so es-419 and es-ES stop "
+        "matching es")
+    assert 'return "en"' in fn, (
+        "visitorLang no longer falls back to English for an unrecognised tag "
+        "— it should fall back, never guess")

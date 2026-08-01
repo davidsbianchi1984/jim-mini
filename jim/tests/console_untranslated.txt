@@ -1,42 +1,30 @@
 # English on the JIM console's pre-session surface — the screen a person
 # meets before any account exists. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
-# ceiling: 47
+# ceiling: 35
 (button below opens it)
 , or point this console at a machine already running one:
 .
 123456
-At least 8 characters
 At least 8 characters.
-Back to sign in
 Backend URL
 Birthdate
 Click the link and this screen continues on its own.
-Create account
 Email
 Enter your account's email; we'll send a 6-digit reset code
-Forgot password?
-I consent to the terms of use
 JIM won't keep the name above. Every emergency path works exactly the same; the one difference is that a dispatcher briefing can't give responders a legal name. Leave one below only if you want it used for that.
 Keep me anonymous — use a pseudonym instead of my name
-Legal name, for emergencies only (optional)
 Monitor, predict, guide, escalate — grounded in your baseline, on your device.
 Name
 No email address? You can start without one. There is no way to recover an account made this way — this device holds the only key to it — but you do not have to have an address to be looked after.
 Open the log with the code
 Prefer typing? Enter the 6-digit code from the same email instead. Your account exists only after one or the other.
-Resend code
 Reset code
-Same password again
 Save &amp; retry
-Send reset code
 Sign
-Sign in
-Start without an email address
 This window is only the console — the Guardian runs as a local service. Start it with
 Verification code
 We emailed a verification link to
-Your Guardian, always here
 Your name
 leaving this blank is fine
 printed in the terminal running the backend
