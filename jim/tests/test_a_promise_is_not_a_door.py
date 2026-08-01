@@ -72,6 +72,39 @@ def _prose(path: Path) -> str:
     return re.sub(r"/\*.*?\*/|//[^\n]*|\{/\*.*?\*/\}", "", text, flags=re.S)
 
 
+def test_the_console_still_says_its_words_in_its_own_source():
+    """A tripwire, not a rule — this console has nothing wrong with it today.
+
+    Everything `_prose` does rests on an assumption nobody wrote down: that a
+    screen's words are in the screen's file. QRME's copy of this check had the
+    same assumption, and it broke there — a round localized the one surface a
+    stranger can reach, the claim moved into a lookup table, and the check
+    quietly stopped being able to see any claim made through a key. It kept
+    passing. QRME's `test_a_public_route_behind_a_private_door.py` now resolves
+    each screen's text through `l10n.ts` before searching it (`_shown_text`).
+
+    JIM's console has no such table yet — every string is a literal. But this
+    product's *server* grew `jim/i18n.py` in the same round, and a console
+    table is the obvious next step. When it arrives, this fails and says what
+    to do, instead of `test_no_gated_screen_both_promises_and_carries` going
+    silently blind on the day the copy starts moving.
+    """
+    tables = [p.name for p in SRC.rglob("*.ts")
+              if p.stem in ("l10n", "i18n", "strings", "messages")]
+    lookups = sorted({p.name for p in SRC.rglob("*.tsx")
+                      if re.search(r'\b(?:t|tr|L)\(\s*"[\w.]+"', _prose(p))})
+    assert not tables and not lookups, (
+        "this console now puts user-visible words somewhere other than the "
+        "screen that shows them"
+        + (f"\n    table:   {', '.join(tables)}" if tables else "")
+        + (f"\n    lookups: {', '.join(lookups)}" if lookups else "")
+        + "\n  Every check in this file searches screen source for a claim, so "
+          "a claim made through a key is now invisible to it — including on a "
+          "screen that also carries the door, which is the whole defect. Teach "
+          "`_prose` to resolve keys through the table before searching, the way "
+          "QRME's `_shown_text` does, then delete this test.")
+
+
 def _gated_screens() -> list[Path]:
     """Everything App.tsx renders only after `session.userId` exists."""
     app = (SRC / "App.tsx").read_text(encoding="utf-8")
