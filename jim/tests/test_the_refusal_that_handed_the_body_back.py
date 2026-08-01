@@ -215,14 +215,35 @@ def test_a_validators_own_words_are_not_repeated():
         "the input that was wrong, and it is this product's own vocabulary")
 
 
-def test_a_callers_own_key_name_is_not_echoed():
-    """On `extra_forbidden`, the last element of `loc` is a name the caller
-    invented, not a field this product declares. A key can be content."""
-    cleaned = i18n.validation_detail(
-        [{"type": "extra_forbidden", "loc": ("body", CANARY),
-          "msg": "Extra inputs are not permitted", "input": 1}], "en")
-    assert CANARY not in json.dumps(cleaned)
-    assert cleaned[0]["loc"] == ["body", i18n.UNRECOGNISED_FIELD]
+def test_a_callers_key_is_echoed_when_it_looks_like_a_field_name():
+    """The correction this round needed, and how it was found.
+
+    The first version replaced the key on every `extra_forbidden`, because a
+    key the caller invented can be content. That broke
+    `test_a_write_that_answers_200_did_something`, which exists because two
+    routes used to accept `dials` for `values` and `years` for `period`,
+    discard them, and answer 200 — a whole round was spent making them strict
+    so the caller is *told* which key was wrong, and this redacted it away
+    again.
+
+        asked     can a key carry content
+        mattered  does this key look like content
+
+    So the rule is the shape. A field name comes back; a sentence does not.
+    """
+    def loc_for(key):
+        return i18n.validation_detail(
+            [{"type": "extra_forbidden", "loc": ("body", key),
+              "msg": "Extra inputs are not permitted", "input": 1}],
+            "en")[0]["loc"]
+
+    assert loc_for("dials") == ["body", "dials"], (
+        "a mistyped field name is no longer named. That refusal exists to say "
+        "which key was wrong.")
+    assert loc_for("years") == ["body", "years"]
+    assert loc_for("chest pain since Tuesday") == [
+        "body", i18n.UNRECOGNISED_FIELD]
+    assert loc_for("x" * 80) == ["body", i18n.UNRECOGNISED_FIELD]
 
 
 def test_the_message_is_in_the_readers_language(client):

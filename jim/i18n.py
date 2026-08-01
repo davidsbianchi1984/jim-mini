@@ -17,6 +17,8 @@ Two mechanisms, matched to how each kind of content is produced:
 
 from __future__ import annotations
 
+import re
+
 SUPPORTED: dict[str, str] = {
     "en": "English",
     "es": "Español",
@@ -1519,7 +1521,9 @@ _REFUSALS: dict[str, dict[str, str]] = {
 #   text is whatever a validator raised, and a validator that quotes the value
 #   it rejected is the same leak wearing a different key.
 # * On `extra_forbidden`, the last element of `loc` is the caller's own key
-#   name, not a field this product declares. A key can be content.
+#   name rather than a field this product declares — so it is echoed only when
+#   it is *shaped* like a field name. Naming the key is the point of that
+#   refusal; a key with spaces in it is not a typo, it is content.
 
 
 #: What is said instead of a validator's own words. Deliberately useless as a
@@ -1529,6 +1533,22 @@ UNSPECIFIED_VALUE_ERROR = "that value is not acceptable here"
 
 #: Where a caller's own key name would otherwise be echoed.
 UNRECOGNISED_FIELD = "<unrecognised field>"
+
+#: What a mistyped field name looks like. A key matching this is echoed back on
+#: `extra_forbidden`, because naming it is the whole value of that refusal:
+#: `test_a_write_that_answers_200_did_something` exists because two routes used
+#: to accept `dials` for `values` and `years` for `period`, discard them, and
+#: answer 200. A round was spent making those strict so the caller is *told*
+#: which key was wrong, and the first version of this file redacted it away
+#: again — caught by that guard, which is what it was written for.
+#:
+#:     asked     can a key carry content
+#:     mattered  does this key look like content
+#:
+#: Anything else — a key with spaces in it, a sentence, something longer than a
+#: field name has any business being — is replaced. A client that builds an
+#: object keyed on what somebody typed produces exactly that shape.
+_FIELD_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_.-]{0,39}$")
 
 _OUR_OWN_WORDS = ("value_error", "assertion_error")
 
@@ -1544,7 +1564,8 @@ def validation_detail(errors, language: str) -> list[dict]:
     for error in errors:
         kind = str(error.get("type", ""))
         where = list(error.get("loc", ()))
-        if kind == "extra_forbidden" and where:
+        if (kind == "extra_forbidden" and where
+                and not _FIELD_NAME.match(str(where[-1]))):
             where[-1] = UNRECOGNISED_FIELD
         message = (UNSPECIFIED_VALUE_ERROR if kind in _OUR_OWN_WORDS
                    else str(error.get("msg", "")))
