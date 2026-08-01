@@ -199,6 +199,76 @@ ladder, which no coordination replaces. The joint plan lands back in JIM as
 a care plan (`GET /users/{id}/care-team/plans`), carrying the sealed-in-
 vault mark when the tandem stored it.
 
+### The synthetic self — the one profile that is the user
+
+Everything above links JIM to *somebody else's* profile. A tandem specialist
+belongs to a clinician; a coordination runs in the user's care-team org; a
+workflow is delegated by an owner who is not the JIM user. In all of it, the
+JIM user reaches QRME as an **interactor** — `tandem_links` maps them to a
+`usr_` id and a capability token — which is to say, as a stranger.
+
+QRME has always had the other thing. `ProfileKind` is
+`self | other_person | fictional | hybrid`, and a `self` profile is a person's
+own synthetic representation: the one that speaks *as* them. JIM had no column,
+module or route that knew it existed, and QRME held nothing pointing back —
+grep the package for a JIM user and there is nothing to find. The link between
+the two products was one-directional and asymmetric by role.
+
+    asked     does JIM reference synthetic profiles
+    mattered  does JIM reference this person's own
+
+#### What a self-link is
+
+One user, one QRME `self` profile, established the way the care-team link
+already is: the user pastes their own QRME **owner** token. Not an interactor
+token — the whole point is that this profile is not a stranger to them — and
+the token is stored on the JIM side only, deleted when the link is dropped.
+
+JIM refuses the link unless QRME reports the profile's `kind` as `self`. A
+`fictional` profile briefed with somebody's medication schedule is a different
+product with the same code.
+
+#### What may cross, and in which direction
+
+**QRME → JIM** is unrestricted in principle and small in practice: the profile
+is the user's own, so reading its identity signature, language and continuity
+standing discloses nothing to anybody who was not already entitled.
+
+**JIM → QRME is the direction that matters**, because a `self` profile answers
+strangers. The rule is an **enumerated allowlist, consented per category, empty
+by default**:
+
+* nothing crosses until the user has been shown the exact brief and answered —
+  the same gate the contribution preview and the problem-report notice use, and
+  for the same reason: a switch defaulting to on is a decision made on
+  somebody's behalf;
+* each category is consented separately, so *"my profile may say I am well"* and
+  *"my profile may discuss my medication"* are different answers;
+* a category not in the allowlist cannot cross by any route, including a future
+  one, because the composer builds the brief from the allowlist rather than
+  filtering a payload down to it;
+* the brief carries **no free text from the user** — no journal entry, no
+  check-in note, no transcript. Those are the fields whose contents nobody can
+  predict, and a synthetic self that can be asked an open question is exactly
+  where an unpredictable string should not be.
+
+The composer's signature is the safeguard, the way `Problems.record` takes a
+method and a path and has no parameter a message could arrive through. It takes
+a user id and a set of consented categories. There is no argument that arbitrary
+text could be passed in by a caller in a hurry.
+
+#### Why the brief is a brief
+
+A self-profile briefed continuously would be a health record with a
+conversational interface, reachable by anyone the profile talks to. So what
+crosses is a *standing*, not a history: the current value of each consented
+category, replaced on each brief rather than accumulated, with no dates
+finer than a day and no numbers that are readings.
+
+What the profile does with it is QRME's business and passes QRME's own persona
+conditioning and moderation, which is the same boundary a tandem specialist's
+reply already crosses in the other direction.
+
 ## qrme / jim-mini ✕ pdi
 
 PDI is a separate secure-hosting product: a private, encrypted data vault with
