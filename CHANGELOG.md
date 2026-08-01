@@ -4,6 +4,32 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### The console backlog reaches its floor, and eight dead keys
+
+47 → 35 → **7**, and the seven are punctuation, a shell command and example
+values — the same in every language.
+
+Eight of last release's keys were in the table and wired to nothing. They had
+been translated into ten languages and no screen looked any of them up, so the
+strings stayed English while the table said otherwise. Every completeness
+check passed, because they ask whether a key *has* its ten languages and never
+whether anything asks for it.
+
+    asked     is every key in the table complete
+    mattered  does every key in the table reach a screen
+
+Both repositories now check. The first version of that check read literal keys
+only and called all fifty-three of QRME's `nav.*` keys dead — every one live,
+looked up as `` t(`nav.${n.id}`, lang) ``. A guard against dead translations
+that would have had somebody delete the working ones. It now understands a
+built key's literal head.
+
+Ten wrapped strings needed a second pass: JSX had broken them across source
+lines, and a substitution matching one line finds nothing while reporting a
+count that looks like success.
+
 ## [0.28.0] — 2026-08-01
 
 ### The console gets a language, and a tripwire fires exactly as designed

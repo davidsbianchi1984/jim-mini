@@ -190,8 +190,8 @@ export function Onboarding() {
   const isDesktop = Boolean((window as unknown as { jimDesktop?: unknown }).jimDesktop);
   const whereIsTheCode = delivery === "console"
     ? (isDesktop
-        ? <> — this deployment has no mail service configured, so the code was <b>written to the app's backend log</b> (button below opens it)</>
-        : <> — this deployment has no mail service configured, so the code was <b>printed in the terminal running the backend</b></>)
+        ? <> {tr("onb.nomail", visitorLang())} <b>{tr("onb.nomail.log", visitorLang())}</b> {tr("onb.nomail.open", visitorLang())}</>
+        : <> {tr("onb.nomail", visitorLang())} <b>{tr("onb.nomail.terminal", visitorLang())}</b></>)
     : null;
 
   return (
@@ -199,7 +199,7 @@ export function Onboarding() {
       <div className="onboard-card">
         <div className="orb big" />
         <h1>{tr("onb.tagline", visitorLang())}</h1>
-        <p className="muted">Monitor, predict, guide, escalate — grounded in your baseline, on your device.</p>
+        <p className="muted">{tr("onb.pitch", visitorLang())}</p>
 
         {(mode === "signup" || mode === "signin") && (
           <div className="tabs">
@@ -217,42 +217,39 @@ export function Onboarding() {
                       title={d.configured ? undefined : d.setup}
                       onClick={() => signInWith(d.provider)}>
                 Sign {mode === "signup" ? "up" : "in"} with {d.name}
-                {!d.configured && <span className="muted small"> · not configured here</span>}
+                {!d.configured && <span className="muted small"> {tr("onb.oauth.absent", visitorLang())}</span>}
               </button>
             ))}
           </div>
         )}
 
         {mode === "signup" && (<>
-          <label>Name<input value={name} placeholder="Your name" onChange={(e) => setName(e.target.value)} /></label>
+          <label>{tr("onb.name", visitorLang())}<input value={name} placeholder={tr("onb.yourname", visitorLang())} onChange={(e) => setName(e.target.value)} /></label>
           {/* Spec [0031] box 212: an anonymous user name is a first-class
               choice, and the tradeoff is stated where the choice is made. */}
           <label className="check">
             <input type="checkbox" checked={anonymous}
                    onChange={(e) => setAnonymous(e.target.checked)} />
-            Keep me anonymous — use a pseudonym instead of my name
+            {tr("onb.anon", visitorLang())}
           </label>
           {anonymous && (<>
             <p className="field-hint">
-              JIM won't keep the name above. Every emergency path works exactly
-              the same; the one difference is that a dispatcher briefing can't
-              give responders a legal name. Leave one below only if you want it
-              used for that.
+              {tr("onb.legalname.why", visitorLang())}
             </p>
             <label>{tr("onb.legalname", visitorLang())}
-              <input value={legalName} placeholder="leaving this blank is fine"
+              <input value={legalName} placeholder={tr("onb.legalname.blank", visitorLang())}
                      onChange={(e) => setLegalName(e.target.value)} /></label>
           </>)}
-          <label>Birthdate<input type="date" value={birthdate} onChange={(e) => setBirthdate(e.target.value)} /></label>
-          <label>Email<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
+          <label>{tr("onb.birthdate", visitorLang())}<input type="date" value={birthdate} onChange={(e) => setBirthdate(e.target.value)} /></label>
+          <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
           <PasswordField label="Password" value={password} placeholder={tr("onb.password.min", visitorLang())} onChange={setPassword} />
-          <p className="field-hint">At least 8 characters.</p>
+          <p className="field-hint">{tr("onb.password.min", visitorLang())}</p>
           {/* Typed twice on purpose: hidden characters are how a typo gets
               remembered wrong with total confidence. The match check is
               instant, before anything is submitted. */}
           <PasswordField label="Re-enter password" value={confirm} placeholder={tr("onb.password.same", visitorLang())} onChange={setConfirm} />
           {confirm && !passwordsMatch && (
-            <div className="error">⚠ The passwords don't match yet.</div>
+            <div className="error">{tr("onb.password.mismatch", visitorLang())}</div>
           )}
           <label className="check">
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
@@ -262,52 +259,48 @@ export function Onboarding() {
 
         {mode === "code" && (<>
           <p className="muted">
-            We emailed a verification link to <b>{email}</b>{whereIsTheCode}.
-            <b> Click the link and this screen continues on its own.</b> Prefer
-            typing? Enter the 6-digit code from the same email instead. Your
-            account exists only after one or the other.
+            {tr("onb.verify.sent", visitorLang())} <b>{email}</b>{whereIsTheCode}.
+            <b> {tr("onb.verify.click", visitorLang())}</b> {tr("onb.verify.type", visitorLang())}
           </p>
           {delivery === "console" && (window as unknown as { jimDesktop?: { openBackendLog?: () => void } }).jimDesktop?.openBackendLog && (
             <button className="linkish" onClick={() =>
               (window as unknown as { jimDesktop: { openBackendLog: () => void } }).jimDesktop.openBackendLog()
-            }>Open the log with the code</button>
+            }>{tr("onb.openlog", visitorLang())}</button>
           )}
-          <label>Verification code
+          <label>{tr("onb.code", visitorLang())}
             <input value={code} inputMode="numeric" placeholder="123456" onChange={(e) => setCode(e.target.value)} />
           </label>
         </>)}
 
         {mode === "signin" && (<>
-          <label>Email<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
+          <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
           <PasswordField label="Password" value={password} onChange={setPassword} />
         </>)}
 
         {mode === "reset" && (<>
-          <p className="muted">Enter your account's email; we'll send a 6-digit reset code{whereIsTheCode}.</p>
-          <label>Email<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
+          <p className="muted">{tr("onb.reset.hint", visitorLang())}{whereIsTheCode}.</p>
+          <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
           <div className="actions" style={{ justifyContent: "center" }}>
             <button disabled={busy || !email.trim()} onClick={startReset}>{tr("onb.reset.send", visitorLang())}</button>
           </div>
-          <label>Reset code
+          <label>{tr("onb.reset.code", visitorLang())}
             <input value={code} inputMode="numeric" placeholder="123456" onChange={(e) => setCode(e.target.value)} />
           </label>
           <PasswordField label="New password" value={password} placeholder={tr("onb.password.min", visitorLang())} onChange={setPassword} />
           <PasswordField label="Re-enter new password" value={confirm} placeholder={tr("onb.password.same", visitorLang())} onChange={setConfirm} />
           {confirm && !passwordsMatch && (
-            <div className="error">⚠ The passwords don't match yet.</div>
+            <div className="error">{tr("onb.password.mismatch", visitorLang())}</div>
           )}
         </>)}
 
         {backendUp === false && (
           <div className="error">
-            ⚠ The Guardian backend isn't reachable at <code>{getBase()}</code>.
+            {tr("onb.unreachable", visitorLang())} <code>{getBase()}</code>.
             <p className="muted small" style={{ margin: "8px 0" }}>
-              This window is only the console — the Guardian runs as a local
-              service. Start it with <code>python -m jim serve</code>, or point
-              this console at a machine already running one:
+              {tr("onb.localservice", visitorLang())} <code>python -m jim serve</code>{tr("onb.orpoint", visitorLang())}
             </p>
-            <label>Backend URL<input value={base} onChange={(e) => setBaseInput(e.target.value)} /></label>
-            <button onClick={saveBase}>Save &amp; retry</button>
+            <label>{tr("onb.backend", visitorLang())}<input value={base} onChange={(e) => setBaseInput(e.target.value)} /></label>
+            <button onClick={saveBase}>{tr("onb.retry", visitorLang())}</button>
           </div>
         )}
         {error && <div className="error">⚠ {error}</div>}
@@ -338,9 +331,7 @@ export function Onboarding() {
               means no way to recover the account, and the token below is
               the only key to it. */}
           <div className="muted small" style={{ marginTop: 12 }}>
-            No email address? You can start without one. There is no way to
-            recover an account made this way — this device holds the only key
-            to it — but you do not have to have an address to be looked after.
+            {tr("onb.noemail.why", visitorLang())}
           </div>
           <button disabled={busy || !consent || !name.trim() || !birthdate
                             || backendUp === false}

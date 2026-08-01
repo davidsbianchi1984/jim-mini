@@ -1,39 +1,14 @@
 # English on the JIM console's pre-session surface — the screen a person
 # meets before any account exists. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
-# ceiling: 35
-(button below opens it)
-, or point this console at a machine already running one:
+# ceiling: 7
+# What is left is not prose: punctuation, an example address, an
+# example code, a shell command, and two fragments of a sentence the
+# extractor splits around an inline <code>. This is the floor.
 .
 123456
-At least 8 characters.
-Backend URL
-Birthdate
-Click the link and this screen continues on its own.
-Email
-Enter your account's email; we'll send a 6-digit reset code
-JIM won't keep the name above. Every emergency path works exactly the same; the one difference is that a dispatcher briefing can't give responders a legal name. Leave one below only if you want it used for that.
-Keep me anonymous — use a pseudonym instead of my name
-Monitor, predict, guide, escalate — grounded in your baseline, on your device.
-Name
-No email address? You can start without one. There is no way to recover an account made this way — this device holds the only key to it — but you do not have to have an address to be looked after.
-Open the log with the code
-Prefer typing? Enter the 6-digit code from the same email instead. Your account exists only after one or the other.
-Reset code
-Save &amp; retry
 Sign
-This window is only the console — the Guardian runs as a local service. Start it with
-Verification code
-We emailed a verification link to
-Your name
-leaving this blank is fine
-printed in the terminal running the backend
 python -m jim serve
 with
-written to the app's backend log
 you@example.com
-· not configured here
-— this deployment has no mail service configured, so the code was
 ⚠
-⚠ The Guardian backend isn't reachable at
-⚠ The passwords don't match yet.

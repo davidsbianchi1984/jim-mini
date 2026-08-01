@@ -210,3 +210,46 @@ def test_the_screen_asks_the_visitor_and_not_a_stored_setting():
     assert 'return "en"' in fn, (
         "visitorLang no longer falls back to English for an unrecognised tag "
         "— it should fall back, never guess")
+
+
+def test_no_key_is_translated_into_ten_languages_and_used_nowhere():
+    """A key in the table that no screen looks up.
+
+    This has now shipped twice: two keys in QRME's 0.27.0 and eight in JIM's
+    0.28.0, all translated into ten languages, all wired to nothing. The
+    strings stayed English on screen while the table said otherwise, and every
+    completeness check passed — because they check that a key *has* its ten
+    languages, never that anything asks for it.
+
+        asked     is every key in the table complete
+        mattered  does every key in the table reach a screen
+
+    A dead key is not merely waste. It is a translation somebody paid
+    attention to, sitting next to the English it was supposed to replace, with
+    nothing to say which of the two a reader will actually get.
+    """
+    table = set(re.findall(r'^  "([\w.]+)":', (SRC / "l10n.ts").read_text("utf-8"),
+                           re.M))
+    used, prefixes = set(), set()
+    for screen in list(SRC.rglob("*.tsx")) + list(SRC.rglob("*.ts")):
+        text = screen.read_text(encoding="utf-8")
+        used |= set(re.findall(r'\b(?:t|tr|L)\(\s*"([\w.]+)"', text))
+        # A key can also be built: `t(`nav.${n.id}`, lang)`. The literal head
+        # of such a template covers every key under it.
+        #
+        # The first version of this check read literal keys only and called
+        # all fifty-three `nav.*` keys dead — every one of them live, on the
+        # console's own navigation. A guard against dead translations that
+        # would have had somebody delete the working ones.
+        #
+        #     asked     is this key looked up by a literal string
+        #     mattered  is this key reachable
+        prefixes |= {p for p in re.findall(r'\b(?:t|tr|L)\(\s*`([\w.]+)\$\{',
+                                           text)}
+    dead = sorted(k for k in table - used
+                  if not any(k.startswith(p) for p in prefixes))
+    assert not dead, (
+        f"{len(dead)} key(s) are translated and looked up by nothing:\n    "
+        + "\n    ".join(dead)
+        + "\n  Wire them, or delete them — but a translated string nobody "
+          "reads is the English still being read instead.")
