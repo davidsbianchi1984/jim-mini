@@ -52,17 +52,14 @@ FIXTURES = (Path(__file__).resolve().parent
 #: comparison is a check no single repository can run — and one that nobody
 #: runs is the state this file exists to end.
 #:
-#: **The Android row is deliberately not the same shape as the other two.**
-#: iOS and Windows normalise an interpolated segment to a placeholder;
-#: Kotlin's leaves `$id` standing. Route matching is unaffected — Starlette's
-#: path parameter matches any segment either way — so this costs nothing
-#: today. It is written here rather than quietly encoded because a difference
-#: nobody has looked at is how the last three divergences started, and the
-#: point of this file is to stop that happening a fourth time.
+#: All three rows are the same shape. They were not when this file was
+#: written: Kotlin left `$id` standing where iOS and Windows normalised it,
+#: because `_spans` routed every `${`-carrying pattern to a brace counter that
+#: only knew `${…}`. Recorded here for one release, then fixed.
 EXPECTED = {
     "ios": {("GET", "/fixture/plain"), ("DELETE", "/fixture/x/nested")},
     "android": {("GET", "/fixture/plain"), ("POST", "/fixture/direct"),
-                ("DELETE", "/fixture/$id/nested")},
+                ("DELETE", "/fixture/x/nested")},
     "windows": {("POST", "/fixture/plain"), ("DELETE", "/fixture/x/nested")},
 }
 

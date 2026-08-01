@@ -4,6 +4,26 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Kotlin's other interpolation
+
+`_spans` routes every `${`-carrying pattern to a brace counter, which is right
+for the nested-template problem it was written for and blind to the *other*
+form the same language uses. Kotlin interpolates `${expr}` **and** a bare
+`$ident`, and only the first was ever substituted — so `"/users/$uid/meds"`
+normalised to itself.
+
+    asked     does this language interpolate with braces
+    mattered  what are all the ways this language interpolates
+
+It never produced a wrong verdict, which is why it lasted: Starlette's path
+parameter matches any segment, so `$uid` resolved against `{uid}` by accident.
+But the optional-parameter cut looks for a quoted `?` *inside an interpolation
+span*, and a span never found cannot be looked inside — a Kotlin call written
+with the `$flag` idiom would have carried its query into the path. The
+divergence recorded last release is now closed rather than recorded.
+
 ## [0.26.0] — 2026-08-01
 
 ### Three copies of one guard, three different blind spots

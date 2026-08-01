@@ -290,6 +290,31 @@ def _spans(raw: str, lang: Language) -> list[tuple[int, int]]:
         else:
             break  # unbalanced: leave the rest alone rather than guess
         i = j + 1
+
+    # Kotlin's pattern carries *two* forms — `${expr}` and a bare `$ident` —
+    # and the brace counter above only knows the first. Every bare one went
+    # unsubstituted, so `"/users/$uid/meds"` normalised to itself rather than
+    # to `/users/x/meds`.
+    #
+    # It never produced a wrong verdict, which is why it lasted: Starlette's
+    # path parameter matches any segment, so `$uid` resolved against `{uid}`
+    # by accident. But the optional-parameter cut below looks for a quoted `?`
+    # *inside an interpolation span*, and a span that was never found cannot
+    # be looked inside — so a Kotlin call written with the `$flag` idiom would
+    # have carried its query into the path.
+    #
+    #     asked     does this language interpolate with braces
+    #     mattered  what are all the ways this language interpolates
+    #
+    # The bare form is matched only where the brace counter found nothing, so
+    # the inside of a `${…}` is never re-scanned.
+    bare = re.compile(r"\$[A-Za-z_][A-Za-z0-9_]*")
+    if "$" in lang.interpolation.pattern:
+        taken = out[:]
+        for m in bare.finditer(raw):
+            if not any(s <= m.start() < e for s, e in taken):
+                out.append(m.span())
+        out.sort()
     return out
 
 
