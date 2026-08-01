@@ -83,10 +83,30 @@ def create_app(qrme_client: QRMEClient | None = None,
     # of a missed one is silent: the write succeeds and lands in the clear.
     # Starlette matches handlers along the exception's MRO, so this catches
     # StorageError and nothing else — plain ValueError is unaffected.
+    # Every refusal in this product, in the language of whoever is reading it.
+    #
+    # `i18n.refuse` is the one place a refusal becomes a response. There are
+    # nine handlers here and eight of them were built one per health domain,
+    # each with its own JSONResponse — so a single HTTPException handler,
+    # ported from QRME where one is enough, would have localized the
+    # framework's refusals and left the medication cabinet, the vigil and the
+    # crash watch in English. In this product those are the wrong eight to
+    # miss.
+    #
+    #     asked     are the refusals localized
+    #     mattered  are all of them
+    #
+    # test_the_guardian_refuses_in_one_language.py fails the next handler
+    # added that does not return through here.
+    @app.exception_handler(HTTPException)
+    async def _refusal_in_the_readers_language(request: Request,
+                                               exc: HTTPException):
+        return i18n.refuse(request, exc.status_code,
+                           {"detail": exc.detail}, exc.headers)
+
     @app.exception_handler(storage.StorageError)
     def _storage_refusal(request: Request, exc: storage.StorageError):
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=402, content={
+        return i18n.refuse(request, 402, {
             "detail": str(exc),
             "reason": "storage_posture",
             "have": tiers.plan_of(tiers.account_of(request) or ""),
@@ -101,46 +121,32 @@ def create_app(qrme_client: QRMEClient | None = None,
     # carry the status it chose (404 wrong channel, 422 unusable payload).
     @app.exception_handler(watch.WatchError)
     def _watch_refusal(request: Request, exc: watch.WatchError):
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=exc.status,
-                            content={"detail": exc.message})
+        return i18n.refuse(request, exc.status, {"detail": exc.message})
 
     @app.exception_handler(crashwatch.CrashWatchError)
     def _crashwatch_refusal(request: Request, exc: crashwatch.CrashWatchError):
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=exc.status,
-                            content={"detail": exc.message})
+        return i18n.refuse(request, exc.status, {"detail": exc.message})
 
     @app.exception_handler(calm_mod.CalmError)
     def _calm_refusal(request: Request, exc: calm_mod.CalmError):
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=exc.status,
-                            content={"detail": exc.message})
+        return i18n.refuse(request, exc.status, {"detail": exc.message})
 
     @app.exception_handler(fitness_mod.FitnessError)
     def _fitness_refusal(request: Request, exc: fitness_mod.FitnessError):
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=exc.status,
-                            content={"detail": exc.message})
+        return i18n.refuse(request, exc.status, {"detail": exc.message})
 
     @app.exception_handler(nutrition_mod.NutritionError)
     def _nutrition_refusal(request: Request,
                            exc: nutrition_mod.NutritionError):
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=exc.status,
-                            content={"detail": exc.message})
+        return i18n.refuse(request, exc.status, {"detail": exc.message})
 
     @app.exception_handler(vigil.VigilError)
     def _vigil_refusal(request: Request, exc: vigil.VigilError):
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=exc.status,
-                            content={"detail": exc.message})
+        return i18n.refuse(request, exc.status, {"detail": exc.message})
 
     @app.exception_handler(meds.MedError)
     def _med_refusal(request: Request, exc: meds.MedError):
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=exc.status,
-                            content={"detail": exc.message})
+        return i18n.refuse(request, exc.status, {"detail": exc.message})
 
     # Optional CORS for a packaged guardian-console front-end (app/) calling the
     # API from another origin. Off by default; set JIM_CORS_ORIGINS to a

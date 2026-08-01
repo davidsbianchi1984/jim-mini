@@ -1030,3 +1030,439 @@ def localize_playbook(playbook: dict, language: str) -> dict:
             pace["cue"] = {k: tr(v, language) for k, v in cue.items()}
         out["pace"] = pace
     return out
+
+
+# --------------------------------------------------------------------------- #
+# The product's own refusals
+# --------------------------------------------------------------------------- #
+#
+# This module's first line says "everything the Guardian drafts or delivers,
+# localized", and its second bullet is specific: *deterministic safety content
+# is hand-translated here ... Safety text is never machine-mangled.* The
+# playbooks are. The pace cues are. The waiver terms are.
+#
+# The sentences the Guardian says when it says **no** were English — all
+# sixty-four of them, including every refusal the medication cabinet, the
+# vigil and the crash watch can produce. A person setting up a fall alarm for
+# their mother, in Portuguese, on a Portuguese phone, was told in English what
+# was wrong with it.
+#
+#     asked     is the safety content the Guardian drafts translated
+#     mattered  is the safety content it refuses with
+#
+# ## Why one handler is not enough here
+#
+# QRME has one `HTTPException` handler and that covers its whole surface. JIM
+# has **eight more** exception handlers, one per health domain — storage,
+# watch, crash watch, calm, fitness, nutrition, vigil, medication — each
+# building its own `JSONResponse`. Porting the single handler across would
+# have localized the framework's refusals and left every domain's own
+# untouched, which in this product is the wrong eight: they are the ones
+# somebody reads while a health feature is failing them.
+#
+#     asked     are the refusals localized
+#     mattered  are all of them
+#
+# `jim/api.py` routes all nine through `refuse()` below, and a guard fails the
+# next handler added that does not.
+#
+# ## Whose language, and which stored value
+#
+# The credential names the reader — a `user` token means that user's stored
+# setting, anything else means the browser header, which is all a stranger on
+# a beacon page carries. And `get_language`, not `effective_language`: the
+# latter answers English whenever the mode is `on_demand`, which is a
+# statement about how *drafted* text arrives ("keep the original medical
+# wording, I will translate what I choose") and says nothing about what the
+# person reads when something is refused.
+
+
+def tr_refusal(text: str, language: str) -> str:
+    """Translate one of the sentences this product refuses with."""
+    if language == DEFAULT:
+        return text
+    return (_REFUSALS.get(text) or _STRINGS.get(text, {})).get(language, text)
+
+
+def localize_detail(detail, language: str):
+    """A refusal payload, translated in whichever shape it arrives.
+
+    Only the sentence. `_storage_refusal` sends `reason`, `have`, `needs` and
+    `period` alongside it, and the console branches on those: what a person
+    reads is translated, what a client compares is not.
+    """
+    if language == DEFAULT:
+        return detail
+    if isinstance(detail, str):
+        return tr_refusal(detail, language)
+    if isinstance(detail, dict) and isinstance(detail.get("detail"), str):
+        return {**detail, "detail": tr_refusal(detail["detail"], language)}
+    if isinstance(detail, dict) and isinstance(detail.get("message"), str):
+        return {**detail, "message": tr_refusal(detail["message"], language)}
+    return detail
+
+
+def refusal_language(request) -> str:
+    """The language the person receiving this refusal reads.
+
+    Never raises. This runs inside exception handlers, and a diagnostic that
+    can fail turns a refusal into a 500 — telling somebody the server broke
+    when it was really telling them no.
+    """
+    from . import auth
+    try:
+        who = auth.principal(request)
+        if who and who.get("role") == "user":
+            return get_language(who["subject_id"])
+    except Exception:
+        pass
+    try:
+        return negotiate(request.headers.get("accept-language"))
+    except Exception:
+        return DEFAULT
+
+
+def refuse(request, status: int, content, headers: dict | None = None):
+    """The one place a refusal becomes a response.
+
+    Every exception handler in `jim/api.py` returns through here, so a domain
+    that grows its own error class cannot also grow its own untranslated
+    sentence.
+
+    `headers` is carried rather than dropped: an `HTTPException` may set
+    `WWW-Authenticate` or `Retry-After`, and a translation round is no reason
+    for a 401 to stop saying how to authenticate.
+    """
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=status,
+        content=localize_detail(content, refusal_language(request)),
+        headers=headers)
+
+
+#: Keyed on the English source, so editing the English falls back loudly to
+#: the new English rather than quietly serving the old sentence in nine
+#: languages. What is not here is recorded in
+#: `jim/tests/refusals_untranslated.txt` and ratcheted.
+_REFUSALS: dict[str, dict[str, str]] = {
+    'authentication required': {
+        'es': 'se requiere autenticación',
+        'fr': 'authentification requise',
+        'de': 'Authentifizierung erforderlich',
+        'pt': 'autenticação necessária',
+        'it': 'autenticazione richiesta',
+        'ja': '認証が必要です',
+        'zh': '需要身份验证',
+        'hi': 'प्रमाणीकरण आवश्यक है',
+        'ar': 'المصادقة مطلوبة',
+    },
+    'not authorized for this user': {
+        'es': 'sin autorización para este usuario',
+        'fr': 'non autorisé pour cet utilisateur',
+        'de': 'keine Berechtigung für diesen Benutzer',
+        'pt': 'sem autorização para este utilizador',
+        'it': 'non autorizzato per questo utente',
+        'ja': 'このユーザーへの権限がありません',
+        'zh': '无权访问此用户',
+        'hi': 'इस उपयोगकर्ता के लिए अधिकार नहीं है',
+        'ar': 'غير مخوَّل لهذا المستخدم',
+    },
+    'user not found': {
+        'es': 'usuario no encontrado',
+        'fr': 'utilisateur introuvable',
+        'de': 'Benutzer nicht gefunden',
+        'pt': 'utilizador não encontrado',
+        'it': 'utente non trovato',
+        'ja': 'ユーザーが見つかりません',
+        'zh': '未找到用户',
+        'hi': 'उपयोगकर्ता नहीं मिला',
+        'ar': 'لم يتم العثور على المستخدم',
+    },
+
+    # --- the medication cabinet ------------------------------------------
+    "a medication has a name and a dose — your words are fine ('the little "
+    "white one, 10 mg')": {
+        'es': 'un medicamento tiene un nombre y una dosis — tus propias '
+              'palabras valen («la pastillita blanca, 10 mg»)',
+        'fr': 'un médicament a un nom et une dose — vos propres mots '
+              'suffisent (« le petit blanc, 10 mg »)',
+        'de': 'ein Medikament hat einen Namen und eine Dosis — Ihre eigenen '
+              'Worte genügen („das kleine weiße, 10 mg“)',
+        'pt': 'um medicamento tem um nome e uma dose — as suas próprias '
+              'palavras servem («o branquinho, 10 mg»)',
+        'it': 'un farmaco ha un nome e una dose — bastano le tue parole '
+              '(«quello bianco piccolo, 10 mg»)',
+        'ja': '薬には名前と用量があります — ご自身の言葉で構いません'
+              '（「小さい白いの、10 mg」）',
+        'zh': '一种药有名称和剂量 — 用你自己的说法就行（“那个白色的小药片，'
+              '10 毫克”）',
+        'hi': 'दवा का एक नाम और एक खुराक होती है — आपके अपने शब्द ठीक हैं '
+              "('वह छोटी सफ़ेद वाली, 10 mg')",
+        'ar': 'للدواء اسم وجرعة — كلماتك الخاصة تكفي '
+              '(”تلك البيضاء الصغيرة، 10 ملغ“)',
+    },
+    "a schedule names times (e.g. ['08:00','20:00']) or is "
+    "{'as_needed': true}": {
+        'es': "un horario indica horas (p. ej. ['08:00','20:00']) o es "
+              "{'as_needed': true}",
+        'fr': "un horaire indique des heures (p. ex. ['08:00','20:00']) ou "
+              "vaut {'as_needed': true}",
+        'de': "ein Zeitplan nennt Uhrzeiten (z. B. ['08:00','20:00']) oder "
+              "ist {'as_needed': true}",
+        'pt': "um horário indica horas (p. ex. ['08:00','20:00']) ou é "
+              "{'as_needed': true}",
+        'it': "un orario indica delle ore (es. ['08:00','20:00']) oppure è "
+              "{'as_needed': true}",
+        'ja': "スケジュールには時刻を並べるか（例 ['08:00','20:00']）、"
+              "{'as_needed': true} を指定します",
+        'zh': "用药时间表要列出时刻（例如 ['08:00','20:00']），或写成 "
+              "{'as_needed': true}",
+        'hi': "समय-सारणी में समय दिए जाते हैं (जैसे ['08:00','20:00']) या वह "
+              "{'as_needed': true} होती है",
+        'ar': "الجدول يذكر أوقاتًا (مثل ['08:00','20:00']) أو يكون "
+              "{'as_needed': true}",
+    },
+    "action is 'taken' or 'skipped'": {
+        'es': "la acción es 'taken' o 'skipped'",
+        'fr': "l'action vaut 'taken' ou 'skipped'",
+        'de': "die Aktion ist 'taken' oder 'skipped'",
+        'pt': "a ação é 'taken' ou 'skipped'",
+        'it': "l'azione è 'taken' oppure 'skipped'",
+        'ja': "action は 'taken' か 'skipped' です",
+        'zh': "action 只能是 'taken' 或 'skipped'",
+        'hi': "क्रिया 'taken' या 'skipped' होती है",
+        'ar': "الإجراء إما 'taken' أو 'skipped'",
+    },
+    'an as-needed medication has no slots': {
+        'es': 'un medicamento a demanda no tiene franjas horarias',
+        'fr': 'un médicament pris au besoin n’a pas de créneaux',
+        'de': 'ein Bedarfsmedikament hat keine Zeitfenster',
+        'pt': 'um medicamento em SOS não tem faixas horárias',
+        'it': 'un farmaco al bisogno non ha fasce orarie',
+        'ja': '頓服の薬に服用枠はありません',
+        'zh': '按需服用的药没有固定时段',
+        'hi': 'आवश्यकतानुसार ली जाने वाली दवा के लिए कोई समय-खंड नहीं होता',
+        'ar': 'الدواء عند اللزوم ليس له مواعيد محددة',
+    },
+    'max_per_day must be at least 1': {
+        'es': 'max_per_day debe ser al menos 1',
+        'fr': 'max_per_day doit valoir au moins 1',
+        'de': 'max_per_day muss mindestens 1 sein',
+        'pt': 'max_per_day tem de ser pelo menos 1',
+        'it': 'max_per_day deve essere almeno 1',
+        'ja': 'max_per_day は 1 以上にしてください',
+        'zh': 'max_per_day 至少为 1',
+        'hi': 'max_per_day कम से कम 1 होना चाहिए',
+        'ar': 'يجب ألا يقل max_per_day عن 1',
+    },
+    'no such medication': {
+        'es': 'no existe ese medicamento',
+        'fr': 'ce médicament n’existe pas',
+        'de': 'dieses Medikament gibt es nicht',
+        'pt': 'não existe esse medicamento',
+        'it': 'quel farmaco non esiste',
+        'ja': 'その薬はありません',
+        'zh': '没有这种药',
+        'hi': 'ऐसी कोई दवा नहीं',
+        'ar': 'لا يوجد دواء بهذا الاسم',
+    },
+    'schedule must be an object': {
+        'es': 'schedule debe ser un objeto',
+        'fr': 'schedule doit être un objet',
+        'de': 'schedule muss ein Objekt sein',
+        'pt': 'schedule tem de ser um objeto',
+        'it': 'schedule deve essere un oggetto',
+        'ja': 'schedule はオブジェクトにしてください',
+        'zh': 'schedule 必须是一个对象',
+        'hi': 'schedule एक ऑब्जेक्ट होना चाहिए',
+        'ar': 'يجب أن يكون schedule كائنًا',
+    },
+
+    # --- the vigil and the crash watch -----------------------------------
+    "a vigil needs a steward's name and a way to reach them": {
+        'es': 'una vigilia necesita el nombre de un custodio y una forma de '
+              'contactarlo',
+        'fr': 'une veille a besoin du nom d’un référent et d’un moyen de le '
+              'joindre',
+        'de': 'eine Wache braucht den Namen einer vertrauten Person und '
+              'einen Weg, sie zu erreichen',
+        'pt': 'uma vigília precisa do nome de um responsável e de uma forma '
+              'de o contactar',
+        'it': 'una veglia ha bisogno del nome di un referente e di un modo '
+              'per contattarlo',
+        'ja': '見守りには世話役の名前と連絡手段が必要です',
+        'zh': '守护需要一位负责人的姓名和联系方式',
+        'hi': 'निगरानी के लिए एक संरक्षक का नाम और उन तक पहुँचने का तरीका चाहिए',
+        'ar': 'يحتاج السهر إلى اسم القيّم وطريقة للوصول إليه',
+    },
+    'quiet_days must be between half a day and 60': {
+        'es': 'quiet_days debe estar entre medio día y 60',
+        'fr': 'quiet_days doit être compris entre une demi-journée et 60',
+        'de': 'quiet_days muss zwischen einem halben Tag und 60 liegen',
+        'pt': 'quiet_days tem de estar entre meio dia e 60',
+        'it': 'quiet_days deve essere compreso tra mezza giornata e 60',
+        'ja': 'quiet_days は半日から 60 のあいだにしてください',
+        'zh': 'quiet_days 必须在半天到 60 之间',
+        'hi': 'quiet_days आधे दिन से 60 के बीच होना चाहिए',
+        'ar': 'يجب أن يكون quiet_days بين نصف يوم و60',
+    },
+    "the crash watch needs a trusted person's name and a way to reach them": {
+        'es': 'la vigilancia de caídas necesita el nombre de una persona de '
+              'confianza y una forma de contactarla',
+        'fr': 'la veille d’urgence a besoin du nom d’une personne de '
+              'confiance et d’un moyen de la joindre',
+        'de': 'die Notfallwache braucht den Namen einer vertrauten Person '
+              'und einen Weg, sie zu erreichen',
+        'pt': 'a vigilância de quedas precisa do nome de uma pessoa de '
+              'confiança e de uma forma de a contactar',
+        'it': 'la sorveglianza di emergenza ha bisogno del nome di una '
+              'persona fidata e di un modo per contattarla',
+        'ja': '緊急見守りには信頼できる人の名前と連絡手段が必要です',
+        'zh': '紧急守护需要一位可信赖的人的姓名和联系方式',
+        'hi': 'क्रैश वॉच के लिए एक भरोसेमंद व्यक्ति का नाम और उन तक पहुँचने का '
+              'तरीका चाहिए',
+        'ar': 'تحتاج مراقبة الطوارئ إلى اسم شخص موثوق وطريقة للوصول إليه',
+    },
+
+    # --- the watch bridge -------------------------------------------------
+    'no readings recognized — use keys like heart_rate, blood_oxygen, '
+    'respiratory_rate, or movement: fall': {
+        'es': 'no se reconoció ninguna lectura — usa claves como heart_rate, '
+              'blood_oxygen, respiratory_rate o movement: fall',
+        'fr': 'aucune mesure reconnue — utilisez des clés comme heart_rate, '
+              'blood_oxygen, respiratory_rate ou movement: fall',
+        'de': 'keine Messwerte erkannt — verwenden Sie Schlüssel wie '
+              'heart_rate, blood_oxygen, respiratory_rate oder movement: fall',
+        'pt': 'nenhuma leitura reconhecida — use chaves como heart_rate, '
+              'blood_oxygen, respiratory_rate ou movement: fall',
+        'it': 'nessuna lettura riconosciuta — usa chiavi come heart_rate, '
+              'blood_oxygen, respiratory_rate o movement: fall',
+        'ja': '認識できる測定値がありません — heart_rate、blood_oxygen、'
+              'respiratory_rate、movement: fall などのキーを使ってください',
+        'zh': '未识别到任何读数 — 请使用 heart_rate、blood_oxygen、'
+              'respiratory_rate 或 movement: fall 之类的键',
+        'hi': 'कोई रीडिंग पहचानी नहीं गई — heart_rate, blood_oxygen, '
+              'respiratory_rate या movement: fall जैसी कुंजियाँ इस्तेमाल करें',
+        'ar': 'لم يتم التعرف على أي قراءات — استخدم مفاتيح مثل heart_rate أو '
+              'blood_oxygen أو respiratory_rate أو movement: fall',
+    },
+    'no such channel — check the drip URL, or rotate the token in Settings '
+    'and re-copy it': {
+        'es': 'no existe ese canal — revisa la URL del enlace, o rota el '
+              'token en Ajustes y vuelve a copiarlo',
+        'fr': 'ce canal n’existe pas — vérifiez l’URL du flux, ou renouvelez '
+              'le jeton dans Réglages et recopiez-le',
+        'de': 'diesen Kanal gibt es nicht — prüfen Sie die Drip-URL, oder '
+              'erneuern Sie das Token in den Einstellungen und kopieren Sie '
+              'es neu',
+        'pt': 'não existe esse canal — verifique o URL do fluxo, ou rode o '
+              'token em Definições e copie-o de novo',
+        'it': 'quel canale non esiste — controlla l’URL del flusso, oppure '
+              'ruota il token in Impostazioni e ricopialo',
+        'ja': 'そのチャンネルはありません — 送信 URL を確認するか、設定で'
+              'トークンを更新してコピーし直してください',
+        'zh': '没有这个通道 — 请检查推送 URL，或在设置中轮换令牌后重新复制',
+        'hi': 'ऐसा कोई चैनल नहीं — ड्रिप URL जाँचें, या सेटिंग्स में टोकन बदलकर '
+              'उसे फिर से कॉपी करें',
+        'ar': 'لا توجد قناة بهذا الاسم — تحقق من رابط الإرسال، أو غيّر الرمز '
+              'في الإعدادات وانسخه من جديد',
+    },
+    "no usable readings in that export — it may predate the watch, or hold "
+    "only types JIM doesn't track": {
+        'es': 'no hay lecturas utilizables en esa exportación — puede ser '
+              'anterior al reloj, o contener solo tipos que JIM no sigue',
+        'fr': 'aucune mesure exploitable dans cet export — il peut être '
+              'antérieur à la montre, ou ne contenir que des types que JIM '
+              'ne suit pas',
+        'de': 'keine verwertbaren Messwerte in diesem Export — er kann älter '
+              'als die Uhr sein oder nur Typen enthalten, die JIM nicht '
+              'verfolgt',
+        'pt': 'não há leituras utilizáveis nessa exportação — pode ser '
+              'anterior ao relógio, ou conter apenas tipos que o JIM não '
+              'acompanha',
+        'it': 'nessuna lettura utilizzabile in quell’esportazione — potrebbe '
+              'precedere l’orologio, o contenere solo tipi che JIM non segue',
+        'ja': 'そのエクスポートに使える測定値がありません — 時計より前のもの'
+              'か、JIM が扱わない種類だけかもしれません',
+        'zh': '该导出中没有可用的读数 — 它可能早于这块手表，或只包含 JIM '
+              '不追踪的类型',
+        'hi': 'उस निर्यात में कोई उपयोगी रीडिंग नहीं — वह घड़ी से पुराना हो सकता '
+              'है, या उसमें केवल वे प्रकार हैं जिन्हें JIM नहीं रखता',
+        'ar': 'لا توجد قراءات صالحة في ذلك التصدير — قد يكون أقدم من الساعة، '
+              'أو يحتوي فقط على أنواع لا يتتبعها JIM',
+    },
+    "that file isn't a Health export — expected export.zip or export.xml "
+    "from the Health app": {
+        'es': 'ese archivo no es una exportación de Salud — se esperaba '
+              'export.zip o export.xml de la app Salud',
+        'fr': 'ce fichier n’est pas un export Santé — export.zip ou '
+              'export.xml de l’app Santé était attendu',
+        'de': 'diese Datei ist kein Health-Export — erwartet wurden '
+              'export.zip oder export.xml aus der Health-App',
+        'pt': 'esse ficheiro não é uma exportação da Saúde — esperava-se '
+              'export.zip ou export.xml da app Saúde',
+        'it': 'quel file non è un’esportazione di Salute — attesi export.zip '
+              'o export.xml dall’app Salute',
+        'ja': 'そのファイルはヘルスケアの書き出しではありません — ヘルスケア '
+              'App の export.zip か export.xml が必要です',
+        'zh': '该文件不是“健康”导出 — 需要“健康”App 导出的 export.zip 或 '
+              'export.xml',
+        'hi': 'वह फ़ाइल Health निर्यात नहीं है — Health ऐप से export.zip या '
+              'export.xml अपेक्षित है',
+        'ar': 'هذا الملف ليس تصديرًا من تطبيق الصحة — المتوقع export.zip أو '
+              'export.xml من تطبيق الصحة',
+    },
+    'that zip has no export.xml inside — export again from the Health app': {
+        'es': 'ese zip no contiene export.xml — vuelve a exportar desde la '
+              'app Salud',
+        'fr': 'ce zip ne contient pas export.xml — refaites l’export depuis '
+              'l’app Santé',
+        'de': 'in diesem Zip fehlt export.xml — exportieren Sie erneut aus '
+              'der Health-App',
+        'pt': 'esse zip não contém export.xml — exporte de novo a partir da '
+              'app Saúde',
+        'it': 'quello zip non contiene export.xml — esporta di nuovo dall’app '
+              'Salute',
+        'ja': 'その zip に export.xml が入っていません — ヘルスケア App から'
+              '書き出し直してください',
+        'zh': '该 zip 中没有 export.xml — 请从“健康”App 重新导出',
+        'hi': 'उस zip में export.xml नहीं है — Health ऐप से दोबारा निर्यात करें',
+        'ar': 'لا يحتوي هذا الملف المضغوط على export.xml — صدِّر مرة أخرى من '
+              'تطبيق الصحة',
+    },
+    'the upload was empty': {
+        'es': 'el archivo subido estaba vacío',
+        'fr': 'le fichier envoyé était vide',
+        'de': 'der Upload war leer',
+        'pt': 'o ficheiro enviado estava vazio',
+        'it': 'il file caricato era vuoto',
+        'ja': 'アップロードが空でした',
+        'zh': '上传的内容为空',
+        'hi': 'अपलोड खाली था',
+        'ar': 'كان الملف المرفوع فارغًا',
+    },
+
+    # --- movement and food ------------------------------------------------
+    'days must be between 1 and 7': {
+        'es': 'los días deben estar entre 1 y 7',
+        'fr': 'le nombre de jours doit être compris entre 1 et 7',
+        'de': 'die Tage müssen zwischen 1 und 7 liegen',
+        'pt': 'os dias têm de estar entre 1 e 7',
+        'it': 'i giorni devono essere compresi tra 1 e 7',
+        'ja': '日数は 1 から 7 のあいだにしてください',
+        'zh': '天数必须在 1 到 7 之间',
+        'hi': 'दिन 1 से 7 के बीच होने चाहिए',
+        'ar': 'يجب أن تكون الأيام بين 1 و7',
+    },
+    'minutes must be between 5 and 90': {
+        'es': 'los minutos deben estar entre 5 y 90',
+        'fr': 'les minutes doivent être comprises entre 5 et 90',
+        'de': 'die Minuten müssen zwischen 5 und 90 liegen',
+        'pt': 'os minutos têm de estar entre 5 e 90',
+        'it': 'i minuti devono essere compresi tra 5 e 90',
+        'ja': '分数は 5 から 90 のあいだにしてください',
+        'zh': '分钟数必须在 5 到 90 之间',
+        'hi': 'मिनट 5 से 90 के बीच होने चाहिए',
+        'ar': 'يجب أن تكون الدقائق بين 5 و90',
+    },
+}
