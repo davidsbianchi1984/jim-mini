@@ -4,6 +4,47 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.4] — 2026-08-01
+
+### A refusal whose English is not a constant
+
+`refusals_untranslated.txt` has carried the same paragraph for three releases:
+f-string refusals, named as uncovered and deliberately not counted in the
+backlog, because
+
+    f"language must be one of {', '.join(SUPPORTED)}"
+
+cannot be looked up by its English source — at the moment it is raised there is
+no English source, only a result.
+
+    asked     is the refusal a constant we can translate
+    mattered  is every part of it something we can translate
+
+`i18n.Templated` is a `str` whose value is the finished English sentence,
+carrying the template and its slots so `localize_detail` can refill the frame
+in the reader's language. Nothing that already treats a detail as text changed
+— the default English path, JSON encoding, and every driven test asserting on a
+refusal message all work exactly as before.
+
+**The slot is the whole design.** A translated frame around an English slot is
+*worse* than an English sentence: it reads as a bug, in front of somebody who
+is already being told no. That is precisely why this record refuses to ship a
+translated plan gate, and doing it here by accident would have been the same
+mistake with a mechanism to spread it. So whitespace means prose, and a slot
+that fails the test keeps the whole refusal English — the state it was already
+in, now chosen rather than stumbled into.
+
+The known limit is stated rather than hidden: a **single** English word has no
+whitespace either, and is indistinguishable from an identifier.
+
+JIM-mini has no refusal that interpolates a closed set, so it carries the
+mechanism without QRME's `Term` marker and vocabulary, and the guard fails if
+that stops being true. **7 sites converted**, 18 remaining.
+
+The extraction read this product's own test file as a raise site, because tests
+live inside the package here and beside it in QRME — caught by the literal-slot
+check firing on its own examples.
+
 ## [0.30.3] — 2026-08-01
 
 ### The refusal that arrived as a list
