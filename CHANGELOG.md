@@ -6,6 +6,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Three copies of one guard, three different blind spots
+
+`clientpaths.py` says of itself, in its own docstring, that it is *byte-
+identical in qrme, jim-mini and pdi*. It was not, and nothing checked.
+
+JIM's had grown two capabilities the other two never received. So the same
+audit, asked the same question in three repositories, gave three different
+answers — and each repository believed it was running the same check.
+
+    asked     does this repo's audit pass
+    mattered  is this repo's audit the same audit
+
+PDI's Android client submits an intake through exactly the form its extractor
+could not see. `POST /intakes/{iid}/submit` had a working door and sat in
+`android_doorless.txt` as missing — the guard could see neither the call nor
+its own error.
+
+Porting the missing capability produced a second finding one layer in: the
+rule arrived carrying its author's premise. The direct-connection form was
+declared `verb="GET"` on the reasoning that *every array route in this shell
+is a GET* — true where it was written, false in PDI, which POSTs. The verb is
+now read from the `.apply { }` block, which needed the extractor to look past
+a call's own parentheses for the first time (`verb_after`).
+
+`test_the_extractors_agree.py` runs each extractor over a fixture whose answer
+is written down, so a capability lost in any one repository fails **there**
+rather than reporting a clean sweep. It immediately found a third divergence:
+iOS and Windows normalise an interpolated segment to a placeholder and Kotlin
+leaves `$id` standing. Harmless today — Starlette matches either — and written
+down rather than quietly encoded, because a difference nobody has looked at is
+how the first three started.
+
 ### The notice that makes it real
 
 Last round's sender answered `awaitingNotice` on every launch, because there
