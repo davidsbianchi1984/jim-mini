@@ -987,7 +987,13 @@ def negotiate(header: str | None) -> str:
                 except ValueError:
                     quality = 0.0
         base = tag.strip().split("-")[0].lower()
-        if base in SUPPORTED:
+        # `q=0` means **not acceptable** — RFC 9110 is explicit, and a browser
+        # that sends `ar;q=0` is refusing Arabic rather than requesting it.
+        # This appended regardless, so a header refusing the only tag it named
+        # got that tag back: the passer-by's phone said "not this one" and
+        # this page answered in it. A malformed `q` lands here too, since the
+        # parse failure sets it to zero.
+        if base in SUPPORTED and quality > 0:
             # `-index` keeps the header's own order as the tie-break, which
             # is what a client means by listing one tag before another at
             # the same q.
