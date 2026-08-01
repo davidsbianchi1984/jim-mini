@@ -4,7 +4,30 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.27.0] — 2026-08-01
+
+### The console speaks one language. Its own phones speak ten.
+
+JIM's native shells each carry an `L10n` table in ten languages, and a round
+two releases ago gave all three a `deviceLanguage` resolver so the accountless
+screen could use it. The desktop console has **no `l10n.ts` at all** — no
+table, no language type, no negotiation, nothing reading `navigator.languages`.
+Every string on it is English and can only be English.
+
+That is not a gap somebody left half-open. It is a surface nobody ever asked
+the question of, and the reason is worth naming: QRME's console was audited
+for language because QRME's console *had* a table to audit. The check followed
+the infrastructure rather than the reader.
+
+    asked     is the localized surface complete
+    mattered  which surfaces were never localized at all
+
+Forty-seven English strings sit on the screen a person meets before any
+account exists. Recorded and ratcheted rather than half-fixed: building a
+localization layer for a whole console is not one round, and translating a
+handful of buttons would leave the same screen half-English with nothing
+recording which half. This claims somebody knows it is not localized, and by
+how much.
 
 ### Kotlin's other interpolation
 
