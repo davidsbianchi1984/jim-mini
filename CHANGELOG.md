@@ -4,6 +4,74 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.1] — 2026-08-01
+
+### The refusal that handed the body back
+
+The round in 0.30.0 put every refusal this product *writes* into the reader's
+language, through nine handlers that all return by one door. It missed every
+refusal this product *returns*.
+
+    asked     is every refusal this product writes translated
+    mattered  is every refusal this product returns
+
+`RequestValidationError` is neither an `HTTPException` nor one of the eight
+domain errors, so a 422 went out past all nine — carrying pydantic's `input`
+key, which on a missing field is the entire submitted body. A real drive
+against `POST /journal`:
+
+    {"type": "missing", "loc": ["body", "text"], "msg": "Field required",
+     "input": {"entry": "chest pain since Tuesday, have not told my
+               daughter", "mood": 3}}
+
+Every other part of this product's error design refuses to carry content —
+`errors.ts` and the three `Problems` shells record a method, a redacted path
+and a status and have no parameter a message could arrive through; `cloudgw`
+refuses a report whole if it finds prose in it. The one place content left the
+process was the framework's default renderer, because nobody had looked at it
+as ours.
+
+**What this is not:** disclosure between people. A 422 goes back to whoever
+sent the request, so what came back was the sender's own body. **What it is:**
+content on an error path, travelling through whatever sits between the app and
+the person.
+
+`type`, `loc` and `msg` are returned; `input` and `ctx` are not, built as an
+allowlist so the response cannot grow a leak by somebody else's release.
+`value_error` and `assertion_error` messages are replaced outright. On
+`extra_forbidden` the caller's key is echoed only when it is *shaped* like a
+field name — the first version replaced it always, and the sibling
+repository's suite failed by name, because a round had been spent making two
+routes strict precisely so a caller is told which key was wrong.
+
+    asked     can a key carry content
+    mattered  does this key look like content
+
+The guard posts a canary at every body-taking route from `all_routes` rather
+than checking for the `input` key, and a second check asserts how many of those
+routes reached validation at all.
+
+
+### The synthetic self enters the tandem contract
+
+`docs/tandem.md` gains the boundary before the code that will obey it.
+
+Everything the contract described linked JIM to *somebody else's* profile, and
+the JIM user reached QRME as an **interactor** — a stranger. QRME's
+`ProfileKind` is `self | other_person | fictional | hybrid` and a `self`
+profile speaks *as* the person; JIM had no column, module or route that knew it
+existed, and QRME held nothing pointing back.
+
+    asked     does JIM reference synthetic profiles
+    mattered  does JIM reference this person's own
+
+An owner token, not an interactor token. The link refused unless QRME reports
+`kind == "self"`. JIM → QRME is an enumerated allowlist, consented per
+category, empty by default, with the composer building the brief *from* the
+allowlist rather than filtering a payload down to it — and no free text from
+the user crossing at all: no journal entry, no check-in note, no transcript.
+Byte-identical in all three repositories.
+
 ## [0.30.0] — 2026-08-01
 
 ### Safety text is never machine-mangled; it was never translated either
