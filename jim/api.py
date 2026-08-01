@@ -479,7 +479,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         if body.provider not in llm.CHOICES:
             raise HTTPException(
-                422, f"provider must be one of {', '.join(llm.CHOICES)}")
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="provider",
+                              choices=", ".join(llm.CHOICES)))
         llm.set_choice(user_id, body.provider)
         return {"user_id": user_id, "provider": body.provider,
                 "effective": llm.resolve_choice(body.provider)}
@@ -513,10 +514,12 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         if body.language not in i18n.SUPPORTED:
             raise HTTPException(
-                422, f"language must be one of {', '.join(i18n.SUPPORTED)}")
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="language",
+                              choices=", ".join(i18n.SUPPORTED)))
         if body.mode not in i18n.MODES:
             raise HTTPException(
-                422, f"mode must be one of {', '.join(i18n.MODES)}")
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="mode",
+                              choices=", ".join(i18n.MODES)))
         i18n.set_language(user_id, body.language, body.mode)
         return {"user_id": user_id, "language": body.language,
                 "label": i18n.SUPPORTED[body.language], "mode": body.mode}
@@ -548,7 +551,8 @@ def create_app(qrme_client: QRMEClient | None = None,
             if body.language not in i18n.SUPPORTED:
                 raise HTTPException(
                     422,
-                    f"language must be one of {', '.join(i18n.SUPPORTED)}")
+                    i18n.fill(i18n.MUST_BE_ONE_OF, field="language",
+                              choices=", ".join(i18n.SUPPORTED)))
             i18n.set_language(user["id"], body.language)
             user["language"] = body.language
         # Signing up is where a membership starts. Basic unless a plan is
@@ -576,7 +580,8 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(403, "minors require parent/guardian consent")
         if body.language and body.language not in i18n.SUPPORTED:
             raise HTTPException(
-                422, f"language must be one of {', '.join(i18n.SUPPORTED)}")
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="language",
+                              choices=", ".join(i18n.SUPPORTED)))
         try:
             return accounts.signup(
                 body.email, body.password,
@@ -1046,7 +1051,8 @@ def create_app(qrme_client: QRMEClient | None = None,
             if body.language not in i18n.SUPPORTED:
                 raise HTTPException(
                     422,
-                    f"language must be one of {', '.join(i18n.SUPPORTED)}")
+                    i18n.fill(i18n.MUST_BE_ONE_OF, field="language",
+                              choices=", ".join(i18n.SUPPORTED)))
             i18n.set_language(child["id"], body.language)
             child["language"] = body.language
         # The child's device token is shown exactly once, here — the
@@ -2462,7 +2468,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         bug, or praise, with an optional 1–5 rating. Open to anyone."""
         if body.category not in _IMPROVE_CATEGORIES:
             raise HTTPException(
-                422, f"category must be one of {', '.join(_IMPROVE_CATEGORIES)}")
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="category",
+                              choices=", ".join(_IMPROVE_CATEGORIES)))
         message = body.message.strip()
         if not message:
             raise HTTPException(422, "a message is required")

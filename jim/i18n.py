@@ -1079,11 +1079,105 @@ def localize_playbook(playbook: dict, language: str) -> dict:
 # person reads when something is refused.
 
 
+#: What a slot may hold and still be dropped into a translated frame.
+#:
+#: The rule is whitespace. A token — `en`, `openai`, `usr_9f2`, `12.00` — has
+#: none. English prose has spaces in it, and so does every other language's.
+#: The one allowed exception is a comma-separated list of tokens, because the
+#: refusals this exists for are "must be one of".
+#:
+#: Conservative in one direction only: it refuses some slots that would have
+#: been safe and never accepts one that is not. A refused slot costs an English
+#: sentence, which is the state everything was already in. An accepted prose
+#: slot costs a sentence half in one language and half in another, in front of
+#: somebody who is already being told no.
+_SLOT_TOKEN = re.compile(r"^\S*$")
+
+
+def _is_token(value) -> bool:
+    return all(_SLOT_TOKEN.match(part.strip())
+               for part in str(value).split(","))
+
+
+class Templated(str):
+    """A refusal whose English text is not a constant, carried so it can be.
+
+    `f"language must be one of {', '.join(SUPPORTED)}"` cannot be keyed on its
+    English source, because at the moment it is raised there is no English
+    source — only a result. `tests/refusals_untranslated.txt` named these and
+    counted none of them.
+
+        asked     is the refusal a constant we can translate
+        mattered  is every part of it something we can translate
+
+    This is a `str`, and its value is the finished English sentence, so
+    everything that already treats a detail as text keeps working unchanged.
+    What it adds is a memory of how it was built, so `localize_detail` can look
+    up the *template* and refill it in the reader's language.
+
+    A slot that does not look like a token sets `translatable = False` and the
+    whole sentence stays English — the state it was in before, chosen rather
+    than stumbled into. Nothing raises: a refusal path is the last place to add
+    a way to fail.
+
+    The known limit, stated because a rule this simple has one: a *single*
+    English word has no whitespace either, and is indistinguishable from an
+    identifier. QRME's copy of this carries a `Term` marker and a translated
+    vocabulary for the closed sets it interpolates; this product has no refusal
+    that interpolates one, and the guard fails if that stops being true.
+    """
+
+    template: str
+    slots: dict
+    translatable: bool
+
+    def __new__(cls, template: str, **slots):
+        text = template.format(**slots)
+        self = super().__new__(cls, text)
+        self.template = template
+        self.slots = slots
+        self.translatable = all(_is_token(v) for v in slots.values())
+        return self
+
+
+def fill(template: str, **slots) -> Templated:
+    """`raise HTTPException(422, i18n.fill(TEMPLATE, field=..., choices=...))`.
+
+    A function rather than the class directly, so a raise site reads as a
+    sentence being built and not as an object being constructed.
+    """
+    return Templated(template, **slots)
+
+
+#: Several routes said this about several different fields. One sentence, one
+#: translation, `field` as a slot: the field name is the API's own and is the
+#: same string in every language.
+MUST_BE_ONE_OF = "{field} must be one of {choices}"
+
+#: Derived from the table below rather than repeated.
+TEMPLATES = (MUST_BE_ONE_OF,)
+
+_TEMPLATES: dict[str, dict[str, str]] = {
+    MUST_BE_ONE_OF: {
+        'es': '{field} debe ser uno de {choices}',
+        'fr': "{field} doit être l'un de {choices}",
+        'de': '{field} muss eines von {choices} sein',
+        'pt': '{field} deve ser um de {choices}',
+        'it': '{field} deve essere uno tra {choices}',
+        'ja': '{field} は次のいずれかにしてください: {choices}',
+        'zh': '{field} 必须是以下之一：{choices}',
+        'hi': '{field} इनमें से एक होना चाहिए: {choices}',
+        'ar': '{field} يجب أن يكون أحد التالي: {choices}',
+    },
+}
+
+
 def tr_refusal(text: str, language: str) -> str:
     """Translate one of the sentences this product refuses with."""
     if language == DEFAULT:
         return text
-    return (_REFUSALS.get(text) or _VALIDATION.get(text)
+    return (_REFUSALS.get(text) or _TEMPLATES.get(text)
+            or _VALIDATION.get(text)
             or _STRINGS.get(text, {})).get(language, text)
 
 
@@ -1096,6 +1190,21 @@ def localize_detail(detail, language: str):
     """
     if language == DEFAULT:
         return detail
+    # Before the plain-string branch: a Templated *is* a str, and its value is
+    # the finished English sentence, which is not a key in any table. Looking
+    # it up would find nothing and return the English — silently, and
+    # indistinguishably from a sentence nobody has translated yet.
+    if isinstance(detail, Templated):
+        if not detail.translatable:
+            return str(detail)
+        frame = tr_refusal(detail.template, language)
+        try:
+            return frame.format(**detail.slots)
+        except (KeyError, IndexError, ValueError):
+            # A translation whose braces do not match the template's. The
+            # English sentence is correct and complete; a half-formatted one
+            # in the reader's language is not.
+            return str(detail)
     if isinstance(detail, str):
         return tr_refusal(detail, language)
     if isinstance(detail, dict) and isinstance(detail.get("detail"), str):

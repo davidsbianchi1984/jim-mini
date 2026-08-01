@@ -23,11 +23,27 @@
 #
 # ## What this file does not cover
 #
-# **25 f-string refusals.** Sentences built by interpolation cannot be keyed
-# on their English source, because their English source is not a constant.
-# They need a template with named slots, which the console's `fill` has and
-# this module does not. Named here rather than counted in, so 42 cannot be
-# read as the whole number.
+# **18 f-string refusals**, down from 25. Sentences built by
+# interpolation cannot be keyed on their English source, because at the moment
+# they are raised there is no English source — only a result.
+#
+#     asked     is the refusal a constant we can translate
+#     mattered  is every part of it something we can translate
+#
+# `i18n.Templated` now carries the template and its slots alongside the
+# finished English sentence, and 7 sites were converted. What decides
+# whether a site can be is the *slot*, not the frame: a slot holding a token —
+# `en, es, pt`, `openai` — is the same string in every language and is safe to
+# drop into a translated frame; a slot holding prose is not, and a translated
+# frame around an English slot is worse than an English sentence, because it
+# reads as a bug in front of somebody who is already being told no.
+#
+# The mechanism refuses rather than guesses: a slot that fails the whitespace
+# test keeps the whole refusal English, so a half-translated sentence is not
+# something a future round can produce by accident. See
+# `test_a_refusal_whose_english_is_not_a_constant`.
+#
+# Named here rather than counted in, so 42 cannot be read as the whole number.
 #
 # ceiling: 42
 PDI vault unreachable
