@@ -4,6 +4,58 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.0] — 2026-08-01
+
+### Safety text is never machine-mangled; it was never translated either
+
+`jim/i18n.py` opens with "everything the Guardian drafts or delivers,
+localized" and is emphatic about the part that matters most:
+
+> **Deterministic safety content** (the CPR/AED playbooks, pace cues, waiver
+> terms) is *hand-translated here* for every supported language ... Safety text
+> is never machine-mangled.
+
+The playbooks are. The pace cues are. The waiver terms are. The sentences the
+Guardian says when it says **no** were English — all sixty-four, including
+every refusal the medication cabinet, the vigil, the crash watch and the watch
+bridge can produce. Somebody setting up a fall alarm for their mother, in
+Portuguese, on a Portuguese phone, was told in English what was wrong with it.
+
+    asked     is the safety content the Guardian drafts translated
+    mattered  is the safety content it refuses with
+
+**One handler would have been the wrong fix here, and would have passed.**
+The sibling repository's round is a single `HTTPException` handler and that
+covers its whole surface. `create_app` in this one has **eight more**, one per
+health domain, each building its own `JSONResponse`. Porting the single handler
+across would have localized the framework's refusals and left every domain's
+own untouched — in this product, exactly the wrong eight to miss.
+
+    asked     are the refusals localized
+    mattered  are all of them
+
+All nine now return through `i18n.refuse`, the one place a refusal becomes a
+response. `test_every_handler_returns_through_the_one_place` reads `api.py`'s
+own AST and fails any handler that does not — structurally, because a driven
+check would cover the eight that exist and say nothing about the ninth.
+
+**Twenty-two** sentences translated into all nine languages: the credential
+checks and every literal refusal from the four health domains. *Which*
+twenty-two is itself asserted, so a later round cannot improve the count by
+translating alphabetically while the cabinet slides back down the list. **42**
+more recorded in `jim/tests/refusals_untranslated.txt` and ratcheted, with the
+25 f-string refusals named in the header as a class the file does not cover.
+
+`get_language`, not `effective_language`: the latter answers English whenever
+the mode is `on_demand`, which is a statement about how *drafted* text arrives
+— keep the original medical wording, I will translate what I choose — and says
+nothing about what somebody reads when the app refuses them. The credential
+names the reader, so a passer-by on a care beacon still gets their own language
+and not the watched person's.
+
+Headers are carried through `refuse()` rather than dropped. A translation round
+is no reason for a 401 to stop saying how to authenticate.
+
 ## [0.29.0] — 2026-08-01
 
 ### The frame around both
