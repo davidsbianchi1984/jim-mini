@@ -2,6 +2,7 @@ package app.jim.guardian
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -380,6 +381,38 @@ object ApiClient {
         if (!target.isNullOrBlank()) body.put("target", target)
         request("/goals/$uid", "POST", body, token)
     }
+
+    // -- the one QRME profile that is this person -----------------------------
+    //
+    // Every other QRME call in this shell reaches somebody else's profile.
+    // These reach their own — see docs/tandem.md, and jim/synthetic_self.py for
+    // the boundary. Seeing and revoking what a profile has been told belongs on
+    // the phone at least as much as on the desktop: the phone is what somebody
+    // has with them when they change their mind.
+
+    suspend fun selfProfile(uid: String, token: String): JSONObject =
+        request("/self-profile/$uid", token = token)
+
+    suspend fun linkSelfProfile(uid: String, token: String, profileId: String,
+                                ownerToken: String): JSONObject =
+        request("/self-profile/$uid", "POST",
+            JSONObject().put("profile_id", profileId).put("owner_token", ownerToken),
+            token)
+
+    suspend fun unlinkSelfProfile(uid: String, token: String): JSONObject =
+        request("/self-profile/$uid", "DELETE", token = token)
+
+    suspend fun consentSelfProfile(uid: String, token: String,
+                                   categories: List<String>): JSONObject =
+        request("/self-profile/$uid/consent", "PUT",
+            JSONObject().put("categories", JSONArray(categories)), token)
+
+    /** Exactly what would be sent, built by the code that sends it. */
+    suspend fun previewSelfProfile(uid: String, token: String): JSONObject =
+        request("/self-profile/$uid/preview", token = token)
+
+    suspend fun briefSelfProfile(uid: String, token: String): JSONObject =
+        request("/self-profile/$uid/brief", "POST", token = token)
 
     suspend fun habits(uid: String, token: String): List<Habit> {
         val arr = getArray("/habits/$uid", token)

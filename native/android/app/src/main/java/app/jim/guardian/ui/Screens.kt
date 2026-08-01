@@ -2243,3 +2243,115 @@ fun ProblemReportingCard() {
         }
     }
 }
+
+/**
+ * The one QRME profile that is this person.
+ *
+ * Every other tandem surface in this shell reaches somebody else's profile.
+ * This reaches their own — the `self` profile that speaks *as* them, and that
+ * answers strangers. Built around the preview rather than the switches,
+ * because the switches are not the decision: docs/tandem.md says what may
+ * cross, and this shows exactly what would before it does.
+ *
+ * On the phone as well as the console, because the phone is what somebody has
+ * with them when they change their mind.
+ */
+@Composable
+fun SelfProfileScreen(api: ApiClient, uid: String, token: String) {
+    val scope = rememberCoroutineScope()
+    var status by remember { mutableStateOf<JSONObject?>(null) }
+    var preview by remember { mutableStateOf<JSONObject?>(null) }
+    var profileId by remember { mutableStateOf("") }
+    var ownerToken by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    val categories = listOf("language", "wellbeing", "conditions",
+                            "medication", "continuity")
+
+    suspend fun refresh() {
+        status = runCatching { api.selfProfile(uid, token) }.getOrNull()
+        preview = runCatching { api.previewSelfProfile(uid, token) }.getOrNull()
+    }
+    LaunchedEffect(uid) { refresh() }
+
+    fun consentedNow(): List<String> {
+        val arr = status?.optJSONArray("consented") ?: return emptyList()
+        return (0 until arr.length()).map { arr.getString(it) }
+    }
+
+    fun run(said: String, work: suspend () -> Unit) {
+        busy = true
+        scope.launch(Dispatchers.IO) {
+            note = runCatching { work(); said }.getOrElse { it.message }
+            refresh(); busy = false
+        }
+    }
+
+    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(L10n.t("self.title"), style = MaterialTheme.typography.titleMedium)
+        ProblemReportingCard()
+        Text(L10n.t("self.lead"), style = MaterialTheme.typography.bodySmall)
+
+        if (status?.optBoolean("linked") != true) {
+            Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(L10n.t("self.link"), style = MaterialTheme.typography.titleSmall)
+                    Text(L10n.t("self.paste"), style = MaterialTheme.typography.bodySmall)
+                    OutlinedTextField(profileId, { profileId = it },
+                        label = { Text(L10n.t("self.profile_id")) })
+                    OutlinedTextField(ownerToken, { ownerToken = it },
+                        label = { Text(L10n.t("self.owner_token")) })
+                    OutlinedButton(enabled = !busy && profileId.isNotBlank() && ownerToken.isNotBlank(),
+                        onClick = {
+                            run(L10n.t("self.linked_note")) {
+                                api.linkSelfProfile(uid, token, profileId.trim(), ownerToken.trim())
+                            }
+                        }) { Text(L10n.t("self.link_button")) }
+                }
+            }
+        } else {
+            Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(L10n.t("self.may_know"), style = MaterialTheme.typography.titleSmall)
+                    Text(L10n.t("self.until_tick"), style = MaterialTheme.typography.bodySmall)
+                    categories.forEach { key ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Switch(checked = consentedNow().contains(key), enabled = !busy,
+                                onCheckedChange = { on ->
+                                    val next = if (on) consentedNow() + key
+                                               else consentedNow() - key
+                                    run(L10n.t("self.saved")) {
+                                        api.consentSelfProfile(uid, token, next)
+                                    }
+                                })
+                            Text(key, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
+            Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(L10n.t("self.exactly"), style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        if (preview?.optBoolean("empty") == true) L10n.t("self.nothing_ticked")
+                        else preview?.optJSONObject("brief")?.toString(2) ?: "",
+                        style = MaterialTheme.typography.bodySmall)
+                    Text(L10n.t("self.message_itself"), style = MaterialTheme.typography.bodySmall)
+                    OutlinedButton(enabled = !busy && preview?.optBoolean("empty") != true,
+                        onClick = { run(L10n.t("self.sent")) { api.briefSelfProfile(uid, token) } }
+                    ) { Text(L10n.t("self.send")) }
+                }
+            }
+            Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(L10n.t("self.stop"), style = MaterialTheme.typography.titleSmall)
+                    Text(L10n.t("self.unlink_note"), style = MaterialTheme.typography.bodySmall)
+                    OutlinedButton(enabled = !busy,
+                        onClick = { run(L10n.t("self.unlinked")) { api.unlinkSelfProfile(uid, token) } }
+                    ) { Text(L10n.t("self.unlink")) }
+                }
+            }
+        }
+        note?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+    }
+}

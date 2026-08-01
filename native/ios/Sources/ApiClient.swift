@@ -184,6 +184,33 @@ struct Goal: Decodable {
     let status: String?
 }
 
+/// The user's own QRME profile, as this shell reads it.
+///
+/// `brief` is deliberately `[String: AnyDecodable]`-free: the preview is shown
+/// as the message itself, so the shell renders the server's JSON rather than a
+/// model that could quietly drop a category the server had decided to send.
+struct SelfProfileStatus: Decodable {
+    var linked: Bool
+    var profileId: String?
+    var consented: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case linked
+        case profileId = "profile_id"
+        case consented
+    }
+}
+
+struct SelfProfilePreview: Decodable {
+    var linked: Bool
+    var consented: [String]?
+    var empty: Bool?
+}
+
+struct SelfProfileSent: Decodable {
+    var sent: Bool
+}
+
 struct Habit: Decodable {
     let id: String
     let name: String
@@ -583,6 +610,47 @@ actor ApiClient {
         var body: [String: Any] = ["area": area, "title": title]
         if let target, !target.isEmpty { body["target"] = target }
         return try await request("/goals/\(uid)", method: "POST", body: body, token: token)
+    }
+
+    // -- the one QRME profile that is this person ---------------------------
+    //
+    // Every other QRME call in this shell reaches somebody else's profile.
+    // These reach their own — see docs/tandem.md, and jim/synthetic_self.py
+    // for the boundary. Seeing and revoking what a profile has been told
+    // belongs on the phone at least as much as on the desktop: the phone is
+    // what somebody has with them when they change their mind.
+
+    func selfProfile(uid: String, token: String) async throws -> SelfProfileStatus {
+        try await request("/self-profile/\(uid)", token: token)
+    }
+
+    func linkSelfProfile(uid: String, token: String, profileId: String,
+                         ownerToken: String) async throws -> SelfProfileStatus {
+        try await request("/self-profile/\(uid)", method: "POST",
+                          body: ["profile_id": profileId,
+                                 "owner_token": ownerToken], token: token)
+    }
+
+    func unlinkSelfProfile(uid: String, token: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/self-profile/\(uid)", method: "DELETE",
+                                      token: token)
+    }
+
+    func consentSelfProfile(uid: String, token: String,
+                            categories: [String]) async throws -> SelfProfileStatus {
+        try await request("/self-profile/\(uid)/consent", method: "PUT",
+                          body: ["categories": categories], token: token)
+    }
+
+    /// Exactly what would be sent, built by the code that sends it.
+    func previewSelfProfile(uid: String, token: String) async throws -> SelfProfilePreview {
+        try await request("/self-profile/\(uid)/preview", token: token)
+    }
+
+    func briefSelfProfile(uid: String, token: String) async throws -> SelfProfileSent {
+        try await request("/self-profile/\(uid)/brief", method: "POST",
+                          token: token)
     }
 
     func habits(uid: String, token: String) async throws -> [Habit] {

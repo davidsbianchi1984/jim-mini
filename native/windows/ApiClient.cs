@@ -171,6 +171,19 @@ public record Goal(
     [property: JsonPropertyName("target")] string? Target,
     [property: JsonPropertyName("status")] string? Status);
 
+// The user's own QRME profile, as this shell reads it. The preview is shown
+// as the message itself, so `Brief` stays a raw element rather than a model
+// that could quietly drop a category the server decided to send.
+public record SelfProfileStatus(
+    bool Linked,
+    string? ProfileId,
+    string[] Consented);
+
+public record SelfProfilePreview(
+    bool Linked,
+    string[]? Consented,
+    bool? Empty);
+
 public record Habit(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("name")] string Name,
@@ -571,6 +584,45 @@ public sealed class ApiClient
     public Task<Goal> AddGoal(string uid, string token, string area, string title, string? target) =>
         Send<Goal>(Post($"/goals/{uid}",
             target is { Length: > 0 } ? new { area, title, target } : (object)new { area, title }, token));
+
+    // -- the one QRME profile that is this person -----------------------------
+    //
+    // Every other QRME call in this shell reaches somebody else's profile.
+    // These reach their own — see docs/tandem.md, and jim/synthetic_self.py for
+    // the boundary. Seeing and revoking what a profile has been told belongs on
+    // the phone at least as much as on the desktop.
+
+    public Task<SelfProfileStatus> SelfProfile(string uid, string token) =>
+        Send<SelfProfileStatus>(Get($"/self-profile/{uid}", token));
+
+    public Task<SelfProfileStatus> LinkSelfProfile(string uid, string token,
+                                                   string profileId, string ownerToken) =>
+        Send<SelfProfileStatus>(Post($"/self-profile/{uid}",
+            new { profile_id = profileId, owner_token = ownerToken }, token));
+
+    public async Task UnlinkSelfProfile(string uid, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete, $"/self-profile/{uid}");
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
+
+    public Task<SelfProfileStatus> ConsentSelfProfile(string uid, string token,
+                                                      string[] categories) =>
+        Send<SelfProfileStatus>(Put($"/self-profile/{uid}/consent",
+            new { categories }, token));
+
+    /// <summary>Exactly what would be sent, built by the code that sends it.</summary>
+    public Task<SelfProfilePreview> PreviewSelfProfile(string uid, string token) =>
+        Send<SelfProfilePreview>(Get($"/self-profile/{uid}/preview", token));
+
+    public async Task BriefSelfProfile(string uid, string token)
+    {
+        var req = Post($"/self-profile/{uid}/brief", new { }, token);
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
 
     public Task<Habit[]> Habits(string uid, string token) => Send<Habit[]>(Get($"/habits/{uid}", token));
 

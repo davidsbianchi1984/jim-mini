@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.SelfProfilePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="740" Spacing="16" Padding="28" HorizontalAlignment="Left">
+            <TextBlock x:Name="TitleText" FontSize="22" FontWeight="Bold"
+                       Foreground="{StaticResource JimTxtBrush}" />
+            <TextBlock x:Name="LeadText" Foreground="{StaticResource JimT2Brush}"
+                       FontSize="13" TextWrapping="Wrap" />
+
+            <StackPanel x:Name="LinkPanel" Spacing="8">
+                <TextBlock x:Name="LinkHeading" FontSize="15" FontWeight="Bold"
+                           Foreground="{StaticResource JimTxtBrush}" />
+                <TextBlock x:Name="PasteText" Foreground="{StaticResource JimT2Brush}"
+                           FontSize="13" TextWrapping="Wrap" />
+                <TextBox x:Name="ProfileIdBox" />
+                <PasswordBox x:Name="OwnerTokenBox" />
+                <Button x:Name="LinkButton" Click="OnLink" />
+            </StackPanel>
+
+            <StackPanel x:Name="ConsentPanel" Spacing="8" Visibility="Collapsed">
+                <TextBlock x:Name="MayKnowHeading" FontSize="15" FontWeight="Bold"
+                           Foreground="{StaticResource JimTxtBrush}" />
+                <TextBlock x:Name="UntilTickText" Foreground="{StaticResource JimT2Brush}"
+                           FontSize="13" TextWrapping="Wrap" />
+                <StackPanel x:Name="CategoryList" Spacing="4" />
+
+                <TextBlock x:Name="ExactlyHeading" FontSize="15" FontWeight="Bold"
+                           Foreground="{StaticResource JimTxtBrush}" />
+                <TextBlock x:Name="BriefText" FontFamily="Consolas" FontSize="12"
+                           Foreground="{StaticResource JimTxtBrush}" TextWrapping="Wrap" />
+                <TextBlock x:Name="MessageItselfText" Foreground="{StaticResource JimT2Brush}"
+                           FontSize="12" TextWrapping="Wrap" />
+                <Button x:Name="SendButton" Click="OnBrief" />
+
+                <TextBlock x:Name="StopHeading" FontSize="15" FontWeight="Bold"
+                           Foreground="{StaticResource JimTxtBrush}" />
+                <TextBlock x:Name="UnlinkNoteText" Foreground="{StaticResource JimT2Brush}"
+                           FontSize="13" TextWrapping="Wrap" />
+                <Button x:Name="UnlinkButton" Click="OnUnlink" />
+            </StackPanel>
+
+            <TextBlock x:Name="NoteText" FontSize="13" TextWrapping="Wrap"
+                       Foreground="{StaticResource JimT2Brush}" Visibility="Collapsed" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

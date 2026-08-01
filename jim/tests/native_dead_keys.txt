@@ -1,0 +1,31 @@
+# Rows in a shell's L10n table that nothing in that shell asks for. Checked by
+# test_a_shell_asks_for_a_key_it_has.py, and ratcheted.
+#
+# These four predate the guard. They are generic action verbs — the kind added
+# in advance because a screen will obviously need a Save button — and no screen
+# in any shell ever asked for them. Each is translated into ten languages and
+# read by nobody.
+#
+# The console gained the same check after two keys shipped translated and wired
+# to nothing. The shells never had it, which is why these sat here: the
+# language guards the shells did have count English strings that are *present*,
+# and a dead row has none to count.
+#
+#     asked     is every string on the screen translated
+#     mattered  is every translation on a screen
+#
+# Left rather than deleted, because a verb somebody added for a screen they
+# were about to write is not obviously waste, and this file is the record that
+# somebody looked. Wire one or delete one; the ceiling does not move up.
+#
+# ceiling: 4
+android: action.refresh
+android: action.save
+android: action.send
+android: action.translate
+ios: action.refresh
+ios: action.save
+ios: action.send
+windows: action.save
+windows: action.send
+windows: action.translate
