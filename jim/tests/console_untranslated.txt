@@ -5,9 +5,19 @@
 # command and example values. The rest of the console is not — 700-odd
 # strings across nineteen gated screens, recorded here so the remainder is a
 # decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 677
-Aims: %
-Aims: 400
+# ceiling: 615
+#
+# **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
+# English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
+# interpolations, carrying no word anybody reads. The extractor counted any
+# string it found; the guard then fired on a card whose every sentence had
+# just been localized.
+#
+#     asked     did the extractor find a string here
+#     mattered  did it find a word a reader reads
+#
+# The same mistake the shells' version of this guard made with
+# `"\(dim): \(n)%"`, one file over and one release later.
 Aims: Add
 Aims: An ordinary activity is context, not a reading. It tells the Guardian why a heart rate moved before it has to guess.
 Aims: Budget
@@ -31,8 +41,6 @@ Aims: groceries
 Aims: of
 Aims: streak
 Aims: walk
-Aims: ·
-Aims: ⚠
 Attending: Advance
 Attending: An alarm, and the way out
 Attending: Ask
@@ -73,17 +81,13 @@ Attending: and does nothing — a refusal, not a silent drop.
 Attending: no tandem specialist
 Attending: sittings before this one
 Attending: specialists, clinicians, and the ladder
-Attending: ·
 Attending: · ceiling
 Attending: · the printable code is at
-Attending: —
-Attending: ⚠
 Baseline: "are you okay?" — and if
 Baseline: ). This is attempt
 Baseline: , a collapsing pulse, oxygen falling — JIM asks
 Baseline: , checked in below
 Baseline: , your Guardian checks in and asks how you are. A drift check-in on its own never calls anybody — but the
-Baseline: .
 Baseline: . Any normal reading — or the button above — stands it down.
 Baseline: . Any sign of you — the button, a normal reading — calls it off. Drift check-ins stay calm and never trigger this.
 Baseline: A concerning reading came in (
@@ -127,10 +131,7 @@ Baseline: unanswered attempts.
 Baseline: was contacted
 Baseline: will be contacted after
 Baseline: your usual
-Baseline: ±
-Baseline: —
 Baseline: — after that, your crash watch contacts
-Baseline: ⚠
 Baseline: ⚠ The crash watch tripped:
 Bearing: Bad answer
 Bearing: Bearing
@@ -183,11 +184,8 @@ Bearing: of them yours
 Bearing: question
 Bearing: still open — it asked and has not been answered.
 Bearing: suggestion
-Bearing: ·
 Bearing: · showing
-Bearing: —
 Bearing: — consent the source over in What's Held first. The check is on the server; this screen is only reporting what it said.
-Bearing: ⚠
 CareTeam: Attach
 CareTeam: Care Team
 CareTeam: Department id
@@ -213,7 +211,6 @@ CareTeam: pasted, never echoed
 CareTeam: your own QRME organization, coordinated by the Guardian
 CareTeam: · credential held
 CareTeam: · desk
-CareTeam: ⚠
 Channel: ) comes back afterwards.
 Channel: A microphone attaches to a device this account already knows, never to a name typed in the moment — so what is listening is always something you registered on purpose.
 Channel: Attach
@@ -247,9 +244,6 @@ Channel: runs a model
 Channel: stationary
 Channel: to a referral
 Channel: wearable
-Channel: ·
-Channel: —
-Checkin: / 5
 Checkin: Check-in
 Checkin: Energy:
 Checkin: Logged
@@ -263,18 +257,13 @@ Checkin: mood
 Checkin: mood, energy &amp; stress · a worrying note runs the crisis check
 Checkin: · energy
 Checkin: · stress
-Checkin: ⚠
-Coach: .
 Coach: 24/7 across your life
 Coach: Answered by
 Coach: Area
 Coach: Coach
 Coach: What's on your mind?
 Coach: · guidance
-Coach: —
-Coach: ⚠
 Coach: ⚠ This is the built-in fallback, not
-Community: (
 Community: ) and the doors appear here.
 Community: Community
 Community: Community lives in QRME. Point this Guardian at your QRME deployment (
@@ -294,9 +283,6 @@ Community: e.g. Bend
 Community: forums, rooms and local events — in QRME
 Community: here
 Community: listed)
-Community: ·
-Community: ⚠
-Held: $
 Held: Allow
 Held: An access record is being kept:
 Held: Can read it:
@@ -324,9 +310,6 @@ Held: journal
 Held: providers catalogued — Apple, Google and the rest, each with the apps and directions it can be asked for.
 Held: to arm the button.
 Held: who holds it, who has read it
-Held: · $
-Held: —
-Held: ⚠
 Home: Check-in
 Home: Coach
 Home: Hi,
@@ -340,7 +323,6 @@ Home: samples
 Home: state
 Home: value
 Home: ● Guardian on
-Home: ⚠
 Home: 👥 Care Team
 Home: 💊 Medications
 Journal: Entries
@@ -350,10 +332,8 @@ Journal: Journal
 Journal: New entry
 Journal: Nothing yet — the first entry can be one sentence.
 Journal: your words, typed or spoken
-Journal: ⚠
 Meds: (optional — JIM will refuse to log past it)
 Meds: (optional)
-Meds: 08:00, 20:00
 Meds: 10 mg
 Meds: Actually took it
 Meds: Add a medication
@@ -381,13 +361,7 @@ Meds: stop
 Meds: today
 Meds: — comma-separated, 24h
 Meds: — marked critical and not logged today. If you took it, tap it below; if you didn't, that's worth a moment.
-Meds: “
-Meds: ”
-Meds: ⚠
-Monitor: (
 Monitor: (edge
-Monitor: )
-Monitor: :
 Monitor: Heart rate (bpm)
 Monitor: Live Monitoring
 Monitor: No, it didn't
@@ -405,16 +379,10 @@ Monitor: drift from your baseline — a check-in, not an alarm
 Monitor: escalated to
 Monitor: guidance
 Monitor: your usual
-Monitor: —
-Monitor: ⚠
-Onboarding: .
-Onboarding: 123456
 Onboarding: Sign
 Onboarding: python -m jim serve
 Onboarding: with
 Onboarding: you@example.com
-Onboarding: ⚠
-Reach: .
 Reach: /c/
 Reach: @you
 Reach: A body in the house
@@ -468,12 +436,8 @@ Reach: the printable code
 Reach: watch drip token
 Reach: will do compressions itself once the automatic waiver is signed; one rated
 Reach: will talk a person through them and nothing more. The rating is the machine's, not the plan's.
-Reach: ·
 Reach: · first aid:
-Reach: —
 Reach: — the printable code for it is behind your own token, not a public link.
-Reach: ⚠
-Safety: :
 Safety: A sticker someone can scan to reach help on your behalf. The scanner needs no account and sees only what you chose to put on the card.
 Safety: Beacons
 Safety: Clear
@@ -499,13 +463,9 @@ Safety: retired
 Safety: scan
 Settings: % confidence
 Settings: (saved — type to replace)
-Settings: ).
-Settings: ,
 Settings: , or OpenAI / xAI / Gemini for those providers) and your Guardian's replies run on your credential. It stays on this device and rides only your own requests — the server never stores it. Leave it empty to use whatever key the deployment lends.
-Settings: .
 Settings: . New accounts must verify by email.
 Settings: . Talking back by microphone works too.
-Settings: :
 Settings: : guidance helped
 Settings: ; paste that here, not your normal password.
 Settings: A profile derived from your own history — the conditions you declared, how your check-ins trend, what you bring up, and which guidance has actually helped. It shapes how the coach answers. Nothing is sent to a model vendor to build it.
@@ -609,7 +569,6 @@ Settings: you@gmail.com
 Settings: your device's own voice
 Settings: · last
 Settings: · steward:
-Settings: —
 Settings: — a pseudonym. JIM never learned your real name.
 Settings: — no account needed. Add an ElevenLabs or OpenAI key for a natural one, and to talk back by microphone.
 Settings: — no online model has a working key on this machine. Pick a provider above and add its key (“Your model API key” below works for all of them).
@@ -617,8 +576,6 @@ Settings: — the one you picked has no key on this machine yet.
 Settings: — verification messages are written to this app's log and signup on this machine simply goes straight in. Point it at a mail account below to send real verification links. For Gmail, turn on 2-Step Verification and create an
 Settings: — what they'll read, written now
 Settings: — what verification links point at
-Settings: …
-Settings: ⚠
 Settings: ⚠ Right now it resolves to
 Settings: ⚠ Right now replies come from the
 Settings: ⚠ The vigil has tripped —
@@ -649,11 +606,6 @@ Wards: escalations in the last day
 Wards: oversight
 Wards: oversight ·
 Wards: sensitivity ·
-Wards: ·
-Wards: ●
-Wards: ⚠
-Wellness: .
-Wellness: :
 Wellness: A day of meals that fits you
 Wellness: A workout for the time you have
 Wellness: Build it
@@ -680,6 +632,4 @@ Wellness: of
 Wellness: s
 Wellness: s —
 Wellness: step
-Wellness: ·
 Wellness: · about
-Wellness: ⚠

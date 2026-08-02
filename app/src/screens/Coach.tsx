@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { api, type Guidance } from "../api";
+import { api, type Guidance, type SpecialistAnswer } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { hush, listen, say, type Listener } from "../speech";
 import { useSession } from "../store";
 
@@ -12,6 +13,8 @@ export function Coach() {
   const [reply, setReply] = useState<Guidance | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fromSpecialist, setFromSpecialist] = useState<SpecialistAnswer | null>(null);
+  const lang = visitorLang();
 
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -24,7 +27,7 @@ export function Coach() {
     try {
       const r = await api.coach(session.userId, { area, message: said },
                                 session.userToken);
-      setReply(r);
+      setReply(r); setFromSpecialist(null);
       // Talking to it should mean being answered out loud — a spoken
       // question answered only in text is half a conversation.
       if (r?.content && (text !== undefined || speaking)) {
@@ -107,6 +110,55 @@ export function Coach() {
             </div>
           ) : reply.provenance?.generated_by && reply.provenance.generated_by !== "stub" && (
             <div className="muted small">Answered by {reply.provenance.generated_by}</div>
+          )}
+
+          {/* A specialist covers this area. An offer, not a send — what would
+              cross is what the person just wrote, so the button is theirs to
+              press and the note says so before they press it. */}
+          {reply.specialist_offer?.available && !fromSpecialist && (
+            <div className="spec-row">
+              <div>
+                <b>{reply.specialist_offer.label}</b>
+                <div className="muted small">{reply.specialist_offer.note}</div>
+              </div>
+              <button disabled={busy} onClick={async () => {
+                if (!session.userId || !session.userToken) return;
+                setBusy(true); setError(null);
+                try {
+                  setFromSpecialist(await api.coachSpecialist(
+                    session.userId, { area, message }, session.userToken));
+                } catch (e) { setError((e as Error).message); }
+                finally { setBusy(false); }
+              }}>{tr("spec.ask", lang)}</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {fromSpecialist && (
+        <div className="card guidance">
+          <div className="guidance-src">
+            {fromSpecialist.specialist?.label || tr("spec.fallback", lang)} · {tr("spec.via", lang)}
+          </div>
+          {fromSpecialist.delivered ? (
+            <p>{fromSpecialist.content}</p>
+          ) : fromSpecialist.held_for_owner_approval ? (
+            <div className="degraded">
+              {tr("spec.held", lang)}
+            </div>
+          ) : (
+            <div className="degraded">
+              {fromSpecialist.reason}
+              {fromSpecialist.note ? ` — ${fromSpecialist.note}` : ""}
+            </div>
+          )}
+          {fromSpecialist.provenance && (
+            <>
+              <div className="muted small">{fromSpecialist.provenance.method}</div>
+              <div className="muted small">
+                {tr("spec.shared", lang)}: {fromSpecialist.provenance.shared}
+              </div>
+            </>
           )}
         </div>
       )}

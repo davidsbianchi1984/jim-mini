@@ -120,6 +120,9 @@ public record Guidance(
     [property: JsonPropertyName("provenance")] Provenance? ProvenanceInfo,
     [property: JsonPropertyName("translation_note")] string? TranslationNote,
     [property: JsonPropertyName("specialist")] string? Specialist,
+    // The *offer*, distinct from the line above: `specialist` is a name
+    // the monitoring path fills in; this is whether one may be asked.
+    [property: JsonPropertyName("specialist_offer")] SpecialistOffer? SpecialistOffer,
     [property: JsonPropertyName("qrme_profile_id")] string? QrmeProfileId,
     [property: JsonPropertyName("custody")] Custody? CustodyInfo);
 
@@ -547,6 +550,13 @@ public sealed class ApiClient
     public Task<CheckinResult> Checkin(string uid, string token, int mood, int energy, string note) =>
         Send<CheckinResult>(Post($"/checkin/{uid}",
             new { mood, energy, note }, token));
+
+    /// Send this question to the QRME specialist covering the area.
+    /// `Coach` only offers; this is the door the person chooses.
+    public Task<SpecialistAnswer> CoachSpecialist(string uid, string token,
+                                                  string area, string message) =>
+        Send<SpecialistAnswer>(Post($"/coach/{uid}/specialist",
+            new { area, message }, token));
 
     public Task<Guidance> Coach(string uid, string token, string area, string message) =>
         Send<Guidance>(Post($"/coach/{uid}", new { area, message }, token));
@@ -1013,3 +1023,27 @@ public record ContinuityState(
 
 public record Forgotten(
     [property: JsonPropertyName("forgotten")] bool Value);
+
+public record SpecialistOffer(
+    [property: JsonPropertyName("available")] bool Available,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("qrme_profile_id")] string QrmeProfileId,
+    [property: JsonPropertyName("sent")] bool Sent,
+    [property: JsonPropertyName("note")] string Note);
+
+public record SpecialistWho(
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("qrme_profile_id")] string QrmeProfileId);
+
+public record SpecialistProvenance(
+    [property: JsonPropertyName("method")] string Method,
+    [property: JsonPropertyName("shared")] string Shared);
+
+public record SpecialistAnswer(
+    [property: JsonPropertyName("delivered")] bool Delivered,
+    [property: JsonPropertyName("content")] string? Content,
+    [property: JsonPropertyName("reason")] string? Reason,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("held_for_owner_approval")] bool HeldForOwnerApproval,
+    [property: JsonPropertyName("specialist")] SpecialistWho? Specialist,
+    [property: JsonPropertyName("provenance")] SpecialistProvenance? Provenance);

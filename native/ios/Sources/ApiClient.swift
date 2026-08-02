@@ -49,6 +49,9 @@ struct Guidance: Decodable {
     let language: String?
     let translation_note: String?
     let specialist: String?            // named expert behind this condition
+    // The *offer*, distinct from the line above: `specialist` is a name the
+    // monitoring path fills in, this is whether one is available to ask.
+    let specialist_offer: SpecialistOffer?
     let qrme_profile_id: String?       // set when routed tandem via QRME
     let custody: Custody?              // tandem exchanges sealed in PDI
 }
@@ -621,6 +624,16 @@ actor ApiClient {
                           body: ["area": area, "message": message], token: token)
     }
 
+    /// Send this question to the QRME specialist covering the area.
+    ///
+    /// `coach` only *offers*. This is the door the person chooses, because
+    /// what crosses the tandem is what they wrote.
+    func coachSpecialist(uid: String, token: String, area: String,
+                         message: String) async throws -> SpecialistAnswer {
+        try await request("/coach/\(uid)/specialist", method: "POST",
+                          body: ["area": area, "message": message], token: token)
+    }
+
     func baseline(uid: String, token: String) async throws -> [BaselineMetric] {
         try await request("/baseline/\(uid)", token: token)
     }
@@ -1097,3 +1110,24 @@ struct ContinuityState: Decodable {
 }
 
 struct Forgotten: Decodable { let forgotten: Bool }
+
+struct SpecialistOffer: Decodable {
+    let available: Bool
+    let label: String
+    let qrme_profile_id: String
+    let sent: Bool
+    let note: String
+}
+
+struct SpecialistAnswer: Decodable {
+    let delivered: Bool
+    let area: String?
+    let content: String?
+    let reason: String?
+    let note: String?
+    let held_for_owner_approval: Bool?
+    struct Who: Decodable { let label: String; let qrme_profile_id: String }
+    let specialist: Who?
+    struct Where: Decodable { let method: String; let shared: String }
+    let provenance: Where?
+}

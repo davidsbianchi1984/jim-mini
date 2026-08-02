@@ -1250,24 +1250,43 @@ def _deliver(user_id, user, detection, note, qrme, source_device=None,
     return delivered
 
 
-def _tandem_guidance(user_id, user, detection, note, spec, qrme,
-                     pdi=None) -> dict:
-    """Delegate guidance to a QRME specialist profile over HTTP."""
+def interactor_for(user_id: str, user: dict, qrme) -> str:
+    """This user's QRME interactor id, creating the link on first use.
+
+    Lifted out of `_tandem_guidance` so the coach can reach a specialist by
+    the same door the monitoring path uses. Two ways of becoming known to QRME
+    would be two things to revoke, and `docs/tandem.md` describes one.
+    """
     conn = db.connect()
     link = conn.execute(
         "SELECT qrme_interactor_id FROM tandem_links WHERE user_id=?", (user_id,)
     ).fetchone()
-    if link is None:
-        interactor_id, token = qrme.ensure_interactor(
-            user["display_name"], user["birthdate"])
-        conn.execute(
-            "INSERT INTO tandem_links (user_id, qrme_interactor_id,"
-            " qrme_interactor_token, created_at) VALUES (?,?,?,?)",
-            (user_id, interactor_id, token, db.utcnow()),
-        )
-        conn.commit()
-    else:
-        interactor_id = link["qrme_interactor_id"]
+    if link is not None:
+        return link["qrme_interactor_id"]
+    interactor_id, token = qrme.ensure_interactor(
+        user["display_name"], user["birthdate"])
+    conn.execute(
+        "INSERT INTO tandem_links (user_id, qrme_interactor_id,"
+        " qrme_interactor_token, created_at) VALUES (?,?,?,?)",
+        (user_id, interactor_id, token, db.utcnow()),
+    )
+    conn.commit()
+    return interactor_id
+
+
+def tandem_safe(user, profile_id, qrme) -> tuple[bool, str | None]:
+    """`_tandem_safe` under a name the coach may call. Same checks, same
+    answers — the age gate and the departed-profile gate are not properties of
+    the monitoring path, they are properties of handing somebody to a
+    specialist at all."""
+    return _tandem_safe(user, profile_id, qrme)
+
+
+def _tandem_guidance(user_id, user, detection, note, spec, qrme,
+                     pdi=None) -> dict:
+    """Delegate guidance to a QRME specialist profile over HTTP."""
+    conn = db.connect()
+    interactor_id = interactor_for(user_id, user, qrme)
 
     label = conditions.LABELS.get(detection.condition, detection.condition)
     message = (

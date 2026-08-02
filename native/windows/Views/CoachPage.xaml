@@ -48,6 +48,33 @@
                                FontSize="11" TextWrapping="Wrap" Visibility="Collapsed" />
                     <TextBlock x:Name="ReplyText" Foreground="{StaticResource JimTxtBrush}"
                                FontSize="14" TextWrapping="Wrap" />
+
+                    <!-- A specialist covers this area. An offer, not a send:
+                         what would cross the tandem is what this person just
+                         wrote, so the button is theirs and the note says so
+                         before they press it. -->
+                    <StackPanel x:Name="OfferPanel" Spacing="4" Visibility="Collapsed">
+                        <TextBlock x:Name="OfferLabel" FontWeight="Bold" FontSize="14"
+                                   Foreground="{StaticResource JimTxtBrush}" TextWrapping="Wrap" />
+                        <TextBlock x:Name="OfferNote" FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{StaticResource JimT2Brush}" />
+                        <Button x:Name="AskSpecialistButton"
+                                Click="OnAskSpecialist" Background="Transparent"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="SpecialistCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="SpecialistWho" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="SpecialistText" FontSize="14" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="SpecialistProv" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
                 </StackPanel>
             </Border>
         </StackPanel>

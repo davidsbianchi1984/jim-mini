@@ -38,6 +38,7 @@ import app.jim.guardian.EscalationPolicy
 import app.jim.guardian.Guidance
 import app.jim.guardian.ImproveState
 import app.jim.guardian.ContinuityState
+import app.jim.guardian.SpecialistAnswer
 import app.jim.guardian.CustodyList
 import app.jim.guardian.OfflinePosture
 import app.jim.guardian.CustodyProvenance
@@ -441,6 +442,7 @@ fun CoachScreen(vm: GuardianViewModel) {
     var message by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var reply by remember { mutableStateOf<Guidance?>(null) }
+    var fromSpecialist by remember { mutableStateOf<SpecialistAnswer?>(null) }
 
     screenScroll {
         Text("Life Coach", color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -452,6 +454,7 @@ fun CoachScreen(vm: GuardianViewModel) {
         }
         BrandButton("Ask coach", enabled = message.isNotBlank(), busy = busy) {
             busy = true
+            fromSpecialist = null
             vm.call({ ApiClient.coach(vm.uid!!, vm.token!!, area, message) }) {
                 reply = it.getOrNull(); busy = false
             }
@@ -461,6 +464,43 @@ fun CoachScreen(vm: GuardianViewModel) {
                 Text("Coach", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text(g.content, color = Jim.Txt, fontSize = 14.sp)
                 GuidanceExtras(g)
+
+                // A specialist covers this area. An offer, not a send: what
+                // would cross the tandem is what this person just wrote, so
+                // the button is theirs and the note says so before they press.
+                val offer = g.specialistOffer
+                if (offer != null && offer.available && fromSpecialist == null) {
+                    Text(offer.label, color = Jim.Txt, fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold)
+                    Text(offer.note, color = Jim.T2, fontSize = 11.sp)
+                    TextButton(enabled = !busy, onClick = {
+                        busy = true
+                        vm.call({ ApiClient.coachSpecialist(
+                            vm.uid!!, vm.token!!, area, message) }) {
+                            fromSpecialist = it.getOrNull(); busy = false
+                        }
+                    }) { Text(L10n.t("spec.ask", vm.language), color = Jim.BrandA, fontSize = 12.sp) }
+                }
+            }
+        }
+        fromSpecialist?.let { a ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text((a.label ?: L10n.t("spec.fallback", vm.language))
+                     + " \u00b7 " + L10n.t("spec.via", vm.language),
+                    color = Jim.Txt, fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold)
+                when {
+                    a.delivered && a.content != null ->
+                        Text(a.content, color = Jim.Txt, fontSize = 14.sp)
+                    a.heldForOwnerApproval ->
+                        Text(L10n.t("spec.held", vm.language),
+                            color = Jim.Amber, fontSize = 12.sp)
+                    else ->
+                        Text((a.reason ?: "") + (a.note?.let { " \u2014 $it" } ?: ""),
+                            color = Jim.Amber, fontSize = 12.sp)
+                }
+                a.method?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+                a.shared?.let { Text(L10n.t("spec.shared", vm.language) + ": $it", color = Jim.T2, fontSize = 11.sp) }
             }
         }
     }

@@ -4,6 +4,89 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.10] — 2026-08-02
+
+### A specialist could be reached by a sensor and not by a person
+
+`grep -c specialist jim/coach.py` returned **0**.
+
+A QRME specialist was reachable from exactly one place in this product:
+`guardian._deliver`, the monitoring path. Sensors trip, a detection names a
+condition, and if a tandem specialist is registered for it the Guardian
+delegates the guidance.
+
+`coach.reply` — where somebody brings something in their own words, because
+they chose to — had no call, no mention and no comment about specialists at
+all.
+
+    asked     can a specialist be reached
+    mattered  can the person who asks reach one
+
+The person whose watch noticed something got the better answer. The person who
+sat down and typed *"I've been struggling with money and it's keeping me up"*
+got the local model — on a product whose premise is that somebody is looking
+after you, and where bringing a problem yourself is the strongest signal there
+is.
+
+**Nothing bridged them because two vocabularies never met.** `specialists` is
+keyed on **condition**, because its only caller was a detection. `coach.AREAS`
+is seven **life areas**, because its only caller was a person choosing a tab.
+`jim/specialists.py` is that map — declared, not matched: a substring rule
+would have paired *finance* with *financial stress* and left *nutrition*
+silently unpaired while looking like it had worked. An area with no clinical
+domain holds an empty tuple, which is a decision rather than an omission, and
+a guard refuses a new area nobody has decided about.
+
+### It offers; it does not route
+
+The material is different in kind from what the monitoring path sends. A
+detection sends a **finding** — *"the user shows signs of low mood (resting
+heart rate elevated for 40 minutes)"*. A coach turn would send **what the
+person wrote about their own life**.
+
+Routing that automatically would disclose to a profile outside JIM something
+somebody said to their Guardian, without ever asking them. So `coach.reply`
+returns an offer that says plainly *nothing has been sent*, and the sending
+lives behind `POST /coach/{id}/specialist` — a door the person chooses.
+`handoff.py` set the same rule for the other multi-step path: *a detection can
+warrant a handoff; a person or an operator starts it*.
+
+Never reachable from escalation, and there is a test that fails if it ever is:
+a ladder that waits on a third party is worse than no ladder.
+
+The answer says where it came from — *"answered by a QRME specialist profile
+through the tandem, not by JIM's own model"* — and what crossed: *"the message
+you sent, and nothing else from your record — no check-ins, no conditions, no
+medication"*. Both are checked by name. A reply that reads as the Guardian's
+own when a third party wrote it is the one thing this path must never do.
+
+Doors in the console and on all three shells.
+
+### A field name that would have broken every phone
+
+The offer ships as `specialist_offer`, not `specialist`. The monitoring path's
+reply already uses `specialist` for the expert's **name**, a string, and all
+three shells decode `Guidance` with `specialist: String?`. An object under that
+key would have thrown at decode time on iOS, Android and Windows — and there is
+no Swift, Kotlin or C# toolchain in this build environment to have said so.
+
+### Two records were overstating themselves
+
+`console_untranslated.txt` counted **62** rows that were separators rather than
+English: a bare `:`, a `·`, a `%`, a `⚠`. The guard then fired on a card whose
+every sentence had just been localized.
+
+    asked     did the extractor find a string here
+    mattered  did it find a word a reader reads
+
+The same mistake the shells' guard made last release with `"\(dim): \(n)%"`,
+one file over. The ceiling is corrected to 615.
+
+The new specialist cards **are** prose, so the native ratchet fired on them
+correctly and they are hand-translated into ten languages on all three shells
+and the console — the rule this repo keeps rather than adding to a backlog it
+just finished measuring.
+
 ## [0.30.9] — 2026-08-02
 
 ### The user-specific model was correct, tested, and never computed

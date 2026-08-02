@@ -24,7 +24,19 @@ data class Guidance(val delivered: Boolean, val source: String?, val content: St
                     val references: List<String> = emptyList(), val firstAid: FirstAid? = null,
                     val provenance: Provenance? = null, val translationNote: String? = null,
                     val specialist: String? = null, val qrmeProfileId: String? = null,
-                    val custody: Custody? = null)
+                    val custody: Custody? = null,
+                    // The *offer*, distinct from `specialist` above: that is a
+                    // name the monitoring path fills in; this is whether one
+                    // is available to ask.
+                    val specialistOffer: SpecialistOffer? = null)
+data class SpecialistOffer(val available: Boolean, val label: String,
+                           val qrmeProfileId: String, val sent: Boolean,
+                           val note: String)
+data class SpecialistAnswer(val delivered: Boolean, val content: String?,
+                            val reason: String?, val note: String?,
+                            val heldForOwnerApproval: Boolean,
+                            val label: String?, val method: String?,
+                            val shared: String?)
 data class LanguageInfo(val code: String, val label: String, val safetyTranslated: Boolean)
 data class TranslateResult(val translation: String, val engine: String, val note: String?)
 data class ChildCreated(val id: String, val childToken: String,
@@ -180,6 +192,12 @@ object ApiClient {
             o.optJSONObject("custody")?.let { c ->
                 Custody(c.optBoolean("vaulted"), c.optString("pdi_key", null),
                     c.optString("note", null))
+            },
+            o.optJSONObject("specialist_offer")?.let { so ->
+                SpecialistOffer(so.optBoolean("available"),
+                    so.optString("label", ""),
+                    so.optString("qrme_profile_id", ""),
+                    so.optBoolean("sent"), so.optString("note", ""))
             })
     }
 
@@ -406,6 +424,24 @@ object ApiClient {
         val o = request("/coach/$uid", "POST",
             JSONObject().put("area", area).put("message", message), token)
         return parseGuidance(o)!!
+    }
+
+    /** Send this question to the QRME specialist covering the area. */
+    suspend fun coachSpecialist(uid: String, token: String, area: String,
+                                message: String): SpecialistAnswer {
+        val o = request("/coach/$uid/specialist", "POST",
+            JSONObject().put("area", area).put("message", message), token)
+        val who = o.optJSONObject("specialist")
+        val prov = o.optJSONObject("provenance")
+        return SpecialistAnswer(
+            o.optBoolean("delivered"),
+            if (o.isNull("content")) null else o.optString("content"),
+            if (o.isNull("reason")) null else o.optString("reason"),
+            if (o.isNull("note")) null else o.optString("note"),
+            o.optBoolean("held_for_owner_approval"),
+            who?.optString("label"),
+            prov?.optString("method"),
+            prov?.optString("shared"))
     }
 
     private suspend fun getArray(path: String, token: String): org.json.JSONArray = withContext(Dispatchers.IO) {

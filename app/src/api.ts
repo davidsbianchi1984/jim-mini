@@ -305,8 +305,20 @@ export interface FirstAid {
   pace?: { compressions_per_minute: number; compression_to_breath_ratio: string;
            cue: { light: string; audio: string } };
 }
+export interface SpecialistOffer {
+  available: boolean; label: string; qrme_profile_id: string;
+  sent: boolean; note: string;
+}
+export interface SpecialistAnswer {
+  delivered: boolean; area?: string; content?: string | null;
+  reason?: string; note?: string;
+  specialist?: { label: string; qrme_profile_id: string };
+  held_for_owner_approval?: boolean;
+  provenance?: { method: string; shared: string };
+}
 export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[];
   first_aid?: FirstAid | null;
+  specialist_offer?: SpecialistOffer | null;
   provenance?: { generated_by?: string; degraded?: boolean; degraded_reason?: string | null } }
 export interface DriftCrossing {
   metric: string; label: string; unit: string; direction: "above" | "below";
@@ -906,6 +918,11 @@ export const api = {
     req<CheckinResult>(`/checkin/${uid}`, { method: "POST", body, token }),
   coach: (uid: string, body: { area: string; message: string }, token: string) =>
     req<Guidance>(`/coach/${uid}`, { method: "POST", body, token }),
+  // The person's own question to the QRME specialist covering this area.
+  // `coach` only *offers*; this is the door they choose, because what crosses
+  // is what they wrote.
+  coachSpecialist: (uid: string, body: { area: string; message: string }, token: string) =>
+    req<SpecialistAnswer>(`/coach/${uid}/specialist`, { method: "POST", body, token }),
   baseline: (uid: string, token: string) =>
     req<BaselineMetric[]>(`/baseline/${uid}`, { token }),
 

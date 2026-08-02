@@ -8,6 +8,7 @@ struct CoachView: View {
     @State private var reply: Guidance?
     @State private var busy = false
     @State private var error: String?
+    @State private var fromSpecialist: SpecialistAnswer?
 
     private let areas = ["mental_health", "health_fitness", "career",
                          "finance", "relationships", "personal_growth"]
@@ -49,9 +50,59 @@ struct CoachView: View {
                         Text("Coach").font(.headline).foregroundStyle(Theme.txt)
                         Text(g.content).font(.subheadline).foregroundStyle(Theme.txt)
                         GuidanceExtras(guidance: g)
+
+                        // A specialist covers this area. An offer, not a send:
+                        // what would cross the tandem is what this person just
+                        // wrote, so the button is theirs to press and the note
+                        // says so before they press it.
+                        if let o = g.specialist_offer, o.available,
+                           fromSpecialist == nil {
+                            Divider().overlay(Theme.line)
+                            Text(o.label).font(.subheadline.bold())
+                                .foregroundStyle(Theme.txt)
+                            Text(o.note).font(.caption2).foregroundStyle(Theme.t2)
+                            Button(L10n.t("spec.ask", state.language)) { askSpecialist() }
+                                .font(.caption).tint(Theme.brandA).disabled(busy)
+                        }
+                    }.card()
+                }
+
+                if let a = fromSpecialist {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text((a.specialist?.label ?? L10n.t("spec.fallback", state.language))
+                             + " · " + L10n.t("spec.via", state.language))
+                            .font(.headline).foregroundStyle(Theme.txt)
+                        if a.delivered, let content = a.content {
+                            Text(content).font(.subheadline)
+                                .foregroundStyle(Theme.txt)
+                        } else if a.held_for_owner_approval == true {
+                            Text(L10n.t("spec.held", state.language))
+                                .font(.caption).foregroundStyle(Theme.amber)
+                        } else {
+                            Text((a.reason ?? "")
+                                 + (a.note.map { " — \($0)" } ?? ""))
+                                .font(.caption).foregroundStyle(Theme.amber)
+                        }
+                        if let p = a.provenance {
+                            Text(p.method).font(.caption2).foregroundStyle(Theme.t2)
+                            Text(L10n.t("spec.shared", state.language) + ": " + p.shared)
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                        }
                     }.card()
                 }
             }.padding(20)
+        }
+    }
+
+    private func askSpecialist() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                fromSpecialist = try await ApiClient.shared.coachSpecialist(
+                    uid: uid, token: token, area: area, message: message)
+            } catch { self.error = error.localizedDescription }
+            busy = false
         }
     }
 
@@ -59,6 +110,7 @@ struct CoachView: View {
         guard let uid = state.uid, let token = state.token else { return }
         busy = true; error = nil
         Task {
+            fromSpecialist = nil
             do { reply = try await ApiClient.shared.coach(uid: uid, token: token, area: area, message: message) }
             catch { self.error = error.localizedDescription }
             busy = false

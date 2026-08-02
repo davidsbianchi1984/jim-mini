@@ -78,7 +78,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.30.9",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.30.10",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2210,6 +2210,19 @@ def create_app(qrme_client: QRMEClient | None = None,
     def coach_reply(user_id: str, body: CoachMessage, request: Request) -> dict:
         _user_or_404(user_id, request)
         return coach.reply(user_id, body.area, body.message)
+
+    @app.post("/coach/{user_id}/specialist")
+    def coach_ask_specialist(user_id: str, body: CoachMessage,
+                             request: Request) -> dict:
+        """Send this question to the QRME specialist covering the area.
+
+        Explicit, because it shares what the person wrote with a profile
+        outside JIM. `POST /coach/{id}` only *offers*; this is the door they
+        choose. Never reachable from escalation.
+        """
+        _user_or_404(user_id, request)
+        return coach.ask_specialist(user_id, body.area, body.message,
+                                    app.state.qrme, pdi=app.state.pdi)
 
     @app.get("/coach/{user_id}")
     def coach_history(user_id: str, request: Request,

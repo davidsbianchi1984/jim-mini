@@ -85,9 +85,19 @@ def _prose() -> list[str]:
     # Prefixed by screen, the way QRME's record is. With one screen the bare
     # string was enough; across twenty it is the difference between a record
     # somebody can act on and six hundred lines of loose sentences.
+    #
+    # **A separator is not prose.** Fragments left between two interpolations
+    # — a bare `:`, a `·`, a `%` — carry no word anybody reads, and counting
+    # them made this guard fire on a card whose every sentence had just been
+    # localized. That is the same mistake the shells' version of this made
+    # with `"\(dim): \(n)%"`, one file over and one release later.
+    #
+    #     asked     did the extractor find a string here
+    #     mattered  did it find a word a reader reads
     return sorted({f"{screen.split('/')[-1].removesuffix('.tsx')}: {text}"
                    for screen in PRE_SESSION
-                   for text in found[f"src/{screen}"]})
+                   for text in found[f"src/{screen}"]
+                   if re.search(r"[A-Za-z]", text)})
 
 
 def _recorded() -> set[str]:

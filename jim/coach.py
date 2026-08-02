@@ -8,7 +8,7 @@ and active goals. Uses JIM's own LLM provider and the same safety net.
 
 from __future__ import annotations
 
-from . import db, guardian, life, llm
+from . import continuity, db, guardian, life, llm
 from .guidance import _DENY, personalize
 
 AREAS = {
@@ -160,8 +160,31 @@ def reply(user_id: str, area: str, message: str) -> dict:
     if not safe:
         return {"delivered": False, "area": area,
                 "reason": "coach reply failed safety check", "content": None}
+    # Who covers this area, if anybody — an offer, never a send.
+    #
+    # A QRME specialist was reachable from exactly one place in this product:
+    # the monitoring path, where a detection names a condition. This surface —
+    # where somebody brings a question in their own words because they chose
+    # to — could not name one at all.
+    #
+    #     asked     can a specialist be reached
+    #     mattered  can the person who asks reach one
+    #
+    # It stays an offer because the material is different in kind: a detection
+    # sends a finding, and this would send what the person wrote. That is
+    # theirs to disclose.
+    from . import specialists
+    #
+    # Under `specialist_offer`, not `specialist`: the monitoring path's
+    # reply already uses `specialist` for the expert's *name*, a string,
+    # and all three native shells decode Guidance with `specialist:
+    # String?`. An object under that key would have thrown at decode time
+    # on every phone, with no compiler in this environment to say so.
+    offer = specialists.offer(area)
+
     return {"delivered": True, "area": area, "content": text,
             "language": language,
+            "specialist_offer": offer,
             # What the coach taught itself from this turn (clause 12), so the
             # adaptation is announced rather than silently applied forever.
             "adapted_tone": adapted_tone,
@@ -184,6 +207,103 @@ def reply(user_id: str, area: str, message: str) -> dict:
                 "disclaimer": "For medical, legal, or investment decisions, "
                               "consult a qualified professional.",
             }}
+
+
+def ask_specialist(user_id: str, area: str, message: str, qrme,
+                   pdi=None) -> dict:
+    """Send this person's own question to the QRME specialist for the area.
+
+    The half of the tandem the coach never had. Until now a specialist was
+    reachable only from `guardian._deliver` — the monitoring path — so the
+    person whose watch noticed something got the better answer and the person
+    who chose to ask got the local model.
+
+        asked     can a specialist be reached
+        mattered  can the person who asks reach one
+
+    Called only from the route a person chose. `coach.reply` *offers*; nothing
+    here runs on the way to an ordinary answer, and nothing here is reachable
+    from escalation — `jim/handoff.py` states the rule and it holds for the
+    same reason: a ladder that waits on a third party is worse than no ladder.
+
+    Every refusal below returns rather than raises, and each says what happened
+    and what was used instead. Somebody who asked a question gets an answer;
+    the worst case is that it came from the Guardian alone.
+    """
+    from . import specialists
+
+    if area not in AREAS:
+        return {"delivered": False, "reason": f"unknown area {area!r}"}
+
+    spec = specialists.for_area(area)
+    if spec is None:
+        return {"delivered": False, "area": area,
+                "reason": "no specialist covers this area",
+                "note": "the Guardian answers this one alone"}
+    if qrme is None:
+        return {"delivered": False, "area": area,
+                "reason": "no QRME tandem is configured on this deployment",
+                "note": "the Guardian answers this one alone"}
+
+    user = guardian.get_user(user_id)
+    if user is None:
+        return {"delivered": False, "reason": "unknown user"}
+
+    safe, why = guardian.tandem_safe(user, spec["qrme_profile_id"], qrme)
+    if not safe:
+        return {"delivered": False, "area": area, "reason": why,
+                "note": "the Guardian answers this one alone"}
+
+    interactor_id = guardian.interactor_for(user_id, user, qrme)
+    try:
+        reply = qrme.specialist_reply(
+            spec["qrme_profile_id"], interactor_id, message)
+    except RuntimeError as e:
+        # QRME refused — its own age gate, its own moderation, its own outage.
+        # Never leave somebody who asked a question with nothing.
+        return {"delivered": False, "area": area, "reason": str(e),
+                "note": "the Guardian answers this one alone"}
+
+    content = reply.get("content")
+    now = db.utcnow()
+    conn = db.connect()
+    # The person's own question and the specialist's answer land in the same
+    # thread as the rest of the coaching. A conversation split across two
+    # stores is a conversation somebody has to reassemble to understand what
+    # they were told.
+    conn.execute(
+        "INSERT INTO coach_messages (id, user_id, area, role, content, created_at)"
+        " VALUES (?,?,?,?,?,?)",
+        (db.new_id("msg"), user_id, area, "user", message, now))
+    if content:
+        conn.execute(
+            "INSERT INTO coach_messages (id, user_id, area, role, content, created_at)"
+            " VALUES (?,?,?,?,?,?)",
+            (db.new_id("msg"), user_id, area, "coach", content, now))
+    conn.commit()
+
+    continuity.observe(user_id, "coach_turn", length=len(message))
+    guardian._event(user_id, "specialist_asked",
+                    detail={"area": area,
+                            "qrme_profile_id": spec["qrme_profile_id"],
+                            "held": content is None})
+    return {
+        "delivered": content is not None,
+        "area": area,
+        "content": content,
+        "specialist": {"label": spec["label"],
+                       "qrme_profile_id": spec["qrme_profile_id"]},
+        # Held rather than refused: QRME's moderation can hold a reply for its
+        # owner's approval, and saying "no answer" would misdescribe a message
+        # that exists and is waiting.
+        "held_for_owner_approval": content is None,
+        "provenance": {
+            "method": "answered by a QRME specialist profile through the "
+                      "tandem, not by JIM's own model",
+            "shared": "the message you sent, and nothing else from your "
+                      "record — no check-ins, no conditions, no medication",
+        },
+    }
 
 
 def companion_checkin(user_id: str) -> dict:
