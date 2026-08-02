@@ -247,6 +247,32 @@ def test_the_health_domains_are_the_ones_that_got_translated():
             "safety feature is failing them.")
 
 
+def test_no_refusal_is_translated_into_english():
+    """The check the one above cannot make.
+
+    `test_every_translated_refusal_has_every_language` asks whether each row
+    has all nine keys. A row whose nine values are the English sentence pasted
+    nine times satisfies it exactly, and the table would then claim the refusal
+    is handled while every reader gets English — the failure this whole file
+    exists to catch, wearing the shape of the fix.
+
+        asked     does every refusal have every language
+        mattered  does every language say something other than the English
+
+    Byte equality is the whole test. It cannot tell a good translation from a
+    bad one and does not try; it can tell a translation from no translation,
+    which is the difference that was going unchecked while 142 rows were added
+    to this table by hand in one release.
+    """
+    untouched = [(k, c) for k, v in i18n._REFUSALS.items()
+                 for c, t in v.items() if t == k]
+    assert not untouched, (
+        f"{len(untouched)} language value(s) are the English sentence "
+        "verbatim, so the table claims a refusal is translated and serves "
+        "English:\n    "
+        + "\n    ".join(f"[{c}] {k[:70]}" for k, c in untouched[:20]))
+
+
 # --- driven, not read ------------------------------------------------------
 
 def _a_user(client, language: str, mode: str = "pre"):

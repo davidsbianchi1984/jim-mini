@@ -4,6 +4,47 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.2] — 2026-08-02
+
+### The refusals, finished
+
+0.24.0 translated the eleven refusals any route can raise and **wrote the rest
+down**. 42 sentences sat in `jim/tests/refusals_untranslated.txt` from that day to this — the sentences
+the Guardian says when it says no, still English on an account that had chosen
+otherwise.
+
+Among them the sentences a guardian meets around a minor's care — the waiver
+that can never be signed for a child, the consent a provider does not have.
+
+
+    asked     is the refusal translated
+    mattered  is every refusal translated
+
+All 42 are now in `_REFUSALS`, in the nine languages beside English. The
+record is a decision rather than a backlog for the first time: it is empty.
+
+### What deliberately stays an identifier
+
+Field names, header names, enum values and environment variables are not
+translated and are not meant to read as words — `audio_base64, qrme_profile_id, x-signup-key, JIM_QRME_URL`. They are the API's own
+names, the same string in every language, and declining them into a sentence is
+the half-in-one-language failure the table exists to refuse.
+
+### The check that could not have caught a lie
+
+`test_every_translated_refusal_has_every_language` asks whether each row has
+all nine keys. A row whose nine values are the English sentence pasted nine
+times satisfies it exactly — and the table would then claim the refusal is
+handled while every reader still got English.
+
+    asked     does every refusal have every language
+    mattered  does every language say something other than the English
+
+That gap was harmless while eleven rows were added by hand and reviewed one at
+a time. It stops being harmless the moment 42 are added in one release, so
+`test_no_refusal_is_translated_into_english` was added first and injected
+against: an English value in one slot of one row fails it by name.
+
 ## [0.40.1] — 2026-08-02
 
 ### The language no client was sending

@@ -45,46 +45,4 @@
 #
 # Named here rather than counted in, so 42 cannot be read as the whole number.
 #
-# ceiling: 42
-PDI vault unreachable
-a message is required
-a typed legal-name signature is required
-app connector not found
-audio_base64 is not valid base64
-beacon not found
-beacons are for publish connections
-connection has been revoked
-connector has been revoked
-consent to terms of use is required to enroll
-excursion not found
-goal not found
-habit not found
-minors require parent/guardian consent
-no Medical ID card to revoke
-no PDI vault configured (set JIM_PDI_URL / JIM_PDI_TOKEN)
-no QRME endpoint configured (set JIM_QRME_URL)
-no QRME endpoint configured (set JIM_QRME_URL) — the community lives in QRME and JIM shows the door
-no alarm with that id
-no audio
-no lesson covers that screen
-no mail server is configured — save one first
-no open alarm with that id
-no signed waiver on file
-no such child on this guardian
-no such custody record
-no such task
-nothing to say
-rating must be 1–5
-robot not found
-session not found
-social connection not found
-tandem specialists require a qrme_profile_id
-that capture belongs to somebody else
-the autonomous-resuscitation waiver can never be signed for a minor — not by the minor and not by a guardian; confirm-gated operation is the ceiling
-the user has not consented to provider access
-the waiver terms must be explicitly accepted
-this Medical ID card is not valid
-this connection is for collecting, not publishing
-this connection is for publishing, not collecting
-this deployment requires a signup key to enroll — send it as the x-signup-key header
-this excursion has no findings to learn
+# ceiling: 0
