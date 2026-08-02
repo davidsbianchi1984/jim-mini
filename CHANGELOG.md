@@ -4,7 +4,7 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.40.10] — 2026-08-02
+## [0.41.0] — 2026-08-02
 
 ### The workflow round-trips and nothing walked the whole arc
 
