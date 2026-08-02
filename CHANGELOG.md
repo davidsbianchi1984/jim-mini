@@ -4,6 +4,55 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.3] — 2026-08-02
+
+### One wrapper recorded its degrades; its sibling said nothing
+
+`llm.FallbackProvider` is where this rule is written down in this codebase, and
+it is exemplary:
+
+> The degrade is recorded on the instance (`answered_by`, `failure`) so a
+> caller can tell the user the truth about who actually answered — **a log line
+> the user will never read is not disclosure.**
+
+`cloud.CloudProvider` degrades to the same local stub and did none of it: a
+bare `except Exception:`, no record, and — unlike its sibling — not even a log
+line. And `generate_for_user` asked for the truth by naming one class:
+
+```python
+if isinstance(provider, FallbackProvider):
+    actual, reason = provider.answered_by, provider.failure
+```
+
+So when the cloud gateway was unreachable, `actual` stayed at the model the
+user had chosen and `degraded` computed to False. The coach's own comment
+beside that field says what that costs:
+
+> a silent degrade to the stub under a screen that says Claude is how a founder
+> demos canned text to their testers without knowing it
+
+    asked     did the fallback provider degrade
+    mattered  did anything degrade
+
+The careful half made the silent half invisible, and nothing exercised the
+cloud path through `generate_for_user` at all.
+
+### What changed
+
+`CloudProvider` now carries `answered_by`/`failure` in the same idiom as its
+sibling, and the assembly **duck-types on those attributes** instead of naming
+one class — so a third wrapper is covered by construction rather than by
+somebody remembering to add a branch. A structural check enforces it.
+
+### A test that passed for the wrong reason
+
+The driven half of the new guard first asserted the right values while the
+defect was still in place. The suite pins `JIM_LLM=stub`, so `intended` was
+already `"stub"` and the broken branch — which reports `intended` — produced
+exactly the answer the fixed branch produces. It now pins the intended provider
+to something that is *not* the stub, which is the whole of its discriminating
+power. Re-injected afterwards to prove it fails.
+
 ## [0.40.2] — 2026-08-02
 
 ### The refusals, finished

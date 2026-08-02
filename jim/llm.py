@@ -464,7 +464,14 @@ def generate_for_user(user_id: str, system: str, user: str, cloud=None) -> dict:
     text = provider.generate(system, user)
 
     actual, reason = intended, None
-    if isinstance(provider, FallbackProvider):
+    # Duck-typed on the two attributes rather than isinstance-checked against
+    # one class. It named `FallbackProvider` alone, so `cloud.CloudProvider` —
+    # which degrades to the same stub — fell through to `intended` and was
+    # reported as an undegraded answer from the model the user had chosen.
+    #
+    #     asked     did the fallback provider degrade
+    #     mattered  did anything degrade
+    if hasattr(provider, "answered_by"):
         actual, reason = provider.answered_by, provider.failure
     elif isinstance(provider, StubProvider):
         actual = "stub"

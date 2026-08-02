@@ -21,6 +21,7 @@ intake where contribution data is stored).
 from __future__ import annotations
 
 import json
+import logging
 import urllib.error
 import urllib.request
 
@@ -116,16 +117,41 @@ class CloudModelClient:
             return False
 
 
+logger = logging.getLogger("jim.cloud")
+
+
 class CloudProvider:
     """Greater-model inference with automatic local fallback."""
+
+    #: What this wrapper is, in the words a provenance record needs. The
+    #: gateway's model is not one of the registry names, so it cannot be
+    #: spelled by `resolve_choice` and has to say its own name here.
+    GREATER_MODEL = "cloud greater model"
 
     def __init__(self, client: CloudModelClient, fallback):
         self._client = client
         self._fallback = fallback
+        # The same two attributes `llm.FallbackProvider` carries, for the same
+        # reason its docstring gives: a log line the user will never read is
+        # not disclosure. This wrapper had neither — it caught the exception
+        # with a bare `except`, wrote nothing, and returned the stub's text,
+        # and `generate_with_provenance` isinstance-checked only its sibling.
+        # So the careful half made the silent half invisible.
+        #
+        #     asked     does this product record when a model degrades
+        #     mattered  does every degrading path record it
+        self.answered_by = self.GREATER_MODEL
+        self.failure: str | None = None
 
     def generate(self, system: str, user: str) -> str:
         try:
-            return self._client.generate(system, user)["content"].strip()
-        except Exception:
-            # The gateway being down never breaks the product.
+            text = self._client.generate(system, user)["content"].strip()
+        except Exception as exc:  # noqa: BLE001 — the gateway never breaks us
+            # The gateway being down never breaks the product — but it does
+            # change who wrote the answer, and that is the reader's to know.
+            logger.warning("cloud gateway failed, using local fallback: %s", exc)
+            self.answered_by = "stub"
+            self.failure = f"the cloud greater model did not answer: {exc}"
             return self._fallback.generate(system, user)
+        self.answered_by, self.failure = self.GREATER_MODEL, None
+        return text
