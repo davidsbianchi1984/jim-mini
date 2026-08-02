@@ -4,7 +4,10 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.30.10] — 2026-08-02
+## [0.40.0] — 2026-08-02
+
+> Staged as 0.30.10 and cut as **0.40.0**. The work below is unchanged; only
+> the number moved, from a patch on the 0.30 line to a minor of its own.
 
 ### A specialist could be reached by a sensor and not by a person
 
