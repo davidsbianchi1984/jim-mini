@@ -136,6 +136,8 @@ def deliver(to: str, subject: str, body: str) -> str:
         msg = EmailMessage()
         msg["From"], msg["To"], msg["Subject"] = sender, to, subject
         msg.set_content(body)
+        from . import offline
+        offline.allow_host(settings["host"], "sending mail")
         with smtplib.SMTP(settings["host"], int(settings["port"]),
                           timeout=30) as smtp:
             smtp.starttls()

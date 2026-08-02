@@ -86,6 +86,16 @@ class AnthropicProvider:
     def __init__(self, api_key: str | None = None) -> None:
         import anthropic
 
+        # Gated here and not only where a provider is chosen — a gate on
+        # the factory is walked past by anything constructing one directly.
+        #
+        #     asked     does offline mode pick a local provider
+        #     mattered  can a remote one still be built and used
+        from . import offline
+        if offline.enabled():
+            raise offline.LeftTheHost(
+                "offline mode is on, so the Anthropic API cannot be reached. "
+                "Nothing leaves this machine while JIM_OFFLINE is set.")
         self._client = (anthropic.Anthropic(api_key=api_key) if api_key
                         else anthropic.Anthropic())
 
@@ -283,8 +293,12 @@ def _ollama_alive() -> bool:
         return _OLLAMA_PROBE["alive"]
     alive = False
     try:
-        req = urllib.request.Request(
-            _OLLAMA_BASE.rsplit("/v1", 1)[0] + "/api/version")
+        probe = _OLLAMA_BASE.rsplit("/v1", 1)[0] + "/api/version"
+        # "nothing leaves the machine" was true of the default and
+        # never checked — the base URL is configurable.
+        from . import offline
+        offline.allow(probe, "the local model daemon")
+        req = urllib.request.Request(probe)
         with urllib.request.urlopen(req, timeout=0.5) as r:
             alive = r.status == 200
     except Exception:  # noqa: BLE001 — not running is the common case
@@ -485,6 +499,8 @@ def _extract(text: str, marker: str) -> str | None:
 def _post_json(url: str, payload: dict, headers: dict) -> dict:
     data = json.dumps(payload).encode()
     h = {"content-type": "application/json", **headers}
+    from . import offline
+    offline.allow(url, "the model provider")
     req = urllib.request.Request(url, data=data, method="POST", headers=h)
     try:
         with urllib.request.urlopen(req, timeout=_TIMEOUT) as r:

@@ -128,6 +128,8 @@ def _exchange(spec: dict, code: str, redirect_uri: str) -> dict:
     req = urllib.request.Request(
         spec["token"], data=body,
         headers={"content-type": "application/x-www-form-urlencoded"})
+    from . import offline
+    offline.allow(url, "the sign-in provider")
     with urllib.request.urlopen(req, timeout=15) as resp:   # noqa: S310
         return json.loads(resp.read().decode())
 

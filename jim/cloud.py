@@ -45,6 +45,11 @@ class _UrllibClient:
             h.update(headers)
         req = urllib.request.Request(
             self._base + path, data=data, method=method, headers=h)
+        # Gated at the way out, not only at the wiring: `api.py` sets
+        # `state.cloud = None` offline, and anything building a client
+        # directly walks past that.
+        from . import offline
+        offline.allow(self._base + path, "the cloud gateway")
         try:
             with urllib.request.urlopen(req, timeout=20) as r:
                 return _Response(r.status, r.read())

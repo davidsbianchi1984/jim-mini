@@ -197,6 +197,12 @@ def speak(text: str, voice_id: str | None = None) -> tuple[bytes, str]:
         headers = {"authorization": f"Bearer {r['api_key']}",
                    "content-type": "application/json"}
     req = urllib.request.Request(url, data=body, headers=headers, method="POST")
+    # Before the `try`, deliberately: the clauses below turn transport errors
+    # into a `VoiceError` a screen shows, and a refusal swallowed into one
+    # would read as the provider being unreachable rather than as nothing
+    # being sent.
+    from . import offline
+    offline.allow(url, "speaking aloud")
     try:
         with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
             return resp.read(), resp.headers.get("content-type", "audio/mpeg")
@@ -237,6 +243,12 @@ def transcribe(audio: bytes, filename: str = "speech.webm") -> str:
     body = b"".join(parts)
     headers["content-type"] = f"multipart/form-data; boundary={boundary}"
     req = urllib.request.Request(url, data=body, headers=headers, method="POST")
+    # Before the `try`, deliberately: the clauses below turn transport errors
+    # into a `VoiceError` a screen shows, and a refusal swallowed into one
+    # would read as the provider being unreachable rather than as nothing
+    # being sent.
+    from . import offline
+    offline.allow(url, "speaking aloud")
     try:
         with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
             data = json.loads(resp.read() or b"{}")

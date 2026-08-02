@@ -90,6 +90,8 @@ def _post(url: str, envelope: dict, http=None) -> None:
         if resp.status_code >= 300:
             raise RuntimeError(f"webhook returned {resp.status_code}")
         return
+    from . import offline
+    offline.allow(url, "the escalation webhook")
     req = urllib.request.Request(url, data=body.encode(), method="POST",
                                  headers=headers)
     with urllib.request.urlopen(req, timeout=_TIMEOUT) as r:
