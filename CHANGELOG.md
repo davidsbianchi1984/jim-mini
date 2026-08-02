@@ -4,6 +4,49 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.10] — 2026-08-02
+
+### The workflow round-trips and nothing walked the whole arc
+
+### The finding
+
+JIM's four specialist-task routes — start, list, read, advance — hand a
+multi-phase goal to a QRME synthetic profile and keep the status of it without
+ever holding the working drafts. Each had unit coverage against a stubbed
+tandem. What nothing did was walk the arc against a *real* QRME: the
+cross-product smoke check seeded all three products, wired the tandems, drove a
+single exchange and proved its custody through the vault, then stopped.
+`start_workflow`, `advance` and `specialist_tasks` were never called across the
+boundary at all.
+
+    asked     does the workflow round-trip
+    mattered  does anything walk the whole arc
+
+### What driving it found
+
+Two behaviours nothing had met end to end, both of them JIM's:
+
+  * **Delegated work is Pro-gated** (`synthetic_agents`). The first
+    `POST /users/{id}/specialist-tasks` came back `402` naming the tier. The
+    exchange the smoke check already drove needs only the vault, which Basic
+    has — so the run had never touched that gate.
+  * **`handoff.available` reads "no" from a specialist whose owner has not
+    opted in**, and the refusal now has to happen before the opt-in for the run
+    to continue. A stranger cannot put a synthetic profile to work uninvited,
+    and that is now proven by asking rather than asserted in a docstring.
+
+The arc walks `research → draft → send` and stops at `confirm` with `awaiting`
+naming what it waits for. `handoff._shape` returns the phases done and the
+profile that did them; the drafts stay in QRME, which is the whole point of
+keeping status only.
+
+### This release
+
+Version alignment: the three products are cut together, so one number names one
+combination of all three. The arc itself lives in QRME's `suite/smoke.py`; what
+changed here is that JIM's delegation surface is now driven by it end to end
+rather than only against a stub.
+
 ## [0.40.9] — 2026-08-02
 
 ### The README said v0.18.0
