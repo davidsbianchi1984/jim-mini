@@ -41,8 +41,34 @@ public sealed partial class SafetyPage : Page
 
     public SafetyPage() => InitializeComponent();
 
+    /// The alarm surface's wording, in the reader's language.
+    ///
+    /// These are the strings where misunderstanding changes what happens to a
+    /// person — the question the crash watch asks, the three answers to an
+    /// open alarm, and the line saying this screen cannot call an ambulance.
+    /// They were English on all three shells while the tab above them read
+    /// *Seguridad*.
+    ///
+    ///     asked     is the chrome localized
+    ///     mattered  is the decision localized
+    ///
+    /// Applied here rather than in XAML because a XAML literal cannot be
+    /// re-read when the language changes.
+    private void LocalizeAlarmSurface()
+    {
+        AlarmsEmpty.Text = L10n.T("alarm.none") + " " + L10n.T("alarm.lead");
+        AcceptButton.Content = L10n.T("alarm.going");
+        EscalateButton.Content = L10n.T("alarm.cannot_go");
+        ClearAlarmButton.Content = L10n.T("alarm.clear");
+        AlarmNotEmergency.Text = L10n.T("alarm.not_emergency");
+        CrashAskingTitle.Text = L10n.T("alarm.asking");
+        ImOkayButton.Content = L10n.T("alarm.im_okay");
+        CrashEms.Content = L10n.T("alarm.ems");
+    }
+
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
+        LocalizeAlarmSurface();
         await LoadAlarms();
         await LoadPolicy();
         await LoadRobots();
@@ -63,7 +89,7 @@ public sealed partial class SafetyPage : Page
 
     private string? _openAlarmId;
 
-    private sealed record AlarmCard(string Said, string Attending);
+    private sealed record AlarmCard(string Raised, string Said, string Attending);
 
     private async System.Threading.Tasks.Task LoadAlarms()
     {
@@ -77,12 +103,13 @@ public sealed partial class SafetyPage : Page
             AlarmsEmpty.Visibility = open.Count == 0
                 ? Visibility.Visible : Visibility.Collapsed;
             AlarmsList.ItemsSource = open.Select(a => new AlarmCard(
+                L10n.T("alarm.raised"),
                 string.Join("  ", a.Messages ?? System.Array.Empty<string>()),
                 // Accepted is not cleared — the alarm stays open and the card
                 // has to say which of the two happened.
                 a.AcceptedBy is null
                     ? ""
-                    : $"{a.AcceptedBy} is attending — still open, not resolved.")
+                    : L10n.T("alarm.attending").Replace("{who}", a.AcceptedBy))
             ).ToList();
             AcceptButton.IsEnabled = _openAlarmId is not null;
             EscalateButton.IsEnabled = _openAlarmId is not null;
@@ -167,21 +194,21 @@ public sealed partial class SafetyPage : Page
         var asking = st.Asking ?? false;
         CrashAskingCard.Visibility = asking ? Visibility.Visible : Visibility.Collapsed;
         if (asking)
-            CrashAskingDetail.Text =
-                $"A concerning reading came in ({st.Concern}). Attempt {st.Attempt} " +
-                $"of {st.Attempts} — silence sends help.";
+            CrashAskingDetail.Text = L10n.T("alarm.concern")
+                .Replace("{concern}", st.Concern ?? "")
+                .Replace("{n}", $"{st.Attempt ?? 1}")
+                .Replace("{total}", $"{st.Attempts ?? 3}");
         var tripped = st.Tripped ?? false;
         CrashTrippedNote.Visibility = tripped ? Visibility.Visible : Visibility.Collapsed;
         if (tripped)
-            CrashTrippedNote.Text =
-                $"The crash watch tripped: {st.TrustedName} was contacted. " +
-                "Any normal reading stands it down.";
+            CrashTrippedNote.Text = L10n.T("alarm.tripped")
+                .Replace("{name}", st.TrustedName ?? "");
         var armedQuiet = st.Armed && !asking && !tripped;
         CrashArmedNote.Visibility = armedQuiet ? Visibility.Visible : Visibility.Collapsed;
         if (armedQuiet)
-            CrashArmedNote.Text =
-                $"Armed — {st.TrustedName} will be contacted after " +
-                $"{st.Attempts} unanswered attempts.";
+            CrashArmedNote.Text = L10n.T("alarm.armed")
+                .Replace("{name}", st.TrustedName ?? "")
+                .Replace("{n}", $"{st.Attempts ?? 3}");
     }
 
     private async System.Threading.Tasks.Task LoadCrashWatch()

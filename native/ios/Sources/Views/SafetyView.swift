@@ -63,16 +63,16 @@ private struct AlarmsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             if open.isEmpty {
-                Text("Nothing open.")
+                Text(L10n.t("alarm.none", state.language))
                     .font(.subheadline).foregroundStyle(Theme.t2)
-                Text("An alarm appears here when somebody scans the care code on your door. Scanning it does not call an ambulance — it wakes the people watching over you, and one of them has to answer.")
+                Text(L10n.t("alarm.lead", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
             }
 
             ForEach(open) { a in
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Text("Someone raised this")
+                        Text(L10n.t("alarm.raised", state.language))
                             .font(.headline).foregroundStyle(Theme.red)
                         Spacer()
                         Text(a.tier ?? "").font(.caption2).foregroundStyle(Theme.t2)
@@ -85,7 +85,8 @@ private struct AlarmsSection: View {
                         // Accepted is not cleared. The server says so in its
                         // own response and this shell repeats it rather than
                         // greying the card out.
-                        Text("\(who) is attending — still open, not resolved.")
+                        Text(L10n.t("alarm.attending", state.language)
+                            .replacingOccurrences(of: "{who}", with: who))
                             .font(.caption).foregroundStyle(Theme.amber)
                     } else {
                         // A named responder, because the backend refuses an
@@ -98,7 +99,7 @@ private struct AlarmsSection: View {
                                 uid: state.userId ?? "", alarmId: a.id,
                                 responder: responder, token: state.token ?? "") }
                         } label: {
-                            Text("I have this — I'm going").frame(maxWidth: .infinity)
+                            Text(L10n.t("alarm.going", state.language)).frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent).tint(Theme.brandA)
                         .disabled(busy || responder.trimmingCharacters(
@@ -106,13 +107,13 @@ private struct AlarmsSection: View {
                     }
 
                     HStack {
-                        Button("Nobody can go — escalate") {
+                        Button(L10n.t("alarm.cannot_go", state.language)) {
                             act { try await Api.shared.escalateAlarm(
                                 uid: state.userId ?? "", alarmId: a.id,
                                 token: state.token ?? "") }
                         }.tint(Theme.red).disabled(busy)
                         Spacer()
-                        Button("It's over — clear it") {
+                        Button(L10n.t("alarm.clear", state.language)) {
                             act { try await Api.shared.clearAlarm(
                                 uid: state.userId ?? "", alarmId: a.id,
                                 token: state.token ?? "") }
@@ -158,7 +159,7 @@ private struct AlarmsSection: View {
                 Text(e).font(.caption).foregroundStyle(Theme.red)
             }
 
-            Text("This is not an emergency service. If it is one, call your local emergency number — this screen cannot.")
+            Text(L10n.t("alarm.not_emergency", state.language))
                 .font(.caption2).foregroundStyle(Theme.t2)
         }
         .task { await load() }
@@ -200,12 +201,15 @@ private struct CrashWatchSection: View {
         VStack(alignment: .leading, spacing: 14) {
             if st?.asking == true {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("JIM is asking: are you okay?")
+                    Text(L10n.t("alarm.asking", state.language))
                         .font(.headline).foregroundStyle(Theme.amber)
-                    Text("A concerning reading came in (\(st?.concern ?? "")). Attempt \(st?.attempt ?? 1) of \(st?.attempts ?? 3) — silence sends help.")
+                    Text(L10n.t("alarm.concern", state.language)
+                        .replacingOccurrences(of: "{concern}", with: st?.concern ?? "")
+                        .replacingOccurrences(of: "{n}", with: "\(st?.attempt ?? 1)")
+                        .replacingOccurrences(of: "{total}", with: "\(st?.attempts ?? 3)"))
                         .font(.caption).foregroundStyle(Theme.t2)
                     Button(action: respond) {
-                        Text("I'm okay").bold()
+                        Text(L10n.t("alarm.im_okay", state.language)).bold()
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                             .background(Theme.green).foregroundStyle(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -213,7 +217,8 @@ private struct CrashWatchSection: View {
                 }.card()
             }
             if st?.tripped == true {
-                Text("The crash watch tripped: \(st?.trusted_name ?? "your trusted person") was contacted. Any normal reading stands it down.")
+                Text(L10n.t("alarm.tripped", state.language)
+                    .replacingOccurrences(of: "{name}", with: st?.trusted_name ?? ""))
                     .font(.footnote).foregroundStyle(Theme.red)
             }
             VStack(alignment: .leading, spacing: 10) {
@@ -229,7 +234,7 @@ private struct CrashWatchSection: View {
                 Stepper("Minutes per attempt: \(Int(window))", value: $window,
                         in: 1...60, step: 1)
                     .foregroundStyle(Theme.txt)
-                Toggle("May request emergency services (relayed as a request — this app cannot itself place a call)", isOn: $ems)
+                Toggle(L10n.t("alarm.ems", state.language), isOn: $ems)
                     .font(.caption).foregroundStyle(Theme.t2)
                 HStack {
                     Button(action: arm) {
@@ -245,7 +250,9 @@ private struct CrashWatchSection: View {
                     }
                 }
                 if st?.armed == true && st?.asking != true && st?.tripped != true {
-                    Text("Armed — \(st?.trusted_name ?? "") will be contacted after \(st?.attempts ?? 3) unanswered attempts.")
+                    Text(L10n.t("alarm.armed", state.language)
+                        .replacingOccurrences(of: "{name}", with: st?.trusted_name ?? "")
+                        .replacingOccurrences(of: "{n}", with: "\(st?.attempts ?? 3)"))
                         .font(.caption).foregroundStyle(Theme.green)
                 }
             }.card()

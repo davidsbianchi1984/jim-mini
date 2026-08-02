@@ -4,6 +4,85 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.8] — 2026-08-02
+
+### The tab bar answers in your language. Everything behind it does not.
+
+The QRME repo has carried a guard since the console rounds called
+`test_the_nav_is_translated_and_nothing_behind_it_is.py`. It found forty-six
+translated sidebar labels in front of 1577 English screens, and said plainly
+why that is worse than shipping no translations at all:
+
+> A uniformly English console tells a Spanish reader the truth on the first
+> screen they see. This one puts *Mercado*, *Amigos* and *Ajustes* in the
+> sidebar — the app apparently answering in their language — and then hands
+> them English the moment they click.
+
+Three products ship three native shells each. All nine have a translated tab
+bar. Nobody had ever counted what is behind them.
+
+| product | iOS | Android | Windows |
+|---|---|---|---|
+| QRME | 2.4% | 3.8% | 0.6% |
+| JIM-mini | 13.0% | 14.2% | 9.7% |
+| PDI | 8.9% | 10.2% | 3.5% |
+
+    asked     is the console's nav-vs-behind gap measured
+    mattered  is the phones' too
+
+`native_screens_untranslated.txt` now records it per shell, ratcheted in both
+directions — the count may not rise, and the record may not sit more than
+twenty above the real number, so the ceiling cannot quietly become a place to
+drift back up into.
+
+### The alarm surface is now hand-translated on all three shells
+
+1813 strings cannot be honestly translated in one round, and this product's own
+rule forbids the other kind — `jim/i18n.py`: safety text is *"never
+machine-mangled"*. So this release takes the subset where English is a hazard
+rather than a discourtesy, and records the rest.
+
+Fourteen strings, ten languages, iOS and Android and Windows:
+
+* the question the crash watch asks — **"JIM is asking: are you okay?"** — and
+  its answer, on a screen whose entire premise is that silence sends help;
+* the three answers to an open alarm: *I have this — I'm going*, *Nobody can go
+  — escalate*, *It's over — clear it*. One of them decides whether the ladder
+  keeps climbing toward emergency services;
+* **"This is not an emergency service. If it is one, call your local emergency
+  number — this screen cannot."**
+
+A Spanish speaker was shown *Seguridad* on the tab, and then asked in English
+whether they were alright, with three English buttons deciding what happened
+next. The backend has refused in nine languages for several releases and
+promises in all of them that emergency paths are never affected.
+
+    asked     is the chrome localized
+    mattered  is the decision localized
+
+All three shells or none, for the reason `native_untranslated.txt` already
+gave: porting one puts the responder on a localized iPhone and an English
+Android, which is the per-client mistake this audit is named for, made on
+purpose.
+
+### Two guards on the guard, one of which caught a real miss
+
+Every translated row is now checked for its **slots**. A row whose English says
+`{name} was contacted` and whose Portuguese forgot the hole renders an alarm
+with the person's name missing from the middle of it — the string is present,
+the language is right, and the sentence is wrong. Where a shell's table holds
+no slotted row the check **skips loudly** rather than passing on an empty set.
+
+The first version of the row parser could not read four of the fourteen new
+rows, and reported them missing from tables they were sitting in. Its Kotlin
+pattern ended a row at the first `)` and its C# pattern at the first `}` —
+and the rows that carry brackets are `({concern})` and `(relayed as a request
+— …)`, which is to say the rows carrying slots, which is to say exactly the
+rows the slot check exists for.
+
+    asked     does the row match a pattern for a row
+    mattered  does the row end where the pattern says it does
+
 ## [0.30.7] — 2026-08-02
 
 ### The screen nothing opens

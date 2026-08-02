@@ -639,15 +639,12 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (open.isEmpty()) {
-            Text("Nothing open.", color = Jim.T2, fontSize = 14.sp)
-            Text("An alarm appears here when somebody scans the care code on " +
-                 "your door. Scanning it does not call an ambulance — it wakes " +
-                 "the people watching over you, and one of them has to answer.",
-                color = Jim.T2, fontSize = 12.sp)
+            Text(L10n.t("alarm.none", vm.language), color = Jim.T2, fontSize = 14.sp)
+            Text(L10n.t("alarm.lead", vm.language), color = Jim.T2, fontSize = 12.sp)
         }
         open.forEach { a ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Someone raised this", color = Jim.Red,
+                Text(L10n.t("alarm.raised", vm.language), color = Jim.Red,
                     fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 a.messages.forEach { m ->
                     Text("\u201c$m\u201d", color = Jim.Txt, fontSize = 14.sp)
@@ -656,7 +653,8 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
                     // Accepted is not cleared. The server says so in its own
                     // response and this shell repeats it rather than greying
                     // the card out.
-                    Text("${a.acceptedBy} is attending — still open, not resolved.",
+                    Text(L10n.t("alarm.attending", vm.language)
+                            .replace("{who}", a.acceptedBy),
                         color = Jim.Amber, fontSize = 12.sp)
                 } else {
                     // A named responder, because the backend refuses an empty
@@ -670,18 +668,18 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
                             responder, vm.token!!) }) { said = it.note; load() }
                     }, enabled = responder.isNotBlank(),
                         colors = ButtonDefaults.buttonColors(containerColor = Jim.BrandA)) {
-                        Text("I have this \u2014 I'm going")
+                        Text(L10n.t("alarm.going", vm.language))
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = {
                         vm.call({ ApiClient.escalateAlarm(vm.uid!!, a.id,
                             vm.token!!) }) { said = it.note; load() }
-                    }) { Text("Nobody can go \u2014 escalate", color = Jim.Red) }
+                    }) { Text(L10n.t("alarm.cannot_go", vm.language), color = Jim.Red) }
                     TextButton(onClick = {
                         vm.call({ ApiClient.clearAlarm(vm.uid!!, a.id,
                             vm.token!!) }) { said = it.note; load() }
-                    }) { Text("It's over \u2014 clear it", color = Jim.T2) }
+                    }) { Text(L10n.t("alarm.clear", vm.language), color = Jim.T2) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(value = question,
@@ -703,8 +701,7 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
         }
         said?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
         error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
-        Text("This is not an emergency service. If it is one, call your local " +
-             "emergency number \u2014 this screen cannot.",
+        Text(L10n.t("alarm.not_emergency", vm.language),
             color = Jim.T2, fontSize = 11.sp)
     }
 }
@@ -739,21 +736,23 @@ private fun CrashWatchPanel(vm: GuardianViewModel) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (st?.asking == true) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("JIM is asking: are you okay?", color = Jim.Amber,
+                Text(L10n.t("alarm.asking", vm.language), color = Jim.Amber,
                     fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text("A concerning reading came in (${st?.concern}). Attempt " +
-                     "${st?.attempt} of ${st?.attempts} — silence sends help.",
+                Text(L10n.t("alarm.concern", vm.language)
+                         .replace("{concern}", st?.concern ?: "")
+                         .replace("{n}", "${st?.attempt ?: 1}")
+                         .replace("{total}", "${st?.attempts ?: 3}"),
                     color = Jim.T2, fontSize = 12.sp)
                 Button(onClick = {
                     vm.call({ ApiClient.imOkay(vm.uid!!, vm.token!!) }) { took(it) }
                 }, colors = ButtonDefaults.buttonColors(containerColor = Jim.Green)) {
-                    Text("I'm okay")
+                    Text(L10n.t("alarm.im_okay", vm.language))
                 }
             }
         }
         if (st?.tripped == true) {
-            Text("The crash watch tripped: ${st?.trustedName} was contacted. " +
-                 "Any normal reading stands it down.",
+            Text(L10n.t("alarm.tripped", vm.language)
+                     .replace("{name}", st?.trustedName ?: ""),
                 color = Jim.Red, fontSize = 13.sp)
         }
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -772,8 +771,7 @@ private fun CrashWatchPanel(vm: GuardianViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Checkbox(checked = ems, onCheckedChange = { ems = it },
                     colors = CheckboxDefaults.colors(checkedColor = Jim.Red))
-                Text("May request emergency services (relayed as a request " +
-                     "\u2014 this app cannot itself place a call)",
+                Text(L10n.t("alarm.ems", vm.language),
                     color = Jim.T2, fontSize = 12.sp)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -795,8 +793,9 @@ private fun CrashWatchPanel(vm: GuardianViewModel) {
                 }
             }
             if (st?.armed == true && st?.asking != true && st?.tripped != true) {
-                Text("Armed \u2014 ${st?.trustedName} will be contacted after " +
-                     "${st?.attempts} unanswered attempts.",
+                Text(L10n.t("alarm.armed", vm.language)
+                         .replace("{name}", st?.trustedName ?: "")
+                         .replace("{n}", "${st?.attempts ?: 3}"),
                     color = Jim.Green, fontSize = 12.sp)
             }
         }

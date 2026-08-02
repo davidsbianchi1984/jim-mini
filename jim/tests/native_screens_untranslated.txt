@@ -1,0 +1,31 @@
+# English strings on the screens behind a translated tab bar, per shell.
+# Checked by test_the_tabs_are_translated_and_the_screens_are_not.py, and
+# ratcheted in both directions: the count may not rise, and the record may not
+# sit more than 20 above the real number.
+#
+# This is a measurement, not a claim. The sibling product's console guard
+# (test_the_nav_is_translated_and_nothing_behind_it_is.py) found forty-six
+# translated sidebar labels in front of 1577 English screens and made the same
+# choice: record it honestly rather than pretend.
+#
+#     asked     is the chrome localized
+#     mattered  is anything behind the chrome localized
+#
+# What came off these numbers this round is the **alarm surface** — fourteen
+# strings across all three shells, in ten languages, checked by name rather
+# than by count in `test_the_alarm_surface_is_translated_on_every_shell`.
+# That subset was chosen because it is where English is a hazard rather than a
+# discourtesy: the question the crash watch asks, the three answers to an open
+# alarm, and the line saying this screen cannot call an ambulance.
+#
+# The rest is ordinary product prose. It is not fine, and it is next.
+#
+# The Windows count is the largest of the three because that shell puts its
+# wording in XAML attributes, which cannot be re-read when the language
+# changes. Localizing a Windows string means moving it to the code-behind
+# first — which is why the alarm surface there gained a LocalizeAlarmSurface()
+# rather than a table lookup in place.
+
+ios: 187
+android: 161
+windows: 226
