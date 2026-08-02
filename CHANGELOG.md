@@ -4,6 +4,65 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.8] — 2026-08-02
+
+### The refusal named the field the API calls it
+
+### The finding
+
+An earlier round took the 422 from `[{"type":"missing",...}]` to one sentence a
+person can read, in their own language. It stopped one step short, and said so
+in its own docstring:
+
+> Mapping those names to the labels a form actually shows — *"Nome de
+> exibição"* rather than `display_name` — is a per-client table this does not
+> have, and is recorded as the remaining gap rather than guessed at.
+
+So a person mistyping the sign-up form was told **`display_name — Field
+required`** while the form beside it said **Profile name**, and had said it in
+ten languages since the console was localized.
+
+    asked     is the refusal a sentence in the reader's language
+    mattered  does it name the field the reader can see
+
+### Where the table lives
+
+Server-side, beside the sentence, for the reason the sentence is composed there
+at all: nine clients rendering it is nine chances to render it differently, and
+six of those are in languages with no test runner in this repository.
+
+Wording is ported — from the console's own labels in QRME (`onb.profile.name`,
+`onb.persona`, `onb.email`, `onb.password`), and from QRME's table into the two
+siblings for every row they share. One vocabulary across three products is one
+thing to keep right; three is three.
+
+There is no mechanical mapping for the rest: the console's rows are keyed by
+screen, not by field, and a name-match across them returns `title` → *"A
+profile depicts me"*, which is a heading. Guessing is what the docstring above
+declined to do, and this table does not.
+
+### The identifier stays the fallback
+
+A field with no row keeps its API name. That is a decision, not a gap: an
+identifier a reader can match to the form in front of them beats a word
+invented for them — the same reasoning that keeps `QRME_ADMIN_TOKEN` in English
+in `refusals_untranslated.txt`. The unmapped fields are recorded, and the
+record only shrinks.
+
+### Changed
+
+- `_FIELD_LABELS` — 19 fields × ten languages — and `field_label()`;
+  `validation_message` renders the label where there is one. Every row shared
+  with QRME carries QRME's wording byte for byte, and a check fails if the two
+  drift.
+- `field_labels_unmapped.txt` records the other 158, with a status line.
+- `test_the_refusal_names_the_field_on_the_form.py`, shared with the sibling
+  products.
+
+The cross-product drift check skipped every run in its first draft: it looked
+for QRME at `REPO.parent`, and these repositories sit under different roots. A
+check that never runs is not a check.
+
 ## [0.40.7] — 2026-08-02
 
 ### The record that outlived the code
