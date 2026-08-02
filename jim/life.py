@@ -424,6 +424,18 @@ def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
         (checkin_id, user_id, mood, energy, stress, stored_note, db.utcnow()),
     )
     conn.commit()
+    # The continuity vector moves here rather than when somebody presses a
+    # button in the console. That edge is the point of jim/continuity.py:
+    # `adaptation.rebuild` had exactly one caller, a console route, so on a
+    # user who never pressed it the derived profile never existed at all.
+    #
+    #     asked     can a user-specific model be built from the history
+    #     mattered  does anything ever build it
+    #
+    # Counts only — the note is never passed, and the vault key never is.
+    from . import continuity
+    continuity.observe(user_id, "checkin", mood=mood, stress=stress)
+
     generated = []
     if mood <= 2:
         generated.append(_insight(

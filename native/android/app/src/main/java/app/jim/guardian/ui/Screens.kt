@@ -37,6 +37,7 @@ import app.jim.guardian.EmergencyResult
 import app.jim.guardian.EscalationPolicy
 import app.jim.guardian.Guidance
 import app.jim.guardian.ImproveState
+import app.jim.guardian.ContinuityState
 import app.jim.guardian.CustodyList
 import app.jim.guardian.OfflinePosture
 import app.jim.guardian.CustodyProvenance
@@ -2301,6 +2302,65 @@ fun ProblemReportingCard() {
  * On the phone as well as the console, because the phone is what somebody has
  * with them when they change their mind.
  */
+/**
+ * What the Guardian carries between sessions, on the phone.
+ *
+ * The console's profile is a snapshot somebody rebuilds. This is the part
+ * that moves on its own — and until this release nothing moved at all,
+ * because the only thing that built the derived artifact was a button in a
+ * desktop console that a phone-only user never sees.
+ *
+ *     asked     can a user-specific model be built from the history
+ *     mattered  does anything ever build it
+ *
+ * Read-only except for forgetting it: every derived thing here has to be
+ * droppable by the person it was derived from.
+ */
+@Composable
+fun ContinuityCard(uid: String, token: String, lang: String) {
+    var carried by remember { mutableStateOf<ContinuityState?>(null) }
+    val scope = rememberCoroutineScope()
+    fun load() {
+        scope.launch(Dispatchers.IO) {
+            carried = runCatching { ApiClient.continuity(uid, token) }.getOrNull()
+        }
+    }
+    LaunchedEffect(Unit) { load() }
+
+    Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(L10n.t("cont.title", lang), style = MaterialTheme.typography.titleSmall)
+            val c = carried
+            if (c != null && c.built) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("${c.observations} " + L10n.t("cont.observations", lang),
+                        Modifier.weight(1f), color = Jim.Txt, fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold)
+                    TextButton(onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            runCatching { ApiClient.forgetContinuity(uid, token) }
+                            load()
+                        }
+                    }) { Text(L10n.t("cont.forget", lang), color = Jim.Red, fontSize = 12.sp) }
+                }
+                Text(if (c.conditioning) L10n.t("cont.shaping", lang)
+                     else L10n.t("cont.not_yet", lang),
+                    color = Jim.T2, fontSize = 11.sp)
+                c.vector.entries.sortedBy { it.key }.forEach { (dim, value) ->
+                    val meaning = c.meanings[dim]?.let { " \u2014 $it" } ?: ""
+                    Text("$dim: ${(value * 100).toInt()}%$meaning",
+                        color = Jim.T2, fontSize = 11.sp)
+                }
+                c.method?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+            } else {
+                Text(c?.note ?: L10n.t("cont.nothing", lang),
+                    color = Jim.T2, fontSize = 11.sp)
+            }
+            c?.carries?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+        }
+    }
+}
+
 @Composable
 fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) {
     val scope = rememberCoroutineScope()
@@ -2335,6 +2395,7 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) 
     Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(L10n.t("self.title", lang), style = MaterialTheme.typography.titleMedium)
         ProblemReportingCard()
+        ContinuityCard(uid, token, lang)
         Text(L10n.t("self.lead", lang), style = MaterialTheme.typography.bodySmall)
 
         if (status?.optBoolean("linked") != true) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile,
+import { t as tr, visitorLang } from "../l10n";
+import { api, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState,
          type AnonymityPosture, type CloudContribution, type PairInfo,
          type SeedReport, type VigilStatus,
          type WatchChannel } from "../api";
@@ -15,6 +16,8 @@ export function Settings() {
   const [adapt, setAdapt] = useState<AdaptationProfile | null>(null);
   const [anon, setAnon] = useState<AnonymityPosture | null>(null);
   const [adaptBusy, setAdaptBusy] = useState(false);
+  const [cont, setCont] = useState<ContinuityState | null>(null);
+  const lang = visitorLang();
   const [health, setHealth] = useState<string>("…");
   const [saved, setSaved] = useState(false);
   const [llmKey, setLlmKeyInput] = useState(getLlmKey());
@@ -27,6 +30,7 @@ export function Settings() {
     if (session.userId && session.userToken) {
       api.adaptation(session.userId, session.userToken).then(setAdapt).catch(() => {});
       api.anonymity(session.userId, session.userToken).then(setAnon).catch(() => {});
+      api.continuity(session.userId, session.userToken).then(setCont).catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.userId]);
@@ -143,6 +147,44 @@ export function Settings() {
             }}>Build it from my history</button>
           </>
         )}
+      </div>
+
+      <div className="card">
+        <h3>{tr("cont.title", lang)}</h3>
+        <p className="muted small">
+          {tr("cont.lead", lang)}
+        </p>
+        {cont?.built && cont.vector ? (
+          <>
+            <div className="spec-row">
+              <div>
+                <b>{cont.observations} {tr("cont.observations", lang)}</b>
+                <div className="muted small">
+                  {cont.conditioning
+                    ? tr("cont.shaping", lang)
+                    : tr("cont.not_yet", lang)}
+                </div>
+              </div>
+              <button onClick={async () => {
+                if (!session.userId || !session.userToken) return;
+                await api.forgetContinuity(session.userId, session.userToken);
+                setCont(await api.continuity(session.userId, session.userToken));
+              }}>{tr("cont.forget", lang)}</button>
+            </div>
+            <ul className="refs">
+              {Object.entries(cont.vector).map(([dim, value]) => (
+                <li key={dim}>
+                  {dim}: {Math.round(value * 100)}{"%"}
+                  {cont.meanings?.[dim] ? ` — ${cont.meanings[dim]}` : ""}
+                </li>
+              ))}
+            </ul>
+            <p className="muted small">{cont.method}</p>
+          </>
+        ) : (
+          <p className="muted small">{cont?.note || tr("cont.nothing", lang)}</p>
+        )}
+        <p className="muted small">{cont?.carries}</p>
       </div>
 
       <div className="card">

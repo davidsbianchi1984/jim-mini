@@ -4,6 +4,99 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.9] — 2026-08-02
+
+### The user-specific model was correct, tested, and never computed
+
+`jim/adaptation.py` implements clause 11 — a profile derived offline from a
+person's own stored history, versioned, confidence-scored, sealed into the
+vault when a tandem is configured. `coach.reply` reads it on every turn through
+`adaptation.prompt_lines`.
+
+`prompt_lines` returns `[]` when there is no row. `rebuild` writes the row. And
+`rebuild` had exactly one caller in the entire product: `POST
+/adaptation/{user}` — a button in the desktop console.
+
+    asked     can a user-specific model be built from the history
+    mattered  does anything ever build it
+
+Nothing called it after a check-in, a coach turn, or an answered follow-up. On
+every user who never pressed that button — which is every user who only ever
+opened the phone app — the artifact had never been computed, and the coach ran
+unadapted forever while the code that would have adapted it sat there correct
+and tested.
+
+The module was not wrong and neither were its tests. What was missing was an
+**edge**, which is exactly the thing no test of either end will notice:
+`adaptation`'s tests build the profile themselves, and `coach`'s tests pass
+whether the profile exists or not, because a coach with no adaptation lines is
+a working coach.
+
+`adaptation.ensure_fresh` now rebuilds from the loop when the history has moved
+on — three COUNTs on the common path, a rebuild only after five new pieces of
+evidence, and it never raises, because a failure to refresh a *derived*
+artifact must not cost somebody the answer they asked for.
+
+### The latent continuity vector
+
+Even with a rebuild, the profile is a snapshot and nothing moved between
+snapshots. The sibling product carries a per-(profile, interactor) latent
+vector, EMA-updated after every interaction, so cross-session state survives
+logins, devices and model calls. JIM had no equivalent at all — a person could
+check in every day for a month and be met each time exactly as on the first
+day.
+
+`jim/continuity.py` is that vector: six named dimensions — engagement, candor,
+strain, receptiveness, steadiness, continuity — folded in at the three moments
+a signal actually arrives, and rendered into the coach's prompt as **attention
+weighting** rather than as instruction. Identity, boundaries and every safety
+path stay fixed, and the rendered block says so.
+
+Three rules it keeps, each with a test:
+
+* **It carries no content.** Six floats and three counters, derived from
+  tallies. Not a phrase, not a condition name, not a message. This matters
+  more here than in the sibling product because what is being counted is
+  somebody's health.
+* **Confidence is earned.** Silent below six observations — a vector built
+  from two check-ins is a shape in noise, and a Guardian that starts pacing
+  itself around one is worse than one that has not started.
+* **It is not a weight file**, and `state()` says so in its own words rather
+  than letting a reader assume a fine-tune happened.
+
+It is readable and droppable from the console and from all three shells:
+`GET`/`DELETE /continuity/{user}`, a Settings panel, and a card on the
+self-profile screen of iOS, Android and Windows.
+
+### Two bugs the round's own guards found
+
+**A type-compatible argument swap in the Android client.** The shared helper is
+declared `request(path, method, body, token)`. Three calls in this shell and
+one in PDI's passed `("GET", "/offline/status", …)` — verb first. Both
+arguments are `String`, nothing complained, and the request went to
+`base + "GET"` with the method set to a path. Two of those shipped in 0.30.7's
+offline round.
+
+    asked     does the call have the right number of arguments
+    mattered  does it have them in the right order
+
+There is no Kotlin toolchain in this build environment, which is why it sat
+there. `test_a_screen_nothing_opens.py` now reads the helper's own signature
+and refuses an HTTP verb in the path slot, in all three repos.
+
+**Last release's untranslated counts were overstated.** The extractor counted
+any string literal containing a letter, which counted format fragments like
+`"\(dim): \(n)%"` — whose only letters are variable names nobody reads — as
+English prose. About seventy-five of them across the nine shells.
+
+    asked     does this literal contain letters
+    mattered  does this literal contain words a reader reads
+
+The ratchet caught it by firing on a card that had just been fully localized,
+which is a measurement saying the opposite of the truth. The corrected figures
+are in `native_screens_untranslated.txt`; JIM's shells are at 167 / 139 / 192,
+and the localized share is higher than 0.30.8 claimed.
+
 ## [0.30.8] — 2026-08-02
 
 ### The tab bar answers in your language. Everything behind it does not.

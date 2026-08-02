@@ -29,6 +29,7 @@ struct SelfProfileSection: View {
                 Text(L10n.t("self.title", state.language)).font(.headline)
                     .foregroundStyle(Theme.txt)
                 ProblemReportingCard()
+                ContinuityCard()
                 Text(L10n.t("self.lead", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
             }.card()

@@ -98,10 +98,26 @@ def reply(user_id: str, area: str, message: str) -> dict:
     system += personalize(guardian.get_user(user_id))
     # The user-specific adaptation profile (jim/adaptation.py, clause 11):
     # what has actually helped this person, derived from their own history.
-    from . import adaptation
+    from . import adaptation, continuity
+    # Build it if the history has moved on since it last was. Until this line
+    # existed, `rebuild` was reachable only from a console button, so on a
+    # phone-only user the profile below had never been computed and
+    # `prompt_lines` returned nothing on every turn forever.
+    adaptation.ensure_fresh(user_id)
     learned = adaptation.prompt_lines(user_id)
     if learned:
         system += "\n" + "\n".join(learned)
+    # The cross-session state, rendered as attention weighting rather than as
+    # instruction (jim/continuity.py). The profile above is a snapshot taken
+    # by hand; this is what moves between snapshots, so a person who has been
+    # checking in every day for a month is not met the way they were met on
+    # the first day.
+    #
+    # Silent below its evidence floor, and it never touches identity,
+    # boundaries or any safety path.
+    attention = continuity.attention_lines(user_id)
+    if attention:
+        system += "\n" + "\n".join(attention)
     language = i18n.effective_language(user_id)
     system += i18n.directive(language)
     gen = llm.generate_for_user(user_id, system, message)
@@ -134,6 +150,12 @@ def reply(user_id: str, area: str, message: str) -> dict:
             (db.new_id("msg"), user_id, area, "coach", text, now),
         )
     conn.commit()
+
+    # The turn itself is a signal — folded in after the reply is composed and
+    # stored, so a model failure cannot cost the observation the person
+    # already gave us by writing. Length only: how much somebody chose to say
+    # is about the relationship and carries none of what they said.
+    continuity.observe(user_id, "coach_turn", length=len(message))
 
     if not safe:
         return {"delivered": False, "area": area,

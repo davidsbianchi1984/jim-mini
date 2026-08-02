@@ -12,6 +12,32 @@
             <TextBlock x:Name="LeadText" Foreground="{StaticResource JimT2Brush}"
                        FontSize="13" TextWrapping="Wrap" />
 
+            <!-- What the Guardian carries between sessions. The console's
+                 profile is a snapshot somebody rebuilds; this is the part
+                 that moves on its own, and until this release nothing moved
+                 at all because the only builder was a console button. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="ContTitle" FontWeight="Bold" FontSize="15"
+                               Foreground="{StaticResource JimTxtBrush}" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock x:Name="ContCount" FontWeight="Bold" FontSize="13"
+                                   VerticalAlignment="Center"
+                                   Foreground="{StaticResource JimTxtBrush}" />
+                        <Button x:Name="ContForget" Click="OnForgetContinuity"
+                                Foreground="{StaticResource JimRedBrush}"
+                                Background="Transparent" Visibility="Collapsed" />
+                    </StackPanel>
+                    <TextBlock x:Name="ContState" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="ContDims" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="ContCarries" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                </StackPanel>
+            </Border>
+
             <StackPanel x:Name="LinkPanel" Spacing="8">
                 <TextBlock x:Name="LinkHeading" FontSize="15" FontWeight="Bold"
                            Foreground="{StaticResource JimTxtBrush}" />

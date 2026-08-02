@@ -147,6 +147,60 @@ def rebuild(user_id: str, pdi=None) -> dict:
     return {**_row_out(get_row(user_id)), "sealed_key": sealed}
 
 
+def _evidence_now(user_id: str) -> int:
+    """How much history exists to derive from, counted the same way `rebuild`
+    counts it. Three cheap COUNTs; no profile is built."""
+    tallies = _followup_tallies(user_id)
+    return (sum(t["answered"] for t in tallies.values())
+            + _checkin_trend(user_id).get("count", 0)
+            + sum(_area_counts(user_id).values()))
+
+
+#: How much new history has to arrive before the profile is worth recomputing.
+#: Small enough that a person who uses the app for a week has one; large
+#: enough that the rebuild is not run on every turn of a conversation.
+_REFRESH_AFTER = 5
+
+
+def ensure_fresh(user_id: str, pdi=None) -> bool:
+    """Rebuild the profile if the history has moved on since it was built.
+
+    ## Why this function exists
+
+    `rebuild` had exactly one caller in the whole product — `POST
+    /adaptation/{user}`, a button in the desktop console. `coach.reply` reads
+    the profile through `prompt_lines` on every turn, and `prompt_lines`
+    returns `[]` when there is no row.
+
+        asked     can a user-specific model be built from the history
+        mattered  does anything ever build it
+
+    So on every user who never pressed that button — which is every user who
+    only ever opened the phone app — the clause-11 artifact had never been
+    computed, and the coach ran unadapted forever while the code that would
+    have adapted it sat there correct and tested.
+
+    Cheap by construction: three COUNTs on the common path, and a rebuild only
+    when `_REFRESH_AFTER` new pieces of evidence have accumulated. Returns
+    whether it rebuilt, so a caller can say so if it wants to.
+
+    Never raises. This runs on the path of somebody asking their health
+    assistant a question, and a failure to refresh a *derived* artifact must
+    not cost them the answer.
+    """
+    try:
+        row = get_row(user_id)
+        evidence = _evidence_now(user_id)
+        if row is not None and evidence - row["evidence_items"] < _REFRESH_AFTER:
+            return False
+        if row is None and evidence == 0:
+            return False          # nothing to derive from yet
+        rebuild(user_id, pdi=pdi)
+        return True
+    except Exception:
+        return False
+
+
 def get_row(user_id: str):
     return db.connect().execute(
         "SELECT * FROM user_models WHERE user_id=?", (user_id,)).fetchone()

@@ -38,7 +38,52 @@ public sealed partial class SelfProfilePage : Page
         StopHeading.Text = L10n.T("self.stop");
         UnlinkNoteText.Text = L10n.T("self.unlink_note");
         UnlinkButton.Content = L10n.T("self.unlink");
-        Loaded += async (_, _) => await Refresh();
+        ContTitle.Text = L10n.T("cont.title");
+        ContForget.Content = L10n.T("cont.forget");
+        Loaded += async (_, _) => { await LoadContinuity(); await Refresh(); };
+    }
+
+    /// What the Guardian carries between sessions.
+    ///
+    /// Its own try/catch and its own load: the vector answers a different
+    /// question from the tandem link above it, and a QRME profile that cannot
+    /// be reached must not blank this card.
+    private async System.Threading.Tasks.Task LoadContinuity()
+    {
+        var s = AppState.Current;
+        if (s.UserId is null || s.UserToken is null) return;
+        try
+        {
+            var c = await s.Api.Continuity(s.UserId, s.UserToken);
+            ContCarries.Text = c.Carries;
+            if (!c.Built || c.Vector is null)
+            {
+                ContCount.Text = "";
+                ContForget.Visibility = Visibility.Collapsed;
+                ContState.Text = c.Note ?? L10n.T("cont.nothing");
+                ContDims.Text = "";
+                return;
+            }
+            ContCount.Text = $"{c.Observations} " + L10n.T("cont.observations");
+            ContForget.Visibility = Visibility.Visible;
+            ContState.Text = c.Conditioning
+                ? L10n.T("cont.shaping") : L10n.T("cont.not_yet");
+            ContDims.Text = string.Join("\n", c.Vector.OrderBy(kv => kv.Key)
+                .Select(kv => $"{kv.Key}: {(int)(kv.Value * 100)}%"
+                              + (c.Meanings is not null
+                                 && c.Meanings.TryGetValue(kv.Key, out var m)
+                                 ? $" \u2014 {m}" : "")));
+        }
+        catch (Exception) { ContState.Text = L10n.T("cont.nothing"); }
+    }
+
+    private async void OnForgetContinuity(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.UserId is null || s.UserToken is null) return;
+        try { await s.Api.ForgetContinuity(s.UserId, s.UserToken); }
+        catch (Exception) { }
+        await LoadContinuity();
     }
 
     private async System.Threading.Tasks.Task Refresh()

@@ -26,6 +26,7 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                robotics,
                rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
                vigil, voice, watch)
+from . import continuity
 from . import crashwatch
 from . import help as help_mod
 from . import calm as calm_mod
@@ -77,7 +78,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.30.8",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.30.9",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -1865,6 +1866,23 @@ def create_app(qrme_client: QRMEClient | None = None,
     def read_adaptation(user_id: str, request: Request) -> dict:
         _user_or_404(user_id, request)
         return adaptation.get(user_id)
+
+    # ---- the state that survives between sessions -------------------------
+
+    @app.get("/continuity/{user_id}")
+    def read_continuity(user_id: str, request: Request) -> dict:
+        """What the Guardian carries across sessions about this person, in
+        named dimensions with their meanings — counts and timings only, never
+        anything they wrote."""
+        _user_or_404(user_id, request)
+        return continuity.state(user_id)
+
+    @app.delete("/continuity/{user_id}")
+    def forget_continuity(user_id: str, request: Request) -> dict:
+        """Drop it. Every derived thing here has to be droppable by the person
+        it was derived from."""
+        _user_or_404(user_id, request)
+        return {"forgotten": continuity.forget(user_id)}
 
     # ---- did the counseling work? (spec [0039]) ---------------------------
 

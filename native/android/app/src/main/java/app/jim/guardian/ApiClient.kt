@@ -186,8 +186,36 @@ object ApiClient {
 
     /** What the deployment can and cannot reach. Read-only: the posture is
      *  set in the deployment's environment, not by somebody signed in. */
+    /** What the Guardian carries across sessions. Counts and timings only. */
+    suspend fun continuity(uid: String, token: String): ContinuityState =
+        withContext(Dispatchers.IO) {
+            val o = org.json.JSONObject(
+                request("/continuity/$uid", "GET", null, token))
+            val vec = o.optJSONObject("vector")
+            val means = o.optJSONObject("meanings")
+            ContinuityState(
+                o.optBoolean("built"),
+                o.optString("carries"),
+                if (o.isNull("note")) null else o.optString("note"),
+                o.optInt("observations"),
+                o.optBoolean("conditioning"),
+                vec?.keys()?.asSequence()?.associateWith { vec.optDouble(it) }
+                    ?: emptyMap(),
+                means?.keys()?.asSequence()?.associateWith { means.optString(it) }
+                    ?: emptyMap(),
+                if (o.isNull("method")) null else o.optString("method"))
+        }
+
+    /** Drop it — every derived thing has to be droppable by its subject. */
+    suspend fun forgetContinuity(uid: String, token: String): Boolean =
+        withContext(Dispatchers.IO) {
+            org.json.JSONObject(
+                request("/continuity/$uid", "DELETE", null, token))
+                .optBoolean("forgotten")
+        }
+
     suspend fun offlineStatus(): OfflinePosture = withContext(Dispatchers.IO) {
-        val o = org.json.JSONObject(request("GET", "/offline/status", null, null))
+        val o = org.json.JSONObject(request("/offline/status", "GET", null, null))
         val gs = o.optJSONArray("guarantees")
         OfflinePosture(
             o.optBoolean("offline"),
@@ -949,3 +977,12 @@ data class OfflinePosture(val offline: Boolean,
                           val externalTransmissionPossible: Boolean,
                           val localDestinationsAllowed: String,
                           val guarantees: List<String>)
+
+data class ContinuityState(val built: Boolean,
+                           val carries: String,
+                           val note: String?,
+                           val observations: Int,
+                           val conditioning: Boolean,
+                           val vector: Map<String, Double>,
+                           val meanings: Map<String, String>,
+                           val method: String?)

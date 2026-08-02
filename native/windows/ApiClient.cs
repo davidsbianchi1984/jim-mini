@@ -451,6 +451,19 @@ public sealed class ApiClient
 
     /// <summary>What the deployment can and cannot reach. Read-only: the
     /// posture is set in the deployment's environment, not in the app.</summary>
+    /// What the Guardian carries across sessions about this person. Counts
+    /// and timings only — the vector is derived from tallies and holds
+    /// nothing anybody wrote.
+    public async Task<ContinuityState> Continuity(string uid, string token) =>
+        await Send<ContinuityState>(new HttpRequestMessage(HttpMethod.Get,
+            _base + $"/continuity/{uid}"), token);
+
+    /// Drop it. Every derived thing here has to be droppable by the person it
+    /// was derived from.
+    public async Task<Forgotten> ForgetContinuity(string uid, string token) =>
+        await Send<Forgotten>(new HttpRequestMessage(HttpMethod.Delete,
+            _base + $"/continuity/{uid}"), token);
+
     public async Task<OfflinePosture> OfflineStatus() =>
         await Send<OfflinePosture>(new HttpRequestMessage(HttpMethod.Get,
             _base + "/offline/status"));
@@ -987,3 +1000,16 @@ public record OfflinePosture(
     [property: JsonPropertyName("external_transmission_possible")] bool ExternalTransmissionPossible,
     [property: JsonPropertyName("local_destinations_allowed")] string LocalDestinationsAllowed,
     [property: JsonPropertyName("guarantees")] string[] Guarantees);
+
+public record ContinuityState(
+    [property: JsonPropertyName("built")] bool Built,
+    [property: JsonPropertyName("carries")] string Carries,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("observations")] int Observations,
+    [property: JsonPropertyName("conditioning")] bool Conditioning,
+    [property: JsonPropertyName("vector")] Dictionary<string, double>? Vector,
+    [property: JsonPropertyName("meanings")] Dictionary<string, string>? Meanings,
+    [property: JsonPropertyName("method")] string? Method);
+
+public record Forgotten(
+    [property: JsonPropertyName("forgotten")] bool Value);

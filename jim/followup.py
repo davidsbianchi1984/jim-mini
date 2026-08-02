@@ -177,6 +177,12 @@ def answer(user_id: str, helped: bool, note: str | None = None) -> dict:
                 **({"escalated_to": escalated_to} if escalated_to else {})},
     )
 
+    # Whether guidance landed is the one input that says if any of this is
+    # working, so it is also the strongest thing the continuity vector reads.
+    # The boolean only — never the note, never the condition.
+    from . import continuity
+    continuity.observe(user_id, "followup", helped=helped)
+
     out = {"answered": True, "id": row["id"], "helped": helped,
            "condition": row["condition"]}
     if helped:

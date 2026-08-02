@@ -194,6 +194,25 @@ CREATE TABLE IF NOT EXISTS user_models (
     rebuilt_at     TEXT NOT NULL
 );
 
+-- The latent continuity vector (jim/continuity.py).
+--
+-- One row per user: six named 0..1 dimensions, EMA-updated at the three
+-- moments a signal arrives — a check-in logged, a coach turn, an answered
+-- follow-up. It is what survives between sessions, and it is the edge that
+-- `user_models` above was missing: that profile is rebuilt by hand, and until
+-- this table existed nothing in the product moved between rebuilds.
+--
+-- The row carries counts and timings only. No message text, no condition
+-- name, nothing the person wrote. `test_the_vector_carries_no_content` holds
+-- it there.
+CREATE TABLE IF NOT EXISTS user_continuity (
+    user_id      TEXT PRIMARY KEY REFERENCES users(id),
+    vector       TEXT NOT NULL,        -- JSON, six named floats
+    observations INTEGER NOT NULL DEFAULT 0,
+    version      INTEGER NOT NULL DEFAULT 1,
+    updated_at   TEXT NOT NULL
+);
+
 -- Did the counseling actually work? (jim/followup.py)
 --
 -- Spec [0039] closes the loop the product was missing: "If the counseling is

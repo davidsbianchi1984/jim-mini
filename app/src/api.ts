@@ -334,6 +334,19 @@ export interface CommunityView {
              health_data_shared: boolean };
 }
 // Claim 11's user-specific model, derived from this user's own history.
+export interface ContinuityState {
+  built: boolean;
+  note?: string;
+  carries: string;
+  version?: number;
+  observations?: number;
+  conditioning?: boolean;
+  vector?: Record<string, number>;
+  meanings?: Record<string, string>;
+  method?: string;
+  updated_at?: string;
+}
+
 export interface AdaptationProfile {
   built: boolean; note?: string; version?: number;
   evidence_items?: number; confidence?: number; vaulted?: boolean;
@@ -881,6 +894,12 @@ export const api = {
     req<AdaptationProfile>(`/adaptation/${uid}`, { token }),
   rebuildAdaptation: (uid: string, token: string) =>
     req<AdaptationProfile>(`/adaptation/${uid}`, { method: "POST", token }),
+  // The state that survives between sessions. Counts and timings only — the
+  // vector is derived from tallies and carries nothing anybody wrote.
+  continuity: (uid: string, token: string) =>
+    req<ContinuityState>(`/continuity/${uid}`, { token }),
+  forgetContinuity: (uid: string, token: string) =>
+    req<{ forgotten: boolean }>(`/continuity/${uid}`, { method: "DELETE", token }),
   anonymity: (uid: string, token: string) =>
     req<AnonymityPosture>(`/anonymity/${uid}`, { token }),
   checkin: (uid: string, body: { mood: number; energy: number; stress?: number; note?: string }, token: string) =>

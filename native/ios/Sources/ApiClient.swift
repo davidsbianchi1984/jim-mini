@@ -540,6 +540,20 @@ actor ApiClient {
 
     /// Read-only on purpose: the posture is set in the deployment's
     /// environment, not by somebody signed into the app.
+    /// What the Guardian carries across sessions about this person. Counts
+    /// and timings only — the vector is derived from tallies and holds
+    /// nothing anybody wrote.
+    func continuity(uid: String, token: String) async throws -> ContinuityState {
+        try await request("/continuity/\(uid)", token: token)
+    }
+
+    /// Drop it. Every derived thing here has to be droppable by the person it
+    /// was derived from.
+    @discardableResult
+    func forgetContinuity(uid: String, token: String) async throws -> Forgotten {
+        try await request("/continuity/\(uid)", method: "DELETE", token: token)
+    }
+
     func offlineStatus() async throws -> OfflinePosture {
         try await request("/offline/status")
     }
@@ -1069,3 +1083,17 @@ struct OfflinePosture: Decodable {
     let local_destinations_allowed: String
     let guarantees: [String]
 }
+
+struct ContinuityState: Decodable {
+    let built: Bool
+    let carries: String
+    let note: String?
+    let version: Int?
+    let observations: Int?
+    let conditioning: Bool?
+    let vector: [String: Double]?
+    let meanings: [String: String]?
+    let method: String?
+}
+
+struct Forgotten: Decodable { let forgotten: Bool }

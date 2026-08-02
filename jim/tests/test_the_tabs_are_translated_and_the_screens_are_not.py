@@ -94,6 +94,19 @@ _BLOCK = re.compile(r"/\*.*?\*/", re.S)
 _LINE = re.compile(r"//[^\n]*")
 _HAS_LETTER = re.compile(r"[A-Za-z]")
 
+#: What is a hole rather than a word: Swift `\(expr)`, Kotlin `${expr}` and
+#: `$name`, XAML `{Binding Foo}`. Stripped before the letter test.
+#:
+#: The first version of this counted any literal containing a letter, and so
+#: counted `"\(dim): \(n)%"` as an English string — a format fragment whose
+#: only letters are variable names nobody reads. The ratchet then fired on a
+#: card that had just been fully localized, which is a measurement telling the
+#: opposite of the truth.
+#:
+#:     asked     does this literal contain letters
+#:     mattered  does this literal contain words a reader reads
+_HOLE = re.compile(r"\\\([^)]*\)|\$\{[^}]*\}|\$[A-Za-z_]\w*|\{[A-Za-z]\w*[^}]*\}")
+
 #: What puts a string in front of a person, per shell. Deliberately a list of
 #: named constructs rather than "every literal": an icon name, a JSON key and
 #: a date format are all string literals and none of them are read by anybody.
@@ -133,7 +146,7 @@ def _measure(shell: str) -> tuple[int, int]:
             continue
         text = _code(path)
         found = {s for pat in patterns for s in re.findall(pat, text)
-                 if _HAS_LETTER.search(s)}
+                 if _HAS_LETTER.search(_HOLE.sub("", s))}
         english += len(found)
         calls += len(re.findall(call, text))
     return english, calls

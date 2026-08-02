@@ -273,3 +273,61 @@ def test_the_argument_counter_counts():
     assert _args_at('f("a,b")', 1) == 1, "a comma inside a string is not a separator"
     assert _args_at('f(g(x, y), b)', 1) == 2, "a nested call is one argument"
     assert _args_at('f("a", [x, y])', 1) == 2
+
+# --- and the arguments are in the order the helper declares -----------------
+
+#: Each shell's shared request helper: where it is declared and how.
+#:
+#: Swift and C# name their arguments at the call site or take a URL, so an
+#: order mistake there is visible. Kotlin's helper takes
+#: `(path, method, body, token)` — four positional strings and objects — and
+#: two of the first three are `String`. Passing the verb first compiles
+#: perfectly and sends `GET /GET` to a server that answers 404.
+_KOTLIN_HELPER = re.compile(
+    r"private suspend fun request\(\s*(\w+): String,\s*(\w+): String")
+_VERBS = ("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS")
+
+
+def _kotlin_client() -> Path | None:
+    return next(iter((REPO / "native/android").rglob("ApiClient.kt")), None)
+
+
+def test_the_kotlin_client_passes_a_path_where_a_path_goes():
+    """A type-compatible argument swap, in the one shell with no compiler here.
+
+    Found by the route-door guard rather than by this one, and only because a
+    DELETE went missing from the backlog: three calls in this shell and one in
+    the sibling's passed `("GET", "/offline/status", ...)` to a helper
+    declared `(path, method, ...)`. Both arguments are `String`, so nothing
+    complained, and the request went to `base + "GET"` with the method set to
+    a path.
+
+        asked     does the call have the right number of arguments
+        mattered  does it have them in the right order
+
+    The check is narrow on purpose: it knows the helper's first parameter is
+    the path, and an HTTP verb is never a path.
+    """
+    path = _kotlin_client()
+    if path is None:
+        pytest.skip("no Kotlin client in this repo")
+    text = _code(path)
+    declared = _KOTLIN_HELPER.search(text)
+    assert declared, (
+        "the shared `request` helper's signature no longer parses, so this "
+        "check cannot tell which argument is the path")
+    assert declared.group(1) == "path", (
+        f"the helper's first parameter is now {declared.group(1)!r}; this "
+        "check assumes it is the path and must be updated deliberately")
+
+    wrong = []
+    for m in re.finditer(r'\brequest\s*\(\s*"([^"\n]*)"', text):
+        first = m.group(1)
+        if first in _VERBS:
+            wrong.append(f"line {text[:m.start()].count(chr(10)) + 1}: "
+                         + 'request("' + first + '", ...) '
+                         + "\u2014 verb in the path slot")
+    assert not wrong, (
+        f"{len(wrong)} call(s) pass an HTTP verb where the helper wants a "
+        "path, which compiles and then requests the wrong URL:\n    "
+        + "\n    ".join(wrong))
