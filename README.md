@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.18.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.40.9** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -332,6 +332,24 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.40.9** | **The README said v0.18.0** — the first bold line of every README named a release twenty-two cuts old, on the line directly above one promising the three products are versioned and cut together; the history table underneath stopped at 0.30.6, leaving seventeen shipped releases in the changelog and off the page anybody reads. Both are now checked against `pyproject.toml` and the changelog |
+| **0.40.8** | **The refusal named the field the API calls it** — An earlier round took the 422 from `[{"type":"missing",...}]` to one sentence a person can read, in their own language. |
+| **0.40.7** | **The record that outlived the code** — `public_untranslated.txt` opened with a paragraph explaining that `Onboarding.tsx` — the screen every person in the world meets first — carried forty-odd English strings, that translating them was "its own round", and that a half-translated sign-up form would be worse than an English one. |
+| **0.40.6** | **Cut alongside qrme and pdi** — No change in this product. The round finishes localizing QRME's **accountless screen** — the one built for somebody who has found a synthetic profile of themselves and has no account, and therefore no profile language to take a setting from. |
+| **0.40.5** | **The account was gone and the wrist kept writing** — `life.delete_user_data` opens with *"Erase every trace of a user across all tables — and the PDI vault."* It empties the vault, walks eighteen tables and removes the `users` row last, and the API answers 404 for that id afterwards. |
+| **0.40.4** | **Cut alongside qrme and pdi** — No change in this product. The round is about a synthetic profile of a person who has died, or whose subject is contesting that it should exist — states QRME has and this product does not: a Guardian belongs to the living person using it, and there is no third party for it to speak as. |
+| **0.40.3** | **One wrapper recorded its degrades; its sibling said nothing** — `llm.FallbackProvider` is where this rule is written down in this codebase, and it is exemplary: `cloud.CloudProvider` degrades to the same local stub and did none of it: a bare `except Exception:`, no record, and — unlike its sibling — not even a log line. |
+| **0.40.2** | **The refusals, finished** — 0.24.0 translated the eleven refusals any route can raise and **wrote the rest down**. |
+| **0.40.1** | **The language no client was sending** — JIM's public surface answers people who have no account yet, and those handlers compose real sentences: what was sent, what is held, what to do next. |
+| **0.40.0** | **A specialist could be reached by a sensor and not by a person** — `grep -c specialist jim/coach.py` returned **0**. |
+| **0.30.9** | **The user-specific model was correct, tested, and never computed** — `jim/adaptation.py` implements clause 11 — a profile derived offline from a person's own stored history, versioned, confidence-scored, sealed into the vault when a tandem is configured. |
+| **0.30.8** | **The tab bar answers in your language. Everything behind it does not.** — The QRME repo has carried a guard since the console rounds called `test_the_nav_is_translated_and_nothing_behind_it_is.py`. |
+| **0.30.7** | **The screen nothing opens** — Last release put the synthetic-self screen on the phones — the one QRME profile that *is* this person, where they say what the Guardian may pass on about their medication. |
+| **0.29.0** | **The frame around both** — The nav is the console's own surface: the phones carry ten languages, the server answers in the reader's, and the frame around both was English whatever anybody chose. |
+| **0.28.0** | **The console gets a language, and a tripwire fires exactly as designed** — Last release measured the gap: JIM's native shells carry ten-language `L10n` tables and the desktop console had none at all. |
+| **0.27.0** | **The console speaks one language. Its own phones speak ten.** — JIM's native shells each carry an `L10n` table in ten languages, and a round two releases ago gave all three a `deviceLanguage` resolver so the accountless screen could use it. |
+| **0.26.0** | **Three copies of one guard, three different blind spots** — `clientpaths.py` says of itself, in its own docstring, that it is *byte- identical in qrme, jim-mini and pdi*. |
+| **0.25.0** | **0.25.0** — Aligned with QRME 0.25.0. The three products carry one version, so a release that only moves in one of them still moves in all three — otherwise a support question about "0.25" has three different answers depending on which app is being asked about. |
 | **0.30.6** | **The plan gate speaks the reader's language** — the one refusal the record refused to half-do, because translating its frame around English prose slots would have produced a sentence half in each language at the moment somebody decides whether to pay. Six capability descriptions and the billing period are a closed set this product authors, so they translate; the plan titles deliberately do not. The emergency clause is part of the frame rather than appended to it — a person told they cannot have the trend model needs to know the alarm still works, in their own language |
 | **0.30.5** | **The plan gate said HTTP 402** — `detail` is a string for most refusals, a dict for the plan gate and a list for a 422, and only the list had been given a top-level `message`. The three shells look for that key and then for a string `detail`; a dict is neither, so the plan gate rendered as a bare status code. Underneath it, `localize_detail` looked one level down while the handler wraps structured refusals two levels down — that sentence had been going out untranslated in every language |
 | **0.30.4** | **A refusal whose English is not a constant** — f-string refusals had been named as uncovered for three releases, because a sentence built by interpolation has no English source to key on at the moment it is raised. `i18n.Templated` carries the template and its slots beside the finished English text; 7 converted. The slot is the whole design: whitespace means prose, and a prose slot keeps the entire refusal English rather than producing a sentence half in each language |

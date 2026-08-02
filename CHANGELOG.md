@@ -4,6 +4,46 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.9] — 2026-08-02
+
+### The README said v0.18.0
+
+### The finding
+
+The first bold line of every README in all three products read:
+
+    **Current release: v0.18.0**
+
+and the line directly beneath it said the three are *"versioned and cut
+together, so one number names one combination of all three"* — a convention the
+banner had stopped following at 0.18.0 and kept advertising for twenty-two
+releases.
+
+The release-history table underneath stopped at **0.30.6**. Seventeen shipped
+releases — 0.25.0 through 0.29.0, 0.30.7 to 0.30.9, and the whole 0.40.x line —
+were in `CHANGELOG.md` and absent from the page anybody actually reads. The
+changelog was right the entire time; the summary of it in front of the door was
+behind.
+
+    asked     is the release written down
+    mattered  does the front page say what shipped
+
+Reported from the README beside the video, which is the one place this was
+always going to be noticed and the one place no test was looking.
+
+### Changed
+
+- The banner names `pyproject.toml`'s version; the table carries every release
+  from 0.25.0 on, backfilled from each product's own changelog.
+- `test_the_readme_says_what_shipped.py` — five tests, the same file in all
+  three: the banner matches the version, every release has a row, the newest
+  row is this release, no row names a release that was never cut, and a guard
+  on the scan itself.
+
+Two injections, both reproducing the reported defect exactly: the banner set
+back to v0.18.0, and the table truncated at 0.30.6 again.
+
+
 ## [0.40.8] — 2026-08-02
 
 ### The refusal named the field the API calls it
