@@ -4,6 +4,19 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.4] — 2026-08-02
+
+### Cut alongside qrme and pdi
+
+No change in this product. The round is about a synthetic profile of a person
+who has died, or whose subject is contesting that it should exist — states
+QRME has and this product does not: a Guardian belongs to the living person
+using it, and there is no third party for it to speak as.
+
+Recorded rather than left silent, on the same reasoning as the last release: a
+version where all three move together and one is untouched should say which
+one and why.
+
 ## [0.40.3] — 2026-08-02
 
 ### One wrapper recorded its degrades; its sibling said nothing
