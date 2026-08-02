@@ -4,6 +4,41 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.6] — 2026-08-01
+
+### The plan gate speaks the reader's language
+
+`refusals_untranslated.txt` carried this as an exception for four releases, in
+its own words: a template whose slots were English prose, where translating the
+frame alone would produce *"a sentence half in each language, at the one moment
+in this product that stands between somebody and a decision to pay"*.
+
+    asked     can the frame be translated
+    mattered  can the slots be
+
+They can. The capability descriptions and the billing period are a **closed set
+this product authors**, so they are `i18n.Term`s with translations rather than
+strangers — and `Term` is now exempt from the whitespace rule for exactly that
+reason. The rule catches prose *nobody wrote a translation for*; an unmapped
+`Term` still keeps the whole sentence English, so the exemption is paid for
+rather than a hole.
+
+The **plan titles** stay as they are. `Basic` and `Pro` are what the product is
+called on the pricing page, in the console's tabs and on a receipt, and
+somebody comparing a refusal against a price list needs the same word in both
+places.
+
+`Opening` capitalises **after** translation, never before: the vocabulary holds
+one form of each phrase and each language raises its own first letter from it.
+`str.capitalize()` was wrong here — it lower-cases the rest, which would have
+flattened German's nouns.
+
+**The emergency clause is part of the frame**, not appended to it. A person
+told they cannot have the trend model needs to know the alarm still works, and
+that reassurance arriving in English at the end of a Portuguese sentence is the
+shape this mechanism exists to prevent. A test asserts it survives into all
+nine languages.
+
 ## [0.30.5] — 2026-08-01
 
 ### The plan gate said HTTP 402
