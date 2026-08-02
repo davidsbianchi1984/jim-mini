@@ -9,6 +9,27 @@ enum L10n {
         table[key]?[lang] ?? table[key]?["en"] ?? key
     }
 
+    /// The language of somebody who has no account to take one from.
+    ///
+    /// `AppState.language` is read from the stored setting and defaults to
+    /// `"en"` until an account exists. Every sentence the backend composes on
+    /// a public route is chosen from `Accept-Language`, and this shell was
+    /// sending no such header — the phone had been carrying the answer in
+    /// `Locale.preferredLanguages` the whole time and nothing read it.
+    ///
+    /// Region dropped (`es-419` and `es-ES` are both `es`); anything the app
+    /// does not carry falls back to English rather than guessing.
+    static var deviceLanguage: String {
+        for tag in Locale.preferredLanguages {
+            let base = String(tag.split(separator: "-")[0]).lowercased()
+            if supported.contains(base) { return base }
+        }
+        return "en"
+    }
+
+    static let supported = ["en", "es", "fr", "de", "pt", "it", "ja", "zh",
+                            "hi", "ar"]
+
     private static let table: [String: [String: String]] = [
         "spec.ask": ["en": "Ask them", "es": "Preguntarles", "fr": "Leur demander", "de": "Sie fragen", "pt": "Perguntar-lhes", "it": "Chiedi a loro", "ja": "この人に聞く", "zh": "去问他们", "hi": "उनसे पूछें", "ar": "اسألهم"],
         "spec.fallback": ["en": "Specialist", "es": "Especialista", "fr": "Spécialiste", "de": "Fachperson", "pt": "Especialista", "it": "Specialista", "ja": "専門家", "zh": "专家", "hi": "विशेषज्ञ", "ar": "المختص"],

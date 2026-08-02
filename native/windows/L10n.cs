@@ -10,9 +10,48 @@ namespace JimGuardian;
 /// </summary>
 public static class L10n
 {
-    public static string T(string key)
+    /// <summary>
+    /// The language of somebody who has no account to take one from.
+    ///
+    /// <para><c>AppState.Language</c> is the stored setting and is "en" until
+    /// an account exists. Every sentence the backend composes on a public
+    /// route is chosen from <c>Accept-Language</c>, and this shell was sending
+    /// no such header — Windows has been carrying the answer in
+    /// CurrentUICulture the whole time.</para>
+    ///
+    /// <para>Region dropped; anything this app does not carry falls back to
+    /// English rather than guessing.</para>
+    /// </summary>
+    public static readonly string[] Supported =
+        { "en", "es", "fr", "de", "pt", "it", "ja", "zh", "hi", "ar" };
+
+    public static string DeviceLanguage()
     {
-        var lang = AppState.Current.Language;
+        var culture = System.Globalization.CultureInfo.CurrentUICulture;
+        while (culture != null && !string.IsNullOrEmpty(culture.Name))
+        {
+            var code = culture.TwoLetterISOLanguageName.ToLowerInvariant();
+            if (System.Array.IndexOf(Supported, code) >= 0) return code;
+            culture = culture.Parent;
+        }
+        return "en";
+    }
+
+    /// <summary>The shell's chrome, in the signed-in account's language.
+    ///
+    /// <para>Convenient and, on a public surface, wrong: the language it
+    /// reaches for is <c>AppState.Current.Language</c>. A reader with no
+    /// account is answered in English no matter what their machine is set to,
+    /// and does it without the screen ever naming the setting. iOS and Android
+    /// cannot make that mistake — both of their <c>t</c> functions require the
+    /// language as an argument.</para></summary>
+    public static string T(string key) => T(key, AppState.Current.Language);
+
+    /// <summary>The same table, asked in a language the caller names. Pass
+    /// <c>DeviceLanguage()</c> on any surface whose reader has no
+    /// account.</summary>
+    public static string T(string key, string lang)
+    {
         if (Table.TryGetValue(key, out var row))
             return row.TryGetValue(lang, out var s) ? s
                  : row.TryGetValue("en", out var en) ? en : key;

@@ -4,6 +4,45 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.41.0] — 2026-08-02
+
+### The language no client was sending
+
+JIM's public surface answers people who have no account yet, and those handlers
+compose real sentences: what was sent, what is held, what to do next. Every one
+of them is chosen from `Accept-Language`.
+
+**No native shell was sending that header.** The browser sends it without being
+asked, which is why the console looked correct and the three clients a person
+is actually holding were the ones answering in English.
+
+    asked     can the shell say it in the reader's language
+    mattered  does the reader's language ever reach the server
+
+Two things were missing, and only the second is obvious once the first is
+written down. There was **no language to send**: each shell's `language` comes
+from the stored account setting and is `"en"` until an account exists.
+`L10n.deviceLanguage` (iOS), `L10n.deviceLanguage()` (Android) and
+`L10n.DeviceLanguage()` (Windows) now read what the device has been carrying
+all along — `Locale.preferredLanguages`, the system configuration's locale
+list, `CurrentUICulture` — drop the region, and fall back to English rather
+than guessing. Then there was **somewhere to send it**: one line in each
+shell's shared request helper.
+
+`test_the_language_nobody_was_sending.py` checks both halves, because a header
+set to a constant is indistinguishable from a correct one from the outside, and
+it checks *every* header line rather than any of them — the sibling product's
+client sets the header in two places and an `any` passed an injection that
+broke one.
+
+### Windows' localizer takes a language now
+
+`L10n.T(key)` read `AppState.Current.Language` and had no way to be told
+otherwise, so a public surface got the account's default without the screen
+ever naming it. iOS and Android could not make that mistake: both of their `t`
+functions require the language as an argument. A `T(key, lang)` overload closes
+the gap.
+
 ## [0.40.0] — 2026-08-02
 
 > Staged as 0.30.10 and cut as **0.40.0**. The work below is unchanged; only

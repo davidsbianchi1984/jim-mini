@@ -566,6 +566,12 @@ actor ApiClient {
         var req = URLRequest(url: base.appendingPathComponent(path))
         req.httpMethod = method
         req.setValue("application/json", forHTTPHeaderField: "content-type")
+        // The language the reader actually speaks. Every sentence the
+        // backend composes on a public route is chosen from this header,
+        // and no native shell was sending it — the browser sends it for
+        // free, which is why the phones were the ones still answering in
+        // English after the routes learned to speak.
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
         if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization") }
         if let body { req.httpBody = try JSONSerialization.data(withJSONObject: body) }
 

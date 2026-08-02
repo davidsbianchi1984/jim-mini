@@ -249,6 +249,10 @@ object ApiClient {
         val conn = (URL(base + path).openConnection() as HttpURLConnection).apply {
             requestMethod = method
             setRequestProperty("content-type", "application/json")
+            // The language the reader actually speaks. Every sentence the
+            // backend composes on a public route is chosen from this
+            // header, and no native shell was sending it.
+            setRequestProperty("accept-language", L10n.deviceLanguage())
             token?.let { setRequestProperty("authorization", "Bearer $it") }
             connectTimeout = 8000; readTimeout = 8000
             if (body != null) {

@@ -483,6 +483,11 @@ public sealed class ApiClient
             ? abs.AbsolutePath
             : req.RequestUri?.ToString() ?? "";
 
+        // The language the reader actually speaks. Every sentence the backend
+        // composes on a public route is chosen from this header, and no native
+        // shell was sending it.
+        req.Headers.TryAddWithoutValidation("accept-language", L10n.DeviceLanguage());
+
         HttpResponseMessage res;
         try
         {
