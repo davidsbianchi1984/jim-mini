@@ -167,6 +167,26 @@ def test_the_dead_key_backlog_only_shrinks():
     assert worst <= ceiling, (
         f"{worst} dead rows in one shell, above the {ceiling} this started at")
 
+    # The total, as well as the worst shell.
+    #
+    # `worst` is a maximum over three shells, so the number of dead rows could
+    # rise — iOS 3 to 4, a fourth shell added carrying four of its own — with
+    # this check passing every time, because no single shell crossed the line.
+    # The file's own header says "the ceiling does not move up" and meant the
+    # count of dead rows; the ratchet was reading one shell's share of it.
+    #
+    #     asked     is any one shell's dead-key count above the line
+    #     mattered  is the number of dead rows going up
+    total_ceiling = int(re.search(
+        r"# total: (\d+)",
+        (Path(__file__).resolve().parent / "native_dead_keys.txt")
+        .read_text(encoding="utf-8")).group(1))
+    total = sum(per_shell.values())
+    assert total <= total_ceiling, (
+        f"{total} dead rows across the shells, above the {total_ceiling} "
+        "recorded. A row translated into ten languages that nothing asks for "
+        "is a translation sitting beside the English it was meant to replace.")
+
 
 def test_the_three_shells_agree_with_the_console_on_shared_keys():
     """One wording, four surfaces.

@@ -109,10 +109,8 @@ enum L10n {
         "tab.family": ["en": "Family", "es": "Familia", "fr": "Famille",
                        "de": "Familie", "pt": "Família", "it": "Famiglia",
                        "ja": "家族", "zh": "家庭", "hi": "परिवार", "ar": "العائلة"],
-        "action.send": ["en": "Send", "es": "Enviar", "fr": "Envoyer",
                         "de": "Senden", "pt": "Enviar", "it": "Invia",
                         "ja": "送信", "zh": "发送", "hi": "भेजें", "ar": "إرسال"],
-        "action.save": ["en": "Save", "es": "Guardar", "fr": "Enregistrer",
                         "de": "Speichern", "pt": "Salvar", "it": "Salva",
                         "ja": "保存", "zh": "保存", "hi": "सहेजें", "ar": "حفظ"],
         "action.translate": ["en": "Translate", "es": "Traducir", "fr": "Traduire",
@@ -122,7 +120,6 @@ enum L10n {
                             "de": "Abmelden", "pt": "Sair", "it": "Esci",
                             "ja": "サインアウト", "zh": "退出登录", "hi": "साइन आउट",
                             "ar": "تسجيل الخروج"],
-        "action.refresh": ["en": "Refresh", "es": "Actualizar", "fr": "Actualiser",
                            "de": "Aktualisieren", "pt": "Atualizar", "it": "Aggiorna",
                            "ja": "更新", "zh": "刷新", "hi": "रीफ़्रेश", "ar": "تحديث"],
     ]

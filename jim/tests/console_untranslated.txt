@@ -1,3 +1,5 @@
+# status: backlog — 615 rows
+#
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
 #

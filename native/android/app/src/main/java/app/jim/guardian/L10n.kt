@@ -105,15 +105,12 @@ object L10n {
             "en" to "Connect", "es" to "Conectar", "fr" to "Connecter",
             "de" to "Verbinden", "pt" to "Conectar", "it" to "Connetti",
             "ja" to "接続", "zh" to "连接", "hi" to "कनेक्ट", "ar" to "اتصال"),
-        "action.send" to mapOf(
             "en" to "Send", "es" to "Enviar", "fr" to "Envoyer",
             "de" to "Senden", "pt" to "Enviar", "it" to "Invia",
             "ja" to "送信", "zh" to "发送", "hi" to "भेजें", "ar" to "إرسال"),
-        "action.save" to mapOf(
             "en" to "Save", "es" to "Guardar", "fr" to "Enregistrer",
             "de" to "Speichern", "pt" to "Salvar", "it" to "Salva",
             "ja" to "保存", "zh" to "保存", "hi" to "सहेजें", "ar" to "حفظ"),
-        "action.translate" to mapOf(
             "en" to "Translate", "es" to "Traducir", "fr" to "Traduire",
             "de" to "Übersetzen", "pt" to "Traduzir", "it" to "Traduci",
             "ja" to "翻訳", "zh" to "翻译", "hi" to "अनुवाद", "ar" to "ترجمة"),
@@ -122,7 +119,6 @@ object L10n {
             "de" to "Abmelden", "pt" to "Sair", "it" to "Esci",
             "ja" to "サインアウト", "zh" to "退出登录", "hi" to "साइन आउट",
             "ar" to "تسجيل الخروج"),
-        "action.refresh" to mapOf(
             "en" to "Refresh", "es" to "Actualizar", "fr" to "Actualiser",
             "de" to "Aktualisieren", "pt" to "Atualizar", "it" to "Aggiorna",
             "ja" to "更新", "zh" to "刷新", "hi" to "रीफ़्रेश", "ar" to "تحديث"),

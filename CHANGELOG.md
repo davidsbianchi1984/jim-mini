@@ -4,6 +4,94 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.7] — 2026-08-02
+
+### The record that outlived the code
+
+### The finding
+
+`public_untranslated.txt` opened with a paragraph explaining that
+`Onboarding.tsx` — the screen every person in the world meets first — carried
+forty-odd English strings, that translating them was "its own round", and that
+a half-translated sign-up form would be worse than an English one. All of that
+was true when it was written.
+
+`The screen everybody meets first` translated them. `The pre-session backlog
+reaches its floor` took the count to four and appended its correction *below*
+the stale paragraph, which nobody struck:
+
+    What is left is not prose. A product name, a punctuation mark, an
+    example address and an example code — strings that are the same in
+    every language. This is the floor, not a backlog.
+
+So the file held two statements about itself with the false one first. Read
+top-down — which is how anybody reads a file — it advertised a cleared backlog,
+and the correction was twenty lines further on. This round was planned off that
+paragraph before the extractor was run and the work turned out to be two
+releases old.
+
+    asked     is the record complete
+    mattered  does the record still describe the code
+
+The numbers were right the whole time. The prose around them had outlived the
+thing it described, and a record only works if a reader can trust the first
+thing it says.
+
+### Every ratchet now leads with what it is
+
+`# status: floor|backlog — N rows`, on the first line, with the count checked
+against the rows beneath it. `floor` means the remainder is permanent and is
+not work; `backlog` means somebody still owes it. The two cannot be told apart
+from the numbers — `console_untranslated` sits exactly at its ceiling with
+1,459 strings still to translate, and `public_untranslated` sits exactly at its
+ceiling and is finished — which is why the file has to say which it is, in a
+line that cannot drift from its own contents.
+
+A third check was written and struck before it shipped: *a file calling itself
+a floor must sit exactly at its ceiling*. It fired on `native_untranslated.txt`,
+which the last release took from three rows to none — a floor of zero under a
+ceiling of three, and the best kind there is. `floor` is a claim about what the
+remaining rows **are**, not how many, and a check that pretended otherwise
+would have been one more guard answering the question next to the one that
+matters.
+
+### The reasons move next to the rows
+
+`unused_native_bindings.txt` recorded two bindings whose justification lived in
+the guard's module docstring — true, careful, and one file away from the list
+it explained. A record whose justification is somewhere else reads, at the
+place somebody actually looks, as an unexplained backlog: the shape this audit
+found seven times in `0.40.5`. Every row now carries its reason on the row, and
+a new check refuses one that does not.
+
+### The dead-key ratchet was reading one shell's share of a total
+
+`native_dead_keys.txt` held four generic action verbs — `action.refresh`,
+`.save`, `.send`, `.translate` — added in advance because a screen would
+obviously need a Save button, translated into ten languages, and asked for by
+no screen in any shell across several releases. Ten rows across three shells.
+
+Its ratchet took the **maximum over the shells**, so the number of dead rows
+could have risen — iOS three to four, a fourth shell arriving with four of its
+own — while the check passed every time, because no single shell crossed the
+line. The file's own instruction said "the ceiling does not move up" and meant
+the count of dead rows.
+
+    asked     is any one shell's dead-key count above the line
+    mattered  is the number of dead rows going up
+
+### Changed
+
+- The four verbs are deleted from all three shells; the record is at **0**. The
+  file's own instruction was "wire one or delete one". A screen that needs a
+  Save button adds the row it needs, in the wording it needs.
+- `# total:` ratchets the sum alongside the per-shell `# ceiling:`.
+- `test_a_record_that_outlived_the_code.py` and the binding-reason check, both
+  shared with the sibling products.
+
+Injections: one dead verb put back and recorded — which the old maximum-only
+ratchet passed at 1 ≤ 4 — plus the three record checks.
+
 ## [0.40.6] — 2026-08-02
 
 ### Cut alongside qrme and pdi

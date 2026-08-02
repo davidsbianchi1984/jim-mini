@@ -107,10 +107,32 @@ def _unused() -> list[str]:
     return sorted(_swift() + _kotlin() + _csharp())
 
 
-def _recorded() -> list[str]:
+def _rows() -> list[str]:
     return [line.strip() for line in
             SNAPSHOT.read_text(encoding="utf-8").splitlines()
             if line.strip() and not line.startswith("#")]
+
+
+def _recorded() -> list[str]:
+    """The binding names, without the reasons that now sit beside them."""
+    return [row.split(" — ", 1)[0].strip() for row in _rows()]
+
+
+def test_every_recorded_binding_says_why_it_is_recorded():
+    """The reasons for these used to live in this file's module docstring —
+    true, careful, and one file away from the list they explained. A record
+    whose justification is somewhere else reads, at the place somebody actually
+    looks, as an unexplained backlog.
+
+        asked     is the exemption explained
+        mattered  is it explained where the exemption is
+    """
+    bare = [row for row in _rows() if " — " not in row or
+            len(row.split(" — ", 1)[1].strip()) < 20]
+    assert not bare, (
+        f"{len(bare)} recorded binding(s) carry no reason on the row:\n    "
+        + "\n    ".join(bare)
+        + "\n  Write why it is here, after an em dash, or strike it.")
 
 
 def test_the_unused_native_bindings_match_the_record():

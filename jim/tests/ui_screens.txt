@@ -1,3 +1,5 @@
+# status: backlog — 25 rows
+#
 # Which console surface each screen drawing depicts.
 #
 # The gallery tests next door all check screens against the README: that a
