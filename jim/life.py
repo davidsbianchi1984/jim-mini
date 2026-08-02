@@ -789,10 +789,21 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
         deleted["habit_logs"] = conn.execute(
             f"DELETE FROM habit_logs WHERE habit_id IN ({marks})", habit_ids
         ).rowcount
+    # `watch_channels`, `contribution_log` and `waivers` are the three tables
+    # here that carry a *live credential or standing permission* rather than a
+    # record of something that happened, and all three used to survive this
+    # function. The channel is the sharpest: its token is a deposit address
+    # printed into somebody's Shortcut, so after an erase the wrist went on
+    # writing readings back in under a user id that no longer resolved —
+    # `events` rows reappearing for an account the API answers 404 for.
+    #
+    #     asked     did we delete the user's data
+    #     mattered  can anything still write more
     for table in ("habits", "goals", "checkins", "insights", "context_events",
                   "coach_messages", "sources", "sessions", "devices",
                   "journal", "feedback", "vault_keys", "events",
                   "baselines", "trend_points", "medical_cards",
+                  "watch_channels", "contribution_log", "waivers",
                   "tandem_links", "users"):
         deleted[table] = conn.execute(
             f"DELETE FROM {table} WHERE {'id' if table == 'users' else 'user_id'}=?",

@@ -4,6 +4,53 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.5] — 2026-08-02
+
+### The account was gone and the wrist kept writing
+
+`life.delete_user_data` opens with *"Erase every trace of a user across all
+tables — and the PDI vault."* It empties the vault, walks eighteen tables and
+removes the `users` row last, and the API answers 404 for that id afterwards.
+
+`watch_channels` was not one of the eighteen. Its `token` is the drip address:
+a URL typed into an Apple Shortcut, sometimes weeks before, that deposits
+readings into one user's stream. Driven end to end:
+
+    DELETE /data/{id}            200  {"events": 1, "baselines": 2, ...}
+    GET    /users/{id}           404  the account is gone
+    POST   /watch/drip/{token}   200  {"received": 1}  ← and an event row is back
+
+    asked     did we delete the user's data
+    mattered  can anything still write more
+
+The reading ran the full Guardian pipeline under an id that no longer resolves,
+so an erased account grew rows again from a credential its owner had no way to
+find and no screen left to rotate. Two other tables in the same shape went with
+it: `contribution_log`, whose `revoked` column is the whole mechanism for
+withdrawing what was shared with the cloud, and `waivers`. Both are standing
+permissions rather than records of something that happened.
+
+The sibling products had the same class in their own idiom, and the same round
+landed in all three: in QRME a terminated profile was still being licensed and
+cloned through the buyer's token, and in PDI a closed vault was still readable
+through a bequest grant.
+
+### Changed
+
+- `life.delete_user_data` now takes `watch_channels`, `contribution_log` and
+  `waivers` with it.
+- `watch._user_for_token` joins `users`, so a channel row that somehow survives
+  still cannot deposit — the second stop, which closes the class rather than
+  the one path.
+- `jim/tests/test_the_erase_left_a_live_address.py` — eight tests. The
+  generalisation reads the schema rather than a list in the file, so a
+  credential table added next release is in scope by construction.
+
+Thirty user-scoped tables hold ordinary data and are also untouched by a
+function whose first line says "every trace". That is recorded in the new test
+file rather than hidden; it is a decision about what deletion means rather than
+a defect with a receipt, and this round does not take it.
+
 ## [0.40.4] — 2026-08-02
 
 ### Cut alongside qrme and pdi

@@ -87,8 +87,20 @@ def rotate(user_id: str) -> dict:
 
 
 def _user_for_token(token: str) -> str:
+    # Joined to `users`, not read from `watch_channels` alone.
+    #
+    # A channel row outliving its user is a live deposit address for somebody
+    # who asked to be forgotten: `delete_user_data` walked eighteen tables and
+    # this was not one of them, so after "delete anything, anytime" the wrist
+    # went on writing readings back in under the deleted id. The erase now
+    # takes the channel down (jim/life.py), and this join is the second stop —
+    # any future path that leaves a channel standing still cannot deposit.
+    #
+    #     asked     is this token a channel
+    #     mattered  is there still anybody at the other end of it
     row = db.connect().execute(
-        "SELECT user_id FROM watch_channels WHERE token=?", (token,)
+        "SELECT c.user_id FROM watch_channels c JOIN users u ON u.id=c.user_id"
+        " WHERE c.token=?", (token,)
     ).fetchone()
     if row is None:
         # 404, not 403: the token *is* the address. A wrong one names
