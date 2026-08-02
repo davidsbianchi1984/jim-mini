@@ -37,6 +37,13 @@ public sealed partial class ShellPage : Page
             case "connect": ContentFrame.Navigate(typeof(ConnectPage)); break;
             case "custody": ContentFrame.Navigate(typeof(CustodyPage)); break;
             case "family": ContentFrame.Navigate(typeof(FamilyPage)); break;
+            // The synthetic self shipped as a page nothing navigated to. It
+            // had its strings in ten languages and a guard checking they were
+            // there.
+            //
+            //     asked     does the screen have its wording
+            //     mattered  does anything open the screen
+            case "self": ContentFrame.Navigate(typeof(SelfProfilePage)); break;
         }
     }
 

@@ -10,6 +10,9 @@ enum L10n {
     }
 
     private static let table: [String: [String: String]] = [
+        "offline.title": ["en": "What this deployment can reach", "es": "Qué puede alcanzar esta instalación", "fr": "Ce que ce déploiement peut atteindre", "de": "Was diese Installation erreichen kann", "pt": "O que esta instalação pode alcançar", "it": "Cosa può raggiungere questa installazione", "ja": "この環境が接続できる範囲", "zh": "此部署可以连接到什么", "hi": "यह परिनियोजन किस तक पहुँच सकता है", "ar": "ما يمكن أن يصل إليه هذا النشر"],
+        "offline.on": ["en": "Offline — nothing leaves this machine", "es": "Sin conexión — nada sale de esta máquina", "fr": "Hors ligne — rien ne quitte cette machine", "de": "Offline — nichts verlässt diesen Rechner", "pt": "Offline — nada sai desta máquina", "it": "Offline — nulla esce da questa macchina", "ja": "オフライン — このマシンから何も出ません", "zh": "离线 — 任何内容都不会离开这台机器", "hi": "ऑफ़लाइन — इस मशीन से कुछ भी बाहर नहीं जाता", "ar": "دون اتصال — لا شيء يغادر هذا الجهاز"],
+        "offline.off": ["en": "Online — this deployment can reach other machines", "es": "En línea — esta instalación puede alcanzar otras máquinas", "fr": "En ligne — ce déploiement peut atteindre d’autres machines", "de": "Online — diese Installation kann andere Rechner erreichen", "pt": "Online — esta instalação pode alcançar outras máquinas", "it": "Online — questa installazione può raggiungere altre macchine", "ja": "オンライン — この環境は他のマシンに接続できます", "zh": "在线 — 此部署可以连接其他机器", "hi": "ऑनलाइन — यह परिनियोजन अन्य मशीनों तक पहुँच सकता है", "ar": "متصل — يمكن لهذا النشر الوصول إلى أجهزة أخرى"],
         "tab.overview": ["en": "Overview", "es": "Resumen", "fr": "Aperçu",
                          "de": "Übersicht", "pt": "Visão geral", "it": "Panoramica",
                          "ja": "概要", "zh": "概览", "hi": "अवलोकन", "ar": "نظرة عامة"],

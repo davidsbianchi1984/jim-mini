@@ -4,6 +4,50 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.7] — 2026-08-02
+
+### The screen nothing opens
+
+Last release put the synthetic-self screen on the phones — the one QRME profile
+that *is* this person, where they say what the Guardian may pass on about their
+medication. One screen per shell, each translated into ten languages, and a
+guard written to prove the wording was there.
+
+The wording was there. Nothing else was. `SelfProfileSection` on iOS,
+`SelfProfileScreen` on Android and `SelfProfilePage` on Windows were each
+declared and each unreachable — no tab, no composable call, no navigation case.
+
+    asked     does the screen have its wording
+    mattered  does anything open the screen
+
+All three are now in the navigation: a **Me** tab beside Community on iOS and
+Android, and a **Me** entry in the Windows nav pane.
+
+### Two of those three would not have compiled
+
+`L10n.t` takes a key **and a language** in Swift and Kotlin. Every one of the
+forty calls on those two screens passed only the key. The Windows shell's
+`L10n.T` takes the key alone and reads the language itself, which is the only
+reason that one was fine — three shells, two spellings of the same function,
+and a screen written against the wrong one twice. There is no Swift or Kotlin
+toolchain in this build environment, which is exactly why it sat there.
+
+`test_a_screen_nothing_opens.py` now asks both questions per shell, and asks
+the arity question against **each shell's own signature** rather than a single
+number for all three. Holding Windows to Swift's two parameters would have been
+the union mistake again, in the guard meant to catch it.
+
+### Offline mode became readable
+
+`GET /offline/status` reports the posture — whether external transmission is
+possible, what counts as a local destination, what the deployment guarantees.
+It was already answerable and nowhere visible. It now has a panel in the
+console's Settings, a card on the Vault Custody screen of all three shells, and
+its three chrome strings in ten languages.
+
+Read-only on purpose. The posture is set in the deployment's environment, not
+by somebody signed into the app, and a switch there would imply otherwise.
+
 ## [0.30.6] — 2026-08-01
 
 ### The plan gate speaks the reader's language

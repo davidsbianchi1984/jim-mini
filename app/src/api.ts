@@ -622,6 +622,15 @@ export const api = {
     req<{ answer: string; ai: boolean; disclosure: string }>(
       "/help", { method: "POST", body: { question } }),
 
+  /** What this deployment can and cannot reach.
+   *
+   *  Offline mode was settable before this and had nowhere to be read. A
+   *  guarantee nobody can see is a guarantee nobody can check. */
+  offlineStatus: () => req<{
+    offline: boolean; external_transmission_possible: boolean;
+    local_destinations_allowed: string; guarantees: string[];
+    cloud_attached?: boolean;
+  }>("/offline/status"),
   health: () => req<{ status: string; version?: string; tandem: boolean;
                       console?: boolean }>("/health"),
   // How to open this console on a phone: its URL on the local network.

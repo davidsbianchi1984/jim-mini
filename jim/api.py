@@ -21,7 +21,8 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                contribution, db,
                escalation, family, followup, guardian, handoff, i18n, identity,
                landing, life, llm,
-               meds, mic, mobile, notify, oauth, referral, relay, research,
+               meds, mic, mobile, notify, oauth, offline, referral, relay,
+               research,
                robotics,
                rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
                vigil, voice, watch)
@@ -76,7 +77,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.30.6",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.30.7",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -314,6 +315,21 @@ def create_app(qrme_client: QRMEClient | None = None,
         return {"version": terms_mod.TERMS_VERSION,
                 "key_points": terms_mod.KEY_POINTS,
                 "document": terms_mod.DOCUMENT}
+
+    @app.get("/offline/status")
+    def offline_status() -> dict:
+        """What this deployment can and cannot reach.
+
+        A guarantee nobody can read is a guarantee nobody can check. The flag
+        was settable before this and there was nowhere to see the answer — the
+        sibling has had `GET /offline/status` since offline mode was written,
+        and this product had the mode without the proof.
+
+        Open, like `/health`: an operator standing up an on-prem deployment
+        needs to confirm the posture before there is an account to sign in
+        with, and the answer names no person and no data.
+        """
+        return offline.status(app)
 
     @app.get("/health")
     def health() -> dict:

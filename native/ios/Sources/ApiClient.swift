@@ -537,6 +537,13 @@ actor ApiClient {
         if let u = URL(string: s.hasSuffix("/") ? String(s.dropLast()) : s) { base = u }
     }
 
+
+    /// Read-only on purpose: the posture is set in the deployment's
+    /// environment, not by somebody signed into the app.
+    func offlineStatus() async throws -> OfflinePosture {
+        try await request("/offline/status")
+    }
+
     private func request<T: Decodable>(_ path: String, method: String = "GET",
                                        body: [String: Any]? = nil, token: String? = nil) async throws -> T {
         var req = URLRequest(url: base.appendingPathComponent(path))
@@ -1049,4 +1056,16 @@ actor ApiClient {
         try await request("/anonymity/\(uid)", token: token)
     }
 
+}
+
+/// What the deployment can and cannot reach.
+///
+/// Offline mode was settable and unreadable: the flag existed, the guarantee
+/// was written in a docstring, and there was nowhere on a phone to see the
+/// answer. A guarantee nobody can check is a guarantee.
+struct OfflinePosture: Decodable {
+    let offline: Bool
+    let external_transmission_possible: Bool
+    let local_destinations_allowed: String
+    let guarantees: [String]
 }

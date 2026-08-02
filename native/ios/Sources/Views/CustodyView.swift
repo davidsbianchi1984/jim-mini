@@ -15,7 +15,7 @@ struct CustodySection: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Vault custody").font(.headline).foregroundStyle(Theme.txt)
                 ProblemReportingCard()
-                ProblemReportingCard()
+                OfflinePostureCard()
                 Text("Chats with tandem specialists are sealed into the PDI vault — encrypted, attributed, and hash-chained. This is your copy of the proof.")
                     .font(.caption).foregroundStyle(Theme.t2)
                 if let list {

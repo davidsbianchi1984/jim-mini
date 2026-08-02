@@ -26,31 +26,31 @@ struct SelfProfileSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
-                Text(L10n.t("self.title")).font(.headline)
+                Text(L10n.t("self.title", state.language)).font(.headline)
                     .foregroundStyle(Theme.txt)
                 ProblemReportingCard()
-                Text(L10n.t("self.lead"))
+                Text(L10n.t("self.lead", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
             }.card()
 
             if status?.linked != true {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(L10n.t("self.link")).font(.subheadline.bold())
+                    Text(L10n.t("self.link", state.language)).font(.subheadline.bold())
                         .foregroundStyle(Theme.txt)
-                    Text(L10n.t("self.paste"))
+                    Text(L10n.t("self.paste", state.language))
                         .font(.caption).foregroundStyle(Theme.t2)
-                    TextField(L10n.t("self.profile_id"), text: $profileId)
+                    TextField(L10n.t("self.profile_id", state.language), text: $profileId)
                         .textFieldStyle(.roundedBorder)
-                    SecureField(L10n.t("self.owner_token"), text: $ownerToken)
+                    SecureField(L10n.t("self.owner_token", state.language), text: $ownerToken)
                         .textFieldStyle(.roundedBorder)
-                    Button(L10n.t("self.link_button")) { link() }
+                    Button(L10n.t("self.link_button", state.language)) { link() }
                         .disabled(busy || profileId.isEmpty || ownerToken.isEmpty)
                 }.card()
             } else {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(L10n.t("self.may_know")).font(.subheadline.bold())
+                    Text(L10n.t("self.may_know", state.language)).font(.subheadline.bold())
                         .foregroundStyle(Theme.txt)
-                    Text(L10n.t("self.until_tick"))
+                    Text(L10n.t("self.until_tick", state.language))
                         .font(.caption).foregroundStyle(Theme.t2)
                     ForEach(categories, id: \.self) { key in
                         Toggle(key, isOn: Binding(
@@ -62,27 +62,27 @@ struct SelfProfileSection: View {
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(L10n.t("self.exactly")).font(.subheadline.bold())
+                    Text(L10n.t("self.exactly", state.language)).font(.subheadline.bold())
                         .foregroundStyle(Theme.txt)
                     if preview?.empty == true {
-                        Text(L10n.t("self.nothing_ticked"))
+                        Text(L10n.t("self.nothing_ticked", state.language))
                             .font(.caption).foregroundStyle(Theme.t2)
                     } else {
                         Text((preview?.consented ?? []).joined(separator: " · "))
                             .font(.caption.monospaced()).foregroundStyle(Theme.txt)
                     }
-                    Text(L10n.t("self.message_itself"))
+                    Text(L10n.t("self.message_itself", state.language))
                         .font(.caption2).foregroundStyle(Theme.t2)
-                    Button(L10n.t("self.send")) { brief() }
+                    Button(L10n.t("self.send", state.language)) { brief() }
                         .disabled(busy || preview?.empty == true)
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(L10n.t("self.stop")).font(.subheadline.bold())
+                    Text(L10n.t("self.stop", state.language)).font(.subheadline.bold())
                         .foregroundStyle(Theme.txt)
-                    Text(L10n.t("self.unlink_note"))
+                    Text(L10n.t("self.unlink_note", state.language))
                         .font(.caption).foregroundStyle(Theme.t2)
-                    Button(L10n.t("self.unlink")) { unlink() }
+                    Button(L10n.t("self.unlink", state.language)) { unlink() }
                         .disabled(busy).foregroundStyle(Theme.red)
                 }.card()
             }
@@ -116,7 +116,7 @@ struct SelfProfileSection: View {
         run({ _ = try await state.api.linkSelfProfile(
                 uid: uid, token: token, profileId: profileId,
                 ownerToken: ownerToken) },
-            L10n.t("self.linked_note"))
+            L10n.t("self.linked_note", state.language))
     }
 
     private func setConsent(_ key: String, _ on: Bool) {
@@ -125,18 +125,18 @@ struct SelfProfileSection: View {
         if on { next.append(key) } else { next.removeAll { $0 == key } }
         run({ _ = try await state.api.consentSelfProfile(
                 uid: uid, token: token, categories: next) },
-            L10n.t("self.saved"))
+            L10n.t("self.saved", state.language))
     }
 
     private func brief() {
         guard let uid = state.userId, let token = state.userToken else { return }
         run({ _ = try await state.api.briefSelfProfile(uid: uid, token: token) },
-            L10n.t("self.sent"))
+            L10n.t("self.sent", state.language))
     }
 
     private func unlink() {
         guard let uid = state.userId, let token = state.userToken else { return }
         run({ try await state.api.unlinkSelfProfile(uid: uid, token: token) },
-            L10n.t("self.unlinked"))
+            L10n.t("self.unlinked", state.language))
     }
 }

@@ -11,6 +11,9 @@ object L10n {
         table[key]?.let { it[lang] ?: it["en"] } ?: key
 
     private val table: Map<String, Map<String, String>> = mapOf(
+        "offline.title" to mapOf("en" to "What this deployment can reach", "es" to "Qué puede alcanzar esta instalación", "fr" to "Ce que ce déploiement peut atteindre", "de" to "Was diese Installation erreichen kann", "pt" to "O que esta instalação pode alcançar", "it" to "Cosa può raggiungere questa installazione", "ja" to "この環境が接続できる範囲", "zh" to "此部署可以连接到什么", "hi" to "यह परिनियोजन किस तक पहुँच सकता है", "ar" to "ما يمكن أن يصل إليه هذا النشر"),
+        "offline.on" to mapOf("en" to "Offline — nothing leaves this machine", "es" to "Sin conexión — nada sale de esta máquina", "fr" to "Hors ligne — rien ne quitte cette machine", "de" to "Offline — nichts verlässt diesen Rechner", "pt" to "Offline — nada sai desta máquina", "it" to "Offline — nulla esce da questa macchina", "ja" to "オフライン — このマシンから何も出ません", "zh" to "离线 — 任何内容都不会离开这台机器", "hi" to "ऑफ़लाइन — इस मशीन से कुछ भी बाहर नहीं जाता", "ar" to "دون اتصال — لا شيء يغادر هذا الجهاز"),
+        "offline.off" to mapOf("en" to "Online — this deployment can reach other machines", "es" to "En línea — esta instalación puede alcanzar otras máquinas", "fr" to "En ligne — ce déploiement peut atteindre d’autres machines", "de" to "Online — diese Installation kann andere Rechner erreichen", "pt" to "Online — esta instalação pode alcançar outras máquinas", "it" to "Online — questa installazione può raggiungere altre macchine", "ja" to "オンライン — この環境は他のマシンに接続できます", "zh" to "在线 — 此部署可以连接其他机器", "hi" to "ऑनलाइन — यह परिनियोजन अन्य मशीनों तक पहुँच सकता है", "ar" to "متصل — يمكن لهذا النشر الوصول إلى أجهزة أخرى"),
         "tab.overview" to mapOf(
             "en" to "Overview", "es" to "Resumen", "fr" to "Aperçu",
             "de" to "Übersicht", "pt" to "Visão geral", "it" to "Panoramica",

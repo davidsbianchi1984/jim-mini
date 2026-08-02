@@ -4,7 +4,7 @@ import SwiftUI
 /// connections, the connected-apps catalog, and the door out to QRME's
 /// community — behind one tab.
 struct ConnectView: View {
-    enum Tab: String, CaseIterable { case sources = "Sources", social = "Social", apps = "Apps", community = "Community" }
+    enum Tab: String, CaseIterable { case sources = "Sources", social = "Social", apps = "Apps", community = "Community", me = "Me" }
     @State private var tab: Tab = .sources
 
     var body: some View {
@@ -19,6 +19,13 @@ struct ConnectView: View {
                 case .social: SocialSection()
                 case .apps: AppsSection()
                 case .community: CommunitySection()
+                // The synthetic self shipped as a section nothing switched to.
+                // It had its strings in ten languages and a guard checking
+                // they were there.
+                //
+                //     asked     does the screen have its wording
+                //     mattered  does anything open the screen
+                case .me: SelfProfileSection()
                 }
             }.padding(20)
         }

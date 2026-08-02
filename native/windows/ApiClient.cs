@@ -448,6 +448,13 @@ public sealed class ApiClient
 
     public void SetBase(string url) => _http.BaseAddress = new Uri(url.TrimEnd('/'));
 
+
+    /// <summary>What the deployment can and cannot reach. Read-only: the
+    /// posture is set in the deployment's environment, not in the app.</summary>
+    public async Task<OfflinePosture> OfflineStatus() =>
+        await Send<OfflinePosture>(new HttpRequestMessage(HttpMethod.Get,
+            _base + "/offline/status"));
+
     private async Task<T> Send<T>(HttpRequestMessage req)
     {
         // The path as written, for the recorder. Read before the send, which
@@ -974,3 +981,9 @@ public sealed class ApiClient
         Send<AnonymityPosture>(Get($"/anonymity/{uid}", token));
 
 }
+
+public record OfflinePosture(
+    [property: JsonPropertyName("offline")] bool Offline,
+    [property: JsonPropertyName("external_transmission_possible")] bool ExternalTransmissionPossible,
+    [property: JsonPropertyName("local_destinations_allowed")] string LocalDestinationsAllowed,
+    [property: JsonPropertyName("guarantees")] string[] Guarantees);

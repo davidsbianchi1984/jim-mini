@@ -38,6 +38,7 @@ import app.jim.guardian.EscalationPolicy
 import app.jim.guardian.Guidance
 import app.jim.guardian.ImproveState
 import app.jim.guardian.CustodyList
+import app.jim.guardian.OfflinePosture
 import app.jim.guardian.CustodyProvenance
 import app.jim.guardian.GuardianViewModel
 import app.jim.guardian.ApiClient
@@ -1006,6 +1007,43 @@ private fun GuidanceExtras(g: Guidance) {
     }
 }
 
+/**
+ * What this deployment can and cannot reach.
+ *
+ * Offline mode was settable and unreadable: the flag existed, the guarantee
+ * was written in a docstring, and there was nowhere on a phone to see the
+ * answer.
+ *
+ *     asked     can the guarantee be turned on
+ *     mattered  can it be checked
+ *
+ * Read-only on purpose. The posture is set in the deployment's environment,
+ * not by somebody signed into the app — a switch here would imply otherwise.
+ */
+@Composable
+fun OfflinePostureCard(vm: GuardianViewModel) {
+    var posture by remember { mutableStateOf<OfflinePosture?>(null) }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.offlineStatus() }) { r -> posture = r.getOrNull() }
+    }
+    posture?.let { p ->
+        Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("offline.title", vm.language),
+                     style = MaterialTheme.typography.titleSmall)
+                Text(if (p.offline) L10n.t("offline.on", vm.language)
+                     else L10n.t("offline.off", vm.language),
+                     color = if (p.offline) Jim.Green else Jim.T2, fontSize = 12.sp,
+                     fontWeight = FontWeight.Bold)
+                Text(p.localDestinationsAllowed, color = Jim.T2, fontSize = 11.sp)
+                p.guarantees.forEach { line ->
+                    Text("\u2022 " + line, color = Jim.T2, fontSize = 11.sp)
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun CustodyPanel(vm: GuardianViewModel) {
     var list by remember { mutableStateOf<CustodyList?>(null) }
@@ -1024,6 +1062,7 @@ private fun CustodyPanel(vm: GuardianViewModel) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Vault custody", color = Jim.Txt, fontSize = 16.sp,
             fontWeight = FontWeight.Bold)
+        OfflinePostureCard(vm)
         Text("Chats with tandem specialists are sealed into the PDI vault — " +
              "encrypted, attributed, and hash-chained. This is your copy of " +
              "the proof.", color = Jim.T2, fontSize = 12.sp)
@@ -1762,7 +1801,7 @@ private fun FamilyPanel(vm: GuardianViewModel) {
 @Composable
 fun ConnectScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Sources", "Social", "Apps", "Community")
+    val tabs = listOf("Sources", "Social", "Apps", "Community", "Me")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -1775,7 +1814,14 @@ fun ConnectScreen(vm: GuardianViewModel) {
             0 -> SourcesPanel(vm)
             1 -> SocialPanel(vm)
             2 -> AppsPanel(vm)
-            else -> CommunityPanel(vm)
+            3 -> CommunityPanel(vm)
+            // The synthetic self shipped as a composable nothing called. It
+            // had its strings in ten languages and a guard checking they were
+            // there.
+            //
+            //     asked     does the screen have its wording
+            //     mattered  does anything open the screen
+            else -> SelfProfileScreen(ApiClient, vm.uid!!, vm.token!!, vm.language)
         }
     }
 }
@@ -2257,7 +2303,7 @@ fun ProblemReportingCard() {
  * with them when they change their mind.
  */
 @Composable
-fun SelfProfileScreen(api: ApiClient, uid: String, token: String) {
+fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) {
     val scope = rememberCoroutineScope()
     var status by remember { mutableStateOf<JSONObject?>(null) }
     var preview by remember { mutableStateOf<JSONObject?>(null) }
@@ -2288,39 +2334,39 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String) {
     }
 
     Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(L10n.t("self.title"), style = MaterialTheme.typography.titleMedium)
+        Text(L10n.t("self.title", lang), style = MaterialTheme.typography.titleMedium)
         ProblemReportingCard()
-        Text(L10n.t("self.lead"), style = MaterialTheme.typography.bodySmall)
+        Text(L10n.t("self.lead", lang), style = MaterialTheme.typography.bodySmall)
 
         if (status?.optBoolean("linked") != true) {
             Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(L10n.t("self.link"), style = MaterialTheme.typography.titleSmall)
-                    Text(L10n.t("self.paste"), style = MaterialTheme.typography.bodySmall)
+                    Text(L10n.t("self.link", lang), style = MaterialTheme.typography.titleSmall)
+                    Text(L10n.t("self.paste", lang), style = MaterialTheme.typography.bodySmall)
                     OutlinedTextField(profileId, { profileId = it },
-                        label = { Text(L10n.t("self.profile_id")) })
+                        label = { Text(L10n.t("self.profile_id", lang)) })
                     OutlinedTextField(ownerToken, { ownerToken = it },
-                        label = { Text(L10n.t("self.owner_token")) })
+                        label = { Text(L10n.t("self.owner_token", lang)) })
                     OutlinedButton(enabled = !busy && profileId.isNotBlank() && ownerToken.isNotBlank(),
                         onClick = {
-                            run(L10n.t("self.linked_note")) {
+                            run(L10n.t("self.linked_note", lang)) {
                                 api.linkSelfProfile(uid, token, profileId.trim(), ownerToken.trim())
                             }
-                        }) { Text(L10n.t("self.link_button")) }
+                        }) { Text(L10n.t("self.link_button", lang)) }
                 }
             }
         } else {
             Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(L10n.t("self.may_know"), style = MaterialTheme.typography.titleSmall)
-                    Text(L10n.t("self.until_tick"), style = MaterialTheme.typography.bodySmall)
+                    Text(L10n.t("self.may_know", lang), style = MaterialTheme.typography.titleSmall)
+                    Text(L10n.t("self.until_tick", lang), style = MaterialTheme.typography.bodySmall)
                     categories.forEach { key ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Switch(checked = consentedNow().contains(key), enabled = !busy,
                                 onCheckedChange = { on ->
                                     val next = if (on) consentedNow() + key
                                                else consentedNow() - key
-                                    run(L10n.t("self.saved")) {
+                                    run(L10n.t("self.saved", lang)) {
                                         api.consentSelfProfile(uid, token, next)
                                     }
                                 })
@@ -2331,24 +2377,24 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String) {
             }
             Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(L10n.t("self.exactly"), style = MaterialTheme.typography.titleSmall)
+                    Text(L10n.t("self.exactly", lang), style = MaterialTheme.typography.titleSmall)
                     Text(
-                        if (preview?.optBoolean("empty") == true) L10n.t("self.nothing_ticked")
+                        if (preview?.optBoolean("empty") == true) L10n.t("self.nothing_ticked", lang)
                         else preview?.optJSONObject("brief")?.toString(2) ?: "",
                         style = MaterialTheme.typography.bodySmall)
-                    Text(L10n.t("self.message_itself"), style = MaterialTheme.typography.bodySmall)
+                    Text(L10n.t("self.message_itself", lang), style = MaterialTheme.typography.bodySmall)
                     OutlinedButton(enabled = !busy && preview?.optBoolean("empty") != true,
-                        onClick = { run(L10n.t("self.sent")) { api.briefSelfProfile(uid, token) } }
-                    ) { Text(L10n.t("self.send")) }
+                        onClick = { run(L10n.t("self.sent", lang)) { api.briefSelfProfile(uid, token) } }
+                    ) { Text(L10n.t("self.send", lang)) }
                 }
             }
             Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(L10n.t("self.stop"), style = MaterialTheme.typography.titleSmall)
-                    Text(L10n.t("self.unlink_note"), style = MaterialTheme.typography.bodySmall)
+                    Text(L10n.t("self.stop", lang), style = MaterialTheme.typography.titleSmall)
+                    Text(L10n.t("self.unlink_note", lang), style = MaterialTheme.typography.bodySmall)
                     OutlinedButton(enabled = !busy,
-                        onClick = { run(L10n.t("self.unlinked")) { api.unlinkSelfProfile(uid, token) } }
-                    ) { Text(L10n.t("self.unlink")) }
+                        onClick = { run(L10n.t("self.unlinked", lang)) { api.unlinkSelfProfile(uid, token) } }
+                    ) { Text(L10n.t("self.unlink", lang)) }
                 }
             }
         }

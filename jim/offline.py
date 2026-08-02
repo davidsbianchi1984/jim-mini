@@ -124,7 +124,7 @@ def allow_host(host: str | None, what: str) -> None:
         "this machine while JIM_OFFLINE is set.")
 
 
-def status() -> dict:
+def status(app=None) -> dict:
     """The posture, for a deployment that has to prove it.
 
     Not routed yet in this product — QRME exposes the equivalent at
@@ -134,8 +134,10 @@ def status() -> dict:
     environment and getting it slightly different.
     """
     off = enabled()
+    cloud = getattr(getattr(app, "state", None), "cloud", None)
     return {
         "offline": off,
+        "cloud_attached": (cloud is not None) and not off,
         # The core promise, and the one this module was built to make true:
         # while offline mode is on, every path out of this host refuses any
         # address that is not this machine or its own network.

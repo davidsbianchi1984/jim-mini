@@ -12,6 +12,24 @@
             <TextBlock Text="Chats with tandem specialists are sealed into the PDI vault — encrypted, attributed, and hash-chained. This is your copy of the proof. Select a record to read its provenance."
                        Foreground="{StaticResource JimT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
+            <!-- What this deployment can and cannot reach. Read-only: the
+                 posture is set in the deployment's environment, not by
+                 somebody signed into the app. -->
+            <Border x:Name="OfflineCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="OfflineTitle" FontWeight="Bold" FontSize="14"
+                               Foreground="{StaticResource JimTxtBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="OfflineState" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimGreenBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="OfflineLocal" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="OfflineGuarantees" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                </StackPanel>
+            </Border>
+
             <TextBlock x:Name="ChainText" FontSize="13" FontWeight="Bold"
                        Foreground="{StaticResource JimGreenBrush}" Visibility="Collapsed" />
             <TextBlock x:Name="ErrorText" FontSize="13" TextWrapping="Wrap"

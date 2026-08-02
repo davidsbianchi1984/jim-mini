@@ -36,6 +36,9 @@
             <NavigationViewItem Content="Family" Tag="family">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="People" /></NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Content="Me" Tag="self">
+                <NavigationViewItem.Icon><SymbolIcon Symbol="Contact" /></NavigationViewItem.Icon>
+            </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>
             <Button Content="Sign out" Margin="12" Click="OnSignOut"

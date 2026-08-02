@@ -38,6 +38,7 @@ nine languages is never affected.
 from __future__ import annotations
 
 import ast
+import re
 import os
 from pathlib import Path
 
@@ -252,3 +253,67 @@ def test_the_posture_is_reportable_in_one_place():
     with pytest.MonkeyPatch.context() as m:
         m.setenv("JIM_OFFLINE", "1")
         assert offline.status()["external_transmission_possible"] is False
+
+
+# --- the posture has to be readable ----------------------------------------
+#
+# A guarantee nobody can see is a guarantee nobody can check. The flag was
+# settable before this round and there was nowhere to read the answer: the
+# module knew, and no route or screen did.
+#
+#     asked     can the guarantee be turned on
+#     mattered  can it be checked
+
+def test_the_posture_is_served_on_a_route():
+    """`offline.status()` existing is not the same as a deployment being able
+    to read it. The sibling has had this route since offline mode was written;
+    this product had the mode without the proof."""
+    from fastapi.testclient import TestClient
+    from jim.api import create_app
+    answered = TestClient(create_app()).get("/offline/status")
+    assert answered.status_code == 200, answered.text
+    body = answered.json()
+    assert "offline" in body and "external_transmission_possible" in body
+
+
+def test_the_route_is_open_because_the_posture_precedes_the_account():
+    """An operator standing up an on-prem deployment confirms the posture
+    before there is anything to sign in with, and the answer names no person
+    and no data — so it is open, like `/health`, and this says so out loud
+    rather than leaving it to look like an oversight."""
+    from fastapi.testclient import TestClient
+    from jim.api import create_app
+    body = TestClient(create_app()).get("/offline/status").json()
+    for key in body:
+        assert key in ("offline", "cloud_attached",
+                       "external_transmission_possible",
+                       "local_destinations_allowed", "guarantees"), (
+            f"the posture grew a {key!r} field — check it names no person, no "
+            "record and no credential before leaving this route open")
+
+
+def test_the_console_reads_it_rather_than_only_binding_it():
+    """A binding is not a door — this repository's own lesson, applied to the
+    thing this round added. The sibling's console renders the posture on its
+    settings screen; a binding with no screen would be a route nobody meets."""
+    console = REPO / "app" / "src"
+    binding = (console / "api.ts").read_text(encoding="utf-8")
+    assert "offlineStatus" in binding, "the console cannot ask for the posture"
+    # Comments stripped first. The injection that proved this necessary
+    # replaced the call with `null /* api.offlineStatus() */`, and a substring
+    # search called that a door — the same mistake as searching a module's
+    # source text for `offline.allow` and matching the comment that mentions
+    # it.
+    #
+    #     asked     does a screen mention the binding
+    #     mattered  does a screen call it
+    used = []
+    for screen in (console / "screens").glob("*.tsx"):
+        text = re.sub(r"/\*.*?\*/", "", screen.read_text(encoding="utf-8"),
+                      flags=re.S)
+        text = re.sub(r"//[^\n]*", "", text)
+        if re.search(r"\bapi\s*\.\s*offlineStatus\s*\(", text):
+            used.append(screen)
+    assert used, (
+        "`api.offlineStatus` is bound and no screen calls it, so the posture "
+        "is reachable by the client and not by a person")
