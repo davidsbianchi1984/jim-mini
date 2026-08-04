@@ -283,7 +283,13 @@ object ApiClient {
             val said = runCatching {
                 val body = JSONObject(text)
                 body.optString("message").ifBlank {
-                    if (body.opt("detail") is String) body.optString("detail") else ""
+                    when (val detail = body.opt("detail")) {
+                        is String -> detail
+                        // A plan refusal (402) puts a dict in detail; its
+                        // `message` is the sentence composed for the reader.
+                        is JSONObject -> detail.optString("message")
+                        else -> ""
+                    }
                 }
             }.getOrNull()
             throw ApiException(if (said.isNullOrBlank()) "HTTP $code" else said)
@@ -1010,7 +1016,112 @@ object ApiClient {
             o.optBoolean("legal_name_on_record"), list("keeps"), list("costs"))
     }
 
+    // ---- money — the guardian that watches balances (jim/money.py) --------
+    // The overview carries its own labels in the reader's language; the
+    // screen renders them and adds no English of its own, because the count
+    // behind this shell's tabs is a ratchet that must not grow.
+
+    private fun moneyAccountOf(o: JSONObject) = MoneyAccount(
+        o.getString("id"), o.optString("kind"), o.optString("institution"),
+        if (o.isNull("label")) null else o.optString("label"),
+        if (o.isNull("last4")) null else o.optString("last4"),
+        o.optString("credentials"),
+        if (o.isNull("balance")) null else o.optDouble("balance"))
+
+    private fun moneyOrderOf(o: JSONObject) = MoneyOrder(
+        o.optString("asset_class"), o.optDouble("amount", 0.0),
+        o.optString("status"),
+        if (o.isNull("rationale")) null else o.optString("rationale"))
+
+    private fun moneyWarningOf(o: JSONObject): MoneyWarning {
+        val doors = o.optJSONObject("doors")
+        val desks = mutableListOf<MoneyDesk>()
+        doors?.optJSONArray("desks")?.let { a ->
+            for (i in 0 until a.length()) {
+                val d = a.getJSONObject(i)
+                desks.add(MoneyDesk(d.optString("name"), d.optString("trade"),
+                                    d.optString("location")))
+            }
+        }
+        val spec = doors?.optJSONObject("specialist")
+        return MoneyWarning(o.optString("kind"), o.optString("message"),
+                            spec?.optString("label"), desks)
+    }
+
+    suspend fun moneyOverview(uid: String, token: String): MoneyOverview {
+        val o = request("/money/$uid", token = token)
+        val accounts = mutableListOf<MoneyAccount>()
+        o.optJSONArray("accounts")?.let { a ->
+            for (i in 0 until a.length()) accounts.add(moneyAccountOf(a.getJSONObject(i)))
+        }
+        val orders = mutableListOf<MoneyOrder>()
+        o.optJSONArray("orders")?.let { a ->
+            for (i in 0 until a.length()) orders.add(moneyOrderOf(a.getJSONObject(i)))
+        }
+        val labels = mutableMapOf<String, String>()
+        o.optJSONObject("labels")?.let { l ->
+            l.keys().forEach { k -> labels[k] = l.getString(k) }
+        }
+        val goal = o.optJSONObject("savings")
+        return MoneyOverview(accounts, goal?.optDouble("goal"), orders,
+                             o.optString("note"), labels)
+    }
+
+    suspend fun moneyAddAccount(uid: String, token: String, kind: String,
+                                institution: String, accountNumber: String?,
+                                routingNumber: String?): MoneyAccount {
+        val body = JSONObject().put("kind", kind).put("institution", institution)
+        if (!accountNumber.isNullOrBlank()) body.put("account_number", accountNumber)
+        if (!routingNumber.isNullOrBlank()) body.put("routing_number", routingNumber)
+        return moneyAccountOf(request("/money/$uid/accounts", "POST", body, token))
+    }
+
+    suspend fun moneyObserve(uid: String, token: String, accountId: String,
+                             balance: Double): List<MoneyWarning> {
+        val body = JSONObject().put("account_id", accountId).put("balance", balance)
+        val o = request("/money/$uid/observe", "POST", body, token)
+        val out = mutableListOf<MoneyWarning>()
+        o.optJSONArray("warnings")?.let { a ->
+            for (i in 0 until a.length()) out.add(moneyWarningOf(a.getJSONObject(i)))
+        }
+        return out
+    }
+
+    suspend fun moneySetSavings(uid: String, token: String, goal: Double) {
+        request("/money/$uid/savings", "PUT", JSONObject().put("goal", goal), token)
+    }
+
+    /** The handover, and the way back. Revoking is never plan-gated. */
+    suspend fun moneySetMandate(uid: String, token: String, enabled: Boolean,
+                                capPerOrder: Double, monthlyCap: Double,
+                                scope: String) {
+        val body = JSONObject().put("enabled", enabled)
+            .put("cap_per_order", capPerOrder).put("monthly_cap", monthlyCap)
+            .put("asset_classes", org.json.JSONArray(listOf("index_funds")))
+            .put("scope", scope)
+        request("/money/$uid/mandate", "PUT", body, token)
+    }
+
 }
+
+data class MoneyAccount(val id: String, val kind: String,
+                        val institution: String, val label: String?,
+                        val last4: String?, val credentials: String,
+                        val balance: Double?)
+
+data class MoneyOrder(val assetClass: String, val amount: Double,
+                      val status: String, val rationale: String?)
+
+data class MoneyDesk(val name: String, val trade: String, val location: String)
+
+data class MoneyWarning(val kind: String, val message: String,
+                        val specialist: String?, val desks: List<MoneyDesk>)
+
+data class MoneyOverview(val accounts: List<MoneyAccount>,
+                         val savingsGoal: Double?,
+                         val orders: List<MoneyOrder>,
+                         val note: String,
+                         val labels: Map<String, String>)
 
 /** What the deployment can and cannot reach. */
 data class OfflinePosture(val offline: Boolean,

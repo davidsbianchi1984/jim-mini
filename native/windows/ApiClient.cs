@@ -518,6 +518,11 @@ public sealed class ApiClient
                     said = m.GetString();
                 else if (root.TryGetProperty("detail", out var d) && d.ValueKind == JsonValueKind.String)
                     said = d.GetString();
+                // A plan refusal (402) puts an *object* in detail; its
+                // `message` is the sentence composed for the reader.
+                else if (root.TryGetProperty("detail", out var dd) && dd.ValueKind == JsonValueKind.Object
+                         && dd.TryGetProperty("message", out var dm) && dm.ValueKind == JsonValueKind.String)
+                    said = dm.GetString();
             }
             catch { /* non-JSON error body */ }
             throw new HttpRequestException(said ?? $"HTTP {(int)res.StatusCode}");
@@ -854,6 +859,11 @@ public sealed class ApiClient
                     said = m.GetString();
                 else if (root.TryGetProperty("detail", out var d) && d.ValueKind == JsonValueKind.String)
                     said = d.GetString();
+                // A plan refusal (402) puts an *object* in detail; its
+                // `message` is the sentence composed for the reader.
+                else if (root.TryGetProperty("detail", out var dd) && dd.ValueKind == JsonValueKind.Object
+                         && dd.TryGetProperty("message", out var dm) && dm.ValueKind == JsonValueKind.String)
+                    said = dm.GetString();
             }
             catch { /* non-JSON error body */ }
             throw new HttpRequestException(said ?? $"HTTP {(int)res.StatusCode}");
@@ -1008,7 +1018,102 @@ public sealed class ApiClient
     public Task<AnonymityPosture> Anonymity(string uid, string token) =>
         Send<AnonymityPosture>(Get($"/anonymity/{uid}", token));
 
+    // -- money: the guardian that watches balances (jim/money.py) --
+    // The overview carries its own labels in the reader's language; the
+    // page renders them and adds no English of its own, because the count
+    // behind this shell's tabs is a ratchet that must not grow.
+
+    public Task<MoneyOverview> MoneyOverview(string uid, string token) =>
+        Send<MoneyOverview>(Get($"/money/{uid}", token));
+
+    public Task<MoneyAccount> MoneyAddAccount(string uid, string token,
+                                              string kind, string institution,
+                                              string? accountNumber,
+                                              string? routingNumber)
+    {
+        object body = (string.IsNullOrWhiteSpace(accountNumber),
+                       string.IsNullOrWhiteSpace(routingNumber)) switch
+        {
+            (true, true) => new { kind, institution },
+            (false, true) => new { kind, institution, account_number = accountNumber },
+            (true, false) => new { kind, institution, routing_number = routingNumber },
+            _ => new { kind, institution, account_number = accountNumber,
+                       routing_number = routingNumber },
+        };
+        return Send<MoneyAccount>(Post($"/money/{uid}/accounts", body, token));
+    }
+
+    public Task<MoneyObserved> MoneyObserve(string uid, string token,
+                                            string accountId, double balance) =>
+        Send<MoneyObserved>(Post($"/money/{uid}/observe",
+            new { account_id = accountId, balance }, token));
+
+    public Task<SavingsGoal> MoneySetSavings(string uid, string token, double goal) =>
+        Send<SavingsGoal>(Put($"/money/{uid}/savings", new { goal }, token));
+
+    /// <summary>The handover, and the way back. Revoking is never plan-gated.</summary>
+    public Task<MoneyMandate> MoneySetMandate(string uid, string token, bool enabled,
+                                              double capPerOrder, double monthlyCap,
+                                              string scope) =>
+        Send<MoneyMandate>(Put($"/money/{uid}/mandate",
+            new { enabled, cap_per_order = capPerOrder, monthly_cap = monthlyCap,
+                  asset_classes = new[] { "index_funds" }, scope }, token));
+
 }
+
+public record MoneyAccount(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("institution")] string Institution,
+    [property: JsonPropertyName("label")] string? Label,
+    [property: JsonPropertyName("last4")] string? Last4,
+    [property: JsonPropertyName("credentials")] string? Credentials,
+    [property: JsonPropertyName("balance")] double? Balance);
+
+public record SavingsGoal(
+    [property: JsonPropertyName("goal")] double Goal,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("reached_at")] string? ReachedAt);
+
+public record MoneyMandate(
+    [property: JsonPropertyName("enabled")] bool Enabled,
+    [property: JsonPropertyName("scope")] string? Scope);
+
+public record MoneyOrder(
+    [property: JsonPropertyName("asset_class")] string AssetClass,
+    [property: JsonPropertyName("amount")] double Amount,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("rationale")] string? Rationale);
+
+public record MoneyDesk(
+    [property: JsonPropertyName("name")] string? Name,
+    [property: JsonPropertyName("trade")] string? Trade,
+    [property: JsonPropertyName("location")] string? Location);
+
+public record MoneySpecialistDoor(
+    [property: JsonPropertyName("label")] string? Label);
+
+public record MoneyDoors(
+    [property: JsonPropertyName("specialist")] MoneySpecialistDoor? Specialist,
+    [property: JsonPropertyName("desks")] MoneyDesk[] Desks);
+
+public record MoneyWarning(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("message")] string Message,
+    [property: JsonPropertyName("doors")] MoneyDoors? Doors);
+
+public record MoneyOverview(
+    [property: JsonPropertyName("accounts")] MoneyAccount[] Accounts,
+    [property: JsonPropertyName("savings")] SavingsGoal? Savings,
+    [property: JsonPropertyName("mandate")] MoneyMandate? Mandate,
+    [property: JsonPropertyName("orders")] MoneyOrder[] Orders,
+    [property: JsonPropertyName("note")] string Note,
+    [property: JsonPropertyName("labels")] System.Collections.Generic.Dictionary<string, string> Labels);
+
+public record MoneyObserved(
+    [property: JsonPropertyName("recorded")] bool Recorded,
+    [property: JsonPropertyName("warnings")] MoneyWarning[] Warnings,
+    [property: JsonPropertyName("orders_proposed")] MoneyOrder[] OrdersProposed);
 
 public record OfflinePosture(
     [property: JsonPropertyName("offline")] bool Offline,

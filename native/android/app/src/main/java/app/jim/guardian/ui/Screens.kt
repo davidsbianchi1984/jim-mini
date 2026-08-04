@@ -537,7 +537,7 @@ private fun FlowRowChips(items: List<String>, selected: String, onPick: (String)
 @Composable
 fun LifeScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Goals", "Habits", "Journal")
+    val tabs = listOf("Goals", "Habits", "Journal", "Money")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -549,7 +549,8 @@ fun LifeScreen(vm: GuardianViewModel) {
         when (tab) {
             0 -> GoalsPanel(vm)
             1 -> HabitsPanel(vm)
-            else -> JournalPanel(vm)
+            2 -> JournalPanel(vm)
+            else -> MoneyPanel(vm)
         }
     }
 }
@@ -645,6 +646,129 @@ private fun JournalPanel(vm: GuardianViewModel) {
                 e.createdAt?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
             }
         }
+    }
+}
+
+// The money guardian's phone door. Every visible string comes from the
+// overview's own `labels` — composed server-side in the reader's language,
+// exactly as the desktop Money card renders them — because the English count
+// behind this shell's tabs is a ratchet and this panel must not feed it.
+// Until the overview loads there is nothing to say, so nothing is said.
+@Composable
+private fun MoneyPanel(vm: GuardianViewModel) {
+    var view by remember { mutableStateOf<MoneyOverview?>(null) }
+    var institution by remember { mutableStateOf("") }
+    var accountNumber by remember { mutableStateOf("") }
+    var routingNumber by remember { mutableStateOf("") }
+    var balanceText by remember { mutableStateOf("") }
+    var goalText by remember { mutableStateOf("") }
+    var scope by remember { mutableStateOf("") }
+    var warnings by remember { mutableStateOf<List<MoneyWarning>>(emptyList()) }
+    var note by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+
+    fun reload() { vm.call({ ApiClient.moneyOverview(vm.uid!!, vm.token!!) }) { r -> view = r.getOrNull() } }
+    LaunchedEffect(Unit) { reload() }
+    fun act(block: suspend () -> Unit) {
+        busy = true; note = null
+        vm.call({ block() }) { r ->
+            busy = false
+            r.exceptionOrNull()?.let { note = it.message }
+            reload()
+        }
+    }
+
+    val v = view ?: return
+    val labels = v.labels
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(labels["title"] ?: "", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(v.note, color = Jim.T2, fontSize = 12.sp)
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["accounts"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            v.accounts.forEach { acc ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("${acc.label ?: acc.institution} · ${acc.kind}" +
+                             (acc.last4?.let { " ····$it" } ?: ""),
+                         color = Jim.Txt, fontSize = 12.sp)
+                    acc.balance?.let {
+                        val shown = (labels["balance"] ?: "") + ": " + "%.0f".format(it)
+                        Text(shown, color = Jim.T2, fontSize = 12.sp)
+                    }
+                }
+            }
+            labeledField(labels["institution"] ?: "", institution, "") { institution = it }
+            labeledField(labels["account_number"] ?: "", accountNumber, "") { accountNumber = it }
+            labeledField(labels["routing_number"] ?: "", routingNumber, "") { routingNumber = it }
+            BrandButton(labels["add_account"] ?: "", enabled = institution.isNotBlank(), busy = busy) {
+                act {
+                    ApiClient.moneyAddAccount(vm.uid!!, vm.token!!, "checking",
+                                              institution, accountNumber, routingNumber)
+                    institution = ""; accountNumber = ""; routingNumber = ""
+                }
+            }
+        }
+
+        v.accounts.firstOrNull()?.let { first ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(labels["record_balance"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                labeledField(labels["balance"] ?: "", balanceText, "") { balanceText = it }
+                BrandButton(labels["record_balance"] ?: "",
+                            enabled = balanceText.toDoubleOrNull() != null, busy = busy) {
+                    act {
+                        warnings = ApiClient.moneyObserve(vm.uid!!, vm.token!!,
+                                                          first.id, balanceText.toDouble())
+                    }
+                }
+                warnings.forEach { w ->
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(w.message, color = Jim.Amber, fontSize = 12.sp)
+                        if (w.specialist != null || w.desks.isNotEmpty()) {
+                            Text(labels["doors"] ?: "", color = Jim.T2, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                        w.specialist?.let { Text("· $it", color = Jim.T2, fontSize = 11.sp) }
+                        w.desks.forEach { d ->
+                            Text("· ${d.name} — ${d.trade} ${d.location}", color = Jim.T2, fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["savings_goal"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            v.savingsGoal?.let { val g = "%.0f".format(it); Text(g, color = Jim.T2, fontSize = 12.sp) }
+            labeledField(labels["savings_goal"] ?: "", goalText, "") { goalText = it }
+            BrandButton(labels["set_goal"] ?: "", enabled = goalText.toDoubleOrNull() != null, busy = busy) {
+                act { ApiClient.moneySetSavings(vm.uid!!, vm.token!!, goalText.toDouble()) }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["mandate"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            labeledField(labels["scope"] ?: "", scope, "") { scope = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                BrandButton(labels["mandate_save"] ?: "", enabled = scope.isNotBlank(), busy = busy) {
+                    act { ApiClient.moneySetMandate(vm.uid!!, vm.token!!, true, 500.0, 1000.0, scope) }
+                }
+                // Never gated by plan or emptiness: taking your hands back
+                // has no price and no preconditions beyond not mid-flight.
+                BrandButton(labels["mandate_revoke"] ?: "", busy = busy) {
+                    act { ApiClient.moneySetMandate(vm.uid!!, vm.token!!, false, 0.0, 0.0, "") }
+                }
+            }
+            if (v.orders.isNotEmpty()) {
+                Text(labels["orders"] ?: "", color = Jim.T2, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                v.orders.forEach { o ->
+                    val line = o.assetClass + " " + "%.0f".format(o.amount) + " · " + o.status
+                    Text(line, color = Jim.T3, fontSize = 11.sp)
+                }
+            }
+        }
+
+        note?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
     }
 }
 

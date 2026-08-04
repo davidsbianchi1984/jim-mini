@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Life: goals, habits, and journal behind a segmented switcher.
 struct LifeView: View {
-    enum Tab: String, CaseIterable { case goals = "Goals", habits = "Habits", journal = "Journal" }
+    enum Tab: String, CaseIterable { case goals = "Goals", habits = "Habits", journal = "Journal", money = "Money" }
     @State private var tab: Tab = .goals
 
     var body: some View {
@@ -16,6 +16,7 @@ struct LifeView: View {
                 case .goals: GoalsSection()
                 case .habits: HabitsSection()
                 case .journal: JournalSection()
+                case .money: MoneySection()
                 }
             }.padding(20)
         }

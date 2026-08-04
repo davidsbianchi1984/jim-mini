@@ -42,7 +42,6 @@ GET /meds/{user_id}/adherence
 GET /memberships/{account_id}
 GET /mic/gains
 GET /mic/types
-GET /money/{user_id}
 GET /pair
 GET /pair/qr.svg
 GET /plans
@@ -94,8 +93,6 @@ POST /help
 POST /meds/{user_id}
 POST /meds/{user_id}/{med_id}/log
 POST /memberships/{account_id}
-POST /money/{user_id}/accounts
-POST /money/{user_id}/observe
 POST /nutrition/{user_id}/plan
 POST /password/reset
 POST /password/reset/request
@@ -133,8 +130,6 @@ PUT /bands/{user_id}/{metric}
 PUT /budgets/{user_id}
 PUT /dock/{user_id}
 PUT /meds/{user_id}/{med_id}
-PUT /money/{user_id}/mandate
-PUT /money/{user_id}/savings
 PUT /personality/{user_id}
 PUT /settings/mail
 PUT /settings/voice

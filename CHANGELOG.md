@@ -4,6 +4,28 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.4] — 2026-08-04
+
+### The money guardian reaches the phones
+
+0.42.2 built the guardian and its five routes; the round's own honesty
+recorded all five as doorless on every native shell. That was the record
+working as intended — and a money guardian a person can only reach from a
+desktop is a guardian that misses them at the grocery store.
+
+    asked     is the doorless record accurate
+    mattered  does the phone in their pocket have the door
+
+All five routes now have real doors on iOS, Android and Windows: a Money
+panel in each shell's Life surface with account registration (number
+fields to the vault or refused, the server's refusal shown verbatim),
+balance observations with warnings and their doors, the savings goal, and
+the mandate — written with scope and caps, revoked by a button that is
+never gated. Every visible string is the overview's own `labels`,
+composed server-side in the reader's language, so the English count
+behind the tabs did not move. Each shell's doorless record shrinks by
+five, and the shared error path now surfaces a 402's structured message.
+
 ## [0.42.3] — 2026-08-04
 
 ### The last thirteen unaudited screens

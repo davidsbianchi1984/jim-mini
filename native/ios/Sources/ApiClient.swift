@@ -599,7 +599,11 @@ actor ApiClient {
             // before their language was ever considered. `message` is the
             // sentence the backend composes beside the rows; read it first.
             let body = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
-            let said = (body?["message"] as? String) ?? (body?["detail"] as? String)
+            // A plan refusal (402) puts a *dict* in detail; its `message` is
+            // the sentence composed for the reader. Read it too, or the
+            // person sees "HTTP 402" where the server wrote them why.
+            let structured = (body?["detail"] as? [String: Any])?["message"] as? String
+            let said = (body?["message"] as? String) ?? (body?["detail"] as? String) ?? structured
             throw ApiError.http(said ?? "HTTP \(http.statusCode)")
         }
         return try JSONDecoder().decode(T.self, from: data)
@@ -1136,4 +1140,123 @@ struct SpecialistAnswer: Decodable {
     let specialist: Who?
     struct Where: Decodable { let method: String; let shared: String }
     let provenance: Where?
+}
+
+// MARK: - Money — the guardian that watches balances (jim/money.py)
+
+/// One registered account. `credentials` is "vaulted" or "none" — the numbers
+/// themselves never come back through any route, which is rule 1 of the
+/// module and the reason there is nothing more sensitive here to hold.
+struct MoneyAccount: Decodable {
+    let id: String
+    let kind: String
+    let institution: String
+    let label: String?
+    let last4: String?
+    let credentials: String?
+    let balance: Double?
+}
+
+struct SavingsGoal: Decodable {
+    let goal: Double
+    let note: String?
+    let reached_at: String?
+}
+
+struct MoneyMandate: Decodable {
+    let enabled: Bool
+    let cap_per_order: Double?
+    let monthly_cap: Double?
+    let asset_classes: [String]
+    let scope: String?
+}
+
+struct MoneyOrder: Decodable {
+    let asset_class: String
+    let amount: Double
+    let status: String
+    let rationale: String?
+}
+
+struct MoneyDoors: Decodable {
+    struct Desk: Decodable {
+        let desk_id: String?
+        let name: String?
+        let trade: String?
+        let location: String?
+    }
+    struct Specialist: Decodable { let label: String?; let route: String? }
+    let coach: String?
+    let specialist: Specialist?
+    let desks: [Desk]
+}
+
+struct MoneyWarning: Decodable {
+    let kind: String
+    let message: String
+    let doors: MoneyDoors?
+}
+
+/// The overview carries its own `labels`, in the reader's language, because
+/// no shell has a translation table for this card and the English count
+/// behind the tabs is a ratchet that must not grow. The server speaks; the
+/// screen shows.
+struct MoneyOverview: Decodable {
+    let accounts: [MoneyAccount]
+    let savings: SavingsGoal?
+    let mandate: MoneyMandate?
+    let orders: [MoneyOrder]
+    let note: String
+    let labels: [String: String]
+}
+
+struct MoneyObserved: Decodable {
+    let account: MoneyAccount
+    let recorded: Bool
+    let warnings: [MoneyWarning]
+    let orders_proposed: [MoneyOrder]
+}
+
+extension ApiClient {
+    func moneyOverview(uid: String, token: String) async throws -> MoneyOverview {
+        try await request("/money/\(uid)", token: token)
+    }
+
+    func moneyAddAccount(uid: String, token: String, kind: String,
+                         institution: String, label: String?,
+                         accountNumber: String?, routingNumber: String?,
+                         apiKey: String?) async throws -> MoneyAccount {
+        var body: [String: Any] = ["kind": kind, "institution": institution]
+        if let label, !label.isEmpty { body["label"] = label }
+        if let accountNumber, !accountNumber.isEmpty { body["account_number"] = accountNumber }
+        if let routingNumber, !routingNumber.isEmpty { body["routing_number"] = routingNumber }
+        if let apiKey, !apiKey.isEmpty { body["api_key"] = apiKey }
+        return try await request("/money/\(uid)/accounts", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func moneyObserve(uid: String, token: String, accountId: String,
+                      balance: Double) async throws -> MoneyObserved {
+        try await request("/money/\(uid)/observe", method: "POST",
+                          body: ["account_id": accountId, "balance": balance],
+                          token: token)
+    }
+
+    func moneySetSavings(uid: String, token: String,
+                         goal: Double) async throws -> SavingsGoal {
+        try await request("/money/\(uid)/savings", method: "PUT",
+                          body: ["goal": goal], token: token)
+    }
+
+    func moneySetMandate(uid: String, token: String, enabled: Bool,
+                         capPerOrder: Double, monthlyCap: Double,
+                         assetClasses: [String],
+                         scope: String) async throws -> MoneyMandate {
+        try await request("/money/\(uid)/mandate", method: "PUT",
+                          body: ["enabled": enabled,
+                                 "cap_per_order": capPerOrder,
+                                 "monthly_cap": monthlyCap,
+                                 "asset_classes": assetClasses,
+                                 "scope": scope], token: token)
+    }
 }

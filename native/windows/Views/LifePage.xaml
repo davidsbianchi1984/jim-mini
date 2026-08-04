@@ -131,5 +131,90 @@
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>
+
+        <!-- Money: the guardian that watches balances. No literal strings
+             here on purpose — every header, placeholder and button below is
+             set in code-behind from the overview's own `labels`, composed
+             server-side in the reader's language, because the English count
+             behind this shell's tabs is a ratchet this page must not feed. -->
+        <PivotItem x:Name="MoneyPivot">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MoneyTitle" FontWeight="Bold" FontSize="15"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="MoneyNote" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="MoneyAccounts">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimTxtBrush}" FontSize="12" />
+                                            <TextBlock Text="{Binding Balance}" Foreground="{StaticResource JimT2Brush}" FontSize="12" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBox x:Name="MoneyInstitution" />
+                            <PasswordBox x:Name="MoneyAccountNumber" />
+                            <PasswordBox x:Name="MoneyRoutingNumber" />
+                            <Button x:Name="MoneyAddButton" HorizontalAlignment="Stretch" Height="42"
+                                    Foreground="White" Click="OnMoneyAdd">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="{StaticResource JimBrandA}" Offset="0" />
+                                        <GradientStop Color="#FF3AA0FF" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MoneyObserveTitle" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="MoneyBalance" />
+                            <Button x:Name="MoneyObserveButton" HorizontalAlignment="Stretch"
+                                    Click="OnMoneyObserve" />
+                            <TextBlock x:Name="MoneyWarningsText" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimAmberBrush}" />
+                            <TextBlock x:Name="MoneyDoorsText" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MoneySavingsTitle" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="MoneySavingsCurrent" FontSize="12"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="MoneyGoal" />
+                            <Button x:Name="MoneyGoalButton" HorizontalAlignment="Stretch"
+                                    Click="OnMoneySetGoal" />
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MoneyMandateTitle" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="MoneyScope" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="MoneyMandateButton" Click="OnMoneyMandate" />
+                                <Button x:Name="MoneyRevokeButton" Click="OnMoneyRevoke" />
+                            </StackPanel>
+                            <TextBlock x:Name="MoneyOrdersText" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="MoneyStatus" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
     </Pivot>
 </Page>
