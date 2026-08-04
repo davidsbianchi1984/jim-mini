@@ -4,6 +4,21 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.5] — 2026-08-04
+
+### Shopping through the tandem, on the buyer's terms
+
+QRME grew shops; JIM grew the buyer's side, deliberately thin, on four
+rules driven by `jim/tests/test_shopping_through_the_tandem.py`: browsing
+is anonymous (an unreachable tandem is an empty shelf, never an error);
+ordering is the *interactor's* act — signed with the same per-user token
+the tandem chat runs on, one identity to revoke; the history is held HERE —
+receipts live in JIM's own table, and a test proves the negative that no
+request ever asks QRME for the buyer's order list; and the shelf carries
+its own labels in the reader's language. Three routes with a console door
+on the Community screen; the three shells record them honestly for the
+queued booking-and-ordering native round.
+
 ## [0.42.4] — 2026-08-04
 
 ### The money guardian reaches the phones

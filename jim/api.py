@@ -18,7 +18,7 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                catalog,
                coach,
                mailer,
-               contribution, db, money,
+               contribution, db, money, shopping,
                escalation, family, followup, guardian, handoff, i18n, identity,
                landing, life, llm,
                meds, mic, mobile, notify, oauth, offline, referral, relay,
@@ -43,7 +43,7 @@ from .models import (
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
-    MandateSet, MoneyAccountAdd, MoneyObserve, SavingsSet,
+    MandateSet, MoneyAccountAdd, MoneyObserve, ShopOrderIn, ShopCancelIn, SavingsSet,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     SelfProfileConsent, SelfProfileLink,
@@ -79,7 +79,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.42.4",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.42.5",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2199,6 +2199,38 @@ def create_app(qrme_client: QRMEClient | None = None,
                                      body.cap_per_order, body.monthly_cap,
                                      body.asset_classes, body.scope)
         except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    # ---- shopping through the tandem (jim/shopping.py) --------------------
+    # Browsing is anonymous; ordering is the interactor's act; the history
+    # is held HERE. Labels ride the view in the reader's language.
+
+    @app.get("/shopping/{user_id}")
+    def shopping_view(user_id: str, request: Request,
+                      tag: str | None = None) -> dict:
+        _user_or_404(user_id, request)
+        return shopping.view(user_id, _money_lang(user_id),
+                             qrme=app.state.qrme, tag=tag)
+
+    @app.post("/shopping/{user_id}/order", status_code=201)
+    def shopping_order(user_id: str, body: ShopOrderIn,
+                       request: Request) -> dict:
+        user = _user_or_404(user_id, request)
+        try:
+            return shopping.order(user_id, dict(user), body.shop_id,
+                                  body.offering_id, body.quantity,
+                                  qrme=app.state.qrme)
+        except shopping.ShoppingError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.post("/shopping/{user_id}/cancel")
+    def shopping_cancel(user_id: str, body: ShopCancelIn,
+                        request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return shopping.cancel(user_id, body.qrme_order_id,
+                                   qrme=app.state.qrme)
+        except shopping.ShoppingError as exc:
             raise HTTPException(422, str(exc))
 
     # ---- budgeting plans ----------------------------------------------------

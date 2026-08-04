@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, type CommunityView } from "../api";
+import { api, type CommunityView, type ShoppingView } from "../api";
 import { useSession } from "../store";
 
 /**
@@ -108,6 +108,93 @@ export function Community() {
           )}
         </div>
       </>)}
+      <ShoppingShelf />
+    </div>
+  );
+}
+
+// The shops shelf: QRME's storefronts, bought from as this user's own
+// interactor, with the receipt history held in JIM. Every visible string
+// below comes from the view's `labels` — composed server-side in the
+// reader's language — because this console has no translation table and
+// its English backlog is a ratchet that only shrinks. Until the view
+// loads there is nothing to say, so nothing is said.
+function ShoppingShelf() {
+  const { session } = useSession();
+  const [view, setView] = useState<ShoppingView | null>(null);
+  const [shopId, setShopId] = useState("");
+  const [offeringId, setOfferingId] = useState("");
+  const [qty, setQty] = useState("1");
+  const [note, setNote] = useState<string | null>(null);
+
+  async function load() {
+    if (!session.userId || !session.userToken) return;
+    try {
+      setView(await api.shoppingView(session.userId, session.userToken));
+    } catch { /* the shelf stays empty */ }
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [session.userId]);
+
+  if (!view) return null;
+  const L = view.labels;
+
+  async function order() {
+    if (!session.userId || !session.userToken) return;
+    setNote(null);
+    try {
+      const placed = await api.shoppingOrder(session.userId,
+        { shop_id: shopId.trim(), offering_id: offeringId.trim(),
+          quantity: Number(qty) || 1 }, session.userToken);
+      setNote(placed.status);
+      load();
+    } catch (e) { setNote((e as Error).message); }
+  }
+
+  async function cancel(qrmeOrderId: string) {
+    if (!session.userId || !session.userToken) return;
+    try {
+      await api.shoppingCancel(session.userId, qrmeOrderId, session.userToken);
+      load();
+    } catch (e) { setNote((e as Error).message); }
+  }
+
+  return (
+    <div className="card">
+      <h3>{L.title}</h3>
+      <p className="muted small">{view.note}</p>
+      {view.shops.map((s) => (
+        <div key={s.id} className="row" style={{ justifyContent: "space-between" }}>
+          <span>{s.name} · <span className="muted small">
+            {L.seller}: {s.seller}{s.tag ? ` · ${s.tag}` : ""} ·{" "}
+            {L.offerings}: {s.offerings}</span></span>
+          <button onClick={() => setShopId(s.id)}>{L.browse}</button>
+        </div>
+      ))}
+      <div className="row">
+        <label>{L.title}
+          <input value={shopId} onChange={(e) => setShopId(e.target.value)} />
+        </label>
+        <label>{L.offerings}
+          <input value={offeringId}
+                 onChange={(e) => setOfferingId(e.target.value)} />
+        </label>
+        <label>{L.quantity}
+          <input value={qty} onChange={(e) => setQty(e.target.value)} />
+        </label>
+        <button disabled={!shopId.trim() || !offeringId.trim()}
+                onClick={order}>{L.order}</button>
+      </div>
+      {view.receipts.length > 0 && <h3>{L.receipts}</h3>}
+      {view.receipts.map((r) => (
+        <div key={r.id} className="row" style={{ justifyContent: "space-between" }}>
+          <span>{r.title} · {r.amount} {r.currency} ·{" "}
+            <span className="muted small">{r.status}</span></span>
+          {r.status === "placed" && (
+            <button onClick={() => cancel(r.qrme_order_id)}>{L.cancel}</button>
+          )}
+        </div>
+      ))}
+      {note && <div className="muted small">{note}</div>}
     </div>
   );
 }

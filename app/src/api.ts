@@ -549,6 +549,20 @@ export type MoneyWarning = { kind: string; message: string;
 export type MoneyObservation = { recorded: boolean;
   warnings: MoneyWarning[]; orders_proposed: MoneyOrder[] };
 /** Labels come with the data, in the reader's language. */
+export type ShoppingView = {
+  shops: { id: string; name: string; seller: string; tag?: string | null;
+           offerings: number }[];
+  receipts: { id: string; qrme_order_id: string; shop_id: string;
+              title: string; amount: number; currency: string;
+              status: string; placed_at: string }[];
+  labels: Record<string, string>;
+  note: string;
+};
+export type PlacedShopOrder = {
+  id: string; shop_id: string; status: string; title?: string;
+  amount?: number; currency?: string;
+};
+
 export type MoneyView = {
   accounts: MoneyAccount[]; savings: SavingsGoal | null;
   mandate: MoneyMandate | null; orders: MoneyOrder[];
@@ -989,6 +1003,19 @@ export const api = {
   // reader's language — the card renders what the server hands it, because
   // this console has no translation table and its English backlog is a
   // ratchet that only shrinks.
+  // Shopping through the tandem. The shelf carries its own `labels` in the
+  // reader's language for the same reason the money card does; the receipt
+  // history lives in JIM, never asked of QRME.
+  shoppingView: (uid: string, token: string, tag?: string) =>
+    req<ShoppingView>(`/shopping/${uid}${tag ? `?tag=${encodeURIComponent(tag)}` : ""}`,
+      { token }),
+  shoppingOrder: (uid: string, body: { shop_id: string; offering_id: string;
+    quantity?: number }, token: string) =>
+    req<PlacedShopOrder>(`/shopping/${uid}/order`,
+      { method: "POST", body, token }),
+  shoppingCancel: (uid: string, qrmeOrderId: string, token: string) =>
+    req<PlacedShopOrder>(`/shopping/${uid}/cancel`,
+      { method: "POST", body: { qrme_order_id: qrmeOrderId }, token }),
   moneyView: (uid: string, token: string) =>
     req<MoneyView>(`/money/${uid}`, { token }),
   moneyAddAccount: (uid: string, body: { kind: string; institution: string;

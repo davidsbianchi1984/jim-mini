@@ -124,6 +124,53 @@ class QRMEClient:
         out = r.json()
         return out if isinstance(out, list) else []
 
+    def shops(self, tag: str | None = None) -> list[dict]:
+        """QRME's open storefronts — goods and services from businesses and
+        people. Empty on any failure: a shelf, never an error page."""
+        path = "/shops" + (f"?tag={urllib.parse.quote(tag)}" if tag else "")
+        try:
+            r = self._client.get(path)
+            out = r.json() if r.status_code == 200 else []
+            return out if isinstance(out, list) else []
+        except Exception:
+            return []
+
+    def shop(self, shop_id: str) -> dict | None:
+        try:
+            r = self._client.get(f"/shops/{shop_id}")
+            return r.json() if r.status_code == 200 else None
+        except Exception:
+            return None
+
+    def place_shop_order(self, shop_id: str, offering_id: str,
+                         buyer_id: str, quantity: int,
+                         token: str | None) -> dict | None:
+        """The buyer's press, signed with the interactor's own token."""
+        if not token:
+            return None
+        try:
+            r = self._client.post(
+                f"/shops/{shop_id}/orders",
+                json={"offering_id": offering_id, "buyer_id": buyer_id,
+                      "quantity": quantity},
+                headers={"authorization": f"Bearer {token}"})
+            return r.json() if r.status_code in (200, 201) else None
+        except Exception:
+            return None
+
+    def advance_shop_order(self, shop_id: str, order_id: str, party: str,
+                           to: str, token: str | None) -> dict | None:
+        if not token:
+            return None
+        try:
+            r = self._client.post(
+                f"/shops/{shop_id}/orders/{order_id}/advance",
+                json={"party": party, "to": to},
+                headers={"authorization": f"Bearer {token}"})
+            return r.json() if r.status_code == 200 else None
+        except Exception:
+            return None
+
     def desks(self) -> list[dict]:
         """Every open desk — real people with trades and locations, the
         doors a money warning can point at. Empty on any failure: a warning

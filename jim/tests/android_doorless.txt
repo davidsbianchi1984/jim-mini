@@ -57,6 +57,7 @@ GET /relay/rota
 GET /report/{user_id}
 GET /settings/mail
 GET /settings/voice
+GET /shopping/{user_id}
 GET /social/connection/{cid}/beacon
 GET /social/connection/{cid}/qr.svg
 GET /social/{user_id}
@@ -106,6 +107,8 @@ POST /password/reset/request
 POST /sessions/{user_id}
 POST /sessions/{user_id}/{session_id}/end
 POST /settings/mail/test
+POST /shopping/{user_id}/cancel
+POST /shopping/{user_id}/order
 POST /signin
 POST /signup
 POST /specialists

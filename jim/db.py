@@ -347,6 +347,21 @@ CREATE TABLE IF NOT EXISTS tandem_links (
     created_at           TEXT NOT NULL
 );
 
+-- Receipts for orders placed on QRME shops through the tandem. The
+-- history lives HERE: QRME is never asked what this person bought,
+-- because that answer held remotely would be a profile of them.
+CREATE TABLE IF NOT EXISTS shop_receipts (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    qrme_order_id TEXT NOT NULL,
+    shop_id       TEXT NOT NULL,
+    title         TEXT NOT NULL,
+    amount        REAL NOT NULL,
+    currency      TEXT NOT NULL,
+    status        TEXT NOT NULL,
+    placed_at     TEXT NOT NULL
+);
+
 -- The care team is an organization (QRME's operational ecosystem): the
 -- user's own org, the department that speaks for the Guardian, and the
 -- owner token they pasted to let JIM act on their behalf. Unlinking

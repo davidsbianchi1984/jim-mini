@@ -478,6 +478,16 @@ class MoneyAccountAdd(BaseModel):
     api_key: str | None = None              # brokerage / exchange access
 
 
+class ShopOrderIn(BaseModel):
+    shop_id: str
+    offering_id: str
+    quantity: int = 1
+
+
+class ShopCancelIn(BaseModel):
+    qrme_order_id: str
+
+
 class MoneyObserve(BaseModel):
     """A balance reading against a registered account."""
     account_id: str

@@ -2491,6 +2491,10 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    'offering_id': {'en': 'Offering', 'es': 'Artículo', 'fr': 'Article', 'de': 'Angebot', 'pt': 'Artigo', 'it': 'Articolo', 'ja': '商品', 'zh': '商品', 'hi': 'पेशकश', 'ar': 'المعروض'},
+    'qrme_order_id': {'en': 'Order', 'es': 'Pedido', 'fr': 'Commande', 'de': 'Bestellung', 'pt': 'Pedido', 'it': 'Ordine', 'ja': '注文', 'zh': '订单', 'hi': 'ऑर्डर', 'ar': 'الطلب'},
+    'quantity': {'en': 'Quantity', 'es': 'Cantidad', 'fr': 'Quantité', 'de': 'Menge', 'pt': 'Quantidade', 'it': 'Quantità', 'ja': '数量', 'zh': '数量', 'hi': 'मात्रा', 'ar': 'الكمية'},
+    'shop_id': {'en': 'Shop', 'es': 'Tienda', 'fr': 'Boutique', 'de': 'Laden', 'pt': 'Loja', 'it': 'Negozio', 'ja': 'ショップ', 'zh': '商店', 'hi': 'दुकान', 'ar': 'المتجر'},
     'account_id': {'en': 'Account', 'es': 'Cuenta', 'fr': 'Compte', 'de': 'Konto', 'pt': 'Conta', 'it': 'Conto', 'ja': '口座', 'zh': '账户', 'hi': 'खाता', 'ar': 'الحساب'},
     'account_number': {'en': 'Account number', 'es': 'Número de cuenta', 'fr': 'Numéro de compte', 'de': 'Kontonummer', 'pt': 'Número de conta', 'it': 'Numero di conto', 'ja': '口座番号', 'zh': '账号', 'hi': 'खाता संख्या', 'ar': 'رقم الحساب'},
     'api_key': {'en': 'API key', 'es': 'Clave API', 'fr': 'Clé API', 'de': 'API-Schlüssel', 'pt': 'Chave API', 'it': 'Chiave API', 'ja': 'APIキー', 'zh': 'API 密钥', 'hi': 'API कुंजी', 'ar': 'مفتاح API'},
@@ -2798,6 +2802,32 @@ _MONEY_LABELS: dict[str, dict[str, str]] = {
     'warnings': {'en': 'Warnings', 'es': 'Avisos', 'fr': 'Alertes', 'de': 'Warnungen', 'pt': 'Avisos', 'it': 'Avvisi', 'ja': '警告', 'zh': '提醒', 'hi': 'चेतावनियाँ', 'ar': 'تنبيهات'},
     'doors': {'en': 'Where help is', 'es': 'Dónde está la ayuda', 'fr': 'Où trouver de l\'aide', 'de': 'Wo Hilfe ist', 'pt': 'Onde está a ajuda', 'it': 'Dove trovare aiuto', 'ja': '助けの窓口', 'zh': '求助入口', 'hi': 'मदद कहाँ है', 'ar': 'أين المساعدة'},
 }
+
+
+_SHOP_TEXT: dict[str, dict[str, str]] = {
+    'held_here': {'en': 'Your purchase history is held here, in your own JIM — QRME is never asked what you bought.', 'es': 'Tu historial de compras se guarda aquí, en tu propio JIM — nunca se le pregunta a QRME qué compraste.', 'fr': "Votre historique d'achats est conservé ici, dans votre propre JIM — on ne demande jamais à QRME ce que vous avez acheté.", 'de': 'Deine Kaufhistorie liegt hier, in deinem eigenen JIM — QRME wird nie gefragt, was du gekauft hast.', 'pt': 'O seu histórico de compras fica aqui, no seu próprio JIM — nunca se pergunta ao QRME o que comprou.', 'it': 'La tua cronologia acquisti resta qui, nel tuo JIM — a QRME non viene mai chiesto cosa hai comprato.', 'ja': '購入履歴はあなた自身の JIM に保管されます — 何を買ったかを QRME に尋ねることはありません。', 'zh': '你的购买记录保存在你自己的 JIM 里 — 绝不会向 QRME 询问你买了什么。', 'hi': 'आपका ख़रीद इतिहास यहीं, आपके अपने JIM में रहता है — QRME से कभी नहीं पूछा जाता कि आपने क्या खरीदा।', 'ar': 'سجل مشترياتك محفوظ هنا في JIM الخاص بك — لا يُسأل QRME أبدًا عمّا اشتريته.'},
+}
+
+_SHOP_LABELS: dict[str, dict[str, str]] = {
+    'title': {'en': 'Shops', 'es': 'Tiendas', 'fr': 'Boutiques', 'de': 'Läden', 'pt': 'Lojas', 'it': 'Negozi', 'ja': 'ショップ', 'zh': '商店', 'hi': 'दुकानें', 'ar': 'المتاجر'},
+    'browse': {'en': 'Browse', 'es': 'Ver', 'fr': 'Parcourir', 'de': 'Ansehen', 'pt': 'Ver', 'it': 'Sfoglia', 'ja': '見る', 'zh': '逛逛', 'hi': 'देखें', 'ar': 'تصفّح'},
+    'order': {'en': 'Order', 'es': 'Pedir', 'fr': 'Commander', 'de': 'Bestellen', 'pt': 'Encomendar', 'it': 'Ordina', 'ja': '注文', 'zh': '下单', 'hi': 'ऑर्डर करें', 'ar': 'اطلب'},
+    'quantity': {'en': 'Quantity', 'es': 'Cantidad', 'fr': 'Quantité', 'de': 'Menge', 'pt': 'Quantidade', 'it': 'Quantità', 'ja': '数量', 'zh': '数量', 'hi': 'मात्रा', 'ar': 'الكمية'},
+    'receipts': {'en': 'Your orders', 'es': 'Tus pedidos', 'fr': 'Vos commandes', 'de': 'Deine Bestellungen', 'pt': 'Os seus pedidos', 'it': 'I tuoi ordini', 'ja': 'あなたの注文', 'zh': '你的订单', 'hi': 'आपके ऑर्डर', 'ar': 'طلباتك'},
+    'cancel': {'en': 'Cancel', 'es': 'Cancelar', 'fr': 'Annuler', 'de': 'Stornieren', 'pt': 'Cancelar', 'it': 'Annulla', 'ja': 'キャンセル', 'zh': '取消', 'hi': 'रद्द करें', 'ar': 'إلغاء'},
+    'offerings': {'en': 'Offerings', 'es': 'Artículos', 'fr': 'Articles', 'de': 'Angebote', 'pt': 'Artigos', 'it': 'Articoli', 'ja': '商品', 'zh': '商品', 'hi': 'पेशकशें', 'ar': 'المعروضات'},
+    'seller': {'en': 'Seller', 'es': 'Vendedor', 'fr': 'Vendeur', 'de': 'Verkäufer', 'pt': 'Vendedor', 'it': 'Venditore', 'ja': '販売者', 'zh': '卖家', 'hi': 'विक्रेता', 'ar': 'البائع'},
+}
+
+
+def shop_text(key: str, language: str) -> str:
+    row = _SHOP_TEXT[key]
+    return row.get(language) or row['en']
+
+
+def shop_labels(language: str) -> dict[str, str]:
+    return {k: (row.get(language) or row['en'])
+            for k, row in _SHOP_LABELS.items()}
 
 
 def money_text(key: str, language: str) -> str:
