@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.43.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.43.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.43.2** | Version alignment with QRME's crowd/couch/loan round |
 | **0.43.1** | Version alignment with the QRME inbox round — JIM's own answer to the question is its existing insight ladder |
 | **0.43.0** | **Version alignment** — QRME's phones learned to do business; 139 doorless rows struck there, nothing changed here |
 | **0.42.9** | **Version alignment** — QRME's social surface reached its phones; nothing changed on this side |
