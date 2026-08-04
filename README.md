@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.42.8** ([changelog](CHANGELOG.md) ·
+**Current release: v0.42.9** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.42.9** | **Version alignment** — QRME's social surface reached its phones; nothing changed on this side |
 | **0.42.8** | **The record said nobody asks; the forms had started asking** — 54 of 154 recorded fields were bound to real console inputs; all now labelled in ten languages, 100 rows remain that match the record's own rule; the console gained QRME's always-on lights widget — the Guardian's watches at a glance, never silently absent |
 | **0.42.7** | **The circle is yours** — `jim/circle.py`: contacts by mutual invitation (either side ends it for both), messages that never leave the deployment, per-user switches that refuse by name, and a homepage sandbox shown to signed-in neighbours only. Doors on all four clients |
 | **0.42.6** | **Booking, scheduling, ordering and email** — `jim/schedule.py`: bookings that cancel in one press (a service booking rides the shop order with it), reminders on the ladder's bottom rung raised by the existing senses, and opt-in email that goes to the account's own verified address or nowhere. Doors on all four clients, and the shopping routes gained their promised native doors |
