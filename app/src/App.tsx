@@ -3,6 +3,7 @@ import { useSession } from "./store";
 import { t as tr, visitorLang } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
 import { VersionGuard } from "./VersionGuard";
+import { GuardianLights } from "./GuardianLights";
 import { Help } from "./Help";
 import { Onboarding } from "./screens/Onboarding";
 import { Home } from "./screens/Home";
@@ -110,6 +111,9 @@ export function App() {
           version guard — the one screen without it is the one somebody is
           lost on. */}
       <Help />
+      {/* Like Help: part of the shell, on every screen — the Guardian's
+          lights, minimizable, and never silently absent. */}
+      <GuardianLights />
     </div>
   );
 }

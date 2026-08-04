@@ -23,7 +23,10 @@ code, .mono { font-family: ui-monospace, Menlo, monospace; }
 
 .app { display: grid; grid-template-columns: 232px 1fr; height: 100%; }
 .sidebar { background: linear-gradient(180deg, #141d31, #0b1120); border-right: 1px solid var(--line);
-  padding: 20px 14px; display: flex; flex-direction: column; }
+  /* The bottom padding is the Guardian-lights widget's footprint: it is
+     fixed at `left: 22px; bottom: 22px` and 176px tall, so it sits *on*
+     this column — without the reserve the last tabs are under it. */
+  padding: 20px 14px 210px; display: flex; flex-direction: column; }
 .brand { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; padding: 0 6px; }
 .brand-name { font-weight: 800; letter-spacing: 0.5px; }
 .brand-sub { font-size: 10px; color: var(--t3); }
@@ -318,3 +321,44 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .followup-buttons { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 .followup-buttons button { flex: 1 1 auto; min-width: 140px; }
 .followup-buttons button.warn { border-color: #c0562f; color: #ffb99a; }
+
+
+/* The Guardian's lights — QRME's agent-lights widget, for the product
+   whose agents are the watches it keeps. Bottom-left; Help owns
+   bottom-right. Ring color = worst light; minimizes to a dot. */
+.watch-lights { position: fixed; left: 22px; bottom: 22px; width: 176px;
+  height: 176px; border-radius: 50%; border: 3px solid var(--line);
+  background: radial-gradient(120% 120% at 50% 20%, #12233a 0%, #0b1120 70%);
+  box-shadow: 0 16px 40px rgba(0,0,0,.55);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 6px; padding: 18px; z-index: 40; }
+.wl-head { display: flex; align-items: center; gap: 6px; max-width: 130px; }
+.wl-name { font-size: 11px; font-weight: 700; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-min { background: none; border: 0; color: var(--muted); font-size: 16px;
+  line-height: 1; cursor: pointer; padding: 0 2px; }
+.wl-row { display: flex; align-items: center; gap: 8px; width: 128px; }
+.wl-light { width: 12px; height: 12px; border-radius: 50%; flex: none;
+  box-shadow: 0 0 8px currentColor; }
+.wl-count { font-size: 15px; font-weight: 800; width: 20px; text-align: right; }
+.wl-label { font-size: 11px; color: var(--muted); }
+.wl-foot { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.wl-dot { position: fixed; left: 22px; bottom: 22px; width: 46px; height: 46px;
+  border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,.45); z-index: 40; }
+/* The unreachable state: the same dot, unlit. Gray on purpose — the
+   three live colors all mean "the backend answered". */
+.wl-dot-off { background: #2c3a52; border-color: rgba(255,255,255,0.35); }
+
+@media (max-width: 760px) {
+  .watch-lights {
+    left: 12px; bottom: calc(76px + env(safe-area-inset-bottom));
+    width: 132px; height: 132px; padding: 12px; gap: 4px;
+  }
+  .watch-lights .wl-row { width: 104px; }
+  .watch-lights .wl-count { font-size: 13px; }
+  .watch-lights .wl-label, .watch-lights .wl-name { font-size: 10px; }
+  .wl-dot {
+    left: 12px; bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+}

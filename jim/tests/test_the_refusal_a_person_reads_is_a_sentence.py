@@ -93,7 +93,10 @@ def test_a_mistyped_form_answers_with_a_sentence(client):
         f"`detail` list: {refused.text[:200]}")
     assert not said.lstrip().startswith(("[", "{")), (
         f"the sentence is still a serialised structure: {said[:120]}")
-    assert "terms_consent" in said and "Field required" in said
+    # 0.42.8: `terms_consent` is asked on the enroll form (a checkbox the
+    # person ticks), so its 422 now speaks the form's own words rather
+    # than the API's identifier.
+    assert "Terms consent" in said and "Field required" in said
 
 
 def test_the_rows_are_still_there(client):
@@ -166,15 +169,19 @@ def test_an_unlabelled_field_keeps_its_identifier_and_that_is_deliberate(client)
     """Half in one language and half in another is the failure
     `refusals_untranslated.txt` will not record its way out of.
 
-    `terms_consent` is a checkbox a switch owns, not a field anybody types, so
-    0.40.8 left it out of `_FIELD_LABELS` and it still arrives as the API's
-    name for it — the same string in every language. It is joined with an em dash rather than declined into the
-    sentence, so it reads as an identifier rather than as a word somebody
-    forgot to translate.
+    The specimen moved once: `terms_consent` held this slot until the
+    0.42.8 audit found it ticked on the enroll form and labelled it — the
+    record's own rule ("map one when a form starts asking a person for
+    it"). `audio_base64` is the rule's other half made flesh: a payload a
+    client fills from a recording, never a word a person reads, so it
+    stays off `_FIELD_LABELS` and arrives as the API's name — the same
+    string in every language, joined with an em dash rather than declined
+    into the sentence, so it reads as an identifier rather than as a word
+    somebody forgot to translate.
     """
-    said = client.post("/enroll", json={"display_name": "A"},
+    said = client.post("/voice/transcribe", json={},
                        headers={"accept-language": "pt"}).json()["message"]
-    assert "terms_consent — " in said
+    assert "audio_base64 — " in said
 
 
 def test_a_body_that_is_not_an_object_still_says_something(client):

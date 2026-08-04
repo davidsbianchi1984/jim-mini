@@ -4,6 +4,34 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.8] — 2026-08-04
+
+### The record said nobody asks; the forms had started asking
+
+The same audit as QRME's, run against this product's record with the
+same evidence rule: a field counts as *asked for* only when a console
+input is literally bound to it. Fifty-four of the 154 recorded fields
+were — the onboarding form's legal name and terms consent, the crash
+watch's trusted contact, the steward channel, the watch bridge's
+thresholds, the wellness planner. All 54 now carry hand-written labels
+in all ten languages, matching QRME's table wherever the two products
+share a field name, which the shared-vocabulary guard now checks in
+both directions for 161 more rows. The 100 rows that remain are the
+record's honest residue: enum members, context-filled ids, and flags.
+
+### The Guardian gets its lights
+
+QRME's always-on agent-lights widget never had a sibling here — a field
+request closed the gap. `GuardianLights.tsx` pins a watch-face to the
+console's bottom-left corner, built from routes the console already
+opens (open alarms, the vigil, the crash watch), so a glance opens no
+new door. Green is the Guardian watching; amber is it asking for you;
+red is an open alarm or a tripped vigil. Minimizable to a dot, worded
+from the console's own ten-language table, and — the lesson its sibling
+paid for in the same cut — unreachable is a state it shows, not one it
+hides in: a failed first fetch renders an unlit dot that retries on
+press.
+
 ## [0.42.7] — 2026-08-04
 
 ### The circle is yours
