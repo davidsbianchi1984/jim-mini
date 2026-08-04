@@ -478,6 +478,15 @@ class MoneyAccountAdd(BaseModel):
     api_key: str | None = None              # brokerage / exchange access
 
 
+class AppointmentIn(BaseModel):
+    title: str
+    when: str
+    where: str | None = None
+    email_reminder: bool = False
+    shop_id: str | None = None
+    offering_id: str | None = None
+
+
 class ShopOrderIn(BaseModel):
     shop_id: str
     offering_id: str

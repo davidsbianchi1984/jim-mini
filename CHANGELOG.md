@@ -4,6 +4,32 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.6] — 2026-08-04
+
+### Booked, reminded at the bottom rung, and emailed to yourself alone
+
+The Guardian could watch sleep, money and medication, point at desks and
+shops — and could not hold an appointment.
+
+    asked     can the Guardian point at where help is
+    mattered  can it hold the time you agreed to go
+
+`jim/schedule.py` on three rules: **a booking is a row, not a hostage** —
+one press books, one press cancels, and booking a shop *service* is one
+act (the order rides through `jim/shopping.py` under all four of its
+rules; cancelling the booking hands a still-`placed` order back).
+**Reminders ride the proactive ladder at its bottom rung** — a `checkin`
+guardian event plus an insight, once per appointment, raised by the
+monitor/observe senses with no scheduler to deploy; however missed, a
+haircut does not ring a phone. **Email goes to the user, or nowhere** —
+the recipient is looked up from the verified account, never passed in,
+so no request shape mails a third party.
+
+Three routes with doors on all four clients in this cut — the Home
+screen's Schedule card and Schedule panels on iOS, Android and Windows —
+and the 0.42.5 promise is paid: the shopping routes gained their native
+doors on all three shells too, their doorless rows struck.
+
 ## [0.42.5] — 2026-08-04
 
 ### Shopping through the tandem, on the buyer's terms

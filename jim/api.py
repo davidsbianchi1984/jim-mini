@@ -18,7 +18,7 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                catalog,
                coach,
                mailer,
-               contribution, db, money, shopping,
+               contribution, db, money, schedule, shopping,
                escalation, family, followup, guardian, handoff, i18n, identity,
                landing, life, llm,
                meds, mic, mobile, notify, oauth, offline, referral, relay,
@@ -43,7 +43,7 @@ from .models import (
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
-    MandateSet, MoneyAccountAdd, MoneyObserve, ShopOrderIn, ShopCancelIn, SavingsSet,
+    MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     SelfProfileConsent, SelfProfileLink,
@@ -79,7 +79,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.42.5",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.42.6",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -1197,6 +1197,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         sample = body.model_dump(exclude_none=True)
         note = sample.pop("note", None)
+        # The calendar's bottom rung rides this sense — see jim/schedule.py.
+        schedule.remind_pass(user_id, _money_lang(user_id))
         return guardian.monitor(user_id, sample, note, qrme=app.state.qrme,
                                 pdi=_vault(user_id))
 
@@ -1667,6 +1669,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         """Ambient background observation: JIM watches an ongoing activity and
         jumps in proactively when a struggle is building — before being asked."""
         _user_or_404(user_id, request)
+        # The calendar's bottom rung rides this sense too.
+        schedule.remind_pass(user_id, _money_lang(user_id))
         return guardian.observe_activity(
             user_id, body.activity, body.signals, body.note,
             qrme=app.state.qrme, pdi=_vault(user_id))
@@ -2199,6 +2203,37 @@ def create_app(qrme_client: QRMEClient | None = None,
                                      body.cap_per_order, body.monthly_cap,
                                      body.asset_classes, body.scope)
         except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    # ---- booking and scheduling (jim/schedule.py) --------------------------
+    # A booking is a row, not a hostage; reminders ride the ladder's bottom
+    # rung off the monitor/observe senses; email goes to the user or nowhere.
+
+    @app.get("/schedule/{user_id}")
+    def schedule_view(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return schedule.view(user_id, _money_lang(user_id))
+
+    @app.post("/schedule/{user_id}", status_code=201)
+    def schedule_book(user_id: str, body: AppointmentIn,
+                      request: Request) -> dict:
+        user = _user_or_404(user_id, request)
+        try:
+            return schedule.book(user_id, dict(user), body.title, body.when,
+                                 body.where, body.email_reminder,
+                                 body.shop_id, body.offering_id,
+                                 qrme=app.state.qrme)
+        except (schedule.ScheduleError, shopping.ShoppingError) as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/schedule/{user_id}/{appointment_id}")
+    def schedule_cancel(user_id: str, appointment_id: str,
+                        request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return schedule.cancel(user_id, appointment_id,
+                                   qrme=app.state.qrme)
+        except schedule.ScheduleError as exc:
             raise HTTPException(422, str(exc))
 
     # ---- shopping through the tandem (jim/shopping.py) --------------------

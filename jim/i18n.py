@@ -2491,6 +2491,9 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    'email_reminder': {'en': 'Email me a reminder', 'es': 'Enviarme un recordatorio por correo', 'fr': "M'envoyer un rappel par e-mail", 'de': 'Erinnerung per E-Mail', 'pt': 'Enviar-me um lembrete por e-mail', 'it': 'Promemoria via e-mail', 'ja': 'メールでリマインド', 'zh': '邮件提醒', 'hi': 'ईमेल अनुस्मारक', 'ar': 'تذكير بالبريد'},
+    'when': {'en': 'When', 'es': 'Cuándo', 'fr': 'Quand', 'de': 'Wann', 'pt': 'Quando', 'it': 'Quando', 'ja': '日時', 'zh': '时间', 'hi': 'कब', 'ar': 'متى'},
+    'where': {'en': 'Where', 'es': 'Dónde', 'fr': 'Où', 'de': 'Wo', 'pt': 'Onde', 'it': 'Dove', 'ja': '場所', 'zh': '地点', 'hi': 'कहाँ', 'ar': 'أين'},
     'offering_id': {'en': 'Offering', 'es': 'Artículo', 'fr': 'Article', 'de': 'Angebot', 'pt': 'Artigo', 'it': 'Articolo', 'ja': '商品', 'zh': '商品', 'hi': 'पेशकश', 'ar': 'المعروض'},
     'qrme_order_id': {'en': 'Order', 'es': 'Pedido', 'fr': 'Commande', 'de': 'Bestellung', 'pt': 'Pedido', 'it': 'Ordine', 'ja': '注文', 'zh': '订单', 'hi': 'ऑर्डर', 'ar': 'الطلب'},
     'quantity': {'en': 'Quantity', 'es': 'Cantidad', 'fr': 'Quantité', 'de': 'Menge', 'pt': 'Quantidade', 'it': 'Quantità', 'ja': '数量', 'zh': '数量', 'hi': 'मात्रा', 'ar': 'الكمية'},
@@ -2802,6 +2805,36 @@ _MONEY_LABELS: dict[str, dict[str, str]] = {
     'warnings': {'en': 'Warnings', 'es': 'Avisos', 'fr': 'Alertes', 'de': 'Warnungen', 'pt': 'Avisos', 'it': 'Avvisi', 'ja': '警告', 'zh': '提醒', 'hi': 'चेतावनियाँ', 'ar': 'تنبيهات'},
     'doors': {'en': 'Where help is', 'es': 'Dónde está la ayuda', 'fr': 'Où trouver de l\'aide', 'de': 'Wo Hilfe ist', 'pt': 'Onde está a ajuda', 'it': 'Dove trovare aiuto', 'ja': '助けの窓口', 'zh': '求助入口', 'hi': 'मदद कहाँ है', 'ar': 'أين المساعدة'},
 }
+
+
+_SCHEDULE_TEXT: dict[str, dict[str, str]] = {
+    'reminder': {'en': 'Coming up: {title} — {when}.', 'es': 'Próximamente: {title} — {when}.', 'fr': 'À venir : {title} — {when}.', 'de': 'Steht an: {title} — {when}.', 'pt': 'Em breve: {title} — {when}.', 'it': 'In arrivo: {title} — {when}.', 'ja': 'まもなく：{title} — {when}。', 'zh': '即将到来：{title} — {when}。', 'hi': 'आने वाला है: {title} — {when}।', 'ar': 'قادم: {title} — {when}.'},
+    'mail_subject': {'en': 'Reminder: {title}', 'es': 'Recordatorio: {title}', 'fr': 'Rappel : {title}', 'de': 'Erinnerung: {title}', 'pt': 'Lembrete: {title}', 'it': 'Promemoria: {title}', 'ja': 'リマインダー：{title}', 'zh': '提醒：{title}', 'hi': 'अनुस्मारक: {title}', 'ar': 'تذكير: {title}'},
+    'mail_note': {'en': 'Email reminders go to the verified address that owns this account — and to no other address, ever.', 'es': 'Los recordatorios por correo van a la dirección verificada de esta cuenta — y a ninguna otra, nunca.', 'fr': "Les rappels par e-mail vont à l'adresse vérifiée de ce compte — et à aucune autre, jamais.", 'de': 'E-Mail-Erinnerungen gehen an die verifizierte Adresse dieses Kontos — und nie an eine andere.', 'pt': 'Os lembretes por e-mail vão para o endereço verificado desta conta — e para nenhum outro, nunca.', 'it': "I promemoria via e-mail vanno all'indirizzo verificato di questo account — e a nessun altro, mai.", 'ja': 'メールのリマインダーは、このアカウントの確認済みアドレスにのみ送られます。ほかの宛先には決して送られません。', 'zh': '邮件提醒只发送到本账户的已验证地址 — 绝不发送到其他任何地址。', 'hi': 'ईमेल अनुस्मारक केवल इस खाते के सत्यापित पते पर जाते हैं — कभी किसी और पते पर नहीं।', 'ar': 'تذهب تذكيرات البريد إلى العنوان الموثّق لهذا الحساب فقط — ولا إلى أي عنوان آخر أبدًا.'},
+}
+
+_SCHEDULE_LABELS: dict[str, dict[str, str]] = {
+    'title': {'en': 'Schedule', 'es': 'Agenda', 'fr': 'Agenda', 'de': 'Kalender', 'pt': 'Agenda', 'it': 'Agenda', 'ja': '予定', 'zh': '日程', 'hi': 'कार्यक्रम', 'ar': 'الجدول'},
+    'book': {'en': 'Book it', 'es': 'Reservar', 'fr': 'Réserver', 'de': 'Buchen', 'pt': 'Marcar', 'it': 'Prenota', 'ja': '予約する', 'zh': '预订', 'hi': 'बुक करें', 'ar': 'احجز'},
+    'what': {'en': 'What', 'es': 'Qué', 'fr': 'Quoi', 'de': 'Was', 'pt': 'O quê', 'it': 'Cosa', 'ja': '内容', 'zh': '事项', 'hi': 'क्या', 'ar': 'ماذا'},
+    'when': {'en': 'When', 'es': 'Cuándo', 'fr': 'Quand', 'de': 'Wann', 'pt': 'Quando', 'it': 'Quando', 'ja': '日時', 'zh': '时间', 'hi': 'कब', 'ar': 'متى'},
+    'where': {'en': 'Where', 'es': 'Dónde', 'fr': 'Où', 'de': 'Wo', 'pt': 'Onde', 'it': 'Dove', 'ja': '場所', 'zh': '地点', 'hi': 'कहाँ', 'ar': 'أين'},
+    'email_me': {'en': 'Email me a reminder', 'es': 'Envíame un recordatorio por correo', 'fr': "M'envoyer un rappel par e-mail", 'de': 'Erinnerung per E-Mail senden', 'pt': 'Enviar-me um lembrete por e-mail', 'it': 'Inviami un promemoria via e-mail', 'ja': 'メールでリマインドする', 'zh': '给我发邮件提醒', 'hi': 'मुझे ईमेल अनुस्मारक भेजें', 'ar': 'أرسل لي تذكيرًا بالبريد'},
+    'no_email': {'en': 'No verified email on this account', 'es': 'Esta cuenta no tiene correo verificado', 'fr': "Pas d'e-mail vérifié sur ce compte", 'de': 'Keine verifizierte E-Mail für dieses Konto', 'pt': 'Sem e-mail verificado nesta conta', 'it': 'Nessuna e-mail verificata su questo account', 'ja': 'このアカウントに確認済みメールがありません', 'zh': '此账户没有已验证的邮箱', 'hi': 'इस खाते में कोई सत्यापित ईमेल नहीं', 'ar': 'لا بريد موثّق في هذا الحساب'},
+    'upcoming': {'en': 'Coming up', 'es': 'Próximas', 'fr': 'À venir', 'de': 'Anstehend', 'pt': 'Próximas', 'it': 'In arrivo', 'ja': 'これからの予定', 'zh': '即将到来', 'hi': 'आगामी', 'ar': 'القادم'},
+    'cancel': {'en': 'Cancel', 'es': 'Cancelar', 'fr': 'Annuler', 'de': 'Absagen', 'pt': 'Cancelar', 'it': 'Annulla', 'ja': 'キャンセル', 'zh': '取消', 'hi': 'रद्द करें', 'ar': 'إلغاء'},
+    'service': {'en': 'Book a shop service', 'es': 'Reservar un servicio de tienda', 'fr': 'Réserver un service de boutique', 'de': 'Laden-Dienstleistung buchen', 'pt': 'Marcar um serviço de loja', 'it': 'Prenota un servizio del negozio', 'ja': 'ショップのサービスを予約', 'zh': '预订店铺服务', 'hi': 'दुकान की सेवा बुक करें', 'ar': 'احجز خدمة من متجر'},
+}
+
+
+def schedule_text(key: str, language: str) -> str:
+    row = _SCHEDULE_TEXT[key]
+    return row.get(language) or row['en']
+
+
+def schedule_labels(language: str) -> dict[str, str]:
+    return {k: (row.get(language) or row['en'])
+            for k, row in _SCHEDULE_LABELS.items()}
 
 
 _SHOP_TEXT: dict[str, dict[str, str]] = {

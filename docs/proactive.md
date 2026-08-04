@@ -34,13 +34,18 @@ code with its own tests; nothing here is aspiration.
   and sleep-debt projections.
 * `jim/money.py` computes the cushion, the savings progress, and what the
   mandate permits.
+* `jim/schedule.py` holds the calendar and raises each appointment once,
+  inside its 24-hour window, on whichever sense fires first.
 
 **Actions** — what the Guardian may do uninvited, in escalation order:
 
 1. **Insights** (`GET /insights/{id}`) — suggestions and alerts on the
    Home feed: budget at 80%, a spending forecast, a drift question.
-2. **Check-in questions** — a band crossing or a money warning becomes a
-   question, never an alarm (`severity="checkin"`).
+2. **Check-in questions** — a band crossing, a money warning or an
+   appointment reminder becomes a question, never an alarm
+   (`severity="checkin"`). An opted-in reminder is also mailed — to the
+   verified address that owns the account, and to no other address,
+   structurally: the recipient is looked up, never passed in.
 3. **Coach nudges with doors** — the coach offers the matching QRME
    specialist (`specialist_offer`) in the same reply; the explicit
    handoff (`POST /coach/{id}/specialist`) is always the user's press.

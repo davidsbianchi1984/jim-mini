@@ -20,6 +20,8 @@ public sealed partial class LifePage : Page
         await LoadHabits();
         await LoadJournal();
         await LoadMoney();
+        await LoadSchedule();
+        await LoadTandemShops();
     }
 
     private static string Pretty(string s) =>
@@ -258,5 +260,122 @@ public sealed partial class LifePage : Page
             await LoadMoney();
         }
         catch (Exception ex) { MoneyStatus.Text = ex.Message; }
+    }
+
+    // -- Schedule + the tandem shops shelf --
+    // As with Money: every visible string comes from the views' own labels.
+
+    private async System.Threading.Tasks.Task LoadSchedule()
+    {
+        var s = AppState.Current;
+        try
+        {
+            var v = await ApiClient.Shared.ScheduleView(s.Uid!, s.Token!);
+            string L(string key) => v.Labels.TryGetValue(key, out var t) ? t : "";
+            SchedulePivot.Header = L("title");
+            ScheduleNote.Text = v.Note;
+            ApptTitle.Header = L("what");
+            ApptWhen.Header = L("when");
+            ApptWhere.Header = L("where");
+            ApptEmail.Content = v.EmailAvailable ? L("email_me") : L("no_email");
+            ApptEmail.IsEnabled = v.EmailAvailable;
+            BookButton.Content = L("book");
+            CancelApptId.Header = L("upcoming");
+            CancelApptButton.Content = L("cancel");
+            ApptList.ItemsSource = v.Appointments.Select(a => new Row(
+                $"{a.Id} · {a.Title} · {a.WhenAt[..16].Replace("T", " ")}" +
+                (a.WhereAt is null ? "" : $" · {a.WhereAt}"))).ToList();
+        }
+        catch { /* leave as-is */ }
+    }
+
+    public record Row(string Line);
+
+    private async void OnBook(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var title = ApptTitle.Text.Trim();
+        var when = ApptWhen.Text.Trim();
+        if (title.Length == 0 || when.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.ScheduleBook(s.Uid!, s.Token!, title, when,
+                ApptWhere.Text.Trim(), ApptEmail.IsChecked == true);
+            ApptTitle.Text = ""; ApptWhen.Text = ""; ApptWhere.Text = "";
+            ScheduleStatus.Text = "";
+            await LoadSchedule();
+        }
+        catch (Exception ex) { ScheduleStatus.Text = ex.Message; }
+    }
+
+    private async void OnCancelAppt(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var id = CancelApptId.Text.Trim();
+        if (id.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.ScheduleCancel(s.Uid!, s.Token!, id);
+            CancelApptId.Text = "";
+            ScheduleStatus.Text = "";
+            await LoadSchedule();
+        }
+        catch (Exception ex) { ScheduleStatus.Text = ex.Message; }
+    }
+
+    private async System.Threading.Tasks.Task LoadTandemShops()
+    {
+        var s = AppState.Current;
+        try
+        {
+            var v = await ApiClient.Shared.ShoppingView(s.Uid!, s.Token!);
+            string L(string key) => v.Labels.TryGetValue(key, out var t) ? t : "";
+            ShopPivot.Header = L("title");
+            ShopNote.Text = v.Note;
+            OrderShopId.Header = L("title");
+            OrderOffering.Header = L("offerings");
+            TandemOrderButton.Content = L("order");
+            CancelOrderId.Header = L("receipts");
+            TandemCancelButton.Content = L("cancel");
+            TandemShopList.ItemsSource = v.Shops.Select(x => new Row(
+                $"{x.Id} · {x.Name} · {x.Seller}" +
+                (x.Tag is null ? "" : $" · {x.Tag}"))).ToList();
+            ReceiptList.ItemsSource = v.Receipts.Select(r => new Row(
+                $"{r.QrmeOrderId} · {r.Title} · {r.Amount:F2} {r.Currency} · {r.Status}"))
+                .ToList();
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private async void OnTandemOrder(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var shop = OrderShopId.Text.Trim();
+        var offering = OrderOffering.Text.Trim();
+        if (shop.Length == 0 || offering.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.ShoppingOrder(s.Uid!, s.Token!, shop,
+                                                 offering, 1);
+            OrderOffering.Text = "";
+            ShopStatus.Text = "";
+            await LoadTandemShops();
+        }
+        catch (Exception ex) { ShopStatus.Text = ex.Message; }
+    }
+
+    private async void OnTandemCancel(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var id = CancelOrderId.Text.Trim();
+        if (id.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.ShoppingCancel(s.Uid!, s.Token!, id);
+            CancelOrderId.Text = "";
+            ShopStatus.Text = "";
+            await LoadTandemShops();
+        }
+        catch (Exception ex) { ShopStatus.Text = ex.Message; }
     }
 }

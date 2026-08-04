@@ -347,6 +347,23 @@ CREATE TABLE IF NOT EXISTS tandem_links (
     created_at           TEXT NOT NULL
 );
 
+-- The Guardian's calendar. Reminders ride the proactive ladder at its
+-- bottom rung; each appointment reminds once (reminded_at). A booking
+-- for a shop service carries the order's receipt id so cancelling the
+-- appointment can hand the order back while it is still `placed`.
+CREATE TABLE IF NOT EXISTS appointments (
+    id             TEXT PRIMARY KEY,
+    user_id        TEXT NOT NULL REFERENCES users(id),
+    title          TEXT NOT NULL,
+    whenat         TEXT NOT NULL,          -- ISO timestamp, tz-aware
+    whereat        TEXT,
+    email_reminder INTEGER NOT NULL DEFAULT 0,
+    qrme_order_id  TEXT,                   -- links a shop_receipts row
+    status         TEXT NOT NULL DEFAULT 'booked',  -- booked | cancelled
+    reminded_at    TEXT,
+    created_at     TEXT NOT NULL
+);
+
 -- Receipts for orders placed on QRME shops through the tandem. The
 -- history lives HERE: QRME is never asked what this person bought,
 -- because that answer held remotely would be a profile of them.

@@ -1091,6 +1091,85 @@ object ApiClient {
         request("/money/$uid/savings", "PUT", JSONObject().put("goal", goal), token)
     }
 
+    // ---- schedule + shopping through the tandem ---------------------------
+    // Labels ride the views in the reader's language; these panels render
+    // them and add no English of their own.
+
+    private fun appointmentOf(o: JSONObject) = Appointment(
+        o.getString("id"), o.optString("title"), o.optString("whenat"),
+        if (o.isNull("whereat")) null else o.optString("whereat"),
+        o.optString("status"))
+
+    suspend fun scheduleView(uid: String, token: String): ScheduleOverview {
+        val o = request("/schedule/$uid", token = token)
+        val appts = mutableListOf<Appointment>()
+        o.optJSONArray("appointments")?.let { a ->
+            for (i in 0 until a.length()) appts.add(appointmentOf(a.getJSONObject(i)))
+        }
+        val labels = mutableMapOf<String, String>()
+        o.optJSONObject("labels")?.let { l ->
+            l.keys().forEach { k -> labels[k] = l.getString(k) }
+        }
+        return ScheduleOverview(appts, o.optBoolean("email_available"),
+                                labels, o.optString("note"))
+    }
+
+    suspend fun scheduleBook(uid: String, token: String, title: String,
+                             whenAt: String, whereAt: String?,
+                             emailReminder: Boolean): Appointment {
+        val body = JSONObject().put("title", title).put("when", whenAt)
+            .put("email_reminder", emailReminder)
+        if (!whereAt.isNullOrBlank()) body.put("where", whereAt)
+        return appointmentOf(request("/schedule/$uid", "POST", body, token))
+    }
+
+    suspend fun scheduleCancel(uid: String, token: String,
+                               appointmentId: String): Appointment =
+        appointmentOf(request("/schedule/$uid/$appointmentId", "DELETE",
+                              null, token))
+
+    suspend fun shoppingView(uid: String, token: String): ShoppingOverview {
+        val o = request("/shopping/$uid", token = token)
+        val shops = mutableListOf<TandemShop>()
+        o.optJSONArray("shops")?.let { a ->
+            for (i in 0 until a.length()) {
+                val s = a.getJSONObject(i)
+                shops.add(TandemShop(s.getString("id"), s.optString("name"),
+                    s.optString("seller"),
+                    if (s.isNull("tag")) null else s.optString("tag")))
+            }
+        }
+        val receipts = mutableListOf<ShopReceipt>()
+        o.optJSONArray("receipts")?.let { a ->
+            for (i in 0 until a.length()) {
+                val r = a.getJSONObject(i)
+                receipts.add(ShopReceipt(r.getString("id"),
+                    r.optString("qrme_order_id"), r.optString("title"),
+                    r.optDouble("amount", 0.0), r.optString("currency"),
+                    r.optString("status")))
+            }
+        }
+        val labels = mutableMapOf<String, String>()
+        o.optJSONObject("labels")?.let { l ->
+            l.keys().forEach { k -> labels[k] = l.getString(k) }
+        }
+        return ShoppingOverview(shops, receipts, labels, o.optString("note"))
+    }
+
+    suspend fun shoppingOrder(uid: String, token: String, shopId: String,
+                              offeringId: String, quantity: Int) {
+        request("/shopping/$uid/order", "POST",
+                JSONObject().put("shop_id", shopId)
+                    .put("offering_id", offeringId).put("quantity", quantity),
+                token)
+    }
+
+    suspend fun shoppingCancel(uid: String, token: String,
+                               qrmeOrderId: String) {
+        request("/shopping/$uid/cancel", "POST",
+                JSONObject().put("qrme_order_id", qrmeOrderId), token)
+    }
+
     /** The handover, and the way back. Revoking is never plan-gated. */
     suspend fun moneySetMandate(uid: String, token: String, enabled: Boolean,
                                 capPerOrder: Double, monthlyCap: Double,
@@ -1116,6 +1195,27 @@ data class MoneyDesk(val name: String, val trade: String, val location: String)
 
 data class MoneyWarning(val kind: String, val message: String,
                         val specialist: String?, val desks: List<MoneyDesk>)
+
+data class Appointment(val id: String, val title: String,
+                       val whenAt: String, val whereAt: String?,
+                       val status: String)
+
+data class ScheduleOverview(val appointments: List<Appointment>,
+                            val emailAvailable: Boolean,
+                            val labels: Map<String, String>,
+                            val note: String)
+
+data class TandemShop(val id: String, val name: String, val seller: String,
+                      val tag: String?)
+
+data class ShopReceipt(val id: String, val qrmeOrderId: String,
+                       val title: String, val amount: Double,
+                       val currency: String, val status: String)
+
+data class ShoppingOverview(val shops: List<TandemShop>,
+                            val receipts: List<ShopReceipt>,
+                            val labels: Map<String, String>,
+                            val note: String)
 
 data class MoneyOverview(val accounts: List<MoneyAccount>,
                          val savingsGoal: Double?,

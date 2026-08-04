@@ -1260,3 +1260,98 @@ extension ApiClient {
                                  "scope": scope], token: token)
     }
 }
+
+// MARK: - Schedule + shopping through the tandem (jim/schedule.py, jim/shopping.py)
+
+struct AppointmentRow: Decodable, Identifiable {
+    let id: String
+    let title: String
+    let whenat: String
+    let whereat: String?
+    let email_reminder: Int
+    let qrme_order_id: String?
+    let status: String
+}
+
+/// Labels ride the view in the reader's language — this shell renders
+/// them and adds no English of its own.
+struct ScheduleOverview: Decodable {
+    let appointments: [AppointmentRow]
+    let email_available: Bool
+    let labels: [String: String]
+    let note: String
+}
+
+struct TandemShopRow: Decodable, Identifiable {
+    let id: String
+    let name: String
+    let seller: String
+    let tag: String?
+    let offerings: Int
+}
+
+struct ShopReceiptRow: Decodable, Identifiable {
+    let id: String
+    let qrme_order_id: String
+    let shop_id: String
+    let title: String
+    let amount: Double
+    let currency: String
+    let status: String
+}
+
+struct ShoppingOverview: Decodable {
+    let shops: [TandemShopRow]
+    let receipts: [ShopReceiptRow]
+    let labels: [String: String]
+    let note: String
+}
+
+struct PlacedTandemOrder: Decodable {
+    let id: String
+    let shop_id: String
+    let status: String
+}
+
+extension ApiClient {
+    func scheduleView(uid: String, token: String) async throws -> ScheduleOverview {
+        try await request("/schedule/\(uid)", token: token)
+    }
+
+    func scheduleBook(uid: String, token: String, title: String, when: String,
+                      where whereAt: String?, emailReminder: Bool,
+                      shopId: String? = nil,
+                      offeringId: String? = nil) async throws -> AppointmentRow {
+        var body: [String: Any] = ["title": title, "when": when,
+                                   "email_reminder": emailReminder]
+        if let whereAt, !whereAt.isEmpty { body["where"] = whereAt }
+        if let shopId, !shopId.isEmpty { body["shop_id"] = shopId }
+        if let offeringId, !offeringId.isEmpty { body["offering_id"] = offeringId }
+        return try await request("/schedule/\(uid)", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func scheduleCancel(uid: String, token: String,
+                        appointmentId: String) async throws -> AppointmentRow {
+        try await request("/schedule/\(uid)/\(appointmentId)",
+                          method: "DELETE", token: token)
+    }
+
+    func shoppingView(uid: String, token: String) async throws -> ShoppingOverview {
+        try await request("/shopping/\(uid)", token: token)
+    }
+
+    func shoppingOrder(uid: String, token: String, shopId: String,
+                       offeringId: String,
+                       quantity: Int) async throws -> PlacedTandemOrder {
+        try await request("/shopping/\(uid)/order", method: "POST",
+                          body: ["shop_id": shopId, "offering_id": offeringId,
+                                 "quantity": quantity], token: token)
+    }
+
+    func shoppingCancel(uid: String, token: String,
+                        qrmeOrderId: String) async throws -> PlacedTandemOrder {
+        try await request("/shopping/\(uid)/cancel", method: "POST",
+                          body: ["qrme_order_id": qrmeOrderId], token: token)
+    }
+}

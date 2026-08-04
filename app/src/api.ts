@@ -549,6 +549,16 @@ export type MoneyWarning = { kind: string; message: string;
 export type MoneyObservation = { recorded: boolean;
   warnings: MoneyWarning[]; orders_proposed: MoneyOrder[] };
 /** Labels come with the data, in the reader's language. */
+export type Appointment = {
+  id: string; title: string; whenat: string; whereat?: string | null;
+  email_reminder: number; qrme_order_id?: string | null; status: string;
+};
+export type ScheduleView = {
+  appointments: Appointment[];
+  email_available: boolean;
+  labels: Record<string, string>;
+  note: string;
+};
 export type ShoppingView = {
   shops: { id: string; name: string; seller: string; tag?: string | null;
            offerings: number }[];
@@ -1003,6 +1013,17 @@ export const api = {
   // reader's language — the card renders what the server hands it, because
   // this console has no translation table and its English backlog is a
   // ratchet that only shrinks.
+  // The Guardian's calendar. Labels ride the view; reminders live on the
+  // proactive ladder's bottom rung, raised by the monitor/observe senses.
+  scheduleView: (uid: string, token: string) =>
+    req<ScheduleView>(`/schedule/${uid}`, { token }),
+  scheduleBook: (uid: string, body: { title: string; when: string;
+    where?: string; email_reminder?: boolean; shop_id?: string;
+    offering_id?: string }, token: string) =>
+    req<Appointment>(`/schedule/${uid}`, { method: "POST", body, token }),
+  scheduleCancel: (uid: string, appointmentId: string, token: string) =>
+    req<Appointment>(`/schedule/${uid}/${appointmentId}`,
+      { method: "DELETE", token }),
   // Shopping through the tandem. The shelf carries its own `labels` in the
   // reader's language for the same reason the money card does; the receipt
   // history lives in JIM, never asked of QRME.

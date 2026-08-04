@@ -1051,6 +1051,48 @@ public sealed class ApiClient
     public Task<SavingsGoal> MoneySetSavings(string uid, string token, double goal) =>
         Send<SavingsGoal>(Put($"/money/{uid}/savings", new { goal }, token));
 
+    // -- schedule + shopping through the tandem --
+    // Labels ride the views in the reader's language; the pivots render
+    // them and add no English of their own.
+
+    public Task<ScheduleOverview> ScheduleView(string uid, string token) =>
+        Send<ScheduleOverview>(Get($"/schedule/{uid}", token));
+
+    public Task<AppointmentRow> ScheduleBook(string uid, string token,
+                                             string title, string when,
+                                             string? where, bool emailReminder)
+    {
+        object body = string.IsNullOrWhiteSpace(where)
+            ? new { title, when, email_reminder = emailReminder }
+            : new { title, when, where, email_reminder = emailReminder };
+        return Send<AppointmentRow>(Post($"/schedule/{uid}", body, token));
+    }
+
+    public Task<AppointmentRow> ScheduleCancel(string uid, string token,
+                                               string appointmentId)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+            $"/schedule/{uid}/{appointmentId}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<AppointmentRow>(req);
+    }
+
+    public Task<ShoppingOverview> ShoppingView(string uid, string token) =>
+        Send<ShoppingOverview>(Get($"/shopping/{uid}", token));
+
+    public Task<PlacedTandemOrder> ShoppingOrder(string uid, string token,
+                                                 string shopId,
+                                                 string offeringId,
+                                                 int quantity) =>
+        Send<PlacedTandemOrder>(Post($"/shopping/{uid}/order",
+            new { shop_id = shopId, offering_id = offeringId, quantity },
+            token));
+
+    public Task<PlacedTandemOrder> ShoppingCancel(string uid, string token,
+                                                  string qrmeOrderId) =>
+        Send<PlacedTandemOrder>(Post($"/shopping/{uid}/cancel",
+            new { qrme_order_id = qrmeOrderId }, token));
+
     /// <summary>The handover, and the way back. Revoking is never plan-gated.</summary>
     public Task<MoneyMandate> MoneySetMandate(string uid, string token, bool enabled,
                                               double capPerOrder, double monthlyCap,
@@ -1109,6 +1151,44 @@ public record MoneyOverview(
     [property: JsonPropertyName("orders")] MoneyOrder[] Orders,
     [property: JsonPropertyName("note")] string Note,
     [property: JsonPropertyName("labels")] System.Collections.Generic.Dictionary<string, string> Labels);
+
+public record AppointmentRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("whenat")] string WhenAt,
+    [property: JsonPropertyName("whereat")] string? WhereAt,
+    [property: JsonPropertyName("status")] string Status);
+
+public record ScheduleOverview(
+    [property: JsonPropertyName("appointments")] AppointmentRow[] Appointments,
+    [property: JsonPropertyName("email_available")] bool EmailAvailable,
+    [property: JsonPropertyName("labels")] System.Collections.Generic.Dictionary<string, string> Labels,
+    [property: JsonPropertyName("note")] string Note);
+
+public record TandemShop(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("seller")] string Seller,
+    [property: JsonPropertyName("tag")] string? Tag);
+
+public record ShopReceipt(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("qrme_order_id")] string QrmeOrderId,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("amount")] double Amount,
+    [property: JsonPropertyName("currency")] string Currency,
+    [property: JsonPropertyName("status")] string Status);
+
+public record ShoppingOverview(
+    [property: JsonPropertyName("shops")] TandemShop[] Shops,
+    [property: JsonPropertyName("receipts")] ShopReceipt[] Receipts,
+    [property: JsonPropertyName("labels")] System.Collections.Generic.Dictionary<string, string> Labels,
+    [property: JsonPropertyName("note")] string Note);
+
+public record PlacedTandemOrder(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("shop_id")] string ShopId,
+    [property: JsonPropertyName("status")] string Status);
 
 public record MoneyObserved(
     [property: JsonPropertyName("recorded")] bool Recorded,

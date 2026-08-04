@@ -537,7 +537,7 @@ private fun FlowRowChips(items: List<String>, selected: String, onPick: (String)
 @Composable
 fun LifeScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Goals", "Habits", "Journal", "Money")
+    val tabs = listOf("Goals", "Habits", "Journal", "Money", "Schedule", "Shop")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -550,7 +550,9 @@ fun LifeScreen(vm: GuardianViewModel) {
             0 -> GoalsPanel(vm)
             1 -> HabitsPanel(vm)
             2 -> JournalPanel(vm)
-            else -> MoneyPanel(vm)
+            3 -> MoneyPanel(vm)
+            4 -> SchedulePanel(vm)
+            else -> TandemShopPanel(vm)
         }
     }
 }
@@ -768,6 +770,138 @@ private fun MoneyPanel(vm: GuardianViewModel) {
             }
         }
 
+        note?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
+    }
+}
+
+// The Guardian's calendar. Every visible string comes from the view's
+// own labels — server-composed in the reader's language — because the
+// English count behind this shell's tabs is a ratchet.
+@Composable
+private fun SchedulePanel(vm: GuardianViewModel) {
+    var view by remember { mutableStateOf<ScheduleOverview?>(null) }
+    var title by remember { mutableStateOf("") }
+    var whenAt by remember { mutableStateOf("") }
+    var whereAt by remember { mutableStateOf("") }
+    var emailMe by remember { mutableStateOf(false) }
+    var note by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+
+    fun reload() { vm.call({ ApiClient.scheduleView(vm.uid!!, vm.token!!) }) { r -> view = r.getOrNull() } }
+    LaunchedEffect(Unit) { reload() }
+
+    val v = view ?: return
+    val labels = v.labels
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["title"] ?: "", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(v.note, color = Jim.T2, fontSize = 11.sp)
+            labeledField(labels["what"] ?: "", title, "") { title = it }
+            labeledField(labels["when"] ?: "", whenAt, "") { whenAt = it }
+            labeledField(labels["where"] ?: "", whereAt, "") { whereAt = it }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(checked = emailMe, onCheckedChange = { emailMe = it },
+                       enabled = v.emailAvailable)
+                val emailLabel = if (v.emailAvailable) labels["email_me"] ?: ""
+                                 else labels["no_email"] ?: ""
+                Text(emailLabel, color = Jim.T2, fontSize = 12.sp)
+            }
+            BrandButton(labels["book"] ?: "",
+                        enabled = title.isNotBlank() && whenAt.isNotBlank(),
+                        busy = busy) {
+                busy = true
+                vm.call({ ApiClient.scheduleBook(vm.uid!!, vm.token!!, title,
+                                                 whenAt, whereAt, emailMe) }) { r ->
+                    busy = false
+                    r.exceptionOrNull()?.let { note = it.message }
+                    title = ""; whenAt = ""; whereAt = ""
+                    reload()
+                }
+            }
+        }
+        if (v.appointments.isNotEmpty()) {
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(labels["upcoming"] ?: "", color = Jim.Txt, fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold)
+                v.appointments.forEach { a ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        val line = a.title + " · " +
+                            a.whenAt.take(16).replace("T", " ") +
+                            (a.whereAt?.let { " · " + it } ?: "")
+                        Text(line, color = Jim.T2, fontSize = 12.sp)
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.scheduleCancel(vm.uid!!, vm.token!!, a.id) }) { reload() }
+                        }) { Text(labels["cancel"] ?: "", color = Jim.Red, fontSize = 11.sp) }
+                    }
+                }
+            }
+        }
+        note?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
+    }
+}
+
+// The tandem shops shelf: QRME's storefronts, ordered as this user's own
+// interactor, with the receipts kept in JIM. Same label discipline.
+@Composable
+private fun TandemShopPanel(vm: GuardianViewModel) {
+    var view by remember { mutableStateOf<ShoppingOverview?>(null) }
+    var shopId by remember { mutableStateOf("") }
+    var offeringId by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+
+    fun reload() { vm.call({ ApiClient.shoppingView(vm.uid!!, vm.token!!) }) { r -> view = r.getOrNull() } }
+    LaunchedEffect(Unit) { reload() }
+
+    val v = view ?: return
+    val labels = v.labels
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["title"] ?: "", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(v.note, color = Jim.T2, fontSize = 11.sp)
+            v.shops.forEach { s ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    val line = s.name + " · " + s.seller + (s.tag?.let { " · " + it } ?: "")
+                    Text(line, color = Jim.Txt, fontSize = 12.sp)
+                    TextButton(onClick = { shopId = s.id }) {
+                        Text(labels["browse"] ?: "", color = Jim.BrandA, fontSize = 12.sp)
+                    }
+                }
+            }
+            labeledField(labels["title"] ?: "", shopId, "") { shopId = it }
+            labeledField(labels["offerings"] ?: "", offeringId, "") { offeringId = it }
+            BrandButton(labels["order"] ?: "",
+                        enabled = shopId.isNotBlank() && offeringId.isNotBlank(),
+                        busy = busy) {
+                busy = true
+                vm.call({ ApiClient.shoppingOrder(vm.uid!!, vm.token!!, shopId,
+                                                  offeringId, 1) }) { r ->
+                    busy = false
+                    r.exceptionOrNull()?.let { note = it.message }
+                    offeringId = ""
+                    reload()
+                }
+            }
+        }
+        if (v.receipts.isNotEmpty()) {
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(labels["receipts"] ?: "", color = Jim.Txt, fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold)
+                v.receipts.forEach { r ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        val line = r.title + " · " + "%.2f".format(r.amount) +
+                            " " + r.currency + " · " + r.status
+                        Text(line, color = Jim.T3, fontSize = 11.sp)
+                        if (r.status == "placed") {
+                            TextButton(onClick = {
+                                vm.call({ ApiClient.shoppingCancel(vm.uid!!, vm.token!!,
+                                    r.qrmeOrderId) }) { reload() }
+                            }) { Text(labels["cancel"] ?: "", color = Jim.Red, fontSize = 11.sp) }
+                        }
+                    }
+                }
+            }
+        }
         note?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
     }
 }

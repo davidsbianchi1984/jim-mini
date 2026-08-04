@@ -216,5 +216,78 @@
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>
+
+        <!-- Schedule and the tandem shops shelf. As with Money: no literal
+             strings — every header and button is set in code-behind from
+             the views' own labels, composed server-side in the reader's
+             language. -->
+        <PivotItem x:Name="SchedulePivot">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="ScheduleNote" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="ApptTitle" />
+                            <TextBox x:Name="ApptWhen" />
+                            <TextBox x:Name="ApptWhere" />
+                            <CheckBox x:Name="ApptEmail" />
+                            <Button x:Name="BookButton" HorizontalAlignment="Stretch"
+                                    Click="OnBook" />
+                            <ItemsControl x:Name="ApptList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimT2Brush}"
+                                                   FontSize="12" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBox x:Name="CancelApptId" />
+                            <Button x:Name="CancelApptButton" Click="OnCancelAppt" />
+                            <TextBlock x:Name="ScheduleStatus" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+
+        <PivotItem x:Name="ShopPivot">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="ShopNote" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="TandemShopList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimTxtBrush}"
+                                                   FontSize="12" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBox x:Name="OrderShopId" />
+                            <TextBox x:Name="OrderOffering" />
+                            <Button x:Name="TandemOrderButton" Click="OnTandemOrder" />
+                            <ItemsControl x:Name="ReceiptList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimT2Brush}"
+                                                   FontSize="12" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBox x:Name="CancelOrderId" />
+                            <Button x:Name="TandemCancelButton" Click="OnTandemCancel" />
+                            <TextBlock x:Name="ShopStatus" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
     </Pivot>
 </Page>
