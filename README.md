@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.43.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.43.1** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.43.1** | Version alignment with the QRME inbox round — JIM's own answer to the question is its existing insight ladder |
 | **0.43.0** | **Version alignment** — QRME's phones learned to do business; 139 doorless rows struck there, nothing changed here |
 | **0.42.9** | **Version alignment** — QRME's social surface reached its phones; nothing changed on this side |
 | **0.42.8** | **The record said nobody asks; the forms had started asking** — 54 of 154 recorded fields were bound to real console inputs; all now labelled in ten languages, 100 rows remain that match the record's own rule; the console gained QRME's always-on lights widget — the Guardian's watches at a glance, never silently absent |

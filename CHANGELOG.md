@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.43.1] — 2026-08-04
+
+### Version alignment
+
+The three products are cut together, so one number names one
+combination of all three. No JIM code changed — QRME gained an inbox
+that tells a person what was done to them; JIM's guardian already
+speaks through its insight ladder, which is this product's own answer
+to the same question.
+
 ## [0.43.0] — 2026-08-04
 
 ### Version alignment
