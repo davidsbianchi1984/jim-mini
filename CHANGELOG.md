@@ -4,6 +4,41 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.0] — 2026-08-04
+
+### The device's confession was stripped at the door
+
+### The finding
+
+`jim/signal.py` grades every biometric sample and folds in the one piece of
+evidence better than any range check — the device's own report of how well
+it read. The fold is multiplicative on purpose: a wearable saying "poor
+contact" can only ever lower trust.
+
+None of that could happen. `BiometricSample` did not declare
+`signal_quality`, so pydantic silently dropped the field at
+`POST /monitor/{id}` and the grader received every sample with the
+confession removed. An SpO2 of 62 read through a flapping strap graded `ok`
+at confidence 1.0 — full trust in exactly the reading the device itself had
+disowned. Found by driving, not reading: the module was correct, its unit
+tests passed, and the door undid it.
+
+    asked     is the sample graded
+    mattered  can the device's own confession reach the grader
+
+`signal_quality` is now declared (bounded 0..1 at the door, so a device
+reporting 7 is an input error rather than a silent clamp), and
+`jim/tests/test_the_device_confession_reaches_the_grader.py` drives the
+defect's exact shape: poor contact caps confidence, a confident device
+changes nothing, and no confession can make a heart rate of zero true.
+
+### Also
+
+The Settings contribution card said what would be shared; it now *shows* it
+— `preview_next`, the exact payload, rendered verbatim from the same
+function that sends. Nothing queued is said in words rather than shown as an
+empty box.
+
 ## [0.41.0] — 2026-08-02
 
 ### The workflow round-trips and nothing walked the whole arc

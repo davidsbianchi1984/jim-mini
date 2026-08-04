@@ -251,6 +251,17 @@ function CloudContributionCard() {
       </p>
       {state.policy && <p className="muted small">{state.policy}</p>}
       {state.preview_note && <p className="muted small">{state.preview_note}</p>}
+      {/* The payload itself, verbatim. The note above describes it; this IS
+          it — composed by the same function that sends, so what is shown and
+          what would leave cannot drift apart. Rendered without a new English
+          empty-state sentence on purpose: the console's untranslated backlog
+          is a ratchet that only shrinks, and `preview_note` already carries
+          the words. */}
+      {state.preview_next != null && (
+        <pre className="small" style={{ overflowX: "auto" }}>
+          {JSON.stringify(state.preview_next, null, 2)}
+        </pre>
+      )}
       {error && <p className="error">{error}</p>}
       {state.opted_in && (
         <button

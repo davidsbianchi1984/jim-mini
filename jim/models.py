@@ -207,6 +207,12 @@ class BiometricSample(BaseModel):
     co_level: float | None = None           # carbon monoxide, ppm
     posture: str | None = None              # e.g. slouched | hunched (ergonomics)
     repetitive_motion_min: int | None = None  # minutes of repetitive motion
+    # The device's own report of how well it read (0..1). `signal.assess`
+    # folds it in multiplicatively, so a wearable saying "poor contact" can
+    # only ever lower trust — but this was the one input the model did not
+    # declare, so pydantic stripped it at the door and the grader never saw
+    # a device confess.
+    signal_quality: float | None = Field(default=None, ge=0.0, le=1.0)
     source_device: str | None = None        # multimodal input: smart_watch |
                                             # stationary | neural_sensor |
                                             # gesture | robot | …
