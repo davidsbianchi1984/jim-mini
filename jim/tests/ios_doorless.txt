@@ -2,7 +2,6 @@ DELETE /bands/{user_id}/{metric}
 DELETE /beacons/{bid}
 DELETE /budgets/{user_id}/{category}
 DELETE /data/{user_id}
-DELETE /medical-id/qr/{user_id}
 DELETE /meds/{user_id}/{med_id}
 DELETE /memberships/{account_id}
 DELETE /robots/{user_id}/{robot_id}

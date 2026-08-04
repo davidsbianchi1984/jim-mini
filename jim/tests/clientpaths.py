@@ -158,7 +158,24 @@ IOS = Language(
     re.compile(r"\\\((?:[^()]|\([^()]*\))*\)"),
     re.compile(r'"(/[^"\n]*)"'),
     (CallForm(re.compile(r"\brequest\s*(?:<[^>]*>)?\s*\("),
-              verb_in_body=re.compile(r'method:\s*"([A-Z]+)"')),),
+              verb_in_body=re.compile(r'method:\s*"([A-Z]+)"')),
+     # The direct-URLRequest form: `base.appendingPathComponent("/…")`
+     # wrapped in a `URLRequest` with `req.httpMethod = "DELETE"` set two
+     # lines down — Swift's spelling of the idiom Kotlin's `URL(` form
+     # below already reads `requestMethod` for. QRME's copy of this rule
+     # was first written `verb="GET"` ("a URL built this way is a URL to
+     # read") and its own suite falsified that within the hour, so the rule
+     # arrives here with its premise: the verb is read, never assumed.
+     #
+     #     asked     does the shell call the transport helper for this route
+     #     mattered  does the shell fetch this route at all
+     #
+     # Without it this audit could not see the call at all, and said so the
+     # quiet way: a live door sat on the ios doorless record as work to do.
+     # Absent a verb, GET stands — URLSession's own default for a bare URL.
+     CallForm(re.compile(r"\bappendingPathComponent\s*\("), verb_after=400,
+              verb_in_body=re.compile(
+                  r'httpMethod\s*=\s*"(GET|POST|PUT|PATCH|DELETE)"')),),
 )
 # Kotlin interpolates bare identifiers as well as braced expressions, and the
 # clients use both. Its verb is positional, so it is only read when it sits
