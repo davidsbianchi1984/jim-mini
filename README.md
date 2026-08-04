@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.42.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.42.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -254,6 +254,10 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/100-bearing.svg" width="160" alt="100 Bearing"><br><sub>100 · Bearing</sub></td>
 <td align="center" width="25%"><img src="docs/screens/101-your-own-profile.svg" width="160" alt="101 Your Own Profile"><br><sub>101 · Your Own Profile</sub></td>
 </tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/102-safety.svg" width="160" alt="102 Safety"><br><sub>102 · Safety</sub></td>
+<td align="center" width="25%"><img src="docs/screens/103-wellness.svg" width="160" alt="103 Wellness"><br><sub>103 · Wellness</sub></td>
+</tr>
 </table>
 
 The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 72 Pick a Plan → 73 Payment → 46 All Set**, landing on **78 You're on Free** — or **74 You're on Basic** if the plan step was paid — then hands off to the daily app and, at the other end, **41 End Session**.
@@ -332,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.42.3** | **The last thirteen unaudited screens** — six JIM components sat `unaudited` since the manifest was seeded. Four were only unlabelled (Meds→85, PaceCue→14, Onboarding→40+42, ProviderTiles→83 — the tile picker, not the human-providers screen); two had never been drawn: **102 Safety**, the answering end of the crash watch, and **103 Wellness**, the three generators. Ceilings at zero, `undrawn=0` true at last |
 | **0.42.2** | **The Guardian watched spending and could not hold the money** — `jim/money.py`: accounts whose numbers live only in the vault (refused without one), balance observations that warn at `checkin` severity through the existing proactive ladder in the reader's language, savings goals, a written Pro-gated revocable investing mandate whose orders are logged proposals, and warnings that carry their doors — coach, tandem specialist, real desks. `docs/proactive.md` names every proactive path |
 | **0.42.1** | **Version alignment** — QRME's 34 starters each gained a dossier (knowledge, skills, connections), so specialists reached through the tandem answer for their own trade; no JIM code changed |
 | **0.42.0** | **The device's confession was stripped at the door** — `signal.py` folds a wearable's own signal-quality report into every grade, and `BiometricSample` never declared the field, so pydantic dropped it and an SpO2 read through a flapping strap arrived at full confidence. Declared and bounded now, with the defect's exact shape driven in tests. The Settings contribution card also now shows the `preview_next` payload verbatim |

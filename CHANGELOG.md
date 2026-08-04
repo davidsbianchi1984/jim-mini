@@ -4,6 +4,26 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.3] — 2026-08-04
+
+### The last thirteen unaudited screens
+
+Six components had sat `unaudited` in `ui_screens.txt` since the manifest
+was seeded. Reading each component's own heading against the gallery's
+titles resolved four as merely unlabelled — `Meds` draws **85**, `PaceCue`
+is the pace circle of **14**, `Onboarding`'s sign-in flow is **40** and
+**42**, and `ProviderTiles` is the tile picker of **83**, not 20, which
+draws the *human* providers — and confirmed two had never been drawn.
+
+    asked     is every component accounted for in the manifest
+    mattered  does every component have a drawing
+
+**102 Safety** is the answering end of the crash watch — screen 88 showed
+the watch asking and nothing showed a person accepting, clearing or
+escalating the alarm. **103 Wellness** draws the three deterministic
+generators (calm, workout, meals). Both ceilings now read zero and the
+slack test keeps them there.
+
 ## [0.42.2] — 2026-08-04
 
 ### The Guardian watched spending and could not hold the money

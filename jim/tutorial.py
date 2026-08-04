@@ -380,6 +380,27 @@ LESSONS: tuple[dict, ...] = (
               "transcripts never cross at any setting.",
          screens=(101,),
          try_it="Link the profile, tick nothing, and read the empty brief."),
+    dict(key="safety", chapter="When it matters", title="Answering an alarm",
+         what="The answering end of the crash watch. JIM can raise an alarm "
+              "— an unanswered check-in, a scanned beacon, a fall — and "
+              "this is where a person takes it: accepting names a "
+              "responder, because 'someone is coming' is a person and not "
+              "a state; escalating is one press with no modal in the way; "
+              "clearing is the direction that asks, because clearing is "
+              "the irreversible one. What paged out and what was recorded "
+              "sit below the fold, history under the urgent.",
+         screens=(102,),
+         try_it="Open an alarm and read what accepting will ask of you."),
+    dict(key="wellness", chapter="Day to day", title="Wellness",
+         what="The on-purpose half of guidance: a guided calm session the "
+              "app paces and can speak, a workout shaped to the minutes "
+              "you have, and a day of meals shaped to a goal. All three "
+              "are protocols, not generations — deterministic on the "
+              "backend, because a breathing count is not something to "
+              "improvise. The Coach stays the place to talk about any "
+              "of it.",
+         screens=(103,),
+         try_it="Start a two-minute calm session and let it pace you."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

@@ -1,4 +1,4 @@
-# status: backlog — 25 rows
+# status: floor — 25 rows
 #
 # Which console surface each screen drawing depicts.
 #
@@ -22,15 +22,19 @@
 # `undrawn` is a ratchet: the count may fall and must never rise. Adding a
 # surface without a drawing therefore fails, which is the whole point.
 #
-# ceiling: undrawn=0 unaudited=6
+# ceiling: undrawn=0 unaudited=0
 #
-# `unaudited` is the honest seed. These components predate the file and their
-# screens were not confirmed one by one — matching a component name against a
-# screen title resolved only ten of twenty-four, because titles are written for
-# the person using the app ("How Should They Work?") and component names are
-# written for the person editing it ("Delegate"). Guessing the rest would have
-# produced a mapping that looked complete and was not. `unaudited` is also
-# ratcheted downward, and is not a status a new component may use.
+# `unaudited` was the honest seed — components that predated the file, their
+# screens never confirmed one by one. 0.42.3 audited the last six by reading
+# each component's own heading against the gallery's titles: four were only
+# unlabelled (`Meds` draws 85, `PaceCue` is the pace circle of 14, the
+# sign-in flow of `Onboarding` is 40 and 42, `ProviderTiles` is the tile
+# picker of 83 — not 20, which is the *human* providers screen), and two had
+# never been drawn at all. `Safety`, the answering end of the crash watch,
+# had no drawing while screen 88 showed only the watch asking; `Wellness`
+# shipped three whole generators with nothing in the gallery. 102 and 103
+# are those drawings, and `undrawn=0` is true for the first time since the
+# column was seeded. `unaudited` is not a status a new component may use.
 
 Baseline        38,81
 CareTeam        86
@@ -43,12 +47,12 @@ Journal         23,87
 Monitor         13
 Settings        12
 
-Meds            unaudited
-Onboarding      unaudited
-Safety          unaudited
-Wellness        unaudited
-PaceCue         unaudited
-ProviderTiles   unaudited
+Meds            85
+Onboarding      40,42
+Safety          102
+Wellness        103
+PaceCue         14
+ProviderTiles   83
 
 Problems        93
 ProblemNotice   94

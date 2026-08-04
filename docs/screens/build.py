@@ -1797,6 +1797,36 @@ SCREENS = [
              dict(icon="doc", color="brand", k="Exactly what would be sent",
                   s="the message itself, before it goes"),
          ]),
+    # 102 and 103 close the manifest's `unaudited` column. Both surfaces had
+    # shipped and been iterated on with nothing in the gallery — `unaudited`
+    # was covering for `undrawn=0` being false. 102 is the *answering* end of
+    # the crash watch, which is what separated it from screen 88: 88 shows
+    # the watch asking, and nothing showed a person taking the alarm.
+    dict(num=102, title="Safety", sub="Answering an alarm",
+         accent="red", cards=[
+        dict(icon="bell", color="red", k="Needs a person",
+             s="open alarms first, alone", pill=("OPEN", "warn")),
+        dict(icon="person", color="amber", k="Accepting names you",
+             s="help is a person, not a state"),
+        dict(icon="bolt", color="red", k="Escalate, no modal",
+             s="clearing is the one that asks"),
+        dict(icon="book", color="cyan", k="What went out",
+             s="pages, incidents, below the fold"),
+    ]),
+    # 103: the on-purpose half of guidance. The three generators are
+    # protocols, not generations — a breathing count, a rep dose and a menu
+    # are deterministic on the backend, which is the card that matters.
+    dict(num=103, title="Wellness", sub="Calm, movement, meals",
+         accent="teal", cards=[
+        dict(icon="leaf", color="teal", k="Guided calm",
+             s="paced, and it can speak", pill=("4:6", "good")),
+        dict(icon="steps", color="amber", k="A workout that fits",
+             s="minutes, level, focus"),
+        dict(icon="flame", color="green", k="A day of meals",
+             s="goal and preferences"),
+        dict(icon="brain", color="brand", k="Protocols, not prose",
+             s="deterministic on the backend"),
+    ]),
 ]
 
 
