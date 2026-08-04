@@ -467,6 +467,39 @@ class ExcursionStart(BaseModel):
     private: list[str] = Field(default_factory=list)
 
 
+class MoneyAccountAdd(BaseModel):
+    """Register a money account (jim/money.py). The numbers are sealed in
+    the PDI vault or refused — they never land in JIM's own database."""
+    kind: str                               # checking | savings | brokerage | crypto
+    institution: str
+    label: str | None = None
+    account_number: str | None = None
+    routing_number: str | None = None
+    api_key: str | None = None              # brokerage / exchange access
+
+
+class MoneyObserve(BaseModel):
+    """A balance reading against a registered account."""
+    account_id: str
+    balance: float | None = None
+    note: str | None = None
+
+
+class SavingsSet(BaseModel):
+    goal: float
+    note: str | None = None
+
+
+class MandateSet(BaseModel):
+    """The written handover: what JIM may do with the money, in caps and in
+    words. Disabling needs nothing but `enabled: false`."""
+    enabled: bool
+    cap_per_order: float = 0
+    monthly_cap: float = 0
+    asset_classes: list[str] = Field(default_factory=list)
+    scope: str = ""
+
+
 class BudgetSet(BaseModel):
     """A budgeting plan (jim/life.py): this much per month for this
     category — '*' is the whole month's plan."""

@@ -124,6 +124,16 @@ class QRMEClient:
         out = r.json()
         return out if isinstance(out, list) else []
 
+    def desks(self) -> list[dict]:
+        """Every open desk — real people with trades and locations, the
+        doors a money warning can point at. Empty on any failure: a warning
+        must never die because the directory was unreachable."""
+        try:
+            r = self.get("/desks")
+            return r.json() if r.status_code == 200 else []
+        except Exception:
+            return []
+
     def localities(self) -> list[dict]:
         """Places QRME's listings actually claim, with counts — the "local"
         in local events, drawn from what exists rather than a typed guess."""

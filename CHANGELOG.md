@@ -4,6 +4,60 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.2] — 2026-08-04
+
+### The Guardian watched spending and could not hold the money
+
+### The finding
+
+JIM already watched money the way it watches sleep: consented spending
+events fill budget tallies, `life._budget_insights` warns at 80% and 100%
+of a plan, `forecast_spending` projects the month, and the finance coach
+hands a question to Marcus Bell through the tandem. But there was nowhere
+to put an *account* — checking, savings, brokerage, crypto — so there was
+no balance to watch, no cushion to warn about, no savings goal to coach
+toward, and nothing to invest.
+
+    asked     is spending watched
+    mattered  is the money watched
+
+### What shipped — `jim/money.py`, on four rules
+
+  * **Credentials only ever live in the vault.** Account numbers, routing
+    numbers and exchange API keys are sealed in the PDI tandem; JIM keeps
+    only the institution, the kind, a label and the last four digits. On a
+    plan with no vault the registration is refused — storing a routing
+    number in the clear is not a degraded mode.
+  * **Warnings ride the existing proactive ladder.** A low balance is a
+    guardian event at `checkin` severity and an insight, in the user's own
+    language, exactly like a drift band. Money never reaches the emergency
+    escalation: an overdraft is not a collapse.
+  * **The mandate is a handover, not a default.** "Let JIM invest for me"
+    requires it written down — enabled, a per-order cap, a monthly cap,
+    asset classes, and a scope in words. Enabling is Pro-gated; revoking is
+    never gated, because taking your hands back must not have a price.
+    Every order JIM proposes is logged, and the record says `proposed`:
+    nothing executes without a brokerage connector, and no execution is
+    pretended.
+  * **A warning carries its doors.** The finance coach, the tandem
+    specialist, and real people at desks — near the user's locality or
+    across the map — ride on the warning that makes them relevant.
+
+Five routes; the console's Money card renders entirely server-provided
+labels in the reader's ten languages, so the console's English ratchet
+gained nothing. The phones record the routes on their doorless backlogs.
+
+`docs/proactive.md` now names every proactive path in one place — senses,
+interpreters, actions in escalation order, and the three lines that keep
+proactive from meaning creepy.
+
+### Checks
+
+`jim/tests/test_the_money_guardian.py`, 17 tests. Driven three ways:
+removing the vault refusal stores a routing number in the clear and the
+test says so; raising money past `checkin` severity fails the hard line;
+ignoring the monthly cap proposes 2000 against a 1000 mandate.
+
 ## [0.42.1] — 2026-08-04
 
 ### Version alignment

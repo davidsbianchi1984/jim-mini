@@ -18,7 +18,7 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                catalog,
                coach,
                mailer,
-               contribution, db,
+               contribution, db, money,
                escalation, family, followup, guardian, handoff, i18n, identity,
                landing, life, llm,
                meds, mic, mobile, notify, oauth, offline, referral, relay,
@@ -43,6 +43,7 @@ from .models import (
     Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
+    MandateSet, MoneyAccountAdd, MoneyObserve, SavingsSet,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     SelfProfileConsent, SelfProfileLink,
@@ -78,7 +79,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.42.1",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.42.2",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2127,7 +2128,81 @@ def create_app(qrme_client: QRMEClient | None = None,
         return {"learned": True, "already_learned": False,
                 "note": "findings folded into guidance context; the local model now uses them"}
 
+    # ---- the money guardian (jim/money.py) --------------------------------
+    # Credentials vault-or-refused; warnings ride the proactive ladder at
+    # `checkin` severity and carry their doors; the mandate is a written,
+    # revocable handover and its orders are logged proposals. The overview
+    # carries its own labels in the reader's language, because the desktop
+    # console has no translation table and its English backlog is a ratchet.
+
+    def _money_lang(user_id: str) -> str:
+        code, _mode = i18n.get_pref(user_id)
+        return code
+
+    @app.get("/money/{user_id}")
+    def money_view(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return money.view(user_id, _money_lang(user_id), qrme=app.state.qrme)
+
+    @app.post("/money/{user_id}/accounts", status_code=201)
+    def money_add_account(user_id: str, body: MoneyAccountAdd,
+                          request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return money.add_account(
+                user_id, body.kind, body.institution, body.label or "",
+                body.account_number, body.routing_number, body.api_key,
+                pdi=_vault(user_id))
+        except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.post("/money/{user_id}/observe")
+    def money_observe(user_id: str, body: MoneyObserve,
+                      request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return money.observe(user_id, body.account_id, body.balance,
+                                 body.note, _money_lang(user_id),
+                                 pdi=_vault(user_id), qrme=app.state.qrme)
+        except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.put("/money/{user_id}/savings")
+    def money_set_savings(user_id: str, body: SavingsSet,
+                          request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return money.set_savings(user_id, body.goal, body.note)
+        except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.put("/money/{user_id}/mandate")
+    def money_set_mandate(user_id: str, body: MandateSet,
+                          request: Request) -> dict:
+        """The handover. Enabling is Pro-gated through the same capability
+        as every other piece of delegated work; revoking is never gated —
+        taking your hands back must not have a price."""
+        _user_or_404(user_id, request)
+        if body.enabled:
+            plan = tiers.plan_of(user_id)
+            if not tiers.entitles(plan, "synthetic_agents"):
+                raise HTTPException(402, {
+                    "reason": "plan", "capability": "synthetic_agents",
+                    "needs": tiers.CAPABILITIES["synthetic_agents"]["from"],
+                    "have": plan,
+                    "message": tiers.refusal(plan, "synthetic_agents"),
+                    "billing": "simulated — no real funds move",
+                    "emergency_unaffected": True,
+                })
+        try:
+            return money.set_mandate(user_id, body.enabled,
+                                     body.cap_per_order, body.monthly_cap,
+                                     body.asset_classes, body.scope)
+        except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
     # ---- budgeting plans ----------------------------------------------------
+
 
     @app.put("/budgets/{user_id}")
     def set_budget(user_id: str, body: BudgetSet, request: Request) -> dict:

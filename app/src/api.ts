@@ -534,6 +534,28 @@ export type BeaconRow = {
   created_at: string;
 };
 
+export type MoneyAccount = {
+  id: string; kind: string; institution: string; label: string;
+  last4?: string | null; credentials: string; balance?: number | null;
+};
+export type SavingsGoal = { goal: number; note?: string | null;
+  reached_at?: string | null };
+export type MoneyMandate = { enabled: boolean; cap_per_order: number;
+  monthly_cap: number; asset_classes: string[]; scope: string };
+export type MoneyOrder = { id: string; asset_class: string; amount: number;
+  status: string; rationale?: string | null; created_at?: string };
+export type MoneyWarning = { kind: string; message: string;
+  doors?: Record<string, unknown> };
+export type MoneyObservation = { recorded: boolean;
+  warnings: MoneyWarning[]; orders_proposed: MoneyOrder[] };
+/** Labels come with the data, in the reader's language. */
+export type MoneyView = {
+  accounts: MoneyAccount[]; savings: SavingsGoal | null;
+  mandate: MoneyMandate | null; orders: MoneyOrder[];
+  doors: Record<string, unknown>; note: string;
+  labels: Record<string, string>;
+};
+
 export type CloudContribution = {
   opted_in: boolean;
   contributed: number;
@@ -963,6 +985,30 @@ export const api = {
   revokeCloudContribution: (uid: string, token: string) =>
     req<CloudContribution>(`/users/${uid}/cloud-contribution/revoke`,
       { method: "POST", token }),
+  // The money guardian. The overview carries its own `labels` in the
+  // reader's language — the card renders what the server hands it, because
+  // this console has no translation table and its English backlog is a
+  // ratchet that only shrinks.
+  moneyView: (uid: string, token: string) =>
+    req<MoneyView>(`/money/${uid}`, { token }),
+  moneyAddAccount: (uid: string, body: { kind: string; institution: string;
+    label?: string; account_number?: string; routing_number?: string;
+    api_key?: string }, token: string) =>
+    req<MoneyAccount>(`/money/${uid}/accounts`,
+      { method: "POST", body, token }),
+  moneyObserve: (uid: string, body: { account_id: string; balance?: number;
+    note?: string }, token: string) =>
+    req<MoneyObservation>(`/money/${uid}/observe`,
+      { method: "POST", body, token }),
+  moneySetSavings: (uid: string, body: { goal: number; note?: string },
+    token: string) =>
+    req<SavingsGoal>(`/money/${uid}/savings`,
+      { method: "PUT", body, token }),
+  moneySetMandate: (uid: string, body: { enabled: boolean;
+    cap_per_order?: number; monthly_cap?: number; asset_classes?: string[];
+    scope?: string }, token: string) =>
+    req<MoneyMandate>(`/money/${uid}/mandate`,
+      { method: "PUT", body, token }),
   setLocality: (uid: string, locality: string | null, token: string) =>
     req<{ locality: string | null }>(`/users/${uid}/locality`,
       { method: "PUT", body: { locality }, token }),

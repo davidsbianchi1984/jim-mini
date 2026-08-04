@@ -2491,6 +2491,19 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    'account_id': {'en': 'Account', 'es': 'Cuenta', 'fr': 'Compte', 'de': 'Konto', 'pt': 'Conta', 'it': 'Conto', 'ja': '口座', 'zh': '账户', 'hi': 'खाता', 'ar': 'الحساب'},
+    'account_number': {'en': 'Account number', 'es': 'Número de cuenta', 'fr': 'Numéro de compte', 'de': 'Kontonummer', 'pt': 'Número de conta', 'it': 'Numero di conto', 'ja': '口座番号', 'zh': '账号', 'hi': 'खाता संख्या', 'ar': 'رقم الحساب'},
+    'api_key': {'en': 'API key', 'es': 'Clave API', 'fr': 'Clé API', 'de': 'API-Schlüssel', 'pt': 'Chave API', 'it': 'Chiave API', 'ja': 'APIキー', 'zh': 'API 密钥', 'hi': 'API कुंजी', 'ar': 'مفتاح API'},
+    'asset_classes': {'en': 'Asset classes', 'es': 'Clases de activos', 'fr': "Classes d'actifs", 'de': 'Anlageklassen', 'pt': 'Classes de ativos', 'it': 'Classi di attivi', 'ja': '資産クラス', 'zh': '资产类别', 'hi': 'परिसंपत्ति वर्ग', 'ar': 'فئات الأصول'},
+    'balance': {'en': 'Balance', 'es': 'Saldo', 'fr': 'Solde', 'de': 'Saldo', 'pt': 'Saldo', 'it': 'Saldo', 'ja': '残高', 'zh': '余额', 'hi': 'शेष राशि', 'ar': 'الرصيد'},
+    'cap_per_order': {'en': 'Cap per order', 'es': 'Límite por orden', 'fr': 'Plafond par ordre', 'de': 'Limit pro Auftrag', 'pt': 'Limite por ordem', 'it': 'Tetto per ordine', 'ja': '注文ごとの上限', 'zh': '单笔上限', 'hi': 'प्रति आदेश सीमा', 'ar': 'الحد لكل أمر'},
+    'enabled': {'en': 'Enabled', 'es': 'Activado', 'fr': 'Activé', 'de': 'Aktiviert', 'pt': 'Ativado', 'it': 'Attivo', 'ja': '有効', 'zh': '启用', 'hi': 'सक्रिय', 'ar': 'مفعّل'},
+    'institution': {'en': 'Institution', 'es': 'Institución', 'fr': 'Établissement', 'de': 'Institut', 'pt': 'Instituição', 'it': 'Istituto', 'ja': '金融機関', 'zh': '机构', 'hi': 'संस्था', 'ar': 'المؤسسة'},
+    'kind': {'en': 'Kind', 'es': 'Tipo', 'fr': 'Type', 'de': 'Art', 'pt': 'Tipo', 'it': 'Tipo', 'ja': '種類', 'zh': '类型', 'hi': 'प्रकार', 'ar': 'النوع'},
+    'label': {'en': 'Label', 'es': 'Etiqueta', 'fr': 'Libellé', 'de': 'Bezeichnung', 'pt': 'Etiqueta', 'it': 'Etichetta', 'ja': 'ラベル', 'zh': '标签', 'hi': 'लेबल', 'ar': 'التسمية'},
+    'monthly_cap': {'en': 'Monthly cap', 'es': 'Límite mensual', 'fr': 'Plafond mensuel', 'de': 'Monatslimit', 'pt': 'Limite mensal', 'it': 'Tetto mensile', 'ja': '月間上限', 'zh': '每月上限', 'hi': 'मासिक सीमा', 'ar': 'الحد الشهري'},
+    'routing_number': {'en': 'Routing number', 'es': 'Número de ruta', 'fr': "Numéro d'acheminement", 'de': 'Routingnummer', 'pt': 'Número de encaminhamento', 'it': 'Numero di instradamento', 'ja': 'ルーティング番号', 'zh': '路由号', 'hi': 'राउटिंग नंबर', 'ar': 'رقم التوجيه'},
+    'scope': {'en': 'Scope', 'es': 'Alcance', 'fr': 'Périmètre', 'de': 'Umfang', 'pt': 'Âmbito', 'it': 'Ambito', 'ja': '範囲', 'zh': '范围', 'hi': 'दायरा', 'ar': 'النطاق'},
     'birthdate': {'en': 'Date of birth', 'es': 'Fecha de nacimiento', 'fr': 'Date de naissance', 'de': 'Geburtsdatum', 'pt': 'Data de nascimento', 'it': 'Data di nascita', 'ja': '生年月日', 'zh': '出生日期', 'hi': 'जन्म तिथि', 'ar': 'تاريخ الميلاد'},
     'content': {'en': 'Content', 'es': 'Contenido', 'fr': 'Contenu', 'de': 'Inhalt', 'pt': 'Conteúdo', 'it': 'Contenuto', 'ja': '内容', 'zh': '内容', 'hi': 'सामग्री', 'ar': 'المحتوى'},
     'display_name': {'en': 'Profile name', 'es': 'Nombre del perfil', 'fr': 'Nom du profil', 'de': 'Profilname', 'pt': 'Nome do perfil', 'it': 'Nome del profilo', 'ja': 'プロフィール名', 'zh': '资料名称', 'hi': 'प्रोफ़ाइल नाम', 'ar': 'اسم الملف'},
@@ -2701,3 +2714,97 @@ _VALIDATION: dict[str, dict[str, str]] = {
         'ar': 'يجب أن يكون تاريخًا صالحًا',
     },
 }
+
+
+# --------------------------------------------------------------------------
+# The money guardian (jim/money.py).
+#
+# Sentences and labels both live server-side, and the reason is the console
+# backlog: the desktop console has no translation table of its own, and
+# every English literal a screen adds is a row in a ratchet that only
+# shrinks. So the Money card renders what `GET /money/{id}` hands it —
+# composed here, in the reader's language, by the same code that raises the
+# warnings. The screen shows; the server speaks.
+
+_MONEY_TEXT: dict[str, dict[str, str]] = {
+    'low_balance': {
+        'en': 'Your liquid balance is {balance}, under your {floor} cushion. Worth a look before the next bill — the finance coach and a specialist are one tap away.',
+        'es': 'Tu saldo líquido es {balance}, por debajo de tu colchón de {floor}. Vale la pena mirarlo antes de la próxima factura: el coach financiero y un especialista están a un toque.',
+        'fr': 'Votre solde liquide est de {balance}, sous votre coussin de {floor}. Un coup d\'œil s\'impose avant la prochaine facture — le coach financier et un spécialiste sont à un geste.',
+        'de': 'Dein liquides Guthaben liegt bei {balance}, unter deinem Polster von {floor}. Ein Blick lohnt sich vor der nächsten Rechnung — der Finanz-Coach und ein Spezialist sind einen Tipp entfernt.',
+        'pt': 'O seu saldo líquido é {balance}, abaixo da sua almofada de {floor}. Vale a pena olhar antes da próxima conta — o coach financeiro e um especialista estão a um toque.',
+        'it': 'Il tuo saldo liquido è {balance}, sotto il tuo cuscinetto di {floor}. Vale un\'occhiata prima della prossima bolletta — il coach finanziario e uno specialista sono a un tocco.',
+        'ja': '流動残高は{balance}で、クッションの{floor}を下回っています。次の請求の前に確認を — ファイナンスコーチと専門家がワンタップで呼べます。',
+        'zh': '你的流动余额为 {balance}，低于 {floor} 的缓冲线。下一笔账单前值得看一眼——理财教练和专家一键可达。',
+        'hi': 'आपकी तरल शेष राशि {balance} है, जो आपके {floor} के कुशन से कम है। अगले बिल से पहले देख लेना ठीक रहेगा — वित्त कोच और विशेषज्ञ एक टैप की दूरी पर हैं।',
+        'ar': 'رصيدك السائل {balance}، وهو دون وسادتك البالغة {floor}. يستحق نظرة قبل الفاتورة القادمة — مدرب المال والاختصاصي على بُعد لمسة.',
+    },
+    'goal_reached': {
+        'en': 'You reached your savings goal of {goal}. Set the next one, or talk to the coach about what this cushion makes possible.',
+        'es': 'Alcanzaste tu meta de ahorro de {goal}. Fija la siguiente, o habla con el coach sobre lo que este colchón hace posible.',
+        'fr': 'Vous avez atteint votre objectif d\'épargne de {goal}. Fixez le prochain, ou parlez au coach de ce que ce coussin rend possible.',
+        'de': 'Du hast dein Sparziel von {goal} erreicht. Setz dir das nächste — oder sprich mit dem Coach darüber, was dieses Polster möglich macht.',
+        'pt': 'Atingiu a sua meta de poupança de {goal}. Defina a próxima, ou fale com o coach sobre o que esta almofada torna possível.',
+        'it': 'Hai raggiunto il tuo obiettivo di risparmio di {goal}. Fissane un altro, o parla con il coach di cosa rende possibile questo cuscinetto.',
+        'ja': '貯蓄目標の{goal}に到達しました。次の目標を立てるか、この余裕で何ができるかコーチに相談してみましょう。',
+        'zh': '你达成了 {goal} 的储蓄目标。设定下一个，或和教练聊聊这份缓冲能带来什么。',
+        'hi': 'आपने {goal} का बचत लक्ष्य पा लिया। अगला लक्ष्य तय करें, या कोच से बात करें कि यह कुशन क्या संभव बनाता है।',
+        'ar': 'بلغت هدف ادخارك البالغ {goal}. حدّد الهدف التالي، أو تحدث مع المدرب عمّا تتيحه هذه الوسادة.',
+    },
+    'order_rationale': {
+        'en': 'Liquid cash exceeds your cushion by {excess} (cushion {cushion}); proposing the excess into your first mandated asset class, within your caps.',
+        'es': 'El efectivo líquido supera tu colchón en {excess} (colchón {cushion}); se propone invertir el exceso en tu primera clase de activo autorizada, dentro de tus límites.',
+        'fr': 'Les liquidités dépassent votre coussin de {excess} (coussin {cushion}) ; proposition de placer l\'excédent dans votre première classe d\'actifs mandatée, dans vos plafonds.',
+        'de': 'Die liquiden Mittel übersteigen dein Polster um {excess} (Polster {cushion}); vorgeschlagen wird, den Überschuss in deine erste mandatierte Anlageklasse zu legen, innerhalb deiner Obergrenzen.',
+        'pt': 'O dinheiro líquido excede a sua almofada em {excess} (almofada {cushion}); propõe-se investir o excedente na sua primeira classe de ativos mandatada, dentro dos seus limites.',
+        'it': 'La liquidità supera il tuo cuscinetto di {excess} (cuscinetto {cushion}); si propone di destinare l\'eccedenza alla prima classe di attivi del mandato, entro i tuoi tetti.',
+        'ja': '流動資金がクッションを{excess}上回っています（クッション{cushion}）。超過分を委任された最初の資産クラスへ、上限内で回すことを提案します。',
+        'zh': '流动资金超出缓冲 {excess}（缓冲为 {cushion}）；建议在你的上限内，将超出部分投入你授权的第一个资产类别。',
+        'hi': 'तरल नकदी आपके कुशन से {excess} अधिक है (कुशन {cushion}); अतिरिक्त राशि को आपकी सीमाओं के भीतर, आपके पहले अधिदिष्ट परिसंपत्ति वर्ग में लगाने का प्रस्ताव है।',
+        'ar': 'النقد السائل يتجاوز وسادتك بمقدار {excess} (الوسادة {cushion})؛ يُقترح توجيه الفائض إلى فئة الأصول الأولى في تفويضك، ضمن حدودك.',
+    },
+    'custody_note': {
+        'en': 'Account and routing numbers are sealed in your vault and never shown here; JIM keeps only the institution, the kind, and the last four digits. Orders are proposals — nothing executes without a brokerage connector, and the mandate is yours to revoke at any time.',
+        'es': 'Los números de cuenta y de ruta están sellados en tu bóveda y nunca se muestran aquí; JIM guarda solo la institución, el tipo y los últimos cuatro dígitos. Las órdenes son propuestas: nada se ejecuta sin un conector de corretaje, y el mandato es tuyo y puedes revocarlo en cualquier momento.',
+        'fr': 'Les numéros de compte et d\'acheminement sont scellés dans votre coffre et jamais affichés ici ; JIM ne conserve que l\'établissement, le type et les quatre derniers chiffres. Les ordres sont des propositions — rien ne s\'exécute sans connecteur de courtage, et le mandat vous appartient, révocable à tout moment.',
+        'de': 'Konto- und Routingnummern liegen versiegelt in deinem Tresor und werden hier nie gezeigt; JIM behält nur Institut, Art und die letzten vier Ziffern. Aufträge sind Vorschläge — ohne Broker-Anbindung wird nichts ausgeführt, und das Mandat gehört dir und ist jederzeit widerrufbar.',
+        'pt': 'Os números de conta e de encaminhamento estão selados no seu cofre e nunca aparecem aqui; o JIM guarda apenas a instituição, o tipo e os últimos quatro dígitos. As ordens são propostas — nada é executado sem um conector de corretagem, e o mandato é seu, revogável a qualquer momento.',
+        'it': 'I numeri di conto e di instradamento sono sigillati nel tuo caveau e non compaiono mai qui; JIM conserva solo l\'istituto, il tipo e le ultime quattro cifre. Gli ordini sono proposte — nulla viene eseguito senza un connettore di intermediazione, e il mandato è tuo, revocabile in qualsiasi momento.',
+        'ja': '口座番号とルーティング番号はあなたの金庫に封印され、ここには表示されません。JIMが保持するのは機関名・種類・下4桁のみです。注文は提案であり、証券コネクタなしには何も執行されません。委任はいつでも取り消せます。',
+        'zh': '账号与路由号封存在你的保险库中，永不在此显示；JIM 只保留机构、类型和末四位。指令均为提案——没有券商连接器不会执行任何操作，且授权随时可由你撤销。',
+        'hi': 'खाता और राउटिंग नंबर आपकी तिजोरी में सीलबंद हैं और यहाँ कभी नहीं दिखते; JIM केवल संस्था, प्रकार और अंतिम चार अंक रखता है। आदेश प्रस्ताव हैं — ब्रोकरेज कनेक्टर के बिना कुछ भी निष्पादित नहीं होता, और अधिदेश आपका है, किसी भी समय रद्द किया जा सकता है।',
+        'ar': 'أرقام الحساب والتوجيه مختومة في خزانتك ولا تُعرض هنا أبدًا؛ لا يحتفظ JIM إلا بالمؤسسة والنوع وآخر أربعة أرقام. الأوامر مقترحات — لا يُنفَّذ شيء دون موصل وساطة، والتفويض ملكك وقابل للإلغاء في أي وقت.',
+    },
+}
+
+_MONEY_LABELS: dict[str, dict[str, str]] = {
+    'title': {'en': 'Money', 'es': 'Dinero', 'fr': 'Argent', 'de': 'Geld', 'pt': 'Dinheiro', 'it': 'Denaro', 'ja': 'マネー', 'zh': '财务', 'hi': 'धन', 'ar': 'المال'},
+    'accounts': {'en': 'Accounts', 'es': 'Cuentas', 'fr': 'Comptes', 'de': 'Konten', 'pt': 'Contas', 'it': 'Conti', 'ja': '口座', 'zh': '账户', 'hi': 'खाते', 'ar': 'الحسابات'},
+    'add_account': {'en': 'Add an account', 'es': 'Añadir una cuenta', 'fr': 'Ajouter un compte', 'de': 'Konto hinzufügen', 'pt': 'Adicionar uma conta', 'it': 'Aggiungi un conto', 'ja': '口座を追加', 'zh': '添加账户', 'hi': 'खाता जोड़ें', 'ar': 'أضف حسابًا'},
+    'institution': {'en': 'Institution', 'es': 'Institución', 'fr': 'Établissement', 'de': 'Institut', 'pt': 'Instituição', 'it': 'Istituto', 'ja': '金融機関', 'zh': '机构', 'hi': 'संस्था', 'ar': 'المؤسسة'},
+    'account_number': {'en': 'Account number', 'es': 'Número de cuenta', 'fr': 'Numéro de compte', 'de': 'Kontonummer', 'pt': 'Número de conta', 'it': 'Numero di conto', 'ja': '口座番号', 'zh': '账号', 'hi': 'खाता संख्या', 'ar': 'رقم الحساب'},
+    'routing_number': {'en': 'Routing number', 'es': 'Número de ruta', 'fr': 'Numéro d\'acheminement', 'de': 'Routingnummer', 'pt': 'Número de encaminhamento', 'it': 'Numero di instradamento', 'ja': 'ルーティング番号', 'zh': '路由号', 'hi': 'राउटिंग नंबर', 'ar': 'رقم التوجيه'},
+    'balance': {'en': 'Balance', 'es': 'Saldo', 'fr': 'Solde', 'de': 'Saldo', 'pt': 'Saldo', 'it': 'Saldo', 'ja': '残高', 'zh': '余额', 'hi': 'शेष राशि', 'ar': 'الرصيد'},
+    'record_balance': {'en': 'Record a balance', 'es': 'Registrar un saldo', 'fr': 'Enregistrer un solde', 'de': 'Saldo erfassen', 'pt': 'Registar um saldo', 'it': 'Registra un saldo', 'ja': '残高を記録', 'zh': '记录余额', 'hi': 'शेष दर्ज करें', 'ar': 'سجّل رصيدًا'},
+    'savings_goal': {'en': 'Savings goal', 'es': 'Meta de ahorro', 'fr': 'Objectif d\'épargne', 'de': 'Sparziel', 'pt': 'Meta de poupança', 'it': 'Obiettivo di risparmio', 'ja': '貯蓄目標', 'zh': '储蓄目标', 'hi': 'बचत लक्ष्य', 'ar': 'هدف الادخار'},
+    'set_goal': {'en': 'Set the goal', 'es': 'Fijar la meta', 'fr': 'Fixer l\'objectif', 'de': 'Ziel festlegen', 'pt': 'Definir a meta', 'it': 'Fissa l\'obiettivo', 'ja': '目標を設定', 'zh': '设定目标', 'hi': 'लक्ष्य तय करें', 'ar': 'حدّد الهدف'},
+    'mandate': {'en': 'Investing mandate', 'es': 'Mandato de inversión', 'fr': 'Mandat d\'investissement', 'de': 'Anlagemandat', 'pt': 'Mandato de investimento', 'it': 'Mandato di investimento', 'ja': '投資委任', 'zh': '投资授权', 'hi': 'निवेश अधिदेश', 'ar': 'تفويض الاستثمار'},
+    'mandate_save': {'en': 'Write the mandate', 'es': 'Escribir el mandato', 'fr': 'Rédiger le mandat', 'de': 'Mandat festhalten', 'pt': 'Escrever o mandato', 'it': 'Scrivi il mandato', 'ja': '委任を記す', 'zh': '写下授权', 'hi': 'अधिदेश लिखें', 'ar': 'اكتب التفويض'},
+    'mandate_revoke': {'en': 'Revoke it', 'es': 'Revocarlo', 'fr': 'Le révoquer', 'de': 'Widerrufen', 'pt': 'Revogá-lo', 'it': 'Revocalo', 'ja': '取り消す', 'zh': '撤销', 'hi': 'रद्द करें', 'ar': 'ألغِه'},
+    'cap_per_order': {'en': 'Cap per order', 'es': 'Límite por orden', 'fr': 'Plafond par ordre', 'de': 'Limit pro Auftrag', 'pt': 'Limite por ordem', 'it': 'Tetto per ordine', 'ja': '注文ごとの上限', 'zh': '单笔上限', 'hi': 'प्रति आदेश सीमा', 'ar': 'الحد لكل أمر'},
+    'monthly_cap': {'en': 'Monthly cap', 'es': 'Límite mensual', 'fr': 'Plafond mensuel', 'de': 'Monatslimit', 'pt': 'Limite mensal', 'it': 'Tetto mensile', 'ja': '月間上限', 'zh': '每月上限', 'hi': 'मासिक सीमा', 'ar': 'الحد الشهري'},
+    'scope': {'en': 'Scope, in your own words', 'es': 'Alcance, con tus palabras', 'fr': 'Périmètre, avec vos mots', 'de': 'Umfang, in deinen Worten', 'pt': 'Âmbito, nas suas palavras', 'it': 'Ambito, con parole tue', 'ja': '範囲（自分の言葉で）', 'zh': '范围（用你自己的话）', 'hi': 'दायरा, आपके अपने शब्दों में', 'ar': 'النطاق، بكلماتك أنت'},
+    'orders': {'en': 'Proposed orders', 'es': 'Órdenes propuestas', 'fr': 'Ordres proposés', 'de': 'Vorgeschlagene Aufträge', 'pt': 'Ordens propostas', 'it': 'Ordini proposti', 'ja': '提案された注文', 'zh': '拟议指令', 'hi': 'प्रस्तावित आदेश', 'ar': 'الأوامر المقترحة'},
+    'warnings': {'en': 'Warnings', 'es': 'Avisos', 'fr': 'Alertes', 'de': 'Warnungen', 'pt': 'Avisos', 'it': 'Avvisi', 'ja': '警告', 'zh': '提醒', 'hi': 'चेतावनियाँ', 'ar': 'تنبيهات'},
+    'doors': {'en': 'Where help is', 'es': 'Dónde está la ayuda', 'fr': 'Où trouver de l\'aide', 'de': 'Wo Hilfe ist', 'pt': 'Onde está a ajuda', 'it': 'Dove trovare aiuto', 'ja': '助けの窓口', 'zh': '求助入口', 'hi': 'मदद कहाँ है', 'ar': 'أين المساعدة'},
+}
+
+
+def money_text(key: str, language: str) -> str:
+    row = _MONEY_TEXT[key]
+    return row.get(language) or row['en']
+
+
+def money_labels(language: str) -> dict[str, str]:
+    return {k: (row.get(language) or row['en'])
+            for k, row in _MONEY_LABELS.items()}

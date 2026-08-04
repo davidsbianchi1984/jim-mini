@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { t as tr, visitorLang } from "../l10n";
-import { api, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState,
+import { api, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState, type MoneyView,
          type AnonymityPosture, type CloudContribution, type PairInfo,
          type SeedReport, type VigilStatus,
          type WatchChannel } from "../api";
@@ -207,6 +207,7 @@ export function Settings() {
         )) : <p className="muted small">…</p>}
       </div>
 
+      <MoneyCard />
       <CloudContributionCard />
       <LocalityCard />
 
@@ -220,6 +221,152 @@ export function Settings() {
   );
 }
 
+
+// The money guardian. Every reader-facing word on this card — headings,
+// buttons, placeholders, the custody note, the warnings — arrives from
+// `GET /money/{id}` in the reader's language. This console has no
+// translation table of its own, and its English backlog is a ratchet that
+// only shrinks, so the server speaks and the card shows.
+function MoneyCard() {
+  const { session } = useSession();
+  const [view, setView] = useState<MoneyView | null>(null);
+  const [inst, setInst] = useState("");
+  const [kind, setKind] = useState("checking");
+  const [acct, setAcct] = useState("");
+  const [routing, setRouting] = useState("");
+  const [obsAccount, setObsAccount] = useState("");
+  const [obsBalance, setObsBalance] = useState("");
+  const [goal, setGoal] = useState("");
+  const [scope, setScope] = useState("");
+  const [capOrder, setCapOrder] = useState("");
+  const [capMonth, setCapMonth] = useState("");
+  const [said, setSaid] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const uid = session.userId, token = session.userToken;
+  function load() {
+    if (!uid || !token) return;
+    api.moneyView(uid, token).then(setView).catch(() => setView(null));
+  }
+  useEffect(load, [uid]);
+  if (!uid || !token || !view) return null;
+  const L = view.labels;
+
+  async function run(action: () => Promise<unknown>) {
+    setError(null); setSaid(null);
+    try { await action(); load(); }
+    catch (e) { setError((e as Error).message); }
+  }
+
+  return (
+    <div className="card">
+      <h3>{L.title}</h3>
+      <p className="muted small">{view.note}</p>
+      {error && <p className="error">{error}</p>}
+      {said && <p className="muted small">{said}</p>}
+
+      <h4>{L.accounts}</h4>
+      {view.accounts.map((a) => (
+        <p key={a.id} className="muted small">
+          {a.label} · {a.kind} · {a.institution}
+          {a.last4 ? ` ····${a.last4}` : ""}
+          {a.balance != null ? ` · ${L.balance}: ${a.balance}` : ""}
+        </p>
+      ))}
+      <div className="row">
+        <input placeholder={L.institution} value={inst}
+          onChange={(e) => setInst(e.target.value)} />
+        <select value={kind} onChange={(e) => setKind(e.target.value)}>
+          {["checking", "savings", "brokerage", "crypto"].map((k) => (
+            <option key={k} value={k}>{k}</option>
+          ))}
+        </select>
+        <input placeholder={L.account_number} value={acct}
+          onChange={(e) => setAcct(e.target.value)} />
+        <input placeholder={L.routing_number} value={routing}
+          onChange={(e) => setRouting(e.target.value)} />
+        <button disabled={!inst.trim()}
+          onClick={() => run(() => api.moneyAddAccount(uid, {
+            kind, institution: inst.trim(),
+            account_number: acct.trim() || undefined,
+            routing_number: routing.trim() || undefined }, token))}>
+          {L.add_account}
+        </button>
+      </div>
+
+      <h4>{L.record_balance}</h4>
+      <div className="row">
+        <select value={obsAccount}
+          onChange={(e) => setObsAccount(e.target.value)}>
+          <option value=""></option>
+          {view.accounts.map((a) => (
+            <option key={a.id} value={a.id}>{a.label}</option>
+          ))}
+        </select>
+        <input placeholder={L.balance} value={obsBalance}
+          onChange={(e) => setObsBalance(e.target.value)} />
+        <button disabled={!obsAccount || !obsBalance.trim()}
+          onClick={() => run(async () => {
+            const out = await api.moneyObserve(uid, {
+              account_id: obsAccount,
+              balance: Number(obsBalance) }, token);
+            setSaid(out.warnings.map((w) => w.message).join(" ") || null);
+          })}>
+          {L.record_balance}
+        </button>
+      </div>
+
+      <h4>{L.savings_goal}</h4>
+      <div className="row">
+        <input placeholder={L.savings_goal} value={goal}
+          onChange={(e) => setGoal(e.target.value)} />
+        <button disabled={!goal.trim()}
+          onClick={() => run(() => api.moneySetSavings(uid,
+            { goal: Number(goal) }, token))}>
+          {L.set_goal}
+        </button>
+        {view.savings && (
+          <span className="muted small">{view.savings.goal}</span>
+        )}
+      </div>
+
+      <h4>{L.mandate}</h4>
+      <div className="row">
+        <input placeholder={L.cap_per_order} value={capOrder}
+          onChange={(e) => setCapOrder(e.target.value)} />
+        <input placeholder={L.monthly_cap} value={capMonth}
+          onChange={(e) => setCapMonth(e.target.value)} />
+        <input placeholder={L.scope} value={scope}
+          onChange={(e) => setScope(e.target.value)} />
+        <button disabled={!scope.trim() || !capOrder.trim() || !capMonth.trim()}
+          onClick={() => run(() => api.moneySetMandate(uid, {
+            enabled: true, cap_per_order: Number(capOrder),
+            monthly_cap: Number(capMonth),
+            asset_classes: ["index_funds"], scope: scope.trim() }, token))}>
+          {L.mandate_save}
+        </button>
+        {view.mandate?.enabled && (
+          <button className="danger"
+            onClick={() => run(() => api.moneySetMandate(uid,
+              { enabled: false }, token))}>
+            {L.mandate_revoke}
+          </button>
+        )}
+      </div>
+      {view.orders.length > 0 && (
+        <>
+          <h4>{L.orders}</h4>
+          {view.orders.map((o) => (
+            <p key={o.id} className="muted small">
+              {o.asset_class} · {o.amount} · {o.status}
+              {o.rationale ? ` — ${o.rationale}` : ""}
+            </p>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
 
 // What has left this device for the shared model, and the button that stops
 // it. The backend has answered both questions for versions; nothing asked.

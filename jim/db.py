@@ -462,6 +462,60 @@ CREATE TABLE IF NOT EXISTS budget_spend (
     created_at TEXT NOT NULL
 );
 
+-- The money guardian (jim/money.py). Credentials never land in these
+-- tables: `vault_key` is the PDI address of the sealed numbers, and the
+-- only digits kept locally are the last four, which is what a screen may
+-- show. A mandate row is the written handover — caps, classes, scope —
+-- and an order row is a *proposal* under it, logged whether or not a
+-- brokerage connector ever exists to execute it.
+CREATE TABLE IF NOT EXISTS money_accounts (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    kind        TEXT NOT NULL,            -- checking | savings | brokerage | crypto
+    institution TEXT NOT NULL,
+    label       TEXT NOT NULL,
+    last4       TEXT,
+    vault_key   TEXT,                     -- where the numbers actually live
+    created_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS money_balances (
+    id          TEXT PRIMARY KEY,
+    account_id  TEXT NOT NULL REFERENCES money_accounts(id),
+    balance     REAL NOT NULL,
+    note        TEXT,
+    observed_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS savings_goals (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    goal       REAL NOT NULL,
+    note       TEXT,
+    set_at     TEXT NOT NULL,
+    reached_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS money_mandates (
+    user_id       TEXT PRIMARY KEY REFERENCES users(id),
+    enabled       INTEGER NOT NULL DEFAULT 0,
+    cap_per_order REAL NOT NULL DEFAULT 0,
+    monthly_cap   REAL NOT NULL DEFAULT 0,
+    asset_classes TEXT NOT NULL DEFAULT '[]',
+    scope         TEXT NOT NULL DEFAULT '',
+    updated_at    TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS money_orders (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    asset_class TEXT NOT NULL,
+    amount      REAL NOT NULL,
+    month       TEXT NOT NULL,            -- YYYY-MM
+    status      TEXT NOT NULL,            -- proposed (no connector executes)
+    rationale   TEXT,
+    created_at  TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS context_events (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),
