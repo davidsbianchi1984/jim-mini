@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, type CommunityView, type ShoppingView } from "../api";
+import { api, type CircleHomepage, type CircleMessage, type CircleView,
+         type CommunityView, type ShoppingView } from "../api";
 import { useSession } from "../store";
 
 /**
@@ -109,6 +110,7 @@ export function Community() {
         </div>
       </>)}
       <ShoppingShelf />
+      <CircleCard />
     </div>
   );
 }
@@ -194,6 +196,210 @@ function ShoppingShelf() {
           )}
         </div>
       ))}
+      {note && <div className="muted small">{note}</div>}
+    </div>
+  );
+}
+
+// Your circle: the people on this deployment you let in — contacts by
+// mutual invitation, messages that never leave the house, the switches
+// that govern both, and a homepage sandbox like the old MySpace. Every
+// visible string comes from the view's `labels`, composed server-side in
+// the reader's language, for the same reason the shelf above does it.
+function CircleCard() {
+  const { session } = useSession();
+  const [view, setView] = useState<CircleView | null>(null);
+  const [inviteId, setInviteId] = useState("");
+  const [withId, setWithId] = useState("");
+  const [thread, setThread] = useState<CircleMessage[]>([]);
+  const [draft, setDraft] = useState("");
+  const [headline, setHeadline] = useState("");
+  const [about, setAbout] = useState("");
+  const [bg, setBg] = useState("#10251c");
+  const [accent, setAccent] = useState("#2fbf8f");
+  const [lookId, setLookId] = useState("");
+  const [looking, setLooking] = useState<CircleHomepage | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+
+  async function load() {
+    if (!session.userId || !session.userToken) return;
+    try {
+      const v = await api.circleView(session.userId, session.userToken);
+      setView(v);
+      setHeadline(v.homepage.headline); setAbout(v.homepage.about);
+      setBg(v.homepage.theme.bg); setAccent(v.homepage.theme.accent);
+    } catch { /* the card stays closed */ }
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [session.userId]);
+
+  if (!view) return null;
+  const L = view.labels;
+
+  const act = (op: () => Promise<unknown>) => async () => {
+    setNote(null);
+    try { await op(); await load(); }
+    catch (e) { setNote((e as Error).message); }
+  };
+
+  const invite = act(() => api.circleInvite(session.userId!,
+    inviteId.trim(), session.userToken!));
+  const save = act(() => api.circleEditHomepage(session.userId!,
+    { headline, about, theme: { bg, accent } }, session.userToken!));
+  const flip = (feature: string, enabled: boolean) => act(() =>
+    api.circleFeature(session.userId!, { feature, enabled },
+      session.userToken!))();
+
+  async function open(other: string) {
+    setWithId(other); setNote(null);
+    try {
+      const box = await api.circleMessages(session.userId!,
+        session.userToken!, other);
+      setThread(box.messages ?? []);
+    } catch (e) { setNote((e as Error).message); }
+  }
+
+  async function send() {
+    if (!withId.trim() || !draft.trim()) return;
+    setNote(null);
+    try {
+      await api.circleSend(session.userId!,
+        { to: withId.trim(), body: draft }, session.userToken!);
+      setDraft("");
+      await open(withId.trim());
+      await load();
+    } catch (e) { setNote((e as Error).message); }
+  }
+
+  const look = act(async () =>
+    setLooking(await api.circleHomepage(session.userId!, lookId.trim(),
+      session.userToken!)));
+
+  const leave = (other: string) => act(() => api.circleLeave(
+    session.userId!, other, session.userToken!))();
+
+  return (
+    <div className="card">
+      <h3>{L.title}</h3>
+      <p className="muted small">{view.note}</p>
+
+      {view.circle.contacts.map((p) => (
+        <div key={p.user_id} className="row"
+             style={{ justifyContent: "space-between" }}>
+          <span>{p.display_name || p.user_id}</span>
+          <span>
+            <button onClick={() => open(p.user_id)}>{L.open}</button>{" "}
+            <button onClick={() => leave(p.user_id)}>{L.leave}</button>
+          </span>
+        </div>
+      ))}
+      {view.circle.invited_me.map((p) => (
+        <div key={p.user_id} className="row"
+             style={{ justifyContent: "space-between" }}>
+          <span>{p.display_name || p.user_id} ·{" "}
+            <span className="muted small">{L.invited_me}</span></span>
+          <button onClick={act(() => api.circleInvite(session.userId!,
+            p.user_id, session.userToken!))}>{L.invite}</button>
+        </div>
+      ))}
+      {view.circle.awaiting.map((p) => (
+        <div key={p.user_id} className="muted small">
+          {p.display_name || p.user_id} · {L.awaiting}</div>
+      ))}
+      <div className="row">
+        <label>{L.invite}
+          <input value={inviteId}
+                 onChange={(e) => setInviteId(e.target.value)} />
+        </label>
+        <button disabled={!inviteId.trim()} onClick={invite}>
+          {L.invite}</button>
+      </div>
+
+      <h3>{L.messages}</h3>
+      {view.threads.map((t) => (
+        <div key={t.other_id} className="row"
+             style={{ justifyContent: "space-between" }}>
+          <span>{t.other_name || t.other_id} ·{" "}
+            <span className="muted small">{t.messages}</span></span>
+          <button onClick={() => open(t.other_id)}>{L.open}</button>
+        </div>
+      ))}
+      <div className="row">
+        <label>{L.to}
+          <input value={withId} onChange={(e) => setWithId(e.target.value)} />
+        </label>
+      </div>
+      {thread.map((m) => (
+        <div key={m.id} className="muted small">
+          {m.sender_id === session.userId ? `→ ${m.body}` : `← ${m.body}`}
+        </div>
+      ))}
+      <div className="voice-row">
+        <input value={draft} onChange={(e) => setDraft(e.target.value)}
+               onKeyDown={(e) => e.key === "Enter" && send()} />
+        <button disabled={!draft.trim() || !withId.trim()}
+                onClick={send}>{L.send}</button>
+      </div>
+
+      <h3>{L.switches}</h3>
+      {Object.entries(view.features).map(([feature, enabled]) => (
+        <label key={feature} className="row">
+          <input type="checkbox" checked={enabled}
+                 onChange={(e) => flip(feature, e.target.checked)} />
+          {feature === "messaging" ? L.sw_messaging : L.sw_homepage}
+        </label>
+      ))}
+
+      <h3>{L.page}</h3>
+      <div style={{ background: bg, borderRadius: 8, padding: 12,
+                    borderLeft: `4px solid ${accent}` }}>
+        <label>{L.headline}
+          <input value={headline}
+                 onChange={(e) => setHeadline(e.target.value)} />
+        </label>
+        <label>{L.about}
+          <textarea rows={3} value={about}
+                    onChange={(e) => setAbout(e.target.value)} />
+        </label>
+        <div className="row">
+          <label>{L.background}
+            <input value={bg} onChange={(e) => setBg(e.target.value)} />
+          </label>
+          <label>{L.accent}
+            <input value={accent}
+                   onChange={(e) => setAccent(e.target.value)} />
+          </label>
+        </div>
+        <button className="primary" onClick={save}>{L.save}</button>
+      </div>
+
+      <h3>{L.visit}</h3>
+      <div className="row">
+        <label>{L.visit_id}
+          <input value={lookId} onChange={(e) => setLookId(e.target.value)} />
+        </label>
+        <button disabled={!lookId.trim()} onClick={look}>{L.open}</button>
+      </div>
+      {looking && (
+        <div style={{ background: looking.theme.bg, borderRadius: 8,
+                      padding: 12,
+                      borderLeft: `4px solid ${looking.theme.accent}` }}>
+          <h3 style={{ color: looking.theme.accent }}>
+            {looking.display_name} — {looking.headline}</h3>
+          <p style={{ whiteSpace: "pre-wrap" }}>{looking.about}</p>
+          <ul className="refs">
+            {looking.links.map((l) => (
+              <li key={l.url}><a href={l.url} target="_blank"
+                                 rel="noreferrer">{l.label}</a></li>
+            ))}
+          </ul>
+          {looking.top_friends.length > 0 && (
+            <p className="muted small">{L.top}:{" "}
+              {looking.top_friends.map((t) => t.display_name)
+                .join(" · ")}</p>
+          )}
+        </div>
+      )}
+
       {note && <div className="muted small">{note}</div>}
     </div>
   );

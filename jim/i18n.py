@@ -2066,6 +2066,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': 'उपयोगकर्ता नहीं मिला',
         'ar': 'لم يتم العثور على المستخدم',
     },
+    'this homepage is not shared': {
+        'es': 'esta página personal no está compartida',
+        'fr': "cette page personnelle n'est pas partagée",
+        'de': 'diese Seite wird nicht geteilt',
+        'pt': 'esta página pessoal não está partilhada',
+        'it': 'questa pagina personale non è condivisa',
+        'ja': 'このホームページは共有されていません',
+        'zh': '这个主页未被分享',
+        'hi': 'यह पन्ना साझा नहीं किया गया है',
+        'ar': 'هذه الصفحة غير مُشارَكة',
+    },
 
     # --- the medication cabinet ------------------------------------------
     "a medication has a name and a dose — your words are fine ('the little "
@@ -2498,6 +2509,14 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'qrme_order_id': {'en': 'Order', 'es': 'Pedido', 'fr': 'Commande', 'de': 'Bestellung', 'pt': 'Pedido', 'it': 'Ordine', 'ja': '注文', 'zh': '订单', 'hi': 'ऑर्डर', 'ar': 'الطلب'},
     'quantity': {'en': 'Quantity', 'es': 'Cantidad', 'fr': 'Quantité', 'de': 'Menge', 'pt': 'Quantidade', 'it': 'Quantità', 'ja': '数量', 'zh': '数量', 'hi': 'मात्रा', 'ar': 'الكمية'},
     'shop_id': {'en': 'Shop', 'es': 'Tienda', 'fr': 'Boutique', 'de': 'Laden', 'pt': 'Loja', 'it': 'Negozio', 'ja': 'ショップ', 'zh': '商店', 'hi': 'दुकान', 'ar': 'المتجر'},
+    'feature': {'en': 'Feature', 'es': 'Función', 'fr': 'Fonction', 'de': 'Funktion', 'pt': 'Função', 'it': 'Funzione', 'ja': '機能', 'zh': '功能', 'hi': 'सुविधा', 'ar': 'الميزة'},
+    'other_id': {'en': 'Who', 'es': 'Quién', 'fr': 'Qui', 'de': 'Wer', 'pt': 'Quem', 'it': 'Chi', 'ja': '相手', 'zh': '对方', 'hi': 'कौन', 'ar': 'من'},
+    'body': {'en': 'Message', 'es': 'Mensaje', 'fr': 'Message', 'de': 'Nachricht', 'pt': 'Mensagem', 'it': 'Messaggio', 'ja': 'メッセージ', 'zh': '消息', 'hi': 'संदेश', 'ar': 'الرسالة'},
+    'headline': {'en': 'Headline', 'es': 'Titular', 'fr': 'Accroche', 'de': 'Überschrift', 'pt': 'Título', 'it': 'Titolo', 'ja': '見出し', 'zh': '标题', 'hi': 'शीर्षक', 'ar': 'العنوان'},
+    'about': {'en': 'About', 'es': 'Acerca de', 'fr': 'À propos', 'de': 'Über', 'pt': 'Sobre', 'it': 'Info', 'ja': '自己紹介', 'zh': '关于', 'hi': 'परिचय', 'ar': 'نبذة'},
+    'theme': {'en': 'Theme', 'es': 'Tema', 'fr': 'Thème', 'de': 'Design', 'pt': 'Tema', 'it': 'Tema', 'ja': 'テーマ', 'zh': '主题', 'hi': 'थीम', 'ar': 'السمة'},
+    'links': {'en': 'Links', 'es': 'Enlaces', 'fr': 'Liens', 'de': 'Links', 'pt': 'Ligações', 'it': 'Collegamenti', 'ja': 'リンク', 'zh': '链接', 'hi': 'लिंक', 'ar': 'الروابط'},
+    'top_friends': {'en': 'Top friends', 'es': 'Mejores amigos', 'fr': 'Meilleurs amis', 'de': 'Beste Freunde', 'pt': 'Melhores amigos', 'it': 'Migliori amici', 'ja': 'トップフレンド', 'zh': '挚友', 'hi': 'खास दोस्त', 'ar': 'أفضل الأصدقاء'},
     'account_id': {'en': 'Account', 'es': 'Cuenta', 'fr': 'Compte', 'de': 'Konto', 'pt': 'Conta', 'it': 'Conto', 'ja': '口座', 'zh': '账户', 'hi': 'खाता', 'ar': 'الحساب'},
     'account_number': {'en': 'Account number', 'es': 'Número de cuenta', 'fr': 'Numéro de compte', 'de': 'Kontonummer', 'pt': 'Número de conta', 'it': 'Numero di conto', 'ja': '口座番号', 'zh': '账号', 'hi': 'खाता संख्या', 'ar': 'رقم الحساب'},
     'api_key': {'en': 'API key', 'es': 'Clave API', 'fr': 'Clé API', 'de': 'API-Schlüssel', 'pt': 'Chave API', 'it': 'Chiave API', 'ja': 'APIキー', 'zh': 'API 密钥', 'hi': 'API कुंजी', 'ar': 'مفتاح API'},
@@ -2871,3 +2890,44 @@ def money_text(key: str, language: str) -> str:
 def money_labels(language: str) -> dict[str, str]:
     return {k: (row.get(language) or row['en'])
             for k, row in _MONEY_LABELS.items()}
+
+
+_CIRCLE_TEXT: dict[str, dict[str, str]] = {
+    'kept_here': {'en': 'Your circle lives on this deployment alone — invitations, messages and pages never leave it.', 'es': 'Tu círculo vive solo en esta instalación — las invitaciones, los mensajes y las páginas nunca salen de ella.', 'fr': "Votre cercle vit uniquement dans cette installation — les invitations, les messages et les pages n'en sortent jamais.", 'de': 'Dein Kreis lebt allein in dieser Installation — Einladungen, Nachrichten und Seiten verlassen sie nie.', 'pt': 'O seu círculo vive apenas nesta instalação — os convites, as mensagens e as páginas nunca saem dela.', 'it': 'La tua cerchia vive solo in questa installazione — inviti, messaggi e pagine non la lasciano mai.', 'ja': 'あなたのサークルはこの環境の中だけにあります — 招待もメッセージもページも外へ出ることはありません。', 'zh': '你的圈子只存在于这套部署中 — 邀请、消息和主页永远不会离开它。', 'hi': 'आपका दायरा केवल इसी इंस्टॉलेशन में रहता है — निमंत्रण, संदेश और पन्ने इससे बाहर कभी नहीं जाते।', 'ar': 'دائرتك تعيش في هذا التثبيت وحده — الدعوات والرسائل والصفحات لا تغادره أبدًا.'},
+}
+
+_CIRCLE_LABELS: dict[str, dict[str, str]] = {
+    'title': {'en': 'Your circle', 'es': 'Tu círculo', 'fr': 'Votre cercle', 'de': 'Dein Kreis', 'pt': 'O seu círculo', 'it': 'La tua cerchia', 'ja': 'あなたのサークル', 'zh': '你的圈子', 'hi': 'आपका दायरा', 'ar': 'دائرتك'},
+    'contacts': {'en': 'Contacts', 'es': 'Contactos', 'fr': 'Contacts', 'de': 'Kontakte', 'pt': 'Contactos', 'it': 'Contatti', 'ja': '連絡先', 'zh': '联系人', 'hi': 'संपर्क', 'ar': 'جهات الاتصال'},
+    'invited_me': {'en': 'Invited you', 'es': 'Te invitaron', 'fr': 'Vous ont invité', 'de': 'Haben dich eingeladen', 'pt': 'Convidaram-no', 'it': 'Ti hanno invitato', 'ja': '招待されています', 'zh': '邀请了你', 'hi': 'आपको आमंत्रित किया', 'ar': 'دعوك'},
+    'awaiting': {'en': 'Awaiting reply', 'es': 'Esperando respuesta', 'fr': 'En attente', 'de': 'Wartet auf Antwort', 'pt': 'A aguardar resposta', 'it': 'In attesa', 'ja': '返事待ち', 'zh': '等待回应', 'hi': 'प्रतीक्षा में', 'ar': 'بانتظار الرد'},
+    'invite': {'en': 'Invite', 'es': 'Invitar', 'fr': 'Inviter', 'de': 'Einladen', 'pt': 'Convidar', 'it': 'Invita', 'ja': '招待', 'zh': '邀请', 'hi': 'आमंत्रित करें', 'ar': 'دعوة'},
+    'leave': {'en': 'Leave', 'es': 'Salir', 'fr': 'Quitter', 'de': 'Verlassen', 'pt': 'Sair', 'it': 'Esci', 'ja': '外れる', 'zh': '退出', 'hi': 'छोड़ें', 'ar': 'مغادرة'},
+    'messages': {'en': 'Messages', 'es': 'Mensajes', 'fr': 'Messages', 'de': 'Nachrichten', 'pt': 'Mensagens', 'it': 'Messaggi', 'ja': 'メッセージ', 'zh': '消息', 'hi': 'संदेश', 'ar': 'الرسائل'},
+    'to': {'en': 'To', 'es': 'Para', 'fr': 'À', 'de': 'An', 'pt': 'Para', 'it': 'A', 'ja': '宛先', 'zh': '发给', 'hi': 'किसे', 'ar': 'إلى'},
+    'send': {'en': 'Send', 'es': 'Enviar', 'fr': 'Envoyer', 'de': 'Senden', 'pt': 'Enviar', 'it': 'Invia', 'ja': '送信', 'zh': '发送', 'hi': 'भेजें', 'ar': 'إرسال'},
+    'open': {'en': 'Open', 'es': 'Abrir', 'fr': 'Ouvrir', 'de': 'Öffnen', 'pt': 'Abrir', 'it': 'Apri', 'ja': '開く', 'zh': '打开', 'hi': 'खोलें', 'ar': 'فتح'},
+    'page': {'en': 'Your page', 'es': 'Tu página', 'fr': 'Votre page', 'de': 'Deine Seite', 'pt': 'A sua página', 'it': 'La tua pagina', 'ja': 'あなたのページ', 'zh': '你的主页', 'hi': 'आपका पन्ना', 'ar': 'صفحتك'},
+    'headline': {'en': 'Headline', 'es': 'Titular', 'fr': 'Accroche', 'de': 'Überschrift', 'pt': 'Título', 'it': 'Titolo', 'ja': '見出し', 'zh': '标题', 'hi': 'शीर्षक', 'ar': 'العنوان'},
+    'about': {'en': 'About you', 'es': 'Sobre ti', 'fr': 'À propos de vous', 'de': 'Über dich', 'pt': 'Sobre si', 'it': 'Su di te', 'ja': '自己紹介', 'zh': '关于你', 'hi': 'आपके बारे में', 'ar': 'نبذة عنك'},
+    'background': {'en': 'Background', 'es': 'Fondo', 'fr': 'Fond', 'de': 'Hintergrund', 'pt': 'Fundo', 'it': 'Sfondo', 'ja': '背景', 'zh': '背景', 'hi': 'पृष्ठभूमि', 'ar': 'الخلفية'},
+    'accent': {'en': 'Accent', 'es': 'Acento', 'fr': 'Accent', 'de': 'Akzent', 'pt': 'Realce', 'it': 'Accento', 'ja': 'アクセント', 'zh': '强调色', 'hi': 'उभार रंग', 'ar': 'اللون المميز'},
+    'links': {'en': 'Links', 'es': 'Enlaces', 'fr': 'Liens', 'de': 'Links', 'pt': 'Ligações', 'it': 'Collegamenti', 'ja': 'リンク', 'zh': '链接', 'hi': 'लिंक', 'ar': 'الروابط'},
+    'top': {'en': 'Top friends', 'es': 'Mejores amigos', 'fr': 'Meilleurs amis', 'de': 'Beste Freunde', 'pt': 'Melhores amigos', 'it': 'Migliori amici', 'ja': 'トップフレンド', 'zh': '挚友', 'hi': 'खास दोस्त', 'ar': 'أفضل الأصدقاء'},
+    'save': {'en': 'Save', 'es': 'Guardar', 'fr': 'Enregistrer', 'de': 'Speichern', 'pt': 'Guardar', 'it': 'Salva', 'ja': '保存', 'zh': '保存', 'hi': 'सहेजें', 'ar': 'حفظ'},
+    'visit': {'en': 'Look at a page', 'es': 'Ver una página', 'fr': 'Voir une page', 'de': 'Eine Seite ansehen', 'pt': 'Ver uma página', 'it': 'Guarda una pagina', 'ja': 'ページを見る', 'zh': '看看别人的主页', 'hi': 'कोई पन्ना देखें', 'ar': 'عرض صفحة'},
+    'visit_id': {'en': 'Their id', 'es': 'Su id', 'fr': 'Leur id', 'de': 'Deren ID', 'pt': 'O id deles', 'it': 'Il loro id', 'ja': '相手のID', 'zh': '对方的ID', 'hi': 'उनकी ID', 'ar': 'معرّفهم'},
+    'switches': {'en': 'Your switches', 'es': 'Tus interruptores', 'fr': 'Vos interrupteurs', 'de': 'Deine Schalter', 'pt': 'Os seus interruptores', 'it': 'I tuoi interruttori', 'ja': 'スイッチ', 'zh': '你的开关', 'hi': 'आपके स्विच', 'ar': 'مفاتيحك'},
+    'sw_messaging': {'en': 'Messaging', 'es': 'Mensajería', 'fr': 'Messagerie', 'de': 'Nachrichten', 'pt': 'Mensagens', 'it': 'Messaggistica', 'ja': 'メッセージ機能', 'zh': '消息功能', 'hi': 'संदेश सुविधा', 'ar': 'المراسلة'},
+    'sw_homepage': {'en': 'Homepage', 'es': 'Página personal', 'fr': 'Page personnelle', 'de': 'Eigene Seite', 'pt': 'Página pessoal', 'it': 'Pagina personale', 'ja': 'ホームページ', 'zh': '个人主页', 'hi': 'निजी पन्ना', 'ar': 'الصفحة الشخصية'},
+}
+
+
+def circle_text(key: str, language: str) -> str:
+    row = _CIRCLE_TEXT[key]
+    return row.get(language) or row['en']
+
+
+def circle_labels(language: str) -> dict[str, str]:
+    return {k: (row.get(language) or row['en'])
+            for k, row in _CIRCLE_LABELS.items()}

@@ -1170,6 +1170,117 @@ object ApiClient {
                 JSONObject().put("qrme_order_id", qrmeOrderId), token)
     }
 
+    // ---- your circle: contacts, messages, switches, homepage ----------
+
+    private fun personOf(o: JSONObject) = CirclePerson(
+        o.getString("user_id"),
+        if (o.isNull("display_name")) null else o.optString("display_name"))
+
+    private fun circlePageOf(o: JSONObject): CircleHomepage {
+        val theme = o.getJSONObject("theme")
+        val links = mutableListOf<CircleLink>()
+        o.optJSONArray("links")?.let { a ->
+            for (i in 0 until a.length()) {
+                val l = a.getJSONObject(i)
+                links.add(CircleLink(l.optString("label"), l.optString("url")))
+            }
+        }
+        val tops = mutableListOf<CirclePerson>()
+        o.optJSONArray("top_friends")?.let { a ->
+            for (i in 0 until a.length()) tops.add(personOf(a.getJSONObject(i)))
+        }
+        return CircleHomepage(o.getString("user_id"),
+            if (o.isNull("display_name")) null else o.optString("display_name"),
+            o.optString("headline"), o.optString("about"),
+            theme.optString("bg"), theme.optString("accent"),
+            links, tops, o.optBoolean("editable"))
+    }
+
+    private fun messageOf(o: JSONObject) = CircleMessage(
+        o.getString("id"), o.getString("sender_id"),
+        o.optString("body"), o.optString("sent_at"))
+
+    suspend fun circleView(uid: String, token: String): CircleOverview {
+        val o = request("/circle/$uid", token = token)
+        val features = mutableMapOf<String, Boolean>()
+        o.optJSONObject("features")?.let { f ->
+            f.keys().forEach { k -> features[k] = f.getBoolean(k) }
+        }
+        fun people(key: String): List<CirclePerson> {
+            val out = mutableListOf<CirclePerson>()
+            o.optJSONObject("circle")?.optJSONArray(key)?.let { a ->
+                for (i in 0 until a.length()) out.add(personOf(a.getJSONObject(i)))
+            }
+            return out
+        }
+        val threads = mutableListOf<CircleThread>()
+        o.optJSONArray("threads")?.let { a ->
+            for (i in 0 until a.length()) {
+                val t = a.getJSONObject(i)
+                threads.add(CircleThread(t.getString("other_id"),
+                    if (t.isNull("other_name")) null else t.optString("other_name"),
+                    t.optInt("messages")))
+            }
+        }
+        val labels = mutableMapOf<String, String>()
+        o.optJSONObject("labels")?.let { l ->
+            l.keys().forEach { k -> labels[k] = l.getString(k) }
+        }
+        return CircleOverview(features, people("contacts"),
+            people("invited_me"), people("awaiting"), threads,
+            circlePageOf(o.getJSONObject("homepage")), labels,
+            o.optString("note"))
+    }
+
+    suspend fun circleSetFeature(uid: String, token: String, feature: String,
+                                 enabled: Boolean) {
+        request("/circle/$uid/features", "PUT",
+                JSONObject().put("feature", feature).put("enabled", enabled),
+                token)
+    }
+
+    suspend fun circleInvite(uid: String, token: String, otherId: String) {
+        request("/circle/$uid/contacts", "POST",
+                JSONObject().put("other_id", otherId), token)
+    }
+
+    suspend fun circleLeave(uid: String, token: String, otherId: String) {
+        request("/circle/$uid/contacts/$otherId", "DELETE", token = token)
+    }
+
+    suspend fun circleSend(uid: String, token: String, to: String,
+                           body: String) {
+        request("/circle/$uid/messages", "POST",
+                JSONObject().put("to", to).put("body", body), token)
+    }
+
+    suspend fun circleThread(uid: String, token: String,
+                             withId: String): List<CircleMessage> {
+        val o = request("/circle/$uid/messages?with_id=" +
+                        java.net.URLEncoder.encode(withId, "UTF-8"),
+                        token = token)
+        val out = mutableListOf<CircleMessage>()
+        o.optJSONArray("messages")?.let { a ->
+            for (i in 0 until a.length()) out.add(messageOf(a.getJSONObject(i)))
+        }
+        return out
+    }
+
+    suspend fun circleHomepage(uid: String, token: String,
+                               otherId: String): CircleHomepage {
+        return circlePageOf(request("/circle/$uid/homepage/$otherId",
+                                    token = token))
+    }
+
+    suspend fun circleEditHomepage(uid: String, token: String,
+                                   headline: String, about: String,
+                                   bg: String, accent: String): CircleHomepage {
+        return circlePageOf(request("/circle/$uid/homepage", "PUT",
+            JSONObject().put("headline", headline).put("about", about)
+                .put("theme", JSONObject().put("bg", bg).put("accent", accent)),
+            token))
+    }
+
     /** The handover, and the way back. Revoking is never plan-gated. */
     suspend fun moneySetMandate(uid: String, token: String, enabled: Boolean,
                                 capPerOrder: Double, monthlyCap: Double,
@@ -1216,6 +1327,32 @@ data class ShoppingOverview(val shops: List<TandemShop>,
                             val receipts: List<ShopReceipt>,
                             val labels: Map<String, String>,
                             val note: String)
+
+data class CirclePerson(val userId: String, val displayName: String?)
+
+data class CircleThread(val otherId: String, val otherName: String?,
+                        val messages: Int)
+
+data class CircleMessage(val id: String, val senderId: String,
+                         val body: String, val sentAt: String)
+
+data class CircleLink(val label: String, val url: String)
+
+data class CircleHomepage(val userId: String, val displayName: String?,
+                          val headline: String, val about: String,
+                          val bg: String, val accent: String,
+                          val links: List<CircleLink>,
+                          val topFriends: List<CirclePerson>,
+                          val editable: Boolean)
+
+data class CircleOverview(val features: Map<String, Boolean>,
+                          val contacts: List<CirclePerson>,
+                          val invitedMe: List<CirclePerson>,
+                          val awaiting: List<CirclePerson>,
+                          val threads: List<CircleThread>,
+                          val homepage: CircleHomepage,
+                          val labels: Map<String, String>,
+                          val note: String)
 
 data class MoneyOverview(val accounts: List<MoneyAccount>,
                          val savingsGoal: Double?,

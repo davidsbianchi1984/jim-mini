@@ -1355,3 +1355,122 @@ extension ApiClient {
                           body: ["qrme_order_id": qrmeOrderId], token: token)
     }
 }
+
+// MARK: - Your circle (contacts, messages, switches, homepage)
+
+struct CirclePersonRow: Decodable, Identifiable {
+    let user_id: String
+    let display_name: String?
+    var id: String { user_id }
+}
+
+struct CircleThreadRow: Decodable, Identifiable {
+    let other_id: String
+    let other_name: String?
+    let messages: Int
+    let last_at: String
+    var id: String { other_id }
+}
+
+struct CircleMessageRow: Decodable, Identifiable {
+    let id: String
+    let sender_id: String
+    let body: String
+    let sent_at: String
+}
+
+struct CircleLinkRow: Decodable {
+    let label: String
+    let url: String
+}
+
+struct CircleThemeRow: Decodable {
+    let bg: String
+    let accent: String
+}
+
+struct CircleHomepageRow: Decodable {
+    let user_id: String
+    let display_name: String?
+    let headline: String
+    let about: String
+    let theme: CircleThemeRow
+    let links: [CircleLinkRow]
+    let top_friends: [CirclePersonRow]
+    let editable: Bool
+}
+
+struct CircleRing: Decodable {
+    let contacts: [CirclePersonRow]
+    let invited_me: [CirclePersonRow]
+    let awaiting: [CirclePersonRow]
+}
+
+struct CircleOverview: Decodable {
+    let features: [String: Bool]
+    let circle: CircleRing
+    let threads: [CircleThreadRow]
+    let homepage: CircleHomepageRow
+    let labels: [String: String]
+    let note: String
+}
+
+struct CircleTieRow: Decodable {
+    let other_id: String
+    let state: String
+}
+
+extension ApiClient {
+    func circleView(uid: String, token: String) async throws -> CircleOverview {
+        try await request("/circle/\(uid)", token: token)
+    }
+
+    func circleSetFeature(uid: String, token: String, feature: String,
+                          enabled: Bool) async throws -> [String: Bool] {
+        try await request("/circle/\(uid)/features", method: "PUT",
+                          body: ["feature": feature, "enabled": enabled],
+                          token: token)
+    }
+
+    func circleInvite(uid: String, token: String,
+                      otherId: String) async throws -> CircleTieRow {
+        try await request("/circle/\(uid)/contacts", method: "POST",
+                          body: ["other_id": otherId], token: token)
+    }
+
+    func circleLeave(uid: String, token: String,
+                     otherId: String) async throws -> CircleTieRow {
+        try await request("/circle/\(uid)/contacts/\(otherId)",
+                          method: "DELETE", token: token)
+    }
+
+    func circleSend(uid: String, token: String, to: String,
+                    body: String) async throws -> CircleMessageRow {
+        try await request("/circle/\(uid)/messages", method: "POST",
+                          body: ["to": to, "body": body], token: token)
+    }
+
+    func circleThread(uid: String, token: String,
+                      withId: String) async throws -> [CircleMessageRow] {
+        struct Box: Decodable { let messages: [CircleMessageRow] }
+        let q = withId.addingPercentEncoding(
+            withAllowedCharacters: .urlQueryAllowed) ?? withId
+        let box: Box = try await request(
+            "/circle/\(uid)/messages?with_id=\(q)", token: token)
+        return box.messages
+    }
+
+    func circleHomepage(uid: String, token: String,
+                        otherId: String) async throws -> CircleHomepageRow {
+        try await request("/circle/\(uid)/homepage/\(otherId)", token: token)
+    }
+
+    func circleEditHomepage(uid: String, token: String, headline: String,
+                            about: String, bg: String,
+                            accent: String) async throws -> CircleHomepageRow {
+        try await request("/circle/\(uid)/homepage", method: "PUT",
+                          body: ["headline": headline, "about": about,
+                                 "theme": ["bg": bg, "accent": accent]],
+                          token: token)
+    }
+}

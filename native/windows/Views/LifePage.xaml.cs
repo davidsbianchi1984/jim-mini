@@ -22,6 +22,7 @@ public sealed partial class LifePage : Page
         await LoadMoney();
         await LoadSchedule();
         await LoadTandemShops();
+        await LoadCircle();
     }
 
     private static string Pretty(string s) =>
@@ -377,5 +378,179 @@ public sealed partial class LifePage : Page
             await LoadTandemShops();
         }
         catch (Exception ex) { ShopStatus.Text = ex.Message; }
+    }
+    // -- Your circle --
+    // As with Money and Schedule: every visible string comes from the
+    // view's own labels; the switches only reflect the server after load.
+
+    private bool _circleLoading;
+
+    private async System.Threading.Tasks.Task LoadCircle()
+    {
+        var s = AppState.Current;
+        try
+        {
+            var v = await ApiClient.Shared.CircleView(s.Uid!, s.Token!);
+            string L(string key) => v.Labels.TryGetValue(key, out var t) ? t : "";
+            _circleLoading = true;
+            CirclePivot.Header = L("title");
+            CircleNote.Text = v.Note;
+            InviteId.Header = L("invite");
+            InviteButton.Content = L("invite");
+            LeaveButton.Content = L("leave");
+            DmWith.Header = L("to");
+            OpenThreadButton.Content = L("open");
+            DmDraft.Header = L("send");
+            DmSendButton.Content = L("send");
+            MessagingSwitch.Header = L("sw_messaging");
+            HomepageSwitch.Header = L("sw_homepage");
+            MessagingSwitch.IsOn = v.Features.TryGetValue("messaging", out var m) && m;
+            HomepageSwitch.IsOn = v.Features.TryGetValue("homepage", out var h) && h;
+            PageHeadline.Header = L("headline");
+            PageAbout.Header = L("about");
+            PageBg.Header = L("background");
+            PageAccent.Header = L("accent");
+            PageSaveButton.Content = L("save");
+            VisitId.Header = L("visit_id");
+            VisitButton.Content = L("visit");
+            PageHeadline.Text = v.Homepage.Headline;
+            PageAbout.Text = v.Homepage.About;
+            PageBg.Text = v.Homepage.Theme.Bg;
+            PageAccent.Text = v.Homepage.Theme.Accent;
+            var people = v.Circle.Contacts.Select(p => new Row(
+                    $"{p.UserId} · {p.DisplayName ?? ""} · {L("contacts")}"))
+                .Concat(v.Circle.InvitedMe.Select(p => new Row(
+                    $"{p.UserId} · {p.DisplayName ?? ""} · {L("invited_me")}")))
+                .Concat(v.Circle.Awaiting.Select(p => new Row(
+                    $"{p.UserId} · {p.DisplayName ?? ""} · {L("awaiting")}")))
+                .ToList();
+            CirclePeople.ItemsSource = people;
+            CircleThreads.ItemsSource = v.Threads.Select(t => new Row(
+                $"{t.OtherId} · {t.OtherName ?? ""} · {t.Messages}")).ToList();
+            _circleLoading = false;
+        }
+        catch { _circleLoading = false; /* leave as-is */ }
+    }
+
+    private async void OnCircleInvite(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var other = InviteId.Text.Trim();
+        if (other.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.CircleInvite(s.Uid!, s.Token!, other);
+            InviteId.Text = "";
+            CircleStatus.Text = "";
+            await LoadCircle();
+        }
+        catch (Exception ex) { CircleStatus.Text = ex.Message; }
+    }
+
+    private async void OnCircleLeave(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var other = InviteId.Text.Trim();
+        if (other.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.CircleLeave(s.Uid!, s.Token!, other);
+            InviteId.Text = "";
+            CircleStatus.Text = "";
+            await LoadCircle();
+        }
+        catch (Exception ex) { CircleStatus.Text = ex.Message; }
+    }
+
+    private async void OnCircleOpenThread(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var other = DmWith.Text.Trim();
+        if (other.Length == 0) return;
+        try
+        {
+            var box = await ApiClient.Shared.CircleThread(s.Uid!, s.Token!, other);
+            CircleThreadList.ItemsSource = box.Messages.Select(m => new Row(
+                (m.SenderId == s.Uid ? "→ " : "← ") + m.Body)).ToList();
+            CircleStatus.Text = "";
+        }
+        catch (Exception ex) { CircleStatus.Text = ex.Message; }
+    }
+
+    private async void OnCircleSend(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var other = DmWith.Text.Trim();
+        var words = DmDraft.Text.Trim();
+        if (other.Length == 0 || words.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.CircleSend(s.Uid!, s.Token!, other, words);
+            DmDraft.Text = "";
+            CircleStatus.Text = "";
+            OnCircleOpenThread(sender, e);
+            await LoadCircle();
+        }
+        catch (Exception ex) { CircleStatus.Text = ex.Message; }
+    }
+
+    private async void OnMessagingSwitch(object sender, RoutedEventArgs e)
+    {
+        if (_circleLoading) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.CircleSetFeature(s.Uid!, s.Token!,
+                "messaging", MessagingSwitch.IsOn);
+            CircleStatus.Text = "";
+        }
+        catch (Exception ex) { CircleStatus.Text = ex.Message; }
+    }
+
+    private async void OnHomepageSwitch(object sender, RoutedEventArgs e)
+    {
+        if (_circleLoading) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.CircleSetFeature(s.Uid!, s.Token!,
+                "homepage", HomepageSwitch.IsOn);
+            CircleStatus.Text = "";
+        }
+        catch (Exception ex) { CircleStatus.Text = ex.Message; }
+    }
+
+    private async void OnCircleSavePage(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.CircleEditHomepage(s.Uid!, s.Token!,
+                PageHeadline.Text.Trim(), PageAbout.Text.Trim(),
+                PageBg.Text.Trim(), PageAccent.Text.Trim());
+            CircleStatus.Text = "";
+            await LoadCircle();
+        }
+        catch (Exception ex) { CircleStatus.Text = ex.Message; }
+    }
+
+    private async void OnCircleVisit(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var other = VisitId.Text.Trim();
+        if (other.Length == 0) return;
+        try
+        {
+            var page = await ApiClient.Shared.CircleHomepage(s.Uid!, s.Token!, other);
+            var tops = string.Join(" · ",
+                page.TopFriends.Select(t => t.DisplayName ?? t.UserId));
+            var links = string.Join("\n",
+                page.Links.Select(l => $"{l.Label} · {l.Url}"));
+            VisitedPage.Text = $"{page.DisplayName ?? page.UserId} — " +
+                $"{page.Headline}\n{page.About}\n{links}" +
+                (tops.Length > 0 ? $"\n{tops}" : "");
+            CircleStatus.Text = "";
+        }
+        catch (Exception ex) { CircleStatus.Text = ex.Message; }
     }
 }

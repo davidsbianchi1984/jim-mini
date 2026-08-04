@@ -379,6 +379,45 @@ CREATE TABLE IF NOT EXISTS shop_receipts (
     placed_at     TEXT NOT NULL
 );
 
+-- Your circle (jim/circle.py): an invitation is one direction; two
+-- directions make contacts, and either side deleting theirs ends it.
+CREATE TABLE IF NOT EXISTS circle_invites (
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    other_id   TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, other_id)
+);
+
+-- Per-user feature switches, default on; everything downstream refuses
+-- by naming the switch.
+CREATE TABLE IF NOT EXISTS user_features (
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    feature    TEXT NOT NULL,
+    enabled    INTEGER NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, feature)
+);
+
+-- One thread per pair: the key is the sorted pair, so the conversation
+-- has one identity from either side. Nothing here ever leaves this
+-- deployment — there is no cloud relay for what neighbours say.
+CREATE TABLE IF NOT EXISTS circle_messages (
+    id        TEXT PRIMARY KEY,
+    low_id    TEXT NOT NULL,
+    high_id   TEXT NOT NULL,
+    sender_id TEXT NOT NULL,
+    body      TEXT NOT NULL,
+    sent_at   TEXT NOT NULL
+);
+
+-- The homepage sandbox: one validated document per user (hex colors,
+-- http(s) links, plain text), shown to signed-in neighbours only.
+CREATE TABLE IF NOT EXISTS user_homepages (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    doc        TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
 -- The care team is an organization (QRME's operational ecosystem): the
 -- user's own org, the department that speaks for the Guardian, and the
 -- owner token they pasted to let JIM act on their behalf. Unlinking

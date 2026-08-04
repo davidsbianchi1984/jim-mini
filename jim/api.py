@@ -18,7 +18,7 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                catalog,
                coach,
                mailer,
-               contribution, db, money, schedule, shopping,
+               circle, contribution, db, money, schedule, shopping,
                escalation, family, followup, guardian, handoff, i18n, identity,
                landing, life, llm,
                meds, mic, mobile, notify, oauth, offline, referral, relay,
@@ -44,6 +44,7 @@ from .models import (
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet,
+    FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     RobotBind, RelayAccept, RelayQuestion,
     SelfProfileConsent, SelfProfileLink,
@@ -79,7 +80,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.42.6",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.42.7",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2266,6 +2267,81 @@ def create_app(qrme_client: QRMEClient | None = None,
             return shopping.cancel(user_id, body.qrme_order_id,
                                    qrme=app.state.qrme)
         except shopping.ShoppingError as exc:
+            raise HTTPException(422, str(exc))
+
+    # ---- your circle (jim/circle.py) --------------------------------------
+    # Contacts by mutual invitation, messages that never leave this
+    # deployment, per-user switches, and the homepage sandbox. Labels ride
+    # the view in the reader's language.
+
+    @app.get("/circle/{user_id}")
+    def circle_view(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return circle.view(user_id, _money_lang(user_id))
+
+    @app.put("/circle/{user_id}/features")
+    def circle_feature(user_id: str, body: FeatureFlip,
+                       request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return circle.set_feature(user_id, body.feature, body.enabled)
+        except circle.CircleError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.post("/circle/{user_id}/contacts", status_code=201)
+    def circle_invite(user_id: str, body: CircleInviteIn,
+                      request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return circle.invite(user_id, body.other_id)
+        except circle.CircleError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/circle/{user_id}/contacts/{other_id}")
+    def circle_leave(user_id: str, other_id: str,
+                     request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return circle.leave(user_id, other_id)
+
+    @app.post("/circle/{user_id}/messages", status_code=201)
+    def circle_send(user_id: str, body: CircleMessageIn,
+                    request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return circle.send_message(user_id, body.to, body.body)
+        except circle.CircleError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.get("/circle/{user_id}/messages")
+    def circle_messages(user_id: str, request: Request,
+                        with_id: str | None = None) -> dict:
+        """The thread list, or — `?with_id=` — one conversation."""
+        _user_or_404(user_id, request)
+        if with_id:
+            return {"with": with_id,
+                    "messages": circle.thread(user_id, with_id)}
+        return {"threads": circle.threads(user_id)}
+
+    @app.get("/circle/{user_id}/homepage/{other_id}")
+    def circle_homepage(user_id: str, other_id: str,
+                        request: Request) -> dict:
+        """A neighbour's page, seen as yourself: the viewer is the
+        credential, the owner's switch is the gate."""
+        _user_or_404(user_id, request)
+        try:
+            return circle.homepage(other_id,
+                                   viewer_is_owner=other_id == user_id)
+        except circle.CircleError:
+            raise HTTPException(404, "this homepage is not shared")
+
+    @app.put("/circle/{user_id}/homepage")
+    def circle_edit_homepage(user_id: str, body: HomepageIn,
+                             request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return circle.set_homepage(user_id, body.model_dump(
+                exclude_none=True))
+        except circle.CircleError as exc:
             raise HTTPException(422, str(exc))
 
     # ---- budgeting plans ----------------------------------------------------

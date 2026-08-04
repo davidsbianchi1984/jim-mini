@@ -1093,6 +1093,51 @@ public sealed class ApiClient
         Send<PlacedTandemOrder>(Post($"/shopping/{uid}/cancel",
             new { qrme_order_id = qrmeOrderId }, token));
 
+    // -- your circle: contacts, messages, switches, homepage --
+    // Same discipline: the view carries labels; the pivot adds no English.
+
+    public Task<CircleOverview> CircleView(string uid, string token) =>
+        Send<CircleOverview>(Get($"/circle/{uid}", token));
+
+    public Task<System.Collections.Generic.Dictionary<string, bool>> CircleSetFeature(
+        string uid, string token, string feature, bool enabled) =>
+        Send<System.Collections.Generic.Dictionary<string, bool>>(
+            Put($"/circle/{uid}/features", new { feature, enabled }, token));
+
+    public Task<CircleTie> CircleInvite(string uid, string token, string otherId) =>
+        Send<CircleTie>(Post($"/circle/{uid}/contacts",
+            new { other_id = otherId }, token));
+
+    public Task<CircleTie> CircleLeave(string uid, string token, string otherId)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+            $"/circle/{uid}/contacts/{otherId}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<CircleTie>(req);
+    }
+
+    public Task<CircleMessageRow> CircleSend(string uid, string token,
+                                             string to, string body) =>
+        Send<CircleMessageRow>(Post($"/circle/{uid}/messages",
+            new { to, body }, token));
+
+    public Task<CircleThreadBox> CircleThread(string uid, string token,
+                                              string withId) =>
+        Send<CircleThreadBox>(Get(
+            $"/circle/{uid}/messages?with_id={Uri.EscapeDataString(withId)}",
+            token));
+
+    public Task<CircleHomepageDoc> CircleHomepage(string uid, string token,
+                                                  string otherId) =>
+        Send<CircleHomepageDoc>(Get($"/circle/{uid}/homepage/{otherId}", token));
+
+    public Task<CircleHomepageDoc> CircleEditHomepage(string uid, string token,
+                                                      string headline,
+                                                      string about, string bg,
+                                                      string accent) =>
+        Send<CircleHomepageDoc>(Put($"/circle/{uid}/homepage",
+            new { headline, about, theme = new { bg, accent } }, token));
+
     /// <summary>The handover, and the way back. Revoking is never plan-gated.</summary>
     public Task<MoneyMandate> MoneySetMandate(string uid, string token, bool enabled,
                                               double capPerOrder, double monthlyCap,
@@ -1189,6 +1234,59 @@ public record PlacedTandemOrder(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("shop_id")] string ShopId,
     [property: JsonPropertyName("status")] string Status);
+
+public record CirclePersonRow(
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("display_name")] string? DisplayName);
+
+public record CircleThreadRow(
+    [property: JsonPropertyName("other_id")] string OtherId,
+    [property: JsonPropertyName("other_name")] string? OtherName,
+    [property: JsonPropertyName("messages")] int Messages);
+
+public record CircleMessageRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("sender_id")] string SenderId,
+    [property: JsonPropertyName("body")] string Body,
+    [property: JsonPropertyName("sent_at")] string SentAt);
+
+public record CircleThreadBox(
+    [property: JsonPropertyName("messages")] CircleMessageRow[] Messages);
+
+public record CircleLinkRow(
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("url")] string Url);
+
+public record CircleThemeRow(
+    [property: JsonPropertyName("bg")] string Bg,
+    [property: JsonPropertyName("accent")] string Accent);
+
+public record CircleHomepageDoc(
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("display_name")] string? DisplayName,
+    [property: JsonPropertyName("headline")] string Headline,
+    [property: JsonPropertyName("about")] string About,
+    [property: JsonPropertyName("theme")] CircleThemeRow Theme,
+    [property: JsonPropertyName("links")] CircleLinkRow[] Links,
+    [property: JsonPropertyName("top_friends")] CirclePersonRow[] TopFriends,
+    [property: JsonPropertyName("editable")] bool Editable);
+
+public record CircleRing(
+    [property: JsonPropertyName("contacts")] CirclePersonRow[] Contacts,
+    [property: JsonPropertyName("invited_me")] CirclePersonRow[] InvitedMe,
+    [property: JsonPropertyName("awaiting")] CirclePersonRow[] Awaiting);
+
+public record CircleOverview(
+    [property: JsonPropertyName("features")] System.Collections.Generic.Dictionary<string, bool> Features,
+    [property: JsonPropertyName("circle")] CircleRing Circle,
+    [property: JsonPropertyName("threads")] CircleThreadRow[] Threads,
+    [property: JsonPropertyName("homepage")] CircleHomepageDoc Homepage,
+    [property: JsonPropertyName("labels")] System.Collections.Generic.Dictionary<string, string> Labels,
+    [property: JsonPropertyName("note")] string Note);
+
+public record CircleTie(
+    [property: JsonPropertyName("other_id")] string OtherId,
+    [property: JsonPropertyName("state")] string State);
 
 public record MoneyObserved(
     [property: JsonPropertyName("recorded")] bool Recorded,

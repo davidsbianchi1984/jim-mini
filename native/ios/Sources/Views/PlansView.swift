@@ -196,3 +196,236 @@ struct ShoppingSection: View {
         }
     }
 }
+
+/// Your circle: contacts by mutual invitation, messages that never leave
+/// this deployment, the switches that govern both, and the homepage
+/// sandbox. Same label discipline as the sections above — every visible
+/// string arrives from the server in the reader's language.
+struct CircleSection: View {
+    @EnvironmentObject var state: AppState
+    @State private var view: CircleOverview?
+    @State private var inviteId = ""
+    @State private var withId = ""
+    @State private var thread: [CircleMessageRow] = []
+    @State private var draft = ""
+    @State private var headline = ""
+    @State private var about = ""
+    @State private var bg = "#10251c"
+    @State private var accent = "#2fbf8f"
+    @State private var lookId = ""
+    @State private var looking: CircleHomepageRow?
+    @State private var note: String?
+    @State private var busy = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if let v = view {
+                let L = v.labels
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L["title"] ?? "").font(.headline)
+                        .foregroundStyle(Theme.txt)
+                    Text(v.note).font(.caption2).foregroundStyle(Theme.t2)
+                    ForEach(v.circle.contacts) { p in
+                        HStack {
+                            Text(p.display_name ?? p.user_id).font(.caption)
+                                .foregroundStyle(Theme.txt)
+                            Spacer()
+                            Button(L["open"] ?? "") { open(p.user_id) }
+                                .font(.caption2).disabled(busy)
+                            Button(L["leave"] ?? "") { leave(p.user_id) }
+                                .font(.caption2).disabled(busy)
+                        }
+                    }
+                    ForEach(v.circle.invited_me) { p in
+                        HStack {
+                            let line = (p.display_name ?? p.user_id) + " · "
+                                + (L["invited_me"] ?? "")
+                            Text(line).font(.caption)
+                                .foregroundStyle(Theme.t2)
+                            Spacer()
+                            Button(L["invite"] ?? "") { invite(p.user_id) }
+                                .font(.caption2).disabled(busy)
+                        }
+                    }
+                    ForEach(v.circle.awaiting) { p in
+                        let line = (p.display_name ?? p.user_id) + " · "
+                            + (L["awaiting"] ?? "")
+                        Text(line).font(.caption2).foregroundStyle(Theme.t2)
+                    }
+                    HStack {
+                        TextField(L["invite"] ?? "", text: $inviteId)
+                            .textFieldStyle(.roundedBorder)
+                        Button(L["invite"] ?? "") { invite(inviteId) }
+                            .disabled(busy || inviteId.isEmpty)
+                    }
+                }.card()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L["messages"] ?? "").font(.subheadline.bold())
+                        .foregroundStyle(Theme.txt)
+                    ForEach(v.threads) { t in
+                        HStack {
+                            Text(t.other_name ?? t.other_id).font(.caption)
+                                .foregroundStyle(Theme.txt)
+                            Spacer()
+                            Button(L["open"] ?? "") { open(t.other_id) }
+                                .font(.caption2).disabled(busy)
+                        }
+                    }
+                    TextField(L["to"] ?? "", text: $withId)
+                        .textFieldStyle(.roundedBorder)
+                    ForEach(thread) { m in
+                        let line = (m.sender_id == state.uid ? "→ " : "← ")
+                            + m.body
+                        Text(line).font(.caption2).foregroundStyle(Theme.t2)
+                    }
+                    HStack {
+                        TextField("", text: $draft)
+                            .textFieldStyle(.roundedBorder)
+                        Button(L["send"] ?? "") { send() }
+                            .disabled(busy || draft.isEmpty || withId.isEmpty)
+                    }
+                }.card()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L["switches"] ?? "").font(.subheadline.bold())
+                        .foregroundStyle(Theme.txt)
+                    ForEach(v.features.keys.sorted(), id: \.self) { feature in
+                        Toggle(isOn: Binding(
+                            get: { v.features[feature] ?? true },
+                            set: { on in flip(feature, on) })) {
+                            Text(feature == "messaging"
+                                 ? (L["sw_messaging"] ?? "")
+                                 : (L["sw_homepage"] ?? ""))
+                                .font(.caption).foregroundStyle(Theme.t2)
+                        }.disabled(busy)
+                    }
+                }.card()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L["page"] ?? "").font(.subheadline.bold())
+                        .foregroundStyle(Theme.txt)
+                    TextField(L["headline"] ?? "", text: $headline)
+                        .textFieldStyle(.roundedBorder)
+                    TextField(L["about"] ?? "", text: $about)
+                        .textFieldStyle(.roundedBorder)
+                    TextField(L["background"] ?? "", text: $bg)
+                        .textFieldStyle(.roundedBorder)
+                    TextField(L["accent"] ?? "", text: $accent)
+                        .textFieldStyle(.roundedBorder)
+                    Button(L["save"] ?? "") { save() }.disabled(busy)
+                }.card()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L["visit"] ?? "").font(.subheadline.bold())
+                        .foregroundStyle(Theme.txt)
+                    HStack {
+                        TextField(L["visit_id"] ?? "", text: $lookId)
+                            .textFieldStyle(.roundedBorder)
+                        Button(L["open"] ?? "") { look() }
+                            .disabled(busy || lookId.isEmpty)
+                    }
+                    if let page = looking {
+                        let head = (page.display_name ?? page.user_id)
+                            + " — " + page.headline
+                        Text(head).font(.caption.bold())
+                            .foregroundStyle(Theme.txt)
+                        Text(page.about).font(.caption2)
+                            .foregroundStyle(Theme.t2)
+                        ForEach(page.links, id: \.url) { link in
+                            Text(link.label + " · " + link.url)
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                        }
+                        if !page.top_friends.isEmpty {
+                            let tops = (L["top"] ?? "") + ": "
+                                + page.top_friends
+                                    .map { $0.display_name ?? $0.user_id }
+                                    .joined(separator: " · ")
+                            Text(tops).font(.caption2)
+                                .foregroundStyle(Theme.t2)
+                        }
+                    }
+                }.card()
+            }
+            if let note {
+                Text(note).font(.caption).foregroundStyle(Theme.t2)
+            }
+        }
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let uid = state.uid, let token = state.token else { return }
+        view = try? await ApiClient.shared.circleView(uid: uid, token: token)
+        if let page = view?.homepage {
+            headline = page.headline; about = page.about
+            bg = page.theme.bg; accent = page.theme.accent
+        }
+    }
+
+    private func run(_ op: @escaping () async throws -> Void) {
+        busy = true; note = nil
+        Task {
+            do { try await op(); await load() }
+            catch { note = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    private func invite(_ otherId: String) {
+        run {
+            _ = try await ApiClient.shared.circleInvite(
+                uid: state.uid!, token: state.token!, otherId: otherId)
+            inviteId = ""
+        }
+    }
+
+    private func leave(_ otherId: String) {
+        run {
+            _ = try await ApiClient.shared.circleLeave(
+                uid: state.uid!, token: state.token!, otherId: otherId)
+        }
+    }
+
+    private func flip(_ feature: String, _ on: Bool) {
+        run {
+            _ = try await ApiClient.shared.circleSetFeature(
+                uid: state.uid!, token: state.token!, feature: feature,
+                enabled: on)
+        }
+    }
+
+    private func open(_ other: String) {
+        withId = other
+        run {
+            thread = try await ApiClient.shared.circleThread(
+                uid: state.uid!, token: state.token!, withId: other)
+        }
+    }
+
+    private func send() {
+        run {
+            _ = try await ApiClient.shared.circleSend(
+                uid: state.uid!, token: state.token!, to: withId,
+                body: draft)
+            draft = ""
+            thread = try await ApiClient.shared.circleThread(
+                uid: state.uid!, token: state.token!, withId: withId)
+        }
+    }
+
+    private func save() {
+        run {
+            _ = try await ApiClient.shared.circleEditHomepage(
+                uid: state.uid!, token: state.token!, headline: headline,
+                about: about, bg: bg, accent: accent)
+        }
+    }
+
+    private func look() {
+        run {
+            looking = try await ApiClient.shared.circleHomepage(
+                uid: state.uid!, token: state.token!, otherId: lookId)
+        }
+    }
+}

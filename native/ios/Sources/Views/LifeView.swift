@@ -19,6 +19,7 @@ struct LifeView: View {
                 case .money: MoneySection()
                 case .schedule: ScheduleSection()
                 case .shop: ShoppingSection()
+                case .circle: CircleSection()
                 }
             }.padding(20)
         }

@@ -537,7 +537,7 @@ private fun FlowRowChips(items: List<String>, selected: String, onPick: (String)
 @Composable
 fun LifeScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Goals", "Habits", "Journal", "Money", "Schedule", "Shop")
+    val tabs = listOf("Goals", "Habits", "Journal", "Money", "Schedule", "Shop", "Circle")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -552,7 +552,8 @@ fun LifeScreen(vm: GuardianViewModel) {
             2 -> JournalPanel(vm)
             3 -> MoneyPanel(vm)
             4 -> SchedulePanel(vm)
-            else -> TandemShopPanel(vm)
+            5 -> TandemShopPanel(vm)
+            else -> CirclePanel(vm)
         }
     }
 }
@@ -902,6 +903,178 @@ private fun TandemShopPanel(vm: GuardianViewModel) {
                 }
             }
         }
+        note?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
+    }
+}
+
+// Your circle: contacts by mutual invitation, messages that never leave
+// this deployment, the switches that govern both, and the homepage
+// sandbox. Every visible string arrives from the view's `labels`, in the
+// reader's language — same discipline as the shelf above.
+@Composable
+private fun CirclePanel(vm: GuardianViewModel) {
+    var view by remember { mutableStateOf<CircleOverview?>(null) }
+    var inviteId by remember { mutableStateOf("") }
+    var withId by remember { mutableStateOf("") }
+    var thread by remember { mutableStateOf<List<CircleMessage>>(emptyList()) }
+    var draft by remember { mutableStateOf("") }
+    var headline by remember { mutableStateOf("") }
+    var about by remember { mutableStateOf("") }
+    var bg by remember { mutableStateOf("#10251c") }
+    var accent by remember { mutableStateOf("#2fbf8f") }
+    var lookId by remember { mutableStateOf("") }
+    var looking by remember { mutableStateOf<CircleHomepage?>(null) }
+    var note by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+
+    fun reload() {
+        vm.call({ ApiClient.circleView(vm.uid!!, vm.token!!) }) { r ->
+            r.getOrNull()?.let { v ->
+                view = v
+                headline = v.homepage.headline; about = v.homepage.about
+                bg = v.homepage.bg; accent = v.homepage.accent
+            }
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    val v = view ?: return
+    val labels = v.labels
+
+    fun act(op: suspend () -> Unit) {
+        busy = true; note = null
+        vm.call({ op() }) { r ->
+            busy = false
+            r.exceptionOrNull()?.let { note = it.message }
+            reload()
+        }
+    }
+
+    fun open(other: String) {
+        withId = other
+        vm.call({ ApiClient.circleThread(vm.uid!!, vm.token!!, other) }) { r ->
+            r.getOrNull()?.let { thread = it }
+            r.exceptionOrNull()?.let { note = it.message }
+        }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["title"] ?: "", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(v.note, color = Jim.T2, fontSize = 11.sp)
+            v.contacts.forEach { p ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(p.displayName ?: p.userId, color = Jim.Txt, fontSize = 12.sp)
+                    Row {
+                        TextButton(onClick = { open(p.userId) }) {
+                            Text(labels["open"] ?: "", color = Jim.BrandA, fontSize = 11.sp)
+                        }
+                        TextButton(onClick = { act { ApiClient.circleLeave(vm.uid!!, vm.token!!, p.userId) } }) {
+                            Text(labels["leave"] ?: "", color = Jim.Red, fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+            v.invitedMe.forEach { p ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    val line = (p.displayName ?: p.userId) + " · " + (labels["invited_me"] ?: "")
+                    Text(line, color = Jim.T2, fontSize = 12.sp)
+                    TextButton(onClick = { act { ApiClient.circleInvite(vm.uid!!, vm.token!!, p.userId) } }) {
+                        Text(labels["invite"] ?: "", color = Jim.BrandA, fontSize = 11.sp)
+                    }
+                }
+            }
+            v.awaiting.forEach { p ->
+                val line = (p.displayName ?: p.userId) + " · " + (labels["awaiting"] ?: "")
+                Text(line, color = Jim.T3, fontSize = 11.sp)
+            }
+            labeledField(labels["invite"] ?: "", inviteId, "") { inviteId = it }
+            BrandButton(labels["invite"] ?: "", enabled = inviteId.isNotBlank(), busy = busy) {
+                val other = inviteId.trim(); inviteId = ""
+                act { ApiClient.circleInvite(vm.uid!!, vm.token!!, other) }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["messages"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            v.threads.forEach { t ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(t.otherName ?: t.otherId, color = Jim.Txt, fontSize = 12.sp)
+                    TextButton(onClick = { open(t.otherId) }) {
+                        Text(labels["open"] ?: "", color = Jim.BrandA, fontSize = 11.sp)
+                    }
+                }
+            }
+            labeledField(labels["to"] ?: "", withId, "") { withId = it }
+            thread.forEach { m ->
+                val line = (if (m.senderId == vm.uid) "→ " else "← ") + m.body
+                Text(line, color = Jim.T2, fontSize = 11.sp)
+            }
+            labeledField(labels["send"] ?: "", draft, "") { draft = it }
+            BrandButton(labels["send"] ?: "",
+                        enabled = draft.isNotBlank() && withId.isNotBlank(),
+                        busy = busy) {
+                val words = draft; draft = ""
+                busy = true
+                vm.call({ ApiClient.circleSend(vm.uid!!, vm.token!!, withId, words) }) { r ->
+                    busy = false
+                    r.exceptionOrNull()?.let { note = it.message }
+                    open(withId)
+                    reload()
+                }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["switches"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            v.features.toSortedMap().forEach { (feature, on) ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Switch(checked = on, enabled = !busy, onCheckedChange = { want ->
+                        act { ApiClient.circleSetFeature(vm.uid!!, vm.token!!, feature, want) }
+                    })
+                    val name = if (feature == "messaging") labels["sw_messaging"]
+                               else labels["sw_homepage"]
+                    Text(name ?: "", color = Jim.T2, fontSize = 12.sp)
+                }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["page"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            labeledField(labels["headline"] ?: "", headline, "") { headline = it }
+            labeledField(labels["about"] ?: "", about, "") { about = it }
+            labeledField(labels["background"] ?: "", bg, "") { bg = it }
+            labeledField(labels["accent"] ?: "", accent, "") { accent = it }
+            BrandButton(labels["save"] ?: "", enabled = true, busy = busy) {
+                act { ApiClient.circleEditHomepage(vm.uid!!, vm.token!!,
+                    headline, about, bg, accent) }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["visit"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            labeledField(labels["visit_id"] ?: "", lookId, "") { lookId = it }
+            BrandButton(labels["open"] ?: "", enabled = lookId.isNotBlank(), busy = busy) {
+                vm.call({ ApiClient.circleHomepage(vm.uid!!, vm.token!!, lookId.trim()) }) { r ->
+                    r.getOrNull()?.let { looking = it }
+                    r.exceptionOrNull()?.let { note = it.message }
+                }
+            }
+            looking?.let { page ->
+                val head = (page.displayName ?: page.userId) + " — " + page.headline
+                Text(head, color = Jim.Txt, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(page.about, color = Jim.T2, fontSize = 11.sp)
+                page.links.forEach { l ->
+                    Text(l.label + " · " + l.url, color = Jim.T3, fontSize = 11.sp)
+                }
+                if (page.topFriends.isNotEmpty()) {
+                    val tops = (labels["top"] ?: "") + ": " +
+                        page.topFriends.joinToString(" · ") { it.displayName ?: it.userId }
+                    Text(tops, color = Jim.T3, fontSize = 11.sp)
+                }
+            }
+        }
+
         note?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
     }
 }

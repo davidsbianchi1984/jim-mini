@@ -573,6 +573,31 @@ export type PlacedShopOrder = {
   amount?: number; currency?: string;
 };
 
+export type CirclePerson = { user_id: string; display_name: string | null };
+export type CircleTie = { other_id: string; other_name?: string | null;
+  state: string };
+export type CircleMessage = { id: string; low_id: string; high_id: string;
+  sender_id: string; body: string; sent_at: string };
+export type CircleThread = { other_id: string; other_name: string | null;
+  messages: number; last_at: string };
+export type CircleHomepage = {
+  user_id: string; display_name: string | null; headline: string;
+  about: string; theme: { bg: string; accent: string };
+  links: { label: string; url: string }[];
+  top_friends: CirclePerson[]; editable: boolean;
+};
+export type CircleView = {
+  features: Record<string, boolean>;
+  circle: { contacts: CirclePerson[]; invited_me: CirclePerson[];
+            awaiting: CirclePerson[] };
+  threads: CircleThread[];
+  homepage: CircleHomepage;
+  labels: Record<string, string>;
+  note: string;
+};
+export type CircleMailbox = { threads?: CircleThread[]; with?: string;
+  messages?: CircleMessage[] };
+
 export type MoneyView = {
   accounts: MoneyAccount[]; savings: SavingsGoal | null;
   mandate: MoneyMandate | null; orders: MoneyOrder[];
@@ -1037,6 +1062,37 @@ export const api = {
   shoppingCancel: (uid: string, qrmeOrderId: string, token: string) =>
     req<PlacedShopOrder>(`/shopping/${uid}/cancel`,
       { method: "POST", body: { qrme_order_id: qrmeOrderId }, token }),
+  // Your circle: contacts by mutual invitation, messages that never leave
+  // this deployment, per-user switches, and the homepage sandbox. The view
+  // carries its own `labels` in the reader's language, like the shelf above.
+  circleView: (uid: string, token: string) =>
+    req<CircleView>(`/circle/${uid}`, { token }),
+  circleFeature: (uid: string, body: { feature: string; enabled: boolean },
+    token: string) =>
+    req<Record<string, boolean>>(`/circle/${uid}/features`,
+      { method: "PUT", body, token }),
+  circleInvite: (uid: string, otherId: string, token: string) =>
+    req<CircleTie>(`/circle/${uid}/contacts`,
+      { method: "POST", body: { other_id: otherId }, token }),
+  circleLeave: (uid: string, otherId: string, token: string) =>
+    req<CircleTie>(`/circle/${uid}/contacts/${otherId}`,
+      { method: "DELETE", token }),
+  circleSend: (uid: string, body: { to: string; body: string },
+    token: string) =>
+    req<CircleMessage>(`/circle/${uid}/messages`,
+      { method: "POST", body, token }),
+  circleMessages: (uid: string, token: string, withId?: string) =>
+    req<CircleMailbox>(
+      `/circle/${uid}/messages${withId ? `?with_id=${encodeURIComponent(withId)}` : ""}`,
+      { token }),
+  circleHomepage: (uid: string, otherId: string, token: string) =>
+    req<CircleHomepage>(`/circle/${uid}/homepage/${otherId}`, { token }),
+  circleEditHomepage: (uid: string, body: { headline?: string;
+    about?: string; theme?: { bg: string; accent: string };
+    links?: { label: string; url: string }[]; top_friends?: string[] },
+    token: string) =>
+    req<CircleHomepage>(`/circle/${uid}/homepage`,
+      { method: "PUT", body, token }),
   moneyView: (uid: string, token: string) =>
     req<MoneyView>(`/money/${uid}`, { token }),
   moneyAddAccount: (uid: string, body: { kind: string; institution: string;

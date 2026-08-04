@@ -497,6 +497,30 @@ class ShopCancelIn(BaseModel):
     qrme_order_id: str
 
 
+class FeatureFlip(BaseModel):
+    feature: str
+    enabled: bool
+
+
+class CircleInviteIn(BaseModel):
+    other_id: str
+
+
+class CircleMessageIn(BaseModel):
+    to: str
+    body: str
+
+
+class HomepageIn(BaseModel):
+    """The homepage document, whole. The walls live in `jim/circle.py`
+    where the refusal sentences are — this shape only carries it."""
+    headline: str | None = None
+    about: str | None = None
+    theme: dict | None = None
+    links: list[dict] | None = None
+    top_friends: list[str] | None = None
+
+
 class MoneyObserve(BaseModel):
     """A balance reading against a registered account."""
     account_id: str

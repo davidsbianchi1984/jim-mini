@@ -4,6 +4,35 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.7] — 2026-08-04
+
+### The circle is yours
+
+QRME's people got messages, switches and a page of their own this round,
+and the person behind a JIM had none of them — the Guardian knew
+everything about them and offered no surface that was simply *theirs*.
+
+    asked     can the Guardian's user reach the people around them
+    mattered  on whose terms
+
+`jim/circle.py`, four parts, one idea — the person decides. **The
+circle**: JIM has no friendship graph, so the consent record is built
+here and kept thin — an invitation is one direction, two directions make
+contacts, and either side deleting theirs ends it for both. **Switches**:
+per user, default on, refusing by naming the switch. **Messages**:
+contacts only, one thread per pair, old words surviving the circle
+ending while new ones need it back — and nothing ever leaves the
+deployment; the module structurally imports no client that could carry a
+message out. **The homepage sandbox**: identical walls to QRME's (hex
+colors, http(s) links, plain text, actual contacts), but never public —
+a signed-in neighbour is the widest audience it has, and only while the
+homepage switch is on.
+
+Eight routes with doors on all four clients — the Community screen's
+Circle card and Circle panels on iOS, Android and Windows — every
+visible string arriving from the view's own `labels` in the reader's
+language.
+
 ## [0.42.6] — 2026-08-04
 
 ### Booked, reminded at the bottom rung, and emailed to yourself alone

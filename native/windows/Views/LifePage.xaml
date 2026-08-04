@@ -289,5 +289,80 @@
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>
+
+        <!-- Your circle. As above: no literal strings — every header and
+             button is set in code-behind from the view's own labels. -->
+        <PivotItem x:Name="CirclePivot">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="CircleNote" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="CirclePeople">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimTxtBrush}"
+                                                   FontSize="12" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBox x:Name="InviteId" />
+                            <Button x:Name="InviteButton" Click="OnCircleInvite" />
+                            <Button x:Name="LeaveButton" Click="OnCircleLeave" />
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <ItemsControl x:Name="CircleThreads">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimTxtBrush}"
+                                                   FontSize="12" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBox x:Name="DmWith" />
+                            <Button x:Name="OpenThreadButton" Click="OnCircleOpenThread" />
+                            <ItemsControl x:Name="CircleThreadList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimT2Brush}"
+                                                   FontSize="12" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBox x:Name="DmDraft" />
+                            <Button x:Name="DmSendButton" Click="OnCircleSend" />
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <ToggleSwitch x:Name="MessagingSwitch" Toggled="OnMessagingSwitch" />
+                            <ToggleSwitch x:Name="HomepageSwitch" Toggled="OnHomepageSwitch" />
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBox x:Name="PageHeadline" />
+                            <TextBox x:Name="PageAbout" />
+                            <TextBox x:Name="PageBg" />
+                            <TextBox x:Name="PageAccent" />
+                            <Button x:Name="PageSaveButton" Click="OnCircleSavePage" />
+                            <TextBox x:Name="VisitId" />
+                            <Button x:Name="VisitButton" Click="OnCircleVisit" />
+                            <TextBlock x:Name="VisitedPage" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="CircleStatus" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
     </Pivot>
 </Page>
