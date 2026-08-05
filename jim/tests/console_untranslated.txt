@@ -1,4 +1,4 @@
-# status: backlog — 481 rows
+# status: backlog — 426 rows
 #
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
@@ -7,7 +7,7 @@
 # command and example values. The rest of the console is not — 700-odd
 # strings across nineteen gated screens, recorded here so the remainder is a
 # decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 481
+# ceiling: 426
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -260,61 +260,6 @@ Onboarding: Sign
 Onboarding: python -m jim serve
 Onboarding: with
 Onboarding: you@example.com
-Reach: /c/
-Reach: @you
-Reach: A body in the house
-Reach: A code somebody can scan
-Reach: A model rated
-Reach: Accounts elsewhere
-Reach: Beacon
-Reach: Bind it
-Reach: Code
-Reach: Collect
-Reach: Connect
-Reach: Disconnect
-Reach: Elsewhere and the wrist
-Reach: Go
-Reach: Keep what it learned
-Reach: Pick a model…
-Reach: Printable
-Reach: Publish
-Reach: Raise it as a stranger would
-Reach: Raising from a scanned code takes no account. It reaches the people watching and stops there — a stranger at a door can wake a household, never an ambulance.
-Reach: Read
-Reach: Redactions
-Reach: Say something
-Reach: Send
-Reach: Send a reading
-Reach: Send it to go and ask
-Reach: Take the code down
-Reach: The card
-Reach: The scan page is
-Reach: The watch posts against a drip token rather than an account credential, because a watch cannot hold one.
-Reach: Topic
-Reach: Unbind
-Reach: What a scanner sees
-Reach: What do you want to know?
-Reach: What reaches out
-Reach: What you call it
-Reach: a body, a code, an account, an errand
-Reach: assist
-Reach: beacon id
-Reach: characters of HTML — it is a page for a stranger's phone, not a document for this console. It is served at
-Reach: collect — words come in
-Reach: community visit
-Reach: is how much of you was taken out before the question left, and
-Reach: is whether it left at all. A screen that showed the findings and hid those two would be showing the answer and hiding what it cost.
-Reach: left this host
-Reach: mastodon
-Reach: perform
-Reach: publish — words go out
-Reach: recorded — JIM points at QRME's rooms, QRME hosts them.
-Reach: the printable code
-Reach: watch drip token
-Reach: will do compressions itself once the automatic waiver is signed; one rated
-Reach: will talk a person through them and nothing more. The rating is the machine's, not the plan's.
-Reach: · first aid:
-Reach: — the printable code for it is behind your own token, not a public link.
 Safety: A sticker someone can scan to reach help on your behalf. The scanner needs no account and sees only what you chose to put on the card.
 Safety: Beacons
 Safety: Clear

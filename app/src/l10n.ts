@@ -1426,6 +1426,141 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "bas.metrics.reset": {
     en: "Reset", es: "Restablecer", fr: "Réinitialiser", de: "Zurücksetzen", pt: "Repor", it: "Reimposta", ja: "リセット", zh: "重置", hi: "रीसेट", ar: "إعادة ضبط",
   },
+  "rch.title": {
+    en: "What reaches out", es: "Lo que sale al mundo", fr: "Ce qui tend la main", de: "Was hinausreicht", pt: "O que alcança lá fora", it: "Ciò che si spinge fuori", ja: "外へ届くもの", zh: "向外伸出的东西", hi: "जो बाहर पहुँचता है", ar: "ما يمتد إلى الخارج",
+  },
+  "rch.sub": {
+    en: "a body, a code, an account, an errand", es: "un cuerpo, un código, una cuenta, un recado", fr: "un corps, un code, un compte, une course", de: "ein Körper, ein Code, ein Konto, ein Botengang", pt: "um corpo, um código, uma conta, um recado", it: "un corpo, un codice, un account, una commissione", ja: "身体、コード、アカウント、お使い", zh: "一个身体、一个码、一个账号、一趟差事", hi: "एक शरीर, एक कोड, एक खाता, एक काम", ar: "جسد، رمز، حساب، مهمة",
+  },
+  "rch.body": {
+    en: "A body in the house", es: "Un cuerpo en la casa", fr: "Un corps dans la maison", de: "Ein Körper im Haus", pt: "Um corpo na casa", it: "Un corpo in casa", ja: "家の中の身体", zh: "屋里的身体", hi: "घर में एक शरीर", ar: "جسد في المنزل",
+  },
+  "rch.body.pick": {
+    en: "Pick a model…", es: "Elige un modelo…", fr: "Choisissez un modèle…", de: "Modell wählen…", pt: "Escolha um modelo…", it: "Scegli un modello…", ja: "モデルを選択…", zh: "选择型号…", hi: "मॉडल चुनें…", ar: "اختر طرازًا…",
+  },
+  "rch.body.model": {
+    en: "{label} — {maker} · first aid: {aid}", es: "{label} — {maker} · primeros auxilios: {aid}", fr: "{label} — {maker} · premiers secours : {aid}", de: "{label} — {maker} · Erste Hilfe: {aid}", pt: "{label} — {maker} · primeiros socorros: {aid}", it: "{label} — {maker} · primo soccorso: {aid}", ja: "{label} — {maker} · 応急手当: {aid}", zh: "{label} — {maker} · 急救: {aid}", hi: "{label} — {maker} · प्राथमिक चिकित्सा: {aid}", ar: "{label} — {maker} · إسعاف أولي: {aid}",
+  },
+  "rch.body.name.ph": {
+    en: "What you call it", es: "Cómo lo llamas", fr: "Comment vous l'appelez", de: "Wie Sie ihn nennen", pt: "Como lhe chama", it: "Come lo chiami", ja: "呼び名", zh: "你怎么称呼它", hi: "आप इसे क्या कहते हैं", ar: "بمَ تسميه",
+  },
+  "rch.body.bind": {
+    en: "Bind it", es: "Vincularlo", fr: "Le lier", de: "Binden", pt: "Vinculá-lo", it: "Vincolalo", ja: "紐付ける", zh: "绑定", hi: "बाँधें", ar: "اربطه",
+  },
+  "rch.body.rating": {
+    en: "A model rated perform will do compressions itself once the automatic waiver is signed; one rated assist will talk a person through them and nothing more. The rating is the machine's, not the plan's.", es: "Un modelo con calificación «perform» hará las compresiones él mismo una vez firmada la renuncia automática; uno con «assist» guiará a una persona y nada más. La calificación es de la máquina, no del plan.", fr: "Un modèle noté « perform » fera les compressions lui-même une fois la décharge automatique signée ; un modèle « assist » guidera une personne et rien de plus. La note est celle de la machine, pas du forfait.", de: "Ein Modell mit Einstufung »perform« führt die Kompressionen selbst aus, sobald der automatische Verzicht unterzeichnet ist; eines mit »assist« leitet eine Person an und nicht mehr. Die Einstufung gehört der Maschine, nicht dem Tarif.", pt: "Um modelo classificado «perform» fará as compressões ele próprio depois de assinada a renúncia automática; um «assist» orientará uma pessoa e nada mais. A classificação é da máquina, não do plano.", it: "Un modello classificato «perform» eseguirà le compressioni da solo una volta firmata la liberatoria automatica; uno «assist» guiderà una persona e nulla più. La classificazione è della macchina, non del piano.", ja: "「perform」評価のモデルは自動免責への署名後、自ら圧迫を行います。「assist」評価のモデルは人に手順を伝えるだけです。この評価は機械のものであり、プランのものではありません。", zh: "评级为「perform」的型号在自动豁免签署后会自己做按压；评级为「assist」的只会口头指导他人，仅此而已。评级属于机器，不属于套餐。", hi: "«perform» रेटेड मॉडल स्वचालित छूट पर हस्ताक्षर होते ही स्वयं कम्प्रेशन करेगा; «assist» रेटेड केवल व्यक्ति को निर्देश देगा, इससे अधिक नहीं। रेटिंग मशीन की है, योजना की नहीं।", ar: "الطراز المصنّف «perform» سيجري الضغطات بنفسه بعد توقيع الإعفاء التلقائي؛ والمصنّف «assist» سيرشد شخصًا لا أكثر. التصنيف للآلة لا للخطة.",
+  },
+  "rch.body.send": {
+    en: "Send", es: "Enviar", fr: "Envoyer", de: "Senden", pt: "Enviar", it: "Invia", ja: "送信", zh: "发送", hi: "भेजें", ar: "أرسل",
+  },
+  "rch.body.unbind": {
+    en: "Unbind", es: "Desvincular", fr: "Délier", de: "Lösen", pt: "Desvincular", it: "Svincola", ja: "解除", zh: "解绑", hi: "अलग करें", ar: "افصله",
+  },
+  "rch.code": {
+    en: "A code somebody can scan", es: "Un código que alguien puede escanear", fr: "Un code que quelqu'un peut scanner", de: "Ein Code, den jemand scannen kann", pt: "Um código que alguém pode digitalizar", it: "Un codice che qualcuno può scansionare", ja: "誰かがスキャンできるコード", zh: "谁都能扫的码", hi: "एक कोड जिसे कोई स्कैन कर सके", ar: "رمز يمكن لأحد مسحه",
+  },
+  "rch.code.bid.ph": {
+    en: "beacon id", es: "id de baliza", fr: "id de balise", de: "Baken-Id", pt: "id da baliza", it: "id del beacon", ja: "ビーコンID", zh: "信标ID", hi: "बीकन आईडी", ar: "معرّف المنارة",
+  },
+  "rch.code.see": {
+    en: "What a scanner sees", es: "Lo que ve quien escanea", fr: "Ce que voit le scanneur", de: "Was ein Scanner sieht", pt: "O que vê quem digitaliza", it: "Cosa vede chi scansiona", ja: "スキャンした人に見えるもの", zh: "扫描者看到的内容", hi: "स्कैन करने वाले को क्या दिखता है", ar: "ما يراه الماسح",
+  },
+  "rch.code.card": {
+    en: "The card", es: "La tarjeta", fr: "La carte", de: "Die Karte", pt: "O cartão", it: "La scheda", ja: "カード", zh: "卡片", hi: "कार्ड", ar: "البطاقة",
+  },
+  "rch.code.printable": {
+    en: "Printable", es: "Imprimible", fr: "Imprimable", de: "Druckbar", pt: "Imprimível", it: "Stampabile", ja: "印刷用", zh: "可打印", hi: "मुद्रण योग्य", ar: "قابل للطباعة",
+  },
+  "rch.code.raise": {
+    en: "Raise it as a stranger would", es: "Actívalo como lo haría un desconocido", fr: "Le déclencher comme un inconnu", de: "Auslösen wie ein Fremder", pt: "Acioná-lo como um estranho faria", it: "Attivalo come farebbe un estraneo", ja: "見知らぬ人として発報する", zh: "像陌生人那样触发", hi: "अजनबी की तरह उठाएँ", ar: "أطلقه كما يفعل غريب",
+  },
+  "rch.code.down": {
+    en: "Take the code down", es: "Retirar el código", fr: "Retirer le code", de: "Den Code abnehmen", pt: "Retirar o código", it: "Togli il codice", ja: "コードを取り下げる", zh: "撤下此码", hi: "कोड हटाएँ", ar: "أنزل الرمز",
+  },
+  "rch.code.pitch": {
+    en: "Raising from a scanned code takes no account. It reaches the people watching and stops there — a stranger at a door can wake a household, never an ambulance.", es: "Activar desde un código escaneado no requiere cuenta. Llega a quienes vigilan y ahí se detiene — un desconocido en la puerta puede despertar a la casa, nunca llamar una ambulancia.", fr: "Déclencher depuis un code scanné ne demande aucun compte. Cela atteint les personnes qui veillent et s'arrête là — un inconnu à la porte peut réveiller un foyer, jamais une ambulance.", de: "Auslösen über einen gescannten Code braucht kein Konto. Es erreicht die Wachenden und endet dort — ein Fremder an der Tür kann einen Haushalt wecken, nie einen Krankenwagen.", pt: "Acionar a partir de um código digitalizado não requer conta. Chega às pessoas que vigiam e para aí — um estranho à porta pode acordar a casa, nunca uma ambulância.", it: "Attivare da un codice scansionato non richiede account. Raggiunge chi veglia e si ferma lì — un estraneo alla porta può svegliare una casa, mai un'ambulanza.", ja: "スキャンしたコードからの発報にアカウントは要りません。見守る人々に届き、そこで止まります — 玄関先の見知らぬ人は家の人を起こせても、救急車は決して呼べません。", zh: "从扫描的码触发无需账户。它抵达守望的人便止步于此 — 门口的陌生人能唤醒一户人家，却永远叫不来救护车。", hi: "स्कैन किए कोड से उठाने में कोई खाता नहीं लगता। यह देखने वालों तक पहुँचता है और वहीं रुक जाता है — दरवाज़े पर खड़ा अजनबी घर को जगा सकता है, कभी एम्बुलेंस नहीं।", ar: "الإطلاق من رمز ممسوح لا يتطلب حسابًا. يصل إلى المراقبين ويتوقف هناك — غريب على الباب يمكنه إيقاظ أهل البيت، لا استدعاء إسعاف أبدًا.",
+  },
+  "rch.code.scanned": {
+    en: "The scan page is {n} characters of HTML — it is a page for a stranger's phone, not a document for this console. It is served at {path}.", es: "La página de escaneo son {n} caracteres de HTML — es una página para el teléfono de un desconocido, no un documento para esta consola. Se sirve en {path}.", fr: "La page de scan fait {n} caractères de HTML — c'est une page pour le téléphone d'un inconnu, pas un document pour cette console. Elle est servie à {path}.", de: "Die Scan-Seite umfasst {n} Zeichen HTML — sie ist eine Seite für das Telefon eines Fremden, kein Dokument für diese Konsole. Sie wird unter {path} ausgeliefert.", pt: "A página de digitalização são {n} caracteres de HTML — é uma página para o telefone de um estranho, não um documento para esta consola. É servida em {path}.", it: "La pagina di scansione è {n} caratteri di HTML — è una pagina per il telefono di un estraneo, non un documento per questa console. È servita a {path}.", ja: "スキャンページは{n}文字のHTMLです — 見知らぬ人の電話のためのページであり、このコンソールの文書ではありません。{path}で提供されます。", zh: "扫描页是{n}个字符的HTML — 它是给陌生人手机看的页面，不是这个控制台的文档。它在{path}提供。", hi: "स्कैन पेज {n} अक्षरों का HTML है — यह अजनबी के फ़ोन के लिए पेज है, इस कंसोल का दस्तावेज़ नहीं। यह {path} पर परोसा जाता है।", ar: "صفحة المسح {n} حرفًا من HTML — إنها صفحة لهاتف غريب لا وثيقة لهذه اللوحة. تُقدَّم على {path}.",
+  },
+  "rch.code.qr.alt": {
+    en: "the printable code", es: "el código imprimible", fr: "le code imprimable", de: "der druckbare Code", pt: "o código imprimível", it: "il codice stampabile", ja: "印刷用コード", zh: "可打印的码", hi: "मुद्रण योग्य कोड", ar: "الرمز القابل للطباعة",
+  },
+  "rch.acc": {
+    en: "Accounts elsewhere", es: "Cuentas en otros sitios", fr: "Comptes ailleurs", de: "Konten anderswo", pt: "Contas noutros lugares", it: "Account altrove", ja: "よそのアカウント", zh: "别处的账号", hi: "अन्यत्र खाते", ar: "حسابات في أماكن أخرى",
+  },
+  "rch.acc.platform.ph": {
+    en: "mastodon", es: "mastodon", fr: "mastodon", de: "mastodon", pt: "mastodon", it: "mastodon", ja: "mastodon", zh: "mastodon", hi: "mastodon", ar: "mastodon",
+  },
+  "rch.acc.handle.ph": {
+    en: "@you", es: "@tu", fr: "@vous", de: "@sie", pt: "@voce", it: "@tu", ja: "@you", zh: "@you", hi: "@aap", ar: "@انت",
+  },
+  "rch.acc.publish.opt": {
+    en: "publish — words go out", es: "publicar — las palabras salen", fr: "publier — les mots sortent", de: "veröffentlichen — Worte gehen hinaus", pt: "publicar — as palavras saem", it: "pubblica — le parole escono", ja: "発信 — 言葉が出ていく", zh: "发布 — 话语向外", hi: "प्रकाशित — शब्द बाहर जाते हैं", ar: "نشر — الكلمات تخرج",
+  },
+  "rch.acc.collect.opt": {
+    en: "collect — words come in", es: "recoger — las palabras entran", fr: "collecter — les mots entrent", de: "sammeln — Worte kommen herein", pt: "recolher — as palavras entram", it: "raccogli — le parole entrano", ja: "収集 — 言葉が入ってくる", zh: "收集 — 话语向内", hi: "एकत्र — शब्द अंदर आते हैं", ar: "جمع — الكلمات تدخل",
+  },
+  "rch.acc.connect": {
+    en: "Connect", es: "Conectar", fr: "Connecter", de: "Verbinden", pt: "Ligar", it: "Collega", ja: "接続", zh: "连接", hi: "जोड़ें", ar: "اربط",
+  },
+  "rch.acc.beacon": {
+    en: "Beacon", es: "Baliza", fr: "Balise", de: "Bake", pt: "Baliza", it: "Beacon", ja: "ビーコン", zh: "信标", hi: "बीकन", ar: "منارة",
+  },
+  "rch.acc.code": {
+    en: "Code", es: "Código", fr: "Code", de: "Code", pt: "Código", it: "Codice", ja: "コード", zh: "码", hi: "कोड", ar: "الرمز",
+  },
+  "rch.acc.disconnect": {
+    en: "Disconnect", es: "Desconectar", fr: "Déconnecter", de: "Trennen", pt: "Desligar", it: "Scollega", ja: "切断", zh: "断开", hi: "हटाएँ", ar: "افصل",
+  },
+  "rch.acc.say.ph": {
+    en: "Say something", es: "Di algo", fr: "Dites quelque chose", de: "Sagen Sie etwas", pt: "Diga algo", it: "Di' qualcosa", ja: "何か言う", zh: "说点什么", hi: "कुछ कहें", ar: "قل شيئًا",
+  },
+  "rch.acc.publish": {
+    en: "Publish", es: "Publicar", fr: "Publier", de: "Veröffentlichen", pt: "Publicar", it: "Pubblica", ja: "発信する", zh: "发布", hi: "प्रकाशित करें", ar: "انشر",
+  },
+  "rch.acc.collect": {
+    en: "Collect", es: "Recoger", fr: "Collecter", de: "Sammeln", pt: "Recolher", it: "Raccogli", ja: "収集する", zh: "收集", hi: "एकत्र करें", ar: "اجمع",
+  },
+  "rch.beacon.note": {
+    en: "{url} — the printable code for it is behind your own token, not a public link.", es: "{url} — su código imprimible está tras tu propio token, no en un enlace público.", fr: "{url} — son code imprimable est derrière votre propre jeton, pas un lien public.", de: "{url} — der druckbare Code dafür liegt hinter Ihrem eigenen Token, nicht hinter einem öffentlichen Link.", pt: "{url} — o código imprimível está atrás do seu próprio token, não de um link público.", it: "{url} — il suo codice stampabile è dietro il tuo token, non un link pubblico.", ja: "{url} — その印刷用コードは公開リンクではなく、あなた自身のトークンの向こうにあります。", zh: "{url} — 它的可打印码在你自己的令牌之后，而非公开链接。", hi: "{url} — इसका मुद्रण योग्य कोड आपके अपने टोकन के पीछे है, सार्वजनिक लिंक नहीं।", ar: "{url} — الرمز القابل للطباعة له خلف رمزك الخاص، لا رابط عام.",
+  },
+  "rch.ask": {
+    en: "Send it to go and ask", es: "Envíalo a preguntar", fr: "L'envoyer demander", de: "Losschicken zum Fragen", pt: "Envie-o a perguntar", it: "Mandalo a chiedere", ja: "尋ねに行かせる", zh: "派它去问", hi: "पूछने भेजें", ar: "أرسله ليسأل",
+  },
+  "rch.ask.topic.ph": {
+    en: "Topic", es: "Tema", fr: "Sujet", de: "Thema", pt: "Tema", it: "Argomento", ja: "トピック", zh: "主题", hi: "विषय", ar: "الموضوع",
+  },
+  "rch.ask.q.ph": {
+    en: "What do you want to know?", es: "¿Qué quieres saber?", fr: "Que voulez-vous savoir ?", de: "Was wollen Sie wissen?", pt: "O que quer saber?", it: "Cosa vuoi sapere?", ja: "何を知りたいですか？", zh: "你想知道什么？", hi: "आप क्या जानना चाहते हैं?", ar: "ماذا تريد أن تعرف؟",
+  },
+  "rch.ask.go": {
+    en: "Go", es: "Ir", fr: "Aller", de: "Los", pt: "Ir", it: "Vai", ja: "行く", zh: "出发", hi: "जाओ", ar: "انطلق",
+  },
+  "rch.ask.read": {
+    en: "Read", es: "Leer", fr: "Lire", de: "Lesen", pt: "Ler", it: "Leggi", ja: "読む", zh: "阅读", hi: "पढ़ें", ar: "اقرأ",
+  },
+  "rch.ask.keep": {
+    en: "Keep what it learned", es: "Conservar lo aprendido", fr: "Garder ce qu'il a appris", de: "Behalten, was er lernte", pt: "Guardar o que aprendeu", it: "Tieni ciò che ha imparato", ja: "学んだことを保持", zh: "保留它学到的", hi: "जो सीखा उसे रखें", ar: "احتفظ بما تعلّمه",
+  },
+  "rch.ask.price": {
+    en: "Redactions is how much of you was taken out before the question left, and left this host is whether it left at all. A screen that showed the findings and hid those two would be showing the answer and hiding what it cost.", es: "«Redactions» es cuánto de ti se quitó antes de que la pregunta saliera, y «left this host» es si salió siquiera. Una pantalla que mostrara los hallazgos y ocultara esos dos estaría mostrando la respuesta y escondiendo lo que costó.", fr: "« Redactions » dit combien de vous a été retiré avant que la question parte, et « left this host » dit si elle est partie tout court. Un écran qui montrerait les résultats en cachant ces deux-là montrerait la réponse en cachant son prix.", de: "»Redactions« sagt, wie viel von Ihnen entfernt wurde, bevor die Frage aufbrach, und »left this host«, ob sie überhaupt aufbrach. Ein Bildschirm, der die Befunde zeigte und diese beiden versteckte, zeigte die Antwort und verbärge ihren Preis.", pt: "«Redactions» é quanto de si foi retirado antes de a pergunta sair, e «left this host» é se sequer saiu. Um ecrã que mostrasse os resultados e escondesse esses dois estaria a mostrar a resposta e a esconder o que custou.", it: "«Redactions» è quanto di te è stato tolto prima che la domanda partisse, e «left this host» è se è partita affatto. Uno schermo che mostrasse i risultati nascondendo quei due mostrerebbe la risposta nascondendo quanto è costata.", ja: "「Redactions」は質問が出発する前にあなたのどれだけが取り除かれたかを、「left this host」はそもそも出発したかどうかを示します。所見を見せてこの二つを隠す画面は、答えを見せて代償を隠すことになります。", zh: "「Redactions」是问题出发前从你身上删去了多少，「left this host」是它究竟有没有离开。若屏幕只展示发现而隐藏这两项，就是展示答案而隐藏代价。", hi: "«Redactions» यह है कि प्रश्न निकलने से पहले आपका कितना हिस्सा हटाया गया, और «left this host» यह कि वह निकला भी या नहीं। जो स्क्रीन निष्कर्ष दिखाकर ये दोनों छिपाए, वह उत्तर दिखाकर उसकी कीमत छिपा रही होगी।", ar: "«Redactions» تعني كم أُخذ منك قبل أن يغادر السؤال، و«left this host» تعني هل غادر أصلًا. الشاشة التي تعرض النتائج وتخفي هذين تعرض الجواب وتخفي ثمنه.",
+  },
+  "rch.wrist": {
+    en: "Elsewhere and the wrist", es: "Otros sitios y la muñeca", fr: "Ailleurs et le poignet", de: "Anderswo und das Handgelenk", pt: "Outros lugares e o pulso", it: "Altrove e il polso", ja: "よそと手首", zh: "别处与手腕", hi: "अन्यत्र और कलाई", ar: "أماكن أخرى والمعصم",
+  },
+  "rch.wrist.visits": {
+    en: "{n} community visit{s} recorded — JIM points at QRME's rooms, QRME hosts them.", es: "{n} visitas comunitarias registradas — JIM apunta a las salas de QRME, QRME las aloja.", fr: "{n} visites communautaires enregistrées — JIM pointe vers les salles de QRME, QRME les héberge.", de: "{n} Community-Besuche verzeichnet — JIM zeigt auf QRMEs Räume, QRME beherbergt sie.", pt: "{n} visitas comunitárias registadas — o JIM aponta para as salas do QRME, o QRME aloja-as.", it: "{n} visite alla community registrate — JIM punta alle stanze di QRME, QRME le ospita.", ja: "コミュニティ訪問{n}件を記録 — JIMはQRMEのルームを指し示し、QRMEがホストします。", zh: "已记录{n}次社区访问 — JIM指向QRME的房间，由QRME托管。", hi: "{n} सामुदायिक भेंट दर्ज — JIM QRME के कमरों की ओर इशारा करता है, QRME उन्हें होस्ट करता है।", ar: "سُجلت {n} زيارة مجتمعية — يشير JIM إلى غرف QRME، وQRME يستضيفها.",
+  },
+  "rch.wrist.token.ph": {
+    en: "watch drip token", es: "token de goteo del reloj", fr: "jeton de goutte-à-goutte de la montre", de: "Watch-Drip-Token", pt: "token de gotejamento do relógio", it: "token drip dell'orologio", ja: "ウォッチのドリップトークン", zh: "手表滴流令牌", hi: "घड़ी ड्रिप टोकन", ar: "رمز تقطير الساعة",
+  },
+  "rch.wrist.send": {
+    en: "Send a reading", es: "Enviar una lectura", fr: "Envoyer une mesure", de: "Eine Messung senden", pt: "Enviar uma leitura", it: "Invia una lettura", ja: "測定値を送る", zh: "发送一条读数", hi: "एक रीडिंग भेजें", ar: "أرسل قراءة",
+  },
+  "rch.wrist.pitch": {
+    en: "The watch posts against a drip token rather than an account credential, because a watch cannot hold one.", es: "El reloj publica con un token de goteo en vez de una credencial de cuenta, porque un reloj no puede guardarla.", fr: "La montre publie avec un jeton de goutte-à-goutte plutôt qu'un identifiant de compte, parce qu'une montre ne peut pas en détenir un.", de: "Die Uhr sendet gegen ein Drip-Token statt einer Kontoberechtigung, weil eine Uhr keine halten kann.", pt: "O relógio publica com um token de gotejamento em vez de uma credencial de conta, porque um relógio não pode guardá-la.", it: "L'orologio pubblica con un token drip anziché una credenziale di account, perché un orologio non può custodirla.", ja: "ウォッチはアカウント資格情報ではなくドリップトークンで送信します。ウォッチは資格情報を保持できないからです。", zh: "手表凭滴流令牌上报，而非账户凭证，因为手表无法保管凭证。", hi: "घड़ी खाता क्रेडेंशियल के बजाय ड्रिप टोकन से भेजती है, क्योंकि घड़ी क्रेडेंशियल नहीं रख सकती।", ar: "تنشر الساعة برمز تقطير لا ببيانات اعتماد حساب، لأن الساعة لا تستطيع حفظها.",
+  },
 };
 
 export function visitorLang(): Lang {

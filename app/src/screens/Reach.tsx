@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, type PlacedCodeCard, type RobotModel, type Row,
          type SocialBeacon } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -26,6 +27,7 @@ import { useSession } from "../store";
  */
 export function Reach() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [models, setModels] = useState<RobotModel[]>([]);
   const [robots, setRobots] = useState<Row[]>([]);
   const [accounts, setAccounts] = useState<Row[]>([]);
@@ -79,38 +81,36 @@ export function Reach() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>What reaches out</h2>
-        <span className="muted small">a body, a code, an account, an errand</span>
+        <h2>{tr("rch.title", lang)}</h2>
+        <span className="muted small">{tr("rch.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>A body in the house</h3>
+        <h3>{tr("rch.body", lang)}</h3>
         <div className="row">
           <select value={model} onChange={(e) => setModel(e.target.value)}>
-            <option value="">Pick a model…</option>
+            <option value="">{tr("rch.body.pick", lang)}</option>
             {models.map((m) => (
               <option key={m.model} value={m.model}>
-                {m.label} — {m.maker} · first aid: {m.first_aid}
+                {tr("rch.body.model", lang)
+                  .replace("{label}", m.label)
+                  .replace("{maker}", m.maker)
+                  .replace("{aid}", m.first_aid)}
               </option>
             ))}
           </select>
-          <input value={robotName} placeholder="What you call it"
+          <input value={robotName} placeholder={tr("rch.body.name.ph", lang)}
                  onChange={(e) => setRobotName(e.target.value)} />
           <button className="primary" disabled={busy || !model}
                   onClick={() => run(async () => {
                     await api.bindRobot(uid!, {
                       model, name: robotName.trim() || undefined }, token!);
                     setRobotName("");
-                  })}>Bind it</button>
+                  })}>{tr("rch.body.bind", lang)}</button>
         </div>
-        <p className="muted small">
-          A model rated <strong>perform</strong> will do compressions itself
-          once the automatic waiver is signed; one rated <strong>assist</strong>
-          {" "}will talk a person through them and nothing more. The rating is
-          the machine's, not the plan's.
-        </p>
+        <p className="muted small">{tr("rch.body.rating", lang)}</p>
         {robots.map((r) => (
           <div key={String(r.id)} className="row"
                style={{ padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
@@ -123,53 +123,49 @@ export function Reach() {
             <button disabled={busy}
                     onClick={() => run(() => api.commandRobot(
                       uid!, String(r.id),
-                      { command: command.trim() }, token!))}>Send</button>
+                      { command: command.trim() }, token!))}>{tr("rch.body.send", lang)}</button>
             <button disabled={busy}
                     onClick={() => run(() => api.unbindRobot(
-                      uid!, String(r.id), token!))}>Unbind</button>
+                      uid!, String(r.id), token!))}>{tr("rch.body.unbind", lang)}</button>
           </div>
         ))}
       </div>
 
       <div className="card">
-        <h3>A code somebody can scan</h3>
+        <h3>{tr("rch.code", lang)}</h3>
         <div className="row">
-          <input value={bid} placeholder="beacon id"
+          <input value={bid} placeholder={tr("rch.code.bid.ph", lang)}
                  onChange={(e) => setBid(e.target.value)} />
           <button disabled={busy || !bid.trim()}
                   onClick={() => run(async () => {
                     setScanned(await api.placedCode(bid.trim()));
-                  })}>What a scanner sees</button>
+                  })}>{tr("rch.code.see", lang)}</button>
           <button disabled={busy || !bid.trim()}
                   onClick={() => run(async () => {
                     setCard(await api.placedCodeCard(bid.trim()));
-                  })}>The card</button>
+                  })}>{tr("rch.code.card", lang)}</button>
           <button disabled={busy || !bid.trim()}
                   onClick={() => run(async () => {
                     setQr(await api.placedCodeQr(bid.trim()));
-                  })}>Printable</button>
+                  })}>{tr("rch.code.printable", lang)}</button>
         </div>
         <div className="row">
           <button disabled={busy || !bid.trim()}
                   onClick={() => run(() => api.raiseFromCode(bid.trim(),
                     { message: "Someone here needs help" }))}>
-            Raise it as a stranger would
+            {tr("rch.code.raise", lang)}
           </button>
           <button disabled={busy || !bid.trim()}
                   onClick={() => run(() => api.pickUpCode(bid.trim(), token!))}>
-            Take the code down
+            {tr("rch.code.down", lang)}
           </button>
         </div>
-        <p className="muted small">
-          Raising from a scanned code takes no account. It reaches the people
-          watching and stops there — a stranger at a door can wake a household,
-          never an ambulance.
-        </p>
+        <p className="muted small">{tr("rch.code.pitch", lang)}</p>
         {scanned && (
           <p className="muted small">
-            The scan page is {scanned.length} characters of HTML — it is a
-            page for a stranger's phone, not a document for this console. It
-            is served at <code>/c/{bid.trim()}</code>.
+            {tr("rch.code.scanned", lang)
+              .replace("{n}", String(scanned.length))
+              .replace("{path}", `/c/${bid.trim()}`)}
           </p>
         )}
         {card && (
@@ -179,23 +175,23 @@ export function Reach() {
           </p>
         )}
         {qr && (
-          <img alt="the printable code"
+          <img alt={tr("rch.code.qr.alt", lang)}
                src={"data:image/svg+xml;utf8," + encodeURIComponent(qr)}
                style={{ width: 160, height: 160 }} />
         )}
       </div>
 
       <div className="card">
-        <h3>Accounts elsewhere</h3>
+        <h3>{tr("rch.acc", lang)}</h3>
         <div className="row">
-          <input value={platform} placeholder="mastodon"
+          <input value={platform} placeholder={tr("rch.acc.platform.ph", lang)}
                  onChange={(e) => setPlatform(e.target.value)} />
-          <input value={handle} placeholder="@you"
+          <input value={handle} placeholder={tr("rch.acc.handle.ph", lang)}
                  onChange={(e) => setHandle(e.target.value)} />
           <select value={direction}
                   onChange={(e) => setDirection(e.target.value)}>
-            <option value="publish">publish — words go out</option>
-            <option value="collect">collect — words come in</option>
+            <option value="publish">{tr("rch.acc.publish.opt", lang)}</option>
+            <option value="collect">{tr("rch.acc.collect.opt", lang)}</option>
           </select>
           <button className="primary" disabled={busy || !platform.trim()}
                   onClick={() => run(async () => {
@@ -203,7 +199,7 @@ export function Reach() {
                       platform: platform.trim(), direction,
                       handle: handle.trim() || undefined }, token!);
                     setHandle("");
-                  })}>Connect</button>
+                  })}>{tr("rch.acc.connect", lang)}</button>
         </div>
         {accounts.map((a) => (
           <div key={String(a.id)}
@@ -217,25 +213,25 @@ export function Reach() {
                       onClick={() => run(async () => {
                         setBeacon(await api.socialBeaconCard(
                           String(a.id), token!));
-                      })}>Beacon</button>
+                      })}>{tr("rch.acc.beacon", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(async () => {
                         setQr(await api.socialQr(String(a.id), token!));
-                      })}>Code</button>
+                      })}>{tr("rch.acc.code", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(() => api.disconnectSocialAccount(
-                        String(a.id), token!))}>Disconnect</button>
+                        String(a.id), token!))}>{tr("rch.acc.disconnect", lang)}</button>
             </div>
             {a.direction === "publish" ? (
               <div className="row">
-                <input value={post} placeholder="Say something"
+                <input value={post} placeholder={tr("rch.acc.say.ph", lang)}
                        onChange={(e) => setPost(e.target.value)} />
                 <button disabled={busy || !post.trim()}
                         onClick={() => run(async () => {
                           await api.publishToSocial(String(a.id), {
                             content: post.trim() }, token!);
                           setPost("");
-                        })}>Publish</button>
+                        })}>{tr("rch.acc.publish", lang)}</button>
               </div>
             ) : (
               <div className="row">
@@ -243,7 +239,7 @@ export function Reach() {
                         onClick={() => run(() => api.collectFromSocial(
                           String(a.id),
                           { items: [{ content: "a post from elsewhere" }] },
-                          token!))}>Collect</button>
+                          token!))}>{tr("rch.acc.collect", lang)}</button>
               </div>
             )}
           </div>
@@ -254,18 +250,18 @@ export function Reach() {
         <div className="card">
           <h3>{beacon.platform} · {beacon.handle}</h3>
           <p className="muted small">
-            {beacon.presence_url ?? "no public address"} — the printable code
-            for it is behind your own token, not a public link.
+            {tr("rch.beacon.note", lang)
+              .replace("{url}", beacon.presence_url ?? "no public address")}
           </p>
         </div>
       )}
 
       <div className="card">
-        <h3>Send it to go and ask</h3>
+        <h3>{tr("rch.ask", lang)}</h3>
         <div className="row">
-          <input value={topic} placeholder="Topic"
+          <input value={topic} placeholder={tr("rch.ask.topic.ph", lang)}
                  onChange={(e) => setTopic(e.target.value)} />
-          <input value={question} placeholder="What do you want to know?"
+          <input value={question} placeholder={tr("rch.ask.q.ph", lang)}
                  onChange={(e) => setQuestion(e.target.value)} />
           <button className="primary"
                   disabled={busy || !topic.trim() || !question.trim()}
@@ -274,7 +270,7 @@ export function Reach() {
                       topic: topic.trim(), question: question.trim(),
                       private: true }, token!);
                     setQuestion("");
-                  })}>Go</button>
+                  })}>{tr("rch.ask.go", lang)}</button>
         </div>
         {excursions.map((x) => (
           <div key={String(x.id)}
@@ -290,39 +286,32 @@ export function Reach() {
               <button disabled={busy}
                       onClick={() => run(async () => {
                         setEntry(await api.excursionEntry(String(x.id)));
-                      })}>Read</button>
+                      })}>{tr("rch.ask.read", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(() => api.learnFromExcursion(
-                        String(x.id), token!))}>Keep what it learned</button>
+                        String(x.id), token!))}>{tr("rch.ask.keep", lang)}</button>
             </div>
           </div>
         ))}
         {entry && <p className="muted small">{JSON.stringify(entry)}</p>}
-        <p className="muted small">
-          <strong>Redactions</strong> is how much of you was taken out before
-          the question left, and <strong>left this host</strong> is whether it
-          left at all. A screen that showed the findings and hid those two
-          would be showing the answer and hiding what it cost.
-        </p>
+        <p className="muted small">{tr("rch.ask.price", lang)}</p>
       </div>
 
       <div className="card">
-        <h3>Elsewhere and the wrist</h3>
+        <h3>{tr("rch.wrist", lang)}</h3>
         <p className="muted small">
-          {visits.length} community visit{visits.length === 1 ? "" : "s"}{" "}
-          recorded — JIM points at QRME's rooms, QRME hosts them.
+          {tr("rch.wrist.visits", lang)
+            .replace("{n}", String(visits.length))
+            .replace("{s}", visits.length === 1 ? "" : "s")}
         </p>
         <div className="row">
-          <input value={dripToken} placeholder="watch drip token"
+          <input value={dripToken} placeholder={tr("rch.wrist.token.ph", lang)}
                  onChange={(e) => setDripToken(e.target.value)} />
           <button disabled={busy || !dripToken.trim()}
                   onClick={() => run(() => api.watchDrip(dripToken.trim(),
-                    { heart_rate: 62 }))}>Send a reading</button>
+                    { heart_rate: 62 }))}>{tr("rch.wrist.send", lang)}</button>
         </div>
-        <p className="muted small">
-          The watch posts against a drip token rather than an account
-          credential, because a watch cannot hold one.
-        </p>
+        <p className="muted small">{tr("rch.wrist.pitch", lang)}</p>
       </div>
     </div>
   );

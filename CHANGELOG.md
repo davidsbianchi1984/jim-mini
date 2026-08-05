@@ -4,6 +4,18 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.6] — 2026-08-05
+
+### What reaches out speaks the visitor's language
+
+The Reach screen — the robot bound to the household with its honest
+first-aid rating, the care code a stranger can scan, the accounts on
+platforms JIM does not run, the excursion that leaves the host and
+says what it cost, and the watch's drip token — is localized end to
+end: fifty-five strings become forty-five `rch.*` keys in all ten
+languages. The console-untranslated record falls **481 → 426**,
+exact-sync held.
+
 ## [0.44.5] — 2026-08-05
 
 ### The baseline speaks the visitor's language
