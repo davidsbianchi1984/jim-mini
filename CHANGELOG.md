@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.43.9] — 2026-08-05
+
+### Version alignment
+
+The three products are cut together, so one number names one
+combination of all three. No JIM-mini code changed — QRME's phones
+gained the face round: portrait, emblem and badge, page and themes,
+front, surfaces, blend, bodies, dials and the wrist, 24 routes with
+doors on iOS, Android and Windows. JIM's guardian and shells are untouched.
+
 ## [0.43.8] — 2026-08-05
 
 ### The watch you actually wear

@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.43.8** ([changelog](CHANGELOG.md) ·
+**Current release: v0.43.9** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.43.9** | Version alignment with QRME's face round (portrait, badge, page, surfaces, bodies, dials, wrist on the phones) |
 | **0.43.8** | **The watch you actually wear** — the setup card asks what you wear (Apple Watch, Wear OS, Fitbit, Garmin) and teaches that; the seed reads Fitbit Takeout exports; the devices card pairs over Bluetooth and knows speakers, glasses, AR/VR headsets and spatial displays |
 | **0.43.7** | Version alignment with QRME's record/veil/exit round |
 | **0.43.6** | Version alignment with QRME's workshop round |
