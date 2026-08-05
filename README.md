@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.45.6** ([changelog](CHANGELOG.md) ·
+**Current release: v0.45.7** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.45.7** | Version alignment with QRME's console round |
 | **0.45.6** | Version alignment with QRME's lobby, presence and voice round |
 | **0.45.5** | Version alignment with QRME's objection, live and marketplace round |
 | **0.45.4** | Version alignment with QRME's watch-party, delegation and beacon round |
