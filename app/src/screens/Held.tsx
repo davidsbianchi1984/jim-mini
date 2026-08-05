@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, type AccessLog, type CloudStatus, type Row } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -26,6 +27,7 @@ import { useSession } from "../store";
  */
 export function Held() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [log, setLog] = useState<AccessLog | null>(null);
   const [membership, setMembership] = useState<Row | null>(null);
   const [plans, setPlans] = useState<Row | null>(null);
@@ -76,30 +78,26 @@ export function Held() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>What's held about you</h2>
-        <span className="muted small">who holds it, who has read it</span>
+        <h2>{tr("hld.title", lang)}</h2>
+        <span className="muted small">{tr("hld.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>Who has read your record</h3>
+        <h3>{tr("hld.log", lang)}</h3>
         <div className="row">
           <span className="muted small">
-            Sealed in a vault: <strong>{log?.vaulted ? "yes" : "no"}</strong>
+            {tr("hld.log.vaulted", lang)} <strong>{log?.vaulted ? "yes" : "no"}</strong>
           </span>
           <span className="muted small">
-            An access record is being kept:{" "}
+            {tr("hld.log.kept", lang)}{" "}
             <strong>{log?.access_record_kept ? "yes" : "no"}</strong>
           </span>
         </div>
         {log?.note && <p className="muted small">{log.note}</p>}
         {log && !log.access_record_kept && (
-          <p className="muted small">
-            The list below is empty because nothing is being recorded — not
-            because nobody has looked. Those are different facts and this
-            screen will not let them look the same.
-          </p>
+          <p className="muted small">{tr("hld.log.empty", lang)}</p>
         )}
         {(log?.entries ?? []).map((e, i) => (
           <div key={i} style={{ padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
@@ -109,7 +107,7 @@ export function Held() {
       </div>
 
       <div className="card">
-        <h3>Your plan</h3>
+        <h3>{tr("hld.plan", lang)}</h3>
         <div className="row">
           <strong style={{ flex: 1 }}>
             {String(membership?.title ?? "…")}
@@ -129,7 +127,8 @@ export function Held() {
         )}
         {Array.isArray(storage.who_can_read) && (
           <p className="muted small">
-            Can read it: {(storage.who_can_read as string[]).join(", ")}
+            {tr("hld.plan.canread", lang).replace("{list}",
+              (storage.who_can_read as string[]).join(", "))}
           </p>
         )}
         <div className="row">
@@ -142,41 +141,35 @@ export function Held() {
           ))}
           <button disabled={busy}
                   onClick={() => run(() =>
-                    api.cancelMembership(uid!, token!))}>Cancel</button>
+                    api.cancelMembership(uid!, token!))}>{tr("hld.plan.cancel", lang)}</button>
         </div>
       </div>
 
       <div className="card">
-        <h3>Custody</h3>
+        <h3>{tr("hld.custody", lang)}</h3>
         {custodyError && <p className="muted small">{custodyError}</p>}
         {custody && (
           <p className="muted small">{JSON.stringify(custody)}</p>
         )}
         <div className="row">
-          <input value={key} placeholder="journal"
+          <input value={key} placeholder={tr("hld.custody.key.ph", lang)}
                  onChange={(e) => setKey(e.target.value)} />
           <button disabled={busy || !key.trim()}
                   onClick={() => run(async () => {
                     setProvenance(await api.custodyProvenance(
                       uid!, key.trim(), token!));
-                  })}>Where did this come from?</button>
+                  })}>{tr("hld.custody.where", lang)}</button>
         </div>
-        <p className="muted small">
-          Provenance is asked one key at a time — the route requires the key,
-          which is a small thing that a binding written from the route table
-          would have got wrong and a call against a running server did not.
-        </p>
+        <p className="muted small">{tr("hld.custody.pitch", lang)}</p>
         {provenance && (
           <p className="muted small">{JSON.stringify(provenance)}</p>
         )}
       </div>
 
       <div className="card">
-        <h3>What it may look at</h3>
+        <h3>{tr("hld.src", lang)}</h3>
         {sources.length === 0 && (
-          <div className="muted small">Nothing consented. Until a source is
-            consented here, giving JIM context from it is refused — the
-            server checks, it does not merely ask nicely.</div>
+          <div className="muted small">{tr("hld.src.none", lang)}</div>
         )}
         {sources.map((s, i) => (
           <div key={i} className="row"
@@ -195,18 +188,19 @@ export function Held() {
             <button key={s} disabled={busy}
                     onClick={() => run(() => api.setSources(
                       uid!, { source: s, consented: true }, token!))}>
-              Allow {s}
+              {tr("hld.src.allow", lang).replace("{source}", s)}
             </button>
           ))}
         </div>
       </div>
 
       <div className="card">
-        <h3>Where the answers come from</h3>
+        <h3>{tr("hld.where", lang)}</h3>
         {cloud && (
           <p className="muted small">
-            Cloud model: <strong>{cloud.cloud ? String(cloud.model) : "none"}</strong>
-            {" · "}falls back to {cloud.fallback}
+            {tr("hld.where.cloud", lang)
+              .replace("{model}", cloud.cloud ? String(cloud.model) : "none")
+              .replace("{fallback}", String(cloud.fallback))}
           </p>
         )}
         {cloud && <p className="muted small">{cloud.contribution}</p>}
@@ -214,30 +208,26 @@ export function Held() {
           ? <p className="muted small">{providerError}</p>
           : provider && (
             <p className="muted small">
-              Provider for this account: {String(provider.provider ?? "—")}
+              {tr("hld.where.provider", lang).replace("{provider}",
+                String(provider.provider ?? "—"))}
             </p>
           )}
         <p className="muted small">
-          {((connectors?.providers ?? []) as Row[]).length} connector
-          {" "}providers catalogued — Apple, Google and the rest, each with the
-          apps and directions it can be asked for.
+          {tr("hld.where.connectors", lang).replace("{n}",
+            String(((connectors?.providers ?? []) as Row[]).length))}
         </p>
       </div>
 
       <div className="card">
-        <h3>End it</h3>
-        <p className="muted small">
-          Erases everything held about you on this deployment. There is no
-          undo, which is the point of it. Type <code>erase</code> to arm the
-          button.
-        </p>
+        <h3>{tr("hld.end", lang)}</h3>
+        <p className="muted small">{tr("hld.end.pitch", lang)}</p>
         <div className="row">
-          <input value={confirm} placeholder="erase"
+          <input value={confirm} placeholder={tr("hld.end.ph", lang)}
                  onChange={(e) => setConfirm(e.target.value)} />
           <button className="danger" disabled={busy || confirm !== "erase"}
                   onClick={() => run(() =>
                     api.eraseEverything(uid!, token!))}>
-            Erase everything
+            {tr("hld.end.go", lang)}
           </button>
         </div>
       </div>

@@ -2101,6 +2101,210 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "wel.meals.day": {
     en: "Day {n}", es: "Día {n}", fr: "Jour {n}", de: "Tag {n}", pt: "Dia {n}", it: "Giorno {n}", ja: "{n}日目", zh: "第{n}天", hi: "दिन {n}", ar: "اليوم {n}",
   },
+  "hld.title": {
+    en: "What's held about you", es: "Lo que se guarda sobre ti", fr: "Ce qui est détenu sur vous", de: "Was über Sie gehalten wird", pt: "O que é guardado sobre si", it: "Ciò che è custodito su di te", ja: "あなたについて保持されているもの", zh: "关于你所保存的一切", hi: "आपके बारे में जो रखा गया है", ar: "ما هو محفوظ عنك",
+  },
+  "hld.sub": {
+    en: "who holds it, who has read it", es: "quién lo guarda, quién lo ha leído", fr: "qui le détient, qui l'a lu", de: "wer es hält, wer es gelesen hat", pt: "quem o guarda, quem o leu", it: "chi lo custodisce, chi l'ha letto", ja: "誰が保持し、誰が読んだか", zh: "谁保管，谁读过", hi: "कौन रखता है, किसने पढ़ा", ar: "من يحفظه، ومن قرأه",
+  },
+  "hld.log": {
+    en: "Who has read your record", es: "Quién ha leído tu registro", fr: "Qui a lu votre dossier", de: "Wer Ihre Akte gelesen hat", pt: "Quem leu o seu registo", it: "Chi ha letto il tuo registro", ja: "あなたの記録を読んだ人", zh: "谁读过你的记录", hi: "आपका रिकॉर्ड किसने पढ़ा", ar: "من قرأ سجلك",
+  },
+  "hld.log.vaulted": {
+    en: "Sealed in a vault:", es: "Sellado en una bóveda:", fr: "Scellé dans un coffre :", de: "In einem Tresor versiegelt:", pt: "Selado num cofre:", it: "Sigillato in un caveau:", ja: "保管庫に封印:", zh: "已封入保险库:", hi: "तिजोरी में सील:", ar: "مختوم في خزنة:",
+  },
+  "hld.log.kept": {
+    en: "An access record is being kept:", es: "Se está llevando un registro de accesos:", fr: "Un registre des accès est tenu :", de: "Ein Zugriffsprotokoll wird geführt:", pt: "Está a ser mantido um registo de acessos:", it: "Si tiene un registro degli accessi:", ja: "アクセス記録の保持:", zh: "正在保留访问记录:", hi: "पहुँच रिकॉर्ड रखा जा रहा है:", ar: "يُحتفظ بسجل وصول:",
+  },
+  "hld.log.empty": {
+    en: "The list below is empty because nothing is being recorded — not because nobody has looked. Those are different facts and this screen will not let them look the same.", es: "La lista de abajo está vacía porque no se está registrando nada — no porque nadie haya mirado. Son hechos distintos y esta pantalla no dejará que parezcan iguales.", fr: "La liste ci-dessous est vide parce que rien n'est enregistré — pas parce que personne n'a regardé. Ce sont deux faits différents et cet écran ne les laissera pas se ressembler.", de: "Die Liste unten ist leer, weil nichts aufgezeichnet wird — nicht, weil niemand hineingesehen hat. Das sind verschiedene Tatsachen, und dieser Bildschirm lässt sie nicht gleich aussehen.", pt: "A lista abaixo está vazia porque nada está a ser registado — não porque ninguém tenha olhado. São factos diferentes e este ecrã não os deixará parecer iguais.", it: "L'elenco qui sotto è vuoto perché non si sta registrando nulla — non perché nessuno abbia guardato. Sono fatti diversi e questa schermata non li lascerà sembrare uguali.", ja: "下のリストが空なのは、誰も見ていないからではなく、何も記録されていないからです。この二つは別の事実であり、この画面は両者を同じに見せません。", zh: "下面的列表为空，是因为什么都没被记录 — 而不是因为无人查看过。这是两个不同的事实，本屏幕不会让它们看起来一样。", hi: "नीचे की सूची इसलिए खाली है क्योंकि कुछ दर्ज ही नहीं हो रहा — इसलिए नहीं कि किसी ने देखा नहीं। ये दो अलग तथ्य हैं और यह स्क्रीन इन्हें एक जैसा नहीं दिखने देगी।", ar: "القائمة أدناه فارغة لأن شيئًا لا يُسجَّل — لا لأن أحدًا لم يطّلع. هاتان حقيقتان مختلفتان، وهذه الشاشة لن تدعهما تبدوان متشابهتين.",
+  },
+  "hld.plan": {
+    en: "Your plan", es: "Tu plan", fr: "Votre forfait", de: "Ihr Tarif", pt: "O seu plano", it: "Il tuo piano", ja: "あなたのプラン", zh: "你的方案", hi: "आपकी योजना", ar: "خطتك",
+  },
+  "hld.plan.canread": {
+    en: "Can read it: {list}", es: "Pueden leerlo: {list}", fr: "Peuvent le lire : {list}", de: "Dürfen es lesen: {list}", pt: "Podem lê-lo: {list}", it: "Possono leggerlo: {list}", ja: "読める者: {list}", zh: "可读取者: {list}", hi: "इसे पढ़ सकते हैं: {list}", ar: "يمكنهم قراءته: {list}",
+  },
+  "hld.plan.cancel": {
+    en: "Cancel", es: "Cancelar", fr: "Annuler", de: "Kündigen", pt: "Cancelar", it: "Annulla", ja: "解約", zh: "取消", hi: "रद्द करें", ar: "ألغِ",
+  },
+  "hld.custody": {
+    en: "Custody", es: "Custodia", fr: "Garde", de: "Verwahrung", pt: "Custódia", it: "Custodia", ja: "保管", zh: "保管", hi: "अभिरक्षा", ar: "الحفظ",
+  },
+  "hld.custody.key.ph": {
+    en: "journal", es: "diario", fr: "journal", de: "Journal", pt: "diário", it: "diario", ja: "journal", zh: "journal", hi: "journal", ar: "journal",
+  },
+  "hld.custody.where": {
+    en: "Where did this come from?", es: "¿De dónde vino esto?", fr: "D'où cela vient-il ?", de: "Woher kam das?", pt: "De onde veio isto?", it: "Da dove viene questo?", ja: "これはどこから来たのか？", zh: "这是从哪来的？", hi: "यह कहाँ से आया?", ar: "من أين جاء هذا؟",
+  },
+  "hld.custody.pitch": {
+    en: "Provenance is asked one key at a time — the route requires the key, which is a small thing that a binding written from the route table would have got wrong and a call against a running server did not.", es: "La procedencia se pide de una clave en una — la ruta exige la clave, un detalle pequeño que un enlace escrito desde la tabla de rutas habría errado y una llamada contra un servidor en marcha no.", fr: "La provenance se demande une clé à la fois — la route exige la clé, un petit détail qu'une liaison écrite d'après la table des routes aurait manqué et qu'un appel contre un serveur en marche n'a pas manqué.", de: "Die Herkunft wird Schlüssel für Schlüssel erfragt — die Route verlangt den Schlüssel, eine Kleinigkeit, die eine aus der Routentabelle geschriebene Anbindung falsch gemacht hätte und ein Aufruf gegen einen laufenden Server nicht.", pt: "A proveniência pede-se uma chave de cada vez — a rota exige a chave, um pormenor pequeno que uma ligação escrita a partir da tabela de rotas teria errado e uma chamada contra um servidor a correr não errou.", it: "La provenienza si chiede una chiave alla volta — la rotta richiede la chiave, una piccolezza che un binding scritto dalla tabella delle rotte avrebbe sbagliato e una chiamata a un server in esecuzione no.", ja: "来歴は一度にひとつのキーで尋ねます — このルートはキーを必須とします。ルート表から書いたバインディングなら取り違えたはずの小さな点で、実際に動くサーバーへ呼び出して初めて分かることでした。", zh: "来历一次只问一个键 — 该路由要求提供键。这是个细节：照着路由表写的绑定会弄错，而对着运行中的服务器实测就不会。", hi: "उद्गम एक बार में एक कुंजी के लिए पूछा जाता है — रूट कुंजी माँगता है, यह छोटी बात रूट-तालिका से लिखी बाइंडिंग ग़लत कर देती, और चालू सर्वर पर की गई कॉल ने नहीं की।", ar: "يُسأل عن المنشأ مفتاحًا مفتاحًا — المسار يشترط المفتاح، وهي تفصيلة صغيرة كان الربط المكتوب من جدول المسارات ليخطئ فيها، ولم يخطئ نداءٌ على خادم يعمل.",
+  },
+  "hld.src": {
+    en: "What it may look at", es: "Qué puede consultar", fr: "Ce qu'il peut consulter", de: "Was es einsehen darf", pt: "O que pode consultar", it: "Cosa può guardare", ja: "見てよいもの", zh: "它可以查看什么", hi: "यह क्या देख सकता है", ar: "ما يجوز له النظر فيه",
+  },
+  "hld.src.none": {
+    en: "Nothing consented. Until a source is consented here, giving JIM context from it is refused — the server checks, it does not merely ask nicely.", es: "Nada consentido. Hasta que una fuente se consienta aquí, darle a JIM contexto desde ella se rechaza — el servidor lo comprueba, no se limita a pedirlo por favor.", fr: "Rien de consenti. Tant qu'une source n'est pas consentie ici, donner à JIM du contexte issu d'elle est refusé — le serveur vérifie, il ne se contente pas de demander gentiment.", de: "Nichts eingewilligt. Solange eine Quelle hier nicht freigegeben ist, wird verweigert, JIM Kontext daraus zu geben — der Server prüft, er bittet nicht bloß höflich.", pt: "Nada consentido. Até uma fonte ser consentida aqui, dar ao JIM contexto a partir dela é recusado — o servidor verifica, não se limita a pedir com jeitinho.", it: "Nulla acconsentito. Finché una fonte non è acconsentita qui, dare a JIM contesto da essa viene rifiutato — il server controlla, non si limita a chiedere gentilmente.", ja: "同意されたものはありません。ここでソースに同意するまで、そこからJIMにコンテキストを与えることは拒否されます — サーバーが検査しており、丁寧にお願いしているだけではありません。", zh: "尚未同意任何来源。在此同意某个来源之前，从它向 JIM 提供上下文会被拒绝 — 服务器会检查，而不只是客气地请求。", hi: "किसी की सहमति नहीं। जब तक यहाँ किसी स्रोत की सहमति न दी जाए, उससे JIM को संदर्भ देना अस्वीकार होता है — सर्वर जाँचता है, केवल विनती नहीं करता।", ar: "لا شيء تمت الموافقة عليه. حتى تُمنح الموافقة لمصدر هنا، يُرفض إعطاء JIM سياقًا منه — الخادم يفحص، ولا يكتفي بالطلب بلطف.",
+  },
+  "hld.src.allow": {
+    en: "Allow {source}", es: "Permitir {source}", fr: "Autoriser {source}", de: "{source} erlauben", pt: "Permitir {source}", it: "Consenti {source}", ja: "{source}を許可", zh: "允许{source}", hi: "{source} की अनुमति दें", ar: "اسمح بـ{source}",
+  },
+  "hld.where": {
+    en: "Where the answers come from", es: "De dónde vienen las respuestas", fr: "D'où viennent les réponses", de: "Woher die Antworten kommen", pt: "De onde vêm as respostas", it: "Da dove vengono le risposte", ja: "答えはどこから来るか", zh: "答案从哪来", hi: "उत्तर कहाँ से आते हैं", ar: "من أين تأتي الإجابات",
+  },
+  "hld.where.cloud": {
+    en: "Cloud model: {model} · falls back to {fallback}", es: "Modelo en la nube: {model} · recurre a {fallback}", fr: "Modèle cloud : {model} · se rabat sur {fallback}", de: "Cloud-Modell: {model} · fällt zurück auf {fallback}", pt: "Modelo na nuvem: {model} · recorre a {fallback}", it: "Modello cloud: {model} · ripiega su {fallback}", ja: "クラウドモデル: {model} · 代替は{fallback}", zh: "云端模型: {model} · 回退到{fallback}", hi: "क्लाउड मॉडल: {model} · विकल्प {fallback}", ar: "نموذج سحابي: {model} · يعود إلى {fallback}",
+  },
+  "hld.where.provider": {
+    en: "Provider for this account: {provider}", es: "Proveedor de esta cuenta: {provider}", fr: "Fournisseur de ce compte : {provider}", de: "Anbieter für dieses Konto: {provider}", pt: "Fornecedor desta conta: {provider}", it: "Provider di questo account: {provider}", ja: "このアカウントのプロバイダー: {provider}", zh: "此账户的提供方: {provider}", hi: "इस खाते का प्रदाता: {provider}", ar: "مزود هذا الحساب: {provider}",
+  },
+  "hld.where.connectors": {
+    en: "{n} connector providers catalogued — Apple, Google and the rest, each with the apps and directions it can be asked for.", es: "{n} proveedores de conectores catalogados — Apple, Google y los demás, cada uno con las apps y direcciones que se le pueden pedir.", fr: "{n} fournisseurs de connecteurs catalogués — Apple, Google et les autres, chacun avec les applis et les directions qu'on peut lui demander.", de: "{n} Konnektor-Anbieter katalogisiert — Apple, Google und die übrigen, jeweils mit den Apps und Richtungen, um die man sie bitten kann.", pt: "{n} fornecedores de conectores catalogados — Apple, Google e os restantes, cada um com as apps e direções que lhe podem ser pedidas.", it: "{n} fornitori di connettori catalogati — Apple, Google e gli altri, ciascuno con le app e le direzioni che gli si possono chiedere.", ja: "コネクタ提供元を{n}社カタログ化 — Apple、Google、その他、それぞれ依頼できるアプリと方向とともに。", zh: "已收录{n}家连接器提供方 — Apple、Google 及其余各家，各自附有可请求的应用与方向。", hi: "{n} कनेक्टर प्रदाता सूचीबद्ध — Apple, Google और बाक़ी, हर एक उन ऐप और दिशाओं के साथ जो उससे माँगी जा सकती हैं।", ar: "{n} من مزودي الموصّلات مفهرسون — Apple وGoogle وسواهما، كل منهم مع التطبيقات والاتجاهات التي يمكن طلبها منه.",
+  },
+  "hld.end": {
+    en: "End it", es: "Terminar con todo", fr: "Y mettre fin", de: "Beenden", pt: "Acabar com tudo", it: "Metterci fine", ja: "すべて終わらせる", zh: "结束这一切", hi: "इसे समाप्त करें", ar: "أنهِ كل شيء",
+  },
+  "hld.end.pitch": {
+    en: "Erases everything held about you on this deployment. There is no undo, which is the point of it. Type erase to arm the button.", es: "Borra todo lo que se guarda sobre ti en este despliegue. No hay deshacer, y ese es justamente el punto. Escribe erase para armar el botón.", fr: "Efface tout ce qui est détenu sur vous sur ce déploiement. Il n'y a pas d'annulation, et c'est justement le but. Tapez erase pour armer le bouton.", de: "Löscht alles, was auf diesem Deployment über Sie gehalten wird. Es gibt kein Rückgängig, und genau darum geht es. Tippen Sie erase, um den Knopf scharf zu stellen.", pt: "Apaga tudo o que é guardado sobre si neste deployment. Não há como desfazer, e é essa a intenção. Escreva erase para armar o botão.", it: "Cancella tutto ciò che è custodito su di te in questo deployment. Non c'è annullamento, ed è proprio il punto. Digita erase per armare il pulsante.", ja: "この配備であなたについて保持されているすべてを消去します。取り消しはできません — それがこの機能の意味です。ボタンを有効にするには erase と入力してください。", zh: "抹除本部署上关于你的一切。没有撤销，这正是它的意义所在。输入 erase 以启用该按钮。", hi: "इस डिप्लॉयमेंट पर आपके बारे में रखा सब कुछ मिटा देता है। कोई पूर्ववत नहीं, और यही इसका मक़सद है। बटन सक्रिय करने के लिए erase टाइप करें।", ar: "يمحو كل ما هو محفوظ عنك على هذا النشر. لا تراجع، وهذا هو المقصود. اكتب erase لتفعيل الزر.",
+  },
+  "hld.end.ph": {
+    en: "erase", es: "erase", fr: "erase", de: "erase", pt: "erase", it: "erase", ja: "erase", zh: "erase", hi: "erase", ar: "erase",
+  },
+  "hld.end.go": {
+    en: "Erase everything", es: "Borrarlo todo", fr: "Tout effacer", de: "Alles löschen", pt: "Apagar tudo", it: "Cancella tutto", ja: "すべて消去", zh: "抹除一切", hi: "सब कुछ मिटाएँ", ar: "امحُ كل شيء",
+  },
+  "wrd.title": {
+    en: "Who you watch", es: "A quién vigilas", fr: "Qui vous veillez", de: "Über wen Sie wachen", pt: "Quem você vigia", it: "Chi vegli", ja: "見守っている相手", zh: "你在看顾谁", hi: "आप किसका ध्यान रखते हैं", ar: "من ترعاه",
+  },
+  "wrd.sub": {
+    en: "children linked to this account", es: "menores vinculados a esta cuenta", fr: "enfants liés à ce compte", de: "mit diesem Konto verknüpfte Kinder", pt: "crianças ligadas a esta conta", it: "bambini collegati a questo account", ja: "このアカウントに紐付いた子ども", zh: "关联到此账户的孩子", hi: "इस खाते से जुड़े बच्चे", ar: "الأطفال المرتبطون بهذا الحساب",
+  },
+  "wrd.link": {
+    en: "Link a child", es: "Vincular a un menor", fr: "Lier un enfant", de: "Ein Kind verknüpfen", pt: "Ligar uma criança", it: "Collega un bambino", ja: "子どもを紐付ける", zh: "关联一个孩子", hi: "एक बच्चा जोड़ें", ar: "اربط طفلًا",
+  },
+  "wrd.link.name.ph": {
+    en: "Their name", es: "Su nombre", fr: "Son prénom", de: "Ihr Name", pt: "O nome dele", it: "Il suo nome", ja: "その子の名前", zh: "他的名字", hi: "उनका नाम", ar: "اسمه",
+  },
+  "wrd.link.parent": {
+    en: "I am their parent", es: "Soy su madre o padre", fr: "Je suis son parent", de: "Ich bin ein Elternteil", pt: "Sou o pai ou a mãe", it: "Sono un genitore", ja: "私はその子の親です", zh: "我是他的家长", hi: "मैं इनका अभिभावक (माता/पिता) हूँ", ar: "أنا والده",
+  },
+  "wrd.link.guardian": {
+    en: "I am their legal guardian", es: "Soy su tutor legal", fr: "Je suis son tuteur légal", de: "Ich bin gesetzlicher Vormund", pt: "Sou o tutor legal", it: "Sono il tutore legale", ja: "私は法定後見人です", zh: "我是他的法定监护人", hi: "मैं इनका क़ानूनी संरक्षक हूँ", ar: "أنا وصيه القانوني",
+  },
+  "wrd.link.go": {
+    en: "Link", es: "Vincular", fr: "Lier", de: "Verknüpfen", pt: "Ligar", it: "Collega", ja: "紐付ける", zh: "关联", hi: "जोड़ें", ar: "اربط",
+  },
+  "wrd.link.pitch": {
+    en: "The child gets their own account and their own token — this links you to it, it does not make their record yours to read line by line. What you can see is on this page and nothing else.", es: "El menor tiene su propia cuenta y su propio token — esto te vincula a ella, no convierte su registro en algo tuyo para leer línea a línea. Lo que puedes ver está en esta página y nada más.", fr: "L'enfant a son propre compte et son propre jeton — ceci vous y relie, cela ne fait pas de son dossier quelque chose que vous pouvez lire ligne à ligne. Ce que vous pouvez voir est sur cette page et rien d'autre.", de: "Das Kind bekommt ein eigenes Konto und ein eigenes Token — dies verknüpft Sie damit, es macht seine Akte nicht zu Ihrer, Zeile für Zeile zu lesen. Was Sie sehen können, steht auf dieser Seite und sonst nirgends.", pt: "A criança tem a sua própria conta e o seu próprio token — isto liga-o a ela, não torna o registo dela seu para ler linha a linha. O que pode ver está nesta página e mais nada.", it: "Il bambino ha un proprio account e un proprio token — questo ti collega a esso, non rende il suo registro tuo da leggere riga per riga. Ciò che puoi vedere è su questa pagina e nient'altro.", ja: "子どもは自分のアカウントと自分のトークンを持ちます — これはあなたをそこに結びつけるだけで、その子の記録を一行ずつ読める自分のものにするわけではありません。あなたが見られるのはこのページにあるものだけです。", zh: "孩子拥有自己的账户和自己的令牌 — 这只是把你与之关联，并不会让他的记录变成你可以逐行阅读的东西。你能看到的就在本页上，别无其他。", hi: "बच्चे का अपना खाता और अपना टोकन होता है — यह आपको उससे जोड़ता है, उसका रिकॉर्ड आपका नहीं बना देता कि आप पंक्ति-दर-पंक्ति पढ़ें। आप जो देख सकते हैं वह इसी पृष्ठ पर है, और कुछ नहीं।", ar: "للطفل حسابه ورمزه الخاصان — هذا يربطك به، ولا يجعل سجله ملكك لتقرأه سطرًا سطرًا. ما يمكنك رؤيته هو ما في هذه الصفحة لا غير.",
+  },
+  "wrd.board": {
+    en: "The board", es: "El tablero", fr: "Le tableau", de: "Die Tafel", pt: "O painel", it: "Il quadro", ja: "ボード", zh: "看板", hi: "बोर्ड", ar: "اللوحة",
+  },
+  "wrd.board.none": {
+    en: "Nobody linked.", es: "Nadie vinculado.", fr: "Personne de lié.", de: "Niemand verknüpft.", pt: "Ninguém ligado.", it: "Nessuno collegato.", ja: "誰も紐付いていません。", zh: "尚未关联任何人。", hi: "कोई नहीं जुड़ा।", ar: "لا أحد مرتبط.",
+  },
+  "wrd.board.oversight": {
+    en: "{oversight} oversight", es: "supervisión {oversight}", fr: "supervision {oversight}", de: "Aufsicht {oversight}", pt: "supervisão {oversight}", it: "supervisione {oversight}", ja: "見守り {oversight}", zh: "{oversight}监护", hi: "{oversight} निगरानी", ar: "إشراف {oversight}",
+  },
+  "wrd.board.counts": {
+    en: "{critical} critical · {escalations} escalations in the last day", es: "{critical} críticos · {escalations} escalados en el último día", fr: "{critical} critiques · {escalations} escalades sur le dernier jour", de: "{critical} kritisch · {escalations} Eskalationen am letzten Tag", pt: "{critical} críticos · {escalations} escalonamentos no último dia", it: "{critical} critici · {escalations} escalation nell'ultimo giorno", ja: "重大{critical}件 · 直近24時間のエスカレーション{escalations}件", zh: "{critical}项危急 · 最近一天{escalations}次升级", hi: "{critical} गंभीर · पिछले दिन {escalations} एस्केलेशन", ar: "{critical} حرجة · {escalations} تصعيدات في اليوم الأخير",
+  },
+  "wrd.board.open": {
+    en: "Open", es: "Abrir", fr: "Ouvrir", de: "Öffnen", pt: "Abrir", it: "Apri", ja: "開く", zh: "打开", hi: "खोलें", ar: "افتح",
+  },
+  "wrd.board.quiet": {
+    en: "Quiet 9pm–7am", es: "Silencio 21:00–7:00", fr: "Silence 21h–7h", de: "Ruhe 21–7 Uhr", pt: "Silêncio 21h–7h", it: "Silenzio 21–7", ja: "21時〜7時は静かに", zh: "21点至7点静默", hi: "रात 9 से सुबह 7 तक शांत", ar: "هدوء من 9 مساءً إلى 7 صباحًا",
+  },
+  "wrd.board.unlink": {
+    en: "Unlink", es: "Desvincular", fr: "Délier", de: "Trennen", pt: "Desligar", it: "Scollega", ja: "紐付けを外す", zh: "取消关联", hi: "अलग करें", ar: "افصل",
+  },
+  "wrd.detail": {
+    en: "{age} · {relationship} · {oversight} oversight · {sensitivity} sensitivity · {critical} critical events on record", es: "{age} · {relationship} · supervisión {oversight} · sensibilidad {sensitivity} · {critical} eventos críticos registrados", fr: "{age} · {relationship} · supervision {oversight} · sensibilité {sensitivity} · {critical} événements critiques au dossier", de: "{age} · {relationship} · Aufsicht {oversight} · Empfindlichkeit {sensitivity} · {critical} kritische Ereignisse verzeichnet", pt: "{age} · {relationship} · supervisão {oversight} · sensibilidade {sensitivity} · {critical} eventos críticos registados", it: "{age} · {relationship} · supervisione {oversight} · sensibilità {sensitivity} · {critical} eventi critici a registro", ja: "{age} · {relationship} · 見守り {oversight} · 感度 {sensitivity} · 記録上の重大事象{critical}件", zh: "{age} · {relationship} · {oversight}监护 · {sensitivity}敏感度 · 记录在案的危急事件{critical}起", hi: "{age} · {relationship} · {oversight} निगरानी · {sensitivity} संवेदनशीलता · रिकॉर्ड में {critical} गंभीर घटनाएँ", ar: "{age} · {relationship} · إشراف {oversight} · حساسية {sensitivity} · {critical} أحداث حرجة في السجل",
+  },
+  "wrd.waiver.pitch": {
+    en: "A bound, CPR-rated robot will not begin without somebody on scene saying so — unless you sign this, and then it will. Read all of it.", es: "Un robot vinculado y homologado para RCP no empezará sin que alguien presente lo diga — salvo que firmes esto, y entonces sí lo hará. Léelo entero.", fr: "Un robot lié et homologué RCP ne commencera pas sans que quelqu'un sur place le dise — sauf si vous signez ceci, et alors il le fera. Lisez tout.", de: "Ein gebundener, CPR-tauglicher Roboter beginnt nicht, ohne dass jemand vor Ort es sagt — es sei denn, Sie unterschreiben dies, dann tut er es. Lesen Sie alles.", pt: "Um robô vinculado e classificado para RCP não começará sem que alguém no local o diga — a não ser que assine isto, e então começará. Leia tudo.", it: "Un robot vincolato e abilitato alla RCP non inizierà senza che qualcuno sul posto lo dica — a meno che tu non firmi questo, e allora lo farà. Leggilo tutto.", ja: "紐付け済みでCPR対応のロボットは、その場にいる誰かがそう言わない限り開始しません — これに署名した場合を除いて。署名すれば開始します。全文を読んでください。", zh: "已绑定且具备心肺复苏资格的机器人，若无现场有人开口，就不会动手 — 除非你签署本项，届时它会动手。请通读全文。", hi: "बँधा हुआ, CPR-रेटेड रोबोट तब तक शुरू नहीं करेगा जब तक मौक़े पर कोई ऐसा न कहे — सिवाय इसके कि आप इस पर हस्ताक्षर करें, तब वह करेगा। इसे पूरा पढ़ें।", ar: "الآلي المربوط المصنّف للإنعاش لن يبدأ ما لم يقل ذلك أحد في الموقع — إلا إذا وقّعت هذا، عندها سيبدأ. اقرأه كاملًا.",
+  },
+  "wrd.waiver.signed": {
+    en: "Signed as {signature}. Withdrawing restores the confirm-gated behaviour immediately.", es: "Firmado como {signature}. Retirarlo restaura de inmediato el comportamiento con confirmación.", fr: "Signé comme {signature}. Le retrait rétablit immédiatement le comportement soumis à confirmation.", de: "Unterschrieben als {signature}. Ein Widerruf stellt das bestätigungspflichtige Verhalten sofort wieder her.", pt: "Assinado como {signature}. Retirar restaura de imediato o comportamento com confirmação.", it: "Firmato come {signature}. Ritirarlo ripristina subito il comportamento con conferma.", ja: "{signature}として署名済み。撤回すれば、確認を要する挙動が直ちに戻ります。", zh: "已以{signature}签署。撤回后，需确认才动手的行为立即恢复。", hi: "{signature} के रूप में हस्ताक्षरित। वापस लेने पर पुष्टि-आधारित व्यवहार तुरंत लौट आता है।", ar: "موقّع باسم {signature}. السحب يعيد فورًا السلوك المشروط بالتأكيد.",
+  },
+  "wrd.waiver.withdraw": {
+    en: "Withdraw", es: "Retirar", fr: "Retirer", de: "Widerrufen", pt: "Retirar", it: "Ritira", ja: "撤回", zh: "撤回", hi: "वापस लें", ar: "اسحب",
+  },
+  "wrd.waiver.sig.ph": {
+    en: "Type your full name", es: "Escribe tu nombre completo", fr: "Tapez votre nom complet", de: "Geben Sie Ihren vollen Namen ein", pt: "Escreva o seu nome completo", it: "Scrivi il tuo nome completo", ja: "氏名を入力してください", zh: "输入你的全名", hi: "अपना पूरा नाम लिखें", ar: "اكتب اسمك الكامل",
+  },
+  "wrd.waiver.sign": {
+    en: "Sign", es: "Firmar", fr: "Signer", de: "Unterschreiben", pt: "Assinar", it: "Firma", ja: "署名する", zh: "签署", hi: "हस्ताक्षर करें", ar: "وقّع",
+  },
+  "ct.title": {
+    en: "Care Team", es: "Equipo de cuidados", fr: "Équipe de soins", de: "Betreuungsteam", pt: "Equipa de cuidados", it: "Squadra di cura", ja: "ケアチーム", zh: "照护团队", hi: "देखभाल टीम", ar: "فريق الرعاية",
+  },
+  "ct.sub": {
+    en: "your own QRME organization, coordinated by the Guardian", es: "tu propia organización QRME, coordinada por el Guardián", fr: "votre propre organisation QRME, coordonnée par le Gardien", de: "Ihre eigene QRME-Organisation, koordiniert vom Guardian", pt: "a sua própria organização QRME, coordenada pelo Guardião", it: "la tua organizzazione QRME, coordinata dal Guardian", ja: "ガーディアンが取りまとめる、あなた自身のQRME組織", zh: "你自己的 QRME 组织，由守护者统筹", hi: "आपका अपना QRME संगठन, गार्जियन द्वारा समन्वित", ar: "منظمتك الخاصة في QRME، ينسّقها الحارس",
+  },
+  "ct.link": {
+    en: "Link your organization", es: "Vincula tu organización", fr: "Liez votre organisation", de: "Verknüpfen Sie Ihre Organisation", pt: "Ligue a sua organização", it: "Collega la tua organizzazione", ja: "組織を紐付ける", zh: "关联你的组织", hi: "अपना संगठन जोड़ें", ar: "اربط منظمتك",
+  },
+  "ct.link.pitch": {
+    en: "Found the org and staff its desks in QRME first, then paste its id, the desk that speaks for JIM, and your own QRME owner token. The token is stored for coordinations only and deleted when you unlink; it is never shown again.", es: "Funda la organización y dota sus mostradores en QRME primero, luego pega su id, el mostrador que habla por JIM, y tu propio token de propietario de QRME. El token se guarda solo para las coordinaciones y se borra al desvincular; nunca se vuelve a mostrar.", fr: "Fondez l'organisation et dotez ses comptoirs dans QRME d'abord, puis collez son id, le comptoir qui parle pour JIM, et votre propre jeton de propriétaire QRME. Le jeton n'est conservé que pour les coordinations et supprimé au moment de délier ; il n'est jamais réaffiché.", de: "Gründen Sie die Organisation und besetzen Sie ihre Schalter zuerst in QRME, fügen Sie dann ihre Id ein, den Schalter, der für JIM spricht, und Ihr eigenes QRME-Inhaber-Token. Das Token wird nur für Koordinationen gespeichert und beim Trennen gelöscht; es wird nie wieder angezeigt.", pt: "Funde a organização e preencha os seus balcões no QRME primeiro, depois cole o id dela, o balcão que fala pelo JIM, e o seu próprio token de proprietário QRME. O token é guardado só para coordenações e apagado quando desligar; nunca é mostrado outra vez.", it: "Fonda l'organizzazione e presidia i suoi banchi in QRME prima, poi incolla il suo id, il banco che parla per JIM, e il tuo token di proprietario QRME. Il token è conservato solo per i coordinamenti ed è cancellato quando scolleghi; non viene mai più mostrato.", ja: "まずQRMEで組織を設立してデスクに人を配置し、その組織ID、JIMを代弁するデスク、そしてあなた自身のQRMEオーナートークンを貼り付けてください。トークンは連携のためだけに保存され、紐付けを外すと削除されます。二度と表示されることはありません。", zh: "请先在 QRME 中创建组织并为其柜台配备人员，然后粘贴组织 id、代表 JIM 发言的柜台，以及你自己的 QRME 所有者令牌。该令牌仅为协同而保存，取消关联时即删除；且绝不会再次显示。", hi: "पहले QRME में संगठन स्थापित करें और उसकी डेस्कों पर लोग बिठाएँ, फिर उसका id, वह डेस्क जो JIM की ओर से बोलती है, और अपना QRME स्वामी टोकन चिपकाएँ। टोकन केवल समन्वय के लिए रखा जाता है और अलग करने पर मिटा दिया जाता है; यह दोबारा कभी नहीं दिखाया जाता।", ar: "أسّس المنظمة وزوّد مكاتبها في QRME أولًا، ثم الصق معرّفها، والمكتب الذي يتحدث باسم JIM، ورمز المالك الخاص بك في QRME. يُخزَّن الرمز للتنسيق فقط ويُحذف عند فك الارتباط؛ ولا يُعرض مرة أخرى أبدًا.",
+  },
+  "ct.link.org": {
+    en: "Org id", es: "Id de la organización", fr: "Id de l'organisation", de: "Organisations-Id", pt: "Id da organização", it: "Id dell'organizzazione", ja: "組織ID", zh: "组织 id", hi: "संगठन id", ar: "معرّف المنظمة",
+  },
+  "ct.link.org.ph": {
+    en: "org_…", es: "org_…", fr: "org_…", de: "org_…", pt: "org_…", it: "org_…", ja: "org_…", zh: "org_…", hi: "org_…", ar: "org_…",
+  },
+  "ct.link.dept": {
+    en: "Department id", es: "Id del departamento", fr: "Id du département", de: "Abteilungs-Id", pt: "Id do departamento", it: "Id del reparto", ja: "部署ID", zh: "部门 id", hi: "विभाग id", ar: "معرّف القسم",
+  },
+  "ct.link.dept.ph": {
+    en: "dep_…", es: "dep_…", fr: "dep_…", de: "dep_…", pt: "dep_…", it: "dep_…", ja: "dep_…", zh: "dep_…", hi: "dep_…", ar: "dep_…",
+  },
+  "ct.link.token": {
+    en: "Your QRME owner token", es: "Tu token de propietario de QRME", fr: "Votre jeton de propriétaire QRME", de: "Ihr QRME-Inhaber-Token", pt: "O seu token de proprietário QRME", it: "Il tuo token di proprietario QRME", ja: "あなたのQRMEオーナートークン", zh: "你的 QRME 所有者令牌", hi: "आपका QRME स्वामी टोकन", ar: "رمز مالك QRME الخاص بك",
+  },
+  "ct.link.token.ph": {
+    en: "pasted, never echoed", es: "pegado, nunca mostrado", fr: "collé, jamais réaffiché", de: "eingefügt, nie wieder angezeigt", pt: "colado, nunca mostrado", it: "incollato, mai rimostrato", ja: "貼り付けるのみ、表示はされません", zh: "粘贴即可，绝不回显", hi: "चिपकाया गया, कभी दिखाया नहीं", ar: "يُلصق ولا يُعرض أبدًا",
+  },
+  "ct.link.go": {
+    en: "Link", es: "Vincular", fr: "Lier", de: "Verknüpfen", pt: "Ligar", it: "Collega", ja: "紐付ける", zh: "关联", hi: "जोड़ें", ar: "اربط",
+  },
+  "ct.linked": {
+    en: "Linked", es: "Vinculada", fr: "Liée", de: "Verknüpft", pt: "Ligada", it: "Collegata", ja: "紐付け済み", zh: "已关联", hi: "जुड़ा हुआ", ar: "مرتبطة",
+  },
+  "ct.linked.line": {
+    en: "org {org} · desk {desk} · credential held", es: "org {org} · mostrador {desk} · credencial guardada", fr: "org {org} · comptoir {desk} · identifiant conservé", de: "Org {org} · Schalter {desk} · Zugang hinterlegt", pt: "org {org} · balcão {desk} · credencial guardada", it: "org {org} · banco {desk} · credenziale custodita", ja: "組織 {org} · デスク {desk} · 資格情報を保持", zh: "组织 {org} · 柜台 {desk} · 已持有凭证", hi: "संगठन {org} · डेस्क {desk} · क्रेडेंशियल रखा है", ar: "منظمة {org} · مكتب {desk} · الاعتماد محفوظ",
+  },
+  "ct.linked.pitch": {
+    en: "When a reading drifts outside your band while doses slip, the Guardian takes it to the whole team — once a day at most, on the calm path only. Summaries cross, never raw readings.", es: "Cuando una lectura se sale de tu banda mientras se saltan dosis, el Guardián lo lleva a todo el equipo — una vez al día como mucho, y solo por la vía tranquila. Cruzan resúmenes, nunca lecturas en bruto.", fr: "Quand une mesure sort de votre plage alors que des doses sont manquées, le Gardien porte l'affaire à toute l'équipe — une fois par jour au plus, et seulement par la voie calme. Ce sont des résumés qui circulent, jamais des mesures brutes.", de: "Wenn eine Messung aus Ihrem Band läuft, während Dosen ausfallen, trägt der Guardian es dem ganzen Team vor — höchstens einmal am Tag und nur auf dem ruhigen Weg. Es kreuzen Zusammenfassungen, nie Rohmessungen.", pt: "Quando uma leitura sai da sua banda enquanto falham doses, o Guardião leva-o à equipa inteira — no máximo uma vez por dia, e só pela via calma. Cruzam resumos, nunca leituras em bruto.", it: "Quando una lettura esce dalla tua banda mentre saltano le dosi, il Guardian la porta a tutta la squadra — al massimo una volta al giorno, solo sulla via calma. Passano riassunti, mai letture grezze.", ja: "服薬が抜けている最中に測定値があなたの帯を外れたとき、ガーディアンはそれをチーム全体に持ち込みます — 一日一度までで、穏やかな経路に限ります。渡るのは要約であり、生の測定値は決して渡りません。", zh: "当读数偏出你的区间、而服药又开始漏掉时，守护者会把这件事带给整个团队 — 每天至多一次，且只走平静通道。跨越的是摘要，绝非原始读数。", hi: "जब कोई रीडिंग आपके बैंड से बाहर जाए और साथ ही ख़ुराकें छूट रही हों, तो गार्जियन इसे पूरी टीम तक ले जाता है — दिन में अधिकतम एक बार, केवल शांत मार्ग से। सारांश जाते हैं, कच्ची रीडिंग कभी नहीं।", ar: "حين تنحرف قراءة خارج نطاقك بينما تُفوَّت الجرعات، يعرضها الحارس على الفريق كله — مرة في اليوم على الأكثر، وعلى المسار الهادئ فقط. تعبر الملخصات، لا القراءات الخام أبدًا.",
+  },
+  "ct.linked.goal": {
+    en: "Take a goal to the team by hand", es: "Llevar un objetivo al equipo a mano", fr: "Porter un objectif à l'équipe à la main", de: "Ein Ziel dem Team von Hand vorlegen", pt: "Levar um objetivo à equipa à mão", it: "Porta un obiettivo alla squadra a mano", ja: "目標を手動でチームに持ち込む", zh: "手动把一个目标带给团队", hi: "कोई लक्ष्य स्वयं टीम तक ले जाएँ", ar: "خذ هدفًا إلى الفريق يدويًا",
+  },
+  "ct.linked.goal.ph": {
+    en: "e.g. plan the recovery week", es: "p. ej. planear la semana de recuperación", fr: "p. ex. planifier la semaine de récupération", de: "z. B. die Erholungswoche planen", pt: "p. ex. planear a semana de recuperação", it: "es. pianificare la settimana di recupero", ja: "例: 回復週間の計画を立てる", zh: "例如：规划康复周", hi: "जैसे: स्वस्थ होने के सप्ताह की योजना", ar: "مثلًا: خطط لأسبوع التعافي",
+  },
+  "ct.linked.unlink": {
+    en: "Unlink", es: "Desvincular", fr: "Délier", de: "Trennen", pt: "Desligar", it: "Scollega", ja: "紐付けを外す", zh: "取消关联", hi: "अलग करें", ar: "افصل",
+  },
+  "ct.plans.none": {
+    en: "No joint plans yet.", es: "Todavía no hay planes conjuntos.", fr: "Pas encore de plans conjoints.", de: "Noch keine gemeinsamen Pläne.", pt: "Ainda não há planos conjuntos.", it: "Ancora nessun piano congiunto.", ja: "共同の計画はまだありません。", zh: "尚无联合计划。", hi: "अभी कोई संयुक्त योजना नहीं।", ar: "لا خطط مشتركة بعد.",
+  },
+  "ct.spec": {
+    en: "Specialists — attach a QRME expert", es: "Especialistas — adjunta un experto de QRME", fr: "Spécialistes — rattachez un expert QRME", de: "Spezialisten — einen QRME-Experten anhängen", pt: "Especialistas — anexe um perito QRME", it: "Specialisti — collega un esperto QRME", ja: "専門家 — QRMEのエキスパートを紐付ける", zh: "专家 — 挂接一位 QRME 专家", hi: "विशेषज्ञ — एक QRME विशेषज्ञ जोड़ें", ar: "المختصون — أرفق خبير QRME",
+  },
+  "ct.spec.pitch": {
+    en: "The Starter Collection: one expert per industry, each already carrying its industry's knowledge pack. Pick who stands behind each condition — guidance for it then routes through them in tandem. The mental-health trio is played straight on purpose.", es: "La Colección Inicial: un experto por sector, cada uno con el paquete de conocimiento de su sector. Elige quién respalda cada condición — la orientación para ella pasa entonces por él en tándem. El trío de salud mental se interpreta en serio, a propósito.", fr: "La Collection de départ : un expert par secteur, chacun portant déjà le pack de savoir de son secteur. Choisissez qui se tient derrière chaque situation — les conseils la concernant passent alors par lui en tandem. Le trio santé mentale est joué au premier degré, à dessein.", de: "Die Starter-Sammlung: ein Experte je Branche, jeder bereits mit dem Wissenspaket seiner Branche. Wählen Sie, wer hinter jedem Zustand steht — die Beratung dazu läuft dann im Tandem über ihn. Das Trio für psychische Gesundheit wird absichtlich ernst gespielt.", pt: "A Coleção Inicial: um perito por setor, cada um já com o pacote de conhecimento do seu setor. Escolha quem está por trás de cada condição — a orientação para ela passa então por ele em tandem. O trio de saúde mental é levado a sério de propósito.", it: "La Collezione iniziale: un esperto per settore, ciascuno già con il pacchetto di conoscenza del suo settore. Scegli chi sta dietro a ogni condizione — la guida per quella passa poi attraverso di lui in tandem. Il trio della salute mentale è interpretato sul serio, di proposito.", ja: "スターターコレクション：業種ごとに一人の専門家がいて、それぞれ自分の業種の知識パックをすでに携えています。各症状の背後に誰が立つかを選んでください — その症状への助言は、以後タンデムでその専門家を経由します。メンタルヘルスの三人組は、意図してまっすぐに演じられています。", zh: "入门合集：每个行业一位专家，各自已随身带着本行业的知识包。挑选由谁来支撑每一种状况 — 针对它的指导此后就会串联着经由这位专家。心理健康三人组是刻意认真对待的。", hi: "स्टार्टर संग्रह: हर उद्योग के लिए एक विशेषज्ञ, हर एक अपने उद्योग का ज्ञान-पैक पहले से लिए हुए। चुनें कि हर स्थिति के पीछे कौन खड़ा हो — फिर उसके लिए मार्गदर्शन उसी के ज़रिए टेंडम में जाता है। मानसिक-स्वास्थ्य की तिकड़ी जान-बूझकर पूरी गंभीरता से निभाई गई है।", ar: "المجموعة الأولى: خبير لكل قطاع، كلٌّ يحمل مسبقًا حزمة معرفة قطاعه. اختر من يقف خلف كل حالة — عندها يمر الإرشاد الخاص بها عبره بالترادف. ثلاثي الصحة النفسية مؤدّى بجدية عن قصد.",
+  },
+  "ct.spec.choose": {
+    en: "choose an expert…", es: "elige un experto…", fr: "choisissez un expert…", de: "einen Experten wählen…", pt: "escolha um perito…", it: "scegli un esperto…", ja: "専門家を選ぶ…", zh: "选择一位专家…", hi: "विशेषज्ञ चुनें…", ar: "اختر خبيرًا…",
+  },
+  "ct.spec.attach": {
+    en: "Attach", es: "Adjuntar", fr: "Rattacher", de: "Anhängen", pt: "Anexar", it: "Collega", ja: "紐付ける", zh: "挂接", hi: "जोड़ें", ar: "أرفق",
+  },
+  "ct.spec.empty": {
+    en: "The QRME tandem answered with an empty shelf — install the Starter Collection there (Discover → Install), then reload.", es: "El tándem de QRME respondió con un estante vacío — instala allí la Colección Inicial (Descubrir → Instalar) y luego recarga.", fr: "Le tandem QRME a répondu avec une étagère vide — installez-y la Collection de départ (Découvrir → Installer), puis rechargez.", de: "Das QRME-Tandem antwortete mit einem leeren Regal — installieren Sie dort die Starter-Sammlung (Entdecken → Installieren) und laden Sie neu.", pt: "O tandem QRME respondeu com uma prateleira vazia — instale lá a Coleção Inicial (Descobrir → Instalar) e recarregue.", it: "Il tandem QRME ha risposto con uno scaffale vuoto — installa lì la Collezione iniziale (Scopri → Installa), poi ricarica.", ja: "QRMEタンデムは空の棚を返しました — 向こうでスターターコレクションを導入し（Discover → Install）、再読み込みしてください。", zh: "QRME 串联端返回的是一个空货架 — 请先在那边安装入门合集（发现 → 安装），然后重新加载。", hi: "QRME टेंडम ने ख़ाली शेल्फ़ लौटाया — वहाँ स्टार्टर संग्रह इंस्टॉल करें (Discover → Install), फिर पुनः लोड करें।", ar: "أجاب ترادف QRME برفٍّ فارغ — ثبّت المجموعة الأولى هناك (Discover ← Install)، ثم أعد التحميل.",
+  },
 };
 
 export function visitorLang(): Lang {

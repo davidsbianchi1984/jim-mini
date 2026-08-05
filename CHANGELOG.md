@@ -4,6 +4,22 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.45.0] — 2026-08-05
+
+### Three screens, and the record falls to 129
+
+**What's held about you** — who holds it, who has read it, and the
+sentence that refuses to let an empty access log mean two opposite
+things — becomes twenty-four `hld.*` keys. **Who you watch** — the
+child who keeps their own account and their own token, the board, and
+the resuscitation waiver that must be read in full before it is
+signed — becomes twenty-one `wrd.*` keys. **Care Team** — the QRME
+organization the Guardian coordinates, where summaries cross and never
+raw readings — becomes twenty-three `ct.*` keys.
+
+Seventy-seven strings, all ten languages. The console-untranslated
+record falls **206 → 129**, exact-sync held.
+
 ## [0.44.9] — 2026-08-05
 
 ### The cabinet and the guided hour speak the visitor's language

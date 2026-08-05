@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, type ChildDetail, type GuardianWatch,
          type WaiverOffer } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -27,6 +28,7 @@ import { useSession } from "../store";
  */
 export function Wards() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [watch, setWatch] = useState<GuardianWatch | null>(null);
   const [open, setOpen] = useState<ChildDetail | null>(null);
   const [waiver, setWaiver] = useState<WaiverOffer | null>(null);
@@ -64,24 +66,24 @@ export function Wards() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Who you watch</h2>
-        <span className="muted small">children linked to this account</span>
+        <h2>{tr("wrd.title", lang)}</h2>
+        <span className="muted small">{tr("wrd.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>Link a child</h3>
+        <h3>{tr("wrd.link", lang)}</h3>
         <div className="row">
-          <input value={name} placeholder="Their name"
+          <input value={name} placeholder={tr("wrd.link.name.ph", lang)}
                  onChange={(e) => setName(e.target.value)} />
           <input value={birthdate} type="date"
                  onChange={(e) => setBirthdate(e.target.value)} />
           <select value={relationship}
                   onChange={(e) => setRelationship(
                     e.target.value as "parent" | "legal_guardian")}>
-            <option value="parent">I am their parent</option>
-            <option value="legal_guardian">I am their legal guardian</option>
+            <option value="parent">{tr("wrd.link.parent", lang)}</option>
+            <option value="legal_guardian">{tr("wrd.link.guardian", lang)}</option>
           </select>
           <button className="primary"
                   disabled={busy || !name.trim() || !birthdate}
@@ -90,19 +92,15 @@ export function Wards() {
                       display_name: name.trim(), birthdate,
                       relationship }, token!);
                     setName(""); setBirthdate("");
-                  })}>Link</button>
+                  })}>{tr("wrd.link.go", lang)}</button>
         </div>
-        <p className="muted small">
-          The child gets their own account and their own token — this links
-          you to it, it does not make their record yours to read line by line.
-          What you can see is on this page and nothing else.
-        </p>
+        <p className="muted small">{tr("wrd.link.pitch", lang)}</p>
       </div>
 
       <div className="card">
-        <h3>The board</h3>
+        <h3>{tr("wrd.board", lang)}</h3>
         {children.length === 0 && (
-          <div className="muted small">Nobody linked.</div>
+          <div className="muted small">{tr("wrd.board.none", lang)}</div>
         )}
         {children.map((c) => (
           <div key={c.child_id}
@@ -111,20 +109,23 @@ export function Wards() {
               <span className={"dot-" + (c.light === "green" ? "online" : "warn")}>●</span>
               <strong style={{ flex: 1 }}>{c.display_name}</strong>
               <span className="muted small">
-                {c.age != null ? `${c.age} · ` : ""}{c.oversight} oversight
+                {c.age != null ? `${c.age} · ` : ""}
+                {tr("wrd.board.oversight", lang)
+                  .replace("{oversight}", String(c.oversight))}
                 {c.paused ? " · paused" : ""}
                 {c.quiet_hours ? ` · quiet ${c.quiet_hours}` : ""}
               </span>
             </div>
             <div className="muted small">
-              {c.critical_24h ?? 0} critical · {c.escalations_24h ?? 0}{" "}
-              escalations in the last day
+              {tr("wrd.board.counts", lang)
+                .replace("{critical}", String(c.critical_24h ?? 0))
+                .replace("{escalations}", String(c.escalations_24h ?? 0))}
             </div>
             <div className="row">
               <button disabled={busy}
                       onClick={() => run(async () => {
                         setOpen(await api.child(uid!, c.child_id, token!));
-                      })}>Open</button>
+                      })}>{tr("wrd.board.open", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(async () => {
                         const r = await api.setChildControls(
@@ -140,11 +141,11 @@ export function Wards() {
                           { quiet_start: "21:00", quiet_end: "07:00" },
                           token!);
                         setNote(r.note);
-                      })}>Quiet 9pm–7am</button>
+                      })}>{tr("wrd.board.quiet", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(() =>
                         api.removeChild(uid!, c.child_id, token!))}>
-                Unlink
+                {tr("wrd.board.unlink", lang)}
               </button>
             </div>
           </div>
@@ -156,9 +157,12 @@ export function Wards() {
         <div className="card">
           <h3>{open.display_name}</h3>
           <div className="muted small">
-            {open.age} · {open.relationship} · {open.oversight} oversight ·{" "}
-            {open.sensitivity} sensitivity · {open.critical_events} critical
-            events on record
+            {tr("wrd.detail", lang)
+              .replace("{age}", String(open.age))
+              .replace("{relationship}", String(open.relationship))
+              .replace("{oversight}", String(open.oversight))
+              .replace("{sensitivity}", String(open.sensitivity))
+              .replace("{critical}", String(open.critical_events))}
           </div>
           {open.privacy_note && (
             <p className="muted small">{open.privacy_note}</p>
@@ -179,31 +183,28 @@ export function Wards() {
       <div className="card">
         <h3>{waiver?.kind === "autonomous_resuscitation"
               ? "Automatic resuscitation" : "Waiver"}</h3>
-        <p className="muted small">
-          A bound, CPR-rated robot will not begin without somebody on scene
-          saying so — unless you sign this, and then it will. Read all of it.
-        </p>
+        <p className="muted small">{tr("wrd.waiver.pitch", lang)}</p>
         {(waiver?.terms ?? []).map((t, i) => (
           <div key={i} style={{ padding: "6px 0" }}>· {t}</div>
         ))}
         {waiver?.signed ? (
           <div className="row">
             <span className="muted small">
-              Signed as {waiver.signature}. Withdrawing restores the
-              confirm-gated behaviour immediately.
+              {tr("wrd.waiver.signed", lang)
+                .replace("{signature}", String(waiver.signature))}
             </span>
             <button disabled={busy}
                     onClick={() => run(() =>
-                      api.withdrawWaiver(uid!, token!))}>Withdraw</button>
+                      api.withdrawWaiver(uid!, token!))}>{tr("wrd.waiver.withdraw", lang)}</button>
           </div>
         ) : (
           <div className="row">
-            <input value={signature} placeholder="Type your full name"
+            <input value={signature} placeholder={tr("wrd.waiver.sig.ph", lang)}
                    onChange={(e) => setSignature(e.target.value)} />
             <button className="primary" disabled={busy || !signature.trim()}
                     onClick={() => run(() => api.signWaiver(uid!, {
                       signature: signature.trim(), accept: true }, token!))}>
-              Sign
+              {tr("wrd.waiver.sign", lang)}
             </button>
           </div>
         )}

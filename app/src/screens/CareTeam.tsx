@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, CarePlan, CareTeamStatus } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 // The care team is an organization (jim/careteam.py): link your own QRME
@@ -8,6 +9,7 @@ import { useSession } from "../store";
 // it never echoes back, and unlinking deletes it.
 export function CareTeam() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [status, setStatus] = useState<CareTeamStatus | null>(null);
   const [plans, setPlans] = useState<CarePlan[]>([]);
   const [orgId, setOrgId] = useState("");
@@ -81,32 +83,27 @@ export function CareTeam() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Care Team</h2>
-        <span className="muted small">your own QRME organization, coordinated by the Guardian</span>
+        <h2>{tr("ct.title", lang)}</h2>
+        <span className="muted small">{tr("ct.sub", lang)}</span>
       </header>
 
       {!status?.linked && (
         <div className="card">
-          <h3>Link your organization</h3>
-          <p className="muted small">
-            Found the org and staff its desks in QRME first, then paste its
-            id, the desk that speaks for JIM, and your own QRME owner token.
-            The token is stored for coordinations only and deleted when you
-            unlink; it is never shown again.
-          </p>
+          <h3>{tr("ct.link", lang)}</h3>
+          <p className="muted small">{tr("ct.link.pitch", lang)}</p>
           <div className="row">
-            <label>Org id<input value={orgId} placeholder="org_…"
+            <label>{tr("ct.link.org", lang)}<input value={orgId} placeholder={tr("ct.link.org.ph", lang)}
                                 onChange={(e) => setOrgId(e.target.value)} /></label>
-            <label>Department id<input value={deptId} placeholder="dep_…"
+            <label>{tr("ct.link.dept", lang)}<input value={deptId} placeholder={tr("ct.link.dept.ph", lang)}
                                        onChange={(e) => setDeptId(e.target.value)} /></label>
           </div>
           <div className="row">
-            <label>Your QRME owner token
-              <input type="password" value={ownerToken} placeholder="pasted, never echoed"
+            <label>{tr("ct.link.token", lang)}
+              <input type="password" value={ownerToken} placeholder={tr("ct.link.token.ph", lang)}
                      onChange={(e) => setOwnerToken(e.target.value)} />
             </label>
             <button className="primary" disabled={busy || !orgId.trim() || !deptId.trim() || !ownerToken.trim()}
-                    onClick={link}>Link</button>
+                    onClick={link}>{tr("ct.link.go", lang)}</button>
           </div>
         </div>
       )}
@@ -114,29 +111,27 @@ export function CareTeam() {
       {status?.linked && (
         <>
           <div className="card">
-            <h3>Linked</h3>
+            <h3>{tr("ct.linked", lang)}</h3>
             <p className="muted small">
-              org {status.org_id} · desk {status.department_id} · credential held
+              {tr("ct.linked.line", lang)
+                .replace("{org}", String(status.org_id))
+                .replace("{desk}", String(status.department_id))}
             </p>
-            <p className="muted small">
-              When a reading drifts outside your band while doses slip, the
-              Guardian takes it to the whole team — once a day at most, on
-              the calm path only. Summaries cross, never raw readings.
-            </p>
+            <p className="muted small">{tr("ct.linked.pitch", lang)}</p>
             <div className="row">
-              <label>Take a goal to the team by hand
-                <input value={goal} placeholder="e.g. plan the recovery week"
+              <label>{tr("ct.linked.goal", lang)}
+                <input value={goal} placeholder={tr("ct.linked.goal.ph", lang)}
                        onChange={(e) => setGoal(e.target.value)} />
               </label>
               <button className="primary" disabled={busy || !goal.trim()} onClick={coordinate}>
                 {busy ? "Coordinating…" : "Coordinate"}
               </button>
-              <button disabled={busy} onClick={unlink}>Unlink</button>
+              <button disabled={busy} onClick={unlink}>{tr("ct.linked.unlink", lang)}</button>
             </div>
           </div>
 
           {plans.length === 0 && (
-            <div className="card"><p className="muted center">No joint plans yet.</p></div>
+            <div className="card"><p className="muted center">{tr("ct.plans.none", lang)}</p></div>
           )}
           {plans.slice().reverse().map((p) => (
             <div key={p.id} className="card">
@@ -153,13 +148,8 @@ export function CareTeam() {
 
       {catalog && (
         <div className="card">
-          <h3>Specialists — attach a QRME expert</h3>
-          <p className="muted small">
-            The Starter Collection: one expert per industry, each already
-            carrying its industry's knowledge pack. Pick who stands behind
-            each condition — guidance for it then routes through them in
-            tandem. The mental-health trio is played straight on purpose.
-          </p>
+          <h3>{tr("ct.spec", lang)}</h3>
+          <p className="muted small">{tr("ct.spec.pitch", lang)}</p>
           {catalog.conditions.map((c) => (
             <div key={c.condition} className="spec-row">
               <b className="spec-cond">{c.condition.replace("_", " ")}</b>
@@ -170,7 +160,7 @@ export function CareTeam() {
               </span>
               <select value={picks[c.condition] || ""}
                       onChange={(e) => setPicks((cur) => ({ ...cur, [c.condition]: e.target.value }))}>
-                <option value="">choose an expert…</option>
+                <option value="">{tr("ct.spec.choose", lang)}</option>
                 {catalog.starters.map((st) => (
                   <option key={st.profile_id} value={st.profile_id}>
                     {st.display_name}{st.tags?.[0] ? ` — ${st.tags[0]}` : ""}
@@ -178,14 +168,11 @@ export function CareTeam() {
                 ))}
               </select>
               <button disabled={busy || !picks[c.condition]}
-                      onClick={() => attach(c.condition)}>Attach</button>
+                      onClick={() => attach(c.condition)}>{tr("ct.spec.attach", lang)}</button>
             </div>
           ))}
           {catalog.starters.length === 0 && (
-            <p className="muted small">
-              The QRME tandem answered with an empty shelf — install the
-              Starter Collection there (Discover → Install), then reload.
-            </p>
+            <p className="muted small">{tr("ct.spec.empty", lang)}</p>
           )}
         </div>
       )}

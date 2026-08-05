@@ -1,4 +1,4 @@
-# status: backlog — 206 rows
+# status: backlog — 129 rows
 #
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
@@ -7,7 +7,7 @@
 # command and example values. The rest of the console is not — 700-odd
 # strings across nineteen gated screens, recorded here so the remainder is a
 # decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 206
+# ceiling: 129
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -43,31 +43,6 @@ Aims: groceries
 Aims: of
 Aims: streak
 Aims: walk
-CareTeam: Attach
-CareTeam: Care Team
-CareTeam: Department id
-CareTeam: Found the org and staff its desks in QRME first, then paste its id, the desk that speaks for JIM, and your own QRME owner token. The token is stored for coordinations only and deleted when you unlink; it is never shown again.
-CareTeam: Link
-CareTeam: Link your organization
-CareTeam: Linked
-CareTeam: No joint plans yet.
-CareTeam: Org id
-CareTeam: Specialists — attach a QRME expert
-CareTeam: Take a goal to the team by hand
-CareTeam: The QRME tandem answered with an empty shelf — install the Starter Collection there (Discover → Install), then reload.
-CareTeam: The Starter Collection: one expert per industry, each already carrying its industry's knowledge pack. Pick who stands behind each condition — guidance for it then routes through them in tandem. The mental-health trio is played straight on purpose.
-CareTeam: Unlink
-CareTeam: When a reading drifts outside your band while doses slip, the Guardian takes it to the whole team — once a day at most, on the calm path only. Summaries cross, never raw readings.
-CareTeam: Your QRME owner token
-CareTeam: choose an expert…
-CareTeam: dep_…
-CareTeam: e.g. plan the recovery week
-CareTeam: org
-CareTeam: org_…
-CareTeam: pasted, never echoed
-CareTeam: your own QRME organization, coordinated by the Guardian
-CareTeam: · credential held
-CareTeam: · desk
 Checkin: Check-in
 Checkin: Energy:
 Checkin: Logged
@@ -107,33 +82,6 @@ Community: e.g. Bend
 Community: forums, rooms and local events — in QRME
 Community: here
 Community: listed)
-Held: Allow
-Held: An access record is being kept:
-Held: Can read it:
-Held: Cancel
-Held: Cloud model:
-Held: Custody
-Held: End it
-Held: Erase everything
-Held: Erases everything held about you on this deployment. There is no undo, which is the point of it. Type
-Held: Nothing consented. Until a source is consented here, giving JIM context from it is refused — the server checks, it does not merely ask nicely.
-Held: Provenance is asked one key at a time — the route requires the key, which is a small thing that a binding written from the route table would have got wrong and a call against a running server did not.
-Held: Provider for this account:
-Held: Sealed in a vault:
-Held: The list below is empty because nothing is being recorded — not because nobody has looked. Those are different facts and this screen will not let them look the same.
-Held: What it may look at
-Held: What's held about you
-Held: Where did this come from?
-Held: Where the answers come from
-Held: Who has read your record
-Held: Your plan
-Held: connector
-Held: erase
-Held: falls back to
-Held: journal
-Held: providers catalogued — Apple, Google and the rest, each with the apps and directions it can be asked for.
-Held: to arm the button.
-Held: who holds it, who has read it
 Home: Check-in
 Home: Coach
 Home: Hi,
@@ -201,28 +149,3 @@ Safety: cleared
 Safety: is on the way.
 Safety: retired
 Safety: scan
-Wards: . Withdrawing restores the confirm-gated behaviour immediately.
-Wards: A bound, CPR-rated robot will not begin without somebody on scene saying so — unless you sign this, and then it will. Read all of it.
-Wards: I am their legal guardian
-Wards: I am their parent
-Wards: Link
-Wards: Link a child
-Wards: Nobody linked.
-Wards: Open
-Wards: Quiet 9pm–7am
-Wards: Sign
-Wards: Signed as
-Wards: The board
-Wards: The child gets their own account and their own token — this links you to it, it does not make their record yours to read line by line. What you can see is on this page and nothing else.
-Wards: Their name
-Wards: Type your full name
-Wards: Unlink
-Wards: Who you watch
-Wards: Withdraw
-Wards: children linked to this account
-Wards: critical events on record
-Wards: critical ·
-Wards: escalations in the last day
-Wards: oversight
-Wards: oversight ·
-Wards: sensitivity ·
