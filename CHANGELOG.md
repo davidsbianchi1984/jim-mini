@@ -4,6 +4,17 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.5] — 2026-08-05
+
+### The baseline speaks the visitor's language
+
+The Baseline screen — your own normal, the bands drawn around it in
+either direction, and the crash watch you program yourself — is
+localized end to end: fifty strings become twenty-six `bas.*` keys in
+all ten languages, the crash-watch explanation and the what-this-is
+paragraph kept whole in every language. The console-untranslated
+record falls **531 → 481**, exact-sync held.
+
 ## [0.44.4] — 2026-08-05
 
 ### The attending speak the visitor's language

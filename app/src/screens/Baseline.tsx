@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, type CrashWatchStatus } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 type Band = Awaited<ReturnType<typeof api.getBands>>["bands"][number];
@@ -14,6 +15,7 @@ type Band = Awaited<ReturnType<typeof api.getBands>>["bands"][number];
 // a threshold built on two readings.
 export function Baseline() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [bands, setBands] = useState<Band[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +98,7 @@ export function Baseline() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Your baseline</h2>
+        <h2>{tr("bas.title", lang)}</h2>
         <span className="muted small">
           {established
             ? `${established} of ${bands.length} learned`
@@ -105,75 +107,63 @@ export function Baseline() {
       </header>
 
       <div className="card">
-        <h3>What this is</h3>
-        <p className="muted small">
-          Every resting reading nudges your own average for each metric. Once
-          a metric has enough of them, a <b>band</b> is drawn around it — and
-          when a reading lands outside that band, in <b>either direction</b>,
-          your Guardian checks in and asks how you are. A drift check-in on
-          its own never calls anybody — but the <b>crash watch</b> below is
-          exactly the "call somebody" you can program: if a reading turns
-          critical and you stop answering, help gets sent.
-        </p>
-        <p className="muted small">
-          The widths below are yours to set. Narrow one to be told sooner;
-          widen it if a metric of yours naturally wanders.
-        </p>
+        <h3>{tr("bas.what", lang)}</h3>
+        <p className="muted small">{tr("bas.what.p1", lang)}</p>
+        <p className="muted small">{tr("bas.what.p2", lang)}</p>
       </div>
 
       {error && <div className="error">⚠ {error}</div>}
 
       {cw?.asking && (
         <div className="card" style={{ borderColor: "#ffb84d" }}>
-          <h3>JIM is asking: are you okay?</h3>
+          <h3>{tr("bas.ask.title", lang)}</h3>
           <p className="muted small">
-            A concerning reading came in ({cw.concern}). This is attempt{" "}
-            {cw.attempt} of {cw.attempts} — after that, your crash watch
-            contacts {cw.trusted_name}
-            {cw.contact_emergency_services ? " and requests emergency services" : ""}.
+            {tr("bas.ask.body", lang)
+              .replace("{concern}", String(cw.concern ?? ""))
+              .replace("{attempt}", String(cw.attempt))
+              .replace("{attempts}", String(cw.attempts))
+              .replace("{name}", String(cw.trusted_name ?? ""))
+              .replace("{ems}", cw.contact_emergency_services
+                ? " and requests emergency services" : "")}
           </p>
-          <button className="primary" onClick={imOkay}>I'm okay</button>
+          <button className="primary" onClick={imOkay}>{tr("bas.ask.ok", lang)}</button>
         </div>
       )}
       {cw?.tripped && (
         <div className="error">
-          ⚠ The crash watch tripped: {cw.trusted_name} was contacted
-          {cw.contact_emergency_services ? " and an emergency-services dispatch was requested" : ""}.
-          Any normal reading — or the button above — stands it down.
+          {tr("bas.trip", lang)
+            .replace("{name}", String(cw.trusted_name ?? ""))
+            .replace("{ems}", cw.contact_emergency_services
+              ? " and an emergency-services dispatch was requested" : "")}
         </div>
       )}
 
       <div className="card">
-        <h3>Crash watch — if you stop answering, help gets sent</h3>
+        <h3>{tr("bas.cw.title", lang)}</h3>
         <p className="muted small">
-          Off by default, programmed by you: when a reading turns{" "}
-          <b>critical</b> — <b>a fall the watch felt</b>, a collapsing
-          pulse, oxygen falling — JIM asks{" "}
-          "are you okay?" — and if {cwAttempts} attempts over{" "}
-          {(cwAttempts * cwWindow).toFixed(0)} minutes all go unanswered, it
-          contacts your trusted person{cwEms ? " and requests emergency services" : ""}.
-          Any sign of you — the button, a normal reading — calls it off.
-          Drift check-ins stay calm and never trigger this.
+          {tr("bas.cw.lead", lang)
+            .replace("{n}", String(cwAttempts))
+            .replace("{m}", (cwAttempts * cwWindow).toFixed(0))
+            .replace("{ems}", cwEms ? " and requests emergency services" : "")}
         </p>
-        <label>Trusted person
+        <label>{tr("bas.cw.name", lang)}
           <input value={cwName} onChange={(e) => setCwName(e.target.value)}
-                 placeholder="Rosa" /></label>
-        <label>How to reach them (email or phone)
+                 placeholder={tr("bas.cw.name.ph", lang)} /></label>
+        <label>{tr("bas.cw.channel", lang)}
           <input value={cwChannel} onChange={(e) => setCwChannel(e.target.value)}
-                 placeholder="rosa@example.com" /></label>
+                 placeholder={tr("bas.cw.channel.ph", lang)} /></label>
         <div className="voice-row">
-          <label>Attempts
+          <label>{tr("bas.cw.attempts", lang)}
             <input type="number" min={1} max={10} value={cwAttempts}
                    onChange={(e) => setCwAttempts(Number(e.target.value))} /></label>
-          <label>Minutes per attempt
+          <label>{tr("bas.cw.window", lang)}
             <input type="number" min={1} max={60} value={cwWindow}
                    onChange={(e) => setCwWindow(Number(e.target.value))} /></label>
         </div>
         <label className="check">
           <input type="checkbox" checked={cwEms}
                  onChange={(e) => setCwEms(e.target.checked)} />
-          May request emergency services (this app relays the request to
-          every connected system — it cannot itself place a call)
+          {tr("bas.cw.ems", lang)}
         </label>
         <div className="voice-row">
           <button className="primary" disabled={busy === "crashwatch"}
@@ -182,21 +172,22 @@ export function Baseline() {
           </button>
           {cw?.armed && (
             <button disabled={busy === "crashwatch"} onClick={disarmCrashWatch}>
-              Disarm
+              {tr("bas.cw.disarm", lang)}
             </button>
           )}
         </div>
         {cw?.armed && !cw.asking && !cw.tripped && (
           <p className="muted small">
-            Armed — {cw.trusted_name} will be contacted after{" "}
-            {cw.attempts} unanswered attempts.
+            {tr("bas.cw.armed", lang)
+              .replace("{name}", String(cw.trusted_name ?? ""))
+              .replace("{n}", String(cw.attempts))}
           </p>
         )}
       </div>
 
       <div className="card">
-        <h3>Your metrics</h3>
-        {bands.length === 0 && <div className="muted small">Nothing yet.</div>}
+        <h3>{tr("bas.metrics", lang)}</h3>
+        {bands.length === 0 && <div className="muted small">{tr("bas.metrics.none", lang)}</div>}
         {bands.map((b) => (
           <div key={b.metric} style={{ padding: "12px 0", borderBottom: "1px solid var(--line)" }}>
             <div className="band-row">
@@ -204,10 +195,14 @@ export function Baseline() {
                 <div className="band-name">{b.label}</div>
                 <div className="band-figures">
                   {b.provisional ? (
-                    <>learning — {b.samples} resting reading{b.samples === 1 ? "" : "s"} so far</>
+                    <>{tr("bas.metrics.learning", lang)
+                      .replace("{n}", String(b.samples))
+                      .replace("{s}", b.samples === 1 ? "" : "s")}</>
                   ) : (
-                    <>your usual <b>{b.baseline}{b.unit}</b>, checked in below{" "}
-                      <b>{b.low_edge}{b.unit}</b> or above <b>{b.high_edge}{b.unit}</b></>
+                    <>{tr("bas.metrics.usual", lang)
+                      .replace("{v}", `${b.baseline}${b.unit}`)
+                      .replace("{lo}", `${b.low_edge}${b.unit}`)
+                      .replace("{hi}", `${b.high_edge}${b.unit}`)}</>
                   )}
                 </div>
               </div>
@@ -230,16 +225,16 @@ export function Baseline() {
               <label className="check">
                 <input type="checkbox" checked={b.watch_low} disabled={busy === b.metric}
                        onChange={(e) => change(b.metric, { watch_low: e.target.checked })} />
-                tell me when it drops
+                {tr("bas.metrics.drop", lang)}
               </label>
               <label className="check">
                 <input type="checkbox" checked={b.watch_high} disabled={busy === b.metric}
                        onChange={(e) => change(b.metric, { watch_high: e.target.checked })} />
-                tell me when it climbs
+                {tr("bas.metrics.climb", lang)}
               </label>
               {b.source === "user" && (
                 <button onClick={() => reset(b.metric)} disabled={busy === b.metric}>
-                  Reset
+                  {tr("bas.metrics.reset", lang)}
                 </button>
               )}
             </div>

@@ -1,4 +1,4 @@
-# status: backlog — 531 rows
+# status: backlog — 481 rows
 #
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
@@ -7,7 +7,7 @@
 # command and example values. The rest of the console is not — 700-odd
 # strings across nineteen gated screens, recorded here so the remainder is a
 # decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 531
+# ceiling: 481
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -43,56 +43,6 @@ Aims: groceries
 Aims: of
 Aims: streak
 Aims: walk
-Baseline: "are you okay?" — and if
-Baseline: ). This is attempt
-Baseline: , a collapsing pulse, oxygen falling — JIM asks
-Baseline: , checked in below
-Baseline: , your Guardian checks in and asks how you are. A drift check-in on its own never calls anybody — but the
-Baseline: . Any normal reading — or the button above — stands it down.
-Baseline: . Any sign of you — the button, a normal reading — calls it off. Drift check-ins stay calm and never trigger this.
-Baseline: A concerning reading came in (
-Baseline: Armed —
-Baseline: Attempts
-Baseline: Crash watch — if you stop answering, help gets sent
-Baseline: Disarm
-Baseline: Every resting reading nudges your own average for each metric. Once a metric has enough of them, a
-Baseline: How to reach them (email or phone)
-Baseline: I'm okay
-Baseline: JIM is asking: are you okay?
-Baseline: May request emergency services (this app relays the request to every connected system — it cannot itself place a call)
-Baseline: Minutes per attempt
-Baseline: Nothing yet.
-Baseline: Off by default, programmed by you: when a reading turns
-Baseline: Reset
-Baseline: Rosa
-Baseline: The widths below are yours to set. Narrow one to be told sooner; widen it if a metric of yours naturally wanders.
-Baseline: Trusted person
-Baseline: What this is
-Baseline: Your baseline
-Baseline: Your metrics
-Baseline: a fall the watch felt
-Baseline: attempts over
-Baseline: band
-Baseline: below is exactly the "call somebody" you can program: if a reading turns critical and you stop answering, help gets sent.
-Baseline: crash watch
-Baseline: critical
-Baseline: either direction
-Baseline: is drawn around it — and when a reading lands outside that band, in
-Baseline: learning —
-Baseline: minutes all go unanswered, it contacts your trusted person
-Baseline: of
-Baseline: or above
-Baseline: resting reading
-Baseline: rosa@example.com
-Baseline: so far
-Baseline: tell me when it climbs
-Baseline: tell me when it drops
-Baseline: unanswered attempts.
-Baseline: was contacted
-Baseline: will be contacted after
-Baseline: your usual
-Baseline: — after that, your crash watch contacts
-Baseline: ⚠ The crash watch tripped:
 Bearing: Bad answer
 Bearing: Bearing
 Bearing: Correct a medication
