@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.2] — 2026-08-05
+
+### Version alignment
+
+The three products are cut together, so one number names one
+combination of all three. No JIM-mini code changed — QRME's phones
+gained the last doors: genesis and hybrids, packs, simulations,
+the contribution ledger, proactive reach, licensing and the senses,
+and the per-shell doorless records run to zero. JIM's guardian and shells are untouched.
+
 ## [0.44.1] — 2026-08-05
 
 ### Version alignment
