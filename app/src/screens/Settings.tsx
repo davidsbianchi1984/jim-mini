@@ -715,19 +715,20 @@ function WatchPanel() {
   const [busy, setBusy] = useState(false);
   const [report, setReport] = useState<SeedReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [device, setDevice] = useState("apple_watch");
 
-  function load() {
+  function load(dev = device) {
     if (!session.userId || !session.userToken) return;
-    api.getWatchChannel(session.userId, session.userToken)
+    api.getWatchChannel(session.userId, session.userToken, dev)
       .then(setCh).catch(() => setCh(null));
   }
-  useEffect(load, [session.userId]);
+  useEffect(() => load(), [session.userId, device]);
 
   if (!session.userId || !session.userToken) return null;
 
   async function rotate() {
     setBusy(true); setError(null);
-    try { setCh(await api.rotateWatchChannel(session.userId!, session.userToken!)); }
+    try { setCh(await api.rotateWatchChannel(session.userId!, session.userToken!, device)); }
     catch (e) { setError((e as Error).message); }
     finally { setBusy(false); }
   }
@@ -759,12 +760,18 @@ function WatchPanel() {
 
   return (
     <div className="card">
-      <h3>Apple Watch</h3>
-      <p className="muted small">
-        No app to install. An iPhone <b>Shortcuts automation</b> drips readings
-        to the address below, and the Health app's <b>export</b> teaches JIM
-        your baseline from the history your watch already recorded.
-      </p>
+      <h3>{tr("watch.title", visitorLang())}</h3>
+      <p className="muted small">{tr("watch.lead", visitorLang())}</p>
+      {ch && (
+        <div className="actions" style={{ flexWrap: "wrap" }}>
+          {ch.devices.map((d) => (
+            <button key={d.key}
+                    className={d.key === device ? "primary" : ""}
+                    disabled={busy}
+                    onClick={() => setDevice(d.key)}>{d.name}</button>
+          ))}
+        </div>
+      )}
       {ch ? (<>
         {/* The truth about the address below: a loopback-bound backend
             serves a Wi-Fi URL nothing answers on. On the desktop the fix
@@ -794,7 +801,7 @@ function WatchPanel() {
         {ch.phone_reachable && (
           <div className="muted small">✓ Reachable from your phone on this Wi-Fi.</div>
         )}
-        <label>Drip address (paste into the Shortcut's “Get Contents of URL” field)
+        <label>{tr("watch.address", visitorLang())}
           <input readOnly value={ch.drip_url} onFocus={(e) => e.currentTarget.select()} />
         </label>
         <div className="actions">
@@ -807,16 +814,16 @@ function WatchPanel() {
         <div className="muted small" style={{ marginTop: 8 }}>
           {ch.drips > 0
             ? <>Received <b>{ch.drips}</b> reading{ch.drips === 1 ? "" : "s"} · last {ch.last_drip_at ? new Date(ch.last_drip_at).toLocaleString() : "—"}</>
-            : "Nothing has arrived yet — run the Shortcut once by hand to test it."}
+            : "Nothing has arrived yet — run the automation once by hand to test it."}
         </div>
         <details style={{ marginTop: 10 }}>
-          <summary className="muted small">Set up the Shortcut (one time)</summary>
+          <summary className="muted small">{tr("watch.setup", visitorLang())}</summary>
           <ol className="muted small">
-            {ch.shortcut.map((s, i) => <li key={i}>{s}</li>)}
+            {ch.steps.map((s, i) => <li key={i}>{s}</li>)}
           </ol>
         </details>
         <div style={{ marginTop: 12 }}>
-          <label>Seed the baseline from a Health export
+          <label>{tr("watch.seed", visitorLang())}
             <input type="file" accept=".zip,.xml" disabled={busy}
                    onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
           </label>

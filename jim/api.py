@@ -80,7 +80,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.43.7",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.43.8",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -1250,24 +1250,30 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return careteam.plans(user_id)
 
-    # -- the Apple Watch bridge (jim/watch.py) ------------------------------
-    # Readings reach JIM from an iPhone with no App-Store app: a Shortcuts
-    # automation drips live samples at a tokened URL, and the Health app's
-    # export.zip seeds the baseline from history the watch already recorded.
+    # -- the watch bridge (jim/watch.py) ------------------------------------
+    # Readings reach JIM from any wrist with no app to install: an
+    # automation drips live samples at a tokened URL, and the wearable's
+    # own export seeds the baseline from history it already recorded. The
+    # ?device= picker chooses which wearable family the recipe teaches —
+    # Apple Watch, Wear OS, Fitbit or Garmin.
 
     @app.get("/watch/channel/{user_id}")
-    def watch_channel(user_id: str, request: Request) -> dict:
-        """The setup card: drip URL, Shortcut recipe, arrivals so far."""
+    def watch_channel(user_id: str, request: Request,
+                      device: str = "apple_watch") -> dict:
+        """The setup card: drip URL, this device's recipe, arrivals so
+        far — and the device list itself, so the picker renders from the
+        API rather than being hardcoded four times."""
         _user_or_404(user_id, request)
         base = mobile.pairing(port=request.url.port or 8000)["api_url"]
-        return watch.setup(user_id, base)
+        return watch.setup(user_id, base, device=device)
 
     @app.post("/watch/channel/{user_id}/rotate")
-    def watch_rotate(user_id: str, request: Request) -> dict:
+    def watch_rotate(user_id: str, request: Request,
+                     device: str = "apple_watch") -> dict:
         _user_or_404(user_id, request)
         watch.rotate(user_id)
         base = mobile.pairing(port=request.url.port or 8000)["api_url"]
-        return watch.setup(user_id, base)
+        return watch.setup(user_id, base, device=device)
 
     @app.post("/watch/drip/{token}")
     def watch_drip(token: str, payload: dict) -> dict:

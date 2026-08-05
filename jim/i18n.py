@@ -2311,6 +2311,32 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'ar': 'هذا الملف ليس تصديرًا من تطبيق الصحة — المتوقع export.zip أو '
               'export.xml من تطبيق الصحة',
     },
+    'that zip has no export.xml and no Fitbit files inside — export again '
+    'from the Health app, or from Google Takeout for a Fitbit': {
+        'es': 'ese zip no contiene export.xml ni archivos de Fitbit — vuelve '
+              'a exportar desde la app Salud, o desde Google Takeout para un '
+              'Fitbit',
+        'fr': 'ce zip ne contient ni export.xml ni fichiers Fitbit — '
+              'refaites l’export depuis l’app Santé, ou depuis Google '
+              'Takeout pour un Fitbit',
+        'de': 'in diesem Zip fehlen export.xml und Fitbit-Dateien — '
+              'exportieren Sie erneut aus der Health-App oder über Google '
+              'Takeout für ein Fitbit',
+        'pt': 'esse zip não contém export.xml nem ficheiros Fitbit — '
+              'exporte de novo a partir da app Saúde, ou do Google Takeout '
+              'para um Fitbit',
+        'it': 'quel zip non contiene export.xml né file Fitbit — esporta di '
+              'nuovo dall’app Salute, o da Google Takeout per un Fitbit',
+        'ja': 'そのzipにはexport.xmlもFitbitのファイルも含まれていません — '
+              'ヘルスケアアプリから再度書き出すか、FitbitならGoogle '
+              'Takeoutから書き出してください',
+        'zh': '该zip中没有export.xml，也没有Fitbit文件——请从健康App重新导出，'
+              'Fitbit则从Google Takeout导出',
+        'hi': 'उस zip में export.xml नहीं है और न ही Fitbit फ़ाइलें — Health '
+              'ऐप से दोबारा निर्यात करें, या Fitbit के लिए Google Takeout से',
+        'ar': 'هذا الملف المضغوط لا يحتوي على export.xml ولا ملفات Fitbit — '
+              'صدّر مجددًا من تطبيق الصحة، أو من Google Takeout لجهاز Fitbit',
+    },
     'that zip has no export.xml inside — export again from the Health app': {
         'es': 'ese zip no contiene export.xml — vuelve a exportar desde la '
               'app Salud',
@@ -2567,6 +2593,7 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'direction': {'en': 'Direction', 'es': 'Sentido', 'fr': 'Sens', 'de': 'Richtung', 'pt': 'Direção', 'it': 'Direzione', 'ja': '方向', 'zh': '方向', 'hi': 'दिशा', 'ar': 'الاتجاه'},
     'focus': {'en': 'Focus', 'es': 'Enfoque', 'fr': 'Axe', 'de': 'Schwerpunkt', 'pt': 'Foco', 'it': 'Focus', 'ja': 'フォーカス', 'zh': '重点', 'hi': 'फोकस', 'ar': 'التركيز'},
     'heart_rate': {'en': 'Heart rate', 'es': 'Frecuencia cardíaca', 'fr': 'Fréquence cardiaque', 'de': 'Herzfrequenz', 'pt': 'Frequência cardíaca', 'it': 'Frequenza cardiaca', 'ja': '心拍数', 'zh': '心率', 'hi': 'हृदय गति', 'ar': 'معدل نبض القلب'},
+    'paired': {'en': 'Paired', 'es': 'Emparejado', 'fr': 'Appairé', 'de': 'Gekoppelt', 'pt': 'Emparelhado', 'it': 'Associato', 'ja': 'ペアリング済み', 'zh': '已配对', 'hi': 'युग्मित', 'ar': 'مقترن'},
     'host': {'en': 'Host', 'es': 'Servidor', 'fr': 'Hôte', 'de': 'Host', 'pt': 'Servidor', 'it': 'Host', 'ja': 'ホスト', 'zh': '主机', 'hi': 'होस्ट', 'ar': 'المضيف'},
     'language': {'en': 'Language', 'es': 'Idioma', 'fr': 'Langue', 'de': 'Sprache', 'pt': 'Idioma', 'it': 'Lingua', 'ja': '言語', 'zh': '语言', 'hi': 'भाषा', 'ar': 'اللغة'},
     'legal_name': {'en': 'Legal name', 'es': 'Nombre legal', 'fr': 'Nom légal', 'de': 'Amtlicher Name', 'pt': 'Nome legal', 'it': 'Nome legale', 'ja': '法的氏名', 'zh': '法定姓名', 'hi': 'कानूनी नाम', 'ar': 'الاسم القانوني'},

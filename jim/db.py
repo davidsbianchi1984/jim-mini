@@ -1044,6 +1044,10 @@ _NEW_COLUMNS = [
     # emergencies only. Never shown in the app.
     ("users", "anonymous", "INTEGER NOT NULL DEFAULT 0"),
     ("users", "legal_name", "TEXT"),
+    # Whether the radio handshake actually happened — a Bluetooth device
+    # the browser's chooser paired is a different fact from a name typed
+    # into the manual row, and the card should be able to say which.
+    ("devices", "paired", "INTEGER NOT NULL DEFAULT 0"),
 ]
 
 

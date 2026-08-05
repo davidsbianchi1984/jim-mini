@@ -225,10 +225,20 @@ class SessionStart(BaseModel):
 
 class DeviceRegister(BaseModel):
     name: str                               # e.g. smart_watch, kitchen_console
-    kind: Literal["wearable", "stationary", "autonomous"]
+    # The first three are clause 16's embodiment classes. The rest are the
+    # things people actually pair over Bluetooth: a speaker JIM speaks
+    # through, the phone itself, smart glasses (Google, Meta), an AR/VR
+    # headset, a spatial (3-D) display — a flat screen is "stationary" —
+    # and the honest bucket for everything else. The console's picker
+    # offered "phone" for a while before this row accepted it, which
+    # meant a choice on screen the server refused.
+    kind: Literal["wearable", "stationary", "autonomous",
+                  "speaker", "phone", "glasses", "headset",
+                  "spatial", "other"]
     transport: Literal["bluetooth", "wifi", "cellular", "wired"] | None = None
     has_llm: bool = False                   # embodiment carries its own LLM
     linked_to: str | None = None            # relays through this device
+    paired: bool = False                    # the radio handshake happened
 
 
 class JournalEntry(BaseModel):

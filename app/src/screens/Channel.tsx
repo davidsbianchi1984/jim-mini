@@ -4,6 +4,7 @@ import {
   type MicEvent, type MicGains, type MicState, type MicTypes,
 } from "../api";
 import { useSession } from "../store";
+import { t as tr, visitorLang } from "../l10n";
 
 /**
  * Channel 2 and the clinical camera — the two ways JIM takes something in
@@ -98,6 +99,9 @@ export function Channel() {
             <span className="muted">{d.kind}</span>
             {d.transport && <span className="muted">{d.transport}</span>}
             {d.has_llm && <span className="pill">runs a model</span>}
+            {d.paired && (
+              <span className="pill">{tr("dev.paired", visitorLang())}</span>
+            )}
           </div>
         </div>
       ))}
@@ -105,9 +109,12 @@ export function Channel() {
         <input value={deviceName} placeholder="Device name"
           onChange={(e) => setDeviceName(e.target.value)} />
         <select value={deviceKind} onChange={(e) => setDeviceKind(e.target.value)}>
-          <option value="wearable">wearable</option>
-          <option value="stationary">stationary</option>
-          <option value="phone">phone</option>
+          {["wearable", "glasses", "headset", "speaker", "phone",
+            "stationary", "spatial", "other"].map((k) => (
+            <option key={k} value={k}>
+              {tr(`dev.kind.${k}`, visitorLang())}
+            </option>
+          ))}
         </select>
         <button disabled={busy || !deviceName.trim()}
           onClick={() => run(async () => {
@@ -116,6 +123,42 @@ export function Channel() {
             setDeviceName("");
           }, "Device registered.")}>
           Register
+        </button>
+        {/* The radio does the typing: where the runtime carries Web
+            Bluetooth (Chrome, Edge, the desktop shell), the picker returns
+            the device's own advertised name — a speaker, a wearable,
+            anything nearby — and it registers under that name with its
+            transport recorded. Browsers without the API get the truth and
+            the manual row, not a dead button. */}
+        <button disabled={busy}
+          onClick={() => run(async () => {
+            const bt = (navigator as unknown as {
+              bluetooth?: { requestDevice: (o: object) =>
+                Promise<{ name?: string }> } }).bluetooth;
+            if (!bt) {
+              throw new Error(
+                "This browser cannot scan for Bluetooth — use Chrome, "
+                + "Edge or the desktop app, or type the device's name "
+                + "and register it with the button to the left.");
+            }
+            const picked = await bt.requestDevice(
+              { acceptAllDevices: true });
+            const name = (picked.name || "").trim() || "bluetooth device";
+            // The chooser found it; the GATT connect is the handshake
+            // itself — the OS pairs (and bonds, where the device asks)
+            // on this call. A device that refuses still registers, with
+            // paired recorded as the fact it is.
+            let paired = false;
+            try {
+              const gatt = (picked as unknown as {
+                gatt?: { connect: () => Promise<unknown> } }).gatt;
+              if (gatt) { await gatt.connect(); paired = true; }
+            } catch { paired = false; }
+            await api.registerDevice(uid, {
+              name, kind: deviceKind, transport: "bluetooth",
+              paired }, token);
+          }, "Bluetooth device paired and registered.")}>
+          {tr("dev.bluetooth", visitorLang())}
         </button>
       </div>
 

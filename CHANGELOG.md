@@ -4,6 +4,39 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.43.8] — 2026-08-05
+
+### The watch you actually wear
+
+The drip channel was never Apple-shaped — it is a URL that accepts
+JSON — but the setup card only spoke iPhone, which meant a person with
+a Pixel Watch or a Fitbit stood in front of instructions for a phone
+they do not own. The card now asks what you wear and teaches that:
+`?device=` picks between Apple Watch (the Shortcuts recipe), Wear OS
+(Health Connect plus a phone automation), Fitbit and Garmin, the
+device list ships in the payload so the picker renders from the API
+and a new wearable family is one dict entry, and a wrong device is a
+422 that names every right one. The seed now reads Fitbit's Takeout
+export alongside Apple's export.xml — resting heart rate and HRV
+summaries fold into the baselines; the continuous heart-rate stream is
+deliberately skipped, because folding a workout into the resting
+baseline is the exact mistake the Apple path's sedentary filter
+exists to prevent (an injection that smuggled it in went red before it
+shipped). Garmin's hint is honest that its export is not parseable
+here yet rather than promising an upload that would be refused.
+
+The devices card gained the radio: an Add-Bluetooth-device button
+that, where the runtime carries Web Bluetooth, opens the chooser,
+performs the GATT handshake, and registers the device under its own
+advertised name with its transport and its paired state recorded — a
+device the radio actually paired is a different fact from a name typed
+into the manual row, and the card says which. The kind set now matches
+what people actually pair: wearable, glasses (Google, Meta), AR/VR
+headset, speaker, phone, stationary (2-D), spatial (3-D), autonomous,
+other — and the picker's long-standing "phone" option, which the
+server used to refuse, is accepted at last. Both cards speak all ten
+languages; the console's untranslated backlog falls 615 → 603.
+
 ## [0.43.7] — 2026-08-05
 
 ### Version alignment

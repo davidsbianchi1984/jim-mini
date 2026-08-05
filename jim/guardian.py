@@ -284,9 +284,10 @@ def register_device(user_id: str, body: dict) -> dict:
     device_id = db.new_id("dev")
     conn.execute(
         "INSERT INTO devices (id, user_id, name, kind, transport, has_llm,"
-        " linked_to, created_at) VALUES (?,?,?,?,?,?,?,?)",
+        " linked_to, paired, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
         (device_id, user_id, body["name"], body["kind"], body.get("transport"),
-         int(body.get("has_llm", False)), body.get("linked_to"), db.utcnow()),
+         int(body.get("has_llm", False)), body.get("linked_to"),
+         int(body.get("paired", False)), db.utcnow()),
     )
     conn.commit()
     return device_lookup(user_id, body["name"])
@@ -595,7 +596,8 @@ def devices_for(user_id: str) -> list[dict]:
     rows = db.connect().execute(
         "SELECT * FROM devices WHERE user_id=? ORDER BY created_at, rowid",
         (user_id,)).fetchall()
-    return [{**dict(r), "has_llm": bool(r["has_llm"])} for r in rows]
+    return [{**dict(r), "has_llm": bool(r["has_llm"]),
+             "paired": bool(r["paired"])} for r in rows]
 
 
 def device_lookup(user_id: str, name: str | None) -> dict | None:
@@ -609,6 +611,7 @@ def device_lookup(user_id: str, name: str | None) -> dict | None:
         return None
     device = dict(row)
     device["has_llm"] = bool(device["has_llm"])
+    device["paired"] = bool(device["paired"])
     return device
 
 

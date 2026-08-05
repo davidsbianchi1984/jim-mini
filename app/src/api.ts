@@ -420,7 +420,8 @@ export interface VigilStatus {
 export interface WatchChannel {
   drip_url: string; phone_reachable: boolean;
   last_drip_at: string | null; drips: number;
-  shortcut: string[]; seed_hint: string;
+  device: string; devices: { key: string; name: string }[];
+  steps: string[]; shortcut: string[]; seed_hint: string;
 }
 export interface SeedReport {
   seeded: Record<string, { days: number; baseline: number; provisional: boolean }>;
@@ -622,6 +623,7 @@ export type DeviceRow = {
   kind: string;
   transport?: string | null;
   has_llm: boolean;
+  paired?: boolean;
   linked_to?: string | null;
   created_at: string;
 };
@@ -909,12 +911,17 @@ export const api = {
   resolveVigil: (uid: string, token: string) =>
     req<VigilStatus>(`/vigil/${uid}/resolve`, { method: "POST", token }),
 
-  // The Apple Watch bridge: a Shortcuts automation drips readings at a
-  // tokened URL; the Health app's export seeds the baseline from history.
-  getWatchChannel: (uid: string, token: string) =>
-    req<WatchChannel>(`/watch/channel/${uid}`, { token }),
-  rotateWatchChannel: (uid: string, token: string) =>
-    req<WatchChannel>(`/watch/channel/${uid}/rotate`, { method: "POST", token }),
+  // The watch bridge: an automation drips readings at a tokened URL; the
+  // wearable's own export seeds the baseline from history. The device
+  // argument picks which wearable family the recipe teaches.
+  getWatchChannel: (uid: string, token: string, device = "apple_watch") =>
+    req<WatchChannel>(
+      `/watch/channel/${uid}?device=${encodeURIComponent(device)}`,
+      { token }),
+  rotateWatchChannel: (uid: string, token: string, device = "apple_watch") =>
+    req<WatchChannel>(
+      `/watch/channel/${uid}/rotate?device=${encodeURIComponent(device)}`,
+      { method: "POST", token }),
   seedWatchExport: async (uid: string, token: string, file: File) => {
     // The export.zip goes up as raw bytes — req() would JSON-encode it.
     const res = await fetch(getBase() + `/watch/seed/${uid}`, {
@@ -1122,7 +1129,8 @@ export const api = {
   devices: (uid: string, token: string) =>
     req<DeviceRow[]>(`/devices/${uid}`, { token }),
   registerDevice: (uid: string, body: { name: string; kind: string;
-    transport?: string; has_llm?: boolean }, token: string) =>
+    transport?: string; has_llm?: boolean; paired?: boolean },
+    token: string) =>
     req<DeviceRow>(`/devices/${uid}`, { method: "POST", body, token }),
 
   // Channel 2 — the microphone JIM listens through. Both vocabularies come

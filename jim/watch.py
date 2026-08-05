@@ -24,6 +24,19 @@ have one. What every iPhone *does* have, for free, is two doors out:
 The two doors are one channel. The drip keeps current what the seed
 established.
 
+**The channel was never Apple-shaped** — it is a URL that accepts JSON,
+and any wrist that can reach a phone can reach it. What *was*
+Apple-shaped were the instructions and the export parser, which meant a
+person with a Pixel Watch or a Fitbit stood in front of a setup card
+that only spoke iPhone. :data:`DEVICES` is the fix: one recipe per
+wearable family, chosen with ``?device=`` on the setup route, rendered
+from the same card. Wear OS watches sync into Health Connect on the
+phone, where a free automation app can read the numbers and POST them
+on a schedule; Fitbit and Garmin sync to their own clouds, so their
+recipes lead with the export — the baseline already happened there too
+— and :func:`seed` reads Fitbit's Takeout files alongside Apple's
+``export.xml``.
+
 Payload tolerance is a design position, not sloppiness: the person typing
 the Shortcut dictionary is a tester on their lunch break, and the number
 arrives as ``72``, ``"72"``, or ``"72 count/min"`` depending on which
@@ -255,16 +268,73 @@ _HK_TYPES = {
 _SEDENTARY = "1"    # HKHeartRateMotionContextSedentary
 
 
-def _export_xml(data: bytes) -> bytes:
-    """The upload is either export.zip or the bare export.xml inside it."""
+def _export_xml(data: bytes) -> bytes | None:
+    """The upload is export.zip, the bare export.xml inside it — or a
+    Fitbit Takeout zip, which is somebody else's history and just as much
+    a baseline. None means "this zip is not Apple's; try Fitbit"."""
     if zipfile.is_zipfile(io.BytesIO(data)):
         with zipfile.ZipFile(io.BytesIO(data)) as zf:
             for name in zf.namelist():
                 if name.endswith("export.xml") and "cda" not in name.lower():
                     return zf.read(name)
-        raise WatchError(422, "that zip has no export.xml inside — export "
-                              "again from the Health app")
+        return None
     return data
+
+
+def _fitbit_day(raw: str) -> str | None:
+    """Takeout writes dates two ways — ``01/15/24 00:00:00`` in older
+    exports, ISO in newer ones. Both are the same day."""
+    import datetime
+
+    text = str(raw).strip()
+    for fmt in ("%m/%d/%y %H:%M:%S", "%m/%d/%Y %H:%M:%S"):
+        try:
+            return datetime.datetime.strptime(text, fmt).date().isoformat()
+        except ValueError:
+            pass
+    if re.match(r"\d{4}-\d{2}-\d{2}", text):
+        return text[:10]
+    return None
+
+
+def _fitbit_days(data: bytes) -> dict:
+    """Read a Fitbit Takeout zip into the same ``days`` shape the Apple
+    parser produces. Resting heart rate comes from the
+    ``resting_heart_rate-*.json`` files; HRV from the daily summary CSVs.
+    The continuous ``heart_rate-*.json`` stream is deliberately skipped —
+    it includes exercise, and folding it would teach the resting baseline
+    a workout, the exact mistake the Apple path's sedentary filter
+    exists to prevent."""
+    import csv
+    import json as _json
+
+    days: dict[tuple[str, str], list[float]] = defaultdict(list)
+    with zipfile.ZipFile(io.BytesIO(data)) as zf:
+        for name in zf.namelist():
+            base = name.rsplit("/", 1)[-1].lower()
+            if base.startswith("resting_heart_rate-") and \
+                    base.endswith(".json"):
+                try:
+                    rows = _json.loads(zf.read(name))
+                except ValueError:
+                    continue
+                for row in rows if isinstance(rows, list) else []:
+                    value = _to_number(
+                        (row.get("value") or {}).get("value"))
+                    day = _fitbit_day(row.get("dateTime", ""))
+                    if value and day:
+                        days[(day, "resting_heart_rate")].append(value)
+            elif "heart_rate_variability" in base and \
+                    base.endswith(".csv") and "summary" in base:
+                text = zf.read(name).decode("utf-8", errors="ignore")
+                for row in csv.DictReader(io.StringIO(text)):
+                    keys = {k.strip().lower(): v for k, v in row.items()
+                            if k}
+                    value = _to_number(keys.get("rmssd"))
+                    day = _fitbit_day(keys.get("timestamp", ""))
+                    if value and day:
+                        days[(day, "hrv")].append(value)
+    return days
 
 
 def seed(user_id: str, data: bytes) -> dict:
@@ -275,8 +345,19 @@ def seed(user_id: str, data: bytes) -> dict:
     from . import guardian
     if not data:
         raise WatchError(422, "the upload was empty")
+    xml = _export_xml(data)
+    if xml is None:
+        # An Apple-less zip: read it as a Fitbit Takeout export, which
+        # carries the same months of history under different filenames.
+        days = _fitbit_days(data)
+        if not days:
+            raise WatchError(
+                422, "that zip has no export.xml and no Fitbit files "
+                     "inside \u2014 export again from the Health app, or "
+                     "from Google Takeout for a Fitbit")
+        return _fold(user_id, days, guardian)
     try:
-        parser = ET.iterparse(io.BytesIO(_export_xml(data)), events=("end",))
+        parser = ET.iterparse(io.BytesIO(xml), events=("end",))
         days: dict[tuple[str, str], list[float]] = defaultdict(list)
         for _event, elem in parser:
             if elem.tag != "Record":
@@ -304,6 +385,13 @@ def seed(user_id: str, data: bytes) -> dict:
     except ET.ParseError:
         raise WatchError(422, "that file isn't a Health export — expected "
                               "export.zip or export.xml from the Health app")
+    return _fold(user_id, days, guardian)
+
+
+def _fold(user_id: str, days: dict, guardian) -> dict:
+    """One value per metric per day — the median — oldest first, so the
+    EMA walks the same road the person did. Shared by the Apple and
+    Fitbit paths because the baseline does not care which wrist."""
     report: dict[str, dict] = {}
     for (day, metric), values in sorted(days.items()):
         folded = guardian.update_baseline(
@@ -320,16 +408,129 @@ def seed(user_id: str, data: bytes) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# The setup card: everything the phone needs, spelled out
+# The setup card: everything the phone needs, spelled out — per wearable
 
-def setup(user_id: str, base_url: str) -> dict:
-    """The channel plus the exact Shortcut recipe, ready to render. The
-    steps live here rather than in the console so the phone-browser
-    console, the desktop app, and anyone curl-ing the API read the same
-    instructions."""
+#: The wearables the card knows how to teach. Keys are what ``?device=``
+#: accepts; adding a family later is one entry here — the console renders
+#: the picker from this list, so no client changes when it grows.
+DEVICES = {
+    "apple_watch": "Apple Watch (iPhone)",
+    "wear_os": "Android watch (Wear OS \u2014 Pixel, Galaxy)",
+    "fitbit": "Fitbit",
+    "garmin": "Garmin",
+}
+
+
+def _recipe(device: str, drip_url: str) -> dict:
+    """The steps and the seed hint for one wearable family.
+
+    Each recipe is honest about its platform: Wear OS numbers live in
+    Health Connect on the phone, where an automation app can read and
+    POST them; Fitbit and Garmin sync to their own clouds, so their
+    recipes lead with the export \u2014 and Garmin's export is not
+    parseable here yet, which the hint says instead of hiding.
+    """
+    if device == "wear_os":
+        return {"steps": [
+            "On the phone, install a free automation app that can read "
+            "Health Connect and make web requests \u2014 MacroDroid and "
+            "Tasker both can. Your watch already syncs its readings into "
+            "Health Connect.",
+            "Create a new macro/task with a Time trigger (say every hour, "
+            "or morning and evening).",
+            "Add an action to read the latest Heart Rate (and Blood "
+            "Oxygen / Respiratory Rate if your watch records them) from "
+            "Health Connect. Grant the read permission when the app asks.",
+            "Add an HTTP Request action \u2014 Method POST, Content-Type "
+            "application/json \u2014 and paste the drip address into the "
+            "URL field (THIS is where it goes).",
+            "For the body, send a JSON dictionary like "
+            '{"heart_rate": 72, "blood_oxygen": 97} using the values '
+            "read in the step above. Spelling is forgiving \u2014 hr, "
+            "pulse and heartrate all land.",
+            "Run the macro once by hand \u2014 this screen shows the "
+            "arrival.",
+        ], "seed_hint":
+            "No bulk export to upload here yet \u2014 Health Connect "
+            "keeps recent history on the phone, so let the drip run and "
+            "the baseline establishes itself within a few days."}
+    if device == "fitbit":
+        return {"steps": [
+            "The baseline first: Fitbit keeps your history in its own "
+            "cloud. Request your data from Google Takeout (takeout."
+            "google.com \u2192 deselect all \u2192 Fitbit \u2192 "
+            "Export), then upload the zip below \u2014 months of "
+            "resting heart rate become the baseline in one step.",
+            "For the live drip, install an automation app on the phone "
+            "(MacroDroid or Tasker) with a Time trigger.",
+            "Add an HTTP Request action \u2014 Method POST, Content-Type "
+            "application/json \u2014 and paste the drip address into the "
+            "URL field (THIS is where it goes).",
+            'Send a JSON dictionary like {"resting_heart_rate": 62} with '
+            "the day's number from the Fitbit app \u2014 or type "
+            "readings on the Monitor screen; both run the same pipeline.",
+            "Run it once by hand \u2014 this screen shows the arrival.",
+        ], "seed_hint":
+            "Google Takeout \u2192 Fitbit \u2192 Export, then upload "
+            "the zip here. The resting heart rate and HRV files inside "
+            "become the baseline in one step."}
+    if device == "garmin":
+        return {"steps": [
+            "Garmin syncs to Garmin Connect, its own cloud. For the live "
+            "drip, install an automation app on the phone (MacroDroid or "
+            "Tasker) with a Time trigger.",
+            "Add an HTTP Request action \u2014 Method POST, Content-Type "
+            "application/json \u2014 and paste the drip address into the "
+            "URL field (THIS is where it goes).",
+            'Send a JSON dictionary like {"resting_heart_rate": 60, '
+            '"blood_oxygen": 97} with the numbers from the Connect app '
+            "\u2014 or type readings on the Monitor screen; both run "
+            "the same pipeline.",
+            "Run it once by hand \u2014 this screen shows the arrival.",
+        ], "seed_hint":
+            "Garmin's account export (garmin.com \u2192 Export Your "
+            "Data) is not parseable here yet \u2014 the drip carries "
+            "the baseline instead, a few days of readings at a time."}
+    return {"steps": [
+        "On the iPhone, open the Shortcuts app \u2192 Automation tab "
+        "\u2192 + New Automation.",
+        "Pick 'Time of Day' \u2192 a time you're usually up (say 9:00 "
+        "AM) \u2192 Repeat Daily \u2192 'Run Immediately'. (Add a "
+        "second automation at an evening time later if you like \u2014 "
+        "Shortcuts has no hourly trigger.)",
+        "Choose 'New Blank Automation' \u2192 Add Action \u2192 search "
+        "'Find Health Samples' \u2192 set type Heart Rate, sorted by "
+        "Start Date latest first, limit 1.",
+        "Add Action \u2192 'Dictionary' \u2192 add key heart_rate, and "
+        "for its value pick the Health Samples variable from the step "
+        "above. Add blood_oxygen and respiratory_rate the same way if "
+        "the watch records them.",
+        "Add Action \u2192 'Get Contents of URL' \u2192 paste the drip "
+        "address into the URL field (THIS is where it goes) \u2192 show "
+        "more \u2192 Method POST \u2192 Request Body JSON \u2192 add "
+        "the Dictionary.",
+        "Tap the automation and Run it once by hand \u2014 this screen "
+        "shows the arrival.",
+    ], "seed_hint":
+        "Health app \u2192 your picture \u2192 Export All Health Data, "
+        "then upload the export.zip here. Months of watch history become "
+        "the baseline in one step."}
+
+
+def setup(user_id: str, base_url: str,
+          device: str = "apple_watch") -> dict:
+    """The channel plus the exact recipe for the wearable the person
+    actually wears. The steps live here rather than in the console so the
+    phone-browser console, the desktop app, and anyone curl-ing the API
+    read the same instructions \u2014 and so a new wearable family is one
+    dict entry, not four client changes."""
     import os
 
     from . import mobile as _mobile
+    if device not in DEVICES:
+        raise WatchError(
+            422, "unknown device \u2014 expected one of "
+                 + ", ".join(sorted(DEVICES)))
     ch = channel(user_id)
     drip_url = f"{base_url.rstrip('/')}/watch/drip/{ch['token']}"
     # The truth about whether a phone can actually reach that address: a
@@ -338,32 +539,17 @@ def setup(user_id: str, base_url: str) -> dict:
     # the CLI's phone/serve modes set it to how they actually bound.
     reachable = (os.environ.get("JIM_HOST") == "0.0.0.0"
                  or bool(_mobile.public_base()))
+    recipe = _recipe(device, drip_url)
     return {
         "drip_url": drip_url,
         "phone_reachable": reachable,
         "last_drip_at": ch["last_drip_at"],
         "drips": ch["drips"],
-        "shortcut": [
-            "On the iPhone, open the Shortcuts app → Automation tab → "
-            "+ New Automation.",
-            "Pick 'Time of Day' → a time you're usually up (say 9:00 AM) → "
-            "Repeat Daily → 'Run Immediately'. (Add a second automation at "
-            "an evening time later if you like — Shortcuts has no hourly "
-            "trigger.)",
-            "Choose 'New Blank Automation' → Add Action → search 'Find "
-            "Health Samples' → set type Heart Rate, sorted by Start Date "
-            "latest first, limit 1.",
-            "Add Action → 'Dictionary' → add key heart_rate, and for its "
-            "value pick the Health Samples variable from the step above. "
-            "Add blood_oxygen and respiratory_rate the same way if the "
-            "watch records them.",
-            "Add Action → 'Get Contents of URL' → paste the drip address "
-            "into the URL field (THIS is where it goes) → show more → "
-            "Method POST → Request Body JSON → add the Dictionary.",
-            "Tap the automation and Run it once by hand — this screen "
-            "shows the arrival.",
-        ],
-        "seed_hint": "Health app → your picture → Export All Health Data, "
-                     "then upload the export.zip here. Months of watch "
-                     "history become the baseline in one step.",
+        "device": device,
+        "devices": [{"key": k, "name": n} for k, n in DEVICES.items()],
+        "steps": recipe["steps"],
+        # The pre-picker name of the same list, kept so nothing that
+        # learned the old card breaks.
+        "shortcut": recipe["steps"],
+        "seed_hint": recipe["seed_hint"],
     }
