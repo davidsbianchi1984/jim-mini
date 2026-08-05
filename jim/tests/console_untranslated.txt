@@ -1,4 +1,4 @@
-# status: backlog — 373 rows
+# status: backlog — 262 rows
 #
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
@@ -7,7 +7,7 @@
 # command and example values. The rest of the console is not — 700-odd
 # strings across nineteen gated screens, recorded here so the remainder is a
 # decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 373
+# ceiling: 262
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -230,117 +230,6 @@ Safety: cleared
 Safety: is on the way.
 Safety: retired
 Safety: scan
-Settings: % confidence
-Settings: (saved — type to replace)
-Settings: , or OpenAI / xAI / Gemini for those providers) and your Guardian's replies run on your credential. It stays on this device and rides only your own requests — the server never stores it. Leave it empty to use whatever key the deployment lends.
-Settings: . New accounts must verify by email.
-Settings: . Talking back by microphone works too.
-Settings: : guidance helped
-Settings: ; paste that here, not your normal password.
-Settings: A profile derived from your own history — the conditions you declared, how your check-ins trend, what you bring up, and which guidance has actually helped. It shapes how the coach answers. Nothing is sent to a model vendor to build it.
-Settings: API connection
-Settings: API key
-Settings: App password
-Settings: Armed · last heard from you
-Settings: Automatic
-Settings: Backend base URL
-Settings: Backend:
-Settings: Build it from my history
-Settings: Clear
-Settings: Costs:
-Settings: Disarm
-Settings: Email delivery
-Settings: Every other alarm fires on a reading. This one fires on the
-Settings: From address
-Settings: Guidance runs on-device; sensitive payloads seal into the PDI vault when the tandem is on. User:
-Settings: Hear it
-Settings: How to reach them
-Settings: I live alone — please knock.
-Settings: I'm okay
-Settings: In your own words
-Settings: Just check it
-Settings: Keeps:
-Settings: Let my phone reach JIM on this Wi-Fi
-Settings: Link address
-Settings: Mail goes out through
-Settings: Mail server
-Settings: New address
-Settings: No mail server configured, so
-Settings: Open on your phone
-Settings: Password
-Settings: Paste your own key (Anthropic
-Settings: Port
-Settings: Privacy &amp; Connection
-Settings: QR code for the console URL on this network
-Settings: Quiet days before they're told
-Settings: Rebuild
-Settings: Received
-Settings: Replies are read aloud in
-Settings: Restarts JIM listening on your network. Windows may ask to allow it through the firewall — say yes. Everything personal still requires your sign-in.
-Settings: Save
-Settings: Send a test message to
-Settings: Sign in to mint your drip address.
-Settings: Sign out &amp; end session
-Settings: Speaking through
-Settings: Start the backend with network access: python -m jim phone
-Settings: Steward's name
-Settings: Stop contributing
-Settings: The vigil
-Settings: Town or city
-Settings: Used only to find local rooms and events through the community door. Leave it empty and nothing local is searched for.
-Settings: Username
-Settings: Voice
-Settings: What JIM has learned about you
-Settings: What you contribute
-Settings: Where to look
-Settings: Which model answers
-Settings: Who to tell
-Settings: You use JIM as
-Settings: You use JIM under your own name (
-Settings: Your Guardian's replies can run on any of these. Pick one and every reply uses it;
-Settings: Your data
-Settings: Your model API key
-Settings: Your name here
-Settings: absence
-Settings: after
-Settings: app password
-Settings: built-in offline helper
-Settings: day
-Settings: folded, baseline
-Settings: from
-Settings: http://127.0.0.1:8000
-Settings: nothing can be emailed
-Settings: of
-Settings: of readings: name someone, and if nothing is heard from you for longer than the quiet period, they are asked to check on you. Any reading stands it down. It never calls emergency services — it knocks on a door.
-Settings: pieces of your own history
-Settings: quiet days
-Settings: reading
-Settings: sk-ant-…
-Settings: sk-…
-Settings: smtp.gmail.com
-Settings: their@email.com
-Settings: times
-Settings: tone you asked for:
-Settings: uses whichever is configured.
-Settings: was asked to check on you
-Settings: work:
-Settings: you@example.com
-Settings: you@gmail.com
-Settings: your device's own voice
-Settings: · last
-Settings: · steward:
-Settings: — a pseudonym. JIM never learned your real name.
-Settings: — no account needed. Add an ElevenLabs or OpenAI key for a natural one, and to talk back by microphone.
-Settings: — no online model has a working key on this machine. Pick a provider above and add its key (“Your model API key” below works for all of them).
-Settings: — the one you picked has no key on this machine yet.
-Settings: — verification messages are written to this app's log and signup on this machine simply goes straight in. Point it at a mail account below to send real verification links. For Gmail, turn on 2-Step Verification and create an
-Settings: — what they'll read, written now
-Settings: — what verification links point at
-Settings: ⚠ Right now it resolves to
-Settings: ⚠ Right now replies come from the
-Settings: ⚠ The vigil has tripped —
-Settings: ⚠ Your phone can't reach this address yet — JIM is only listening on this computer.
-Settings: ✓ Reachable from your phone on this Wi-Fi.
 Wards: . Withdrawing restores the confirm-gated behaviour immediately.
 Wards: A bound, CPR-rated robot will not begin without somebody on scene saying so — unless you sign this, and then it will. Read all of it.
 Wards: I am their legal guardian

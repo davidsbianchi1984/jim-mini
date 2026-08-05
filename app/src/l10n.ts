@@ -1690,6 +1690,258 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "brg.tell.board": {
     en: "{n} suggestion{s} in all · {m} of them yours", es: "{n} sugerencias en total · {m} son tuyas", fr: "{n} suggestions en tout · {m} sont les vôtres", de: "{n} Vorschläge insgesamt · {m} davon Ihre", pt: "{n} sugestões no total · {m} são suas", it: "{n} suggerimenti in tutto · {m} sono tuoi", ja: "提案は計{n}件 · うち{m}件があなたのもの", zh: "共{n}条建议 · 其中{m}条是你的", hi: "कुल {n} सुझाव · उनमें {m} आपके", ar: "{n} اقتراحات إجمالًا · {m} منها لك",
   },
+  "set.title": {
+    en: "Privacy & Connection", es: "Privacidad y conexión", fr: "Confidentialité et connexion", de: "Datenschutz & Verbindung", pt: "Privacidade e ligação", it: "Privacy e connessione", ja: "プライバシーと接続", zh: "隐私与连接", hi: "गोपनीयता और कनेक्शन", ar: "الخصوصية والاتصال",
+  },
+  "set.api": {
+    en: "API connection", es: "Conexión con la API", fr: "Connexion à l'API", de: "API-Verbindung", pt: "Ligação à API", it: "Connessione API", ja: "API接続", zh: "API 连接", hi: "API कनेक्शन", ar: "اتصال الواجهة",
+  },
+  "set.api.base": {
+    en: "Backend base URL", es: "URL base del servidor", fr: "URL de base du serveur", de: "Basis-URL des Backends", pt: "URL base do servidor", it: "URL base del backend", ja: "バックエンドのベースURL", zh: "后端基础 URL", hi: "बैकएंड बेस URL", ar: "عنوان الخادم الأساسي",
+  },
+  "set.api.backend": {
+    en: "Backend:", es: "Servidor:", fr: "Serveur :", de: "Backend:", pt: "Servidor:", it: "Backend:", ja: "バックエンド:", zh: "后端:", hi: "बैकएंड:", ar: "الخادم:",
+  },
+  "set.save": {
+    en: "Save", es: "Guardar", fr: "Enregistrer", de: "Speichern", pt: "Guardar", it: "Salva", ja: "保存", zh: "保存", hi: "सहेजें", ar: "احفظ",
+  },
+  "set.clear": {
+    en: "Clear", es: "Borrar", fr: "Effacer", de: "Löschen", pt: "Limpar", it: "Cancella", ja: "クリア", zh: "清除", hi: "हटाएँ", ar: "امسح",
+  },
+  "set.key": {
+    en: "Your model API key", es: "Tu clave de API del modelo", fr: "Votre clé d'API du modèle", de: "Ihr Modell-API-Schlüssel", pt: "A sua chave de API do modelo", it: "La tua chiave API del modello", ja: "あなたのモデルAPIキー", zh: "你的模型 API 密钥", hi: "आपकी मॉडल API कुंजी", ar: "مفتاح واجهة النموذج الخاص بك",
+  },
+  "set.key.pitch": {
+    en: "Paste your own key (Anthropic sk-ant-…, or OpenAI / xAI / Gemini for those providers) and your Guardian's replies run on your credential. It stays on this device and rides only your own requests — the server never stores it. Leave it empty to use whatever key the deployment lends.", es: "Pega tu propia clave (Anthropic sk-ant-…, o de OpenAI / xAI / Gemini para esos proveedores) y las respuestas de tu Guardián correrán con tu credencial. Se queda en este dispositivo y viaja solo con tus propias peticiones — el servidor nunca la almacena. Déjala vacía para usar la clave que preste el despliegue.", fr: "Collez votre propre clé (Anthropic sk-ant-…, ou OpenAI / xAI / Gemini pour ces fournisseurs) et les réponses de votre Gardien tournent sur votre identifiant. Elle reste sur cet appareil et n'accompagne que vos propres requêtes — le serveur ne la stocke jamais. Laissez-la vide pour utiliser la clé que prête le déploiement.", de: "Fügen Sie Ihren eigenen Schlüssel ein (Anthropic sk-ant-…, oder OpenAI / xAI / Gemini für diese Anbieter), und die Antworten Ihres Guardians laufen auf Ihrem Zugang. Er bleibt auf diesem Gerät und reist nur mit Ihren eigenen Anfragen — der Server speichert ihn nie. Lassen Sie ihn leer, um den Schlüssel zu nutzen, den das Deployment leiht.", pt: "Cole a sua própria chave (Anthropic sk-ant-…, ou OpenAI / xAI / Gemini para esses fornecedores) e as respostas do seu Guardião correm com a sua credencial. Fica neste dispositivo e viaja só com os seus próprios pedidos — o servidor nunca a guarda. Deixe-a vazia para usar a chave que o deployment empresta.", it: "Incolla la tua chiave (Anthropic sk-ant-…, oppure OpenAI / xAI / Gemini per quei provider) e le risposte del tuo Guardian girano sulla tua credenziale. Resta su questo dispositivo e viaggia solo con le tue richieste — il server non la memorizza mai. Lasciala vuota per usare la chiave che presta il deployment.", ja: "自分のキーを貼り付けてください（Anthropicは sk-ant-…、各プロバイダーはOpenAI / xAI / Gemini のもの）。するとガーディアンの返答はあなたの資格情報で動きます。キーはこの端末に留まり、あなた自身のリクエストにだけ同行します — サーバーが保存することはありません。空欄にすれば、この配備が貸すキーが使われます。", zh: "粘贴你自己的密钥（Anthropic 用 sk-ant-…，对应提供方则用 OpenAI / xAI / Gemini 的密钥），你的守护者的回复便以你的凭证运行。它留在本设备上，只随你自己的请求同行 — 服务器绝不存储它。留空则使用本部署出借的密钥。", hi: "अपनी कुंजी चिपकाएँ (Anthropic के लिए sk-ant-…, या उन प्रदाताओं के लिए OpenAI / xAI / Gemini) और आपके गार्जियन के जवाब आपकी क्रेडेंशियल पर चलेंगे। यह इसी डिवाइस पर रहती है और केवल आपके अपने अनुरोधों के साथ जाती है — सर्वर इसे कभी संग्रहित नहीं करता। खाली छोड़ें तो डिप्लॉयमेंट जो कुंजी उधार देता है वही चलेगी।", ar: "الصق مفتاحك الخاص (Anthropic بصيغة sk-ant-…، أو OpenAI / xAI / Gemini لتلك المزودات) فتعمل ردود حارسك على اعتمادك. يبقى على هذا الجهاز ويرافق طلباتك أنت فقط — ولا يخزّنه الخادم أبدًا. اتركه فارغًا لاستخدام المفتاح الذي يعيره هذا النشر.",
+  },
+  "set.key.label": {
+    en: "API key", es: "Clave de API", fr: "Clé d'API", de: "API-Schlüssel", pt: "Chave de API", it: "Chiave API", ja: "APIキー", zh: "API 密钥", hi: "API कुंजी", ar: "مفتاح الواجهة",
+  },
+  "set.key.ph": {
+    en: "sk-…", es: "sk-…", fr: "sk-…", de: "sk-…", pt: "sk-…", it: "sk-…", ja: "sk-…", zh: "sk-…", hi: "sk-…", ar: "sk-…",
+  },
+  "set.pair": {
+    en: "Open on your phone", es: "Abrir en tu teléfono", fr: "Ouvrir sur votre téléphone", de: "Auf dem Telefon öffnen", pt: "Abrir no seu telefone", it: "Apri sul telefono", ja: "スマートフォンで開く", zh: "在手机上打开", hi: "अपने फ़ोन पर खोलें", ar: "افتح على هاتفك",
+  },
+  "set.pair.alt": {
+    en: "QR code for the console URL on this network", es: "Código QR de la URL de la consola en esta red", fr: "QR code de l'URL de la console sur ce réseau", de: "QR-Code der Konsolen-URL in diesem Netzwerk", pt: "Código QR do URL da consola nesta rede", it: "Codice QR dell'URL della console su questa rete", ja: "このネットワーク上のコンソールURLのQRコード", zh: "本网络上控制台网址的二维码", hi: "इस नेटवर्क पर कंसोल URL का QR कोड", ar: "رمز QR لعنوان اللوحة على هذه الشبكة",
+  },
+  "set.adapt": {
+    en: "What JIM has learned about you", es: "Lo que JIM ha aprendido sobre ti", fr: "Ce que JIM a appris de vous", de: "Was JIM über Sie gelernt hat", pt: "O que o JIM aprendeu sobre si", it: "Cosa JIM ha imparato di te", ja: "JIMがあなたについて学んだこと", zh: "JIM 对你的了解", hi: "JIM ने आपके बारे में क्या सीखा", ar: "ما تعلّمه JIM عنك",
+  },
+  "set.adapt.pitch": {
+    en: "A profile derived from your own history — the conditions you declared, how your check-ins trend, what you bring up, and which guidance has actually helped. It shapes how the coach answers. Nothing is sent to a model vendor to build it.", es: "Un perfil derivado de tu propio historial — las condiciones que declaraste, cómo evolucionan tus registros, lo que sacas a colación y qué orientación te ha ayudado de verdad. Da forma a cómo responde el coach. No se envía nada a un proveedor de modelos para construirlo.", fr: "Un profil dérivé de votre propre historique — les affections que vous avez déclarées, la tendance de vos pointages, ce que vous évoquez, et quels conseils ont réellement aidé. Il façonne la façon dont le coach répond. Rien n'est envoyé à un fournisseur de modèles pour le construire.", de: "Ein Profil aus Ihrer eigenen Historie — die Beschwerden, die Sie angaben, wie sich Ihre Check-ins entwickeln, was Sie ansprechen und welche Ratschläge tatsächlich geholfen haben. Es prägt, wie der Coach antwortet. Zum Bauen wird nichts an einen Modellanbieter gesendet.", pt: "Um perfil derivado do seu próprio histórico — as condições que declarou, como evoluem os seus check-ins, o que traz à conversa e que orientação ajudou realmente. Molda a forma como o coach responde. Nada é enviado a um fornecedor de modelos para o construir.", it: "Un profilo derivato dalla tua stessa storia — le condizioni che hai dichiarato, come vanno i tuoi check-in, cosa tiri fuori, e quale guida ha davvero aiutato. Modella il modo in cui il coach risponde. Nulla viene inviato a un fornitore di modelli per costruirlo.", ja: "あなた自身の履歴から導かれたプロフィールです — 申告した状態、チェックインの推移、話題にすること、そして実際に役立った助言。コーチの答え方を形づくります。これを作るためにモデルベンダーへ送られるものは何もありません。", zh: "由你自己的历史推导出的画像 — 你申报的状况、签到的趋势、你会提起的事，以及哪些指导真正有用。它塑造教练的回答方式。构建它不会向任何模型厂商发送任何东西。", hi: "आपके अपने इतिहास से बना एक प्रोफ़ाइल — आपने जो स्थितियाँ बताईं, आपके चेक-इन का रुझान, आप क्या उठाते हैं, और किस मार्गदर्शन ने वास्तव में मदद की। यह तय करता है कि कोच कैसे जवाब देता है। इसे बनाने के लिए किसी मॉडल विक्रेता को कुछ नहीं भेजा जाता।", ar: "ملف مستخلص من تاريخك أنت — الحالات التي أعلنتها، واتجاه تسجيلاتك، وما تثيره، وأي إرشاد أفاد فعلًا. يشكّل طريقة إجابة المدرب. ولا يُرسل شيء إلى مزود نماذج لبنائه.",
+  },
+  "set.adapt.conf": {
+    en: "{pct}% confidence", es: "{pct}% de confianza", fr: "{pct}% de confiance", de: "{pct}% Konfidenz", pt: "{pct}% de confiança", it: "{pct}% di confidenza", ja: "確信度{pct}%", zh: "置信度{pct}%", hi: "{pct}% विश्वास", ar: "ثقة {pct}%",
+  },
+  "set.adapt.from": {
+    en: "from {n} pieces of your own history", es: "de {n} fragmentos de tu propio historial", fr: "à partir de {n} éléments de votre propre historique", de: "aus {n} Teilen Ihrer eigenen Historie", pt: "de {n} peças do seu próprio histórico", it: "da {n} pezzi della tua stessa storia", ja: "あなた自身の履歴{n}件から", zh: "取自你自己历史中的{n}条", hi: "आपके अपने इतिहास के {n} टुकड़ों से", ar: "من {n} قطعة من تاريخك",
+  },
+  "set.adapt.rebuild": {
+    en: "Rebuild", es: "Reconstruir", fr: "Reconstruire", de: "Neu aufbauen", pt: "Reconstruir", it: "Ricostruisci", ja: "再構築", zh: "重建", hi: "फिर बनाएँ", ar: "أعد البناء",
+  },
+  "set.adapt.helped": {
+    en: "{cond}: guidance helped {h} of {a} times", es: "{cond}: la orientación ayudó {h} de {a} veces", fr: "{cond} : les conseils ont aidé {h} fois sur {a}", de: "{cond}: Rat half {h} von {a} Malen", pt: "{cond}: a orientação ajudou {h} de {a} vezes", it: "{cond}: la guida ha aiutato {h} volte su {a}", ja: "{cond}: 助言が役立ったのは{a}回中{h}回", zh: "{cond}: 指导在{a}次中有{h}次有用", hi: "{cond}: मार्गदर्शन {a} में से {h} बार काम आया", ar: "{cond}: أفاد الإرشاد {h} من {a} مرات",
+  },
+  "set.adapt.work": {
+    en: "work: {what}", es: "trabajo: {what}", fr: "travail : {what}", de: "Arbeit: {what}", pt: "trabalho: {what}", it: "lavoro: {what}", ja: "仕事: {what}", zh: "工作: {what}", hi: "काम: {what}", ar: "العمل: {what}",
+  },
+  "set.adapt.tone": {
+    en: "tone you asked for: {tone}", es: "tono que pediste: {tone}", fr: "ton que vous avez demandé : {tone}", de: "gewünschter Ton: {tone}", pt: "tom que pediu: {tone}", it: "tono che hai chiesto: {tone}", ja: "希望した口調: {tone}", zh: "你要求的语气: {tone}", hi: "आपने जो लहजा माँगा: {tone}", ar: "النبرة التي طلبتها: {tone}",
+  },
+  "set.adapt.build": {
+    en: "Build it from my history", es: "Construirlo desde mi historial", fr: "Le construire depuis mon historique", de: "Aus meiner Historie aufbauen", pt: "Construí-lo a partir do meu histórico", it: "Costruiscilo dalla mia storia", ja: "自分の履歴から作る", zh: "用我的历史来构建", hi: "मेरे इतिहास से बनाएँ", ar: "ابنِه من تاريخي",
+  },
+  "set.anon": {
+    en: "Your name here", es: "Tu nombre aquí", fr: "Votre nom ici", de: "Ihr Name hier", pt: "O seu nome aqui", it: "Il tuo nome qui", ja: "ここでのあなたの名前", zh: "你在这里的名字", hi: "यहाँ आपका नाम", ar: "اسمك هنا",
+  },
+  "set.anon.pseudo": {
+    en: "You use JIM as {name} — a pseudonym. JIM never learned your real name.", es: "Usas JIM como {name} — un seudónimo. JIM nunca supo tu nombre real.", fr: "Vous utilisez JIM sous le nom {name} — un pseudonyme. JIM n'a jamais appris votre vrai nom.", de: "Sie nutzen JIM als {name} — ein Pseudonym. JIM hat Ihren echten Namen nie erfahren.", pt: "Usa o JIM como {name} — um pseudónimo. O JIM nunca soube o seu nome real.", it: "Usi JIM come {name} — uno pseudonimo. JIM non ha mai saputo il tuo vero nome.", ja: "あなたはJIMを{name}として使っています — 仮名です。JIMがあなたの本名を知ることはありませんでした。", zh: "你以{name}的身份使用 JIM — 那是化名。JIM 从未知道你的真名。", hi: "आप JIM का उपयोग {name} के रूप में करते हैं — यह छद्मनाम है। JIM ने आपका असली नाम कभी नहीं जाना।", ar: "تستخدم JIM باسم {name} — وهو اسم مستعار. لم يعرف JIM اسمك الحقيقي قط.",
+  },
+  "set.anon.keeps": {
+    en: "Keeps: {x}", es: "Conserva: {x}", fr: "Garde : {x}", de: "Behält: {x}", pt: "Mantém: {x}", it: "Mantiene: {x}", ja: "保つもの: {x}", zh: "保留: {x}", hi: "रखता है: {x}", ar: "يحتفظ بـ: {x}",
+  },
+  "set.anon.costs": {
+    en: "Costs: {x}", es: "Cuesta: {x}", fr: "Coûte : {x}", de: "Kostet: {x}", pt: "Custa: {x}", it: "Costa: {x}", ja: "失うもの: {x}", zh: "代价: {x}", hi: "क़ीमत: {x}", ar: "يكلّف: {x}",
+  },
+  "set.anon.own": {
+    en: "You use JIM under your own name ({name}).", es: "Usas JIM con tu propio nombre ({name}).", fr: "Vous utilisez JIM sous votre vrai nom ({name}).", de: "Sie nutzen JIM unter Ihrem eigenen Namen ({name}).", pt: "Usa o JIM com o seu próprio nome ({name}).", it: "Usi JIM con il tuo vero nome ({name}).", ja: "あなたは本名（{name}）でJIMを使っています。", zh: "你以自己的真名（{name}）使用 JIM。", hi: "आप JIM का उपयोग अपने असली नाम ({name}) से करते हैं।", ar: "تستخدم JIM باسمك الحقيقي ({name}).",
+  },
+  "set.data": {
+    en: "Your data", es: "Tus datos", fr: "Vos données", de: "Ihre Daten", pt: "Os seus dados", it: "I tuoi dati", ja: "あなたのデータ", zh: "你的数据", hi: "आपका डेटा", ar: "بياناتك",
+  },
+  "set.data.note": {
+    en: "Guidance runs on-device; sensitive payloads seal into the PDI vault when the tandem is on. User: {uid}", es: "La orientación corre en el dispositivo; las cargas sensibles se sellan en la bóveda PDI cuando el tándem está activo. Usuario: {uid}", fr: "Les conseils tournent sur l'appareil ; les charges sensibles sont scellées dans le coffre PDI quand le tandem est actif. Utilisateur : {uid}", de: "Die Beratung läuft auf dem Gerät; sensible Daten werden im PDI-Tresor versiegelt, wenn das Tandem an ist. Nutzer: {uid}", pt: "A orientação corre no dispositivo; as cargas sensíveis selam-se no cofre PDI quando o tandem está ligado. Utilizador: {uid}", it: "La guida gira sul dispositivo; i payload sensibili si sigillano nel caveau PDI quando il tandem è attivo. Utente: {uid}", ja: "ガイダンスは端末上で動きます。タンデムが有効なとき、機微なペイロードはPDI保管庫に封印されます。ユーザー: {uid}", zh: "指导在设备上运行；串联开启时，敏感负载会封入 PDI 保险库。用户: {uid}", hi: "मार्गदर्शन डिवाइस पर चलता है; टेंडम चालू होने पर संवेदनशील पेलोड PDI तिजोरी में सील हो जाते हैं। उपयोगकर्ता: {uid}", ar: "يعمل الإرشاد على الجهاز؛ وتُختم الحمولات الحساسة في خزنة PDI عندما يكون الترادف مفعّلًا. المستخدم: {uid}",
+  },
+  "set.data.signout": {
+    en: "Sign out & end session", es: "Cerrar sesión y terminar", fr: "Se déconnecter et clore la session", de: "Abmelden & Sitzung beenden", pt: "Terminar sessão e sair", it: "Esci e chiudi la sessione", ja: "サインアウトしてセッションを終了", zh: "登出并结束会话", hi: "साइन आउट करें और सत्र समाप्त करें", ar: "سجّل الخروج وأنهِ الجلسة",
+  },
+  "set.cloud": {
+    en: "What you contribute", es: "Lo que aportas", fr: "Ce que vous contribuez", de: "Was Sie beitragen", pt: "O que contribui", it: "Cosa contribuisci", ja: "あなたが提供するもの", zh: "你贡献了什么", hi: "आप क्या योगदान देते हैं", ar: "ما تساهم به",
+  },
+  "set.cloud.stop": {
+    en: "Stop contributing", es: "Dejar de aportar", fr: "Cesser de contribuer", de: "Beitragen beenden", pt: "Deixar de contribuir", it: "Smetti di contribuire", ja: "提供をやめる", zh: "停止贡献", hi: "योगदान बंद करें", ar: "أوقف المساهمة",
+  },
+  "set.loc": {
+    en: "Where to look", es: "Dónde buscar", fr: "Où chercher", de: "Wo gesucht wird", pt: "Onde procurar", it: "Dove cercare", ja: "どこを探すか", zh: "在哪里查找", hi: "कहाँ देखना है", ar: "أين يُبحث",
+  },
+  "set.loc.pitch": {
+    en: "Used only to find local rooms and events through the community door. Leave it empty and nothing local is searched for.", es: "Se usa solo para encontrar salas y eventos locales a través de la puerta comunitaria. Déjalo vacío y no se buscará nada local.", fr: "Utilisé uniquement pour trouver des salles et événements locaux via la porte communautaire. Laissez vide et rien de local n'est cherché.", de: "Wird nur genutzt, um lokale Räume und Veranstaltungen über die Community-Tür zu finden. Leer lassen, und es wird nichts Lokales gesucht.", pt: "Usado apenas para encontrar salas e eventos locais através da porta comunitária. Deixe vazio e nada local é procurado.", it: "Usato solo per trovare stanze ed eventi locali tramite la porta della community. Lascialo vuoto e non si cerca nulla di locale.", ja: "コミュニティの入口を通じて地元のルームやイベントを探すためだけに使われます。空欄にすれば地元の検索は一切行われません。", zh: "仅用于通过社区入口查找本地房间和活动。留空则不搜索任何本地内容。", hi: "केवल सामुदायिक द्वार से स्थानीय कमरे और आयोजन खोजने के लिए उपयोग होता है। खाली छोड़ें तो कुछ भी स्थानीय नहीं खोजा जाएगा।", ar: "يُستخدم فقط للعثور على الغرف والفعاليات المحلية عبر باب المجتمع. اتركه فارغًا فلا يُبحث عن شيء محلي.",
+  },
+  "set.loc.ph": {
+    en: "Town or city", es: "Pueblo o ciudad", fr: "Ville ou commune", de: "Ort oder Stadt", pt: "Vila ou cidade", it: "Paese o città", ja: "市区町村", zh: "城镇或城市", hi: "क़स्बा या शहर", ar: "بلدة أو مدينة",
+  },
+  "set.mail": {
+    en: "Email delivery", es: "Envío de correo", fr: "Envoi des e-mails", de: "E-Mail-Zustellung", pt: "Envio de email", it: "Recapito email", ja: "メール配送", zh: "邮件投递", hi: "ईमेल वितरण", ar: "تسليم البريد",
+  },
+  "set.mail.smtp": {
+    en: "Mail goes out through {host}{env}. New accounts must verify by email.", es: "El correo sale por {host}{env}. Las cuentas nuevas deben verificarse por email.", fr: "Le courrier part via {host}{env}. Les nouveaux comptes doivent se vérifier par e-mail.", de: "Mail geht über {host}{env} hinaus. Neue Konten müssen sich per E-Mail bestätigen.", pt: "O correio sai por {host}{env}. As contas novas têm de verificar por email.", it: "La posta esce tramite {host}{env}. I nuovi account devono verificarsi via email.", ja: "メールは{host}{env}を通じて送信されます。新規アカウントはメールでの確認が必要です。", zh: "邮件经由{host}{env}发出。新账户须通过邮件验证。", hi: "मेल {host}{env} के ज़रिए जाता है। नए खातों को ईमेल से सत्यापन करना होगा।", ar: "يخرج البريد عبر {host}{env}. على الحسابات الجديدة التحقق بالبريد.",
+  },
+  "set.mail.none": {
+    en: "No mail server configured, so nothing can be emailed — verification messages are written to this app's log and signup on this machine simply goes straight in. Point it at a mail account below to send real verification links. For Gmail, turn on 2-Step Verification and create an App password; paste that here, not your normal password.", es: "No hay servidor de correo configurado, así que no se puede enviar nada por email — los mensajes de verificación se escriben en el registro de esta app y el alta en esta máquina simplemente entra directa. Apúntalo a una cuenta de correo abajo para enviar enlaces de verificación reales. Para Gmail, activa la verificación en dos pasos y crea una contraseña de aplicación; pega esa aquí, no tu contraseña normal.", fr: "Aucun serveur de messagerie configuré, donc rien ne peut être envoyé par e-mail — les messages de vérification sont écrits dans le journal de cette appli et l'inscription sur cette machine passe directement. Pointez-le vers un compte de messagerie ci-dessous pour envoyer de vrais liens de vérification. Pour Gmail, activez la validation en deux étapes et créez un mot de passe d'application ; collez celui-ci ici, pas votre mot de passe habituel.", de: "Kein Mailserver konfiguriert, also kann nichts per E-Mail gesendet werden — Bestätigungsnachrichten landen im Log dieser App, und die Anmeldung auf dieser Maschine geht einfach direkt durch. Richten Sie es unten auf ein Mailkonto, um echte Bestätigungslinks zu senden. Für Gmail: Bestätigung in zwei Schritten einschalten und ein App-Passwort erstellen; fügen Sie dieses hier ein, nicht Ihr normales Passwort.", pt: "Não há servidor de correio configurado, por isso nada pode ser enviado por email — as mensagens de verificação são escritas no registo desta app e o registo nesta máquina entra diretamente. Aponte-o a uma conta de correio abaixo para enviar links de verificação reais. Para o Gmail, ligue a verificação em duas etapas e crie uma palavra-passe de aplicação; cole essa aqui, não a sua palavra-passe normal.", it: "Nessun server di posta configurato, quindi non si può inviare nulla per email — i messaggi di verifica finiscono nel log di questa app e l'iscrizione su questa macchina passa direttamente. Puntalo a un account di posta qui sotto per inviare link di verifica veri. Per Gmail, attiva la verifica in due passaggi e crea una password per le app; incolla quella qui, non la tua password normale.", ja: "メールサーバーが設定されていないため、メールは一切送れません — 確認メッセージはこのアプリのログに書き出され、この端末での登録はそのまま通ります。実際の確認リンクを送るには、下でメールアカウントを指定してください。Gmailの場合は2段階認証を有効にしてアプリパスワードを作成し、通常のパスワードではなくそちらをここに貼り付けてください。", zh: "未配置邮件服务器，因此无法发送任何邮件 — 验证消息会写入本应用的日志，本机上的注册直接通过。请在下方指向一个邮件账户，以发送真实的验证链接。若用 Gmail，请开启两步验证并创建应用专用密码；把那个粘贴到这里，而不是你的常用密码。", hi: "कोई मेल सर्वर कॉन्फ़िगर नहीं है, इसलिए ईमेल से कुछ नहीं भेजा जा सकता — सत्यापन संदेश इस ऐप के लॉग में लिखे जाते हैं और इस मशीन पर साइनअप सीधे हो जाता है। असली सत्यापन लिंक भेजने के लिए नीचे किसी मेल खाते की ओर इंगित करें। Gmail के लिए 2-चरणीय सत्यापन चालू करें और ऐप पासवर्ड बनाएँ; वही यहाँ चिपकाएँ, अपना सामान्य पासवर्ड नहीं।", ar: "لا يوجد خادم بريد مهيأ، فلا يمكن إرسال أي بريد — تُكتب رسائل التحقق في سجل هذا التطبيق ويمر التسجيل على هذه الآلة مباشرة. وجّهه إلى حساب بريد أدناه لإرسال روابط تحقق حقيقية. في Gmail، فعّل التحقق بخطوتين وأنشئ كلمة مرور للتطبيقات؛ والصق تلك هنا لا كلمة مرورك المعتادة.",
+  },
+  "set.mail.host": {
+    en: "Mail server", es: "Servidor de correo", fr: "Serveur de messagerie", de: "Mailserver", pt: "Servidor de correio", it: "Server di posta", ja: "メールサーバー", zh: "邮件服务器", hi: "मेल सर्वर", ar: "خادم البريد",
+  },
+  "set.mail.host.ph": {
+    en: "smtp.gmail.com", es: "smtp.gmail.com", fr: "smtp.gmail.com", de: "smtp.gmail.com", pt: "smtp.gmail.com", it: "smtp.gmail.com", ja: "smtp.gmail.com", zh: "smtp.gmail.com", hi: "smtp.gmail.com", ar: "smtp.gmail.com",
+  },
+  "set.mail.port": {
+    en: "Port", es: "Puerto", fr: "Port", de: "Port", pt: "Porta", it: "Porta", ja: "ポート", zh: "端口", hi: "पोर्ट", ar: "المنفذ",
+  },
+  "set.mail.user": {
+    en: "Username", es: "Usuario", fr: "Nom d'utilisateur", de: "Benutzername", pt: "Utilizador", it: "Nome utente", ja: "ユーザー名", zh: "用户名", hi: "उपयोगकर्ता नाम", ar: "اسم المستخدم",
+  },
+  "set.mail.user.ph": {
+    en: "you@gmail.com", es: "tu@gmail.com", fr: "vous@gmail.com", de: "sie@gmail.com", pt: "voce@gmail.com", it: "tu@gmail.com", ja: "you@gmail.com", zh: "you@gmail.com", hi: "aap@gmail.com", ar: "you@gmail.com",
+  },
+  "set.mail.pass": {
+    en: "Password", es: "Contraseña", fr: "Mot de passe", de: "Passwort", pt: "Palavra-passe", it: "Password", ja: "パスワード", zh: "密码", hi: "पासवर्ड", ar: "كلمة المرور",
+  },
+  "set.mail.saved": {
+    en: "(saved — type to replace)", es: "(guardada — escribe para reemplazar)", fr: "(enregistré — tapez pour remplacer)", de: "(gespeichert — tippen zum Ersetzen)", pt: "(guardada — escreva para substituir)", it: "(salvata — digita per sostituire)", ja: "（保存済み — 入力すると置き換わります）", zh: "（已保存 — 输入即替换）", hi: "(सहेजा गया — बदलने के लिए टाइप करें)", ar: "(محفوظة — اكتب للاستبدال)",
+  },
+  "set.mail.pass.ph": {
+    en: "app password", es: "contraseña de aplicación", fr: "mot de passe d'application", de: "App-Passwort", pt: "palavra-passe de aplicação", it: "password per le app", ja: "アプリパスワード", zh: "应用专用密码", hi: "ऐप पासवर्ड", ar: "كلمة مرور التطبيق",
+  },
+  "set.mail.from": {
+    en: "From address", es: "Dirección de remite", fr: "Adresse d'expéditeur", de: "Absenderadresse", pt: "Endereço de remetente", it: "Indirizzo mittente", ja: "差出人アドレス", zh: "发件地址", hi: "प्रेषक पता", ar: "عنوان المرسل",
+  },
+  "set.mail.link": {
+    en: "Link address", es: "Dirección de los enlaces", fr: "Adresse des liens", de: "Link-Adresse", pt: "Endereço dos links", it: "Indirizzo dei link", ja: "リンクのアドレス", zh: "链接地址", hi: "लिंक पता", ar: "عنوان الروابط",
+  },
+  "set.mail.link.note": {
+    en: "— what verification links point at", es: "— adónde apuntan los enlaces de verificación", fr: "— où pointent les liens de vérification", de: "— worauf Verifizierungslinks zeigen", pt: "— para onde apontam os links de verificação", it: "— dove puntano i link di verifica", ja: "— 確認リンクの宛先", zh: "— 验证链接指向何处", hi: "— सत्यापन लिंक कहाँ इंगित करते हैं", ar: "— إلى أين تشير روابط التحقق",
+  },
+  "set.mail.link.ph": {
+    en: "http://127.0.0.1:8000", es: "http://127.0.0.1:8000", fr: "http://127.0.0.1:8000", de: "http://127.0.0.1:8000", pt: "http://127.0.0.1:8000", it: "http://127.0.0.1:8000", ja: "http://127.0.0.1:8000", zh: "http://127.0.0.1:8000", hi: "http://127.0.0.1:8000", ar: "http://127.0.0.1:8000",
+  },
+  "set.mail.test": {
+    en: "Send a test message to", es: "Enviar un mensaje de prueba a", fr: "Envoyer un message de test à", de: "Testnachricht senden an", pt: "Enviar mensagem de teste para", it: "Invia un messaggio di prova a", ja: "テストメッセージの宛先", zh: "发送测试邮件至", hi: "परीक्षण संदेश भेजें", ar: "أرسل رسالة اختبار إلى",
+  },
+  "set.mail.test.ph": {
+    en: "you@example.com", es: "tu@example.com", fr: "vous@example.com", de: "sie@example.com", pt: "voce@example.com", it: "tu@example.com", ja: "you@example.com", zh: "you@example.com", hi: "aap@example.com", ar: "you@example.com",
+  },
+  "set.model": {
+    en: "Which model answers", es: "Qué modelo responde", fr: "Quel modèle répond", de: "Welches Modell antwortet", pt: "Que modelo responde", it: "Quale modello risponde", ja: "どのモデルが答えるか", zh: "由哪个模型作答", hi: "कौन-सा मॉडल जवाब देता है", ar: "أي نموذج يجيب",
+  },
+  "set.model.pitch": {
+    en: "Your Guardian's replies can run on any of these. Pick one and every reply uses it; Automatic uses whichever is configured.", es: "Las respuestas de tu Guardián pueden correr en cualquiera de estos. Elige uno y todas las respuestas lo usan; Automático usa el que esté configurado.", fr: "Les réponses de votre Gardien peuvent tourner sur n'importe lequel. Choisissez-en un et chaque réponse l'utilise ; Automatique utilise celui qui est configuré.", de: "Die Antworten Ihres Guardians können auf jedem davon laufen. Wählen Sie eines, und jede Antwort nutzt es; Automatisch nutzt das jeweils Konfigurierte.", pt: "As respostas do seu Guardião podem correr em qualquer um destes. Escolha um e todas as respostas o usam; Automático usa o que estiver configurado.", it: "Le risposte del tuo Guardian possono girare su uno qualsiasi. Scegline uno e ogni risposta lo usa; Automatico usa quello configurato.", ja: "ガーディアンの返答はどれでも動かせます。選べばすべての返答がそれを使い、「自動」は設定済みのものを使います。", zh: "你的守护者的回复可运行在任一模型上。选定后每条回复都用它；「自动」使用已配置的模型。", hi: "आपके गार्जियन के जवाब इनमें से किसी पर चल सकते हैं। एक चुनें और हर जवाब उसी का उपयोग करेगा; स्वचालित जो कॉन्फ़िगर है उसे लेता है।", ar: "يمكن أن تعمل ردود حارسك على أي منها. اختر واحدًا فتستخدمه كل الردود؛ التلقائي يستخدم ما هو مهيأ.",
+  },
+  "set.model.stub": {
+    en: "⚠ Right now replies come from the built-in offline helper — no online model has a working key on this machine. Pick a provider above and add its key (“Your model API key” below works for all of them).", es: "⚠ Ahora mismo las respuestas vienen del asistente offline integrado — ningún modelo en línea tiene clave válida en esta máquina. Elige un proveedor arriba y añade su clave («Tu clave de API del modelo», abajo, sirve para todos).", fr: "⚠ En ce moment, les réponses viennent de l'assistant hors ligne intégré — aucun modèle en ligne n'a de clé valide sur cette machine. Choisissez un fournisseur ci-dessus et ajoutez sa clé (« Votre clé d'API du modèle », plus bas, vaut pour tous).", de: "⚠ Derzeit kommen Antworten vom eingebauten Offline-Helfer — kein Online-Modell hat auf dieser Maschine einen gültigen Schlüssel. Wählen Sie oben einen Anbieter und fügen Sie dessen Schlüssel hinzu (»Ihr Modell-API-Schlüssel« unten gilt für alle).", pt: "⚠ Neste momento as respostas vêm do assistente offline integrado — nenhum modelo online tem chave válida nesta máquina. Escolha um fornecedor acima e adicione a sua chave («A sua chave de API do modelo», abaixo, serve para todos).", it: "⚠ In questo momento le risposte vengono dall'assistente offline integrato — nessun modello online ha una chiave valida su questa macchina. Scegli un provider sopra e aggiungi la sua chiave («La tua chiave API del modello», qui sotto, vale per tutti).", ja: "⚠ 現在の返答は内蔵オフラインヘルパーからです — このマシンで有効なキーを持つオンラインモデルがありません。上でプロバイダーを選び、キーを追加してください（下の「あなたのモデルAPIキー」がすべてに使えます）。", zh: "⚠ 当前回复来自内置离线助手 — 本机上没有任何在线模型持有有效密钥。请在上方选择提供方并添加其密钥（下方的「你的模型 API 密钥」对所有提供方都适用）。", hi: "⚠ अभी जवाब अंतर्निहित ऑफ़लाइन सहायक से आ रहे हैं — इस मशीन पर किसी ऑनलाइन मॉडल की कुंजी नहीं है। ऊपर प्रदाता चुनें और उसकी कुंजी जोड़ें (नीचे «आपकी मॉडल API कुंजी» सभी के लिए काम करती है)।", ar: "⚠ الردود الآن من المساعد المدمج دون اتصال — لا يملك أي نموذج متصل مفتاحًا صالحًا على هذه الآلة. اختر مزودًا أعلاه وأضف مفتاحه («مفتاح واجهة النموذج الخاص بك» أدناه يصلح لها جميعًا).",
+  },
+  "set.model.resolves": {
+    en: "⚠ Right now it resolves to {effective} — the one you picked has no key on this machine yet.", es: "⚠ Ahora mismo se resuelve a {effective} — el que elegiste aún no tiene clave en esta máquina.", fr: "⚠ En ce moment, cela se résout en {effective} — celui que vous avez choisi n'a pas encore de clé sur cette machine.", de: "⚠ Derzeit löst es zu {effective} auf — das gewählte hat auf dieser Maschine noch keinen Schlüssel.", pt: "⚠ Neste momento resolve para {effective} — o que escolheu ainda não tem chave nesta máquina.", it: "⚠ In questo momento si risolve in {effective} — quello scelto non ha ancora una chiave su questa macchina.", ja: "⚠ 現在は{effective}に解決されます — 選んだものはまだこのマシンにキーがありません。", zh: "⚠ 当前解析为{effective} — 你选的那个在本机上还没有密钥。", hi: "⚠ अभी यह {effective} पर हल होता है — आपके चुने हुए की इस मशीन पर अभी कुंजी नहीं है।", ar: "⚠ الآن يُحل إلى {effective} — الذي اخترته لا مفتاح له على هذه الآلة بعد.",
+  },
+  "set.voice": {
+    en: "Voice", es: "Voz", fr: "Voix", de: "Stimme", pt: "Voz", it: "Voce", ja: "音声", zh: "语音", hi: "आवाज़", ar: "الصوت",
+  },
+  "set.voice.device": {
+    en: "Replies are read aloud in your device's own voice — no account needed. Add an ElevenLabs or OpenAI key for a natural one, and to talk back by microphone.", es: "Las respuestas se leen en voz alta con la voz propia de tu dispositivo — sin cuenta. Añade una clave de ElevenLabs u OpenAI para una voz natural, y para responder por micrófono.", fr: "Les réponses sont lues à voix haute avec la voix de votre appareil — aucun compte nécessaire. Ajoutez une clé ElevenLabs ou OpenAI pour une voix naturelle, et pour répondre au micro.", de: "Antworten werden mit der geräteeigenen Stimme vorgelesen — ohne Konto. Fügen Sie einen ElevenLabs- oder OpenAI-Schlüssel hinzu für eine natürliche Stimme und um per Mikrofon zu antworten.", pt: "As respostas são lidas em voz alta com a voz do seu dispositivo — sem conta. Adicione uma chave ElevenLabs ou OpenAI para uma voz natural, e para responder por microfone.", it: "Le risposte sono lette ad alta voce con la voce del tuo dispositivo — nessun account necessario. Aggiungi una chiave ElevenLabs o OpenAI per una voce naturale, e per rispondere al microfono.", ja: "返答は端末自身の音声で読み上げられます — アカウントは不要です。自然な声とマイクでの応答には、ElevenLabsまたはOpenAIのキーを追加してください。", zh: "回复会用你设备自带的语音朗读 — 无需账户。添加 ElevenLabs 或 OpenAI 密钥即可获得自然嗓音，并可用麦克风回话。", hi: "जवाब आपके डिवाइस की अपनी आवाज़ में पढ़े जाते हैं — कोई खाता नहीं चाहिए। प्राकृतिक आवाज़ और माइक से जवाब देने के लिए ElevenLabs या OpenAI कुंजी जोड़ें।", ar: "تُقرأ الردود بصوت جهازك نفسه — دون حاجة لحساب. أضف مفتاح ElevenLabs أو OpenAI لصوت طبيعي وللرد بالميكروفون.",
+  },
+  "set.voice.through": {
+    en: "Speaking through {provider}{env}. Talking back by microphone works too.", es: "Hablando a través de {provider}{env}. Responder por micrófono también funciona.", fr: "Parle via {provider}{env}. Répondre au micro fonctionne aussi.", de: "Spricht über {provider}{env}. Antworten per Mikrofon geht auch.", pt: "A falar através de {provider}{env}. Responder por microfone também funciona.", it: "Parla tramite {provider}{env}. Rispondere al microfono funziona anche.", ja: "{provider}{env}を通じて話します。マイクでの応答も使えます。", zh: "通过{provider}{env}发声。用麦克风回话同样可用。", hi: "{provider}{env} के ज़रिए बोल रहा है। माइक से जवाब देना भी चलता है।", ar: "يتحدث عبر {provider}{env}. والرد بالميكروفون يعمل أيضًا.",
+  },
+  "set.voice.hear": {
+    en: "Hear it", es: "Escucharla", fr: "L'écouter", de: "Anhören", pt: "Ouvi-la", it: "Ascoltala", ja: "聞いてみる", zh: "听听看", hi: "सुनें", ar: "استمع إليه",
+  },
+  "set.watch.unreach": {
+    en: "⚠ Your phone can't reach this address yet — JIM is only listening on this computer.", es: "⚠ Tu teléfono aún no puede alcanzar esta dirección — JIM solo escucha en este ordenador.", fr: "⚠ Votre téléphone ne peut pas encore atteindre cette adresse — JIM n'écoute que sur cet ordinateur.", de: "⚠ Ihr Telefon erreicht diese Adresse noch nicht — JIM lauscht nur auf diesem Computer.", pt: "⚠ O seu telefone ainda não alcança este endereço — o JIM só escuta neste computador.", it: "⚠ Il tuo telefono non raggiunge ancora questo indirizzo — JIM ascolta solo su questo computer.", ja: "⚠ このアドレスにはまだスマートフォンから届きません — JIMはこのコンピューター上でのみ待ち受けています。", zh: "⚠ 你的手机还无法访问此地址 — JIM 只在这台电脑上监听。", hi: "⚠ आपका फ़ोन अभी इस पते तक नहीं पहुँच सकता — JIM केवल इसी कंप्यूटर पर सुन रहा है।", ar: "⚠ لا يستطيع هاتفك بلوغ هذا العنوان بعد — JIM يستمع على هذا الحاسوب فقط.",
+  },
+  "set.watch.lan": {
+    en: "Let my phone reach JIM on this Wi-Fi", es: "Permitir que mi teléfono alcance a JIM en esta Wi-Fi", fr: "Laisser mon téléphone joindre JIM sur ce Wi-Fi", de: "Mein Telefon JIM in diesem WLAN erreichen lassen", pt: "Deixar o meu telefone alcançar o JIM nesta Wi-Fi", it: "Fai raggiungere JIM al mio telefono su questa Wi-Fi", ja: "このWi-FiでスマートフォンからJIMに届くようにする", zh: "让我的手机在此 Wi-Fi 上访问 JIM", hi: "मेरे फ़ोन को इस Wi-Fi पर JIM तक पहुँचने दें", ar: "دع هاتفي يصل إلى JIM على شبكة Wi-Fi هذه",
+  },
+  "set.watch.lan.note": {
+    en: "Restarts JIM listening on your network. Windows may ask to allow it through the firewall — say yes. Everything personal still requires your sign-in.", es: "Reinicia JIM escuchando en tu red. Windows puede pedir permiso en el cortafuegos — di que sí. Todo lo personal sigue requiriendo tu inicio de sesión.", fr: "Redémarre JIM en écoute sur votre réseau. Windows peut demander à l'autoriser dans le pare-feu — dites oui. Tout ce qui est personnel exige toujours votre connexion.", de: "Startet JIM neu, lauschend in Ihrem Netzwerk. Windows fragt womöglich nach einer Firewall-Freigabe — sagen Sie ja. Alles Persönliche verlangt weiterhin Ihre Anmeldung.", pt: "Reinicia o JIM a escutar na sua rede. O Windows pode pedir para o permitir na firewall — diga que sim. Tudo o que é pessoal continua a exigir a sua sessão iniciada.", it: "Riavvia JIM in ascolto sulla tua rete. Windows potrebbe chiedere di consentirlo nel firewall — di' di sì. Tutto ciò che è personale richiede ancora il tuo accesso.", ja: "JIMをネットワーク上で待ち受ける形で再起動します。Windowsがファイアウォールの許可を尋ねたら「はい」を選んでください。個人的なものはすべて、引き続きサインインが必要です。", zh: "重启 JIM 使其在你的网络上监听。Windows 可能会请求放行防火墙 — 请选择允许。所有个人内容仍需你登录。", hi: "JIM को आपके नेटवर्क पर सुनते हुए पुनः शुरू करता है। Windows फ़ायरवॉल से अनुमति माँग सकता है — हाँ कहें। सब कुछ निजी अब भी आपके साइन-इन की माँग करता है।", ar: "يعيد تشغيل JIM ليستمع على شبكتك. قد يطلب Windows السماح له عبر الجدار الناري — وافق. وكل ما هو شخصي ما زال يتطلب تسجيل دخولك.",
+  },
+  "set.watch.cli": {
+    en: "Start the backend with network access: python -m jim phone", es: "Arranca el servidor con acceso de red: python -m jim phone", fr: "Démarrez le serveur avec accès réseau : python -m jim phone", de: "Backend mit Netzwerkzugriff starten: python -m jim phone", pt: "Inicie o servidor com acesso de rede: python -m jim phone", it: "Avvia il backend con accesso di rete: python -m jim phone", ja: "ネットワークアクセス付きでバックエンドを起動: python -m jim phone", zh: "以网络访问方式启动后端: python -m jim phone", hi: "बैकएंड को नेटवर्क पहुँच के साथ शुरू करें: python -m jim phone", ar: "شغّل الخادم مع وصول الشبكة: python -m jim phone",
+  },
+  "set.watch.ok": {
+    en: "✓ Reachable from your phone on this Wi-Fi.", es: "✓ Accesible desde tu teléfono en esta Wi-Fi.", fr: "✓ Joignable depuis votre téléphone sur ce Wi-Fi.", de: "✓ Von Ihrem Telefon in diesem WLAN erreichbar.", pt: "✓ Acessível do seu telefone nesta Wi-Fi.", it: "✓ Raggiungibile dal tuo telefono su questa Wi-Fi.", ja: "✓ このWi-Fiでスマートフォンから到達できます。", zh: "✓ 在此 Wi-Fi 上可从你的手机访问。", hi: "✓ इस Wi-Fi पर आपके फ़ोन से पहुँच योग्य।", ar: "✓ يمكن الوصول إليه من هاتفك على هذه الشبكة.",
+  },
+  "set.watch.newaddr": {
+    en: "New address", es: "Nueva dirección", fr: "Nouvelle adresse", de: "Neue Adresse", pt: "Novo endereço", it: "Nuovo indirizzo", ja: "新しいアドレス", zh: "新地址", hi: "नया पता", ar: "عنوان جديد",
+  },
+  "set.watch.received": {
+    en: "Received {n} reading{s} · last {when}", es: "Recibidas {n} lecturas · última {when}", fr: "{n} mesures reçues · dernière {when}", de: "{n} Messungen empfangen · zuletzt {when}", pt: "Recebidas {n} leituras · última {when}", it: "Ricevute {n} letture · ultima {when}", ja: "測定値{n}件を受信 · 最終 {when}", zh: "已收到{n}条读数 · 最近 {when}", hi: "{n} रीडिंग प्राप्त · अंतिम {when}", ar: "استُلمت {n} قراءات · آخرها {when}",
+  },
+  "set.watch.signin": {
+    en: "Sign in to mint your drip address.", es: "Inicia sesión para acuñar tu dirección de goteo.", fr: "Connectez-vous pour créer votre adresse de goutte-à-goutte.", de: "Melden Sie sich an, um Ihre Drip-Adresse zu prägen.", pt: "Inicie sessão para cunhar o seu endereço de gotejamento.", it: "Accedi per coniare il tuo indirizzo drip.", ja: "サインインしてドリップアドレスを発行してください。", zh: "登录以生成你的滴流地址。", hi: "अपना ड्रिप पता बनाने के लिए साइन इन करें।", ar: "سجّل الدخول لإنشاء عنوان التقطير الخاص بك.",
+  },
+  "set.watch.seeded": {
+    en: "{metric}: {d} day{s} folded, baseline {b}{tail}", es: "{metric}: {d} días incorporados, línea base {b}{tail}", fr: "{metric} : {d} jours intégrés, ligne de base {b}{tail}", de: "{metric}: {d} Tage eingearbeitet, Basislinie {b}{tail}", pt: "{metric}: {d} dias incorporados, linha de base {b}{tail}", it: "{metric}: {d} giorni integrati, linea di base {b}{tail}", ja: "{metric}: {d}日分を取り込み、ベースライン {b}{tail}", zh: "{metric}: 已并入{d}天，基线 {b}{tail}", hi: "{metric}: {d} दिन समेटे गए, आधार रेखा {b}{tail}", ar: "{metric}: أُدمج {d} أيام، الخط الأساسي {b}{tail}",
+  },
+  "set.vigil": {
+    en: "The vigil", es: "La vigilia", fr: "La veille", de: "Die Wache", pt: "A vigília", it: "La veglia", ja: "見守り", zh: "守夜", hi: "पहरा", ar: "السهر",
+  },
+  "set.vigil.pitch": {
+    en: "Every other alarm fires on a reading. This one fires on the absence of readings: name someone, and if nothing is heard from you for longer than the quiet period, they are asked to check on you. Any reading stands it down. It never calls emergency services — it knocks on a door.", es: "Todas las demás alarmas se disparan por una lectura. Esta se dispara por la ausencia de lecturas: nombra a alguien, y si no se sabe nada de ti durante más tiempo que el periodo de silencio, se le pide que vaya a ver cómo estás. Cualquier lectura la desactiva. Nunca llama a los servicios de emergencia — llama a una puerta.", fr: "Toutes les autres alertes se déclenchent sur une mesure. Celle-ci se déclenche sur l'absence de mesures : nommez quelqu'un, et si l'on n'a rien de vous plus longtemps que la période de silence, on lui demande de prendre de vos nouvelles. Toute mesure la lève. Elle n'appelle jamais les secours — elle frappe à une porte.", de: "Jeder andere Alarm löst auf eine Messung hin aus. Dieser löst auf das Ausbleiben von Messungen hin aus: nennen Sie jemanden, und hört man länger als die Stillperiode nichts von Ihnen, wird diese Person gebeten, nach Ihnen zu sehen. Jede Messung stellt ihn zurück. Er ruft nie den Rettungsdienst — er klopft an eine Tür.", pt: "Todos os outros alarmes disparam com uma leitura. Este dispara com a ausência de leituras: nomeie alguém, e se nada se souber de si por mais tempo do que o período de silêncio, pedem-lhe que veja como está. Qualquer leitura o desativa. Nunca chama os serviços de emergência — bate a uma porta.", it: "Ogni altro allarme scatta su una lettura. Questo scatta sull'assenza di letture: nomina qualcuno, e se non si sa nulla di te per più del periodo di silenzio, gli si chiede di venire a vedere come stai. Qualsiasi lettura lo rientra. Non chiama mai i soccorsi — bussa a una porta.", ja: "他のあらゆる警報は測定値によって鳴ります。これは測定値がないことによって鳴ります：誰かを指名しておくと、静穏期間を超えてあなたから何の知らせもない場合、その人に様子を見に行くよう頼まれます。どんな測定値でも解除されます。救急を呼ぶことは決してなく — 扉を叩くだけです。", zh: "其他所有警报都因某条读数而触发。这一个因读数的缺席而触发：指定一个人，若超过静默期仍未收到你的任何消息，就会请他来看看你。任何读数都会将其解除。它绝不呼叫急救 — 它只是去敲一扇门。", hi: "बाक़ी हर अलार्म किसी रीडिंग पर बजता है। यह रीडिंग की अनुपस्थिति पर बजता है: किसी का नाम दें, और यदि शांत अवधि से अधिक समय तक आपका कोई हाल न मिले, तो उनसे आपकी ख़बर लेने को कहा जाता है। कोई भी रीडिंग इसे शांत कर देती है। यह कभी आपातकालीन सेवाएँ नहीं बुलाता — यह एक दरवाज़ा खटखटाता है।", ar: "كل إنذار آخر ينطلق بقراءة. هذا ينطلق بغياب القراءات: سمِّ شخصًا، وإن لم يُسمع عنك شيء أطول من فترة الصمت، يُطلب منه أن يطمئن عليك. وأي قراءة تُعيده. لا يستدعي الطوارئ أبدًا — بل يطرق بابًا.",
+  },
+  "set.vigil.tripped": {
+    en: "⚠ The vigil has tripped — {name} was asked to check on you{after}.", es: "⚠ La vigilia se ha disparado — se pidió a {name} que fuera a ver cómo estás{after}.", fr: "⚠ La veille s'est déclenchée — on a demandé à {name} de prendre de vos nouvelles{after}.", de: "⚠ Die Wache hat ausgelöst — {name} wurde gebeten, nach Ihnen zu sehen{after}.", pt: "⚠ A vigília disparou — pediram a {name} que visse como está{after}.", it: "⚠ La veglia è scattata — è stato chiesto a {name} di venire a vedere come stai{after}.", ja: "⚠ 見守りが作動しました — {name}にあなたの様子を見るよう依頼しました{after}。", zh: "⚠ 守夜已触发 — 已请{name}来看看你{after}。", hi: "⚠ पहरा सक्रिय हुआ — {name} से आपकी ख़बर लेने को कहा गया{after}।", ar: "⚠ انطلق السهر — طُلب من {name} أن يطمئن عليك{after}.",
+  },
+  "set.vigil.after": {
+    en: " after {n} quiet days", es: " tras {n} días de silencio", fr: " après {n} jours de silence", de: " nach {n} stillen Tagen", pt: " após {n} dias de silêncio", it: " dopo {n} giorni di silenzio", ja: "（静穏{n}日ののち）", zh: "（在{n}天静默之后）", hi: " {n} शांत दिनों के बाद", ar: " بعد {n} أيام من الصمت",
+  },
+  "set.vigil.okay": {
+    en: "I'm okay", es: "Estoy bien", fr: "Ça va", de: "Mir geht es gut", pt: "Estou bem", it: "Sto bene", ja: "大丈夫です", zh: "我没事", hi: "मैं ठीक हूँ", ar: "أنا بخير",
+  },
+  "set.vigil.name": {
+    en: "Steward's name", es: "Nombre de la persona de guardia", fr: "Nom de la personne de confiance", de: "Name des Verwalters", pt: "Nome do guardião", it: "Nome del custode", ja: "見守り役の名前", zh: "受托人姓名", hi: "संरक्षक का नाम", ar: "اسم القيّم",
+  },
+  "set.vigil.name.ph": {
+    en: "Who to tell", es: "A quién avisar", fr: "Qui prévenir", de: "Wem Bescheid geben", pt: "A quem avisar", it: "Chi avvisare", ja: "誰に知らせるか", zh: "该通知谁", hi: "किसे बताना है", ar: "من تُخبر",
+  },
+  "set.vigil.reach": {
+    en: "How to reach them", es: "Cómo contactarle", fr: "Comment la joindre", de: "Wie man sie erreicht", pt: "Como contactá-lo", it: "Come raggiungerlo", ja: "連絡方法", zh: "如何联系", hi: "उन तक कैसे पहुँचें", ar: "كيف تصل إليه",
+  },
+  "set.vigil.reach.ph": {
+    en: "their@email.com", es: "su@email.com", fr: "son@email.com", de: "ihre@email.com", pt: "dele@email.com", it: "suo@email.com", ja: "their@email.com", zh: "their@email.com", hi: "unka@email.com", ar: "their@email.com",
+  },
+  "set.vigil.days": {
+    en: "Quiet days before they're told", es: "Días de silencio antes de avisarle", fr: "Jours de silence avant qu'on la prévienne", de: "Stille Tage, bevor Bescheid gegeben wird", pt: "Dias de silêncio antes de o avisarem", it: "Giorni di silenzio prima di avvisarlo", ja: "知らせるまでの静穏日数", zh: "通知前的静默天数", hi: "बताने से पहले शांत दिन", ar: "أيام الصمت قبل إخباره",
+  },
+  "set.vigil.words": {
+    en: "In your own words", es: "Con tus palabras", fr: "Avec vos mots", de: "In Ihren eigenen Worten", pt: "Nas suas palavras", it: "Con parole tue", ja: "自分の言葉で", zh: "用你自己的话", hi: "अपने शब्दों में", ar: "بكلماتك أنت",
+  },
+  "set.vigil.words.note": {
+    en: "— what they'll read, written now", es: "— lo que leerá, escrito ahora", fr: "— ce qu'elle lira, écrit maintenant", de: "— was sie lesen wird, jetzt geschrieben", pt: "— o que ele lerá, escrito agora", it: "— ciò che leggerà, scritto ora", ja: "— その人が読む言葉を、いま書いておく", zh: "— 他将读到的内容，此刻写下", hi: "— वे क्या पढ़ेंगे, अभी लिखा हुआ", ar: "— ما سيقرؤه، مكتوبًا الآن",
+  },
+  "set.vigil.words.ph": {
+    en: "I live alone — please knock.", es: "Vivo solo — llama a la puerta, por favor.", fr: "Je vis seul — frappez, s'il vous plaît.", de: "Ich lebe allein — bitte klopfen Sie.", pt: "Vivo sozinho — por favor bata à porta.", it: "Vivo da solo — bussa, per favore.", ja: "一人暮らしです — どうか扉を叩いてください。", zh: "我独自居住 — 请敲门。", hi: "मैं अकेला रहता हूँ — कृपया दरवाज़ा खटखटाएँ।", ar: "أعيش وحدي — من فضلك اطرق الباب.",
+  },
+  "set.vigil.disarm": {
+    en: "Disarm", es: "Desactivar", fr: "Désarmer", de: "Entschärfen", pt: "Desativar", it: "Disattiva", ja: "解除", zh: "解除", hi: "निष्क्रिय करें", ar: "عطّل",
+  },
+  "set.vigil.check": {
+    en: "Just check it", es: "Solo comprobarla", fr: "Juste vérifier", de: "Nur nachsehen", pt: "Só verificar", it: "Solo controlla", ja: "確認するだけ", zh: "只查看", hi: "बस जाँच लें", ar: "تفقّده فقط",
+  },
+  "set.vigil.armed": {
+    en: "Armed · last heard from you {when} · steward: {name}", es: "Activada · última señal tuya {when} · persona de guardia: {name}", fr: "Armée · dernières nouvelles de vous {when} · personne de confiance : {name}", de: "Scharf · zuletzt von Ihnen gehört {when} · Verwalter: {name}", pt: "Ativada · última notícia sua {when} · guardião: {name}", it: "Attiva · ultime tue notizie {when} · custode: {name}", ja: "作動中 · 最後の便り {when} · 見守り役: {name}", zh: "已启用 · 最近一次得知你的消息 {when} · 受托人: {name}", hi: "सक्रिय · आपकी अंतिम ख़बर {when} · संरक्षक: {name}", ar: "مفعّل · آخر خبر عنك {when} · القيّم: {name}",
+  },
 };
 
 export function visitorLang(): Lang {

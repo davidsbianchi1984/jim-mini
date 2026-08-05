@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.44.7** ([changelog](CHANGELOG.md) ·
+**Current release: v0.44.8** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.44.8** | **The Control Center speaks** — the Settings screen fully localized, the largest single block on the record (console-untranslated 373 → 262) |
 | **0.44.7** | **The bearing speaks the visitor's language** — the Bearing screen fully localized (console-untranslated 426 → 373) |
 | **0.44.6** | **What reaches out speaks the visitor's language** — the Reach screen fully localized (console-untranslated 481 → 426) |
 | **0.44.5** | **The baseline speaks the visitor's language** — the Baseline screen fully localized (console-untranslated 531 → 481) |

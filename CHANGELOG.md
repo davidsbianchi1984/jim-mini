@@ -4,6 +4,21 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.8] — 2026-08-05
+
+### The Control Center speaks — the largest block on the record
+
+The Settings screen — the backend address, the model key that stays on
+your device, the model picker with its honest warning about which
+model actually answers, the voice, the watch channel and the Wi-Fi
+truth about whether a phone can reach it, the vigil that fires on the
+absence of readings, the mail setup, what JIM has learned about you,
+your name here, what you contribute, and where to look — is localized
+end to end: **111 strings, the largest single block left on either
+console**, become eighty-four `set.*` keys in all ten languages across
+eight panels. The console-untranslated record falls **373 → 262**,
+exact-sync held.
+
 ## [0.44.7] — 2026-08-05
 
 ### The bearing speaks the visitor's language

@@ -42,28 +42,22 @@ export function Settings() {
 
   return (
     <div className="screen">
-      <header className="screen-head"><h2>Privacy &amp; Connection</h2></header>
+      <header className="screen-head"><h2>{tr("set.title", lang)}</h2></header>
       <div className="card">
-        <h3>API connection</h3>
-        <label>Backend base URL<input value={base} onChange={(e) => setBaseInput(e.target.value)} /></label>
+        <h3>{tr("set.api", lang)}</h3>
+        <label>{tr("set.api.base", lang)}<input value={base} onChange={(e) => setBaseInput(e.target.value)} /></label>
         <button className="primary" onClick={save}>{saved ? "Saved ✓" : "Save"}</button>
-        <div className="muted small" style={{ marginTop: 10 }}>Backend: {health}</div>
+        <div className="muted small" style={{ marginTop: 10 }}>{tr("set.api.backend", lang)} {health}</div>
       </div>
       <OfflinePosture />
 
       <ModelPanel />
 
       <div className="card">
-        <h3>Your model API key</h3>
-        <p className="muted small">
-          Paste your own key (Anthropic <code>sk-ant-…</code>, or OpenAI / xAI /
-          Gemini for those providers) and your Guardian's replies run on your
-          credential. It stays on this device and rides only your own requests —
-          the server never stores it. Leave it empty to use whatever key the
-          deployment lends.
-        </p>
-        <label>API key
-          <input type="password" value={llmKey} placeholder="sk-…"
+        <h3>{tr("set.key", lang)}</h3>
+        <p className="muted small">{tr("set.key.pitch", lang)}</p>
+        <label>{tr("set.key.label", lang)}
+          <input type="password" value={llmKey} placeholder={tr("set.key.ph", lang)}
                  onChange={(e) => setLlmKeyInput(e.target.value)} />
         </label>
         <button className="primary" onClick={() => {
@@ -81,7 +75,7 @@ export function Settings() {
 
       {pair && (
         <div className="card">
-          <h3>Open on your phone</h3>
+          <h3>{tr("set.pair", lang)}</h3>
           <p className="muted small">{pair.note}</p>
           <div className="pair">
             {/* The literal rather than `pair.qr_svg`, which holds this exact
@@ -90,7 +84,7 @@ export function Settings() {
                     door no static check can find, and the last one of those got
                     itself exempted as "not a client call" and then went years
                     without anybody noticing it rendered nowhere. */}
-            <img className="pair-qr" src={getBase() + "/pair/qr.svg"} alt="QR code for the console URL on this network" />
+            <img className="pair-qr" src={getBase() + "/pair/qr.svg"} alt={tr("set.pair.alt", lang)} />
             <div>
               <div className="mono pair-url">{pair.console_url}</div>
               <ol className="pair-steps">{pair.how.map((s) => <li key={s}>{s}</li>)}</ol>
@@ -99,20 +93,17 @@ export function Settings() {
         </div>
       )}
       <div className="card">
-        <h3>What JIM has learned about you</h3>
-        <p className="muted small">
-          A profile derived from your own history — the conditions you
-          declared, how your check-ins trend, what you bring up, and which
-          guidance has actually helped. It shapes how the coach answers.
-          Nothing is sent to a model vendor to build it.
-        </p>
+        <h3>{tr("set.adapt", lang)}</h3>
+        <p className="muted small">{tr("set.adapt.pitch", lang)}</p>
         {adapt?.built && adapt.profile ? (
           <>
             <div className="spec-row">
               <div>
-                <b>{Math.round((adapt.confidence || 0) * 100)}% confidence</b>
+                <b>{tr("set.adapt.conf", lang).replace("{pct}",
+                  String(Math.round((adapt.confidence || 0) * 100)))}</b>
                 <div className="muted small">
-                  from {adapt.evidence_items} pieces of your own history
+                  {tr("set.adapt.from", lang)
+                    .replace("{n}", String(adapt.evidence_items))}
                   {adapt.vaulted ? " · sealed in the vault" : ""}
                 </div>
               </div>
@@ -121,18 +112,23 @@ export function Settings() {
                 setAdaptBusy(true);
                 try { setAdapt(await api.rebuildAdaptation(session.userId, session.userToken)); }
                 finally { setAdaptBusy(false); }
-              }}>Rebuild</button>
+              }}>{tr("set.adapt.rebuild", lang)}</button>
             </div>
             <ul className="refs">
               {Object.entries(adapt.profile.what_helps).map(([cond, t]) => (
                 <li key={cond}>
-                  {cond}: guidance helped {t.helped} of {t.answered} times
+                  {tr("set.adapt.helped", lang)
+                    .replace("{cond}", cond)
+                    .replace("{h}", String(t.helped))
+                    .replace("{a}", String(t.answered))}
                 </li>
               ))}
               {adapt.profile.occupation && (
-                <li>work: {adapt.profile.occupation}</li>
+                <li>{tr("set.adapt.work", lang)
+                  .replace("{what}", String(adapt.profile.occupation))}</li>
               )}
-              {adapt.profile.tone && <li>tone you asked for: {adapt.profile.tone}</li>}
+              {adapt.profile.tone && <li>{tr("set.adapt.tone", lang)
+                .replace("{tone}", String(adapt.profile.tone))}</li>}
             </ul>
             <p className="muted small">{adapt.profile.method}</p>
           </>
@@ -144,7 +140,7 @@ export function Settings() {
               setAdaptBusy(true);
               try { setAdapt(await api.rebuildAdaptation(session.userId, session.userToken)); }
               finally { setAdaptBusy(false); }
-            }}>Build it from my history</button>
+            }}>{tr("set.adapt.build", lang)}</button>
           </>
         )}
       </div>
@@ -188,21 +184,22 @@ export function Settings() {
       </div>
 
       <div className="card">
-        <h3>Your name here</h3>
+        <h3>{tr("set.anon", lang)}</h3>
         {anon ? (anon.anonymous ? (
           <>
             <p>
-              You use JIM as <b>{anon.known_as}</b> — a pseudonym. JIM never
-              learned your real name.
+              {tr("set.anon.pseudo", lang).replace("{name}", String(anon.known_as))}
             </p>
             <ul className="refs">
-              {anon.keeps.map((k, i) => <li key={i}>Keeps: {k}</li>)}
-              {anon.costs.map((c, i) => <li key={`c${i}`}>Costs: {c}</li>)}
+              {anon.keeps.map((k, i) => <li key={i}>{tr("set.anon.keeps", lang)
+                .replace("{x}", k)}</li>)}
+              {anon.costs.map((c, i) => <li key={`c${i}`}>{tr("set.anon.costs", lang)
+                .replace("{x}", c)}</li>)}
             </ul>
           </>
         ) : (
           <p className="muted small">
-            You use JIM under your own name ({anon.known_as}).
+            {tr("set.anon.own", lang).replace("{name}", String(anon.known_as))}
           </p>
         )) : <p className="muted small">…</p>}
       </div>
@@ -212,9 +209,9 @@ export function Settings() {
       <LocalityCard />
 
       <div className="card">
-        <h3>Your data</h3>
-        <p className="muted small">Guidance runs on-device; sensitive payloads seal into the PDI vault when the tandem is on. User: {session.userId}</p>
-        <button className="danger" onClick={signOut}>Sign out &amp; end session</button>
+        <h3>{tr("set.data", lang)}</h3>
+        <p className="muted small">{tr("set.data.note", lang).replace("{uid}", String(session.userId))}</p>
+        <button className="danger" onClick={signOut}>{tr("set.data.signout", lang)}</button>
       </div>
       <Problems />
     </div>
@@ -376,6 +373,7 @@ function MoneyCard() {
 // the behaviour changing underneath it. A number cannot.
 function CloudContributionCard() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [state, setState] = useState<CloudContribution | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -390,7 +388,7 @@ function CloudContributionCard() {
 
   return (
     <div className="card">
-      <h3>What you contribute</h3>
+      <h3>{tr("set.cloud", lang)}</h3>
       <p className="muted small">
         {state.opted_in
           ? `Contributing. ${state.contributed} item${state.contributed === 1 ? "" : "s"} have gone to the shared model.`
@@ -422,7 +420,7 @@ function CloudContributionCard() {
             catch (e) { setError((e as Error).message); }
             finally { setBusy(false); }
           }}>
-          Stop contributing
+          {tr("set.cloud.stop", lang)}
         </button>
       )}
     </div>
@@ -435,6 +433,7 @@ function CloudContributionCard() {
 // where somebody lives is not a thing to make quietly.
 function LocalityCard() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [locality, setLocality] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
@@ -453,20 +452,17 @@ function LocalityCard() {
 
   return (
     <div className="card">
-      <h3>Where to look</h3>
-      <p className="muted small">
-        Used only to find local rooms and events through the community door.
-        Leave it empty and nothing local is searched for.
-      </p>
+      <h3>{tr("set.loc", lang)}</h3>
+      <p className="muted small">{tr("set.loc.pitch", lang)}</p>
       <div className="row">
         <input
           value={locality}
-          placeholder="Town or city"
+          placeholder={tr("set.loc.ph", lang)}
           onChange={(e) => setLocality(e.target.value)} />
         <button disabled={busy || !locality.trim()}
-          onClick={() => save(locality.trim())}>Save</button>
+          onClick={() => save(locality.trim())}>{tr("set.save", lang)}</button>
         <button disabled={busy}
-          onClick={() => { setLocality(""); save(null); }}>Clear</button>
+          onClick={() => { setLocality(""); save(null); }}>{tr("set.clear", lang)}</button>
       </div>
       {note && <p className="muted small">{note}</p>}
       {error && <p className="error">{error}</p>}
@@ -480,6 +476,7 @@ function LocalityCard() {
 // goes to the server's log instead, which is why local signup does not wait
 // for one. Fill this in and the emails become real.
 function MailPanel() {
+  const lang = visitorLang();
   const [cfg, setCfg] = useState<Awaited<ReturnType<typeof api.getMailSettings>> | null>(null);
   const [host, setHost] = useState("");
   const [port, setPort] = useState(587);
@@ -511,24 +508,27 @@ function MailPanel() {
 
   return (
     <div className="card">
-      <h3>Email delivery</h3>
+      <h3>{tr("set.mail", lang)}</h3>
       <p className="muted small">
         {cfg?.transport === "smtp"
-          ? <>Mail goes out through <b>{cfg.host}</b>{cfg.source === "environment" && " (set by environment variables)"}. New accounts must verify by email.</>
-          : <>No mail server configured, so <b>nothing can be emailed</b> — verification messages are written to this app's log and signup on this machine simply goes straight in. Point it at a mail account below to send real verification links. For Gmail, turn on 2-Step Verification and create an <b>App password</b>; paste that here, not your normal password.</>}
+          ? tr("set.mail.smtp", lang)
+              .replace("{host}", String(cfg.host))
+              .replace("{env}", cfg.source === "environment"
+                ? " (set by environment variables)" : "")
+          : tr("set.mail.none", lang)}
       </p>
       {cfg?.source !== "environment" && (<>
         <div className="row">
-          <label>Mail server<input value={host} placeholder="smtp.gmail.com" onChange={(e) => setHost(e.target.value)} /></label>
-          <label>Port<input type="number" value={port} onChange={(e) => setPort(Number(e.target.value))} /></label>
+          <label>{tr("set.mail.host", lang)}<input value={host} placeholder={tr("set.mail.host.ph", lang)} onChange={(e) => setHost(e.target.value)} /></label>
+          <label>{tr("set.mail.port", lang)}<input type="number" value={port} onChange={(e) => setPort(Number(e.target.value))} /></label>
         </div>
-        <label>Username<input value={username} placeholder="you@gmail.com" onChange={(e) => setUsername(e.target.value)} /></label>
-        <label>Password {cfg?.password_set && <span className="muted small">(saved — type to replace)</span>}
-          <input type="password" value={password} placeholder="app password" onChange={(e) => setPassword(e.target.value)} />
+        <label>{tr("set.mail.user", lang)}<input value={username} placeholder={tr("set.mail.user.ph", lang)} onChange={(e) => setUsername(e.target.value)} /></label>
+        <label>{tr("set.mail.pass", lang)} {cfg?.password_set && <span className="muted small">{tr("set.mail.saved", lang)}</span>}
+          <input type="password" value={password} placeholder={tr("set.mail.pass.ph", lang)} onChange={(e) => setPassword(e.target.value)} />
         </label>
-        <label>From address<input value={sender} placeholder="you@gmail.com" onChange={(e) => setSender(e.target.value)} /></label>
-        <label>Link address <span className="muted small">— what verification links point at</span>
-          <input value={publicUrl} placeholder="http://127.0.0.1:8000" onChange={(e) => setPublicUrl(e.target.value)} />
+        <label>{tr("set.mail.from", lang)}<input value={sender} placeholder={tr("set.mail.user.ph", lang)} onChange={(e) => setSender(e.target.value)} /></label>
+        <label>{tr("set.mail.link", lang)} <span className="muted small">{tr("set.mail.link.note", lang)}</span>
+          <input value={publicUrl} placeholder={tr("set.mail.link.ph", lang)} onChange={(e) => setPublicUrl(e.target.value)} />
         </label>
         <div className="actions">
           <button className="primary" disabled={busy || !host.trim()}
@@ -539,13 +539,13 @@ function MailPanel() {
           </button>
           {cfg?.transport === "smtp" && (
             <button disabled={busy} onClick={() => run(() => api.clearMailSettings(), "Cleared.")}>
-              Clear
+              {tr("set.clear", lang)}
             </button>
           )}
         </div>
       </>)}
       {cfg?.transport === "smtp" && (<>
-        <label>Send a test message to<input value={testTo} placeholder="you@example.com" onChange={(e) => setTestTo(e.target.value)} /></label>
+        <label>{tr("set.mail.test", lang)}<input value={testTo} placeholder={tr("set.mail.test.ph", lang)} onChange={(e) => setTestTo(e.target.value)} /></label>
         <button disabled={busy || !testTo.trim()}
                 onClick={() => run(() => api.testMailSettings(testTo.trim()),
                   `Sent to ${testTo.trim()} — check the inbox.`)}>
@@ -563,6 +563,7 @@ function MailPanel() {
 // backend; a person should not have to know that a PUT exists.
 function ModelPanel() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [providers, setProviders] = useState<Awaited<ReturnType<typeof api.listModels>>["providers"]>([]);
   const [chosen, setChosen] = useState("auto");
   const [effective, setEffective] = useState("");
@@ -591,27 +592,18 @@ function ModelPanel() {
 
   return (
     <div className="card">
-      <h3>Which model answers</h3>
-      <p className="muted small">
-        Your Guardian's replies can run on any of these. Pick one and every
-        reply uses it; <b>Automatic</b> uses whichever is configured.
-      </p>
+      <h3>{tr("set.model", lang)}</h3>
+      <p className="muted small">{tr("set.model.pitch", lang)}</p>
       <ProviderTiles providers={providers} chosen={chosen}
                      effective={effective} onPick={pick} busy={busy} />
       {/* The truth about what will actually answer. The silent case was the
           bad one: Automatic quietly resolving to the stub while the screen
           full of logos implied a real model was on. */}
       {effective === "stub" && chosen !== "stub" ? (
-        <div className="degraded">
-          ⚠ Right now replies come from the <b>built-in offline helper</b> —
-          no online model has a working key on this machine. Pick a provider
-          above and add its key (“Your model API key” below works for all of
-          them).
-        </div>
+        <div className="degraded">{tr("set.model.stub", lang)}</div>
       ) : effective && chosen !== "auto" && chosen !== effective && (
         <div className="degraded">
-          ⚠ Right now it resolves to <b>{effective}</b> — the one you picked
-          has no key on this machine yet.
+          {tr("set.model.resolves", lang).replace("{effective}", effective)}
         </div>
       )}
       {error && <div className="error">⚠ {error}</div>}
@@ -623,6 +615,7 @@ function ModelPanel() {
 // replies aloud — free, no account — so this panel is about *upgrading* the
 // voice, never about switching speech on.
 function VoicePanel() {
+  const lang = visitorLang();
   const [cfg, setCfg] = useState<Awaited<ReturnType<typeof api.getVoiceSettings>> | null>(null);
   const [provider, setProvider] = useState("device");
   const [apiKey, setApiKey] = useState("");
@@ -655,11 +648,14 @@ function VoicePanel() {
   const voices = cfg?.voices || [];
   return (
     <div className="card">
-      <h3>Voice</h3>
+      <h3>{tr("set.voice", lang)}</h3>
       <p className="muted small">
         {cfg?.provider === "device"
-          ? <>Replies are read aloud in <b>your device's own voice</b> — no account needed. Add an ElevenLabs or OpenAI key for a natural one, and to talk back by microphone.</>
-          : <>Speaking through <b>{cfg?.provider}</b>{cfg?.key_source === "environment" && " (key from the environment)"}. Talking back by microphone works too.</>}
+          ? tr("set.voice.device", lang)
+          : tr("set.voice.through", lang)
+              .replace("{provider}", String(cfg?.provider))
+              .replace("{env}", cfg?.key_source === "environment"
+                ? " (key from the environment)" : "")}
       </p>
       <div className="voice-row">
         {["device", "elevenlabs", "openai"].map((p) => (
@@ -671,12 +667,12 @@ function VoicePanel() {
         ))}
       </div>
       {provider !== "device" && (<>
-        <label>API key {cfg?.key_set && <span className="muted small">(saved — type to replace)</span>}
+        <label>{tr("set.key.label", lang)} {cfg?.key_set && <span className="muted small">{tr("set.mail.saved", lang)}</span>}
           <input type="password" value={apiKey} placeholder={provider === "elevenlabs" ? "ElevenLabs key" : "sk-…"}
                  onChange={(e) => setApiKey(e.target.value)} />
         </label>
         {voices.length > 0 && (
-          <label>Voice
+          <label>{tr("set.voice", lang)}
             <select value={voiceId} onChange={(e) => { setVoiceId(e.target.value); save({ voice_id: e.target.value }); }}>
               {voices.map((v) => (
                 <option key={v.id} value={v.id}>
@@ -692,14 +688,14 @@ function VoicePanel() {
           </button>
           <button disabled={busy}
                   onClick={() => say("Hello — this is the voice your Guardian will speak in.")}>
-            Hear it
+            {tr("set.voice.hear", lang)}
           </button>
         </div>
       </>)}
       {provider === "device" && (
         <button disabled={busy}
                 onClick={() => say("Hello — this is your device's own voice.")}>
-          Hear it
+          {tr("set.voice.hear", lang)}
         </button>
       )}
       {note && <div className="muted small">{note}</div>}
@@ -710,6 +706,7 @@ function VoicePanel() {
 
 function WatchPanel() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [ch, setCh] = useState<WatchChannel | null>(null);
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -778,28 +775,25 @@ function WatchPanel() {
             is one switch away; elsewhere, the card says what to run. */}
         {!ch.phone_reachable && (
           <div className="degraded">
-            ⚠ Your phone can't reach this address yet — JIM is only
-            listening on this computer.
+            {tr("set.watch.unreach", lang)}
             {desktop() ? (
               <div style={{ marginTop: 8 }}>
                 <button className="primary" disabled={busy} onClick={enableLan}>
-                  Let my phone reach JIM on this Wi-Fi
+                  {tr("set.watch.lan", lang)}
                 </button>
                 <div className="muted small" style={{ marginTop: 6 }}>
-                  Restarts JIM listening on your network. Windows may ask to
-                  allow it through the firewall — say yes. Everything personal
-                  still requires your sign-in.
+                  {tr("set.watch.lan.note", lang)}
                 </div>
               </div>
             ) : (
               <div className="muted small" style={{ marginTop: 6 }}>
-                Start the backend with network access: python -m jim phone
+                {tr("set.watch.cli", lang)}
               </div>
             )}
           </div>
         )}
         {ch.phone_reachable && (
-          <div className="muted small">✓ Reachable from your phone on this Wi-Fi.</div>
+          <div className="muted small">{tr("set.watch.ok", lang)}</div>
         )}
         <label>{tr("watch.address", visitorLang())}
           <input readOnly value={ch.drip_url} onFocus={(e) => e.currentTarget.select()} />
@@ -809,11 +803,15 @@ function WatchPanel() {
             navigator.clipboard?.writeText(ch.drip_url);
             setCopied(true); setTimeout(() => setCopied(false), 1500);
           }}>{copied ? "Copied ✓" : "Copy address"}</button>
-          <button disabled={busy} onClick={rotate}>New address</button>
+          <button disabled={busy} onClick={rotate}>{tr("set.watch.newaddr", lang)}</button>
         </div>
         <div className="muted small" style={{ marginTop: 8 }}>
           {ch.drips > 0
-            ? <>Received <b>{ch.drips}</b> reading{ch.drips === 1 ? "" : "s"} · last {ch.last_drip_at ? new Date(ch.last_drip_at).toLocaleString() : "—"}</>
+            ? tr("set.watch.received", lang)
+                .replace("{n}", String(ch.drips))
+                .replace("{s}", ch.drips === 1 ? "" : "s")
+                .replace("{when}", ch.last_drip_at
+                  ? new Date(ch.last_drip_at).toLocaleString() : "—")
             : "Nothing has arrived yet — run the automation once by hand to test it."}
         </div>
         <details style={{ marginTop: 10 }}>
@@ -833,13 +831,18 @@ function WatchPanel() {
           <div className="muted small" style={{ marginTop: 8 }}>
             {Object.entries(report.seeded).map(([metric, r]) => (
               <div key={metric}>
-                <b>{metric.replace(/_/g, " ")}</b>: {r.days} day{r.days === 1 ? "" : "s"} folded,
-                baseline {r.baseline}{r.provisional ? " (still learning)" : " — established"}
+                {tr("set.watch.seeded", lang)
+                  .replace("{metric}", metric.replace(/_/g, " "))
+                  .replace("{d}", String(r.days))
+                  .replace("{s}", r.days === 1 ? "" : "s")
+                  .replace("{b}", String(r.baseline))
+                  .replace("{tail}", r.provisional
+                    ? " (still learning)" : " — established")}
               </div>
             ))}
           </div>
         )}
-      </>) : <div className="muted small">Sign in to mint your drip address.</div>}
+      </>) : <div className="muted small">{tr("set.watch.signin", lang)}</div>}
       {error && <div className="error">⚠ {error}</div>}
     </div>
   );
@@ -847,6 +850,7 @@ function WatchPanel() {
 
 function VigilPanel() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [st, setSt] = useState<VigilStatus | null>(null);
   const [name, setName] = useState("");
   const [channel, setChannel] = useState("");
@@ -879,34 +883,33 @@ function VigilPanel() {
 
   return (
     <div className="card">
-      <h3>The vigil</h3>
-      <p className="muted small">
-        Every other alarm fires on a reading. This one fires on the <b>absence</b> of
-        readings: name someone, and if nothing is heard from you for longer than
-        the quiet period, they are asked to check on you. Any reading stands it
-        down. It never calls emergency services — it knocks on a door.
-      </p>
+      <h3>{tr("set.vigil", lang)}</h3>
+      <p className="muted small">{tr("set.vigil.pitch", lang)}</p>
       {st?.tripped && (
         <div className="degraded">
-          ⚠ The vigil has tripped — {st.steward_name} was asked to check on you
-          {st.silent_hours != null && <> after {Math.round((st.silent_hours) / 24 * 10) / 10} quiet days</>}.
+          {tr("set.vigil.tripped", lang)
+            .replace("{name}", String(st.steward_name))
+            .replace("{after}", st.silent_hours != null
+              ? tr("set.vigil.after", lang).replace("{n}",
+                  String(Math.round((st.silent_hours) / 24 * 10) / 10))
+              : "")}
           <div style={{ marginTop: 8 }}>
             <button className="primary" disabled={busy}
                     onClick={() => run(() => api.resolveVigil(session.userId!, session.userToken!))}>
-              I'm okay
+              {tr("set.vigil.okay", lang)}
             </button>
           </div>
         </div>
       )}
       <div className="row">
-        <label>Steward's name<input value={name} placeholder="Who to tell" onChange={(e) => setName(e.target.value)} /></label>
-        <label>How to reach them<input value={channel} placeholder="their@email.com" onChange={(e) => setChannel(e.target.value)} /></label>
+        <label>{tr("set.vigil.name", lang)}<input value={name} placeholder={tr("set.vigil.name.ph", lang)} onChange={(e) => setName(e.target.value)} /></label>
+        <label>{tr("set.vigil.reach", lang)}<input value={channel} placeholder={tr("set.vigil.reach.ph", lang)} onChange={(e) => setChannel(e.target.value)} /></label>
       </div>
-      <label>Quiet days before they're told
+      <label>{tr("set.vigil.days", lang)}
         <input type="number" min={1} max={60} value={days} onChange={(e) => setDays(Number(e.target.value))} />
       </label>
-      <label>In your own words <span className="muted small">— what they'll read, written now</span>
-        <input value={note} placeholder="I live alone — please knock." onChange={(e) => setNote(e.target.value)} />
+      <label>{tr("set.vigil.words", lang)} <span className="muted small">{tr("set.vigil.words.note", lang)}</span>
+        <input value={note} placeholder={tr("set.vigil.words.ph", lang)} onChange={(e) => setNote(e.target.value)} />
       </label>
       <div className="actions">
         <button className="primary" disabled={busy || !name.trim() || !channel.trim()}
@@ -917,7 +920,7 @@ function VigilPanel() {
         {st?.armed && (
           <button disabled={busy}
                   onClick={() => run(() => api.disarmVigil(session.userId!, session.userToken!))}>
-            Disarm
+            {tr("set.vigil.disarm", lang)}
           </button>
         )}
         {/* A read, not a sweep. Opening this screen sweeps — which is the
@@ -928,12 +931,15 @@ function VigilPanel() {
             thing. This is the way to look without acting. */}
         <button disabled={busy}
                 onClick={() => run(() => api.getVigil(session.userId!, session.userToken!))}>
-          Just check it
+          {tr("set.vigil.check", lang)}
         </button>
       </div>
       {st?.armed && st.last_heard_at && !st.tripped && (
         <div className="muted small">
-          Armed · last heard from you {st.silent_hours != null ? `${st.silent_hours}h ago` : "recently"} · steward: {st.steward_name}
+          {tr("set.vigil.armed", lang)
+            .replace("{when}", st.silent_hours != null
+              ? `${st.silent_hours}h ago` : "recently")
+            .replace("{name}", String(st.steward_name))}
         </div>
       )}
       {error && <div className="error">⚠ {error}</div>}
