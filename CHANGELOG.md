@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.1] — 2026-08-05
+
+### Version alignment
+
+The three products are cut together, so one number names one
+combination of all three. No JIM-mini code changed — QRME's phones
+gained the sticker, the queue and the stamp: beacons/QR and pairing,
+moderation with message edit and retract, reviews, watermarks, media
+and wearables, 24 routes with doors on iOS, Android and Windows. JIM's guardian and shells are untouched.
+
 ## [0.44.0] — 2026-08-05
 
 ### Version alignment
