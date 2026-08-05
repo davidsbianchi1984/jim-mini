@@ -1561,6 +1561,135 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "rch.wrist.pitch": {
     en: "The watch posts against a drip token rather than an account credential, because a watch cannot hold one.", es: "El reloj publica con un token de goteo en vez de una credencial de cuenta, porque un reloj no puede guardarla.", fr: "La montre publie avec un jeton de goutte-à-goutte plutôt qu'un identifiant de compte, parce qu'une montre ne peut pas en détenir un.", de: "Die Uhr sendet gegen ein Drip-Token statt einer Kontoberechtigung, weil eine Uhr keine halten kann.", pt: "O relógio publica com um token de gotejamento em vez de uma credencial de conta, porque um relógio não pode guardá-la.", it: "L'orologio pubblica con un token drip anziché una credenziale di account, perché un orologio non può custodirla.", ja: "ウォッチはアカウント資格情報ではなくドリップトークンで送信します。ウォッチは資格情報を保持できないからです。", zh: "手表凭滴流令牌上报，而非账户凭证，因为手表无法保管凭证。", hi: "घड़ी खाता क्रेडेंशियल के बजाय ड्रिप टोकन से भेजती है, क्योंकि घड़ी क्रेडेंशियल नहीं रख सकती।", ar: "تنشر الساعة برمز تقطير لا ببيانات اعتماد حساب، لأن الساعة لا تستطيع حفظها.",
   },
+  "brg.title": {
+    en: "Bearing", es: "Porte", fr: "Allure", de: "Haltung", pt: "Porte", it: "Portamento", ja: "たたずまい", zh: "姿态", hi: "आचरण", ar: "الهيئة",
+  },
+  "brg.sub": {
+    en: "how it speaks, and what it made of you", es: "cómo habla, y qué ha hecho de ti", fr: "comment il parle, et ce qu'il a fait de vous", de: "wie er spricht, und was er aus Ihnen gemacht hat", pt: "como fala, e o que fez de si", it: "come parla, e cosa ha fatto di te", ja: "どう話すか、そしてあなたから何を読み取ったか", zh: "它如何说话，以及它对你的解读", hi: "यह कैसे बोलता है, और आपके बारे में क्या समझा", ar: "كيف يتكلم، وما استخلصه عنك",
+  },
+  "brg.speak": {
+    en: "How it speaks", es: "Cómo habla", fr: "Comment il parle", de: "Wie er spricht", pt: "Como fala", it: "Come parla", ja: "話し方", zh: "它如何说话", hi: "यह कैसे बोलता है", ar: "كيف يتكلم",
+  },
+  "brg.speak.go": {
+    en: "Speak this", es: "Habla esto", fr: "Parle ceci", de: "Sprich das", pt: "Fala isto", it: "Parla questo", ja: "この言語で話す", zh: "用这个说", hi: "यह बोलो", ar: "تكلم بهذه",
+  },
+  "brg.speak.now": {
+    en: "now:", es: "ahora:", fr: "actuellement :", de: "jetzt:", pt: "agora:", it: "ora:", ja: "現在:", zh: "当前:", hi: "अभी:", ar: "الآن:",
+  },
+  "brg.speak.tone.ph": {
+    en: "Plainly. No cheerleading.", es: "Con claridad. Sin porras.", fr: "Simplement. Sans pom-pom girls.", de: "Schlicht. Kein Anfeuern.", pt: "Com clareza. Sem claque.", it: "Con chiarezza. Niente tifo.", ja: "率直に。応援口調は不要。", zh: "直白点。不要打鸡血。", hi: "साफ़-साफ़। कोई जयकारा नहीं।", ar: "ببساطة. دون تشجيع مبالغ.",
+  },
+  "brg.speak.tone": {
+    en: "Set the tone", es: "Fijar el tono", fr: "Définir le ton", de: "Ton festlegen", pt: "Definir o tom", it: "Imposta il tono", ja: "口調を設定", zh: "设定语气", hi: "लहजा तय करें", ar: "حدد النبرة",
+  },
+  "brg.speak.cautious": {
+    en: "cautious", es: "cauto", fr: "prudent", de: "vorsichtig", pt: "cauteloso", it: "cauto", ja: "慎重", zh: "谨慎", hi: "सतर्क", ar: "حذر",
+  },
+  "brg.speak.balanced": {
+    en: "balanced", es: "equilibrado", fr: "équilibré", de: "ausgewogen", pt: "equilibrado", it: "equilibrato", ja: "バランス", zh: "均衡", hi: "संतुलित", ar: "متوازن",
+  },
+  "brg.speak.direct": {
+    en: "direct", es: "directo", fr: "direct", de: "direkt", pt: "direto", it: "diretto", ja: "率直", zh: "直接", hi: "सीधा", ar: "مباشر",
+  },
+  "brg.speak.sens": {
+    en: "Set sensitivity", es: "Fijar la sensibilidad", fr: "Définir la sensibilité", de: "Empfindlichkeit festlegen", pt: "Definir a sensibilidade", it: "Imposta la sensibilità", ja: "感度を設定", zh: "设定敏感度", hi: "संवेदनशीलता तय करें", ar: "حدد الحساسية",
+  },
+  "brg.speak.voice": {
+    en: "Forget the voice", es: "Olvidar la voz", fr: "Oublier la voix", de: "Die Stimme vergessen", pt: "Esquecer a voz", it: "Dimentica la voce", ja: "声を忘れる", zh: "忘掉这把声音", hi: "आवाज़ भूल जाओ", ar: "انسَ الصوت",
+  },
+  "brg.speak.tr.ph": {
+    en: "Something to translate", es: "Algo que traducir", fr: "Quelque chose à traduire", de: "Etwas zum Übersetzen", pt: "Algo para traduzir", it: "Qualcosa da tradurre", ja: "翻訳する文", zh: "要翻译的内容", hi: "अनुवाद के लिए कुछ", ar: "شيء للترجمة",
+  },
+  "brg.speak.tr": {
+    en: "Translate", es: "Traducir", fr: "Traduire", de: "Übersetzen", pt: "Traduzir", it: "Traduci", ja: "翻訳", zh: "翻译", hi: "अनुवाद करें", ar: "ترجم",
+  },
+  "brg.told": {
+    en: "What it was told", es: "Lo que se le dijo", fr: "Ce qu'on lui a dit", de: "Was ihm gesagt wurde", pt: "O que lhe foi dito", it: "Cosa gli è stato detto", ja: "伝えられたこと", zh: "它被告知的", hi: "इसे क्या बताया गया", ar: "ما قيل له",
+  },
+  "brg.told.note.ph": {
+    en: "In your own words", es: "Con tus palabras", fr: "Avec vos mots", de: "In Ihren eigenen Worten", pt: "Nas suas palavras", it: "Con parole tue", ja: "自分の言葉で", zh: "用你自己的话", hi: "अपने शब्दों में", ar: "بكلماتك أنت",
+  },
+  "brg.told.tell": {
+    en: "Tell it", es: "Díselo", fr: "Dites-le-lui", de: "Sag es ihm", pt: "Diga-lhe", it: "Diglielo", ja: "伝える", zh: "告诉它", hi: "बताएँ", ar: "أخبره",
+  },
+  "brg.told.src.ph": {
+    en: "calendar", es: "calendario", fr: "calendrier", de: "Kalender", pt: "calendário", it: "calendario", ja: "カレンダー", zh: "日历", hi: "कैलेंडर", ar: "التقويم",
+  },
+  "brg.told.ctx": {
+    en: "Give it context from here", es: "Darle contexto desde aquí", fr: "Lui donner du contexte d'ici", de: "Kontext von hier geben", pt: "Dar-lhe contexto daqui", it: "Dagli contesto da qui", ja: "ここからコンテキストを渡す", zh: "从这里给它上下文", hi: "यहाँ से संदर्भ दें", ar: "أعطه سياقًا من هنا",
+  },
+  "brg.told.say": {
+    en: "Say something unprompted", es: "Que diga algo sin preguntarle", fr: "Qu'il dise quelque chose de lui-même", de: "Unaufgefordert etwas sagen", pt: "Que diga algo sem lhe pedirem", it: "Fagli dire qualcosa spontaneamente", ja: "促されずに何か言わせる", zh: "让它主动说点什么", hi: "बिना पूछे कुछ कहे", ar: "قل شيئًا دون طلب",
+  },
+  "brg.told.refused": {
+    en: "Refused: {err} — consent the source over in What's Held first. The check is on the server; this screen is only reporting what it said.", es: "Rechazado: {err} — consiente la fuente primero en Lo Retenido. La comprobación está en el servidor; esta pantalla solo informa de lo que dijo.", fr: "Refusé : {err} — consentez d'abord la source dans Ce qui est détenu. Le contrôle est sur le serveur ; cet écran ne fait que rapporter ce qu'il a dit.", de: "Abgelehnt: {err} — willigen Sie zuerst drüben in »Was gehalten wird« in die Quelle ein. Die Prüfung liegt auf dem Server; dieser Bildschirm berichtet nur, was er sagte.", pt: "Recusado: {err} — consinta a fonte primeiro em O Que É Guardado. A verificação está no servidor; este ecrã apenas relata o que ele disse.", it: "Rifiutato: {err} — acconsenti prima la fonte in Ciò che è custodito. Il controllo è sul server; questa schermata riporta solo ciò che ha detto.", ja: "拒否: {err} — まず「保持されているもの」でそのソースに同意してください。チェックはサーバー側にあり、この画面はその返答を伝えているだけです。", zh: "被拒: {err} — 请先到「所持有的」里同意该来源。检查在服务器上；此屏幕只是转述它的答复。", hi: "अस्वीकृत: {err} — पहले «जो रखा गया है» में स्रोत की सहमति दें। जाँच सर्वर पर है; यह स्क्रीन केवल उसका कहा बता रही है।", ar: "مرفوض: {err} — وافق على المصدر أولًا في «ما هو محفوظ». الفحص على الخادم؛ هذه الشاشة تنقل ما قاله فحسب.",
+  },
+  "brg.told.med.ph": {
+    en: "medication id", es: "id del medicamento", fr: "id du médicament", de: "Medikamenten-Id", pt: "id do medicamento", it: "id del farmaco", ja: "薬ID", zh: "药物ID", hi: "दवा आईडी", ar: "معرّف الدواء",
+  },
+  "brg.told.dose.ph": {
+    en: "new dose", es: "nueva dosis", fr: "nouvelle dose", de: "neue Dosis", pt: "nova dose", it: "nuova dose", ja: "新しい用量", zh: "新剂量", hi: "नई ख़ुराक", ar: "جرعة جديدة",
+  },
+  "brg.told.med": {
+    en: "Correct a medication", es: "Corregir un medicamento", fr: "Corriger un médicament", de: "Ein Medikament korrigieren", pt: "Corrigir um medicamento", it: "Correggi un farmaco", ja: "薬を修正", zh: "更正一种药物", hi: "दवा सुधारें", ar: "صحّح دواءً",
+  },
+  "brg.made": {
+    en: "What it made of that", es: "Lo que ha hecho de ello", fr: "Ce qu'il en a fait", de: "Was er daraus gemacht hat", pt: "O que fez disso", it: "Cosa ne ha fatto", ja: "そこから読み取ったこと", zh: "它由此得出的", hi: "इसने उससे क्या समझा", ar: "ما استخلصه من ذلك",
+  },
+  "brg.made.stats": {
+    en: "{c} check-ins · average mood {m} · {i} insights · {e} events · {s} calm sessions · {x} coach exchanges", es: "{c} registros · ánimo medio {m} · {i} observaciones · {e} eventos · {s} sesiones de calma · {x} intercambios con el coach", fr: "{c} pointages · humeur moyenne {m} · {i} aperçus · {e} événements · {s} séances de calme · {x} échanges avec le coach", de: "{c} Check-ins · Durchschnittsstimmung {m} · {i} Einsichten · {e} Ereignisse · {s} Ruhesitzungen · {x} Coach-Wechsel", pt: "{c} check-ins · humor médio {m} · {i} observações · {e} eventos · {s} sessões de calma · {x} trocas com o coach", it: "{c} check-in · umore medio {m} · {i} osservazioni · {e} eventi · {s} sessioni di calma · {x} scambi col coach", ja: "チェックイン{c}件 · 平均気分{m} · 洞察{i}件 · イベント{e}件 · カームセッション{s}件 · コーチとのやり取り{x}件", zh: "{c}次签到 · 平均心情{m} · {i}条洞察 · {e}条事件 · {s}次平静练习 · {x}次教练往来", hi: "{c} चेक-इन · औसत मनोदशा {m} · {i} अंतर्दृष्टियाँ · {e} घटनाएँ · {s} शांत सत्र · {x} कोच संवाद", ar: "{c} تسجيلات · متوسط المزاج {m} · {i} استبصارات · {e} أحداث · {s} جلسات هدوء · {x} تبادلات مع المدرب",
+  },
+  "brg.made.open": {
+    en: "{n} follow-up question{s} still open — it asked and has not been answered.", es: "{n} preguntas de seguimiento siguen abiertas — preguntó y no se le ha respondido.", fr: "{n} questions de suivi encore ouvertes — il a demandé et n'a pas eu de réponse.", de: "{n} Nachfragen noch offen — er fragte und wurde nicht beantwortet.", pt: "{n} perguntas de seguimento ainda abertas — perguntou e não foi respondido.", it: "{n} domande di follow-up ancora aperte — ha chiesto e non ha avuto risposta.", ja: "未回答のフォローアップ質問が{n}件 — 尋ねたまま答えられていません。", zh: "{n}个跟进问题仍未回答 — 它问了，还没人答。", hi: "{n} अनुवर्ती प्रश्न अभी खुले हैं — इसने पूछा और उत्तर नहीं मिला।", ar: "{n} أسئلة متابعة ما زالت مفتوحة — سأل ولم يُجَب.",
+  },
+  "brg.guide": {
+    en: "The guide", es: "La guía", fr: "Le guide", de: "Der Führer", pt: "O guia", it: "La guida", ja: "ガイド", zh: "向导", hi: "मार्गदर्शक", ar: "الدليل",
+  },
+  "brg.guide.start": {
+    en: "Start the tour", es: "Empezar el recorrido", fr: "Commencer la visite", de: "Rundgang starten", pt: "Começar a visita", it: "Inizia il tour", ja: "ツアーを開始", zh: "开始导览", hi: "सैर शुरू करें", ar: "ابدأ الجولة",
+  },
+  "brg.guide.step": {
+    en: "Read a step", es: "Leer un paso", fr: "Lire une étape", de: "Einen Schritt lesen", pt: "Ler um passo", it: "Leggi un passo", ja: "ステップを読む", zh: "读一步", hi: "एक चरण पढ़ें", ar: "اقرأ خطوة",
+  },
+  "brg.guide.screen": {
+    en: "What is this screen?", es: "¿Qué es esta pantalla?", fr: "C'est quoi, cet écran ?", de: "Was ist dieser Bildschirm?", pt: "O que é este ecrã?", it: "Cos'è questa schermata?", ja: "この画面は何？", zh: "这个屏幕是什么？", hi: "यह स्क्रीन क्या है?", ar: "ما هذه الشاشة؟",
+  },
+  "brg.guide.done": {
+    en: "Mark it done", es: "Marcarlo hecho", fr: "Le marquer fait", de: "Als erledigt markieren", pt: "Marcar como feito", it: "Segna come fatto", ja: "完了にする", zh: "标记完成", hi: "पूर्ण चिह्नित करें", ar: "علّمه منجزًا",
+  },
+  "brg.guide.progress": {
+    en: "{d} of {t} done", es: "{d} de {t} hechos", fr: "{d} sur {t} faits", de: "{d} von {t} erledigt", pt: "{d} de {t} feitos", it: "{d} di {t} fatti", ja: "{t}件中{d}件完了", zh: "{t}项中已完成{d}项", hi: "{t} में से {d} पूर्ण", ar: "أُنجز {d} من {t}",
+  },
+  "brg.guide.topics": {
+    en: "Help topics", es: "Temas de ayuda", fr: "Rubriques d'aide", de: "Hilfethemen", pt: "Temas de ajuda", it: "Argomenti di aiuto", ja: "ヘルプトピック", zh: "帮助主题", hi: "सहायता विषय", ar: "مواضيع المساعدة",
+  },
+  "brg.dock": {
+    en: "The dock in the corner", es: "El muelle de la esquina", fr: "Le dock dans le coin", de: "Das Dock in der Ecke", pt: "A doca no canto", it: "Il dock nell'angolo", ja: "隅のドック", zh: "角落里的坞", hi: "कोने का डॉक", ar: "المرسى في الزاوية",
+  },
+  "brg.dock.line": {
+    en: "{corner} · {state}{forced} · showing {face}", es: "{corner} · {state}{forced} · mostrando {face}", fr: "{corner} · {state}{forced} · affiche {face}", de: "{corner} · {state}{forced} · zeigt {face}", pt: "{corner} · {state}{forced} · a mostrar {face}", it: "{corner} · {state}{forced} · mostra {face}", ja: "{corner} · {state}{forced} · 表示中 {face}", zh: "{corner} · {state}{forced} · 正在显示{face}", hi: "{corner} · {state}{forced} · दिखा रहा {face}", ar: "{corner} · {state}{forced} · يعرض {face}",
+  },
+  "brg.dock.move": {
+    en: "Move it to the other corner", es: "Moverlo a la otra esquina", fr: "Le déplacer dans l'autre coin", de: "In die andere Ecke schieben", pt: "Movê-lo para o outro canto", it: "Spostalo nell'altro angolo", ja: "反対の隅へ移動", zh: "移到另一个角落", hi: "दूसरे कोने में ले जाएँ", ar: "انقله إلى الزاوية الأخرى",
+  },
+  "brg.tell": {
+    en: "Tell us about the app", es: "Cuéntanos sobre la app", fr: "Parlez-nous de l'appli", de: "Erzählen Sie uns von der App", pt: "Fale-nos da app", it: "Parlaci dell'app", ja: "アプリについて教えてください", zh: "跟我们聊聊这个应用", hi: "ऐप के बारे में बताएँ", ar: "أخبرنا عن التطبيق",
+  },
+  "brg.tell.ph": {
+    en: "What would make this better?", es: "¿Qué lo haría mejor?", fr: "Qu'est-ce qui rendrait cela meilleur ?", de: "Was würde das besser machen?", pt: "O que tornaria isto melhor?", it: "Cosa lo renderebbe migliore?", ja: "何があれば良くなりますか？", zh: "怎样能做得更好？", hi: "इसे बेहतर क्या बनाएगा?", ar: "ما الذي يجعله أفضل؟",
+  },
+  "brg.tell.send": {
+    en: "Send it", es: "Enviarlo", fr: "L'envoyer", de: "Absenden", pt: "Enviá-lo", it: "Invialo", ja: "送信する", zh: "发送", hi: "भेजें", ar: "أرسله",
+  },
+  "brg.tell.good": {
+    en: "Good answer", es: "Buena respuesta", fr: "Bonne réponse", de: "Gute Antwort", pt: "Boa resposta", it: "Buona risposta", ja: "良い回答", zh: "回答得好", hi: "अच्छा उत्तर", ar: "إجابة جيدة",
+  },
+  "brg.tell.bad": {
+    en: "Bad answer", es: "Mala respuesta", fr: "Mauvaise réponse", de: "Schlechte Antwort", pt: "Má resposta", it: "Cattiva risposta", ja: "悪い回答", zh: "回答得差", hi: "ख़राब उत्तर", ar: "إجابة سيئة",
+  },
+  "brg.tell.board": {
+    en: "{n} suggestion{s} in all · {m} of them yours", es: "{n} sugerencias en total · {m} son tuyas", fr: "{n} suggestions en tout · {m} sont les vôtres", de: "{n} Vorschläge insgesamt · {m} davon Ihre", pt: "{n} sugestões no total · {m} são suas", it: "{n} suggerimenti in tutto · {m} sono tuoi", ja: "提案は計{n}件 · うち{m}件があなたのもの", zh: "共{n}条建议 · 其中{m}条是你的", hi: "कुल {n} सुझाव · उनमें {m} आपके", ar: "{n} اقتراحات إجمالًا · {m} منها لك",
+  },
 };
 
 export function visitorLang(): Lang {

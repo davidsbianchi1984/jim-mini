@@ -4,6 +4,17 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.7] — 2026-08-05
+
+### The bearing speaks the visitor's language
+
+The Bearing screen — how JIM speaks, what it was told, what it made of
+that, the guide, the dock in the corner and the suggestion box — is
+localized end to end: fifty-three strings become forty-three `brg.*`
+keys in all ten languages, including the refusal that names What's
+Held as the place to consent a source. The console-untranslated record
+falls **426 → 373**, exact-sync held.
+
 ## [0.44.6] — 2026-08-05
 
 ### What reaches out speaks the visitor's language

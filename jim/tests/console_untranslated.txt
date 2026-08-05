@@ -1,4 +1,4 @@
-# status: backlog — 426 rows
+# status: backlog — 373 rows
 #
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
@@ -7,7 +7,7 @@
 # command and example values. The rest of the console is not — 700-odd
 # strings across nineteen gated screens, recorded here so the remainder is a
 # decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 426
+# ceiling: 373
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -43,59 +43,6 @@ Aims: groceries
 Aims: of
 Aims: streak
 Aims: walk
-Bearing: Bad answer
-Bearing: Bearing
-Bearing: Correct a medication
-Bearing: Forget the voice
-Bearing: Give it context from here
-Bearing: Good answer
-Bearing: Help topics
-Bearing: How it speaks
-Bearing: In your own words
-Bearing: Mark it done
-Bearing: Move it to the other corner
-Bearing: Plainly. No cheerleading.
-Bearing: Read a step
-Bearing: Refused:
-Bearing: Say something unprompted
-Bearing: Send it
-Bearing: Set sensitivity
-Bearing: Set the tone
-Bearing: Something to translate
-Bearing: Speak this
-Bearing: Start the tour
-Bearing: Tell it
-Bearing: Tell us about the app
-Bearing: The dock in the corner
-Bearing: The guide
-Bearing: Translate
-Bearing: What is this screen?
-Bearing: What it made of that
-Bearing: What it was told
-Bearing: What would make this better?
-Bearing: balanced
-Bearing: calendar
-Bearing: calm sessions ·
-Bearing: cautious
-Bearing: check-ins · average mood
-Bearing: coach exchanges
-Bearing: direct
-Bearing: done
-Bearing: events ·
-Bearing: follow-up
-Bearing: how it speaks, and what it made of you
-Bearing: in all ·
-Bearing: insights ·
-Bearing: medication id
-Bearing: new dose
-Bearing: now:
-Bearing: of
-Bearing: of them yours
-Bearing: question
-Bearing: still open — it asked and has not been answered.
-Bearing: suggestion
-Bearing: · showing
-Bearing: — consent the source over in What's Held first. The check is on the server; this screen is only reporting what it said.
 CareTeam: Attach
 CareTeam: Care Team
 CareTeam: Department id

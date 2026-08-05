@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, type ConditionName, type DockCatalog, type DockState,
          type ImproveBoard, type LanguageOption, type Row } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -33,6 +34,7 @@ const CONDITIONS: ConditionName[] = [
 
 export function Bearing() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [languages, setLanguages] = useState<LanguageOption[]>([]);
   const [mine, setMine] = useState<Row | null>(null);
   const [dock, setDock] = useState<DockState | null>(null);
@@ -102,14 +104,14 @@ export function Bearing() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Bearing</h2>
-        <span className="muted small">how it speaks, and what it made of you</span>
+        <h2>{tr("brg.title", lang)}</h2>
+        <span className="muted small">{tr("brg.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>How it speaks</h3>
+        <h3>{tr("brg.speak", lang)}</h3>
         <div className="row">
           <select value={language}
                   onChange={(e) => setLanguage(e.target.value)}>
@@ -121,38 +123,38 @@ export function Bearing() {
           </select>
           <button className="primary" disabled={busy}
                   onClick={() => run(() => api.setUserLanguage(
-                    uid!, { language }, token!))}>Speak this</button>
+                    uid!, { language }, token!))}>{tr("brg.speak.go", lang)}</button>
           <span className="muted small">
-            now: {String(mine?.label ?? "…")} · {String(mine?.mode ?? "")}
+            {tr("brg.speak.now", lang)} {String(mine?.label ?? "…")} · {String(mine?.mode ?? "")}
           </span>
         </div>
         <div className="row">
-          <input value={tone} placeholder="Plainly. No cheerleading."
+          <input value={tone} placeholder={tr("brg.speak.tone.ph", lang)}
                  onChange={(e) => setTone(e.target.value)} />
           <button disabled={busy || !tone.trim()}
                   onClick={() => run(() => api.setPersonality(
-                    uid!, { tone: tone.trim() }, token!))}>Set the tone</button>
+                    uid!, { tone: tone.trim() }, token!))}>{tr("brg.speak.tone", lang)}</button>
           <select value={level} onChange={(e) => setLevel(e.target.value)}>
-            <option value="cautious">cautious</option>
-            <option value="balanced">balanced</option>
-            <option value="direct">direct</option>
+            <option value="cautious">{tr("brg.speak.cautious", lang)}</option>
+            <option value="balanced">{tr("brg.speak.balanced", lang)}</option>
+            <option value="direct">{tr("brg.speak.direct", lang)}</option>
           </select>
           <button disabled={busy}
                   onClick={() => run(() => api.setSensitivity(
-                    uid!, { level }, token!))}>Set sensitivity</button>
+                    uid!, { level }, token!))}>{tr("brg.speak.sens", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(() => api.clearVoice(token!))}>
-            Forget the voice
+            {tr("brg.speak.voice", lang)}
           </button>
         </div>
         <div className="row">
-          <input value={text} placeholder="Something to translate"
+          <input value={text} placeholder={tr("brg.speak.tr.ph", lang)}
                  onChange={(e) => setText(e.target.value)} />
           <button disabled={busy || !text.trim()}
                   onClick={() => run(async () => {
                     setTranslated(await api.translate(uid!, {
                       text: text.trim(), to: language }, token!));
-                  })}>Translate</button>
+                  })}>{tr("brg.speak.tr", lang)}</button>
         </div>
         {translated && (
           <p className="muted small">{String(translated.text ?? "")}</p>
@@ -160,14 +162,14 @@ export function Bearing() {
       </div>
 
       <div className="card">
-        <h3>What it was told</h3>
+        <h3>{tr("brg.told", lang)}</h3>
         <div className="row">
           <select value={condition}
                   onChange={(e) =>
                     setCondition(e.target.value as ConditionName)}>
             {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          <input value={conditionNote} placeholder="In your own words"
+          <input value={conditionNote} placeholder={tr("brg.told.note.ph", lang)}
                  onChange={(e) => setConditionNote(e.target.value)} />
           <button className="primary" disabled={busy}
                   onClick={() => run(async () => {
@@ -175,10 +177,10 @@ export function Bearing() {
                       condition, note: conditionNote.trim() || undefined },
                       token!);
                     setConditionNote("");
-                  })}>Tell it</button>
+                  })}>{tr("brg.told.tell", lang)}</button>
         </div>
         <div className="row">
-          <input value={source} placeholder="calendar"
+          <input value={source} placeholder={tr("brg.told.src.ph", lang)}
                  onChange={(e) => setSource(e.target.value)} />
           <button disabled={busy}
                   onClick={async () => {
@@ -189,46 +191,48 @@ export function Bearing() {
                         data: { title: "something on the calendar" } },
                         token!);
                     } catch (e) { setContextError((e as Error).message); }
-                  }}>Give it context from here</button>
+                  }}>{tr("brg.told.ctx", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(async () => {
                     setSaid(await api.askCompanion(uid!, {}, token!));
-                  })}>Say something unprompted</button>
+                  })}>{tr("brg.told.say", lang)}</button>
         </div>
         {contextError && (
           <p className="muted small">
-            Refused: {contextError} — consent the source over in What's Held
-            first. The check is on the server; this screen is only reporting
-            what it said.
+            {tr("brg.told.refused", lang).replace("{err}", contextError)}
           </p>
         )}
         {said && <p className="muted small">{String(said.content ?? "")}</p>}
         <div className="row">
-          <input value={medId} placeholder="medication id"
+          <input value={medId} placeholder={tr("brg.told.med.ph", lang)}
                  onChange={(e) => setMedId(e.target.value)} />
-          <input value={medDose} placeholder="new dose"
+          <input value={medDose} placeholder={tr("brg.told.dose.ph", lang)}
                  onChange={(e) => setMedDose(e.target.value)} />
           <button disabled={busy || !medId.trim()}
                   onClick={() => run(() => api.updateMed(uid!, medId.trim(),
                     { dose: medDose.trim() || undefined }, token!))}>
-            Correct a medication
+            {tr("brg.told.med", lang)}
           </button>
         </div>
       </div>
 
       <div className="card">
-        <h3>What it made of that</h3>
+        <h3>{tr("brg.made", lang)}</h3>
         <p className="muted small">
-          {String(checkins.count ?? 0)} check-ins · average mood{" "}
-          {String(checkins.avg_mood ?? "—")} · {insights.length} insights ·{" "}
-          {events.length} events · {calm.length} calm sessions ·{" "}
-          {history.length} coach exchanges
+          {tr("brg.made.stats", lang)
+            .replace("{c}", String(checkins.count ?? 0))
+            .replace("{m}", String(checkins.avg_mood ?? "—"))
+            .replace("{i}", String(insights.length))
+            .replace("{e}", String(events.length))
+            .replace("{s}", String(calm.length))
+            .replace("{x}", String(history.length))}
         </p>
         {((followup?.open ?? []) as Row[]).length > 0 && (
           <p className="muted small">
-            {((followup?.open ?? []) as Row[]).length} follow-up
-            {" "}question{((followup?.open ?? []) as Row[]).length === 1 ? "" : "s"}
-            {" "}still open — it asked and has not been answered.
+            {tr("brg.made.open", lang)
+              .replace("{n}", String(((followup?.open ?? []) as Row[]).length))
+              .replace("{s}",
+                ((followup?.open ?? []) as Row[]).length === 1 ? "" : "s")}
           </p>
         )}
         {insights.slice(0, 8).map((x, i) => (
@@ -247,29 +251,31 @@ export function Bearing() {
       </div>
 
       <div className="card">
-        <h3>The guide</h3>
+        <h3>{tr("brg.guide", lang)}</h3>
         <p className="muted small">{String(guide?.guide ?? "…")}</p>
         <div className="row">
           <button disabled={busy}
                   onClick={() => run(() => api.startTutorial(
-                    { learner_id: uid! }))}>Start the tour</button>
+                    { learner_id: uid! }))}>{tr("brg.guide.start", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(async () => {
                     setStep(await api.tutorialStep("what"));
-                  })}>Read a step</button>
+                  })}>{tr("brg.guide.step", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(async () => {
                     setStep(await api.tutorialForScreen(1));
-                  })}>What is this screen?</button>
+                  })}>{tr("brg.guide.screen", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(() => api.finishTutorialStep(
                     { learner_id: uid!, lesson: "what" }))}>
-            Mark it done
+            {tr("brg.guide.done", lang)}
           </button>
         </div>
         {progress != null && (
           <p className="muted small">
-            {String(progress.done ?? 0)} of {String(progress.total ?? 0)} done
+            {tr("brg.guide.progress", lang)
+              .replace("{d}", String(progress.done ?? 0))
+              .replace("{t}", String(progress.total ?? 0))}
           </p>
         )}
         {step && (
@@ -278,7 +284,7 @@ export function Bearing() {
             {String(step.what ?? "")} {String(step.try_it ?? "")}
           </p>
         )}
-        <h4>Help topics</h4>
+        <h4>{tr("brg.guide.topics", lang)}</h4>
         {topics.slice(0, 6).map((t, i) => (
           <div key={i} className="muted small" style={{ padding: "4px 0" }}>
             · {t}
@@ -287,12 +293,15 @@ export function Bearing() {
       </div>
 
       <div className="card">
-        <h3>The dock in the corner</h3>
+        <h3>{tr("brg.dock", lang)}</h3>
         {dock && (
           <p className="muted small">
-            {dock.corner} · {dock.state}
-            {dock.forced ? ` · forced (${String(dock.why ?? "")})` : ""} ·
-            showing {dock.face}
+            {tr("brg.dock.line", lang)
+              .replace("{corner}", dock.corner)
+              .replace("{state}", dock.state)
+              .replace("{forced}",
+                dock.forced ? ` · forced (${String(dock.why ?? "")})` : "")
+              .replace("{face}", dock.face)}
           </p>
         )}
         <div className="row">
@@ -309,7 +318,7 @@ export function Bearing() {
                   onClick={() => run(() => api.setDock(uid!,
                     { corner: dock?.corner === "bottom_right"
                         ? "bottom_left" : "bottom_right" }, token!))}>
-            Move it to the other corner
+            {tr("brg.dock.move", lang)}
           </button>
           <button disabled={busy}
                   onClick={() => run(() => api.setDock(uid!,
@@ -327,27 +336,29 @@ export function Bearing() {
       </div>
 
       <div className="card">
-        <h3>Tell us about the app</h3>
+        <h3>{tr("brg.tell", lang)}</h3>
         <div className="row">
-          <input value={idea} placeholder="What would make this better?"
+          <input value={idea} placeholder={tr("brg.tell.ph", lang)}
                  onChange={(e) => setIdea(e.target.value)} />
           <button className="primary" disabled={busy || !idea.trim()}
                   onClick={() => run(async () => {
                     await api.suggestImprovement({
                       category: "improvement", message: idea.trim() });
                     setIdea("");
-                  })}>Send it</button>
+                  })}>{tr("brg.tell.send", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(() => api.sendFeedback(
-                    uid!, { rating: "up" }, token!))}>Good answer</button>
+                    uid!, { rating: "up" }, token!))}>{tr("brg.tell.good", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(() => api.sendFeedback(
-                    uid!, { rating: "down" }, token!))}>Bad answer</button>
+                    uid!, { rating: "down" }, token!))}>{tr("brg.tell.bad", lang)}</button>
         </div>
         {board && (
           <p className="muted small">
-            {board.total} suggestion{board.total === 1 ? "" : "s"} in all ·
-            {" "}{board.mine.length} of them yours
+            {tr("brg.tell.board", lang)
+              .replace("{n}", String(board.total))
+              .replace("{s}", board.total === 1 ? "" : "s")
+              .replace("{m}", String(board.mine.length))}
           </p>
         )}
       </div>
