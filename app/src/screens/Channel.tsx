@@ -75,30 +75,26 @@ export function Channel() {
     finally { setBusy(false); }
   }
 
-  if (!uid || !token) return <p>Sign in to set up the channel.</p>;
+  if (!uid || !token) return <p>{tr("ch.signin", visitorLang())}</p>;
 
   const intimate = new Set(vocab?.intimate ?? []);
   const siteIsIntimate = site !== "" && intimate.has(site);
 
   return (
     <section className="screen">
-      <h2>Channel &amp; camera</h2>
+      <h2>{tr("ch.title", visitorLang())}</h2>
       {error && <p className="error">{error}</p>}
       {said && <p className="muted">{said}</p>}
 
-      <h3>Devices</h3>
-      <p className="muted">
-        A microphone attaches to a device this account already knows, never to
-        a name typed in the moment — so what is listening is always something
-        you registered on purpose.
-      </p>
+      <h3>{tr("ch.devices", visitorLang())}</h3>
+      <p className="muted">{tr("ch.devices.lead", visitorLang())}</p>
       {devices.map((d) => (
         <div key={d.id} className="card">
           <div className="row">
             <strong>{d.name}</strong>
             <span className="muted">{d.kind}</span>
             {d.transport && <span className="muted">{d.transport}</span>}
-            {d.has_llm && <span className="pill">runs a model</span>}
+            {d.has_llm && <span className="pill">{tr("ch.dev.model", visitorLang())}</span>}
             {d.paired && (
               <span className="pill">{tr("dev.paired", visitorLang())}</span>
             )}
@@ -106,7 +102,7 @@ export function Channel() {
         </div>
       ))}
       <div className="row">
-        <input value={deviceName} placeholder="Device name"
+        <input value={deviceName} placeholder={tr("ch.dev.name", visitorLang())}
           onChange={(e) => setDeviceName(e.target.value)} />
         <select value={deviceKind} onChange={(e) => setDeviceKind(e.target.value)}>
           {["wearable", "glasses", "headset", "speaker", "phone",
@@ -122,7 +118,7 @@ export function Channel() {
               name: deviceName.trim(), kind: deviceKind }, token);
             setDeviceName("");
           }, "Device registered.")}>
-          Register
+          {tr("ch.dev.register", visitorLang())}
         </button>
         {/* The radio does the typing: where the runtime carries Web
             Bluetooth (Chrome, Edge, the desktop shell), the picker returns
@@ -162,7 +158,7 @@ export function Channel() {
         </button>
       </div>
 
-      <h3>Channel 2 — what JIM hears</h3>
+      <h3>{tr("ch.mic", visitorLang())}</h3>
       {types && <p className="muted">{types.rule}</p>}
       {mic?.listening
         ? (
@@ -190,13 +186,13 @@ export function Channel() {
                     "Is anybody else in the room? OK for yes."),
                   primary_device: mic.device ?? undefined,
                 }, token), "Handed over.")}>
-                Hand channel 2 over
+                {tr("ch.mic.handover", visitorLang())}
               </button>
             </div>
             {mic.capped && (
               <p className="muted">
-                Narrowed for the moment — a call is in progress. Your setting
-                ({mic.gain}) comes back afterwards.
+                {tr("ch.mic.capped", visitorLang()).replace(
+                  "{gain}", String(mic.gain))}
               </p>
             )}
             <div className="row">
@@ -215,31 +211,31 @@ export function Channel() {
               <button disabled={busy}
                 onClick={() => run(() => api.releaseMic(uid, token),
                   "Released. JIM is not listening.")}>
-                Release
+                {tr("ch.mic.release", visitorLang())}
               </button>
               <button disabled={busy}
                 onClick={() => {
                   if (confirm("Detach the microphone entirely?"))
                     run(() => api.detachMic(uid, token), "Detached.");
                 }}>
-                Detach
+                {tr("ch.mic.detach", visitorLang())}
               </button>
             </div>
           </div>
         )
         : (
           <div className="card">
-            <p className="muted">Nothing attached. JIM is not listening.</p>
+            <p className="muted">{tr("ch.mic.none", visitorLang())}</p>
             <div className="row">
               <select value={micDevice}
                 onChange={(e) => setMicDevice(e.target.value)}>
-                <option value="">Which device…</option>
+                <option value="">{tr("ch.mic.which", visitorLang())}</option>
                 {devices.map((d) => (
                   <option key={d.id} value={d.name}>{d.name}</option>
                 ))}
               </select>
               <select value={micType} onChange={(e) => setMicType(e.target.value)}>
-                <option value="">What kind of microphone…</option>
+                <option value="">{tr("ch.mic.kind", visitorLang())}</option>
                 {(types?.personal ?? []).map((mt) => (
                   <option key={mt} value={mt}>{mt.replace("_", " ")}</option>
                 ))}
@@ -248,7 +244,7 @@ export function Channel() {
                 onClick={() => run(() => api.attachMic(uid,
                   { device_name: micDevice, mic_type: micType }, token),
                   "Attached.")}>
-                Attach
+                {tr("ch.mic.attach", visitorLang())}
               </button>
             </div>
             {/* Only the personal list is offered. The ambient microphones are
@@ -256,7 +252,9 @@ export function Channel() {
                 missing option raises the question the rule already answers. */}
             {types && types.ambient.length > 0 && (
               <p className="muted">
-                Not offered: {types.ambient.join(", ")} — {types.rule}
+                {tr("ch.mic.refused", visitorLang())
+                  .replace("{list}", types.ambient.join(", "))
+                  .replace("{rule}", types.rule)}
               </p>
             )}
           </div>
@@ -265,14 +263,14 @@ export function Channel() {
 
       {history.length > 0 && (
         <>
-          <h3>When it was open</h3>
+          <h3>{tr("ch.hist", visitorLang())}</h3>
           {history.map((h) => (
             <div key={h.id} className="card muted">
               <div className="row">
                 <span>{h.device} · {h.mic_type}</span>
                 <span>{h.gain}</span>
                 {h.reason && <span>{h.reason}</span>}
-                {h.live && <span className="pill">live</span>}
+                {h.live && <span className="pill">{tr("ch.hist.live", visitorLang())}</span>}
               </div>
               <span>{h.started_at.slice(0, 16).replace("T", " ")}
                 {h.ended_at ? ` → ${h.ended_at.slice(11, 16)}` : ""}
@@ -282,7 +280,7 @@ export function Channel() {
         </>
       )}
 
-      <h3>Clinical camera</h3>
+      <h3>{tr("ch.cam", visitorLang())}</h3>
       {vocab && (
         <p className="muted">
           {vocab.agent_sees}{vocab.vault_required
@@ -303,7 +301,7 @@ export function Channel() {
             </label>
             <span className="muted">{c.kind}</span>
             {c.condition && <span className="muted">{c.condition}</span>}
-            {intimate.has(c.site) && <span className="pill">intimate</span>}
+            {intimate.has(c.site) && <span className="pill">{tr("ch.cam.intimate", visitorLang())}</span>}
           </div>
           {c.note && <p className="muted">{c.note}</p>}
           {shown[c.id] && (
@@ -330,7 +328,7 @@ export function Channel() {
                   + "clinician who was shown it will see it was withdrawn."))
                   run(() => api.deleteCapture(uid, c.id, token), "Withdrawn.");
               }}>
-              Withdraw
+              {tr("ch.cam.withdraw", visitorLang())}
             </button>
           </div>
         </div>
@@ -346,7 +344,8 @@ export function Channel() {
                 ? `Attached. ${named} intimate capture(s) had to be named one at a time — they are never swept in by a match.`
                 : "Attached to the referral.");
             })}>
-            Attach {chosen.length > 0 ? `${chosen.length} ` : ""}to a referral
+            {tr("ch.cam.attach", visitorLang()).replace(
+              "{n}", chosen.length > 0 ? `${chosen.length} ` : "")}
           </button>
         </div>
       )}
@@ -354,7 +353,7 @@ export function Channel() {
       <div className="card">
         <div className="row">
           <select value={site} onChange={(e) => { setSite(e.target.value); setConsent(false); }}>
-            <option value="">Where on the body…</option>
+            <option value="">{tr("ch.cam.where", visitorLang())}</option>
             {Object.entries(vocab?.sites ?? {}).map(([k, label]) => (
               <option key={k} value={k}>{label}{intimate.has(k) ? " (intimate)" : ""}</option>
             ))}
@@ -364,16 +363,16 @@ export function Channel() {
               <option key={k} value={k} title={label}>{k}</option>
             ))}
           </select>
-          <input value={condition} placeholder="What it is for (optional)"
+          <input value={condition} placeholder={tr("ch.cam.for", visitorLang())}
             onChange={(e) => setCondition(e.target.value)} />
         </div>
-        <input value={note} placeholder="Note (optional)"
+        <input value={note} placeholder={tr("ch.cam.note", visitorLang())}
           onChange={(e) => setNote(e.target.value)} />
         {siteIsIntimate && (
           <label className="row">
             <input type="checkbox" checked={consent}
               onChange={(e) => setConsent(e.target.checked)} />
-            {" "}This is an intimate site and I am choosing to record it.
+            {" "}{tr("ch.cam.consent", visitorLang())}
           </label>
         )}
         <input type="file" accept="image/*,video/*,audio/*"
@@ -403,9 +402,9 @@ export function Channel() {
             setNote(""); setConsent(false);
             e.target.value = "";
           }} />
-        {!site && <p className="muted">Choose a site first.</p>}
+        {!site && <p className="muted">{tr("ch.cam.site", visitorLang())}</p>}
         {siteIsIntimate && !consent
-          && <p className="muted">Tick the box before choosing a file.</p>}
+          && <p className="muted">{tr("ch.cam.tick", visitorLang())}</p>}
       </div>
     </section>
   );

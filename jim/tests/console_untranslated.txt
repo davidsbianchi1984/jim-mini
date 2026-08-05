@@ -1,4 +1,4 @@
-# status: backlog — 603 rows
+# status: backlog — 573 rows
 #
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
@@ -7,7 +7,7 @@
 # command and example values. The rest of the console is not — 700-odd
 # strings across nineteen gated screens, recorded here so the remainder is a
 # decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 603
+# ceiling: 573
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -213,36 +213,6 @@ CareTeam: pasted, never echoed
 CareTeam: your own QRME organization, coordinated by the Guardian
 CareTeam: · credential held
 CareTeam: · desk
-Channel: ) comes back afterwards.
-Channel: A microphone attaches to a device this account already knows, never to a name typed in the moment — so what is listening is always something you registered on purpose.
-Channel: Attach
-Channel: Channel &amp; camera
-Channel: Channel 2 — what JIM hears
-Channel: Choose a site first.
-Channel: Clinical camera
-Channel: Detach
-Channel: Device name
-Channel: Devices
-Channel: Hand channel 2 over
-Channel: Narrowed for the moment — a call is in progress. Your setting (
-Channel: Not offered:
-Channel: Note (optional)
-Channel: Nothing attached. JIM is not listening.
-Channel: Register
-Channel: Release
-Channel: Sign in to set up the channel.
-Channel: This is an intimate site and I am choosing to record it.
-Channel: Tick the box before choosing a file.
-Channel: What it is for (optional)
-Channel: What kind of microphone…
-Channel: When it was open
-Channel: Where on the body…
-Channel: Which device…
-Channel: Withdraw
-Channel: intimate
-Channel: live
-Channel: runs a model
-Channel: to a referral
 Checkin: Check-in
 Checkin: Energy:
 Checkin: Logged

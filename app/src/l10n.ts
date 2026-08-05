@@ -1144,6 +1144,93 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "बैकएंड URL",
     ar: "عنوان الخادم",
   },
+  "ch.title": {
+    en: "Channel & camera", es: "Canal y cámara", fr: "Canal et caméra", de: "Kanal & Kamera", pt: "Canal e câmara", it: "Canale e fotocamera", ja: "チャンネルとカメラ", zh: "通道与相机", hi: "चैनल और कैमरा", ar: "القناة والكاميرا",
+  },
+  "ch.signin": {
+    en: "Sign in to set up the channel.", es: "Inicia sesión para configurar el canal.", fr: "Connectez-vous pour configurer le canal.", de: "Melden Sie sich an, um den Kanal einzurichten.", pt: "Inicie sessão para configurar o canal.", it: "Accedi per configurare il canale.", ja: "チャンネルを設定するにはサインインしてください。", zh: "登录以设置通道。", hi: "चैनल सेट करने के लिए साइन इन करें।", ar: "سجّل الدخول لإعداد القناة.",
+  },
+  "ch.devices": {
+    en: "Devices", es: "Dispositivos", fr: "Appareils", de: "Geräte", pt: "Dispositivos", it: "Dispositivi", ja: "デバイス", zh: "设备", hi: "उपकरण", ar: "الأجهزة",
+  },
+  "ch.devices.lead": {
+    en: "A microphone attaches to a device this account already knows, never to a name typed in the moment — so what is listening is always something you registered on purpose.", es: "Un micrófono se conecta a un dispositivo que esta cuenta ya conoce, nunca a un nombre escrito en el momento — así lo que escucha es siempre algo que registraste a propósito.", fr: "Un micro s'attache à un appareil que ce compte connaît déjà, jamais à un nom tapé sur le moment — ce qui écoute est donc toujours quelque chose que vous avez enregistré exprès.", de: "Ein Mikrofon hängt an einem Gerät, das dieses Konto bereits kennt, nie an einem eben eingetippten Namen — was zuhört, ist also immer etwas, das Sie absichtlich registriert haben.", pt: "Um microfone liga-se a um dispositivo que esta conta já conhece, nunca a um nome escrito no momento — o que está a ouvir é sempre algo que registou de propósito.", it: "Un microfono si collega a un dispositivo che questo account già conosce, mai a un nome digitato al momento — ciò che ascolta è sempre qualcosa che hai registrato apposta.", ja: "マイクはこのアカウントが既に知るデバイスにのみ接続され、その場で入力した名前には接続されません — 聞いているのは常にあなたが意図して登録したものです。", zh: "麦克风只连接到此账户已知的设备，绝不连接临时输入的名称 — 因此在聆听的始终是你有意注册的设备。", hi: "माइक्रोफ़ोन उसी उपकरण से जुड़ता है जिसे यह खाता पहले से जानता है, तुरंत टाइप किए नाम से कभी नहीं — तो जो सुन रहा है वह हमेशा आपका जानबूझकर पंजीकृत उपकरण है।", ar: "يرتبط الميكروفون بجهاز يعرفه هذا الحساب مسبقًا، لا باسم يُكتب في اللحظة — فما يستمع هو دائمًا شيء سجّلته عمدًا.",
+  },
+  "ch.dev.model": {
+    en: "runs a model", es: "ejecuta un modelo", fr: "exécute un modèle", de: "führt ein Modell aus", pt: "executa um modelo", it: "esegue un modello", ja: "モデル搭載", zh: "运行模型", hi: "मॉडल चलाता है", ar: "يشغّل نموذجًا",
+  },
+  "ch.dev.name": {
+    en: "Device name", es: "Nombre del dispositivo", fr: "Nom de l'appareil", de: "Gerätename", pt: "Nome do dispositivo", it: "Nome del dispositivo", ja: "デバイス名", zh: "设备名称", hi: "उपकरण का नाम", ar: "اسم الجهاز",
+  },
+  "ch.dev.register": {
+    en: "Register", es: "Registrar", fr: "Enregistrer", de: "Registrieren", pt: "Registar", it: "Registra", ja: "登録", zh: "登记", hi: "पंजीकृत करें", ar: "تسجيل",
+  },
+  "ch.mic": {
+    en: "Channel 2 — what JIM hears", es: "Canal 2 — lo que oye JIM", fr: "Canal 2 — ce que JIM entend", de: "Kanal 2 — was JIM hört", pt: "Canal 2 — o que o JIM ouve", it: "Canale 2 — ciò che JIM sente", ja: "チャンネル2 — JIMに聞こえるもの", zh: "通道2 — JIM听到的", hi: "चैनल 2 — JIM क्या सुनता है", ar: "القناة 2 — ما يسمعه JIM",
+  },
+  "ch.mic.handover": {
+    en: "Hand channel 2 over", es: "Ceder el canal 2", fr: "Céder le canal 2", de: "Kanal 2 übergeben", pt: "Ceder o canal 2", it: "Cedi il canale 2", ja: "チャンネル2を引き渡す", zh: "移交通道2", hi: "चैनल 2 सौंपें", ar: "تسليم القناة 2",
+  },
+  "ch.mic.capped": {
+    en: "Narrowed for the moment — a call is in progress. Your setting ({gain}) comes back afterwards.", es: "Reducido por el momento — hay una llamada en curso. Tu ajuste ({gain}) vuelve después.", fr: "Restreint pour le moment — un appel est en cours. Votre réglage ({gain}) revient ensuite.", de: "Vorübergehend verengt — ein Anruf läuft. Ihre Einstellung ({gain}) kehrt danach zurück.", pt: "Reduzido por agora — há uma chamada em curso. O seu ajuste ({gain}) volta depois.", it: "Ridotto per il momento — c'è una chiamata in corso. La tua impostazione ({gain}) torna dopo.", ja: "通話中のため一時的に絞られています。設定（{gain}）は通話後に戻ります。", zh: "通话进行中，暂时收窄。你的设置（{gain}）稍后恢复。", hi: "फ़िलहाल सीमित — कॉल चल रही है। आपकी सेटिंग ({gain}) बाद में लौट आएगी।", ar: "مقيَّد مؤقتًا — هناك مكالمة جارية. إعدادك ({gain}) يعود بعدها.",
+  },
+  "ch.mic.release": {
+    en: "Release", es: "Liberar", fr: "Libérer", de: "Freigeben", pt: "Libertar", it: "Rilascia", ja: "解放", zh: "释放", hi: "छोड़ें", ar: "تحرير",
+  },
+  "ch.mic.detach": {
+    en: "Detach", es: "Desconectar", fr: "Détacher", de: "Trennen", pt: "Desligar", it: "Scollega", ja: "取り外す", zh: "断开", hi: "हटाएँ", ar: "فصل",
+  },
+  "ch.mic.none": {
+    en: "Nothing attached. JIM is not listening.", es: "Nada conectado. JIM no está escuchando.", fr: "Rien d'attaché. JIM n'écoute pas.", de: "Nichts angeschlossen. JIM hört nicht zu.", pt: "Nada ligado. O JIM não está a ouvir.", it: "Niente collegato. JIM non sta ascoltando.", ja: "何も接続されていません。JIMは聞いていません。", zh: "未连接任何设备。JIM没有在听。", hi: "कुछ नहीं जुड़ा। JIM सुन नहीं रहा।", ar: "لا شيء موصول. JIM لا يستمع.",
+  },
+  "ch.mic.which": {
+    en: "Which device…", es: "Qué dispositivo…", fr: "Quel appareil…", de: "Welches Gerät…", pt: "Que dispositivo…", it: "Quale dispositivo…", ja: "どのデバイス…", zh: "哪个设备…", hi: "कौन-सा उपकरण…", ar: "أي جهاز…",
+  },
+  "ch.mic.kind": {
+    en: "What kind of microphone…", es: "Qué tipo de micrófono…", fr: "Quel type de micro…", de: "Welche Art Mikrofon…", pt: "Que tipo de microfone…", it: "Che tipo di microfono…", ja: "どの種類のマイク…", zh: "哪种麦克风…", hi: "किस तरह का माइक…", ar: "أي نوع من الميكروفون…",
+  },
+  "ch.mic.attach": {
+    en: "Attach", es: "Conectar", fr: "Attacher", de: "Anschließen", pt: "Ligar", it: "Collega", ja: "接続", zh: "连接", hi: "जोड़ें", ar: "توصيل",
+  },
+  "ch.mic.refused": {
+    en: "Not offered: {list} — {rule}", es: "No se ofrecen: {list} — {rule}", fr: "Non proposés : {list} — {rule}", de: "Nicht angeboten: {list} — {rule}", pt: "Não oferecidos: {list} — {rule}", it: "Non offerti: {list} — {rule}", ja: "提供されません: {list} — {rule}", zh: "不提供：{list} — {rule}", hi: "उपलब्ध नहीं: {list} — {rule}", ar: "غير معروض: {list} — {rule}",
+  },
+  "ch.hist": {
+    en: "When it was open", es: "Cuándo estuvo abierto", fr: "Quand il était ouvert", de: "Wann er offen war", pt: "Quando esteve aberto", it: "Quando era aperto", ja: "開いていた時間", zh: "开启的时段", hi: "कब खुला था", ar: "متى كانت مفتوحة",
+  },
+  "ch.hist.live": {
+    en: "live", es: "en vivo", fr: "en direct", de: "live", pt: "em direto", it: "in diretta", ja: "ライブ", zh: "直播中", hi: "लाइव", ar: "مباشر",
+  },
+  "ch.cam": {
+    en: "Clinical camera", es: "Cámara clínica", fr: "Caméra clinique", de: "Klinische Kamera", pt: "Câmara clínica", it: "Fotocamera clinica", ja: "臨床カメラ", zh: "临床相机", hi: "क्लिनिकल कैमरा", ar: "الكاميرا السريرية",
+  },
+  "ch.cam.intimate": {
+    en: "intimate", es: "íntimo", fr: "intime", de: "intim", pt: "íntimo", it: "intimo", ja: "プライベート", zh: "隐私部位", hi: "निजी", ar: "حسّاس",
+  },
+  "ch.cam.withdraw": {
+    en: "Withdraw", es: "Retirar", fr: "Retirer", de: "Zurückziehen", pt: "Retirar", it: "Ritira", ja: "取り下げる", zh: "撤回", hi: "वापस लें", ar: "سحب",
+  },
+  "ch.cam.attach": {
+    en: "Attach {n}to a referral", es: "Adjuntar {n}a una derivación", fr: "Joindre {n}à une orientation", de: "{n}an eine Überweisung anhängen", pt: "Anexar {n}a um encaminhamento", it: "Allega {n}a un referto", ja: "{n}件を紹介状に添付", zh: "将{n}附到转诊", hi: "{n}रेफ़रल में जोड़ें", ar: "إرفاق {n}بإحالة",
+  },
+  "ch.cam.where": {
+    en: "Where on the body…", es: "En qué parte del cuerpo…", fr: "Où sur le corps…", de: "Wo am Körper…", pt: "Onde no corpo…", it: "Dove sul corpo…", ja: "体のどこ…", zh: "身体哪个部位…", hi: "शरीर पर कहाँ…", ar: "أين في الجسم…",
+  },
+  "ch.cam.for": {
+    en: "What it is for (optional)", es: "Para qué es (opcional)", fr: "À quoi ça sert (facultatif)", de: "Wofür es ist (optional)", pt: "Para que serve (opcional)", it: "A cosa serve (facoltativo)", ja: "何のためか（任意）", zh: "用途（可选）", hi: "किसलिए है (वैकल्पिक)", ar: "لأي غرض (اختياري)",
+  },
+  "ch.cam.note": {
+    en: "Note (optional)", es: "Nota (opcional)", fr: "Note (facultatif)", de: "Notiz (optional)", pt: "Nota (opcional)", it: "Nota (facoltativa)", ja: "メモ（任意）", zh: "备注（可选）", hi: "नोट (वैकल्पिक)", ar: "ملاحظة (اختياري)",
+  },
+  "ch.cam.consent": {
+    en: "This is an intimate site and I am choosing to record it.", es: "Es una zona íntima y elijo registrarla.", fr: "C'est une zone intime et je choisis de l'enregistrer.", de: "Dies ist eine intime Stelle, und ich entscheide mich, sie aufzunehmen.", pt: "É uma zona íntima e escolho registá-la.", it: "È una zona intima e scelgo di registrarla.", ja: "これはプライベートな部位であり、私は記録することを選びます。", zh: "这是隐私部位，我选择记录它。", hi: "यह निजी अंग है और मैं इसे दर्ज करना चुन रहा/रही हूँ।", ar: "هذا موضع حسّاس وأنا أختار تسجيله.",
+  },
+  "ch.cam.site": {
+    en: "Choose a site first.", es: "Elige primero una zona.", fr: "Choisissez d'abord une zone.", de: "Wählen Sie zuerst eine Stelle.", pt: "Escolha primeiro uma zona.", it: "Scegli prima una zona.", ja: "まず部位を選んでください。", zh: "请先选择部位。", hi: "पहले स्थान चुनें।", ar: "اختر الموضع أولاً.",
+  },
+  "ch.cam.tick": {
+    en: "Tick the box before choosing a file.", es: "Marca la casilla antes de elegir un archivo.", fr: "Cochez la case avant de choisir un fichier.", de: "Setzen Sie das Häkchen, bevor Sie eine Datei wählen.", pt: "Marque a caixa antes de escolher um ficheiro.", it: "Spunta la casella prima di scegliere un file.", ja: "ファイルを選ぶ前にチェックを入れてください。", zh: "选择文件前请先勾选。", hi: "फ़ाइल चुनने से पहले बॉक्स चिह्नित करें।", ar: "ضع علامة في المربع قبل اختيار ملف.",
+  },
 };
 
 export function visitorLang(): Lang {

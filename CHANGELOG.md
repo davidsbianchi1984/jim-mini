@@ -4,6 +4,19 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.3] — 2026-08-05
+
+### The channel speaks the visitor's language
+
+The Channel & camera screen — the microphone that listens and the
+clinical camera that seals photographs of a body into the vault — is
+localized end to end: thirty strings become twenty-nine `ch.*` keys in
+all ten languages, whole sentences with named holes. The
+console-untranslated record falls **603 → 573**, exact-sync held. The
+field-label evidence pass walked the residue against every form and
+found nothing newly typed — the hundred rows stay on the identifier
+fallback with the evidence recorded.
+
 ## [0.44.2] — 2026-08-05
 
 ### Version alignment
