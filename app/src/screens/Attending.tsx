@@ -4,6 +4,7 @@ import { api, type ConditionName, type EscalationPolicy,
          type RelayRota, type Row, type SessionRow,
          type SpecialistRow } from "../api";
 import { useSession } from "../store";
+import { t as tr, visitorLang } from "../l10n";
 
 /**
  * Who else is looking — the specialists JIM can hand a thing to, the
@@ -30,6 +31,7 @@ const CONDITIONS: ConditionName[] = [
 
 export function Attending() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [specialists, setSpecialists] = useState<SpecialistRow[]>([]);
   const [clinicians, setClinicians] = useState<Row[]>([]);
   const [requests, setRequests] = useState<Row[]>([]);
@@ -78,28 +80,26 @@ export function Attending() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Who else is looking</h2>
-        <span className="muted small">specialists, clinicians, and the ladder</span>
+        <h2>{tr("att.title", lang)}</h2>
+        <span className="muted small">{tr("att.tag", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>Specialists</h3>
+        <h3>{tr("att.spec", lang)}</h3>
         <div className="row">
           <button disabled={busy}
                   onClick={() => run(() => api.seedSpecialists(token!))}>
-            Install the local set
+            {tr("att.spec.local", lang)}
           </button>
           <button disabled={busy}
                   onClick={() => run(() => api.seedTandemSpecialists(token!))}>
-            Install the QRME-hosted set
+            {tr("att.spec.hosted", lang)}
           </button>
         </div>
         {specialists.length === 0 && (
-          <div className="muted small">None installed. Without one, handing a
-            thing over answers <em>no tandem specialist</em> and does nothing
-            — a refusal, not a silent drop.</div>
+          <div className="muted small">{tr("att.spec.none", lang)}</div>
         )}
         {specialists.map((s) => (
           <div key={s.condition} className="row"
@@ -114,26 +114,26 @@ export function Attending() {
       </div>
 
       <div className="card">
-        <h3>Hand something over</h3>
+        <h3>{tr("att.hand", lang)}</h3>
         <div className="row">
           <select value={condition}
                   onChange={(e) =>
                     setCondition(e.target.value as ConditionName)}>
             {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          <input value={goal} placeholder="Get through the week"
+          <input value={goal} placeholder={tr("att.hand.ph", lang)}
                  onChange={(e) => setGoal(e.target.value)} />
           <button className="primary" disabled={busy || !goal.trim()}
                   onClick={() => run(async () => {
                     setTask(await api.handToSpecialist(uid!, {
                       condition, goal: goal.trim() }, token!));
                     setGoal("");
-                  })}>Hand it over</button>
+                  })}>{tr("att.hand.go", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(async () => {
                     setClinicians(await api.referralClinicians(
                       uid!, condition, token!));
-                  })}>Who could see me for this?</button>
+                  })}>{tr("att.hand.who", lang)}</button>
         </div>
         {task && (
           <p className="muted small">
@@ -158,25 +158,25 @@ export function Attending() {
                     onClick={() => run(async () => {
                       setTask(await api.specialistTask(
                         uid!, String(t.id), token!));
-                    })}>Open</button>
+                    })}>{tr("att.open", lang)}</button>
             <button disabled={busy}
                     onClick={() => run(() => api.advanceSpecialistTask(
-                      uid!, String(t.id), token!))}>Advance</button>
+                      uid!, String(t.id), token!))}>{tr("att.advance", lang)}</button>
           </div>
         ))}
       </div>
 
       <div className="card">
-        <h3>Referrals</h3>
+        <h3>{tr("att.ref", lang)}</h3>
         <div className="row">
           <button disabled={busy}
                   onClick={() => run(() => api.prepareReferral(uid!, {
                     condition, provider_id: "prv_local" }, token!))}>
-            Prepare one for {condition}
+            {tr("att.ref.prep", lang).replace("{c}", condition)}
           </button>
         </div>
         {requests.length === 0 && (
-          <div className="muted small">No referral has been prepared.</div>
+          <div className="muted small">{tr("att.ref.none", lang)}</div>
         )}
         {requests.map((r) => (
           <div key={String(r.id)} className="row"
@@ -186,18 +186,19 @@ export function Attending() {
             <button disabled={busy}
                     onClick={() => run(() => api.markReferralReleased(
                       uid!, String(r.id), {}, token!))}>
-              Mark released
+              {tr("att.ref.released", lang)}
             </button>
           </div>
         ))}
       </div>
 
       <div className="card">
-        <h3>The ladder</h3>
+        <h3>{tr("att.ladder", lang)}</h3>
         {policy && (
           <>
             <p className="muted small">
-              Sensitivity <strong>{policy.sensitivity}</strong> ·{" "}
+              {tr("att.ladder.sens", lang)}{" "}
+              <strong>{policy.sensitivity}</strong> ·{" "}
               {policy.ladder.join(" → ")}
             </p>
             {Object.entries(policy.by_severity).map(([k, v]) => (
@@ -208,28 +209,32 @@ export function Attending() {
               </div>
             ))}
             <p className="muted small">
-              Floors — {Object.entries(policy.safety_floors)
-                .map(([k, v]) => `${k}: ${v}`).join("; ")}
+              {tr("att.ladder.floors", lang).replace("{list}",
+                Object.entries(policy.safety_floors)
+                  .map(([k, v]) => `${k}: ${v}`).join("; "))}
             </p>
             {Object.values(policy.ceilings).map((v, i) => (
-              <p key={i} className="muted small">Ceiling — {v}</p>
+              <p key={i} className="muted small">{tr("att.ladder.ceiling", lang).replace("{v}", v)}</p>
             ))}
           </>
         )}
       </div>
 
       <div className="card">
-        <h3>The relay</h3>
+        <h3>{tr("att.relay", lang)}</h3>
         {channel && (
           <p className="muted small">
-            Channel {channel.configured ? "configured" : "not configured"}
+            {tr("att.relay.channel", lang)}{" "}
+            {channel.configured ? "configured" : "not configured"}
             {channel.signed ? ", signed" : ""} · {channel.envelope}
             {channel.note ? ` — ${channel.note}` : ""}
           </p>
         )}
         {roster && (
           <p className="muted small">
-            Roster: {roster.roster.join(", ")} · ceiling {roster.ceiling}
+            {tr("att.relay.roster", lang)
+              .replace("{list}", roster.roster.join(", "))
+              .replace("{c}", String(roster.ceiling))}
             {roster.note ? ` — ${roster.note}` : ""}
           </p>
         )}
@@ -244,30 +249,32 @@ export function Attending() {
       </div>
 
       <div className="card">
-        <h3>This sitting</h3>
+        <h3>{tr("att.sit", lang)}</h3>
         <div className="row">
           <button disabled={busy}
                   onClick={() => run(async () => {
                     setSession_(await api.startSession(
                       uid!, { device: "desktop" }, token!));
-                  })}>Start a session</button>
+                  })}>{tr("att.sit.start", lang)}</button>
           <button disabled={busy || !session_}
                   onClick={() => run(() => api.endSession(
-                    uid!, session_!.id, token!))}>End it</button>
+                    uid!, session_!.id, token!))}>{tr("att.sit.end", lang)}</button>
         </div>
         {session_ && (
           <p className="muted small">
-            {session_.id} · {session_.prior_sessions} sittings before this one
+            {tr("att.sit.prior", lang)
+              .replace("{id}", session_.id)
+              .replace("{n}", String(session_.prior_sessions))}
           </p>
         )}
       </div>
 
       <div className="card">
-        <h3>An alarm, and the way out</h3>
+        <h3>{tr("att.alarm", lang)}</h3>
         <div className="row">
-          <input value={alarmId} placeholder="alarm id"
+          <input value={alarmId} placeholder={tr("att.alarm.id.ph", lang)}
                  onChange={(e) => setAlarmId(e.target.value)} />
-          <input value={question} placeholder="What should I do right now?"
+          <input value={question} placeholder={tr("att.alarm.q.ph", lang)}
                  onChange={(e) => setQuestion(e.target.value)} />
           <button disabled={busy || !alarmId.trim() || !question.trim()}
                   onClick={() => run(async () => {
@@ -277,48 +284,45 @@ export function Attending() {
                     // the person kneeling is the scanned beacon page.
                     setGuidance(await api.alarmGuidance(alarmId.trim(),
                       { question: question.trim() }));
-                  })}>Ask</button>
+                  })}>{tr("att.alarm.ask", lang)}</button>
         </div>
         {guidance != null && (
           <p className="muted small">{String(guidance.content ?? "")}</p>
         )}
         <div className="row">
-          <input value={situation} placeholder="What is happening"
+          <input value={situation} placeholder={tr("att.alarm.what.ph", lang)}
                  onChange={(e) => setSituation(e.target.value)} />
           <button className="danger" disabled={busy}
                   onClick={() => run(() => api.raiseEmergency(uid!, {
                     situation: situation.trim() || undefined }, token!))}>
-            Raise an emergency
+            {tr("att.alarm.raise", lang)}
           </button>
         </div>
-        <p className="muted small">
-          This is the door that reaches emergency services, and it takes your
-          own credential. The uncredentialed one is a scanned care code — a
-          bystander at your front door can wake the people watching over you,
-          and stops there. Only you can send an ambulance to yourself.
-        </p>
+        <p className="muted small">{tr("att.alarm.rule", lang)}</p>
       </div>
 
       <div className="card">
-        <h3>Medical ID</h3>
+        <h3>{tr("att.med", lang)}</h3>
         <div className="row">
           <button disabled={busy}
                   onClick={() => run(async () => {
                     setCode(await api.makeMedicalIdQr(uid!, token!));
-                  })}>Make a code</button>
+                  })}>{tr("att.med.make", lang)}</button>
           <button disabled={busy || !code}
                   onClick={() => run(async () => {
                     setSeen(await api.medicalId(code!.token));
-                  })}>See what a stranger sees</button>
+                  })}>{tr("att.med.see", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(async () => {
                     await api.revokeMedicalIdQr(uid!, token!);
                     setCode(null); setSeen(null);
-                  })}>Revoke</button>
+                  })}>{tr("att.med.revoke", lang)}</button>
         </div>
         {code && (
           <p className="muted small">
-            {code.view_url} · the printable code is at {code.qr_svg_url}
+            {tr("att.med.at", lang)
+              .replace("{view}", code.view_url)
+              .replace("{qr}", code.qr_svg_url)}
           </p>
         )}
         {seen && (

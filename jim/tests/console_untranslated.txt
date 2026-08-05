@@ -1,4 +1,4 @@
-# status: backlog — 573 rows
+# status: backlog — 531 rows
 #
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
@@ -7,7 +7,7 @@
 # command and example values. The rest of the console is not — 700-odd
 # strings across nineteen gated screens, recorded here so the remainder is a
 # decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 573
+# ceiling: 531
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -43,48 +43,6 @@ Aims: groceries
 Aims: of
 Aims: streak
 Aims: walk
-Attending: Advance
-Attending: An alarm, and the way out
-Attending: Ask
-Attending: Ceiling —
-Attending: Channel
-Attending: End it
-Attending: Floors —
-Attending: Get through the week
-Attending: Hand it over
-Attending: Hand something over
-Attending: Install the QRME-hosted set
-Attending: Install the local set
-Attending: Make a code
-Attending: Mark released
-Attending: Medical ID
-Attending: No referral has been prepared.
-Attending: None installed. Without one, handing a thing over answers
-Attending: Open
-Attending: Prepare one for
-Attending: Raise an emergency
-Attending: Referrals
-Attending: Revoke
-Attending: Roster:
-Attending: See what a stranger sees
-Attending: Sensitivity
-Attending: Specialists
-Attending: Start a session
-Attending: The ladder
-Attending: The relay
-Attending: This is the door that reaches emergency services, and it takes your own credential. The uncredentialed one is a scanned care code — a bystander at your front door can wake the people watching over you, and stops there. Only you can send an ambulance to yourself.
-Attending: This sitting
-Attending: What is happening
-Attending: What should I do right now?
-Attending: Who could see me for this?
-Attending: Who else is looking
-Attending: alarm id
-Attending: and does nothing — a refusal, not a silent drop.
-Attending: no tandem specialist
-Attending: sittings before this one
-Attending: specialists, clinicians, and the ladder
-Attending: · ceiling
-Attending: · the printable code is at
 Baseline: "are you okay?" — and if
 Baseline: ). This is attempt
 Baseline: , a collapsing pulse, oxygen falling — JIM asks

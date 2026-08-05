@@ -4,6 +4,17 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.4] — 2026-08-05
+
+### The attending speak the visitor's language
+
+The Attending screen — the specialists JIM can hand a thing to, the
+referrals, the escalation ladder with its floors and its one ceiling,
+the relay, the sittings, the alarm and the Medical ID — is localized
+end to end: forty-two strings become thirty-nine `att.*` keys in all
+ten languages, the emergency-door rule kept as one whole paragraph.
+The console-untranslated record falls **573 → 531**, exact-sync held.
+
 ## [0.44.3] — 2026-08-05
 
 ### The channel speaks the visitor's language

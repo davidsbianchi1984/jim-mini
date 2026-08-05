@@ -1231,6 +1231,123 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "ch.cam.tick": {
     en: "Tick the box before choosing a file.", es: "Marca la casilla antes de elegir un archivo.", fr: "Cochez la case avant de choisir un fichier.", de: "Setzen Sie das Häkchen, bevor Sie eine Datei wählen.", pt: "Marque a caixa antes de escolher um ficheiro.", it: "Spunta la casella prima di scegliere un file.", ja: "ファイルを選ぶ前にチェックを入れてください。", zh: "选择文件前请先勾选。", hi: "फ़ाइल चुनने से पहले बॉक्स चिह्नित करें।", ar: "ضع علامة في المربع قبل اختيار ملف.",
   },
+  "att.title": {
+    en: "Who else is looking", es: "Quién más está mirando", fr: "Qui d'autre regarde", de: "Wer sonst noch hinschaut", pt: "Quem mais está a olhar", it: "Chi altro sta guardando", ja: "他に見ている人", zh: "还有谁在看", hi: "और कौन देख रहा है", ar: "من غيرك يراقب",
+  },
+  "att.tag": {
+    en: "specialists, clinicians, and the ladder", es: "especialistas, clínicos y la escalera", fr: "spécialistes, cliniciens et l'échelle", de: "Spezialisten, Kliniker und die Leiter", pt: "especialistas, clínicos e a escada", it: "specialisti, clinici e la scala", ja: "専門家、臨床医、そしてはしご", zh: "专家、临床医生与阶梯", hi: "विशेषज्ञ, चिकित्सक और सीढ़ी", ar: "المتخصصون والأطباء والسلّم",
+  },
+  "att.spec": {
+    en: "Specialists", es: "Especialistas", fr: "Spécialistes", de: "Spezialisten", pt: "Especialistas", it: "Specialisti", ja: "専門家", zh: "专家", hi: "विशेषज्ञ", ar: "المتخصصون",
+  },
+  "att.spec.local": {
+    en: "Install the local set", es: "Instalar el conjunto local", fr: "Installer le jeu local", de: "Lokales Set installieren", pt: "Instalar o conjunto local", it: "Installa il set locale", ja: "ローカルセットを導入", zh: "安装本地集合", hi: "स्थानीय सेट स्थापित करें", ar: "تثبيت المجموعة المحلية",
+  },
+  "att.spec.hosted": {
+    en: "Install the QRME-hosted set", es: "Instalar el conjunto alojado en QRME", fr: "Installer le jeu hébergé par QRME", de: "Das QRME-gehostete Set installieren", pt: "Instalar o conjunto alojado no QRME", it: "Installa il set ospitato su QRME", ja: "QRMEホストのセットを導入", zh: "安装QRME托管集合", hi: "QRME-होस्टेड सेट स्थापित करें", ar: "تثبيت مجموعة QRME المستضافة",
+  },
+  "att.spec.none": {
+    en: "None installed. Without one, handing a thing over answers no tandem specialist and does nothing — a refusal, not a silent drop.", es: "Ninguno instalado. Sin uno, entregar algo responde no hay especialista en tándem y no hace nada — un rechazo, no una omisión silenciosa.", fr: "Aucun installé. Sans, confier une chose répond aucun spécialiste en tandem et ne fait rien — un refus, pas un abandon silencieux.", de: "Keiner installiert. Ohne einen antwortet die Übergabe kein Tandem-Spezialist und tut nichts — eine Ablehnung, kein stilles Verschlucken.", pt: "Nenhum instalado. Sem um, entregar algo responde nenhum especialista em tandem e não faz nada — uma recusa, não uma queda silenciosa.", it: "Nessuno installato. Senza, consegnare qualcosa risponde nessuno specialista in tandem e non fa nulla — un rifiuto, non una caduta silenziosa.", ja: "未導入です。ないまま引き渡すと「タンデム専門家なし」と答えて何もしません — 静かな握りつぶしではなく拒否です。", zh: "尚未安装。没有它，移交会回答「无协作专家」且什么也不做 — 是拒绝，而非静默丢弃。", hi: "कोई स्थापित नहीं। इसके बिना, सौंपने पर जवाब मिलता है कोई टैंडम विशेषज्ञ नहीं और कुछ नहीं होता — इनकार, चुपचाप गिराना नहीं।", ar: "لا شيء مثبت. بدونه، يجيب التسليم لا متخصص مرافق ولا يفعل شيئًا — رفض لا إسقاط صامت.",
+  },
+  "att.hand": {
+    en: "Hand something over", es: "Entregar algo", fr: "Confier quelque chose", de: "Etwas übergeben", pt: "Entregar algo", it: "Consegna qualcosa", ja: "何かを引き渡す", zh: "移交事项", hi: "कुछ सौंपें", ar: "سلّم شيئًا",
+  },
+  "att.hand.ph": {
+    en: "Get through the week", es: "Superar la semana", fr: "Tenir la semaine", de: "Die Woche überstehen", pt: "Aguentar a semana", it: "Superare la settimana", ja: "今週を乗り切る", zh: "撑过这一周", hi: "यह हफ़्ता पार करें", ar: "اجتياز الأسبوع",
+  },
+  "att.hand.go": {
+    en: "Hand it over", es: "Entregarlo", fr: "Le confier", de: "Übergeben", pt: "Entregar", it: "Consegnalo", ja: "引き渡す", zh: "移交", hi: "सौंप दें", ar: "سلّمه",
+  },
+  "att.hand.who": {
+    en: "Who could see me for this?", es: "¿Quién podría atenderme por esto?", fr: "Qui pourrait me recevoir pour ça ?", de: "Wer könnte mich damit sehen?", pt: "Quem me poderia ver por isto?", it: "Chi potrebbe vedermi per questo?", ja: "これで診てくれるのは誰？", zh: "这事谁能接诊我？", hi: "इसके लिए मुझे कौन देख सकता है?", ar: "من يمكنه استقبالي لهذا؟",
+  },
+  "att.open": {
+    en: "Open", es: "Abrir", fr: "Ouvrir", de: "Öffnen", pt: "Abrir", it: "Apri", ja: "開く", zh: "打开", hi: "खोलें", ar: "افتح",
+  },
+  "att.advance": {
+    en: "Advance", es: "Avanzar", fr: "Avancer", de: "Weiter", pt: "Avançar", it: "Avanza", ja: "進める", zh: "推进", hi: "आगे बढ़ाएँ", ar: "تقدّم",
+  },
+  "att.ref": {
+    en: "Referrals", es: "Derivaciones", fr: "Orientations", de: "Überweisungen", pt: "Encaminhamentos", it: "Referti", ja: "紹介", zh: "转诊", hi: "रेफ़रल", ar: "الإحالات",
+  },
+  "att.ref.prep": {
+    en: "Prepare one for {c}", es: "Preparar una para {c}", fr: "En préparer une pour {c}", de: "Eine für {c} vorbereiten", pt: "Preparar um para {c}", it: "Preparane uno per {c}", ja: "{c}向けに準備", zh: "为{c}准备一份", hi: "{c} के लिए तैयार करें", ar: "حضّر واحدة لـ {c}",
+  },
+  "att.ref.none": {
+    en: "No referral has been prepared.", es: "No se ha preparado ninguna derivación.", fr: "Aucune orientation n'a été préparée.", de: "Keine Überweisung vorbereitet.", pt: "Nenhum encaminhamento preparado.", it: "Nessun referto preparato.", ja: "紹介状は準備されていません。", zh: "尚未准备任何转诊。", hi: "कोई रेफ़रल तैयार नहीं हुआ।", ar: "لم تُحضَّر أي إحالة.",
+  },
+  "att.ref.released": {
+    en: "Mark released", es: "Marcar entregada", fr: "Marquer transmise", de: "Als freigegeben markieren", pt: "Marcar como entregue", it: "Segna rilasciato", ja: "送付済みにする", zh: "标记已交付", hi: "जारी चिह्नित करें", ar: "وضع علامة مُسلَّمة",
+  },
+  "att.ladder": {
+    en: "The ladder", es: "La escalera", fr: "L'échelle", de: "Die Leiter", pt: "A escada", it: "La scala", ja: "はしご", zh: "阶梯", hi: "सीढ़ी", ar: "السلّم",
+  },
+  "att.ladder.sens": {
+    en: "Sensitivity", es: "Sensibilidad", fr: "Sensibilité", de: "Empfindlichkeit", pt: "Sensibilidade", it: "Sensibilità", ja: "感度", zh: "敏感度", hi: "संवेदनशीलता", ar: "الحساسية",
+  },
+  "att.ladder.floors": {
+    en: "Floors — {list}", es: "Suelos — {list}", fr: "Planchers — {list}", de: "Böden — {list}", pt: "Pisos — {list}", it: "Piani — {list}", ja: "下限 — {list}", zh: "下限 — {list}", hi: "न्यूनतम — {list}", ar: "الحدود الدنيا — {list}",
+  },
+  "att.ladder.ceiling": {
+    en: "Ceiling — {v}", es: "Techo — {v}", fr: "Plafond — {v}", de: "Decke — {v}", pt: "Teto — {v}", it: "Soffitto — {v}", ja: "上限 — {v}", zh: "上限 — {v}", hi: "अधिकतम — {v}", ar: "السقف — {v}",
+  },
+  "att.relay": {
+    en: "The relay", es: "El relevo", fr: "Le relais", de: "Die Staffel", pt: "O revezamento", it: "La staffetta", ja: "リレー", zh: "接力", hi: "रिले", ar: "التتابع",
+  },
+  "att.relay.channel": {
+    en: "Channel", es: "Canal", fr: "Canal", de: "Kanal", pt: "Canal", it: "Canale", ja: "チャンネル", zh: "通道", hi: "चैनल", ar: "القناة",
+  },
+  "att.relay.roster": {
+    en: "Roster: {list} · ceiling {c}", es: "Turnos: {list} · techo {c}", fr: "Effectif : {list} · plafond {c}", de: "Dienstplan: {list} · Decke {c}", pt: "Escala: {list} · teto {c}", it: "Turni: {list} · soffitto {c}", ja: "当番: {list} · 上限 {c}", zh: "名册：{list} · 上限{c}", hi: "रोस्टर: {list} · अधिकतम {c}", ar: "القائمة: {list} · السقف {c}",
+  },
+  "att.sit": {
+    en: "This sitting", es: "Esta sesión", fr: "Cette séance", de: "Diese Sitzung", pt: "Esta sessão", it: "Questa seduta", ja: "今回の対話", zh: "本次会谈", hi: "यह बैठक", ar: "هذه الجلسة",
+  },
+  "att.sit.start": {
+    en: "Start a session", es: "Iniciar una sesión", fr: "Démarrer une séance", de: "Sitzung starten", pt: "Iniciar uma sessão", it: "Avvia una seduta", ja: "セッションを開始", zh: "开始会谈", hi: "सत्र शुरू करें", ar: "بدء جلسة",
+  },
+  "att.sit.end": {
+    en: "End it", es: "Terminarla", fr: "La terminer", de: "Beenden", pt: "Terminar", it: "Terminala", ja: "終了する", zh: "结束", hi: "समाप्त करें", ar: "إنهاؤها",
+  },
+  "att.sit.prior": {
+    en: "{id} · {n} sittings before this one", es: "{id} · {n} sesiones antes de esta", fr: "{id} · {n} séances avant celle-ci", de: "{id} · {n} Sitzungen vor dieser", pt: "{id} · {n} sessões antes desta", it: "{id} · {n} sedute prima di questa", ja: "{id} · これまでの対話{n}回", zh: "{id} · 此前{n}次会谈", hi: "{id} · इससे पहले {n} बैठकें", ar: "{id} · {n} جلسات قبل هذه",
+  },
+  "att.alarm": {
+    en: "An alarm, and the way out", es: "Una alarma, y la salida", fr: "Une alarme, et la sortie", de: "Ein Alarm, und der Ausweg", pt: "Um alarme, e a saída", it: "Un allarme, e la via d'uscita", ja: "警報と、その出口", zh: "警报与出路", hi: "एक अलार्म, और निकास", ar: "إنذار، وطريق الخروج",
+  },
+  "att.alarm.id.ph": {
+    en: "alarm id", es: "id de la alarma", fr: "id de l'alarme", de: "Alarm-Id", pt: "id do alarme", it: "id dell'allarme", ja: "警報ID", zh: "警报ID", hi: "अलार्म आईडी", ar: "معرّف الإنذار",
+  },
+  "att.alarm.q.ph": {
+    en: "What should I do right now?", es: "¿Qué debo hacer ahora mismo?", fr: "Que dois-je faire maintenant ?", de: "Was soll ich jetzt tun?", pt: "O que devo fazer agora?", it: "Cosa devo fare adesso?", ja: "今すぐ何をすべき？", zh: "我现在该怎么做？", hi: "मुझे अभी क्या करना चाहिए?", ar: "ماذا أفعل الآن؟",
+  },
+  "att.alarm.ask": {
+    en: "Ask", es: "Preguntar", fr: "Demander", de: "Fragen", pt: "Perguntar", it: "Chiedi", ja: "尋ねる", zh: "询问", hi: "पूछें", ar: "اسأل",
+  },
+  "att.alarm.what.ph": {
+    en: "What is happening", es: "Qué está pasando", fr: "Que se passe-t-il", de: "Was gerade passiert", pt: "O que está a acontecer", it: "Cosa sta succedendo", ja: "何が起きているか", zh: "正在发生什么", hi: "क्या हो रहा है", ar: "ما الذي يحدث",
+  },
+  "att.alarm.raise": {
+    en: "Raise an emergency", es: "Activar una emergencia", fr: "Déclencher une urgence", de: "Notfall auslösen", pt: "Acionar uma emergência", it: "Attiva un'emergenza", ja: "緊急事態を発報", zh: "发起紧急求助", hi: "आपातकाल उठाएँ", ar: "إطلاق حالة طوارئ",
+  },
+  "att.alarm.rule": {
+    en: "This is the door that reaches emergency services, and it takes your own credential. The uncredentialed one is a scanned care code — a bystander at your front door can wake the people watching over you, and stops there. Only you can send an ambulance to yourself.", es: "Esta es la puerta que llega a los servicios de emergencia, y requiere tu propia credencial. La puerta sin credencial es un código de cuidado escaneado — un transeúnte en tu puerta puede despertar a quienes te cuidan, y ahí se detiene. Solo tú puedes enviarte una ambulancia.", fr: "C'est la porte qui atteint les services d'urgence, et elle exige votre propre référence. Celle sans référence est un code de soin scanné — un passant à votre porte peut réveiller ceux qui veillent sur vous, et s'arrête là. Vous seul pouvez vous envoyer une ambulance.", de: "Dies ist die Tür zu den Rettungsdiensten, und sie verlangt Ihre eigenen Zugangsdaten. Die ohne ist ein gescannter Pflegecode — ein Passant an Ihrer Haustür kann die Menschen wecken, die über Sie wachen, und dort endet es. Nur Sie können sich selbst einen Krankenwagen schicken.", pt: "Esta é a porta que chega aos serviços de emergência, e exige a sua própria credencial. A porta sem credencial é um código de cuidado lido — um transeunte à sua porta pode acordar quem vela por si, e fica por aí. Só você pode enviar uma ambulância a si próprio.", it: "Questa è la porta che raggiunge i servizi di emergenza, e richiede la tua credenziale. Quella senza è un codice di cura scansionato — un passante alla tua porta può svegliare chi veglia su di te, e si ferma lì. Solo tu puoi mandarti un'ambulanza.", ja: "これは救急サービスに届く扉で、あなた自身の資格情報が必要です。資格情報なしの扉はスキャンされたケアコードで、玄関先の通行人はあなたを見守る人々を起こせますが、そこまでです。自分に救急車を呼べるのはあなただけです。", zh: "这是通往急救服务的门，需要你本人的凭证。无凭证的那扇门是被扫描的护理码 — 你门前的路人可以唤醒守护你的人，仅止于此。只有你能为自己叫救护车。", hi: "यही वह द्वार है जो आपातकालीन सेवाओं तक पहुँचता है, और इसे आपकी अपनी क्रेडेंशियल चाहिए। बिना क्रेडेंशियल वाला द्वार स्कैन किया केयर कोड है — आपके दरवाज़े पर खड़ा राहगीर आपकी देखरेख करने वालों को जगा सकता है, बस वहीं तक। एम्बुलेंस केवल आप ही अपने लिए भेज सकते हैं।", ar: "هذا هو الباب الذي يصل إلى خدمات الطوارئ، ويتطلب اعتمادك الشخصي. الباب بلا اعتماد هو رمز رعاية ممسوح — عابر عند بابك يمكنه إيقاظ من يسهرون عليك، ويقف عند ذلك. وحدك من يستطيع إرسال إسعاف لنفسك.",
+  },
+  "att.med": {
+    en: "Medical ID", es: "Identificación médica", fr: "Identité médicale", de: "Medizinischer Ausweis", pt: "Identificação médica", it: "ID medico", ja: "メディカルID", zh: "医疗ID", hi: "मेडिकल आईडी", ar: "الهوية الطبية",
+  },
+  "att.med.make": {
+    en: "Make a code", es: "Crear un código", fr: "Créer un code", de: "Code erstellen", pt: "Criar um código", it: "Crea un codice", ja: "コードを作る", zh: "生成代码", hi: "कोड बनाएँ", ar: "إنشاء رمز",
+  },
+  "att.med.see": {
+    en: "See what a stranger sees", es: "Ver lo que ve un desconocido", fr: "Voir ce qu'un inconnu voit", de: "Sehen, was ein Fremder sieht", pt: "Ver o que um estranho vê", it: "Vedi ciò che vede un estraneo", ja: "他人に見えるものを確認", zh: "查看陌生人所见", hi: "देखें अजनबी को क्या दिखता है", ar: "شاهد ما يراه الغريب",
+  },
+  "att.med.revoke": {
+    en: "Revoke", es: "Revocar", fr: "Révoquer", de: "Widerrufen", pt: "Revogar", it: "Revoca", ja: "失効させる", zh: "撤销", hi: "रद्द करें", ar: "إلغاء",
+  },
+  "att.med.at": {
+    en: "{view} · the printable code is at {qr}", es: "{view} · el código imprimible está en {qr}", fr: "{view} · le code imprimable est à {qr}", de: "{view} · der druckbare Code liegt unter {qr}", pt: "{view} · o código imprimível está em {qr}", it: "{view} · il codice stampabile è su {qr}", ja: "{view} · 印刷用コードは{qr}にあります", zh: "{view} · 可打印代码位于{qr}", hi: "{view} · प्रिंट योग्य कोड {qr} पर है", ar: "{view} · الرمز القابل للطباعة في {qr}",
+  },
 };
 
 export function visitorLang(): Lang {

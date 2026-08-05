@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.44.3** ([changelog](CHANGELOG.md) ·
+**Current release: v0.44.4** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.44.4** | **The attending speak the visitor's language** — the Attending screen fully localized (console-untranslated 573 → 531) |
 | **0.44.3** | **The channel speaks the visitor's language** — the Channel & camera screen fully localized (console-untranslated 603 → 573) |
 | **0.44.2** | Version alignment with QRME's last-doors round (the doorless records run to zero on all three shells) |
 | **0.44.1** | Version alignment with QRME's sticker/queue/stamp round (beacons, moderation, reviews, watermarks, media, wearables on the phones) |
