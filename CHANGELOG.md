@@ -4,6 +4,15 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.45.6] — 2026-08-05
+
+### Version alignment
+
+The three products are cut together, so one number names one
+combination of all three. No JIM code changed — its own console record
+sits at its floor of zero. QRME took three more screens off its record
+this round: 516 → 425.
+
 ## [0.45.5] — 2026-08-05
 
 ### Version alignment
