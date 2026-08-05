@@ -4,6 +4,19 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.44.9] — 2026-08-05
+
+### The cabinet and the guided hour speak the visitor's language
+
+Two screens localized end to end. **Medications** — the day's doses,
+the critical one that went unlogged, the as-needed ceiling JIM will
+refuse to log past, and the promise that your own words are a valid
+name and dose — becomes twenty-eight `med.*` keys. **Wellness** — the
+guided calm that is a protocol rather than a generation, the workout
+shaped to the minutes you have, and the day of meals — becomes
+twenty-five `wel.*` keys. All ten languages. The console-untranslated
+record falls **262 → 206**, exact-sync held.
+
 ## [0.44.8] — 2026-08-05
 
 ### The Control Center speaks — the largest block on the record

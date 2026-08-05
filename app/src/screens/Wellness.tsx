@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type CalmSession, type MealPlan, type WorkoutPlan } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { hush, say } from "../speech";
 import { useSession } from "../store";
 
@@ -13,6 +14,7 @@ import { useSession } from "../store";
  */
 export function Wellness() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [catalog, setCatalog] = useState<{ kind: string; title: string; minutes: number; what: string }[]>([]);
   const [calm, setCalm] = useState<CalmSession | null>(null);
   const [stepIx, setStepIx] = useState(-1);          // -1 = not running
@@ -88,28 +90,30 @@ export function Wellness() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Wellness</h2>
-        <span className="muted small">calm · movement · meals — on purpose, any hour</span>
+        <h2>{tr("wel.title", lang)}</h2>
+        <span className="muted small">{tr("wel.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>Guided calm</h3>
+        <h3>{tr("wel.calm", lang)}</h3>
         <p className="muted small">
-          Protocols, not generations — the counts never vary. Pick one; the
-          app paces it{spoken ? " and speaks each step" : ""}.
+          {tr("wel.calm.pitch", lang).replace("{spoken}",
+            spoken ? tr("wel.calm.spoken", lang) : "")}
         </p>
         <label className="check">
           <input type="checkbox" checked={spoken}
                  onChange={(e) => setSpoken(e.target.checked)} />
-          Speak the steps out loud
+          {tr("wel.calm.speak", lang)}
         </label>
         <div className="voice-row" style={{ flexWrap: "wrap" }}>
           {catalog.map((s) => (
             <button key={s.kind} disabled={busy === s.kind || stepIx >= 0}
                     onClick={() => startCalm(s.kind)} title={s.what}>
-              {s.title} · {s.minutes} min
+              {tr("wel.calm.tile", lang)
+                .replace("{title}", s.title)
+                .replace("{n}", String(s.minutes))}
             </button>
           ))}
         </div>
@@ -117,42 +121,46 @@ export function Wellness() {
           <div className="calm-run">
             <div className="calm-say">{calm.steps[stepIx].say}</div>
             <div className="muted small">
-              step {stepIx + 1} of {calm.steps.length} ·{" "}
-              {calm.steps[stepIx].seconds}s
+              {tr("wel.calm.step", lang)
+                .replace("{i}", String(stepIx + 1))
+                .replace("{n}", String(calm.steps.length))
+                .replace("{sec}", String(calm.steps[stepIx].seconds))}
             </div>
-            <button onClick={stopCalm}>End early</button>
+            <button onClick={stopCalm}>{tr("wel.calm.end", lang)}</button>
           </div>
         )}
         {calm && stepIx === -1 && (
-          <p className="muted small">Session complete. Carry the pace with you.</p>
+          <p className="muted small">{tr("wel.calm.done", lang)}</p>
         )}
       </div>
 
       <div className="card">
-        <h3>A workout for the time you have</h3>
+        <h3>{tr("wel.work", lang)}</h3>
         <div className="voice-row">
-          <label>Minutes
+          <label>{tr("wel.work.minutes", lang)}
             <input type="number" min={5} max={90} value={minutes}
                    onChange={(e) => setMinutes(Number(e.target.value))} /></label>
-          <label>Level
+          <label>{tr("wel.work.level", lang)}
             <select value={level} onChange={(e) => setLevel(e.target.value)}>
               {["beginner", "intermediate", "advanced"].map((l) =>
                 <option key={l} value={l}>{l}</option>)}
             </select></label>
-          <label>Focus
+          <label>{tr("wel.work.focus", lang)}
             <select value={focus} onChange={(e) => setFocus(e.target.value)}>
               {["full_body", "cardio", "strength", "yoga", "mobility"].map((f) =>
                 <option key={f} value={f}>{f.replace("_", " ")}</option>)}
             </select></label>
           <button className="primary" disabled={busy === "workout"}
-                  onClick={makeWorkout}>Build it</button>
+                  onClick={makeWorkout}>{tr("wel.work.build", lang)}</button>
         </div>
         {workout && (
           <div>
             {workout.blocks.map((b, i) => (
               <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
                 <b>{b.name}</b>
-                <span className="muted small"> · {b.seconds}s — {b.cue}</span>
+                <span className="muted small">{tr("wel.work.block", lang)
+                  .replace("{sec}", String(b.seconds))
+                  .replace("{cue}", b.cue)}</span>
               </div>
             ))}
             <p className="muted small">{workout.note}</p>
@@ -161,19 +169,19 @@ export function Wellness() {
       </div>
 
       <div className="card">
-        <h3>A day of meals that fits you</h3>
+        <h3>{tr("wel.meals", lang)}</h3>
         <div className="voice-row">
-          <label>Goal
+          <label>{tr("wel.meals.goal", lang)}
             <select value={goal} onChange={(e) => setGoal(e.target.value)}>
-              <option value="eat_healthier">eat healthier</option>
-              <option value="lose_weight">lose weight</option>
-              <option value="gain_muscle">gain muscle</option>
+              <option value="eat_healthier">{tr("wel.meals.healthier", lang)}</option>
+              <option value="lose_weight">{tr("wel.meals.lose", lang)}</option>
+              <option value="gain_muscle">{tr("wel.meals.gain", lang)}</option>
             </select></label>
-          <label>Days
+          <label>{tr("wel.meals.days", lang)}
             <input type="number" min={1} max={7} value={days}
                    onChange={(e) => setDays(Number(e.target.value))} /></label>
           <button className="primary" disabled={busy === "meals"}
-                  onClick={makeMeals}>Plan it</button>
+                  onClick={makeMeals}>{tr("wel.meals.plan", lang)}</button>
         </div>
         <div className="voice-row" style={{ flexWrap: "wrap" }}>
           {["vegetarian", "vegan", "dairy_free", "gluten_free"].map((p) => (
@@ -186,11 +194,14 @@ export function Wellness() {
         </div>
         {meals && (
           <div>
-            <p className="muted small">{meals.shape.why} · about{" "}
-              {meals.shape.orientation_calories} kcal/day for orientation</p>
+            <p className="muted small">{tr("wel.meals.shape", lang)
+              .replace("{why}", meals.shape.why)
+              .replace("{kcal}",
+                String(meals.shape.orientation_calories))}</p>
             {meals.days.map((d) => (
               <div key={d.day} style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
-                <b>Day {d.day}</b>
+                <b>{tr("wel.meals.day", lang)
+                  .replace("{n}", String(d.day))}</b>
                 {d.meals.map((m) => (
                   <div key={m.slot} className="muted small">
                     {m.slot}: {m.name}

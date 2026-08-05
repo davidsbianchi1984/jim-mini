@@ -1,4 +1,4 @@
-# status: backlog — 262 rows
+# status: backlog — 206 rows
 #
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
@@ -7,7 +7,7 @@
 # command and example values. The rest of the console is not — 700-odd
 # strings across nineteen gated screens, recorded here so the remainder is a
 # decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 262
+# ceiling: 206
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -156,35 +156,6 @@ Journal: Journal
 Journal: New entry
 Journal: Nothing yet — the first entry can be one sentence.
 Journal: your words, typed or spoken
-Meds: (optional — JIM will refuse to log past it)
-Meds: (optional)
-Meds: 10 mg
-Meds: Actually took it
-Meds: Add a medication
-Meds: As needed, not on a schedule
-Meds: Ceiling per day
-Meds: Dose
-Meds: Last
-Meds: Lisinopril
-Meds: Medications
-Meds: Missing this one is worth a check-in
-Meds: Name
-Meds: Nothing here yet — add what you take below, in your own words.
-Meds: Skip
-Meds: Take
-Meds: Times
-Meds: Today
-Meds: Took one
-Meds: What it's for
-Meds: Your words are fine — “the little white one, 10 mg” is a valid name and dose.
-Meds: as needed ·
-Meds: blood pressure
-Meds: days
-Meds: of
-Meds: stop
-Meds: today
-Meds: — comma-separated, 24h
-Meds: — marked critical and not logged today. If you took it, tap it below; if you didn't, that's worth a moment.
 Monitor: (edge
 Monitor: Heart rate (bpm)
 Monitor: Live Monitoring
@@ -255,30 +226,3 @@ Wards: escalations in the last day
 Wards: oversight
 Wards: oversight ·
 Wards: sensitivity ·
-Wellness: A day of meals that fits you
-Wellness: A workout for the time you have
-Wellness: Build it
-Wellness: Day
-Wellness: Days
-Wellness: End early
-Wellness: Focus
-Wellness: Goal
-Wellness: Guided calm
-Wellness: Level
-Wellness: Minutes
-Wellness: Plan it
-Wellness: Protocols, not generations — the counts never vary. Pick one; the app paces it
-Wellness: Session complete. Carry the pace with you.
-Wellness: Speak the steps out loud
-Wellness: Wellness
-Wellness: calm · movement · meals — on purpose, any hour
-Wellness: eat healthier
-Wellness: gain muscle
-Wellness: kcal/day for orientation
-Wellness: lose weight
-Wellness: min
-Wellness: of
-Wellness: s
-Wellness: s —
-Wellness: step
-Wellness: · about

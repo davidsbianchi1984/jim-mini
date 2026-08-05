@@ -1942,6 +1942,165 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "set.vigil.armed": {
     en: "Armed · last heard from you {when} · steward: {name}", es: "Activada · última señal tuya {when} · persona de guardia: {name}", fr: "Armée · dernières nouvelles de vous {when} · personne de confiance : {name}", de: "Scharf · zuletzt von Ihnen gehört {when} · Verwalter: {name}", pt: "Ativada · última notícia sua {when} · guardião: {name}", it: "Attiva · ultime tue notizie {when} · custode: {name}", ja: "作動中 · 最後の便り {when} · 見守り役: {name}", zh: "已启用 · 最近一次得知你的消息 {when} · 受托人: {name}", hi: "सक्रिय · आपकी अंतिम ख़बर {when} · संरक्षक: {name}", ar: "مفعّل · آخر خبر عنك {when} · القيّم: {name}",
   },
+  "med.title": {
+    en: "Medications", es: "Medicamentos", fr: "Médicaments", de: "Medikamente", pt: "Medicamentos", it: "Farmaci", ja: "薬", zh: "药物", hi: "दवाइयाँ", ar: "الأدوية",
+  },
+  "med.missed": {
+    en: "⚠ {list} — marked critical and not logged today. If you took it, tap it below; if you didn't, that's worth a moment.", es: "⚠ {list} — marcados como críticos y sin registrar hoy. Si lo tomaste, tócalo abajo; si no, merece un momento.", fr: "⚠ {list} — marqués critiques et non consignés aujourd'hui. Si vous l'avez pris, touchez-le ci-dessous ; sinon, cela mérite un instant.", de: "⚠ {list} — als kritisch markiert und heute nicht erfasst. Wenn Sie es genommen haben, tippen Sie unten darauf; wenn nicht, ist das einen Moment wert.", pt: "⚠ {list} — marcados como críticos e não registados hoje. Se o tomou, toque abaixo; se não, isso merece um momento.", it: "⚠ {list} — segnati come critici e non registrati oggi. Se l'hai preso, toccalo qui sotto; se no, vale un momento.", ja: "⚠ {list} — 重要と設定されていますが、今日はまだ記録がありません。飲んだなら下でタップを、飲んでいないなら少し立ち止まる価値があります。", zh: "⚠ {list} — 已标为关键，今天尚未记录。若你已服用，请在下方点选；若没有，这值得停下来想一想。", hi: "⚠ {list} — महत्वपूर्ण चिह्नित है और आज दर्ज नहीं हुआ। अगर आपने लिया है तो नीचे टैप करें; नहीं लिया तो यह एक पल ठहरने लायक़ है।", ar: "⚠ {list} — مُعلَّم كحرج ولم يُسجَّل اليوم. إن كنت تناولته فانقره أدناه؛ وإن لم تفعل، فالأمر يستحق لحظة.",
+  },
+  "med.today": {
+    en: "Today", es: "Hoy", fr: "Aujourd'hui", de: "Heute", pt: "Hoje", it: "Oggi", ja: "今日", zh: "今天", hi: "आज", ar: "اليوم",
+  },
+  "med.none": {
+    en: "Nothing here yet — add what you take below, in your own words.", es: "Aquí no hay nada todavía — añade abajo lo que tomas, con tus palabras.", fr: "Rien ici pour l'instant — ajoutez ci-dessous ce que vous prenez, avec vos mots.", de: "Hier ist noch nichts — fügen Sie unten hinzu, was Sie nehmen, in Ihren eigenen Worten.", pt: "Ainda não há nada aqui — adicione abaixo o que toma, nas suas palavras.", it: "Qui non c'è ancora niente — aggiungi sotto ciò che prendi, con parole tue.", ja: "まだ何もありません — 服用しているものを、自分の言葉で下に追加してください。", zh: "这里还什么都没有 — 在下方用你自己的话添加你所服用的药。", hi: "यहाँ अभी कुछ नहीं — नीचे अपने शब्दों में जोड़ें कि आप क्या लेते हैं।", ar: "لا شيء هنا بعد — أضف أدناه ما تتناوله، بكلماتك أنت.",
+  },
+  "med.stop": {
+    en: "stop", es: "dejar", fr: "arrêter", de: "beenden", pt: "parar", it: "smetti", ja: "中止", zh: "停止", hi: "रोकें", ar: "أوقف",
+  },
+  "med.take": {
+    en: "Take", es: "Tomar", fr: "Prendre", de: "Nehmen", pt: "Tomar", it: "Prendi", ja: "服用", zh: "服用", hi: "लें", ar: "تناول",
+  },
+  "med.skip": {
+    en: "Skip", es: "Saltar", fr: "Passer", de: "Auslassen", pt: "Saltar", it: "Salta", ja: "スキップ", zh: "跳过", hi: "छोड़ें", ar: "تخطَّ",
+  },
+  "med.actually": {
+    en: "Actually took it", es: "En realidad sí lo tomé", fr: "En fait, je l'ai pris", de: "Doch genommen", pt: "Afinal tomei-o", it: "In realtà l'ho preso", ja: "やはり飲みました", zh: "其实我服用了", hi: "असल में ले लिया था", ar: "تناولته فعلًا",
+  },
+  "med.asneeded.line": {
+    en: "as needed · {n} today{max}", es: "según necesidad · {n} hoy{max}", fr: "au besoin · {n} aujourd'hui{max}", de: "bei Bedarf · {n} heute{max}", pt: "conforme necessário · {n} hoje{max}", it: "al bisogno · {n} oggi{max}", ja: "頓用 · 今日{n}回{max}", zh: "按需 · 今天{n}次{max}", hi: "आवश्यकतानुसार · आज {n}{max}", ar: "عند الحاجة · {n} اليوم{max}",
+  },
+  "med.asneeded.max": {
+    en: " of {max} max", es: " de {max} máx.", fr: " sur {max} max", de: " von {max} max.", pt: " de {max} máx.", it: " su {max} max", ja: "（上限{max}回）", zh: "（上限{max}次）", hi: " अधिकतम {max} में से", ar: " من أصل {max} كحد أقصى",
+  },
+  "med.tookone": {
+    en: "Took one", es: "Tomé una", fr: "J'en ai pris un", de: "Eine genommen", pt: "Tomei um", it: "Ne ho preso uno", ja: "1回飲んだ", zh: "服用了一次", hi: "एक ले ली", ar: "تناولت واحدة",
+  },
+  "med.last": {
+    en: "Last {n} days", es: "Últimos {n} días", fr: "Ces {n} derniers jours", de: "Letzte {n} Tage", pt: "Últimos {n} dias", it: "Ultimi {n} giorni", ja: "直近{n}日間", zh: "最近{n}天", hi: "पिछले {n} दिन", ar: "آخر {n} أيام",
+  },
+  "med.of": {
+    en: "{taken} of {expected}", es: "{taken} de {expected}", fr: "{taken} sur {expected}", de: "{taken} von {expected}", pt: "{taken} de {expected}", it: "{taken} su {expected}", ja: "{expected}回中{taken}回", zh: "{expected}次中{taken}次", hi: "{expected} में से {taken}", ar: "{taken} من {expected}",
+  },
+  "med.add": {
+    en: "Add a medication", es: "Añadir un medicamento", fr: "Ajouter un médicament", de: "Ein Medikament hinzufügen", pt: "Adicionar um medicamento", it: "Aggiungi un farmaco", ja: "薬を追加", zh: "添加一种药", hi: "दवा जोड़ें", ar: "أضف دواءً",
+  },
+  "med.add.pitch": {
+    en: "Your words are fine — “the little white one, 10 mg” is a valid name and dose.", es: "Tus palabras valen — «la blanquita, 10 mg» es un nombre y una dosis válidos.", fr: "Vos mots suffisent — « le petit blanc, 10 mg » est un nom et une dose valables.", de: "Ihre Worte genügen — »die kleine weiße, 10 mg« ist ein gültiger Name und eine gültige Dosis.", pt: "As suas palavras servem — «o branquinho, 10 mg» é um nome e uma dose válidos.", it: "Le tue parole vanno bene — «quella bianca piccola, 10 mg» è un nome e una dose validi.", ja: "あなたの言葉で構いません — 「小さい白いの、10 mg」も立派な名前と用量です。", zh: "用你自己的话就好 — 「那个白色小药片，10 mg」就是有效的名称和剂量。", hi: "आपके शब्द ठीक हैं — «वो छोटी सफ़ेद वाली, 10 mg» एक मान्य नाम और ख़ुराक है।", ar: "كلماتك تكفي — «الحبة البيضاء الصغيرة، 10 ملغ» اسم وجرعة صالحان.",
+  },
+  "med.name": {
+    en: "Name", es: "Nombre", fr: "Nom", de: "Name", pt: "Nome", it: "Nome", ja: "名前", zh: "名称", hi: "नाम", ar: "الاسم",
+  },
+  "med.name.ph": {
+    en: "Lisinopril", es: "Lisinopril", fr: "Lisinopril", de: "Lisinopril", pt: "Lisinopril", it: "Lisinopril", ja: "Lisinopril", zh: "Lisinopril", hi: "Lisinopril", ar: "Lisinopril",
+  },
+  "med.dose": {
+    en: "Dose", es: "Dosis", fr: "Dose", de: "Dosis", pt: "Dose", it: "Dose", ja: "用量", zh: "剂量", hi: "ख़ुराक", ar: "الجرعة",
+  },
+  "med.dose.ph": {
+    en: "10 mg", es: "10 mg", fr: "10 mg", de: "10 mg", pt: "10 mg", it: "10 mg", ja: "10 mg", zh: "10 mg", hi: "10 mg", ar: "10 ملغ",
+  },
+  "med.purpose": {
+    en: "What it's for", es: "Para qué es", fr: "À quoi ça sert", de: "Wofür es ist", pt: "Para que serve", it: "A cosa serve", ja: "何のための薬か", zh: "用来治什么", hi: "यह किसलिए है", ar: "لماذا هو",
+  },
+  "med.optional": {
+    en: "(optional)", es: "(opcional)", fr: "(facultatif)", de: "(optional)", pt: "(opcional)", it: "(facoltativo)", ja: "（任意）", zh: "（可选）", hi: "(वैकल्पिक)", ar: "(اختياري)",
+  },
+  "med.purpose.ph": {
+    en: "blood pressure", es: "tensión arterial", fr: "tension artérielle", de: "Blutdruck", pt: "tensão arterial", it: "pressione sanguigna", ja: "血圧", zh: "血压", hi: "रक्तचाप", ar: "ضغط الدم",
+  },
+  "med.asneeded": {
+    en: "As needed, not on a schedule", es: "Según necesidad, sin horario", fr: "Au besoin, pas selon un horaire", de: "Bei Bedarf, nicht nach Plan", pt: "Conforme necessário, sem horário", it: "Al bisogno, non a orario", ja: "定時ではなく頓用", zh: "按需服用，非定时", hi: "आवश्यकतानुसार, समय-सारणी पर नहीं", ar: "عند الحاجة، لا وفق جدول",
+  },
+  "med.ceiling": {
+    en: "Ceiling per day", es: "Máximo por día", fr: "Plafond par jour", de: "Obergrenze pro Tag", pt: "Limite por dia", it: "Tetto giornaliero", ja: "1日の上限", zh: "每日上限", hi: "प्रतिदिन अधिकतम", ar: "الحد اليومي",
+  },
+  "med.ceiling.note": {
+    en: "(optional — JIM will refuse to log past it)", es: "(opcional — JIM se negará a registrar por encima)", fr: "(facultatif — JIM refusera d'enregistrer au-delà)", de: "(optional — JIM verweigert Einträge darüber hinaus)", pt: "(opcional — o JIM recusará registar acima disso)", it: "(facoltativo — JIM rifiuterà di registrare oltre)", ja: "（任意 — これを超える記録をJIMは拒みます）", zh: "（可选 — 超过后 JIM 会拒绝记录）", hi: "(वैकल्पिक — इससे आगे JIM दर्ज करने से मना कर देगा)", ar: "(اختياري — سيرفض JIM التسجيل بعده)",
+  },
+  "med.times": {
+    en: "Times", es: "Horas", fr: "Heures", de: "Zeiten", pt: "Horas", it: "Orari", ja: "時刻", zh: "时间", hi: "समय", ar: "الأوقات",
+  },
+  "med.times.note": {
+    en: "— comma-separated, 24h", es: "— separadas por comas, 24 h", fr: "— séparées par des virgules, format 24 h", de: "— kommagetrennt, 24 h", pt: "— separadas por vírgulas, 24 h", it: "— separati da virgole, 24 h", ja: "— カンマ区切り、24時間表記", zh: "— 逗号分隔，24小时制", hi: "— अल्पविराम से अलग, 24 घंटे", ar: "— مفصولة بفواصل، بنظام 24 ساعة",
+  },
+  "med.critical": {
+    en: "Missing this one is worth a check-in", es: "Saltarse este merece una consulta", fr: "Manquer celui-ci mérite qu'on prenne de vos nouvelles", de: "Dieses zu verpassen ist eine Nachfrage wert", pt: "Falhar este merece uma verificação", it: "Saltare questo vale un controllo", ja: "これを飲み忘れたら声をかけてほしい", zh: "漏服这一种值得来问一句", hi: "यह छूटे तो हालचाल पूछना बनता है", ar: "تفويت هذا يستحق اطمئنانًا",
+  },
+  "wel.title": {
+    en: "Wellness", es: "Bienestar", fr: "Bien-être", de: "Wohlbefinden", pt: "Bem-estar", it: "Benessere", ja: "ウェルネス", zh: "身心健康", hi: "स्वस्थता", ar: "العافية",
+  },
+  "wel.sub": {
+    en: "calm · movement · meals — on purpose, any hour", es: "calma · movimiento · comidas — a propósito, a cualquier hora", fr: "calme · mouvement · repas — à dessein, à toute heure", de: "Ruhe · Bewegung · Mahlzeiten — absichtlich, zu jeder Stunde", pt: "calma · movimento · refeições — de propósito, a qualquer hora", it: "calma · movimento · pasti — di proposito, a qualsiasi ora", ja: "静けさ · 動き · 食事 — 意図して、いつでも", zh: "静心 · 活动 · 饮食 — 有意为之，随时可做", hi: "शांति · गति · भोजन — सोच-समझकर, किसी भी घड़ी", ar: "هدوء · حركة · وجبات — عن قصد، في أي ساعة",
+  },
+  "wel.calm": {
+    en: "Guided calm", es: "Calma guiada", fr: "Calme guidé", de: "Geführte Ruhe", pt: "Calma guiada", it: "Calma guidata", ja: "ガイド付きの静けさ", zh: "引导静心", hi: "निर्देशित शांति", ar: "هدوء موجَّه",
+  },
+  "wel.calm.pitch": {
+    en: "Protocols, not generations — the counts never vary. Pick one; the app paces it{spoken}.", es: "Protocolos, no generaciones — las cuentas nunca varían. Elige uno; la app marca el ritmo{spoken}.", fr: "Des protocoles, pas des générations — les comptes ne varient jamais. Choisissez-en un ; l'appli donne le rythme{spoken}.", de: "Protokolle, keine Generierungen — die Zählungen ändern sich nie. Wählen Sie eines; die App gibt den Takt{spoken}.", pt: "Protocolos, não gerações — as contagens nunca variam. Escolha um; a app marca o ritmo{spoken}.", it: "Protocolli, non generazioni — i conteggi non variano mai. Scegline uno; l'app scandisce il ritmo{spoken}.", ja: "生成ではなくプロトコルです — 数え方は決して変わりません。ひとつ選べば、アプリがペースを刻みます{spoken}。", zh: "是既定方案，不是即兴生成 — 计数从不变化。选一个，应用会为你计拍{spoken}。", hi: "प्रोटोकॉल हैं, जनरेशन नहीं — गिनती कभी नहीं बदलती। एक चुनें; ऐप उसकी लय बनाए रखेगा{spoken}।", ar: "بروتوكولات لا توليدات — الأعداد لا تتغير أبدًا. اختر واحدًا؛ والتطبيق يضبط الإيقاع{spoken}.",
+  },
+  "wel.calm.spoken": {
+    en: " and speaks each step", es: " y dice cada paso", fr: " et énonce chaque étape", de: " und spricht jeden Schritt", pt: " e diz cada passo", it: " e pronuncia ogni passo", ja: "、各ステップを読み上げます", zh: "，并朗读每一步", hi: " और हर चरण बोलता है", ar: " وينطق كل خطوة",
+  },
+  "wel.calm.speak": {
+    en: "Speak the steps out loud", es: "Decir los pasos en voz alta", fr: "Énoncer les étapes à voix haute", de: "Die Schritte laut sprechen", pt: "Dizer os passos em voz alta", it: "Pronuncia i passi ad alta voce", ja: "ステップを声に出す", zh: "把步骤朗读出来", hi: "चरणों को ज़ोर से बोलें", ar: "انطق الخطوات بصوت عالٍ",
+  },
+  "wel.calm.tile": {
+    en: "{title} · {n} min", es: "{title} · {n} min", fr: "{title} · {n} min", de: "{title} · {n} Min.", pt: "{title} · {n} min", it: "{title} · {n} min", ja: "{title} · {n}分", zh: "{title} · {n}分钟", hi: "{title} · {n} मिनट", ar: "{title} · {n} دقيقة",
+  },
+  "wel.calm.step": {
+    en: "step {i} of {n} · {sec}s", es: "paso {i} de {n} · {sec}s", fr: "étape {i} sur {n} · {sec}s", de: "Schritt {i} von {n} · {sec}s", pt: "passo {i} de {n} · {sec}s", it: "passo {i} di {n} · {sec}s", ja: "ステップ{i}/{n} · {sec}秒", zh: "第{i}步，共{n}步 · {sec}秒", hi: "चरण {i}/{n} · {sec} सेकंड", ar: "الخطوة {i} من {n} · {sec} ثانية",
+  },
+  "wel.calm.end": {
+    en: "End early", es: "Terminar antes", fr: "Terminer plus tôt", de: "Früher beenden", pt: "Terminar mais cedo", it: "Termina prima", ja: "途中で終える", zh: "提前结束", hi: "जल्दी समाप्त करें", ar: "أنهِ مبكرًا",
+  },
+  "wel.calm.done": {
+    en: "Session complete. Carry the pace with you.", es: "Sesión completa. Llévate el ritmo contigo.", fr: "Séance terminée. Emportez ce rythme avec vous.", de: "Sitzung abgeschlossen. Nehmen Sie den Takt mit.", pt: "Sessão concluída. Leve o ritmo consigo.", it: "Sessione completata. Porta con te il ritmo.", ja: "セッション終了。この呼吸のペースを持って行ってください。", zh: "本次完成。把这份节奏带走。", hi: "सत्र पूरा। इस लय को साथ ले जाएँ।", ar: "انتهت الجلسة. خذ الإيقاع معك.",
+  },
+  "wel.work": {
+    en: "A workout for the time you have", es: "Un entrenamiento para el tiempo que tienes", fr: "Une séance pour le temps dont vous disposez", de: "Ein Training für die Zeit, die Sie haben", pt: "Um treino para o tempo que tem", it: "Un allenamento per il tempo che hai", ja: "あなたの持ち時間に合う運動", zh: "配合你时间的一套锻炼", hi: "आपके पास जितना समय है उसके लिए एक कसरत", ar: "تمرين يناسب وقتك المتاح",
+  },
+  "wel.work.minutes": {
+    en: "Minutes", es: "Minutos", fr: "Minutes", de: "Minuten", pt: "Minutos", it: "Minuti", ja: "分数", zh: "分钟", hi: "मिनट", ar: "الدقائق",
+  },
+  "wel.work.level": {
+    en: "Level", es: "Nivel", fr: "Niveau", de: "Niveau", pt: "Nível", it: "Livello", ja: "レベル", zh: "水平", hi: "स्तर", ar: "المستوى",
+  },
+  "wel.work.focus": {
+    en: "Focus", es: "Enfoque", fr: "Cible", de: "Schwerpunkt", pt: "Foco", it: "Focus", ja: "重点", zh: "侧重", hi: "केंद्र", ar: "التركيز",
+  },
+  "wel.work.build": {
+    en: "Build it", es: "Créalo", fr: "Construire", de: "Erstellen", pt: "Criá-lo", it: "Crealo", ja: "組み立てる", zh: "生成", hi: "बनाएँ", ar: "ابنِه",
+  },
+  "wel.work.block": {
+    en: " · {sec}s — {cue}", es: " · {sec}s — {cue}", fr: " · {sec}s — {cue}", de: " · {sec}s — {cue}", pt: " · {sec}s — {cue}", it: " · {sec}s — {cue}", ja: " · {sec}秒 — {cue}", zh: " · {sec}秒 — {cue}", hi: " · {sec} सेकंड — {cue}", ar: " · {sec} ثانية — {cue}",
+  },
+  "wel.meals": {
+    en: "A day of meals that fits you", es: "Un día de comidas que te encaja", fr: "Une journée de repas qui vous convient", de: "Ein Tag mit Mahlzeiten, der zu Ihnen passt", pt: "Um dia de refeições que lhe assenta", it: "Una giornata di pasti che ti calza", ja: "あなたに合う一日の食事", zh: "适合你的一天三餐", hi: "आपके अनुकूल एक दिन का भोजन", ar: "يوم من الوجبات يناسبك",
+  },
+  "wel.meals.goal": {
+    en: "Goal", es: "Objetivo", fr: "Objectif", de: "Ziel", pt: "Objetivo", it: "Obiettivo", ja: "目標", zh: "目标", hi: "लक्ष्य", ar: "الهدف",
+  },
+  "wel.meals.healthier": {
+    en: "eat healthier", es: "comer más sano", fr: "manger plus sainement", de: "gesünder essen", pt: "comer mais saudável", it: "mangiare più sano", ja: "健康的に食べる", zh: "吃得更健康", hi: "स्वस्थ खाना", ar: "أكل أصح",
+  },
+  "wel.meals.lose": {
+    en: "lose weight", es: "perder peso", fr: "perdre du poids", de: "abnehmen", pt: "perder peso", it: "perdere peso", ja: "減量する", zh: "减重", hi: "वज़न घटाना", ar: "إنقاص الوزن",
+  },
+  "wel.meals.gain": {
+    en: "gain muscle", es: "ganar músculo", fr: "prendre du muscle", de: "Muskeln aufbauen", pt: "ganhar músculo", it: "mettere massa", ja: "筋肉をつける", zh: "增肌", hi: "मांसपेशी बढ़ाना", ar: "بناء العضلات",
+  },
+  "wel.meals.days": {
+    en: "Days", es: "Días", fr: "Jours", de: "Tage", pt: "Dias", it: "Giorni", ja: "日数", zh: "天数", hi: "दिन", ar: "الأيام",
+  },
+  "wel.meals.plan": {
+    en: "Plan it", es: "Planifícalo", fr: "Planifier", de: "Planen", pt: "Planeá-lo", it: "Pianificalo", ja: "計画する", zh: "规划", hi: "योजना बनाएँ", ar: "خطّط له",
+  },
+  "wel.meals.shape": {
+    en: "{why} · about {kcal} kcal/day for orientation", es: "{why} · unas {kcal} kcal/día como orientación", fr: "{why} · environ {kcal} kcal/jour à titre indicatif", de: "{why} · etwa {kcal} kcal/Tag zur Orientierung", pt: "{why} · cerca de {kcal} kcal/dia para orientação", it: "{why} · circa {kcal} kcal/giorno come orientamento", ja: "{why} · 目安として1日およそ{kcal}kcal", zh: "{why} · 每天约{kcal}千卡，仅供参考", hi: "{why} · दिशा-निर्देश हेतु लगभग {kcal} kcal/दिन", ar: "{why} · نحو {kcal} سعرة/يوم للاسترشاد",
+  },
+  "wel.meals.day": {
+    en: "Day {n}", es: "Día {n}", fr: "Jour {n}", de: "Tag {n}", pt: "Dia {n}", it: "Giorno {n}", ja: "{n}日目", zh: "第{n}天", hi: "दिन {n}", ar: "اليوم {n}",
+  },
 };
 
 export function visitorLang(): Lang {
