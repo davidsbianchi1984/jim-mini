@@ -1,13 +1,19 @@
-# status: backlog — 129 rows
+# status: floor — 0 rows
 #
 # English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
 #
-# The pre-session screen is done: what is left of it is punctuation, a shell
-# command and example values. The rest of the console is not — 700-odd
-# strings across nineteen gated screens, recorded here so the remainder is a
-# decision somebody wrote down rather than a surface nobody looked at.
-# ceiling: 129
+# **A floor as of 0.45.1.** Every screen of this console — pre-session and
+# gated alike — is localized into all ten languages. The file stays, with
+# its ceiling at zero, because the guard reads it in both directions: a
+# single new English string on any screen fails the build, and the only way
+# to add one is to write the row down here and raise the ceiling on purpose.
+#
+# What it used to say, kept for the record: "The rest of the console is not
+# — 700-odd strings across nineteen gated screens, recorded here so the
+# remainder is a decision somebody wrote down rather than a surface nobody
+# looked at."
+# ceiling: 0
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -20,132 +26,3 @@
 #
 # The same mistake the shells' version of this guard made with
 # `"\(dim): \(n)%"`, one file over and one release later.
-Aims: Add
-Aims: An ordinary activity is context, not a reading. It tells the Guardian why a heart rate moved before it has to guess.
-Aims: Budget
-Aims: Did it today
-Aims: Goals
-Aims: Habits
-Aims: Log it
-Aims: Mark done
-Aims: No limits set. Financial stress is one of the eight conditions JIM will take on, and a budget is how it learns the shape of yours.
-Aims: None yet.
-Aims: Nothing set. A goal here is a thing the coach and the daily suggestion both read — it is not a list for its own sake.
-Aims: Remove
-Aims: Set a limit
-Aims: Tell it what you did
-Aims: Walk thirty minutes
-Aims: Water at eight
-Aims: What you're working on
-Aims: daily
-Aims: goals, habits, and what the month costs
-Aims: groceries
-Aims: of
-Aims: streak
-Aims: walk
-Checkin: Check-in
-Checkin: Energy:
-Checkin: Logged
-Checkin: Mood:
-Checkin: No concern detected — logged to your day.
-Checkin: Note (optional)
-Checkin: Stress:
-Checkin: flagged
-Checkin: guardian
-Checkin: mood
-Checkin: mood, energy &amp; stress · a worrying note runs the crisis check
-Checkin: · energy
-Checkin: · stress
-Coach: 24/7 across your life
-Coach: Answered by
-Coach: Area
-Coach: Coach
-Coach: What's on your mind?
-Coach: · guidance
-Coach: ⚠ This is the built-in fallback, not
-Community: ) and the doors appear here.
-Community: Community
-Community: Community lives in QRME. Point this Guardian at your QRME deployment (
-Community: Filter by place
-Community: JIM_QRME_URL
-Community: Local events
-Community: No health data crosses over.
-Community: No rooms open right now. Start one in QRME — Rooms → new topic.
-Community: Nothing claimed for that place yet.
-Community: Nothing from a room is copied into JIM.
-Community: Nothing is ever posted on your behalf.
-Community: Open in QRME
-Community: Rooms &amp; forums
-Community: Rooms you can read in:
-Community: Where this happens
-Community: e.g. Bend
-Community: forums, rooms and local events — in QRME
-Community: here
-Community: listed)
-Home: Check-in
-Home: Coach
-Home: Hi,
-Home: Learned baseline
-Home: Live Monitoring
-Home: No baseline yet — it builds from calm samples in Live Monitoring.
-Home: Overview
-Home: Your Guardian is watching — rules are transparent.
-Home: metric
-Home: samples
-Home: state
-Home: value
-Home: ● Guardian on
-Home: 👥 Care Team
-Home: 💊 Medications
-Journal: Entries
-Journal: Entries are sealed in your vault on a private plan. If an entry says you're in danger, your Guardian treats it exactly like a reading that says so.
-Journal: How was today, really?
-Journal: Journal
-Journal: New entry
-Journal: Nothing yet — the first entry can be one sentence.
-Journal: your words, typed or spoken
-Monitor: (edge
-Monitor: Heart rate (bpm)
-Monitor: Live Monitoring
-Monitor: No, it didn't
-Monitor: Noted — monitoring resumes, and the Guardian remembers that this worked for you.
-Monitor: Reaching a person
-Monitor: Relaying a dispatcher briefing — who you are, your known conditions and critical medications, the latest readings, and what's being done — through every configured channel, updated with each new reading.
-Monitor: Respiration (/min)
-Monitor: Stress (0–1)
-Monitor: Submit a biometric sample
-Monitor: Yes, that helped
-Monitor: all calm
-Monitor: companion, in the background
-Monitor: detect → guide → escalate
-Monitor: drift from your baseline — a check-in, not an alarm
-Monitor: escalated to
-Monitor: guidance
-Monitor: your usual
-Onboarding: Sign
-Onboarding: python -m jim serve
-Onboarding: with
-Onboarding: you@example.com
-Safety: A sticker someone can scan to reach help on your behalf. The scanner needs no account and sees only what you chose to put on the card.
-Safety: Beacons
-Safety: Clear
-Safety: Escalate
-Safety: Every page JIM sent on your behalf, and whether it arrived. Shown because a message that failed to deliver is the one you most need to know about.
-Safety: History
-Safety: I'm going
-Safety: Label (Front door)
-Safety: Needs a person
-Safety: No pages sent.
-Safety: Nothing has happened yet.
-Safety: Nothing open. Nobody is waiting.
-Safety: Place a beacon
-Safety: Safety
-Safety: Sign in to see safety.
-Safety: What went out
-Safety: Where it is (optional)
-Safety: Who is going?
-Safety: answered by
-Safety: cleared
-Safety: is on the way.
-Safety: retired
-Safety: scan

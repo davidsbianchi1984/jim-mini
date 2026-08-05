@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { api, type BaselineMetric, type ScheduleView } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 export function Home({ go }: {
   go: (t: "monitor" | "coach" | "checkin" | "meds" | "careteam") => void;
 }) {
   const { session } = useSession();
+  const lang = visitorLang();
   const [baseline, setBaseline] = useState<BaselineMetric[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,27 +19,29 @@ export function Home({ go }: {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Overview</h2>
-        <span className="dot-online">● Guardian on</span>
+        <h2>{tr("hom.title", lang)}</h2>
+        <span className="dot-online">{tr("hom.on", lang)}</span>
       </header>
 
       <div className="profile-hero">
         <div className="orb big" />
         <div>
-          <h3>Hi, {session.displayName}</h3>
-          <div className="muted">Your Guardian is watching — rules are transparent.</div>
+          <h3>{tr("hom.hi", lang)
+            .replace("{name}", String(session.displayName))}</h3>
+          <div className="muted">{tr("hom.watching", lang)}</div>
         </div>
       </div>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>Learned baseline</h3>
+        <h3>{tr("hom.baseline", lang)}</h3>
         {baseline.length === 0 ? (
-          <div className="muted">No baseline yet — it builds from calm samples in Live Monitoring.</div>
+          <div className="muted">{tr("hom.baseline.none", lang)}</div>
         ) : (
           <table className="tbl">
-            <thead><tr><th>metric</th><th>value</th><th>state</th><th>samples</th></tr></thead>
+            <thead><tr><th>{tr("hom.th.metric", lang)}</th><th>{tr("hom.th.value", lang)}</th>
+              <th>{tr("hom.th.state", lang)}</th><th>{tr("hom.th.samples", lang)}</th></tr></thead>
             <tbody>
               {baseline.map((m) => (
                 <tr key={m.metric}>
@@ -51,11 +55,11 @@ export function Home({ go }: {
       </div>
 
       <div className="actions">
-        <button className="primary" onClick={() => go("monitor")}>Live Monitoring</button>
-        <button onClick={() => go("coach")}>Coach</button>
-        <button onClick={() => go("checkin")}>Check-in</button>
-        <button onClick={() => go("meds")}>💊 Medications</button>
-        <button onClick={() => go("careteam")}>👥 Care Team</button>
+        <button className="primary" onClick={() => go("monitor")}>{tr("hom.go.monitor", lang)}</button>
+        <button onClick={() => go("coach")}>{tr("hom.go.coach", lang)}</button>
+        <button onClick={() => go("checkin")}>{tr("hom.go.checkin", lang)}</button>
+        <button onClick={() => go("meds")}>{tr("hom.go.meds", lang)}</button>
+        <button onClick={() => go("careteam")}>{tr("hom.go.careteam", lang)}</button>
       </div>
 
       <ScheduleCard />

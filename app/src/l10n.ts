@@ -2305,6 +2305,381 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "ct.spec.empty": {
     en: "The QRME tandem answered with an empty shelf — install the Starter Collection there (Discover → Install), then reload.", es: "El tándem de QRME respondió con un estante vacío — instala allí la Colección Inicial (Descubrir → Instalar) y luego recarga.", fr: "Le tandem QRME a répondu avec une étagère vide — installez-y la Collection de départ (Découvrir → Installer), puis rechargez.", de: "Das QRME-Tandem antwortete mit einem leeren Regal — installieren Sie dort die Starter-Sammlung (Entdecken → Installieren) und laden Sie neu.", pt: "O tandem QRME respondeu com uma prateleira vazia — instale lá a Coleção Inicial (Descobrir → Instalar) e recarregue.", it: "Il tandem QRME ha risposto con uno scaffale vuoto — installa lì la Collezione iniziale (Scopri → Installa), poi ricarica.", ja: "QRMEタンデムは空の棚を返しました — 向こうでスターターコレクションを導入し（Discover → Install）、再読み込みしてください。", zh: "QRME 串联端返回的是一个空货架 — 请先在那边安装入门合集（发现 → 安装），然后重新加载。", hi: "QRME टेंडम ने ख़ाली शेल्फ़ लौटाया — वहाँ स्टार्टर संग्रह इंस्टॉल करें (Discover → Install), फिर पुनः लोड करें।", ar: "أجاب ترادف QRME برفٍّ فارغ — ثبّت المجموعة الأولى هناك (Discover ← Install)، ثم أعد التحميل.",
   },
+  "sfy.title": {
+    en: "Safety", es: "Seguridad", fr: "Sécurité", de: "Sicherheit", pt: "Segurança", it: "Sicurezza", ja: "安全", zh: "安全", hi: "सुरक्षा", ar: "السلامة",
+  },
+  "sfy.signin": {
+    en: "Sign in to see safety.", es: "Inicia sesión para ver la seguridad.", fr: "Connectez-vous pour voir la sécurité.", de: "Melden Sie sich an, um Sicherheit zu sehen.", pt: "Inicie sessão para ver a segurança.", it: "Accedi per vedere la sicurezza.", ja: "安全画面を見るにはサインインしてください。", zh: "请登录以查看安全页面。", hi: "सुरक्षा देखने के लिए साइन इन करें।", ar: "سجّل الدخول لعرض السلامة.",
+  },
+  "sfy.needs": {
+    en: "Needs a person", es: "Necesita a una persona", fr: "Demande une personne", de: "Braucht einen Menschen", pt: "Precisa de uma pessoa", it: "Serve una persona", ja: "人の対応が必要", zh: "需要有人处理", hi: "किसी व्यक्ति की ज़रूरत", ar: "يحتاج إلى شخص",
+  },
+  "sfy.needs.none": {
+    en: "Nothing open. Nobody is waiting.", es: "Nada abierto. Nadie está esperando.", fr: "Rien d'ouvert. Personne n'attend.", de: "Nichts offen. Niemand wartet.", pt: "Nada em aberto. Ninguém está à espera.", it: "Niente di aperto. Nessuno sta aspettando.", ja: "未対応はありません。待っている人はいません。", zh: "没有未结事项。无人在等待。", hi: "कुछ खुला नहीं। कोई प्रतीक्षा में नहीं।", ar: "لا شيء مفتوح. لا أحد ينتظر.",
+  },
+  "sfy.onway": {
+    en: "{who} is on the way.", es: "{who} va en camino.", fr: "{who} est en route.", de: "{who} ist unterwegs.", pt: "{who} vem a caminho.", it: "{who} sta arrivando.", ja: "{who}が向かっています。", zh: "{who}正在赶来。", hi: "{who} रास्ते में हैं।", ar: "{who} في الطريق.",
+  },
+  "sfy.responder.ph": {
+    en: "Who is going?", es: "¿Quién va?", fr: "Qui y va ?", de: "Wer geht hin?", pt: "Quem vai?", it: "Chi ci va?", ja: "誰が行きますか？", zh: "谁去？", hi: "कौन जा रहा है?", ar: "من سيذهب؟",
+  },
+  "sfy.going": {
+    en: "I'm going", es: "Voy yo", fr: "J'y vais", de: "Ich gehe", pt: "Vou eu", it: "Ci vado io", ja: "私が行きます", zh: "我去", hi: "मैं जा रहा हूँ", ar: "سأذهب أنا",
+  },
+  "sfy.escalate": {
+    en: "Escalate", es: "Escalar", fr: "Escalader", de: "Eskalieren", pt: "Escalar", it: "Aumenta il livello", ja: "エスカレート", zh: "升级", hi: "आगे बढ़ाएँ", ar: "صعّد",
+  },
+  "sfy.clear": {
+    en: "Clear", es: "Cerrar", fr: "Clore", de: "Abschließen", pt: "Encerrar", it: "Chiudi", ja: "解除", zh: "解除", hi: "बंद करें", ar: "أغلق",
+  },
+  "sfy.beacons": {
+    en: "Beacons", es: "Balizas", fr: "Balises", de: "Baken", pt: "Balizas", it: "Beacon", ja: "ビーコン", zh: "信标", hi: "बीकन", ar: "المنارات",
+  },
+  "sfy.beacons.pitch": {
+    en: "A sticker someone can scan to reach help on your behalf. The scanner needs no account and sees only what you chose to put on the card.", es: "Una pegatina que alguien puede escanear para pedir ayuda en tu nombre. Quien escanea no necesita cuenta y solo ve lo que decidiste poner en la tarjeta.", fr: "Un autocollant que quelqu'un peut scanner pour appeler de l'aide en votre nom. Le scanneur n'a besoin d'aucun compte et ne voit que ce que vous avez choisi de mettre sur la carte.", de: "Ein Aufkleber, den jemand scannen kann, um in Ihrem Namen Hilfe zu holen. Wer scannt, braucht kein Konto und sieht nur, was Sie auf die Karte setzen wollten.", pt: "Um autocolante que alguém pode digitalizar para pedir ajuda em seu nome. Quem digitaliza não precisa de conta e vê apenas o que escolheu pôr no cartão.", it: "Un adesivo che qualcuno può scansionare per chiedere aiuto per te. Chi scansiona non ha bisogno di account e vede solo ciò che hai scelto di mettere sulla scheda.", ja: "誰かがスキャンして、あなたに代わって助けを呼べるステッカーです。スキャンする人にアカウントは要らず、見えるのはあなたがカードに載せると決めたものだけです。", zh: "一张贴纸，别人扫一下就能代你求助。扫描者无需账户，只能看到你选择放上卡片的内容。", hi: "एक स्टिकर जिसे कोई स्कैन करके आपकी ओर से मदद बुला सके। स्कैन करने वाले को खाता नहीं चाहिए और उसे केवल वही दिखता है जो आपने कार्ड पर रखना चुना।", ar: "ملصق يمكن لأحد مسحه ليطلب النجدة نيابة عنك. الماسح لا يحتاج حسابًا ولا يرى إلا ما اخترت وضعه على البطاقة.",
+  },
+  "sfy.beacons.scans": {
+    en: "{n} scan{s}", es: "{n} escaneos", fr: "{n} scans", de: "{n} Scans", pt: "{n} digitalizações", it: "{n} scansioni", ja: "スキャン{n}件", zh: "{n}次扫描", hi: "{n} स्कैन", ar: "{n} مسحة",
+  },
+  "sfy.beacons.retired": {
+    en: "retired", es: "retirada", fr: "retirée", de: "zurückgezogen", pt: "retirada", it: "ritirato", ja: "引退済み", zh: "已退役", hi: "सेवानिवृत्त", ar: "متقاعد",
+  },
+  "sfy.beacons.label.ph": {
+    en: "Label (Front door)", es: "Etiqueta (Puerta principal)", fr: "Étiquette (Porte d'entrée)", de: "Beschriftung (Haustür)", pt: "Etiqueta (Porta da frente)", it: "Etichetta (Porta d'ingresso)", ja: "ラベル（玄関）", zh: "标签（前门）", hi: "लेबल (मुख्य द्वार)", ar: "التسمية (الباب الأمامي)",
+  },
+  "sfy.beacons.where.ph": {
+    en: "Where it is (optional)", es: "Dónde está (opcional)", fr: "Où elle est (facultatif)", de: "Wo sie ist (optional)", pt: "Onde está (opcional)", it: "Dov'è (facoltativo)", ja: "設置場所（任意）", zh: "它在哪里（可选）", hi: "यह कहाँ है (वैकल्पिक)", ar: "أين هي (اختياري)",
+  },
+  "sfy.beacons.place": {
+    en: "Place a beacon", es: "Colocar una baliza", fr: "Poser une balise", de: "Eine Bake platzieren", pt: "Colocar uma baliza", it: "Colloca un beacon", ja: "ビーコンを設置", zh: "放置信标", hi: "बीकन रखें", ar: "ضع منارة",
+  },
+  "sfy.pages": {
+    en: "What went out", es: "Lo que salió", fr: "Ce qui est parti", de: "Was hinausging", pt: "O que saiu", it: "Cosa è uscito", ja: "送信されたもの", zh: "发出去的内容", hi: "क्या भेजा गया", ar: "ما الذي خرج",
+  },
+  "sfy.pages.pitch": {
+    en: "Every page JIM sent on your behalf, and whether it arrived. Shown because a message that failed to deliver is the one you most need to know about.", es: "Cada aviso que JIM envió en tu nombre, y si llegó. Se muestra porque un mensaje que no se entregó es justo el que más necesitas conocer.", fr: "Chaque appel que JIM a envoyé en votre nom, et s'il est arrivé. Affiché parce qu'un message non délivré est celui qu'il faut le plus connaître.", de: "Jede Benachrichtigung, die JIM in Ihrem Namen sandte, und ob sie ankam. Gezeigt, weil eine nicht zugestellte Nachricht genau die ist, von der Sie wissen müssen.", pt: "Cada aviso que o JIM enviou em seu nome, e se chegou. Mostrado porque uma mensagem que falhou a entrega é a que mais precisa de conhecer.", it: "Ogni avviso che JIM ha inviato per te, e se è arrivato. Mostrato perché un messaggio non consegnato è proprio quello che più ti serve sapere.", ja: "JIMがあなたに代わって送ったすべての呼び出しと、それが届いたかどうか。届かなかったメッセージこそ、最も知る必要があるものだからです。", zh: "JIM 代你发出的每一次呼叫，以及它是否送达。之所以展示，是因为没能送达的那条消息，正是你最需要知道的。", hi: "JIM ने आपकी ओर से भेजा हर संदेश, और वह पहुँचा या नहीं। इसलिए दिखाया गया क्योंकि जो संदेश पहुँच न सका, उसी के बारे में जानना सबसे ज़रूरी है।", ar: "كل نداء أرسله JIM نيابة عنك، وهل وصل. يُعرض لأن الرسالة التي أخفقت في الوصول هي أكثر ما تحتاج معرفته.",
+  },
+  "sfy.pages.none": {
+    en: "No pages sent.", es: "No se enviaron avisos.", fr: "Aucun appel envoyé.", de: "Keine Benachrichtigungen gesendet.", pt: "Nenhum aviso enviado.", it: "Nessun avviso inviato.", ja: "送信された呼び出しはありません。", zh: "未发出任何呼叫。", hi: "कोई संदेश नहीं भेजा गया।", ar: "لم تُرسل أي نداءات.",
+  },
+  "sfy.history": {
+    en: "History", es: "Historial", fr: "Historique", de: "Verlauf", pt: "Histórico", it: "Cronologia", ja: "履歴", zh: "历史", hi: "इतिहास", ar: "السجل",
+  },
+  "sfy.history.none": {
+    en: "Nothing has happened yet.", es: "No ha pasado nada todavía.", fr: "Rien ne s'est encore passé.", de: "Bisher ist nichts geschehen.", pt: "Ainda não aconteceu nada.", it: "Non è ancora successo nulla.", ja: "まだ何も起きていません。", zh: "尚未发生任何事。", hi: "अभी कुछ नहीं हुआ।", ar: "لم يحدث شيء بعد.",
+  },
+  "sfy.history.cleared": {
+    en: "cleared", es: "cerrada", fr: "clos", de: "abgeschlossen", pt: "encerrado", it: "chiuso", ja: "解除済み", zh: "已解除", hi: "बंद", ar: "مغلق",
+  },
+  "sfy.history.answered": {
+    en: "answered by {who}", es: "atendida por {who}", fr: "répondu par {who}", de: "beantwortet von {who}", pt: "atendido por {who}", it: "risposto da {who}", ja: "{who}が対応", zh: "由{who}处理", hi: "{who} ने संभाला", ar: "تولّاه {who}",
+  },
+  "aim.title": {
+    en: "What you're working on", es: "En qué estás trabajando", fr: "Ce sur quoi vous travaillez", de: "Woran Sie arbeiten", pt: "No que está a trabalhar", it: "A cosa stai lavorando", ja: "取り組んでいること", zh: "你在努力的事", hi: "आप किस पर काम कर रहे हैं", ar: "ما تعمل عليه",
+  },
+  "aim.sub": {
+    en: "goals, habits, and what the month costs", es: "metas, hábitos y lo que cuesta el mes", fr: "objectifs, habitudes, et ce que coûte le mois", de: "Ziele, Gewohnheiten und was der Monat kostet", pt: "metas, hábitos e o que custa o mês", it: "obiettivi, abitudini e quanto costa il mese", ja: "目標、習慣、そして今月の出費", zh: "目标、习惯，以及这个月的花费", hi: "लक्ष्य, आदतें, और महीने का ख़र्च", ar: "أهداف وعادات وكم يكلف الشهر",
+  },
+  "aim.goals": {
+    en: "Goals", es: "Metas", fr: "Objectifs", de: "Ziele", pt: "Metas", it: "Obiettivi", ja: "目標", zh: "目标", hi: "लक्ष्य", ar: "الأهداف",
+  },
+  "aim.goals.title.ph": {
+    en: "Walk thirty minutes", es: "Caminar treinta minutos", fr: "Marcher trente minutes", de: "Dreißig Minuten gehen", pt: "Caminhar trinta minutos", it: "Camminare trenta minuti", ja: "30分歩く", zh: "走三十分钟", hi: "तीस मिनट चलना", ar: "المشي ثلاثين دقيقة",
+  },
+  "aim.goals.target.ph": {
+    en: "daily", es: "a diario", fr: "quotidien", de: "täglich", pt: "diariamente", it: "ogni giorno", ja: "毎日", zh: "每天", hi: "रोज़", ar: "يوميًا",
+  },
+  "aim.add": {
+    en: "Add", es: "Añadir", fr: "Ajouter", de: "Hinzufügen", pt: "Adicionar", it: "Aggiungi", ja: "追加", zh: "添加", hi: "जोड़ें", ar: "أضف",
+  },
+  "aim.goals.none": {
+    en: "Nothing set. A goal here is a thing the coach and the daily suggestion both read — it is not a list for its own sake.", es: "Nada fijado. Una meta aquí es algo que leen tanto el coach como la sugerencia diaria — no es una lista por sí misma.", fr: "Rien de défini. Un objectif ici est une chose que lisent à la fois le coach et la suggestion du jour — ce n'est pas une liste pour la forme.", de: "Nichts gesetzt. Ein Ziel hier ist etwas, das der Coach und der Tagesvorschlag beide lesen — keine Liste um ihrer selbst willen.", pt: "Nada definido. Uma meta aqui é algo que o coach e a sugestão diária leem — não é uma lista por si só.", it: "Niente impostato. Un obiettivo qui è una cosa che leggono sia il coach sia il suggerimento del giorno — non è una lista fine a se stessa.", ja: "未設定です。ここでの目標は、コーチと毎日の提案の両方が読むものです — ただのリストではありません。", zh: "尚未设定。这里的目标是教练和每日建议都会读的东西 — 它不是一份为了列而列的清单。", hi: "कुछ तय नहीं। यहाँ का लक्ष्य वह चीज़ है जिसे कोच और दैनिक सुझाव दोनों पढ़ते हैं — यह अपने आप में कोई सूची नहीं।", ar: "لا شيء محدد. الهدف هنا شيء يقرؤه المدرب والاقتراح اليومي كلاهما — وليس قائمة لذاتها.",
+  },
+  "aim.goals.done": {
+    en: "Mark done", es: "Marcar hecha", fr: "Marquer atteint", de: "Als erledigt markieren", pt: "Marcar como feita", it: "Segna come fatto", ja: "完了にする", zh: "标记完成", hi: "पूर्ण चिह्नित करें", ar: "علّمه منجزًا",
+  },
+  "aim.habits": {
+    en: "Habits", es: "Hábitos", fr: "Habitudes", de: "Gewohnheiten", pt: "Hábitos", it: "Abitudini", ja: "習慣", zh: "习惯", hi: "आदतें", ar: "العادات",
+  },
+  "aim.habits.ph": {
+    en: "Water at eight", es: "Agua a las ocho", fr: "De l'eau à huit heures", de: "Um acht Wasser trinken", pt: "Água às oito", it: "Acqua alle otto", ja: "8時に水を飲む", zh: "八点喝水", hi: "आठ बजे पानी", ar: "ماء عند الثامنة",
+  },
+  "aim.habits.none": {
+    en: "None yet.", es: "Ninguno todavía.", fr: "Aucune pour l'instant.", de: "Noch keine.", pt: "Nenhum ainda.", it: "Ancora nessuna.", ja: "まだありません。", zh: "尚无。", hi: "अभी कोई नहीं।", ar: "لا شيء بعد.",
+  },
+  "aim.habits.streak": {
+    en: "streak {n}", es: "racha {n}", fr: "série {n}", de: "Serie {n}", pt: "sequência {n}", it: "serie {n}", ja: "連続{n}日", zh: "连续{n}次", hi: "लगातार {n}", ar: "تتابع {n}",
+  },
+  "aim.habits.did": {
+    en: "Did it today", es: "Hecho hoy", fr: "Fait aujourd'hui", de: "Heute erledigt", pt: "Feito hoje", it: "Fatto oggi", ja: "今日やった", zh: "今天做了", hi: "आज किया", ar: "فعلتها اليوم",
+  },
+  "aim.budget": {
+    en: "Budget", es: "Presupuesto", fr: "Budget", de: "Budget", pt: "Orçamento", it: "Budget", ja: "予算", zh: "预算", hi: "बजट", ar: "الميزانية",
+  },
+  "aim.budget.cat.ph": {
+    en: "groceries", es: "comida", fr: "courses", de: "Lebensmittel", pt: "mercearia", it: "spesa", ja: "食料品", zh: "杂货", hi: "किराना", ar: "بقالة",
+  },
+  "aim.budget.set": {
+    en: "Set a limit", es: "Poner un límite", fr: "Fixer une limite", de: "Grenze setzen", pt: "Definir um limite", it: "Imposta un limite", ja: "上限を設定", zh: "设定上限", hi: "सीमा तय करें", ar: "حدد سقفًا",
+  },
+  "aim.budget.none": {
+    en: "No limits set. Financial stress is one of the eight conditions JIM will take on, and a budget is how it learns the shape of yours.", es: "Sin límites. El estrés financiero es una de las ocho condiciones que JIM atiende, y un presupuesto es como aprende la forma del tuyo.", fr: "Aucune limite. Le stress financier est l'une des huit situations dont JIM se charge, et un budget est la façon dont il apprend la forme du vôtre.", de: "Keine Grenzen gesetzt. Finanzieller Stress ist einer der acht Zustände, die JIM übernimmt, und ein Budget ist, wie es die Gestalt Ihres eigenen lernt.", pt: "Sem limites definidos. O stress financeiro é uma das oito condições que o JIM assume, e um orçamento é como aprende a forma do seu.", it: "Nessun limite impostato. Lo stress finanziario è una delle otto condizioni di cui JIM si occupa, e un budget è il modo in cui impara la forma del tuo.", ja: "上限は未設定です。経済的ストレスはJIMが引き受ける八つの状態のひとつで、予算はあなたのそれの形を学ぶ手がかりです。", zh: "尚未设定上限。财务压力是 JIM 会承接的八种状况之一，而预算正是它了解你这方面轮廓的途径。", hi: "कोई सीमा तय नहीं। आर्थिक तनाव उन आठ स्थितियों में से एक है जिन्हें JIM संभालता है, और बजट ही वह तरीक़ा है जिससे वह आपकी स्थिति का आकार समझता है।", ar: "لا حدود محددة. الضغط المالي أحد الحالات الثماني التي يتولاها JIM، والميزانية هي كيف يتعلم شكل حالتك.",
+  },
+  "aim.budget.line": {
+    en: "{spent} of {limit} · {standing}", es: "{spent} de {limit} · {standing}", fr: "{spent} sur {limit} · {standing}", de: "{spent} von {limit} · {standing}", pt: "{spent} de {limit} · {standing}", it: "{spent} su {limit} · {standing}", ja: "{limit}中{spent} · {standing}", zh: "{limit}中已用{spent} · {standing}", hi: "{limit} में से {spent} · {standing}", ar: "{spent} من {limit} · {standing}",
+  },
+  "aim.budget.remove": {
+    en: "Remove", es: "Quitar", fr: "Retirer", de: "Entfernen", pt: "Remover", it: "Rimuovi", ja: "削除", zh: "移除", hi: "हटाएँ", ar: "أزل",
+  },
+  "aim.activity": {
+    en: "Tell it what you did", es: "Dile qué hiciste", fr: "Dites-lui ce que vous avez fait", de: "Sagen Sie ihm, was Sie getan haben", pt: "Diga-lhe o que fez", it: "Digli cosa hai fatto", ja: "何をしたか伝える", zh: "告诉它你做了什么", hi: "बताएँ आपने क्या किया", ar: "أخبره بما فعلت",
+  },
+  "aim.activity.ph": {
+    en: "walk", es: "caminata", fr: "marche", de: "Spaziergang", pt: "caminhada", it: "camminata", ja: "散歩", zh: "散步", hi: "सैर", ar: "مشي",
+  },
+  "aim.activity.log": {
+    en: "Log it", es: "Registrarlo", fr: "L'enregistrer", de: "Erfassen", pt: "Registá-lo", it: "Registralo", ja: "記録する", zh: "记录", hi: "दर्ज करें", ar: "سجّلها",
+  },
+  "aim.activity.pitch": {
+    en: "An ordinary activity is context, not a reading. It tells the Guardian why a heart rate moved before it has to guess.", es: "Una actividad corriente es contexto, no una lectura. Le dice al Guardián por qué se movió una frecuencia cardíaca antes de que tenga que adivinarlo.", fr: "Une activité ordinaire est du contexte, pas une mesure. Elle dit au Gardien pourquoi un rythme cardiaque a bougé, avant qu'il ait à le deviner.", de: "Eine gewöhnliche Aktivität ist Kontext, keine Messung. Sie sagt dem Guardian, warum sich ein Puls bewegt hat, bevor er raten muss.", pt: "Uma atividade comum é contexto, não uma leitura. Diz ao Guardião porque é que uma frequência cardíaca se mexeu, antes de ele ter de adivinhar.", it: "Un'attività ordinaria è contesto, non una lettura. Dice al Guardian perché una frequenza cardiaca si è mossa, prima che debba indovinarlo.", ja: "ふつうの活動は測定値ではなく文脈です。心拍が動いた理由を、ガーディアンが推測する前に伝えてくれます。", zh: "日常活动是上下文，不是读数。它在守护者需要猜测之前，就告诉它心率为何变动。", hi: "सामान्य गतिविधि संदर्भ है, रीडिंग नहीं। यह गार्जियन को बताती है कि हृदय गति क्यों बदली — इससे पहले कि उसे अनुमान लगाना पड़े।", ar: "النشاط العادي سياق لا قراءة. يخبر الحارس لماذا تحرك معدل ضربات القلب قبل أن يضطر إلى التخمين.",
+  },
+  "cmy.title": {
+    en: "Community", es: "Comunidad", fr: "Communauté", de: "Gemeinschaft", pt: "Comunidade", it: "Comunità", ja: "コミュニティ", zh: "社区", hi: "समुदाय", ar: "المجتمع",
+  },
+  "cmy.sub": {
+    en: "forums, rooms and local events — in QRME", es: "foros, salas y eventos locales — en QRME", fr: "forums, salles et événements locaux — dans QRME", de: "Foren, Räume und lokale Veranstaltungen — in QRME", pt: "fóruns, salas e eventos locais — no QRME", it: "forum, stanze ed eventi locali — in QRME", ja: "フォーラム、ルーム、地域のイベント — QRMEにて", zh: "论坛、房间与本地活动 — 都在 QRME 里", hi: "फ़ोरम, कमरे और स्थानीय आयोजन — QRME में", ar: "منتديات وغرف وفعاليات محلية — في QRME",
+  },
+  "cmy.unset": {
+    en: "Community lives in QRME. Point this Guardian at your QRME deployment (JIM_QRME_URL) and the doors appear here.", es: "La comunidad vive en QRME. Apunta este Guardián a tu despliegue de QRME (JIM_QRME_URL) y las puertas aparecerán aquí.", fr: "La communauté vit dans QRME. Pointez ce Gardien vers votre déploiement QRME (JIM_QRME_URL) et les portes apparaîtront ici.", de: "Die Gemeinschaft lebt in QRME. Richten Sie diesen Guardian auf Ihr QRME-Deployment (JIM_QRME_URL), und die Türen erscheinen hier.", pt: "A comunidade vive no QRME. Aponte este Guardião ao seu deployment QRME (JIM_QRME_URL) e as portas aparecem aqui.", it: "La community vive in QRME. Punta questo Guardian al tuo deployment QRME (JIM_QRME_URL) e le porte appariranno qui.", ja: "コミュニティはQRMEにあります。このガーディアンをあなたのQRME配備（JIM_QRME_URL）に向ければ、扉がここに現れます。", zh: "社区在 QRME 里。把这个守护者指向你的 QRME 部署（JIM_QRME_URL），门就会出现在这里。", hi: "समुदाय QRME में रहता है। इस गार्जियन को अपने QRME डिप्लॉयमेंट (JIM_QRME_URL) की ओर इंगित करें, और द्वार यहाँ दिखने लगेंगे।", ar: "المجتمع يعيش في QRME. وجّه هذا الحارس إلى نشر QRME الخاص بك (JIM_QRME_URL) فتظهر الأبواب هنا.",
+  },
+  "cmy.where": {
+    en: "Where this happens", es: "Dónde ocurre esto", fr: "Où cela se passe", de: "Wo das stattfindet", pt: "Onde isto acontece", it: "Dove succede", ja: "これが起きる場所", zh: "这一切发生在哪里", hi: "यह कहाँ होता है", ar: "أين يحدث هذا",
+  },
+  "cmy.nocopy": {
+    en: "Nothing from a room is copied into JIM.", es: "Nada de una sala se copia a JIM.", fr: "Rien d'une salle n'est copié dans JIM.", de: "Nichts aus einem Raum wird nach JIM kopiert.", pt: "Nada de uma sala é copiado para o JIM.", it: "Nulla di una stanza viene copiato in JIM.", ja: "ルームの内容がJIMに複製されることはありません。", zh: "房间里的任何内容都不会复制进 JIM。", hi: "किसी कमरे से कुछ भी JIM में कॉपी नहीं होता।", ar: "لا يُنسخ شيء من غرفة إلى JIM.",
+  },
+  "cmy.nopost": {
+    en: "Nothing is ever posted on your behalf.", es: "Nunca se publica nada en tu nombre.", fr: "Rien n'est jamais publié en votre nom.", de: "Es wird nie etwas in Ihrem Namen gepostet.", pt: "Nunca é publicado nada em seu nome.", it: "Non viene mai pubblicato nulla a tuo nome.", ja: "あなたの名前で何かが投稿されることは決してありません。", zh: "绝不会以你的名义发布任何内容。", hi: "आपकी ओर से कभी कुछ पोस्ट नहीं किया जाता।", ar: "لا يُنشر شيء نيابة عنك أبدًا.",
+  },
+  "cmy.nohealth": {
+    en: "No health data crosses over.", es: "Ningún dato de salud cruza.", fr: "Aucune donnée de santé ne passe.", de: "Keine Gesundheitsdaten gehen hinüber.", pt: "Nenhum dado de saúde atravessa.", it: "Nessun dato sanitario attraversa.", ja: "健康データが渡ることはありません。", zh: "没有任何健康数据越界。", hi: "कोई स्वास्थ्य डेटा पार नहीं जाता।", ar: "لا تعبر أي بيانات صحية.",
+  },
+  "cmy.lang": {
+    en: "Rooms you can read in:", es: "Salas en las que puedes leer:", fr: "Salles que vous pouvez lire :", de: "Räume, in denen Sie lesen können:", pt: "Salas em que pode ler:", it: "Stanze in cui puoi leggere:", ja: "読めるルームの言語:", zh: "你可以阅读的房间语言:", hi: "जिन कमरों में आप पढ़ सकते हैं:", ar: "الغرف التي يمكنك القراءة بها:",
+  },
+  "cmy.rooms": {
+    en: "Rooms & forums", es: "Salas y foros", fr: "Salles et forums", de: "Räume & Foren", pt: "Salas e fóruns", it: "Stanze e forum", ja: "ルームとフォーラム", zh: "房间与论坛", hi: "कमरे और फ़ोरम", ar: "الغرف والمنتديات",
+  },
+  "cmy.rooms.none": {
+    en: "No rooms open right now. Start one in QRME — Rooms → new topic.", es: "No hay salas abiertas ahora. Abre una en QRME — Salas → nuevo tema.", fr: "Aucune salle ouverte pour l'instant. Ouvrez-en une dans QRME — Salles → nouveau sujet.", de: "Gerade sind keine Räume offen. Eröffnen Sie einen in QRME — Räume → neues Thema.", pt: "Não há salas abertas agora. Abra uma no QRME — Salas → novo tema.", it: "Nessuna stanza aperta ora. Aprine una in QRME — Stanze → nuovo argomento.", ja: "現在開いているルームはありません。QRMEで開いてください — ルーム → 新しいトピック。", zh: "目前没有开放的房间。去 QRME 里开一个 — 房间 → 新话题。", hi: "अभी कोई कमरा खुला नहीं। QRME में एक शुरू करें — कमरे → नया विषय।", ar: "لا غرف مفتوحة الآن. افتح واحدة في QRME — الغرف ← موضوع جديد.",
+  },
+  "cmy.rooms.here": {
+    en: "{channel} · {n} here", es: "{channel} · {n} aquí", fr: "{channel} · {n} ici", de: "{channel} · {n} hier", pt: "{channel} · {n} aqui", it: "{channel} · {n} qui", ja: "{channel} · {n}人", zh: "{channel} · {n}人在此", hi: "{channel} · {n} यहाँ", ar: "{channel} · {n} هنا",
+  },
+  "cmy.rooms.open": {
+    en: "Open in QRME", es: "Abrir en QRME", fr: "Ouvrir dans QRME", de: "In QRME öffnen", pt: "Abrir no QRME", it: "Apri in QRME", ja: "QRMEで開く", zh: "在 QRME 中打开", hi: "QRME में खोलें", ar: "افتح في QRME",
+  },
+  "cmy.events": {
+    en: "Local events", es: "Eventos locales", fr: "Événements locaux", de: "Lokale Veranstaltungen", pt: "Eventos locais", it: "Eventi locali", ja: "地域のイベント", zh: "本地活动", hi: "स्थानीय आयोजन", ar: "فعاليات محلية",
+  },
+  "cmy.events.filter": {
+    en: "Filter by place", es: "Filtrar por lugar", fr: "Filtrer par lieu", de: "Nach Ort filtern", pt: "Filtrar por lugar", it: "Filtra per luogo", ja: "場所で絞り込む", zh: "按地点筛选", hi: "स्थान से छाँटें", ar: "تصفية حسب المكان",
+  },
+  "cmy.events.ph": {
+    en: "e.g. Bend", es: "p. ej. Bend", fr: "p. ex. Bend", de: "z. B. Bend", pt: "p. ex. Bend", it: "es. Bend", ja: "例: Bend", zh: "例如 Bend", hi: "जैसे Bend", ar: "مثل Bend",
+  },
+  "cmy.events.listed": {
+    en: "({n} listed)", es: "({n} en lista)", fr: "({n} annoncés)", de: "({n} gelistet)", pt: "({n} listados)", it: "({n} in elenco)", ja: "（{n}件掲載）", zh: "（已列{n}项）", hi: "({n} सूचीबद्ध)", ar: "({n} مدرجة)",
+  },
+  "cmy.events.none": {
+    en: "Nothing claimed for that place yet.", es: "Nada reclamado para ese lugar todavía.", fr: "Rien de signalé pour ce lieu pour l'instant.", de: "Für diesen Ort ist noch nichts eingetragen.", pt: "Nada reclamado para esse lugar ainda.", it: "Ancora nulla per quel luogo.", ja: "その場所についてはまだ何もありません。", zh: "该地点尚无任何登记。", hi: "उस स्थान के लिए अभी कुछ नहीं।", ar: "لا شيء مُدرج لذلك المكان بعد.",
+  },
+  "mon.title": {
+    en: "Live Monitoring", es: "Monitorización en vivo", fr: "Surveillance en direct", de: "Live-Überwachung", pt: "Monitorização ao vivo", it: "Monitoraggio dal vivo", ja: "ライブモニタリング", zh: "实时监测", hi: "लाइव निगरानी", ar: "المراقبة الحية",
+  },
+  "mon.sub": {
+    en: "detect → guide → escalate", es: "detectar → guiar → escalar", fr: "détecter → guider → escalader", de: "erkennen → anleiten → eskalieren", pt: "detetar → orientar → escalar", it: "rileva → guida → escala", ja: "検知 → 案内 → エスカレート", zh: "检测 → 指导 → 升级", hi: "पहचान → मार्गदर्शन → वृद्धि", ar: "اكتشاف ← إرشاد ← تصعيد",
+  },
+  "mon.submit": {
+    en: "Submit a biometric sample", es: "Enviar una muestra biométrica", fr: "Envoyer un échantillon biométrique", de: "Eine biometrische Probe senden", pt: "Enviar uma amostra biométrica", it: "Invia un campione biometrico", ja: "生体サンプルを送信", zh: "提交一份生物特征样本", hi: "एक बायोमेट्रिक नमूना भेजें", ar: "أرسل عينة حيوية",
+  },
+  "mon.hr": {
+    en: "Heart rate (bpm)", es: "Frecuencia cardíaca (lpm)", fr: "Rythme cardiaque (bpm)", de: "Herzfrequenz (bpm)", pt: "Frequência cardíaca (bpm)", it: "Frequenza cardiaca (bpm)", ja: "心拍数（bpm）", zh: "心率（次/分）", hi: "हृदय गति (bpm)", ar: "معدل النبض (نبضة/د)",
+  },
+  "mon.resp": {
+    en: "Respiration (/min)", es: "Respiración (/min)", fr: "Respiration (/min)", de: "Atmung (/min)", pt: "Respiração (/min)", it: "Respirazione (/min)", ja: "呼吸（回/分）", zh: "呼吸（次/分）", hi: "श्वसन (/मिनट)", ar: "التنفس (/دقيقة)",
+  },
+  "mon.stress": {
+    en: "Stress (0–1)", es: "Estrés (0–1)", fr: "Stress (0–1)", de: "Stress (0–1)", pt: "Stress (0–1)", it: "Stress (0–1)", ja: "ストレス（0–1）", zh: "压力（0–1）", hi: "तनाव (0–1)", ar: "التوتر (0–1)",
+  },
+  "mon.calm": {
+    en: "all calm", es: "todo en calma", fr: "tout est calme", de: "alles ruhig", pt: "tudo calmo", it: "tutto calmo", ja: "すべて平穏", zh: "一切平静", hi: "सब शांत", ar: "كل شيء هادئ",
+  },
+  "mon.drift": {
+    en: "drift from your baseline — a check-in, not an alarm", es: "desviación de tu línea base — una consulta, no una alarma", fr: "écart par rapport à votre ligne de base — une prise de nouvelles, pas une alarme", de: "Abweichung von Ihrer Basislinie — eine Nachfrage, kein Alarm", pt: "desvio da sua linha de base — uma verificação, não um alarme", it: "scostamento dalla tua linea di base — un controllo, non un allarme", ja: "ベースラインからのずれ — 警報ではなく、様子うかがいです", zh: "偏离你的基线 — 这是问候，不是警报", hi: "आपकी आधार रेखा से विचलन — यह हालचाल है, अलार्म नहीं", ar: "انحراف عن خطك الأساسي — اطمئنان لا إنذار",
+  },
+  "mon.reading": {
+    en: "{label}: {value}{unit} — {direction} your usual {baseline}{unit} (edge {edge}{unit})", es: "{label}: {value}{unit} — {direction} tu habitual {baseline}{unit} (borde {edge}{unit})", fr: "{label} : {value}{unit} — {direction} votre habituel {baseline}{unit} (limite {edge}{unit})", de: "{label}: {value}{unit} — {direction} Ihrem üblichen {baseline}{unit} (Rand {edge}{unit})", pt: "{label}: {value}{unit} — {direction} o seu habitual {baseline}{unit} (limite {edge}{unit})", it: "{label}: {value}{unit} — {direction} il tuo solito {baseline}{unit} (bordo {edge}{unit})", ja: "{label}: {value}{unit} — 普段の{baseline}{unit}より{direction}（境界 {edge}{unit}）", zh: "{label}: {value}{unit} — {direction}你平常的{baseline}{unit}（边界 {edge}{unit}）", hi: "{label}: {value}{unit} — आपके सामान्य {baseline}{unit} से {direction} (सीमा {edge}{unit})", ar: "{label}: {value}{unit} — {direction} معتادك {baseline}{unit} (الحد {edge}{unit})",
+  },
+  "mon.guidance": {
+    en: "{source} guidance", es: "orientación de {source}", fr: "conseils de {source}", de: "{source}-Anleitung", pt: "orientação de {source}", it: "guida di {source}", ja: "{source}によるガイダンス", zh: "{source}指导", hi: "{source} मार्गदर्शन", ar: "إرشاد {source}",
+  },
+  "mon.helped": {
+    en: "Yes, that helped", es: "Sí, eso ayudó", fr: "Oui, ça a aidé", de: "Ja, das half", pt: "Sim, isso ajudou", it: "Sì, ha aiutato", ja: "はい、役に立ちました", zh: "是的，有用", hi: "हाँ, इससे मदद मिली", ar: "نعم، أفاد",
+  },
+  "mon.nothelped": {
+    en: "No, it didn't", es: "No, no ayudó", fr: "Non, pas vraiment", de: "Nein, hat es nicht", pt: "Não, não ajudou", it: "No, non ha aiutato", ja: "いいえ、役に立ちませんでした", zh: "没有用", hi: "नहीं, नहीं मिली", ar: "لا، لم يفد",
+  },
+  "mon.noted": {
+    en: "Noted — monitoring resumes, and the Guardian remembers that this worked for you.", es: "Anotado — la monitorización se reanuda, y el Guardián recuerda que esto te funcionó.", fr: "Noté — la surveillance reprend, et le Gardien retient que cela a marché pour vous.", de: "Notiert — die Überwachung läuft weiter, und der Guardian merkt sich, dass das bei Ihnen wirkte.", pt: "Anotado — a monitorização retoma, e o Guardião lembra-se de que isto resultou consigo.", it: "Annotato — il monitoraggio riprende, e il Guardian ricorda che con te ha funzionato.", ja: "記録しました — 監視を再開します。ガーディアンは、これがあなたに効いたことを覚えています。", zh: "已记下 — 监测继续，守护者也记住了这个方法对你有效。", hi: "दर्ज किया — निगरानी फिर शुरू, और गार्जियन याद रखता है कि यह आपके लिए काम आया।", ar: "سُجّل — تستأنف المراقبة، ويتذكر الحارس أن هذا نفعك.",
+  },
+  "mon.reaching": {
+    en: "Reaching a person", es: "Contactando a una persona", fr: "Joindre une personne", de: "Einen Menschen erreichen", pt: "A contactar uma pessoa", it: "Raggiungere una persona", ja: "人へ連絡中", zh: "正在联系一个人", hi: "किसी व्यक्ति तक पहुँचना", ar: "الوصول إلى شخص",
+  },
+  "mon.escalated": {
+    en: "escalated to {tier}", es: "escalado a {tier}", fr: "escaladé vers {tier}", de: "eskaliert zu {tier}", pt: "escalado para {tier}", it: "escalato a {tier}", ja: "{tier}へエスカレート", zh: "已升级至{tier}", hi: "{tier} तक बढ़ाया गया", ar: "صُعّد إلى {tier}",
+  },
+  "mon.companion": {
+    en: "companion, in the background", es: "acompañante, en segundo plano", fr: "compagnon, en arrière-plan", de: "Begleiter, im Hintergrund", pt: "companheiro, em segundo plano", it: "compagno, in sottofondo", ja: "伴走者として、背後で", zh: "同伴，在后台", hi: "साथी, पृष्ठभूमि में", ar: "رفيق، في الخلفية",
+  },
+  "mon.relaying": {
+    en: "Relaying a dispatcher briefing — who you are, your known conditions and critical medications, the latest readings, and what's being done — through every configured channel, updated with each new reading.", es: "Retransmitiendo un parte para el operador — quién eres, tus condiciones conocidas y medicamentos críticos, las últimas lecturas, y qué se está haciendo — por cada canal configurado, actualizado con cada nueva lectura.", fr: "Transmission d'un briefing au régulateur — qui vous êtes, vos affections connues et médicaments critiques, les dernières mesures, et ce qui est fait — par chaque canal configuré, mis à jour à chaque nouvelle mesure.", de: "Weitergabe eines Leitstellen-Briefings — wer Sie sind, Ihre bekannten Beschwerden und kritischen Medikamente, die letzten Messungen und was getan wird — über jeden konfigurierten Kanal, mit jeder neuen Messung aktualisiert.", pt: "A retransmitir um resumo para o operador — quem é, as suas condições conhecidas e medicamentos críticos, as últimas leituras, e o que está a ser feito — por cada canal configurado, atualizado a cada nova leitura.", it: "Ritrasmissione di un briefing per l'operatore — chi sei, le tue condizioni note e i farmaci critici, le ultime letture, e cosa si sta facendo — su ogni canale configurato, aggiornato a ogni nuova lettura.", ja: "指令員向けの申し送りを中継しています — あなたが誰か、既知の状態と重要な薬、最新の測定値、そして今行われていること — 設定済みのすべてのチャネルへ、新しい測定のたびに更新して。", zh: "正在转达给调度员的简报 — 你是谁、你已知的状况与关键用药、最新读数，以及正在采取的措施 — 通过每一个已配置的通道，并随每条新读数更新。", hi: "डिस्पैचर के लिए ब्रीफ़िंग पहुँचाई जा रही है — आप कौन हैं, आपकी ज्ञात स्थितियाँ और महत्वपूर्ण दवाएँ, नवीनतम रीडिंग, और क्या किया जा रहा है — हर कॉन्फ़िगर किए चैनल से, हर नई रीडिंग के साथ अद्यतन।", ar: "يُنقل إيجاز للمرسِل — من أنت، وحالاتك المعروفة وأدويتك الحرجة، وآخر القراءات، وما يجري فعله — عبر كل قناة مهيأة، ويُحدَّث مع كل قراءة جديدة.",
+  },
+  "hom.title": {
+    en: "Overview", es: "Resumen", fr: "Vue d'ensemble", de: "Übersicht", pt: "Vista geral", it: "Panoramica", ja: "概要", zh: "总览", hi: "अवलोकन", ar: "نظرة عامة",
+  },
+  "hom.on": {
+    en: "● Guardian on", es: "● Guardián activo", fr: "● Gardien actif", de: "● Guardian an", pt: "● Guardião ativo", it: "● Guardian attivo", ja: "● ガーディアン稼働中", zh: "● 守护者已启用", hi: "● गार्जियन चालू", ar: "● الحارس يعمل",
+  },
+  "hom.hi": {
+    en: "Hi, {name}", es: "Hola, {name}", fr: "Bonjour, {name}", de: "Hallo, {name}", pt: "Olá, {name}", it: "Ciao, {name}", ja: "こんにちは、{name}さん", zh: "你好，{name}", hi: "नमस्ते, {name}", ar: "مرحبًا، {name}",
+  },
+  "hom.watching": {
+    en: "Your Guardian is watching — rules are transparent.", es: "Tu Guardián está atento — las reglas son transparentes.", fr: "Votre Gardien veille — les règles sont transparentes.", de: "Ihr Guardian wacht — die Regeln sind transparent.", pt: "O seu Guardião está atento — as regras são transparentes.", it: "Il tuo Guardian veglia — le regole sono trasparenti.", ja: "ガーディアンが見守っています — ルールは公開されています。", zh: "你的守护者正在看顾 — 规则是透明的。", hi: "आपका गार्जियन देख रहा है — नियम पारदर्शी हैं।", ar: "حارسك يراقب — والقواعد شفافة.",
+  },
+  "hom.baseline": {
+    en: "Learned baseline", es: "Línea base aprendida", fr: "Ligne de base apprise", de: "Gelernte Basislinie", pt: "Linha de base aprendida", it: "Linea di base appresa", ja: "学習済みベースライン", zh: "已学习的基线", hi: "सीखी गई आधार रेखा", ar: "الخط الأساسي المُتعلَّم",
+  },
+  "hom.baseline.none": {
+    en: "No baseline yet — it builds from calm samples in Live Monitoring.", es: "Aún no hay línea base — se construye con muestras en calma desde la Monitorización en vivo.", fr: "Pas encore de ligne de base — elle se construit à partir d'échantillons calmes dans la Surveillance en direct.", de: "Noch keine Basislinie — sie entsteht aus ruhigen Proben in der Live-Überwachung.", pt: "Ainda não há linha de base — constrói-se a partir de amostras calmas na Monitorização ao vivo.", it: "Ancora nessuna linea di base — si costruisce da campioni calmi nel Monitoraggio dal vivo.", ja: "ベースラインはまだありません — ライブモニタリングの安静時サンプルから作られます。", zh: "尚无基线 — 它由实时监测中的平静样本积累而成。", hi: "अभी कोई आधार रेखा नहीं — यह लाइव निगरानी के शांत नमूनों से बनती है।", ar: "لا خط أساسي بعد — يُبنى من عينات هادئة في المراقبة الحية.",
+  },
+  "hom.th.metric": {
+    en: "metric", es: "métrica", fr: "métrique", de: "Metrik", pt: "métrica", it: "metrica", ja: "指標", zh: "指标", hi: "मीट्रिक", ar: "المقياس",
+  },
+  "hom.th.value": {
+    en: "value", es: "valor", fr: "valeur", de: "Wert", pt: "valor", it: "valore", ja: "値", zh: "数值", hi: "मान", ar: "القيمة",
+  },
+  "hom.th.state": {
+    en: "state", es: "estado", fr: "état", de: "Zustand", pt: "estado", it: "stato", ja: "状態", zh: "状态", hi: "स्थिति", ar: "الحالة",
+  },
+  "hom.th.samples": {
+    en: "samples", es: "muestras", fr: "échantillons", de: "Proben", pt: "amostras", it: "campioni", ja: "サンプル数", zh: "样本数", hi: "नमूने", ar: "العينات",
+  },
+  "hom.go.monitor": {
+    en: "Live Monitoring", es: "Monitorización en vivo", fr: "Surveillance en direct", de: "Live-Überwachung", pt: "Monitorização ao vivo", it: "Monitoraggio dal vivo", ja: "ライブモニタリング", zh: "实时监测", hi: "लाइव निगरानी", ar: "المراقبة الحية",
+  },
+  "hom.go.coach": {
+    en: "Coach", es: "Coach", fr: "Coach", de: "Coach", pt: "Coach", it: "Coach", ja: "コーチ", zh: "教练", hi: "कोच", ar: "المدرب",
+  },
+  "hom.go.checkin": {
+    en: "Check-in", es: "Registro", fr: "Point du jour", de: "Check-in", pt: "Check-in", it: "Check-in", ja: "チェックイン", zh: "签到", hi: "चेक-इन", ar: "تسجيل",
+  },
+  "hom.go.meds": {
+    en: "💊 Medications", es: "💊 Medicamentos", fr: "💊 Médicaments", de: "💊 Medikamente", pt: "💊 Medicamentos", it: "💊 Farmaci", ja: "💊 薬", zh: "💊 药物", hi: "💊 दवाइयाँ", ar: "💊 الأدوية",
+  },
+  "hom.go.careteam": {
+    en: "👥 Care Team", es: "👥 Equipo de cuidados", fr: "👥 Équipe de soins", de: "👥 Betreuungsteam", pt: "👥 Equipa de cuidados", it: "👥 Squadra di cura", ja: "👥 ケアチーム", zh: "👥 照护团队", hi: "👥 देखभाल टीम", ar: "👥 فريق الرعاية",
+  },
+  "chk.title": {
+    en: "Check-in", es: "Registro", fr: "Point du jour", de: "Check-in", pt: "Check-in", it: "Check-in", ja: "チェックイン", zh: "签到", hi: "चेक-इन", ar: "تسجيل",
+  },
+  "chk.sub": {
+    en: "mood, energy & stress · a worrying note runs the crisis check", es: "ánimo, energía y estrés · una nota preocupante dispara la comprobación de crisis", fr: "humeur, énergie et stress · une note inquiétante déclenche le contrôle de crise", de: "Stimmung, Energie & Stress · eine besorgniserregende Notiz löst die Krisenprüfung aus", pt: "humor, energia e stress · uma nota preocupante corre a verificação de crise", it: "umore, energia e stress · una nota preoccupante avvia il controllo di crisi", ja: "気分・活力・ストレス · 気がかりなメモは危機チェックを走らせます", zh: "心情、精力与压力 · 令人担忧的备注会触发危机检查", hi: "मनोदशा, ऊर्जा और तनाव · चिंताजनक टिप्पणी संकट-जाँच चलाती है", ar: "المزاج والطاقة والتوتر · ملاحظة مقلقة تُشغّل فحص الأزمة",
+  },
+  "chk.mood": {
+    en: "Mood:", es: "Ánimo:", fr: "Humeur :", de: "Stimmung:", pt: "Humor:", it: "Umore:", ja: "気分:", zh: "心情:", hi: "मनोदशा:", ar: "المزاج:",
+  },
+  "chk.energy": {
+    en: "Energy:", es: "Energía:", fr: "Énergie :", de: "Energie:", pt: "Energia:", it: "Energia:", ja: "活力:", zh: "精力:", hi: "ऊर्जा:", ar: "الطاقة:",
+  },
+  "chk.stress": {
+    en: "Stress:", es: "Estrés:", fr: "Stress :", de: "Stress:", pt: "Stress:", it: "Stress:", ja: "ストレス:", zh: "压力:", hi: "तनाव:", ar: "التوتر:",
+  },
+  "chk.note": {
+    en: "Note (optional)", es: "Nota (opcional)", fr: "Note (facultatif)", de: "Notiz (optional)", pt: "Nota (opcional)", it: "Nota (facoltativo)", ja: "メモ（任意）", zh: "备注（可选）", hi: "टिप्पणी (वैकल्पिक)", ar: "ملاحظة (اختياري)",
+  },
+  "chk.logged": {
+    en: "Logged", es: "Registrado", fr: "Enregistré", de: "Erfasst", pt: "Registado", it: "Registrato", ja: "記録しました", zh: "已记录", hi: "दर्ज", ar: "سُجّل",
+  },
+  "chk.result": {
+    en: "mood {mood} · energy {energy} · stress {stress}", es: "ánimo {mood} · energía {energy} · estrés {stress}", fr: "humeur {mood} · énergie {energy} · stress {stress}", de: "Stimmung {mood} · Energie {energy} · Stress {stress}", pt: "humor {mood} · energia {energy} · stress {stress}", it: "umore {mood} · energia {energy} · stress {stress}", ja: "気分{mood} · 活力{energy} · ストレス{stress}", zh: "心情{mood} · 精力{energy} · 压力{stress}", hi: "मनोदशा {mood} · ऊर्जा {energy} · तनाव {stress}", ar: "المزاج {mood} · الطاقة {energy} · التوتر {stress}",
+  },
+  "chk.guardian": {
+    en: "guardian", es: "guardián", fr: "gardien", de: "Guardian", pt: "guardião", it: "guardian", ja: "ガーディアン", zh: "守护者", hi: "गार्जियन", ar: "الحارس",
+  },
+  "chk.flagged": {
+    en: "flagged", es: "marcado", fr: "signalé", de: "markiert", pt: "assinalado", it: "segnalato", ja: "要注意", zh: "已标记", hi: "चिह्नित", ar: "مُعلَّم",
+  },
+  "chk.noconcern": {
+    en: "No concern detected — logged to your day.", es: "Sin motivo de preocupación — registrado en tu día.", fr: "Rien d'inquiétant — enregistré dans votre journée.", de: "Nichts Besorgniserregendes — in Ihren Tag eingetragen.", pt: "Sem motivo de preocupação — registado no seu dia.", it: "Nessuna preoccupazione — registrato nella tua giornata.", ja: "気がかりな点はありません — その日の記録に加えました。", zh: "未发现值得担忧之处 — 已记入你的一天。", hi: "कोई चिंता की बात नहीं — आपके दिन में दर्ज।", ar: "لا ما يقلق — سُجّل في يومك.",
+  },
+  "jrn.title": {
+    en: "Journal", es: "Diario", fr: "Journal", de: "Journal", pt: "Diário", it: "Diario", ja: "ジャーナル", zh: "日志", hi: "डायरी", ar: "اليوميات",
+  },
+  "jrn.sub": {
+    en: "your words, typed or spoken", es: "tus palabras, escritas o habladas", fr: "vos mots, écrits ou dits", de: "Ihre Worte, getippt oder gesprochen", pt: "as suas palavras, escritas ou faladas", it: "le tue parole, scritte o dette", ja: "あなたの言葉を、書いても話しても", zh: "你的话，打字或口述", hi: "आपके शब्द, टाइप किए या बोले", ar: "كلماتك، مكتوبة أو منطوقة",
+  },
+  "jrn.new": {
+    en: "New entry", es: "Nueva entrada", fr: "Nouvelle entrée", de: "Neuer Eintrag", pt: "Nova entrada", it: "Nuova voce", ja: "新しい記録", zh: "新条目", hi: "नई प्रविष्टि", ar: "مدخل جديد",
+  },
+  "jrn.ph": {
+    en: "How was today, really?", es: "¿Cómo fue hoy, de verdad?", fr: "Comment était cette journée, vraiment ?", de: "Wie war der Tag wirklich?", pt: "Como foi hoje, na verdade?", it: "Com'è andata oggi, davvero?", ja: "今日は本当のところ、どうでしたか？", zh: "今天到底过得怎么样？", hi: "आज सचमुच कैसा रहा?", ar: "كيف كان يومك، حقًا؟",
+  },
+  "jrn.sealed": {
+    en: "Entries are sealed in your vault on a private plan. If an entry says you're in danger, your Guardian treats it exactly like a reading that says so.", es: "Las entradas se sellan en tu bóveda en un plan privado. Si una entrada dice que estás en peligro, tu Guardián la trata igual que una lectura que lo diga.", fr: "Les entrées sont scellées dans votre coffre sur un forfait privé. Si une entrée dit que vous êtes en danger, votre Gardien la traite exactement comme une mesure qui le dirait.", de: "Einträge werden bei einem privaten Tarif in Ihrem Tresor versiegelt. Sagt ein Eintrag, dass Sie in Gefahr sind, behandelt Ihr Guardian ihn genau wie eine Messung, die das sagt.", pt: "As entradas são seladas no seu cofre num plano privado. Se uma entrada disser que está em perigo, o seu Guardião trata-a exatamente como uma leitura que o diga.", it: "Le voci sono sigillate nel tuo caveau su un piano privato. Se una voce dice che sei in pericolo, il tuo Guardian la tratta esattamente come una lettura che lo dica.", ja: "プライベートプランでは、記録はあなたの保管庫に封印されます。危険を告げる記録があれば、ガーディアンはそれを同じことを告げる測定値とまったく同じに扱います。", zh: "在私有方案下，条目会封入你的保险库。若某条写着你身处危险，你的守护者会像对待同样内容的读数一样对待它。", hi: "निजी योजना पर प्रविष्टियाँ आपकी तिजोरी में सील होती हैं। यदि कोई प्रविष्टि कहती है कि आप ख़तरे में हैं, तो आपका गार्जियन उसे ठीक वैसे ही लेता है जैसे वैसा कहने वाली रीडिंग को।", ar: "تُختم المدخلات في خزنتك ضمن خطة خاصة. وإن قال مدخل إنك في خطر، عامله حارسك تمامًا كقراءة تقول ذلك.",
+  },
+  "jrn.entries": {
+    en: "Entries", es: "Entradas", fr: "Entrées", de: "Einträge", pt: "Entradas", it: "Voci", ja: "記録", zh: "条目", hi: "प्रविष्टियाँ", ar: "المدخلات",
+  },
+  "jrn.none": {
+    en: "Nothing yet — the first entry can be one sentence.", es: "Nada todavía — la primera entrada puede ser una frase.", fr: "Rien pour l'instant — la première entrée peut tenir en une phrase.", de: "Noch nichts — der erste Eintrag darf ein Satz sein.", pt: "Nada ainda — a primeira entrada pode ser uma frase.", it: "Ancora niente — la prima voce può essere una frase.", ja: "まだ何もありません — 最初の記録は一文で構いません。", zh: "尚无内容 — 第一条可以只写一句话。", hi: "अभी कुछ नहीं — पहली प्रविष्टि एक वाक्य भी हो सकती है।", ar: "لا شيء بعد — يكفي أن يكون المدخل الأول جملة واحدة.",
+  },
+  "cch.title": {
+    en: "Coach", es: "Coach", fr: "Coach", de: "Coach", pt: "Coach", it: "Coach", ja: "コーチ", zh: "教练", hi: "कोच", ar: "المدرب",
+  },
+  "cch.sub": {
+    en: "24/7 across your life", es: "24/7 en toda tu vida", fr: "24h/24, dans toute votre vie", de: "rund um die Uhr, durch Ihr ganzes Leben", pt: "24/7 em toda a sua vida", it: "24 ore su 24, in tutta la tua vita", ja: "生活のあらゆる場面で、24時間365日", zh: "全天候陪伴你的生活", hi: "आपके जीवन भर, चौबीसों घंटे", ar: "على مدار الساعة في كل جوانب حياتك",
+  },
+  "cch.area": {
+    en: "Area", es: "Área", fr: "Domaine", de: "Bereich", pt: "Área", it: "Area", ja: "分野", zh: "领域", hi: "क्षेत्र", ar: "المجال",
+  },
+  "cch.mind": {
+    en: "What's on your mind?", es: "¿Qué tienes en mente?", fr: "Qu'avez-vous en tête ?", de: "Was beschäftigt Sie?", pt: "O que lhe vai na cabeça?", it: "Cosa ti passa per la testa?", ja: "何を考えていますか？", zh: "你在想什么？", hi: "आपके मन में क्या है?", ar: "بمَ تفكر؟",
+  },
+  "cch.guidance": {
+    en: "{area} · guidance", es: "{area} · orientación", fr: "{area} · conseils", de: "{area} · Anleitung", pt: "{area} · orientação", it: "{area} · guida", ja: "{area} · ガイダンス", zh: "{area} · 指导", hi: "{area} · मार्गदर्शन", ar: "{area} · إرشاد",
+  },
+  "cch.fallback": {
+    en: "⚠ This is the built-in fallback, not", es: "⚠ Este es el recurso integrado, no", fr: "⚠ Ceci est la solution de repli intégrée, pas", de: "⚠ Dies ist der eingebaute Rückfall, nicht", pt: "⚠ Este é o recurso integrado, não", it: "⚠ Questo è il ripiego integrato, non", ja: "⚠ これは内蔵のフォールバックであり、", zh: "⚠ 这是内置的后备回答，而非", hi: "⚠ यह अंतर्निहित फ़ॉलबैक है, न कि", ar: "⚠ هذا هو البديل المدمج، لا",
+  },
+  "cch.answered": {
+    en: "Answered by {who}", es: "Respondido por {who}", fr: "Répondu par {who}", de: "Beantwortet von {who}", pt: "Respondido por {who}", it: "Risposto da {who}", ja: "{who}が回答", zh: "由{who}作答", hi: "{who} ने उत्तर दिया", ar: "أجاب {who}",
+  },
+  "onb.signwith": {
+    en: "Sign {mode} with {provider}", es: "Iniciar {mode} con {provider}", fr: "{mode} avec {provider}", de: "{mode} mit {provider}", pt: "{mode} com {provider}", it: "{mode} con {provider}", ja: "{provider}で{mode}", zh: "用{provider}{mode}", hi: "{provider} से {mode}", ar: "{mode} عبر {provider}",
+  },
+  "onb.mode.up": {
+    en: "up", es: "registro", fr: "S'inscrire", de: "Registrieren", pt: "Registar", it: "Registrati", ja: "登録", zh: "注册", hi: "साइन अप", ar: "إنشاء حساب",
+  },
+  "onb.mode.in": {
+    en: "in", es: "sesión", fr: "Se connecter", de: "Anmelden", pt: "Entrar", it: "Accedi", ja: "サインイン", zh: "登录", hi: "साइन इन", ar: "تسجيل الدخول",
+  },
+  "onb.serve": {
+    en: "python -m jim serve", es: "python -m jim serve", fr: "python -m jim serve", de: "python -m jim serve", pt: "python -m jim serve", it: "python -m jim serve", ja: "python -m jim serve", zh: "python -m jim serve", hi: "python -m jim serve", ar: "python -m jim serve",
+  },
+  "onb.email.ph": {
+    en: "you@example.com", es: "tu@example.com", fr: "vous@example.com", de: "sie@example.com", pt: "voce@example.com", it: "tu@example.com", ja: "you@example.com", zh: "you@example.com", hi: "aap@example.com", ar: "you@example.com",
+  },
 };
 
 export function visitorLang(): Lang {

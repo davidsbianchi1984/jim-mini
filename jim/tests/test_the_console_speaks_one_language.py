@@ -134,6 +134,27 @@ def test_the_backlog_only_shrinks():
         "guard started at")
 
 
+def test_no_screen_of_this_console_speaks_only_english():
+    """The record is empty, and this is what keeps it empty.
+
+    Every screen — pre-session and gated alike — reads its words out of the
+    table now, so the honest measurement of what is left is zero. A count of
+    zero is a fact that decays the moment somebody adds a screen, which is
+    why the emptiness is asserted rather than merely reached: the file above
+    can only be re-populated on purpose, by a person who writes the row down
+    and raises the ceiling in the same commit.
+    """
+    ceiling = int(re.search(r"# ceiling: (\d+)",
+                            SNAPSHOT.read_text(encoding="utf-8")).group(1))
+    assert ceiling == 0, (
+        "the console-untranslated ceiling left zero. Raising it is allowed — "
+        "it is how a new screen gets recorded — but it is a decision, and "
+        "this line is where somebody has to make it deliberately.")
+    assert _recorded() == set(), (
+        "rows are back in an emptied record: "
+        + ", ".join(sorted(_recorded())[:8]))
+
+
 def test_the_extractor_can_still_see():
     """A guard on the guard, against a fixture whose answer is known.
 

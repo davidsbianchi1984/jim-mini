@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type JournalRow } from "../api";
 import { listen, type Listener } from "../speech";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -15,6 +16,7 @@ import { useSession } from "../store";
  */
 export function Journal() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [entries, setEntries] = useState<JournalRow[]>([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -63,14 +65,14 @@ export function Journal() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Journal</h2>
-        <span className="muted small">your words, typed or spoken</span>
+        <h2>{tr("jrn.title", lang)}</h2>
+        <span className="muted small">{tr("jrn.sub", lang)}</span>
       </header>
 
       <div className="card">
-        <h3>New entry</h3>
+        <h3>{tr("jrn.new", lang)}</h3>
         <textarea rows={4} value={text}
-                  placeholder="How was today, really?"
+                  placeholder={tr("jrn.ph", lang)}
                   onChange={(e) => setText(e.target.value)} />
         <div className="voice-row">
           <button className={listening ? "mic listening" : "mic"}
@@ -83,20 +85,15 @@ export function Journal() {
             {busy ? "Saving…" : "Add to the journal"}
           </button>
         </div>
-        <p className="muted small">
-          Entries are sealed in your vault on a private plan. If an entry
-          says you're in danger, your Guardian treats it exactly like a
-          reading that says so.
-        </p>
+        <p className="muted small">{tr("jrn.sealed", lang)}</p>
       </div>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>Entries</h3>
+        <h3>{tr("jrn.entries", lang)}</h3>
         {entries.length === 0 && (
-          <div className="muted small">Nothing yet — the first entry can be
-            one sentence.</div>
+          <div className="muted small">{tr("jrn.none", lang)}</div>
         )}
         {entries.slice().reverse().map((e) => (
           <div key={e.id}

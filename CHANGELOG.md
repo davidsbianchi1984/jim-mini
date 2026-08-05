@@ -4,6 +4,28 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.45.1] — 2026-08-05
+
+### The console speaks ten languages, all of it
+
+**The console-untranslated record runs to zero.** The nine screens that
+were left — Safety, Aims, Community, Live Monitoring, Overview,
+Check-in, Journal, Coach and the last four strings of the sign-in
+page — are localized end to end: 129 strings become 125 keys in all ten
+languages. Every screen of this console, pre-session and gated alike,
+now reads its words out of the table.
+
+The record file stays, its status changed from `backlog` to `floor` and
+its ceiling set to **0**, because the guard reads it in both
+directions: a single new English string on any screen fails the build.
+A new test, `test_no_screen_of_this_console_speaks_only_english`, pins
+the emptiness the way the doorless records were pinned — the ceiling
+can be raised, but only by somebody who writes the row down and does it
+on purpose in the same commit.
+
+The measurement started at 603 and has been worked down over nine
+rounds: 603 → 573 → 531 → 481 → 426 → 373 → 262 → 206 → 129 → **0**.
+
 ## [0.45.0] — 2026-08-05
 
 ### Three screens, and the record falls to 129

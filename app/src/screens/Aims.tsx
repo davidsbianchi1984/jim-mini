@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, type BudgetBoard, type GoalArea, type GoalRow,
          type HabitRow } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -35,6 +36,7 @@ const AREAS: { id: GoalArea; label: string }[] = [
 
 export function Aims() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [goals, setGoals] = useState<GoalRow[]>([]);
   const [habits, setHabits] = useState<HabitRow[]>([]);
   const [board, setBoard] = useState<BudgetBoard | null>(null);
@@ -71,16 +73,16 @@ export function Aims() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>What you're working on</h2>
-        <span className="muted small">goals, habits, and what the month costs</span>
+        <h2>{tr("aim.title", lang)}</h2>
+        <span className="muted small">{tr("aim.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>Goals</h3>
+        <h3>{tr("aim.goals", lang)}</h3>
         <div className="row">
-          <input value={title} placeholder="Walk thirty minutes"
+          <input value={title} placeholder={tr("aim.goals.title.ph", lang)}
                  onChange={(e) => setTitle(e.target.value)} />
           <select value={area}
                   onChange={(e) => setArea(e.target.value as GoalArea)}>
@@ -88,7 +90,7 @@ export function Aims() {
               <option key={a.id} value={a.id}>{a.label}</option>
             ))}
           </select>
-          <input value={target} placeholder="daily"
+          <input value={target} placeholder={tr("aim.goals.target.ph", lang)}
                  onChange={(e) => setTarget(e.target.value)} />
           <button className="primary" disabled={busy || !title.trim()}
                   onClick={() => run(async () => {
@@ -96,12 +98,10 @@ export function Aims() {
                       area, title: title.trim(),
                       target: target.trim() || undefined }, token!);
                     setTitle(""); setTarget("");
-                  })}>Add</button>
+                  })}>{tr("aim.add", lang)}</button>
         </div>
         {goals.length === 0 && (
-          <div className="muted small">Nothing set. A goal here is a thing
-            the coach and the daily suggestion both read — it is not a list
-            for its own sake.</div>
+          <div className="muted small">{tr("aim.goals.none", lang)}</div>
         )}
         {goals.map((g) => (
           <div key={g.id}
@@ -124,7 +124,7 @@ export function Aims() {
               <button disabled={busy}
                       onClick={() => run(() => api.updateGoal(
                         uid!, g.id, { status: "done" }, token!))}>
-                Mark done
+                {tr("aim.goals.done", lang)}
               </button>
             </div>
           </div>
@@ -132,41 +132,42 @@ export function Aims() {
       </div>
 
       <div className="card">
-        <h3>Habits</h3>
+        <h3>{tr("aim.habits", lang)}</h3>
         <div className="row">
-          <input value={habit} placeholder="Water at eight"
+          <input value={habit} placeholder={tr("aim.habits.ph", lang)}
                  onChange={(e) => setHabit(e.target.value)} />
           <button className="primary" disabled={busy || !habit.trim()}
                   onClick={() => run(async () => {
                     await api.addHabit(uid!, { name: habit.trim() }, token!);
                     setHabit("");
-                  })}>Add</button>
+                  })}>{tr("aim.add", lang)}</button>
         </div>
         {habits.length === 0 && (
-          <div className="muted small">None yet.</div>
+          <div className="muted small">{tr("aim.habits.none", lang)}</div>
         )}
         {habits.map((h) => (
           <div key={h.id} className="row"
                style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
             <span style={{ flex: 1 }}>{h.name}</span>
-            <span className="muted small">streak {h.streak}</span>
+            <span className="muted small">{tr("aim.habits.streak", lang)
+              .replace("{n}", String(h.streak))}</span>
             <button disabled={busy}
                     onClick={() => run(() => api.logHabit(uid!, h.id, token!))}>
-              Did it today
+              {tr("aim.habits.did", lang)}
             </button>
           </div>
         ))}
       </div>
 
       <div className="card">
-        <h3>Budget</h3>
+        <h3>{tr("aim.budget", lang)}</h3>
         <p className="muted small">
           {board
             ? `${board.month} · ${board.days_left} days left in the month`
             : "…"}
         </p>
         <div className="row">
-          <input value={category} placeholder="groceries"
+          <input value={category} placeholder={tr("aim.budget.cat.ph", lang)}
                  onChange={(e) => setCategory(e.target.value)} />
           <input value={limit} type="number" placeholder="400"
                  onChange={(e) => setLimit(e.target.value)} />
@@ -174,46 +175,44 @@ export function Aims() {
                   onClick={() => run(() => api.setBudget(uid!, {
                     category: category.trim() || undefined,
                     monthly_limit: Number(limit) }, token!))}>
-            Set a limit
+            {tr("aim.budget.set", lang)}
           </button>
         </div>
         {(board?.budgets ?? []).length === 0 && (
-          <div className="muted small">No limits set. Financial stress is one
-            of the eight conditions JIM will take on, and a budget is how it
-            learns the shape of yours.</div>
+          <div className="muted small">{tr("aim.budget.none", lang)}</div>
         )}
         {(board?.budgets ?? []).map((b) => (
           <div key={b.category} className="row"
                style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
             <span style={{ flex: 1 }}>{b.category}</span>
             <span className="muted small">
-              {b.spent} of {b.monthly_limit} · {b.standing}
+              {tr("aim.budget.line", lang)
+                .replace("{spent}", String(b.spent))
+                .replace("{limit}", String(b.monthly_limit))
+                .replace("{standing}", String(b.standing))}
             </span>
             <button disabled={busy}
                     onClick={() => run(() =>
                       api.clearBudget(uid!, b.category, token!))}>
-              Remove
+              {tr("aim.budget.remove", lang)}
             </button>
           </div>
         ))}
       </div>
 
       <div className="card">
-        <h3>Tell it what you did</h3>
+        <h3>{tr("aim.activity", lang)}</h3>
         <div className="row">
-          <input value={activity} placeholder="walk"
+          <input value={activity} placeholder={tr("aim.activity.ph", lang)}
                  onChange={(e) => setActivity(e.target.value)} />
           <button className="primary" disabled={busy || !activity.trim()}
                   onClick={() => run(async () => {
                     await api.logActivity(uid!,
                       { activity: activity.trim() }, token!);
                     setActivity("");
-                  })}>Log it</button>
+                  })}>{tr("aim.activity.log", lang)}</button>
         </div>
-        <p className="muted small">
-          An ordinary activity is context, not a reading. It tells the
-          Guardian why a heart rate moved before it has to guess.
-        </p>
+        <p className="muted small">{tr("aim.activity.pitch", lang)}</p>
       </div>
     </div>
   );

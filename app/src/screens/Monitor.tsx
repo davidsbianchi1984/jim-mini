@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { api, type FollowupResult, type MonitorResult } from "../api";
 import { PaceCue } from "../PaceCue";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 export function Monitor() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [hr, setHr] = useState(110);
   const [resp, setResp] = useState(22);
   const [stress, setStress] = useState(0.8);
@@ -34,17 +36,17 @@ export function Monitor() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Live Monitoring</h2>
-        <span className="muted small">detect → guide → escalate</span>
+        <h2>{tr("mon.title", lang)}</h2>
+        <span className="muted small">{tr("mon.sub", lang)}</span>
       </header>
 
       <div className="card">
-        <h3>Submit a biometric sample</h3>
+        <h3>{tr("mon.submit", lang)}</h3>
         <div className="row">
-          <label>Heart rate (bpm)<input type="number" value={hr} onChange={(e) => setHr(+e.target.value)} /></label>
-          <label>Respiration (/min)<input type="number" value={resp} onChange={(e) => setResp(+e.target.value)} /></label>
+          <label>{tr("mon.hr", lang)}<input type="number" value={hr} onChange={(e) => setHr(+e.target.value)} /></label>
+          <label>{tr("mon.resp", lang)}<input type="number" value={resp} onChange={(e) => setResp(+e.target.value)} /></label>
         </div>
-        <label>Stress (0–1)<input type="number" step="0.1" min="0" max="1" value={stress} onChange={(e) => setStress(+e.target.value)} /></label>
+        <label>{tr("mon.stress", lang)}<input type="number" step="0.1" min="0" max="1" value={stress} onChange={(e) => setStress(+e.target.value)} /></label>
         <button className="primary" onClick={submit} disabled={busy}>{busy ? "Analyzing…" : "Send to Guardian"}</button>
         {error && <div className="error">⚠ {error}</div>}
       </div>
@@ -54,18 +56,22 @@ export function Monitor() {
           <div className="detect-head">
             {result.detected
               ? <><span className="tag warn">{result.severity}</span> {result.condition}</>
-              : <span className="tag ok">all calm</span>}
+              : <span className="tag ok">{tr("mon.calm", lang)}</span>}
           </div>
           {result.reason && <div className="muted small">{result.reason}</div>}
           {result.drift?.crossings?.length ? (
             <div className="guidance">
-              <div className="guidance-src">drift from your baseline — a check-in, not an alarm</div>
+              <div className="guidance-src">{tr("mon.drift", lang)}</div>
               <p>{result.drift.question}</p>
               <ul className="refs">
                 {result.drift.crossings.map((c) => (
                   <li key={c.metric}>
-                    {c.label}: <b>{c.value}{c.unit}</b> — {c.direction} your usual{" "}
-                    {c.baseline}{c.unit} (edge {c.edge}{c.unit})
+                    {tr("mon.reading", lang)
+                      .replace("{label}", String(c.label))
+                      .replace("{value}{unit}", `${c.value}${c.unit}`)
+                      .replace("{direction}", String(c.direction))
+                      .replace("{baseline}{unit}", `${c.baseline}${c.unit}`)
+                      .replace("{edge}{unit}", `${c.edge}${c.unit}`)}
                   </li>
                 ))}
               </ul>
@@ -73,7 +79,8 @@ export function Monitor() {
           ) : null}
           {result.guidance?.content && (
             <div className="guidance">
-              <div className="guidance-src">{result.guidance.source} guidance</div>
+              <div className="guidance-src">{tr("mon.guidance", lang)
+                .replace("{source}", String(result.guidance.source))}</div>
               <p>{result.guidance.content}</p>
               {result.guidance.first_aid && (
                 <div className="first-aid">
@@ -93,24 +100,24 @@ export function Monitor() {
                 <div className="followup">
                   <b>{result.followup.question}</b>
                   <div className="followup-buttons">
-                    <button onClick={() => say(true)} disabled={asking}>Yes, that helped</button>
+                    <button onClick={() => say(true)} disabled={asking}>{tr("mon.helped", lang)}</button>
                     <button className="warn" onClick={() => say(false)} disabled={asking}>
-                      No, it didn't
+                      {tr("mon.nothelped", lang)}
                     </button>
                   </div>
                 </div>
               )}
               {answer?.helped && (
                 <div className="followup"><span className="muted small">
-                  Noted — monitoring resumes, and the Guardian remembers that
-                  this worked for you.
+                  {tr("mon.noted", lang)}
                 </span></div>
               )}
               {answer && answer.helped === false && answer.live_assistance && (
                 <div className="followup">
-                  <b>Reaching a person</b>
+                  <b>{tr("mon.reaching", lang)}</b>
                   <div className="muted small">
-                    escalated to {answer.escalation_decision?.tier.replace(/_/g, " ")}
+                    {tr("mon.escalated", lang).replace("{tier}",
+                      String(answer.escalation_decision?.tier.replace(/_/g, " ")))}
                   </div>
                   <ul className="refs">
                     {answer.live_assistance.options.map((o, i) => (
@@ -127,12 +134,9 @@ export function Monitor() {
           )}
           {(result.escalation as { companion?: { relaying?: { note?: string } } } | null)?.companion && (
             <div className="guidance">
-              <div className="guidance-src">companion, in the background</div>
+              <div className="guidance-src">{tr("mon.companion", lang)}</div>
               <p>
-                Relaying a dispatcher briefing — who you are, your known
-                conditions and critical medications, the latest readings, and
-                what's being done — through every configured channel, updated
-                with each new reading.{" "}
+                {tr("mon.relaying", lang)}{" "}
                 <span className="muted small">
                   {(result.escalation as { companion: { relaying: { note: string } } }).companion.relaying.note}
                 </span>

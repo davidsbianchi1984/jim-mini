@@ -216,7 +216,11 @@ export function Onboarding() {
               <button key={d.provider} disabled={!d.configured || oauthWaiting}
                       title={d.configured ? undefined : d.setup}
                       onClick={() => signInWith(d.provider)}>
-                Sign {mode === "signup" ? "up" : "in"} with {d.name}
+                {tr("onb.signwith", visitorLang())
+                  .replace("{mode}", mode === "signup"
+                    ? tr("onb.mode.up", visitorLang())
+                    : tr("onb.mode.in", visitorLang()))
+                  .replace("{provider}", d.name)}
                 {!d.configured && <span className="muted small"> {tr("onb.oauth.absent", visitorLang())}</span>}
               </button>
             ))}
@@ -241,7 +245,7 @@ export function Onboarding() {
                      onChange={(e) => setLegalName(e.target.value)} /></label>
           </>)}
           <label>{tr("onb.birthdate", visitorLang())}<input type="date" value={birthdate} onChange={(e) => setBirthdate(e.target.value)} /></label>
-          <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
+          <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder={tr("onb.email.ph", visitorLang())} onChange={(e) => setEmail(e.target.value)} /></label>
           <PasswordField label="Password" value={password} placeholder={tr("onb.password.min", visitorLang())} onChange={setPassword} />
           <p className="field-hint">{tr("onb.password.min", visitorLang())}</p>
           {/* Typed twice on purpose: hidden characters are how a typo gets
@@ -273,13 +277,13 @@ export function Onboarding() {
         </>)}
 
         {mode === "signin" && (<>
-          <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
+          <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder={tr("onb.email.ph", visitorLang())} onChange={(e) => setEmail(e.target.value)} /></label>
           <PasswordField label="Password" value={password} onChange={setPassword} />
         </>)}
 
         {mode === "reset" && (<>
           <p className="muted">{tr("onb.reset.hint", visitorLang())}{whereIsTheCode}.</p>
-          <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} /></label>
+          <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder={tr("onb.email.ph", visitorLang())} onChange={(e) => setEmail(e.target.value)} /></label>
           <div className="actions" style={{ justifyContent: "center" }}>
             <button disabled={busy || !email.trim()} onClick={startReset}>{tr("onb.reset.send", visitorLang())}</button>
           </div>
@@ -297,7 +301,7 @@ export function Onboarding() {
           <div className="error">
             {tr("onb.unreachable", visitorLang())} <code>{getBase()}</code>.
             <p className="muted small" style={{ margin: "8px 0" }}>
-              {tr("onb.localservice", visitorLang())} <code>python -m jim serve</code>{tr("onb.orpoint", visitorLang())}
+              {tr("onb.localservice", visitorLang())} <code>{tr("onb.serve", visitorLang())}</code>{tr("onb.orpoint", visitorLang())}
             </p>
             <label>{tr("onb.backend", visitorLang())}<input value={base} onChange={(e) => setBaseInput(e.target.value)} /></label>
             <button onClick={saveBase}>{tr("onb.retry", visitorLang())}</button>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, type CircleHomepage, type CircleMessage, type CircleView,
          type CommunityView, type ShoppingView } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -14,6 +15,7 @@ import { useSession } from "../store";
  */
 export function Community() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [view, setView] = useState<CommunityView | null>(null);
   const [place, setPlace] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -39,40 +41,37 @@ export function Community() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Community</h2>
-        <span className="muted small">forums, rooms and local events — in QRME</span>
+        <h2>{tr("cmy.title", lang)}</h2>
+        <span className="muted small">{tr("cmy.sub", lang)}</span>
       </header>
 
       {error && (
         <div className="card">
           <div className="error">⚠ {error}</div>
-          <p className="muted small">
-            Community lives in QRME. Point this Guardian at your QRME
-            deployment (<code>JIM_QRME_URL</code>) and the doors appear here.
-          </p>
+          <p className="muted small">{tr("cmy.unset", lang)}</p>
         </div>
       )}
 
       {view && (<>
         <div className="card">
-          <h3>Where this happens</h3>
+          <h3>{tr("cmy.where", lang)}</h3>
           <p>{view.note}</p>
           <ul className="refs">
-            <li>Nothing from a room is copied into JIM.</li>
-            <li>Nothing is ever posted on your behalf.</li>
-            <li>No health data crosses over.</li>
+            <li>{tr("cmy.nocopy", lang)}</li>
+            <li>{tr("cmy.nopost", lang)}</li>
+            <li>{tr("cmy.nohealth", lang)}</li>
           </ul>
           <div className="muted small">
-            Rooms you can read in: <b>{view.language}</b>
+            {tr("cmy.lang", lang)} <b>{view.language}</b>
             {view.qrme_url ? <> · {view.qrme_url}</> : null}
           </div>
         </div>
 
         <div className="card">
-          <h3>Rooms &amp; forums</h3>
+          <h3>{tr("cmy.rooms", lang)}</h3>
           {view.rooms.length === 0 && (
             <p className="muted small">
-              No rooms open right now. Start one in QRME — Rooms → new topic.
+              {tr("cmy.rooms.none", lang)}
             </p>
           )}
           {view.rooms.map((room) => (
@@ -80,19 +79,21 @@ export function Community() {
               <div>
                 <b>{room.topic}</b>
                 <div className="muted small">
-                  {room.channel} · {room.participants} here
+                  {tr("cmy.rooms.here", lang)
+                    .replace("{channel}", String(room.channel))
+                    .replace("{n}", String(room.participants))}
                 </div>
               </div>
-              <button onClick={() => open(room.id, room.url)}>Open in QRME</button>
+              <button onClick={() => open(room.id, room.url)}>{tr("cmy.rooms.open", lang)}</button>
             </div>
           ))}
         </div>
 
         <div className="card">
-          <h3>Local events</h3>
+          <h3>{tr("cmy.events", lang)}</h3>
           <div className="row">
-            <label>Filter by place
-              <input value={place} placeholder="e.g. Bend"
+            <label>{tr("cmy.events.filter", lang)}
+              <input value={place} placeholder={tr("cmy.events.ph", lang)}
                      onChange={(e) => setPlace(e.target.value)} /></label>
           </div>
           <button onClick={() => load(place.trim() || undefined)} disabled={busy}>
@@ -101,11 +102,12 @@ export function Community() {
           <ul className="refs">
             {view.places.map((p) => (
               <li key={p.locality}>{p.locality} <span className="muted small">
-                ({p.listings} listed)</span></li>
+                {tr("cmy.events.listed", lang)
+                  .replace("{n}", String(p.listings))}</span></li>
             ))}
           </ul>
           {view.places.length === 0 && (
-            <p className="muted small">Nothing claimed for that place yet.</p>
+            <p className="muted small">{tr("cmy.events.none", lang)}</p>
           )}
         </div>
       </>)}

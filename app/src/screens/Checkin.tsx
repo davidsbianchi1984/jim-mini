@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { api, type CheckinResult } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 export function Checkin() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [mood, setMood] = useState(4);
   const [energy, setEnergy] = useState(3);
   const [stress, setStress] = useState(2);
@@ -22,30 +24,33 @@ export function Checkin() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Check-in</h2>
-        <span className="muted small">mood, energy &amp; stress · a worrying note runs the crisis check</span>
+        <h2>{tr("chk.title", lang)}</h2>
+        <span className="muted small">{tr("chk.sub", lang)}</span>
       </header>
       <div className="card">
-        <label>Mood: <b className="green">{mood}</b> / 5
+        <label>{tr("chk.mood", lang)} <b className="green">{mood}</b> / 5
           <input type="range" min="1" max="5" value={mood} onChange={(e) => setMood(+e.target.value)} /></label>
-        <label>Energy: <b className="amber">{energy}</b> / 5
+        <label>{tr("chk.energy", lang)} <b className="amber">{energy}</b> / 5
           <input type="range" min="1" max="5" value={energy} onChange={(e) => setEnergy(+e.target.value)} /></label>
-        <label>Stress: <b className="red">{stress}</b> / 5
+        <label>{tr("chk.stress", lang)} <b className="red">{stress}</b> / 5
           <input type="range" min="1" max="5" value={stress} onChange={(e) => setStress(+e.target.value)} /></label>
-        <label>Note (optional)<textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} /></label>
+        <label>{tr("chk.note", lang)}<textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} /></label>
         <button className="primary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save check-in"}</button>
         {error && <div className="error">⚠ {error}</div>}
       </div>
       {result && (
         <div className="card">
-          <h3>Logged</h3>
-          <div className="muted small">mood {result.mood} · energy {result.energy} · stress {result.stress ?? stress}</div>
+          <h3>{tr("chk.logged", lang)}</h3>
+          <div className="muted small">{tr("chk.result", lang)
+            .replace("{mood}", String(result.mood))
+            .replace("{energy}", String(result.energy))
+            .replace("{stress}", String(result.stress ?? stress))}</div>
           {result.guardian?.detected ? (
             <div className="detect hit" style={{ marginTop: 10 }}>
-              <div className="detect-head"><span className="tag warn">guardian</span> flagged</div>
+              <div className="detect-head"><span className="tag warn">{tr("chk.guardian", lang)}</span> {tr("chk.flagged", lang)}</div>
               {result.guardian.guidance?.content && <p>{result.guardian.guidance.content}</p>}
             </div>
-          ) : <div className="ok-note" style={{ marginTop: 10 }}>No concern detected — logged to your day.</div>}
+          ) : <div className="ok-note" style={{ marginTop: 10 }}>{tr("chk.noconcern", lang)}</div>}
         </div>
       )}
     </div>

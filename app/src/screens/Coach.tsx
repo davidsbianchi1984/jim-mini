@@ -66,16 +66,16 @@ export function Coach() {
         </div>
       )}
       <header className="screen-head">
-        <h2>Coach</h2>
-        <span className="muted small">24/7 across your life</span>
+        <h2>{tr("cch.title", lang)}</h2>
+        <span className="muted small">{tr("cch.sub", lang)}</span>
       </header>
       <div className="card">
-        <label>Area
+        <label>{tr("cch.area", lang)}
           <select value={area} onChange={(e) => setArea(e.target.value)}>
             {AREAS.map((a) => <option key={a}>{a}</option>)}
           </select>
         </label>
-        <label>What's on your mind?
+        <label>{tr("cch.mind", lang)}
           <textarea rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
         </label>
         <div className="voice-row">
@@ -97,19 +97,21 @@ export function Coach() {
       </div>
       {reply?.content && (
         <div className="card guidance">
-          <div className="guidance-src">{area.replace("_", " ")} · guidance</div>
+          <div className="guidance-src">{tr("cch.guidance", lang)
+            .replace("{area}", area.replace("_", " "))}</div>
           <p>{reply.content}</p>
           {/* Who actually answered. When the model layer degraded, say so in
               amber — canned fallback text presented as the chosen model is a
               lie the user has no way to detect from the words alone. */}
           {reply.provenance?.degraded ? (
             <div className="degraded">
-              ⚠ This is the built-in fallback, not {" "}
+              {tr("cch.fallback", lang)}{" "}
               {reply.provenance.generated_by === "stub" ? "an online model" : reply.provenance.generated_by} —{" "}
               {reply.provenance.degraded_reason || "the model could not be reached"}.
             </div>
           ) : reply.provenance?.generated_by && reply.provenance.generated_by !== "stub" && (
-            <div className="muted small">Answered by {reply.provenance.generated_by}</div>
+            <div className="muted small">{tr("cch.answered", lang)
+              .replace("{who}", String(reply.provenance.generated_by))}</div>
           )}
 
           {/* A specialist covers this area. An offer, not a send — what would

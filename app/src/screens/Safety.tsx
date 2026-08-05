@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   api, type AlarmRow, type BeaconRow, type IncidentRow, type PageRow,
 } from "../api";
+import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -28,6 +29,7 @@ import { useSession } from "../store";
  */
 export function Safety() {
   const { session } = useSession();
+  const lang = visitorLang();
   const [alarms, setAlarms] = useState<AlarmRow[]>([]);
   const [incidents, setIncidents] = useState<IncidentRow[]>([]);
   const [pages, setPages] = useState<PageRow[]>([]);
@@ -70,15 +72,15 @@ export function Safety() {
   const open = alarms.filter((a) => a.state !== "cleared" && !a.cleared_at);
   const past = alarms.filter((a) => a.state === "cleared" || a.cleared_at);
 
-  if (!uid || !token) return <p>Sign in to see safety.</p>;
+  if (!uid || !token) return <p>{tr("sfy.signin", lang)}</p>;
 
   return (
     <section className="screen">
-      <h2>Safety</h2>
+      <h2>{tr("sfy.title", lang)}</h2>
       {error && <p className="error">{error}</p>}
 
-      <h3>Needs a person {open.length > 0 && <span className="pill">{open.length}</span>}</h3>
-      {open.length === 0 && <p className="muted">Nothing open. Nobody is waiting.</p>}
+      <h3>{tr("sfy.needs", lang)} {open.length > 0 && <span className="pill">{open.length}</span>}</h3>
+      {open.length === 0 && <p className="muted">{tr("sfy.needs.none", lang)}</p>}
       {open.map((a) => (
         <div key={a.id} className="card alarm">
           <div className="row">
@@ -87,18 +89,18 @@ export function Safety() {
             {a.created_at && <span className="muted">{a.created_at.slice(0, 16).replace("T", " ")}</span>}
           </div>
           {a.accepted_by
-            ? <p><strong>{a.accepted_by}</strong> is on the way.</p>
+            ? <p>{tr("sfy.onway", lang).replace("{who}", String(a.accepted_by))}</p>
             : (
               <div className="row">
                 <input
                   value={responder}
-                  placeholder="Who is going?"
+                  placeholder={tr("sfy.responder.ph", lang)}
                   onChange={(e) => setResponder(e.target.value)} />
                 <button
                   disabled={busy || !responder.trim()}
                   onClick={() => run(() =>
                     api.acceptAlarm(uid, a.id, responder.trim(), token))}>
-                  I'm going
+                  {tr("sfy.going", lang)}
                 </button>
               </div>
             )}
@@ -109,7 +111,7 @@ export function Safety() {
             <button
               disabled={busy}
               onClick={() => run(() => api.escalateAlarm(uid, a.id, token))}>
-              Escalate
+              {tr("sfy.escalate", lang)}
             </button>
             <button
               disabled={busy}
@@ -117,32 +119,31 @@ export function Safety() {
                 if (confirm("Clear this alarm? Do it only once the person is safe."))
                   run(() => api.clearAlarm(uid, a.id, token));
               }}>
-              Clear
+              {tr("sfy.clear", lang)}
             </button>
           </div>
         </div>
       ))}
 
-      <h3>Beacons</h3>
-      <p className="muted">
-        A sticker someone can scan to reach help on your behalf. The scanner
-        needs no account and sees only what you chose to put on the card.
-      </p>
+      <h3>{tr("sfy.beacons", lang)}</h3>
+      <p className="muted">{tr("sfy.beacons.pitch", lang)}</p>
       {beacons.map((b) => (
         <div key={b.id} className="card">
           <div className="row">
             <strong>{b.label}</strong>
             {b.placement && <span className="muted">{b.placement}</span>}
-            <span className="muted">{b.scans} scan{b.scans === 1 ? "" : "s"}</span>
-            {!b.active && <span className="muted">retired</span>}
+            <span className="muted">{tr("sfy.beacons.scans", lang)
+              .replace("{n}", String(b.scans))
+              .replace("{s}", b.scans === 1 ? "" : "s")}</span>
+            {!b.active && <span className="muted">{tr("sfy.beacons.retired", lang)}</span>}
           </div>
           <a href={b.scan_url} target="_blank" rel="noreferrer">{b.scan_url}</a>
         </div>
       ))}
       <div className="row">
-        <input value={label} placeholder="Label (Front door)"
+        <input value={label} placeholder={tr("sfy.beacons.label.ph", lang)}
           onChange={(e) => setLabel(e.target.value)} />
-        <input value={placement} placeholder="Where it is (optional)"
+        <input value={placement} placeholder={tr("sfy.beacons.where.ph", lang)}
           onChange={(e) => setPlacement(e.target.value)} />
         <button
           disabled={busy || !label.trim()}
@@ -153,17 +154,13 @@ export function Safety() {
             }, token);
             setLabel(""); setPlacement("");
           })}>
-          Place a beacon
+          {tr("sfy.beacons.place", lang)}
         </button>
       </div>
 
-      <h3>What went out</h3>
-      <p className="muted">
-        Every page JIM sent on your behalf, and whether it arrived. Shown
-        because a message that failed to deliver is the one you most need to
-        know about.
-      </p>
-      {pages.length === 0 && <p className="muted">No pages sent.</p>}
+      <h3>{tr("sfy.pages", lang)}</h3>
+      <p className="muted">{tr("sfy.pages.pitch", lang)}</p>
+      {pages.length === 0 && <p className="muted">{tr("sfy.pages.none", lang)}</p>}
       {pages.map((p, i) => (
         <div key={String(p.id ?? i)} className="card">
           <div className="row">
@@ -174,15 +171,16 @@ export function Safety() {
         </div>
       ))}
 
-      <h3>History</h3>
+      <h3>{tr("sfy.history", lang)}</h3>
       {past.length === 0 && incidents.length === 0
-        && <p className="muted">Nothing has happened yet.</p>}
+        && <p className="muted">{tr("sfy.history.none", lang)}</p>}
       {past.map((a) => (
         <div key={a.id} className="card muted">
           <div className="row">
             <span>{a.tier}</span>
-            <span>cleared</span>
-            {a.accepted_by && <span>answered by {a.accepted_by}</span>}
+            <span>{tr("sfy.history.cleared", lang)}</span>
+            {a.accepted_by && <span>{tr("sfy.history.answered", lang)
+              .replace("{who}", String(a.accepted_by))}</span>}
           </div>
         </div>
       ))}
