@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.45.2] — 2026-08-05
+
+### Version alignment
+
+The three products are cut together, so one number names one
+combination of all three. No JIM code changed — this console's own
+record reached zero at 0.45.1 and stays there, held by its floor and
+by `test_no_screen_of_this_console_speaks_only_english`. QRME took its
+three largest remaining screens off its record this round: 978 → 848.
+
 ## [0.45.1] — 2026-08-05
 
 ### The console speaks ten languages, all of it

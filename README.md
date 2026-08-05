@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.45.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.45.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.45.2** | Version alignment with QRME's three-screen localization round |
 | **0.45.1** | **The console speaks ten languages, all of it** — the last nine screens localized; **the console-untranslated record runs to zero** (129 → 0) and the emptiness is pinned by test |
 | **0.45.0** | **Three screens, and the record falls to 129** — What's held, Who you watch and Care Team fully localized (console-untranslated 206 → 129) |
 | **0.44.9** | **The cabinet and the guided hour speak the visitor's language** — Medications and Wellness fully localized (console-untranslated 262 → 206) |
