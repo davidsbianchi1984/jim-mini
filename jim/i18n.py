@@ -2630,7 +2630,8 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'trusted_channel': {'en': 'Trusted channel', 'es': 'Canal de confianza', 'fr': 'Canal de confiance', 'de': 'Vertrauenskanal', 'pt': 'Canal de confiança', 'it': 'Canale di fiducia', 'ja': '信頼できる連絡先', 'zh': '可信渠道', 'hi': 'विश्वसनीय चैनल', 'ar': 'القناة الموثوقة'},
     'trusted_name': {'en': 'Trusted name', 'es': 'Nombre de confianza', 'fr': 'Nom de confiance', 'de': 'Vertrauensperson', 'pt': 'Nome de confiança', 'it': 'Nome di fiducia', 'ja': '信頼できる人の名前', 'zh': '可信联系人姓名', 'hi': 'विश्वसनीय नाम', 'ar': 'الاسم الموثوق'},
     'username': {'en': 'Username', 'es': 'Nombre de usuario', 'fr': 'Nom d’utilisateur', 'de': 'Benutzername', 'pt': 'Nome de utilizador', 'it': 'Nome utente', 'ja': 'ユーザー名', 'zh': '用户名', 'hi': 'उपयोगकर्ता नाम', 'ar': 'اسم المستخدم'},
-    'window_minutes': {'en': 'Window (minutes)', 'es': 'Ventana (minutos)', 'fr': 'Fenêtre (minutes)', 'de': 'Zeitfenster (Minuten)', 'pt': 'Janela (minutos)', 'it': 'Finestra (minuti)', 'ja': 'ウィンドウ（分）', 'zh': '时间窗（分钟）', 'hi': 'विंडो (मिनट)', 'ar': 'النافذة (بالدقائق)'},
+    'window_minutes': {'en': 'Window (minutes)', 'es': 'Ventana (minutos)', 'fr': 'Fenêtre (minutes)', 'de': 'Zeitfenster (Minuten)', 'pt': 'Janela (minutos)', 'it': 'Finestra (minuti)', 'ja': 'ウィンドウ（分）', 'zh': '时间窗（分钟）', 'hi': 'विंडो (मिनट)', 'ar': 'النافذة (بالدقائق)'},    'voice_id': {'en': 'Voice', 'es': 'Voz', 'fr': 'Voix', 'de': 'Stimme', 'pt': 'Voz', 'it': 'Voce', 'ja': '音声', 'zh': '语音', 'hi': 'आवाज़', 'ar': 'الصوت'},
+
 }
 
 

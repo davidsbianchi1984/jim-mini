@@ -1,4 +1,4 @@
-# status: backlog — 100 rows
+# status: backlog — 99 rows
 #
 # Request-model fields with no row in `i18n._FIELD_LABELS`, so a 422 that
 # names one shows the API's identifier rather than the label on the form.
@@ -13,7 +13,7 @@
 # nobody labels would be worse than the identifier a reader can at least
 # match to the form in front of them.
 #
-# ceiling: 158
+# ceiling: 99
 accept
 action
 activity_level
@@ -111,6 +111,5 @@ template
 translatable
 transport
 trend
-voice_id
 watch_high
 watch_low

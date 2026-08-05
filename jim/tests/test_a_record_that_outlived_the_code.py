@@ -76,11 +76,23 @@ def test_every_ratchet_says_what_it_is_before_it_says_anything_else(path):
     """The status line leads. Not "the file contains a status somewhere": a
     correction twenty lines below a stale claim is what this exists to stop."""
     first = path.read_text(encoding="utf-8").splitlines()[0]
-    assert re.match(r"^# status: (floor|backlog) — \d+ rows$", first), (
+    # `row` for one, `rows` for anything else. The pattern demanded the plural
+    # unconditionally until `console_untranslated.txt` became the first ratchet
+    # here to land on exactly one — and the choice it forced was between "1
+    # rows" at the top of a file about stating a count honestly, and a format
+    # that had simply never met the case. Requiring the *right* form of the
+    # word is stricter than requiring one form of it, not looser.
+    said = re.match(r"^# status: (floor|backlog) — (\d+) (rows?)$", first)
+    assert said, (
         f"{path.name} opens with {first!r}. Every ratchet's first line must be "
         "`# status: floor|backlog — N rows`, because a reader takes the first "
         "claim a file makes and this one had a cleared backlog advertised at "
         "the top for two releases.")
+    plural = "row" if said.group(2) == "1" else "rows"
+    assert said.group(3) == plural, (
+        f"{path.name} says {said.group(2)} {said.group(3)!r}; one row is a "
+        f"{plural!r}. A file whose subject is an accurate count should be able "
+        "to count to one.")
 
 
 @pytest.mark.parametrize("path", _ratchets(), ids=lambda p: p.name)
@@ -88,7 +100,7 @@ def test_the_status_line_counts_the_rows_that_are_there(path):
     """A summary nobody checks is the thing that went stale in the first
     place."""
     text = path.read_text(encoding="utf-8")
-    said = int(re.search(r"^# status: \w+ — (\d+) rows$", text, re.M).group(1))
+    said = int(re.search(r"^# status: \w+ — (\d+) rows?$", text, re.M).group(1))
     actual = _rows(path)
     assert said == actual, (
         f"{path.name} says {said} rows and holds {actual}. The count in the "

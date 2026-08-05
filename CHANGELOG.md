@@ -4,6 +4,22 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.46.4] — 2026-08-05
+
+### The voice picker had a label and the refusal did not use it
+
+Settings has had `<label>{tr("set.voice", lang)}` over the voice picker
+since the picker existed — **Voice**, *Voz*, *Stimme*, 音声 — and a 422 on
+that field answered `voice_id`. The label is ported into `_FIELD_LABELS`
+word for word rather than translated a second time, which is the same
+reason the table is server-side at all: two wordings of one word is two
+things to keep right, and the drift shows up first in the language nobody
+here reads.
+
+The record: 100 → 99.
+
+Cut together with QRME and PDI at app-v0.46.4.
+
 ## [0.46.3] — 2026-08-05
 
 ### Version alignment
