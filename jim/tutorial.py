@@ -413,6 +413,19 @@ LESSONS: tuple[dict, ...] = (
          screens=(104, 105),
          try_it="Open the Feed tab and read the posture card before the "
                 "first video — it says what this tab will not do."),
+    dict(key="presence", chapter="Day to day", title="Presence",
+         what="The coach that speaks first. It reads six areas of your own "
+              "history — check-ins, goals, habits, bands, follow-ups — and "
+              "says something when there is something worth saying, or says "
+              "nothing and tells you why. All of that is decided on this "
+              "machine, with no network and no model, so it still works on a "
+              "plane. A model, when you have one, is allowed to word the same "
+              "line better and nothing else. It is warm and it is a program, "
+              "and it says which: no body, no romance, never the only one "
+              "you should talk to, and no leaving without a sentence first.",
+         screens=(106, 107),
+         try_it="Read the second card before the first — what it will not be "
+                "is the part that makes the rest safe."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

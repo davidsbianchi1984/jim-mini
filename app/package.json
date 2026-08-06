@@ -1,7 +1,7 @@
 {
   "name": "jim-guardian",
   "productName": "JIM Guardian",
-  "version": "0.49.0",
+  "version": "0.50.0",
   "description": "JIM-mini guardian console — a runnable React front-end wired to the JIM API, packaged with Electron.",
   "author": "David Bianchi",
   "repository": "https://github.com/davidsbianchi1984/jim-mini",

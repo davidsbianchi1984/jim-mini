@@ -351,6 +351,19 @@ class CommunityVisit(BaseModel):
     room_id: str
 
 
+class PresenceSurface(BaseModel):
+    """Where the presence speaks (jim/presence.py). One word, because the
+    consequence — whether health is read out loud or shown — follows from
+    the place rather than from a second setting somebody has to find.
+
+    Named `speaks_on` and not `surface`: `surface` already means a *display*
+    surface in QRME and PDI, and the shared-vocabulary guard across the three
+    products is right that one field name should not mean two things.
+    """
+
+    speaks_on: str
+
+
 class FollowupAnswer(BaseModel):
     """Spec [0039]: whether the counseling that was delivered actually
     worked. ``helped=False`` escalates toward a live person."""

@@ -21,7 +21,8 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                circle, contribution, db, money, schedule, shopping,
                escalation, family, followup, guardian, handoff, i18n, identity,
                landing, life, llm,
-               meds, mic, mobile, notify, oauth, offline, referral, relay,
+               meds, mic, mobile, notify, oauth, offline, presence,
+               referral, relay,
                research,
                robotics,
                rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
@@ -46,6 +47,7 @@ from .models import (
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
+    PresenceSurface,
     RobotBind, RelayAccept, RelayQuestion,
     SelfProfileConsent, SelfProfileLink,
     BandSet,
@@ -80,7 +82,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.49.0",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.50.0",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -1877,6 +1879,81 @@ def create_app(qrme_client: QRMEClient | None = None,
         checkbox with hidden consequences."""
         _user_or_404(user_id, request)
         return identity.posture(guardian.get_user(user_id))
+
+    # ---- the presence (jim/presence.py) -----------------------------------
+    #
+    # The coach that speaks first. Every read below is answered from rows this
+    # deployment already holds — no model, no network — because a guardian
+    # that goes quiet when the signal drops is not a guardian.
+
+    @app.get("/presence")
+    def presence_who() -> dict:
+        """What this thing is, answerable without an account so the answer is
+        the same to a child, a guardian, a clinician and a regulator."""
+        return presence.who_am_i()
+
+    @app.get("/presence/{user_id}/baseline")
+    def presence_baseline(user_id: str, request: Request) -> dict:
+        """The six areas, and the evidence behind each standing."""
+        _user_or_404(user_id, request)
+        return presence.baseline(user_id)
+
+    @app.get("/presence/{user_id}/beat")
+    def presence_beat(user_id: str, request: Request,
+                      slot: str = "morning") -> dict:
+        """The next unprompted thing it would say — or nothing, with the
+        reason. Silence is an outcome here, not a failure to produce one."""
+        _user_or_404(user_id, request)
+        return presence.beat(user_id, slot=slot)
+
+    @app.get("/presence/{user_id}/day")
+    def presence_day(user_id: str, request: Request) -> dict:
+        """The day's three beats at once, so a client can schedule them and
+        then lose its connection without losing the day."""
+        _user_or_404(user_id, request)
+        return presence.day(user_id)
+
+    @app.post("/presence/{user_id}/deepen")
+    def presence_deepen(user_id: str, request: Request,
+                        slot: str = "morning") -> dict:
+        """The same beat with a model's wording on it. The model may not
+        change whether it speaks, which area, or the evidence."""
+        _user_or_404(user_id, request)
+        return presence.deepen(user_id, slot=slot)
+
+    @app.get("/presence/{user_id}/reach")
+    def presence_reach(user_id: str, request: Request,
+                       area: str | None = None) -> dict:
+        """Other minds — QRME's rooms, desks and profiles, offered. 409
+        without a tandem, the same as every other door onto QRME."""
+        _user_or_404(user_id, request)
+        if app.state.qrme is None:
+            raise HTTPException(
+                409, "no QRME endpoint configured (set JIM_QRME_URL) — the "
+                     "people live in QRME and JIM shows the door")
+        return presence.reach_out(user_id, app.state.qrme, area=area)
+
+    @app.get("/presence/{user_id}/surfaces")
+    def presence_surfaces(user_id: str, request: Request) -> dict:
+        """Where it can speak, and what each surface makes it hold back."""
+        _user_or_404(user_id, request)
+        return presence.surfaces(user_id)
+
+    @app.put("/presence/{user_id}/surface")
+    def presence_choose_surface(user_id: str, body: PresenceSurface,
+                                request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return presence.choose_surface(user_id, body.speaks_on)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+
+    @app.get("/presence/{user_id}/growth")
+    def presence_growth(user_id: str, request: Request) -> dict:
+        """What it has become, with the counts under it — the film's best
+        line, held to evidence rather than asserted."""
+        _user_or_404(user_id, request)
+        return presence.growth(user_id)
 
     # ---- the user-specific model (clause 11) ------------------------------
 

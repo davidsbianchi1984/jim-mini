@@ -5,7 +5,7 @@ import SwiftUI
 struct CareView: View {
     enum Tab: String, CaseIterable {
         case monitor = "Monitor", checkin = "Check-in",
-             coach = "Coach", family = "Family"
+             coach = "Coach", presence = "Presence", family = "Family"
 
         /// English lived in the `case` clause, where no `Text("…")`
         /// pattern looks — the same shape ConnectView had, written
@@ -17,6 +17,7 @@ struct CareView: View {
             case .monitor: return L10n.t("tab.monitor", lang)
             case .checkin: return L10n.t("tab.checkin", lang)
             case .coach: return L10n.t("tab.coach", lang)
+            case .presence: return L10n.t("presence.tab", lang)
             case .family: return L10n.t("tab.family", lang)
             }
         }
@@ -40,6 +41,9 @@ struct CareView: View {
             case .monitor: MonitorView()
             case .checkin: CheckinView()
             case .coach: CoachView()
+            // The coach answers; the presence speaks first. Same screen
+            // group because they are two halves of one thing.
+            case .presence: PresenceView()
             case .family: FamilyView()
             }
         }

@@ -2060,6 +2060,7 @@ fun CareScreen(vm: GuardianViewModel) {
         L10n.t("tab.monitor", vm.language),
         L10n.t("tab.checkin", vm.language),
         L10n.t("tab.coach", vm.language),
+        L10n.t("presence.tab", vm.language),
         L10n.t("tab.family", vm.language),
     )
     Column(Modifier.fillMaxSize()) {
@@ -2076,7 +2077,151 @@ fun CareScreen(vm: GuardianViewModel) {
             0 -> MonitorScreen(vm)
             1 -> CheckinScreen(vm)
             2 -> CoachScreen(vm)
+            // The coach answers; the presence speaks first.
+            3 -> PresencePanel(vm)
             else -> FamilyPanel(vm)
+        }
+    }
+}
+
+// ---- the presence: the coach that speaks first ----
+
+/**
+ * What it noticed, unprompted — and, above that, what it will not be.
+ *
+ * The order is deliberate: the refusals are rendered before any warm line,
+ * because a guardian that is charming before it is honest has the order
+ * wrong, and because this product enrols children whose guardians should be
+ * able to read that without scrolling for it.
+ *
+ * Nothing here decides anything. Whether it speaks, about what and why are
+ * the backend's, read from six areas of this person's own history with no
+ * model and no second call out.
+ */
+@Composable
+private fun PresencePanel(vm: GuardianViewModel) {
+    var who by remember { mutableStateOf<PresenceWho?>(null) }
+    var beats by remember { mutableStateOf<List<PresenceBeat>>(emptyList()) }
+    var base by remember { mutableStateOf<PresenceBaseline?>(null) }
+    var surfaces by remember { mutableStateOf<PresenceSurfaces?>(null) }
+    var reach by remember { mutableStateOf<List<String>>(emptyList()) }
+    var grew by remember { mutableStateOf<PresenceGrowth?>(null) }
+    var spoken by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.presenceWho() }) { who = it.getOrNull() }
+        vm.call({ ApiClient.presenceDay(vm.uid!!, vm.token!!) }) {
+            beats = it.getOrDefault(emptyList())
+        }
+        vm.call({ ApiClient.presenceBaseline(vm.uid!!, vm.token!!) }) { base = it.getOrNull() }
+        vm.call({ ApiClient.presenceSurfaces(vm.uid!!, vm.token!!) }) { surfaces = it.getOrNull() }
+        vm.call({ ApiClient.presenceGrowth(vm.uid!!, vm.token!!) }) { grew = it.getOrNull() }
+        // A missing tandem is not an error: 409 means the people live in QRME.
+        vm.call({ ApiClient.presenceReach(vm.uid!!, vm.token!!) }) {
+            reach = it.getOrDefault(emptyList())
+        }
+    }
+
+    screenScroll {
+        Text(L10n.t("presence.tab", vm.language), color = Jim.Txt,
+            fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("presence.sub", vm.language), color = Jim.T2, fontSize = 13.sp)
+
+        who?.let { w ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("presence.what", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(w.says, color = Jim.Txt, fontSize = 14.sp)
+                Text(L10n.t("presence.will.not", vm.language), color = Jim.T2, fontSize = 12.sp)
+                w.boundaries.toSortedMap().forEach { (_, says) ->
+                    Text(says, color = Jim.T3, fontSize = 10.sp)
+                }
+                Text(w.note, color = Jim.T3, fontSize = 10.sp)
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("presence.today", vm.language), color = Jim.Txt,
+                fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("presence.offline", vm.language), color = Jim.T3, fontSize = 10.sp)
+            beats.forEach { b ->
+                Text(b.slot, color = Jim.BrandA, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(spoken[b.slot] ?: b.english, color = Jim.Txt, fontSize = 14.sp)
+                // Why it said this.
+                b.because.forEach { why -> Text(why, color = Jim.T3, fontSize = 10.sp) }
+                if (b.speak) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TextButton(onClick = {
+                            // `/day` is the plan; asking for the beat is what
+                            // counts as having been told.
+                            vm.call({ ApiClient.presenceBeat(vm.uid!!, vm.token!!, b.slot) }) { r ->
+                                r.getOrNull()?.let { spoken = spoken + (b.slot to (it.spoken ?: it.english)) }
+                            }
+                        }) { Text(L10n.t("presence.tab", vm.language), color = Jim.T2, fontSize = 12.sp) }
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.presenceDeepen(vm.uid!!, vm.token!!, b.slot) }) { r ->
+                                r.getOrNull()?.let { spoken = spoken + (b.slot to (it.spoken ?: it.english)) }
+                            }
+                        }) { Text(L10n.t("presence.deepen", vm.language), color = Jim.BrandA, fontSize = 12.sp) }
+                    }
+                }
+            }
+        }
+
+        base?.let { bl ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("presence.baseline", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("" + bl.known + " / " + bl.of, color = Jim.T3, fontSize = 10.sp)
+                bl.areas.forEach { a ->
+                    Row {
+                        Text(a.area, color = Jim.Txt, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                        Text(a.standing, color = Jim.T3, fontSize = 10.sp)
+                    }
+                }
+            }
+        }
+
+        surfaces?.let { s ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("presence.surfaces", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(s.rule, color = Jim.T3, fontSize = 10.sp)
+                s.surfaces.forEach { row ->
+                    Row {
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.presenceChooseSurface(vm.uid!!, vm.token!!, row.surface) }) { r ->
+                                surfaces = r.getOrNull() ?: surfaces
+                            }
+                        }, modifier = Modifier.weight(1f)) {
+                            Text(row.surface, color = if (row.chosen) Jim.BrandA else Jim.T2, fontSize = 12.sp)
+                        }
+                        Text(if (row.readsHealthAloud)
+                                L10n.t("presence.aloud", vm.language)
+                             else L10n.t("presence.shown", vm.language),
+                            color = Jim.T3, fontSize = 10.sp)
+                    }
+                }
+            }
+        }
+
+        if (reach.isNotEmpty()) {
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("presence.reach", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                reach.forEach { name -> Text(name, color = Jim.Txt, fontSize = 12.sp) }
+            }
+        }
+
+        grew?.let { g ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("presence.growth", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("" + g.beatsSpoken + " · " + g.areasSeen + " / " + g.of,
+                    color = Jim.T3, fontSize = 10.sp)
+                // The honest half, in its own words.
+                Text(g.aboutMyself, color = Jim.T3, fontSize = 10.sp)
+            }
         }
     }
 }

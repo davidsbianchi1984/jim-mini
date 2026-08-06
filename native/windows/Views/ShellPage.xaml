@@ -21,6 +21,9 @@
             <NavigationViewItem Tag="coach">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Message" /></NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Tag="presence">
+                <NavigationViewItem.Icon><SymbolIcon Symbol="Contact" /></NavigationViewItem.Icon>
+            </NavigationViewItem>
             <NavigationViewItem Tag="life">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Flag" /></NavigationViewItem.Icon>
             </NavigationViewItem>

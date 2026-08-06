@@ -1,4 +1,4 @@
-# status: floor — 26 rows
+# status: floor — 27 rows
 #
 # Which console surface each screen drawing depicts.
 #
@@ -43,6 +43,7 @@ Checkin         22
 Coach           14,24,82
 Community       92
 Feed            104,105
+Presence        106,107
 Home            2
 Journal         23,87
 Monitor         13

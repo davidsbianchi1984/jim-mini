@@ -19,7 +19,15 @@ public sealed partial class ShellPage : Page
     {
         foreach (var entry in Nav.MenuItems)
             if (entry is NavigationViewItem nvi && nvi.Tag is string tag)
-                nvi.Content = L10n.T($"tab.{tag}");
+                // `tab.{tag}` is the convention and the presence is the one
+                // exception: its label already exists as `presence.tab`,
+                // shared with the other two shells and the console. Adding a
+                // `tab.presence` row would put the same English under two
+                // keys in one table — the defect the 0.48.0 sweep spent a
+                // round removing.
+                nvi.Content = tag == "presence"
+                    ? L10n.T("presence.tab")
+                    : L10n.T($"tab.{tag}");
         // Not a menu item: this one sits in the pane footer, which the loop
         // above does not walk. It said "Sign out" in every language until this
         // round — and the sibling product found and fixed exactly this two
@@ -39,6 +47,8 @@ public sealed partial class ShellPage : Page
             case "monitor": ContentFrame.Navigate(typeof(MonitorPage)); break;
             case "checkin": ContentFrame.Navigate(typeof(CheckinPage)); break;
             case "coach": ContentFrame.Navigate(typeof(CoachPage)); break;
+            // The coach answers; the presence speaks first.
+            case "presence": ContentFrame.Navigate(typeof(PresencePage)); break;
             case "life": ContentFrame.Navigate(typeof(LifePage)); break;
             case "safety": ContentFrame.Navigate(typeof(SafetyPage)); break;
             case "connect": ContentFrame.Navigate(typeof(ConnectPage)); break;

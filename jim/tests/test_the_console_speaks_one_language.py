@@ -284,7 +284,15 @@ def test_no_key_is_translated_into_ten_languages_and_used_nowhere():
     used, prefixes = set(), set()
     for screen in list(SRC.rglob("*.tsx")) + list(SRC.rglob("*.ts")):
         text = screen.read_text(encoding="utf-8")
-        used |= set(re.findall(r'\b(?:t|tr|L)\(\s*"([\w.]+)"', text))
+        # `fill` is the second lookup this console has: a row with holes in
+        # it, filled from the server's slots (0.50.0, the presence). It was
+        # not in this list on the day it arrived, and the ten `presence.*`
+        # line rows came back "translated and looked up by nothing" while the
+        # screen was reading every one of them.
+        #
+        #     asked     is this key passed to `t`
+        #     mattered  is this key read
+        used |= set(re.findall(r'\b(?:t|tr|L|fill)\(\s*"([\w.]+)"', text))
         # A key can also be built: `t(`nav.${n.id}`, lang)`. The literal head
         # of such a template covers every key under it.
         #
@@ -295,8 +303,8 @@ def test_no_key_is_translated_into_ten_languages_and_used_nowhere():
         #
         #     asked     is this key looked up by a literal string
         #     mattered  is this key reachable
-        prefixes |= {p for p in re.findall(r'\b(?:t|tr|L)\(\s*`([\w.]+)\$\{',
-                                           text)}
+        prefixes |= {p for p in re.findall(
+            r'\b(?:t|tr|L|fill)\(\s*`([\w.]+)\$\{', text)}
     dead = sorted(k for k in table - used
                   if not any(k.startswith(p) for p in prefixes))
     assert not dead, (

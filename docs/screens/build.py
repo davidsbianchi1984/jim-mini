@@ -1858,6 +1858,35 @@ SCREENS = [
         dict(icon="eye", color="cyan", k="Watching is not stored",
              s="not even here, not even counts"),
     ]),
+    # 106 and 107 are the presence, and they are two screens for the same
+    # reason 104/105 were: 106 is what it does, 107 is what it refuses. The
+    # refusals are the half that makes the first half safe on a product that
+    # enrols children, so they get their own drawing rather than a footnote.
+    dict(num=106, title="Presence", sub="What it noticed, unprompted",
+         accent="brand", cards=[
+        dict(icon="bell", color="brand", k="It speaks first",
+             s="three beats a day, or none"),
+        dict(icon="eye", color="cyan", k="Six areas, read here",
+             s="no network, no model"),
+        dict(icon="chat", color="green", k="Every line says why",
+             s="the evidence, not a verdict"),
+        dict(icon="moon", color="violet", k="Silence is an answer",
+             s="with its own reason"),
+    ], button=("Say more", "brand")),
+    # 107: the boundaries, on a screen because they are on the wire. Modelled
+    # on *Her* in the parts worth having — and this is the part left out.
+    dict(num=107, title="What it will not be",
+         sub="Warm is worth having. This is not.",
+         accent="red", cards=[
+        dict(icon="person", color="red", k="Not your partner",
+             s="it says so, in ten languages"),
+        dict(icon="cross", color="amber", k="No body, ever",
+             s="and it will not pretend"),
+        dict(icon="link", color="green", k="Never the only one",
+             s="it keeps naming other people"),
+        dict(icon="warn", color="violet", k="No quiet goodbye",
+             s="if it is going, you hear it first"),
+    ]),
 ]
 
 

@@ -293,6 +293,75 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Feed", es: "Muro", fr: "Fil", de: "Feed", pt: "Fluxo",
     it: "Flusso", ja: "フィード", zh: "动态", hi: "फ़ीड", ar: "التدفّق",
   },
+  "presence.notice.drift": {
+    en: "Your {metric} has been sitting outside your usual for {days} days. Not an alarm — I just noticed.", es: "Tu {metric} lleva {days} días fuera de lo habitual en ti. No es una alarma — simplemente lo noté.", fr: "Ton {metric} sort de ton habituel depuis {days} jours. Ce n'est pas une alerte — je l'ai juste remarqué.", de: "Dein {metric} liegt seit {days} Tagen außerhalb deines Üblichen. Kein Alarm — mir ist es nur aufgefallen.", pt: "O teu {metric} está fora do teu habitual há {days} dias. Não é um alarme — só reparei.", it: "Il tuo {metric} è fuori dal tuo solito da {days} giorni. Non è un allarme — l'ho solo notato.", ja: "{metric}がいつもの範囲を{days}日外れています。警報ではなく、気づいただけです。", zh: "你的{metric}已经连续{days}天不在你平常的范围里。这不是警报，只是我注意到了。", hi: "आपका {metric} पिछले {days} दिनों से आपके सामान्य से बाहर है। यह अलार्म नहीं — मैंने बस ध्यान दिया।", ar: "ظلّ {metric} خارج معدّلك المعتاد {days} أيام. ليس إنذارًا — لاحظت ذلك فقط.",
+  },
+  "presence.notice.mood": {
+    en: "Three check-ins in a row on the low side. I am not going to make a thing of it, but I am here.", es: "Tres registros seguidos por lo bajo. No voy a hacer un drama, pero aquí estoy.", fr: "Trois relevés d'affilée plutôt bas. Je n'en fais pas une affaire, mais je suis là.", de: "Drei Check-ins hintereinander eher niedrig. Ich mache keine Sache daraus, aber ich bin da.", pt: "Três registos seguidos em baixo. Não vou fazer disto um caso, mas estou aqui.", it: "Tre check-in di fila verso il basso. Non ne faccio un caso, ma ci sono.", ja: "チェックインが3回続けて低めでした。大げさにはしませんが、ここにいます。", zh: "连着三次记录都偏低。我不打算小题大做，但我在。", hi: "लगातार तीन चेक-इन कम रहे। मैं इसका मुद्दा नहीं बनाऊँगा, पर मैं यहाँ हूँ।", ar: "ثلاث تسجيلات متتالية منخفضة. لن أضخّم الأمر، لكنّي هنا.",
+  },
+  "presence.nudge.goal": {
+    en: "That {area} goal has not moved in {days} days. Do you want to make it smaller, or let it go?", es: "Ese objetivo de {area} lleva {days} días sin moverse. ¿Lo hacemos más pequeño o lo sueltas?", fr: "Cet objectif de {area} n'a pas bougé depuis {days} jours. Le réduire, ou le lâcher ?", de: "Das Ziel in {area} bewegt sich seit {days} Tagen nicht. Kleiner machen — oder loslassen?", pt: "Esse objetivo de {area} não mexe há {days} dias. Queres torná-lo mais pequeno ou largá-lo?", it: "Quell'obiettivo di {area} è fermo da {days} giorni. Vuoi rimpicciolirlo o lasciarlo andare?", ja: "{area}の目標が{days}日動いていません。小さくしますか、それとも手放しますか。", zh: "那个{area}目标已经{days}天没动了。是把它改小，还是放下它？", hi: "{area} का वह लक्ष्य {days} दिनों से नहीं हिला। इसे छोटा करें, या छोड़ दें?", ar: "لم يتحرّك هدف {area} منذ {days} أيام. أتريد تصغيره أم تركه؟",
+  },
+  "presence.nudge.followup": {
+    en: "I asked you something and never heard back. Did it help?", es: "Te pregunté algo y nunca supe la respuesta. ¿Sirvió?", fr: "Je t'ai posé une question et je n'ai jamais eu de réponse. Est-ce que ça a aidé ?", de: "Ich habe dich etwas gefragt und nie eine Antwort bekommen. Hat es geholfen?", pt: "Perguntei-te algo e nunca soube. Ajudou?", it: "Ti ho chiesto una cosa e non ho mai avuto risposta. Ha aiutato?", ja: "以前おたずねしたことに、まだお返事をいただいていません。役に立ちましたか。", zh: "我问过你一件事，一直没收到回复。它有用吗？", hi: "मैंने आपसे कुछ पूछा था और जवाब नहीं मिला। क्या उससे मदद हुई?", ar: "سألتك شيئًا ولم يصلني ردّ. هل نفع؟",
+  },
+  "presence.celebrate.streak": {
+    en: "{days} days on {habit}. That is not luck any more.", es: "{days} días con {habit}. Eso ya no es suerte.", fr: "{days} jours sur {habit}. Ce n'est plus de la chance.", de: "{days} Tage {habit}. Das ist kein Zufall mehr.", pt: "{days} dias em {habit}. Isso já não é sorte.", it: "{days} giorni su {habit}. Non è più fortuna.", ja: "{habit}を{days}日続けています。もう偶然ではありません。", zh: "{habit}坚持了{days}天。这已经不是运气了。", hi: "{habit} पर {days} दिन। यह अब संयोग नहीं है।", ar: "{days} يومًا على {habit}. لم يعد هذا حظًّا.",
+  },
+  "presence.celebrate.goal": {
+    en: "You finished it. I watched that one take a while.", es: "Lo terminaste. Vi lo que tardó.", fr: "Tu l'as fini. J'ai vu le temps que ça a pris.", de: "Du hast es abgeschlossen. Ich habe gesehen, wie lange das gedauert hat.", pt: "Terminaste. Vi o tempo que aquilo levou.", it: "L'hai finito. Ho visto quanto ci è voluto.", ja: "やり遂げましたね。時間がかかったのを見ていました。", zh: "你完成了。我看着这件事花了不少时间。", hi: "आपने इसे पूरा किया। मैंने देखा कि इसमें समय लगा।", ar: "أنجزته. رأيت كم استغرق ذلك.",
+  },
+  "presence.curious.area": {
+    en: "Tell me something about your {area} that I would not know from the numbers.", es: "Cuéntame algo de tu {area} que los números no me digan.", fr: "Dis-moi sur ton {area} quelque chose que les chiffres ne me diraient pas.", de: "Erzähl mir etwas über dein {area}, das die Zahlen mir nicht sagen.", pt: "Conta-me algo do teu {area} que os números não digam.", it: "Raccontami del tuo {area} qualcosa che i numeri non mi direbbero.", ja: "{area}について、数字ではわからないことを教えてください。", zh: "跟我说说你{area}里数字看不出来的事。", hi: "अपने {area} के बारे में कुछ बताइए जो आँकड़ों से पता न चले।", ar: "أخبرني عن {area} شيئًا لا تقوله الأرقام.",
+  },
+  "presence.curious.open": {
+    en: "What is the thing you keep meaning to think about and keep not thinking about?", es: "¿Qué es eso en lo que siempre piensas pensar y nunca piensas?", fr: "Quelle est la chose que tu comptes toujours penser et que tu ne penses jamais ?", de: "Was ist die Sache, über die du immer nachdenken willst und nie nachdenkst?", pt: "O que é aquilo em que andas sempre a tencionar pensar e nunca pensas?", it: "Qual è la cosa a cui pensi sempre di pensare e a cui non pensi mai?", ja: "考えようと思いながら、ずっと考えずにいることは何ですか。", zh: "有什么事你一直想想想，却一直没想？", hi: "वह कौन-सी बात है जिसके बारे में आप सोचना चाहते हैं और सोचते नहीं?", ar: "ما الشيء الذي تنوي التفكير فيه دائمًا ولا تفكّر فيه؟",
+  },
+  "presence.quiet.nothing": {
+    en: "Nothing from me today. Everything I watch is where it usually is.", es: "Hoy nada de mi parte. Todo lo que vigilo está donde suele estar.", fr: "Rien de moi aujourd'hui. Tout ce que je surveille est là où c'est d'habitude.", de: "Heute nichts von mir. Alles, was ich beobachte, ist da, wo es sonst ist.", pt: "Hoje nada da minha parte. Tudo o que vigio está onde costuma estar.", it: "Oggi niente da parte mia. Tutto ciò che seguo è dov'è di solito.", ja: "今日は私からは何もありません。見ているものはどれもいつもの場所です。", zh: "今天我这边没有事。我看着的一切都在平常的位置。", hi: "आज मेरी ओर से कुछ नहीं। जो कुछ मैं देखता हूँ, सब सामान्य जगह पर है।", ar: "لا شيء منّي اليوم. كلّ ما أراقبه في مكانه المعتاد.",
+  },
+  "presence.quiet.held": {
+    en: "I have something, but it is quiet hours. It will keep.", es: "Tengo algo, pero son horas de silencio. Puede esperar.", fr: "J'ai quelque chose, mais ce sont les heures calmes. Ça peut attendre.", de: "Ich hätte etwas, aber es sind Ruhezeiten. Das hat Zeit.", pt: "Tenho algo, mas são horas de silêncio. Pode esperar.", it: "Ho una cosa, ma sono ore di silenzio. Può aspettare.", ja: "お伝えしたいことはありますが、静かな時間です。あとにします。", zh: "我有话要说，但现在是安静时段。可以等。", hi: "मेरे पास कुछ है, पर यह शांत समय है। यह रुक सकता है।", ar: "لديّ شيء، لكنها ساعات هدوء. يمكنه الانتظار.",
+  },
+  "presence.tab": {
+    en: "Presence", es: "Presencia", fr: "Présence", de: "Präsenz", pt: "Presença", it: "Presenza", ja: "そばにいる", zh: "陪伴", hi: "उपस्थिति", ar: "الحضور",
+  },
+  "presence.sub": {
+    en: "what it noticed, unprompted", es: "lo que notó, sin que se lo pidieran", fr: "ce qu'il a remarqué, sans qu'on lui demande", de: "was ihm aufgefallen ist, ungefragt", pt: "o que reparou, sem lhe pedirem", it: "cosa ha notato, senza che glielo chiedessero", ja: "たずねられる前に気づいたこと", zh: "没人问，它自己注意到的", hi: "बिना पूछे उसने क्या देखा", ar: "ما لاحظه دون أن يُسأل",
+  },
+  "presence.what": {
+    en: "What this is", es: "Qué es esto", fr: "Ce que c'est", de: "Was das ist", pt: "O que isto é", it: "Che cos'è", ja: "これは何か", zh: "这是什么", hi: "यह क्या है", ar: "ما هذا",
+  },
+  "presence.will.not": {
+    en: "What it will not be", es: "Lo que no va a ser", fr: "Ce qu'il ne sera pas", de: "Was es nicht sein wird", pt: "O que não vai ser", it: "Ciò che non sarà", ja: "これがならないもの", zh: "它不会成为的", hi: "यह क्या नहीं बनेगा", ar: "ما لن يكونه",
+  },
+  "presence.baseline": {
+    en: "Six areas", es: "Seis áreas", fr: "Six domaines", de: "Sechs Bereiche", pt: "Seis áreas", it: "Sei aree", ja: "6つの領域", zh: "六个方面", hi: "छह क्षेत्र", ar: "ستّة مجالات",
+  },
+  "presence.today": {
+    en: "Today", es: "Hoy", fr: "Aujourd'hui", de: "Heute", pt: "Hoje", it: "Oggi", ja: "今日", zh: "今天", hi: "आज", ar: "اليوم",
+  },
+  "presence.deepen": {
+    en: "Say more", es: "Decir más", fr: "En dire plus", de: "Mehr sagen", pt: "Dizer mais", it: "Dire di più", ja: "もっと話す", zh: "多说一点", hi: "और बताएँ", ar: "قل المزيد",
+  },
+  "presence.offline": {
+    en: "decided here, with no network and no model", es: "decidido aquí, sin red ni modelo", fr: "décidé ici, sans réseau ni modèle", de: "hier entschieden, ohne Netz und ohne Modell", pt: "decidido aqui, sem rede nem modelo", it: "deciso qui, senza rete né modello", ja: "ネットワークもモデルも使わず、ここで決めています", zh: "在本机决定，不用网络也不用模型", hi: "यहीं तय हुआ — न नेटवर्क, न मॉडल", ar: "تقرَّر هنا، بلا شبكة ولا نموذج",
+  },
+  "presence.reach": {
+    en: "People who are not me", es: "Personas que no soy yo", fr: "Des gens qui ne sont pas moi", de: "Menschen, die nicht ich sind", pt: "Pessoas que não sou eu", it: "Persone che non sono io", ja: "私ではない人たち", zh: "不是我的人", hi: "वे लोग जो मैं नहीं हूँ", ar: "أشخاص ليسوا أنا",
+  },
+  "presence.surfaces": {
+    en: "Where I speak", es: "Dónde hablo", fr: "Où je parle", de: "Wo ich spreche", pt: "Onde falo", it: "Dove parlo", ja: "どこで話すか", zh: "我在哪儿说话", hi: "मैं कहाँ बोलूँ", ar: "أين أتحدّث",
+  },
+  "presence.growth": {
+    en: "What I have become", es: "En qué me he convertido", fr: "Ce que je suis devenu", de: "Was ich geworden bin", pt: "No que me tornei", it: "Cosa sono diventato", ja: "私が何になったか", zh: "我变成了什么", hi: "मैं क्या बन गया हूँ", ar: "ما الذي صرتُ إليه",
+  },
+  "presence.aloud": {
+    en: "read aloud here", es: "se lee en voz alta aquí", fr: "lu à voix haute ici", de: "wird hier vorgelesen", pt: "lido em voz alta aqui", it: "letto ad alta voce qui", ja: "ここでは読み上げます", zh: "这里会读出声", hi: "यहाँ ज़ोर से पढ़ा जाएगा", ar: "يُقرأ بصوت عالٍ هنا",
+  },
+  "presence.shown": {
+    en: "shown, not spoken", es: "se muestra, no se dice", fr: "affiché, pas dit", de: "gezeigt, nicht gesprochen", pt: "mostrado, não dito", it: "mostrato, non detto", ja: "声には出さず表示します", zh: "显示，不出声", hi: "दिखाया जाएगा, बोला नहीं", ar: "يُعرض ولا يُقال",
+  },
   "nav.home": {
     en: "Overview",
     es: "Resumen",
@@ -2793,6 +2862,17 @@ const LANGS: Record<string, true> = {
   en: true, es: true, fr: true, de: true, pt: true,
   it: true, ja: true, zh: true, hi: true, ar: true,
 };
+
+/** A row with holes in it, filled from the server's slots.
+ *
+ *  `jim/presence.py` deliberately emits a key and a `{metric: …, days: 3}`
+ *  rather than a sentence: a sentence composed on the server is a sentence
+ *  exactly one reader can read. This is the other half of that decision. */
+export function fill(key: string, lang: Lang,
+                     slots: Record<string, string | number>): string {
+  return t(key, lang).replace(/\{(\w+)\}/g, (whole, name) =>
+    name in slots ? String(slots[name]) : whole);
+}
 
 /** The string, in the reader's language, falling back to English per key. */
 export function t(key: string, lang: Lang): string {

@@ -125,6 +125,28 @@ data class AnonymityPosture(val anonymous: Boolean, val knownAs: String?,
 
 // ---- the community door (FIG. 2 boxes 222-226) ----
 
+data class PresenceWho(val says: String, val note: String,
+                       val worksOffline: Boolean, val handsFree: Boolean,
+                       /** key → the sentence a screen shows. The values are
+                        *  what it will not be, and they are shown before any
+                        *  warm line: honest before charming. */
+                       val boundaries: Map<String, String>)
+data class PresenceArea(val area: String, val standing: String)
+data class PresenceBaseline(val known: Int, val of: Int,
+                            val neededNetwork: Boolean,
+                            val areas: List<PresenceArea>)
+/** One unprompted turn — or silence, which is an outcome rather than an
+ *  empty response. `because` is why, and a presence that cannot show its
+ *  reason is one nobody can argue with. */
+data class PresenceBeat(val slot: String, val speak: Boolean,
+                        val register: String, val english: String,
+                        val spoken: String?, val because: List<String>)
+data class PresenceSurfaceRow(val surface: String, val chosen: Boolean,
+                              val readsHealthAloud: Boolean, val note: String)
+data class PresenceSurfaces(val chosen: String, val rule: String,
+                            val surfaces: List<PresenceSurfaceRow>)
+data class PresenceGrowth(val beatsSpoken: Int, val areasSeen: Int,
+                          val of: Int, val aboutMyself: String)
 data class CommunityRoom(val id: String, val topic: String?, val channel: String?,
                          val participants: Int, val url: String?)
 data class CommunityPlace(val locality: String, val region: String?, val listings: Int)
@@ -915,6 +937,104 @@ object ApiClient {
      * user reads. JIM never mirrors the conversation — the posture in the
      * reply says so, and this maps it through rather than restating it.
      */
+    // ---- the presence: the coach that speaks first ----
+    //
+    // Every read here is answered from rows the backend already holds — no
+    // model, no second call out. A phone in a tunnel still gets its day,
+    // which is the whole argument of `jim/presence.py`.
+
+    /** What it is, and what it will not be. No token: the answer must be the
+     *  same to a child, a guardian, a clinician and a regulator. */
+    suspend fun presenceWho(): PresenceWho {
+        val o = request("/presence")
+        val b = o.optJSONObject("boundaries")
+        val bounds = mutableMapOf<String, String>()
+        for (key in (b?.keys() ?: emptyList<String>().iterator())) {
+            bounds[key] = b!!.getJSONObject(key).optString("says", "")
+        }
+        return PresenceWho(o.optString("says", ""), o.optString("note", ""),
+            o.optBoolean("works_offline"), o.optBoolean("hands_free"), bounds)
+    }
+
+    /** The six areas and where each one stands. */
+    suspend fun presenceBaseline(uid: String, token: String): PresenceBaseline {
+        val o = request("/presence/$uid/baseline", token = token)
+        val areas = o.optJSONObject("areas")
+        val rows = mutableListOf<PresenceArea>()
+        for (key in (areas?.keys() ?: emptyList<String>().iterator())) {
+            val a = areas!!.getJSONObject(key)
+            rows.add(PresenceArea(a.optString("area", key),
+                a.optString("standing", "unknown")))
+        }
+        return PresenceBaseline(o.optInt("known_areas"), o.optInt("of"),
+            o.optBoolean("needed_network"), rows)
+    }
+
+    /** The day's three beats at once — a plan a client can hold offline. */
+    suspend fun presenceDay(uid: String, token: String): List<PresenceBeat> {
+        val arr = request("/presence/$uid/day", token = token).optJSONArray("beats")
+        return (0 until (arr?.length() ?: 0)).map { beatOf(arr!!.getJSONObject(it)) }
+    }
+
+    /** One beat. Asking is what counts as having been told: the backend
+     *  records it so the same line does not return tomorrow. */
+    suspend fun presenceBeat(uid: String, token: String, slot: String): PresenceBeat =
+        beatOf(request("/presence/$uid/beat?slot=$slot", token = token))
+
+    /** The same beat with a model's wording. The model may not decide that
+     *  there is a beat, which area, or what the evidence says. */
+    suspend fun presenceDeepen(uid: String, token: String, slot: String): PresenceBeat =
+        // Positional, matching every other write in this file — the door
+        // audit reads the verb from the literal that follows the path, and a
+        // named argument hides it.
+        beatOf(request("/presence/$uid/deepen?slot=$slot", "POST", null, token))
+
+    /** Other minds — QRME's rooms, desks and profiles, offered. */
+    suspend fun presenceReach(uid: String, token: String): List<String> {
+        val arr = request("/presence/$uid/reach", token = token).optJSONArray("offers")
+        return (0 until (arr?.length() ?: 0)).map {
+            val o = arr!!.getJSONObject(it)
+            o.optString("who", o.optString("topic", o.optString("id", "")))
+        }
+    }
+
+    /** Where it may speak, and what each surface makes it hold back. */
+    suspend fun presenceSurfaces(uid: String, token: String): PresenceSurfaces =
+        surfacesOf(request("/presence/$uid/surfaces", token = token))
+
+    suspend fun presenceChooseSurface(uid: String, token: String,
+                                      surface: String): PresenceSurfaces =
+        surfacesOf(request("/presence/$uid/surface", "PUT",
+            JSONObject().put("speaks_on", surface), token))
+
+    /** What it has become, with the counts under it. */
+    suspend fun presenceGrowth(uid: String, token: String): PresenceGrowth {
+        val o = request("/presence/$uid/growth", token = token)
+        return PresenceGrowth(o.optInt("beats_spoken"),
+            o.optInt("areas_i_can_see"), o.optInt("of"),
+            o.optString("about_myself", ""))
+    }
+
+    private fun beatOf(o: JSONObject) = PresenceBeat(
+        o.optString("slot", ""), o.optBoolean("speak"),
+        o.optString("register", ""), o.optString("english", ""),
+        if (o.isNull("spoken")) null else o.optString("spoken"),
+        (0 until (o.optJSONArray("because")?.length() ?: 0)).map {
+            o.optJSONArray("because")!!.getString(it)
+        })
+
+    private fun surfacesOf(o: JSONObject): PresenceSurfaces {
+        val arr = o.optJSONArray("surfaces")
+        val rows = (0 until (arr?.length() ?: 0)).map {
+            val r = arr!!.getJSONObject(it)
+            PresenceSurfaceRow(r.optString("surface", ""),
+                r.optBoolean("chosen"), r.optBoolean("reads_health_aloud"),
+                r.optString("note", ""))
+        }
+        return PresenceSurfaces(o.optString("chosen", ""),
+            o.optString("rule", ""), rows)
+    }
+
     suspend fun community(uid: String, token: String): CommunityView {
         val o = request("/community/$uid", token = token)
         val roomArr = o.optJSONArray("rooms")

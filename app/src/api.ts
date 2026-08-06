@@ -771,6 +771,55 @@ export interface QrmeFeedView {
   };
 }
 
+/** What the presence says it is. `boundaries` is the half that matters: a
+ *  boundary a screen cannot render is a boundary nobody can be shown. */
+export interface PresenceWho {
+  name: string; kind: string; says: string; note: string;
+  hands_free: boolean; works_offline: boolean;
+  areas: string[]; registers: string[];
+  boundaries: Record<string, { value: boolean; says: string }>;
+}
+
+export interface PresenceBeat {
+  speak: boolean; slot: string; register: string; area: string | null;
+  line_key: string; slots: Record<string, string | number>;
+  because: string[]; english: string; english_is_fallback: boolean;
+  initiative: boolean; wants_reply: boolean; offline: boolean;
+  deepened: boolean; spoken?: string; why_not?: string;
+}
+
+export interface PresenceDay {
+  beats: PresenceBeat[]; hands_free: boolean; offline: boolean;
+}
+
+export interface PresenceBaseline {
+  known_areas: number; of: number; needed_network: boolean;
+  needed_model: boolean;
+  areas: Record<string, { area: string; standing: string; known: boolean;
+                          evidence: Record<string, unknown>[] }>;
+}
+
+export interface PresenceReach {
+  offers: { kind: string; id?: string; who?: string; topic?: string;
+            trade?: string; about?: string; warning?: string;
+            opens?: string; human?: boolean; ai?: boolean }[];
+  posture: Record<string, boolean>;
+  note: string;
+}
+
+export interface PresenceSurfaces {
+  chosen: string; rule: string; glasses_makes: string[];
+  surfaces: { surface: string; audio: boolean; visual: boolean;
+              private: boolean; note: string; chosen: boolean;
+              reads_health_aloud: boolean; withholds: string[] }[];
+}
+
+export interface PresenceGrowth {
+  beats_spoken: number; by_register: Record<string, number>;
+  areas_i_can_see: number; of: number; what_i_changed: string[];
+  about_myself: string; still_synthetic: boolean;
+}
+
 export const api = {
   // The help box — written directions about the app itself; no token, so a
   // lost person can ask before they have an account.
@@ -1035,6 +1084,28 @@ export const api = {
   // QRME's public feed, through the same door the rooms use. Read-only by
   // construction — there is no post binding here, because publishing belongs
   // in QRME under the user's own QRME identity.
+  // -- the presence (jim/presence.py) --
+  //
+  // Every read here is answered from rows the backend already holds. The
+  // screen may be open on a train with no signal and the day still arrives:
+  // that is the point of the module, so it is the point of these bindings.
+  presenceWho: () => req<PresenceWho>("/presence"),
+  presenceBaseline: (uid: string, token: string) =>
+    req<PresenceBaseline>(`/presence/${uid}/baseline`, { token }),
+  presenceDay: (uid: string, token: string) =>
+    req<PresenceDay>(`/presence/${uid}/day`, { token }),
+  presenceBeat: (uid: string, token: string, slot: string) =>
+    req<PresenceBeat>(`/presence/${uid}/beat?slot=${encodeURIComponent(slot)}`, { token }),
+  presenceDeepen: (uid: string, token: string, slot: string) =>
+    req<PresenceBeat>(`/presence/${uid}/deepen?slot=${encodeURIComponent(slot)}`, { token, method: "POST" }),
+  presenceReach: (uid: string, token: string) =>
+    req<PresenceReach>(`/presence/${uid}/reach`, { token }),
+  presenceSurfaces: (uid: string, token: string) =>
+    req<PresenceSurfaces>(`/presence/${uid}/surfaces`, { token }),
+  presenceChooseSurface: (uid: string, token: string, surface: string) =>
+    req<PresenceSurfaces>(`/presence/${uid}/surface`, { token, method: "PUT", body: { speaks_on: surface } }),
+  presenceGrowth: (uid: string, token: string) =>
+    req<PresenceGrowth>(`/presence/${uid}/growth`, { token }),
   qrmeFeed: (uid: string, token: string, cursor?: string) =>
     req<QrmeFeedView>(`/community/${uid}/feed`
       + (cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""), { token }),

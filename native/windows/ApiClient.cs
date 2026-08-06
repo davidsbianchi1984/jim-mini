@@ -435,6 +435,71 @@ public record CommunityPosture(
     [property: JsonPropertyName("posts_on_your_behalf")] bool PostsOnYourBehalf,
     [property: JsonPropertyName("health_data_shared")] bool HealthDataShared);
 
+/// <summary>What the presence says it is. <c>Boundaries</c> is the half that
+/// matters: a boundary a screen cannot render is one nobody can be shown.
+/// </summary>
+public record PresenceWho(
+    [property: JsonPropertyName("says")] string Says,
+    [property: JsonPropertyName("note")] string Note,
+    [property: JsonPropertyName("works_offline")] bool WorksOffline,
+    [property: JsonPropertyName("hands_free")] bool HandsFree,
+    [property: JsonPropertyName("boundaries")] Dictionary<string, PresenceBoundary>? Boundaries);
+
+public record PresenceBoundary(
+    [property: JsonPropertyName("value")] bool Value,
+    [property: JsonPropertyName("says")] string Says);
+
+/// <summary>One unprompted turn — or silence, which is an outcome rather
+/// than an empty response. <c>Because</c> is why, and a presence that cannot
+/// show its reason is one nobody can argue with.</summary>
+public record PresenceBeat(
+    [property: JsonPropertyName("slot")] string Slot,
+    [property: JsonPropertyName("speak")] bool Speak,
+    [property: JsonPropertyName("register")] string Register,
+    [property: JsonPropertyName("english")] string English,
+    [property: JsonPropertyName("spoken")] string? Spoken,
+    [property: JsonPropertyName("because")] string[]? Because);
+
+public record PresenceDay(
+    [property: JsonPropertyName("beats")] PresenceBeat[]? Beats,
+    [property: JsonPropertyName("offline")] bool Offline);
+
+public record PresenceArea(
+    [property: JsonPropertyName("area")] string Area,
+    [property: JsonPropertyName("standing")] string Standing);
+
+public record PresenceBaseline(
+    [property: JsonPropertyName("known_areas")] int KnownAreas,
+    [property: JsonPropertyName("of")] int Of,
+    [property: JsonPropertyName("needed_network")] bool NeededNetwork,
+    [property: JsonPropertyName("areas")] Dictionary<string, PresenceArea>? Areas);
+
+public record PresenceOffer(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("who")] string? Who,
+    [property: JsonPropertyName("topic")] string? Topic);
+
+public record PresenceReach(
+    [property: JsonPropertyName("offers")] PresenceOffer[]? Offers,
+    [property: JsonPropertyName("note")] string Note);
+
+public record PresenceSurfaceRow(
+    [property: JsonPropertyName("surface")] string Surface,
+    [property: JsonPropertyName("chosen")] bool Chosen,
+    [property: JsonPropertyName("reads_health_aloud")] bool ReadsHealthAloud,
+    [property: JsonPropertyName("note")] string Note);
+
+public record PresenceSurfaces(
+    [property: JsonPropertyName("chosen")] string Chosen,
+    [property: JsonPropertyName("rule")] string Rule,
+    [property: JsonPropertyName("surfaces")] PresenceSurfaceRow[]? Surfaces);
+
+public record PresenceGrowth(
+    [property: JsonPropertyName("beats_spoken")] int BeatsSpoken,
+    [property: JsonPropertyName("areas_i_can_see")] int AreasSeen,
+    [property: JsonPropertyName("of")] int Of,
+    [property: JsonPropertyName("about_myself")] string AboutMyself);
+
 public record CommunityView(
     [property: JsonPropertyName("qrme_url")] string? QrmeUrl,
     [property: JsonPropertyName("language")] string? Language,
@@ -1008,6 +1073,59 @@ public sealed class ApiClient
         res.EnsureSuccessStatusCode();
     }
 
+
+    // MARK: The presence — the coach that speaks first
+    //
+    // Every read here is answered from rows the backend already holds — no
+    // model, no second call out. A machine with no connection still gets its
+    // day, which is the whole argument of `jim/presence.py`.
+
+    /// <summary>What it is, and what it will not be. No token: the answer
+    /// must be the same to a child, a guardian, a clinician and a
+    /// regulator.</summary>
+    /// <remarks>The token is passed and ignored by the route: this answer is
+    /// public by design, and sending the header keeps one code path rather
+    /// than a second unauthenticated one.</remarks>
+    public Task<PresenceWho> PresenceWho(string token) =>
+        Send<PresenceWho>(Get("/presence", token));
+
+    /// <summary>The six areas and where each one stands.</summary>
+    public Task<PresenceBaseline> PresenceBaseline(string uid, string token) =>
+        Send<PresenceBaseline>(Get($"/presence/{uid}/baseline", token));
+
+    /// <summary>The day's three beats at once — a plan a client can hold and
+    /// then lose its connection without losing the day.</summary>
+    public Task<PresenceDay> PresenceDay(string uid, string token) =>
+        Send<PresenceDay>(Get($"/presence/{uid}/day", token));
+
+    /// <summary>One beat. Asking is what counts as having been told: the
+    /// backend records it so the same line does not return tomorrow.</summary>
+    public Task<PresenceBeat> PresenceBeat(string uid, string token, string slot) =>
+        Send<PresenceBeat>(Get($"/presence/{uid}/beat?slot={slot}", token));
+
+    /// <summary>The same beat with a model's wording. The model may not
+    /// decide that there is a beat, which area, or what the evidence
+    /// says.</summary>
+    public Task<PresenceBeat> PresenceDeepen(string uid, string token, string slot) =>
+        Send<PresenceBeat>(Post($"/presence/{uid}/deepen?slot={slot}", new { }, token));
+
+    /// <summary>Other minds — QRME's rooms, desks and profiles, offered.</summary>
+    public Task<PresenceReach> PresenceReach(string uid, string token) =>
+        Send<PresenceReach>(Get($"/presence/{uid}/reach", token));
+
+    /// <summary>Where it may speak, and what each surface makes it hold
+    /// back.</summary>
+    public Task<PresenceSurfaces> PresenceSurfaces(string uid, string token) =>
+        Send<PresenceSurfaces>(Get($"/presence/{uid}/surfaces", token));
+
+    public Task<PresenceSurfaces> PresenceChooseSurface(string uid, string token,
+                                                        string surface) =>
+        Send<PresenceSurfaces>(Put($"/presence/{uid}/surface",
+            new { speaks_on = surface }, token));
+
+    /// <summary>What it has become, with the counts under it.</summary>
+    public Task<PresenceGrowth> PresenceGrowth(string uid, string token) =>
+        Send<PresenceGrowth>(Get($"/presence/{uid}/growth", token));
 
     // MARK: Followup, adaptation and anonymity
 

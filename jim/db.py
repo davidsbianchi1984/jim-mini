@@ -815,6 +815,31 @@ CREATE TABLE IF NOT EXISTS trend_points (
     created_at TEXT NOT NULL
 );
 
+-- The presence's own spoken beats (jim/presence.py). What it said, when, and
+-- which line — never the sentence itself, because the sentence is composed in
+-- the reader's language on the client and storing the English would make this
+-- table a second, worse copy of what somebody actually heard.
+--
+-- It exists for one reason: so the presence does not repeat itself. A
+-- guardian that says the same thing every morning is a notification, and
+-- people turn notifications off.
+CREATE TABLE IF NOT EXISTS presence_beats (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    slot       TEXT,            -- morning | midday | evening
+    area       TEXT,            -- one of the six, or NULL for an open question
+    register   TEXT,            -- noticing | nudging | celebrating | curious
+    line_key   TEXT NOT NULL,   -- the key, not the words
+    created_at TEXT NOT NULL
+);
+
+-- Where the presence speaks. One row per user: a choice, not a history.
+CREATE TABLE IF NOT EXISTS presence_surface (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    surface    TEXT NOT NULL,   -- earbuds | speaker | glasses | ar | vr | ...
+    created_at TEXT NOT NULL
+);
+
 -- Physical embodiments (clause 16): wearables, stationary systems, and
 -- networked autonomous devices — with transport (e.g. Bluetooth), an
 -- optional on-device LLM, and links between devices (watch → phone).

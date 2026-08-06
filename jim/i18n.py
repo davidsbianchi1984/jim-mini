@@ -1780,6 +1780,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': 'कोई QRME एंडपॉइंट कॉन्फ़िगर नहीं है (JIM_QRME_URL सेट करें) — फ़ीड QRME में रहती है और JIM उसका द्वार दिखाता है',
         'ar': 'لا توجد نقطة نهاية QRME مُهيّأة (اضبط JIM_QRME_URL) — التدفق يقيم في QRME وJIM يدلّ على بابه',
     },
+    'no QRME endpoint configured (set JIM_QRME_URL) — the people live in QRME and JIM shows the door': {
+        'es': 'no hay endpoint de QRME configurado (defina JIM_QRME_URL) — las personas viven en QRME y JIM muestra la puerta',
+        'fr': 'aucun point de terminaison QRME configuré (définissez JIM_QRME_URL) — les gens vivent dans QRME et JIM en indique la porte',
+        'de': 'kein QRME-Endpunkt konfiguriert (JIM_QRME_URL setzen) — die Menschen leben in QRME, und JIM zeigt die Tür dorthin',
+        'pt': 'não há endpoint QRME configurado (defina JIM_QRME_URL) — as pessoas vivem no QRME e o JIM mostra a porta',
+        'it': 'nessun endpoint QRME configurato (imposta JIM_QRME_URL) — le persone vivono in QRME e JIM ne mostra la porta',
+        'ja': 'QRME のエンドポイントが設定されていません（JIM_QRME_URL を設定してください）— 人びとは QRME にいて、JIM はその入口を示します',
+        'zh': '未配置 QRME 端点（请设置 JIM_QRME_URL）— 人在 QRME，JIM 只是指出入口',
+        'hi': 'कोई QRME एंडपॉइंट कॉन्फ़िगर नहीं है (JIM_QRME_URL सेट करें) — लोग QRME में हैं और JIM उसका द्वार दिखाता है',
+        'ar': 'لا توجد نقطة نهاية QRME مُهيّأة (اضبط JIM_QRME_URL) — الناس في QRME وJIM يدلّ على بابه',
+    },
     'no alarm with that id': {
         'es': 'no hay ninguna alarma con ese id',
         'fr': 'aucune alerte avec cet identifiant',
@@ -2539,6 +2550,7 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    'speaks_on': {'en': 'Where it speaks', 'es': 'Dónde habla', 'fr': 'Où il parle', 'de': 'Wo es spricht', 'pt': 'Onde fala', 'it': 'Dove parla', 'ja': 'どこで話すか', 'zh': '在哪儿说话', 'hi': 'कहाँ बोले', 'ar': 'أين يتحدّث'},
     'email_reminder': {'en': 'Email me a reminder', 'es': 'Enviarme un recordatorio por correo', 'fr': "M'envoyer un rappel par e-mail", 'de': 'Erinnerung per E-Mail', 'pt': 'Enviar-me um lembrete por e-mail', 'it': 'Promemoria via e-mail', 'ja': 'メールでリマインド', 'zh': '邮件提醒', 'hi': 'ईमेल अनुस्मारक', 'ar': 'تذكير بالبريد'},
     'when': {'en': 'When', 'es': 'Cuándo', 'fr': 'Quand', 'de': 'Wann', 'pt': 'Quando', 'it': 'Quando', 'ja': '日時', 'zh': '时间', 'hi': 'कब', 'ar': 'متى'},
     'where': {'en': 'Where', 'es': 'Dónde', 'fr': 'Où', 'de': 'Wo', 'pt': 'Onde', 'it': 'Dove', 'ja': '場所', 'zh': '地点', 'hi': 'कहाँ', 'ar': 'أين'},

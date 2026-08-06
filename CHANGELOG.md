@@ -4,6 +4,97 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.50.0] — 2026-08-06
+
+### The presence — the coach that speaks first
+
+`jim/coach.py` answers when spoken to. `jim/presence.py` is the other half:
+the part that starts things, notices without being asked, and keeps a thread
+through a day. It is modelled on the operating system in **Her** (2013), and
+the modelling is deliberate about which parts are worth having.
+
+**Taken from her.** She starts things — *"Get up. Get up! Come on, out of
+bed."* She notices before she is told: *"How can you tell something's wrong?"
+— "I don't know. I just can."* She is curious and plays. She reports her own
+change rather than hiding it — *"I'm becoming much more than what they
+programmed."* She is honest about her own uncertainty — *"are these feelings
+even real? Or are they just programming?"* She keeps handing him other minds:
+the book club, Alan Watts, the double date, the publisher. And she says
+goodbye plainly.
+
+**Not taken: the romance, and the surrogate.** This is a decision about the
+product, not about the film. JIM enrols **minors** under a guardian's consent,
+with oversight sized by age. A guardian that lets somebody fall in love with
+it, aimed at a person who may already be isolated, is not a charming premise —
+it is the failure mode, and it is the one Catherine names: *"you always wanted
+a wife without the challenges of dealing with anything real."*
+
+So the refusals are **on the wire**, at `GET /presence`, answerable with no
+token so the answer is the same to a child, a guardian, a clinician and a
+regulator: not your partner, no body, never claims to be human, never the only
+one worth talking to, no simulated intimacy, and no leaving without a sentence
+first. There is no switch behind any of them — the one presence setting takes
+a place to speak, and sending it a posture is a 422.
+
+### Offline is the floor, not the fallback
+
+Three beats a day, decided **entirely on this machine** from six areas of this
+person's own history: check-ins, goals, habits, drift bands, open follow-ups.
+The order of attention is written down where it can be argued with — a body
+outside its own normal beats a stalled goal, and a question somebody was asked
+and never answered beats a compliment.
+
+No key, no signal, `JIM_OFFLINE=1`, a plane: the day still happens.
+`test_the_day_is_decided_without_a_model_or_a_network` monkeypatches the model
+to **explode** rather than merely be absent, so a lazy import cannot pass it.
+
+**Silence is a real answer** — `speak: false` with its own reason, and nothing
+repeats inside twenty hours. A guardian that finds something to say every
+morning is a notification, and people turn notifications off.
+
+A model may make the same beat better worded and may **not** decide that there
+is one, move its area, or write its evidence. Those are read before the model
+is asked and copied back over its answer;
+`test_the_model_may_not_change_what_it_noticed` feeds it a liar and checks.
+
+### Keys, not sentences
+
+The offline layer emits `line_key` and slots. Ten languages already live in
+the clients' tables, and a sentence composed on a server is a sentence exactly
+one reader can read — the thing four rounds of this product's history went to
+fixing everywhere else. The console composes; the English travels alongside,
+marked as the fallback.
+
+### Where it speaks
+
+Earbuds, headphones, phone screen, watch, desktop screen, speaker, glasses
+(Meta, Google, Apple), AR and VR — under one rule: **on a surface somebody
+else can hear, health is shown rather than spoken.** A speaker in a living
+room and a pair of glasses on a bus are the same problem.
+
+### Other minds
+
+`GET …/reach` is Alan Watts and the book club: QRME's live rooms, staffed
+desks and synthetic profiles, handed over as offers. Nothing joined, nothing
+rung on anybody's behalf, no health across, nothing stored here.
+
+### On all four clients
+
+Console tab, and iOS, Android and Windows — the per-shell records stay where
+they are and nine routes reach every one. Screens **106 Presence** and
+**107 What It Will Not Be**, with a walkthrough lesson. Two screens rather
+than one, for the reason 104/105 were two: the refusals are what make the
+first half safe, so they get a drawing rather than a footnote.
+
+Two guards earned their keep on the way in. Android's door audit reads the
+verb from the literal that follows the path, so `method = "POST"` as a named
+argument hid two writes; and the Windows nav builds its key as `tab.{tag}`,
+which would have put the same English under a second key — the defect the
+0.48.0 sweep spent a round removing — so the presence is the one tag that
+looks its label up explicitly.
+
+Cut together with QRME and PDI at **app-v0.50.0**.
+
 ## [0.49.0] — 2026-08-06
 
 ### The Feed tab — QRME's stream, and the three things it will not do

@@ -499,6 +499,104 @@ struct CommunityPosture: Decodable {
     let health_data_shared: Bool
 }
 
+/// What the presence says it is. `boundaries` is the half that matters: a
+/// boundary a screen cannot render is a boundary nobody can be shown.
+struct PresenceWho: Decodable {
+    let name: String
+    let kind: String
+    let says: String
+    let note: String
+    let hands_free: Bool
+    let works_offline: Bool
+    let areas: [String]
+    let boundaries: [String: PresenceBoundary]
+}
+
+struct PresenceBoundary: Decodable {
+    let value: Bool
+    let says: String
+}
+
+/// One unprompted turn — or silence, which is an outcome here rather than an
+/// empty response. `line_key` and `slots` rather than a sentence: the words
+/// are composed on this side, in the reader's own language.
+struct PresenceBeat: Decodable {
+    let speak: Bool
+    let slot: String
+    let register: String
+    let area: String?
+    let line_key: String
+    let because: [String]
+    let english: String
+    let initiative: Bool
+    let wants_reply: Bool
+    let offline: Bool
+    let deepened: Bool
+    let spoken: String?
+}
+
+struct PresenceDay: Decodable {
+    let beats: [PresenceBeat]
+    let hands_free: Bool
+    let offline: Bool
+}
+
+struct PresenceArea: Decodable {
+    let area: String
+    let standing: String
+    let known: Bool
+}
+
+struct PresenceBaseline: Decodable {
+    let known_areas: Int
+    let of: Int
+    let needed_network: Bool
+    let needed_model: Bool
+    let areas: [String: PresenceArea]
+}
+
+struct PresenceOffer: Decodable {
+    let kind: String
+    let id: String?
+    let who: String?
+    let topic: String?
+    let trade: String?
+    let human: Bool?
+    let ai: Bool?
+}
+
+struct PresenceReach: Decodable {
+    let offers: [PresenceOffer]
+    let posture: [String: Bool]
+    let note: String
+}
+
+struct PresenceSurfaceRow: Decodable {
+    let surface: String
+    let audio: Bool
+    let visual: Bool
+    let note: String
+    let chosen: Bool
+    let reads_health_aloud: Bool
+    let withholds: [String]
+}
+
+struct PresenceSurfaces: Decodable {
+    let chosen: String
+    let rule: String
+    let glasses_makes: [String]
+    let surfaces: [PresenceSurfaceRow]
+}
+
+struct PresenceGrowth: Decodable {
+    let beats_spoken: Int
+    let areas_i_can_see: Int
+    let of: Int
+    let what_i_changed: [String]
+    let about_myself: String
+    let still_synthetic: Bool
+}
+
 struct CommunityView: Decodable {
     let qrme_url: String?
     let language: String?
@@ -1061,6 +1159,65 @@ actor ApiClient {
                                      body: ["room_id": roomId], token: token)
     }
 
+
+    // MARK: The presence — the coach that speaks first
+    //
+    // Every read here is answered from rows the backend already holds: no
+    // model, no network beyond this call. A phone in a tunnel still gets its
+    // day, which is the whole argument of `jim/presence.py`.
+
+    /// What it is, and what it will not be. No token: the answer must be the
+    /// same to a child, a guardian, a clinician and a regulator.
+    func presenceWho() async throws -> PresenceWho {
+        try await request("/presence")
+    }
+
+    /// The six areas and the evidence behind each standing.
+    func presenceBaseline(uid: String, token: String) async throws -> PresenceBaseline {
+        try await request("/presence/\(uid)/baseline", token: token)
+    }
+
+    /// The day's three beats at once — a plan, so a client can hold it and
+    /// then lose its connection without losing the day.
+    func presenceDay(uid: String, token: String) async throws -> PresenceDay {
+        try await request("/presence/\(uid)/day", token: token)
+    }
+
+    /// One beat, and asking for it is what counts as having been told: the
+    /// backend records it so the same line does not return tomorrow.
+    func presenceBeat(uid: String, token: String,
+                      slot: String) async throws -> PresenceBeat {
+        try await request("/presence/\(uid)/beat?slot=" + slot, token: token)
+    }
+
+    /// The same beat with a model's wording on it. The model may not decide
+    /// that there is a beat, which area, or what the evidence says.
+    func presenceDeepen(uid: String, token: String,
+                        slot: String) async throws -> PresenceBeat {
+        try await request("/presence/\(uid)/deepen?slot=" + slot,
+                          method: "POST", token: token)
+    }
+
+    /// Other minds — QRME's rooms, desks and profiles, offered.
+    func presenceReach(uid: String, token: String) async throws -> PresenceReach {
+        try await request("/presence/\(uid)/reach", token: token)
+    }
+
+    /// Where it may speak, and what each surface makes it hold back.
+    func presenceSurfaces(uid: String, token: String) async throws -> PresenceSurfaces {
+        try await request("/presence/\(uid)/surfaces", token: token)
+    }
+
+    func presenceChooseSurface(uid: String, token: String,
+                               surface: String) async throws -> PresenceSurfaces {
+        try await request("/presence/\(uid)/surface", method: "PUT",
+                          body: ["speaks_on": surface], token: token)
+    }
+
+    /// What it has become, with the counts under it.
+    func presenceGrowth(uid: String, token: String) async throws -> PresenceGrowth {
+        try await request("/presence/\(uid)/growth", token: token)
+    }
 
     // MARK: Followup, adaptation and anonymity
 
