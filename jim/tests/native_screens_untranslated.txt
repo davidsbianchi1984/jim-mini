@@ -110,5 +110,5 @@
 # along.
 
 ios: 45
-android: 48
+android: 46
 windows: 57

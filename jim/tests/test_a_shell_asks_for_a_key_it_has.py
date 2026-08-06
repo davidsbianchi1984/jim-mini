@@ -99,6 +99,45 @@ _ASKED_TERNARY = [
     re.compile(r'\bL10n\s*\.\s*[tTfF][a-zA-Z]*\s*\(\s*if\s*\([^)]*\)\s*"([\w.]+)"\s*else\s*"([\w.]+)"'),
 ]
 
+#: **Added in 0.47.6.** Three more shapes, after the ported guard reported 540
+#: rows in the sibling product as asked for by nobody and reading them showed
+#: most of that number was this file not looking in the right places.
+#:
+#: A key assembled from a prefix and a value — `L10n.t("obj.actor.\(a)")`,
+#: `"obj.actor.${a}"`, `$"obj.actor.{a}"` — asks for *every* row under that
+#: prefix. All six `obj.actor.*` rows are reachable; none of them appeared as
+#: a literal argument anywhere.
+#: Anywhere in the sources, not only at a localizer call. The first version
+#: of this required `L10n.t(` in front, and missed the shape iOS uses for the
+#: welcome screen's profile-kind picker — a helper that *returns* the key and
+#: a caller that looks it up:
+#:
+#:     kind == "other_person" ? "nw.kind.other" : "nw.kind.\(kind)"
+#:
+#: A string literal ending in a dot with a value spliced onto it is a key
+#: being assembled, wherever it sits. Requiring the call in front is the same
+#: narrowness this whole comment block is a history of.
+_ASKED_PREFIX = [
+    re.compile(r'"([\w]+(?:\.[\w]+)*\.)\\\('),   # Swift  "a.b.\(x)"
+    re.compile(r'"([\w]+(?:\.[\w]+)*\.)\$\{?[A-Za-z_]'),  # Kotlin "a.b.${x}"
+    re.compile(r'\$"([\w]+(?:\.[\w]+)*\.)\{'),    # C#     $"a.b.{x}"
+    re.compile(r'"([\w]+(?:\.[\w]+)*\.)"\s*\+'),  # concat
+]
+
+#: And a key that is a literal in the shell's sources but not at a call site:
+#: held in a dictionary of keys, returned by a helper that picks one, passed
+#: to a component that looks it up. The key is right there in the file; only
+#: this file's idea of "asked for" was narrow.
+#:
+#:     asked     is the key the first argument to a localizer call
+#:     mattered  does this shell reach this row at all
+#:
+#: This is deliberately generous. The direction that matters is the dangerous
+#: one — a guard that calls a live row dead invites somebody to delete a row a
+#: screen is using, and this file has caused that once already. A key
+#: mentioned in a comment counting as reached is a cost worth paying.
+_MENTIONED = re.compile(r'"([\w]+(?:\.[\w]+)+)"')
+
 #: A row in any of the three table syntaxes — Swift `"k": [`, Kotlin
 #: `"k" to mapOf(`, C# `["k"] = new()`.
 _HELD = re.compile(r'"([\w.]+)"\s*(?::\s*\[|\s+to\s+mapOf\(|"?\]\s*=\s*new)')
@@ -118,6 +157,38 @@ def _asked(shell: str) -> dict[str, list[str]]:
         for key in keys:
             found.setdefault(key, []).append(path.name)
     return found
+
+
+def _reached(shell: str) -> set[str]:
+    """Every row this shell can get to, by any means.
+
+    Deliberately a wider net than :func:`_asked`, and the two are used for
+    opposite questions. *Does this shell ask for a row it does not hold* has
+    to be strict, or a dotted string that is not a key at all — a module path,
+    an SF Symbol name — reports a missing row that was never a row. *Does
+    anything reach this row* has to be generous, because the failure there is
+    calling a live row dead, which is how somebody comes to delete a row a
+    screen is using.
+
+        asked     is the key the first argument to a localizer call
+        mattered  does this shell reach this row at all
+    """
+    root, suffixes, table = SHELLS[shell]
+    reached, prefixes = set(_asked(shell)), set()
+    for path in sorted(root.rglob("*")):
+        if path.suffix not in suffixes or path == table:
+            continue
+        text = path.read_text(encoding="utf-8")
+        reached |= set(_MENTIONED.findall(text))
+        for rx in _ASKED_PREFIX:
+            prefixes |= set(rx.findall(text))
+    # Every row under an assembled prefix. Resolved against the table rather
+    # than kept as a bare prefix, so a prefix matching no row at all — a typo,
+    # or a family that was deleted — covers nothing instead of covering
+    # silently.
+    reached |= {k for k in _held(shell)
+                if any(k.startswith(pre) for pre in prefixes)}
+    return reached
 
 
 def _held(shell: str) -> set[str]:
@@ -162,7 +233,7 @@ def test_no_row_is_translated_into_ten_languages_and_asked_for_by_nobody(shell):
     prefix, the way the console's version handles `nav.${id}`.
     """
     built_from_a_list = ("tab.",)
-    dead = sorted(k for k in _held(shell) - set(_asked(shell))
+    dead = sorted(k for k in _held(shell) - _reached(shell)
                   if not k.startswith(built_from_a_list))
     recorded = {line.split(": ", 1)[1] for line in _dead_record()
                 if line.startswith(f"{shell}: ")}

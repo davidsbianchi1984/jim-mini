@@ -4,6 +4,43 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.6] — 2026-08-06
+
+### Nine English buttons on the resuscitation screen
+
+The sibling repo widened the untranslated-screens rule this round, and ported
+it here in the same round because these three files are one guard copied twice.
+It found that Compose has no `Button(text)`: a button on this shell is a `Box`
+with a `Text` inside it, called by name — `SmallAction`, `BrandButton`,
+`RobotAction`, `labeledField`, `medRow`, `ratingRow`, `sliderRow` — and the
+Kotlin pattern list was `Text(` and nothing else.
+
+`RobotAction` is the **resuscitation surface**. *Start CPR (pre-authorized)*,
+*Confirm: unresponsive, not breathing*, *Auto-resuscitate*, *Coach CPR*, *Fetch
+AED*, *Meet EMS*, *Stop CPR*, *Perform CPR…* — nine buttons, in English, on the
+screen this guard's own opening section names as the case where English is a
+hazard rather than a discourtesy. Beside them, `medRow` labels the age,
+conditions and resting heart rate a responder reads off the same screen.
+
+    asked     does the string start a `Text(`
+    mattered  does the string end up inside one
+
+Every one of those rows already existed — `fa.start`, `fa.stop`, `fa.aed`,
+`fa.coach`, `fa.ems`, `fa.perform`, `res.auto` have been in the iOS table since
+the crisis round. Only the shell asking for them was missing.
+
+### The welcome screen, again
+
+`WelcomeScreen` opens `language` at `"en"` and localizes itself from it, so
+the accountless screen greeted every reader on earth in English until they
+found the picker. PDI had exactly this at 0.47.5 and this repo's own `L10n`
+carries `deviceLanguage()` for it. The picker now starts where the device is.
+
+**46 call sites wired, 32 rows added, 12 copied from the iOS table.** Android
+48 → 46.
+
+Cut together with QRME and PDI at app-v0.47.6.
+
 ## [0.47.5] — 2026-08-06
 
 ### The guard this repo wrote, in the other two

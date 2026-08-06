@@ -127,7 +127,7 @@ fun WelcomeScreen(vm: GuardianViewModel) {
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var languages by remember { mutableStateOf<List<LanguageInfo>>(emptyList()) }
-    var language by remember { mutableStateOf("en") }
+    var language by remember { mutableStateOf(L10n.deviceLanguage()) }
     LaunchedEffect(Unit) {
         runCatching { ApiClient.languages() }.onSuccess { languages = it }
     }
@@ -145,8 +145,8 @@ fun WelcomeScreen(vm: GuardianViewModel) {
                 color = Jim.T2, fontSize = 13.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
 
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                labeledField("Name", name, "Your name") { name = it }
-                labeledField("Birthdate", birthdate, "yyyy-MM-dd") { birthdate = it }
+                labeledField(L10n.t("nw.name", language), name, L10n.t("res.name", language)) { name = it }
+                labeledField(L10n.t("nw.birthdate", language), birthdate, L10n.t("nw.birthdate.ph", language)) { birthdate = it }
                 if (languages.isNotEmpty()) {
                     Text("Language", color = Jim.T2, fontSize = 12.sp)
                     languages.chunked(3).forEach { row ->
@@ -172,7 +172,7 @@ fun WelcomeScreen(vm: GuardianViewModel) {
                 }
             }
             error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
-            BrandButton("Get Started", enabled = consent && name.isNotBlank(), busy = busy) {
+            BrandButton(L10n.t("nw.start", language), enabled = consent && name.isNotBlank(), busy = busy) {
                 error = null
                 vm.enroll(name, birthdate, language,
                     onError = { error = it }, onBusy = { busy = it })
@@ -284,8 +284,8 @@ fun MonitorScreen(vm: GuardianViewModel) {
         Text(L10n.t("mon", vm.language), color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text("Send a sample. The Guardian compares it to your baseline.", color = Jim.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            sliderRow("Heart rate", "${hr.roundToInt()} bpm", Jim.Red, hr, 40f..180f) { hr = it }
-            sliderRow("Stress", "${(stress * 100).roundToInt()}%", Jim.Amber, stress, 0f..1f) { stress = it }
+            sliderRow(L10n.t("ci.hr", vm.language), "${hr.roundToInt()} bpm", Jim.Red, hr, 40f..180f) { hr = it }
+            sliderRow(L10n.t("ci.stress", vm.language), "${(stress * 100).roundToInt()}%", Jim.Amber, stress, 0f..1f) { stress = it }
         }
         BrandButton(L10n.t("mon.send", vm.language), busy = busy) {
             busy = true
@@ -316,7 +316,7 @@ fun MonitorScreen(vm: GuardianViewModel) {
                     fontWeight = FontWeight.Bold)
                 Text("About the guidance for ${f.condition}.",
                     color = Jim.T2, fontSize = 12.sp)
-                labeledField("", note, "Anything you want to add (optional)") { note = it }
+                labeledField("", note, L10n.t("mon.add", vm.language)) { note = it }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     listOf("It helped" to true, "It did not" to false).forEach { (label, helped) ->
                         SmallAction(label, enabled = !busy) {
@@ -385,8 +385,8 @@ fun CheckinScreen(vm: GuardianViewModel) {
         Text("Check-in", color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text("A quick pulse on how you're doing.", color = Jim.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            ratingRow("Mood", mood) { mood = it }
-            ratingRow("Energy", energy) { energy = it }
+            ratingRow(L10n.t("ci.mood", vm.language), mood) { mood = it }
+            ratingRow(L10n.t("ci.energy", vm.language), energy) { energy = it }
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Note", color = Jim.Txt, fontSize = 14.sp)
                 OutlinedTextField(value = note, onValueChange = { note = it },
@@ -399,7 +399,7 @@ fun CheckinScreen(vm: GuardianViewModel) {
                         focusedContainerColor = Jim.ScrBot, unfocusedContainerColor = Jim.ScrBot))
             }
         }
-        BrandButton("Log check-in", busy = busy) {
+        BrandButton(L10n.t("ci.log", vm.language), busy = busy) {
             busy = true
             vm.call({ ApiClient.checkin(vm.uid!!, vm.token!!, mood, energy, note) }) {
                 result = it.getOrNull(); busy = false
@@ -452,9 +452,9 @@ fun CoachScreen(vm: GuardianViewModel) {
             color = Jim.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             areaChips(area) { area = it }
-            labeledField("Message", message, "What's on your mind?") { message = it }
+            labeledField(L10n.t("coach.msg", vm.language), message, L10n.t("coach.msg.ph", vm.language)) { message = it }
         }
-        BrandButton("Ask coach", enabled = message.isNotBlank(), busy = busy) {
+        BrandButton(L10n.t("coach.ask", vm.language), enabled = message.isNotBlank(), busy = busy) {
             busy = true
             fromSpecialist = null
             vm.call({ ApiClient.coach(vm.uid!!, vm.token!!, area, message) }) {
@@ -581,8 +581,8 @@ private fun GoalsPanel(vm: GuardianViewModel) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("New goal", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             areaChips(area) { area = it }
-            labeledField("Title", title, "What do you want to achieve?") { title = it }
-            BrandButton("Add goal", enabled = title.isNotBlank(), busy = busy) {
+            labeledField(L10n.t("goal.title", vm.language), title, L10n.t("goal.title.ph", vm.language)) { title = it }
+            BrandButton(L10n.t("goal.add", vm.language), enabled = title.isNotBlank(), busy = busy) {
                 busy = true
                 vm.call({ ApiClient.addGoal(vm.uid!!, vm.token!!, area, title, null) }) {
                     title = ""; busy = false; reload()
@@ -612,8 +612,8 @@ private fun HabitsPanel(vm: GuardianViewModel) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("New habit", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            labeledField("Name", name, "e.g. Walk 20 minutes") { name = it }
-            BrandButton("Add habit", enabled = name.isNotBlank(), busy = busy) {
+            labeledField(L10n.t("habit.name", vm.language), name, L10n.t("habit.name.ph", vm.language)) { name = it }
+            BrandButton(L10n.t("habit.add", vm.language), enabled = name.isNotBlank(), busy = busy) {
                 busy = true
                 vm.call({ ApiClient.addHabit(vm.uid!!, vm.token!!, name) }) {
                     name = ""; busy = false; reload()
@@ -645,8 +645,8 @@ private fun JournalPanel(vm: GuardianViewModel) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("New entry", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            labeledField("Entry", text, "How was today?") { text = it }
-            BrandButton("Save entry", enabled = text.isNotBlank(), busy = busy) {
+            labeledField(L10n.t("jrn.entry", vm.language), text, L10n.t("jrn.entry.ph", vm.language)) { text = it }
+            BrandButton(L10n.t("jrn.save", vm.language), enabled = text.isNotBlank(), busy = busy) {
                 busy = true
                 vm.call({ ApiClient.addJournal(vm.uid!!, vm.token!!, text) }) {
                     text = ""; busy = false; reload()
@@ -1144,7 +1144,7 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
                     // exists to stop being enough.
                     OutlinedTextField(value = responder,
                         onValueChange = { responder = it },
-                        label = { Text("Your name") })
+                        label = { Text(L10n.t("res.name", vm.language)) })
                     Button(onClick = {
                         vm.call({ ApiClient.acceptAlarm(vm.uid!!, a.id,
                             responder, vm.token!!) }) { said = it.note; load() }
@@ -1242,10 +1242,10 @@ private fun CrashWatchPanel(vm: GuardianViewModel) {
                 fontWeight = FontWeight.Bold)
             Text(L10n.t("cw.sub", vm.language),
                 color = Jim.T2, fontSize = 12.sp)
-            labeledField(L10n.t("cw.trusted", vm.language), name, "Rosa") { name = it }
-            labeledField(L10n.t("cw.reach", vm.language), channel, "rosa@example.com") { channel = it }
-            labeledField("Attempts (1\u201310)", attempts, "3") { attempts = it }
-            labeledField("Minutes per attempt", window, "5") { window = it }
+            labeledField(L10n.t("cw.trusted", vm.language), name, L10n.t("res.name.ph", vm.language)) { name = it }
+            labeledField(L10n.t("cw.reach", vm.language), channel, L10n.t("res.email.ph", vm.language)) { channel = it }
+            labeledField(L10n.t("res.attempts", vm.language), attempts, "3") { attempts = it }
+            labeledField(L10n.t("res.minutes", vm.language), window, "5") { window = it }
             Row(verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Checkbox(checked = ems, onCheckedChange = { ems = it },
@@ -1345,8 +1345,8 @@ private fun SOSPanel(vm: GuardianViewModel) {
             }
         }
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            labeledField("What's happening? (optional)", situation, "") { situation = it }
-            labeledField("Where are you? (optional)", location, "") { location = it }
+            labeledField(L10n.t("sos.what", vm.language), situation, "") { situation = it }
+            labeledField(L10n.t("sos.where", vm.language), location, "") { location = it }
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
         result?.let { r ->
@@ -1650,7 +1650,7 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                     }
                 }
             }
-            BrandButton("Bind", enabled = catalog.isNotEmpty(), busy = busy) {
+            BrandButton(L10n.t("rob.bind.go", vm.language), enabled = catalog.isNotEmpty(), busy = busy) {
                 busy = true; error = null
                 vm.call({ ApiClient.bindRobot(vm.uid!!, vm.token!!, chosen) }) { r ->
                     busy = false
@@ -1724,9 +1724,9 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                 }
                 if ("fetch_aed" in rob.commands) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        RobotAction("Fetch AED") { command(rob, "fetch_aed", null) }
-                        RobotAction("Coach CPR") { command(rob, "guide_first_aid", "cpr") }
-                        RobotAction("Meet EMS") { command(rob, "meet_responders", null) }
+                        RobotAction(L10n.t("fa.aed", vm.language)) { command(rob, "fetch_aed", null) }
+                        RobotAction(L10n.t("fa.coach", vm.language)) { command(rob, "guide_first_aid", "cpr") }
+                        RobotAction(L10n.t("fa.ems", vm.language)) { command(rob, "meet_responders", null) }
                     }
                 }
                 if ("perform_cpr" in rob.commands) {
@@ -1734,17 +1734,17 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                         verticalAlignment = Alignment.CenterVertically) {
                         when {
                             rob.status == "performing_cpr" ->
-                                RobotAction("Stop CPR", Jim.Red) { command(rob, "stop_cpr", null) }
+                                RobotAction(L10n.t("fa.stop", vm.language), Jim.Red) { command(rob, "stop_cpr", null) }
                             waiver?.signed == true -> {
-                                RobotAction("Start CPR (pre-authorized)", Jim.Red) {
+                                RobotAction(L10n.t("fa.start", vm.language), Jim.Red) {
                                     command(rob, "perform_cpr", null)
                                 }
-                                RobotAction("Auto-resuscitate", Jim.Red) {
+                                RobotAction(L10n.t("res.auto", vm.language), Jim.Red) {
                                     command(rob, "auto_defib", null)
                                 }
                             }
                             confirmingCpr == rob.id -> {
-                                RobotAction("Confirm: unresponsive, not breathing", Jim.Red) {
+                                RobotAction(L10n.t("res.confirm", vm.language), Jim.Red) {
                                     confirmingCpr = null
                                     command(rob, "perform_cpr", "confirmed")
                                 }
@@ -1752,7 +1752,7 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                                     Text("Cancel", color = Jim.T2, fontSize = 12.sp)
                                 }
                             }
-                            else -> RobotAction("Perform CPR…", Jim.Red) {
+                            else -> RobotAction(L10n.t("fa.perform", vm.language), Jim.Red) {
                                 confirmingCpr = rob.id
                                 cmdResult = "Confirm the person is unresponsive and not " +
                                     "breathing normally. The robot never starts on its own " +
@@ -2025,13 +2025,13 @@ private fun MedicalPanel(vm: GuardianViewModel) {
                     HorizontalDivider(color = Jim.Line)
                     Text(L10n.t("mid.responder", vm.language), color = Jim.Txt, fontSize = 14.sp,
                         fontWeight = FontWeight.Bold)
-                    medRow("Name", c.name ?: "—")
-                    medRow("Age", c.age?.toString() ?: "—")
-                    medRow("Resting HR", c.restingHr?.let { "$it bpm" } ?: "—")
-                    medRow("Conditions",
+                    medRow(L10n.t("med.name", vm.language), c.name ?: "—")
+                    medRow(L10n.t("med.age", vm.language), c.age?.toString() ?: "—")
+                    medRow(L10n.t("med.hr", vm.language), c.restingHr?.let { "$it bpm" } ?: "—")
+                    medRow(L10n.t("med.conditions", vm.language),
                         if (c.conditions.isEmpty()) "none declared" else c.conditions.joinToString(", "))
                     if (c.contactName != null || c.contactPhone != null)
-                        medRow("Contact", "${c.contactName ?: "—"} · ${c.contactPhone ?: "—"}")
+                        medRow(L10n.t("med.contact", vm.language), "${c.contactName ?: "—"} · ${c.contactPhone ?: "—"}")
                 }
                 TextButton(onClick = {
                     vm.call({ ApiClient.revokeMedicalCard(vm.uid!!, vm.token!!) }) {
@@ -2445,7 +2445,7 @@ private fun SocialPanel(vm: GuardianViewModel) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(L10n.t("jcon.social", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             FlowRowChips(platforms, platform) { platform = it }
-            labeledField(L10n.t("jcon.handle", vm.language), handle, "@you") { handle = it }
+            labeledField(L10n.t("jcon.handle", vm.language), handle, L10n.t("care.handle.ph", vm.language)) { handle = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 smallAction(L10n.t("jcon.connect.collect", vm.language)) { connect("collect") }
                 smallAction(L10n.t("jcon.connect.publish", vm.language)) { connect("publish") }
