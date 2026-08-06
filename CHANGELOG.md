@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.8] — 2026-08-06
+
+### No changes in this repo
+
+The three products are cut at one version, so this release exists here to keep that true. The round's work is PDI's Transfers screen — the sealed transfer, the intake, and the two out-of-band instructions that sit under a token shown once and name the only way the file can be retrieved.
+
+The rules it applied were written here: the picker keeping its raw values as identity (0.47.4), the strip resolving keys out of a `listOf` (0.47.6), and the desktop's labels moving out of XAML into a `Localize()` (0.47.7).
+
+Cut together with QRME and PDI at app-v0.47.8.
+
 ## [0.47.7] — 2026-08-06
 
 ### The medical card, on the two shells last round did not reach
