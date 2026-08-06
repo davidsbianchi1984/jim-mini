@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.46.9] — 2026-08-06
+
+### Version alignment
+
+The three products are cut together, so one number names one combination of
+all three. No JIM code changed. QRME localized the six screens that exist
+on all three of its shells — 212 English strings behind the tab bars down to
+68 — and fixed a sign-out button on Windows that read "Sign out" in every
+language because it sat outside the loop that localizes the navigation.
+
 ## [0.46.8] — 2026-08-06
 
 ### Version alignment
