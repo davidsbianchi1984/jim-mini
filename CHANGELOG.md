@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.0] — 2026-08-06
+
+### Version alignment
+
+The three products are cut together, so one number names one combination of
+all three. No JIM code changed. QRME found that its native-shell
+measurement could not see a string chosen by a ternary — `cond ? "Verifies" :
+"Does not verify"` was invisible on every shell — corrected the count from 68
+to 125, and then ran it to 7, none of which contains English.
+
 ## [0.46.9] — 2026-08-06
 
 ### Version alignment
