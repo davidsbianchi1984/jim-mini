@@ -4,6 +4,27 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.5] — 2026-08-06
+
+### The guard this repo wrote, in the other two
+
+`test_a_shell_asks_for_a_key_it_has.py` was written here at 0.44.x, after
+three native screens shipped asking `L10n` for rows that had been added to the
+console's table and to none of the three native ones. It has been running here
+ever since, and in neither sibling — both of which carry the same three tables
+and the same risk.
+
+Ported to QRME and PDI this round. It found the defect it exists for
+immediately in QRME: three Android screen headings asked for `tab.compose`,
+`tab.posts` and `tab.robots`, and that table held none of them, so those
+screens were titled with their own key names in every language.
+
+No JIM code changed. The finding is that a guard sitting in one product for
+several releases is a guard the other two are owed, and it took thirty rounds
+to go and check.
+
+Cut together with QRME and PDI at app-v0.47.5.
+
 ## [0.47.4] — 2026-08-06
 
 ### The first screen, in the reader's language

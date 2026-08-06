@@ -175,10 +175,22 @@ LOCALIZERS = {
 }
 
 
-def _declared_arity(shell: str) -> int:
+def _declared_arities(shell: str) -> set[int]:
+    """Every arity the shell's localizer declares, not the first one found.
+
+    `search` returned whichever overload appeared earliest in the file, which
+    was the right answer for as long as each shell had exactly one. Windows
+    now has two — `T(key)` for the signed-in chrome and `T(key, lang)` for the
+    screens whose reader has no profile — and the earlier version failed six
+    correct call sites on the strength of having stopped reading.
+
+        asked     does every call match the signature
+        mattered  does every call match a signature that exists
+    """
     path, decl, _ = LOCALIZERS[shell]
-    params = decl.search(path.read_text(encoding="utf-8")).group(1).strip()
-    return len([p for p in params.split(",") if p.strip()])
+    text = path.read_text(encoding="utf-8")
+    return {len([p for p in m.group(1).split(",") if p.strip()])
+            for m in decl.finditer(text)}
 
 
 def _args_at(text: str, open_paren: int) -> int:
@@ -229,17 +241,19 @@ def test_every_localizer_call_passes_what_that_shell_declares(shell):
     """Forty calls passed one argument to a two-parameter function, on the
     two shells with no compiler in this environment.
 
-    Per shell, against that shell's own signature — `L10n.T` on Windows takes
-    the key alone and reads the language itself, and holding all three to one
-    number would be the union mistake again.
+    Per shell, against that shell's own signatures — Windows' `L10n.T` has an
+    overload that reads the language itself and one that is told, and holding
+    all three shells to one number would be the union mistake again.
     """
-    want = _declared_arity(shell)
+    want = _declared_arities(shell)
+    assert want, f"{shell}: no localizer declaration parsed at all"
     wrong = [f"{f}:{line} — {n} argument(s)"
-             for f, line, n in _call_sites(shell) if n != want]
+             for f, line, n in _call_sites(shell) if n not in want]
     assert not wrong, (
-        f"{shell}'s localizer takes {want} argument(s); {len(wrong)} call "
-        "site(s) pass a different number, so those files do not "
-        "compile:\n    " + "\n    ".join(wrong[:20]))
+        f"{shell}'s localizer declares "
+        + " or ".join(f"{n}" for n in sorted(want))
+        + f" argument(s); {len(wrong)} call site(s) match none of them, so "
+        "those files do not compile:\n    " + "\n    ".join(wrong[:20]))
 
 
 @pytest.mark.parametrize("shell", sorted(LOCALIZERS))
@@ -259,7 +273,7 @@ def test_the_call_extraction_finds_something(shell):
     assert len(sites) >= 2, (
         f"only {len(sites)} localizer call(s) found in {shell} — the call "
         "pattern has stopped matching")
-    assert _declared_arity(shell) >= 1, (
+    assert _declared_arities(shell) and min(_declared_arities(shell)) >= 1, (
         f"{shell}'s localizer signature parsed as taking no arguments, which "
         "would make every call site look wrong")
 
