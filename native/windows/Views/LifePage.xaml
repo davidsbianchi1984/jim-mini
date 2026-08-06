@@ -8,7 +8,7 @@
     <Pivot MaxWidth="680" Margin="20,12" Foreground="{StaticResource JimTxtBrush}">
 
         <!-- Goals -->
-        <PivotItem Header="Goals">
+        <PivotItem x:Name="GoalsPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
@@ -53,7 +53,7 @@
         </PivotItem>
 
         <!-- Habits -->
-        <PivotItem Header="Habits">
+        <PivotItem x:Name="HabitsPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
@@ -95,7 +95,7 @@
         </PivotItem>
 
         <!-- Journal -->
-        <PivotItem Header="Journal">
+        <PivotItem x:Name="JournalPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"

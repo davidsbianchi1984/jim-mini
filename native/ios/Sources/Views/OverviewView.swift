@@ -18,18 +18,22 @@ struct OverviewView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 8) {
                     Circle().fill(Theme.green).frame(width: 8, height: 8)
-                    Text("Guardian on · watching").font(.caption.bold()).foregroundStyle(Theme.green)
+                    Text(L10n.t("ov.watching", state.language)).font(.caption.bold()).foregroundStyle(Theme.green)
                 }
-                Text("Hi, \(state.displayName)").font(.title.bold()).foregroundStyle(Theme.txt)
-                Text("Your Guardian is watching — the rules are transparent.")
+                Text(L10n.t("ov.hi", state.language)
+                    .replacingOccurrences(of: "{name}", with: state.displayName))
+                    .font(.title.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("ov.watching.sub", state.language))
                     .font(.subheadline).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Learned baseline").font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("ov.baseline", state.language)).font(.headline).foregroundStyle(Theme.txt)
                     if loading {
                         ProgressView().tint(Theme.brandA)
                     } else if metrics.isEmpty {
-                        Text("No baseline yet — it builds from calm samples in Monitor.")
+                        Text(L10n.t("ov.baseline.none", state.language)
+                            .replacingOccurrences(of: "{screen}",
+                                with: L10n.t("tab.monitor", state.language)))
                             .font(.footnote).foregroundStyle(Theme.t2)
                     } else {
                         ForEach(metrics, id: \.metric) { m in
@@ -44,11 +48,11 @@ struct OverviewView: View {
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Model").font(.headline).foregroundStyle(Theme.txt)
-                    Text("Which LLM powers your coaching and guidance.")
+                    Text(L10n.t("ov.model", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("ov.model.sub", state.language))
                         .font(.caption).foregroundStyle(Theme.t2)
                     Picker("", selection: $provider) {
-                        Text("Auto (platform default)").tag("auto")
+                        Text(L10n.t("ov.model.auto", state.language)).tag("auto")
                         ForEach(providers, id: \.name) { p in
                             Text(p.label + (p.configured ? "" : " (no key)")).tag(p.name)
                         }
@@ -58,8 +62,8 @@ struct OverviewView: View {
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Language").font(.headline).foregroundStyle(Theme.txt)
-                    Text("Everything drafted for you — guidance, coaching, first-aid steps, waiver terms — is delivered in this language.")
+                    Text(L10n.t("ov.language", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("ov.language.sub", state.language))
                         .font(.caption).foregroundStyle(Theme.t2)
                     Picker("", selection: $language) {
                         ForEach(languages, id: \.code) { l in
@@ -72,9 +76,9 @@ struct OverviewView: View {
                     .onChange(of: language) { _ in applyLanguage() }
                     Toggle(isOn: $preTranslate) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Pre-translate everything")
+                            Text(L10n.t("ov.pretranslate", state.language))
                                 .font(.subheadline).foregroundStyle(Theme.txt)
-                            Text("Off keeps originals — translate selectively below.")
+                            Text(L10n.t("ov.pretranslate.sub", state.language))
                                 .font(.caption2).foregroundStyle(Theme.t2)
                         }
                     }
@@ -83,10 +87,13 @@ struct OverviewView: View {
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Translate").font(.headline).foregroundStyle(Theme.txt)
-                    Text("Anything you run across — a note, a message, a label — into \(languages.first { $0.code == language }?.label ?? "your language").")
+                    Text(L10n.t("ov.translate", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("ov.translate.sub", state.language)
+                        .replacingOccurrences(of: "{lang}", with:
+                            languages.first { $0.code == language }?.label
+                            ?? L10n.t("ov.translate.yours", state.language)))
                         .font(.caption).foregroundStyle(Theme.t2)
-                    TextField("Paste or type text…", text: $translateInput, axis: .vertical)
+                    TextField(L10n.t("ov.translate.placeholder", state.language), text: $translateInput, axis: .vertical)
                         .lineLimit(1...4).foregroundStyle(Theme.txt)
                         .padding(10).background(Theme.scrBot)
                         .clipShape(RoundedRectangle(cornerRadius: 11))
@@ -101,7 +108,9 @@ struct OverviewView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(10).background(Theme.scrBot)
                             .clipShape(RoundedRectangle(cornerRadius: 9))
-                        Text("engine: \(r.engine)" + (r.note.map { " — \($0)" } ?? ""))
+                        Text(L10n.t("ov.engine", state.language)
+                            .replacingOccurrences(of: "{engine}", with: r.engine)
+                         + (r.note.map { " — \($0)" } ?? ""))
                             .font(.caption2).foregroundStyle(Theme.t3)
                     }
                 }.card()
@@ -177,12 +186,14 @@ private struct AdaptationCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("What JIM has learned about you").font(.headline)
+            Text(L10n.t("ov.learned", state.language)).font(.headline)
                 .foregroundStyle(Theme.txt)
             if let p = profile, p.built, let d = p.profile {
                 if let confidence = p.confidence, let evidence = p.evidence_items {
-                    Text("Confidence \(Int(confidence * 100))% — earned from "
-                         + "\(evidence) things already on your record.")
+                    Text(L10n.t("ov.confidence", state.language)
+                        .replacingOccurrences(of: "{pct}",
+                                              with: "\(Int(confidence * 100))")
+                        .replacingOccurrences(of: "{n}", with: "\(evidence)"))
                         .font(.caption).foregroundStyle(Theme.t2)
                 }
                 // Only conditions with enough answers to mean anything: a
@@ -193,7 +204,11 @@ private struct AdaptationCard: View {
                             Text(entry.key.replacingOccurrences(of: "_", with: " "))
                                 .font(.subheadline).foregroundStyle(Theme.txt)
                             Spacer()
-                            Text("helped \(entry.value.helped) of \(entry.value.answered)")
+                            Text(L10n.t("ov.helped", state.language)
+                                .replacingOccurrences(of: "{n}",
+                                                      with: "\(entry.value.helped)")
+                                .replacingOccurrences(of: "{total}",
+                                                      with: "\(entry.value.answered)"))
                                 .font(.caption).monospacedDigit()
                                 .foregroundStyle(entry.value.helped * 2 >= entry.value.answered
                                                  ? Theme.green : Theme.amber)
@@ -201,15 +216,17 @@ private struct AdaptationCard: View {
                     }
                 }
                 if let tone = d.tone {
-                    Text("Tone you asked for: \(tone)").font(.caption)
+                    Text(L10n.t("ov.tone", state.language)
+                        .replacingOccurrences(of: "{tone}", with: tone)).font(.caption)
                         .foregroundStyle(Theme.t3)
                 }
                 if let job = d.occupation {
-                    Text("Work you named: \(job)").font(.caption)
+                    Text(L10n.t("ov.work", state.language)
+                        .replacingOccurrences(of: "{job}", with: job)).font(.caption)
                         .foregroundStyle(Theme.t3)
                 }
                 if p.vaulted == true {
-                    Text("Sealed in your own vault.").font(.caption2)
+                    Text(L10n.t("ov.sealed", state.language)).font(.caption2)
                         .foregroundStyle(Theme.green)
                 }
                 if let method = d.method {
@@ -257,11 +274,9 @@ private struct AnonymityCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Your name here").font(.headline).foregroundStyle(Theme.txt)
+            Text(L10n.t("ov.name", state.language)).font(.headline).foregroundStyle(Theme.txt)
             if let p = posture {
-                Text(p.anonymous
-                     ? "You are known here as \(p.known_as ?? "a pseudonym")."
-                     : "You are enrolled under your own name.")
+                Text(p.anonymous ? knownAs(p) : L10n.t("ov.name.own", state.language))
                     .font(.subheadline).foregroundStyle(Theme.txt)
                 ForEach(p.keeps, id: \.self) { line in
                     Text("✓ " + line).font(.caption).foregroundStyle(Theme.green)
@@ -270,15 +285,21 @@ private struct AnonymityCard: View {
                     Text("• " + line).font(.caption).foregroundStyle(Theme.amber)
                 }
                 if p.costs.isEmpty && p.anonymous {
-                    Text("A legal name is on record for responders.")
+                    Text(L10n.t("ov.legal", state.language))
                         .font(.caption2).foregroundStyle(Theme.t3)
                 }
             } else {
-                Text("Loading…").font(.caption).foregroundStyle(Theme.t3)
+                Text(L10n.t("ov.loading", state.language)).font(.caption).foregroundStyle(Theme.t3)
             }
         }
         .card()
         .task { await load() }
+    }
+
+    private func knownAs(_ p: AnonymityPosture) -> String {
+        L10n.t("ov.name.pseudonym", state.language)
+            .replacingOccurrences(of: "{name}", with: p.known_as
+                ?? L10n.t("ov.name.pseudonym.fallback", state.language))
     }
 
     private func load() async {

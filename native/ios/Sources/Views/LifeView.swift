@@ -2,14 +2,37 @@ import SwiftUI
 
 /// Life: goals, habits, and journal behind a segmented switcher.
 struct LifeView: View {
-    enum Tab: String, CaseIterable { case goals = "Goals", habits = "Habits", journal = "Journal", money = "Money", schedule = "Schedule", shop = "Shop" }
+    enum Tab: String, CaseIterable {
+        case goals = "Goals", habits = "Habits", journal = "Journal",
+             money = "Money", schedule = "Schedule", shop = "Shop"
+
+        /// The strip said *Shop* where the backend already serves
+        /// *Shops* through `i18n.shop_labels`, which the desktop
+        /// renders — one strip, two spellings. The rows take the
+        /// server's English so nothing drifts.
+        func label(_ lang: String) -> String {
+            switch self {
+            case .goals: return L10n.t("life.goals", lang)
+            case .habits: return L10n.t("life.habits", lang)
+            case .journal: return L10n.t("life.journal", lang)
+            case .money: return L10n.t("life.money", lang)
+            case .schedule: return L10n.t("life.schedule", lang)
+            case .shop: return L10n.t("life.shops", lang)
+            }
+        }
+    }
+    // The strip reads its words from the table now, and the table
+    // needs the language.
+    @EnvironmentObject var state: AppState
     @State private var tab: Tab = .goals
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Picker("", selection: $tab) {
-                    ForEach(Tab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    ForEach(Tab.allCases, id: \.self) {
+                        Text($0.label(state.language)).tag($0)
+                    }
                 }.pickerStyle(.segmented)
 
                 switch tab {

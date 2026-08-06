@@ -222,16 +222,18 @@ fun OverviewScreen(vm: GuardianViewModel) {
     screenScroll {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.size(8.dp).clip(CircleShape).background(Jim.Green))
-            Text("Guardian on · watching", color = Jim.Green, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("ov.watching", vm.language), color = Jim.Green, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
-        Text("Hi, ${vm.displayName}", color = Jim.Txt, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Text("Your Guardian is watching — the rules are transparent.", color = Jim.T2, fontSize = 14.sp)
+        Text(L10n.t("ov.hi", vm.language).replace("{name}", vm.displayName),
+            color = Jim.Txt, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ov.watching.sub", vm.language), color = Jim.T2, fontSize = 14.sp)
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Learned baseline", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("ov.baseline", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             when {
                 metrics == null -> CircularProgressIndicator(color = Jim.BrandA, modifier = Modifier.size(22.dp))
-                metrics!!.isEmpty() -> Text("No baseline yet — it builds from calm samples in Monitor.",
+                metrics!!.isEmpty() -> Text(L10n.t("ov.baseline.none", vm.language)
+                    .replace("{screen}", L10n.t("tab.monitor", vm.language)),
                     color = Jim.T2, fontSize = 13.sp)
                 else -> metrics!!.forEach { m ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -537,7 +539,15 @@ private fun FlowRowChips(items: List<String>, selected: String, onPick: (String)
 @Composable
 fun LifeScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Goals", "Habits", "Journal", "Money", "Schedule", "Shop", "Circle")
+    val tabs = listOf(
+        L10n.t("life.goals", vm.language),
+        L10n.t("life.habits", vm.language),
+        L10n.t("life.journal", vm.language),
+        L10n.t("life.money", vm.language),
+        L10n.t("life.schedule", vm.language),
+        L10n.t("life.shops", vm.language),
+        L10n.t("life.circle", vm.language),
+    )
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -1781,8 +1791,8 @@ fun ModelCard(vm: GuardianViewModel) {
         }
     }
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Model", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        Text("Which LLM powers your coaching and guidance.", color = Jim.T2, fontSize = 12.sp)
+        Text(L10n.t("ov.model", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ov.model.sub", vm.language), color = Jim.T2, fontSize = 12.sp)
         providers.chunked(2).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 row.forEach { p ->
@@ -1823,8 +1833,8 @@ fun LanguageCard(vm: GuardianViewModel) {
         }
     }
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Language", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        Text("Everything drafted for you — guidance, coaching, first-aid steps, waiver terms — is delivered in this language.",
+        Text(L10n.t("ov.language", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ov.language.sub", vm.language),
             color = Jim.T2, fontSize = 12.sp)
         languages.chunked(3).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -1852,8 +1862,9 @@ fun LanguageCard(vm: GuardianViewModel) {
                 color = Jim.Amber, fontSize = 10.sp)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Pre-translate everything", color = Jim.Txt, fontSize = 13.sp)
-                Text("Off keeps originals — translate selectively below.",
+                Text(L10n.t("ov.pretranslate", vm.language),
+                    color = Jim.Txt, fontSize = 13.sp)
+                Text(L10n.t("ov.pretranslate.sub", vm.language),
                     color = Jim.T2, fontSize = 10.sp)
             }
             Switch(
@@ -1867,9 +1878,11 @@ fun LanguageCard(vm: GuardianViewModel) {
             )
         }
         HorizontalDivider(color = Jim.Line)
-        Text("Translate anything", color = Jim.Txt, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-        labeledField("", translateInput, "Paste or type text…") { translateInput = it }
-        RobotAction("Translate") {
+        Text(L10n.t("ov.translate", vm.language),
+            color = Jim.Txt, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        labeledField("", translateInput,
+            L10n.t("ov.translate.placeholder", vm.language)) { translateInput = it }
+        RobotAction(L10n.t("ov.translate.go", vm.language)) {
             if (translateInput.isNotBlank() && current != "en") {
                 vm.call({ ApiClient.translate(vm.uid!!, vm.token!!, translateInput) }) { r ->
                     translated = r.getOrNull()
@@ -1880,13 +1893,29 @@ fun LanguageCard(vm: GuardianViewModel) {
             Text(t.translation, color = Jim.Txt, fontSize = 13.sp,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(9.dp))
                     .background(Jim.ScrBot).padding(10.dp))
-            Text("engine: ${t.engine}" + (t.note?.let { " — $it" } ?: ""),
+            Text(L10n.t("ov.engine", vm.language).replace("{engine}", t.engine)
+                 + (t.note?.let { n -> " — $n" } ?: ""),
                 color = Jim.T3, fontSize = 10.sp)
         }
     }
 }
 
 // ---- Help us improve — product feedback (open to anyone) ----
+
+/**
+ * The five kinds of feedback, in the reader's language.
+ *
+ * A `when` rather than a key built from the API value, for the reason the
+ * sensitivity dial has one: a key assembled at runtime is a key no guard can
+ * see being asked for, and the dead-key check would call all five rows dead.
+ */
+private fun feedbackCategory(kind: String, lang: String): String = when (kind) {
+    "idea" -> L10n.t("ov.fb.cat.idea", lang)
+    "improvement" -> L10n.t("ov.fb.cat.improvement", lang)
+    "bug" -> L10n.t("ov.fb.cat.bug", lang)
+    "praise" -> L10n.t("ov.fb.cat.praise", lang)
+    else -> L10n.t("ov.fb.cat.other", lang)
+}
 
 @Composable
 fun ImproveCard(vm: GuardianViewModel) {
@@ -1903,8 +1932,8 @@ fun ImproveCard(vm: GuardianViewModel) {
     LaunchedEffect(Unit) { reload() }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Help us improve", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        Text("Tell us how to make the app better — an idea, a rough edge, a bug, or what you love. It goes straight to the team.",
+        Text(L10n.t("ov.fb", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ov.fb.sub", vm.language),
             color = Jim.T2, fontSize = 12.sp)
         categories.chunked(3).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -1912,7 +1941,7 @@ fun ImproveCard(vm: GuardianViewModel) {
                     FilterChip(
                         selected = category == c,
                         onClick = { category = c },
-                        label = { Text(c.replaceFirstChar { it.uppercase() }, fontSize = 11.sp) },
+                        label = { Text(feedbackCategory(c, vm.language), fontSize = 11.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Jim.BrandA,
                             selectedLabelColor = Color.White, labelColor = Jim.T2,
@@ -1921,31 +1950,32 @@ fun ImproveCard(vm: GuardianViewModel) {
                 }
             }
         }
-        labeledField("", message, "What's on your mind?") { message = it }
+        labeledField("", message, L10n.t("ov.fb.placeholder", vm.language)) { message = it }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Rating", color = Jim.T2, fontSize = 12.sp)
+            Text(L10n.t("ov.fb.rating", vm.language), color = Jim.T2, fontSize = 12.sp)
             (1..5).forEach { n ->
                 Text(if (n <= rating) "★" else "☆",
                     color = if (n <= rating) Jim.Amber else Jim.T3, fontSize = 20.sp,
                     modifier = Modifier.clickable { rating = if (rating == n) 0 else n })
             }
         }
-        BrandButton("Send feedback", enabled = message.isNotBlank()) {
+        BrandButton(L10n.t("ov.fb.send", vm.language), enabled = message.isNotBlank()) {
             vm.call({
                 ApiClient.submitImprovement(vm.token, category, message.trim(),
                     if (rating == 0) null else rating)
             }) {
-                thanks = "Thank you — sent."; message = ""; rating = 0; reload()
+                thanks = L10n.t("ov.fb.thanks", vm.language)
+                message = ""; rating = 0; reload()
             }
         }
         thanks?.let { Text(it, color = Jim.Green, fontSize = 12.sp) }
         state?.takeIf { it.total > 0 }?.let { st ->
             HorizontalDivider(color = Jim.Line)
-            Text("So far: " + categories.mapNotNull { c ->
+            Text(L10n.t("ov.fb.sofar", vm.language) + " " + categories.mapNotNull { c ->
                 st.tally[c]?.takeIf { it > 0 }?.let { "$it $c" }
             }.joinToString(" · "), color = Jim.T3, fontSize = 10.sp)
             if (st.mine.isNotEmpty()) {
-                Text("Yours", color = Jim.Txt, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("ov.fb.yours", vm.language), color = Jim.Txt, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 st.mine.take(4).forEach { f ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("[${f.category}] ${f.message}", color = Jim.T2, fontSize = 10.sp,
@@ -2026,7 +2056,12 @@ private fun medRow(k: String, v: String) {
 @Composable
 fun CareScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Monitor", "Check-in", "Coach", "Family")
+    val tabs = listOf(
+        L10n.t("tab.monitor", vm.language),
+        L10n.t("tab.checkin", vm.language),
+        L10n.t("tab.coach", vm.language),
+        L10n.t("tab.family", vm.language),
+    )
     Column(Modifier.fillMaxSize()) {
         TabRow(
             selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA,
@@ -2687,37 +2722,46 @@ private fun AdaptationCard(vm: GuardianViewModel) {
     LaunchedEffect(Unit) { reload() }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("What JIM has learned about you", color = Jim.Txt, fontSize = 16.sp,
+        Text(L10n.t("ov.learned", vm.language), color = Jim.Txt, fontSize = 16.sp,
             fontWeight = FontWeight.Bold)
         val p = profile
         if (p != null && p.built) {
-            Text("Confidence ${(p.confidence * 100).roundToInt()}% — earned from " +
-                 "${p.evidenceItems} things already on your record.",
+            Text(L10n.t("ov.confidence", vm.language)
+                    .replace("{pct}", "${(p.confidence * 100).roundToInt()}")
+                    .replace("{n}", "${p.evidenceItems}"),
                 color = Jim.T2, fontSize = 12.sp)
             p.whatHelps.entries.sortedBy { it.key }.forEach { (condition, tally) ->
                 if (tally.answered > 0) {
                     Row(Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(condition.replace('_', ' '), color = Jim.Txt, fontSize = 14.sp)
-                        Text("helped ${tally.helped} of ${tally.answered}",
+                        Text(L10n.t("ov.helped", vm.language)
+                                .replace("{n}", "${tally.helped}")
+                                .replace("{total}", "${tally.answered}"),
                             color = if (tally.helped * 2 >= tally.answered) Jim.Green
                                     else Jim.Amber,
                             fontSize = 12.sp)
                     }
                 }
             }
-            p.tone?.let { Text("Tone you asked for: $it", color = Jim.T3, fontSize = 11.sp) }
-            p.occupation?.let { Text("Work you named: $it", color = Jim.T3, fontSize = 11.sp) }
+            p.tone?.let {
+                Text(L10n.t("ov.tone", vm.language).replace("{tone}", it),
+                    color = Jim.T3, fontSize = 11.sp)
+            }
+            p.occupation?.let {
+                Text(L10n.t("ov.work", vm.language).replace("{job}", it),
+                    color = Jim.T3, fontSize = 11.sp)
+            }
             if (p.vaulted) {
-                Text("Sealed in your own vault.", color = Jim.Green, fontSize = 11.sp)
+                Text(L10n.t("ov.sealed", vm.language), color = Jim.Green, fontSize = 11.sp)
             }
             p.method?.let { Text(it, color = Jim.T3, fontSize = 10.sp) }
         } else {
-            Text(p?.note ?: "No profile yet — it is built from the history already " +
-                 "on record, here on your own device's backend.",
+            Text(p?.note ?: L10n.t("ov.adapt.none", vm.language),
                 color = Jim.T2, fontSize = 12.sp)
         }
-        SmallAction(if (busy) "Rebuilding…" else "Rebuild from my history",
+        SmallAction(if (busy) L10n.t("ov.rebuilding", vm.language)
+                    else L10n.t("ov.rebuild", vm.language),
             enabled = !busy) {
             val uid = vm.uid ?: return@SmallAction
             val token = vm.token ?: return@SmallAction
@@ -2749,19 +2793,22 @@ private fun AnonymityCard(vm: GuardianViewModel) {
     }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("Your name here", color = Jim.Txt, fontSize = 16.sp,
+        Text(L10n.t("ov.name", vm.language), color = Jim.Txt, fontSize = 16.sp,
             fontWeight = FontWeight.Bold)
         val p = posture
         if (p == null) {
-            Text("Loading…", color = Jim.T3, fontSize = 12.sp)
+            Text(L10n.t("ov.loading", vm.language), color = Jim.T3, fontSize = 12.sp)
         } else {
-            Text(if (p.anonymous) "You are known here as ${p.knownAs ?: "a pseudonym"}."
-                 else "You are enrolled under your own name.",
+            Text(
+                if (p.anonymous)
+                    L10n.t("ov.name.pseudonym", vm.language).replace("{name}",
+                        p.knownAs ?: L10n.t("ov.name.pseudonym.fallback", vm.language))
+                else L10n.t("ov.name.own", vm.language),
                 color = Jim.Txt, fontSize = 14.sp)
             p.keeps.forEach { Text("✓ $it", color = Jim.Green, fontSize = 12.sp) }
             p.costs.forEach { Text("• $it", color = Jim.Amber, fontSize = 12.sp) }
             if (p.costs.isEmpty() && p.anonymous) {
-                Text("A legal name is on record for responders.",
+                Text(L10n.t("ov.legal", vm.language),
                     color = Jim.T3, fontSize = 11.sp)
             }
         }

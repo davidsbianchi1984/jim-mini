@@ -7,17 +7,38 @@ struct SafetyView: View {
         case alarms = "Alarms", sos = "SOS", crash = "Crash",
              medical = "Med ID", policy = "Policy", robots = "Robots",
              vault = "Vault"
+
+        /// Android has rendered this strip from the table for rounds;
+        /// these are its keys, not new ones. Only iOS was still
+        /// showing the raw values, because they live in a `case`
+        /// clause and nothing looks there.
+        func label(_ lang: String) -> String {
+            switch self {
+            case .alarms: return L10n.t("alarm.lead.short", lang)
+            case .sos: return L10n.t("sos", lang)
+            case .crash: return L10n.t("cw.short", lang)
+            case .medical: return L10n.t("mid.short", lang)
+            case .policy: return L10n.t("cw.policy", lang)
+            case .robots: return L10n.t("rob.short", lang)
+            case .vault: return L10n.t("cust", lang)
+            }
+        }
     }
     // Alarms first, and the default. Somebody opening this screen has usually
     // been paged; the thing they were paged about should not be behind a tab
     // they have to find.
+    // The strip reads its words from the table now, and the table
+    // needs the language.
+    @EnvironmentObject var state: AppState
     @State private var tab: Tab = .alarms
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Picker("", selection: $tab) {
-                    ForEach(Tab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    ForEach(Tab.allCases, id: \.self) {
+                        Text($0.label(state.language)).tag($0)
+                    }
                 }.pickerStyle(.segmented)
 
                 switch tab {

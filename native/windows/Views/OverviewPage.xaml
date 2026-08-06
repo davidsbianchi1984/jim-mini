@@ -9,24 +9,24 @@
         <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Ellipse Width="9" Height="9" Fill="{StaticResource JimGreenBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Guardian on · watching" Foreground="{StaticResource JimGreenBrush}"
+                <TextBlock x:Name="WatchingChip" Foreground="{StaticResource JimGreenBrush}"
                            FontWeight="Bold" FontSize="12" />
             </StackPanel>
             <TextBlock x:Name="Greeting" FontSize="28" FontWeight="Bold" Foreground="{StaticResource JimTxtBrush}" />
-            <TextBlock Text="Your Guardian is watching — the rules are transparent."
+            <TextBlock x:Name="WatchingSub"
                        Foreground="{StaticResource JimT2Brush}" FontSize="14" TextWrapping="Wrap" />
-            <Button x:Name="RefreshButton" Content="Refresh" Click="OnRefresh"
+            <Button x:Name="RefreshButton" Click="OnRefresh"
                     Background="Transparent" FontSize="12"
                     Foreground="{StaticResource JimBrandABrush}" />
 
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="Learned baseline" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="BaselineTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource JimTxtBrush}" />
                     <ProgressRing x:Name="Loading" IsActive="True" Foreground="{StaticResource JimBrandABrush}"
                                   Width="24" Height="24" HorizontalAlignment="Left" />
-                    <TextBlock x:Name="Empty" Text="No baseline yet — it builds from calm samples in Live Monitoring."
+                    <TextBlock x:Name="Empty"
                                Foreground="{StaticResource JimT2Brush}" FontSize="13" Visibility="Collapsed"
                                TextWrapping="Wrap" />
                     <ItemsControl x:Name="MetricsList">
@@ -47,9 +47,9 @@
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="Model" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="ModelTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource JimTxtBrush}" />
-                    <TextBlock Text="Which LLM powers your coaching and guidance."
+                    <TextBlock x:Name="ModelSub"
                                Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
                     <ComboBox x:Name="ProviderBox" HorizontalAlignment="Stretch"
                               SelectionChanged="OnProviderPicked" />
@@ -59,19 +59,16 @@
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="Language" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="LanguageTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource JimTxtBrush}" />
-                    <TextBlock Text="Everything drafted for you — guidance, coaching, first-aid steps, waiver terms — is delivered in this language."
+                    <TextBlock x:Name="LanguageSub"
                                Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
                     <ComboBox x:Name="LanguageBox" HorizontalAlignment="Stretch"
                               SelectionChanged="OnLanguagePicked" />
-                    <ToggleSwitch x:Name="PreTranslateToggle" Header="Pre-translate everything"
-                                  OnContent="Everything arrives translated"
-                                  OffContent="Originals kept — translate below"
+                    <ToggleSwitch x:Name="PreTranslateToggle"
                                   IsOn="True" Toggled="OnModeToggled" />
-                    <TextBox x:Name="TranslateBox" Header="Translate anything"
-                             PlaceholderText="Paste or type text…" />
-                    <Button Content="Translate" Click="OnTranslate"
+                    <TextBox x:Name="TranslateBox" />
+                    <Button x:Name="TranslateButton" Click="OnTranslate"
                             Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
                     <TextBlock x:Name="TranslateOut" FontSize="13" TextWrapping="Wrap"
                                Foreground="{StaticResource JimTxtBrush}" Visibility="Collapsed" />
@@ -83,21 +80,21 @@
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="Help us improve" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="ImproveTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource JimTxtBrush}" />
-                    <TextBlock Text="Tell us how to make the app better — an idea, a rough edge, a bug, or what you love. It goes straight to the team."
+                    <TextBlock x:Name="ImproveSub"
                                Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
-                    <ComboBox x:Name="ImproveCategory" Header="Category" HorizontalAlignment="Stretch" />
-                    <TextBox x:Name="ImproveMessage" PlaceholderText="What's on your mind?"
+                    <ComboBox x:Name="ImproveCategory" HorizontalAlignment="Stretch" />
+                    <TextBox x:Name="ImproveMessage"
                              TextWrapping="Wrap" AcceptsReturn="True" Height="80" />
-                    <ComboBox x:Name="ImproveRating" Header="Rating (optional)" HorizontalAlignment="Stretch" />
-                    <Button Content="Send feedback" Click="OnSendImprovement"
+                    <ComboBox x:Name="ImproveRating" HorizontalAlignment="Stretch" />
+                    <Button x:Name="SendImproveButton" Click="OnSendImprovement"
                             Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
                     <TextBlock x:Name="ImproveThanks" Foreground="{StaticResource JimGreenBrush}" FontSize="12"
                                TextWrapping="Wrap" Visibility="Collapsed" />
                     <TextBlock x:Name="ImproveTally" Foreground="{StaticResource JimT2Brush}" FontSize="11"
                                TextWrapping="Wrap" Visibility="Collapsed" />
-                    <TextBlock x:Name="ImproveMineHeader" Text="Yours" FontWeight="Bold" FontSize="12"
+                    <TextBlock x:Name="ImproveMineHeader" FontWeight="Bold" FontSize="12"
                                Foreground="{StaticResource JimTxtBrush}" Visibility="Collapsed" />
                     <ItemsControl x:Name="ImproveMine">
                         <ItemsControl.ItemTemplate>
@@ -114,7 +111,7 @@
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="What JIM has learned about you" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="LearnedTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="AdaptationSummary" Foreground="{StaticResource JimT2Brush}"
                                FontSize="12" TextWrapping="Wrap" />
@@ -138,10 +135,10 @@
                                Foreground="{StaticResource JimT3Brush}" />
                     <TextBlock x:Name="AdaptationVaulted" FontSize="11" Visibility="Collapsed"
                                Foreground="{StaticResource JimGreenBrush}"
-                               Text="Sealed in your own vault." />
+                               x:Name="SealedText" />
                     <TextBlock x:Name="AdaptationMethod" FontSize="10" TextWrapping="Wrap"
                                Foreground="{StaticResource JimT3Brush}" />
-                    <Button x:Name="RebuildButton" Content="Rebuild from my history"
+                    <Button x:Name="RebuildButton"
                             Click="OnRebuildAdaptation"
                             Background="{StaticResource JimBrandABrush}" Foreground="White" />
                 </StackPanel>
@@ -151,7 +148,7 @@
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Your name here" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="NameTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="AnonymityKnownAs" FontSize="14" TextWrapping="Wrap"
                                Foreground="{StaticResource JimTxtBrush}" />

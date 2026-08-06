@@ -4,6 +4,47 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.4] — 2026-08-06
+
+### The first screen, in the reader's language
+
+Overview is what a person sees after signing in: the greeting, the language
+they will be spoken to in, the model that will do the speaking, what the
+Guardian has learned about them, and whether they are enrolled under their own
+name or a pseudonym. All of it was English on all three shells.
+
+### The strips that showed the API its own enum members
+
+The tab strips on Care, Life and Safety were the shape found in ConnectView at
+0.47.2 and written down then as belonging to the round that takes those
+screens. This is that round. English lived in a `case` clause of
+`enum Tab: String`, where no `Text("…")` pattern looks — so the ratchet
+counted zero and the strip read *Goals · Habits · Journal* in every language.
+
+The feedback picker was the same defect one layer down: its five choices were
+the API's own values (`idea`, `improvement`, `bug`, `praise`, `other`) with a
+capital letter put on the front.
+
+    asked     is the wording on the screen in the table
+    mattered  is the wording anywhere a pattern can reach
+
+### Three names for one screen
+
+The empty-baseline line tells a reader where the samples come from, and named
+that screen *Monitor* on the phones and *Live Monitoring* on the desktop —
+while the nav item itself says **Live Monitoring**. So the first fix was
+wrong too: settling on *Monitor* would have sent a reader to a tab with a
+different name on it. The row now takes the screen's name from `tab.monitor`
+through a hole, and the two cannot drift again.
+
+The Life strip had the same disease: *Shop* and *Circle* on the phones where
+the backend's own `shop_labels` and `circle_labels` say **Shops** and **Your
+circle**, which the desktop has been rendering all along.
+
+**229 → 150.** iOS 70 → 45, Android 75 → 48, Windows 84 → 57.
+
+Cut together with QRME and PDI at app-v0.47.4.
+
 ## [0.47.3] — 2026-08-06
 
 ### A checker that invents work, for the fourth time

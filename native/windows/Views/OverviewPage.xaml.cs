@@ -24,11 +24,56 @@ public sealed partial class OverviewPage : Page
     public OverviewPage()
     {
         InitializeComponent();
+        Localize();
         ImproveCategory.ItemsSource = ImproveCategories
-            .Select(c => char.ToUpper(c[0]) + c[1..]).ToList();
+            .Select(FeedbackCategory).ToList();
         ImproveCategory.SelectedIndex = 0;
         ImproveRating.ItemsSource = new[] { "—", "1", "2", "3", "4", "5" };
         ImproveRating.SelectedIndex = 0;
+    }
+
+    /// Literal keys rather than "ov.fb.cat." + the API value: a key built
+    /// at runtime is a key the dead-key guard cannot see being asked for.
+    private static string FeedbackCategory(string kind) => kind switch
+    {
+        "idea" => L10n.T("ov.fb.cat.idea"),
+        "improvement" => L10n.T("ov.fb.cat.improvement"),
+        "bug" => L10n.T("ov.fb.cat.bug"),
+        "praise" => L10n.T("ov.fb.cat.praise"),
+        _ => L10n.T("ov.fb.cat.other"),
+    };
+
+    /// XAML carries no table lookup, so every fixed string on this page is
+    /// named there and filled in here. The empty-baseline line used to say
+    /// *Live Monitoring* where the phones said *Monitor*; it now takes the
+    /// screen's name from the nav item itself, so the two cannot drift.
+    private void Localize()
+    {
+        WatchingChip.Text = L10n.T("ov.watching");
+        WatchingSub.Text = L10n.T("ov.watching.sub");
+        BaselineTitle.Text = L10n.T("ov.baseline");
+        Empty.Text = L10n.T("ov.baseline.none")
+            .Replace("{screen}", L10n.T("tab.monitor"));
+        ModelTitle.Text = L10n.T("ov.model");
+        ModelSub.Text = L10n.T("ov.model.sub");
+        LanguageTitle.Text = L10n.T("ov.language");
+        LanguageSub.Text = L10n.T("ov.language.sub");
+        PreTranslateToggle.Header = L10n.T("ov.pretranslate");
+        PreTranslateToggle.OffContent = L10n.T("ov.pretranslate.sub");
+        TranslateBox.Header = L10n.T("ov.translate");
+        TranslateBox.PlaceholderText = L10n.T("ov.translate.placeholder");
+        TranslateButton.Content = L10n.T("ov.translate.go");
+        ImproveTitle.Text = L10n.T("ov.fb");
+        ImproveSub.Text = L10n.T("ov.fb.sub");
+        ImproveCategory.Header = L10n.T("ov.fb.category");
+        ImproveMessage.PlaceholderText = L10n.T("ov.fb.placeholder");
+        ImproveRating.Header = L10n.T("ov.fb.rating");
+        SendImproveButton.Content = L10n.T("ov.fb.send");
+        ImproveMineHeader.Text = L10n.T("ov.fb.yours");
+        LearnedTitle.Text = L10n.T("ov.learned");
+        SealedText.Text = L10n.T("ov.sealed");
+        RebuildButton.Content = L10n.T("ov.rebuild");
+        NameTitle.Text = L10n.T("ov.name");
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -73,9 +118,9 @@ public sealed partial class OverviewPage : Page
             AdaptationVaulted.Visibility = Visibility.Collapsed;
             return;
         }
-        AdaptationSummary.Text =
-            $"Confidence {(int)Math.Round(p.Confidence * 100)}% — earned from "
-          + $"{p.EvidenceItems} things already on your record.";
+        AdaptationSummary.Text = L10n.T("ov.confidence")
+            .Replace("{pct}", $"{(int)Math.Round(p.Confidence * 100)}")
+            .Replace("{n}", $"{p.EvidenceItems}");
 
         var helps = p.Profile?.WhatHelps ?? new System.Collections.Generic.Dictionary<string, HelpTally>();
         AdaptationHelps.ItemsSource = helps
@@ -84,12 +129,16 @@ public sealed partial class OverviewPage : Page
             .Select(kv => new HelpVm
             {
                 Condition = kv.Key.Replace('_', ' '),
-                Tally = $"helped {kv.Value.Helped} of {kv.Value.Answered}",
+                Tally = L10n.T("ov.helped")
+                    .Replace("{n}", $"{kv.Value.Helped}")
+                    .Replace("{total}", $"{kv.Value.Answered}"),
             }).ToList();
 
         var dials = new System.Collections.Generic.List<string>();
-        if (p.Profile?.Tone is { Length: > 0 } tone) dials.Add($"Tone you asked for: {tone}");
-        if (p.Profile?.Occupation is { Length: > 0 } job) dials.Add($"Work you named: {job}");
+        if (p.Profile?.Tone is { Length: > 0 } tone)
+            dials.Add(L10n.T("ov.tone").Replace("{tone}", tone));
+        if (p.Profile?.Occupation is { Length: > 0 } job)
+            dials.Add(L10n.T("ov.work").Replace("{job}", job));
         AdaptationDials.Text = string.Join(" · ", dials);
         AdaptationMethod.Text = p.Profile?.Method ?? "";
         AdaptationVaulted.Visibility = p.Vaulted ? Visibility.Visible : Visibility.Collapsed;
@@ -114,8 +163,9 @@ public sealed partial class OverviewPage : Page
         {
             var p = await ApiClient.Shared.Anonymity(s.Uid, s.Token);
             AnonymityKnownAs.Text = p.Anonymous
-                ? $"You are known here as {p.KnownAs ?? "a pseudonym"}."
-                : "You are enrolled under your own name.";
+                ? L10n.T("ov.name.pseudonym").Replace("{name}",
+                    p.KnownAs ?? L10n.T("ov.name.pseudonym.fallback"))
+                : L10n.T("ov.name.own");
             AnonymityLines.ItemsSource =
                 p.Keeps.Select(k => new LineVm { Line = "\u2713 " + k })
                  .Concat(p.Costs.Select(c => new LineVm { Line = "• " + c }))
@@ -127,7 +177,7 @@ public sealed partial class OverviewPage : Page
     private async System.Threading.Tasks.Task Load()
     {
         var s = AppState.Current;
-        Greeting.Text = $"Hi, {s.DisplayName}";
+        Greeting.Text = L10n.T("ov.hi").Replace("{name}", s.DisplayName);
         await LoadAdaptation();
         await LoadAnonymity();
         try

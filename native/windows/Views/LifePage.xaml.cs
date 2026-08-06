@@ -12,7 +12,16 @@ public sealed partial class LifePage : Page
     public record HabitRow(string Id, string Name, string Streak);
     public record JournalRow(string Text, string Date);
 
-    public LifePage() => InitializeComponent();
+    public LifePage()
+    {
+        InitializeComponent();
+        // Money, Schedule, Shops and Circle take their headers from the
+        // backend's own label sets. These three had nothing to take them
+        // from and were English in every language.
+        GoalsPivot.Header = L10n.T("life.goals");
+        HabitsPivot.Header = L10n.T("life.habits");
+        JournalPivot.Header = L10n.T("life.journal");
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
