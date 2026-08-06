@@ -201,24 +201,24 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     es: "Resumen",
     fr: "Aperçu",
     de: "Übersicht",
-    pt: "Resumo",
+    pt: "Visão geral",
     it: "Panoramica",
     ja: "概要",
-    zh: "总览",
+    zh: "概览",
     hi: "अवलोकन",
     ar: "نظرة عامة",
   },
   "nav.monitor": {
     en: "Live Monitoring",
-    es: "Monitorización en vivo",
-    fr: "Suivi en direct",
+    es: "Vigilancia en directo",
+    fr: "Surveillance en direct",
     de: "Live-Überwachung",
-    pt: "Monitorização em direto",
+    pt: "Vigilância em direto",
     it: "Monitoraggio dal vivo",
-    ja: "リアルタイム監視",
+    ja: "ライブ・モニタリング",
     zh: "实时监测",
     hi: "लाइव निगरानी",
-    ar: "المراقبة المباشرة",
+    ar: "المراقبة الحيّة",
   },
   "nav.safety": {
     en: "Safety",
@@ -451,9 +451,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "self.unlink": {
     en: "Unlink",
     es: "Desvincular",
-    fr: "Délier",
+    fr: "Dissocier",
     de: "Trennen",
-    pt: "Desligar",
+    pt: "Desvincular",
     it: "Scollega",
     ja: "リンク解除",
     zh: "取消关联",
@@ -534,15 +534,15 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "nav.coach": {
     en: "Coach",
-    es: "Entrenador",
+    es: "Coach",
     fr: "Coach",
     de: "Coach",
-    pt: "Treinador",
+    pt: "Coach",
     it: "Coach",
     ja: "コーチ",
     zh: "教练",
     hi: "कोच",
-    ar: "المدرّب",
+    ar: "مدرب",
   },
   "nav.wellness": {
     en: "Wellness",
@@ -559,9 +559,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "nav.checkin": {
     en: "Check-in",
     es: "Registro",
-    fr: "Point",
+    fr: "Bilan",
     de: "Check-in",
-    pt: "Registo",
+    pt: "Check-in",
     it: "Check-in",
     ja: "チェックイン",
     zh: "签到",
@@ -575,9 +575,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     de: "Tagebuch",
     pt: "Diário",
     it: "Diario",
-    ja: "ジャーナル",
+    ja: "日記",
     zh: "日志",
-    hi: "जर्नल",
+    hi: "डायरी",
     ar: "اليوميات",
   },
   "nav.aims": {
@@ -972,7 +972,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     pt: "O seu nome",
     it: "Il tuo nome",
     ja: "お名前",
-    zh: "你的名字",
+    zh: "你的姓名",
     hi: "आपका नाम",
     ar: "اسمك",
   },
@@ -1283,7 +1283,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "The ladder", es: "La escalera", fr: "L'échelle", de: "Die Leiter", pt: "A escada", it: "La scala", ja: "はしご", zh: "阶梯", hi: "सीढ़ी", ar: "السلّم",
   },
   "att.ladder.sens": {
-    en: "Sensitivity", es: "Sensibilidad", fr: "Sensibilité", de: "Empfindlichkeit", pt: "Sensibilidade", it: "Sensibilità", ja: "感度", zh: "敏感度", hi: "संवेदनशीलता", ar: "الحساسية",
+    en: "Sensitivity", es: "Sensibilidad", fr: "Sensibilité", de: "Empfindlichkeit", pt: "Sensibilidade", it: "Sensibilità", ja: "感度", zh: "灵敏度", hi: "संवेदनशीलता", ar: "الحساسية",
   },
   "att.ladder.floors": {
     en: "Floors — {list}", es: "Suelos — {list}", fr: "Planchers — {list}", de: "Böden — {list}", pt: "Pisos — {list}", it: "Piani — {list}", ja: "下限 — {list}", zh: "下限 — {list}", hi: "न्यूनतम — {list}", ar: "الحدود الدنيا — {list}",
@@ -1322,7 +1322,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "What should I do right now?", es: "¿Qué debo hacer ahora mismo?", fr: "Que dois-je faire maintenant ?", de: "Was soll ich jetzt tun?", pt: "O que devo fazer agora?", it: "Cosa devo fare adesso?", ja: "今すぐ何をすべき？", zh: "我现在该怎么做？", hi: "मुझे अभी क्या करना चाहिए?", ar: "ماذا أفعل الآن؟",
   },
   "att.alarm.ask": {
-    en: "Ask", es: "Preguntar", fr: "Demander", de: "Fragen", pt: "Perguntar", it: "Chiedi", ja: "尋ねる", zh: "询问", hi: "पूछें", ar: "اسأل",
+    en: "Ask", es: "Preguntar", fr: "Demander", de: "Fragen", pt: "Perguntar", it: "Chiedi", ja: "たずねる", zh: "询问", hi: "पूछें", ar: "اسأل",
   },
   "att.alarm.what.ph": {
     en: "What is happening", es: "Qué está pasando", fr: "Que se passe-t-il", de: "Was gerade passiert", pt: "O que está a acontecer", it: "Cosa sta succedendo", ja: "何が起きているか", zh: "正在发生什么", hi: "क्या हो रहा है", ar: "ما الذي يحدث",
@@ -1334,7 +1334,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "This is the door that reaches emergency services, and it takes your own credential. The uncredentialed one is a scanned care code — a bystander at your front door can wake the people watching over you, and stops there. Only you can send an ambulance to yourself.", es: "Esta es la puerta que llega a los servicios de emergencia, y requiere tu propia credencial. La puerta sin credencial es un código de cuidado escaneado — un transeúnte en tu puerta puede despertar a quienes te cuidan, y ahí se detiene. Solo tú puedes enviarte una ambulancia.", fr: "C'est la porte qui atteint les services d'urgence, et elle exige votre propre référence. Celle sans référence est un code de soin scanné — un passant à votre porte peut réveiller ceux qui veillent sur vous, et s'arrête là. Vous seul pouvez vous envoyer une ambulance.", de: "Dies ist die Tür zu den Rettungsdiensten, und sie verlangt Ihre eigenen Zugangsdaten. Die ohne ist ein gescannter Pflegecode — ein Passant an Ihrer Haustür kann die Menschen wecken, die über Sie wachen, und dort endet es. Nur Sie können sich selbst einen Krankenwagen schicken.", pt: "Esta é a porta que chega aos serviços de emergência, e exige a sua própria credencial. A porta sem credencial é um código de cuidado lido — um transeunte à sua porta pode acordar quem vela por si, e fica por aí. Só você pode enviar uma ambulância a si próprio.", it: "Questa è la porta che raggiunge i servizi di emergenza, e richiede la tua credenziale. Quella senza è un codice di cura scansionato — un passante alla tua porta può svegliare chi veglia su di te, e si ferma lì. Solo tu puoi mandarti un'ambulanza.", ja: "これは救急サービスに届く扉で、あなた自身の資格情報が必要です。資格情報なしの扉はスキャンされたケアコードで、玄関先の通行人はあなたを見守る人々を起こせますが、そこまでです。自分に救急車を呼べるのはあなただけです。", zh: "这是通往急救服务的门，需要你本人的凭证。无凭证的那扇门是被扫描的护理码 — 你门前的路人可以唤醒守护你的人，仅止于此。只有你能为自己叫救护车。", hi: "यही वह द्वार है जो आपातकालीन सेवाओं तक पहुँचता है, और इसे आपकी अपनी क्रेडेंशियल चाहिए। बिना क्रेडेंशियल वाला द्वार स्कैन किया केयर कोड है — आपके दरवाज़े पर खड़ा राहगीर आपकी देखरेख करने वालों को जगा सकता है, बस वहीं तक। एम्बुलेंस केवल आप ही अपने लिए भेज सकते हैं।", ar: "هذا هو الباب الذي يصل إلى خدمات الطوارئ، ويتطلب اعتمادك الشخصي. الباب بلا اعتماد هو رمز رعاية ممسوح — عابر عند بابك يمكنه إيقاظ من يسهرون عليك، ويقف عند ذلك. وحدك من يستطيع إرسال إسعاف لنفسك.",
   },
   "att.med": {
-    en: "Medical ID", es: "Identificación médica", fr: "Identité médicale", de: "Medizinischer Ausweis", pt: "Identificação médica", it: "ID medico", ja: "メディカルID", zh: "医疗ID", hi: "मेडिकल आईडी", ar: "الهوية الطبية",
+    en: "Medical ID", es: "Identificación médica", fr: "Fiche médicale", de: "Notfallpass", pt: "Identificação médica", it: "Scheda medica", ja: "メディカル ID", zh: "医疗卡", hi: "मेडिकल आईडी", ar: "البطاقة الطبية",
   },
   "att.med.make": {
     en: "Make a code", es: "Crear un código", fr: "Créer un code", de: "Code erstellen", pt: "Criar um código", it: "Crea un codice", ja: "コードを作る", zh: "生成代码", hi: "कोड बनाएँ", ar: "إنشاء رمز",
@@ -1361,7 +1361,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "The widths below are yours to set. Narrow one to be told sooner; widen it if a metric of yours naturally wanders.", es: "Los anchos de abajo los fijas tú. Estrecha uno para enterarte antes; ensánchalo si una métrica tuya vaga por naturaleza.", fr: "Les largeurs ci-dessous sont à vous. Resserrez-en une pour être prévenu plus tôt ; élargissez-la si une de vos métriques vagabonde naturellement.", de: "Die Breiten darunter bestimmen Sie. Verengen Sie eine, um früher Bescheid zu bekommen; weiten Sie sie, wenn eine Ihrer Metriken von Natur aus wandert.", pt: "As larguras abaixo são suas. Estreite uma para saber mais cedo; alargue-a se uma métrica sua vagueia por natureza.", it: "Le larghezze qui sotto le decidi tu. Restringine una per saperlo prima; allargala se una tua metrica vaga per natura.", ja: "下の幅はあなたが決めます。早く知りたければ狭く、生まれつき揺れやすい指標なら広く。", zh: "下面的宽度由你设定。调窄可更早得知；某项指标天生爱漂移就调宽。", hi: "नीचे की चौड़ाइयाँ आप तय करते हैं। जल्दी जानने के लिए संकरी करें; अगर आपका कोई मीट्रिक स्वभावतः भटकता है तो चौड़ी करें।", ar: "العروض أدناه أنت من يحددها. ضيّق نطاقًا لتُخبَر أبكر؛ ووسّعه إن كان أحد مقاييسك يتجول بطبيعته.",
   },
   "bas.ask.title": {
-    en: "JIM is asking: are you okay?", es: "JIM pregunta: ¿estás bien?", fr: "JIM demande : ça va ?", de: "JIM fragt: Geht es Ihnen gut?", pt: "O JIM pergunta: está bem?", it: "JIM chiede: stai bene?", ja: "JIMが尋ねています：大丈夫ですか？", zh: "JIM在问：你还好吗？", hi: "JIM पूछ रहा है: क्या आप ठीक हैं?", ar: "JIM يسأل: هل أنت بخير؟",
+    en: "JIM is asking: are you okay?", es: "JIM pregunta: ¿estás bien?", fr: "JIM demande : est-ce que ça va ?", de: "JIM fragt: Geht es Ihnen gut?", pt: "O JIM pergunta: está bem?", it: "JIM chiede: stai bene?", ja: "JIM が確認しています：大丈夫ですか？", zh: "JIM 在询问：你还好吗？", hi: "JIM पूछ रहा है: क्या आप ठीक हैं?", ar: "يسأل JIM: هل أنت بخير؟",
   },
   "bas.ask.body": {
     en: "A concerning reading came in ({concern}). This is attempt {attempt} of {attempts} — after that, your crash watch contacts {name}{ems}.", es: "Llegó una lectura preocupante ({concern}). Este es el intento {attempt} de {attempts} — después, tu vigilancia de colapso contacta a {name}{ems}.", fr: "Une mesure préoccupante est arrivée ({concern}). Ceci est la tentative {attempt} sur {attempts} — ensuite, votre veille d'effondrement contacte {name}{ems}.", de: "Eine besorgniserregende Messung kam an ({concern}). Dies ist Versuch {attempt} von {attempts} — danach kontaktiert Ihre Absturzwache {name}{ems}.", pt: "Chegou uma leitura preocupante ({concern}). Esta é a tentativa {attempt} de {attempts} — depois disso, a sua vigília de colapso contacta {name}{ems}.", it: "È arrivata una lettura preoccupante ({concern}). Questo è il tentativo {attempt} di {attempts} — dopo, la tua veglia anti-collasso contatta {name}{ems}.", ja: "懸念される測定値が届きました（{concern}）。これは{attempts}回中{attempt}回目の呼びかけです — その後、クラッシュウォッチが{name}に連絡します{ems}。", zh: "收到一条令人担忧的读数（{concern}）。这是第{attempt}次尝试，共{attempts}次 — 之后，骤变守护将联系{name}{ems}。", hi: "एक चिंताजनक रीडिंग आई ({concern})। यह {attempts} में से {attempt}वाँ प्रयास है — उसके बाद आपकी क्रैश निगरानी {name} से संपर्क करेगी{ems}।", ar: "وصلت قراءة مقلقة ({concern}). هذه المحاولة {attempt} من {attempts} — بعدها تتصل مراقبة الانهيار بـ{name}{ems}.",
@@ -1379,13 +1379,13 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Off by default, programmed by you: when a reading turns critical — a fall the watch felt, a collapsing pulse, oxygen falling — JIM asks \"are you okay?\" — and if {n} attempts over {m} minutes all go unanswered, it contacts your trusted person{ems}. Any sign of you — the button, a normal reading — calls it off. Drift check-ins stay calm and never trigger this.", es: "Desactivada por defecto y programada por ti: cuando una lectura se vuelve crítica — una caída que el reloj sintió, un pulso que se desploma, oxígeno bajando — JIM pregunta «¿estás bien?» — y si {n} intentos a lo largo de {m} minutos quedan sin respuesta, contacta a tu persona de confianza{ems}. Cualquier señal tuya — el botón, una lectura normal — la cancela. Las consultas por deriva son tranquilas y nunca la disparan.", fr: "Désactivée par défaut, programmée par vous : quand une mesure devient critique — une chute sentie par la montre, un pouls qui s'effondre, l'oxygène qui baisse — JIM demande « ça va ? » — et si {n} tentatives sur {m} minutes restent toutes sans réponse, elle contacte votre personne de confiance{ems}. Tout signe de vous — le bouton, une mesure normale — l'annule. Les contrôles de dérive restent calmes et ne la déclenchent jamais.", de: "Standardmäßig aus, von Ihnen programmiert: Wird eine Messung kritisch — ein Sturz, den die Uhr spürte, ein einbrechender Puls, fallender Sauerstoff — fragt JIM »Geht es Ihnen gut?« — und bleiben {n} Versuche über {m} Minuten alle unbeantwortet, kontaktiert sie Ihre Vertrauensperson{ems}. Jedes Zeichen von Ihnen — der Knopf, eine normale Messung — bricht sie ab. Drift-Nachfragen bleiben ruhig und lösen das nie aus.", pt: "Desligada por defeito, programada por si: quando uma leitura fica crítica — uma queda que o relógio sentiu, um pulso a desabar, oxigénio a cair — o JIM pergunta «está bem?» — e se {n} tentativas ao longo de {m} minutos ficarem todas sem resposta, contacta a sua pessoa de confiança{ems}. Qualquer sinal seu — o botão, uma leitura normal — cancela-a. As verificações de deriva ficam calmas e nunca a disparam.", it: "Spenta per default, programmata da te: quando una lettura diventa critica — una caduta che l'orologio ha sentito, un polso che crolla, ossigeno in calo — JIM chiede «stai bene?» — e se {n} tentativi in {m} minuti restano tutti senza risposta, contatta la tua persona di fiducia{ems}. Qualsiasi segno di te — il pulsante, una lettura normale — la annulla. I controlli di deriva restano calmi e non la attivano mai.", ja: "初期状態ではオフで、設定するのはあなたです：測定値が危険域に入ると — 時計が感じた転倒、急落する脈拍、下がる酸素 — JIMが「大丈夫ですか？」と尋ね、{m}分間に{n}回の呼びかけがすべて無応答なら、信頼できる人に連絡します{ems}。あなたの気配 — ボタンや正常な測定値 — があれば中止します。ドリフト確認は穏やかなままで、これを作動させることはありません。", zh: "默认关闭，由你设定：当读数转为危急 — 手表感到的跌倒、骤降的脉搏、下降的血氧 — JIM会问「你还好吗？」— 若{m}分钟内{n}次尝试均无应答，就联系你的信任联系人{ems}。你的任何动静 — 按钮、一条正常读数 — 都会取消它。漂移问询保持平静，绝不会触发它。", hi: "डिफ़ॉल्ट रूप से बंद, आपके द्वारा प्रोग्राम की गई: जब कोई रीडिंग गंभीर हो — घड़ी को महसूस हुई गिरावट, गिरती नब्ज़, घटती ऑक्सीजन — JIM पूछता है «क्या आप ठीक हैं?» — और अगर {m} मिनटों में {n} प्रयास सब अनुत्तरित रहें, तो यह आपके भरोसेमंद व्यक्ति से संपर्क करती है{ems}। आपका कोई भी संकेत — बटन, एक सामान्य रीडिंग — इसे रद्द कर देता है। ड्रिफ़्ट पूछताछ शांत रहती है और इसे कभी सक्रिय नहीं करती।", ar: "معطلة افتراضيًا وأنت من يبرمجها: إذا صارت قراءة حرجة — سقطة شعرت بها الساعة، نبض ينهار، أكسجين يهبط — يسأل JIM «هل أنت بخير؟» — وإن بقيت {n} محاولات خلال {m} دقيقة كلها بلا رد، تتصل بشخصك الموثوق{ems}. أي إشارة منك — الزر أو قراءة طبيعية — تلغيها. فحوص الانحراف تبقى هادئة ولا تُطلقها أبدًا.",
   },
   "bas.cw.name": {
-    en: "Trusted person", es: "Persona de confianza", fr: "Personne de confiance", de: "Vertrauensperson", pt: "Pessoa de confiança", it: "Persona di fiducia", ja: "信頼できる人", zh: "信任联系人", hi: "भरोसेमंद व्यक्ति", ar: "الشخص الموثوق",
+    en: "Trusted person", es: "Persona de confianza", fr: "Personne de confiance", de: "Vertrauensperson", pt: "Pessoa de confiança", it: "Persona di fiducia", ja: "信頼する人", zh: "信任的人", hi: "भरोसेमंद व्यक्ति", ar: "الشخص الموثوق",
   },
   "bas.cw.name.ph": {
     en: "Rosa", es: "Rosa", fr: "Rosa", de: "Rosa", pt: "Rosa", it: "Rosa", ja: "Rosa", zh: "Rosa", hi: "Rosa", ar: "Rosa",
   },
   "bas.cw.channel": {
-    en: "How to reach them (email or phone)", es: "Cómo contactarla (correo o teléfono)", fr: "Comment la joindre (e-mail ou téléphone)", de: "Wie man sie erreicht (E-Mail oder Telefon)", pt: "Como contactá-la (email ou telefone)", it: "Come raggiungerla (email o telefono)", ja: "連絡方法（メールまたは電話）", zh: "如何联系（邮箱或电话）", hi: "उन तक कैसे पहुँचें (ईमेल या फ़ोन)", ar: "كيف تصل إليه (بريد أو هاتف)",
+    en: "How to reach them (email or phone)", es: "Cómo contactarla (correo o teléfono)", fr: "Comment la joindre (e-mail ou téléphone)", de: "Wie sie erreichbar ist (E-Mail oder Telefon)", pt: "Como contactá-la (email ou telefone)", it: "Come raggiungerla (email o telefono)", ja: "連絡方法（メールまたは電話）", zh: "如何联系他们（邮箱或电话）", hi: "उन तक कैसे पहुँचें (ईमेल या फ़ोन)", ar: "كيفية الوصول إليه (بريد أو هاتف)",
   },
   "bas.cw.channel.ph": {
     en: "rosa@example.com", es: "rosa@example.com", fr: "rosa@example.com", de: "rosa@example.com", pt: "rosa@example.com", it: "rosa@example.com", ja: "rosa@example.com", zh: "rosa@example.com", hi: "rosa@example.com", ar: "rosa@example.com",
@@ -1394,16 +1394,16 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Attempts", es: "Intentos", fr: "Tentatives", de: "Versuche", pt: "Tentativas", it: "Tentativi", ja: "回数", zh: "尝试次数", hi: "प्रयास", ar: "المحاولات",
   },
   "bas.cw.window": {
-    en: "Minutes per attempt", es: "Minutos por intento", fr: "Minutes par tentative", de: "Minuten pro Versuch", pt: "Minutos por tentativa", it: "Minuti per tentativo", ja: "1回あたりの分数", zh: "每次间隔分钟", hi: "प्रति प्रयास मिनट", ar: "دقائق لكل محاولة",
+    en: "Minutes per attempt", es: "Minutos por intento", fr: "Minutes par tentative", de: "Minuten pro Versuch", pt: "Minutos por tentativa", it: "Minuti per tentativo", ja: "1回あたりの分数", zh: "每次尝试的分钟数", hi: "प्रति प्रयास मिनट", ar: "الدقائق لكل محاولة",
   },
   "bas.cw.ems": {
     en: "May request emergency services (this app relays the request to every connected system — it cannot itself place a call)", es: "Puede solicitar servicios de emergencia (esta app retransmite la solicitud a cada sistema conectado — no puede llamar por sí misma)", fr: "Peut demander les services d'urgence (cette appli relaie la demande à chaque système connecté — elle ne peut pas appeler elle-même)", de: "Darf Rettungsdienste anfordern (diese App leitet die Anforderung an jedes verbundene System weiter — selbst anrufen kann sie nicht)", pt: "Pode pedir serviços de emergência (esta app retransmite o pedido a cada sistema ligado — ela própria não pode ligar)", it: "Può richiedere i servizi di emergenza (questa app inoltra la richiesta a ogni sistema collegato — non può chiamare da sola)", ja: "救急要請を許可（このアプリは接続された各システムに要請を中継します — 自分で電話をかけることはできません）", zh: "可请求急救服务（本应用将请求转发给每个已连接的系统 — 它自己无法拨打电话）", hi: "आपातकालीन सेवाएँ माँग सकती है (यह ऐप अनुरोध हर जुड़े सिस्टम तक पहुँचाती है — खुद कॉल नहीं कर सकती)", ar: "يجوز طلب خدمات الطوارئ (يمرر هذا التطبيق الطلب إلى كل نظام متصل — ولا يستطيع الاتصال بنفسه)",
   },
   "bas.cw.disarm": {
-    en: "Disarm", es: "Desactivar", fr: "Désarmer", de: "Entschärfen", pt: "Desativar", it: "Disattiva", ja: "解除", zh: "解除", hi: "निष्क्रिय करें", ar: "عطّل",
+    en: "Disarm", es: "Desactivar", fr: "Désarmer", de: "Entschärfen", pt: "Desarmar", it: "Disattiva", ja: "解除する", zh: "停用", hi: "निष्क्रिय करें", ar: "ألغِ التفعيل",
   },
   "bas.cw.armed": {
-    en: "Armed — {name} will be contacted after {n} unanswered attempts.", es: "Activada — se contactará a {name} tras {n} intentos sin respuesta.", fr: "Armée — {name} sera contacté après {n} tentatives sans réponse.", de: "Scharf — {name} wird nach {n} unbeantworteten Versuchen kontaktiert.", pt: "Ativada — {name} será contactado após {n} tentativas sem resposta.", it: "Attiva — {name} sarà contattato dopo {n} tentativi senza risposta.", ja: "作動中 — {n}回の呼びかけが無応答なら{name}に連絡します。", zh: "已启用 — {n}次尝试无应答后将联系{name}。", hi: "सक्रिय — {n} अनुत्तरित प्रयासों के बाद {name} से संपर्क होगा।", ar: "مفعّلة — سيُتصل بـ{name} بعد {n} محاولات بلا رد.",
+    en: "Armed — {name} will be contacted after {n} unanswered attempts.", es: "Activada — se contactará a {name} tras {n} intentos sin respuesta.", fr: "Armée — {name} sera contacté après {n} tentatives sans réponse.", de: "Scharf — {name} wird nach {n} unbeantworteten Versuchen benachrichtigt.", pt: "Armada — {name} será contactado após {n} tentativas sem resposta.", it: "Attiva — {name} verrà contattato dopo {n} tentativi senza risposta.", ja: "作動中 — 応答のない確認が {n} 回続くと {name} に連絡します。", zh: "已启用 — 在 {n} 次无人应答后将联系 {name}。", hi: "सक्रिय — {n} बार उत्तर न मिलने पर {name} से संपर्क किया जाएगा।", ar: "مُفعَّلة — سيجري الاتصال بـ {name} بعد {n} محاولات دون رد.",
   },
   "bas.metrics": {
     en: "Your metrics", es: "Tus métricas", fr: "Vos métriques", de: "Ihre Metriken", pt: "As suas métricas", it: "Le tue metriche", ja: "あなたの指標", zh: "你的指标", hi: "आपके मीट्रिक", ar: "مقاييسك",
@@ -1502,7 +1502,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "collect — words come in", es: "recoger — las palabras entran", fr: "collecter — les mots entrent", de: "sammeln — Worte kommen herein", pt: "recolher — as palavras entram", it: "raccogli — le parole entrano", ja: "収集 — 言葉が入ってくる", zh: "收集 — 话语向内", hi: "एकत्र — शब्द अंदर आते हैं", ar: "جمع — الكلمات تدخل",
   },
   "rch.acc.connect": {
-    en: "Connect", es: "Conectar", fr: "Connecter", de: "Verbinden", pt: "Ligar", it: "Collega", ja: "接続", zh: "连接", hi: "जोड़ें", ar: "اربط",
+    en: "Connect", es: "Conectar", fr: "Connecter", de: "Verbinden", pt: "Ligar", it: "Connetti", ja: "接続", zh: "连接", hi: "कनेक्ट", ar: "اتصال",
   },
   "rch.acc.beacon": {
     en: "Beacon", es: "Baliza", fr: "Balise", de: "Bake", pt: "Baliza", it: "Beacon", ja: "ビーコン", zh: "信标", hi: "बीकन", ar: "منارة",
@@ -1520,7 +1520,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Publish", es: "Publicar", fr: "Publier", de: "Veröffentlichen", pt: "Publicar", it: "Pubblica", ja: "発信する", zh: "发布", hi: "प्रकाशित करें", ar: "انشر",
   },
   "rch.acc.collect": {
-    en: "Collect", es: "Recoger", fr: "Collecter", de: "Sammeln", pt: "Recolher", it: "Raccogli", ja: "収集する", zh: "收集", hi: "एकत्र करें", ar: "اجمع",
+    en: "Collect", es: "Recopilar", fr: "Collecter", de: "Sammeln", pt: "Recolher", it: "Raccogli", ja: "集める", zh: "收集", hi: "एकत्र करें", ar: "اجمع",
   },
   "rch.beacon.note": {
     en: "{url} — the printable code for it is behind your own token, not a public link.", es: "{url} — su código imprimible está tras tu propio token, no en un enlace público.", fr: "{url} — son code imprimable est derrière votre propre jeton, pas un lien public.", de: "{url} — der druckbare Code dafür liegt hinter Ihrem eigenen Token, nicht hinter einem öffentlichen Link.", pt: "{url} — o código imprimível está atrás do seu próprio token, não de um link público.", it: "{url} — il suo codice stampabile è dietro il tuo token, non un link pubblico.", ja: "{url} — その印刷用コードは公開リンクではなく、あなた自身のトークンの向こうにあります。", zh: "{url} — 它的可打印码在你自己的令牌之后，而非公开链接。", hi: "{url} — इसका मुद्रण योग्य कोड आपके अपने टोकन के पीछे है, सार्वजनिक लिंक नहीं।", ar: "{url} — الرمز القابل للطباعة له خلف رمزك الخاص، لا رابط عام.",
@@ -1583,10 +1583,10 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Set the tone", es: "Fijar el tono", fr: "Définir le ton", de: "Ton festlegen", pt: "Definir o tom", it: "Imposta il tono", ja: "口調を設定", zh: "设定语气", hi: "लहजा तय करें", ar: "حدد النبرة",
   },
   "brg.speak.cautious": {
-    en: "cautious", es: "cauto", fr: "prudent", de: "vorsichtig", pt: "cauteloso", it: "cauto", ja: "慎重", zh: "谨慎", hi: "सतर्क", ar: "حذر",
+    en: "cautious", es: "cauteloso", fr: "prudent", de: "vorsichtig", pt: "cauteloso", it: "cauto", ja: "慎重", zh: "谨慎", hi: "सतर्क", ar: "حذر",
   },
   "brg.speak.balanced": {
-    en: "balanced", es: "equilibrado", fr: "équilibré", de: "ausgewogen", pt: "equilibrado", it: "equilibrato", ja: "バランス", zh: "均衡", hi: "संतुलित", ar: "متوازن",
+    en: "balanced", es: "equilibrado", fr: "équilibré", de: "ausgewogen", pt: "equilibrado", it: "equilibrato", ja: "標準", zh: "均衡", hi: "संतुलित", ar: "متوازن",
   },
   "brg.speak.direct": {
     en: "direct", es: "directo", fr: "direct", de: "direkt", pt: "direto", it: "diretto", ja: "率直", zh: "直接", hi: "सीधा", ar: "مباشر",
@@ -1727,7 +1727,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "QR code for the console URL on this network", es: "Código QR de la URL de la consola en esta red", fr: "QR code de l'URL de la console sur ce réseau", de: "QR-Code der Konsolen-URL in diesem Netzwerk", pt: "Código QR do URL da consola nesta rede", it: "Codice QR dell'URL della console su questa rete", ja: "このネットワーク上のコンソールURLのQRコード", zh: "本网络上控制台网址的二维码", hi: "इस नेटवर्क पर कंसोल URL का QR कोड", ar: "رمز QR لعنوان اللوحة على هذه الشبكة",
   },
   "set.adapt": {
-    en: "What JIM has learned about you", es: "Lo que JIM ha aprendido sobre ti", fr: "Ce que JIM a appris de vous", de: "Was JIM über Sie gelernt hat", pt: "O que o JIM aprendeu sobre si", it: "Cosa JIM ha imparato di te", ja: "JIMがあなたについて学んだこと", zh: "JIM 对你的了解", hi: "JIM ने आपके बारे में क्या सीखा", ar: "ما تعلّمه JIM عنك",
+    en: "What JIM has learned about you", es: "Lo que JIM ha aprendido sobre ti", fr: "Ce que JIM a appris sur vous", de: "Was JIM über dich gelernt hat", pt: "O que o JIM aprendeu sobre si", it: "Ciò che JIM ha imparato su di te", ja: "JIM があなたについて学んだこと", zh: "JIM 对你的了解", hi: "JIM ने आपके बारे में क्या सीखा", ar: "ما تعلَّمه JIM عنك",
   },
   "set.adapt.pitch": {
     en: "A profile derived from your own history — the conditions you declared, how your check-ins trend, what you bring up, and which guidance has actually helped. It shapes how the coach answers. Nothing is sent to a model vendor to build it.", es: "Un perfil derivado de tu propio historial — las condiciones que declaraste, cómo evolucionan tus registros, lo que sacas a colación y qué orientación te ha ayudado de verdad. Da forma a cómo responde el coach. No se envía nada a un proveedor de modelos para construirlo.", fr: "Un profil dérivé de votre propre historique — les affections que vous avez déclarées, la tendance de vos pointages, ce que vous évoquez, et quels conseils ont réellement aidé. Il façonne la façon dont le coach répond. Rien n'est envoyé à un fournisseur de modèles pour le construire.", de: "Ein Profil aus Ihrer eigenen Historie — die Beschwerden, die Sie angaben, wie sich Ihre Check-ins entwickeln, was Sie ansprechen und welche Ratschläge tatsächlich geholfen haben. Es prägt, wie der Coach antwortet. Zum Bauen wird nichts an einen Modellanbieter gesendet.", pt: "Um perfil derivado do seu próprio histórico — as condições que declarou, como evoluem os seus check-ins, o que traz à conversa e que orientação ajudou realmente. Molda a forma como o coach responde. Nada é enviado a um fornecedor de modelos para o construir.", it: "Un profilo derivato dalla tua stessa storia — le condizioni che hai dichiarato, come vanno i tuoi check-in, cosa tiri fuori, e quale guida ha davvero aiutato. Modella il modo in cui il coach risponde. Nulla viene inviato a un fornitore di modelli per costruirlo.", ja: "あなた自身の履歴から導かれたプロフィールです — 申告した状態、チェックインの推移、話題にすること、そして実際に役立った助言。コーチの答え方を形づくります。これを作るためにモデルベンダーへ送られるものは何もありません。", zh: "由你自己的历史推导出的画像 — 你申报的状况、签到的趋势、你会提起的事，以及哪些指导真正有用。它塑造教练的回答方式。构建它不会向任何模型厂商发送任何东西。", hi: "आपके अपने इतिहास से बना एक प्रोफ़ाइल — आपने जो स्थितियाँ बताईं, आपके चेक-इन का रुझान, आप क्या उठाते हैं, और किस मार्गदर्शन ने वास्तव में मदद की। यह तय करता है कि कोच कैसे जवाब देता है। इसे बनाने के लिए किसी मॉडल विक्रेता को कुछ नहीं भेजा जाता।", ar: "ملف مستخلص من تاريخك أنت — الحالات التي أعلنتها، واتجاه تسجيلاتك، وما تثيره، وأي إرشاد أفاد فعلًا. يشكّل طريقة إجابة المدرب. ولا يُرسل شيء إلى مزود نماذج لبنائه.",
@@ -1754,7 +1754,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Build it from my history", es: "Construirlo desde mi historial", fr: "Le construire depuis mon historique", de: "Aus meiner Historie aufbauen", pt: "Construí-lo a partir do meu histórico", it: "Costruiscilo dalla mia storia", ja: "自分の履歴から作る", zh: "用我的历史来构建", hi: "मेरे इतिहास से बनाएँ", ar: "ابنِه من تاريخي",
   },
   "set.anon": {
-    en: "Your name here", es: "Tu nombre aquí", fr: "Votre nom ici", de: "Ihr Name hier", pt: "O seu nome aqui", it: "Il tuo nome qui", ja: "ここでのあなたの名前", zh: "你在这里的名字", hi: "यहाँ आपका नाम", ar: "اسمك هنا",
+    en: "Your name here", es: "Tu nombre aquí", fr: "Votre nom ici", de: "Dein Name hier", pt: "O seu nome aqui", it: "Il tuo nome qui", ja: "ここでのあなたの名前", zh: "你在这里的名字", hi: "यहाँ आपका नाम", ar: "اسمك هنا",
   },
   "set.anon.pseudo": {
     en: "You use JIM as {name} — a pseudonym. JIM never learned your real name.", es: "Usas JIM como {name} — un seudónimo. JIM nunca supo tu nombre real.", fr: "Vous utilisez JIM sous le nom {name} — un pseudonyme. JIM n'a jamais appris votre vrai nom.", de: "Sie nutzen JIM als {name} — ein Pseudonym. JIM hat Ihren echten Namen nie erfahren.", pt: "Usa o JIM como {name} — um pseudónimo. O JIM nunca soube o seu nome real.", it: "Usi JIM come {name} — uno pseudonimo. JIM non ha mai saputo il tuo vero nome.", ja: "あなたはJIMを{name}として使っています — 仮名です。JIMがあなたの本名を知ることはありませんでした。", zh: "你以{name}的身份使用 JIM — 那是化名。JIM 从未知道你的真名。", hi: "आप JIM का उपयोग {name} के रूप में करते हैं — यह छद्मनाम है। JIM ने आपका असली नाम कभी नहीं जाना।", ar: "تستخدم JIM باسم {name} — وهو اسم مستعار. لم يعرف JIM اسمك الحقيقي قط.",
@@ -1934,7 +1934,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "I live alone — please knock.", es: "Vivo solo — llama a la puerta, por favor.", fr: "Je vis seul — frappez, s'il vous plaît.", de: "Ich lebe allein — bitte klopfen Sie.", pt: "Vivo sozinho — por favor bata à porta.", it: "Vivo da solo — bussa, per favore.", ja: "一人暮らしです — どうか扉を叩いてください。", zh: "我独自居住 — 请敲门。", hi: "मैं अकेला रहता हूँ — कृपया दरवाज़ा खटखटाएँ।", ar: "أعيش وحدي — من فضلك اطرق الباب.",
   },
   "set.vigil.disarm": {
-    en: "Disarm", es: "Desactivar", fr: "Désarmer", de: "Entschärfen", pt: "Desativar", it: "Disattiva", ja: "解除", zh: "解除", hi: "निष्क्रिय करें", ar: "عطّل",
+    en: "Disarm", es: "Desactivar", fr: "Désarmer", de: "Entschärfen", pt: "Desarmar", it: "Disattiva", ja: "解除する", zh: "停用", hi: "निष्क्रिय करें", ar: "ألغِ التفعيل",
   },
   "set.vigil.check": {
     en: "Just check it", es: "Solo comprobarla", fr: "Juste vérifier", de: "Nur nachsehen", pt: "Só verificar", it: "Solo controlla", ja: "確認するだけ", zh: "只查看", hi: "बस जाँच लें", ar: "تفقّده فقط",
@@ -2126,7 +2126,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Can read it: {list}", es: "Pueden leerlo: {list}", fr: "Peuvent le lire : {list}", de: "Dürfen es lesen: {list}", pt: "Podem lê-lo: {list}", it: "Possono leggerlo: {list}", ja: "読める者: {list}", zh: "可读取者: {list}", hi: "इसे पढ़ सकते हैं: {list}", ar: "يمكنهم قراءته: {list}",
   },
   "hld.plan.cancel": {
-    en: "Cancel", es: "Cancelar", fr: "Annuler", de: "Kündigen", pt: "Cancelar", it: "Annulla", ja: "解約", zh: "取消", hi: "रद्द करें", ar: "ألغِ",
+    en: "Cancel", es: "Cancelar", fr: "Annuler", de: "Abbrechen", pt: "Cancelar", it: "Annulla", ja: "キャンセル", zh: "取消", hi: "रद्द करें", ar: "ألغِ",
   },
   "hld.custody": {
     en: "Custody", es: "Custodia", fr: "Garde", de: "Verwahrung", pt: "Custódia", it: "Custodia", ja: "保管", zh: "保管", hi: "अभिरक्षा", ar: "الحفظ",
@@ -2216,7 +2216,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Quiet 9pm–7am", es: "Silencio 21:00–7:00", fr: "Silence 21h–7h", de: "Ruhe 21–7 Uhr", pt: "Silêncio 21h–7h", it: "Silenzio 21–7", ja: "21時〜7時は静かに", zh: "21点至7点静默", hi: "रात 9 से सुबह 7 तक शांत", ar: "هدوء من 9 مساءً إلى 7 صباحًا",
   },
   "wrd.board.unlink": {
-    en: "Unlink", es: "Desvincular", fr: "Délier", de: "Trennen", pt: "Desligar", it: "Scollega", ja: "紐付けを外す", zh: "取消关联", hi: "अलग करें", ar: "افصل",
+    en: "Unlink", es: "Desvincular", fr: "Dissocier", de: "Trennen", pt: "Desvincular", it: "Scollega", ja: "リンク解除", zh: "取消关联", hi: "अनलिंक करें", ar: "إلغاء الربط",
   },
   "wrd.detail": {
     en: "{age} · {relationship} · {oversight} oversight · {sensitivity} sensitivity · {critical} critical events on record", es: "{age} · {relationship} · supervisión {oversight} · sensibilidad {sensitivity} · {critical} eventos críticos registrados", fr: "{age} · {relationship} · supervision {oversight} · sensibilité {sensitivity} · {critical} événements critiques au dossier", de: "{age} · {relationship} · Aufsicht {oversight} · Empfindlichkeit {sensitivity} · {critical} kritische Ereignisse verzeichnet", pt: "{age} · {relationship} · supervisão {oversight} · sensibilidade {sensitivity} · {critical} eventos críticos registados", it: "{age} · {relationship} · supervisione {oversight} · sensibilità {sensitivity} · {critical} eventi critici a registro", ja: "{age} · {relationship} · 見守り {oversight} · 感度 {sensitivity} · 記録上の重大事象{critical}件", zh: "{age} · {relationship} · {oversight}监护 · {sensitivity}敏感度 · 记录在案的危急事件{critical}起", hi: "{age} · {relationship} · {oversight} निगरानी · {sensitivity} संवेदनशीलता · रिकॉर्ड में {critical} गंभीर घटनाएँ", ar: "{age} · {relationship} · إشراف {oversight} · حساسية {sensitivity} · {critical} أحداث حرجة في السجل",
@@ -2285,7 +2285,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "e.g. plan the recovery week", es: "p. ej. planear la semana de recuperación", fr: "p. ex. planifier la semaine de récupération", de: "z. B. die Erholungswoche planen", pt: "p. ex. planear a semana de recuperação", it: "es. pianificare la settimana di recupero", ja: "例: 回復週間の計画を立てる", zh: "例如：规划康复周", hi: "जैसे: स्वस्थ होने के सप्ताह की योजना", ar: "مثلًا: خطط لأسبوع التعافي",
   },
   "ct.linked.unlink": {
-    en: "Unlink", es: "Desvincular", fr: "Délier", de: "Trennen", pt: "Desligar", it: "Scollega", ja: "紐付けを外す", zh: "取消关联", hi: "अलग करें", ar: "افصل",
+    en: "Unlink", es: "Desvincular", fr: "Dissocier", de: "Trennen", pt: "Desvincular", it: "Scollega", ja: "リンク解除", zh: "取消关联", hi: "अनलिंक करें", ar: "إلغاء الربط",
   },
   "ct.plans.none": {
     en: "No joint plans yet.", es: "Todavía no hay planes conjuntos.", fr: "Pas encore de plans conjoints.", de: "Noch keine gemeinsamen Pläne.", pt: "Ainda não há planos conjuntos.", it: "Ancora nessun piano congiunto.", ja: "共同の計画はまだありません。", zh: "尚无联合计划。", hi: "अभी कोई संयुक्त योजना नहीं।", ar: "لا خطط مشتركة بعد.",
@@ -2495,7 +2495,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Nothing claimed for that place yet.", es: "Nada reclamado para ese lugar todavía.", fr: "Rien de signalé pour ce lieu pour l'instant.", de: "Für diesen Ort ist noch nichts eingetragen.", pt: "Nada reclamado para esse lugar ainda.", it: "Ancora nulla per quel luogo.", ja: "その場所についてはまだ何もありません。", zh: "该地点尚无任何登记。", hi: "उस स्थान के लिए अभी कुछ नहीं।", ar: "لا شيء مُدرج لذلك المكان بعد.",
   },
   "mon.title": {
-    en: "Live Monitoring", es: "Monitorización en vivo", fr: "Surveillance en direct", de: "Live-Überwachung", pt: "Monitorização ao vivo", it: "Monitoraggio dal vivo", ja: "ライブモニタリング", zh: "实时监测", hi: "लाइव निगरानी", ar: "المراقبة الحية",
+    en: "Live Monitoring", es: "Vigilancia en directo", fr: "Surveillance en direct", de: "Live-Überwachung", pt: "Vigilância em direto", it: "Monitoraggio dal vivo", ja: "ライブ・モニタリング", zh: "实时监测", hi: "लाइव निगरानी", ar: "المراقبة الحيّة",
   },
   "mon.sub": {
     en: "detect → guide → escalate", es: "detectar → guiar → escalar", fr: "détecter → guider → escalader", de: "erkennen → anleiten → eskalieren", pt: "detetar → orientar → escalar", it: "rileva → guida → escala", ja: "検知 → 案内 → エスカレート", zh: "检测 → 指导 → 升级", hi: "पहचान → मार्गदर्शन → वृद्धि", ar: "اكتشاف ← إرشاد ← تصعيد",
@@ -2504,7 +2504,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Submit a biometric sample", es: "Enviar una muestra biométrica", fr: "Envoyer un échantillon biométrique", de: "Eine biometrische Probe senden", pt: "Enviar uma amostra biométrica", it: "Invia un campione biometrico", ja: "生体サンプルを送信", zh: "提交一份生物特征样本", hi: "एक बायोमेट्रिक नमूना भेजें", ar: "أرسل عينة حيوية",
   },
   "mon.hr": {
-    en: "Heart rate (bpm)", es: "Frecuencia cardíaca (lpm)", fr: "Rythme cardiaque (bpm)", de: "Herzfrequenz (bpm)", pt: "Frequência cardíaca (bpm)", it: "Frequenza cardiaca (bpm)", ja: "心拍数（bpm）", zh: "心率（次/分）", hi: "हृदय गति (bpm)", ar: "معدل النبض (نبضة/د)",
+    en: "Heart rate (bpm)", es: "Frecuencia cardíaca (lpm)", fr: "Fréquence cardiaque (bpm)", de: "Herzfrequenz (bpm)", pt: "Frequência cardíaca (bpm)", it: "Frequenza cardiaca (bpm)", ja: "心拍数（bpm）", zh: "心率（次/分）", hi: "हृदय गति (bpm)", ar: "نبض القلب (نبضة/د)",
   },
   "mon.resp": {
     en: "Respiration (/min)", es: "Respiración (/min)", fr: "Respiration (/min)", de: "Atmung (/min)", pt: "Respiração (/min)", it: "Respirazione (/min)", ja: "呼吸（回/分）", zh: "呼吸（次/分）", hi: "श्वसन (/मिनट)", ar: "التنفس (/دقيقة)",
@@ -2546,19 +2546,19 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Relaying a dispatcher briefing — who you are, your known conditions and critical medications, the latest readings, and what's being done — through every configured channel, updated with each new reading.", es: "Retransmitiendo un parte para el operador — quién eres, tus condiciones conocidas y medicamentos críticos, las últimas lecturas, y qué se está haciendo — por cada canal configurado, actualizado con cada nueva lectura.", fr: "Transmission d'un briefing au régulateur — qui vous êtes, vos affections connues et médicaments critiques, les dernières mesures, et ce qui est fait — par chaque canal configuré, mis à jour à chaque nouvelle mesure.", de: "Weitergabe eines Leitstellen-Briefings — wer Sie sind, Ihre bekannten Beschwerden und kritischen Medikamente, die letzten Messungen und was getan wird — über jeden konfigurierten Kanal, mit jeder neuen Messung aktualisiert.", pt: "A retransmitir um resumo para o operador — quem é, as suas condições conhecidas e medicamentos críticos, as últimas leituras, e o que está a ser feito — por cada canal configurado, atualizado a cada nova leitura.", it: "Ritrasmissione di un briefing per l'operatore — chi sei, le tue condizioni note e i farmaci critici, le ultime letture, e cosa si sta facendo — su ogni canale configurato, aggiornato a ogni nuova lettura.", ja: "指令員向けの申し送りを中継しています — あなたが誰か、既知の状態と重要な薬、最新の測定値、そして今行われていること — 設定済みのすべてのチャネルへ、新しい測定のたびに更新して。", zh: "正在转达给调度员的简报 — 你是谁、你已知的状况与关键用药、最新读数，以及正在采取的措施 — 通过每一个已配置的通道，并随每条新读数更新。", hi: "डिस्पैचर के लिए ब्रीफ़िंग पहुँचाई जा रही है — आप कौन हैं, आपकी ज्ञात स्थितियाँ और महत्वपूर्ण दवाएँ, नवीनतम रीडिंग, और क्या किया जा रहा है — हर कॉन्फ़िगर किए चैनल से, हर नई रीडिंग के साथ अद्यतन।", ar: "يُنقل إيجاز للمرسِل — من أنت، وحالاتك المعروفة وأدويتك الحرجة، وآخر القراءات، وما يجري فعله — عبر كل قناة مهيأة، ويُحدَّث مع كل قراءة جديدة.",
   },
   "hom.title": {
-    en: "Overview", es: "Resumen", fr: "Vue d'ensemble", de: "Übersicht", pt: "Vista geral", it: "Panoramica", ja: "概要", zh: "总览", hi: "अवलोकन", ar: "نظرة عامة",
+    en: "Overview", es: "Resumen", fr: "Aperçu", de: "Übersicht", pt: "Visão geral", it: "Panoramica", ja: "概要", zh: "概览", hi: "अवलोकन", ar: "نظرة عامة",
   },
   "hom.on": {
     en: "● Guardian on", es: "● Guardián activo", fr: "● Gardien actif", de: "● Guardian an", pt: "● Guardião ativo", it: "● Guardian attivo", ja: "● ガーディアン稼働中", zh: "● 守护者已启用", hi: "● गार्जियन चालू", ar: "● الحارس يعمل",
   },
   "hom.hi": {
-    en: "Hi, {name}", es: "Hola, {name}", fr: "Bonjour, {name}", de: "Hallo, {name}", pt: "Olá, {name}", it: "Ciao, {name}", ja: "こんにちは、{name}さん", zh: "你好，{name}", hi: "नमस्ते, {name}", ar: "مرحبًا، {name}",
+    en: "Hi, {name}", es: "Hola, {name}", fr: "Bonjour, {name}", de: "Hallo, {name}", pt: "Olá, {name}", it: "Ciao, {name}", ja: "こんにちは、{name} さん", zh: "你好，{name}", hi: "नमस्ते, {name}", ar: "مرحبًا، {name}",
   },
   "hom.watching": {
     en: "Your Guardian is watching — rules are transparent.", es: "Tu Guardián está atento — las reglas son transparentes.", fr: "Votre Gardien veille — les règles sont transparentes.", de: "Ihr Guardian wacht — die Regeln sind transparent.", pt: "O seu Guardião está atento — as regras são transparentes.", it: "Il tuo Guardian veglia — le regole sono trasparenti.", ja: "ガーディアンが見守っています — ルールは公開されています。", zh: "你的守护者正在看顾 — 规则是透明的。", hi: "आपका गार्जियन देख रहा है — नियम पारदर्शी हैं।", ar: "حارسك يراقب — والقواعد شفافة.",
   },
   "hom.baseline": {
-    en: "Learned baseline", es: "Línea base aprendida", fr: "Ligne de base apprise", de: "Gelernte Basislinie", pt: "Linha de base aprendida", it: "Linea di base appresa", ja: "学習済みベースライン", zh: "已学习的基线", hi: "सीखी गई आधार रेखा", ar: "الخط الأساسي المُتعلَّم",
+    en: "Learned baseline", es: "Línea base aprendida", fr: "Référence apprise", de: "Gelernte Ausgangslage", pt: "Linha de base aprendida", it: "Base di riferimento appresa", ja: "学習したベースライン", zh: "已学习的基线", hi: "सीखी गई आधार-रेखा", ar: "خط الأساس المكتسب",
   },
   "hom.baseline.none": {
     en: "No baseline yet — it builds from calm samples in Live Monitoring.", es: "Aún no hay línea base — se construye con muestras en calma desde la Monitorización en vivo.", fr: "Pas encore de ligne de base — elle se construit à partir d'échantillons calmes dans la Surveillance en direct.", de: "Noch keine Basislinie — sie entsteht aus ruhigen Proben in der Live-Überwachung.", pt: "Ainda não há linha de base — constrói-se a partir de amostras calmas na Monitorização ao vivo.", it: "Ancora nessuna linea di base — si costruisce da campioni calmi nel Monitoraggio dal vivo.", ja: "ベースラインはまだありません — ライブモニタリングの安静時サンプルから作られます。", zh: "尚无基线 — 它由实时监测中的平静样本积累而成。", hi: "अभी कोई आधार रेखा नहीं — यह लाइव निगरानी के शांत नमूनों से बनती है।", ar: "لا خط أساسي بعد — يُبنى من عينات هادئة في المراقبة الحية.",
@@ -2576,13 +2576,13 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "samples", es: "muestras", fr: "échantillons", de: "Proben", pt: "amostras", it: "campioni", ja: "サンプル数", zh: "样本数", hi: "नमूने", ar: "العينات",
   },
   "hom.go.monitor": {
-    en: "Live Monitoring", es: "Monitorización en vivo", fr: "Surveillance en direct", de: "Live-Überwachung", pt: "Monitorização ao vivo", it: "Monitoraggio dal vivo", ja: "ライブモニタリング", zh: "实时监测", hi: "लाइव निगरानी", ar: "المراقبة الحية",
+    en: "Live Monitoring", es: "Vigilancia en directo", fr: "Surveillance en direct", de: "Live-Überwachung", pt: "Vigilância em direto", it: "Monitoraggio dal vivo", ja: "ライブ・モニタリング", zh: "实时监测", hi: "लाइव निगरानी", ar: "المراقبة الحيّة",
   },
   "hom.go.coach": {
-    en: "Coach", es: "Coach", fr: "Coach", de: "Coach", pt: "Coach", it: "Coach", ja: "コーチ", zh: "教练", hi: "कोच", ar: "المدرب",
+    en: "Coach", es: "Coach", fr: "Coach", de: "Coach", pt: "Coach", it: "Coach", ja: "コーチ", zh: "教练", hi: "कोच", ar: "مدرب",
   },
   "hom.go.checkin": {
-    en: "Check-in", es: "Registro", fr: "Point du jour", de: "Check-in", pt: "Check-in", it: "Check-in", ja: "チェックイン", zh: "签到", hi: "चेक-इन", ar: "تسجيل",
+    en: "Check-in", es: "Registro", fr: "Bilan", de: "Check-in", pt: "Check-in", it: "Check-in", ja: "チェックイン", zh: "签到", hi: "चेक-इन", ar: "تسجيل الحالة",
   },
   "hom.go.meds": {
     en: "💊 Medications", es: "💊 Medicamentos", fr: "💊 Médicaments", de: "💊 Medikamente", pt: "💊 Medicamentos", it: "💊 Farmaci", ja: "💊 薬", zh: "💊 药物", hi: "💊 दवाइयाँ", ar: "💊 الأدوية",
@@ -2591,7 +2591,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "👥 Care Team", es: "👥 Equipo de cuidados", fr: "👥 Équipe de soins", de: "👥 Betreuungsteam", pt: "👥 Equipa de cuidados", it: "👥 Squadra di cura", ja: "👥 ケアチーム", zh: "👥 照护团队", hi: "👥 देखभाल टीम", ar: "👥 فريق الرعاية",
   },
   "chk.title": {
-    en: "Check-in", es: "Registro", fr: "Point du jour", de: "Check-in", pt: "Check-in", it: "Check-in", ja: "チェックイン", zh: "签到", hi: "चेक-इन", ar: "تسجيل",
+    en: "Check-in", es: "Registro", fr: "Bilan", de: "Check-in", pt: "Check-in", it: "Check-in", ja: "チェックイン", zh: "签到", hi: "चेक-इन", ar: "تسجيل الحالة",
   },
   "chk.sub": {
     en: "mood, energy & stress · a worrying note runs the crisis check", es: "ánimo, energía y estrés · una nota preocupante dispara la comprobación de crisis", fr: "humeur, énergie et stress · une note inquiétante déclenche le contrôle de crise", de: "Stimmung, Energie & Stress · eine besorgniserregende Notiz löst die Krisenprüfung aus", pt: "humor, energia e stress · uma nota preocupante corre a verificação de crise", it: "umore, energia e stress · una nota preoccupante avvia il controllo di crisi", ja: "気分・活力・ストレス · 気がかりなメモは危機チェックを走らせます", zh: "心情、精力与压力 · 令人担忧的备注会触发危机检查", hi: "मनोदशा, ऊर्जा और तनाव · चिंताजनक टिप्पणी संकट-जाँच चलाती है", ar: "المزاج والطاقة والتوتر · ملاحظة مقلقة تُشغّل فحص الأزمة",
@@ -2624,7 +2624,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "No concern detected — logged to your day.", es: "Sin motivo de preocupación — registrado en tu día.", fr: "Rien d'inquiétant — enregistré dans votre journée.", de: "Nichts Besorgniserregendes — in Ihren Tag eingetragen.", pt: "Sem motivo de preocupação — registado no seu dia.", it: "Nessuna preoccupazione — registrato nella tua giornata.", ja: "気がかりな点はありません — その日の記録に加えました。", zh: "未发现值得担忧之处 — 已记入你的一天。", hi: "कोई चिंता की बात नहीं — आपके दिन में दर्ज।", ar: "لا ما يقلق — سُجّل في يومك.",
   },
   "jrn.title": {
-    en: "Journal", es: "Diario", fr: "Journal", de: "Journal", pt: "Diário", it: "Diario", ja: "ジャーナル", zh: "日志", hi: "डायरी", ar: "اليوميات",
+    en: "Journal", es: "Diario", fr: "Journal", de: "Tagebuch", pt: "Diário", it: "Diario", ja: "日記", zh: "日志", hi: "डायरी", ar: "اليوميات",
   },
   "jrn.sub": {
     en: "your words, typed or spoken", es: "tus palabras, escritas o habladas", fr: "vos mots, écrits ou dits", de: "Ihre Worte, getippt oder gesprochen", pt: "as suas palavras, escritas ou faladas", it: "le tue parole, scritte o dette", ja: "あなたの言葉を、書いても話しても", zh: "你的话，打字或口述", hi: "आपके शब्द, टाइप किए या बोले", ar: "كلماتك، مكتوبة أو منطوقة",
@@ -2645,7 +2645,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Nothing yet — the first entry can be one sentence.", es: "Nada todavía — la primera entrada puede ser una frase.", fr: "Rien pour l'instant — la première entrée peut tenir en une phrase.", de: "Noch nichts — der erste Eintrag darf ein Satz sein.", pt: "Nada ainda — a primeira entrada pode ser uma frase.", it: "Ancora niente — la prima voce può essere una frase.", ja: "まだ何もありません — 最初の記録は一文で構いません。", zh: "尚无内容 — 第一条可以只写一句话。", hi: "अभी कुछ नहीं — पहली प्रविष्टि एक वाक्य भी हो सकती है।", ar: "لا شيء بعد — يكفي أن يكون المدخل الأول جملة واحدة.",
   },
   "cch.title": {
-    en: "Coach", es: "Coach", fr: "Coach", de: "Coach", pt: "Coach", it: "Coach", ja: "コーチ", zh: "教练", hi: "कोच", ar: "المدرب",
+    en: "Coach", es: "Coach", fr: "Coach", de: "Coach", pt: "Coach", it: "Coach", ja: "コーチ", zh: "教练", hi: "कोच", ar: "مدرب",
   },
   "cch.sub": {
     en: "24/7 across your life", es: "24/7 en toda tu vida", fr: "24h/24, dans toute votre vie", de: "rund um die Uhr, durch Ihr ganzes Leben", pt: "24/7 em toda a sua vida", it: "24 ore su 24, in tutta la tua vita", ja: "生活のあらゆる場面で、24時間365日", zh: "全天候陪伴你的生活", hi: "आपके जीवन भर, चौबीसों घंटे", ar: "على مدار الساعة في كل جوانب حياتك",
@@ -2654,7 +2654,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Area", es: "Área", fr: "Domaine", de: "Bereich", pt: "Área", it: "Area", ja: "分野", zh: "领域", hi: "क्षेत्र", ar: "المجال",
   },
   "cch.mind": {
-    en: "What's on your mind?", es: "¿Qué tienes en mente?", fr: "Qu'avez-vous en tête ?", de: "Was beschäftigt Sie?", pt: "O que lhe vai na cabeça?", it: "Cosa ti passa per la testa?", ja: "何を考えていますか？", zh: "你在想什么？", hi: "आपके मन में क्या है?", ar: "بمَ تفكر؟",
+    en: "What's on your mind?", es: "¿Qué tienes en mente?", fr: "Qu'avez-vous en tête ?", de: "Was beschäftigt Sie?", pt: "O que tem em mente?", it: "Cosa hai in mente?", ja: "気になっていることは？", zh: "你在想什么？", hi: "आपके मन में क्या है?", ar: "ما الذي يدور في بالك؟",
   },
   "cch.guidance": {
     en: "{area} · guidance", es: "{area} · orientación", fr: "{area} · conseils", de: "{area} · Anleitung", pt: "{area} · orientação", it: "{area} · guida", ja: "{area} · ガイダンス", zh: "{area} · 指导", hi: "{area} · मार्गदर्शन", ar: "{area} · إرشاد",

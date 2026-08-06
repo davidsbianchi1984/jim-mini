@@ -1,0 +1,56 @@
+# status: backlog — 6 rows
+#
+# English strings held by both the desktop console's table and a shell's, on
+# which no console row and no native row share a wording. Checked by
+# test_the_desktop_and_the_phone_say_different_things.py, matched exactly in
+# both directions.
+#
+# ## What this measured here
+#
+#     ios       61 English strings in both tables, 25 with no agreed wording
+#     android   65                                 27
+#     windows   62                                 27
+#
+# Nine more were counted at first and were not real. This repo's console table
+# writes some rows escaped — `"破棄する"`, which in TypeScript
+# *is* 破棄する and renders correctly. Comparing source bytes calls that a
+# disagreement, and the guard would have shipped demanding it be fixed.
+#
+#     asked     are these two source strings identical
+#     mattered  do these two strings render the same
+#
+# ## What it was hiding
+#
+# The alarm and safety surface — the set this audit keeps naming as the case
+# where English is a hazard rather than a discourtesy. Here the two clients
+# were not both English. They were two different sentences in the reader's own
+# language:
+#
+#   * *JIM demande : ça va ?* on the desktop against *JIM demande : est-ce que
+#     ça va ?* on the phone — the question the crash watch asks;
+#   * **Cancel** as *Kündigen* on the desktop, which is the German for
+#     terminating a contract, against *Abbrechen* on the phone;
+#   * **Medical ID** as *Identité médicale* against *Fiche médicale*, on the
+#     card a responder reads;
+#   * **Disarm** as *Desativar* against *Desarmar*;
+#   * *Armed — {name} will be contacted…* as *kontaktiert* against
+#     *benachrichtigt*.
+#
+# All reconciled onto the phones' wording.
+#
+# ## What is left
+#
+# Two example values and one unit label, and one row on a third axis: *Translate*
+# is `action.translate` on the iPhone and `ov.translate.go` on the other two
+# shells, and **those two disagree with each other**, so there is no single
+# native wording for the console to adopt. The three native tables have never
+# been compared with each other. That is the next bite, and it is named here
+# rather than counted, because a count would not say which.
+#
+# ceiling: 6
+ios: brg.speak.tr :: action.translate  ("Translate")
+android: rch.acc.handle.ph :: care.handle.ph  ("@you" — an example handle)
+android: bas.cw.name.ph :: res.name.ph  ("Rosa" — an example name; one table localises it and the other does not)
+android: brg.speak.tr :: ov.translate.go  ("Translate")
+windows: bas.cw.window :: cw.minutes  ("Minutes per attempt")
+windows: brg.speak.tr :: ov.translate.go  ("Translate")

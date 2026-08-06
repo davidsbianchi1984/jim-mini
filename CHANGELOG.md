@@ -4,6 +4,46 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.48.1] — 2026-08-06
+
+### The desktop and the phone asked the same question two different ways
+
+The shared guard this round compares the desktop console's table with the three
+shells'. 61 English strings are held by both this repo's console table and its
+iOS table, and 25 had no wording the two agreed on — Android 27, Windows 27.
+
+Nine more were counted at first and were not real. This repo's console writes
+some rows escaped — `"\u7834\u68c4\u3059\u308b"`, which in TypeScript *is*
+破棄する and renders correctly — and a comparison of source bytes calls that a
+disagreement. The count fell from 34 to 25 before anything was fixed.
+
+### What it was hiding
+
+The alarm and safety surface. Not English on one side and translated on the
+other: two different sentences in the reader's own language, depending on which
+client they opened.
+
+* *JIM demande : ça va ?* on the desktop against *JIM demande : est-ce que ça
+  va ?* on the phone — the question the crash watch asks.
+* **Cancel** rendered *Kündigen* on the desktop — the German for terminating a
+  contract — against *Abbrechen* on the phone.
+* **Medical ID** as *Identité médicale* against *Fiche médicale*, on the card a
+  responder reads.
+* **Disarm** as *Desativar* against *Desarmar*, and *Armed — {name} will be
+  contacted…* as *kontaktiert* against *benachrichtigt*.
+
+All reconciled onto the phones' wording. 25 → 1 on iOS, 27 → 3, 27 → 2.
+
+### What is left
+
+Two example values, one unit label, and one row on a third axis: *Translate* is
+`action.translate` on the iPhone and `ov.translate.go` on the other two shells,
+and those two disagree with each other, so there is no single native wording to
+adopt. **The three native tables have never been compared with each other.**
+That is the next bite, named in the record rather than counted.
+
+Cut together with QRME and PDI at app-v0.48.1.
+
 ## [0.48.0] — 2026-08-06
 
 ### Six duplicate wordings, all six drifted
