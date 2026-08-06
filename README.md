@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.48.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.48.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.48.3** | Cut together at one version; the round's work is PDI's console — Custody and Continuity, 229 → 177 |
 | **0.48.2** | Three rows where the shells disagreed with each other, every one a noun against a verb — *Translate* was 翻訳 on the iPhone and 翻訳する on the other two |
 | **0.48.1** | The desktop and the phone asked *are you okay?* two different ways in French — the alarm surface reconciled across the two tables, 25 → 1 |
 | **0.48.0** | Six duplicate wordings and all six drifted — *Live Monitoring* lost the word *live* in nine languages, and a medication was labelled 姓名 |

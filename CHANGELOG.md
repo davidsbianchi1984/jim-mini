@@ -4,6 +4,29 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.48.3] — 2026-08-06
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+The round's work is PDI's: its desktop console, which had no localization table
+at all until 0.48.2, takes its next two screens — **Custody** and
+**Continuity**, chosen ahead of larger ones because they are decisions rather
+than descriptions. 229 English strings to 177.
+
+Two things there are worth carrying across. The split record that repo wrote at
+0.48.2 predicted it would *"become a real record the moment a screen exists on
+both sides"*, and it did within one round — one disagreement, caught and
+reconciled the day the table grew. And four more guards went blind the way
+0.48.2 said they would: a check that greps a screen for a sentence stops seeing
+it the moment the sentence moves into a table. Both are worth expecting here,
+where every screen is already localized and every such guard was written
+against English that has since moved.
+
+Cut together with QRME and PDI at app-v0.48.3.
+
 ## [0.48.2] — 2026-08-06
 
 ### Three rows where the shells disagreed with each other
