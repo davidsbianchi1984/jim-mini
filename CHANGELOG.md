@@ -4,6 +4,25 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.9] — 2026-08-06
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round**, beyond the shared guard:
+`_ARRAY` arrives, the Swift twin of the `listOf` shape found in Kotlin at
+0.47.6 — an array literal handed to a loop, whose strings never start a
+`Text(`. It found nothing on these shells.
+
+The round's work is QRME's, and it is a correction rather than a bite: the
+record that has called 335 rows a deletion backlog for three releases was
+wrong. 263 of them are rows one shell holds and a sibling asks for — the same
+screen saying less on one shell than the others. What that mislabelling was
+hiding is the voiceprint consent block, whose three sentences were hardcoded
+English on the iPhone while both siblings took them from the table.
+
+Cut together with QRME and PDI at app-v0.47.9.
+
 ## [0.47.8] — 2026-08-06
 
 ### No changes in this repo
