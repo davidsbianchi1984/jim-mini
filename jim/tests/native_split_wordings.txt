@@ -1,0 +1,44 @@
+# status: backlog — 1 row
+#
+# One English string carried by two or more keys whose ten translations do not
+# agree. Checked by test_the_same_sentence_translated_twice.py, matched exactly
+# in both directions — a new one fails, and a reconciled one must be struck
+# from here rather than left to rot.
+#
+# ## What this measured here
+#
+# The guard and the finding are the sibling product's; this repo's tables are a
+# quarter the size and carry six duplicate sets rather than fifty-four. All six
+# had drifted, which is a worse rate than QRME's 43-in-54 and only looks small
+# because the denominator is.
+#
+#     ios      267 rows,  3 English strings under 2+ keys, 3 of them drifted
+#     android  278 rows,  5 English strings under 2+ keys, 5 of them drifted
+#     windows  252 rows,  4 English strings under 2+ keys, 4 of them drifted
+#
+# Two of the six are worth naming.
+#
+# **`tab.monitor` and `mon` both read *Live Monitoring* in English.** In every
+# other language the tab dropped the word *live*: *Monitoreo*, *Surveillance*,
+# *Überwachung*, *Monitoramento*. The tab bar of a health guardian named its
+# monitoring surface without saying it was live, in nine of ten languages, and
+# the English reader could not see it. Reconciled to the full wording.
+#
+# **`med.name` called a medicine by the word for a person's full name.** Three
+# keys read *Name*: `habit.name` for a habit, `med.name` for a medication,
+# `nw.name` for a person. Chinese needs 名称 for a thing and 姓名 for a person,
+# and `med.name` had 姓名 — the medication label on the dose board asking a
+# Chinese reader for somebody's full name. `habit.name` had it right, which is
+# how the disagreement pointed at it.
+#
+# The row left below is that same set, and it stays split on purpose: 名称 for a
+# habit and a medicine, 姓名 for a person, under one English word that cannot
+# tell them apart. It is a question about the English, not a translation
+# mistake, which is why this file is a backlog and not a floor.
+#
+# The other four — *Connect*, *Refresh*, *Unlink*, *What's on your mind?* —
+# were the third kind the sibling's copy of this guard describes: the same
+# thing said two ways for no reason. Reconciled.
+#
+# ceiling: 1
+android: habit.name med.name nw.name  ("Name" — a habit, a medicine, a person)

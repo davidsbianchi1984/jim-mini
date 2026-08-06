@@ -4,6 +4,38 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.48.0] — 2026-08-06
+
+### Six duplicate wordings, all six drifted
+
+The shared guard this round is
+`test_the_same_sentence_translated_twice.py`: per shell, the English strings
+carried by two or more keys whose ten translations disagree. QRME found 54
+such strings on iOS with 43 already drifted. This repo's tables are a quarter
+the size and held six — **and all six had drifted**, a worse rate that only
+looks small because the denominator is.
+
+Two are worth naming.
+
+`tab.monitor` and `mon` both read **Live Monitoring** in English. In nine of
+the ten languages the tab dropped the word *live*: *Monitoreo*, *Surveillance*,
+*Überwachung*, *Monitoramento*. A health guardian's tab bar named its
+monitoring surface without saying it was live, everywhere except English, where
+nobody could see it.
+
+`med.name` labelled a medication with **姓名** — the Chinese for a person's
+full name — while `habit.name`, the same English word one screen over, had
+名称. The disagreement is what pointed at it.
+
+*Connect*, *Refresh*, *Unlink* and *What's on your mind?* were reconciled.
+One row is recorded and left split on purpose: *Name* covers a habit, a
+medicine and a person, and Chinese needs 名称 for the first two and 姓名 for
+the third. That is a question about the English, not a translation mistake —
+the distinction the new record leads with.
+
+
+Cut together with QRME and PDI at app-v0.48.0.
+
 ## [0.47.9] — 2026-08-06
 
 ### Cut together at one version
