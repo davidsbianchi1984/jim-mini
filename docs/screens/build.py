@@ -1827,6 +1827,37 @@ SCREENS = [
         dict(icon="brain", color="brand", k="Protocols, not prose",
              s="deterministic on the backend"),
     ]),
+    # 104 and 105 are the feed tab, and they are drawn as *two* screens on
+    # purpose. 104 is what a person sees; 105 is what the surface refuses to
+    # do, which is the whole reason a health guardian is allowed to carry a
+    # public video feed at all. Drawing only the first would put the pretty
+    # half in the gallery and leave the argument in a docstring.
+    dict(num=104, title="Feed", sub="QRME's stream, shown here",
+         accent="brand", cards=[
+        dict(icon="link", color="brand", k="A door, not a copy",
+             s="the posts live in QRME"),
+        dict(icon="eye", color="cyan", k="One card at a time",
+             s="swipe for the next"),
+        dict(icon="shield", color="green", k="QRME says what plays",
+             s="off-site waits for a press"),
+        dict(icon="person", color="amber", k="Rooms and desks too",
+             s="both reach a human being"),
+    ], button=("Open in QRME", "brand")),
+    # 105: the posture block, on the screen because it is on the wire. The
+    # last card is the one this surface adds — a feed is the one place a
+    # guardian could learn a great deal by watching somebody watch.
+    dict(num=105, title="What this tab won't do",
+         sub="Stated before anything plays",
+         accent="violet", cards=[
+        dict(icon="cross", color="red", k="You cannot post here",
+             s="no write route, by construction"),
+        dict(icon="cloud", color="violet", k="Nothing is mirrored",
+             s="no second copy of the wall"),
+        dict(icon="heart", color="green", k="No health data crosses",
+             s="in either direction"),
+        dict(icon="eye", color="cyan", k="Watching is not stored",
+             s="not even here, not even counts"),
+    ]),
 ]
 
 

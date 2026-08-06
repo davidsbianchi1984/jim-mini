@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.48.3** ([changelog](CHANGELOG.md) ·
+**Current release: v0.49.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -257,6 +257,8 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/102-safety.svg" width="160" alt="102 Safety"><br><sub>102 · Safety</sub></td>
 <td align="center" width="25%"><img src="docs/screens/103-wellness.svg" width="160" alt="103 Wellness"><br><sub>103 · Wellness</sub></td>
+<td align="center" width="25%"><img src="docs/screens/104-feed.svg" width="160" alt="104 Feed"><br><sub>104 · Feed</sub></td>
+<td align="center" width="25%"><img src="docs/screens/105-what-this-tab-wont-do.svg" width="160" alt="105 What This Tab Won't Do"><br><sub>105 · What This Tab Won't Do</sub></td>
 </tr>
 </table>
 
@@ -336,6 +338,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.49.0** | **The Feed tab is a door, not a copy** — QRME's public stream shown here one card at a time, GET-only by construction: no write route, no binding, and `plays`/`entering`/`ringing` passed through whole rather than recomputed. Nothing about what was watched is stored on this side |
 | **0.48.3** | Cut together at one version; the round's work is PDI's console — Custody and Continuity, 229 → 177 |
 | **0.48.2** | Three rows where the shells disagreed with each other, every one a noun against a verb — *Translate* was 翻訳 on the iPhone and 翻訳する on the other two |
 | **0.48.1** | The desktop and the phone asked *are you okay?* two different ways in French — the alarm surface reconciled across the two tables, 25 → 1 |
@@ -687,6 +690,62 @@ The test checks the coordinate is gone from the bytes that were actually sealed,
 not that a flag was set. A format the function does not parse is **reported as
 unparsed** rather than claimed clean — saying "stripped" about a PNG would be
 the exact false assurance the rest of this is written against.
+
+## The Feed tab — QRME's stream, and the three things it will not do
+
+`jim/community.py` opens with the argument this tab is another instance of.
+The spec promises forums, local events and community; all of it exists in
+**QRME**, where the moderation stack, the rooms and the ten languages already
+are. Building a second version inside a private health guardian would duplicate
+something hard to get right once, and put somebody's medical timeline and their
+public watching in the same database.
+
+So the Feed is a **door**, not a copy. `GET /community/{user_id}/feed`, and
+screens **104** and **105**:
+
+<table>
+  <tr>
+    <td align="center" width="30%"><img src="docs/screens/104-feed.svg" width="200" alt="104 Feed"></td>
+    <td align="center" width="30%"><img src="docs/screens/105-what-this-tab-wont-do.svg" width="200" alt="105 What This Tab Won't Do"></td>
+    <td valign="middle">
+
+One public card filling the screen, swipe for the next: footage QRME holds,
+cards for footage it does not, and every fourth card a **live room** you can
+walk into or a **desk with a real person behind it**, shop and prices included.
+Two screens rather than one on purpose — 104 is what a person sees, 105 is what
+the surface refuses to do, and drawing only the first would put the pretty half
+in the gallery and leave the argument in a docstring.
+
+  </td>
+  </tr>
+</table>
+
+**It cannot post — not "does not", cannot.** There is no write route on this
+side and no binding in the console. Publishing happens in QRME, under the
+user's own QRME identity, which is the entire reason for showing a door rather
+than building a room. `test_there_is_no_way_to_post_from_here` reads the route
+table rather than trusting the intention.
+
+**It passes QRME's promises through rather than restating them.** Three fields
+in every page are QRME's word to the person reading: `plays` (whether footage
+plays without being asked for), `entering` (what walking into a live room
+does), `ringing` (what pressing a bell does, and to whom). `plays` is the
+sharpest — QRME sets it `false` for anything it does not host, so scrolling
+past a card makes no request to another company's server. If JIM recomputed
+that flag there would be two implementations of one promise, and the second one
+would be wrong the first time QRME changed its mind.
+
+**It carries no health data, in either direction** — and the `posture` block
+says so on the wire rather than in a comment: nothing mirrored here, nothing
+posted on your behalf, no publishing from JIM, no health data shared, and
+**nothing about what was watched stored on this side**. That last line is new
+with this surface. A feed is the one place a guardian could quietly learn a
+great deal about somebody by watching them watch.
+
+Standalone JIM answers `409` and names the door; an unreachable QRME is a quiet
+screen with an empty shelf, the same as every other tandem surface. The tab is
+on the desktop console — it has not reached the iOS, Android or Windows shells
+yet.
 
 ## Membership
 
@@ -1152,6 +1211,7 @@ this machine's address and restart.
 <tr><td valign="top"><sub><code>GET /health</code></sub></td><td valign="top"><sub>Status + whether tandem is configured</sub></td></tr>
 <tr><td valign="top"><sub><code>POST /enroll</code></sub></td><td valign="top"><sub>Enroll a user: terms/guardian consent, emergency contact (+ consent), devices, resting-HR baseline, goals, declared known conditions. <code>anonymous: true</code> enrolls under a <b>pseudonym</b> and the typed name is discarded — the app never learns it (spec [0031] / FIG. 2 box 212). An optional <code>legal_name</code> is then used <i>only</i> in an emergency briefing; without one the briefing says no legal name is on record rather than passing a pseudonym off as an identity</sub></td></tr>
 <tr><td valign="top"><sub><code>GET /community/{user_id}</code>, <code>POST</code>/<code>GET …/visits</code></sub></td><td valign="top"><sub>The <b>community door</b> — FIG. 2 boxes 222–226 and [0020]'s "chat engines, your local events, and forums in all languages". All of it lives in <b>QRME</b>, where the moderation, the rooms and the languages already are, so JIM shows the door rather than growing a second social network inside a private health guardian: QRME's active rooms (topic, channel, heads, an openable URL) and the places its listings actually claim, filtered by <code>?locality=</code>, in the language this user reads. Nothing is mirrored here, nothing is posted on your behalf, and no health data crosses over — the reply says so in its own <code>posture</code> block. Opening a door records <b>the fact only</b> on your timeline, never anything from inside the room. 409 without <code>JIM_QRME_URL</code>; an unreachable QRME is a quiet screen. Console: the <b>Community</b> tab</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /community/{user_id}/feed</code></sub></td><td valign="top"><sub>The <b>feed</b>, through the same door — QRME's public stream, one card at a time: footage QRME holds, cards for footage it does not, and every fourth card a <b>live room</b> or a <b>desk with a person behind it</b>, shop included. The cards come through <b>whole</b>: <code>plays</code>, <code>entering</code> and <code>ringing</code> are QRME's word to the reader and are never recomputed here, because a second implementation of "does this play without being asked for" would be wrong the first time QRME changed its mind. <b>GET only, by construction</b> — there is no write route on this side and no binding in the client; publishing happens in QRME under the user's own QRME identity, and a test reads the route table rather than trusting the intention. The <code>posture</code> block adds one line this surface needed: <b>nothing about what was watched is stored here</b>. 409 without <code>JIM_QRME_URL</code>; an unreachable QRME is a quiet screen. Console: the <b>Feed</b> tab</sub></td></tr>
 <tr><td valign="top"><sub><code>GET /anonymity/{user_id}</code></sub></td><td valign="top"><sub>What anonymity keeps (every emergency path, your own history and vault records) and what it costs (a legal name for responders, unless you left one) — so the checkbox is an informed choice, not a surprise</sub></td></tr>
 <tr><td valign="top"><sub><code>POST /guardians/{gid}/children</code>, <code>GET …/children</code>, <code>GET</code>/<code>DELETE …/children/{cid}</code></sub></td><td valign="top"><sub><b>Family</b> (<code>jim/family.py</code>): a verified-adult guardian enrolls their child — consent recorded as a relationship (who, as what, when, on the child's timeline), protective defaults (cautious sensitivity, the guardian as consented emergency contact, cloud/provider sharing hard-off), and the child's device token shown once. Oversight is sized by age: <b>full</b> under 13 (condition-level timeline, never raw notes), <b>alerts-only</b> 13–17 (escalations reach the parent; a teen's check-ins and everyday guidance stay private), and it <b>ends by itself at 18</b>. The autonomous-resuscitation waiver can never be signed for a minor — not by the minor and not by a guardian</sub></td></tr>
 <tr><td valign="top"><sub><code>PUT …/children/{cid}/controls</code>, <code>GET /guardians/{gid}/watch</code></sub></td><td valign="top"><sub><b>Family controls & the parent's wrist</b>: pause and quiet hours (HH:MM, midnight-wrapping) hold <i>everyday</i> guidance only — detection, crisis escalation, and the emergency path never pause, and a held delivery is an audited <code>guidance_held</code> event. The guardian watch face shows one light per child from the last 24h of alert-level events (green quiet · orange escalated · red critical) with <code>haptic: alert</code> when a child needs someone — alert-level only, so teen privacy holds by construction. With a PDI vault configured, the guardian-consent record is sealed there (<code>jim/{child}/family/consent/…</code>) for provable custody</sub></td></tr>

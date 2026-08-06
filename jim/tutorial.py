@@ -401,6 +401,18 @@ LESSONS: tuple[dict, ...] = (
               "of it.",
          screens=(103,),
          try_it="Start a two-minute calm session and let it pace you."),
+    dict(key="feed", chapter="Day to day", title="Feed",
+         what="QRME's public stream, shown here — one card at a time: "
+              "footage QRME holds, cards for footage it does not, and "
+              "every fourth card a live room or a desk with a real person "
+              "behind it. It is a door, not a copy. You cannot post from "
+              "this tab — there is no write route on this side, and "
+              "publishing happens in QRME under your own QRME identity. "
+              "Nothing is mirrored here, no health data crosses over, and "
+              "nothing about what you watched is stored.",
+         screens=(104, 105),
+         try_it="Open the Feed tab and read the posture card before the "
+                "first video — it says what this tab will not do."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

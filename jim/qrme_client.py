@@ -124,6 +124,28 @@ class QRMEClient:
         out = r.json()
         return out if isinstance(out, list) else []
 
+    def feed(self, cursor: str | None = None) -> dict:
+        """QRME's public feed, passed through whole.
+
+        Whole rather than reshaped: the cards carry `plays`, `entering` and
+        `ringing`, and every one of those is a promise QRME makes to the
+        person on the other end. Re-deriving them here would be a second
+        implementation of a rule that is only safe when there is one.
+
+        Empty on any failure, like every other shelf in this client: a feed
+        that cannot load is a quiet screen, never an error page.
+        """
+        path = "/feed" + (f"?cursor={urllib.parse.quote(cursor)}"
+                          if cursor else "")
+        try:
+            r = self._client.get(path)
+        except Exception:
+            return {"items": [], "cursor": None}
+        if r.status_code >= 300:
+            return {"items": [], "cursor": None}
+        out = r.json()
+        return out if isinstance(out, dict) else {"items": [], "cursor": None}
+
     def shops(self, tag: str | None = None) -> list[dict]:
         """QRME's open storefronts — goods and services from businesses and
         people. Empty on any failure: a shelf, never an error page."""

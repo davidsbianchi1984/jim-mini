@@ -713,6 +713,64 @@ export type CaptureAttachResult = {
   [key: string]: unknown;
 };
 
+export interface QrmeFeedItem {
+  kind: "video" | "offsite" | "room" | "desk";
+  id: string;
+  reason: string;
+  at: string;
+  /** QRME's, and passed through whole. JIM never recomputes it: the rule that
+   *  footage QRME does not hold makes no request until pressed is only safe
+   *  when one place decides it. */
+  plays: boolean;
+  loop?: boolean;
+  note?: string;
+  src?: string;
+  profile?: { profile_id: string; name: string };
+  title?: string;
+  said?: string;
+  facade?: { platform: string; platform_name: string; video_id: string;
+             url: string };
+  topic?: string;
+  channel?: string;
+  people?: number;
+  entering?: string;
+  enter?: string;
+  display_name?: string;
+  trade?: string;
+  location?: string | null;
+  blurb?: string | null;
+  presence?: string;
+  live?: boolean;
+  human?: boolean;
+  ai?: boolean;
+  ringing?: string;
+  ring?: string;
+  shop?: {
+    shop_id: string; name: string; blurb?: string | null;
+    offerings: { id: string; kind: string; title: string; price: number;
+                 currency: string }[];
+    open: string;
+  } | null;
+}
+
+export interface QrmeFeedView {
+  qrme_url: string | null;
+  language: string;
+  items: QrmeFeedItem[];
+  cursor: string | null;
+  counts: Record<string, number>;
+  rules: Record<string, string>;
+  open_in_qrme: string | null;
+  note: string;
+  posture: {
+    mirrored_here: boolean;
+    posts_on_your_behalf: boolean;
+    can_post_from_jim: boolean;
+    health_data_shared: boolean;
+    watching_stored_here: boolean;
+  };
+}
+
 export const api = {
   // The help box — written directions about the app itself; no token, so a
   // lost person can ask before they have an account.
@@ -974,6 +1032,12 @@ export const api = {
     req<FollowupResult>(`/followup/${uid}`, { method: "POST", body, token }),
   // FIG. 2 boxes 222-226: the community door. Rooms and places come from
   // QRME through the tandem; nothing is mirrored into JIM.
+  // QRME's public feed, through the same door the rooms use. Read-only by
+  // construction — there is no post binding here, because publishing belongs
+  // in QRME under the user's own QRME identity.
+  qrmeFeed: (uid: string, token: string, cursor?: string) =>
+    req<QrmeFeedView>(`/community/${uid}/feed`
+      + (cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""), { token }),
   community: (uid: string, token: string, locality?: string) =>
     req<CommunityView>(`/community/${uid}` + (locality ? `?locality=${encodeURIComponent(locality)}` : ""), { token }),
   communityVisit: (uid: string, room_id: string, token: string) =>

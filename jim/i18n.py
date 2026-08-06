@@ -1769,6 +1769,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': 'कोई QRME एंडपॉइंट कॉन्फ़िगर नहीं है (JIM_QRME_URL सेट करें) — समुदाय QRME में रहता है और JIM उसका द्वार दिखाता है',
         'ar': 'لا توجد نقطة نهاية QRME مُهيّأة (اضبط JIM_QRME_URL) — المجتمع يقيم في QRME وJIM يدلّ على بابه',
     },
+    'no QRME endpoint configured (set JIM_QRME_URL) — the feed lives in QRME and JIM shows the door': {
+        'es': 'no hay endpoint de QRME configurado (defina JIM_QRME_URL) — el feed vive en QRME y JIM muestra la puerta',
+        'fr': 'aucun point de terminaison QRME configuré (définissez JIM_QRME_URL) — le fil vit dans QRME et JIM en indique la porte',
+        'de': 'kein QRME-Endpunkt konfiguriert (JIM_QRME_URL setzen) — der Feed lebt in QRME, und JIM zeigt die Tür dorthin',
+        'pt': 'não há endpoint QRME configurado (defina JIM_QRME_URL) — o feed vive no QRME e o JIM mostra a porta',
+        'it': 'nessun endpoint QRME configurato (imposta JIM_QRME_URL) — il feed vive in QRME e JIM ne mostra la porta',
+        'ja': 'QRME のエンドポイントが設定されていません（JIM_QRME_URL を設定してください）— フィードは QRME にあり、JIM はその入口を示します',
+        'zh': '未配置 QRME 端点（请设置 JIM_QRME_URL）— 信息流位于 QRME，JIM 只是指出入口',
+        'hi': 'कोई QRME एंडपॉइंट कॉन्फ़िगर नहीं है (JIM_QRME_URL सेट करें) — फ़ीड QRME में रहती है और JIM उसका द्वार दिखाता है',
+        'ar': 'لا توجد نقطة نهاية QRME مُهيّأة (اضبط JIM_QRME_URL) — التدفق يقيم في QRME وJIM يدلّ على بابه',
+    },
     'no alarm with that id': {
         'es': 'no hay ninguna alarma con ese id',
         'fr': 'aucune alerte avec cet identifiant',

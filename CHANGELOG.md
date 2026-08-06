@@ -4,6 +4,73 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.49.0] — 2026-08-06
+
+### The Feed tab — QRME's stream, and the three things it will not do
+
+`jim/community.py` opens with the argument this tab is another instance of. The
+spec promises forums, local events and community; all of it exists in **QRME**,
+where the moderation stack, the rooms and the ten languages already are.
+Building a second version inside a private health guardian would duplicate
+something hard to get right once, and put somebody's medical timeline and their
+public watching in the same database.
+
+So the Feed is a **door**. `GET /community/{user_id}/feed` — one public card at
+a time: footage QRME holds, cards for footage it does not, and every fourth
+card a live room or a desk with a real person behind it, shop and prices
+included.
+
+**It cannot post — not "does not", cannot.** There is no write route on this
+side and no binding in the console. Publishing happens in QRME under the user's
+own QRME identity, which is the entire reason for showing a door rather than
+building a room. `test_there_is_no_way_to_post_from_here` reads the route table
+rather than trusting the intention.
+
+**It passes QRME's promises through rather than restating them.** Three fields
+are QRME's word to the person reading: `plays` (whether footage plays without
+being asked for), `entering` (what walking into a live room does) and `ringing`
+(what pressing a bell does, and to whom). `plays` is the sharpest — QRME sets
+it false for anything it does not host, so scrolling past a card makes no
+request to another company's server. Recomputing it here would be two
+implementations of one promise, and the second would be wrong the first time
+QRME changed its mind.
+
+**It carries no health data, in either direction** — and the `posture` block
+says so on the wire rather than in a comment: nothing mirrored, nothing posted
+on the user's behalf, no publishing from JIM, no health data shared, and
+**nothing about what was watched stored on this side**. That last line is new
+with this surface: a feed is the one place a guardian could quietly learn a
+great deal about somebody by watching them watch.
+
+Standalone JIM answers `409` and names the door; an unreachable QRME is a quiet
+screen with an empty shelf, the same as every other tandem surface.
+
+### Screens and lessons
+
+**104 Feed** and **105 What This Tab Won't Do**, drawn on both platforms, with
+a `feed` lesson in the walkthrough. Two screens rather than one on purpose —
+drawing only the first would put the pretty half in the gallery and leave the
+argument in a docstring.
+
+### Where it is not
+
+The tab is on the desktop console only. `GET /community/{user_id}/feed` is
+recorded as doorless in all three shell records rather than left for a guard to
+discover, and the ratchets that hold those records shrinking are unchanged.
+
+QRME went the other way in the same round, and not by preference: its per-shell
+records are pinned **empty** by a test, so its `/feed` routes had to reach the
+phones or the suite stayed red. This repo's records were never zero, so the row
+is the honest answer here — but the stream itself is on QRME's phones, and JIM's
+door onto it is the piece still to build.
+
+One test in this round was fixed after being written wrong in a way worth
+recording: `test_an_unreachable_qrme_is_a_quiet_screen` first monkeypatched
+`QRMEClient.feed` itself, which replaced the very `try`/`except` it was meant
+to exercise and asserted nothing at all. It now patches the transport.
+
+Cut together with QRME and PDI at **app-v0.49.0**.
+
 ## [0.48.3] — 2026-08-06
 
 ### Cut together at one version

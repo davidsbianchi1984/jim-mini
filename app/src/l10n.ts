@@ -196,6 +196,103 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "अभिभावक लाइटें बैकएंड तक नहीं पहुँच पा रहीं — फिर से आज़माने के लिए दबाएँ",
     ar: "أضواء الحارس لا تصل إلى الخادم — اضغط لإعادة المحاولة",
   },
+  "feed.title": {
+    en: "Feed", es: "Muro", fr: "Fil", de: "Feed", pt: "Fluxo",
+    it: "Flusso", ja: "フィード", zh: "动态", hi: "फ़ीड", ar: "التدفّق",
+  },
+  "feed.sub": {
+    en: "QRME's public stream, shown here",
+    es: "el flujo público de QRME, mostrado aquí",
+    fr: "le flux public de QRME, affiché ici",
+    de: "QRMEs öffentlicher Stream, hier gezeigt",
+    pt: "o fluxo público do QRME, mostrado aqui",
+    it: "il flusso pubblico di QRME, mostrato qui",
+    ja: "QRME の公開ストリームを、ここに表示しています",
+    zh: "QRME 的公开流，在这里显示",
+    hi: "QRME की सार्वजनिक धारा, यहाँ दिखाई गई",
+    ar: "تدفّق QRME العلني، معروضًا هنا",
+  },
+  "feed.cannotpost": {
+    en: "You cannot post from JIM. Publishing happens in QRME, under your own QRME identity.",
+    es: "No puedes publicar desde JIM. Publicar ocurre en QRME, con tu propia identidad de QRME.",
+    fr: "Vous ne pouvez pas publier depuis JIM. La publication se fait dans QRME, sous votre propre identité QRME.",
+    de: "Aus JIM heraus kann nichts veröffentlicht werden. Das Veröffentlichen geschieht in QRME, unter Ihrer eigenen QRME-Identität.",
+    pt: "Não podes publicar a partir do JIM. Publicar acontece no QRME, com a tua própria identidade QRME.",
+    it: "Da JIM non si pubblica. La pubblicazione avviene in QRME, con la tua identità QRME.",
+    ja: "JIM からは投稿できません。投稿は QRME で、あなた自身の QRME の身元で行います。",
+    zh: "不能从 JIM 发布。发布发生在 QRME，用你自己的 QRME 身份。",
+    hi: "आप JIM से पोस्ट नहीं कर सकते। प्रकाशन QRME में होता है, आपकी अपनी QRME पहचान से।",
+    ar: "لا يمكنك النشر من JIM. النشر يجري في QRME، بهويتك الخاصة هناك.",
+  },
+  "feed.openinqrme": {
+    en: "Open it in QRME", es: "Abrirlo en QRME", fr: "L'ouvrir dans QRME",
+    de: "In QRME öffnen", pt: "Abrir no QRME", it: "Aprirlo in QRME",
+    ja: "QRME で開く", zh: "在 QRME 中打开",
+    hi: "QRME में खोलें", ar: "افتحه في QRME",
+  },
+  "feed.empty": {
+    en: "Nothing public right now.", es: "Nada público ahora mismo.",
+    fr: "Rien de public pour l'instant.", de: "Gerade nichts Öffentliches.",
+    pt: "Nada público neste momento.", it: "Nulla di pubblico al momento.",
+    ja: "いま公開されているものはありません。", zh: "此刻没有公开内容。",
+    hi: "अभी कुछ भी सार्वजनिक नहीं।", ar: "لا شيء علني الآن.",
+  },
+  "feed.kind.video": {
+    en: "Video", es: "Vídeo", fr: "Vidéo", de: "Video", pt: "Vídeo",
+    it: "Video", ja: "動画", zh: "视频", hi: "वीडियो", ar: "فيديو",
+  },
+  "feed.kind.offsite": {
+    en: "Elsewhere", es: "En otro sitio", fr: "Ailleurs", de: "Anderswo",
+    pt: "Noutro sítio", it: "Altrove", ja: "よそのサイト", zh: "站外",
+    hi: "अन्यत्र", ar: "في موقع آخر",
+  },
+  "feed.kind.room": {
+    en: "Live room", es: "Sala en directo", fr: "Salon en direct",
+    de: "Live-Raum", pt: "Sala em direto", it: "Sala dal vivo",
+    ja: "ライブの部屋", zh: "直播房间", hi: "लाइव रूम", ar: "غرفة حيّة",
+  },
+  "feed.kind.desk": {
+    en: "Desk", es: "Mostrador", fr: "Comptoir", de: "Theke", pt: "Balcão",
+    it: "Banco", ja: "受付", zh: "服务台", hi: "डेस्क", ar: "المكتب",
+  },
+  "feed.play": {
+    en: "Play it", es: "Reproducirlo", fr: "Le lire", de: "Abspielen",
+    pt: "Reproduzir", it: "Riproducilo", ja: "再生する", zh: "播放",
+    hi: "चलाएँ", ar: "شغّله",
+  },
+  "feed.enter": {
+    en: "Walk in", es: "Entrar", fr: "Entrer", de: "Hineingehen",
+    pt: "Entrar", it: "Entrare", ja: "入る", zh: "走进去",
+    hi: "अंदर जाएँ", ar: "ادخل",
+  },
+  "feed.ring": {
+    en: "Ring the bell", es: "Tocar el timbre", fr: "Sonner",
+    de: "Klingeln", pt: "Tocar a campainha", it: "Suonare il campanello",
+    ja: "呼び鈴を鳴らす", zh: "按响门铃", hi: "घंटी बजाएँ",
+    ar: "اقرع الجرس",
+  },
+  "feed.room.untitled": {
+    en: "No topic", es: "Sin tema", fr: "Sans sujet", de: "Kein Thema",
+    pt: "Sem tema", it: "Nessun argomento", ja: "話題なし", zh: "无话题",
+    hi: "कोई विषय नहीं", ar: "بلا موضوع",
+  },
+  // "Previous", not "Back" — the same reasoning QRME's table carries: this
+  // control moves one card up a stream, it does not leave a screen, and the
+  // same English under two keys is what the desktop/phone guard catches.
+  "feed.back": {
+    en: "Previous", es: "Anterior", fr: "Précédent", de: "Vorheriges",
+    pt: "Anterior", it: "Precedente", ja: "前へ", zh: "上一个",
+    hi: "पिछला", ar: "السابق",
+  },
+  "feed.next": {
+    en: "Next", es: "Siguiente", fr: "Suivant", de: "Weiter",
+    pt: "Seguinte", it: "Avanti", ja: "次へ", zh: "下一个",
+    hi: "अगला", ar: "التالي",
+  },
+  "nav.feed": {
+    en: "Feed", es: "Muro", fr: "Fil", de: "Feed", pt: "Fluxo",
+    it: "Flusso", ja: "フィード", zh: "动态", hi: "फ़ीड", ar: "التدفّق",
+  },
   "nav.home": {
     en: "Overview",
     es: "Resumen",

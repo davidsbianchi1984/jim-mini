@@ -79,6 +79,55 @@ class FakeQRME:
                  "channel": "voice", "participants": 7,
                  "created_at": "2026-07-29T00:00:00+00:00"},
             ])
+        if path == "/feed" or path.startswith("/feed?"):
+            # Shaped like QRME's real GET /feed, including the two fields
+            # JIM must pass through rather than recompute: `plays`, and the
+            # sentence a room or a desk says before it is pressed.
+            return _Resp(200, {
+                "items": [
+                    {"kind": "video", "id": "pst_bench", "plays": True,
+                     "loop": True, "src": "/media/med_bench",
+                     "title": "The bench, finished",
+                     "profile": {"profile_id": "prf_otis", "name": "Otis"},
+                     "reason": "posted publicly on the wall",
+                     "note": "This deployment holds this file, so it plays here.",
+                     "at": "2026-08-06T10:00:00+00:00"},
+                    {"kind": "offsite", "id": "pst_song", "plays": False,
+                     "loop": False, "title": "A song",
+                     "facade": {"platform": "youtube",
+                                "platform_name": "YouTube",
+                                "video_id": "dQw4w9WgXcQ",
+                                "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
+                     "reason": "posted publicly on the wall",
+                     "note": "It stays a card until you press play.",
+                     "at": "2026-08-06T09:00:00+00:00"},
+                    {"kind": "room", "id": "rm_night", "plays": False,
+                     "topic": "Night shift, still awake", "channel": "chat",
+                     "people": 4, "display_name": "Otis Marsh",
+                     "entering": "Walking in puts you in the room with the "
+                                 "people already there.",
+                     "enter": "/rooms/rm_night/join", "reason": "live right now",
+                     "at": "2026-08-06T08:00:00+00:00"},
+                    {"kind": "desk", "id": "dsk_otis", "plays": False,
+                     "display_name": "Otis Marsh", "trade": "Carpentry",
+                     "presence": "attended", "human": True, "ai": False,
+                     "ringing": "Ringing reaches a person.",
+                     "ring": "/desks/dsk_otis/bell",
+                     "shop": {"shop_id": "shp_1", "name": "Marsh & Daughter",
+                              "offerings": [{"id": "off_1", "kind": "goods",
+                                             "title": "Oak bench",
+                                             "price": 240.0,
+                                             "currency": "USD"}],
+                              "open": "/shops/shp_1"},
+                     "reason": "a person is at this desk",
+                     "at": "2026-08-06T07:00:00+00:00"},
+                ],
+                "cursor": None,
+                "counts": {"video": 1, "offsite": 1, "room": 1, "desk": 1},
+                "rules": {"plays": "QRME holds it, so it plays.",
+                          "facade": "Anything it does not hold stays a card.",
+                          "public": "Everything here was posted publicly."},
+            })
         if path == "/marketplace/localities":
             return _Resp(200, [{"locality": "Bend, OR", "listings": 3},
                                {"locality": "Portland, OR", "listings": 11}])

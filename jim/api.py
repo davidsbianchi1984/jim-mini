@@ -80,7 +80,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.48.3",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.49.0",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -1842,6 +1842,20 @@ def create_app(qrme_client: QRMEClient | None = None,
                 409, "no QRME endpoint configured (set JIM_QRME_URL) — the "
                      "community lives in QRME and JIM shows the door")
         return community.view(user_id, app.state.qrme, locality=locality)
+
+    @app.get("/community/{user_id}/feed")
+    def community_feed(user_id: str, request: Request,
+                       cursor: str | None = None) -> dict:
+        """QRME's public feed, through the tandem. Read-only by construction:
+        there is no route here that posts to it, because publishing belongs
+        in QRME under the user's own QRME identity. 409 without an endpoint,
+        the same as the rooms above."""
+        _user_or_404(user_id, request)
+        if app.state.qrme is None:
+            raise HTTPException(
+                409, "no QRME endpoint configured (set JIM_QRME_URL) — the "
+                     "feed lives in QRME and JIM shows the door")
+        return community.feed(user_id, app.state.qrme, cursor=cursor)
 
     @app.post("/community/{user_id}/visits", status_code=201)
     def community_visit(user_id: str, body: CommunityVisit,

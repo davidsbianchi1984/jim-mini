@@ -1,4 +1,4 @@
-# status: floor — 25 rows
+# status: floor — 26 rows
 #
 # Which console surface each screen drawing depicts.
 #
@@ -42,6 +42,7 @@ Channel         65
 Checkin         22
 Coach           14,24,82
 Community       92
+Feed            104,105
 Home            2
 Journal         23,87
 Monitor         13

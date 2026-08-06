@@ -25,6 +25,7 @@ GET /calm/{user_id}/history
 GET /captures/vocabulary
 GET /cloud/status
 GET /coach/{user_id}
+GET /community/{user_id}/feed
 GET /community/{user_id}/visits
 GET /devices/{user_id}
 GET /dock/faces
