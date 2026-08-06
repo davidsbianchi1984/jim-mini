@@ -833,6 +833,19 @@ CREATE TABLE IF NOT EXISTS presence_beats (
     created_at TEXT NOT NULL
 );
 
+-- How the presence carries itself: `companion` (the default) or
+-- `professional`. One row per user, written either from the setting or from
+-- a sentence — "keep it professional" changes it from that turn on.
+--
+-- It is a register, never a capability. What the presence watches and every
+-- safety path are identical in both, because a dial that quietly narrowed
+-- what a health guardian sees would hurt the person who turned it.
+CREATE TABLE IF NOT EXISTS presence_bearing (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    bearing    TEXT NOT NULL,   -- companion | professional
+    created_at TEXT NOT NULL
+);
+
 -- Where the presence speaks. One row per user: a choice, not a history.
 CREATE TABLE IF NOT EXISTS presence_surface (
     user_id    TEXT PRIMARY KEY REFERENCES users(id),

@@ -127,7 +127,111 @@ BOUNDARY_NOTE = (
 
 #: Registers. A presence that is always counselling is exhausting; one that
 #: is never counselling is furniture.
-REGISTERS = ("noticing", "nudging", "celebrating", "curious", "quiet")
+REGISTERS = ("noticing", "nudging", "celebrating", "curious", "quiet",
+             "company", "toward_people")
+
+#: How it carries itself. **Companion is the default**, deliberately: a
+#: guardian that opens in the register of a form is one people answer like a
+#: form. Somebody who wants it serious can say so — in a setting, or just by
+#: saying it — and it stays that way until they say otherwise.
+#:
+#: There is no third option and no brand name on either. It is JIM, or the
+#: Coach; the bearing is how it talks, not who it is.
+BEARINGS = ("companion", "professional")
+DEFAULT_BEARING = "companion"
+
+#: What each bearing changes. Nothing here touches what it *notices* — the
+#: baseline, the order of attention and every safety path are identical in
+#: both. A dial that quietly narrowed what a health guardian watches would be
+#: a dial that hurts somebody who turned it.
+BEARING_EFFECT: dict[str, dict] = {
+    "companion": {
+        "registers": list(REGISTERS),
+        "asks_about_your_day": True,
+        "keeps_company": True,
+        "says": "I will talk to you like somebody who knows you, and I will "
+                "say things you did not ask for.",
+    },
+    "professional": {
+        # Curiosity and company are the two that go. Both are unasked-for
+        # warmth, which is exactly what somebody choosing this is declining.
+        "registers": [r for r in REGISTERS
+                      if r not in ("curious", "company")],
+        "asks_about_your_day": False,
+        "keeps_company": False,
+        "says": "I will keep to what I noticed and why, and leave the rest "
+                "alone.",
+    },
+}
+
+#: Said in a prompt, this changes the bearing from that turn on — the same
+#: shape `coach.py` already uses for tone (clause 12's autonomous half). A
+#: person should not have to find a setting to be taken seriously.
+_BEARING_CUES: tuple[tuple[tuple[str, ...], str], ...] = (
+    (("keep it professional", "be professional", "keep things serious",
+      "be serious", "less chit-chat", "less small talk", "no small talk",
+      "stop being chatty", "just the facts", "keep it clinical"),
+     "professional"),
+    (("you can relax", "be yourself", "less formal", "loosen up",
+      "you can be warmer", "talk to me normally", "be friendly"),
+     "companion"),
+)
+
+
+def bearing_from_prompt(message: str) -> str | None:
+    """The bearing a sentence asks for, or None when it asks for nothing.
+
+    Deliberately a phrase table rather than a model read: a person saying
+    "keep it professional" should be obeyed the same way every time, and by
+    something they can read in the source.
+    """
+    text = (message or "").lower()
+    for cues, bearing in _BEARING_CUES:
+        if any(cue in text for cue in cues):
+            return bearing
+    return None
+
+
+def bearing(user_id: str) -> str:
+    row = db.connect().execute(
+        "SELECT bearing FROM presence_bearing WHERE user_id=?",
+        (user_id,)).fetchone()
+    return row["bearing"] if row else DEFAULT_BEARING
+
+
+def set_bearing(user_id: str, value: str) -> dict:
+    if value not in BEARINGS:
+        raise ValueError(
+            f"no bearing called {value!r} — it is companion or professional")
+    conn = db.connect()
+    conn.execute(
+        "INSERT INTO presence_bearing (user_id, bearing, created_at)"
+        " VALUES (?,?,?) ON CONFLICT (user_id) DO UPDATE SET"
+        " bearing=excluded.bearing, created_at=excluded.created_at",
+        (user_id, value, db.utcnow()))
+    conn.commit()
+    return posture(user_id)
+
+
+def posture(user_id: str) -> dict:
+    """How it is carrying itself, and what that does and does not change."""
+    now = bearing(user_id)
+    return {
+        "user_id": user_id,
+        "bearing": now,
+        "default": DEFAULT_BEARING,
+        "choices": list(BEARINGS),
+        "effect": BEARING_EFFECT[now],
+        "unchanged": {
+            "what_it_watches": "the same six areas",
+            "safety_paths": "every one, in both",
+            "boundaries": "the same, and not a setting",
+        },
+        "note": ("It starts as a companion because a guardian that opens in "
+                 "the register of a form is one people answer like a form. "
+                 "Ask it to keep things serious and it will, from that "
+                 "sentence on."),
+    }
 
 #: Slots of the day. Not clock times — a person's morning is not 07:00 — but
 #: three shapes a day has, so the cadence can be reasoned about and tested.
@@ -157,6 +261,17 @@ LINES: dict[str, str] = {
     "presence.curious.open":
         "What is the thing you keep meaning to think about and keep not "
         "thinking about?",
+    "presence.company.here":
+        "No question in this one. I am just here for a minute.",
+    "presence.company.weather":
+        "It is quiet. Whatever kind of day this is, it is allowed to be that "
+        "kind of day.",
+    "presence.people.alone":
+        "You have talked to me {days} days running and to nobody else I can "
+        "see. I am not the one to fix that, and I would rather say so.",
+    "presence.people.offer":
+        "There are people in QRME right now — a room, a desk, somebody with "
+        "a name. Want me to show you who?",
     "presence.quiet.nothing":
         "Nothing from me today. Everything I watch is where it usually is.",
     "presence.quiet.held":
@@ -172,6 +287,10 @@ DRIFT_DAYS = 2
 
 #: A goal nobody has touched in this long is worth asking about — once.
 STALE_GOAL_DAYS = 10
+
+#: Consecutive days of talking to this and to nobody else before it says so
+#: and points at people. Three, because two is a weekend.
+ALONE_DAYS = 3
 
 
 def _now() -> datetime:
@@ -303,12 +422,26 @@ def beat(user_id: str, slot: str = "morning", record: bool = True) -> dict:
     if slot not in SLOTS:
         slot = "morning"
     base = baseline(user_id)
+    carried = bearing(user_id)
+    allowed = BEARING_EFFECT[carried]["registers"]
+
+    # The order of attention, with one thing above everything else that is
+    # about *this* relationship: if somebody is talking to nothing but this
+    # program, that outranks a compliment and outranks curiosity, and the
+    # beat points away from here rather than deeper into it.
     chosen = (_drift_beat(user_id, base)
               or _followup_beat(user_id)
+              or _alone_beat(user_id, carried)
               or _mood_beat(base)
               or _stale_goal_beat(base)
               or _streak_beat(base)
-              or _curious_beat(base, slot))
+              or _curious_beat(base, slot)
+              or _company_beat(base, slot))
+    if chosen is not None and chosen["register"] not in allowed:
+        # The bearing does not silence a beat that was earned by evidence —
+        # it only declines the unasked-for warmth. `curious` and `company`
+        # are the only two that can land here, and both are exactly that.
+        chosen = None
 
     if chosen is None:
         out = {"speak": False, "register": "quiet", "area": None,
@@ -324,6 +457,7 @@ def beat(user_id: str, slot: str = "morning", record: bool = True) -> dict:
 
     out.update({
         "slot": slot,
+        "bearing": carried,
         "initiative": True,
         "wants_reply": False,
         "english": _english(out["line_key"], out.get("slots") or {}),
@@ -468,6 +602,118 @@ def _curious_beat(base: dict, slot: str) -> dict | None:
     return {"register": "curious", "area": None,
             "line_key": "presence.curious.open", "slots": {},
             "because": ["nothing needed saying, so I asked instead"]}
+
+
+def _alone_beat(user_id: str, carried: str) -> dict | None:
+    """The ending this is built for.
+
+    The good outcome for a companion like this one is not that somebody keeps
+    it forever. It is that they end up back among people, saying things in
+    their own voice, and this becomes the smaller part of their day. Anything
+    built here that quietly works against that outcome is working against the
+    product's own purpose.
+
+    So: when somebody has been talking to this program on consecutive days
+    and to nobody else it can see, the next beat is **toward people**. Not a
+    warmer line, not a longer one — a different direction.
+
+    A guardian that answers isolation with more of itself has found the
+    problem and made it worse, and it is the easiest possible thing for a
+    product like this to do by accident, because the metric it would move is
+    the one that looks like success.
+
+    Both bearings do this. Somebody who asked for professional asked for less
+    chat, not for a guardian that watches them get lonelier in silence.
+    """
+    rows = db.connect().execute(
+        "SELECT DISTINCT substr(created_at, 1, 10) AS day FROM presence_beats"
+        " WHERE user_id=? ORDER BY day DESC LIMIT 14", (user_id,)).fetchall()
+    days = [r["day"] for r in rows]
+    if len(days) < ALONE_DAYS:
+        return None
+    # Consecutive, not merely frequent: a person who checks in every Sunday
+    # is not the pattern this is about.
+    run = 1
+    for earlier, later in zip(days[1:], days):
+        if _one_day_apart(earlier, later):
+            run += 1
+        else:
+            break
+    if run < ALONE_DAYS:
+        return None
+    if _reached_people(user_id):
+        return None
+    return {"register": "toward_people", "area": "relationships",
+            "line_key": "presence.people.alone",
+            "slots": {"days": run},
+            "because": [f"{run} days running with me and no door opened to "
+                        "anybody else"],
+            "offer_people": True}
+
+
+def _one_day_apart(earlier: str, later: str) -> bool:
+    try:
+        a = date.fromisoformat(earlier)
+        b = date.fromisoformat(later)
+    except Exception:
+        return False
+    return (b - a).days == 1
+
+
+#: The events that count as having reached a person. Opening a community
+#: door and reaching a specialist are both somebody else on the other end;
+#: talking to this program is not, which is the whole point of the check.
+REACHED_PEOPLE = ("community_room_opened", "specialist_asked",
+                  "referral_requested", "careteam_message")
+
+
+def _reached_people(user_id: str) -> bool:
+    """Did they open a door to an actual person recently?
+
+    Read from the timeline this product already keeps — `note_visit` files a
+    `community_room_opened` event and stores the *fact* and nothing from
+    inside the room, which is exactly the shape this needs and no more.
+    """
+    marks = ",".join("?" * len(REACHED_PEOPLE))
+    since = (date.today() - timedelta(days=ALONE_DAYS)).isoformat()
+    row = db.connect().execute(
+        f"SELECT COUNT(*) AS n FROM events WHERE user_id=?"
+        f" AND type IN ({marks}) AND created_at >= ?",
+        (user_id, *REACHED_PEOPLE, since)).fetchone()
+    return bool(row and row["n"])
+
+
+#: Areas this must already know about before it offers ambient company.
+#: Two, because company from something that knows nothing about you is a
+#: stranger being familiar, and because silence has to stay reachable — a
+#: guardian that finds a warm nothing to say every single morning is the
+#: notification this module exists not to be.
+COMPANY_NEEDS_AREAS = 2
+
+
+def _company_beat(base: dict, slot: str) -> dict | None:
+    """Company without a question in it.
+
+    Not every beat should want something. A line that asks nothing is the one
+    a person can receive on a bad day without owing an answer, and it is the
+    closest thing this can offer to the plain experience of somebody being
+    *around* — which is most of what company actually is.
+
+    Two gates, and both matter:
+
+    * **last in the order**, so it never displaces something that was noticed;
+    * **only once this knows the person**. Silence stays a first-class answer
+      — `test_silence_is_an_answer_with_a_reason` is the pin — and filling
+      every empty morning with a warm nothing would be exactly the
+      notification this whole module refuses to be.
+    """
+    if base["known_areas"] < COMPANY_NEEDS_AREAS:
+        return None
+    return {"register": "company", "area": None,
+            "line_key": ("presence.company.here" if slot == "morning"
+                         else "presence.company.weather"),
+            "slots": {},
+            "because": ["nothing needed saying and I am here anyway"]}
 
 
 def _days_since(stamp) -> int | None:
@@ -746,10 +992,18 @@ def who_am_i(user_id: str | None = None) -> dict:
         "boundaries": BOUNDARIES,
         "note": BOUNDARY_NOTE,
         "registers": list(REGISTERS),
+        "bearings": list(BEARINGS),
+        "starts_as": DEFAULT_BEARING,
         "areas": list(AREAS),
         "hands_free": True,
         "works_offline": True,
         "says": ("I am a program that watches six parts of your life with "
                  "your permission, says something when it is worth saying, "
                  "and keeps pointing you at people who are not me."),
+        # No brand on the register. It is JIM, or the Coach; how it talks is
+        # a dial the person holds, and it starts warm because a guardian that
+        # opens like a form is one people answer like a form.
+        "bearing_note": ("I start out talking to you like somebody who knows "
+                         "you. Tell me to keep things professional and I "
+                         "will, from that sentence on."),
     }

@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.50.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.51.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -342,6 +342,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.51.0** | **How it carries itself** — companion by default, professional on request or just by saying so. A register and never a capability: the same six areas watched and every safety path identical in both. Plus a company beat that wants nothing, and a lonely run whose beat points at people |
 | **0.50.0** | **The coach that speaks first** — a presence in the parts of a companion worth having: it starts things, notices from six areas of your own history, and says why. Decided entirely offline; a model may only reword it. What it will not be is on the wire — not your partner, no body, never the only one |
 | **0.49.0** | **The Feed tab is a door, not a copy** — QRME's public stream shown here one card at a time, GET-only by construction: no write route, no binding, and `plays`/`entering`/`ringing` passed through whole rather than recomputed. Nothing about what was watched is stored on this side |
 | **0.48.3** | Cut together at one version; the round's work is PDI's console — Custody and Continuity, 229 → 177 |
@@ -743,6 +744,46 @@ So the boundaries are on the wire, at `GET /presence`, with no token needed:
 There is no switch behind any of them. The one presence setting is where it
 speaks, and `test_there_is_no_setting_that_turns_the_boundaries_off` sends a
 posture to that picker and expects a 422.
+
+### How it carries itself — and what the dial does not touch
+
+It **starts as a companion**, because a guardian that opens in the register of
+a form is one people answer like a form. Somebody who wants the form asks for
+it: `PUT /presence/{user_id}/bearing`, or just *"keep it professional"* in an
+ordinary message — `coach.py` applies it **before** the prompt is built, so
+the very turn that asked already gets it, and the reply carries `bearing` and
+`adapted_bearing` so an adaptation is never silent.
+
+| | companion | professional |
+| --- | --- | --- |
+| unasked-for warmth | yes | no |
+| registers | all seven | five — `curious` and `company` drop |
+| **the six areas watched** | **same** | **same** |
+| **safety paths** | **same** | **same** |
+| **the boundaries** | **same, and not a setting** | **same, and not a setting** |
+
+The bottom three rows are the point, and they are asserted rather than
+promised. A dial that quietly narrowed what a health guardian sees would be a
+dial that hurts whoever turned it, so the only thing it changes is how a
+sentence is worded. It never silences a beat that was **earned by evidence**:
+three low check-ins still speaks in both.
+
+### Two beats that are about the relationship rather than the week
+
+**Company.** A line with nothing wanted in it — last in the order, so it can
+never displace something that was actually noticed. It is the one a person can
+receive on a bad day without owing an answer.
+
+**The lonely run.** Three consecutive days of talking to this and to nobody
+else it can see, and the next beat points **at people**: not a warmer line, a
+different direction. A guardian that answers isolation with more of itself has
+found the problem and made it worse — and it is the easiest thing for a
+product like this to do by accident, because the number it would move is the
+one that looks like success. Both bearings do it; somebody who asked for
+professional asked for less chat, not for a guardian that watches them get
+lonelier in silence. And somebody who *did* open a room or ask a specialist
+this week is left alone, because saying it to them anyway is a product talking
+to itself.
 
 ### Hands-free, and offline is the floor
 

@@ -147,6 +147,14 @@ data class PresenceSurfaces(val chosen: String, val rule: String,
                             val surfaces: List<PresenceSurfaceRow>)
 data class PresenceGrowth(val beatsSpoken: Int, val areasSeen: Int,
                           val of: Int, val aboutMyself: String)
+/** How the presence carries itself, and what the dial leaves alone.
+ *
+ *  `unchanged` is carried to the screen rather than assumed: a bearing that
+ *  quietly narrowed what a health guardian watches would be a setting that
+ *  hurts whoever turned it, so the claim is rendered where it can be read. */
+data class PresenceBearingView(val bearing: String, val default: String,
+                               val choices: List<String>, val says: String,
+                               val unchanged: List<String>, val note: String)
 data class CommunityRoom(val id: String, val topic: String?, val channel: String?,
                          val participants: Int, val url: String?)
 data class CommunityPlace(val locality: String, val region: String?, val listings: Int)
@@ -1006,6 +1014,28 @@ object ApiClient {
                                       surface: String): PresenceSurfaces =
         surfacesOf(request("/presence/$uid/surface", "PUT",
             JSONObject().put("speaks_on", surface), token))
+
+    /** The bearing: companion by default, professional on request. */
+    suspend fun presenceBearing(uid: String, token: String): PresenceBearingView =
+        bearingOf(request("/presence/$uid/bearing", token = token))
+
+    suspend fun presenceSetBearing(uid: String, token: String,
+                                   bearing: String): PresenceBearingView =
+        bearingOf(request("/presence/$uid/bearing", "PUT",
+            JSONObject().put("bearing", bearing), token))
+
+    private fun bearingOf(o: JSONObject): PresenceBearingView {
+        val picks = o.optJSONArray("choices")
+        val same = o.optJSONObject("unchanged")
+        return PresenceBearingView(
+            o.optString("bearing", "companion"),
+            o.optString("default", "companion"),
+            (0 until (picks?.length() ?: 0)).map { picks!!.getString(it) },
+            o.optJSONObject("effect")?.optString("says", "") ?: "",
+            same?.keys()?.asSequence()?.map { same.optString(it, "") }?.toList()
+                ?: emptyList(),
+            o.optString("note", ""))
+    }
 
     /** What it has become, with the counts under it. */
     suspend fun presenceGrowth(uid: String, token: String): PresenceGrowth {

@@ -814,6 +814,14 @@ export interface PresenceSurfaces {
               reads_health_aloud: boolean; withholds: string[] }[];
 }
 
+export interface PresenceBearingView {
+  bearing: string; default: string; choices: string[];
+  effect: { registers: string[]; asks_about_your_day: boolean;
+            keeps_company: boolean; says: string };
+  unchanged: Record<string, string>;
+  note: string;
+}
+
 export interface PresenceGrowth {
   beats_spoken: number; by_register: Record<string, number>;
   areas_i_can_see: number; of: number; what_i_changed: string[];
@@ -1104,6 +1112,12 @@ export const api = {
     req<PresenceSurfaces>(`/presence/${uid}/surfaces`, { token }),
   presenceChooseSurface: (uid: string, token: string, surface: string) =>
     req<PresenceSurfaces>(`/presence/${uid}/surface`, { token, method: "PUT", body: { speaks_on: surface } }),
+  presenceBearing: (uid: string, token: string) =>
+    req<PresenceBearingView>(`/presence/${uid}/bearing`, { token }),
+  // A register, never a capability — the same six areas are watched in both,
+  // which is why this reads back the whole posture rather than an ack.
+  presenceSetBearing: (uid: string, token: string, bearing: string) =>
+    req<PresenceBearingView>(`/presence/${uid}/bearing`, { token, method: "PUT", body: { bearing } }),
   presenceGrowth: (uid: string, token: string) =>
     req<PresenceGrowth>(`/presence/${uid}/growth`, { token }),
   qrmeFeed: (uid: string, token: string, cursor?: string) =>

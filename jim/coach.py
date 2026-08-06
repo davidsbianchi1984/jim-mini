@@ -85,6 +85,23 @@ def tone_from_prompt(message: str) -> str | None:
     return None
 
 
+#: What each bearing adds to the system prompt. Two short paragraphs rather
+#: than two personas: the model is being told how to *word* an answer, and
+#: nothing here touches what it is allowed to look at or to say. Both end the
+#: same way on purpose — the honesty is not a feature of the warm one.
+_BEARING_PROMPT: dict[str, str] = {
+    "companion": (
+        "\nTalk like somebody who knows them. Warmth is allowed, so is a "
+        "question they did not ask for, and so is saying nothing much. Do "
+        "not perform intimacy and do not claim to be a person."),
+    "professional": (
+        "\nThey have asked you to keep things serious. Answer what was "
+        "asked, say what you noticed and why, and leave the small talk out. "
+        "Do not become cold — brief is not the same as clipped. Do not claim "
+        "to be a person."),
+}
+
+
 def reply(user_id: str, area: str, message: str) -> dict:
     from . import i18n
 
@@ -94,7 +111,18 @@ def reply(user_id: str, area: str, message: str) -> dict:
     if adapted_tone:
         guardian.set_personality(user_id, {"tone": adapted_tone})
 
+    # The bearing takes the same path, and for the same reason: somebody who
+    # says "keep it professional" is asking to be met that way *now*, not
+    # after they find a setting. It is a register — it changes how the answer
+    # is worded and never what this is willing to look at.
+    from . import presence
+    adapted_bearing = presence.bearing_from_prompt(message)
+    if adapted_bearing:
+        presence.set_bearing(user_id, adapted_bearing)
+    carried = presence.bearing(user_id)
+
     system = _SYSTEM.format(area=AREAS[area], context=_context(user_id))
+    system += _BEARING_PROMPT[carried]
     system += personalize(guardian.get_user(user_id))
     # The user-specific adaptation profile (jim/adaptation.py, clause 11):
     # what has actually helped this person, derived from their own history.
@@ -188,6 +216,11 @@ def reply(user_id: str, area: str, message: str) -> dict:
             # What the coach taught itself from this turn (clause 12), so the
             # adaptation is announced rather than silently applied forever.
             "adapted_tone": adapted_tone,
+            # And the bearing, on the same principle: an adaptation nobody
+            # can see is an uncanny one. `bearing` is what it is carrying
+            # now; `adapted_bearing` is set only on the turn that changed it.
+            "bearing": carried,
+            "adapted_bearing": adapted_bearing,
             "provenance": {
                 "method": ("offline knowledge pack — curated, deterministic, "
                            "referenced; a configured model key replaces this "

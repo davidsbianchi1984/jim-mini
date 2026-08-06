@@ -4,6 +4,45 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.51.0] — 2026-08-06
+
+### How it carries itself — a register, never a capability
+
+The presence starts as a **companion**, because a guardian that opens in the
+register of a form is one people answer like a form. Somebody who wants the
+form asks for it: `GET`/`PUT /presence/{user_id}/bearing`, or just *"keep it
+professional"* in an ordinary message. `coach.py` applies that **before** the
+prompt is built, so the very turn that asked already gets it, and the reply
+carries `bearing` and `adapted_bearing` — an adaptation nobody can see is an
+uncanny one.
+
+What the dial changes is unasked-for warmth: `curious` and `company` drop.
+What it does **not** change is on the wire and asserted — the same six areas
+watched, every safety path identical, the boundaries the same and still not a
+setting. A dial that quietly narrowed what a health guardian sees would be a
+dial that hurts whoever turned it. It also never silences a beat **earned by
+evidence**: three low check-ins speaks in both bearings.
+
+### Two beats about the relationship rather than the week
+
+**Company** is a line with nothing wanted in it — last in the order, so it can
+never displace something that was actually noticed. It is the one a person can
+receive on a bad day without owing an answer.
+
+**The lonely run** is the one this module exists to get right. Three
+consecutive days of talking to this and to nobody else it can see, and the
+next beat points **at people**: not a warmer line, a different direction. A
+guardian that answers isolation with more of itself has found the problem and
+made it worse, and that is the easiest thing for a product like this to do by
+accident, because the number it would move is the one that looks like success.
+Both bearings do it. Somebody who already opened a room or asked a specialist
+this week is left alone.
+
+Four new line keys in ten languages, the dial on the console and all three
+shells, a lesson, and twelve tests including an injection pass.
+
+Cut together with QRME and PDI at **app-v0.51.0**.
+
 ## [0.50.0] — 2026-08-06
 
 ### The presence — the coach that speaks first

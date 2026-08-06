@@ -494,6 +494,21 @@ public record PresenceSurfaces(
     [property: JsonPropertyName("rule")] string Rule,
     [property: JsonPropertyName("surfaces")] PresenceSurfaceRow[]? Surfaces);
 
+/// <summary>How the presence carries itself, and what the dial leaves
+/// alone. <c>Unchanged</c> is decoded and rendered rather than trusted from a
+/// comment: a bearing that quietly narrowed what a health guardian watches
+/// would be a setting that hurts whoever turned it.</summary>
+public record PresenceBearingEffect(
+    [property: JsonPropertyName("says")] string Says);
+
+public record PresenceBearingView(
+    [property: JsonPropertyName("bearing")] string Bearing,
+    [property: JsonPropertyName("default")] string Default,
+    [property: JsonPropertyName("choices")] string[]? Choices,
+    [property: JsonPropertyName("effect")] PresenceBearingEffect? Effect,
+    [property: JsonPropertyName("unchanged")] Dictionary<string, string>? Unchanged,
+    [property: JsonPropertyName("note")] string Note);
+
 public record PresenceGrowth(
     [property: JsonPropertyName("beats_spoken")] int BeatsSpoken,
     [property: JsonPropertyName("areas_i_can_see")] int AreasSeen,
@@ -1122,6 +1137,16 @@ public sealed class ApiClient
                                                         string surface) =>
         Send<PresenceSurfaces>(Put($"/presence/{uid}/surface",
             new { speaks_on = surface }, token));
+
+    /// <summary>The bearing: companion by default, professional on
+    /// request.</summary>
+    public Task<PresenceBearingView> PresenceBearing(string uid, string token) =>
+        Send<PresenceBearingView>(Get($"/presence/{uid}/bearing", token));
+
+    public Task<PresenceBearingView> PresenceSetBearing(string uid, string token,
+                                                        string bearing) =>
+        Send<PresenceBearingView>(Put($"/presence/{uid}/bearing",
+            new { bearing }, token));
 
     /// <summary>What it has become, with the counts under it.</summary>
     public Task<PresenceGrowth> PresenceGrowth(string uid, string token) =>

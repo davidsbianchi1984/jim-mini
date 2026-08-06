@@ -351,6 +351,18 @@ class CommunityVisit(BaseModel):
     room_id: str
 
 
+class PresenceBearing(BaseModel):
+    """How the presence carries itself: `companion` (the default) or
+    `professional`.
+
+    A register, not a capability. The same six areas are watched and every
+    safety path is identical in both — a dial that quietly narrowed what a
+    health guardian sees would be a dial that hurts whoever turned it.
+    """
+
+    bearing: str
+
+
 class PresenceSurface(BaseModel):
     """Where the presence speaks (jim/presence.py). One word, because the
     consequence — whether health is read out loud or shown — follows from

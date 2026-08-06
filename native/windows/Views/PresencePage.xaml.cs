@@ -34,6 +34,13 @@ public sealed partial class PresencePage : Page
         TodayHead.Text = L10n.T("presence.today");
         OfflineNote.Text = L10n.T("presence.offline");
         BaselineHead.Text = L10n.T("presence.baseline");
+        BearingHead.Text = L10n.T("presence.bearing");
+        BearingSameHead.Text = L10n.T("presence.bearing.same");
+        // Spelled out rather than "presence.bearing." + choice: a key built
+        // from a variable is invisible to the guard that checks every
+        // translated row is asked for by something.
+        CompanionButton.Content = L10n.T("presence.bearing.companion");
+        ProfessionalButton.Content = L10n.T("presence.bearing.professional");
         SurfacesHead.Text = L10n.T("presence.surfaces");
         ReachHead.Text = L10n.T("presence.reach");
         GrowthHead.Text = L10n.T("presence.growth");
@@ -71,6 +78,8 @@ public sealed partial class PresencePage : Page
                 (sf.Surfaces ?? Array.Empty<PresenceSurfaceRow>()).Select(r =>
                     r.Surface + " · " + (r.ReadsHealthAloud
                         ? L10n.T("presence.aloud") : L10n.T("presence.shown"))));
+
+            ShowBearing(await ApiClient.Shared.PresenceBearing(s.Uid!, s.Token!));
 
             var g = await ApiClient.Shared.PresenceGrowth(s.Uid!, s.Token!);
             Growth.Text = g.BeatsSpoken + " · " + g.AreasSeen + " / " + g.Of
@@ -110,6 +119,33 @@ public sealed partial class PresencePage : Page
         {
             var b = await ApiClient.Shared.PresenceDeepen(s.Uid!, s.Token!, _slot);
             Beats.Text = b.Slot + " · " + (b.Spoken ?? b.English);
+        }
+        catch { }
+    }
+
+    /// <summary>The dial. A register, never a capability — so this renders
+    /// what stays the same in both bearings next to the buttons that change
+    /// it.</summary>
+    private void ShowBearing(PresenceBearingView b)
+    {
+        BearingSays.Text = b.Effect?.Says ?? "";
+        BearingSame.Text = string.Join("\n",
+            (b.Unchanged ?? new()).OrderBy(kv => kv.Key).Select(kv => kv.Value));
+    }
+
+    private async void OnCarryCompanion(object sender, RoutedEventArgs e)
+        => await Carry("companion");
+
+    private async void OnCarryProfessional(object sender, RoutedEventArgs e)
+        => await Carry("professional");
+
+    private async System.Threading.Tasks.Task Carry(string bearing)
+    {
+        var s = AppState.Current;
+        try
+        {
+            ShowBearing(await ApiClient.Shared.PresenceSetBearing(
+                s.Uid!, s.Token!, bearing));
         }
         catch { }
     }

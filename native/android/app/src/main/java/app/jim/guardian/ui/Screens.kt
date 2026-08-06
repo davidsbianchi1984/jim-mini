@@ -2106,6 +2106,7 @@ private fun PresencePanel(vm: GuardianViewModel) {
     var surfaces by remember { mutableStateOf<PresenceSurfaces?>(null) }
     var reach by remember { mutableStateOf<List<String>>(emptyList()) }
     var grew by remember { mutableStateOf<PresenceGrowth?>(null) }
+    var carry by remember { mutableStateOf<PresenceBearingView?>(null) }
     var spoken by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     LaunchedEffect(Unit) {
@@ -2116,6 +2117,7 @@ private fun PresencePanel(vm: GuardianViewModel) {
         vm.call({ ApiClient.presenceBaseline(vm.uid!!, vm.token!!) }) { base = it.getOrNull() }
         vm.call({ ApiClient.presenceSurfaces(vm.uid!!, vm.token!!) }) { surfaces = it.getOrNull() }
         vm.call({ ApiClient.presenceGrowth(vm.uid!!, vm.token!!) }) { grew = it.getOrNull() }
+        vm.call({ ApiClient.presenceBearing(vm.uid!!, vm.token!!) }) { carry = it.getOrNull() }
         // A missing tandem is not an error: 409 means the people live in QRME.
         vm.call({ ApiClient.presenceReach(vm.uid!!, vm.token!!) }) {
             reach = it.getOrDefault(emptyList())
@@ -2137,6 +2139,38 @@ private fun PresencePanel(vm: GuardianViewModel) {
                     Text(says, color = Jim.T3, fontSize = 10.sp)
                 }
                 Text(w.note, color = Jim.T3, fontSize = 10.sp)
+            }
+        }
+
+        // The dial: companion by default, professional on request. A register
+        // and never a capability, so the card that changes it also shows what
+        // both bearings leave alone.
+        carry?.let { c ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("presence.bearing", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    c.choices.forEach { pick ->
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.presenceSetBearing(vm.uid!!, vm.token!!, pick) }) { r ->
+                                carry = r.getOrNull() ?: carry
+                            }
+                        }) {
+                            // Spelled out rather than "presence.bearing.$pick":
+                            // a key built from a variable is invisible to the
+                            // guard that checks every translated row is read.
+                            Text(if (pick == "professional")
+                                    L10n.t("presence.bearing.professional", vm.language)
+                                 else L10n.t("presence.bearing.companion", vm.language),
+                                color = if (pick == c.bearing) Jim.BrandA else Jim.T2,
+                                fontSize = 12.sp)
+                        }
+                    }
+                }
+                Text(c.says, color = Jim.T3, fontSize = 10.sp)
+                Text(L10n.t("presence.bearing.same", vm.language), color = Jim.T2, fontSize = 10.sp)
+                c.unchanged.forEach { line -> Text(line, color = Jim.T3, fontSize = 10.sp) }
+                Text(c.note, color = Jim.T3, fontSize = 10.sp)
             }
         }
 

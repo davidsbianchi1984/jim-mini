@@ -588,6 +588,27 @@ struct PresenceSurfaces: Decodable {
     let surfaces: [PresenceSurfaceRow]
 }
 
+/// How it carries itself, and what the dial does not touch.
+///
+/// `unchanged` is decoded and rendered rather than trusted from a comment: a
+/// bearing that quietly narrowed what a health guardian watches would be a
+/// setting that hurts whoever turned it, so the screen shows the claim.
+struct PresenceBearingEffect: Decodable {
+    let registers: [String]
+    let asks_about_your_day: Bool
+    let keeps_company: Bool
+    let says: String
+}
+
+struct PresenceBearingView: Decodable {
+    let bearing: String
+    let `default`: String
+    let choices: [String]
+    let effect: PresenceBearingEffect
+    let unchanged: [String: String]
+    let note: String
+}
+
 struct PresenceGrowth: Decodable {
     let beats_spoken: Int
     let areas_i_can_see: Int
@@ -1212,6 +1233,17 @@ actor ApiClient {
                                surface: String) async throws -> PresenceSurfaces {
         try await request("/presence/\(uid)/surface", method: "PUT",
                           body: ["speaks_on": surface], token: token)
+    }
+
+    /// The bearing: companion by default, professional on request.
+    func presenceBearing(uid: String, token: String) async throws -> PresenceBearingView {
+        try await request("/presence/\(uid)/bearing", token: token)
+    }
+
+    func presenceSetBearing(uid: String, token: String,
+                            bearing: String) async throws -> PresenceBearingView {
+        try await request("/presence/\(uid)/bearing", method: "PUT",
+                          body: ["bearing": bearing], token: token)
     }
 
     /// What it has become, with the counts under it.

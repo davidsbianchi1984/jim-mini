@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  api, type PresenceBaseline, type PresenceBeat, type PresenceDay,
-  type PresenceGrowth,
+  api, type PresenceBaseline, type PresenceBearingView, type PresenceBeat,
+  type PresenceDay, type PresenceGrowth,
   type PresenceReach, type PresenceSurfaces, type PresenceWho,
 } from "../api";
 import { fill, t as tr, visitorLang } from "../l10n";
@@ -26,7 +26,7 @@ import { useSession } from "../store";
  *     because a guardian with something to say every single day is a
  *     notification and people turn notifications off.
  */
-/** The ten line keys, spelled out.
+/** The fourteen line keys, spelled out.
  *
  *  `fill(b.line_key, …)` would be shorter and is what a first draft did — and
  *  a key looked up from a variable is invisible to the guard that checks every
@@ -45,6 +45,10 @@ function lineFor(b: PresenceBeat, lang: ReturnType<typeof visitorLang>): string 
     case "presence.celebrate.goal": return fill("presence.celebrate.goal", lang, s);
     case "presence.curious.area": return fill("presence.curious.area", lang, s);
     case "presence.curious.open": return fill("presence.curious.open", lang, s);
+    case "presence.company.here": return fill("presence.company.here", lang, s);
+    case "presence.company.weather": return fill("presence.company.weather", lang, s);
+    case "presence.people.alone": return fill("presence.people.alone", lang, s);
+    case "presence.people.offer": return fill("presence.people.offer", lang, s);
     case "presence.quiet.held": return fill("presence.quiet.held", lang, s);
     case "presence.quiet.nothing": return fill("presence.quiet.nothing", lang, s);
     // A key this build has never heard of: show the server's English rather
@@ -65,6 +69,7 @@ export function Presence() {
   const [surf, setSurf] = useState<PresenceSurfaces | null>(null);
   const [reach, setReach] = useState<PresenceReach | null>(null);
   const [grew, setGrew] = useState<PresenceGrowth | null>(null);
+  const [carry, setCarry] = useState<PresenceBearingView | null>(null);
   const [spoken, setSpoken] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
@@ -77,6 +82,7 @@ export function Presence() {
       setBase(await api.presenceBaseline(uid, token));
       setSurf(await api.presenceSurfaces(uid, token));
       setGrew(await api.presenceGrowth(uid, token));
+      setCarry(await api.presenceBearing(uid, token));
     } catch (e) {
       setError((e as Error).message);
     }
@@ -113,6 +119,14 @@ export function Presence() {
     } catch (e) { setError((e as Error).message); }
   }
 
+  /** The dial. A register, never a capability — which is why the card that
+   *  changes it also renders what stays the same in both. */
+  async function carryAs(bearing: string) {
+    if (!uid || !token) return;
+    try { setCarry(await api.presenceSetBearing(uid, token, bearing)); }
+    catch (e) { setError((e as Error).message); }
+  }
+
   async function choose(surface: string) {
     if (!uid || !token) return;
     try { setSurf(await api.presenceChooseSurface(uid, token, surface)); }
@@ -140,6 +154,34 @@ export function Presence() {
             ))}
           </ul>
           <p className="muted small">{who.note}</p>
+        </div>
+      )}
+
+      {carry && (
+        <div className="card">
+          <p><strong>{tr("presence.bearing", lang)}</strong></p>
+          <div className="row">
+            {carry.choices.map((b) => (
+              <button key={b}
+                      className={b === carry.bearing ? "primary" : ""}
+                      onClick={() => carryAs(b)}>
+                {b === "professional"
+                  ? tr("presence.bearing.professional", lang)
+                  : tr("presence.bearing.companion", lang)}
+              </button>
+            ))}
+          </div>
+          <p className="muted small">{carry.effect.says}</p>
+          {/* What the dial does *not* touch, on the screen rather than in a
+              docstring: a dial that quietly narrowed what a health guardian
+              watches would be a dial that hurts whoever turned it. */}
+          <p className="muted small">{tr("presence.bearing.same", lang)}</p>
+          <ul>
+            {Object.entries(carry.unchanged).map(([key, value]) => (
+              <li key={key} className="muted small">{value}</li>
+            ))}
+          </ul>
+          <p className="muted small">{carry.note}</p>
         </div>
       )}
 

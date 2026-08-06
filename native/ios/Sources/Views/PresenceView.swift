@@ -23,6 +23,7 @@ struct PresenceView: View {
     @State private var surf: PresenceSurfaces?
     @State private var reach: PresenceReach?
     @State private var grew: PresenceGrowth?
+    @State private var carry: PresenceBearingView?
     @State private var spoken: [String: String] = [:]
 
     var body: some View {
@@ -47,6 +48,35 @@ struct PresenceView: View {
                             }
                         }
                         Text(w.note).font(.caption2).foregroundStyle(Theme.t3)
+                    }.card()
+                }
+
+                if let c = carry {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(L10n.t("presence.bearing", state.language))
+                            .font(.headline).foregroundStyle(Theme.txt)
+                        HStack {
+                            ForEach(c.choices, id: \.self) { b in
+                                Button(b == "professional"
+                                       ? L10n.t("presence.bearing.professional",
+                                                state.language)
+                                       : L10n.t("presence.bearing.companion",
+                                                state.language)) {
+                                    Task { await carryAs(b) }
+                                }.font(.caption)
+                            }
+                        }
+                        Text(c.effect.says).font(.caption2)
+                            .foregroundStyle(Theme.t3)
+                        Text(L10n.t("presence.bearing.same", state.language))
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                        ForEach(Array(c.unchanged.keys.sorted()), id: \.self) { key in
+                            if let value = c.unchanged[key] {
+                                Text(value).font(.caption2)
+                                    .foregroundStyle(Theme.t3)
+                            }
+                        }
+                        Text(c.note).font(.caption2).foregroundStyle(Theme.t3)
                     }.card()
                 }
 
@@ -172,6 +202,7 @@ struct PresenceView: View {
         base = try? await ApiClient.shared.presenceBaseline(uid: uid, token: token)
         surf = try? await ApiClient.shared.presenceSurfaces(uid: uid, token: token)
         grew = try? await ApiClient.shared.presenceGrowth(uid: uid, token: token)
+        carry = try? await ApiClient.shared.presenceBearing(uid: uid, token: token)
         // A missing tandem is not an error here — 409 means "the people live
         // in QRME", and an empty shelf says that better than a red banner.
         reach = try? await ApiClient.shared.presenceReach(uid: uid, token: token)
@@ -193,6 +224,14 @@ struct PresenceView: View {
             uid: uid, token: token, slot: slot) {
             spoken[slot] = b.spoken ?? b.english
         }
+    }
+
+    /// The dial. A register, never a capability — so the card that changes it
+    /// also renders what stays the same in both bearings.
+    private func carryAs(_ bearing: String) async {
+        guard let uid = state.userId, let token = state.userToken else { return }
+        carry = try? await ApiClient.shared.presenceSetBearing(
+            uid: uid, token: token, bearing: bearing)
     }
 
     private func choose(_ surface: String) async {

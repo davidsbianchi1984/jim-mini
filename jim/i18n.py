@@ -2550,6 +2550,7 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    'bearing': {'en': 'How it carries itself', 'es': 'Cómo se comporta', 'fr': 'Comment il se tient', 'de': 'Wie es sich gibt', 'pt': 'Como se porta', 'it': 'Come si pone', 'ja': 'どう構えるか', 'zh': '以什么姿态', 'hi': 'कैसा रुख़ रखे', 'ar': 'كيف يتصرّف'},
     'speaks_on': {'en': 'Where it speaks', 'es': 'Dónde habla', 'fr': 'Où il parle', 'de': 'Wo es spricht', 'pt': 'Onde fala', 'it': 'Dove parla', 'ja': 'どこで話すか', 'zh': '在哪儿说话', 'hi': 'कहाँ बोले', 'ar': 'أين يتحدّث'},
     'email_reminder': {'en': 'Email me a reminder', 'es': 'Enviarme un recordatorio por correo', 'fr': "M'envoyer un rappel par e-mail", 'de': 'Erinnerung per E-Mail', 'pt': 'Enviar-me um lembrete por e-mail', 'it': 'Promemoria via e-mail', 'ja': 'メールでリマインド', 'zh': '邮件提醒', 'hi': 'ईमेल अनुस्मारक', 'ar': 'تذكير بالبريد'},
     'when': {'en': 'When', 'es': 'Cuándo', 'fr': 'Quand', 'de': 'Wann', 'pt': 'Quando', 'it': 'Quando', 'ja': '日時', 'zh': '时间', 'hi': 'कब', 'ar': 'متى'},

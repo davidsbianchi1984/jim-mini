@@ -353,6 +353,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "presence.surfaces": {
     en: "Where I speak", es: "Dónde hablo", fr: "Où je parle", de: "Wo ich spreche", pt: "Onde falo", it: "Dove parlo", ja: "どこで話すか", zh: "我在哪儿说话", hi: "मैं कहाँ बोलूँ", ar: "أين أتحدّث",
   },
+  "presence.bearing": {
+    en: "How I carry myself", es: "Cómo me comporto", fr: "Comment je me tiens", de: "Wie ich mich gebe", pt: "Como me porto", it: "Come mi pongo", ja: "どう構えるか", zh: "我以什么姿态", hi: "मैं कैसा रुख़ रखूँ", ar: "كيف أتصرّف",
+  },
+  "presence.bearing.companion": {
+    en: "Companion", es: "Compañía", fr: "Compagnon", de: "Begleiter", pt: "Companhia", it: "Compagno", ja: "そばにいる", zh: "陪伴", hi: "साथी", ar: "رفيق",
+  },
+  "presence.bearing.professional": {
+    en: "Professional", es: "Profesional", fr: "Professionnel", de: "Sachlich", pt: "Profissional", it: "Professionale", ja: "きちんと", zh: "专业", hi: "पेशेवर", ar: "مِهَنيّ",
+  },
+  "presence.bearing.same": {
+    en: "Unchanged either way", es: "Igual en ambos casos", fr: "Identique dans les deux cas", de: "In beiden Fällen gleich", pt: "Igual nos dois casos", it: "Uguale in entrambi", ja: "どちらでも変わらないこと", zh: "两者都不变", hi: "दोनों में अपरिवर्तित", ar: "لا يتغيّر في الحالتين",
+  },
   "presence.growth": {
     en: "What I have become", es: "En qué me he convertido", fr: "Ce que je suis devenu", de: "Was ich geworden bin", pt: "No que me tornei", it: "Cosa sono diventato", ja: "私が何になったか", zh: "我变成了什么", hi: "मैं क्या बन गया हूँ", ar: "ما الذي صرتُ إليه",
   },

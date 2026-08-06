@@ -41,6 +41,19 @@
             <TextBlock x:Name="Areas" Foreground="{StaticResource JimT2Brush}"
                        FontSize="12" TextWrapping="Wrap" />
 
+            <TextBlock x:Name="BearingHead" FontSize="16" FontWeight="Bold"
+                       Foreground="{StaticResource JimTxtBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button x:Name="CompanionButton" Click="OnCarryCompanion" />
+                <Button x:Name="ProfessionalButton" Click="OnCarryProfessional" />
+            </StackPanel>
+            <TextBlock x:Name="BearingSays" Foreground="{StaticResource JimT3Brush}"
+                       FontSize="11" TextWrapping="Wrap" />
+            <TextBlock x:Name="BearingSameHead" Foreground="{StaticResource JimT2Brush}"
+                       FontSize="11" TextWrapping="Wrap" />
+            <TextBlock x:Name="BearingSame" Foreground="{StaticResource JimT3Brush}"
+                       FontSize="11" TextWrapping="Wrap" />
+
             <TextBlock x:Name="SurfacesHead" FontSize="16" FontWeight="Bold"
                        Foreground="{StaticResource JimTxtBrush}" />
             <TextBlock x:Name="SurfaceRule" Foreground="{StaticResource JimT3Brush}"

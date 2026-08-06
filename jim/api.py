@@ -47,7 +47,7 @@ from .models import (
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
-    PresenceSurface,
+    PresenceBearing, PresenceSurface,
     RobotBind, RelayAccept, RelayQuestion,
     SelfProfileConsent, SelfProfileLink,
     BandSet,
@@ -82,7 +82,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.50.0",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.51.0",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -1945,6 +1945,23 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         try:
             return presence.choose_surface(user_id, body.speaks_on)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+
+    @app.get("/presence/{user_id}/bearing")
+    def presence_bearing(user_id: str, request: Request) -> dict:
+        """How it is carrying itself, and what that does and does not
+        change. Companion is the default; the dial is a register, never a
+        capability."""
+        _user_or_404(user_id, request)
+        return presence.posture(user_id)
+
+    @app.put("/presence/{user_id}/bearing")
+    def presence_set_bearing(user_id: str, body: PresenceBearing,
+                             request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return presence.set_bearing(user_id, body.bearing)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
 

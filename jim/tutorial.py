@@ -426,6 +426,19 @@ LESSONS: tuple[dict, ...] = (
          screens=(106, 107),
          try_it="Read the second card before the first — what it will not be "
                 "is the part that makes the rest safe."),
+    dict(key="bearing", chapter="Day to day", title="How it carries itself",
+         what="It starts as a companion, because a guardian that opens in the "
+              "register of a form is one people answer like a form. Ask it to "
+              "keep things professional — in the setting or just by saying so "
+              "— and it will, from that sentence on. What changes is the "
+              "wording and the unasked-for warmth. What does not change is "
+              "anything that matters: the same six areas are watched, every "
+              "safety path is identical, and the boundaries are not a "
+              "setting in either. A dial that quietly narrowed what a health "
+              "guardian sees would be a dial that hurts whoever turned it.",
+         screens=(106, 107),
+         try_it="Say 'keep it professional' in a normal message and watch the "
+                "reply come back saying which bearing it used."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))
