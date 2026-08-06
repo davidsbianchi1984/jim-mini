@@ -322,7 +322,7 @@ enum L10n {
                         "ja": "保存", "zh": "保存", "hi": "सहेजें", "ar": "حفظ"],
         "action.translate": ["en": "Translate", "es": "Traducir", "fr": "Traduire",
                              "de": "Übersetzen", "pt": "Traduzir", "it": "Traduci",
-                             "ja": "翻訳", "zh": "翻译", "hi": "अनुवाद", "ar": "ترجمة"],
+                             "ja": "翻訳する", "zh": "翻译", "hi": "अनुवाद करें", "ar": "ترجِم"],
         "action.sign_out": ["en": "Sign out", "es": "Cerrar sesión", "fr": "Se déconnecter",
                             "de": "Abmelden", "pt": "Sair", "it": "Esci",
                             "ja": "サインアウト", "zh": "退出登录", "hi": "साइन आउट",

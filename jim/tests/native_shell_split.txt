@@ -1,0 +1,47 @@
+# status: floor — 0 rows
+#
+# Rows on which this product's three shells say different things to each other.
+# Checked by test_the_three_shells_say_the_same_thing.py, matched exactly in
+# both directions, in two forms: `key:` where two shells hold one key and
+# disagree, and `english:` where all three hold one English string under
+# whatever keys and share no wording.
+#
+# ## The third axis, and how large it turned out to be
+#
+# 0.48.0 compared keys inside one table. 0.48.1 compared the console's table
+# with each shell's. Both ended by naming this axis as the next thing, because
+# each had rows it could not reconcile: the shells disagreed with each other,
+# so there was no single native wording to adopt.
+#
+#     asked     does each table agree with itself, and with the console
+#     mattered  do the three shells agree with each other
+#
+# Measured for the first time in 0.48.2, it held **three rows** here — the most
+# of the three products — and every one was a word class rather than a word:
+#
+#     Translate            翻訳 on the iPhone, 翻訳する on the other two;
+#                          अनुवाद against अनुवाद करें. A noun against a verb,
+#                          on a button.
+#     Me                   わたし twice, 自分 once.
+#     When something breaks 出问题的时候 twice, 当出问题时 once.
+#
+# Each followed the two shells that already agreed. The first is the row
+# 0.48.1 could not reconcile with the console: no single native wording existed
+# to adopt, because nothing had asked the shells whether they agreed.
+#
+# 261 keys are held by two or more shells here and 204 English strings by all
+# three.
+#
+# Recording that plainly is the point. Two rounds pointed at this axis as the
+# next large thing and it was not large, and a guard built on the assumption
+# that it would be would have been built to find much more than exists.
+#
+# ## Majority, not a favourite
+#
+# Where two shells agree and one does not, the odd one out is the drift and the
+# fix follows the two. Where all three differ there is no majority to follow,
+# the row is a judgement rather than a defect, and it belongs here instead —
+# the rule `native_split_wordings.txt` leads with. No row has needed that yet.
+# The check exists so the first one is recorded rather than guessed at.
+#
+# ceiling: 0

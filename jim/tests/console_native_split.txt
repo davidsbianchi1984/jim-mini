@@ -1,4 +1,4 @@
-# status: backlog — 6 rows
+# status: backlog — 3 rows
 #
 # English strings held by both the desktop console's table and a shell's, on
 # which no console row and no native row share a wording. Checked by
@@ -40,17 +40,20 @@
 #
 # ## What is left
 #
-# Two example values and one unit label, and one row on a third axis: *Translate*
-# is `action.translate` on the iPhone and `ov.translate.go` on the other two
-# shells, and **those two disagree with each other**, so there is no single
-# native wording for the console to adopt. The three native tables have never
-# been compared with each other. That is the next bite, and it is named here
-# rather than counted, because a count would not say which.
+# Two example values and one unit label.
 #
-# ceiling: 6
-ios: brg.speak.tr :: action.translate  ("Translate")
+# **0.48.2 struck the fourth.** *Translate* was recorded here as a row on a
+# third axis: `action.translate` on the iPhone against `ov.translate.go` on the
+# other two shells, disagreeing with each other, so no single native wording
+# existed for the console to adopt. That was true, and it is now fixed rather
+# than recorded — the three shells were measured against each other for the
+# first time, agreed on 翻訳する and अनुवाद करें in two places out of three, and
+# the odd one out moved. `Me` and `When something breaks` came with it.
+#
+# The third axis is closed: `test_the_three_shells_say_the_same_thing.py`,
+# zero rows in all three products.
+#
+# ceiling: 3
 android: rch.acc.handle.ph :: care.handle.ph  ("@you" — an example handle)
 android: bas.cw.name.ph :: res.name.ph  ("Rosa" — an example name; one table localises it and the other does not)
-android: brg.speak.tr :: ov.translate.go  ("Translate")
 windows: bas.cw.window :: cw.minutes  ("Minutes per attempt")
-windows: brg.speak.tr :: ov.translate.go  ("Translate")

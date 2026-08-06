@@ -4,6 +4,36 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.48.2] — 2026-08-06
+
+### Three rows where the shells disagreed with each other
+
+The third and last axis of this arc: not each table against itself, nor the
+console against a shell, but **the three shells against each other**. It had
+never been measured. This repo held the most of the three products, and every
+row was a word class rather than a word.
+
+* **Translate** — 翻訳 on the iPhone against 翻訳する on the other two, and
+  *अनुवाद* against *अनुवाद करें*. A noun against a verb, on a button.
+* **Me** — わたし twice, 自分 once.
+* **When something breaks** — 出问题的时候 twice, 当出问题时 once.
+
+Each followed the two shells that already agreed. The first is the row 0.48.1
+could not reconcile with the console: no single native wording existed to
+adopt, because nothing had asked the shells whether they agreed. With that
+settled the console adopted it too, and this repo's console split went 6 → 3.
+
+261 keys are held by two or more shells here and 204 English strings by all
+three, so the three rows are what a whole axis amounted to. QRME held one and
+PDI none.
+
+### Added
+
+- `jim/tests/test_the_three_shells_say_the_same_thing.py` and
+  `jim/tests/native_shell_split.txt`, now at a floor of zero.
+
+Cut together with QRME and PDI at app-v0.48.2.
+
 ## [0.48.1] — 2026-08-06
 
 ### The desktop and the phone asked the same question two different ways

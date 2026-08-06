@@ -133,10 +133,11 @@ TABLES = {
 
 LANGS = ["en", "es", "fr", "de", "pt", "it", "ja", "zh", "hi", "ar"]
 
-#: Floors under each parse and a row all four tables hold in all ten
-#: languages — the probe has to be in *both* tables or it only proves one of
-#: them parsed. Per repo; nothing else in this file is.
-FLOOR, CONSOLE_FLOOR, PROBE = 240, 550, "cont.title"
+#: Floors under each parse, and a probe row per table in all ten languages —
+#: one probe cannot serve both when the two tables share no key, which is the
+#: state a console table starts in. Per repo; nothing else in this file is.
+FLOOR, CONSOLE_FLOOR = 240, 550
+NATIVE_PROBE, CONSOLE_PROBE = "cont.title", "cont.title"
 
 _STR = r'"((?:[^"\\]|\\.)*)"'
 _NATIVE_HEAD = {
@@ -251,14 +252,14 @@ def test_both_tables_still_parse():
     assert len(con) > CONSOLE_FLOOR, (
         f"the console table parsed to {len(con)} rows, far below what "
         f"{CONSOLE.name} holds — the row pattern has stopped matching")
-    assert con.get(PROBE) and sorted(con[PROBE]) == sorted(LANGS), (
-        f"console: `{PROBE}` did not parse into all ten languages")
+    assert con.get(CONSOLE_PROBE) and sorted(con[CONSOLE_PROBE]) == sorted(LANGS), (
+        f"console: `{CONSOLE_PROBE}` did not parse into all ten languages")
     for shell in TABLES:
         nat = _native(shell)
         assert len(nat) > FLOOR, (
             f"{shell}'s table parsed to {len(nat)} rows, far below what it holds")
-        assert nat.get(PROBE) and sorted(nat[PROBE]) == sorted(LANGS), (
-            f"{shell}: `{PROBE}` did not parse into all ten languages")
+        assert nat.get(NATIVE_PROBE) and sorted(nat[NATIVE_PROBE]) == sorted(LANGS), (
+            f"{shell}: `{NATIVE_PROBE}` did not parse into all ten languages")
 
 
 def test_the_escape_decoder_reads_each_syntax():

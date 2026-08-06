@@ -1601,7 +1601,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Something to translate", es: "Algo que traducir", fr: "Quelque chose à traduire", de: "Etwas zum Übersetzen", pt: "Algo para traduzir", it: "Qualcosa da tradurre", ja: "翻訳する文", zh: "要翻译的内容", hi: "अनुवाद के लिए कुछ", ar: "شيء للترجمة",
   },
   "brg.speak.tr": {
-    en: "Translate", es: "Traducir", fr: "Traduire", de: "Übersetzen", pt: "Traduzir", it: "Traduci", ja: "翻訳", zh: "翻译", hi: "अनुवाद करें", ar: "ترجم",
+    en: "Translate", es: "Traducir", fr: "Traduire", de: "Übersetzen", pt: "Traduzir", it: "Traduci", ja: "翻訳する", zh: "翻译", hi: "अनुवाद करें", ar: "ترجِم",
   },
   "brg.told": {
     en: "What it was told", es: "Lo que se le dijo", fr: "Ce qu'on lui a dit", de: "Was ihm gesagt wurde", pt: "O que lhe foi dito", it: "Cosa gli è stato detto", ja: "伝えられたこと", zh: "它被告知的", hi: "इसे क्या बताया गया", ar: "ما قيل له",
