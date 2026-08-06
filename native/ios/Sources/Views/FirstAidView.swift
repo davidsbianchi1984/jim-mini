@@ -5,6 +5,7 @@ import SwiftUI
 /// crisis / self-help references — e.g. the 988 Suicide & Crisis Lifeline.
 struct GuidanceExtras: View {
     let guidance: Guidance
+    @EnvironmentObject var state: AppState
 
     var body: some View {
         if let who = guidance.specialist {
@@ -24,7 +25,7 @@ struct GuidanceExtras: View {
         if let c = guidance.custody {
             if c.vaulted, let key = c.pdi_key {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("🔒 Sealed in the PDI vault")
+                    Text(L10n.t("fa.sealed", state.language))
                         .font(.caption2.bold()).foregroundStyle(Theme.green)
                     Text(key).font(.caption2).foregroundStyle(Theme.t3)
                         .lineLimit(1).truncationMode(.middle)
@@ -40,11 +41,11 @@ struct GuidanceExtras: View {
                         .padding(.horizontal, 7).padding(.vertical, 3)
                         .background(Theme.red.opacity(0.16)).foregroundStyle(Theme.red)
                         .clipShape(Capsule())
-                    Text("First aid — step by step")
+                    Text(L10n.t("fa", state.language))
                         .font(.subheadline.bold()).foregroundStyle(Theme.txt)
                 }
                 if aid.call_emergency_services == true {
-                    Text("📞 Call emergency services now")
+                    Text(L10n.t("fa.call", state.language))
                         .font(.caption.bold()).foregroundStyle(Theme.red)
                 }
                 ForEach(Array(aid.steps.enumerated()), id: \.offset) { i, step in
@@ -53,7 +54,9 @@ struct GuidanceExtras: View {
                 }
                 if let pace = aid.pace {
                     Divider().overlay(Theme.line)
-                    Text("Pace: \(pace.compressions_per_minute)/min · \(pace.compression_to_breath_ratio)")
+                    Text(L10n.fill("fa.pace", state.language,
+                                   ["cpm": "\(pace.compressions_per_minute)",
+                                    "ratio": pace.compression_to_breath_ratio]))
                         .font(.caption.bold()).foregroundStyle(Theme.amber)
                     if let cue = pace.cue {
                         Text("💡 \(cue.light)").font(.caption2).foregroundStyle(Theme.t2)
@@ -76,13 +79,13 @@ struct GuidanceExtras: View {
         if let p = guidance.provenance {
             VStack(alignment: .leading, spacing: 4) {
                 Divider().overlay(Theme.line)
-                Text("Derived from").font(.caption.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("fa.derived", state.language)).font(.caption.bold()).foregroundStyle(Theme.txt)
                 ForEach(p.evidence, id: \.url) { e in
                     VStack(alignment: .leading, spacing: 1) {
                         Text("\(e.publisher) — \(e.title)")
                             .font(.caption).foregroundStyle(Theme.txt)
                         if let s = e.supports {
-                            Text("supports: \(s)").font(.caption2).foregroundStyle(Theme.t2)
+                            Text(L10n.fill("fa.supports", state.language, ["sources": s])).font(.caption2).foregroundStyle(Theme.t2)
                         }
                         Text(e.url).font(.caption2).foregroundStyle(Theme.brandA)
                     }

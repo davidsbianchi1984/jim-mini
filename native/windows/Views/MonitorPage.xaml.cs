@@ -16,7 +16,18 @@ public sealed partial class MonitorPage : Page
         public string Note { get; init; } = "";
     }
 
-    public MonitorPage() => InitializeComponent();
+    public MonitorPage()
+    {
+        InitializeComponent();
+        Title.Text = L10n.T("mon");
+        Sub.Text = L10n.T("mon.sub");
+        HeartRate.Header = L10n.T("mon.hr");
+        Stress.Header = L10n.T("mon.stress");
+        SendButton.Content = L10n.T("mon.send");
+        FollowupNote.PlaceholderText = L10n.T("mon.add");
+        HelpedButton.Content = L10n.T("mon.helped");
+        DidNotButton.Content = L10n.T("mon.didnot");
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e) =>
         await LoadFollowups();

@@ -7,20 +7,20 @@
 
     <ScrollViewer>
         <StackPanel MaxWidth="640" Spacing="16" Padding="28" HorizontalAlignment="Left">
-            <TextBlock Text="Live Monitoring" FontSize="22" FontWeight="Bold"
+            <TextBlock x:Name="Title" FontSize="22" FontWeight="Bold"
                        Foreground="{StaticResource JimTxtBrush}" />
-            <TextBlock Text="Send a sample. The Guardian compares it to your baseline."
+            <TextBlock x:Name="Sub"
                        Foreground="{StaticResource JimT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="8">
-                    <Slider x:Name="HeartRate" Header="Heart rate (bpm)" Minimum="40" Maximum="180" Value="72" />
-                    <Slider x:Name="Stress" Header="Stress (%)" Minimum="0" Maximum="100" Value="20" />
+                    <Slider x:Name="HeartRate" Minimum="40" Maximum="180" Value="72" />
+                    <Slider x:Name="Stress" Minimum="0" Maximum="100" Value="20" />
                 </StackPanel>
             </Border>
 
-            <Button x:Name="SendButton" Content="Send sample" Height="46" HorizontalAlignment="Stretch"
+            <Button x:Name="SendButton" Height="46" HorizontalAlignment="Stretch"
                     Foreground="White" Click="OnSend">
                 <Button.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -64,11 +64,11 @@
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="FollowupAbout" Foreground="{StaticResource JimT2Brush}"
                                FontSize="12" TextWrapping="Wrap" />
-                    <TextBox x:Name="FollowupNote" PlaceholderText="Anything you want to add (optional)" />
+                    <TextBox x:Name="FollowupNote" />
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button Content="It helped" Click="OnFollowupHelped"
+                        <Button x:Name="HelpedButton" Click="OnFollowupHelped"
                                 Background="{StaticResource JimGreenBrush}" Foreground="Black" />
-                        <Button Content="It did not" Click="OnFollowupDidNot"
+                        <Button x:Name="DidNotButton" Click="OnFollowupDidNot"
                                 Background="{StaticResource JimAmberBrush}" Foreground="Black" />
                     </StackPanel>
                 </StackPanel>

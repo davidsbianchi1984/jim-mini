@@ -10,7 +10,7 @@
         <!-- Alarms. First, and therefore the pivot that opens: somebody
              reaching this page has usually just been paged, and the thing they
              were paged about should not be behind a header they have to find. -->
-        <PivotItem Header="Alarms">
+        <PivotItem x:Name="AlarmsPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <TextBlock x:Name="AlarmsEmpty" TextWrapping="Wrap" FontSize="12"
@@ -42,8 +42,7 @@
                     <!-- A named responder, because the backend refuses an empty
                          one: "someone accepted it" is the thing this relay
                          exists to stop being enough. -->
-                    <TextBox x:Name="ResponderBox" Header="Your name"
-                             PlaceholderText="Dana next door" />
+                    <TextBox x:Name="ResponderBox" />
                     <Button x:Name="AcceptButton" Click="OnAcceptAlarm"
                             HorizontalAlignment="Stretch"
                             />
@@ -54,9 +53,9 @@
                                 />
                     </StackPanel>
 
-                    <TextBox x:Name="AlarmQuestionBox" Header="What do I do?" />
+                    <TextBox x:Name="AlarmQuestionBox" />
                     <Button x:Name="AskAlarmButton" Click="OnAskAlarmGuidance"
-                            Content="Ask" />
+                            x:Name="AlarmAskButton" />
                     <TextBlock x:Name="AlarmGuidanceText" TextWrapping="Wrap"
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="AlarmSaid" TextWrapping="Wrap" FontSize="12"
@@ -68,24 +67,24 @@
         </PivotItem>
 
         <!-- SOS -->
-        <PivotItem Header="SOS">
+        <PivotItem x:Name="SosPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Button x:Name="SosButton" HorizontalAlignment="Stretch" Height="96"
                             Background="{StaticResource JimRedBrush}" Foreground="White"
                             Click="OnSos">
                         <StackPanel>
-                            <TextBlock Text="SOS" FontSize="30" FontWeight="Black"
+                            <TextBlock x:Name="SosLabel" FontSize="30" FontWeight="Black"
                                        HorizontalAlignment="Center" />
-                            <TextBlock x:Name="SosHint" Text="Click for emergency" FontSize="12"
+                            <TextBlock x:Name="SosHint" FontSize="12"
                                        HorizontalAlignment="Center" />
                         </StackPanel>
                     </Button>
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <TextBox x:Name="SituationBox" Header="What's happening? (optional)" />
-                            <TextBox x:Name="LocationBox" Header="Where are you? (optional)" />
+                            <TextBox x:Name="SituationBox" />
+                            <TextBox x:Name="LocationBox" />
                         </StackPanel>
                     </Border>
                     <TextBlock x:Name="SosError" Foreground="{StaticResource JimRed}" FontSize="13"
@@ -110,7 +109,7 @@
         </PivotItem>
 
         <!-- Crash watch -->
-        <PivotItem Header="Crash">
+        <PivotItem x:Name="CrashPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border x:Name="CrashAskingCard" Visibility="Collapsed"
@@ -130,22 +129,21 @@
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <TextBlock Text="Crash watch" FontWeight="Bold"
+                            <TextBlock x:Name="CrashHead" FontWeight="Bold"
                                        Foreground="{StaticResource JimTxtBrush}" />
-                            <TextBlock Text="Off by default, programmed by you: a critical reading (a fall the watch felt, a collapsing pulse) opens &#x201C;are you okay?&#x201D; &#x2014; unanswered attempts contact your trusted person, and emergency services only if you tick the box. Gentle drift check-ins can never trigger this."
+                            <TextBlock x:Name="CrashSub"
                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
-                            <TextBox x:Name="CrashName" Header="Trusted person" PlaceholderText="Rosa" />
-                            <TextBox x:Name="CrashChannel" Header="How to reach them"
-                                     PlaceholderText="rosa@example.com" />
-                            <NumberBox x:Name="CrashAttempts" Header="Attempts (1&#x2013;10)" Value="3"
+                            <TextBox x:Name="CrashName" PlaceholderText="Rosa" />
+                            <TextBox x:Name="CrashChannel" PlaceholderText="rosa@example.com" />
+                            <NumberBox x:Name="CrashAttempts" Value="3"
                                        Minimum="1" Maximum="10" SpinButtonPlacementMode="Inline" />
-                            <NumberBox x:Name="CrashWindow" Header="Minutes per attempt" Value="5"
+                            <NumberBox x:Name="CrashWindow" Value="5"
                                        Minimum="1" Maximum="60" SpinButtonPlacementMode="Inline" />
                             <CheckBox x:Name="CrashEms"
                                       />
                             <StackPanel Orientation="Horizontal" Spacing="10">
-                                <Button x:Name="CrashArmButton" Content="Arm the crash watch" Click="OnCrashArm" />
-                                <Button x:Name="CrashDisarmButton" Content="Disarm" Click="OnCrashDisarm"
+                                <Button x:Name="CrashArmButton" Click="OnCrashArm" />
+                                <Button x:Name="CrashDisarmButton" Click="OnCrashDisarm"
                                         Visibility="Collapsed" Foreground="{StaticResource JimRedBrush}" />
                             </StackPanel>
                             <TextBlock x:Name="CrashArmedNote" Visibility="Collapsed" FontSize="12"
@@ -159,17 +157,17 @@
         </PivotItem>
 
         <!-- Medical ID -->
-        <PivotItem Header="Med ID">
+        <PivotItem x:Name="MedPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <TextBlock Text="Medical ID" FontWeight="Bold" FontSize="16"
+                            <TextBlock x:Name="MedHead" FontWeight="Bold" FontSize="16"
                                        Foreground="{StaticResource JimTxtBrush}" />
-                            <TextBlock Text="A shareable card for first responders: condition-level facts only, readable from a locked phone. Re-issuing rotates the QR and kills the old one."
+                            <TextBlock x:Name="MedSub"
                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
-                            <Button x:Name="IssueButton" Content="Issue Medical ID" HorizontalAlignment="Stretch"
+                            <Button x:Name="IssueButton" HorizontalAlignment="Stretch"
                                     Height="42" Foreground="White" Click="OnIssueCard">
                                 <Button.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -186,9 +184,9 @@
                             BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1" CornerRadius="16"
                             Padding="16" Visibility="Collapsed">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Card issued" FontWeight="Bold" FontSize="16"
+                            <TextBlock x:Name="IssuedHead" FontWeight="Bold" FontSize="16"
                                        Foreground="{StaticResource JimGreenBrush}" />
-                            <TextBlock Text="Print or lock-screen the QR at:"
+                            <TextBlock x:Name="PrintHint"
                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" />
                             <TextBlock x:Name="QrUrlText" FontFamily="Consolas" FontSize="11"
                                        Foreground="{StaticResource JimT2Brush}" TextWrapping="Wrap" />
@@ -204,7 +202,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button Content="Revoke card" Click="OnRevokeCard"
+                            <Button x:Name="RevokeCardButton" Click="OnRevokeCard"
                                     Background="Transparent" Foreground="{StaticResource JimRed}" />
                         </StackPanel>
                     </Border>
@@ -213,19 +211,19 @@
         </PivotItem>
 
         <!-- Policy -->
-        <PivotItem Header="Policy">
+        <PivotItem x:Name="PolicyPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <ComboBox x:Name="SensitivityBox" Header="Sensitivity" HorizontalAlignment="Stretch"
+                            <ComboBox x:Name="SensitivityBox" HorizontalAlignment="Stretch"
                                       SelectionChanged="OnSensitivityPicked">
-                                <ComboBoxItem Content="cautious" />
-                                <ComboBoxItem Content="balanced" />
-                                <ComboBoxItem Content="assertive" />
+                                <ComboBoxItem x:Name="SensCautious" />
+                                <ComboBoxItem x:Name="SensBalanced" />
+                                <ComboBoxItem x:Name="SensAssertive" />
                             </ComboBox>
-                            <TextBlock Text="Cautious escalates a rung earlier; assertive a rung later. Crisis and critical events have floors no dial can lower."
+                            <TextBlock x:Name="SensSub"
                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
@@ -246,14 +244,14 @@
         </PivotItem>
 
         <!-- Robots -->
-        <PivotItem Header="Robots">
+        <PivotItem x:Name="RobotsPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <ComboBox x:Name="RobotModelBox" Header="Bind a robot" HorizontalAlignment="Stretch" />
-                            <Button x:Name="BindButton" Content="Bind" HorizontalAlignment="Stretch"
+                            <ComboBox x:Name="RobotModelBox" HorizontalAlignment="Stretch" />
+                            <Button x:Name="BindButton" HorizontalAlignment="Stretch"
                                     Height="42" Foreground="White" Click="OnBind">
                                 <Button.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -262,7 +260,7 @@
                                     </LinearGradientBrush>
                                 </Button.Background>
                             </Button>
-                            <TextBlock Text="Bound robots respond to escalations: mobile bodies come to you; vacuums dock and clear the floor."
+                            <TextBlock x:Name="RobotsSub"
                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
@@ -270,9 +268,9 @@
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="8">
                             <Grid>
-                                <TextBlock Text="Autonomous-resuscitation waiver" FontWeight="Bold" FontSize="15"
+                                <TextBlock x:Name="WaiverHead" FontWeight="Bold" FontSize="15"
                                            Foreground="{StaticResource JimTxtBrush}" />
-                                <TextBlock x:Name="WaiverBadge" Text="SIGNED" HorizontalAlignment="Right"
+                                <TextBlock x:Name="WaiverBadge" HorizontalAlignment="Right"
                                            FontSize="11" FontWeight="Bold" Visibility="Collapsed"
                                            Foreground="{StaticResource JimGreenBrush}" />
                             </Grid>
@@ -280,11 +278,11 @@
                                        Foreground="{StaticResource JimT2Brush}" />
                             <TextBlock x:Name="WaiverTerms" FontSize="11" TextWrapping="Wrap"
                                        Foreground="{StaticResource JimT2Brush}" />
-                            <TextBox x:Name="SignatureBox" Header="Type your legal name to sign" />
+                            <TextBox x:Name="SignatureBox" />
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button x:Name="SignWaiverButton" Content="Sign &amp; submit waiver" Click="OnSignWaiver"
+                                <Button x:Name="SignWaiverButton" Click="OnSignWaiver"
                                         Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
-                                <Button x:Name="RevokeWaiverButton" Content="Revoke — restore confirm-gated operation"
+                                <Button x:Name="RevokeWaiverButton"
                                         Click="OnRevokeWaiver" Visibility="Collapsed"
                                         Background="Transparent" FontSize="12"
                                         Foreground="{StaticResource JimRedBrush}" />
@@ -315,25 +313,25 @@
                                                    Foreground="{StaticResource JimT2Brush}" />
                                         <StackPanel Orientation="Horizontal" Spacing="6"
                                                     Visibility="{Binding AssistVisibility}">
-                                            <Button Content="Fetch AED" Tag="{Binding Id}" Click="OnFetchAed"
+                                            <Button Content="{Binding AedLabel}" Tag="{Binding Id}" Click="OnFetchAed"
                                                     Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="11" />
-                                            <Button Content="Coach CPR" Tag="{Binding Id}" Click="OnCoachCpr"
+                                            <Button Content="{Binding CoachLabel}" Tag="{Binding Id}" Click="OnCoachCpr"
                                                     Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="11" />
-                                            <Button Content="Meet EMS" Tag="{Binding Id}" Click="OnMeetEms"
+                                            <Button Content="{Binding EmsLabel}" Tag="{Binding Id}" Click="OnMeetEms"
                                                     Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="11" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="6"
                                                     Visibility="{Binding PerformVisibility}">
-                                            <Button Content="Perform CPR…" Tag="{Binding Id}" Click="OnPerformCpr"
+                                            <Button Content="{Binding PerformLabel}" Tag="{Binding Id}" Click="OnPerformCpr"
                                                     Visibility="{Binding ConfirmGateVisibility}"
                                                     Background="{StaticResource JimRedBrush}" Foreground="White" FontSize="11" />
-                                            <Button Content="Start CPR (pre-authorized)" Tag="{Binding Id}" Click="OnAutoCpr"
+                                            <Button Content="{Binding StartLabel}" Tag="{Binding Id}" Click="OnAutoCpr"
                                                     Visibility="{Binding WaivedVisibility}"
                                                     Background="{StaticResource JimRedBrush}" Foreground="White" FontSize="11" />
-                                            <Button Content="Auto-resuscitate" Tag="{Binding Id}" Click="OnAutoDefib"
+                                            <Button Content="{Binding AutoLabel}" Tag="{Binding Id}" Click="OnAutoDefib"
                                                     Visibility="{Binding WaivedVisibility}"
                                                     Background="{StaticResource JimRedBrush}" Foreground="White" FontSize="11" />
-                                            <Button Content="Stop CPR" Tag="{Binding Id}" Click="OnStopCpr"
+                                            <Button Content="{Binding StopLabel}" Tag="{Binding Id}" Click="OnStopCpr"
                                                     Visibility="{Binding StopVisibility}"
                                                     Background="{StaticResource JimRedBrush}" Foreground="White" FontSize="11" />
                                         </StackPanel>
@@ -343,7 +341,6 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <Button x:Name="ConfirmCprButton" Visibility="Collapsed" Click="OnConfirmCpr"
-                            Content="Confirm: unresponsive, not breathing — start compressions"
                             HorizontalAlignment="Stretch"
                             Background="{StaticResource JimRedBrush}" Foreground="White" />
                 </StackPanel>

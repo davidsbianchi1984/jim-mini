@@ -120,6 +120,25 @@ _KOTLIN = [r'\bText\(\s*"([^"]{2,})"']
 _XAML = [r'\bText="([^"]{2,})"', r'\bContent="([^"]{2,})"',
          r'\bHeader="([^"]{2,})"', r'\bPlaceholderText="([^"]{2,})"']
 
+#: **Added in 0.47.0**, in the sibling repo, and ported here in the same round
+#: because these three files are one guard copied twice: a blind spot in one
+#: is a blind spot in all three by construction.
+#:
+#: A string chosen by a ternary is not at the start of an argument list, so
+#: none of the patterns above could see it. `Text(cond ? "Verifies" : "Does
+#: not verify")` was invisible on every shell of every product.
+#:
+#:     asked     is this literal the first thing in a Text(...)
+#:     mattered  does a person read it
+#:
+#: Only phrases, deliberately. A lone token inside a ternary is as often an
+#: API value (`"on"`, `"pre"`), a symbol name (`"star.fill"`) or a table key
+#: as it is a word, and the conservative direction for a rule that *raises* a
+#: ratcheted count is to under-count.
+_TERNARY = [r'\?\s*"([^"]{2,})"\s*:\s*"([^"]{2,})"',
+            r'\bif\s*\([^)]*\)\s*"([^"]{2,})"\s*else\s*"([^"]{2,})"']
+_PHRASE = re.compile(r"\S\s\S")
+
 SHELLS = {
     "ios": ("native/ios", {".swift"}, _SWIFT, r"\bL10n\s*\.\s*t\s*\("),
     "android": ("native/android", {".kt"}, _KOTLIN, r"\bL10n\s*\.\s*t\s*\("),
@@ -147,6 +166,11 @@ def _measure(shell: str) -> tuple[int, int]:
         text = _code(path)
         found = {s for pat in patterns for s in re.findall(pat, text)
                  if _HAS_LETTER.search(_HOLE.sub("", s))}
+        # `re.findall` on a two-group pattern yields tuples, one per branch.
+        found |= {s for pat in _TERNARY for pair in re.findall(pat, text)
+                  for s in pair
+                  if _PHRASE.search(_HOLE.sub("", s).strip())
+                  and _HAS_LETTER.search(_HOLE.sub("", s))}
         english += len(found)
         calls += len(re.findall(call, text))
     return english, calls
@@ -202,6 +226,29 @@ def test_the_measurement_still_measures(shell):
     assert calls >= 1, (
         f"{shell} makes no localizer calls at all — either the call pattern "
         "broke or the shell lost its localization entirely")
+
+
+def test_the_ternary_scan_can_find_one():
+    """A guard on the widening. `_TERNARY` was added because a string chosen
+    by a condition was invisible to every other pattern here; a version of it
+    that matches nothing would restore exactly the blind spot it was written
+    to close, and would do it quietly."""
+    swift = 'Label(ok ? "It verifies fine" : "It does not verify", x)'
+    kotlin = 'Text(if (ok) "It verifies fine" else "It does not verify")'
+    for source in (swift, kotlin):
+        found = {s for pat in _TERNARY for pair in re.findall(pat, source)
+                 for s in pair}
+        assert found == {"It verifies fine", "It does not verify"}, (source, found)
+
+
+def test_a_lone_token_in_a_ternary_is_not_counted():
+    """The other half of that rule, stated as a test rather than a comment.
+    `cond ? "on" : "off"` is as likely to be an API value as a word, and this
+    rule raises a ratcheted number - so it counts phrases and says so."""
+    source = 'Text(on ? "on" : "off") + Text(x ? "star.fill" : "star")'
+    counted = {s for pat in _TERNARY for pair in re.findall(pat, source)
+               for s in pair if _PHRASE.search(_HOLE.sub("", s).strip())}
+    assert counted == set(), counted
 
 
 # --- the slots, which are the part that breaks silently -------------------

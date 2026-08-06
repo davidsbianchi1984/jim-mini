@@ -92,7 +92,7 @@ private struct AlarmsSection: View {
                         // A named responder, because the backend refuses an
                         // empty one: "someone accepted it" is the thing this
                         // relay exists to stop being enough.
-                        TextField("Your name", text: $responder)
+                        TextField(L10n.t("res.name", state.language), text: $responder)
                             .textFieldStyle(.roundedBorder)
                         Button {
                             act { try await Api.shared.acceptAlarm(
@@ -121,9 +121,9 @@ private struct AlarmsSection: View {
                     }.font(.caption)
 
                     HStack {
-                        TextField("What do I do?", text: $question)
+                        TextField(L10n.t("sos.whatdo", state.language), text: $question)
                             .textFieldStyle(.roundedBorder)
-                        Button("Ask") {
+                        Button(L10n.t("sos.ask", state.language)) {
                             Task {
                                 busy = true; error = nil
                                 do {
@@ -222,12 +222,12 @@ private struct CrashWatchSection: View {
                     .font(.footnote).foregroundStyle(Theme.red)
             }
             VStack(alignment: .leading, spacing: 10) {
-                Text("Crash watch").font(.headline).foregroundStyle(Theme.txt)
-                Text("Off by default, programmed by you: a critical reading (a fall the watch felt, a collapsing pulse) opens “are you okay?” — unanswered attempts contact your trusted person, and emergency services only if you tick it. Gentle drift check-ins can never trigger this.")
+                Text(L10n.t("cw", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("cw.sub", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
-                TextField("Trusted person", text: $name)
+                TextField(L10n.t("cw.trusted", state.language), text: $name)
                     .textFieldStyle(.roundedBorder)
-                TextField("How to reach them (email or phone)", text: $channel)
+                TextField(L10n.t("cw.reach", state.language), text: $channel)
                     .textFieldStyle(.roundedBorder)
                 Stepper("Attempts: \(attempts)", value: $attempts, in: 1...10)
                     .foregroundStyle(Theme.txt)
@@ -239,13 +239,14 @@ private struct CrashWatchSection: View {
                 HStack {
                     Button(action: arm) {
                         HStack { if busy { ProgressView().tint(.white) }
-                                 Text(st?.armed == true ? "Update" : "Arm the crash watch").bold() }
+                                 Text(st?.armed == true ? L10n.t("action.update", state.language)
+                                                : L10n.t("cw.arm", state.language)).bold() }
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                             .background(Theme.brand).foregroundStyle(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     }.disabled(busy)
                     if st?.armed == true {
-                        Button("Disarm") { disarm() }
+                        Button(L10n.t("cw.disarm", state.language)) { disarm() }
                             .font(.caption.bold()).foregroundStyle(Theme.red)
                     }
                 }
@@ -322,12 +323,12 @@ private struct MedicalSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Medical ID").font(.headline).foregroundStyle(Theme.txt)
-                Text("A shareable card for first responders: condition-level facts only, readable from a locked phone. Re-issuing rotates the QR and kills the old one.")
+                Text(L10n.t("mid", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("mid.sub", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
                 Button(action: issue) {
                     HStack { if busy { ProgressView().tint(.white) }
-                             Text(issued == nil ? "Issue Medical ID" : "Rotate QR").bold() }
+                             Text(L10n.t(issued == nil ? "mid.issue" : "mid.rotate", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -338,15 +339,15 @@ private struct MedicalSection: View {
 
             if let issued {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Card issued").font(.headline).foregroundStyle(Theme.green)
-                    Text("Print or lock-screen the QR at:")
+                    Text(L10n.t("mid.issued", state.language)).font(.headline).foregroundStyle(Theme.green)
+                    Text(L10n.t("mid.print", state.language))
                         .font(.caption).foregroundStyle(Theme.t2)
                     Text(issued.qr_svg_url)
                         .font(.system(.caption, design: .monospaced))
                         .foregroundStyle(Theme.t2)
                     if let c = card {
                         Divider().overlay(Theme.line)
-                        Text("What a responder sees").font(.subheadline.bold())
+                        Text(L10n.t("mid.responder", state.language)).font(.subheadline.bold())
                             .foregroundStyle(Theme.txt)
                         row("Name", c.name ?? "—")
                         row("Age", c.age.map(String.init) ?? "—")
@@ -358,7 +359,7 @@ private struct MedicalSection: View {
                             row("Contact", "\(ec.name ?? "—") · \(ec.phone ?? "—")")
                         }
                     }
-                    Button("Revoke card") { revoke() }
+                    Button(L10n.t("mid.revoke", state.language)) { revoke() }
                         .font(.caption.bold()).foregroundStyle(Theme.red)
                 }.card()
             }
@@ -409,8 +410,8 @@ private struct SOSSection: View {
         VStack(alignment: .leading, spacing: 14) {
             Button(action: trigger) {
                 VStack(spacing: 4) {
-                    Text("SOS").font(.system(size: 34, weight: .heavy))
-                    Text(busy ? "Coordinating…" : "Tap for emergency")
+                    Text(L10n.t("sos", state.language)).font(.system(size: 34, weight: .heavy))
+                    Text(busy ? L10n.t("sos.coordinating", state.language) : L10n.t("sos.tap", state.language))
                         .font(.caption)
                 }
                 .foregroundStyle(.white)
@@ -420,9 +421,9 @@ private struct SOSSection: View {
             }.disabled(busy)
 
             VStack(alignment: .leading, spacing: 10) {
-                TextField("What's happening? (optional)", text: $situation)
+                TextField(L10n.t("sos.what", state.language), text: $situation)
                     .foregroundStyle(Theme.txt)
-                TextField("Where are you? (optional)", text: $location)
+                TextField(L10n.t("sos.where", state.language), text: $location)
                     .foregroundStyle(Theme.txt)
             }.card()
 
@@ -430,7 +431,7 @@ private struct SOSSection: View {
 
             if !flow.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Coordinated response").font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("rob.coordinated", state.language)).font(.headline).foregroundStyle(Theme.txt)
                     ForEach(Array(flow.enumerated()), id: \.offset) { i, step in
                         HStack(alignment: .top, spacing: 10) {
                             Text("\(i + 1)").font(.caption.bold())
@@ -480,19 +481,19 @@ private struct PolicySection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Sensitivity").font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("cw.sensitivity", state.language)).font(.headline).foregroundStyle(Theme.txt)
                 Picker("", selection: $level) {
                     ForEach(levels, id: \.self) { Text($0.capitalized).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: level) { _ in apply() }
-                Text("Cautious escalates a rung earlier; assertive a rung later. Crisis language and critical events have floors no dial can lower.")
+                Text(L10n.t("cw.sensitivity.sub", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
             }.card()
 
             if let p = policy {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("How each severity resolves").font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("rob.severity", state.language)).font(.headline).foregroundStyle(Theme.txt)
                     ForEach(["info", "guidance", "critical"], id: \.self) { sev in
                         HStack {
                             Text(sev.capitalized).font(.subheadline).foregroundStyle(Theme.txt)
@@ -540,8 +541,8 @@ private struct RobotsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Bind a robot").font(.headline).foregroundStyle(Theme.txt)
-                Text("Bound robots respond to escalations: mobile bodies come to you; vacuums dock and clear the floor.")
+                Text(L10n.t("rob.bind", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("rob.sub", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
                 Picker("", selection: $chosen) {
                     ForEach(catalog, id: \.model) {
@@ -549,7 +550,7 @@ private struct RobotsSection: View {
                     }
                 }.pickerStyle(.menu).tint(Theme.brandA)
                 Button(action: bind) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Bind").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("rob.bind.go", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -568,7 +569,8 @@ private struct RobotsSection: View {
                     HStack {
                         Text(r.name).font(.subheadline.bold()).foregroundStyle(Theme.txt)
                         if let rating = r.first_aid {
-                            Text(rating == "perform" ? "CPR-rated" : "first-aid assist")
+                            Text(rating == "perform" ? L10n.t("rob.cpr_rated", state.language)
+                                             : L10n.t("sos.firstaid", state.language))
                                 .font(.caption2.bold())
                                 .padding(.horizontal, 6).padding(.vertical, 2)
                                 .background(Theme.green.opacity(0.16))
@@ -580,38 +582,39 @@ private struct RobotsSection: View {
                             .font(.caption).foregroundStyle(Theme.t2)
                     }
                     if let d = r.escalation_directive {
-                        Text("On escalation: \(d.replacingOccurrences(of: "_", with: " "))")
+                        Text(L10n.fill("rob.onesc", state.language,
+                              ["directive": d.replacingOccurrences(of: "_", with: " ")]))
                             .font(.caption).foregroundStyle(Theme.amber)
                     }
                     if let cmds = r.commands, cmds.contains("fetch_aed") {
                         HStack(spacing: 8) {
-                            cmdButton("Fetch AED") { command(r, "fetch_aed", nil) }
-                            cmdButton("Coach CPR") { command(r, "guide_first_aid", "cpr") }
-                            cmdButton("Meet EMS") { command(r, "meet_responders", nil) }
+                            cmdButton(L10n.t("fa.aed", state.language)) { command(r, "fetch_aed", nil) }
+                            cmdButton(L10n.t("fa.coach", state.language)) { command(r, "guide_first_aid", "cpr") }
+                            cmdButton(L10n.t("fa.ems", state.language)) { command(r, "meet_responders", nil) }
                         }
                         if cmds.contains("perform_cpr") {
                             HStack(spacing: 8) {
                                 if r.status == "performing_cpr" {
-                                    cmdButton("Stop CPR", tint: Theme.red) {
+                                    cmdButton(L10n.t("fa.stop", state.language), tint: Theme.red) {
                                         command(r, "stop_cpr", nil)
                                     }
                                 } else if waiver?.signed == true {
-                                    cmdButton("Start CPR (pre-authorized)", tint: Theme.red) {
+                                    cmdButton(L10n.t("fa.start", state.language), tint: Theme.red) {
                                         command(r, "perform_cpr", nil)
                                     }
-                                    cmdButton("Auto-resuscitate", tint: Theme.red) {
+                                    cmdButton(L10n.t("res.auto", state.language), tint: Theme.red) {
                                         command(r, "auto_defib", nil)
                                     }
                                 } else if confirmingCPR == r.id {
-                                    cmdButton("Confirm: unresponsive, not breathing",
+                                    cmdButton(L10n.t("fa.confirm", state.language),
                                               tint: Theme.red) {
                                         confirmingCPR = nil
                                         command(r, "perform_cpr", "confirmed")
                                     }
-                                    Button("Cancel") { confirmingCPR = nil }
+                                    Button(L10n.t("action.cancel", state.language)) { confirmingCPR = nil }
                                         .font(.caption).foregroundStyle(Theme.t2)
                                 } else {
-                                    cmdButton("Perform CPR…", tint: Theme.red) {
+                                    cmdButton(L10n.t("fa.perform", state.language), tint: Theme.red) {
                                         confirmingCPR = r.id
                                         cmdResult = "Confirm the person is unresponsive and not breathing normally. The robot never starts on its own judgement — and never delivers a shock; the AED analyzes, a human presses. (Sign the waiver above to pre-authorize automatic operation.)"
                                     }
@@ -629,33 +632,33 @@ private struct RobotsSection: View {
     private func waiverCard() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Autonomous-resuscitation waiver")
+                Text(L10n.t("res.waiver", state.language))
                     .font(.headline).foregroundStyle(Theme.txt)
                 Spacer()
                 if waiver?.signed == true {
-                    Text("SIGNED").font(.caption2.bold())
+                    Text(L10n.t("res.signed", state.language)).font(.caption2.bold())
                         .padding(.horizontal, 7).padding(.vertical, 3)
                         .background(Theme.green.opacity(0.16))
                         .foregroundStyle(Theme.green).clipShape(Capsule())
                 }
             }
             if let w = waiver, w.signed {
-                Text("Signed by \(w.signature ?? "") — CPR-rated robots may start compressions automatically and operate a fully-automatic AED. A shock still only follows the AED's own rhythm analysis.")
+                Text(L10n.fill("res.signed.by", state.language, ["name": w.signature ?? ""]))
                     .font(.caption).foregroundStyle(Theme.t2)
-                Button("Revoke — restore confirm-gated operation") { revoke() }
+                Button(L10n.t("res.revoke", state.language)) { revoke() }
                     .font(.caption.bold()).foregroundStyle(Theme.red)
             } else {
-                Text("Unlock automatic operation: CPR that starts on detection, and a fully-automatic AED that shocks on its own analysis after the robot verifies everyone is clear. Until signed, every start needs an on-scene confirmation and no shock is ever delivered.")
+                Text(L10n.t("res.waiver.sub", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
                 ForEach((waiver?.terms ?? []).prefix(6), id: \.self) { t in
                     Text("• \(t)").font(.caption2).foregroundStyle(Theme.t3)
                 }
-                TextField("Type your legal name to sign", text: $signatureDraft)
+                TextField(L10n.t("res.sign.ph", state.language), text: $signatureDraft)
                     .foregroundStyle(Theme.txt)
                     .padding(10).background(Theme.scrBot)
                     .clipShape(RoundedRectangle(cornerRadius: 11))
                     .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
-                cmdButton("Sign & submit waiver", tint: Theme.brandA) { sign() }
+                cmdButton(L10n.t("res.sign", state.language), tint: Theme.brandA) { sign() }
             }
         }.card()
     }

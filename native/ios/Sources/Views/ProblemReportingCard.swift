@@ -20,6 +20,7 @@ import SwiftUI
 ///   and neither is focused by default. A dialog with a bright Yes and a grey
 ///   No has made the choice already.
 struct ProblemReportingCard: View {
+    @EnvironmentObject var state: AppState
     @State private var answered = Problems.noticeAnswered()
     @State private var sending = Problems.sendingEnabled()
     @State private var showing = false
@@ -30,45 +31,39 @@ struct ProblemReportingCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("When something breaks").font(.headline)
+            Text(L10n.t("ns.pr", state.language)).font(.headline)
                 .foregroundStyle(Theme.txt)
 
             if Problems.collectorUrl().isEmpty {
                 // Not a failure and not a thing to hide. This build has no
                 // address compiled in, so there is nothing to consent to.
-                Text("This build reports nowhere. Failures are counted on this "
-                     + "device and never leave it.")
+                Text(L10n.t("ns.pr.nowhere", state.language))
                     .font(.footnote).foregroundStyle(Theme.t2)
             } else if !answered {
-                Text("This app can send a count of what failed — the operation "
-                     + "and the HTTP status, the day it happened, and how many "
-                     + "times. Not what you typed, not who you are, not which "
-                     + "profile. Nothing that identifies you or anyone else.")
+                Text(L10n.t("ns.pr.explain", state.language))
                     .font(.footnote).foregroundStyle(Theme.t2)
                 HStack(spacing: 10) {
-                    Button("Send counts") { answer(true) }
+                    Button(L10n.t("ns.pr.send", state.language)) { answer(true) }
                         .buttonStyle(.bordered)
-                    Button("Do not send") { answer(false) }
+                    Button(L10n.t("ns.pr.dont", state.language)) { answer(false) }
                         .buttonStyle(.bordered)
                 }
             } else {
                 Toggle(isOn: Binding(get: { sending },
                                      set: { on in sending = on
                                             Problems.setSending(on) })) {
-                    Text("Send failure counts").font(.subheadline)
+                    Text(L10n.t("ns.pr.toggle", state.language)).font(.subheadline)
                         .foregroundStyle(Theme.txt)
                 }
                 .tint(Theme.brandA)
             }
 
-            Button(showing ? "Hide what would be sent"
-                           : "Show what would be sent") { showing.toggle() }
+            Button(L10n.t(showing ? "ns.pr.hide" : "ns.pr.show", state.language)) { showing.toggle() }
                 .font(.caption).foregroundStyle(Theme.brandA)
 
             if showing {
                 if rows.isEmpty {
-                    Text("Nothing is owed. Either nothing has failed, or "
-                         + "everything that has was already reported.")
+                    Text(L10n.t("ns.pr.owed", state.language))
                         .font(.caption2).foregroundStyle(Theme.t3)
                 } else {
                     ForEach(rows.indices, id: \.self) { i in

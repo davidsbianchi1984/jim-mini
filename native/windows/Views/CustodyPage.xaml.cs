@@ -14,6 +14,16 @@ public sealed partial class CustodyPage : Page
     public CustodyPage()
     {
         InitializeComponent();
+        Title.Text = L10n.T("cust");
+        Sub.Text = L10n.T("cust.sub");
+        EmptyNote.Text = L10n.T("cust.none");
+        RefreshButton.Content = L10n.T("cust.refresh");
+        BreaksHead.Text = L10n.T("cust.breaks");
+        ProblemsYes.Content = L10n.T("ns.pr.send");
+        ProblemsNo.Content = L10n.T("ns.pr.dont");
+        ProblemsSwitch.Header = L10n.T("ns.pr.toggle");
+        ProblemsPreviewButton.Content = L10n.T("ns.pr.show");
+
         // The card reads three stored choices, so it has to be told when
         // the page appears rather than only when a button is pressed.
         Loaded += (_, _) => RefreshProblemsCard();
@@ -164,7 +174,7 @@ public sealed partial class CustodyPage : Page
         if (ProblemsPreview.Visibility == Visibility.Visible)
         {
             ProblemsPreview.Visibility = Visibility.Collapsed;
-            ProblemsPreviewButton.Content = "Show what would be sent";
+            ProblemsPreviewButton.Content = L10n.T("ns.pr.show");
             return;
         }
         var owed = Problems.Report()["problems"]
@@ -175,6 +185,6 @@ public sealed partial class CustodyPage : Page
             : string.Join("\n", owed.Select(r =>
                 $"{r["op"]} → {r["status"]}  ×{r["count"]}  {r["day"]}"));
         ProblemsPreview.Visibility = Visibility.Visible;
-        ProblemsPreviewButton.Content = "Hide what would be sent";
+        ProblemsPreviewButton.Content = L10n.T("ns.pr.hide");
     }
 }

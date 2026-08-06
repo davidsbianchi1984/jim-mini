@@ -279,13 +279,13 @@ fun MonitorScreen(vm: GuardianViewModel) {
     LaunchedEffect(Unit) { reloadFollowups() }
 
     screenScroll {
-        Text("Live Monitoring", color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("mon", vm.language), color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text("Send a sample. The Guardian compares it to your baseline.", color = Jim.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             sliderRow("Heart rate", "${hr.roundToInt()} bpm", Jim.Red, hr, 40f..180f) { hr = it }
             sliderRow("Stress", "${(stress * 100).roundToInt()}%", Jim.Amber, stress, 0f..1f) { stress = it }
         }
-        BrandButton("Send sample", busy = busy) {
+        BrandButton(L10n.t("mon.send", vm.language), busy = busy) {
             busy = true
             vm.call({ ApiClient.monitor(vm.uid!!, vm.token!!, hr.roundToInt(), stress.toDouble()) }) {
                 result = it.getOrNull(); busy = false
@@ -335,7 +335,7 @@ fun MonitorScreen(vm: GuardianViewModel) {
 
         answered?.let { a ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(if (a.helped == true) "Monitoring resumes" else "Bringing in a person",
+                Text(L10n.t(if (a.helped == true) "mon.resumes" else "mon.person", vm.language),
                     color = if (a.helped == true) Jim.Green else Jim.Amber,
                     fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 a.next?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
@@ -1156,7 +1156,7 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(value = question,
                         onValueChange = { question = it },
-                        label = { Text("What do I do?") },
+                        label = { Text(L10n.t("sos.whatdo", vm.language)) },
                         modifier = Modifier.weight(1f))
                     TextButton(onClick = {
                         vm.call({ ApiClient.alarmGuidance(a.id, question,
@@ -1228,15 +1228,12 @@ private fun CrashWatchPanel(vm: GuardianViewModel) {
                 color = Jim.Red, fontSize = 13.sp)
         }
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Crash watch", color = Jim.Txt, fontSize = 16.sp,
+            Text(L10n.t("cw", vm.language), color = Jim.Txt, fontSize = 16.sp,
                 fontWeight = FontWeight.Bold)
-            Text("Off by default, programmed by you: a critical reading (a fall the watch felt, a collapsing pulse) opens " +
-                 "\"are you okay?\" — unanswered attempts contact your trusted " +
-                 "person, and emergency services only if you tick the box. " +
-                 "Gentle drift check-ins can never trigger it.",
+            Text(L10n.t("cw.sub", vm.language),
                 color = Jim.T2, fontSize = 12.sp)
-            labeledField("Trusted person", name, "Rosa") { name = it }
-            labeledField("How to reach them", channel, "rosa@example.com") { channel = it }
+            labeledField(L10n.t("cw.trusted", vm.language), name, "Rosa") { name = it }
+            labeledField(L10n.t("cw.reach", vm.language), channel, "rosa@example.com") { channel = it }
             labeledField("Attempts (1\u201310)", attempts, "3") { attempts = it }
             labeledField("Minutes per attempt", window, "5") { window = it }
             Row(verticalAlignment = Alignment.CenterVertically,
@@ -1254,13 +1251,13 @@ private fun CrashWatchPanel(vm: GuardianViewModel) {
                             channel, attempts.toIntOrNull() ?: 3,
                             window.toDoubleOrNull() ?: 5.0, ems)
                     }) { took(it) }
-                }) { Text(if (st?.armed == true) "Update" else "Arm the crash watch") }
+                }) { Text(L10n.t(if (st?.armed == true) "action.update" else "cw.arm", vm.language)) }
                 if (st?.armed == true) {
                     Button(enabled = !busy, onClick = {
                         busy = true
                         vm.call({ ApiClient.disarmCrashWatch(vm.uid!!, vm.token!!) }) { took(it) }
                     }, colors = ButtonDefaults.buttonColors(containerColor = Jim.Card)) {
-                        Text("Disarm", color = Jim.Red)
+                        Text(L10n.t("cw.disarm", vm.language), color = Jim.Red)
                     }
                 }
             }
@@ -1283,10 +1280,14 @@ fun SafetyScreen(vm: GuardianViewModel) {
     // Alarms first and selected by default: somebody opening this screen has
     // usually just been paged, and the thing they were paged about should not
     // be behind a tab they have to go looking for.
-    val tabs = listOf("Alarms", "SOS", "Crash", "Med ID", "Policy", "Robots", "Vault")
+    val tabs = listOf(
+        L10n.t("alarm.lead.short", vm.language), L10n.t("sos", vm.language),
+        L10n.t("cw.short", vm.language), L10n.t("mid.short", vm.language),
+        L10n.t("cw.policy", vm.language), L10n.t("rob.short", vm.language),
+        L10n.t("cust", vm.language))
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ProblemReportingCard()
+        ProblemReportingCard(vm.language)
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
             tabs.forEachIndexed { i, t ->
                 Tab(selected = tab == i, onClick = { tab = i },
@@ -1327,8 +1328,9 @@ private fun SOSPanel(vm: GuardianViewModel) {
             contentAlignment = Alignment.Center,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("SOS", color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Black)
-                Text(if (busy) "Coordinating…" else "Tap for emergency",
+                Text(L10n.t("sos", vm.language), color = Color.White, fontSize = 34.sp,
+                     fontWeight = FontWeight.Black)
+                Text(L10n.t(if (busy) "sos.coordinating" else "sos.tap", vm.language),
                     color = Color.White, fontSize = 12.sp)
             }
         }
@@ -1371,7 +1373,7 @@ private fun PolicyPanel(vm: GuardianViewModel) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Sensitivity", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("cw.sensitivity", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 listOf("cautious", "balanced", "assertive").forEach { lvl ->
                     FilterChip(
@@ -1387,7 +1389,7 @@ private fun PolicyPanel(vm: GuardianViewModel) {
                     )
                 }
             }
-            Text("Cautious escalates a rung earlier; assertive a rung later. Crisis and critical events have floors no dial can lower.",
+            Text(L10n.t("cw.sensitivity.sub", vm.language),
                 color = Jim.T2, fontSize = 12.sp)
         }
         policy?.let { p ->
@@ -1531,7 +1533,7 @@ private fun CustodyPanel(vm: GuardianViewModel) {
     LaunchedEffect(Unit) { reload() }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Vault custody", color = Jim.Txt, fontSize = 16.sp,
+        Text(L10n.t("cust", vm.language), color = Jim.Txt, fontSize = 16.sp,
             fontWeight = FontWeight.Bold)
         OfflinePostureCard(vm)
         Text("Chats with tandem specialists are sealed into the PDI vault — " +
@@ -1539,8 +1541,8 @@ private fun CustodyPanel(vm: GuardianViewModel) {
              "the proof.", color = Jim.T2, fontSize = 12.sp)
         error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
         list?.let { c ->
-            Text(if (c.chainIntact == true) "🔗 Audit chain intact"
-                 else "⚠️ Audit chain status unknown",
+            Text(L10n.t(if (c.chainIntact == true) "cust.chain.ok"
+                        else "cust.chain.unknown", vm.language),
                 color = if (c.chainIntact == true) Jim.Green else Jim.Amber,
                 fontSize = 12.sp, fontWeight = FontWeight.Bold)
             if (c.records.isEmpty())
@@ -1569,8 +1571,8 @@ private fun CustodyPanel(vm: GuardianViewModel) {
                         }
                         Text("Audit events: ${p.auditCount}", color = Jim.T2,
                             fontSize = 10.sp)
-                        Text(if (p.chainIntact == true) "Hash chain: intact"
-                             else "Hash chain: unknown",
+                        Text(L10n.t(if (p.chainIntact == true) "cust.hash.ok"
+                                    else "cust.hash.unknown", vm.language),
                             color = if (p.chainIntact == true) Jim.Green
                                     else Jim.Amber,
                             fontSize = 10.sp, fontWeight = FontWeight.Bold)
@@ -1620,8 +1622,8 @@ private fun RobotsPanel(vm: GuardianViewModel) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Bind a robot", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text("Bound robots respond to escalations: mobile bodies come to you; vacuums dock and clear the floor.",
+            Text(L10n.t("rob.bind", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("rob.sub", vm.language),
                 color = Jim.T2, fontSize = 12.sp)
             catalog.chunked(2).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -1648,10 +1650,10 @@ private fun RobotsPanel(vm: GuardianViewModel) {
         }
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Autonomous-resuscitation waiver", color = Jim.Txt,
+                Text(L10n.t("res.waiver", vm.language), color = Jim.Txt,
                     fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 if (waiver?.signed == true)
-                    Text("SIGNED", color = Jim.Green, fontSize = 10.sp,
+                    Text(L10n.t("res.signed", vm.language), color = Jim.Green, fontSize = 10.sp,
                         fontWeight = FontWeight.Bold)
             }
             if (waiver?.signed == true) {
@@ -1664,7 +1666,7 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                         cmdResult = "Waiver revoked — confirm-gated operation restored."
                         reload()
                     }
-                }) { Text("Revoke — restore confirm-gated operation", color = Jim.Red, fontSize = 12.sp) }
+                }) { Text(L10n.t("res.revoke", vm.language), color = Jim.Red, fontSize = 12.sp) }
             } else {
                 Text("Unlock automatic operation: CPR that starts on detection, and a " +
                     "fully-automatic AED that shocks on its own analysis after the robot " +
@@ -1674,8 +1676,8 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                 waiver?.terms?.forEach { t ->
                     Text("• $t", color = Jim.T3, fontSize = 10.sp)
                 }
-                labeledField("Type your legal name to sign", signature, vm.displayName) { signature = it }
-                RobotAction("Sign & submit waiver") {
+                labeledField(L10n.t("res.sign.ph", vm.language), signature, vm.displayName) { signature = it }
+                RobotAction(L10n.t("res.sign", vm.language)) {
                     if (signature.isNotBlank()) {
                         error = null
                         vm.call({ ApiClient.signWaiver(vm.uid!!, vm.token!!, signature) }) { r ->
@@ -1698,7 +1700,7 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                         verticalAlignment = Alignment.CenterVertically) {
                         Text(rob.name, color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         rob.firstAid?.let { rating ->
-                            Text(if (rating == "perform") "CPR-rated" else "first-aid assist",
+                            Text(L10n.t(if (rating == "perform") "rob.cpr_rated" else "sos.firstaid", vm.language),
                                 color = Jim.Green, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                     }
@@ -1966,10 +1968,11 @@ private fun MedicalPanel(vm: GuardianViewModel) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Medical ID", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text("A shareable card for first responders: condition-level facts only, readable from a locked phone. Re-issuing rotates the QR and kills the old one.",
+            Text(L10n.t("mid", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("mid.sub", vm.language),
                 color = Jim.T2, fontSize = 12.sp)
-            BrandButton(if (issued == null) "Issue Medical ID" else "Rotate QR", busy = busy) {
+            BrandButton(L10n.t(if (issued == null) "mid.issue" else "mid.rotate", vm.language),
+                        busy = busy) {
                 busy = true; error = null
                 vm.call({
                     val r = ApiClient.issueMedicalCard(vm.uid!!, vm.token!!)
@@ -1984,12 +1987,12 @@ private fun MedicalPanel(vm: GuardianViewModel) {
         error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
         issued?.let { i ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Card issued", color = Jim.Green, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text("Print or lock-screen the QR at:", color = Jim.T2, fontSize = 12.sp)
+                Text(L10n.t("mid.issued", vm.language), color = Jim.Green, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("mid.print", vm.language), color = Jim.T2, fontSize = 12.sp)
                 Text(i.qrSvgUrl, color = Jim.T2, fontSize = 11.sp)
                 card?.let { c ->
                     HorizontalDivider(color = Jim.Line)
-                    Text("What a responder sees", color = Jim.Txt, fontSize = 14.sp,
+                    Text(L10n.t("mid.responder", vm.language), color = Jim.Txt, fontSize = 14.sp,
                         fontWeight = FontWeight.Bold)
                     medRow("Name", c.name ?: "—")
                     medRow("Age", c.age?.toString() ?: "—")
@@ -2003,7 +2006,7 @@ private fun MedicalPanel(vm: GuardianViewModel) {
                     vm.call({ ApiClient.revokeMedicalCard(vm.uid!!, vm.token!!) }) {
                         issued = null; card = null
                     }
-                }) { Text("Revoke card", color = Jim.Red, fontSize = 13.sp) }
+                }) { Text(L10n.t("mid.revoke", vm.language), color = Jim.Red, fontSize = 13.sp) }
             }
         }
     }
@@ -2691,7 +2694,7 @@ private fun AnonymityCard(vm: GuardianViewModel) {
  *    with a bright Yes and a grey No has made the choice already.
  */
 @Composable
-fun ProblemReportingCard() {
+fun ProblemReportingCard(lang: String = "en") {
     var answered by remember { mutableStateOf(Problems.noticeAnswered()) }
     var sending by remember { mutableStateOf(Problems.sendingEnabled()) }
     var showing by remember { mutableStateOf(false) }
@@ -2703,19 +2706,15 @@ fun ProblemReportingCard() {
 
     Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("When something breaks", style = MaterialTheme.typography.titleSmall)
+            Text(L10n.t("ns.pr", lang), style = MaterialTheme.typography.titleSmall)
 
             if (Problems.collectorUrl().isEmpty()) {
                 // Not a failure and not a thing to hide: this build has no
                 // address compiled in, so there is nothing to consent to.
-                Text("This build reports nowhere. Failures are counted on this " +
-                     "device and never leave it.",
+                Text(L10n.t("ns.pr.nowhere", lang),
                      style = MaterialTheme.typography.bodySmall)
             } else if (!answered) {
-                Text("This app can send a count of what failed — the operation " +
-                     "and the HTTP status, the day, and how many times. Not " +
-                     "what you typed, not who you are, not which profile. " +
-                     "Nothing that identifies you or anyone else.",
+                Text(L10n.t("ns.pr.explain", lang),
                      style = MaterialTheme.typography.bodySmall)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(onClick = {
@@ -2725,14 +2724,14 @@ fun ProblemReportingCard() {
                         // just agreed watches the buffer drain, instead of
                         // being told something happened later.
                         scope.launch(Dispatchers.IO) { Problems.send() }
-                    }) { Text("Send counts") }
+                    }) { Text(L10n.t("ns.pr.send", lang)) }
                     OutlinedButton(onClick = {
                         Problems.answerNotice(false); answered = true; sending = false
-                    }) { Text("Do not send") }
+                    }) { Text(L10n.t("ns.pr.dont", lang)) }
                 }
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Send failure counts", Modifier.weight(1f),
+                    Text(L10n.t("ns.pr.toggle", lang), Modifier.weight(1f),
                          style = MaterialTheme.typography.bodyMedium)
                     Switch(checked = sending, onCheckedChange = {
                         sending = it; Problems.setSending(it)
@@ -2741,13 +2740,11 @@ fun ProblemReportingCard() {
             }
 
             TextButton(onClick = { showing = !showing }) {
-                Text(if (showing) "Hide what would be sent"
-                     else "Show what would be sent")
+                Text(L10n.t(if (showing) "ns.pr.hide" else "ns.pr.show", lang))
             }
             if (showing) {
                 if (owed.isEmpty()) {
-                    Text("Nothing is owed. Either nothing has failed, or " +
-                         "everything that has was already reported.",
+                    Text(L10n.t("ns.pr.owed", lang),
                          style = MaterialTheme.typography.bodySmall)
                 } else {
                     owed.forEach { r ->
@@ -2865,7 +2862,7 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) 
 
     Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(L10n.t("self.title", lang), style = MaterialTheme.typography.titleMedium)
-        ProblemReportingCard()
+        ProblemReportingCard(vm.language)
         ContinuityCard(uid, token, lang)
         Text(L10n.t("self.lead", lang), style = MaterialTheme.typography.bodySmall)
 

@@ -26,6 +26,16 @@ public sealed partial class SafetyPage : Page
             Assist ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PerformVisibility =>
             Perform ? Visibility.Visible : Visibility.Collapsed;
+        // A template is stamped once per robot, so there is no named control
+        // to assign to; the row is where the lookup goes. These are the
+        // buttons that put a machine's hands on somebody's chest.
+        public string AedLabel => L10n.T("fa.aed");
+        public string CoachLabel => L10n.T("fa.coach");
+        public string EmsLabel => L10n.T("fa.ems");
+        public string PerformLabel => L10n.T("fa.perform");
+        public string StartLabel => L10n.T("fa.start");
+        public string AutoLabel => L10n.T("res.auto");
+        public string StopLabel => L10n.T("fa.stop");
         public Visibility StopVisibility =>
             PerformingCpr ? Visibility.Visible : Visibility.Collapsed;
         public Visibility WaivedVisibility =>
@@ -39,7 +49,72 @@ public sealed partial class SafetyPage : Page
     private string? _pendingCprRobot;
     private bool _waiverSigned;
 
-    public SafetyPage() => InitializeComponent();
+    public SafetyPage()
+    {
+        InitializeComponent();
+        LocalizeTheRest();
+    }
+
+    /// The rest of the same screen.
+    ///
+    /// `LocalizeAlarmSurface` below covers what the alarm *says* once it is
+    /// going. It does not cover what arms it, fires it, or signs away the
+    /// confirmation before a machine starts compressions — because the count
+    /// those strings were chosen from could not see a string picked by a
+    /// ternary, and `Click for emergency` is one.
+    ///
+    ///     asked     is the alarm's own wording localized
+    ///     mattered  is the control that starts it
+    private void LocalizeTheRest()
+    {
+        AlarmsPivot.Header = L10n.T("alarm.lead.short");
+        SosPivot.Header = L10n.T("sos");
+        CrashPivot.Header = L10n.T("cw.short");
+        MedPivot.Header = L10n.T("mid.short");
+        PolicyPivot.Header = L10n.T("cw.policy");
+        RobotsPivot.Header = L10n.T("rob.short");
+
+        ResponderBox.Header = L10n.T("res.name");
+        AlarmQuestionBox.Header = L10n.T("sos.whatdo");
+        AlarmAskButton.Content = L10n.T("sos.ask");
+
+        SosLabel.Text = L10n.T("sos");
+        SosHint.Text = L10n.T("sos.click");
+        SituationBox.Header = L10n.T("sos.what");
+        LocationBox.Header = L10n.T("sos.where");
+
+        CrashHead.Text = L10n.T("cw");
+        CrashSub.Text = L10n.T("cw.sub");
+        CrashName.Header = L10n.T("cw.trusted");
+        CrashChannel.Header = L10n.T("cw.reach");
+        CrashAttempts.Header = L10n.T("cw.attempts");
+        CrashWindow.Header = L10n.T("cw.minutes");
+        CrashArmButton.Content = L10n.T("cw.arm");
+        CrashDisarmButton.Content = L10n.T("cw.disarm");
+
+        MedHead.Text = L10n.T("mid");
+        MedSub.Text = L10n.T("mid.sub");
+        IssueButton.Content = L10n.T("mid.issue");
+        IssuedHead.Text = L10n.T("mid.issued");
+        PrintHint.Text = L10n.T("mid.print");
+        RevokeCardButton.Content = L10n.T("mid.revoke");
+
+        SensitivityBox.Header = L10n.T("cw.sensitivity");
+        SensCautious.Content = L10n.T("cw.cautious");
+        SensBalanced.Content = L10n.T("cw.balanced");
+        SensAssertive.Content = L10n.T("cw.assertive");
+        SensSub.Text = L10n.T("cw.sensitivity.sub");
+
+        RobotModelBox.Header = L10n.T("rob.bind");
+        BindButton.Content = L10n.T("rob.bind.go");
+        RobotsSub.Text = L10n.T("rob.sub");
+        WaiverHead.Text = L10n.T("res.waiver");
+        WaiverBadge.Text = L10n.T("res.signed");
+        SignatureBox.Header = L10n.T("res.sign.ph");
+        SignWaiverButton.Content = L10n.T("res.sign");
+        RevokeWaiverButton.Content = L10n.T("res.revoke");
+        ConfirmCprButton.Content = L10n.T("fa.confirm");
+    }
 
     /// The alarm surface's wording, in the reader's language.
     ///
@@ -189,7 +264,7 @@ public sealed partial class SafetyPage : Page
         if (st.Attempts is int a) CrashAttempts.Value = a;
         if (st.WindowMinutes is double w) CrashWindow.Value = w;
         CrashEms.IsChecked = st.ContactEms ?? false;
-        CrashArmButton.Content = st.Armed ? "Update" : "Arm the crash watch";
+        CrashArmButton.Content = L10n.T(st.Armed ? "action.update" : "cw.arm");
         CrashDisarmButton.Visibility = st.Armed ? Visibility.Visible : Visibility.Collapsed;
         var asking = st.Asking ?? false;
         CrashAskingCard.Visibility = asking ? Visibility.Visible : Visibility.Collapsed;
@@ -256,7 +331,7 @@ public sealed partial class SafetyPage : Page
     {
         var s = AppState.Current;
         SosButton.IsEnabled = false;
-        SosHint.Text = "Coordinating…";
+        SosHint.Text = L10n.T("sos.coordinating");
         SosError.Visibility = Visibility.Collapsed;
         try
         {
@@ -277,7 +352,7 @@ public sealed partial class SafetyPage : Page
         finally
         {
             SosButton.IsEnabled = true;
-            SosHint.Text = "Click for emergency";
+            SosHint.Text = L10n.T("sos.click");
         }
     }
 
@@ -342,13 +417,9 @@ public sealed partial class SafetyPage : Page
             WaiverTerms.Text = waiver.Signed ? "" : string.Join("\n", waiver.Terms.Select(t => $"• {t}"));
             WaiverTerms.Visibility = waiver.Signed ? Visibility.Collapsed : Visibility.Visible;
             WaiverBlurb.Text = waiver.Signed
-                ? $"Signed by {waiver.Signature} — CPR-rated robots may start compressions " +
-                  "automatically and operate a fully-automatic AED. A shock still only " +
-                  "follows the AED's own rhythm analysis."
-                : "Unlock automatic operation: CPR that starts on detection, and a " +
-                  "fully-automatic AED that shocks on its own analysis after the robot " +
-                  "verifies everyone is clear. Until signed, every start needs an " +
-                  "on-scene confirmation and no shock is ever delivered.";
+                ? L10n.Fill("res.signed.by", AppState.Current.Language,
+                            ("name", waiver.Signature))
+                : L10n.T("res.waiver.sub");
 
             var robots = await ApiClient.Shared.Robots(s.Uid!, s.Token!);
             RobotsList.ItemsSource = robots.Select(r => new RobotRow
@@ -545,7 +616,7 @@ public sealed partial class SafetyPage : Page
                                ? $"{ec.Name ?? "—"} · {ec.Phone ?? "—"}" : "—"),
             }.ToList();
             MedCard.Visibility = Visibility.Visible;
-            IssueButton.Content = "Rotate QR";
+            IssueButton.Content = L10n.T("mid.rotate");
         }
         catch (Exception ex)
         {

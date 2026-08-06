@@ -70,6 +70,35 @@ SHELLS = {
 #: like it.
 _ASKED = re.compile(r'\bL10n\s*\.\s*[tT]\s*\(\s*"([\w.]+)"')
 
+#: **Also 0.47.1.** `fill` takes the key first exactly as `t` does, and this
+#: pattern did not know the method existed — so every row whose only caller
+#: interpolates a value into it read as asked for by nobody. Nine of them, on
+#: the screens this round wired.
+#:
+#:     asked     does a shell call L10n.t with this key
+#:     mattered  does a shell ask for this row at all
+_ASKED_FILL = re.compile(r'\bL10n\s*\.\s*[fF]ill\s*\(\s*"([\w.]+)"')
+
+#: **Added in 0.47.1**, and it is the mirror image of what the ratchet guard
+#: was missing in the same round. That one could not see a *string* chosen by
+#: a ternary; this one could not see a *key* chosen by one:
+#:
+#:     L10n.t(armed ? "action.update" : "cw.arm", lang)
+#:
+#: The key is not the first thing after the paren, so `_ASKED` read past it
+#: and this file reported seventy-five live rows as asked for by nobody.
+#:
+#:     asked     is the key the first argument
+#:     mattered  does the shell ask for it
+#:
+#: The failure mode is the dangerous direction: a guard that calls a row dead
+#: invites somebody to delete a row a screen is using. Two branches, both
+#: captured, in Swift/C# ternary form and Kotlin if/else form.
+_ASKED_TERNARY = [
+    re.compile(r'\bL10n\s*\.\s*[tTfF][a-zA-Z]*\s*\([^()"]*\?\s*"([\w.]+)"\s*:\s*"([\w.]+)"'),
+    re.compile(r'\bL10n\s*\.\s*[tTfF][a-zA-Z]*\s*\(\s*if\s*\([^)]*\)\s*"([\w.]+)"\s*else\s*"([\w.]+)"'),
+]
+
 #: A row in any of the three table syntaxes — Swift `"k": [`, Kotlin
 #: `"k" to mapOf(`, C# `["k"] = new()`.
 _HELD = re.compile(r'"([\w.]+)"\s*(?::\s*\[|\s+to\s+mapOf\(|"?\]\s*=\s*new)')
@@ -81,7 +110,12 @@ def _asked(shell: str) -> dict[str, list[str]]:
     for path in sorted(root.rglob("*")):
         if path.suffix not in suffixes or path == table:
             continue
-        for key in _ASKED.findall(path.read_text(encoding="utf-8")):
+        text = path.read_text(encoding="utf-8")
+        keys = list(_ASKED.findall(text))
+        keys += _ASKED_FILL.findall(text)
+        keys += [k for rx in _ASKED_TERNARY for pair in rx.findall(text)
+                 for k in pair]
+        for key in keys:
             found.setdefault(key, []).append(path.name)
     return found
 

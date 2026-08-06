@@ -38,6 +38,28 @@
 # localized, which is a measurement saying the opposite of the truth. The
 # counts below are what is actually unreadable.
 
-ios: 167
-android: 139
-windows: 192
+# **Corrected in 0.47.1, and the safety surface carved out.** The guard in
+# this repo is the sibling's guard, copied — so the blind spot it found was
+# here too: a string chosen by a ternary is not at the start of an argument
+# list, and nothing was looking anywhere else. The recorded numbers were
+# understating by 40.
+#
+# What that hid is the part worth writing down. The fourteen `alarm.*` rows
+# carved out earlier localize what the alarm *says* once it is going. They do
+# not localize **Tap for emergency**, **Arm the crash watch**, **Issue Medical
+# ID** or **Rotate QR** — the controls that arm it, fire it and stand it down
+# — because the count those rows were chosen from could not see them.
+#
+#     asked     is the alarm's own wording localized
+#     mattered  is the control that starts it
+#
+# This round takes the whole safety surface on all three shells: the SOS
+# control, the crash-watch dial, the autonomous-resuscitation waiver, the
+# responder card, first aid, the monitor and the custody proof. Also settled:
+# the SOS button read *Tap for emergency* on the phones and *Click for
+# emergency* on the desktop, and the escalation-floor sentence dropped the
+# word *language* on one shell out of three.
+
+ios: 113
+android: 113
+windows: 136

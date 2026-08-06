@@ -4,6 +4,57 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.1] — 2026-08-06
+
+### The alarm was localized where it speaks, not where you start it
+
+The guard in this repo is the sibling's guard, copied. So the blind spot
+found in 0.47.0 was here too: a string chosen by a ternary is not at the
+start of an argument list, and nothing was looking anywhere else. The
+recorded counts were understating by **40**.
+
+What that hid is the part worth writing down.
+
+Fourteen `alarm.*` rows were carved out in an earlier round, by name rather
+than by count, because — in that round's own words — *a count cannot tell you
+which string a person could not read*. They cover what the alarm **says**
+once it is going: the question it asks, the three answers, the line admitting
+this screen cannot call an ambulance.
+
+They do not cover **Tap for emergency**. Or **Arm the crash watch**, or
+**Issue Medical ID**, or **Rotate QR** — the controls that arm the alarm,
+fire it, and stand it down. The carve-out was chosen by reading the count,
+and the count could not see the button.
+
+    asked     is the alarm's own wording localized
+    mattered  is the control that starts it
+
+### The whole safety surface, on all three shells
+
+The SOS control and what it asks. The crash-watch dial, its sensitivity
+floors, its trusted person. The **autonomous-resuscitation waiver** — the
+consent that lets a machine start compressions and fire a fully-automatic AED
+without an on-scene confirmation — and the sentence describing what signing
+it means. The responder card a stranger reads off a locked phone. First aid,
+including **📞 Call emergency services now**. The monitor, and the custody
+proof with its hash-chain verdict.
+
+**538 → 386.** iOS 183 → 128, Android 153 → 122, Windows 202 → 136.
+
+### Two wordings and a missing card
+
+The SOS button read *Tap for emergency* on the phones and *Click for
+emergency* on the desktop. The escalation-floor sentence said *Crisis
+language and critical events have floors* on two shells and dropped the word
+*language* on the third.
+
+And the failure-report card — settled in the sibling product at 0.46.6, three
+shells saying one thing about what a crash report contains — was still
+English on all three of JIM's. Its ten rows are taken verbatim from the
+sibling's table rather than written a second time.
+
+Cut together with QRME and PDI at app-v0.47.1.
+
 ## [0.47.0] — 2026-08-06
 
 ### Version alignment

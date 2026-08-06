@@ -18,8 +18,8 @@ struct MonitorView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Live Monitoring").font(.title2.bold()).foregroundStyle(Theme.txt)
-                Text("Send a sample. The Guardian compares it to your baseline.")
+                Text(L10n.t("mon", state.language)).font(.title2.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("mon.sub", state.language))
                     .font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 18) {
@@ -28,7 +28,7 @@ struct MonitorView: View {
                 }.card()
 
                 Button(action: send) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Send sample").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("mon.send", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 14)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 13))
@@ -76,9 +76,9 @@ struct MonitorView: View {
         if let open = followups?.open.first {
             VStack(alignment: .leading, spacing: 10) {
                 Text(open.question).font(.headline).foregroundStyle(Theme.txt)
-                Text("About the guidance for \(open.condition).")
+                Text(L10n.fill("mon.about", state.language, ["condition": open.condition]))
                     .font(.caption).foregroundStyle(Theme.t2)
-                TextField("Anything you want to add (optional)", text: $note)
+                TextField(L10n.t("mon.add", state.language), text: $note)
                     .font(.subheadline).foregroundStyle(Theme.txt)
                     .padding(10).background(Theme.scrBot)
                     .clipShape(RoundedRectangle(cornerRadius: 11))
@@ -91,8 +91,7 @@ struct MonitorView: View {
 
         if let a = answered {
             VStack(alignment: .leading, spacing: 8) {
-                Text(a.helped == true ? "Monitoring resumes"
-                                      : "Bringing in a person")
+                Text(L10n.t(a.helped == true ? "mon.resumes" : "mon.person", state.language))
                     .font(.headline)
                     .foregroundStyle(a.helped == true ? Theme.green : Theme.amber)
                 if let next = a.next {

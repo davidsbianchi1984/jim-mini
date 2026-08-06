@@ -7,9 +7,9 @@
 
     <ScrollViewer>
         <StackPanel MaxWidth="740" Spacing="16" Padding="28" HorizontalAlignment="Left">
-            <TextBlock Text="Vault Custody" FontSize="22" FontWeight="Bold"
+            <TextBlock x:Name="Title" FontSize="22" FontWeight="Bold"
                        Foreground="{StaticResource JimTxtBrush}" />
-            <TextBlock Text="Chats with tandem specialists are sealed into the PDI vault — encrypted, attributed, and hash-chained. This is your copy of the proof. Select a record to read its provenance."
+            <TextBlock x:Name="Sub"
                        Foreground="{StaticResource JimT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
             <!-- What this deployment can and cannot reach. Read-only: the
@@ -35,7 +35,7 @@
             <TextBlock x:Name="ErrorText" FontSize="13" TextWrapping="Wrap"
                        Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
             <TextBlock x:Name="EmptyText"
-                       Text="No sealed exchanges yet — they appear after a tandem specialist chat."
+                       x:Name="EmptyNote"
                        Foreground="{StaticResource JimT2Brush}" FontSize="13"
                        TextWrapping="Wrap" Visibility="Collapsed" />
 
@@ -56,7 +56,7 @@
                 </StackPanel>
             </Border>
 
-            <Button Content="Refresh" Height="40" Click="OnRefresh"
+            <Button x:Name="RefreshButton" Height="40" Click="OnRefresh"
                     Foreground="White" Background="{StaticResource JimBrandABrush}" />
             <!-- The notice that has to be answered before anything leaves this
                  machine, and the switch that turns it off afterwards. The
@@ -66,17 +66,17 @@
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="When something breaks" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="BreaksHead" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="ProblemsExplain" FontSize="12" TextWrapping="Wrap"
                                Foreground="{StaticResource JimT2Brush}" />
                     <StackPanel x:Name="ProblemsAsk" Orientation="Horizontal" Spacing="10">
-                        <Button x:Name="ProblemsYes" Content="Send counts" Click="OnProblemsYes" />
-                        <Button x:Name="ProblemsNo" Content="Do not send" Click="OnProblemsNo" />
+                        <Button x:Name="ProblemsYes" Click="OnProblemsYes" />
+                        <Button x:Name="ProblemsNo" Click="OnProblemsNo" />
                     </StackPanel>
-                    <ToggleSwitch x:Name="ProblemsSwitch" Header="Send failure counts"
+                    <ToggleSwitch x:Name="ProblemsSwitch"
                                   Toggled="OnProblemsToggled" Visibility="Collapsed" />
-                    <HyperlinkButton x:Name="ProblemsPreviewButton" Content="Show what would be sent"
+                    <HyperlinkButton x:Name="ProblemsPreviewButton"
                                      Click="OnProblemsPreview" />
                     <TextBlock x:Name="ProblemsPreview" FontSize="11" TextWrapping="Wrap"
                                FontFamily="Consolas" Visibility="Collapsed"

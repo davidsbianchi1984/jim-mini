@@ -13,21 +13,20 @@ struct CustodySection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Vault custody").font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("cust", state.language)).font(.headline).foregroundStyle(Theme.txt)
                 ProblemReportingCard()
                 OfflinePostureCard()
-                Text("Chats with tandem specialists are sealed into the PDI vault — encrypted, attributed, and hash-chained. This is your copy of the proof.")
+                Text(L10n.t("cust.sub", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
                 if let list {
                     HStack(spacing: 8) {
-                        Text(list.chain_intact == true
-                             ? "🔗 Audit chain intact"
-                             : "⚠️ Audit chain status unknown")
+                        Text(L10n.t(list.chain_intact == true ? "cust.chain.ok"
+                                        : "cust.chain.unknown", state.language))
                             .font(.caption.bold())
                             .foregroundStyle(list.chain_intact == true
                                              ? Theme.green : Theme.amber)
                         Spacer()
-                        Text("\(list.count) sealed")
+                        Text(L10n.fill("cust.sealed", state.language, ["n": "\(list.count)"]))
                             .font(.caption).foregroundStyle(Theme.t2)
                     }
                 }
@@ -37,7 +36,7 @@ struct CustodySection: View {
 
             if let list {
                 if list.records.isEmpty {
-                    Text("No sealed exchanges yet — they appear after a tandem specialist chat.")
+                    Text(L10n.t("cust.none", state.language))
                         .font(.footnote).foregroundStyle(Theme.t2).card()
                 }
                 ForEach(list.records, id: \.self) { key in
@@ -55,18 +54,18 @@ struct CustodySection: View {
                         }
                         if openKey == key, let p = provenance[key] {
                             Divider().overlay(Theme.line)
-                            Text("Origin: \(p.origin)")
+                            Text(L10n.fill("cust.origin", state.language, ["origin": p.origin]))
                                 .font(.caption).foregroundStyle(Theme.txt)
                             if let cipher = p.sealed?.cipher {
-                                Text("Seal: \(cipher)")
+                                Text(L10n.fill("cust.seal", state.language, ["cipher": cipher]))
                                     .font(.caption2).foregroundStyle(Theme.t2)
                             }
                             if let n = p.audit?.count {
-                                Text("Audit events: \(n)")
+                                Text(L10n.fill("cust.events", state.language, ["n": "\(n)"]))
                                     .font(.caption2).foregroundStyle(Theme.t2)
                             }
-                            Text(p.chain?.intact == true
-                                 ? "Hash chain: intact" : "Hash chain: unknown")
+                            Text(L10n.t(p.chain?.intact == true ? "cust.hash.ok"
+                                      : "cust.hash.unknown", state.language))
                                 .font(.caption2.bold())
                                 .foregroundStyle(p.chain?.intact == true
                                                  ? Theme.green : Theme.amber)
