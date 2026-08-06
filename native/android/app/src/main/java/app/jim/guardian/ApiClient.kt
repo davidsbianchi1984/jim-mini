@@ -354,6 +354,17 @@ object ApiClient {
             o.optString("privacy_note", null), o.optString("note", null))
     }
 
+    /**
+     * The guardian steps back. A guardian link is a standing relationship —
+     * one adult able to see another person's events, light and escalations —
+     * and it outlives the reason for it: children grow up, custody changes,
+     * households end. iOS has been able to end one since the link was built;
+     * this shell and the desktop could begin one and not end one.
+     */
+    suspend fun unlinkChild(gid: String, cid: String, token: String) {
+        request("/guardians/$gid/children/$cid", "DELETE", null, token)
+    }
+
     suspend fun setFamilyControls(gid: String, cid: String, token: String,
                                   paused: Boolean?, quietStart: String?,
                                   quietEnd: String?): String {

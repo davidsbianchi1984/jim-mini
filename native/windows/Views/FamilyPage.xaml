@@ -76,6 +76,35 @@
                             Background="{StaticResource JimBrandABrush}" Foreground="White" />
                     <TextBlock x:Name="ControlsNote" FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource JimGreenBrush}" Visibility="Collapsed" />
+
+                    <!-- Ending the link. This page could begin one and not end
+                         one; the confirm is the two-step reveal this shell
+                         already uses before an irreversible act, rather than a
+                         dialog, so the sentence about what is *not* deleted is
+                         on screen while the decision is made. -->
+                    <Border Height="1" Background="{StaticResource JimLineBrush}"
+                            Margin="0,6" />
+                    <Button x:Name="UnlinkButton" Click="OnUnlinkAsked"
+                            HorizontalAlignment="Left" Background="Transparent"
+                            FontSize="12" FontWeight="Bold"
+                            Foreground="{StaticResource JimRedBrush}" />
+                    <StackPanel x:Name="UnlinkConfirmPanel" Spacing="6"
+                                Visibility="Collapsed">
+                        <TextBlock x:Name="UnlinkAsk" FontWeight="Bold" FontSize="13"
+                                   TextWrapping="Wrap"
+                                   Foreground="{StaticResource JimTxtBrush}" />
+                        <TextBlock x:Name="UnlinkTheirs" FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{StaticResource JimT2Brush}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button x:Name="UnlinkConfirmButton" Click="OnUnlinkConfirmed"
+                                    Background="{StaticResource JimRedBrush}"
+                                    Foreground="White" FontSize="12" />
+                            <Button x:Name="KeepLinkButton" Click="OnKeepLink"
+                                    FontSize="12" />
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock x:Name="UnlinkNote" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
 

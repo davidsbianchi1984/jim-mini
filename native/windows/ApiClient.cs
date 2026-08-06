@@ -602,6 +602,23 @@ public sealed class ApiClient
     public Task<ChildOverview> ChildOverviewOf(string gid, string cid, string token) =>
         Send<ChildOverview>(Get($"/guardians/{gid}/children/{cid}", token));
 
+    /// <summary>The guardian steps back: the oversight window closes, and
+    /// the child account and the recorded consent event remain.
+    ///
+    /// <para>A guardian link is a standing relationship that outlives the
+    /// reason for it — children grow up, custody changes, households end.
+    /// iOS has been able to end one since the link was built. This shell
+    /// could begin one and not end one, and the route audit said so in
+    /// windows_doorless.txt the whole time.</para></summary>
+    public async Task UnlinkChild(string gid, string cid, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+            $"/guardians/{gid}/children/{cid}");
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+    }
+
     public Task<FamilyControlsState> SetFamilyControls(
         string gid, string cid, string token, bool? paused,
         string? quietStart, string? quietEnd)

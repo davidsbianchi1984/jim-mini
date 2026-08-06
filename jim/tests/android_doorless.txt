@@ -2,7 +2,6 @@ DELETE /bands/{user_id}/{metric}
 DELETE /beacons/{bid}
 DELETE /budgets/{user_id}/{category}
 DELETE /data/{user_id}
-DELETE /guardians/{guardian_id}/children/{child_id}
 DELETE /meds/{user_id}/{med_id}
 DELETE /memberships/{account_id}
 DELETE /robots/{user_id}/{robot_id}
@@ -35,13 +34,9 @@ GET /dock/{user_id}/face/{name}
 GET /events/{user_id}
 GET /excursions/entry/{cid}
 GET /excursions/{user_id}
-GET /goals/{user_id}
-GET /guardians/{guardian_id}/children
-GET /habits/{user_id}
 GET /health
 GET /help/topics
 GET /insights/{user_id}
-GET /journal/{user_id}
 GET /meds/{user_id}
 GET /meds/{user_id}/adherence
 GET /memberships/{account_id}
@@ -59,8 +54,6 @@ GET /settings/mail
 GET /settings/voice
 GET /social/connection/{cid}/beacon
 GET /social/connection/{cid}/qr.svg
-GET /social/{user_id}
-GET /sources/{user_id}
 GET /specialists
 GET /specialists/catalog
 GET /tutorial

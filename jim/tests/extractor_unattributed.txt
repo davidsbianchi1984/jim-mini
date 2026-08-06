@@ -1,0 +1,24 @@
+# Path-shaped literals that no call form encloses, and are not requests.
+# Checked by test_the_extractor_knows_every_call_shape.py, ratcheted in both
+# directions: a new one has to be justified here, and one that has gone has to
+# be struck.
+#
+# A literal in this file is a claim that the surface writes this path and does
+# not send it. That claim is the only thing standing between the route audit
+# and a blind spot, so each line carries the reason it is here rather than a
+# shape for the extractor to learn.
+
+# `defaultBase()` asks whether `window.location.pathname` starts with this —
+# a question about where the page is being served from, not a call. Documented
+# in clientpaths.paths() since long before this check existed.
+console: app/src/api.ts  /app
+
+# Shown to a person as text: the card tells them what URL their care code
+# points at, so somebody can read it off the sticker. Nothing fetches it here
+# — the scan happens on whatever phone is pointed at the code.
+console: app/src/screens/Reach.tsx  /c/${bid.trim()}
+
+# Not a path at all. It is the regular expression that trims trailing slashes
+# off the problem-collector URL, and it is in this file only because it begins
+# with a slash and survives the URL-safe test.
+ios: native/ios/Sources/Problems.swift  /+$

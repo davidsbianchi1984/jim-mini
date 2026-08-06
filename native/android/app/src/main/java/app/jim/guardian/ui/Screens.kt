@@ -2062,6 +2062,8 @@ private fun FamilyPanel(vm: GuardianViewModel) {
     var quietStart by remember { mutableStateOf("") }
     var quietEnd by remember { mutableStateOf("") }
     var controlsNote by remember { mutableStateOf<String?>(null) }
+    var unlinking by remember { mutableStateOf<String?>(null) }
+    var unlinkNote by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
     fun reload() {
@@ -2239,7 +2241,55 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                 controlsNote?.let {
                     Text(it, color = Jim.Green, fontSize = 10.sp)
                 }
+
+                // Ending the link. This screen could begin one and not end
+                // one — iOS gained the control when `unlinkChild` was wired
+                // there, and the route audit has listed
+                // `DELETE /guardians/{guardian_id}/children/{child_id}` in
+                // android_doorless.txt ever since.
+                //
+                // A guardian link is a standing relationship: one adult able
+                // to see another person's events, light and escalations. It
+                // outlives the reason for it. The surface that creates it has
+                // to be able to end it, or the person who set it up has to
+                // find a desktop — and until this round the desktop could not
+                // do it either.
+                HorizontalDivider(color = Jim.Line)
+                Text(L10n.t("fam.unlink.this", vm.language), color = Jim.Red,
+                    fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { unlinking = cid })
+                unlinkNote?.let {
+                    Text(it, color = Jim.T2, fontSize = 10.sp)
+                }
             }
+        }
+
+        // Attached outside the controls card, like the iOS dialog: a dialog
+        // owned by a row is dismissed with the row when the list reloads,
+        // which is exactly when this one fires.
+        unlinking?.let { cid ->
+            AlertDialog(
+                onDismissRequest = { unlinking = null },
+                title = { Text(L10n.t("fam.unlink.ask", vm.language)) },
+                text = { Text(L10n.t("fam.theirs", vm.language)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        unlinking = null
+                        vm.call({ ApiClient.unlinkChild(vm.uid!!, cid, vm.token!!) }) { r ->
+                            r.onSuccess {
+                                openKid = null
+                                unlinkNote = L10n.t("fam.unlinked.note", vm.language)
+                            }.onFailure { error = it.message }
+                            reload()
+                        }
+                    }) { Text(L10n.t("fam.unlink", vm.language), color = Jim.Red) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { unlinking = null }) {
+                        Text(L10n.t("fam.keep", vm.language))
+                    }
+                },
+            )
         }
         overview?.let { o ->
             Column(Modifier.fillMaxWidth()

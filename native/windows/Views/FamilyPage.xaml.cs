@@ -40,6 +40,46 @@ public sealed partial class FamilyPage : Page
         QuietStartBox.Header = L10n.T("fam.quiet.start");
         QuietEndBox.Header = L10n.T("fam.quiet.end");
         ApplyButton.Content = L10n.T("fam.apply");
+        UnlinkButton.Content = L10n.T("fam.unlink.this");
+        UnlinkAsk.Text = L10n.T("fam.unlink.ask");
+        UnlinkTheirs.Text = L10n.T("fam.theirs");
+        UnlinkConfirmButton.Content = L10n.T("fam.unlink");
+        KeepLinkButton.Content = L10n.T("fam.keep");
+    }
+
+    private void OnUnlinkAsked(object sender, RoutedEventArgs e)
+    {
+        UnlinkConfirmPanel.Visibility = Visibility.Visible;
+        UnlinkButton.Visibility = Visibility.Collapsed;
+    }
+
+    private void OnKeepLink(object sender, RoutedEventArgs e)
+    {
+        UnlinkConfirmPanel.Visibility = Visibility.Collapsed;
+        UnlinkButton.Visibility = Visibility.Visible;
+    }
+
+    private async void OnUnlinkConfirmed(object sender, RoutedEventArgs e)
+    {
+        if (_openKid is not { } cid) return;
+        var s = AppState.Current;
+        UnlinkConfirmPanel.Visibility = Visibility.Collapsed;
+        UnlinkButton.Visibility = Visibility.Visible;
+        try
+        {
+            await ApiClient.Shared.UnlinkChild(s.Uid!, cid, s.Token!);
+            _openKid = null;
+            ControlsCard.Visibility = Visibility.Collapsed;
+            OverviewCard.Visibility = Visibility.Collapsed;
+            UnlinkNote.Text = L10n.T("fam.unlinked.note");
+            UnlinkNote.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            ErrorText.Text = ex.Message;
+            ErrorText.Visibility = Visibility.Visible;
+        }
+        await Reload();
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -151,6 +191,9 @@ public sealed partial class FamilyPage : Page
         _openKid = cid;
         ControlsCard.Visibility = Visibility.Visible;
         ControlsNote.Visibility = Visibility.Collapsed;
+        UnlinkNote.Visibility = Visibility.Collapsed;
+        UnlinkConfirmPanel.Visibility = Visibility.Collapsed;
+        UnlinkButton.Visibility = Visibility.Visible;
         var s = AppState.Current;
         try
         {

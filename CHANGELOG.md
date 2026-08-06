@@ -4,6 +4,59 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.3] — 2026-08-06
+
+### A checker that invents work, for the fourth time
+
+`clientpaths.py` finds a client's requests by looking for the call shapes it
+knows and reading the path out of the arguments. A client is free to write a
+shape nobody taught it, and then the audit reports a working door as missing.
+
+That has now happened four times, and the file records all four: the nested
+template literal, the `<img src>` with no callee, the `reqText` sibling of
+`req`, and Android's direct-connection form. Every one was found the same way
+— somebody went to build a door and found the door already there.
+
+    asked     does the extractor understand the calls it knows about
+    mattered  does the extractor know about all the calls
+
+Every guard-on-guard already in that file checks the first question. This
+round adds one for the second: **every path-shaped literal is either inside a
+call form's arguments, or it is recorded with the reason it is not a request.**
+
+It found `getArray("/goals/$uid", token)` immediately — a private helper in
+this shell's Android client that opens its own connection, so the path sits at
+the caller where no known opener encloses it. Six routes with working Android
+doors had been sitting in `android_doorless.txt`.
+
+Worth being precise about why nothing caught it earlier, because it is the
+reason the new check is positional rather than set-based: those paths were not
+invisible. Each was attributed under its **write** verb, from the
+`request(path, "POST", …)` a few lines away. Only the GET was missing, and a
+check comparing the paths a client mentions against the paths it calls reads
+that as covered.
+
+### The link a guardian could begin and not end
+
+`DELETE /guardians/{guardian_id}/children/{child_id}` was honestly recorded as
+doorless on Android and Windows — no measurement bug, just a missing control
+on two shells out of three.
+
+A guardian link is a standing relationship: one adult able to see another
+person's events, light and escalations. It outlives the reason for it —
+children grow up, custody changes, households end. iOS has been able to end
+one since the link was built. On a phone that is not an iPhone, and on the
+desktop, the person who set it up had nowhere to undo it.
+
+Both shells now have the control, the confirmation, and the sentence saying
+what unlinking does **not** delete: their account, their guardian and their
+own record stay theirs. The six rows come back to those two tables, lifted
+from the iOS wording rather than retyped.
+
+**Android 147 → 140, Windows 141 → 140.** Six of the seven were never missing.
+
+Cut together with QRME and PDI at app-v0.47.3.
+
 ## [0.47.2] — 2026-08-06
 
 ### The sign-out fix nobody carried across
