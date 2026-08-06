@@ -29,10 +29,10 @@ struct FamilyView: View {
                 if let face, !face.children.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Family watch").font(.headline).foregroundStyle(Theme.txt)
+                            Text(L10n.t("fam", state.language)).font(.headline).foregroundStyle(Theme.txt)
                             Spacer()
                             if face.haptic == "alert" {
-                                Text("⌚︎ TAPPED").font(.caption2.bold())
+                                Text(L10n.t("fam.tapped", state.language)).font(.caption2.bold())
                                     .padding(.horizontal, 7).padding(.vertical, 3)
                                     .background(Theme.red.opacity(0.16))
                                     .foregroundStyle(Theme.red).clipShape(Capsule())
@@ -43,13 +43,13 @@ struct FamilyView: View {
                                 Circle().fill(faceLight(c.light)).frame(width: 9, height: 9)
                                 Text(c.display_name).font(.caption.bold()).foregroundStyle(Theme.txt)
                                 if (c.critical_24h ?? 0) > 0 {
-                                    Text("critical").font(.caption2.bold()).foregroundStyle(Theme.red)
+                                    Text(L10n.t("fam.st.critical", state.language)).font(.caption2.bold()).foregroundStyle(Theme.red)
                                 } else if (c.escalations_24h ?? 0) > 0 {
-                                    Text("escalated").font(.caption2).foregroundStyle(Theme.amber)
+                                    Text(L10n.t("fam.st.escalated", state.language)).font(.caption2).foregroundStyle(Theme.amber)
                                 }
                                 Spacer()
                                 if c.paused == true {
-                                    Text("paused").font(.caption2).foregroundStyle(Theme.t3)
+                                    Text(L10n.t("fam.st.paused", state.language)).font(.caption2).foregroundStyle(Theme.t3)
                                 }
                                 if let q = c.quiet_hours {
                                     Text("🌙 \(q)").font(.caption2).foregroundStyle(Theme.t3)
@@ -60,15 +60,15 @@ struct FamilyView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Set up my child").font(.headline).foregroundStyle(Theme.txt)
-                    Text("You enroll as the recorded parent/guardian. The account starts cautious, with you as the emergency contact; cloud sharing stays off. The auto-defib waiver can never be signed for a minor.")
+                    Text(L10n.t("fam.setup", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("fam.enrol", state.language))
                         .font(.caption).foregroundStyle(Theme.t2)
-                    field("child's name", text: $name)
-                    field("birthdate (YYYY-MM-DD)", text: $birthdate)
-                    field("your phone (emergency line, optional)", text: $phone)
+                    field(L10n.t("fam.child.name", state.language), text: $name)
+                    field(L10n.t("fam.child.dob", state.language), text: $birthdate)
+                    field(L10n.t("fam.child.phone", state.language), text: $phone)
                     Button(action: create) {
                         HStack { if busy { ProgressView().tint(.white) }
-                                 Text("Create child account").bold() }
+                                 Text(L10n.t("fam.create", state.language)).bold() }
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                             .background(Theme.brand).foregroundStyle(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -79,10 +79,16 @@ struct FamilyView: View {
 
                 if let created {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Child account created").font(.headline).foregroundStyle(Theme.green)
-                        Text("Oversight: \(created.oversight == "full" ? "full (under 13)" : "alerts only (teen)") · sensitivity: \(created.sensitivity ?? "cautious")")
+                        Text(L10n.t("fam.created", state.language)).font(.headline).foregroundStyle(Theme.green)
+                        Text(L10n.t("fam.oversight", state.language)
+                            .replacingOccurrences(of: "{scope}",
+                                                  with: scopeLabel(created.oversight))
+                             + " · " + L10n.t("fam.sens", state.language)
+                            .replacingOccurrences(of: "{level}", with:
+                                sensitivityLabel(created.sensitivity ?? "cautious",
+                                                 state.language)))
                             .font(.caption).foregroundStyle(Theme.t2)
-                        Text("Device token — shown once, put it on their watch or phone:")
+                        Text(L10n.t("fam.token", state.language))
                             .font(.caption.bold()).foregroundStyle(Theme.amber)
                         Text(created.child_token).font(.caption2.monospaced())
                             .foregroundStyle(Theme.txt).textSelection(.enabled)
@@ -90,7 +96,7 @@ struct FamilyView: View {
                 }
 
                 if !kids.isEmpty {
-                    Text("My family").font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("fam.mine", state.language)).font(.headline).foregroundStyle(Theme.txt)
                     ForEach(kids, id: \.child_id) { kid in
                         Button(action: { open(kid) }) {
                             HStack(spacing: 8) {
@@ -111,16 +117,16 @@ struct FamilyView: View {
 
                 if openKid != nil {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Device controls").font(.subheadline.bold()).foregroundStyle(Theme.txt)
-                        Text("Pause and quiet hours hold everyday guidance only — monitoring, crisis escalation, and the emergency path never pause.")
+                        Text(L10n.t("fam.controls", state.language)).font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                        Text(L10n.t("fam.pause.sub", state.language))
                             .font(.caption2).foregroundStyle(Theme.t3)
-                        Toggle("Pause guidance", isOn: $pauseOn)
+                        Toggle(L10n.t("fam.pause", state.language), isOn: $pauseOn)
                             .font(.subheadline).foregroundStyle(Theme.txt).tint(Theme.amber)
                         HStack(spacing: 8) {
-                            field("quiet start (HH:MM)", text: $quietStart)
-                            field("quiet end (HH:MM)", text: $quietEnd)
+                            field(L10n.t("fam.quiet.start", state.language), text: $quietStart)
+                            field(L10n.t("fam.quiet.end", state.language), text: $quietEnd)
                         }
-                        Button("Apply") { applyControls() }
+                        Button(L10n.t("fam.apply", state.language)) { applyControls() }
                             .font(.caption.bold()).foregroundStyle(.white)
                             .padding(.horizontal, 14).padding(.vertical, 9)
                             .background(Theme.brandA).clipShape(Capsule())
@@ -141,7 +147,7 @@ struct FamilyView: View {
                         // desktop to undo it on.
                         Divider().background(Theme.line)
                         Button(role: .destructive) { unlinking = openKid } label: {
-                            Text("Unlink this child").font(.caption.bold())
+                            Text(L10n.t("fam.unlink.this", state.language)).font(.caption.bold())
                         }
                         if let unlinkNote {
                             Text(unlinkNote).font(.caption2).foregroundStyle(Theme.t2)
@@ -152,16 +158,17 @@ struct FamilyView: View {
                 if let o = overview {
                     VStack(alignment: .leading, spacing: 6) {
                         if let note = o.note {
-                            Text("Oversight ended").font(.headline).foregroundStyle(Theme.txt)
+                            Text(L10n.t("fam.unlinked", state.language)).font(.headline).foregroundStyle(Theme.txt)
                             Text(note).font(.caption).foregroundStyle(Theme.t2)
                         } else {
-                            Text("\(o.display_name ?? "Child") — \(tierLabel(o.oversight))")
+                            Text("\(childName(o)) — \(tierLabel(o.oversight))")
                                 .font(.headline).foregroundStyle(Theme.txt)
                             if let p = o.privacy_note {
                                 Text("🔒 \(p)").font(.caption).foregroundStyle(Theme.amber)
                             }
                             if let n = o.critical_events, n > 0 {
-                                Text("⚠️ \(n) critical event(s)")
+                                Text(L10n.t("fam.critical", state.language)
+                                    .replacingOccurrences(of: "{n}", with: "\(n)"))
                                     .font(.caption.bold()).foregroundStyle(Theme.red)
                             }
                             ForEach(Array((o.events ?? []).enumerated()), id: \.offset) { _, e in
@@ -178,7 +185,7 @@ struct FamilyView: View {
                                 }
                             }
                             if (o.events ?? []).isEmpty {
-                                Text("Nothing in the window — quiet is good news.")
+                                Text(L10n.t("fam.quiet", state.language))
                                     .font(.caption).foregroundStyle(Theme.t2)
                             }
                         }
@@ -190,18 +197,16 @@ struct FamilyView: View {
         // Attached to the ScrollView rather than the button: a
         // confirmationDialog on a row inside a ForEach is dismissed with the
         // row when the list reloads, which is exactly when this one fires.
-        .confirmationDialog("Unlink this child?",
+        .confirmationDialog(L10n.t("fam.unlink.ask", state.language),
                             isPresented: .constant(unlinking != nil),
                             titleVisibility: .visible) {
-            Button("Unlink", role: .destructive) {
+            Button(L10n.t("fam.unlink", state.language), role: .destructive) {
                 if let c = unlinking { unlink(c) }
                 unlinking = nil
             }
-            Button("Keep the link", role: .cancel) { unlinking = nil }
+            Button(L10n.t("fam.keep", state.language), role: .cancel) { unlinking = nil }
         } message: {
-            Text("Their account, their guardian, and their own record are not "
-                 + "deleted — this ends your ability to see their events and "
-                 + "set their controls.")
+            Text(L10n.t("fam.theirs", state.language))
         }
     }
 
@@ -237,11 +242,29 @@ struct FamilyView: View {
         }
     }
 
+    /// A helper rather than the lookup inline, because a table key quoted
+    /// inside a string interpolation ends the enclosing literal as far as the
+    /// ratchet's `Text\(\s*"([^"]+)"` pattern is concerned — it then reports
+    /// the fragment up to that quote as untranslated English. The line was
+    /// localized; the measurement could not see that it was.
+    private func childName(_ o: ChildOverview) -> String {
+        o.display_name ?? L10n.t("fam.child.generic", state.language)
+    }
+
+    /// Each branch resolves on its own line. Folding it into one lookup
+    /// with a ternary key hides both rows from the dead-key guard: its
+    /// ternary pattern stops at the first quote, and the comparison has one.
+    private func scopeLabel(_ oversight: String) -> String {
+        oversight == "full"
+            ? L10n.t("fam.scope.full", state.language)
+            : L10n.t("fam.scope.alerts", state.language)
+    }
+
     private func tierLabel(_ oversight: String) -> String {
         switch oversight {
-        case "full": return "full oversight (under 13)"
-        case "alerts_only": return "alerts only — their daily life stays private"
-        default: return "oversight ended — they're an adult now"
+        case "full": return L10n.t("fam.tier.full", state.language)
+        case "alerts_only": return L10n.t("fam.tier.alerts", state.language)
+        default: return L10n.t("fam.tier.ended", state.language)
         }
     }
 
@@ -282,8 +305,7 @@ struct FamilyView: View {
                 try await ApiClient.shared.unlinkChild(gid: uid, cid: cid,
                                                        token: token)
                 openKid = nil
-                unlinkNote = "Unlinked. Their account and their own record "
-                    + "stay theirs — this ends your view of it."
+                unlinkNote = L10n.t("fam.unlinked.note", state.language)
             } catch { self.error = error.localizedDescription }
             busy = false
             await load()

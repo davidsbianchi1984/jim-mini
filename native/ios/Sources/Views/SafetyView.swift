@@ -483,7 +483,13 @@ private struct PolicySection: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(L10n.t("cw.sensitivity", state.language)).font(.headline).foregroundStyle(Theme.txt)
                 Picker("", selection: $level) {
-                    ForEach(levels, id: \.self) { Text($0.capitalized).tag($0) }
+                    // `capitalized` on the API's own enum member is not a
+                    // label — it reads as English on every shell. Windows has
+                    // asked the table for these three since its dial was
+                    // localized; this shell had never been given the rows.
+                    ForEach(levels, id: \.self) {
+                        Text(sensitivityLabel($0, state.language)).tag($0)
+                    }
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: level) { _ in apply() }

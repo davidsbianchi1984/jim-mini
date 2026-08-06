@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.47.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.47.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.47.2** | **Family and Connect, on all three shells** — the sentence saying the auto-defib waiver can never be signed for a minor was English everywhere, the oversight scope printed the API's own `full`/`alerts_only` on two shells, and the three promises on Connect were arguments to a helper no ratchet could see (386 → 229); plus the PaneFooter sign-out fix QRME made two releases ago |
 | **0.47.1** | **The alarm was localized where it speaks, not where you start it** — the fourteen carved-out `alarm.*` rows cover what the alarm says, and not *"Tap for emergency"*, *"Arm the crash watch"* or the autonomous-resuscitation waiver, because the count they were chosen from could not see a string picked by a ternary; the whole safety surface now localized on all three shells (538 → 386) |
 | **0.47.0** | Version alignment with QRME's native round |
 | **0.46.9** | Version alignment with QRME's native round |

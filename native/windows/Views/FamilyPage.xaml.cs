@@ -16,7 +16,31 @@ public sealed partial class FamilyPage : Page
     private Dictionary<string, string> _kidByLabel = new();
     private string? _openKid;
 
-    public FamilyPage() => InitializeComponent();
+    public FamilyPage()
+    {
+        InitializeComponent();
+        Localize();
+    }
+
+    /// XAML has no table lookup, so every fixed string on this page is
+    /// named above and filled in here.
+    private void Localize()
+    {
+        PageTitle.Text = L10n.T("tab.family");
+        IntroText.Text = L10n.T("fam.intro");
+        ChildName.Header = L10n.T("fam.child.name");
+        ChildBirthdate.Header = L10n.T("fam.child.dob");
+        GuardianPhone.Header = L10n.T("fam.child.phone");
+        CreateButton.Content = L10n.T("fam.create");
+        CreatedTitle.Text = L10n.T("fam.created");
+        TokenLabel.Text = L10n.T("fam.token");
+        ControlsTitle.Text = L10n.T("fam.controls");
+        ControlsSub.Text = L10n.T("fam.pause.sub");
+        PauseToggle.Header = L10n.T("fam.pause");
+        QuietStartBox.Header = L10n.T("fam.quiet.start");
+        QuietEndBox.Header = L10n.T("fam.quiet.end");
+        ApplyButton.Content = L10n.T("fam.apply");
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -24,11 +48,23 @@ public sealed partial class FamilyPage : Page
         await Reload();
     }
 
+    /// Each branch resolves on its own line, rather than picking a key and
+    /// handing it to one lookup: a key that is not a literal argument is a
+    /// key the dead-key guard cannot see being asked for.
     private static string TierLabel(string oversight) => oversight switch
     {
-        "full" => "full oversight (under 13)",
-        "alerts_only" => "alerts only — daily life stays private",
-        _ => "oversight ended — an adult now",
+        "full" => L10n.T("fam.tier.full"),
+        "alerts_only" => L10n.T("fam.tier.alerts"),
+        _ => L10n.T("fam.tier.ended"),
+    };
+
+    /// Literal keys rather than "cw." + the API value, so the dead-key
+    /// guard can see that these three rows are asked for.
+    private static string SensitivityLabel(string? level) => level switch
+    {
+        "cautious" => L10n.T("cw.cautious"),
+        "assertive" => L10n.T("cw.assertive"),
+        _ => L10n.T("cw.balanced"),
     };
 
     private async Task Reload()
@@ -46,7 +82,8 @@ public sealed partial class FamilyPage : Page
             if (face.Children.Length > 0)
             {
                 WatchTitle.Text = face.Haptic == "alert"
-                    ? "Family watch — ⌚ TAPPED" : "Family watch";
+                    ? $"{L10n.T("fam")} — {L10n.T("fam.tapped")}"
+                    : L10n.T("fam");
                 WatchText.Text = string.Join("\n", face.Children.Select(c =>
                 {
                     var dot = c.Light switch
@@ -54,9 +91,12 @@ public sealed partial class FamilyPage : Page
                         "green" => "🟢", "orange" => "🟠", "red" => "🔴",
                         _ => "⚪",
                     };
-                    var extra = c.Critical24h is > 0 ? " · critical"
-                        : c.Escalations24h is > 0 ? " · escalated" : "";
-                    var chips = (c.Paused == true ? " · paused" : "")
+                    var extra = c.Critical24h is > 0
+                        ? $" · {L10n.T("fam.st.critical")}"
+                        : c.Escalations24h is > 0
+                        ? $" · {L10n.T("fam.st.escalated")}" : "";
+                    var chips = (c.Paused == true
+                                 ? $" · {L10n.T("fam.st.paused")}" : "")
                         + (c.QuietHours is { } q ? $" · 🌙 {q}" : "");
                     return $"{dot} {c.DisplayName}{extra}{chips}";
                 }));
@@ -81,7 +121,12 @@ public sealed partial class FamilyPage : Page
             var c = await ApiClient.Shared.EnrollChild(
                 s.Uid!, s.Token!, ChildName.Text.Trim(),
                 ChildBirthdate.Text.Trim(), GuardianPhone.Text.Trim());
-            CreatedMeta.Text = $"Oversight: {c.Oversight} · sensitivity: {c.Sensitivity}";
+            CreatedMeta.Text =
+                L10n.T("fam.oversight").Replace("{scope}",
+                    c.Oversight == "full"
+                        ? L10n.T("fam.scope.full") : L10n.T("fam.scope.alerts"))
+                + " · " + L10n.T("fam.sens")
+                    .Replace("{level}", SensitivityLabel(c.Sensitivity));
             CreatedToken.Text = c.ChildToken;
             CreatedCard.Visibility = Visibility.Visible;
             ChildName.Text = ""; ChildBirthdate.Text = ""; GuardianPhone.Text = "";
@@ -112,22 +157,25 @@ public sealed partial class FamilyPage : Page
             var o = await ApiClient.Shared.ChildOverviewOf(s.Uid!, cid, s.Token!);
             if (o.Note is { } note)
             {
-                OverviewTitle.Text = "Oversight ended";
+                OverviewTitle.Text = L10n.T("fam.unlinked");
                 OverviewText.Text = note;
             }
             else
             {
-                OverviewTitle.Text = $"{o.DisplayName} — {TierLabel(o.Oversight)}";
+                OverviewTitle.Text =
+                    $"{o.DisplayName ?? L10n.T("fam.child.generic")}"
+                    + $" — {TierLabel(o.Oversight)}";
                 var lines = new List<string>();
                 if (o.PrivacyNote is { } p) lines.Add($"🔒 {p}");
                 if (o.CriticalEvents is > 0)
-                    lines.Add($"⚠️ {o.CriticalEvents} critical event(s)");
+                    lines.Add(L10n.T("fam.critical")
+                        .Replace("{n}", $"{o.CriticalEvents}"));
                 foreach (var ev in o.Events ?? Array.Empty<ChildEvent>())
                     lines.Add($"{ev.Type}"
                               + (ev.Condition is { } c ? $" · {c}" : "")
                               + (ev.Severity is { } sv ? $" · {sv.ToUpper()}" : ""));
                 if (lines.Count == 0)
-                    lines.Add("Nothing in the window — quiet is good news.");
+                    lines.Add(L10n.T("fam.quiet"));
                 OverviewText.Text = string.Join("\n", lines);
             }
             OverviewCard.Visibility = Visibility.Visible;
@@ -148,7 +196,7 @@ public sealed partial class FamilyPage : Page
             var r = await ApiClient.Shared.SetFamilyControls(
                 s.Uid!, cid, s.Token!, PauseToggle.IsOn,
                 QuietStartBox.Text.Trim(), QuietEndBox.Text.Trim());
-            ControlsNote.Text = r.Note ?? "applied";
+            ControlsNote.Text = r.Note ?? L10n.T("fam.applied");
             ControlsNote.Visibility = Visibility.Visible;
         }
         catch (Exception ex)

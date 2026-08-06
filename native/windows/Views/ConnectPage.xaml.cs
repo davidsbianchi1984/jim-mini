@@ -25,6 +25,8 @@ public sealed partial class ConnectPage : Page
             Collect ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PublishVisibility =>
             Collect ? Visibility.Collapsed : Visibility.Visible;
+        public string CollectSampleLabel => L10n.T("jcon.collect.sample");
+        public string PublishUpdateLabel => L10n.T("jcon.publish.update");
     }
 
     public sealed class PostureVm
@@ -40,6 +42,7 @@ public sealed partial class ConnectPage : Page
         public string? Url { get; init; }
         public Visibility OpenVisibility =>
             string.IsNullOrEmpty(Url) ? Visibility.Collapsed : Visibility.Visible;
+        public string OpenLabel => L10n.T("jcon.open");
     }
 
     public sealed class PlaceVm
@@ -54,6 +57,7 @@ public sealed partial class ConnectPage : Page
         public string App { get; init; } = "";
         public string Label { get; init; } = "";
         public string Key => $"{Provider}|{App}";
+        public string ConnectLabel => L10n.T("jcon.connect");
     }
 
     public sealed class AppConnVm
@@ -61,6 +65,7 @@ public sealed partial class ConnectPage : Page
         public string Id { get; init; } = "";
         public string Title { get; init; } = "";
         public string App { get; init; } = "";
+        public string CollectLabel => L10n.T("jcon.collect");
     }
 
     private static readonly string[] Platforms =
@@ -73,7 +78,38 @@ public sealed partial class ConnectPage : Page
     private AppConn[] _appConns = Array.Empty<AppConn>();
     private bool _loadingSources;
 
-    public ConnectPage() => InitializeComponent();
+    public ConnectPage()
+    {
+        InitializeComponent();
+        Localize();
+    }
+
+    /// The fixed strings on this page. Row-level labels are not here —
+    /// they are properties on the view models above, because a template
+    /// is stamped once per row and a name addresses only one of them.
+    private void Localize()
+    {
+        SourcesPivot.Header = L10n.T("jcon.tab.sources");
+        SocialPivot.Header = L10n.T("jcon.tab.social");
+        AppsPivot.Header = L10n.T("jcon.tab.apps");
+        CommunityPivot.Header = L10n.T("jcon.community");
+        SourcesTitle.Text = L10n.T("jcon.sources");
+        SourcesSub.Text = L10n.T("jcon.sources.sub");
+        SocialTitle.Text = L10n.T("jcon.social");
+        PlatformBox.Header = L10n.T("jcon.platform");
+        HandleBox.Header = L10n.T("jcon.handle");
+        ConnectCollectButton.Content = L10n.T("jcon.connect.collect");
+        ConnectPublishButton.Content = L10n.T("jcon.connect.publish");
+        AppsTitle.Text = L10n.T("jcon.apps");
+        AppsSub.Text = L10n.T("jcon.apps.sub");
+        CommunityTitle.Text = L10n.T("jcon.community");
+        CommunityNote.Text = L10n.T("jcon.loading");
+        PostureTitle.Text = L10n.T("jcon.notdo");
+        RoomsTitle.Text = L10n.T("jcon.rooms");
+        RoomsEmpty.Text = L10n.T("jcon.rooms.none");
+        NearTitle.Text = L10n.T("jcon.near");
+        PlacesEmpty.Text = L10n.T("jcon.places.none");
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -164,7 +200,8 @@ public sealed partial class ConnectPage : Page
         {
             await ApiClient.Shared.SocialCollect(
                 cid, s.Token!, $"sample post from {conn?.Platform}");
-            ShowSocialStatus($"collected one item from {conn?.Platform}");
+            ShowSocialStatus(L10n.T("jcon.collected.one")
+                .Replace("{platform}", Pretty(conn?.Platform ?? "")));
         }
         catch (Exception ex) { ShowSocialError(ex.Message); }
     }
@@ -178,7 +215,8 @@ public sealed partial class ConnectPage : Page
         {
             await ApiClient.Shared.SocialPublish(
                 cid, s.Token!, "A check-in from my Guardian.");
-            ShowSocialStatus($"published to {conn?.Platform}");
+            ShowSocialStatus(L10n.T("jcon.published")
+                .Replace("{platform}", Pretty(conn?.Platform ?? "")));
         }
         catch (Exception ex) { ShowSocialError(ex.Message); }
     }
@@ -220,7 +258,8 @@ public sealed partial class ConnectPage : Page
         try
         {
             await ApiClient.Shared.AppConnect(s.Uid!, s.Token!, parts[0], parts[1]);
-            ShowAppsStatus($"connected {parts[0]}/{parts[1]}");
+            ShowAppsStatus(L10n.T("jcon.connected")
+                .Replace("{provider}", parts[0]).Replace("{app}", parts[1]));
             await ReloadApps();
         }
         catch (Exception ex) { ShowAppsError(ex.Message); }
@@ -235,7 +274,8 @@ public sealed partial class ConnectPage : Page
         {
             await ApiClient.Shared.AppCollect(
                 cid, s.Token!, $"sample context from {conn?.App}");
-            ShowAppsStatus($"collected from {conn?.App}");
+            ShowAppsStatus(L10n.T("jcon.collected.from")
+                .Replace("{app}", conn?.App ?? ""));
         }
         catch (Exception ex) { ShowAppsError(ex.Message); }
     }
@@ -290,14 +330,14 @@ public sealed partial class ConnectPage : Page
             var v = await ApiClient.Shared.Community(s.Uid, s.Token);
             CommunityNote.Text = v.Note;
             CommunityLanguage.Text = v.Language is { Length: > 0 } lang
-                ? $"Rooms are listed as QRME serves them; you read {lang}."
+                ? L10n.T("jcon.rooms.lang").Replace("{lang}", lang)
                 : "";
 
             PostureList.ItemsSource = new[]
             {
-                Posture("Mirror the conversation here", v.Posture.MirroredHere),
-                Posture("Post on your behalf", v.Posture.PostsOnYourBehalf),
-                Posture("Share your health data", v.Posture.HealthDataShared),
+                Posture(L10n.T("jcon.posture.mirror"), v.Posture.MirroredHere),
+                Posture(L10n.T("jcon.posture.post"), v.Posture.PostsOnYourBehalf),
+                Posture(L10n.T("jcon.posture.health"), v.Posture.HealthDataShared),
             };
 
             var rooms = v.Rooms.Select(r => new RoomVm
@@ -329,7 +369,8 @@ public sealed partial class ConnectPage : Page
     {
         var bits = new System.Collections.Generic.List<string>();
         if (!string.IsNullOrEmpty(room.Channel)) bits.Add(room.Channel!);
-        if (room.Participants > 0) bits.Add($"{room.Participants} here");
+        if (room.Participants > 0)
+            bits.Add(L10n.T("jcon.here").Replace("{n}", $"{room.Participants}"));
         return bits.Count == 0 ? room.Id : string.Join(" · ", bits);
     }
 
@@ -348,8 +389,7 @@ public sealed partial class ConnectPage : Page
             try
             {
                 await ApiClient.Shared.NoteCommunityVisit(s.Uid, s.Token, roomId);
-                VisitStatus.Text = $"Noted that you opened {roomId} — the visit, "
-                                 + "and nothing from inside it.";
+                VisitStatus.Text = L10n.T("jcon.noted").Replace("{room}", roomId);
                 VisitStatus.Visibility = Visibility.Visible;
             }
             catch (Exception ex) { ShowCommunityError(ex.Message); }

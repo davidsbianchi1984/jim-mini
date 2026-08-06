@@ -4,14 +4,29 @@ import SwiftUI
 /// connections, the connected-apps catalog, and the door out to QRME's
 /// community — behind one tab.
 struct ConnectView: View {
-    enum Tab: String, CaseIterable { case sources = "Sources", social = "Social", apps = "Apps", community = "Community", me = "Me" }
+    enum Tab: String, CaseIterable {
+        case sources, social, apps, community, me
+
+        func label(_ lang: String) -> String {
+            switch self {
+            case .sources: return L10n.t("jcon.tab.sources", lang)
+            case .social: return L10n.t("jcon.tab.social", lang)
+            case .apps: return L10n.t("jcon.tab.apps", lang)
+            case .community: return L10n.t("jcon.community", lang)
+            case .me: return L10n.t("jcon.tab.me", lang)
+            }
+        }
+    }
+    @EnvironmentObject var state: AppState
     @State private var tab: Tab = .sources
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Picker("", selection: $tab) {
-                    ForEach(Tab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    ForEach(Tab.allCases, id: \.self) {
+                        Text($0.label(state.language)).tag($0)
+                    }
                 }.pickerStyle(.segmented)
 
                 switch tab {
@@ -40,8 +55,8 @@ private struct SourcesSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Data sources").font(.headline).foregroundStyle(Theme.txt)
-            Text("JIM sees what you allow — flip a source off and it stops being read, immediately.")
+            Text(L10n.t("jcon.sources", state.language)).font(.headline).foregroundStyle(Theme.txt)
+            Text(L10n.t("jcon.sources.sub", state.language))
                 .font(.caption).foregroundStyle(Theme.t2)
             ForEach(rows, id: \.source) { row in
                 Toggle(isOn: Binding(
@@ -86,18 +101,18 @@ private struct SocialSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Social platforms").font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("jcon.social", state.language)).font(.headline).foregroundStyle(Theme.txt)
                 Picker("", selection: $platform) {
                     ForEach(platforms, id: \.self) { Text($0.capitalized).tag($0) }
                 }.pickerStyle(.menu).tint(Theme.brandA)
-                TextField("handle (optional)", text: $handle)
+                TextField(L10n.t("jcon.handle", state.language), text: $handle)
                     .foregroundStyle(Theme.txt).textInputAutocapitalization(.never)
                     .padding(10).background(Theme.scrBot)
                     .clipShape(RoundedRectangle(cornerRadius: 11))
                     .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
                 HStack(spacing: 8) {
-                    smallButton("Connect to collect") { connect("collect") }
-                    smallButton("Connect to publish") { connect("publish") }
+                    smallButton(L10n.t("jcon.connect.collect", state.language)) { connect("collect") }
+                    smallButton(L10n.t("jcon.connect.publish", state.language)) { connect("publish") }
                 }
             }.card()
 
@@ -114,9 +129,9 @@ private struct SocialSection: View {
                     }
                     HStack(spacing: 8) {
                         if c.direction == "collect" {
-                            smallButton("Collect sample") { collect(c) }
+                            smallButton(L10n.t("jcon.collect.sample", state.language)) { collect(c) }
                         } else {
-                            smallButton("Publish update") { publish(c) }
+                            smallButton(L10n.t("jcon.publish.update", state.language)) { publish(c) }
                         }
                     }
                 }.card()
@@ -157,7 +172,8 @@ private struct SocialSection: View {
             do {
                 try await ApiClient.shared.socialCollect(
                     cid: c.id, token: token, content: "sample post from \(c.platform)")
-                status = "collected one item from \(c.platform)"
+                status = L10n.t("jcon.collected.one", state.language)
+                    .replacingOccurrences(of: "{platform}", with: c.platform.capitalized)
             } catch { self.error = error.localizedDescription }
         }
     }
@@ -168,7 +184,8 @@ private struct SocialSection: View {
             do {
                 try await ApiClient.shared.socialPublish(
                     cid: c.id, token: token, content: "A check-in from my Guardian.")
-                status = "published to \(c.platform)"
+                status = L10n.t("jcon.published", state.language)
+                    .replacingOccurrences(of: "{platform}", with: c.platform.capitalized)
             } catch { self.error = error.localizedDescription }
         }
     }
@@ -186,15 +203,15 @@ private struct AppsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Connected apps").font(.headline).foregroundStyle(Theme.txt)
-                Text("Apple, Google, Microsoft, and Canva apps the Guardian can collect from and act through.")
+                Text(L10n.t("jcon.apps", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("jcon.apps.sub", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
                 ForEach(flat.prefix(10), id: \.app) { entry in
                     HStack {
                         Text(entry.label).font(.subheadline).foregroundStyle(Theme.txt)
                         Text(entry.provider).font(.caption).foregroundStyle(Theme.t3)
                         Spacer()
-                        Button("Connect") { connect(entry.provider, entry.app) }
+                        Button(L10n.t("jcon.connect", state.language)) { connect(entry.provider, entry.app) }
                             .font(.caption.bold()).foregroundStyle(Theme.brandA)
                     }
                 }
@@ -208,7 +225,7 @@ private struct AppsSection: View {
                     Text("\(c.provider) · \(c.app)")
                         .font(.subheadline.bold()).foregroundStyle(Theme.txt)
                     Spacer()
-                    Button("Collect") { collect(c) }
+                    Button(L10n.t("jcon.collect", state.language)) { collect(c) }
                         .font(.caption.bold()).foregroundStyle(Theme.brandA)
                 }.card()
             }
@@ -233,7 +250,9 @@ private struct AppsSection: View {
             do {
                 _ = try await ApiClient.shared.appConnect(
                     uid: uid, token: token, provider: provider, app: app)
-                status = "connected \(provider)/\(app)"
+                status = L10n.t("jcon.connected", state.language)
+                    .replacingOccurrences(of: "{provider}", with: provider)
+                    .replacingOccurrences(of: "{app}", with: app)
             } catch { self.error = error.localizedDescription }
             await load()
         }
@@ -245,7 +264,8 @@ private struct AppsSection: View {
             do {
                 try await ApiClient.shared.appCollect(
                     cid: c.id, token: token, content: "sample context from \(c.app)")
-                status = "collected from \(c.app)"
+                status = L10n.t("jcon.collected.from", state.language)
+                    .replacingOccurrences(of: "{app}", with: c.app)
             } catch { self.error = error.localizedDescription }
         }
     }
@@ -271,33 +291,36 @@ private struct CommunitySection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Community").font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("jcon.community", state.language)).font(.headline).foregroundStyle(Theme.txt)
                 if let v = view {
                     Text(v.note).font(.caption).foregroundStyle(Theme.t2)
                     if let lang = v.language {
-                        Text("Rooms are listed as QRME serves them; you read \(lang).")
+                        Text(L10n.t("jcon.rooms.lang", state.language)
+                            .replacingOccurrences(of: "{lang}", with: lang))
                             .font(.caption2).foregroundStyle(Theme.t3)
                     }
                 } else {
-                    Text("Loading the door…").font(.caption).foregroundStyle(Theme.t3)
+                    Text(L10n.t("jcon.loading", state.language)).font(.caption).foregroundStyle(Theme.t3)
                 }
             }.card()
 
             if let v = view {
                 // The posture, from the server's booleans rather than prose.
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("What JIM does not do").font(.subheadline.bold())
+                    Text(L10n.t("jcon.notdo", state.language)).font(.subheadline.bold())
                         .foregroundStyle(Theme.txt)
-                    postureRow("Mirror the conversation here", v.posture.mirrored_here)
-                    postureRow("Post on your behalf", v.posture.posts_on_your_behalf)
-                    postureRow("Share your health data", v.posture.health_data_shared)
+                    postureRow(L10n.t("jcon.posture.mirror", state.language),
+                               v.posture.mirrored_here)
+                    postureRow(L10n.t("jcon.posture.post", state.language),
+                               v.posture.posts_on_your_behalf)
+                    postureRow(L10n.t("jcon.posture.health", state.language),
+                               v.posture.health_data_shared)
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Rooms").font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                    Text(L10n.t("jcon.rooms", state.language)).font(.subheadline.bold()).foregroundStyle(Theme.txt)
                     if v.rooms.isEmpty {
-                        Text("No rooms open right now. A community shelf that "
-                             + "cannot load is a quiet screen, not an error.")
+                        Text(L10n.t("jcon.rooms.none", state.language))
                             .font(.caption).foregroundStyle(Theme.t3)
                     }
                     ForEach(v.rooms) { room in
@@ -310,7 +333,7 @@ private struct CommunitySection: View {
                             }
                             Spacer()
                             if let raw = room.url, let url = URL(string: raw) {
-                                Link("Open", destination: url)
+                                Link(L10n.t("jcon.open", state.language), destination: url)
                                     .font(.caption.bold()).foregroundStyle(Theme.brandA)
                                     .simultaneousGesture(TapGesture().onEnded {
                                         note(room.id)
@@ -321,9 +344,9 @@ private struct CommunitySection: View {
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Near you").font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                    Text(L10n.t("jcon.near", state.language)).font(.subheadline.bold()).foregroundStyle(Theme.txt)
                     if v.places.isEmpty {
-                        Text("No places claimed yet.").font(.caption)
+                        Text(L10n.t("jcon.places.none", state.language)).font(.caption)
                             .foregroundStyle(Theme.t3)
                     }
                     ForEach(v.places) { place in
@@ -341,8 +364,8 @@ private struct CommunitySection: View {
             }
 
             if let opened {
-                Text("Noted that you opened \(opened) — the visit, and nothing "
-                     + "from inside it.")
+                Text(L10n.t("jcon.noted", state.language)
+                        .replacingOccurrences(of: "{room}", with: opened))
                     .font(.caption).foregroundStyle(Theme.green)
             }
             if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
@@ -361,7 +384,10 @@ private struct CommunitySection: View {
     private func roomDetail(_ room: CommunityRoom) -> String {
         var bits: [String] = []
         if let channel = room.channel { bits.append(channel) }
-        if let heads = room.participants { bits.append("\(heads) here") }
+        if let heads = room.participants {
+            bits.append(L10n.t("jcon.here", state.language)
+                .replacingOccurrences(of: "{n}", with: "\(heads)"))
+        }
         return bits.isEmpty ? room.id : bits.joined(separator: " · ")
     }
 

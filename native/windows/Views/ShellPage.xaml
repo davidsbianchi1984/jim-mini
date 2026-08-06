@@ -9,39 +9,39 @@
                     PaneDisplayMode="Left" SelectionChanged="OnSelectionChanged"
                     Background="{StaticResource JimScrBotBrush}">
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="Overview" Tag="overview" IsSelected="True">
+            <NavigationViewItem Tag="overview" IsSelected="True">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Home" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Live Monitoring" Tag="monitor">
+            <NavigationViewItem Tag="monitor">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Important" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Check-in" Tag="checkin">
+            <NavigationViewItem Tag="checkin">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Emoji2" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Coach" Tag="coach">
+            <NavigationViewItem Tag="coach">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Message" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Life" Tag="life">
+            <NavigationViewItem Tag="life">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Flag" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Safety" Tag="safety">
+            <NavigationViewItem Tag="safety">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="ReportHacked" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Connect" Tag="connect">
+            <NavigationViewItem Tag="connect">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Link" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Vault Custody" Tag="custody">
+            <NavigationViewItem Tag="custody">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Permissions" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Family" Tag="family">
+            <NavigationViewItem Tag="family">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="People" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Me" Tag="self">
+            <NavigationViewItem Tag="self">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Contact" /></NavigationViewItem.Icon>
             </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>
-            <Button Content="Sign out" Margin="12" Click="OnSignOut"
+            <Button x:Name="SignOutButton" Margin="12" Click="OnSignOut"
                     Foreground="{StaticResource JimT2Brush}" Background="Transparent" />
         </NavigationView.PaneFooter>
         <Frame x:Name="ContentFrame" />

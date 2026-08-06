@@ -7,18 +7,18 @@
 
     <ScrollViewer>
         <StackPanel MaxWidth="680" Spacing="16" Padding="28" HorizontalAlignment="Left">
-            <TextBlock Text="Family" FontSize="22" FontWeight="Bold"
+            <TextBlock x:Name="PageTitle" FontSize="22" FontWeight="Bold"
                        Foreground="{StaticResource JimTxtBrush}" />
-            <TextBlock Text="Set up your child's account. You enroll as the recorded parent/guardian; the account starts cautious, with you as the emergency contact, and cloud sharing stays off. The auto-defib waiver can never be signed for a minor. Oversight is sized by age — full under 13, alerts-only for teens — and ends by itself at 18."
+            <TextBlock x:Name="IntroText"
                        Foreground="{StaticResource JimT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <TextBox x:Name="ChildName" Header="Child's name" />
-                    <TextBox x:Name="ChildBirthdate" Header="Birthdate (YYYY-MM-DD)" />
-                    <TextBox x:Name="GuardianPhone" Header="Your phone (emergency line, optional)" />
-                    <Button x:Name="CreateButton" Content="Create child account" Height="42"
+                    <TextBox x:Name="ChildName" />
+                    <TextBox x:Name="ChildBirthdate" />
+                    <TextBox x:Name="GuardianPhone" />
+                    <Button x:Name="CreateButton" Height="42"
                             HorizontalAlignment="Stretch" Click="OnCreate"
                             Foreground="White" Background="{StaticResource JimBrandABrush}" />
                 </StackPanel>
@@ -31,11 +31,11 @@
                     BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
                     CornerRadius="16" Padding="16" Visibility="Collapsed">
                 <StackPanel Spacing="4">
-                    <TextBlock Text="Child account created" FontWeight="Bold"
+                    <TextBlock x:Name="CreatedTitle" FontWeight="Bold"
                                Foreground="{StaticResource JimGreenBrush}" />
                     <TextBlock x:Name="CreatedMeta" FontSize="12"
                                Foreground="{StaticResource JimT2Brush}" TextWrapping="Wrap" />
-                    <TextBlock Text="Device token — shown once, put it on their watch or phone:"
+                    <TextBlock x:Name="TokenLabel"
                                FontSize="12" FontWeight="Bold"
                                Foreground="{StaticResource JimAmberBrush}" />
                     <TextBlock x:Name="CreatedToken" FontSize="11" TextWrapping="Wrap"
@@ -48,7 +48,7 @@
                     BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
                     CornerRadius="16" Padding="16" Visibility="Collapsed">
                 <StackPanel Spacing="4">
-                    <TextBlock x:Name="WatchTitle" Text="Family watch" FontWeight="Bold"
+                    <TextBlock x:Name="WatchTitle" FontWeight="Bold"
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="WatchText" FontSize="12" TextWrapping="Wrap"
                                Foreground="{StaticResource JimT2Brush}" />
@@ -61,18 +61,18 @@
                     BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
                     CornerRadius="16" Padding="16" Visibility="Collapsed">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Device controls" FontWeight="Bold"
+                    <TextBlock x:Name="ControlsTitle" FontWeight="Bold"
                                Foreground="{StaticResource JimTxtBrush}" />
-                    <TextBlock Text="Pause and quiet hours hold everyday guidance only — monitoring, crisis escalation, and the emergency path never pause."
+                    <TextBlock x:Name="ControlsSub"
                                FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource JimT2Brush}" />
-                    <ToggleSwitch x:Name="PauseToggle" Header="Pause guidance"
+                    <ToggleSwitch x:Name="PauseToggle"
                                   Foreground="{StaticResource JimTxtBrush}" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBox x:Name="QuietStartBox" Header="Quiet start (HH:MM)" Width="180" />
-                        <TextBox x:Name="QuietEndBox" Header="Quiet end (HH:MM)" Width="180" />
+                        <TextBox x:Name="QuietStartBox" Width="180" />
+                        <TextBox x:Name="QuietEndBox" Width="180" />
                     </StackPanel>
-                    <Button Content="Apply" Click="OnApplyControls"
+                    <Button x:Name="ApplyButton" Click="OnApplyControls"
                             Background="{StaticResource JimBrandABrush}" Foreground="White" />
                     <TextBlock x:Name="ControlsNote" FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource JimGreenBrush}" Visibility="Collapsed" />

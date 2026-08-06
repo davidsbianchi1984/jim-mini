@@ -20,6 +20,13 @@ public sealed partial class ShellPage : Page
         foreach (var entry in Nav.MenuItems)
             if (entry is NavigationViewItem nvi && nvi.Tag is string tag)
                 nvi.Content = L10n.T($"tab.{tag}");
+        // Not a menu item: this one sits in the pane footer, which the loop
+        // above does not walk. It said "Sign out" in every language until this
+        // round — and the sibling product found and fixed exactly this two
+        // releases ago, in its own copy of this file, and nobody carried the
+        // check across. The row has been in this repo's table all along;
+        // Android has been using it.
+        SignOutButton.Content = L10n.T("action.sign_out");
     }
 
     private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

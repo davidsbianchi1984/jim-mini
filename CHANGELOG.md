@@ -4,6 +4,75 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.2] — 2026-08-06
+
+### The sign-out fix nobody carried across
+
+QRME found this exact bug two releases ago and fixed it in its own copy of
+this file: the Windows shell's **Sign out** sits in `NavigationView.PaneFooter`
+and the loop that localizes the nav walks `Nav.MenuItems`, which the footer is
+not one of. It said *Sign out* in every language.
+
+Android has been asking for `action.sign_out` all along. Windows was not, and
+its table did not even hold the row — so wiring the call was not enough on its
+own. Both are fixed.
+
+    asked     is the nav localized
+    mattered  is every control in the nav localized
+
+### Family, on all three shells at once
+
+Family is where a parent enrols a child, chooses how much of that child's
+record they get to see, and reads the sentence saying **the auto-defib waiver
+can never be signed for a minor**. That sentence was English on every shell.
+
+So were the oversight tiers, the device controls, the pause-and-quiet-hours
+paragraph promising that monitoring and crisis escalation never pause, the
+unlink confirmation, and the line saying an unlinked child keeps their own
+account and their own record.
+
+The scope on the card confirming a new child's account was worse than English
+on two of the three: Android and Windows printed the API's own enum member,
+`full` and `alerts_only`, raw, on a parent's screen. So did the sensitivity —
+which iOS and Android were also rendering by capitalizing the wire value on
+the Safety dial, three rounds after Windows started asking the table for those
+same three words.
+
+### Connect, and three promises no measurement could see
+
+Connect is the door out to QRME's community rather than a second copy of it,
+and the three promises that make that true — *Mirror the conversation here*,
+*Post on your behalf*, *Share your health data* — were arguments to a helper
+rather than the first thing inside a `Text(`, so no ratchet on any shell could
+ever have counted them.
+
+The tab strip above them was the other shape: on iOS the English lived in an
+enum's raw values, in a `case` clause, where nothing looks.
+
+**386 → 229.** iOS 113 → 70, Android 113 → 75, Windows 136 → 84.
+
+### Every key named where a guard can see it
+
+Four shapes of key were quietly invisible to the dead-key guard, and all four
+are the dangerous direction — a guard that calls a live row dead is what
+invites somebody to delete a row a screen is using:
+
+* a key assembled at runtime (`"cw." + level`);
+* a key chosen by a `switch`/`when` and handed to one lookup;
+* a key chosen by a ternary whose condition contains a quote;
+* a key passed to a helper as a bare literal.
+
+Each branch now resolves on its own line, and the helpers take the finished
+sentence rather than the key.
+
+### Still open, and named
+
+Windows and Android have no way to end a guardian link; only iOS does. Three
+more pickers render an enum's raw values, on Care, Life and Safety. Both
+belong to the rounds that take those screens.
+
+Cut together with QRME and PDI at app-v0.47.2.
+
 ## [0.47.1] — 2026-08-06
 
 ### The alarm was localized where it speaks, not where you start it

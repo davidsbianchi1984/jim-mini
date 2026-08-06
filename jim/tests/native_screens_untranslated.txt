@@ -60,6 +60,31 @@
 # emergency* on the desktop, and the escalation-floor sentence dropped the
 # word *language* on one shell out of three.
 
-ios: 113
-android: 113
-windows: 136
+# **0.47.2 — Family and Connect, on all three shells at once.**
+#
+# Family is where a parent enrols a child, picks how much of that child's
+# record they get to see, and reads the sentence saying the auto-defibrillation
+# waiver can never be signed for a minor. That sentence was English on every
+# shell. So were the oversight tiers, and so was the scope on the card that
+# confirms a new child's account — which on Android and Windows was not even
+# English but the API's own enum member, `full` and `alerts_only`, printed raw
+# on a parent's screen.
+#
+# Connect is the door out to QRME's community, and the three promises on it —
+# *Mirror the conversation here*, *Post on your behalf*, *Share your health
+# data* — were arguments to a helper rather than the first thing in a `Text(`,
+# so no ratchet on any shell could ever have counted them.
+#
+#     asked     is the wording on the screen in the table
+#     mattered  can the measurement see the wording at all
+#
+# Two more of the same shape came off with them: the sensitivity dial rendered
+# `cautious`/`balanced`/`assertive` by capitalizing the API value on iOS and
+# Android (Windows has asked the table for those three rows for rounds), and
+# ConnectView's tab strip rendered an enum's raw values, where English lives in
+# a `case` clause no pattern here looks at. Three more such enums remain, on
+# Care, Life and Safety, and they belong to the rounds that take those screens.
+
+ios: 70
+android: 75
+windows: 84

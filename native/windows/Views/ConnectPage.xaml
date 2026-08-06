@@ -8,15 +8,15 @@
     <Pivot MaxWidth="680" Margin="20,12" Foreground="{StaticResource JimTxtBrush}">
 
         <!-- Sources: consented data feeds -->
-        <PivotItem Header="Sources">
+        <PivotItem x:Name="SourcesPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Data sources" FontWeight="Bold" FontSize="16"
+                            <TextBlock x:Name="SourcesTitle" FontWeight="Bold" FontSize="16"
                                        Foreground="{StaticResource JimTxtBrush}" />
-                            <TextBlock Text="JIM sees what you allow — flip a source off and it stops being read, immediately."
+                            <TextBlock x:Name="SourcesSub"
                                        FontSize="12" TextWrapping="Wrap"
                                        Foreground="{StaticResource JimT2Brush}" />
                             <ItemsControl x:Name="SourcesList">
@@ -43,20 +43,20 @@
         </PivotItem>
 
         <!-- Social platform connections -->
-        <PivotItem Header="Social">
+        <PivotItem x:Name="SocialPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <TextBlock Text="Social platforms" FontWeight="Bold" FontSize="16"
+                            <TextBlock x:Name="SocialTitle" FontWeight="Bold" FontSize="16"
                                        Foreground="{StaticResource JimTxtBrush}" />
-                            <ComboBox x:Name="PlatformBox" Header="Platform" HorizontalAlignment="Stretch" />
-                            <TextBox x:Name="HandleBox" Header="Handle (optional)" />
+                            <ComboBox x:Name="PlatformBox" HorizontalAlignment="Stretch" />
+                            <TextBox x:Name="HandleBox" />
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Content="Connect to collect" Click="OnConnectCollect"
+                                <Button x:Name="ConnectCollectButton" Click="OnConnectCollect"
                                         Background="{StaticResource JimBrandABrush}" Foreground="White" />
-                                <Button Content="Connect to publish" Click="OnConnectPublish"
+                                <Button x:Name="ConnectPublishButton" Click="OnConnectPublish"
                                         Background="{StaticResource JimBrandABrush}" Foreground="White" />
                             </StackPanel>
                         </StackPanel>
@@ -82,10 +82,10 @@
                                                        Foreground="{StaticResource JimT2Brush}" />
                                         </Grid>
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <Button Content="Collect sample" Tag="{Binding Id}" Click="OnCollect"
+                                            <Button Content="{Binding CollectSampleLabel}" Tag="{Binding Id}" Click="OnCollect"
                                                     Visibility="{Binding CollectVisibility}"
                                                     Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
-                                            <Button Content="Publish update" Tag="{Binding Id}" Click="OnPublish"
+                                            <Button Content="{Binding PublishUpdateLabel}" Tag="{Binding Id}" Click="OnPublish"
                                                     Visibility="{Binding PublishVisibility}"
                                                     Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
                                         </StackPanel>
@@ -99,15 +99,15 @@
         </PivotItem>
 
         <!-- Connected-apps catalog -->
-        <PivotItem Header="Apps">
+        <PivotItem x:Name="AppsPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Connected apps" FontWeight="Bold" FontSize="16"
+                            <TextBlock x:Name="AppsTitle" FontWeight="Bold" FontSize="16"
                                        Foreground="{StaticResource JimTxtBrush}" />
-                            <TextBlock Text="Apple, Google, Microsoft, and Canva apps the Guardian can collect from and act through."
+                            <TextBlock x:Name="AppsSub"
                                        FontSize="12" TextWrapping="Wrap"
                                        Foreground="{StaticResource JimT2Brush}" />
                             <ItemsControl x:Name="CatalogList">
@@ -124,7 +124,7 @@
                                                 <TextBlock Text="{Binding Provider}" FontSize="11"
                                                            Foreground="{StaticResource JimT2Brush}" />
                                             </StackPanel>
-                                            <Button Grid.Column="1" Content="Connect" Tag="{Binding Key}"
+                                            <Button Grid.Column="1" Content="{Binding ConnectLabel}" Tag="{Binding Key}"
                                                     Click="OnAppConnect" VerticalAlignment="Center"
                                                     Background="Transparent" FontSize="12"
                                                     Foreground="{StaticResource JimBrandABrush}" />
@@ -150,7 +150,7 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text="{Binding Title}" FontWeight="Bold" VerticalAlignment="Center"
                                                    Foreground="{StaticResource JimTxtBrush}" />
-                                        <Button Grid.Column="1" Content="Collect" Tag="{Binding Id}"
+                                        <Button Grid.Column="1" Content="{Binding CollectLabel}" Tag="{Binding Id}"
                                                 Click="OnAppCollect" Background="Transparent" FontSize="12"
                                                 Foreground="{StaticResource JimBrandABrush}" />
                                     </Grid>
@@ -163,17 +163,16 @@
         </PivotItem>
 
         <!-- The community door (FIG. 2 boxes 222-226) -->
-        <PivotItem Header="Community">
+        <PivotItem x:Name="CommunityPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Community" FontWeight="Bold" FontSize="16"
+                            <TextBlock x:Name="CommunityTitle" FontWeight="Bold" FontSize="16"
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <TextBlock x:Name="CommunityNote" FontSize="12" TextWrapping="Wrap"
-                                       Foreground="{StaticResource JimT2Brush}"
-                                       Text="Loading the door…" />
+                                       Foreground="{StaticResource JimT2Brush}" />
                             <TextBlock x:Name="CommunityLanguage" FontSize="11" TextWrapping="Wrap"
                                        Foreground="{StaticResource JimT3Brush}" />
                         </StackPanel>
@@ -182,7 +181,7 @@
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="What JIM does not do" FontWeight="Bold" FontSize="14"
+                            <TextBlock x:Name="PostureTitle" FontWeight="Bold" FontSize="14"
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <!-- Rendered from the server's own booleans rather than
                                  retyped as reassurance, so this cannot drift from
@@ -201,11 +200,10 @@
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Rooms" FontWeight="Bold" FontSize="14"
+                            <TextBlock x:Name="RoomsTitle" FontWeight="Bold" FontSize="14"
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <TextBlock x:Name="RoomsEmpty" FontSize="12" Visibility="Collapsed"
-                                       TextWrapping="Wrap" Foreground="{StaticResource JimT3Brush}"
-                                       Text="No rooms open right now. A community shelf that cannot load is a quiet screen, not an error." />
+                                       TextWrapping="Wrap" Foreground="{StaticResource JimT3Brush}" />
                             <ItemsControl x:Name="RoomList">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -220,7 +218,7 @@
                                                 <TextBlock Text="{Binding Detail}" FontSize="11"
                                                            Foreground="{StaticResource JimT3Brush}" />
                                             </StackPanel>
-                                            <Button Grid.Column="1" Content="Open" Tag="{Binding Id}"
+                                            <Button Grid.Column="1" Content="{Binding OpenLabel}" Tag="{Binding Id}"
                                                     Click="OnOpenRoom" VerticalAlignment="Center"
                                                     Visibility="{Binding OpenVisibility}"
                                                     Background="Transparent" FontSize="12"
@@ -235,11 +233,10 @@
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Near you" FontWeight="Bold" FontSize="14"
+                            <TextBlock x:Name="NearTitle" FontWeight="Bold" FontSize="14"
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <TextBlock x:Name="PlacesEmpty" FontSize="12" Visibility="Collapsed"
-                                       Foreground="{StaticResource JimT3Brush}"
-                                       Text="No places claimed yet." />
+                                       Foreground="{StaticResource JimT3Brush}" />
                             <ItemsControl x:Name="PlaceList">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>

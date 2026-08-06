@@ -1381,7 +1381,8 @@ private fun PolicyPanel(vm: GuardianViewModel) {
                         onClick = {
                             vm.call({ ApiClient.setSensitivity(vm.uid!!, vm.token!!, lvl) }) { reload() }
                         },
-                        label = { Text(lvl.replaceFirstChar { it.uppercase() }, fontSize = 12.sp) },
+                        // Capitalizing the API's own enum member is not a label.
+                        label = { Text(sensitivityLabel(lvl, vm.language), fontSize = 12.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Jim.BrandA,
                             selectedLabelColor = Color.White, labelColor = Jim.T2,
@@ -2081,10 +2082,10 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Family watch", color = Jim.Txt, fontSize = 14.sp,
+                    Text(L10n.t("fam", vm.language), color = Jim.Txt, fontSize = 14.sp,
                         fontWeight = FontWeight.Bold)
                     if (f.haptic == "alert")
-                        Text("⌚ TAPPED", color = Jim.Red, fontSize = 11.sp,
+                        Text(L10n.t("fam.tapped", vm.language), color = Jim.Red, fontSize = 11.sp,
                             fontWeight = FontWeight.Bold)
                 }
                 f.children.forEach { c ->
@@ -2102,14 +2103,14 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                             Text(c.displayName, color = Jim.Txt, fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold)
                             if (c.critical24h > 0)
-                                Text("critical", color = Jim.Red, fontSize = 10.sp,
+                                Text(L10n.t("fam.st.critical", vm.language), color = Jim.Red, fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold)
                             else if (c.escalations24h > 0)
-                                Text("escalated", color = Jim.Amber, fontSize = 10.sp)
+                                Text(L10n.t("fam.st.escalated", vm.language), color = Jim.Amber, fontSize = 10.sp)
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             if (c.paused)
-                                Text("paused", color = Jim.T3, fontSize = 10.sp)
+                                Text(L10n.t("fam.st.paused", vm.language), color = Jim.T3, fontSize = 10.sp)
                             c.quietHours?.let {
                                 Text("🌙 $it", color = Jim.T3, fontSize = 10.sp)
                             }
@@ -2120,19 +2121,17 @@ private fun FamilyPanel(vm: GuardianViewModel) {
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Set up my child", color = Jim.Txt, fontSize = 16.sp,
+            Text(L10n.t("fam.setup", vm.language), color = Jim.Txt, fontSize = 16.sp,
                 fontWeight = FontWeight.Bold)
-            Text("You enroll as the recorded parent/guardian. The account " +
-                 "starts cautious, with you as the emergency contact; cloud " +
-                 "sharing stays off. The auto-defib waiver can never be " +
-                 "signed for a minor.", color = Jim.T2, fontSize = 12.sp)
+            Text(L10n.t("fam.enrol", vm.language), color = Jim.T2, fontSize = 12.sp)
             OutlinedTextField(value = name, onValueChange = { name = it },
-                label = { Text("Child's name") }, modifier = Modifier.fillMaxWidth())
+                label = { Text(L10n.t("fam.child.name", vm.language)) },
+                modifier = Modifier.fillMaxWidth())
             OutlinedTextField(value = birthdate, onValueChange = { birthdate = it },
-                label = { Text("Birthdate (YYYY-MM-DD)") },
+                label = { Text(L10n.t("fam.child.dob", vm.language)) },
                 modifier = Modifier.fillMaxWidth())
             OutlinedTextField(value = phone, onValueChange = { phone = it },
-                label = { Text("Your phone (emergency line, optional)") },
+                label = { Text(L10n.t("fam.child.phone", vm.language)) },
                 modifier = Modifier.fillMaxWidth())
             Button(onClick = {
                 error = null
@@ -2144,17 +2143,24 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                 }
             }, enabled = name.isNotBlank() && birthdate.isNotBlank(),
                 modifier = Modifier.fillMaxWidth()) {
-                Text("Create child account")
+                Text(L10n.t("fam.create", vm.language))
             }
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
         created?.let { c ->
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text("Child account created", color = Jim.Green, fontSize = 14.sp,
+                Text(L10n.t("fam.created", vm.language), color = Jim.Green, fontSize = 14.sp,
                     fontWeight = FontWeight.Bold)
-                Text("Oversight: ${c.oversight} · sensitivity: ${c.sensitivity}",
+                Text(L10n.t("fam.oversight", vm.language)
+                        .replace("{scope}",
+                            if (c.oversight == "full")
+                                L10n.t("fam.scope.full", vm.language)
+                            else L10n.t("fam.scope.alerts", vm.language)) +
+                     " · " + L10n.t("fam.sens", vm.language)
+                        .replace("{level}",
+                            sensitivityLabel(c.sensitivity ?: "cautious", vm.language)),
                     color = Jim.T2, fontSize = 12.sp)
-                Text("Device token — shown once, put it on their watch or phone:",
+                Text(L10n.t("fam.token", vm.language),
                     color = Jim.Amber, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 Text(c.childToken, color = Jim.Txt, fontSize = 10.sp)
             }
@@ -2184,9 +2190,9 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                     Text("${kid.displayName} · ${kid.age}", color = Jim.Txt,
                         fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Text(when (kid.oversight) {
-                        "full" -> "full oversight (under 13)"
-                        "alerts_only" -> "alerts only — daily life stays private"
-                        else -> "oversight ended — an adult now"
+                        "full" -> L10n.t("fam.tier.full", vm.language)
+                        "alerts_only" -> L10n.t("fam.tier.alerts", vm.language)
+                        else -> L10n.t("fam.tier.ended", vm.language)
                     }, color = Jim.T2, fontSize = 11.sp)
                 }
                 Text("●", fontSize = 12.sp,
@@ -2202,28 +2208,26 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                     .clip(RoundedCornerShape(12.dp)).background(Jim.Card)
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Device controls", color = Jim.Txt, fontSize = 14.sp,
+                Text(L10n.t("fam.controls", vm.language), color = Jim.Txt, fontSize = 14.sp,
                     fontWeight = FontWeight.Bold)
-                Text("Pause and quiet hours hold everyday guidance only — " +
-                     "monitoring, crisis escalation, and the emergency path " +
-                     "never pause.", color = Jim.T3, fontSize = 10.sp)
+                Text(L10n.t("fam.pause.sub", vm.language), color = Jim.T3, fontSize = 10.sp)
                 Row(Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically) {
-                    Text("Pause guidance", color = Jim.Txt, fontSize = 12.sp)
+                    Text(L10n.t("fam.pause", vm.language), color = Jim.Txt, fontSize = 12.sp)
                     Switch(checked = pauseOn, onCheckedChange = { pauseOn = it })
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(value = quietStart,
                         onValueChange = { quietStart = it },
-                        label = { Text("Quiet start") },
+                        label = { Text(L10n.t("fam.quiet.start", vm.language)) },
                         modifier = Modifier.weight(1f))
                     OutlinedTextField(value = quietEnd,
                         onValueChange = { quietEnd = it },
-                        label = { Text("Quiet end") },
+                        label = { Text(L10n.t("fam.quiet.end", vm.language)) },
                         modifier = Modifier.weight(1f))
                 }
-                SmallAction("Apply") {
+                SmallAction(L10n.t("fam.apply", vm.language)) {
                     vm.call({ ApiClient.setFamilyControls(vm.uid!!, cid,
                         vm.token!!, pauseOn,
                         quietStart.trim().ifEmpty { null },
@@ -2243,17 +2247,18 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 if (o.note != null) {
-                    Text("Oversight ended", color = Jim.Txt, fontSize = 14.sp,
+                    Text(L10n.t("fam.unlinked", vm.language), color = Jim.Txt, fontSize = 14.sp,
                         fontWeight = FontWeight.Bold)
                     Text(o.note, color = Jim.T2, fontSize = 11.sp)
                 } else {
-                    Text(o.displayName ?: "Child", color = Jim.Txt,
+                    Text(o.displayName ?: L10n.t("fam.child.generic", vm.language), color = Jim.Txt,
                         fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     o.privacyNote?.let {
                         Text("🔒 $it", color = Jim.Amber, fontSize = 11.sp)
                     }
                     if (o.criticalEvents > 0)
-                        Text("⚠️ ${o.criticalEvents} critical event(s)",
+                        Text(L10n.t("fam.critical", vm.language)
+                                .replace("{n}", "${o.criticalEvents}"),
                             color = Jim.Red, fontSize = 12.sp,
                             fontWeight = FontWeight.Bold)
                     o.events.forEach { e ->
@@ -2262,7 +2267,7 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                             color = Jim.T2, fontSize = 11.sp)
                     }
                     if (o.events.isEmpty())
-                        Text("Nothing in the window — quiet is good news.",
+                        Text(L10n.t("fam.quiet", vm.language),
                             color = Jim.T2, fontSize = 11.sp)
                 }
             }
@@ -2275,7 +2280,13 @@ private fun FamilyPanel(vm: GuardianViewModel) {
 @Composable
 fun ConnectScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Sources", "Social", "Apps", "Community", "Me")
+    val tabs = listOf(
+        L10n.t("jcon.tab.sources", vm.language),
+        L10n.t("jcon.tab.social", vm.language),
+        L10n.t("jcon.tab.apps", vm.language),
+        L10n.t("jcon.community", vm.language),
+        L10n.t("jcon.tab.me", vm.language),
+    )
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
@@ -2307,8 +2318,8 @@ private fun SourcesPanel(vm: GuardianViewModel) {
     LaunchedEffect(Unit) { reload() }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Data sources", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        Text("JIM sees what you allow — flip a source off and it stops being read, immediately.",
+        Text(L10n.t("jcon.sources", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("jcon.sources.sub", vm.language),
             color = Jim.T2, fontSize = 12.sp)
         rows.forEach { row ->
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -2347,12 +2358,12 @@ private fun SocialPanel(vm: GuardianViewModel) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Social platforms", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("jcon.social", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             FlowRowChips(platforms, platform) { platform = it }
-            labeledField("Handle (optional)", handle, "@you") { handle = it }
+            labeledField(L10n.t("jcon.handle", vm.language), handle, "@you") { handle = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                smallAction("Connect to collect") { connect("collect") }
-                smallAction("Connect to publish") { connect("publish") }
+                smallAction(L10n.t("jcon.connect.collect", vm.language)) { connect("collect") }
+                smallAction(L10n.t("jcon.connect.publish", vm.language)) { connect("publish") }
             }
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
@@ -2365,18 +2376,24 @@ private fun SocialPanel(vm: GuardianViewModel) {
                     c.handle?.let { Text("@$it", color = Jim.T3, fontSize = 12.sp) }
                 }
                 if (c.direction == "collect") {
-                    smallAction("Collect sample") {
+                    smallAction(L10n.t("jcon.collect.sample", vm.language)) {
                         vm.call({ ApiClient.socialCollect(c.id, vm.token!!,
                             "sample post from ${c.platform}") }) { r ->
-                            r.onSuccess { status = "collected one item from ${c.platform}" }
+                            r.onSuccess {
+                                status = L10n.t("jcon.collected.one", vm.language)
+                                    .replace("{platform}", pretty(c.platform))
+                            }
                                 .onFailure { error = it.message }
                         }
                     }
                 } else {
-                    smallAction("Publish update") {
+                    smallAction(L10n.t("jcon.publish.update", vm.language)) {
                         vm.call({ ApiClient.socialPublish(c.id, vm.token!!,
                             "A check-in from my Guardian.") }) { r ->
-                            r.onSuccess { status = "published to ${c.platform}" }
+                            r.onSuccess {
+                                status = L10n.t("jcon.published", vm.language)
+                                    .replace("{platform}", pretty(c.platform))
+                            }
                                 .onFailure { error = it.message }
                         }
                     }
@@ -2400,8 +2417,8 @@ private fun AppsPanel(vm: GuardianViewModel) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Connected apps", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text("Apple, Google, Microsoft, and Canva apps the Guardian can collect from and act through.",
+            Text(L10n.t("jcon.apps", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("jcon.apps.sub", vm.language),
                 color = Jim.T2, fontSize = 12.sp)
             catalog.take(10).forEach { entry ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -2413,10 +2430,16 @@ private fun AppsPanel(vm: GuardianViewModel) {
                         error = null
                         vm.call({ ApiClient.appConnect(vm.uid!!, vm.token!!,
                             entry.provider, entry.app) }) { r ->
-                            r.onSuccess { status = "connected ${entry.provider}/${entry.app}"; reload() }
+                            r.onSuccess {
+                                status = L10n.t("jcon.connected", vm.language)
+                                    .replace("{provider}", entry.provider)
+                                    .replace("{app}", entry.app)
+                                reload()
+                            }
                                 .onFailure { error = it.message }
                         }
-                    }) { Text("Connect", color = Jim.BrandA, fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+                    }) { Text(L10n.t("jcon.connect", vm.language), color = Jim.BrandA,
+                                fontSize = 13.sp, fontWeight = FontWeight.Bold) }
                 }
             }
         }
@@ -2429,10 +2452,14 @@ private fun AppsPanel(vm: GuardianViewModel) {
                 TextButton(onClick = {
                     vm.call({ ApiClient.appCollect(c.id, vm.token!!,
                         "sample context from ${c.app}") }) { r ->
-                        r.onSuccess { status = "collected from ${c.app}" }
+                        r.onSuccess {
+                            status = L10n.t("jcon.collected.from", vm.language)
+                                .replace("{app}", c.app)
+                        }
                             .onFailure { error = it.message }
                     }
-                }) { Text("Collect", color = Jim.BrandA, fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+                }) { Text(L10n.t("jcon.collect", vm.language), color = Jim.BrandA,
+                            fontSize = 13.sp, fontWeight = FontWeight.Bold) }
             }
         }
     }
@@ -2478,14 +2505,14 @@ private fun CommunityPanel(vm: GuardianViewModel) {
     LaunchedEffect(Unit) { reload() }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Community", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("jcon.community", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         val v = view
         if (v == null) {
-            Text("Loading the door…", color = Jim.T3, fontSize = 12.sp)
+            Text(L10n.t("jcon.loading", vm.language), color = Jim.T3, fontSize = 12.sp)
         } else {
             Text(v.note, color = Jim.T2, fontSize = 12.sp)
             v.language?.let {
-                Text("Rooms are listed as QRME serves them; you read $it.",
+                Text(L10n.t("jcon.rooms.lang", vm.language).replace("{lang}", it),
                     color = Jim.T3, fontSize = 11.sp)
             }
         }
@@ -2493,18 +2520,20 @@ private fun CommunityPanel(vm: GuardianViewModel) {
 
     view?.let { v ->
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("What JIM does not do", color = Jim.Txt, fontSize = 14.sp,
+            Text(L10n.t("jcon.notdo", vm.language), color = Jim.Txt, fontSize = 14.sp,
                 fontWeight = FontWeight.Bold)
-            PostureRow("Mirror the conversation here", v.posture.mirroredHere)
-            PostureRow("Post on your behalf", v.posture.postsOnYourBehalf)
-            PostureRow("Share your health data", v.posture.healthDataShared)
+            PostureRow(L10n.t("jcon.posture.mirror", vm.language),
+                v.posture.mirroredHere)
+            PostureRow(L10n.t("jcon.posture.post", vm.language),
+                v.posture.postsOnYourBehalf)
+            PostureRow(L10n.t("jcon.posture.health", vm.language),
+                v.posture.healthDataShared)
         }
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Rooms", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("jcon.rooms", vm.language), color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             if (v.rooms.isEmpty()) {
-                Text("No rooms open right now. A community shelf that cannot " +
-                     "load is a quiet screen, not an error.",
+                Text(L10n.t("jcon.rooms.none", vm.language),
                     color = Jim.T3, fontSize = 12.sp)
             }
             v.rooms.forEach { room ->
@@ -2512,10 +2541,10 @@ private fun CommunityPanel(vm: GuardianViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween) {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(room.topic ?: room.id, color = Jim.Txt, fontSize = 13.sp)
-                        Text(roomDetail(room), color = Jim.T3, fontSize = 10.sp)
+                        Text(roomDetail(room, vm.language), color = Jim.T3, fontSize = 10.sp)
                     }
                     room.url?.let { url ->
-                        SmallAction("Open") {
+                        SmallAction(L10n.t("jcon.open", vm.language)) {
                             val uid = vm.uid
                             val token = vm.token
                             if (uid != null && token != null) {
@@ -2531,9 +2560,9 @@ private fun CommunityPanel(vm: GuardianViewModel) {
         }
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Near you", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("jcon.near", vm.language), color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             if (v.places.isEmpty()) {
-                Text("No places claimed yet.", color = Jim.T3, fontSize = 12.sp)
+                Text(L10n.t("jcon.places.none", vm.language), color = Jim.T3, fontSize = 12.sp)
             }
             v.places.forEach { place ->
                 Row(Modifier.fillMaxWidth(),
@@ -2546,7 +2575,7 @@ private fun CommunityPanel(vm: GuardianViewModel) {
     }
 
     opened?.let {
-        Text("Noted that you opened $it — the visit, and nothing from inside it.",
+        Text(L10n.t("jcon.noted", vm.language).replace("{room}", it),
             color = Jim.Green, fontSize = 12.sp)
     }
     error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
@@ -2561,11 +2590,26 @@ private fun PostureRow(label: String, happens: Boolean) {
     }
 }
 
-private fun roomDetail(room: CommunityRoom): String {
+private fun roomDetail(room: CommunityRoom, lang: String): String {
     val bits = mutableListOf<String>()
     room.channel?.let { bits.add(it) }
-    if (room.participants > 0) bits.add("${room.participants} here")
+    if (room.participants > 0)
+        bits.add(L10n.t("jcon.here", lang).replace("{n}", "${room.participants}"))
     return if (bits.isEmpty()) room.id else bits.joinToString(" · ")
+}
+
+/**
+ * The three settings of the sensitivity dial, in the reader's language.
+ *
+ * A `when` rather than one lookup on a key built by concatenating the prefix
+ * with the API value, which is shorter and wrong: a key assembled at runtime
+ * is a key no guard can find, and the dead-key check would then report all
+ * three rows as asked for by nobody.
+ */
+private fun sensitivityLabel(level: String, lang: String): String = when (level) {
+    "cautious" -> L10n.t("cw.cautious", lang)
+    "assertive" -> L10n.t("cw.assertive", lang)
+    else -> L10n.t("cw.balanced", lang)
 }
 
 private fun placeName(place: CommunityPlace): String =
