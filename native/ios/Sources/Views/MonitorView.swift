@@ -23,8 +23,8 @@ struct MonitorView: View {
                     .font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 18) {
-                    slider("Heart rate", value: $heartRate, range: 40...180, unit: "bpm", tint: Theme.red)
-                    slider("Stress", value: $stress, range: 0...1, unit: "", tint: Theme.amber, percent: true)
+                    slider(L10n.t("ci.hr", state.language), value: $heartRate, range: 40...180, unit: "bpm", tint: Theme.red)
+                    slider(L10n.t("ci.stress", state.language), value: $stress, range: 0...1, unit: "", tint: Theme.amber, percent: true)
                 }.card()
 
                 Button(action: send) {
@@ -83,8 +83,8 @@ struct MonitorView: View {
                     .padding(10).background(Theme.scrBot)
                     .clipShape(RoundedRectangle(cornerRadius: 11))
                 HStack(spacing: 10) {
-                    answerButton("It helped", helped: true, tint: Theme.green)
-                    answerButton("It did not", helped: false, tint: Theme.amber)
+                    answerButton(L10n.t("mon.helped", state.language), helped: true, tint: Theme.green)
+                    answerButton(L10n.t("mon.didnot", state.language), helped: false, tint: Theme.amber)
                 }
             }.card()
         }

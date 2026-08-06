@@ -37,7 +37,7 @@ public sealed partial class CheckinPage : Page
         }
         catch
         {
-            GuidanceText.Text = "Couldn't reach your Guardian — is the backend running?";
+            GuidanceText.Text = L10n.T("ci.error");
             GuidanceCard.Visibility = Visibility.Visible;
         }
         finally

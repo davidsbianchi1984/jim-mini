@@ -16,8 +16,8 @@ struct CheckinView: View {
                 Text("A quick pulse on how you're doing.").font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 18) {
-                    rating("Mood", value: $mood)
-                    rating("Energy", value: $energy)
+                    rating(L10n.t("ci.mood", state.language), value: $mood)
+                    rating(L10n.t("ci.energy", state.language), value: $energy)
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Note").font(.subheadline).foregroundStyle(Theme.txt)
                         TextField("Anything on your mind?", text: $note, axis: .vertical)

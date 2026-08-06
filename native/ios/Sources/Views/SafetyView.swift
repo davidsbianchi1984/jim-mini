@@ -370,14 +370,14 @@ private struct MedicalSection: View {
                         Divider().overlay(Theme.line)
                         Text(L10n.t("mid.responder", state.language)).font(.subheadline.bold())
                             .foregroundStyle(Theme.txt)
-                        row("Name", c.name ?? "—")
-                        row("Age", c.age.map(String.init) ?? "—")
-                        row("Resting HR", c.resting_heart_rate.map { "\($0) bpm" } ?? "—")
-                        row("Conditions",
+                        row(L10n.t("med.name", state.language), c.name ?? "—")
+                        row(L10n.t("med.age", state.language), c.age.map(String.init) ?? "—")
+                        row(L10n.t("med.hr", state.language), c.resting_heart_rate.map { "\($0) bpm" } ?? "—")
+                        row(L10n.t("med.conditions", state.language),
                             (c.known_conditions?.isEmpty == false)
                                 ? c.known_conditions!.joined(separator: ", ") : "none declared")
                         if let ec = c.emergency_contact {
-                            row("Contact", "\(ec.name ?? "—") · \(ec.phone ?? "—")")
+                            row(L10n.t("med.contact", state.language), "\(ec.name ?? "—") · \(ec.phone ?? "—")")
                         }
                     }
                     Button(L10n.t("mid.revoke", state.language)) { revoke() }

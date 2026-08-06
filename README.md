@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.47.6** ([changelog](CHANGELOG.md) ·
+**Current release: v0.47.7** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.47.7** | **The medical card, on the two shells last round did not reach** — `row`, `rating`, `slider` and `answerButton` on the iPhone, and the desktop's resuscitation confirmation and waiver verdicts, all set by assignment in the code-behind |
 | **0.47.6** | **Nine English buttons on the resuscitation screen** — `RobotAction("Start CPR (pre-authorized)")` and its eight neighbours were invisible to a rule that only read `Text(`; plus the welcome screen finally opens in the device's language |
 | **0.47.5** | The dead-key guard written here is now in QRME and PDI too — it found three Android screen headings in QRME rendering their own key names |
 | **0.47.4** | **The first screen, in the reader's language** — Overview was English on all three shells, and the Care/Life/Safety strips rendered an `enum Tab: String`'s raw values where no pattern looks; also three names for one screen, now taken from `tab.monitor` through a hole so they cannot drift (229 → 150) |

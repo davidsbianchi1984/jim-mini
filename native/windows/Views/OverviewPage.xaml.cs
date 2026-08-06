@@ -190,7 +190,7 @@ public sealed partial class OverviewPage : Page
         }
         catch
         {
-            Empty.Text = "Couldn't load the baseline — is the backend running?";
+            Empty.Text = L10n.T("ov.error");
             Empty.Visibility = Visibility.Visible;
         }
         finally
@@ -213,7 +213,7 @@ public sealed partial class OverviewPage : Page
                 var parts = ImproveCategories
                     .Where(c => st.Tally.TryGetValue(c, out var n) && n > 0)
                     .Select(c => $"{st.Tally[c]} {c}");
-                ImproveTally.Text = "So far: " + string.Join(" · ", parts);
+                ImproveTally.Text = L10n.T("fb.sofar").Replace("{list}", string.Join(" · ", parts));
                 ImproveTally.Visibility = Visibility.Visible;
             }
             else ImproveTally.Visibility = Visibility.Collapsed;
@@ -238,7 +238,7 @@ public sealed partial class OverviewPage : Page
             await ApiClient.Shared.SubmitImprovement(AppState.Current.Token, cat, message, rating);
             ImproveMessage.Text = "";
             ImproveRating.SelectedIndex = 0;
-            ImproveThanks.Text = "Thank you — sent.";
+            ImproveThanks.Text = L10n.T("ov.fb.thanks");
             ImproveThanks.Visibility = Visibility.Visible;
             await LoadImprovements();
         }

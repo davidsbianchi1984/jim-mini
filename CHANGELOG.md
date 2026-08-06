@@ -4,6 +4,43 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.7] — 2026-08-06
+
+### The medical card, on the two shells last round did not reach
+
+0.47.6 localized `medRow` — the Android medical card a responder reads off the
+screen while kneeling next to somebody. It did not touch the iPhone's `row` or
+the desktop's code-behind, because the rule it fixed was the Kotlin one. That
+is the per-client mistake this audit is named for, and last round made it.
+
+The derivation now covers Swift, so `row` (*Name*, *Age*, *Resting HR*,
+*Conditions*, *Contact*), `rating` (*Mood*, *Energy*), `slider` (*Heart rate*,
+*Stress*) and `answerButton` (*It helped* / *It did not*) are read here too.
+Every one of those rows already existed in another table — the shells simply
+were not asking.
+
+### The desktop half of the resuscitation surface
+
+`_XAML` reads attributes; this shell's settled idiom is `x:Name` plus
+`Foo.Text = L10n.T("key")` in `Localize()`, so a label that was never localized
+sits in the code-behind as an assignment that `Text="` cannot match.
+
+    asked     is this an attribute on an element
+    mattered  does this end up as the words on an element
+
+What it hid: **Confirm the person is unresponsive and not breathing normally.
+The robot never starts on its own judgement — and never delivers a shock; the
+AED analyzes, a human presses.** Beside it both waiver verdicts, *A responder
+needs a name.*, and *Issue Medical ID*. Last round localized the buttons of
+this screen on one shell; this round finishes the sentence they sit under, on
+the other two.
+
+**24 call sites wired, 11 rows added, 12 copied between tables.** Records
+unchanged at iOS 45, Android 46, Windows 57 — the newly visible strings were
+all localized rather than recorded.
+
+Cut together with QRME and PDI at app-v0.47.7.
+
 ## [0.47.6] — 2026-08-06
 
 ### Nine English buttons on the resuscitation screen

@@ -201,7 +201,7 @@ public sealed partial class SafetyPage : Page
         // accepted it" is the thing this relay exists to stop being enough.
         if (string.IsNullOrWhiteSpace(ResponderBox.Text))
         {
-            AlarmSaid.Text = "A responder needs a name.";
+            AlarmSaid.Text = L10n.T("res.needname");
             return;
         }
         try
@@ -518,9 +518,7 @@ public sealed partial class SafetyPage : Page
         if ((sender as Button)?.Tag is not string id) return;
         _pendingCprRobot = id;
         RobotCmdResult.Text =
-            "Confirm the person is unresponsive and not breathing normally. " +
-            "The robot never starts on its own judgement — and never delivers " +
-            "a shock; the AED analyzes, a human presses.";
+            L10n.T("res.confirm.note");
         RobotCmdResult.Visibility = Visibility.Visible;
         ConfirmCprButton.Visibility = Visibility.Visible;
     }
@@ -560,7 +558,7 @@ public sealed partial class SafetyPage : Page
         {
             await ApiClient.Shared.SignWaiver(s.Uid!, s.Token!, signature);
             SignatureBox.Text = "";
-            RobotCmdResult.Text = "Waiver signed — automatic resuscitation pre-authorized.";
+            RobotCmdResult.Text = L10n.T("res.waiver.signed");
             RobotCmdResult.Visibility = Visibility.Visible;
             await LoadRobots();
         }
@@ -577,7 +575,7 @@ public sealed partial class SafetyPage : Page
         try
         {
             await ApiClient.Shared.RevokeWaiver(s.Uid!, s.Token!);
-            RobotCmdResult.Text = "Waiver revoked — confirm-gated operation restored.";
+            RobotCmdResult.Text = L10n.T("res.waiver.revoked");
             RobotCmdResult.Visibility = Visibility.Visible;
             await LoadRobots();
         }
@@ -633,7 +631,7 @@ public sealed partial class SafetyPage : Page
         {
             await ApiClient.Shared.RevokeMedicalCard(s.Uid!, s.Token!);
             MedCard.Visibility = Visibility.Collapsed;
-            IssueButton.Content = "Issue Medical ID";
+            IssueButton.Content = L10n.T("mid.issue");
         }
         catch (Exception ex)
         {

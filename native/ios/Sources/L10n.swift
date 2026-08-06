@@ -31,6 +31,17 @@ enum L10n {
                             "hi", "ar"]
 
     private static let table: [String: [String: String]] = [
+        "ci.energy": ["en": "Energy", "es": "Energía", "fr": "Énergie", "de": "Energie", "pt": "Energia", "it": "Energia", "ja": "エネルギー", "zh": "精力", "hi": "ऊर्जा", "ar": "الطاقة"],
+        "ci.hr": ["en": "Heart rate", "es": "Frecuencia cardíaca", "fr": "Fréquence cardiaque", "de": "Herzfrequenz", "pt": "Frequência cardíaca", "it": "Frequenza cardiaca", "ja": "心拍数", "zh": "心率", "hi": "हृदय गति", "ar": "معدل ضربات القلب"],
+        "ci.mood": ["en": "Mood", "es": "Ánimo", "fr": "Humeur", "de": "Stimmung", "pt": "Humor", "it": "Umore", "ja": "気分", "zh": "心情", "hi": "मनोदशा", "ar": "المزاج"],
+        "ci.stress": ["en": "Stress", "es": "Estrés", "fr": "Stress", "de": "Stress", "pt": "Stresse", "it": "Stress", "ja": "ストレス", "zh": "压力", "hi": "तनाव", "ar": "التوتر"],
+        "med.age": ["en": "Age", "es": "Edad", "fr": "Âge", "de": "Alter", "pt": "Idade", "it": "Età", "ja": "年齢", "zh": "年龄", "hi": "आयु", "ar": "العمر"],
+        "med.conditions": ["en": "Conditions", "es": "Afecciones", "fr": "Pathologies", "de": "Erkrankungen", "pt": "Condições", "it": "Patologie", "ja": "既往症", "zh": "健康状况", "hi": "स्थितियाँ", "ar": "الحالات الصحية"],
+        "med.contact": ["en": "Contact", "es": "Contacto", "fr": "Contact", "de": "Kontakt", "pt": "Contacto", "it": "Contatto", "ja": "連絡先", "zh": "联系人", "hi": "संपर्क", "ar": "جهة الاتصال"],
+        "med.hr": ["en": "Resting HR", "es": "FC en reposo", "fr": "FC au repos", "de": "Ruhepuls", "pt": "FC em repouso", "it": "FC a riposo", "ja": "安静時心拍", "zh": "静息心率", "hi": "विश्राम हृदय गति", "ar": "النبض أثناء الراحة"],
+        "med.name": ["en": "Name", "es": "Nombre", "fr": "Nom", "de": "Name", "pt": "Nome", "it": "Nome", "ja": "名前", "zh": "姓名", "hi": "नाम", "ar": "الاسم"],
+        "mon.didnot": ["en": "It did not", "es": "No ayudó", "fr": "Ça n'a pas aidé", "de": "Es hat nicht geholfen", "pt": "Não ajudou", "it": "Non ha aiutato", "ja": "役に立ちませんでした", "zh": "没有帮助", "hi": "मदद नहीं मिली", "ar": "لم يُفِدني"],
+        "mon.helped": ["en": "It helped", "es": "Ayudó", "fr": "Ça a aidé", "de": "Es hat geholfen", "pt": "Ajudou", "it": "Ha aiutato", "ja": "役に立ちました", "zh": "有帮助", "hi": "इससे मदद मिली", "ar": "أفادني"],
         "spec.ask": ["en": "Ask them", "es": "Preguntarles", "fr": "Leur demander", "de": "Sie fragen", "pt": "Perguntar-lhes", "it": "Chiedi a loro", "ja": "この人に聞く", "zh": "去问他们", "hi": "उनसे पूछें", "ar": "اسألهم"],
         "spec.fallback": ["en": "Specialist", "es": "Especialista", "fr": "Spécialiste", "de": "Fachperson", "pt": "Especialista", "it": "Specialista", "ja": "専門家", "zh": "专家", "hi": "विशेषज्ञ", "ar": "المختص"],
         "spec.held": ["en": "Their reply is waiting for its owner to approve it — held, not refused.", "es": "Su respuesta espera la aprobación de su propietario: retenida, no rechazada.", "fr": "Leur réponse attend l'approbation de son propriétaire : retenue, pas refusée.", "de": "Ihre Antwort wartet auf die Freigabe ihres Eigentümers — zurückgehalten, nicht abgelehnt.", "pt": "A resposta aguarda a aprovação do seu proprietário — retida, não recusada.", "it": "La loro risposta attende l'approvazione del proprietario: trattenuta, non rifiutata.", "ja": "返信はオーナーの承認待ちです — 拒否ではなく保留されています。", "zh": "他们的回复正在等待其所有者批准 — 是被暂存，而不是被拒绝。", "hi": "उनका उत्तर उसके स्वामी की मंज़ूरी की प्रतीक्षा में है — रोका गया है, अस्वीकार नहीं।", "ar": "ردّهم بانتظار موافقة مالكه — محجوز، لا مرفوض."],

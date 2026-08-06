@@ -1,4 +1,4 @@
-# status: floor — 0 rows
+# status: backlog — 0 rows
 #
 # Rows in a shell's L10n table that nothing in that shell asks for. Checked by
 # test_a_shell_asks_for_a_key_it_has.py, and ratcheted in two directions: no
@@ -20,5 +20,8 @@
 #     asked     is any one shell's dead-key count above the line
 #     mattered  is the number of dead rows going up
 #
-# ceiling: 4
+# ceiling: 0
 # total: 0
+
+
+

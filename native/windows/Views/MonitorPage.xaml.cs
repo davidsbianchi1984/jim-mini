@@ -168,7 +168,7 @@ public sealed partial class MonitorPage : Page
         }
         catch (Exception ex)
         {
-            ResultTitle.Text = "Couldn't reach your Guardian";
+            ResultTitle.Text = L10n.T("mon.error");
             ResultReason.Text = ex.Message;
             ResultReason.Visibility = Visibility.Visible;
             ResultGuidance.Visibility = Visibility.Collapsed;
