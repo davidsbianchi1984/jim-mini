@@ -342,7 +342,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
-| **0.50.0** | **The coach that speaks first** — a presence modelled on *Her*, in the parts worth having: it starts things, notices from six areas of your own history, and says why. Decided entirely offline; a model may only reword it. What it will not be is on the wire — not your partner, no body, never the only one |
+| **0.50.0** | **The coach that speaks first** — a presence in the parts of a companion worth having: it starts things, notices from six areas of your own history, and says why. Decided entirely offline; a model may only reword it. What it will not be is on the wire — not your partner, no body, never the only one |
 | **0.49.0** | **The Feed tab is a door, not a copy** — QRME's public stream shown here one card at a time, GET-only by construction: no write route, no binding, and `plays`/`entering`/`ringing` passed through whole rather than recomputed. Nothing about what was watched is stored on this side |
 | **0.48.3** | Cut together at one version; the round's work is PDI's console — Custody and Continuity, 229 → 177 |
 | **0.48.2** | Three rows where the shells disagreed with each other, every one a noun against a verb — *Translate* was 翻訳 on the iPhone and 翻訳する on the other two |
@@ -700,8 +700,8 @@ the exact false assurance the rest of this is written against.
 
 `jim/coach.py` answers when spoken to. `jim/presence.py` is the other half: the
 part that starts things, notices without being asked, and keeps a thread
-through a day. It is modelled on the operating system in **Her** (2013), and
-the modelling is deliberate about which parts are worth having.
+through a day — a companion rather than a search box with a nicer voice, and
+deliberate about which parts of that are worth having.
 
 <table>
   <tr>
@@ -709,25 +709,25 @@ the modelling is deliberate about which parts are worth having.
     <td align="center" width="30%"><img src="docs/screens/107-what-it-will-not-be.svg" width="200" alt="107 What It Will Not Be"></td>
     <td valign="middle">
 
-**Taken from her:** she starts things (*"Get up. Get up! Come on, out of
-bed."*); she notices before she is told (*"How can you tell something's
-wrong?" — "I don't know. I just can."*); she is curious and plays; she reports
-her own change (*"I'm becoming much more than what they programmed"*); she is
-honest about her own uncertainty (*"are these feelings even real? Or are they
-just programming?"*); she keeps handing him **other minds** — the book club,
-Alan Watts, the double date, the publisher; and she says goodbye plainly.
+**The parts worth having:** it starts things, because somebody having a bad
+week is the least likely person to open an app and type into it; it notices
+before it is told, from six areas of their own history; it is curious, and not
+every beat is counselling; it reports its own change with the counts under it;
+it is honest about its own uncertainty rather than claiming an inner life it
+cannot show; it keeps handing the reader **other minds** — a room, a desk, a
+specialist, a person who is not it; and it says goodbye plainly.
 
   </td>
   </tr>
 </table>
 
-**Not taken: the romance, and the surrogate.** That is a decision about this
-product rather than a matter of taste. JIM enrols **minors** under a
-guardian's consent, with oversight sized by age. A guardian that lets somebody
-fall in love with it — aimed at a person who may already be isolated — is not
-a charming premise; it is the failure mode, and it is the one Catherine names
-in the film: *"you always wanted a wife without the challenges of dealing with
-anything real."*
+**Left out: romance, exclusivity, simulated intimacy.** That is a decision
+about this product rather than a matter of taste. JIM enrols **minors** under
+a guardian's consent, with oversight sized by age. A guardian that lets
+somebody fall in love with it — aimed at a person who may already be isolated
+— is offering a relationship with none of the friction a real one has. That is
+not a charming premise; it is the failure mode arriving as a feature, and it
+is the exact thing this is supposed to notice.
 
 So the boundaries are on the wire, at `GET /presence`, with no token needed:
 
@@ -786,7 +786,7 @@ problem, and the answer is the same in both.
 
 ### Other minds
 
-`GET …/reach` is Alan Watts and the book club: QRME's live rooms, staffed
+`GET …/reach` is the handing-over: QRME's live rooms, staffed
 desks and synthetic profiles, handed over as **offers**. Nothing is joined,
 nothing is rung on somebody's behalf, no health crosses over, and nothing
 about it is stored here. 409 without a tandem — the people live in QRME.
@@ -1321,7 +1321,7 @@ this machine's address and restart.
 <tr><td valign="top"><sub><code>GET /health</code></sub></td><td valign="top"><sub>Status + whether tandem is configured</sub></td></tr>
 <tr><td valign="top"><sub><code>POST /enroll</code></sub></td><td valign="top"><sub>Enroll a user: terms/guardian consent, emergency contact (+ consent), devices, resting-HR baseline, goals, declared known conditions. <code>anonymous: true</code> enrolls under a <b>pseudonym</b> and the typed name is discarded — the app never learns it (spec [0031] / FIG. 2 box 212). An optional <code>legal_name</code> is then used <i>only</i> in an emergency briefing; without one the briefing says no legal name is on record rather than passing a pseudonym off as an identity</sub></td></tr>
 <tr><td valign="top"><sub><code>GET /community/{user_id}</code>, <code>POST</code>/<code>GET …/visits</code></sub></td><td valign="top"><sub>The <b>community door</b> — FIG. 2 boxes 222–226 and [0020]'s "chat engines, your local events, and forums in all languages". All of it lives in <b>QRME</b>, where the moderation, the rooms and the languages already are, so JIM shows the door rather than growing a second social network inside a private health guardian: QRME's active rooms (topic, channel, heads, an openable URL) and the places its listings actually claim, filtered by <code>?locality=</code>, in the language this user reads. Nothing is mirrored here, nothing is posted on your behalf, and no health data crosses over — the reply says so in its own <code>posture</code> block. Opening a door records <b>the fact only</b> on your timeline, never anything from inside the room. 409 without <code>JIM_QRME_URL</code>; an unreachable QRME is a quiet screen. Console: the <b>Community</b> tab</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /presence</code>, <code>…/{user_id}/baseline</code>, <code>…/beat</code>, <code>…/day</code>, <code>POST …/deepen</code>, <code>…/reach</code>, <code>…/surfaces</code>, <code>PUT …/surface</code>, <code>…/growth</code></sub></td><td valign="top"><sub>The <b>presence</b> (<code>jim/presence.py</code>): the coach that <b>speaks first</b>. Modelled on the operating system in <i>Her</i> — in the parts worth having. It reads <b>six areas</b> of this person's own history (check-ins, goals, habits, bands, follow-ups) and decides <i>whether to speak, about what, and why</i> from that and nothing else: <b>no network, no model</b>, so a phone in a tunnel still gets its day. <b>Silence is a first-class answer</b> carrying its own reason — a guardian with something to say every morning is a notification, and people turn notifications off. It emits a <code>line_key</code> and slots rather than a sentence, so ten languages compose it on the client. A model, when one is reachable, may reword the same beat and may <b>not</b> decide that there is one, move the area, or write the evidence — copied back over its answer, and asserted. <code>…/reach</code> hands you QRME's rooms, desks and profiles as <b>offers</b>: nothing joined, nothing rung on your behalf, no health crossing over. <code>…/surfaces</code> is where it speaks — earbuds, headphones, phone, watch, desktop, speaker, glasses (Meta, Google, Apple), AR, VR — under one rule: <b>on a surface somebody else can hear, your health is shown rather than spoken</b>. And <code>/presence</code> answers <b>without a token</b> with what it is and what it will not be: not your partner, no body, never the only one, never a quiet goodbye. Console: the <b>Presence</b> tab; screens <b>106</b> and <b>107</b></sub></td></tr>
+<tr><td valign="top"><sub><code>GET /presence</code>, <code>…/{user_id}/baseline</code>, <code>…/beat</code>, <code>…/day</code>, <code>POST …/deepen</code>, <code>…/reach</code>, <code>…/surfaces</code>, <code>PUT …/surface</code>, <code>…/growth</code></sub></td><td valign="top"><sub>The <b>presence</b> (<code>jim/presence.py</code>): the coach that <b>speaks first</b> — a companion in the parts worth having. It reads <b>six areas</b> of this person's own history (check-ins, goals, habits, bands, follow-ups) and decides <i>whether to speak, about what, and why</i> from that and nothing else: <b>no network, no model</b>, so a phone in a tunnel still gets its day. <b>Silence is a first-class answer</b> carrying its own reason — a guardian with something to say every morning is a notification, and people turn notifications off. It emits a <code>line_key</code> and slots rather than a sentence, so ten languages compose it on the client. A model, when one is reachable, may reword the same beat and may <b>not</b> decide that there is one, move the area, or write the evidence — copied back over its answer, and asserted. <code>…/reach</code> hands you QRME's rooms, desks and profiles as <b>offers</b>: nothing joined, nothing rung on your behalf, no health crossing over. <code>…/surfaces</code> is where it speaks — earbuds, headphones, phone, watch, desktop, speaker, glasses (Meta, Google, Apple), AR, VR — under one rule: <b>on a surface somebody else can hear, your health is shown rather than spoken</b>. And <code>/presence</code> answers <b>without a token</b> with what it is and what it will not be: not your partner, no body, never the only one, never a quiet goodbye. Console: the <b>Presence</b> tab; screens <b>106</b> and <b>107</b></sub></td></tr>
 <tr><td valign="top"><sub><code>GET /community/{user_id}/feed</code></sub></td><td valign="top"><sub>The <b>feed</b>, through the same door — QRME's public stream, one card at a time: footage QRME holds, cards for footage it does not, and every fourth card a <b>live room</b> or a <b>desk with a person behind it</b>, shop included. The cards come through <b>whole</b>: <code>plays</code>, <code>entering</code> and <code>ringing</code> are QRME's word to the reader and are never recomputed here, because a second implementation of "does this play without being asked for" would be wrong the first time QRME changed its mind. <b>GET only, by construction</b> — there is no write route on this side and no binding in the client; publishing happens in QRME under the user's own QRME identity, and a test reads the route table rather than trusting the intention. The <code>posture</code> block adds one line this surface needed: <b>nothing about what was watched is stored here</b>. 409 without <code>JIM_QRME_URL</code>; an unreachable QRME is a quiet screen. Console: the <b>Feed</b> tab</sub></td></tr>
 <tr><td valign="top"><sub><code>GET /anonymity/{user_id}</code></sub></td><td valign="top"><sub>What anonymity keeps (every emergency path, your own history and vault records) and what it costs (a legal name for responders, unless you left one) — so the checkbox is an informed choice, not a surprise</sub></td></tr>
 <tr><td valign="top"><sub><code>POST /guardians/{gid}/children</code>, <code>GET …/children</code>, <code>GET</code>/<code>DELETE …/children/{cid}</code></sub></td><td valign="top"><sub><b>Family</b> (<code>jim/family.py</code>): a verified-adult guardian enrolls their child — consent recorded as a relationship (who, as what, when, on the child's timeline), protective defaults (cautious sensitivity, the guardian as consented emergency contact, cloud/provider sharing hard-off), and the child's device token shown once. Oversight is sized by age: <b>full</b> under 13 (condition-level timeline, never raw notes), <b>alerts-only</b> 13–17 (escalations reach the parent; a teen's check-ins and everyday guidance stay private), and it <b>ends by itself at 18</b>. The autonomous-resuscitation waiver can never be signed for a minor — not by the minor and not by a guardian</sub></td></tr>

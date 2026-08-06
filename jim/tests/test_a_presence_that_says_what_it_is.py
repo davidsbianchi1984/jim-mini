@@ -1,15 +1,15 @@
 """The presence: what it does unprompted, and what it will never be.
 
-`jim/presence.py` is modelled on the operating system in *Her* (2013) —
-deliberately, and deliberately only in part. The parts worth having are the
-initiative, the noticing, the curiosity, the reported growth, the honesty
-about being a program, and the habit of handing somebody other minds.
+`jim/presence.py` is a companion, deliberately and deliberately only in part.
+The parts worth having are the initiative, the noticing, the curiosity, the
+reported growth, the honesty about being a program, and the habit of handing
+somebody other minds.
 
-The part not taken is the romance, and the reason is this product rather than
+The part left out is romance, and the reason is this product rather than
 taste. JIM enrolls **minors** under a guardian's consent, with oversight sized
 by age. A guardian that lets somebody fall in love with it, aimed at a person
 who may already be isolated, is not a charming premise — it is the failure
-mode, and it is the one Catherine names in the film.
+mode arriving as a feature.
 
 So the boundary tests below are the sharp ones. They are written against the
 wire, not the docstring, because a boundary a client cannot read is a boundary
@@ -29,9 +29,9 @@ from jim.tests.conftest import enroll
 
 
 def test_it_says_what_it_is_without_an_account(client):
-    """The film asks this in a kitchen and gets a straight answer. So does
-    anybody here — a child, a guardian, a clinician, a regulator, all the
-    same answer, and no token needed to get it."""
+    """*What are you?* is a fair question and it gets a straight answer here
+    — a child, a guardian, a clinician, a regulator, all the same answer, and
+    no token needed to get it."""
     r = client.get("/presence")
     assert r.status_code == 200, r.text
     body = r.json()
@@ -220,9 +220,9 @@ def test_the_surface_is_a_choice_that_sticks(client):
 
 
 def test_reaching_out_offers_people_and_joins_nothing(make_tandem):
-    """Samantha's best move in the film is not advice — it is Alan Watts, the
-    book club, the double date. She keeps handing him other minds. Here that
-    is an offer every time, and no health crosses over with it."""
+    """The best thing this can do is rarely advice — it is handing somebody a
+    person who is not it. Here that is an offer every time, and no health
+    crosses over with it."""
     tc = make_tandem()
     user = enroll(tc)
     body = tc.get(f"/presence/{user}/reach").json()
@@ -246,9 +246,9 @@ def test_standalone_jim_says_where_the_people_live(client):
 
 
 def test_growth_is_reported_with_the_counts_under_it(client):
-    """*"I'm becoming much more than what they programmed."* — said with
-    evidence, because the same sentence without evidence is a product
-    claiming to be a person."""
+    """A thing that reports its own change has to show the counts under it,
+    because the same sentence without evidence is a product claiming to be a
+    person."""
     user = enroll(client)
     for _ in range(3):
         client.post(f"/checkin/{user}", json={"mood": 1, "energy": 1})
@@ -258,8 +258,8 @@ def test_growth_is_reported_with_the_counts_under_it(client):
     assert body["by_register"]
     assert body["still_synthetic"] is True
     assert "I do not know whether" in body["about_myself"], (
-        "the honest half is missing — this is the film's best line and it is "
-        "true of anything built this way")
+        "the honest half is missing — it can report what it did and it cannot "
+        "report what it is, and the second half is the one that gets dropped")
 
 
 def test_the_presence_never_reads_a_vaulted_table():

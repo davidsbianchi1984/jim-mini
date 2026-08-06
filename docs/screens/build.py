@@ -1873,8 +1873,9 @@ SCREENS = [
         dict(icon="moon", color="violet", k="Silence is an answer",
              s="with its own reason"),
     ], button=("Say more", "brand")),
-    # 107: the boundaries, on a screen because they are on the wire. Modelled
-    # on *Her* in the parts worth having — and this is the part left out.
+    # 107: the boundaries, on a screen because they are on the wire. Warmth
+    # and initiative are the parts of a companion worth having; this screen is
+    # the part deliberately left out.
     dict(num=107, title="What it will not be",
          sub="Warm is worth having. This is not.",
          accent="red", cards=[

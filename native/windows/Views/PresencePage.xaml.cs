@@ -9,9 +9,9 @@ namespace JimGuardian.Views;
 /// <summary>
 /// The presence — the coach that speaks first.
 ///
-/// Modelled on the operating system in <i>Her</i>, in the parts worth having:
-/// it starts things, it notices without being asked, it reports its own
-/// change, and it keeps handing the reader people who are not it.
+/// A companion in the parts worth having: it starts things, it notices
+/// without being asked, it reports its own change, and it keeps handing the
+/// reader people who are not it.
 ///
 /// Nothing on this page decides anything. Whether it speaks, about what, and
 /// why, are the backend's, read from six areas of this person's own history

@@ -1950,8 +1950,8 @@ def create_app(qrme_client: QRMEClient | None = None,
 
     @app.get("/presence/{user_id}/growth")
     def presence_growth(user_id: str, request: Request) -> dict:
-        """What it has become, with the counts under it — the film's best
-        line, held to evidence rather than asserted."""
+        """What it has become, with the counts under it — reported change
+        held to evidence rather than asserted."""
         _user_or_404(user_id, request)
         return presence.growth(user_id)
 

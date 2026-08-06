@@ -2,9 +2,9 @@ import SwiftUI
 
 /// The presence, in the pocket: the coach that speaks first.
 ///
-/// Modelled on the operating system in *Her*, in the parts worth having — it
-/// starts things, it notices without being asked, it reports its own change,
-/// and it keeps handing the reader people who are not it.
+/// A companion in the parts worth having — it starts things, it notices
+/// without being asked, it reports its own change, and it keeps handing the
+/// reader people who are not it.
 ///
 /// The order on this screen is deliberate. **What it will not be comes
 /// first**, above any warm sentence, because a guardian that is charming

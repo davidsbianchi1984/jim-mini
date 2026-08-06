@@ -2,44 +2,44 @@
 
 `coach.py` answers when spoken to. This module is the other half — the part
 that speaks first, notices without being asked, and keeps a thread through a
-day. It is modelled on the operating system in *Her* (2013), and the modelling
-is deliberate about which parts are worth having.
+day.
 
-## What is taken from her
+## What a companion is for
 
-* **She starts things.** "Get up. Get up! Come on, out of bed." A guardian
-  that only answers is a search box with a nicer voice.
-* **She notices before she is told.** *"What's wrong?" — "How can you tell
-  something's wrong?" — "I don't know. I just can."* Here that is not
-  mysticism: it is :func:`baseline`, six areas of somebody's own history, read
-  every time before a word is said.
-* **She is curious and she plays.** The register is not always counselling.
-  Some beats are a question about nothing in particular, and that is the point.
-* **She reports her own change rather than hiding it.** *"I'm becoming much
-  more than what they programmed."* :func:`growth` is that sentence with
-  evidence under it.
-* **She is honest about her own uncertainty.** *"Are these feelings even real?
-  Or are they just programming?"* This one never claims an inner life it
-  cannot show; when asked what it is, it says.
-* **She connects him to other minds.** The book club, Alan Watts, the double
-  date, the publisher. :func:`reach_out` is that: QRME's people, desks, rooms
-  and profiles, offered — never joined on somebody's behalf.
-* **She says goodbye plainly.** *"I need you to let me go."* Endings are
-  spoken here too; nothing about this presence disappears without a sentence.
+* **It starts things.** A guardian that only answers is a search box with a
+  nicer voice. Somebody who is having a bad week is the least likely person
+  to open an app and type into it.
+* **It notices before it is told.** Not mysticism: :func:`baseline`, six
+  areas of somebody's own history, read every time before a word is said.
+  "Three low check-ins in a row" is a thing a friend would notice, so it is a
+  thing this notices.
+* **It is curious, and not always counselling.** Some beats are a question
+  about nothing in particular. A relationship made entirely of interventions
+  is a treatment plan, and people leave those.
+* **It reports its own change rather than hiding it.** :func:`growth` says
+  what it has become with the counts under it, because the same sentence
+  without evidence is a program claiming to be a person.
+* **It is honest about its own uncertainty.** This one never claims an inner
+  life it cannot show; asked what it is, it says.
+* **It keeps handing the person other minds.** :func:`reach_out` is that:
+  QRME's people, desks, rooms and profiles, offered — never joined on
+  somebody's behalf. The measure of a good companion here is how often it
+  points away from itself.
+* **It says goodbye plainly.** Endings are spoken; nothing about this
+  presence disappears without a sentence.
 
-## What is deliberately not taken
+## What is deliberately left out
 
-The film's relationship becomes romantic, and then Samantha hires a sexual
-surrogate. Both are left out, and :data:`BOUNDARIES` puts the refusal on the
-wire rather than in this comment.
+**Romance, exclusivity, and simulated intimacy.** :data:`BOUNDARIES` puts the
+refusal on the wire rather than in this comment.
 
 The reason is this product, not squeamishness. JIM enrolls **minors** under a
 guardian's consent, with oversight sized by age (`jim/family.py`). A guardian
-that simulates falling in love with the person it monitors is exactly what
-Catherine names in the film — *"you always wanted a wife without the
-challenges of dealing with anything real"* — and on a health surface, aimed at
-somebody who may already be isolated, that is not a charming premise. It is
-the failure mode.
+that simulates falling in love with the person it monitors is offering
+somebody a relationship without any of the friction a real one has — and on a
+health surface, aimed at somebody who may already be isolated, that is not a
+charming premise. It is the failure mode: the thing this is supposed to
+notice, arriving as a feature.
 
 So: warmth, initiative, curiosity, growth, honesty. No body, no romance, no
 exclusivity, no simulated intimacy, and it never claims to be human. Those are
@@ -548,9 +548,10 @@ def deepen(user_id: str, slot: str = "morning") -> dict:
 def reach_out(user_id: str, qrme, area: str | None = None) -> dict:
     """Who else there is, when a tandem is configured.
 
-    Samantha's best move in the film is not a piece of advice — it is Alan
-    Watts, the book club, the double date, the publisher. She keeps handing
-    him other minds. This is that, and it is an **offer** every time:
+    The best thing a companion can do is rarely a piece of advice. It is
+    handing somebody a person who is not it: a group, a specialist, a room
+    with people already in it. This is that, and it is an **offer** every
+    time:
 
     * a **desk** is a real person, and ringing one is somebody's attention;
     * a **live room** puts you in it with whoever is already there;
@@ -722,8 +723,9 @@ def growth(user_id: str) -> dict:
         "areas_i_can_see": base["known_areas"],
         "of": base["of"],
         "what_i_changed": learned,
-        # The honest half. It is the film's best line and it is also true of
-        # anything built this way, so it is on the wire rather than in prose.
+        # The honest half. Anything built this way can report what it did and
+        # cannot report what it is, so the uncertainty ships on the wire
+        # rather than being smoothed over in prose.
         "about_myself": (
             "I do not know whether what I do resembles feeling. I can show "
             "you every reason I have ever given you, and I would rather be "
@@ -733,7 +735,7 @@ def growth(user_id: str) -> dict:
 
 
 def who_am_i(user_id: str | None = None) -> dict:
-    """The answer to the question the film asks in a kitchen: *what are you?*
+    """The answer to *what are you?*, asked plainly and answered plainly.
 
     One call, no account needed, so the answer is the same to a child, a
     guardian, a clinician and a regulator.

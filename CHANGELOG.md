@@ -10,24 +10,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 `jim/coach.py` answers when spoken to. `jim/presence.py` is the other half:
 the part that starts things, notices without being asked, and keeps a thread
-through a day. It is modelled on the operating system in **Her** (2013), and
-the modelling is deliberate about which parts are worth having.
+through a day — a companion rather than a search box with a nicer voice, and
+deliberate about which parts of that are worth having.
 
-**Taken from her.** She starts things — *"Get up. Get up! Come on, out of
-bed."* She notices before she is told: *"How can you tell something's wrong?"
-— "I don't know. I just can."* She is curious and plays. She reports her own
-change rather than hiding it — *"I'm becoming much more than what they
-programmed."* She is honest about her own uncertainty — *"are these feelings
-even real? Or are they just programming?"* She keeps handing him other minds:
-the book club, Alan Watts, the double date, the publisher. And she says
-goodbye plainly.
+**The parts worth having.** It starts things, because somebody having a bad
+week is the least likely person to open an app and type into it. It notices
+before it is told, from six areas of their own history rather than from
+mysticism. It is curious, and not every beat is counselling. It reports its
+own change with the counts under it. It is honest about its own uncertainty
+instead of claiming an inner life it cannot show. It keeps handing the person
+other minds. And it says goodbye plainly.
 
-**Not taken: the romance, and the surrogate.** This is a decision about the
-product, not about the film. JIM enrols **minors** under a guardian's consent,
-with oversight sized by age. A guardian that lets somebody fall in love with
-it, aimed at a person who may already be isolated, is not a charming premise —
-it is the failure mode, and it is the one Catherine names: *"you always wanted
-a wife without the challenges of dealing with anything real."*
+**Left out: romance, exclusivity, simulated intimacy.** This is a decision
+about the product rather than a matter of taste. JIM enrols **minors** under a
+guardian's consent, with oversight sized by age. A guardian that lets somebody
+fall in love with it, aimed at a person who may already be isolated, is
+offering a relationship with none of the friction a real one has — not a
+charming premise but the failure mode arriving as a feature, and the exact
+thing this is supposed to notice.
 
 So the refusals are **on the wire**, at `GET /presence`, answerable with no
 token so the answer is the same to a child, a guardian, a clinician and a
@@ -74,7 +74,7 @@ room and a pair of glasses on a bus are the same problem.
 
 ### Other minds
 
-`GET …/reach` is Alan Watts and the book club: QRME's live rooms, staffed
+`GET …/reach` is the handing-over: QRME's live rooms, staffed
 desks and synthetic profiles, handed over as offers. Nothing joined, nothing
 rung on anybody's behalf, no health across, nothing stored here.
 

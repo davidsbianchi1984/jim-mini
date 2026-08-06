@@ -10,9 +10,9 @@ import { useSession } from "../store";
 /**
  * The presence — the coach that speaks first.
  *
- * Modelled on the operating system in *Her*, in the parts worth having: it
- * starts things, it notices without being asked, it is curious, it reports its
- * own change, and it keeps handing the reader people who are not it.
+ * A companion in the parts worth having: it starts things, it notices without
+ * being asked, it is curious, it reports its own change, and it keeps handing
+ * the reader people who are not it.
  *
  * Three things this screen renders and does not decide:
  *
