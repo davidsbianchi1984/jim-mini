@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.46.7] — 2026-08-06
+
+### Version alignment
+
+The three products are cut together, so one number names one combination of
+all three. No JIM code changed. QRME localized Signatures and Voice on all
+three shells — 470 English strings behind the tab bars down to 368 — and
+closed a gap where two cards had been done on two shells and missed on the
+third.
+
 ## [0.46.6] — 2026-08-05
 
 ### Version alignment

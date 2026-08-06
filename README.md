@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.46.6** ([changelog](CHANGELOG.md) ·
+**Current release: v0.46.7** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -336,6 +336,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.46.7** | Version alignment with QRME's native round |
 | **0.46.6** | Version alignment with QRME's native round |
 | **0.46.5** | Version alignment with QRME's native round |
 | **0.46.4** | The voice picker's label reaches the refusal that names it — field-label record 100 → 99 |
