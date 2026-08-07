@@ -4,6 +4,29 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.7] — 2026-08-07
+
+### The shape guard learned to read types, and this client is still clean
+
+Cut together at one version. The only change here is to the guard.
+
+QRME split the last two names on its wire-name collision record — `kinds` and
+`refused`, each carrying three meanings — and in doing so found that its
+wearables board sends `kinds` as a **map** while the Windows record declared
+`string[]`. `System.Text.Json` does not coerce an object into an array; it
+throws. That call had been failing outright, not losing a field.
+
+The shape guard added in 0.56.5 compares declared **names** against the keys a
+route returns, and `kinds` was returned under exactly that name as exactly the
+wrong kind of thing. It saw nothing.
+
+So there is a second assertion now, here as well as there: drive the route,
+and check that each declared type *can decode the shape that arrived* — list,
+object, string, number, bool, the distinctions a decoder actually throws on.
+Over there it found five more, every one a live crash rather than a blank
+field. **Here it found none**, which is the same answer this client gave to
+the name check.
+
 ## [0.56.6] — 2026-08-07
 
 ### Reported from a phone: eight watch faces that were not on the page

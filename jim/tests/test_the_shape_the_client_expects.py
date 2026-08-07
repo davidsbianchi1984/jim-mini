@@ -109,6 +109,70 @@ def _descend(body, key):
     return body[key]
 
 
+def _shape_of(value) -> str:
+    """The kind of thing a JSON value is — the coarsest fact a decoder needs."""
+    if isinstance(value, bool):
+        return "bool"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, str):
+        return "string"
+    if isinstance(value, list):
+        return "list"
+    if isinstance(value, dict):
+        return "object"
+    return "null"
+
+
+def _accepts(csharp: str, shape: str) -> bool:
+    """Whether a C# type can decode a value of that shape.
+
+    Coarse on purpose: this is not a type checker, it is the check that would
+    have caught `kinds` declared `string[]` for a route that sends a map, and
+    `screen` declared `string` for an integer. Both were present on the wire
+    under the right name, so the name check above saw nothing wrong.
+    """
+    t = csharp.replace(" ", "")
+    if shape == "null":
+        return True                      # a null tells you nothing
+    if t.endswith("[]") or t.startswith("List<") or t.startswith("IReadOnlyList<"):
+        return shape == "list"
+    if "Dictionary<" in t:
+        return shape == "object"
+    if t in {"string"}:
+        return shape == "string"
+    if t in {"bool"}:
+        return shape == "bool"
+    if t in {"int", "long", "double", "float", "decimal"}:
+        return shape == "number"
+    if t in {"JsonElement", "object"}:
+        return True                      # deliberately untyped
+    return shape == "object"             # a record decodes an object
+
+
+def _wrong_types(record: str, body, recs, seen=()) -> list[str]:
+    """Fields whose declared C# type cannot decode what the route sent."""
+    if record not in recs or record in seen:
+        return []
+    if not isinstance(body, dict):
+        if isinstance(body, list):
+            body = next((x for x in body if isinstance(x, dict)), None)
+        if body is None:
+            return []
+    out = []
+    for wire, typ in recs[record]:
+        if wire not in body:
+            continue
+        shape = _shape_of(body[wire])
+        if not _accepts(typ, shape):
+            out.append(f"{record}.{wire} is declared {typ} and arrives as a "
+                       f"{shape}")
+            continue
+        nested = typ.replace("[]", "").split(".")[-1]
+        out += _wrong_types(nested, _descend(body, wire), recs, seen + (record,))
+    return out
+
+
 def _mismatches(record: str, body, recs, seen=()) -> list[str]:
     """Wire names `record` declares that `body` did not carry."""
     if record not in recs or record in seen:
@@ -145,6 +209,9 @@ def _standing(client) -> tuple[str, str]:
     return uid, other
 
 
+_typed: dict[str, list[str]] = {}
+
+
 def _drive(client, uid: str, other_id: str):
     """Every binding, driven. Yields (template, record, mismatches|None).
 
@@ -173,6 +240,7 @@ def _drive(client, uid: str, other_id: str):
         if _returned_keys(body) is None:
             yield template, record, None
             continue
+        _typed[record] = _wrong_types(record, body, recs)
         yield template, record, _mismatches(record, body, recs)
 
 
@@ -193,6 +261,22 @@ def test_no_client_record_promises_a_field_the_route_never_sends(client):
         + "\n  The route was driven and did not return them. Correct the "
           "record to the shape the route actually has, or record the row "
           "with the state that produces it — recording is ratcheted.")
+
+
+def test_no_client_record_declares_a_type_the_wire_cannot_decode(client):
+    """The name check above passes when a field is present under the right
+    name and the wrong shape. QRME's `/wearables` sent `kinds` as a map of
+    kind to where it is worn while the record declared `string[]`, so the
+    whole call threw rather than losing one field."""
+    uid, other = _standing(client)
+    loose = []
+    for _, record, missing in _drive(client, uid, other):
+        if missing is None:
+            continue
+        loose += _typed[record]
+    assert not loose, (
+        "these client fields cannot decode what the route sends:\n    "
+        + "\n    ".join(sorted(set(loose))))
 
 
 def test_the_unverified_record_only_shrinks():
