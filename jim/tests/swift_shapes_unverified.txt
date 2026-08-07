@@ -1,0 +1,50 @@
+# status: backlog — 22 rows
+# ceiling: 22
+#
+# iOS fields the Swift shape guard saw a route not return, which are real.
+#
+# `test_the_shape_the_swift_client_expects.py` drives every GET binding in
+# `native/ios/Sources/ApiClient.swift` and checks each struct against what the
+# route actually sends — the names, and whether the declared type can decode
+# the shape that arrives. QRME's copy found nine fictions in its own Swift
+# client on the first run, every one a defect already fixed on the Windows
+# side and never carried across.
+#
+# This client had none. All twenty-two of these are the same shape of answer:
+# a route that returns a short *nothing yet* body until the account has a
+# history, and its full shape afterwards.
+#
+# The 0.56.5 rule is that driving into a state beats recording that you did
+# not, and where that was two calls — arming the crash watch, building an
+# adaptation profile — the guard makes them. These cannot be manufactured:
+# continuity is derived from accumulated check-ins, coach turns and
+# helpfulness answers over time, and there is no route that builds one. A
+# fixture that faked the history would be asserting against its own fiction.
+#
+# Ratcheted: this list may shrink and must never grow. A row leaves it when
+# somebody writes a test that lives the history and reads the field.
+#
+AdaptationProfile.note        # only while `built` is false — the sentence
+                              # saying there is no profile yet
+ContinuityState.version       # once continuity is built, which takes a history
+ContinuityState.observations  # of check-ins and coach turns over time
+ContinuityState.conditioning
+ContinuityState.vector
+ContinuityState.meanings
+ContinuityState.method
+HelpTally.answered            # once somebody has answered whether help helped
+HelpTally.did_not
+HelpTally.helped
+HelpTally.hit_rate
+CheckinTrend.avg_mood         # once there are enough check-ins to average
+CheckinTrend.avg_stress
+BaselineMetric.state          # once a personal baseline has bands to be in
+PresenceArea.area             # once presence has an area it is standing on
+PresenceArea.known
+PresenceArea.standing
+PresenceBoundary.says         # once a boundary has been set
+PresenceBoundary.value
+PresenceSpoken.due            # once a beat is scheduled
+PresenceSpoken.slot_from_hour
+PresenceBeat.deepened_line    # only when a real model answers — under the stub
+                              # `deepen` returns the offline line and says so

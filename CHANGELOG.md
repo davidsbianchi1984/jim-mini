@@ -4,6 +4,31 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.8] — 2026-08-07
+
+### The Swift client gets the same guard, and answers the same way
+
+QRME found nine fictions in its own iOS client — every one a defect already
+fixed on its Windows side in 0.56.4 or 0.56.7 and never carried across.
+Fixing a defect in one client was not fixing the defect, and nothing was
+checking the other one.
+
+`test_the_shape_the_swift_client_expects.py` is here now too. It drives every
+GET binding in `native/ios/Sources/ApiClient.swift` and asks both halves of
+the same question: is each declared field a key the route returns, and can its
+declared type decode the shape that arrives.
+
+**This client came back with no fictions** — the third time in four releases
+these clients have answered a new check cleanly.
+
+
+JIM-mini's own answer records twenty-two conditional fields — continuity
+vectors, help tallies, presence areas — that appear only once an account has a
+history. Unlike the crash watch and the adaptation profile, which the fixture
+builds in two calls, continuity is derived from accumulated check-ins over
+time and has no route that builds one. A fixture that faked that history would
+be asserting against its own fiction, so the rows name the state instead.
+
 ## [0.56.7] — 2026-08-07
 
 ### The shape guard learned to read types, and this client is still clean
