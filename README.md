@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.56.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.56.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -342,6 +342,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.56.3** | Cut together at one version; QRME's collision record falls 28 → 24 — three counts that shared a name with the boolean they counted, and one client bug wearing the same disguise |
 | **0.56.2** | **One name, three meanings** — `spoken` was the CPR steps, the model's rewritten line and a said-aloud boolean at once; Windows had forked it into three records and TypeScript could not, so `tsc` had been failing on `main` and no suite ran `tsc`. Each meaning has its own name now, and both the compiler and a wire-name guard are in the suite |
 | **0.56.1** | **A model that is actually trained** — `adaptation.py` built a profile and said plainly it was not a weight file; this trains one, by gradient descent, from this user's own answered follow-ups, with the network blocked for the duration. Training and using stay two decisions |
 | **0.56.0** | Cut together at one version; QRME can now hand this product a door, carrying two counts and a window and nothing anybody wrote |

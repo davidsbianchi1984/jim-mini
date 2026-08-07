@@ -4,6 +4,26 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.3] — 2026-08-07
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+QRME started paying down the wire-name collision backlog 0.56.2 recorded, and
+four of its twenty-eight rows turned out to be one finding repeated: a boolean
+state and a count of that state sharing a name. `seen` was both *has this item
+been seen* and *how many were just marked seen*; `available` was both *is this
+desk free* and *how many packs this registry has*; `revoked` was both a flag and
+a tally. A decoder handed `1` where it expects a boolean coerces rather than
+refusing, so the wrong route returns a plausible answer from the wrong evidence.
+
+The counts are now `marked_seen`, `available_packs` and `revoked_count`. A
+fourth row, `reattested`, was not a collision at all but a client bug: the wire
+value is always a boolean and the Windows record declared an integer. QRME's
+record falls 28 → 24.
+
 ## [0.56.2] — 2026-08-07
 
 ### One name, three meanings — and the compiler nobody ran
