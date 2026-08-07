@@ -48,15 +48,28 @@ def test_locality_filters_the_places(make_tandem):
     assert [p["locality"] for p in body["places"]] == ["Bend, OR"]
 
 
-def test_the_posture_is_stated_and_kept(make_tandem):
+def test_the_posture_is_stated(make_tandem):
     """The whole reason this is a door: a private health guardian must not
-    grow a second social network, and must not carry health data into one."""
+    grow a second social network, and must not carry health data into one.
+
+    **Stated, and only stated.** This reads literals back out of the dict that
+    hardcodes them, so it can tell you the fields are present and their
+    spelling has not drifted, and it can tell you nothing at all about whether
+    the product keeps its word. It was called *stated and kept* for several
+    releases, which is worse than useless: a name like that is why nobody went
+    looking. Whether it is kept is
+    `test_the_posture_is_stated_and_nothing_keeps_it.py`, which takes the
+    action and counts the rows.
+    """
     tc = make_tandem()
     user = enroll(tc)
     body = tc.get(f"/community/{user}").json()
-    assert body["posture"] == {"mirrored_here": False,
-                               "posts_on_your_behalf": False,
-                               "health_data_shared": False}
+    posture = body["posture"]
+    assert posture["mirrored_here"] is False
+    assert posture["posts_on_your_behalf"] is False
+    assert posture["health_data_shared"] is False
+    # And what it does keep, which a block of refusals used not to mention.
+    assert posture["records"]
     assert "community lives in QRME" in body["note"]
 
 

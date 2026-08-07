@@ -101,7 +101,11 @@ def test_the_shop_behind_a_desk_comes_with_it(make_tandem):
     assert desk["shop"]["offerings"], desk["shop"]
 
 
-def test_the_posture_is_stated_and_kept(make_tandem):
+def test_the_posture_is_stated(make_tandem):
+    """Stated, and only stated — every assertion below reads back a literal
+    from the dict that hardcodes it. Whether any of it is *kept* is
+    `test_the_posture_is_stated_and_nothing_keeps_it.py`, which snapshots
+    every table, reads the feed, and looks at what grew."""
     tc = make_tandem()
     user = enroll(tc)
     body = tc.get(f"/community/{user}/feed").json()
@@ -113,6 +117,9 @@ def test_the_posture_is_stated_and_kept(make_tandem):
     assert posture["watching_stored_here"] is False, (
         "a feed is the one surface where a guardian could learn a great deal "
         "by watching somebody watch")
+    # The record it does keep. A block of five refusals that never mentions
+    # the one thing it writes lets a true sentence be read wider than it is.
+    assert posture["records"]
     assert "QRME" in body["note"]
 
 

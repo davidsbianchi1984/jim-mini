@@ -4,6 +4,52 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.53.0] — 2026-08-07
+
+### The posture is stated, and nothing was keeping it
+
+Every tandem surface ships a `posture` block — `mirrored_here`,
+`posts_on_your_behalf`, `health_data_shared`, `watching_stored_here`,
+`auto_joined`, `rings_on_your_behalf`, `stored_here`. Every one is a hardcoded
+literal in a response dict, and what guarded them read the literal back out of
+the dict that hardcodes it:
+
+    assert posture["watching_stored_here"] is False
+
+That cannot fail. Add a line tomorrow that files every card somebody scrolls
+past and it stays green. The test was named `test_the_posture_is_stated_and
+_kept` and only ever checked **stated** — a name worse than useless, because it
+is why nobody went looking. The one honourable exception sat directly below it,
+reading the route table instead of trusting the intention, and this round is
+that technique applied to the rest.
+
+**Checked from outside the claim.** You cannot compute "I did not do X" from
+doing nothing, so `writes_only_to` snapshots **every table in the database**,
+takes the action, and fails on a row appearing anywhere it should not — read
+from `sqlite_master` rather than a hand-kept list, because the table a later
+round adds is the one a hand-kept list misses. One test writes a row on purpose
+to prove the helper can fail.
+
+**The promises were true.** Reading the feed stores nothing, reaching out joins
+nothing and rings nobody, no condition crosses into an offer: eight of nine new
+assertions passed the moment they were written. They had simply never been
+checked.
+
+**A sentence was wrong.** *"Nothing you watch is stored in JIM"* is wider than
+the truth — opening a community room **is** recorded, room id and time, on the
+user's own timeline, and the presence reads exactly those rows to notice
+somebody has been talking to nothing but this program. A defensible record; an
+indefensible silence about it. The block now carries **`records`**, naming what
+it keeps, and the note says which card is not stored and which door is. Saying
+only what you refuse is how a true sentence misleads.
+
+**And the route guard could not see a verb.** `test_there_is_no_way_to_post
+_from_here` collected paths and asserted the set — so a `POST` to
+`/community/{user_id}/feed` produced the same string and passed. `.methods`
+was on every route object the whole time.
+
+Cut together with QRME and PDI at **app-v0.53.0**.
+
 ## [0.52.0] — 2026-08-07
 
 ### What the room hears — the surface rule stops being a label

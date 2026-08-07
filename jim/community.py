@@ -65,6 +65,9 @@ def view(user_id: str, qrme, locality: str | None = None) -> dict:
             "mirrored_here": False,
             "posts_on_your_behalf": False,
             "health_data_shared": False,
+            "records": [
+                "that you opened a community room — the room's id and the "
+                "time, on your own timeline, and nothing from inside it"],
         },
     }
 
@@ -124,12 +127,17 @@ def feed(user_id: str, qrme, cursor: str | None = None) -> dict:
         "open_in_qrme": f"{base}/app/#/feed" if base else None,
         "note": ("this feed is QRME's. JIM shows it and keeps your health "
                  "data out of it — watching here tells QRME nothing about "
-                 "your guardian, and nothing you watch is stored in JIM"),
+                 "your guardian, and no card you scroll past is stored in "
+                 "JIM. Opening a room is the one thing that is: see "
+                 "`records`"),
         "posture": {
             "mirrored_here": False,
             "posts_on_your_behalf": False,
             "can_post_from_jim": False,
             "health_data_shared": False,
             "watching_stored_here": False,
+            "records": [
+                "that you opened a community room — the room's id and the "
+                "time, on your own timeline, and nothing from inside it"],
         },
     }

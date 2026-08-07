@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.52.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.53.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -342,6 +342,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.53.0** | **The posture is stated, and nothing was keeping it** — the guards read literals back out of the dict that hardcodes them. Now checked from outside by snapshotting every table. The promises held; one sentence was wider than the truth, and the block now names what it keeps |
 | **0.52.0** | **What the room hears** — on a speaker, glasses or AR a vital, condition, medication, money, journal or crisis is held back and shown instead, decided on the server before anything is synthesised. Plus `/due`: the one question a device on a timer has to know how to ask |
 | **0.51.0** | **How it carries itself** — companion by default, professional on request or just by saying so. A register and never a capability: the same six areas watched and every safety path identical in both. Plus a company beat that wants nothing, and a lonely run whose beat points at people |
 | **0.50.0** | **The coach that speaks first** — a presence in the parts of a companion worth having: it starts things, notices from six areas of your own history, and says why. Decided entirely offline; a model may only reword it. What it will not be is on the wire — not your partner, no body, never the only one |
@@ -768,6 +769,50 @@ promised. A dial that quietly narrowed what a health guardian sees would be a
 dial that hurts whoever turned it, so the only thing it changes is how a
 sentence is worded. It never silences a beat that was **earned by evidence**:
 three low check-ins still speaks in both.
+
+### The posture blocks, and what was checking them
+
+Every tandem surface ships a `posture` block — `mirrored_here`,
+`posts_on_your_behalf`, `health_data_shared`, `watching_stored_here`,
+`auto_joined`, `rings_on_your_behalf`, `stored_here`. They are the promises
+that make a bridge from a health guardian into a public platform defensible at
+all, and every one is a hardcoded literal in a response dict.
+
+What guarded them was this:
+
+```python
+assert posture["watching_stored_here"] is False
+```
+
+which reads the literal back out of the dict that hardcodes it. It cannot
+fail. Add a line tomorrow that files every card somebody scrolls past and it
+stays green. The test was called `test_the_posture_is_stated_and_kept` and
+only ever checked **stated** — a name that is worse than useless, because it
+is why nobody went looking.
+
+The checks are now made from outside the claim. You cannot compute *"I did not
+do X"* from doing nothing, so `writes_only_to` **snapshots every table in the
+database**, takes the action, and fails on any row that appears anywhere it
+should not — read from `sqlite_master` rather than a hand-kept list, because
+the table a later round adds is exactly the one a hand-kept list would miss.
+One test writes a row on purpose to prove the helper can fail, since a guard
+nobody has watched fail is a guard nobody should trust.
+
+**The good news, honestly reported: the promises were true.** Reading the feed
+stores nothing, reaching out joins nothing and rings nobody, and no condition
+crosses into an offer. Eight of the nine new assertions passed the moment they
+were written. They just had not been checked.
+
+**The one that was wrong was a sentence.** *"Nothing you watch is stored in
+JIM"* is wider than the truth: opening a community room **is** recorded —
+`community_room_opened`, the room's id and the time, on the user's own
+timeline — and the presence reads exactly those rows to notice somebody has
+been talking to nothing but this program. That record is defensible and
+useful. A posture block that lists five refusals and never mentions it is not.
+So the block now carries **`records`**, naming what it keeps, and the sentence
+says which card is not stored and which door is.
+
+Saying only what you refuse is how a true sentence misleads.
 
 ### What the room hears — the surface rule, enforced
 
