@@ -20,7 +20,7 @@ export function Monitor() {
     if (!session.userId || !session.userToken) return;
     setBusy(true); setError(null); setAnswer(null);
     try {
-      setResult(await api.monitor(session.userId, { heart_rate: hr, respiration: resp, stress_level: stress }, session.userToken));
+      setResult(await api.monitor(session.userId, { heart_rate: hr, respiratory_rate: resp, stress_level: stress }, session.userToken));
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
 

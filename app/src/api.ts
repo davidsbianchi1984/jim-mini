@@ -1125,7 +1125,12 @@ export const api = {
   resetPassword: (body: { email: string; code: string; new_password: string }) =>
     req<{ email: string; reset: boolean }>(
       "/password/reset", { method: "POST", body }),
-  monitor: (uid: string, body: { heart_rate: number; respiration?: number; stress_level?: number }, token: string) =>
+  // `respiratory_rate` is what BiometricSample calls it. Sent as
+  // `respiration`, it was dropped by the model with no error — the
+  // console collected a breathing rate and the guardian never saw it.
+  monitor: (uid: string, body: { heart_rate: number;
+            respiratory_rate?: number; stress_level?: number },
+            token: string) =>
     req<MonitorResult>(`/monitor/${uid}`, { method: "POST", body, token }),
   // Spec [0039]: whether the guidance actually worked. "No" escalates toward
   // a live person and comes back with the humans reachable right now.

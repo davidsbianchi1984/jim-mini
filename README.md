@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.57.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.57.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -344,6 +344,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.57.2** | Request bodies get the guard responses have had since 0.56.4, and it found the monitor route discarding readings: `stress_level` was on no model while all four clients sent it, and the console called breathing `respiration` where the model says `respiratory_rate`. Both dropped silently by Pydantic — a health guardian collecting a vital sign and throwing it away |
 | **0.57.1** | The console gets the shape guard the native clients have had since 0.56.4. Two defects, both of which rendered: a privacy disclosure whose field names ran together into one word, and a contribution count that printed the payloads instead of counting them |
 | **0.57.0** | The Kotlin guard arrives, and the reason it was absent was a required `JSONObject(` wrapper this client does not use — its `request` returns one already. Twelve of forty-two GETs were being read, and twelve looked like all there were. Now 44 routes and 161 keys, 32 driven; six states recorded, the same six the Swift guard found from the other side |
 | **0.56.9** | QRME found eight wrong reads in its Kotlin client, all already fixed in its C#. The guard is not here yet: ported across, its extractor found zero routes — this client calls the backend in a different shape, and lowering the threshold until it passed would ship a guard that asserts on nothing |

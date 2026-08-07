@@ -2561,6 +2561,7 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    'stress_level': {'en': 'Stress level', 'es': 'Nivel de estrés', 'fr': "Niveau de stress", 'de': 'Stressniveau', 'pt': 'Nível de stress', 'it': 'Livello di stress', 'ja': 'ストレスの度合い', 'zh': '压力水平', 'hi': 'तनाव का स्तर', 'ar': 'مستوى التوتر'},
     'active': {'en': 'Use the trained model', 'es': 'Usar el modelo entrenado', 'fr': 'Utiliser le modèle entraîné', 'de': 'Trainiertes Modell verwenden', 'pt': 'Usar o modelo treinado', 'it': 'Usa il modello addestrato', 'ja': '学習済みモデルを使う', 'zh': '使用已训练的模型', 'hi': 'प्रशिक्षित मॉडल का उपयोग करें', 'ar': 'استخدام النموذج المدرَّب'},
     'bearing': {'en': 'How it carries itself', 'es': 'Cómo se comporta', 'fr': 'Comment il se tient', 'de': 'Wie es sich gibt', 'pt': 'Como se porta', 'it': 'Come si pone', 'ja': 'どう構えるか', 'zh': '以什么姿态', 'hi': 'कैसा रुख़ रखे', 'ar': 'كيف يتصرّف'},
     'speaks_on': {'en': 'Where it speaks', 'es': 'Dónde habla', 'fr': 'Où il parle', 'de': 'Wo es spricht', 'pt': 'Onde fala', 'it': 'Dove parla', 'ja': 'どこで話すか', 'zh': '在哪儿说话', 'hi': 'कहाँ बोले', 'ar': 'أين يتحدّث'},

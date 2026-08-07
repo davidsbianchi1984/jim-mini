@@ -197,3 +197,36 @@ def test_a_sensor_fault_never_reaches_the_baseline(client):
 
     assert signal.clean({"heart_rate": 300, "blood_oxygen": 97}) \
         == {"blood_oxygen": 97}
+
+
+# --- what the clients actually send ----------------------------------------
+
+def test_the_sample_keeps_every_field_all_four_clients_send(client):
+    """`stress_level` was on no model, and four clients were sending it.
+
+    The console, and the Kotlin, C# and Swift shells, each collect a stress
+    reading on the monitor screen and post it with the heart rate. Pydantic
+    ignores a field the model does not declare, so every one of those numbers
+    was discarded on arrival — no error, no log, nothing on the screen to say
+    the reading had not landed. Four clients agreeing with each other and all
+    four wrong about the server is the exact shape 0.57.1 said to watch for,
+    read from the other direction.
+
+    The console also called breathing `respiration` where the model says
+    `respiratory_rate`, so that one was dropped too — on the surface a
+    desktop owner uses.
+    """
+    u = _enroll(client)
+    r = client.post(f"/monitor/{u['id']}",
+                    json={"heart_rate": 72, "respiratory_rate": 16,
+                          "stress_level": 0.38},
+                    headers=_auth(u))
+    assert r.status_code == 200
+
+    from jim.models import BiometricSample
+    parsed = BiometricSample(**{"heart_rate": 72, "respiratory_rate": 16,
+                                "stress_level": 0.38}).model_dump(
+                                    exclude_none=True)
+    assert parsed == {"heart_rate": 72, "respiratory_rate": 16,
+                      "stress_level": 0.38}, (
+        "a field the clients send is being dropped by the model")

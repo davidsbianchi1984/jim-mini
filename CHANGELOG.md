@@ -4,6 +4,51 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.2] — 2026-08-07
+
+### Four clients agreed with each other and all four were wrong about the server
+
+Every guard since 0.56.4 has asked whether a client understands what a route
+sends back. None asked what the client sends *in*. This one does, against
+`app.openapi()` — the schema FastAPI actually validates with — and it found
+two on the monitor route, both of which had been discarding readings.
+
+**`stress_level` was on no model at all.** The console collects it, and so do
+the Kotlin, C# and Swift shells: every one of the four posts a stress reading
+beside the heart rate on the monitor screen. `BiometricSample` never declared
+the field, and Pydantic drops an undeclared field without complaint — so the
+number was discarded on arrival, on every surface, with no error, no log and
+nothing on the screen to say it had not landed. A health guardian was
+collecting a vital sign and throwing it away.
+
+0.57.1 found three clients right and one wrong. This is the same lesson read
+from the other direction: agreement between clients says nothing about whether
+any of them is talking to the server.
+
+**The console called breathing `respiration`.** The model says
+`respiratory_rate`. Dropped the same way, on the surface a desktop owner uses.
+
+`stress_level` is now a declared field on `BiometricSample`, a float on the
+0.0–1.0 scale — which is the scale all four clients were already sending on,
+and worth stating because the first attempt declared it an integer 0–100.
+Nothing contradicted that until a suite-gateway test posted `0.8` and got a
+422: while the field was being discarded, its type could not be wrong.
+The console sends `respiratory_rate`. A test in
+`test_signal_quality.py` posts all three fields and asserts the sample keeps
+them, so a reading cannot go quiet again.
+
+### What the guard reads
+
+113 writes, 70 with a body it can read, 92 matched to a model. Three checks: a
+required field never sent, a field the model has no property for, and a
+bodiless write to a route that requires one. Ratcheted at a ceiling of zero.
+
+The reach is worth stating because it is how these two were found at all. The
+first port read 28 of the 113 — this client writes `(uid, body: { ... },
+token)` where QRME writes `(body: { ... })`, and the pattern was anchored on
+the opening paren. It was green at 28. Checking the share it reached, rather
+than the colour of the run, is what turned it up.
+
 ## [0.57.1] — 2026-08-07
 
 ### The console reads the wire too, and twice it read it wrong

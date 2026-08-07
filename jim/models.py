@@ -198,6 +198,9 @@ class BiometricSample(BaseModel):
     bp_systolic: int | None = None          # mmHg
     bp_diastolic: int | None = None         # mmHg
     hrv: float | None = None                # heart-rate variability, ms
+    stress_level: float | None = None       # 0.0 (calm) .. 1.0 — the
+                                            # scale all four clients
+                                            # send on, not 0..100
     activity_level: int | None = None       # 0 (sedentary) .. 10 (intense)
     movement: str | None = None             # e.g. fall | collapse | immobile
     speech: str | None = None               # e.g. slurred | incoherent

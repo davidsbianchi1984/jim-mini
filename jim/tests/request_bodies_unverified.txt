@@ -1,0 +1,12 @@
+# status: backlog — 0 rows
+# ceiling: 0
+#
+# Writes whose body the route cannot accept, which are real. There are none.
+#
+# The first run found two, both on POST /monitor: the console called breathing
+# `respiration` where the model says `respiratory_rate`, and all four clients
+# sent `stress_level`, which no model had. Pydantic drops an undeclared field
+# without complaint, so every one of those readings was discarded on arrival.
+# Both are fixed rather than recorded.
+#
+# Ratcheted: this list may shrink and must never grow.
