@@ -4,6 +4,31 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.9] — 2026-08-07
+
+### The Android client gets a guard it was thought not to need — over there
+
+QRME's 0.56.8 left Kotlin out because it parses `JSONObject` by hand and
+declares no shapes, so there was nothing to compare. That was wrong. Every
+line of that client is two claims at once — `o.optJSONObject("kinds_worn")`
+says the route sends that key *and* that it is an object — and `org.json`
+never throws when either is wrong. `optString` on a missing key returns `""`,
+`optJSONArray` on an object returns `null` into the `?:` beside it, and a
+screen draws empty instead of crashing.
+
+It found eight wrong reads there, every one already fixed in that product's C#
+client and most in Swift too.
+
+**The guard is not in this repo yet, and the reason is worth stating.** Ported
+across, its extractor found *zero* routes here — this client calls the backend
+in a shape QRME's pattern does not match, exactly as PDI's C# client did when
+the first shape guard travelled in 0.56.5. Lowering the threshold until it
+passed would have shipped a guard that asserts on nothing, which is the defect
+this whole sequence exists to find. So it is named here as next round's work
+instead.
+
+**No code changes in this repo this round.**
+
 ## [0.56.8] — 2026-08-07
 
 ### The Swift client gets the same guard, and answers the same way
