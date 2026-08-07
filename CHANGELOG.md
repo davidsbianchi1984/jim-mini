@@ -4,6 +4,26 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.53.1] — 2026-08-07
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+The round carries 0.53.0's audit into the two repos that had not had it. QRME
+unplugs the network and confirms a video post asks the other platform nothing
+— at post time, at wall render, at feed render. PDI walks every column of
+every table looking for a customer's key in any representation, including
+after a refused key, since the error path is where secrets go to be logged.
+
+Neither found a leak. Both had been resting on a literal read back out of the
+dict that hardcodes it, or on a sentence that promises a thing rather than
+prevents it — which is the finding this repo shipped last round, confirmed
+twice more.
+
+Cut together with QRME and PDI at **app-v0.53.1**.
+
 ## [0.53.0] — 2026-08-07
 
 ### The posture is stated, and nothing was keeping it
