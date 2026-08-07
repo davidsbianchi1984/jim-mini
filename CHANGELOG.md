@@ -4,6 +4,25 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.0] — 2026-08-07
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+QRME grew the other half of its multiplicity disclosure: a person can now ask
+how much of their own talking there went to a profile rather than to a person,
+and — above a threshold, and only if they accept — be handed a door to this
+product. The referral carries two counts and a window. It carries no message,
+no profile name and no topic, because a bridge into a health guardian that
+arrived with somebody's private evenings attached is the exact trade this
+ecosystem exists to refuse.
+
+PDI found that `mode=wipe` cleared three of its twenty tenant-scoped tables,
+leaving a wiped customer's key configuration and signed BAA behind, and
+replaced the hand-written list with a cascade read from the schema.
+
 ## [0.55.0] — 2026-08-07
 
 ### The rule the record stated, with something behind it at last
