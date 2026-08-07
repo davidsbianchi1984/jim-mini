@@ -4,6 +4,64 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.6] — 2026-08-07
+
+### Reported from a phone: eight watch faces that were not on the page
+
+> *"On the readme in JIM-mini 5, 10, 15, 20, 25, 30, 35, 36 are not visible on
+> a mobile device."*
+
+That is exactly the set of cells in the last column, and the reason was two
+layers deep.
+
+An HTML table is as wide as its **longest row**. JIM's watch gallery had six
+rows of five and one row of six, so the table was six columns wide — every
+five-cell row rendered a sixth empty column, and a phone clipped the whole
+thing past the fourth. QRME's main gallery was worse: one `<tr>` carrying
+**fifteen** cells beside rows of three, which made that table fifteen columns
+wide and left twelve blank columns on almost every row. That is the *gaps and
+spaces* in the same report.
+
+    asked     is every screen in the gallery
+    mattered  is every screen in the gallery *on the page*
+
+`test_docs_gallery.py` had been checking that every drawing is referenced and
+every reference resolves, and it passed the whole time — correctly. A cell can
+be present in the markup and pushed off the visible page by the row it sits
+in, and only the shape of the table can tell you that. Its own docstring even
+records an earlier version of this ("inserting one screen into a three-wide
+row pushed the last cell out"), which is a defect the file knew about and had
+no assertion for.
+
+#### Four across
+
+Every gallery is now a uniform grid: screens and watch faces four per row at
+`width="25%"`, desktop frames two at 50%. Four is the number because four is
+what fits the phone the report came from; a fifth column is the column that
+went missing.
+
+Eighteen tables were reflowed across the three repos. Five cells that held no
+picture at all — literal blank squares — were dropped on the way through.
+
+| | rows before | rows after |
+|---|---|---|
+| QRME screens (the big one) | `3,3,4,3,…,15,3,3,3` | 26 rows of 4 |
+| QRME desktop | `2,2,2,2,3,2,1` | 7 rows of 2 |
+| JIM screens | `4,4,…,3,…,5,1` | 27 rows of 4 |
+| JIM watch | `5,5,5,5,5,5,6` | 9 rows of 4 |
+| PDI screens | `3,2,3,3,3,3,2,…` | 8 rows of 4 |
+
+#### The guard
+
+`test_the_gallery_is_a_grid.py`, in all three repos. It finds every table
+whose picture cells all point at one folder under `docs/`, and asserts three
+things: no row wider than four, every row the same length as the one above it
+(the last may be short), and no cell without a picture in it.
+
+It reads the **widest** row rather than the first, because JIM's gallery
+opened with five rows of five and put the sixth cell in the last row —
+anything reading row one would have called it fine.
+
 ## [0.56.5] — 2026-08-07
 
 ### The guard that found fourteen fictions next door, pointed here
