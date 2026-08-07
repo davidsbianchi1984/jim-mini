@@ -4,6 +4,28 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.54.1] — 2026-08-07
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+QRME finished what 0.54.0 started: the twenty-four literals its new guard had
+recorded were read one at a time, and **twelve were labels and twelve were
+values**. The labels are keys now — including a signature attestation,
+*"I attest this is accurate and complete"*, that had been pre-filled in
+English on two shells while its translation sat beside it. The values stay
+English because they are posted back to routes that compare against English,
+and each was read rather than skipped.
+
+The distinction is the useful part, and it is one this repo makes constantly:
+what a person **reads** and what a machine **matches on** are different
+strings, and a sweep that cannot tell them apart either leaves the first in
+English or breaks the second.
+
+Cut together with QRME and PDI at **app-v0.54.1**.
+
 ## [0.54.0] — 2026-08-07
 
 ### Cut together at one version

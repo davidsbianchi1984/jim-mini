@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.54.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.54.1** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -342,6 +342,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.54.1** | Cut together at one version; QRME sorted label from value across twenty-four rows — what a person reads and what a machine matches on are different strings |
 | **0.54.0** | Cut together at one version; the round closes two screens that said less than their siblings — including a privacy promise only Android readers were given |
 | **0.53.1** | Cut together at one version; last round's audit carried into QRME and PDI, which had been resting on the same circular reads. Neither leaked |
 | **0.53.0** | **The posture is stated, and nothing was keeping it** — the guards read literals back out of the dict that hardcodes them. Now checked from outside by snapshotting every table. The promises held; one sentence was wider than the truth, and the block now names what it keeps |
