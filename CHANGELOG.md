@@ -4,6 +4,29 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.4] — 2026-08-07
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+QRME chased its last unexplained wire-name collision, `share`, into a Windows
+client record for `GET /profiles/{id}/composition` that declared two fields —
+`name` and `share` — the route has never sent. It sends `display_name` and
+`weight`. Both decoded to null on every response, and the button wired to them
+drew a row of separators with nothing between them; it had never been run.
+
+Fourteen records were the same: a guess at a shape, written without driving
+the route. The fix is a guard that reads the client's GET bindings, drives
+each against a live app, and asserts every declared field is a key the route
+actually returned — one-directional, because a client may decode less than it
+is sent but must never claim more.
+
+**That guard belongs in this repo too, and it is not here yet.** It needs this
+product's own fixtures to reach its own routes, which is the next round's
+work, named here rather than left for somebody to notice.
+
 ## [0.56.3] — 2026-08-07
 
 ### Cut together at one version
