@@ -63,7 +63,7 @@ WRITES = ("POST", "PUT", "PATCH")
 
 
 def _shape(path: str) -> str:
-    """A path in the one spelling all four sides can be compared in.
+    r"""A path in the one spelling all four sides can be compared in.
 
     Each language interpolates differently — C# `{id}`, Swift `\(id)`,
     Kotlin `$id` and `${id}` — and the console guard's normaliser knows only

@@ -4,6 +4,20 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.4] — 2026-08-07
+
+### Nothing to collect here, and the version moves with the others
+
+0.57.3 gave the three native shells a guard on what they *send*, and found
+this product's shells correct: 55 writes each, 47 matched to a model, nothing
+wrong. QRME's found seven defects and recorded six of them as needing an
+input its screens did not collect; 0.57.4 collects those inputs and empties
+that record.
+
+There was nothing here to collect. The guard, its per-client reach floors and
+its record file at a ceiling of zero are unchanged and still green, and the
+three repos are cut at one version, so this is the version.
+
 ## [0.57.3] — 2026-08-07
 
 ### The request-body guard reaches the three shells, and finds them right
