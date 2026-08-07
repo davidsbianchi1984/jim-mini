@@ -1,0 +1,26 @@
+# status: backlog — 2 rows
+# ceiling: 2
+#
+# Client fields the shape guard saw a route not return, which are real anyway.
+#
+# `test_the_shape_the_client_expects.py` drives every GET binding in the
+# Windows client and compares each record's `JsonPropertyName` set against the
+# keys the route actually sent back. QRME's copy of that guard found fourteen
+# records over there declaring fields their routes have never sent. This
+# product's client came out clean: every field it declares is a field its
+# route sends, in some state.
+#
+# These two are the states the fixture cannot manufacture. The guard arms the
+# crash watch and builds the adaptation profile before it drives — driving
+# into a state beats recording that you did not — but neither of these can be
+# reached that way, and each names why.
+#
+# Ratcheted: this list may shrink and must never grow.
+#
+AdaptationProfile.note        # only while `built` is false — it is the sentence
+                              # explaining that there is no profile yet, so a
+                              # fixture that builds one can never see it
+PresenceBeat.deepened_line    # only when a real model answers. Under the stub
+                              # provider `deepen` returns the offline line with
+                              # `deepened: false` and says so, which is the
+                              # whole point of that branch

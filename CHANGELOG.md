@@ -4,6 +4,57 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.5] — 2026-08-07
+
+### The guard that found fourteen fictions next door, pointed here
+
+0.56.4 built a guard in QRME that reads the Windows client's GET bindings,
+drives each one against a live app, and asserts every `JsonPropertyName` in
+the bound record is a key the route actually returned. It found fourteen
+records over there declaring fields their routes have never sent — a
+composition card promising a `name` and a `share` on a route that has only
+ever sent `display_name` and `weight`, a button drawing separators with
+nothing between them because nobody had run it.
+
+That changelog said the guard belonged here too and was not here yet. It is
+now, adapted to this product's fixtures.
+
+**This client came out clean.** Every field it declares is a field its route
+sends. That is worth saying plainly rather than reporting as a null result:
+the two clients were written in the same weeks by the same hand, and only one
+of them was written from the wire.
+
+#### Driving into the state beats recording that you did not
+
+Two records here return a short *nothing here yet* body until the feature is
+on, and their full shape afterwards — the crash watch until it is armed, the
+adaptation profile until one is built. A fixture that only enrolled would have
+put twelve real fields in the unverified record. Arming the watch and building
+the profile is two calls, so the guard makes them, and the record closes at
+two rows:
+
+* `AdaptationProfile.note`, the sentence explaining there is no profile yet —
+  only visible while `built` is false, which a fixture that builds one can
+  never see;
+* `PresenceBeat.deepened_line`, only present when a real model answers. Under
+  the stub provider `deepen` returns the offline line and says so, which is
+  the whole point of that branch.
+
+Both name the state that produces them. A guard that cannot tell a conditional
+field from a fiction is a guard nobody can trust.
+
+#### Two things the port fixed in all three copies
+
+The record parser counted a wrapped reason — an indented `#` continuing the
+line above — as an empty row, so a record with any wrapped comment failed its
+own ratchet. Filtering on the parsed result rather than the raw line fixes it.
+
+And a deliberately malformed injection, made while checking the guard fires,
+showed the record-block regex will run one record's body into the next when a
+paren is unbalanced — reporting fields against the wrong record name, which
+reads as a real finding and is not one. There is now an assertion that no
+extracted body contains another record.
+
 ## [0.56.4] — 2026-08-07
 
 ### Cut together at one version
