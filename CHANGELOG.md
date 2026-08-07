@@ -4,6 +4,50 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.5] — 2026-08-07
+
+### Nothing here builds the phones, so nothing here noticed when they stopped
+
+0.57.4 shipped a fix and a defect in the same release. Renaming iOS's `venue`
+to `locality` collided with a `locality` already declared in the same
+`TradeSection` — two stored properties of one name in one type, which does not
+compile. It reached `main` and sat there for a release.
+
+The reason is worth writing down rather than apologising for: **every guard in
+these repos reads the shell sources as text.** The request-body guard extracts
+call shapes; the response guards extract declarations; none of them parse, so
+none of them can see a syntax error. `tsc --noEmit` covers the console. There
+is no Swift, Kotlin or C# toolchain on the machine these run on, so there is
+nothing to compile with.
+
+    asked     do the shells say the right things to the server
+    mattered  do the shells still compile
+
+### What this checks, and what it does not
+
+`test_the_shells_still_parse.py` does not typecheck. It checks the one class
+of breakage that is invisible to a text-reading guard, cheap to detect without
+a compiler, and *certain* to stop a build:
+
+* a name declared twice in one scope — a Swift type's stored properties, a
+  Compose function's `remember`ed state, a C# type's fields;
+* braces that do not balance, counting through strings and comments.
+
+A green run here does not mean the shells build. It means they do not contain
+the specific mistake that got past everything else. That is a narrow claim,
+and it is stated narrowly in the file: the whole arc since 0.56.4 has been
+guards that measured slightly the wrong thing and passed, and a check that
+promised "these compile" would be the next one.
+
+The scope reader counts braces rather than matching a regex, because a pattern
+that stops at the first `}` reads half a type — and half a type has no
+duplicates in the half it did not read. Nested declarations are excluded: a
+`var` inside a closure is not a member, and an inner type's property belongs
+to the inner type.
+
+Three defects were injected and confirmed to fail it, the first being 0.57.4's
+own, put back verbatim.
+
 ## [0.57.4] — 2026-08-07
 
 ### Nothing to collect here, and the version moves with the others
