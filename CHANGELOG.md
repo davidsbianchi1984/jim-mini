@@ -4,6 +4,29 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.3] — 2026-08-07
+
+### The request-body guard reaches the three shells, and finds them right
+
+0.57.2 asked what the console sends against the schema FastAPI validates with,
+and found two fields on the monitor route being discarded on arrival. The
+defect that motivated that release was visible only because the four clients
+were read by hand; the guard read one of them.
+
+This release reads the other three. Each needs its own extractor — C#
+anonymous objects, Swift dictionary literals, Kotlin `.put` chains share
+nothing but the question — and the comparison is imported unchanged.
+
+**55 writes per shell, 51 / 37 / 37 of them with a readable body, 47 matched
+to a model, and nothing wrong.** QRME found seven distinct defects in the same
+sweep, including a marketplace call that had never worked from any native
+surface; this product's shells send what their routes ask for.
+
+A clean result rather than an absence: three defects were injected and
+confirmed to fail the guard before it shipped, and the reach floors are set
+per client — because the failure they catch is per client, and a pattern that
+stops matching one file leaves the other two green and says nothing.
+
 ## [0.57.2] — 2026-08-07
 
 ### Four clients agreed with each other and all four were wrong about the server

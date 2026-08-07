@@ -1,0 +1,14 @@
+# status: backlog — 0 rows
+# ceiling: 0
+#
+# Native writes whose body the route cannot accept, which are real. There
+# are none.
+#
+# QRME found seven distinct defects on its first honest run, one fixed and
+# six recorded. This product had none — and that is a result rather than an
+# absence: three injected defects were confirmed to fail this guard before
+# it shipped, and the per-client reach floors are set to what each shell
+# honestly yields, so a pattern that stops matching one of them fails
+# loudly instead of leaving the other two green.
+#
+# Ratcheted: this list may shrink and must never grow.
