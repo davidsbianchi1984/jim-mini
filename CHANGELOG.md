@@ -4,6 +4,37 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.6] — 2026-08-07
+
+### The half of the Windows shell that is not code
+
+0.57.5's parse check globbed `*.swift`, `*.kt` and `*.cs` and reported the
+three shells parseable. The Windows shell's screens are XAML, and it never
+opened one.
+
+```
+asked     do the files that look like code still parse
+mattered  do the shells' screens still parse
+```
+
+### Added
+
+- Four markup checks in `test_the_shells_still_parse.py`: the page is
+  well-formed XML; no two elements in it share a name; every handler it names
+  exists in its code-behind; every control the code-behind drives is named in
+  the page. Reach floors on all four — 15 pages, 400 names, 92 handlers, 348
+  driven controls — and four injected defects confirming each can fail.
+
+### Fixed
+
+- Three pages carried `x:Name` twice on a single element, which is a duplicate
+  attribute and stops any XML reader at the tag: the custody screen's
+  empty-state note (`EmptyText` / `EmptyNote`), the overview screen's sealed
+  badge (`AdaptationVaulted` / `SealedText`), and the safety screen's alarm
+  question button (`AskAlarmButton` / `AlarmAskButton`). In each case the
+  code-behind drove both names, so the fix had to decide which control was
+  meant rather than drop an attribute.
+
 ## [0.57.5] — 2026-08-07
 
 ### Nothing here builds the phones, so nothing here noticed when they stopped

@@ -121,7 +121,7 @@ public sealed partial class OverviewPage : Page
             AdaptationHelps.ItemsSource = null;
             AdaptationDials.Text = "";
             AdaptationMethod.Text = "";
-            AdaptationVaulted.Visibility = Visibility.Collapsed;
+            SealedText.Visibility = Visibility.Collapsed;
             return;
         }
         AdaptationSummary.Text = L10n.T("ov.confidence")
@@ -147,7 +147,7 @@ public sealed partial class OverviewPage : Page
             dials.Add(L10n.T("ov.work").Replace("{job}", job));
         AdaptationDials.Text = string.Join(" · ", dials);
         AdaptationMethod.Text = p.Profile?.Method ?? "";
-        AdaptationVaulted.Visibility = p.Vaulted ? Visibility.Visible : Visibility.Collapsed;
+        SealedText.Visibility = p.Vaulted ? Visibility.Visible : Visibility.Collapsed;
     }
 
     /// <summary>The offline fine-tune. A 404 before anything is trained is

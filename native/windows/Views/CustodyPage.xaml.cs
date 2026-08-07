@@ -70,7 +70,7 @@ public sealed partial class CustodyPage : Page
                 : "⚠️ Audit chain status unknown";
             ChainText.Visibility = Visibility.Visible;
             RecordsList.ItemsSource = c.Records;
-            EmptyText.Visibility = c.Records.Length == 0
+            EmptyNote.Visibility = c.Records.Length == 0
                 ? Visibility.Visible : Visibility.Collapsed;
             ErrorText.Visibility = Visibility.Collapsed;
         }
@@ -79,7 +79,7 @@ public sealed partial class CustodyPage : Page
             ErrorText.Text = ex.Message;   // e.g. "no PDI vault configured"
             ErrorText.Visibility = Visibility.Visible;
             ChainText.Visibility = Visibility.Collapsed;
-            EmptyText.Visibility = Visibility.Collapsed;
+            EmptyNote.Visibility = Visibility.Collapsed;
         }
     }
 

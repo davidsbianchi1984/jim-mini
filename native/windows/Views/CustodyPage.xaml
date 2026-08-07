@@ -34,8 +34,7 @@
                        Foreground="{StaticResource JimGreenBrush}" Visibility="Collapsed" />
             <TextBlock x:Name="ErrorText" FontSize="13" TextWrapping="Wrap"
                        Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
-            <TextBlock x:Name="EmptyText"
-                       x:Name="EmptyNote"
+            <TextBlock x:Name="EmptyNote"
                        Foreground="{StaticResource JimT2Brush}" FontSize="13"
                        TextWrapping="Wrap" Visibility="Collapsed" />
 

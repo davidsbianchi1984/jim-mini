@@ -54,8 +54,7 @@
                     </StackPanel>
 
                     <TextBox x:Name="AlarmQuestionBox" />
-                    <Button x:Name="AskAlarmButton" Click="OnAskAlarmGuidance"
-                            x:Name="AlarmAskButton" />
+                    <Button x:Name="AlarmAskButton" Click="OnAskAlarmGuidance" />
                     <TextBlock x:Name="AlarmGuidanceText" TextWrapping="Wrap"
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="AlarmSaid" TextWrapping="Wrap" FontSize="12"

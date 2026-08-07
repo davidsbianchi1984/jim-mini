@@ -133,9 +133,8 @@
                     </ItemsControl>
                     <TextBlock x:Name="AdaptationDials" FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource JimT3Brush}" />
-                    <TextBlock x:Name="AdaptationVaulted" FontSize="11" Visibility="Collapsed"
-                               Foreground="{StaticResource JimGreenBrush}"
-                               x:Name="SealedText" />
+                    <TextBlock x:Name="SealedText" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource JimGreenBrush}" />
                     <TextBlock x:Name="AdaptationMethod" FontSize="10" TextWrapping="Wrap"
                                Foreground="{StaticResource JimT3Brush}" />
                     <Button x:Name="RebuildButton"
