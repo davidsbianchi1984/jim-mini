@@ -2107,6 +2107,7 @@ private fun PresencePanel(vm: GuardianViewModel) {
     var reach by remember { mutableStateOf<List<String>>(emptyList()) }
     var grew by remember { mutableStateOf<PresenceGrowth?>(null) }
     var carry by remember { mutableStateOf<PresenceBearingView?>(null) }
+    var aloud by remember { mutableStateOf<PresenceSpoken?>(null) }
     var spoken by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     LaunchedEffect(Unit) {
@@ -2197,10 +2198,42 @@ private fun PresencePanel(vm: GuardianViewModel) {
                                 r.getOrNull()?.let { spoken = spoken + (b.slot to (it.spoken ?: it.english)) }
                             }
                         }) { Text(L10n.t("presence.deepen", vm.language), color = Jim.BrandA, fontSize = 12.sp) }
+                        // Say it — and let the room decide. The verdict is
+                        // the server's: letting a client work out whether the
+                        // room is safe is how the picker became a caption.
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.presenceSay(vm.uid!!, vm.token!!, b.slot) }) { r ->
+                                aloud = r.getOrNull() ?: aloud
+                            }
+                        }) { Text(L10n.t("presence.aloud", vm.language), color = Jim.T2, fontSize = 12.sp) }
                     }
                 }
             }
         }
+
+        // What the room did with it. Its own card: a withheld line is a
+        // thing that happened, not a missing button.
+        aloud?.let { a ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(a.speaksOn, color = Jim.Txt, fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold)
+                Text(a.english, color = Jim.Txt, fontSize = 14.sp)
+                Text(if (a.spoken) L10n.t("presence.aloud.said", vm.language)
+                     else if (a.hasAudio) L10n.t("presence.aloud.held", vm.language)
+                     else L10n.t("presence.aloud.nosound", vm.language),
+                    color = Jim.T2, fontSize = 11.sp)
+                a.withheld.forEach { h -> Text(h, color = Jim.T3, fontSize = 10.sp) }
+                if (a.whyNotAloud.isNotBlank()) {
+                    Text(a.whyNotAloud, color = Jim.T3, fontSize = 10.sp)
+                }
+            }
+        }
+
+        TextButton(onClick = {
+            vm.call({ ApiClient.presenceDue(vm.uid!!, vm.token!!) }) { r ->
+                aloud = r.getOrNull() ?: aloud
+            }
+        }) { Text(L10n.t("presence.hands.free", vm.language), color = Jim.BrandA, fontSize = 12.sp) }
 
         base?.let { bl ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {

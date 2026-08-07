@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import {
   api, type PresenceBaseline, type PresenceBearingView, type PresenceBeat,
   type PresenceDay, type PresenceGrowth,
-  type PresenceReach, type PresenceSurfaces, type PresenceWho,
+  type PresenceReach, type PresenceSpoken, type PresenceSurfaces,
+  type PresenceWho,
 } from "../api";
 import { fill, t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
@@ -71,6 +72,7 @@ export function Presence() {
   const [grew, setGrew] = useState<PresenceGrowth | null>(null);
   const [carry, setCarry] = useState<PresenceBearingView | null>(null);
   const [spoken, setSpoken] = useState<Record<string, string>>({});
+  const [aloud, setAloud] = useState<PresenceSpoken | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -117,6 +119,27 @@ export function Presence() {
       const got = await api.presenceDeepen(uid, token, slot);
       setSpoken((p) => ({ ...p, [slot]: got.spoken ?? got.english }));
     } catch (e) { setError((e as Error).message); }
+  }
+
+  /** Say it — and let the room decide whether it may be said.
+   *
+   *  The verdict is the server's. Handing a client the line and letting it
+   *  work out whether the room is safe is exactly how the surface picker
+   *  spent a release as a caption: `reads_health_aloud` was on the wire from
+   *  the first day and every reader was a label.
+   */
+  async function sayIt(slot: string) {
+    if (!uid || !token) return;
+    try { setAloud(await api.presenceSay(uid, token, slot)); }
+    catch (e) { setError((e as Error).message); }
+  }
+
+  /** The hands-free question, on a button here so a person can see what a
+   *  device on a timer would get. */
+  async function askDue() {
+    if (!uid || !token) return;
+    try { setAloud(await api.presenceDue(uid, token)); }
+    catch (e) { setError((e as Error).message); }
   }
 
   /** The dial. A register, never a capability — which is why the card that
@@ -208,12 +231,41 @@ export function Presence() {
                   <button onClick={() => deepen(b.slot)}>
                     {tr("presence.deepen", lang)}
                   </button>
+                  <button onClick={() => sayIt(b.slot)}>
+                    {tr("presence.aloud", lang)}
+                  </button>
                 </>
               )}
             </div>
           ))}
         </div>
       )}
+
+      {/* What the room did with it. Rendered as its own card because a
+          withheld line is a thing that happened, not a missing button. */}
+      {aloud && (
+        <div className="card">
+          <p><strong>{aloud.speaks_on}</strong></p>
+          <p>{aloud.english}</p>
+          <p className="muted small">
+            {aloud.spoken
+              ? tr("presence.aloud.said", lang)
+              : aloud.surface_has_audio
+                ? tr("presence.aloud.held", lang)
+                : tr("presence.aloud.nosound", lang)}
+          </p>
+          {aloud.withheld.length > 0 && (
+            <p className="muted small">{aloud.withheld.join(" · ")}</p>
+          )}
+          {aloud.why_not_aloud && (
+            <p className="muted small">{aloud.why_not_aloud}</p>
+          )}
+        </div>
+      )}
+
+      <div className="row">
+        <button onClick={askDue}>{tr("presence.hands.free", lang)}</button>
+      </div>
 
       {base && (
         <div className="card">

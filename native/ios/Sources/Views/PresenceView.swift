@@ -24,6 +24,7 @@ struct PresenceView: View {
     @State private var reach: PresenceReach?
     @State private var grew: PresenceGrowth?
     @State private var carry: PresenceBearingView?
+    @State private var aloud: PresenceSpoken?
     @State private var spoken: [String: String] = [:]
 
     var body: some View {
@@ -106,12 +107,44 @@ struct PresenceView: View {
                                         Button(L10n.t("presence.deepen", state.language)) {
                                             Task { await deepen(b.slot) }
                                         }.font(.caption)
+                                        Button(L10n.t("presence.aloud", state.language)) {
+                                            Task { await sayIt(b.slot) }
+                                        }.font(.caption)
                                     }
                                 }
                             }
                         }
                     }.card()
                 }
+
+                // What the room did with it. Its own card, because a
+                // withheld line is a thing that happened rather than a
+                // missing button.
+                if let a = aloud {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(a.speaks_on).font(.headline)
+                            .foregroundStyle(Theme.txt)
+                        Text(a.english).font(.subheadline)
+                            .foregroundStyle(Theme.txt)
+                        Text(a.spoken
+                             ? L10n.t("presence.aloud.said", state.language)
+                             : a.surface_has_audio
+                               ? L10n.t("presence.aloud.held", state.language)
+                               : L10n.t("presence.aloud.nosound", state.language))
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                        ForEach(a.withheld, id: \.self) { held in
+                            Text(held).font(.caption2).foregroundStyle(Theme.t3)
+                        }
+                        if !a.why_not_aloud.isEmpty {
+                            Text(a.why_not_aloud).font(.caption2)
+                                .foregroundStyle(Theme.t3)
+                        }
+                    }.card()
+                }
+
+                Button(L10n.t("presence.hands.free", state.language)) {
+                    Task { await askDue() }
+                }.font(.caption)
 
                 if let bl = base {
                     VStack(alignment: .leading, spacing: 6) {
@@ -224,6 +257,20 @@ struct PresenceView: View {
             uid: uid, token: token, slot: slot) {
             spoken[slot] = b.spoken ?? b.english
         }
+    }
+
+    /// Say it — and let the room decide whether it may be said. The verdict
+    /// is the server's: handing a client the line and letting it work out
+    /// whether the room is safe is how the picker became a caption.
+    private func sayIt(_ slot: String) async {
+        guard let uid = state.userId, let token = state.userToken else { return }
+        aloud = try? await ApiClient.shared.presenceSay(
+            uid: uid, token: token, slot: slot)
+    }
+
+    private func askDue() async {
+        guard let uid = state.userId, let token = state.userToken else { return }
+        aloud = try? await ApiClient.shared.presenceDue(uid: uid, token: token)
     }
 
     /// The dial. A register, never a capability — so the card that changes it

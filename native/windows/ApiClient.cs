@@ -498,6 +498,20 @@ public record PresenceSurfaces(
 /// alone. <c>Unchanged</c> is decoded and rendered rather than trusted from a
 /// comment: a bearing that quietly narrowed what a health guardian watches
 /// would be a setting that hurts whoever turned it.</summary>
+/// <summary>A beat plus the room's verdict on it. The withholding is decided
+/// on the server, before anything is synthesised: the surface rule spent a
+/// release as a caption next to a button, reported by <c>surfaces()</c> and
+/// read by nothing.</summary>
+public record PresenceSpoken(
+    [property: JsonPropertyName("speaks_on")] string SpeaksOn,
+    [property: JsonPropertyName("spoken")] bool Spoken,
+    [property: JsonPropertyName("shown")] bool Shown,
+    [property: JsonPropertyName("withheld")] string[]? Withheld,
+    [property: JsonPropertyName("why_not_aloud")] string WhyNotAloud,
+    [property: JsonPropertyName("surface_has_audio")] bool SurfaceHasAudio,
+    [property: JsonPropertyName("english")] string English,
+    [property: JsonPropertyName("speak")] bool Speak);
+
 public record PresenceBearingEffect(
     [property: JsonPropertyName("says")] string Says);
 
@@ -1137,6 +1151,16 @@ public sealed class ApiClient
                                                         string surface) =>
         Send<PresenceSurfaces>(Put($"/presence/{uid}/surface",
             new { speaks_on = surface }, token));
+
+    /// <summary>The beat, and whether this surface may speak it.</summary>
+    public Task<PresenceSpoken> PresenceSay(string uid, string token,
+                                            string slot) =>
+        Send<PresenceSpoken>(Get($"/presence/{uid}/say?slot={slot}", token));
+
+    /// <summary>The hands-free question. Does not record — a machine polling
+    /// on a timer must not burn a beat nobody heard.</summary>
+    public Task<PresenceSpoken> PresenceDue(string uid, string token) =>
+        Send<PresenceSpoken>(Get($"/presence/{uid}/due", token));
 
     /// <summary>The bearing: companion by default, professional on
     /// request.</summary>

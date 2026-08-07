@@ -82,7 +82,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.51.0",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.52.0",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -1964,6 +1964,32 @@ def create_app(qrme_client: QRMEClient | None = None,
             return presence.set_bearing(user_id, body.bearing)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
+
+    @app.get("/presence/{user_id}/say")
+    def presence_say(user_id: str, request: Request,
+                     slot: str = "morning") -> dict:
+        """The beat, and whether this surface may speak it.
+
+        The surface rule stops being a label here. `surfaces()` has reported
+        `reads_health_aloud` since the picker shipped and nothing read it —
+        every consumer was a screen rendering the word next to a button. The
+        decision now happens before anything is synthesised.
+        """
+        _user_or_404(user_id, request)
+        return presence.say(user_id, slot=slot)
+
+    @app.get("/presence/{user_id}/due")
+    def presence_due(user_id: str, request: Request,
+                     hour: int | None = None) -> dict:
+        """The hands-free question: is there something to say right now.
+
+        One question a device on a timer has to know how to ask. The slot is
+        taken from the hour rather than the caller, so a watch, a pair of
+        earbuds and a speaker cannot disagree about what time of day it is
+        for the same person.
+        """
+        _user_or_404(user_id, request)
+        return presence.due(user_id, hour=hour)
 
     @app.get("/presence/{user_id}/growth")
     def presence_growth(user_id: str, request: Request) -> dict:

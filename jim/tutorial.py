@@ -439,6 +439,21 @@ LESSONS: tuple[dict, ...] = (
          screens=(106, 107),
          try_it="Say 'keep it professional' in a normal message and watch the "
                 "reply come back saying which bearing it used."),
+    dict(key="aloud", chapter="Day to day", title="What the room hears",
+         what="Where it speaks decides what it may say. On earbuds or "
+              "headphones — in your ear, nobody else's — it will read you "
+              "anything. On a speaker, glasses or AR, it holds back the "
+              "things this app treats as private everywhere else: a vital, a "
+              "condition, a medication, money, your journal, a crisis. Those "
+              "arrive on the screen instead, with the reason, because going "
+              "quiet without saying why takes the beat away rather than "
+              "moving it. The decision is made here, before any audio exists, "
+              "so it is not a setting a client can talk itself out of. And "
+              "harmless lines are not caught by it: a good streak may be said "
+              "out loud in a room.",
+         screens=(106, 107),
+         try_it="Set where it speaks to the speaker, then ask it to say a "
+                "beat — the answer tells you what it held and why."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

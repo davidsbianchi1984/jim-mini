@@ -34,6 +34,8 @@ public sealed partial class PresencePage : Page
         TodayHead.Text = L10n.T("presence.today");
         OfflineNote.Text = L10n.T("presence.offline");
         BaselineHead.Text = L10n.T("presence.baseline");
+        SayButton.Content = L10n.T("presence.aloud");
+        DueButton.Content = L10n.T("presence.hands.free");
         BearingHead.Text = L10n.T("presence.bearing");
         BearingSameHead.Text = L10n.T("presence.bearing.same");
         // Spelled out rather than "presence.bearing." + choice: a key built
@@ -121,6 +123,36 @@ public sealed partial class PresencePage : Page
             Beats.Text = b.Slot + " · " + (b.Spoken ?? b.English);
         }
         catch { }
+    }
+
+    /// <summary>Say it — and let the room decide whether it may be said. The
+    /// verdict is the server's: letting a client work out whether the room is
+    /// safe is how the picker became a caption.</summary>
+    private async void OnSay(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try { ShowAloud(await ApiClient.Shared.PresenceSay(s.Uid!, s.Token!, _slot)); }
+        catch { }
+    }
+
+    private async void OnDue(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try { ShowAloud(await ApiClient.Shared.PresenceDue(s.Uid!, s.Token!)); }
+        catch { }
+    }
+
+    private void ShowAloud(PresenceSpoken a)
+    {
+        AloudLine.Text = a.SpeaksOn + "\n" + a.English;
+        AloudVerdict.Text = a.Spoken
+            ? L10n.T("presence.aloud.said")
+            : a.SurfaceHasAudio
+                ? L10n.T("presence.aloud.held")
+                : L10n.T("presence.aloud.nosound");
+        AloudHeld.Text = string.Join("\n",
+            (a.Withheld ?? Array.Empty<string>()).Append(a.WhyNotAloud)
+                .Where(x => !string.IsNullOrWhiteSpace(x)));
     }
 
     /// <summary>The dial. A register, never a capability — so this renders

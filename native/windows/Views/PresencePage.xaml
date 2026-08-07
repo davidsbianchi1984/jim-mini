@@ -41,6 +41,17 @@
             <TextBlock x:Name="Areas" Foreground="{StaticResource JimT2Brush}"
                        FontSize="12" TextWrapping="Wrap" />
 
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button x:Name="SayButton" Click="OnSay" />
+                <Button x:Name="DueButton" Click="OnDue" />
+            </StackPanel>
+            <TextBlock x:Name="AloudLine" Foreground="{StaticResource JimTxtBrush}"
+                       FontSize="12" TextWrapping="Wrap" />
+            <TextBlock x:Name="AloudVerdict" Foreground="{StaticResource JimT2Brush}"
+                       FontSize="11" TextWrapping="Wrap" />
+            <TextBlock x:Name="AloudHeld" Foreground="{StaticResource JimT3Brush}"
+                       FontSize="11" TextWrapping="Wrap" />
+
             <TextBlock x:Name="BearingHead" FontSize="16" FontWeight="Bold"
                        Foreground="{StaticResource JimTxtBrush}" />
             <StackPanel Orientation="Horizontal" Spacing="10">

@@ -814,6 +814,23 @@ export interface PresenceSurfaces {
               reads_health_aloud: boolean; withholds: string[] }[];
 }
 
+/** A beat plus the room's verdict on it.
+ *
+ *  The withholding is decided on the server, before anything is synthesised,
+ *  because the surface rule spent a whole release as a caption next to a
+ *  button — reported by `surfaces()` and read by nothing. */
+export interface PresenceSpoken extends PresenceBeat {
+  speaks_on: string;
+  spoken: boolean;
+  shown: boolean;
+  withheld: string[];
+  why_not_aloud: string;
+  surface_is_private: boolean;
+  surface_has_audio: boolean;
+  due?: boolean;
+  slot_from_hour?: string;
+}
+
 export interface PresenceBearingView {
   bearing: string; default: string; choices: string[];
   effect: { registers: string[]; asks_about_your_day: boolean;
@@ -1112,6 +1129,12 @@ export const api = {
     req<PresenceSurfaces>(`/presence/${uid}/surfaces`, { token }),
   presenceChooseSurface: (uid: string, token: string, surface: string) =>
     req<PresenceSurfaces>(`/presence/${uid}/surface`, { token, method: "PUT", body: { speaks_on: surface } }),
+  presenceSay: (uid: string, token: string, slot: string) =>
+    req<PresenceSpoken>(`/presence/${uid}/say?slot=${encodeURIComponent(slot)}`, { token }),
+  // The hands-free question. Deliberately does not record: a device polling
+  // every ten minutes must not burn a beat the person never heard.
+  presenceDue: (uid: string, token: string) =>
+    req<PresenceSpoken>(`/presence/${uid}/due`, { token }),
   presenceBearing: (uid: string, token: string) =>
     req<PresenceBearingView>(`/presence/${uid}/bearing`, { token }),
   // A register, never a capability — the same six areas are watched in both,

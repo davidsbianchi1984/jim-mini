@@ -926,6 +926,126 @@ def choose_surface(user_id: str, surface: str) -> dict:
     return surfaces(user_id)
 
 
+#: Which line keys carry something from :data:`NOT_ALOUD_IN_COMPANY`.
+#:
+#: Written as a table rather than inferred from the area, because the area is
+#: too coarse in the direction that matters: `health_fitness` covers both "your
+#: resting rate has been high for four days" and "nice streak on the walking".
+#: One of those is a fact about somebody's body and the other is not, and a
+#: rule that treats them the same either leaks the first or silences the
+#: second. Silencing the harmless one is how a safety feature gets turned off.
+SPOKEN_CARRIES: dict[str, tuple[str, ...]] = {
+    "presence.notice.drift": ("vital",),
+    "presence.notice.mood": ("condition",),
+    "presence.nudge.goal": (),
+    "presence.nudge.followup": ("condition",),
+    "presence.celebrate.streak": (),
+    "presence.celebrate.goal": (),
+    "presence.curious.area": (),
+    "presence.curious.open": (),
+    "presence.company.here": (),
+    "presence.company.weather": (),
+    "presence.people.alone": (),
+    "presence.people.offer": (),
+    "presence.quiet.nothing": (),
+    "presence.quiet.held": (),
+}
+
+
+def carries(line_key: str) -> tuple[str, ...]:
+    """What a line would say out loud, in the categories this product already
+    treats as private. An unknown key is treated as carrying everything —
+    a beat added later is withheld on a shared surface until somebody decides
+    otherwise, which is the safe direction for the default to fail in."""
+    return SPOKEN_CARRIES.get(line_key, NOT_ALOUD_IN_COMPANY)
+
+
+def say(user_id: str, slot: str = "morning", record: bool = True) -> dict:
+    """The beat, and whether this surface is allowed to speak it.
+
+    ## Why this route exists
+
+    `surfaces()` has returned `reads_health_aloud` since the surface picker
+    shipped, and until now **nothing read it**. Every consumer was a screen
+    rendering the word "shown" or "aloud" next to a button. The rule was a
+    label: a client could take a beat about somebody's resting rate and put it
+    through a living-room speaker, and no code in this product would stop it
+    or know it happened.
+
+    That is the shape this codebase keeps finding — a promise on the wire with
+    no path enforcing it — so the decision moves here, before anything is
+    synthesised, and the answer says which of three things happened:
+
+    * **the surface has no voice at all** (a watch, a phone screen). Nothing
+      is withheld; there is simply nothing to speak with, and the beat is
+      shown;
+    * **the surface is one other people can hear** and the line carries a
+      vital, a condition, a medication, money, a journal or a crisis. Withheld
+      and shown instead, with the categories named so a screen can say why
+      rather than going mysteriously quiet;
+    * **it can be spoken**, and it is.
+
+    What this can and cannot enforce, stated plainly: this deployment will not
+    synthesise a withheld line, and the wire says `spoken: false` with the
+    reason. The line is still returned, because the person is still owed their
+    beat on a screen. A client that takes that text and reads it aloud anyway
+    has done something the product told it not to — the same honesty `plays`
+    keeps in the feed, where the promise is kept by whoever holds the file.
+    """
+    out = beat(user_id, slot=slot, record=record)
+    surface = _chosen_surface(user_id)
+    spec = SURFACES.get(surface, SURFACES["phone_screen"])
+    held = tuple(c for c in carries(out["line_key"])
+                 if c in NOT_ALOUD_IN_COMPANY)
+
+    if not out["speak"]:
+        # Silence is still silence. There is nothing to withhold and nothing
+        # to speak, and saying "withheld" here would invent a refusal.
+        spoken, why, withheld = False, "there is nothing to say", ()
+    elif not spec["audio"]:
+        spoken, why, withheld = False, f"{surface} has no voice", ()
+    elif held and not spec["private"]:
+        spoken, why, withheld = False, (
+            f"{surface} is a surface other people can hear"), held
+    else:
+        spoken, why, withheld = True, "", ()
+
+    out.update({
+        "speaks_on": surface,
+        "spoken": spoken,
+        "shown": not spoken,
+        "withheld": list(withheld),
+        "why_not_aloud": why,
+        # The rule itself, on the wire, so a screen can explain the silence
+        # rather than presenting it as a failure.
+        "surface_is_private": spec["private"],
+        "surface_has_audio": spec["audio"],
+    })
+    return out
+
+
+def due(user_id: str, hour: int | None = None) -> dict:
+    """Is there something to say *now* — the hands-free question.
+
+    A device that wakes on a timer asks this and gets one of two answers. It
+    is deliberately the only question such a device has to know how to ask:
+    the slot comes from the hour rather than from the caller, so a watch, a
+    pair of earbuds and a speaker cannot disagree about what time of day it
+    is for the same person.
+
+    Nothing here is a new decision about *whether* to speak — `say` already
+    holds all of it, including the twenty-hour repeat rule that keeps a
+    guardian from becoming a notification. This only answers *is it time*.
+    """
+    now = _now().hour if hour is None else hour
+    slot = ("morning" if now < 11 else
+            "midday" if now < 17 else "evening")
+    out = say(user_id, slot=slot, record=False)
+    out["due"] = bool(out["speak"])
+    out["slot_from_hour"] = slot
+    return out
+
+
 def _chosen_surface(user_id: str) -> str:
     row = db.connect().execute(
         "SELECT surface FROM presence_surface WHERE user_id=?",

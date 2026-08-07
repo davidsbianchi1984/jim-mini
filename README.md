@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.51.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.52.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -342,6 +342,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.52.0** | **What the room hears** — on a speaker, glasses or AR a vital, condition, medication, money, journal or crisis is held back and shown instead, decided on the server before anything is synthesised. Plus `/due`: the one question a device on a timer has to know how to ask |
 | **0.51.0** | **How it carries itself** — companion by default, professional on request or just by saying so. A register and never a capability: the same six areas watched and every safety path identical in both. Plus a company beat that wants nothing, and a lonely run whose beat points at people |
 | **0.50.0** | **The coach that speaks first** — a presence in the parts of a companion worth having: it starts things, notices from six areas of your own history, and says why. Decided entirely offline; a model may only reword it. What it will not be is on the wire — not your partner, no body, never the only one |
 | **0.49.0** | **The Feed tab is a door, not a copy** — QRME's public stream shown here one card at a time, GET-only by construction: no write route, no binding, and `plays`/`entering`/`ringing` passed through whole rather than recomputed. Nothing about what was watched is stored on this side |
@@ -767,6 +768,49 @@ promised. A dial that quietly narrowed what a health guardian sees would be a
 dial that hurts whoever turned it, so the only thing it changes is how a
 sentence is worded. It never silences a beat that was **earned by evidence**:
 three low check-ins still speaks in both.
+
+### What the room hears — the surface rule, enforced
+
+The surface picker shipped in 0.50.0 reporting `reads_health_aloud` for every
+surface, and **nothing read it**. Every consumer in the codebase was a screen
+rendering the word "shown" or "aloud" next to a button — the console and three
+shells, and nothing else. A client could take a beat about somebody's resting
+rate and put it through a living-room speaker, and no code here would stop it
+or know. The picker looked like a safety feature and was a caption.
+
+`GET /presence/{user_id}/say` moves the decision to the server, **before
+anything is synthesised**, and the answer says which of three things happened:
+
+| | |
+| --- | --- |
+| the surface has no voice | a watch, a phone screen. Nothing withheld — there is simply nothing to speak with, and calling that "withheld" would tell somebody their guardian was censoring itself when it was reading a screen |
+| the room can hear | speaker, glasses, AR — and the line carries a vital, condition, medication, money, journal or crisis. Withheld, **shown instead**, with the categories named |
+| it may be spoken | and it is |
+
+Which lines carry what is a **table**, not an inference from the area, because
+the area is too coarse in the direction that matters: `health_fitness` covers
+both *"your resting rate has been high for four days"* and *"nice streak on the
+walking"*. A rule treating those the same either leaks the first or silences
+the second — and over-withholding is how a safety feature becomes useless and
+gets switched off, taking the real protection with it. A line key nobody has
+classified is withheld on a shared surface by default; that is the safe
+direction to fail in.
+
+What this can and cannot enforce, plainly: this deployment will not synthesise
+a withheld line, and the wire says `spoken: false` with the reason. The line is
+still returned, because the person is still owed their beat on a screen. A
+client that reads that text aloud anyway has done something the product told it
+not to — the same honesty `plays` keeps in the feed, where the promise is kept
+by whoever holds the file.
+
+### Hands-free — one question a device on a timer has to know
+
+`GET /presence/{user_id}/due` is the whole interface. The slot comes from the
+hour rather than the caller, so a watch, a pair of earbuds and a speaker cannot
+disagree about what time of day it is for the same person, and the surface
+verdict rides along so a device never has to judge the room itself. It
+deliberately **does not record**: a hands-free product polls, and a line filed
+as said but never heard is a line the person never gets.
 
 ### Two beats that are about the relationship rather than the week
 

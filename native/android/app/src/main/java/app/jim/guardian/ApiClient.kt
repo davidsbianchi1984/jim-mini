@@ -152,6 +152,14 @@ data class PresenceGrowth(val beatsSpoken: Int, val areasSeen: Int,
  *  `unchanged` is carried to the screen rather than assumed: a bearing that
  *  quietly narrowed what a health guardian watches would be a setting that
  *  hurts whoever turned it, so the claim is rendered where it can be read. */
+/** A beat plus the room's verdict on it. The withholding is decided on the
+ *  server, before anything is synthesised: the surface rule spent a release
+ *  as a caption next to a button, reported by `surfaces()` and read by
+ *  nothing. */
+data class PresenceSpoken(val speaksOn: String, val spoken: Boolean,
+                          val shown: Boolean, val withheld: List<String>,
+                          val whyNotAloud: String, val hasAudio: Boolean,
+                          val english: String, val speak: Boolean)
 data class PresenceBearingView(val bearing: String, val default: String,
                                val choices: List<String>, val says: String,
                                val unchanged: List<String>, val note: String)
@@ -1014,6 +1022,27 @@ object ApiClient {
                                       surface: String): PresenceSurfaces =
         surfacesOf(request("/presence/$uid/surface", "PUT",
             JSONObject().put("speaks_on", surface), token))
+
+    /** The beat, and whether this surface may speak it. */
+    suspend fun presenceSay(uid: String, token: String,
+                            slot: String): PresenceSpoken =
+        spokenOf(request("/presence/$uid/say?slot=$slot", token = token))
+
+    /** The hands-free question. Does not record — a device polling on a
+     *  timer must not burn a beat nobody heard. */
+    suspend fun presenceDue(uid: String, token: String): PresenceSpoken =
+        spokenOf(request("/presence/$uid/due", token = token))
+
+    private fun spokenOf(o: JSONObject): PresenceSpoken {
+        val held = o.optJSONArray("withheld")
+        return PresenceSpoken(
+            o.optString("speaks_on", ""), o.optBoolean("spoken"),
+            o.optBoolean("shown"),
+            (0 until (held?.length() ?: 0)).map { held!!.getString(it) },
+            o.optString("why_not_aloud", ""),
+            o.optBoolean("surface_has_audio"),
+            o.optString("english", ""), o.optBoolean("speak"))
+    }
 
     /** The bearing: companion by default, professional on request. */
     suspend fun presenceBearing(uid: String, token: String): PresenceBearingView =

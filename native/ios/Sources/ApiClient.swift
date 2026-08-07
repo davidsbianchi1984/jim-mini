@@ -593,6 +593,25 @@ struct PresenceSurfaces: Decodable {
 /// `unchanged` is decoded and rendered rather than trusted from a comment: a
 /// bearing that quietly narrowed what a health guardian watches would be a
 /// setting that hurts whoever turned it, so the screen shows the claim.
+/// A beat plus the room's verdict on it.
+///
+/// The withholding is decided on the server, before anything is synthesised:
+/// the surface rule spent a release as a caption next to a button, reported
+/// by `surfaces()` and read by nothing.
+struct PresenceSpoken: Decodable {
+    let speaks_on: String
+    let spoken: Bool
+    let shown: Bool
+    let withheld: [String]
+    let why_not_aloud: String
+    let surface_is_private: Bool
+    let surface_has_audio: Bool
+    let english: String
+    let speak: Bool
+    let due: Bool?
+    let slot_from_hour: String?
+}
+
 struct PresenceBearingEffect: Decodable {
     let registers: [String]
     let asks_about_your_day: Bool
@@ -1233,6 +1252,18 @@ actor ApiClient {
                                surface: String) async throws -> PresenceSurfaces {
         try await request("/presence/\(uid)/surface", method: "PUT",
                           body: ["speaks_on": surface], token: token)
+    }
+
+    /// The beat, and whether this surface may speak it.
+    func presenceSay(uid: String, token: String,
+                     slot: String) async throws -> PresenceSpoken {
+        try await request("/presence/\(uid)/say?slot=" + slot, token: token)
+    }
+
+    /// The hands-free question: is there something to say right now. Does not
+    /// record — a device polling on a timer must not burn a beat nobody heard.
+    func presenceDue(uid: String, token: String) async throws -> PresenceSpoken {
+        try await request("/presence/\(uid)/due", token: token)
     }
 
     /// The bearing: companion by default, professional on request.

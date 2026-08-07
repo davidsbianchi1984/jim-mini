@@ -353,6 +353,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "presence.surfaces": {
     en: "Where I speak", es: "Dónde hablo", fr: "Où je parle", de: "Wo ich spreche", pt: "Onde falo", it: "Dove parlo", ja: "どこで話すか", zh: "我在哪儿说话", hi: "मैं कहाँ बोलूँ", ar: "أين أتحدّث",
   },
+  "presence.aloud.held": {
+    en: "Held back — this surface is one other people can hear", es: "Retenido: en esta superficie pueden oírlo otras personas", fr: "Retenu — sur cette surface, d'autres peuvent entendre", de: "Zurückgehalten — auf dieser Fläche können andere mithören", pt: "Retido — nesta superfície outras pessoas podem ouvir", it: "Trattenuto — su questa superficie altri possono sentire", ja: "保留しました — ここは他の人にも聞こえます", zh: "已保留 — 这个设备旁边可能有别人", hi: "रोका गया — इस सतह पर दूसरे सुन सकते हैं", ar: "مُحتجَز — هذا السطح يسمعه آخرون",
+  },
+  "presence.aloud.nosound": {
+    en: "No voice on this one — read it instead", es: "Esta no tiene voz: léelo", fr: "Pas de voix ici — à lire", de: "Hier ohne Stimme — zum Lesen", pt: "Esta não tem voz — leia", it: "Qui senza voce — da leggere", ja: "ここには声がありません — 読んでください", zh: "这个没有声音 — 请阅读", hi: "इस पर आवाज़ नहीं — पढ़ लें", ar: "لا صوت هنا — اقرأه",
+  },
+  "presence.aloud.said": {
+    en: "Said out loud", es: "Dicho en voz alta", fr: "Dit à voix haute", de: "Laut gesagt", pt: "Dito em voz alta", it: "Detto ad alta voce", ja: "声に出しました", zh: "已读出", hi: "बोलकर कहा गया", ar: "قيل بصوت مسموع",
+  },
+  "presence.hands.free": {
+    en: "Anything right now?", es: "¿Algo ahora mismo?", fr: "Quelque chose maintenant ?", de: "Gerade irgendwas?", pt: "Algo agora?", it: "Qualcosa adesso?", ja: "いま何かある？", zh: "现在有什么吗？", hi: "अभी कुछ है?", ar: "هل من شيء الآن؟",
+  },
   "presence.bearing": {
     en: "How I carry myself", es: "Cómo me comporto", fr: "Comment je me tiens", de: "Wie ich mich gebe", pt: "Como me porto", it: "Come mi pongo", ja: "どう構えるか", zh: "我以什么姿态", hi: "मैं कैसा रुख़ रखूँ", ar: "كيف أتصرّف",
   },

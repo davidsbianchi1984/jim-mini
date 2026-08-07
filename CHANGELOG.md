@@ -4,6 +4,54 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.52.0] — 2026-08-07
+
+### What the room hears — the surface rule stops being a label
+
+The surface picker shipped in 0.50.0 reporting `reads_health_aloud` for every
+surface, and **nothing read it**. Grep the codebase and every consumer was a
+screen rendering the word "shown" or "aloud" next to a button — the console and
+three shells, and nothing else. A client could have taken a beat about
+somebody's resting rate and put it through a living-room speaker, and no code
+here would have stopped it or known. The picker looked like a safety feature
+and was a caption.
+
+`GET /presence/{user_id}/say` moves the decision to the server, **before
+anything is synthesised**, and the answer distinguishes three things: a surface
+with **no voice at all** (a watch withholds nothing — calling that "withheld"
+would tell somebody their guardian was censoring itself when it was reading a
+screen); a **room other people can hear**, where a vital, condition,
+medication, money, journal or crisis is held back and **shown instead** with
+the categories named; and a line that may simply be spoken.
+
+Which lines carry what is a **table**, not an inference from the area — the
+area is too coarse in the direction that matters. `health_fitness` covers both
+*"your resting rate has been high for four days"* and *"nice streak on the
+walking"*; a rule treating those the same either leaks the first or silences
+the second, and over-withholding is how a safety feature becomes useless and
+gets switched off. A line key nobody has classified is withheld on a shared
+surface by default: the safe direction to fail in.
+
+Stated plainly, because the honest version is smaller than the marketing one:
+this deployment will not synthesise a withheld line and the wire says so. The
+line is still returned — the person is still owed their beat on a screen. A
+client that reads it aloud anyway has done something the product told it not
+to, the same honesty `plays` keeps in the feed.
+
+### Hands-free — one question a device on a timer has to know
+
+`GET /presence/{user_id}/due`. The slot comes from the hour rather than the
+caller, so a watch, a pair of earbuds and a speaker cannot disagree about what
+time of day it is for the same person, and the surface verdict rides along so a
+device never judges the room itself. It **does not record**: a hands-free
+product polls, and a line filed as said but never heard is a line the person
+never gets.
+
+Fifteen tests, an injection pass on six rules, four L10n rows across four
+tables, doors on the console and all three shells, and a lesson.
+
+Cut together with QRME and PDI at **app-v0.52.0**.
+
 ## [0.51.0] — 2026-08-06
 
 ### How it carries itself — a register, never a capability
