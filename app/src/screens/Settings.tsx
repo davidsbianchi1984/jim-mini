@@ -450,7 +450,7 @@ function CloudContributionCard() {
       <h3>{tr("set.cloud", lang)}</h3>
       <p className="muted small">
         {state.opted_in
-          ? `Contributing. ${state.contributed} item${state.contributed === 1 ? "" : "s"} have gone to the shared model.`
+          ? `Contributing. ${state.contributed.length} item${state.contributed.length === 1 ? "" : "s"} have gone to the shared model.`
           : "Not contributing. Nothing from this account has gone to the shared model."}
       </p>
       {state.policy && <p className="muted small">{state.policy}</p>}

@@ -283,7 +283,7 @@ export function Channel() {
       <h3>{tr("ch.cam", visitorLang())}</h3>
       {vocab && (
         <p className="muted">
-          {vocab.agent_sees}{vocab.vault_required
+          {vocab.agent_sees?.join(", ")}{vocab.vault_required
             ? " Sealed in the vault; a private plan is required."
             : ""}
         </p>

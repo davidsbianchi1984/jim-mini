@@ -4,6 +4,44 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.1] — 2026-08-07
+
+### The console reads the wire too, and twice it read it wrong
+
+QRME's guard family has asked three clients the same question since 0.56.4 —
+does this client's declared shape match what the route sends. The console was
+never asked. It declares more than the native shells do, and TypeScript erases
+all of it at build time, so a wrong declaration is not a crash: it is a screen
+that renders something else.
+
+Both findings here rendered.
+
+**The capture screen listed the agent's fields as one word.**
+`/capture/vocabulary` sends `agent_sees` as the list of field names. The
+console declared it `string` and put `{vocab.agent_sees}` straight into the
+markup, and React concatenates an array of strings with no separator — so a
+privacy disclosure about what the agent can see arrived as its field names run
+together. Worse than blank, because it looks like text.
+
+**The settings line counted payloads instead of items.**
+`/users/{id}/cloud-contribution` sends `contributed` as the contribution log.
+The console declared it `number` and wrote `${state.contributed} item${...===
+1 ? "" : "s"}`, which stringifies the whole array and can never take the
+singular. Someone who had contributed one item was told so in a sentence made
+of their own payload.
+
+Both are fixed — `agent_sees: string[]` joined for display, and
+`contributed: ContributedItem[]` counted by `.length` — rather than recorded.
+`jim/tests/console_shapes_unverified.txt` sits at a ceiling of zero.
+
+### What the guard reads
+
+100 declared shapes, 623 fields, 110 GET bindings, 49 of them driven against a
+live fixture. Every required field is checked twice: that the route sends that
+name, and that the declared type can hold what arrives. Optional fields are
+believed — this client writes `?` where a field genuinely comes and goes — so
+the result is a list of defects rather than a list of states.
+
 ## [0.57.0] — 2026-08-07
 
 ### The guard arrives, and the reason it was not here was mine

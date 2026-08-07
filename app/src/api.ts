@@ -622,9 +622,20 @@ export type MoneyView = {
   labels: Record<string, string>;
 };
 
+// `contributed` is the log itself, not a count of it. Declared as a number,
+// the settings line read `${state.contributed} item...` and rendered the
+// whole array stringified, with `=== 1` never true — so the singular never
+// appeared and the count was the payloads.
+export type ContributedItem = {
+  ref: string;
+  at: string;
+  revoked: boolean;
+  payload: unknown;
+};
+
 export type CloudContribution = {
   opted_in: boolean;
-  contributed: number;
+  contributed: ContributedItem[];
   policy?: string;
   preview_next?: unknown;
   preview_note?: string;
@@ -704,7 +715,7 @@ export type CaptureVocabulary = {
   provenance: Record<string, string>;
   intimate: string[];
   minors?: string;
-  agent_sees?: string;
+  agent_sees?: string[];   // the field names, not a sentence about them
   agent_never_sees?: string;
   vault_required: boolean;
   max_bytes: number;

@@ -1,0 +1,18 @@
+# status: backlog — 0 rows
+# ceiling: 0
+#
+# Console declarations the shape guard saw a route not satisfy, which are
+# real. There are none.
+#
+# The first run found two — `agent_sees` declared a sentence when the route
+# sends the list of field names, and `contributed` declared a count when the
+# route sends the log itself. Both were rendered straight into a screen, so
+# both were visible: field names run together with no separator, and an item
+# count that was the payloads. Both are fixed rather than recorded.
+#
+# This client marks a field optional when it genuinely comes and goes, so a
+# required field that is missing is missing — there is no legitimate state to
+# record, only a declaration to correct or a `?` to add. The ceiling is zero
+# and should stay there.
+#
+# Ratcheted: this list may shrink and must never grow.
