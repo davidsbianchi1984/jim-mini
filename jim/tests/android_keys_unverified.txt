@@ -1,0 +1,32 @@
+# status: backlog — 6 rows
+# ceiling: 6
+#
+# Keys the Android client asks for that the route does not send *yet*, which
+# are real.
+#
+# `test_the_keys_the_android_client_reads.py` drives every GET this client
+# reads and checks each key by name and by the shape `org.json` will hand
+# back. QRME's copy found eight fictions in its own Kotlin client. This one
+# found six, and all six are the same six the Swift guard found in 0.56.8 —
+# the same routes, the same states, reached through a different language.
+# That is the point of writing the guard three times: a client that never
+# declares a shape has the same defect surface as one that does, and the two
+# lists agreeing is the evidence.
+#
+# These are states, not fictions. The 0.56.5 rule is that driving into a
+# state beats recording that you did not, and where that is a call or two the
+# guard makes them. These cannot be manufactured: continuity is derived from
+# accumulated check-ins, coach turns and helpfulness answers over time, and
+# no route builds one. A fixture that faked the history would be asserting
+# against its own fiction.
+#
+# Ratcheted: this list may shrink and must never grow. A row leaves it when
+# somebody writes a test that lives the history and reads the key.
+#
+/adaptation/{id} note           # only while `built` is false — the sentence
+                                # saying there is no profile yet
+/continuity/{id} observations   # once continuity is built, which takes a
+/continuity/{id} conditioning   # history of check-ins and coach turns over
+/continuity/{id} vector         # time
+/continuity/{id} meanings
+/continuity/{id} method

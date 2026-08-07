@@ -4,6 +4,52 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.0] — 2026-08-07
+
+### The guard arrives, and the reason it was not here was mine
+
+0.56.9 said this client called the backend in a shape QRME's extractor could
+not see, and that lowering the threshold until it passed would ship a guard
+that asserts on nothing. The first half was true and the second half was the
+right instinct. What was wrong was the conclusion drawn from it: the shape
+difference is one optional `JSONObject(` wrapper, because QRME's `request`
+returns a `String` and this client's returns a `JSONObject` already.
+
+With the wrapper required, the guard found twelve of this client's forty-two
+GETs and passed. Twelve found reads exactly like twelve is all there are.
+
+### What it found
+
+Forty-four routes and 161 keys now, thirty-two of them driven against a live
+fixture. Every key this client reads off a response is checked twice — that
+the route sends that name, and that `org.json`'s accessor can give back what
+arrives — and this client is correct on all of them but six.
+
+Those six are states, not fictions: `note` on the adaptation profile, which is
+only there while `built` is false, and five `ContinuityState` keys that need a
+history of check-ins and coach turns accumulated over time. They are the same
+six the Swift guard recorded in 0.56.8, found again from the other side. Two
+extractors reading two languages and arriving at the same six is the evidence
+that neither invented them.
+
+`jim/tests/android_keys_unverified.txt` records them at a ceiling of six, with
+the state named beside each. The file also gained a check that every row still
+names a read this client makes, so a row cannot outlive the line it describes
+and go on holding the ceiling up.
+
+### One finding that was the guard's, not this client's
+
+The circle thread builds its URL by concatenation:
+
+    request("/circle/$uid/messages?with_id=" + encode(withId), token = token)
+
+The extractor sees `/circle/$uid/messages?with_id=` and nothing more, because
+the value is on the next line. Driving that asks for the thread list, which
+the route answers with `threads` and no `messages` — and the client was
+reported for reading a key the route sends perfectly well. A half-built query
+string is now unreachable rather than recorded, which matters: recording it
+would have written the guard's own defect into the ratchet file.
+
 ## [0.56.9] — 2026-08-07
 
 ### The Android client gets a guard it was thought not to need — over there
