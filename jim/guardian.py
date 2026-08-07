@@ -568,7 +568,13 @@ def robot_command(user_id: str, robot_id: str, command: str,
         pb = i18n.localize_playbook(local_guidance.playbook(kind),
                                     i18n.effective_language(user_id))
         result = {"status": "coaching", "playbook": pb,
-                  "spoken": pb["steps"],
+                  # `spoken_steps`, not `spoken`. The name used to be `spoken`
+                  # here, in `presence.deepen` (a string) and in
+                  # `presence.say` (a bool) — one field name carrying three
+                  # incompatible types across one API, which the Windows
+                  # client had already forked into three records without
+                  # anybody noticing what the forking meant.
+                  "spoken_steps": pb["steps"],
                   "note": ("coaching aloud with the pace cue"
                            if kind == "cpr" else
                            "reading the AED prompts aloud — analysis and "

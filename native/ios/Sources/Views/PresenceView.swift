@@ -247,7 +247,7 @@ struct PresenceView: View {
         guard let uid = state.userId, let token = state.userToken else { return }
         if let b = try? await ApiClient.shared.presenceBeat(
             uid: uid, token: token, slot: slot) {
-            spoken[slot] = b.spoken ?? b.english
+            spoken[slot] = b.deepened_line ?? b.english
         }
     }
 
@@ -255,7 +255,7 @@ struct PresenceView: View {
         guard let uid = state.userId, let token = state.userToken else { return }
         if let b = try? await ApiClient.shared.presenceDeepen(
             uid: uid, token: token, slot: slot) {
-            spoken[slot] = b.spoken ?? b.english
+            spoken[slot] = b.deepened_line ?? b.english
         }
     }
 

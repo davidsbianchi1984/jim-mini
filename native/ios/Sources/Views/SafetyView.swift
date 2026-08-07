@@ -733,7 +733,7 @@ private struct RobotsSection: View {
                 if let pace = res.pace {
                     line += " · \(pace.compressions_per_minute)/min"
                 }
-                if let spoken = res.spoken {
+                if let spoken = res.spoken_steps {
                     line = "🔊 " + spoken.joined(separator: " → ")
                 }
                 if let seq = res.sequence {

@@ -801,7 +801,7 @@ export interface PresenceBeat {
   line_key: string; slots: Record<string, string | number>;
   because: string[]; english: string; english_is_fallback: boolean;
   initiative: boolean; wants_reply: boolean; offline: boolean;
-  deepened: boolean; spoken?: string; why_not?: string;
+  deepened: boolean; deepened_line?: string; why_not?: string;
 }
 
 export interface PresenceDay {

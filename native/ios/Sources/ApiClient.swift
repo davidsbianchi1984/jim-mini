@@ -328,7 +328,7 @@ struct RobotCmdResult: Decodable {
     let status: String
     let note: String?
     let instruction: String?           // perform_cpr confirmation gate
-    let spoken: [String]?              // guide_first_aid playbook steps
+    let spoken_steps: [String]?        // guide_first_aid playbook steps
     let sequence: [String]?            // auto_defib resuscitation sequence
     let pace: Pace?
     let safeguards: [String]?
@@ -552,7 +552,7 @@ struct PresenceBeat: Decodable {
     let wants_reply: Bool
     let offline: Bool
     let deepened: Bool
-    let spoken: String?
+    let deepened_line: String?
 }
 
 struct PresenceDay: Decodable {

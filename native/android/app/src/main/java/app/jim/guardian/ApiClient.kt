@@ -96,7 +96,7 @@ data class RobotSpec(val model: String, val label: String, val maker: String,
 data class Robot(val id: String, val model: String, val name: String, val status: String?,
                  val directive: String?, val firstAid: String?, val commands: List<String>)
 data class RobotCmdResult(val status: String, val note: String?, val instruction: String?,
-                          val spoken: List<String>, val sequence: List<String>,
+                          val spokenSteps: List<String>, val sequence: List<String>,
                           val pacePerMinute: Int?)
 data class WaiverState(val signed: Boolean, val signature: String?, val terms: List<String>)
 data class MedicalCardIssued(val token: String, val qrSvgUrl: String)
@@ -144,7 +144,7 @@ data class PresenceBaseline(val known: Int, val of: Int,
  *  reason is one nobody can argue with. */
 data class PresenceBeat(val slot: String, val speak: Boolean,
                         val register: String, val english: String,
-                        val spoken: String?, val because: List<String>)
+                        val deepenedLine: String?, val because: List<String>)
 data class PresenceSurfaceRow(val surface: String, val chosen: Boolean,
                               val readsHealthAloud: Boolean, val note: String)
 data class PresenceSurfaces(val chosen: String, val rule: String,
@@ -801,7 +801,7 @@ object ApiClient {
         val body = JSONObject().put("command", command)
         if (!arg.isNullOrBlank()) body.put("arg", arg)
         val o = request("/robots/$uid/$robotId/command", "POST", body, token)
-        val spoken = o.optJSONArray("spoken")
+        val spoken = o.optJSONArray("spoken_steps")
         val seq = o.optJSONArray("sequence")
         return RobotCmdResult(
             o.optString("status", ""), o.optString("note", null),
@@ -1081,7 +1081,7 @@ object ApiClient {
     private fun beatOf(o: JSONObject) = PresenceBeat(
         o.optString("slot", ""), o.optBoolean("speak"),
         o.optString("register", ""), o.optString("english", ""),
-        if (o.isNull("spoken")) null else o.optString("spoken"),
+        if (o.isNull("deepened_line")) null else o.optString("deepened_line"),
         (0 until (o.optJSONArray("because")?.length() ?: 0)).map {
             o.optJSONArray("because")!!.getString(it)
         })

@@ -64,7 +64,7 @@ public sealed partial class PresencePage : Page
 
             var day = await ApiClient.Shared.PresenceDay(s.Uid!, s.Token!);
             Beats.Text = string.Join("\n\n", (day.Beats ?? Array.Empty<PresenceBeat>())
-                .Select(b => b.Slot + " · " + (b.Spoken ?? b.English)
+                .Select(b => b.Slot + " · " + (b.DeepenedLine ?? b.English)
                              // Why it said this. A presence that cannot show
                              // its reason is one nobody can argue with.
                              + "\n" + string.Join("; ", b.Because ?? Array.Empty<string>())));
@@ -109,7 +109,7 @@ public sealed partial class PresencePage : Page
         try
         {
             var b = await ApiClient.Shared.PresenceBeat(s.Uid!, s.Token!, _slot);
-            Beats.Text = b.Slot + " · " + (b.Spoken ?? b.English);
+            Beats.Text = b.Slot + " · " + (b.DeepenedLine ?? b.English);
         }
         catch { }
     }
@@ -120,7 +120,7 @@ public sealed partial class PresencePage : Page
         try
         {
             var b = await ApiClient.Shared.PresenceDeepen(s.Uid!, s.Token!, _slot);
-            Beats.Text = b.Slot + " · " + (b.Spoken ?? b.English);
+            Beats.Text = b.Slot + " · " + (b.DeepenedLine ?? b.English);
         }
         catch { }
     }

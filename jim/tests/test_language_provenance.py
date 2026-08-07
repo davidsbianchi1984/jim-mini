@@ -67,7 +67,7 @@ def test_robot_coaching_speaks_in_language(client):
     rob = client.post(f"/robots/{uid}", json={"model": "neo"}).json()
     r = client.post(f"/robots/{uid}/{rob['id']}/command",
                     json={"command": "guide_first_aid", "arg": "cpr"}).json()
-    assert r["spoken"][0].startswith("Llame")
+    assert r["spoken_steps"][0].startswith("Llame")
 
 
 def test_japanese_playbook_is_hand_translated(client):

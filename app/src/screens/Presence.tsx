@@ -109,7 +109,7 @@ export function Presence() {
     if (!uid || !token) return;
     try {
       const got = await api.presenceBeat(uid, token, slot);
-      setSpoken((p) => ({ ...p, [slot]: got.spoken ?? got.english }));
+      setSpoken((p) => ({ ...p, [slot]: got.deepened_line ?? got.english }));
     } catch (e) { setError((e as Error).message); }
   }
 
@@ -117,7 +117,7 @@ export function Presence() {
     if (!uid || !token) return;
     try {
       const got = await api.presenceDeepen(uid, token, slot);
-      setSpoken((p) => ({ ...p, [slot]: got.spoken ?? got.english }));
+      setSpoken((p) => ({ ...p, [slot]: got.deepened_line ?? got.english }));
     } catch (e) { setError((e as Error).message); }
   }
 

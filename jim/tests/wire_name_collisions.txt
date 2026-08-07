@@ -1,0 +1,43 @@
+# status: backlog — 9 rows
+# ceiling: 9
+#
+# One wire field name carrying more than one type across this product's API.
+#
+# `spoken` was the row that made this file. It meant three things at once:
+# the CPR playbook steps read aloud (a string list), the model's rewritten
+# presence line (a string), and whether a beat was said out loud (a boolean).
+# The Windows client had already forked it into three records without anybody
+# noticing what the forking meant, and TypeScript could not fork it — one
+# interface `extends` another there — so `tsc` had been failing on `main` and
+# nothing in any suite ran `tsc`.
+#
+# Two kinds of row, and the first is the sharper one:
+#
+#   * a **primitive** clash (bool/int, bool/string, double/int, string/list)
+#     is dangerous, because a decoder coerces rather than refusing and the
+#     reader gets a plausible wrong answer;
+#   * an **object-shape** clash (`Row[]` vs `int`, one record vs another) is
+#     usually a count beside a collection, or two views of one concept. A
+#     decoder fails loudly on those, so somebody finds out.
+#
+# Neither is good. A field name is the one piece of an API a reader carries
+# from one route to the next, and a name that changes meaning between them is
+# the reader being misled by the thing they were told to rely on.
+#
+# Read from the Windows client, because its records declare every wire name
+# and its type explicitly with `JsonPropertyName` — the only place in this
+# codebase where the whole surface is stated in one file.
+#
+# Ratcheted: this list may shrink and must never grow. Fix one by giving each
+# meaning its own name, the way `spoken` became `spoken_steps`,
+# `deepened_line` and `spoken`.
+#
+answered
+chosen
+first_aid
+helped
+messages
+provenance
+providers
+specialist
+value

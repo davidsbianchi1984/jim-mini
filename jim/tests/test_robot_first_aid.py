@@ -88,7 +88,7 @@ def test_guide_first_aid_speaks_the_playbook(client):
                     json={"command": "guide_first_aid", "arg": "aed"}).json()
     assert r["status"] == "coaching"
     assert r["playbook"]["kind"] == "aed"
-    assert any("Stand clear" in s for s in r["spoken"])
+    assert any("Stand clear" in s for s in r["spoken_steps"])
     # CPR coaching carries the pace cue.
     r = client.post(f"/robots/{uid}/{neo['id']}/command",
                     json={"command": "guide_first_aid"}).json()

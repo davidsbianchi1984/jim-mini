@@ -1618,7 +1618,7 @@ private fun RobotsPanel(vm: GuardianViewModel) {
             r.onSuccess { res ->
                 cmdResult = when {
                     res.sequence.isNotEmpty() -> res.sequence.joinToString(" → ")
-                    res.spoken.isNotEmpty() -> "🔊 " + res.spoken.joinToString(" → ")
+                    res.spokenSteps.isNotEmpty() -> "🔊 " + res.spokenSteps.joinToString(" → ")
                     res.pacePerMinute != null ->
                         (res.note ?: res.status) + " · ${res.pacePerMinute}/min"
                     else -> res.note ?: res.instruction ?: res.status
@@ -2191,12 +2191,12 @@ private fun PresencePanel(vm: GuardianViewModel) {
                             // `/day` is the plan; asking for the beat is what
                             // counts as having been told.
                             vm.call({ ApiClient.presenceBeat(vm.uid!!, vm.token!!, b.slot) }) { r ->
-                                r.getOrNull()?.let { spoken = spoken + (b.slot to (it.spoken ?: it.english)) }
+                                r.getOrNull()?.let { spoken = spoken + (b.slot to (it.deepenedLine ?: it.english)) }
                             }
                         }) { Text(L10n.t("presence.tab", vm.language), color = Jim.T2, fontSize = 12.sp) }
                         TextButton(onClick = {
                             vm.call({ ApiClient.presenceDeepen(vm.uid!!, vm.token!!, b.slot) }) { r ->
-                                r.getOrNull()?.let { spoken = spoken + (b.slot to (it.spoken ?: it.english)) }
+                                r.getOrNull()?.let { spoken = spoken + (b.slot to (it.deepenedLine ?: it.english)) }
                             }
                         }) { Text(L10n.t("presence.deepen", vm.language), color = Jim.BrandA, fontSize = 12.sp) }
                         // Say it — and let the room decide. The verdict is

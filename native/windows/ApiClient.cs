@@ -288,7 +288,7 @@ public record RobotCmdResult(
     [property: JsonPropertyName("status")] string Status,
     [property: JsonPropertyName("note")] string? Note,
     [property: JsonPropertyName("instruction")] string? Instruction,
-    [property: JsonPropertyName("spoken")] string[]? Spoken,
+    [property: JsonPropertyName("spoken_steps")] string[]? SpokenSteps,
     [property: JsonPropertyName("sequence")] string[]? Sequence,
     [property: JsonPropertyName("pace")] Pace? Pace);
 
@@ -474,7 +474,7 @@ public record PresenceBeat(
     [property: JsonPropertyName("speak")] bool Speak,
     [property: JsonPropertyName("register")] string Register,
     [property: JsonPropertyName("english")] string English,
-    [property: JsonPropertyName("spoken")] string? Spoken,
+    [property: JsonPropertyName("deepened_line")] string? DeepenedLine,
     [property: JsonPropertyName("because")] string[]? Because);
 
 public record PresenceDay(

@@ -4,6 +4,48 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.2] — 2026-08-07
+
+### One name, three meanings — and the compiler nobody ran
+
+`spoken` meant three different things in this product at the same time:
+
+* `guardian.guide_first_aid` → the CPR playbook steps read aloud, a **string
+  list**;
+* `presence.deepen` → the model's rewritten line, a **string**;
+* `presence.say` → whether the beat was said out loud, a **boolean**.
+
+The Windows client had already forked it into three records, each with its own
+`JsonPropertyName("spoken")`. Nothing about that looked wrong to anybody
+reading one record at a time. TypeScript could not fork it, because
+`PresenceSpoken extends PresenceBeat` there, so the collision surfaced as a
+compiler error:
+
+```
+Interface 'PresenceSpoken' incorrectly extends interface 'PresenceBeat'.
+  Types of property 'spoken' are incompatible.
+    Type 'boolean' is not assignable to type 'string'.
+```
+
+**And it sat on `main`, through several releases, because no suite in any of
+these three repositories ran `tsc`.** The one tool able to see the problem was
+the one tool nobody had wired up.
+
+Each meaning now has its own name: `spoken_steps`, `deepened_line`, and
+`spoken` for the boolean it pairs with `shown`. The console, all three native
+clients and two tests were updated together.
+
+### The two guards
+
+`test_the_console_typechecks` runs `tsc --noEmit`. Six seconds, and this
+particular defect cannot reach `main` again without somebody deleting the test.
+
+`test_no_wire_name_carries_two_types` is the general shape: it reads every
+`JsonPropertyName` in the Windows client — the one file where the whole wire
+surface is declared with its types — and records names carrying more than one.
+Nine were found here, `spoken` among them; eight remain, ratcheted, each to be
+fixed by giving its meanings separate names.
+
 ## [0.56.1] — 2026-08-07
 
 ### A model that is actually trained

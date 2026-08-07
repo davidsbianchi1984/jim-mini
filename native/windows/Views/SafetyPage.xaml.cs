@@ -483,8 +483,8 @@ public sealed partial class SafetyPage : Page
             var line = r.Note ?? r.Instruction ?? r.Status;
             if (r.Sequence is { Length: > 0 })
                 line = string.Join(" → ", r.Sequence);
-            else if (r.Spoken is { Length: > 0 })
-                line = "🔊 " + string.Join(" → ", r.Spoken);
+            else if (r.SpokenSteps is { Length: > 0 })
+                line = "🔊 " + string.Join(" → ", r.SpokenSteps);
             else if (r.Pace is { } pace)
                 line += $" · {pace.CompressionsPerMinute}/min";
             RobotCmdResult.Text = line;

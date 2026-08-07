@@ -777,7 +777,11 @@ def deepen(user_id: str, slot: str = "morning") -> dict:
         # The floor answered. Say so rather than passing a stub off as depth.
         return {**base, "deepened": False,
                 "why_not": "no model reachable — this is the offline line"}
-    out = {**base, "spoken": gen["text"], "deepened": True,
+    # `deepened_line`, not `spoken`. `say()` below uses `spoken` for a
+    # boolean — *was this said aloud* — and one name meaning both the text and
+    # whether there was text is a field no client can read without knowing
+    # which route it came from.
+    out = {**base, "deepened_line": gen["text"], "deepened": True,
            "provider": gen.get("provider")}
     # Copied back over the model's answer, deliberately, in case a future
     # prompt change lets it try to edit them.
