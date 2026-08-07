@@ -4,6 +4,38 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.55.0] — 2026-08-07
+
+### The rule the record stated, with something behind it at last
+
+`jim/tests/field_labels_unmapped.txt` records the request-model fields that keep their API identifier in a
+422 instead of the label a form shows, and gives a sound reason for each: enum
+members a control sets, ids a client fills in from the resource it is already
+looking at, flags a switch owns. Every word of that is a claim about **the
+screens**, and nothing in this repository was reading the screens.
+
+The ceiling stops the list growing. It says nothing about a field already on
+the list that a screen quietly grew an input for — the record would go on
+shrinking, every test would stay green, and the field would sit there being
+typed into a box by a person and named by an identifier in the refusal
+underneath it.
+
+This repo's forms come out clean: nineteen fields are bound to a control and
+sent, and all nineteen already carry a label — including the bank details on
+the money screen, which are the most consequential kind of field to hand back
+as an identifier to somebody who has just mistyped them.
+
+`jim/tests/test_a_form_that_asks_for_it_has_a_label_for_it.py` now reads the screens and asks the question the record could not: is
+any field **both** bound to a form control and sent in a request body, without
+a label? The AND is the whole guard — screens are full of object literals, and
+control bindings alone match local state that never leaves the browser. Either
+half alone reports dozens of fields no person types into; together they find
+exactly the population `_FIELD_LABELS` exists for. 
+
+QRME found two of its own this way, in a blend screen that had been asking for
+**share** and **their…** in ten languages while its refusal said `weight` and
+`aspect`. Both now carry the label the form shows.
+
 ## [0.54.1] — 2026-08-07
 
 ### Cut together at one version
