@@ -144,6 +144,30 @@
                 </StackPanel>
             </Border>
 
+            <!-- The offline fine-tune. A separate card from the adaptation
+                 profile above it on purpose: that one is a profile that
+                 conditions a prompt, this one is weights, and one card doing
+                 both is how a reader ends up unable to say which they have. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="FtHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="FtSub" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="FtFrom" FontSize="14" FontWeight="Bold"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="FtMethod" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <ToggleSwitch x:Name="FtUse" Toggled="OnUseTrainedModel"
+                                  Visibility="Collapsed" />
+                    <TextBlock x:Name="FtOff" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <Button x:Name="FtTrainButton" Click="OnTrainModel"
+                            Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                </StackPanel>
+            </Border>
+
             <!-- Spec [0031] / box 212: the tradeoff, not a switch. -->
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">

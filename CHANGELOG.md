@@ -4,6 +4,58 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.1] — 2026-08-07
+
+### A model that is actually trained
+
+`adaptation.py` builds a per-user profile and is scrupulous about what it is
+not:
+
+> **This is not a weight file.** The transformer stays the vendor's. What JIM
+> owns is the state that conditions it, and the profile says so in its own
+> `method` field rather than letting a reader assume a fine-tune happened.
+
+That was true, and it was the right position to hold until it was overruled.
+`jim/finetune.py` is the other thing: an offline pass that reads this user's
+own answered follow-ups and **trains weights** by gradient descent, on this
+machine, with the network blocked for the duration.
+
+### What is trained, and why it is small
+
+The supervised signal this product actually has is narrow and real:
+`guidance_followups` records, per condition and severity, whether the guidance
+JIM gave **helped**. That is a labelled dataset of the one question the Guardian
+needs a learned answer to — *for this person, which register of advice lands* —
+and it is the dataset a general model cannot have, because it is about one
+person.
+
+So the default backend trains a logistic model over interpretable features. It
+is a weight file, and it is a *small* one, which is a property of the evidence
+rather than a shortcut: a hundred follow-ups do not support a hundred million
+parameters, and a model larger than its evidence is a confident guess in a
+bigger coat.
+
+### The four things that are enforced rather than promised
+
+* **Nothing leaves.** The pass runs with `urlopen` replaced, so a backend that
+  reached for a model hub raises instead of uploading somebody's health
+  history. A test injects exactly that backend and watches it fail.
+* **It has to have learned.** The central test does not check that training
+  *ran* — weights of all zeros serialise perfectly well. It trains on a corpus
+  with a planted signal and asserts the weights recovered it, with the loss
+  more than halved.
+* **Below twelve examples it refuses.** Not a low-confidence model; a refusal.
+  Attaching `confidence: 0.2` to a coincidence does not stop it being one.
+* **Training and using are two decisions.** A trained model is inert until a
+  switch with no default turns it on, and turning it off restores exactly the
+  behaviour that predates the module.
+
+The `lora` backend is wired to `transformers`, `peft` and `torch` and **raises**
+when they are absent — and raises again, deliberately, when they are present but
+no pass has been watched to completion on this deployment. A training path that
+reports success without anybody having seen it work is worse than one that
+refuses.
+
 ## [0.56.0] — 2026-08-07
 
 ### Cut together at one version

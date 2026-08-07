@@ -359,6 +359,22 @@ export interface ContinuityState {
   updated_at?: string;
 }
 
+export interface Finetune {
+  version: number;
+  backend: string;
+  examples: number;
+  helped: number;
+  did_not_help: number;
+  weights: number[];
+  vocab: Record<string, number>;
+  final_loss: number;
+  first_loss: number;
+  method: string;
+  digest: string;
+  trained_at: string;
+  active?: boolean;
+}
+
 export interface AdaptationProfile {
   built: boolean; note?: string; version?: number;
   evidence_items?: number; confidence?: number; vaulted?: boolean;
@@ -1152,6 +1168,17 @@ export const api = {
     req<{ noted: boolean; room_id: string; stored: string }>(
       `/community/${uid}/visits`, { method: "POST", body: { room_id }, token }),
   // Claim 11: the user-specific model, derived and (with a tandem) sealed.
+  // The offline fine-tune. Beside `adaptation` and not folded into it: that
+  // one recomputes a profile that conditions a prompt, this one trains
+  // weights. A reader who cannot tell which happened has been told nothing.
+  finetune: (uid: string, token: string) =>
+    req<Finetune>(`/finetune/${uid}`, { token }),
+  runFinetune: (uid: string, token: string) =>
+    req<Finetune>(`/finetune/${uid}`, { method: "POST", token }),
+  // Training and using are two decisions. Off takes effect on the next reply.
+  setFinetuneActive: (uid: string, token: string, active: boolean) =>
+    req<{ user_id: string; active: boolean; digest: string; backend: string }>(
+      `/finetune/${uid}/active`, { method: "PUT", token, body: { active } }),
   adaptation: (uid: string, token: string) =>
     req<AdaptationProfile>(`/adaptation/${uid}`, { token }),
   rebuildAdaptation: (uid: string, token: string) =>

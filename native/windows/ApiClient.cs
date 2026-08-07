@@ -398,6 +398,23 @@ public record AdaptationDetail(
 
 /// Claim 11's user-specific model, derived locally from this user's own stored
 /// history — nothing was sent to a model vendor to build it.
+public record Finetune(
+    [property: JsonPropertyName("version")] int Version,
+    [property: JsonPropertyName("backend")] string Backend,
+    [property: JsonPropertyName("examples")] int Examples,
+    [property: JsonPropertyName("helped")] int Helped,
+    [property: JsonPropertyName("did_not_help")] int DidNotHelp,
+    [property: JsonPropertyName("method")] string Method,
+    [property: JsonPropertyName("digest")] string Digest,
+    [property: JsonPropertyName("trained_at")] string TrainedAt,
+    [property: JsonPropertyName("active")] bool? Active);
+
+public record FinetuneSwitchResult(
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("active")] bool Active,
+    [property: JsonPropertyName("digest")] string Digest,
+    [property: JsonPropertyName("backend")] string Backend);
+
 public record AdaptationProfile(
     [property: JsonPropertyName("built")] bool Built,
     [property: JsonPropertyName("note")] string? Note,
@@ -1198,6 +1215,23 @@ public sealed class ApiClient
     /// <summary>Rebuild from the history already on record — local work only.</summary>
     public Task<AdaptationProfile> RebuildAdaptation(string uid, string token) =>
         Send<AdaptationProfile>(Post($"/adaptation/{uid}", new { }, token));
+
+    /// <summary>The offline fine-tune. Beside Adaptation and not folded into
+    /// it: that one recomputes a profile that conditions a prompt, this one
+    /// trains weights.</summary>
+    public Task<Finetune> Finetune(string uid, string token) =>
+        Send<Finetune>(Get($"/finetune/{uid}", token));
+
+    /// <summary>Train from the history already on record — local work only.
+    /// The pass runs with the backend's network blocked.</summary>
+    public Task<Finetune> RunFinetune(string uid, string token) =>
+        Send<Finetune>(Post($"/finetune/{uid}", new { }, token));
+
+    /// <summary>Training and using are two decisions.</summary>
+    public Task<FinetuneSwitchResult> SetFinetuneActive(
+            string uid, string token, bool active) =>
+        Send<FinetuneSwitchResult>(
+            Put($"/finetune/{uid}/active", new { active }, token));
 
     public Task<AnonymityPosture> Anonymity(string uid, string token) =>
         Send<AnonymityPosture>(Get($"/anonymity/{uid}", token));

@@ -184,6 +184,24 @@ CREATE TABLE IF NOT EXISTS vigils (
 -- own stored history, its evidence count and earned confidence, and the vault
 -- key when a PDI tandem sealed it. The profile conditions prompts; it is not
 -- a weight file, and `profile.method` says so in its own words.
+-- The offline fine-tune (jim/finetune.py). Distinct from `user_models` beside
+-- it and deliberately a separate table: that one holds a *profile* that
+-- conditions a prompt, this one holds *weights* trained on this user's own
+-- answered follow-ups. Confusing the two is the misreading the whole module
+-- is written to prevent, and one table with a "kind" column would have
+-- invited it. `active` is off on insert: training and using are two decisions.
+CREATE TABLE IF NOT EXISTS user_finetunes (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    version    INTEGER NOT NULL,
+    backend    TEXT NOT NULL,       -- local-logistic | lora
+    artifact   TEXT NOT NULL,       -- JSON: weights, vocab, provenance
+    examples   INTEGER NOT NULL,
+    digest     TEXT NOT NULL,       -- sha256 over the artifact
+    pdi_key    TEXT,                -- set when sealed in the user's vault
+    active     INTEGER NOT NULL DEFAULT 0,
+    trained_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS user_models (
     user_id        TEXT PRIMARY KEY REFERENCES users(id),
     version        INTEGER NOT NULL,

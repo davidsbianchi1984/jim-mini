@@ -116,6 +116,7 @@ struct OverviewView: View {
                 }.card()
 
                 AdaptationCard()
+                TrainedModelCard()
                 AnonymityCard()
 
                 ImproveCard()
@@ -260,6 +261,83 @@ private struct AdaptationCard: View {
             profile = try? await ApiClient.shared.rebuildAdaptation(uid: uid,
                                                                     token: token)
             busy = false
+        }
+    }
+}
+
+/// The offline fine-tune, on this phone.
+///
+/// A separate card from the adaptation profile beside it, on purpose: that one
+/// is a profile that conditions a prompt, this one is weights. One card doing
+/// both is how a reader ends up unable to say which of the two they have.
+struct TrainedModelCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var ft: Finetune?
+    @State private var busy = false
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("ov.ft", state.language)).font(.headline)
+                .foregroundStyle(Theme.txt)
+            Text(L10n.t("ov.ft.sub", state.language))
+                .font(.footnote).foregroundStyle(Theme.t2)
+
+            if let f = ft {
+                Text(L10n.fill("ov.ft.from", state.language,
+                               ["n": "\(f.examples)"]))
+                    .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                // The server's own sentence, shown rather than paraphrased:
+                // it is the line that says whether weights or a prompt came
+                // out of this, and rewording it here would blur exactly that.
+                Text(f.method).font(.caption).foregroundStyle(Theme.t3)
+                Toggle(L10n.t("ov.ft.use", state.language),
+                       isOn: Binding(get: { f.active ?? false },
+                                     set: { setActive($0) }))
+                    .font(.subheadline).foregroundStyle(Theme.txt)
+                Text(L10n.t("ov.ft.off", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t3)
+            } else {
+                Text(L10n.t("ov.ft.none", state.language))
+                    .font(.footnote).foregroundStyle(Theme.t2)
+            }
+
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+            Button(L10n.t(busy ? "ov.ft.training" : "ov.ft.train",
+                          state.language)) { train() }
+                .font(.caption.bold()).foregroundStyle(.white)
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(Theme.brandA).clipShape(Capsule())
+                .disabled(busy)
+        }
+        .card()
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let uid = state.uid, let token = state.token else { return }
+        // A 404 until something has been trained, which is the normal state.
+        ft = try? await ApiClient.shared.finetune(uid: uid, token: token)
+    }
+
+    private func train() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do { ft = try await ApiClient.shared.runFinetune(uid: uid, token: token) }
+            catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    private func setActive(_ on: Bool) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            do {
+                _ = try await ApiClient.shared.setFinetuneActive(
+                    uid: uid, token: token, active: on)
+                await load()
+            } catch { self.error = error.localizedDescription }
         }
     }
 }

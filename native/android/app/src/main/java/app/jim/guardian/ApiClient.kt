@@ -113,6 +113,10 @@ data class FollowupAnswered(val answered: Boolean, val reason: String?,
 data class HelpTally(val helped: Int, val answered: Int)
 /** Claim 11's user-specific model, derived locally from this user's own
  *  stored history — nothing was sent to a model vendor to build it. */
+data class Finetune(val version: Int, val backend: String, val examples: Int,
+                    val helped: Int, val didNotHelp: Int, val method: String,
+                    val digest: String, val trainedAt: String,
+                    val active: Boolean)
 data class AdaptationProfile(val built: Boolean, val note: String?,
                              val evidenceItems: Int, val confidence: Double,
                              val vaulted: Boolean, val whatHelps: Map<String, HelpTally>,
@@ -1186,6 +1190,29 @@ object ApiClient {
             if (prof.isNull("occupation")) null else prof.optString("occupation"),
             if (prof.isNull("method")) null else prof.optString("method"))
     }
+
+    // --- the offline fine-tune ---------------------------------------------
+    // Beside adaptation and not folded into it: that one recomputes a profile
+    // that conditions a prompt, this one trains weights.
+
+    private fun finetuneOf(o: JSONObject) = Finetune(
+        o.optInt("version"), o.optString("backend"), o.optInt("examples"),
+        o.optInt("helped"), o.optInt("did_not_help"),
+        o.optString("method"), o.optString("digest"),
+        o.optString("trained_at"), o.optBoolean("active"))
+
+    suspend fun finetune(uid: String, token: String): Finetune =
+        finetuneOf(request("/finetune/$uid", token = token))
+
+    /** Local work: the pass runs with the backend's network blocked. */
+    suspend fun runFinetune(uid: String, token: String): Finetune =
+        finetuneOf(request("/finetune/$uid", "POST", JSONObject(), token))
+
+    /** Training and using are two decisions. */
+    suspend fun setFinetuneActive(uid: String, token: String,
+                                  active: Boolean): Boolean =
+        request("/finetune/$uid/active", "PUT",
+                JSONObject().put("active", active), token).optBoolean("active")
 
     suspend fun adaptation(uid: String, token: String): AdaptationProfile =
         adaptationOf(request("/adaptation/$uid", token = token))

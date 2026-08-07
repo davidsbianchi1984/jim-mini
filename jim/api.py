@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 
 from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
+               finetune as finetune_mod,
                careteam, community,
                catalog,
                coach,
@@ -47,7 +48,7 @@ from .models import (
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
-    PresenceBearing, PresenceSurface,
+    FinetuneSwitch, PresenceBearing, PresenceSurface,
     RobotBind, RelayAccept, RelayQuestion,
     SelfProfileConsent, SelfProfileLink,
     BandSet,
@@ -82,7 +83,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.56.0",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.56.1",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2012,6 +2013,42 @@ def create_app(qrme_client: QRMEClient | None = None,
     def read_adaptation(user_id: str, request: Request) -> dict:
         _user_or_404(user_id, request)
         return adaptation.get(user_id)
+
+    # ---- the offline fine-tune --------------------------------------------
+    #
+    # Beside `/adaptation` and not folded into it. That one recomputes a
+    # profile that conditions a prompt; this one trains weights. A reader who
+    # cannot tell which happened has been told nothing useful, and one route
+    # doing both is how that reader is created.
+
+    @app.post("/finetune/{user_id}")
+    def run_finetune(user_id: str, request: Request,
+                     backend: str | None = None) -> dict:
+        """Train a user-specific model offline, from this user's own answered
+        follow-ups. Nothing is transmitted: the pass runs with the network
+        blocked, so a backend that reached for a model hub raises."""
+        _user_or_404(user_id, request)
+        return finetune_mod.train(user_id, pdi=app.state.pdi, backend=backend)
+
+    @app.get("/finetune/{user_id}")
+    def read_finetune(user_id: str, request: Request) -> dict:
+        """The artifact, weights and all. Readable by the person whose history
+        trained it — a model somebody cannot inspect is one they cannot
+        meaningfully decline."""
+        _user_or_404(user_id, request)
+        out = finetune_mod.latest(user_id)
+        if out is None:
+            raise HTTPException(status_code=404,
+                                detail="nothing has been trained yet")
+        return out
+
+    @app.put("/finetune/{user_id}/active")
+    def switch_finetune(user_id: str, body: FinetuneSwitch,
+                        request: Request) -> dict:
+        """Training and using are two decisions. Off takes effect on the next
+        reply and the base behaviour is never more than this switch away."""
+        _user_or_404(user_id, request)
+        return finetune_mod.activate(user_id, body.active)
 
     # ---- the state that survives between sessions -------------------------
 

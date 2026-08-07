@@ -3,7 +3,7 @@ import { t as tr, visitorLang } from "../l10n";
 import { api, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState, type MoneyView,
          type AnonymityPosture, type CloudContribution, type PairInfo,
          type SeedReport, type VigilStatus,
-         type WatchChannel } from "../api";
+         type WatchChannel, type Finetune } from "../api";
 import { Problems } from "../Problems";
 import { ProviderTiles } from "../ProviderTiles";
 import { say } from "../speech";
@@ -16,6 +16,9 @@ export function Settings() {
   const [adapt, setAdapt] = useState<AdaptationProfile | null>(null);
   const [anon, setAnon] = useState<AnonymityPosture | null>(null);
   const [adaptBusy, setAdaptBusy] = useState(false);
+  const [ft, setFt] = useState<Finetune | null>(null);
+  const [ftBusy, setFtBusy] = useState(false);
+  const [ftError, setFtError] = useState<string | null>(null);
   const [cont, setCont] = useState<ContinuityState | null>(null);
   const lang = visitorLang();
   const [health, setHealth] = useState<string>("…");
@@ -29,6 +32,8 @@ export function Settings() {
     api.pair().then(setPair).catch(() => setPair(null));
     if (session.userId && session.userToken) {
       api.adaptation(session.userId, session.userToken).then(setAdapt).catch(() => {});
+      // 404 until something has been trained, which is the normal state.
+      api.finetune(session.userId, session.userToken).then(setFt).catch(() => {});
       api.anonymity(session.userId, session.userToken).then(setAnon).catch(() => {});
       api.continuity(session.userId, session.userToken).then(setCont).catch(() => {});
     }
@@ -143,6 +148,60 @@ export function Settings() {
             }}>{tr("set.adapt.build", lang)}</button>
           </>
         )}
+      </div>
+
+      {/* The offline fine-tune. A separate card from the adaptation profile
+          above it on purpose: that one is a profile that conditions a prompt,
+          this one is weights. One card doing both is how a reader ends up
+          unable to say which of the two they have. */}
+      <div className="card">
+        <h3>{tr("set.ft.title", lang)}</h3>
+        <p className="muted small">{tr("set.ft.sub", lang)}</p>
+        {ft ? (
+          <>
+            <div className="spec-row">
+              <div>
+                <b>{tr("set.ft.trained", lang)
+                  .replace("{n}", String(ft.examples))
+                  .replace("{backend}", ft.backend)}</b>
+                {/* The server's own sentence, shown rather than paraphrased. */}
+                <div className="muted small">{ft.method}</div>
+              </div>
+              <button disabled={ftBusy} onClick={async () => {
+                if (!session.userId || !session.userToken) return;
+                setFtBusy(true);
+                try { setFt(await api.runFinetune(session.userId, session.userToken)); }
+                catch (e) { setFtError((e as Error).message); }
+                finally { setFtBusy(false); }
+              }}>{tr("set.ft.retrain", lang)}</button>
+            </div>
+            <label className="spec-row">
+              <span>{tr("set.ft.use", lang)}</span>
+              <input type="checkbox" checked={!!ft.active}
+                     onChange={async (e) => {
+                       if (!session.userId || !session.userToken) return;
+                       const on = e.target.checked;
+                       try {
+                         await api.setFinetuneActive(session.userId, session.userToken, on);
+                         setFt({ ...ft, active: on });
+                       } catch (err) { setFtError((err as Error).message); }
+                     }} />
+            </label>
+            <p className="muted small">{tr("set.ft.offswitch", lang)}</p>
+          </>
+        ) : (
+          <>
+            <p className="muted small">{tr("set.ft.none", lang)}</p>
+            <button disabled={ftBusy} onClick={async () => {
+              if (!session.userId || !session.userToken) return;
+              setFtBusy(true); setFtError(null);
+              try { setFt(await api.runFinetune(session.userId, session.userToken)); }
+              catch (e) { setFtError((e as Error).message); }
+              finally { setFtBusy(false); }
+            }}>{tr("set.ft.train", lang)}</button>
+          </>
+        )}
+        {ftError && <p className="muted small">{ftError}</p>}
       </div>
 
       <div className="card">

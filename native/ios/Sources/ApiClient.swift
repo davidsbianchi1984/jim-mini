@@ -466,6 +466,26 @@ struct AdaptationProfile: Decodable {
 
 /// What anonymity costs and does not cost, said out loud, so the tradeoff is a
 /// choice rather than a surprise.
+struct Finetune: Decodable {
+    let version: Int
+    let backend: String
+    let examples: Int
+    let helped: Int
+    let did_not_help: Int
+    let weights: [Double]
+    let method: String
+    let digest: String
+    let trained_at: String
+    let active: Bool?
+}
+
+struct FinetuneSwitchResult: Decodable {
+    let user_id: String
+    let active: Bool
+    let digest: String
+    let backend: String
+}
+
 struct AnonymityPosture: Decodable {
     let anonymous: Bool
     let known_as: String?
@@ -1307,6 +1327,30 @@ actor ApiClient {
     func rebuildAdaptation(uid: String,
                            token: String) async throws -> AdaptationProfile {
         try await request("/adaptation/\(uid)", method: "POST", token: token)
+    }
+
+    // MARK: The offline fine-tune
+    //
+    // Beside `adaptation` and not folded into it: that one recomputes a
+    // profile that conditions a prompt, this one trains weights. A reader who
+    // cannot tell which happened has been told nothing useful.
+
+    func finetune(uid: String, token: String) async throws -> Finetune {
+        try await request("/finetune/\(uid)", token: token)
+    }
+
+    /// Train from the history already on record. Local work: the pass runs
+    /// with the backend's network blocked, so nothing about this person's
+    /// health goes anywhere to produce it.
+    func runFinetune(uid: String, token: String) async throws -> Finetune {
+        try await request("/finetune/\(uid)", method: "POST", token: token)
+    }
+
+    /// Training and using are two decisions. Off takes effect on the next reply.
+    func setFinetuneActive(uid: String, token: String,
+                           active: Bool) async throws -> FinetuneSwitchResult {
+        try await request("/finetune/\(uid)/active", method: "PUT",
+                          body: ["active": active], token: token)
     }
 
     func anonymity(uid: String, token: String) async throws -> AnonymityPosture {

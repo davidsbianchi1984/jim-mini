@@ -246,6 +246,7 @@ fun OverviewScreen(vm: GuardianViewModel) {
         ModelCard(vm)
         LanguageCard(vm)
         AdaptationCard(vm)
+        TrainedModelCard(vm)
         AnonymityCard(vm)
         ImproveCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
@@ -2981,6 +2982,64 @@ private fun AdaptationCard(vm: GuardianViewModel) {
             vm.call({ ApiClient.rebuildAdaptation(uid, token) }) { r ->
                 busy = false
                 profile = r.getOrNull() ?: profile
+            }
+        }
+    }
+}
+
+/**
+ * The offline fine-tune, on this phone.
+ *
+ * A separate card from the adaptation profile beside it, on purpose: that one
+ * is a profile that conditions a prompt, this one is weights. One card doing
+ * both is how a reader ends up unable to say which of the two they have.
+ */
+@Composable
+private fun TrainedModelCard(vm: GuardianViewModel) {
+    var ft by remember { mutableStateOf<Finetune?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(vm.uid) {
+        val uid = vm.uid ?: return@LaunchedEffect
+        val token = vm.token ?: return@LaunchedEffect
+        // A 404 until something has been trained, which is the normal state.
+        vm.call({ ApiClient.finetune(uid, token) }) { r -> ft = r.getOrNull() }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ov.ft", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("ov.ft.sub", vm.language), color = Jim.T2, fontSize = 12.sp)
+        ft?.let { f ->
+            Text(L10n.fill("ov.ft.from", vm.language,
+                           mapOf("n" to f.examples.toString())),
+                color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            // The server's own sentence, shown rather than paraphrased.
+            Text(f.method, color = Jim.T3, fontSize = 10.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(L10n.t("ov.ft.use", vm.language), color = Jim.Txt,
+                    fontSize = 13.sp, modifier = Modifier.weight(1f))
+                Switch(checked = f.active, onCheckedChange = { on ->
+                    val uid = vm.uid ?: return@Switch
+                    val token = vm.token ?: return@Switch
+                    vm.call({ ApiClient.setFinetuneActive(uid, token, on) }) { r ->
+                        r.onSuccess { ft = f.copy(active = on) }
+                         .onFailure { error = it.message }
+                    }
+                })
+            }
+            Text(L10n.t("ov.ft.off", vm.language), color = Jim.T3, fontSize = 10.sp)
+        } ?: Text(L10n.t("ov.ft.none", vm.language), color = Jim.T2, fontSize = 12.sp)
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+        SmallAction(L10n.t(if (busy) "ov.ft.training" else "ov.ft.train",
+                           vm.language), enabled = !busy) {
+            val uid = vm.uid ?: return@SmallAction
+            val token = vm.token ?: return@SmallAction
+            busy = true; error = null
+            vm.call({ ApiClient.runFinetune(uid, token) }) { r ->
+                busy = false
+                r.onSuccess { ft = it }.onFailure { error = it.message }
             }
         }
     }

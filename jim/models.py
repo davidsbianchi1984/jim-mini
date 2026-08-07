@@ -351,6 +351,17 @@ class CommunityVisit(BaseModel):
     room_id: str
 
 
+class FinetuneSwitch(BaseModel):
+    """Put the trained weights in front of the Guardian, or take them away.
+
+    No default. Training and using are two decisions, and a field that
+    defaulted to `True` would turn an empty PUT into a consent nobody typed —
+    for a model that answers somebody about their health.
+    """
+
+    active: bool
+
+
 class PresenceBearing(BaseModel):
     """How the presence carries itself: `companion` (the default) or
     `professional`.

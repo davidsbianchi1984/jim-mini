@@ -73,6 +73,12 @@ public sealed partial class OverviewPage : Page
         LearnedTitle.Text = L10n.T("ov.learned");
         SealedText.Text = L10n.T("ov.sealed");
         RebuildButton.Content = L10n.T("ov.rebuild");
+        FtHead.Text = L10n.T("ov.ft");
+        FtSub.Text = L10n.T("ov.ft.sub");
+        FtFrom.Text = L10n.T("ov.ft.none");
+        FtUse.Header = L10n.T("ov.ft.use");
+        FtTrainButton.Content = L10n.T("ov.ft.train");
+        LoadFinetune();
         NameTitle.Text = L10n.T("ov.name");
     }
 
@@ -143,6 +149,57 @@ public sealed partial class OverviewPage : Page
         AdaptationMethod.Text = p.Profile?.Method ?? "";
         AdaptationVaulted.Visibility = p.Vaulted ? Visibility.Visible : Visibility.Collapsed;
     }
+
+    /// <summary>The offline fine-tune. A 404 before anything is trained is
+    /// the normal state, not an error worth showing.</summary>
+    private async void LoadFinetune()
+    {
+        var s = AppState.Shared;
+        if (s.Uid is null || s.Token is null) return;
+        try { RenderFinetune(await ApiClient.Shared.Finetune(s.Uid, s.Token)); }
+        catch { /* nothing trained yet */ }
+    }
+
+    private void RenderFinetune(Finetune f)
+    {
+        _ft = f;
+        FtFrom.Text = L10n.Fill("ov.ft.from", ("n", f.Examples.ToString()));
+        // The server's own sentence, shown rather than paraphrased: it is the
+        // line that says whether weights or a prompt came out of this.
+        FtMethod.Text = f.Method;
+        FtUse.Visibility = Visibility.Visible;
+        FtUse.IsOn = f.Active ?? false;
+        FtOff.Text = L10n.T("ov.ft.off");
+    }
+
+    private async void OnTrainModel(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Shared;
+        if (s.Uid is null || s.Token is null) return;
+        FtTrainButton.IsEnabled = false;
+        FtTrainButton.Content = L10n.T("ov.ft.training");
+        try { RenderFinetune(await ApiClient.Shared.RunFinetune(s.Uid, s.Token)); }
+        catch (Exception ex) { FtMethod.Text = ex.Message; }
+        finally
+        {
+            FtTrainButton.IsEnabled = true;
+            FtTrainButton.Content = L10n.T("ov.ft.train");
+        }
+    }
+
+    /// <summary>Training and using are two decisions.</summary>
+    private async void OnUseTrainedModel(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Shared;
+        if (s.Uid is null || s.Token is null || _ft is null) return;
+        try
+        {
+            await ApiClient.Shared.SetFinetuneActive(s.Uid, s.Token, FtUse.IsOn);
+        }
+        catch (Exception ex) { FtMethod.Text = ex.Message; }
+    }
+
+    private Finetune? _ft;
 
     private async void OnRebuildAdaptation(object sender, RoutedEventArgs e)
     {
