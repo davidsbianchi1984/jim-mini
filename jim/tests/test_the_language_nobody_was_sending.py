@@ -56,6 +56,14 @@ SHELLS = (
      "CurrentUICulture", "native/windows/ApiClient.cs", "L10n.DeviceLanguage()"),
 )
 
+#: Where a request actually leaves the shell. Not the same question as "does
+#: this file mention the header" — see the check below.
+DISPATCH = {
+    "ios": r'URLSession\.shared\.(?:data|upload|bytes)\(',
+    "android": r'\.openConnection\(\)',
+    "windows": r'_http\.SendAsync\(',
+}
+
 
 def _code(path: Path) -> str:
     """Source with comments and doc comments stripped.
@@ -153,3 +161,78 @@ def test_the_backend_really_does_read_this_header():
     assert callers, (
         "nothing outside i18n.py calls negotiate(), so no route chooses a "
         "language from the header these shells now send")
+
+
+def test_every_place_a_request_leaves_the_shell_carries_the_header():
+    """0.57.9. The half the two checks above cannot see.
+
+    They ask *is the header set with the resolver*, which is answered by the
+    one line in the shared helper. They cannot ask **how many requests never
+    go through that helper** — and in this estate the answer was most of them:
+
+        QRME      Windows 21 of 22 sends, iOS 3 of 4, Android 1 of 2
+        JIM-mini  Windows 15 of 16, iOS 1 of 2, Android 4 of 5
+        PDI       Windows 3 of 4
+
+    Uploads, streams and raw-response reads, every one of them building its
+    own request beside the funnel. Those calls carry a token, so a *valid*
+    token still picks the owner's stored language — but an expired one is not
+    a principal, and the refusal falls back to the header that was not there.
+
+        asked     does this client set the header with the resolver
+        mattered  does every request this client makes carry it
+
+    The fix was a dispatcher per shell rather than a line per call site,
+    because a line per call site is the thing that was missing twenty-one
+    times.
+    """
+    uncovered = []
+    for name, _, _, _, client, _ in SHELLS:
+        path = REPO / client
+        if not path.exists():
+            continue
+        src = _code(path)
+        for m in re.finditer(DISPATCH[name], src):
+            # The window is the request's own construction, not the file: a
+            # header set four hundred characters earlier belongs to a
+            # different request.
+            before = src[max(0, m.start() - 900):m.start()]
+            after = src[m.end():m.end() + 500]
+            if "accept-language" not in (before + after).lower():
+                line = src[:m.start()].count("\n") + 1
+                uncovered.append(f"{name}: {client}:{line} sends a request "
+                                 "that carries no accept-language")
+    assert not uncovered, (
+        "these requests leave the shell without the reader's language:\n    "
+        + "\n    ".join(uncovered)
+        + "\n  Route them through the shell's dispatcher rather than adding "
+          "a line to each.")
+
+
+#: Where a request is *built*. Used only as the reach floor — after the fix
+#: the Windows shell has exactly one place a request *leaves* from, which is
+#: the point of the fix and useless as evidence that the file was read.
+BUILT = {
+    "ios": r'URLRequest\(',
+    "android": r'\.openConnection\(\)',
+    "windows": r'new HttpRequestMessage\(',
+}
+
+
+def test_the_scan_reaches_every_client():
+    """A pattern that stopped matching would report every shell clean by
+    finding no requests at all — the failure this arc keeps producing.
+
+    Counted on requests *built* rather than requests *sent*: consolidating
+    the sends behind one dispatcher is exactly what this round did, so a floor
+    on send sites would now be a floor of one.
+    """
+    seen = {}
+    for name, _, _, _, client, _ in SHELLS:
+        path = REPO / client
+        if not path.exists():
+            continue
+        seen[name] = len(re.findall(BUILT[name], _code(path)))
+    assert len(seen) == 3, f"only found {sorted(seen)}"
+    for name, n in seen.items():
+        assert n >= 2, f"{name}: only {n} request(s) built — the pattern has "

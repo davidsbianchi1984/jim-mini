@@ -4,6 +4,62 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.9] — 2026-08-08
+
+### A funnel only funnels what goes into it
+
+0.57.8 ended by naming its own next question: guards get written in one repo
+and not ported, so compare the three `tests/` directories. Twenty-four files
+exist in exactly two of the three, and most of those are genuine product
+differences. One was not.
+
+`test_the_language_nobody_was_sending.py` exists in JIM-mini and PDI and not
+in QRME — the product whose premise is a profile that speaks in a person's
+language, and which built an accountless *stranger* surface over three
+rounds. Every refusal it raises goes through `refusal_language`, which reads
+`Accept-Language` whenever the caller is not an owner.
+
+**A first pass said QRME's shells never sent the header. That was a
+case-sensitive grep and it was wrong** — all three send it, lower-case, from
+their shared request helper. What the guard could not ask, in any of the three
+products, is the question that mattered:
+
+```
+asked     does this client set the header with the resolver
+mattered  does every request this client makes carry it
+```
+
+Because the answer was **no**, everywhere:
+
+```
+QRME      Windows 21 of 22 sends, iOS 3 of 4, Android 1 of 2
+JIM-mini  Windows 15 of 16, iOS 1 of 2,  Android 4 of 5
+PDI       Windows  3 of 4
+```
+
+Uploads, streams and raw-response reads, each building its own request beside
+the shared helper and setting only `authorization`. Those calls carry a token,
+so a *valid* token still picks the owner's stored language — but an expired
+one is not a principal, and the refusal falls back to a header that was not
+there. Forty-four requests across three products.
+
+### Fixed
+
+- One dispatcher per shell rather than one line per call site, because a line
+  per call site is precisely the thing that went missing forty-four times.
+  C# gained `Dispatch(HttpRequestMessage)`, Swift a `dispatch(_:)`, and the
+  Kotlin clients' remaining connections got the header where they are built.
+
+### Added
+
+- `test_every_place_a_request_leaves_the_shell_carries_the_header`, which
+  walks every dispatch site rather than every line that mentions the header —
+  the half the original could not see, in the product that had it and the two
+  that did not.
+- The guard itself, in QRME, four releases after it was written next door.
+
+Suite: **1,544 passed**, 1 skipped.
+
 ## [0.57.8] — 2026-08-08
 
 ### The rows the guard skipped were the interesting ones

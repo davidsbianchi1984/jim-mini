@@ -441,6 +441,9 @@ object ApiClient {
         // /baseline returns a JSON array; wrap for the shared request() helper.
         val arr = withContext(Dispatchers.IO) {
             val conn = (URL("$base/baseline/$uid").openConnection() as HttpURLConnection).apply {
+                    // One of the four connections in this file the shared
+                    // helper's accept-language line never reached.
+                    setRequestProperty("accept-language", L10n.deviceLanguage())
                 setRequestProperty("authorization", "Bearer $token")
                 connectTimeout = 8000; readTimeout = 8000
             }
@@ -509,6 +512,9 @@ object ApiClient {
 
     private suspend fun getArray(path: String, token: String): org.json.JSONArray = withContext(Dispatchers.IO) {
         val conn = (URL("$base$path").openConnection() as HttpURLConnection).apply {
+                    // One of the four connections in this file the shared
+                    // helper's accept-language line never reached.
+                    setRequestProperty("accept-language", L10n.deviceLanguage())
             setRequestProperty("authorization", "Bearer $token")
             connectTimeout = 8000; readTimeout = 8000
         }
@@ -648,6 +654,9 @@ object ApiClient {
             val conn = (URL("$base/users/$uid/alarms").openConnection()
                 as HttpURLConnection).apply {
                 setRequestProperty("authorization", "Bearer $token")
+                // The fifth connection in this file, and the last one the
+                // shared helper's accept-language line never reached.
+                setRequestProperty("accept-language", L10n.deviceLanguage())
                 connectTimeout = 8000; readTimeout = 8000
             }
             val text = conn.inputStream.bufferedReader().use { it.readText() }
@@ -782,6 +791,9 @@ object ApiClient {
 
     suspend fun robots(uid: String, token: String): List<Robot> = withContext(Dispatchers.IO) {
         val conn = (URL("$base/robots/$uid").openConnection() as HttpURLConnection).apply {
+                    // One of the four connections in this file the shared
+                    // helper's accept-language line never reached.
+                    setRequestProperty("accept-language", L10n.deviceLanguage())
             setRequestProperty("authorization", "Bearer $token")
             connectTimeout = 8000; readTimeout = 8000
         }

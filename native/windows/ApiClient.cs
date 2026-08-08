@@ -560,6 +560,20 @@ public sealed class ApiClient
 
     private readonly HttpClient _http = new() { BaseAddress = new Uri("http://127.0.0.1:8000") };
 
+    /// <summary>Every request this client sends, and the one place the
+    /// reader's language is attached to it.
+    ///
+    /// <para>The header used to be set in the shared send helper — and the
+    /// calls that went straight to <c>_http.SendAsync</c> instead never got
+    /// it. Those are the uploads, the streams and the raw-response reads, and
+    /// every refusal they draw arrived in English no matter what the machine
+    /// was set to. A funnel only funnels what goes into it.</para></summary>
+    private Task<HttpResponseMessage> Dispatch(HttpRequestMessage req)
+    {
+        req.Headers.TryAddWithoutValidation("accept-language", L10n.DeviceLanguage());
+        return _http.SendAsync(req);
+    }
+
     public void SetBase(string url) => _http.BaseAddress = new Uri(url.TrimEnd('/'));
 
 
@@ -597,12 +611,11 @@ public sealed class ApiClient
         // The language the reader actually speaks. Every sentence the backend
         // composes on a public route is chosen from this header, and no native
         // shell was sending it.
-        req.Headers.TryAddWithoutValidation("accept-language", L10n.DeviceLanguage());
 
         HttpResponseMessage res;
         try
         {
-            res = await _http.SendAsync(req);
+            res = await Dispatch(req);
         }
         catch
         {
@@ -726,7 +739,7 @@ public sealed class ApiClient
         var req = new HttpRequestMessage(HttpMethod.Delete,
             $"/guardians/{gid}/children/{cid}");
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -782,7 +795,7 @@ public sealed class ApiClient
     {
         var req = new HttpRequestMessage(HttpMethod.Delete, $"/self-profile/{uid}");
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -798,7 +811,7 @@ public sealed class ApiClient
     public async Task BriefSelfProfile(string uid, string token)
     {
         var req = Post($"/self-profile/{uid}/brief", new { }, token);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -810,7 +823,7 @@ public sealed class ApiClient
     public async Task LogHabit(string uid, string token, string habitId)
     {
         var req = Post($"/habits/{uid}/{habitId}/log", new { }, token);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -819,7 +832,7 @@ public sealed class ApiClient
     public async Task AddJournal(string uid, string token, string text)
     {
         var req = Post($"/journal/{uid}", new { text }, token);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -938,7 +951,7 @@ public sealed class ApiClient
             Content = JsonContent.Create(new { level }),
         };
         req.Headers.Add("authorization", $"Bearer {token}");
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -972,7 +985,7 @@ public sealed class ApiClient
     public async Task SignWaiver(string uid, string token, string signature)
     {
         var req = Post($"/waivers/{uid}", new { signature, accept = true }, token);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         if (!res.IsSuccessStatusCode)
         {
             var body = await res.Content.ReadAsStringAsync();
@@ -1002,7 +1015,7 @@ public sealed class ApiClient
     {
         var req = new HttpRequestMessage(HttpMethod.Delete, $"/waivers/{uid}");
         req.Headers.Add("authorization", $"Bearer {token}");
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -1018,7 +1031,7 @@ public sealed class ApiClient
             Content = JsonContent.Create(new { source, consented }),
         };
         req.Headers.Add("authorization", $"Bearer {token}");
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -1036,14 +1049,14 @@ public sealed class ApiClient
     {
         var req = Post($"/social/connection/{cid}/collect",
             new { items = new[] { new { content } } }, token);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
     public async Task SocialPublish(string cid, string token, string content)
     {
         var req = Post($"/social/connection/{cid}/publish", new { content }, token);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -1060,7 +1073,7 @@ public sealed class ApiClient
     {
         var req = Post($"/apps/connector/{cid}/collect",
             new { items = new[] { new { content } } }, token);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -1077,7 +1090,7 @@ public sealed class ApiClient
     {
         var req = new HttpRequestMessage(HttpMethod.Delete, $"/medical-id/qr/{uid}");
         req.Headers.Add("authorization", $"Bearer {token}");
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
 
@@ -1089,7 +1102,7 @@ public sealed class ApiClient
         object body = rating is { } r
             ? new { category, message, rating = r }
             : new { category, message };
-        var res = await _http.SendAsync(Post("/improve", body, token));
+        var res = await Dispatch(Post("/improve", body, token));
         res.EnsureSuccessStatusCode();
     }
 
@@ -1114,7 +1127,7 @@ public sealed class ApiClient
     /// inside it.</summary>
     public async Task NoteCommunityVisit(string uid, string token, string roomId)
     {
-        var res = await _http.SendAsync(
+        var res = await Dispatch(
             Post($"/community/{uid}/visits", new { room_id = roomId }, token));
         res.EnsureSuccessStatusCode();
     }

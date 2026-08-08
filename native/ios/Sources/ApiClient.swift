@@ -719,6 +719,15 @@ actor ApiClient {
         try await request("/offline/status")
     }
 
+    /// Every request this client sends that does not go through the shared
+    /// helper, and the one place the reader's language is attached to it.
+    /// A funnel only funnels what goes into it.
+    private func dispatch(_ req: URLRequest) async throws -> (Data, URLResponse) {
+        var req = req
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        return try await URLSession.shared.data(for: req)
+    }
+
     private func request<T: Decodable>(_ path: String, method: String = "GET",
                                        body: [String: Any]? = nil, token: String? = nil) async throws -> T {
         var req = URLRequest(url: base.appendingPathComponent(path))
@@ -1196,7 +1205,7 @@ actor ApiClient {
         var req = URLRequest(url: base.appendingPathComponent("/medical-id/qr/\(uid)"))
         req.httpMethod = "DELETE"
         req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
-        let (_, resp) = try await URLSession.shared.data(for: req)
+        let (_, resp) = try await dispatch(req)
         guard let http = resp as? HTTPURLResponse,
               (200..<300).contains(http.statusCode) else {
             throw ApiError.http("revoke failed")
