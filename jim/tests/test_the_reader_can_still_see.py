@@ -54,22 +54,20 @@ from __future__ import annotations
 
 from jim.api import app
 
-from . import clientpaths
+from . import clientpaths, ratchets
 
 #: (language, the floor under its extracted call sites). Measured, then set
 #: to about four-fifths — low enough not to trip on ordinary movement, high
 #: enough that a reader covering a fraction of the surface cannot pass.
-FLOORS = (
-    (clientpaths.CONSOLE, 200),
-    (clientpaths.IOS, 90),
-    (clientpaths.ANDROID, 90),
-    (clientpaths.WINDOWS, 90),
-)
+FLOORS = tuple(
+    (lang, ratchets.floor(f"route.calls.{lang.name}"))
+    for lang in (clientpaths.CONSOLE, clientpaths.IOS,
+                 clientpaths.ANDROID, clientpaths.WINDOWS))
 
 #: The route table's own floor. `all_routes` walks FastAPI's included-router
 #: wrappers; the flat `app.routes` showed 8 of 409 once, and the first version
 #: of the doorless audit reported zero on that basis and passed.
-ROUTE_FLOOR = 220
+ROUTE_FLOOR = ratchets.floor("route.table")
 
 #: How far below the busiest shell the quietest may sit. The three are one
 #: client ported three times, so a reader seeing a third of what its ports

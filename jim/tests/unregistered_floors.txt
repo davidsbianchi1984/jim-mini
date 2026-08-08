@@ -1,0 +1,114 @@
+# status: backlog — 63 rows
+#
+# Every numeric floor in this suite still carrying its own literal: an
+# `assert <something> > <int>` with the number written into the assertion.
+#
+# ## What this counts, and why counting it is the point
+#
+# A floor answers one question every run — is the number satisfied — and that
+# is exactly the question that keeps passing after the number stops meaning
+# anything. Asking the second question, *is it still near what it measures*,
+# needs the measurement, and a literal inside an assertion has none attached.
+#
+#     asked     is the number satisfied
+#     mattered  is the number still near what it measures
+#
+# 0.58.8 found the route reader's floor was written when the console was the
+# only client. 0.58.9 found the localizer's was ten against nine hundred and
+# forty-five in the largest product. 0.59.0 applied the standard to everything
+# reachable, in all three:
+#
+#     l10n asked, per shell        10 against 279-312      ratio 0.04
+#     l10n held, per shell         20 against 286-312      ratio 0.07
+#     path literals, all surfaces  40 against 466          ratio 0.09
+#     native call sites            20 against 113-114      ratio 0.18
+#     console call sites          200 against 251          ratio 0.80  held
+#
+# The rows that passed are as informative as the ones that did not. A literal
+# copied into three repositories is calibrated for whichever of them was
+# smallest when it was written, so the same number is an honest floor in one
+# product and decoration in another — and nothing in either could tell,
+# because neither had the measurement attached.
+#
+# Those are now in `ratchets.py`, registered with the way to measure the same
+# quantity, and audited every run. The rows below are what is left.
+#
+# ## How a row leaves this file
+#
+# Register it in `ratchets.py` with a `measure` callable and change the
+# assertion to `ratchets.floor("name")`. The sweep finds bare literals only,
+# so registering removes the row without anybody editing this list — and the
+# registered floor is then checked against reality on every run.
+#
+# Not every row here is wrong. Some of these numbers are small fixed
+# cardinalities that will never drift. Telling those apart from the decoration
+# requires knowing what each one measures, which is the work of registering
+# it, which is why they are counted rather than guessed at.
+#
+# The ceiling does not move up. A new bare floor is a new number nothing will
+# ever audit.
+#
+# ceiling: 63
+test_a_binding_is_not_a_door.py:134: len(found) > 20
+test_a_form_that_asks_for_it_has_a_label_for_it.py:119: controls > 6000
+test_a_form_that_asks_for_it_has_a_label_for_it.py:122: len(_asked_for()) >= 10
+test_a_native_binding_is_not_a_door_either.py:177: n > 20
+test_a_refusal_whose_english_is_not_a_constant.py:151: len(calls) >= 6
+test_a_screen_nothing_opens.py:156: len(found) >= 5
+test_a_shell_asks_for_a_key_it_has.py:313: len(wanted) >= 20
+test_a_shell_does_not_print_what_it_translated.py:355: len(_shown(spec)) > 100
+test_a_shell_does_not_print_what_it_translated.py:359: len(_fragments(spec)) >= 22
+test_emergency.py:40: med['age'] >= 40
+test_error_report_carries_nothing_private.py:398: len(segments) > 30
+test_help.py:19: len(client.get('/help/topics').json()['topics']) >= 10
+test_knowledge.py:35: len(knowledge.ENTRIES) >= 15
+test_nothing_leaves_the_host.py:147: len(sites) >= 5
+test_one_name_one_type_on_the_wire.py:134: len(_declared()) >= 240
+test_the_body_the_native_clients_send.py:358: matched >= 44
+test_the_body_the_route_requires.py:246: len(writes) >= 105
+test_the_body_the_route_requires.py:247: len(readable) >= 65
+test_the_body_the_route_requires.py:254: len(models) >= 90
+test_the_body_the_route_requires.py:264: matched >= 85
+test_the_console_speaks_one_language.py:237: len(keys) >= 15
+test_the_desktop_and_the_phone_say_different_things.py:324: len(shared) > 40
+test_the_files_the_release_never_touched.py:231: len(sorted(REPO.glob('native/ios/Sources/**/*.swift'))) >= 24
+test_the_files_the_release_never_touched.py:232: len(sorted(REPO.glob('native/android/**/*.kt'))) >= 6
+test_the_guardian_refuses_in_one_language.py:179: len(handlers) >= 9
+test_the_guardian_refuses_in_one_language.py:226: len(i18n._REFUSALS) >= 21
+test_the_guardian_refuses_in_one_language.py:305: refused.status_code >= 400
+test_the_guardian_refuses_in_one_language.py:331: refused.status_code >= 400
+test_the_key_the_server_never_sends.py:228: len(vocabulary) >= 500
+test_the_keys_the_android_client_reads.py:358: len(reads) >= 40
+test_the_keys_the_android_client_reads.py:359: sum((len(k) for _, k in reads)) >= 155
+test_the_keys_the_android_client_reads.py:382: len(driven) >= 30
+test_the_member_that_isnt_there.py:230: len(_declared(lang, REPO / decl)) >= 5
+test_the_member_that_isnt_there.py:239: len(keys) >= 12
+test_the_member_that_isnt_there.py:240: len(used) >= 10
+test_the_readme_says_what_shipped.py:127: len(_rows()) >= 40
+test_the_readme_says_what_shipped.py:130: len(_released()) >= 40
+test_the_refusal_names_the_field_on_the_form.py:106: len(found) >= 150
+test_the_refusal_that_handed_the_body_back.py:154: len(found) > 80
+test_the_refusal_that_handed_the_body_back.py:158: reached > 50
+test_the_refusal_that_handed_the_body_back.py:273: len(i18n._VALIDATION) >= 10
+test_the_shape_the_client_expects.py:307: len(driven) >= 20
+test_the_shape_the_client_expects.py:320: len(_bindings()) >= 35
+test_the_shape_the_console_expects.py:404: len(shapes) >= 95
+test_the_shape_the_console_expects.py:405: sum((len(f) for f in shapes.values())) >= 600
+test_the_shape_the_console_expects.py:406: len(_gets()) >= 105
+test_the_shape_the_console_expects.py:456: len(driven) >= 45
+test_the_shape_the_swift_client_expects.py:218: len(_structs()) >= 110
+test_the_shape_the_swift_client_expects.py:219: fields >= 420
+test_the_shape_the_swift_client_expects.py:220: len(_bindings()) >= 45
+test_the_shape_the_swift_client_expects.py:227: len(driven) >= 15
+test_the_shells_still_parse.py:363: len(SWIFT) >= 24
+test_the_shells_still_parse.py:364: len(KOTLIN) >= 6
+test_the_shells_still_parse.py:365: len(CSHARP) >= 18
+test_the_shells_still_parse.py:375: len(XAML) >= 13
+test_the_shells_still_parse.py:378: named >= 340
+test_the_shells_still_parse.py:380: checked >= 80
+test_the_shells_still_parse.py:382: driven >= 300
+test_the_tabs_are_translated_and_the_screens_are_not.py:433: english + calls >= 50
+test_the_tabs_are_translated_and_the_screens_are_not.py:622: len(rows) >= 10
+test_the_watch_you_actually_wear.py:111: metrics['resting_heart_rate']['value'] > 60
+test_vigil.py:75: st['silent_hours'] >= 48
+test_watch.py:145: metrics['heart_rate']['samples'] >= 6

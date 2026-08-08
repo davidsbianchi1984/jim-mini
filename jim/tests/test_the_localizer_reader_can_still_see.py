@@ -94,6 +94,7 @@ from pathlib import Path
 
 import pytest
 
+from . import ratchets
 from .test_a_shell_asks_for_a_key_it_has import SHELLS, _asked, _held
 
 #: shell -> (floor under its extracted call sites, floor under its table rows).
@@ -101,11 +102,9 @@ from .test_a_shell_asks_for_a_key_it_has import SHELLS, _asked, _held
 #: ordinary movement, high enough that a reader covering a fraction of the
 #: surface cannot pass. Per shell rather than one number, so a shell that
 #: genuinely grows can be raised on its own.
-FLOORS = {
-    "ios": (240, 240),
-    "android": (245, 245),
-    "windows": (220, 225),
-}
+FLOORS = {shell: (ratchets.floor(f"l10n.asked.{shell}"),
+                  ratchets.floor(f"l10n.held.{shell}"))
+          for shell in ("ios", "android", "windows")}
 
 #: How far below the busiest shell the quietest may sit. The three are one
 #: client ported three times; see the docstring for the measured spreads.

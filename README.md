@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.58.9** ([changelog](CHANGELOG.md) ·
+**Current release: v0.59.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -344,6 +344,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.59.0** | **A floor nobody raised** — every floor in the suite swept against what it measures. 69 carried their own literal; l10n sat at 10 against 279–312 and path literals at 40 against 466. The console's `> 200` **passed**, at four-fifths — the identical literal is at 0.47 in QRME, because one number written for three repositories is calibrated for whichever was smallest. `ratchets.py` gives each floor a measurement; the rest are a backlog that only shrinks |
 | **0.58.9** | **Ten against two hundred and seventy-nine** — the L10n guard's floor has not moved since it was written: ten localizer calls, twenty table rows, against tables that now hold 286–312 rows. Narrowing the call pattern to `L10n.t("…")` blinds C# alone — Windows 279 → 4 — and the dead-row path notices only the six rows in that shell without a dot in them. Per-shell floors on both halves, plus a spread across the three ports that needs no hand-chosen number |
 | **0.58.8** | **The route reader had one floor and four clients** — six files ask `clientpaths` what each client calls, so a reader read short narrows all of them at once, in the safe direction. An absolute floor per client and a spread check across the three shells, with this product's own measured numbers; the console sits outside the spread because its 251 call sites against 114 per phone are a real difference in surface |
 | **0.58.7** | **A wire model is data, and data has no methods** — a pin whose reader goes blind reads an empty model, and an empty set is a subset of anything; every pin now asserts on both ends, and three checks audit the readers. Clean here; the finding was QRME's missing brace, which put ninety-five client methods inside a wire model |

@@ -43,6 +43,8 @@ from pathlib import Path
 
 import pytest
 
+from . import ratchets
+
 
 def _repo_root() -> Path:
     for d in Path(__file__).resolve().parents:
@@ -212,10 +214,10 @@ def test_the_extraction_finds_something(shell):
     """A guard on the guard: a pattern that stopped matching reports a shell
     with no missing keys because it found no keys at all."""
     asked, held = _asked(shell), _held(shell)
-    assert len(asked) >= 10, (
+    assert len(asked) >= ratchets.floor(f"l10n.asked.{shell}"), (
         f"only {len(asked)} L10n lookups found in {shell} — the call pattern "
         "has stopped matching, and the check above would pass on nothing")
-    assert len(held) >= 20, (
+    assert len(held) >= ratchets.floor(f"l10n.held.{shell}"), (
         f"only {len(held)} rows parsed from {shell}'s table — the row pattern "
         "has stopped matching, and every key would look missing")
 

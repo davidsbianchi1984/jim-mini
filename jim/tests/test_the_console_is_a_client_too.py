@@ -32,7 +32,7 @@ from pathlib import Path
 
 from jim.api import app
 
-from . import clientpaths
+from . import clientpaths, ratchets
 
 SNAPSHOT = Path(__file__).resolve().parent / "console_doorless.txt"
 
@@ -130,7 +130,7 @@ def test_each_native_shell_is_still_being_read():
     """
     for lang in clientpaths.NATIVE:
         made = clientpaths.calls(lang)
-        assert len(made) > 20, (
+        assert len(made) >= ratchets.floor(f"route.calls.{lang.name}"), (
             f"only {len(made)} call sites extracted from the {lang.name} "
             "shell — its patterns have stopped matching, which would make "
             "the union backlog look better than it is")

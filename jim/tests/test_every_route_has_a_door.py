@@ -28,7 +28,7 @@ from pathlib import Path
 
 from jim.api import app
 
-from . import clientpaths
+from . import clientpaths, ratchets
 
 SNAPSHOT = Path(__file__).resolve().parent / "doorless_routes.txt"
 
@@ -89,10 +89,10 @@ def test_the_audit_is_actually_looking_at_something():
     problem still existing. It passed for as long as the backlog did.
     """
     routed = clientpaths.all_routes(app)
-    assert len(routed) > 50, (
+    assert len(routed) >= ratchets.floor("route.table"), (
         f"only {len(routed)} routes found — the app did not build properly")
     made = clientpaths.calls(clientpaths.CONSOLE)
-    assert len(made) > 200, (
+    assert len(made) >= ratchets.floor("route.calls.console"), (
         f"only {len(made)} console call sites extracted — the audit is "
         "reading almost nothing, so an empty backlog means nothing either")
 

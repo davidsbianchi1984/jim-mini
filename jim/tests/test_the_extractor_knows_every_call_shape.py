@@ -54,6 +54,8 @@ from pathlib import Path
 
 import pytest
 
+from . import ratchets
+
 from . import clientpaths as cp
 
 RECORD = Path(__file__).resolve().parent / "extractor_unattributed.txt"
@@ -110,7 +112,7 @@ def test_the_check_is_looking_at_something():
     mode this whole file exists to catch, reproduced inside it.
     """
     total = sum(len(cp.paths(lang)) for lang in SURFACES.values())
-    assert total >= 40, (
+    assert total >= ratchets.floor("extractor.path_literals"), (
         f"only {total} path literals found across {len(SURFACES)} surfaces — "
         "the extraction has stopped matching, and an emptiness check passes "
         "on nothing")
