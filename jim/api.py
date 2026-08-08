@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import logging
 import os
 from datetime import date, datetime
 
@@ -11,7 +12,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi import (Depends, FastAPI, Header, HTTPException, Request,
                      Response)
 from pydantic import BaseModel
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                finetune as finetune_mod,
@@ -69,6 +70,10 @@ from .pdi_client import PDIClient
 from .qrme_client import QRMEClient
 
 
+#: The unhandled-error path logs here and nowhere else: the traceback
+#: stays on this machine, and what leaves is a status and a sentence.
+_log = logging.getLogger(__name__)
+
 def _age(birthdate: date) -> int:
     today = datetime.now().date()
     return today.year - birthdate.year - (
@@ -83,7 +88,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.59.1",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.59.2",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -242,14 +247,6 @@ def create_app(qrme_client: QRMEClient | None = None,
     # Optional CORS for a packaged guardian-console front-end (app/) calling the
     # API from another origin. Off by default; set JIM_CORS_ORIGINS to a
     # comma-separated allowlist, or "*" for any.
-    _origins = os.environ.get("JIM_CORS_ORIGINS")
-    if _origins:
-        from fastapi.middleware.cors import CORSMiddleware
-        _allow = ["*"] if _origins.strip() == "*" else [
-            o.strip() for o in _origins.split(",") if o.strip()]
-        app.add_middleware(
-            CORSMiddleware, allow_origins=_allow, allow_credentials=False,
-            allow_methods=["*"], allow_headers=["*"])
 
     # Bring-your-own model key: ``x-llm-api-key`` rides the request into a
     # context variable the provider layer reads — the caller's generations run
@@ -3021,6 +3018,63 @@ def create_app(qrme_client: QRMEClient | None = None,
         from fastapi.staticfiles import StaticFiles
         app.mount("/app", StaticFiles(directory=str(_console), html=True),
                   name="console")
+
+    # A failure the console can read.
+    #
+    # An unhandled exception is rendered by Starlette's `ServerErrorMiddleware`,
+    # which sits *outside* every middleware this factory adds — including CORS.
+    # So a 500 went back to a browser with no `access-control-allow-origin`, the
+    # browser dropped the whole response, and the console reported a network
+    # error. Measured over HTTP at 0.59.2, in all three products:
+    #
+    #     GET /health   200   access-control-allow-origin: *
+    #     a 500         500   access-control-allow-origin: None
+    #
+    # No in-process test could see it: a `TestClient` never sends an `Origin`
+    # and never runs the browser's rule. And the consequence is worse here than
+    # the missing header suggests — this estate's consoles distinguish "the
+    # backend is unreachable" from "the backend refused", and a 500 the browser
+    # discards is indistinguishable from the first. The version-mismatch guard
+    # and the problem reporter both read a failure that never arrives.
+    #
+    # Registering `@app.exception_handler(Exception)` does not fix it: Starlette
+    # hands that handler to `ServerErrorMiddleware`, which is still outside the
+    # CORS layer. It has to be a middleware, and it has to sit *inside* CORS —
+    # which is why the CORS block below is the last one added.
+    #
+    #     asked     does the server answer when a route fails
+    #     mattered  does the answer reach the reader
+    #
+    # The body says nothing about what broke. The traceback is logged here and
+    # stays here; what leaves is a status and a sentence, which is the same
+    # posture every other refusal in this product takes.
+    @app.middleware("http")
+    async def _a_failure_the_console_can_read(request: Request, call_next):
+        try:
+            return await call_next(request)
+        except Exception:
+            _log.exception("unhandled error on %s %s",
+                           request.method, request.url.path)
+            return JSONResponse(
+                status_code=500,
+                content={"detail": "server_error",
+                         "message": "Something went wrong on our side. "
+                                    "Nothing you sent was recorded."})
+
+    # Last on purpose, and this is load-bearing. `add_middleware` inserts at
+    # the front, so the middleware registered last is the outermost — and CORS
+    # has to be outside the catch-all above, or the 500 it builds goes back
+    # without the header again. The three products used to disagree about this
+    # ordering: two added CORS before their request-scoped middleware and one
+    # after, which nothing was comparing.
+    _origins = os.environ.get("JIM_CORS_ORIGINS")
+    if _origins:
+        from fastapi.middleware.cors import CORSMiddleware
+        _allow = ["*"] if _origins.strip() == "*" else [
+            o.strip() for o in _origins.split(",") if o.strip()]
+        app.add_middleware(
+            CORSMiddleware, allow_origins=_allow, allow_credentials=False,
+            allow_methods=["*"], allow_headers=["*"])
 
     return app
 

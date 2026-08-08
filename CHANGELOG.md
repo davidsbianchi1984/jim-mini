@@ -4,6 +4,70 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.2] — 2026-08-08
+
+### A crash the browser threw away
+
+0.59.1 found a CORS defect in a sibling product by comparing three
+repositories rather than by testing behaviour — because **no test in this
+estate could have found it.** Every one of them calls the app through a
+`TestClient`, which never sends an `Origin`, never runs a preflight, and never
+drops a response for want of a header. The whole class is invisible.
+
+    asked     does the server answer
+    mattered  does the answer reach the reader
+
+Asking the question properly found a second one, in all three products at
+once.
+
+An unhandled exception is rendered by Starlette's `ServerErrorMiddleware`,
+which sits **outside** every middleware the factory adds — including CORS. So
+a 500 went back to a browser with no `access-control-allow-origin`, and the
+browser discarded the entire response. Measured over HTTP:
+
+    GET /health   200   access-control-allow-origin: *
+    a 500         500   access-control-allow-origin: None
+
+The consequence is worse than a missing header. These consoles distinguish
+*the backend is unreachable* from *the backend refused* — the version-mismatch
+guard and the content-free problem reporter both depend on it — and a 500 the
+browser throws away is indistinguishable from the first. **Every crash in
+every one of the three products reached its user as "Failed to fetch."**
+
+### Why the obvious fix is not the fix
+
+Registering `@app.exception_handler(Exception)` does not help: Starlette hands
+that handler to `ServerErrorMiddleware`, which is still outside the CORS
+layer. It has to be a middleware, and it has to sit *inside* CORS.
+
+So each factory now ends with a catch-all middleware followed by the CORS
+block, in that order — `add_middleware` inserts at the front, so the last one
+registered is the outermost. The body it returns says nothing about what
+broke: the traceback is logged on the machine and what leaves is a status and
+a sentence, the same posture every other refusal here takes.
+
+That ordering is now checked rather than assumed, and it needed to be: the
+three products disagreed about it. Two added CORS before their request-scoped
+middleware and one after, and nothing was comparing them.
+
+### A test that starts a server
+
+`test_what_the_browser_enforces.py` boots the app under uvicorn on an
+ephemeral port and talks to it with a plain HTTP client, sending the header a
+browser sends. It checks that a 500, a refusal and a preflight all come back
+readable, and that CORS is still the outermost layer.
+
+Its last test is the point of the exercise: it makes the same failing request
+through a `TestClient` and shows it passing, with the header absent. Three
+thousand tests can pass on an API no console can read.
+
+### Also
+
+- Versions moved to 0.59.2 across the console, the backend, and the iOS,
+  Android and Windows projects (build 59002).
+- `shared_guards.txt` regenerated at 383 names; the divergence record holds at
+  136.
+
 ## [0.59.1] — 2026-08-08
 
 ### Three suites, and nothing comparing what they ask
