@@ -4,6 +4,59 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.4] — 2026-08-08
+
+### The key was right and the shape was wrong
+
+0.58.3 checked that every key a shell decodes is one the backend can send, and
+left a named gap: the check is a *union*, so a key read off the **wrong**
+response passes. The obvious next step was to bind each decode site to the
+route it calls and compare per route.
+
+### Four attempts at that, and why none of them shipped
+
+The binding is not derivable by reading this backend, and every narrowing that
+removed a false positive removed real coverage with it:
+
+1. **Route to handler to return.** Handlers delegate, wrap (`{"beacons": [...]}`)
+   and merge (`{**metrics}`). One level of following resolved 141 of some 400
+   routes, and the mismatch list was 41 rows of which the ones checked by hand
+   were the reader's fault.
+2. **Flat-only on both sides.** Coverage fell to 52 sites and the mismatch
+   rate stayed above four in ten.
+3. **Bind on the container key** — `chapters: [{...}]`. The first run reported
+   five defects that are not there: `llm.py` builds `{"messages": [...]}` as an
+   outbound *request*, and the backend's inputs share a vocabulary with its
+   outputs. Restricting to route-reachable returns fixed that and hid the real
+   finding instead.
+4. **Disjointness rather than subset**, to survive a key with two shapes. It
+   survives them by not judging them.
+
+The rule narrow enough to be sound covers two sites per product and finds
+nothing. That is the honest ceiling of inference here, and it is worth writing
+down rather than shipping a guard whose failures are mostly its own.
+
+### Added
+
+- `test_the_shape_inside_the_shape.py`, in all three products. It infers
+  nothing: each row **pins** a shell model to the backend function whose
+  `return` is that model's contract. A human read both ends once; the file
+  holds them together from then on. It is small on purpose and meant to grow
+  one verified row at a time.
+- The Kotlin half of the table is empty here, and the reason is written
+  down rather than worked around: `emergency` descends into
+  `robot_directives`, whose elements are built by appending in a loop.
+  A `return` this file cannot read is a pin it must not guess at.
+
+Nothing here, which is what a pinned table looks like on the day it is
+written: the rows are a contract somebody read at both ends, not a search. The
+finding was next door — QRME's guided tour, blank on both phones and correct
+on Windows, where the outline's chapters were read as `key` and `title` on a
+shape that sends `chapter` and `steps`, and three more buttons decoded a
+wrapper as the thing it wraps.
+
+Suites: **1,575** passed, 1 skipped.
+
 ## [0.58.3] — 2026-08-08
 
 ### The key the server never sends
