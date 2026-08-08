@@ -4,6 +4,39 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.5] — 2026-08-08
+
+### The disclosure that showed nobody
+
+0.58.4 shipped a pinned table — each row a shell model held against the backend
+function whose `return` is its contract — and closed by naming where it should
+grow: the surfaces where an empty render reads as *nothing to report* rather
+than as a bug. The first one checked was worse than the guided tour.
+
+Nothing here. The finding was next door, and it was the same class as the
+guided tour but louder: QRME's live-microphone disclosure — *who in this room
+has lent the profiles an open microphone* — reads `lent` on all three shells
+against a route that sends `microphones_lent`. It rendered as nobody, on every
+client, which is exactly what a disclosure looks like when it is broken.
+
+### Added
+
+- Six more pinned rows here, and the reader learned to follow three more
+  shapes, all of them assignment inside the one pinned function: `out = {...}`
+  with `out["k"] = …` after it, `rows = [{...} for r in …]`, and `rows = []`
+  with `rows.append(row)`. 0.58.4 named the last of those as a limit and
+  refused to guess past it. It is read now rather than guessed. That is also why the Kotlin half of the table
+  is no longer empty: `emergency` descends into `robot_directives`, which
+  is exactly a list built by appending, and the pin that 0.58.4 refused to
+  write is written now.
+- A `**spec` is resolved the same way — to a module-level dict of dicts whose
+  values all carry the same keys, directly or through the
+  `for _k, spec in SOMETHING.items()` that produced it — and refused outright
+  when it is anything else. The refusal is the feature: a pin this file cannot
+  read is one it must not invent.
+
+Suites: **1,575** passed, 1 skipped.
+
 ## [0.58.4] — 2026-08-08
 
 ### The key was right and the shape was wrong

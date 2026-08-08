@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.58.4** ([changelog](CHANGELOG.md) ·
+**Current release: v0.58.5** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -344,6 +344,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.58.5** | **The disclosure that showed nobody** — the pinned table grows to the surface rule that decides whether a health beat is spoken into a room other people are in, and the Kotlin half is no longer empty: a list built by appending is read now rather than guessed. Clean here; the finding was QRME's live-microphone disclosure, blank on all three clients |
 | **0.58.4** | **The key was right and the shape was wrong** — a per-route key check is not derivable by reading; what shipped instead pins a shell model to the backend function whose `return` is its contract, inferring nothing. Clean here; the finding was QRME's guided tour, blank on both phones and correct on Windows |
 | **0.58.3** | **The key the server never sends** — every key a shell decodes is now read against everything this backend can put on a response, with a named exemption for the eight that arrive verbatim from PDI and QRME. Clean here; the finding was next door, where Sign in with Google and Apple could not start on either phone |
 | **0.58.2** | **The colour that wasn't in the palette** — 0.58.1 checked the one receiver whose type is known for free; this checks all eight, adding the API client, the theme object and `App.xaml`'s brushes. Clean here across 108 client call sites and the whole palette; the finding was QRME's Android theme, and this product gets the check because the next one could be here |
