@@ -222,7 +222,7 @@ def _readable(page):
     """The page as a person meets it: no markup, no script, no entities."""
     import html as _html
 
-    body = re.sub(r"<script>.*?</script>", " ", page, flags=re.S)
+    body = re.sub(r"<script[^>]*>.*?</script>", " ", page, flags=re.S)
     body = re.sub(r"<style>.*?</style>", " ", body, flags=re.S)
     return _html.unescape(re.sub(r"<[^>]+>", " ", body))
 

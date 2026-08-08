@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import io
 import json
 import logging
@@ -14,6 +15,7 @@ from fastapi import (Depends, FastAPI, Header, HTTPException, Request,
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse
 
+from . import pagehead
 from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                finetune as finetune_mod,
                careteam, community,
@@ -88,7 +90,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.59.2",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.59.3",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -830,16 +832,16 @@ def create_app(qrme_client: QRMEClient | None = None,
         if error or not code:
             return HTMLResponse(
                 f"<h2>Sign-in was not completed</h2>"
-                f"<p>{error or 'no code came back'} — you can close this "
-                "window and try again.</p>", status_code=400)
+                f"<p>{html.escape(error) or 'no code came back'} — you can close "
+                "this window and try again.</p>", status_code=400)
         try:
             done = oauth.callback(provider, code, state)
         except oauth.OAuthError as exc:
             return HTMLResponse(
-                f"<h2>Sign-in failed</h2><p>{exc.message}</p>",
+                f"<h2>Sign-in failed</h2><p>{html.escape(exc.message)}</p>",
                 status_code=exc.status)
         return HTMLResponse(
-            f"<h2>Signed in as {done['email']}</h2>"
+            f"<h2>Signed in as {html.escape(done['email'])}</h2>"
             "<p>You can close this window and return to the app.</p>")
 
     @app.post("/auth/oauth/{provider}/callback", response_class=HTMLResponse)
@@ -3018,6 +3020,35 @@ def create_app(qrme_client: QRMEClient | None = None,
         from fastapi.staticfiles import StaticFiles
         app.mount("/app", StaticFiles(directory=str(_console), html=True),
                   name="console")
+
+    # What a page promises a browser before it says anything else.
+    #
+    # These products serve HTML a person reaches without an account, on a
+    # device that is not theirs: the sticker a stranger kneels over, the
+    # sealed-carrier card, the page a sign-in provider sends a browser back
+    # to. Measured over HTTP at 0.59.3, every one of them went out with no
+    # Content-Security-Policy, no X-Content-Type-Options, no X-Frame-Options
+    # and no Referrer-Policy — and nothing in-process could see that, because
+    # a TestClient reads none of those headers and a browser reads all of
+    # them.
+    #
+    # The nonce is minted before the route runs so the page builders can
+    # stamp it on their own inline script; the policy then names that nonce
+    # and nothing else, which is the difference between a header that stops
+    # an injected `<script>` and one that decorates the response.
+    #
+    #     asked     is the page correct
+    #     mattered  what can a page do that is not
+    @app.middleware("http")
+    async def _what_a_page_promises_a_browser(request: Request, call_next):
+        value = pagehead.new_nonce()
+        response = await call_next(request)
+        if response.headers.get("content-type", "").startswith("text/html"):
+            for key, header in pagehead.HEADERS.items():
+                response.headers.setdefault(key, header)
+            response.headers.setdefault("content-security-policy",
+                                        pagehead.policy(value))
+        return response
 
     # A failure the console can read.
     #

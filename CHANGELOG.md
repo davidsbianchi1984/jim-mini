@@ -4,6 +4,76 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.3] — 2026-08-08
+
+### What a page promises a browser before it says anything else
+
+0.59.2 built a harness that talks to a real server, because the rules a
+browser enforces are invisible to an in-process client. This round pointed it
+at the surface where that matters most: the HTML these products serve to
+someone **without an account, on a device that is not theirs** — the sticker a
+stranger kneels over, the sealed-carrier card, the page a sign-in provider
+sends a browser back to.
+
+Measured over HTTP, every one of those pages in all three products went out
+with **no `Content-Security-Policy`, no `X-Content-Type-Options`, no
+`X-Frame-Options` and no `Referrer-Policy`.**
+
+That was the standing invitation. Then a sweep of every f-string that builds
+markup found what had walked through it.
+
+### Reflected cross-site scripting on the sign-in callback
+
+`GET /auth/oauth/{provider}/callback?error=…` interpolated the query parameter
+straight into its HTML. Driven over HTTP:
+
+    ?error=<script>alert(document.domain)</script>
+    →  400, and the payload comes back verbatim inside <p>…</p>
+
+Anyone who could get a person to follow a link ran script on this product's
+own origin — in a browser holding a session, or inside the packaged console's
+window. Two more values on the same route went in unescaped: the provider's
+error message and the address it returns.
+
+Escaped at the interpolation, which is the fix. The policy below is the second
+line, not the first.
+
+### A policy with a nonce, because one without is decoration
+
+`script-src 'unsafe-inline'` permits exactly what an injected `<script>` needs
+and would have stopped nothing above. So `pagehead.py` mints a nonce per
+response, the pages that carry an inline script stamp it through
+`script_open()`, and the policy names that nonce and nothing else:
+
+    default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline';
+    script-src 'nonce-…'; connect-src 'self'; form-action 'self';
+    base-uri 'none'; frame-ancestors 'none'
+
+`style-src` keeps `'unsafe-inline'`: the stylesheets are constants in the
+package and no page interpolates into them.
+
+Verified in real Chromium against a real server — the beacon page renders
+with **no CSP violations**, styles applied, its own script running.
+
+### What the guard checks
+
+`test_what_the_browser_enforces.py` grew from four questions to a dozen: the
+headers on every stranger-facing page, that the policy names a nonce rather
+than permitting everything, that the page and its policy **agree** about that
+nonce, that the reflected parameter comes back escaped, and that JSON is left
+alone.
+
+The nonce-agreement check is the one worth keeping. If the header and the tag
+ever drift apart, the policy is still perfect and the page's own script
+silently stops running — and that check's first draft failed against correct
+code, because it read the header from one request and the body from another.
+Two requests, two nonces. It reads both from one response now.
+
+### Also
+
+- Versions moved to 0.59.3 across the console, the backend, and the iOS,
+  Android and Windows projects (build 59003).
+
 ## [0.59.2] — 2026-08-08
 
 ### A crash the browser threw away

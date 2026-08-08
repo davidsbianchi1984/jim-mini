@@ -46,10 +46,12 @@ same request through a `TestClient` and shows it passing.
 
 from __future__ import annotations
 
+import re
 import socket
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 import pytest
@@ -85,6 +87,27 @@ def _ask(port: int, path: str, method: str = "GET",
             return r.status, r.headers
     except urllib.error.HTTPError as e:
         return e.code, e.headers
+
+
+def _page(port: int, path: str):
+    """Headers **and** body from one request.
+
+    Two requests would not do, and the first draft of this file used two: the
+    nonce is minted per response, so a header read from one request and a
+    body read from another can never agree. That draft failed against correct
+    code and the failure looked exactly like the defect it was written for —
+    which is its own small lesson about measuring one thing twice.
+    """
+    req = urllib.request.Request(f"http://127.0.0.1:{port}{path}")
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status, r.headers, r.read().decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        return e.code, e.headers, e.read().decode("utf-8", "replace")
+
+
+def _body(port: int, path: str) -> str:
+    return _page(port, path)[2]
 
 
 @pytest.fixture(scope="module")
@@ -205,3 +228,136 @@ def test_an_in_process_client_cannot_see_any_of_this(served):
         answer = client.get(BOOM)
     assert answer.status_code == 500
     assert "access-control-allow-origin" not in {k.lower() for k in answer.headers}
+
+#: The pages a person reaches without an account, on a device that is not
+#: theirs. Each is (path, the status it answers with no data behind it).
+#: A 404 page is still a page: it is served as HTML from this origin and a
+#: browser applies the same rules to it.
+STRANGER_PAGES = (("/verify-email/click", 403),)
+
+#: Reflected straight into the OAuth callback's HTML until 0.59.3.
+PAYLOAD = "<script>alert(document.domain)</script>"
+
+
+@pytest.mark.parametrize("path,expected", STRANGER_PAGES,
+                         ids=lambda v: str(v).strip("/") or "root")
+def test_every_page_a_stranger_reaches_carries_a_policy(served, path, expected):
+    """The headers a browser reads and an in-process client does not.
+
+    Until 0.59.3 every HTML page in every one of the three products went out
+    with none of these — measured over HTTP, which is the only place the
+    question exists.
+    """
+    port, _ = served
+    status, headers = _ask(port, path, origin=None)
+    assert status == expected, f"{path} answered {status}"
+    assert headers.get("content-type", "").startswith("text/html")
+    missing = [name for name in ("content-security-policy",
+                                 "x-content-type-options", "x-frame-options",
+                                 "referrer-policy") if not headers.get(name)]
+    assert not missing, (
+        f"{path} is HTML a stranger reaches and carries no {missing}. "
+        "See pagehead.py — the middleware stamps these on any text/html "
+        "response, so a page without them is a page the middleware did not "
+        "see.")
+
+
+def test_the_policy_names_a_nonce_rather_than_permitting_everything(served):
+    """A `Content-Security-Policy` with `script-src 'unsafe-inline'` permits
+    exactly what an injected `<script>` needs. It would satisfy the check
+    above and stop nothing, which is this session's recurring shape."""
+    port, _ = served
+    _, headers = _ask(port, STRANGER_PAGES[0][0], origin=None)
+    policy = headers["content-security-policy"]
+    script = next((part.strip() for part in policy.split(";")
+                   if part.strip().startswith("script-src")), "")
+    assert script, f"no script-src in the policy: {policy}"
+    assert "'unsafe-inline'" not in script, (
+        f"script-src permits inline script ({script}), so the policy is "
+        "decoration: an injected tag runs under it.")
+    assert "'nonce-" in script or script.endswith("'none'"), (
+        f"script-src names neither a nonce nor 'none': {script}")
+
+
+def test_the_page_and_its_policy_agree_about_the_nonce(served):
+    """The failure that would ship silently.
+
+    If the header's nonce and the page's `<script nonce=…>` ever stop
+    matching, the policy is still perfect and the page's own script stops
+    running — a screen that quietly loses its behaviour, which is exactly
+    what nobody notices.
+    """
+    port, _ = served
+    looked = 0
+    for path, _expected in STRANGER_PAGES:
+        _status, headers, body = _page(port, path)
+        if "<script" not in body:
+            continue
+        looked += 1
+        policy = headers["content-security-policy"]
+        wanted = re.search(r"'nonce-([^']+)'", policy)
+        assert wanted, f"{path} serves a script and the policy names no nonce"
+        assert f'nonce="{wanted.group(1)}"' in body, (
+            f"{path} carries an inline script whose nonce is not the one in "
+            "the policy, so the browser refuses to run it")
+    assert looked or not any("<script" in _body(port, p)
+                             for p, _ in STRANGER_PAGES), (
+        "no page reached here carries an inline script, so this check ran on "
+        "nothing — the pages it was written for have moved")
+
+
+def test_a_reflected_parameter_is_not_markup(served):
+    """The defect, directly.
+
+    `?error=<script>…` on the sign-in callback came back verbatim, executing
+    on this product's own origin — reachable by anyone who can get a person
+    to follow a link.
+    """
+    port, _ = served
+    body = _body(port, "/auth/oauth/google/callback?"
+                 + urllib.parse.urlencode({"error": PAYLOAD}))
+    assert PAYLOAD not in body, (
+        "a query parameter came back as live markup on an HTML page served "
+        "from this origin — that is reflected cross-site scripting. Escape "
+        "it at the interpolation; the policy is the second line, not the "
+        "first.")
+    assert "&lt;script&gt;" in body, (
+        "the payload is neither reflected nor escaped — this test has "
+        "stopped exercising the path it was written for")
+
+
+def test_the_api_is_left_alone(served):
+    """A page policy on a JSON response would be noise at best. The
+    middleware keys off the content type, and this is the check that it
+    actually does."""
+    port, _ = served
+    _, headers = _ask(port, "/health")
+    assert headers.get("content-type", "").startswith("application/json")
+    assert not headers.get("content-security-policy")
+
+
+def test_a_page_stamps_the_nonce_it_was_given():
+    """The integration check above can only run where a reachable page carries
+    an inline script. This is the same contract as a unit, so it holds in
+    every product whatever their pages happen to serve today."""
+    from jim import pagehead
+
+    minted = pagehead.new_nonce()
+    assert minted and pagehead.nonce() == minted
+    assert pagehead.script_open() == f'<script nonce="{minted}">'
+    assert f"'nonce-{minted}'" in pagehead.policy(minted)
+    assert "'unsafe-inline'" not in [
+        part.strip() for part in pagehead.policy(minted).split(";")
+        if part.strip().startswith("script-src")][0]
+
+
+def test_a_page_built_outside_a_request_carries_no_borrowed_nonce():
+    """A builder called with no request behind it — a preview, a test — must
+    not stamp a stale nonce from whatever ran last. It emits a bare tag, which
+    the policy then refuses, which is the loud failure rather than the quiet
+    one."""
+    from jim import pagehead
+
+    pagehead._NONCE.set("")
+    assert pagehead.script_open() == "<script>"
+    assert "script-src 'none'" in pagehead.policy("")

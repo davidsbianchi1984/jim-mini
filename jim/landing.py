@@ -27,6 +27,8 @@ The form posts to a **relative** URL. An absolute one baked from
 
 from __future__ import annotations
 
+from . import pagehead
+
 import html
 import json
 
@@ -294,7 +296,7 @@ def care_page(card: dict, language: str = "en") -> str:
         # not do, which is the thing somebody hesitating most needs.
         + f'<p class="foot">{html.escape(t(FOOT_SITE if site else FOOT_HOME))}'
           "</p>"
-        + "<script>"
+        + pagehead.script_open()
         + _ALARM_JS % {"endpoint": _js(f"/c/{card['beacon']}/alarm"),
                        # A prefix, not a URL: the alarm id only exists once
                        # the alarm has been raised. Relative, for the same
