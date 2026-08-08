@@ -1,4 +1,4 @@
-# status: manifest — 419 guards carried by all three products
+# status: manifest — 421 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -123,6 +123,7 @@ test_english_is_the_fallback_and_is_supported
 test_every_android_capability_used_is_declared
 test_every_brush_a_page_paints_with_is_declared
 test_every_build_step_passes_it_through
+test_every_client_is_reachable_at_all
 test_every_client_is_read_at_a_share_of_its_writes
 test_every_client_is_still_being_read
 test_every_client_reaches_some_route
@@ -289,7 +290,7 @@ test_the_client_list_is_the_whole_set
 test_the_client_never_hands_the_recorder_a_message
 test_the_client_records_both_kinds_of_failure
 test_the_comparison_can_tell_agreement_from_drift
-test_the_comparison_is_reading_both_sides
+test_the_comparison_is_reading_every_client
 test_the_console_backlog_matches_the_record
 test_the_console_backlog_record_is_empty
 test_the_console_native_split_only_shrinks
@@ -378,6 +379,7 @@ test_the_redaction_is_as_wide_as_the_console
 test_the_registry_names_are_distinct_and_sorted_by_meaning
 test_the_report_sends_only_what_the_screen_shows
 test_the_route_reader_prefers_the_declared_response_model
+test_the_route_side_is_still_being_read
 test_the_route_table_is_read_whole
 test_the_routes_side_is_read_from_what_fastapi_validates
 test_the_row_parser_reads_the_table

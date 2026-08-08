@@ -4,6 +4,59 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.8] — 2026-08-08
+
+### The check that covered one client of four
+
+0.59.7 asked whether the shape a screen declares is the shape its route
+answers with, found two screens throwing `.map is not a function` during
+render, and asked the question of **the console alone**. The three native
+shells decode the same answers into their own types, and a wrong one there is
+the same failure with a different stack trace: `JSONArray` on an object throws
+exactly like `.map` on one.
+
+*No disagreement* from a check that was never run reads exactly like *no
+disagreement* from a check that passed. That sentence is most of this arc.
+
+### What each client says, and where
+
+    console   req<T>(…)                     the generic
+    ios       let x: T = try await request  the annotated decode
+    windows   Send<T>(…)                    the generic
+    android   JSONObject(body) / JSONArray  the parse itself
+
+Android is the one worth reading twice: Kotlin has no decode type at these
+call sites, so the *parse* is the claim being checked.
+
+### What it found
+
+No disagreements — the three shells were already right. What it found instead
+was how unevenly the clients can be read at all:
+
+    console 245   iOS 89   Android 3   Windows 88
+
+JIM-mini's Android shell names a shape on **three calls out of a hundred and
+fourteen**, because it discards the body on the rest. That is not a reader
+failing; a client that never reads an answer cannot be wrong about one. But
+three and three hundred cannot share a floor, so the per-client reach is a
+**record that must not go down** rather than a number chosen by hand — the
+same instrument the estate uses everywhere a count is honest but lopsided.
+
+### Two readers this round got wrong first
+
+Both are kept as prose beside the code that fixes them, because both reported
+*clean*:
+
+* a Swift `[K: V]` dictionary counted as a list, because both spellings start
+  with a bracket — three false disagreements;
+* the Windows shell spells its verb `Post(…)`, not `HttpMethod.Post`, so
+  twenty-one calls defaulted to GET and every one was reported wrong.
+
+Injections confirmed red before the round closed: a `GameSession[]` narrowed
+to `GameSession` is named by client, file, route and declared type; and a
+single character removed from the Android reader drops its reach from 316 to
+310 and fails on the record rather than passing quietly.
+
 ## [0.59.7] — 2026-08-08
 
 ### `req<T>` is a cast, and a cast is a claim about the server nothing checks
