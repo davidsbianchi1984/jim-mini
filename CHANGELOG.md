@@ -4,6 +4,86 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.1] — 2026-08-08
+
+### Three suites, and nothing comparing what they ask
+
+0.59.0 closed on the observation that a literal copied into three
+repositories is calibrated for whichever of them was smallest. That is a
+special case of something larger: **every guard in this estate exists in three
+copies, and the copies drift silently in both directions.** A fix made in one
+product and not ported looks exactly like a product that never needed it.
+
+Nothing anywhere was comparing them.
+
+    asked     does this product pass its own suite
+    mattered  do the three suites ask the same questions
+
+A sweep of every `def test_*` across the three suites found **370 names
+carried by all three and 140 carried by exactly two** — 91 absent from PDI, 29
+from QRME, 16 from JIM-mini.
+
+### Four of those rows were one defect
+
+`test_serve_cors.py` existed in QRME and JIM-mini and not in PDI, and so did
+the code it guards. Both siblings' `serve` opens CORS for a loopback bind,
+because the packaged console calls the API from its own origin and dies as
+"Failed to fetch" otherwise. PDI's frozen backend in
+`packaging/backend_entry.py` does the same, so the **installed** app worked.
+`python -m pdi serve` — the documented from-source path — set nothing.
+
+Measured over HTTP with the console's origin on the request, because CORS is a
+browser rule and an in-process test client never sends an `Origin` at all:
+
+    OPTIONS /terms   →  405, no access-control headers at all
+    GET     /terms   →  200, no access-control-allow-origin
+
+and after the fix:
+
+    OPTIONS /terms   →  200, access-control-allow-origin: *
+
+Every in-process test in that product passed throughout. Loopback binds only —
+a non-loopback bind is somebody serving a vault to a network, and that is the
+last place to open CORS by default; `--no-cors` restores the closed posture,
+and an explicit `PDI_CORS_ORIGINS` is never overwritten.
+
+### The mechanism, and why it is a written record
+
+The three repositories are rarely checked out together, so a live comparison
+skips in CI — and this estate has already been bitten by that: the sibling
+vocabulary check in `test_the_refusal_names_the_field_on_the_form.py` carries
+a comment saying its first draft looked in the wrong place and skipped every
+run. *A check that never runs is not a check.*
+
+So the shared vocabulary is written down, byte-identical in all three
+repositories:
+
+- `tests/shared_guards.txt` — 377 names carried by all three.
+- `tests/guard_divergences.txt` — 136 names carried by exactly two, each row
+  naming the product that lacks it. Ratcheted: it may shrink, never grow.
+
+Each product then verifies its own half with nothing but itself. Every name in
+the manifest must exist here. Every divergence naming *another* product must
+exist here. Every divergence naming *this* product must still be absent, so a
+port that lands without being recorded fails rather than passing quietly.
+Three checks, no sibling checkout required — and the live three-way comparison
+runs on top whenever the siblings are on disk.
+
+### A name is not a behaviour
+
+This compares function names. A guard ported under a different name reads as
+missing; one that kept its name while its body was gutted reads as present.
+PDI reports its version from `/health` under a differently-named test, and the
+record holds that as a row rather than pretending otherwise.
+
+The limit is worth the check, because the failure it catches is the one that
+actually happens: not a renamed guard, but a fix that never travelled.
+
+### Also
+
+- Versions moved to 0.59.1 across the console, the backend, and the iOS,
+  Android and Windows projects (build 59001).
+
 ## [0.59.0] — 2026-08-08
 
 ### A floor nobody raised is a floor nobody is standing on

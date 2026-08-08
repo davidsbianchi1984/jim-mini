@@ -113,6 +113,11 @@ def _path_literals() -> int:
     return sum(len(clientpaths.paths(lang)) for lang in SURFACES.values())
 
 
+def _guard_names() -> int:
+    from .test_the_three_suites_ask_the_same_questions import TESTS, guard_names
+    return len(guard_names(TESTS))
+
+
 def _files_swept() -> int:
     from .test_a_floor_is_within_sight_of_what_it_measures import parsed_files
     return parsed_files()
@@ -146,6 +151,8 @@ RATCHETS: tuple[Ratchet, ...] = (
             "routes reachable by walking the included routers"),
     Ratchet("extractor.path_literals", 370, _path_literals,
             "path literals found across all four surfaces"),
+    Ratchet("suite.guard_names", 1050, _guard_names,
+            "test functions this suite declares"),
     Ratchet("sweep.files_parsed", 130, _files_swept,
             "test files the bare-floor sweep can read"),
 )
