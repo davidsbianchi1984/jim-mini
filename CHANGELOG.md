@@ -4,6 +4,64 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.8] — 2026-08-08
+
+### The route reader had one floor and four clients
+
+0.58.7 found a missing brace by auditing a reader rather than the thing it
+read, and closed by naming the general case: **a blind instrument is
+indistinguishable from a clean repository.** The route audit's reader is the
+oldest and most load-bearing in the estate — six other files ask `clientpaths`
+what each client calls, and a route table read short narrows all of them at
+once, silently, in the safe direction. So this round went there.
+
+### What the probe found
+
+The console *is* protected. `test_the_audit_is_actually_looking_at_something`
+asserts `calls(CONSOLE) > 200`, written when the console was the only client.
+Blinding the console's template-literal reader drops it 351 → 74 call sites
+and fails four tests including that one.
+
+**The three native shells had no floor at all.** Their protection was
+incidental — a scatter of per-block and per-form tests from earlier rounds
+that happen to name routes those readers see. Blinding the iOS `request(`
+form drops it **430 → 11** call sites; what fails is a handful of block
+guards, not one of them saying *the iOS reader has stopped reading*. A
+narrowing that misses the blocks those tests happen to cover passes in
+silence, and `doorless` still reports zero throughout, because the other
+three clients cover for the blind one.
+
+```
+asked     do the clients call every route
+mattered  can the reader still see the clients
+```
+
+### Added
+
+- `test_the_reader_can_still_see.py`, in all three products. Two floors,
+  because they fail differently. **An absolute floor per client**, set at
+  about four-fifths of what each reader reaches today, catches the slow case —
+  a reader narrowed a form at a time until it covers a fraction of the
+  surface. **A spread check across the three native shells** catches the fast
+  case without a hand-chosen number: iOS, Android and Windows are one client
+  ported three times, so one reader at a third of the other two is the reader
+  breaking rather than the shell shrinking.
+- The console sits outside the spread comparison, and the reason is measured
+  rather than assumed: JIM-mini's console extracts 251 call sites against 114
+  on each phone, PDI's 121 against 35. Those consoles carry surface the phones
+  do not, so a rule spanning all four would have to be loosened until it
+  caught nothing. The absolute floor is what holds the console.
+- A floor on the route table itself. `app.routes` is not the route table — it
+  showed 8 of 409 once, and the first doorless audit built on it reported a
+  clean bill.
+
+The floors are ratchets, not targets, and they are this product's own
+numbers — measured here, not copied. Raising one when a client grows is
+ordinary; lowering one takes a deliberate edit that shows up in a diff.
+
+
+Suites: **1,588** passed, 1 skipped.
+
 ## [0.58.7] — 2026-08-08
 
 ### A wire model is data, and data has no methods
