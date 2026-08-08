@@ -38,11 +38,27 @@ on. It is small on purpose, and it is meant to grow one verified row at a time.
 
 ## What the pinning found
 
-Nothing here. The finding was next door, and it was the same class as the
-guided tour but louder: QRME's live-microphone disclosure — *who in this room
-has lent the profiles an open microphone* — reads `lent` on all three shells
-against a route that sends `microphones_lent`. It rendered as nobody, on every
-client, which is exactly what a disclosure looks like when it is broken.
+Nothing here, across three rounds of growing it. The findings were all next
+door, in QRME, and both of the last two were on **every** shell at once rather
+than on one: the guided tour read `key` and `title` off a chapter that carries
+`chapter` and `steps`, and the live-microphone disclosure read `lent` against a
+route that sends `microphones_lent`. The shells agree with each other and
+disagree with the server, so cross-checking the clients against each other
+would have found neither. This table is the only instrument in the repository
+that catches that, which is the argument for growing it here too.
+
+## What the reader learned this time
+
+Three more lookups, all still inside the one pinned function or the module it
+lives in — no cross-module inference:
+
+* `{**dict(r), …}` over `conn.execute("SELECT id, condition, … FROM …")`. The
+  column list is a string literal right there, so the keys `dict(r)` carries
+  are readable. `SELECT *` is not, and is refused.
+* A `**spec` bound by a *comprehension* generator, not only by a `for`
+  statement.
+* `list(_PROGRAMS.values())` and a module table written as a dict
+  comprehension.
 """
 
 from __future__ import annotations
@@ -69,10 +85,13 @@ PKG = "jim"
 PINS = (
     ("FlowStep", "guardian", "emergency", "flow"),
     ("RobotDirective", "guardian", "_robot_directives", None),
-    # 0.58.5's batch: the surface rule decides whether a health beat is spoken
-    # into a room other people are in. An empty render reads as no rule.
     ("PresenceSurfaces", "presence", "surfaces", None),
     ("PresenceSurfaceRow", "presence", "surfaces", "surfaces"),
+    # 0.58.6's batch: did the guidance work, and what was done about it when
+    # it did not. An empty render of the open list reads as nothing pending.
+    ("FollowupState", "api", "open_followups", None),
+    ("OpenFollowup", "followup", "open_for", None),
+    ("FollowupRecord", "followup", "history", None),
 )
 
 #: Kotlin declares no models — it reads keys inline, and one function may
@@ -114,7 +133,13 @@ def _module_dict(tree: ast.Module, name: str) -> set[str] | None:
             ident, value = node.target.id, node.value
         else:
             continue
-        if ident != name or not isinstance(value, ast.Dict):
+        if ident != name:
+            continue
+        if isinstance(value, ast.DictComp):
+            # `{key: {...} for … in _ROWS}` — one shape, written once.
+            return (_keys(value.value)
+                    if isinstance(value.value, ast.Dict) else None)
+        if not isinstance(value, ast.Dict):
             continue
         shapes = []
         for v in value.values:
@@ -124,6 +149,63 @@ def _module_dict(tree: ast.Module, name: str) -> set[str] | None:
         if not shapes or any(sh != shapes[0] for sh in shapes[1:]):
             return None
         return shapes[0]
+    return None
+
+
+_SELECT = re.compile(r'\bSELECT\s+(.*?)\s+FROM\b', re.I | re.S)
+
+
+def _columns(fn, ident: str) -> set[str] | None:
+    """`[{**dict(r), …} for r in conn.execute("SELECT a, b, c FROM …")]`.
+
+    The column list is a string literal in the function being read, so the
+    keys `dict(r)` will carry are readable too. `SELECT *` is not — the
+    columns are in a schema this file is not looking at — and that returns
+    None so the pin is refused rather than guessed.
+    """
+    for node in ast.walk(fn):
+        targets = []
+        if isinstance(node, (ast.ListComp, ast.GeneratorExp)):
+            targets = [(g.target, g.iter) for g in node.generators]
+        elif isinstance(node, ast.For):
+            targets = [(node.target, node.iter)]
+        for target, source in targets:
+            if not (isinstance(target, ast.Name) and target.id == ident):
+                continue
+            sources = [source]
+            if isinstance(source, ast.Name):
+                # `rows = conn.execute("SELECT …").fetchall()` on its own
+                # line, then `[... for r in rows]`.
+                sources += [n.value for n in ast.walk(fn)
+                            if isinstance(n, ast.Assign) and len(n.targets) == 1
+                            and isinstance(n.targets[0], ast.Name)
+                            and n.targets[0].id == source.id]
+            sql = "".join(n.value for src in sources for n in ast.walk(src)
+                          if isinstance(n, ast.Constant)
+                          and isinstance(n.value, str))
+            found = _SELECT.search(sql)
+            if not found:
+                continue
+            cols = set()
+            for raw in found.group(1).split(","):
+                col = raw.strip().split()[-1] if raw.strip() else ""
+                if not re.fullmatch(r'[a-z_]\w*', col):
+                    return None            # `*`, an expression, a function
+                cols.add(col)
+            return cols or None
+    return None
+
+
+def _listed(tree: ast.Module, node) -> set[str] | None:
+    """`list(_PROGRAMS.values())` — the element shape is the table's."""
+    if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+            and node.func.id in {"list", "sorted"} and len(node.args) == 1):
+        return None
+    inner = node.args[0]
+    if (isinstance(inner, ast.Call) and isinstance(inner.func, ast.Attribute)
+            and inner.func.attr == "values"
+            and isinstance(inner.func.value, ast.Name)):
+        return _module_dict(tree, inner.func.value.id)
     return None
 
 
@@ -137,13 +219,17 @@ def _spread(tree: ast.Module, fn, name: str) -> set[str] | None:
     direct = _module_dict(tree, name)
     if direct is not None:
         return direct
+    pairs = []
     for node in ast.walk(fn):
-        if not (isinstance(node, ast.For) and isinstance(node.target, ast.Tuple)
-                and len(node.target.elts) == 2
-                and isinstance(node.target.elts[1], ast.Name)
-                and node.target.elts[1].id == name):
+        if isinstance(node, ast.For):
+            pairs.append((node.target, node.iter))
+        elif isinstance(node, (ast.ListComp, ast.GeneratorExp, ast.DictComp)):
+            pairs += [(g.target, g.iter) for g in node.generators]
+    for target, it in pairs:
+        if not (isinstance(target, ast.Tuple) and len(target.elts) == 2
+                and isinstance(target.elts[1], ast.Name)
+                and target.elts[1].id == name):
             continue
-        it = node.iter
         if (isinstance(it, ast.Call) and isinstance(it.func, ast.Attribute)
                 and it.func.attr == "items"
                 and isinstance(it.func.value, ast.Name)):
@@ -160,8 +246,14 @@ def _keys(node: ast.Dict, tree: ast.Module | None = None, fn=None) -> set[str]:
             # `{"surface": name, **spec, …}` — the spread is part of the
             # contract, and skipping it would call a real key a defect.
             v = node.values[node.keys.index(k)]
-            spread = (_spread(tree, fn, v.id)
-                      if isinstance(v, ast.Name) and fn is not None else None)
+            spread = None
+            if fn is not None:
+                if isinstance(v, ast.Name):
+                    spread = _spread(tree, fn, v.id) or _columns(fn, v.id)
+                elif (isinstance(v, ast.Call) and isinstance(v.func, ast.Name)
+                      and v.func.id == "dict" and len(v.args) == 1
+                      and isinstance(v.args[0], ast.Name)):
+                    spread = _columns(fn, v.args[0].id)
             assert spread is not None, (
                 "a `**` this file cannot resolve is a pin it must not guess at")
             out |= spread
@@ -244,6 +336,12 @@ def contract(module: str, func: str, container: str | None) -> set[str]:
                 spread: set[str] = set()
                 if inner is None and isinstance(v, ast.Name):
                     inner, spread = _named(fn, v.id)
+                if inner is None and not spread:
+                    # `"programs": list(_PROGRAMS.values())` — a module-level
+                    # table handed out whole.
+                    from_table = _listed(tree, v)
+                    if from_table is not None:
+                        return from_table
                 assert inner is not None, (
                     f"{module}.{func}[{container!r}] is not a list of dicts")
                 return _keys(inner, tree, fn) | spread
@@ -253,7 +351,13 @@ def contract(module: str, func: str, container: str | None) -> set[str]:
 # --- the shell side ----------------------------------------------------------
 
 _STRUCT = re.compile(r'\bstruct\s+(\w+)\s*:[^{\n]*\bDecodable\b[^{\n]*\{')
-_STORED = re.compile(r'^\s*(?:var|let)\s+(\w+)\s*:\s*[^\n={]+?$', re.M)
+#: A stored property, whether it ends the line or is separated from the
+#: next by a `;`. PDI declares `struct X: Decodable { let a: T; let b: T }`
+#: on one line, and requiring end-of-line read that struct as empty —
+#: which made its pin pass against nothing at all.
+_STORED = re.compile(
+    r'(?:^|\{|;)\s*(?:var|let)\s+(\w+)\s*:\s*[^\n={;}]+?(?=\s*(?:$|;|\}))',
+    re.M)
 _RENAME = re.compile(r'^\s*case\s+(\w+)\s*=\s*"([^"]+)"', re.M)
 _CREC = re.compile(r'public record (\w+)\(')
 _CPROP = re.compile(r'JsonPropertyName\("([^"]+)"\)')
