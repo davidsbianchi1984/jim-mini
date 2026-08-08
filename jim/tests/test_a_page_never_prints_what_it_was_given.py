@@ -150,7 +150,17 @@ def rows(root: pathlib.Path):
                         continue
                     if sc.safe(part.value):
                         continue
-                    out.append(f"{path.relative_to(root)}:{node.lineno}: "
+                    # File and expression, deliberately **not** the line
+                    # number. 0.59.4 recorded the line and 0.59.5 invalidated
+                    # every row in this product by adding one function above
+                    # them — a record that goes stale on an unrelated edit is
+                    # a record people regenerate without reading, which is the
+                    # one thing it must not become.
+                    #
+                    # The cost is a second identical expression in the same
+                    # file reading as already-recorded. That is a narrower
+                    # blind spot than a record nobody reads.
+                    out.append(f"{path.relative_to(root)}: "
                                f"{{{ast.unparse(part.value)[:70]}}}")
     return sorted(set(out))
 

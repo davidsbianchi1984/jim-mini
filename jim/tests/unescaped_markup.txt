@@ -38,6 +38,6 @@
 # can put markup into.
 #
 # ceiling: 3
-landing.py:104: {_CSS}
-landing.py:104: {body}
-landing.py:274: {who}
+landing.py: {_CSS}
+landing.py: {body}
+landing.py: {who}

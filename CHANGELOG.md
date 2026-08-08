@@ -4,6 +4,67 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.5] — 2026-08-08
+
+### A value inside a script is not markup, and neither escaper knows both
+
+0.59.3 shipped a Content-Security-Policy with a nonce and called it the second
+line of defence. 0.59.4 made the first line — escaping into HTML — a guard.
+This is the third sink, and it is the one where **both of those miss.**
+
+Inside a `<script>` element the HTML parser ends the element at the first
+`</script`, whatever the JavaScript quoting says. A value carrying `</script>`
+closes the script early and everything after it is parsed as markup — in the
+page's own nonced script, which the policy exists to permit.
+
+    json.dumps    escapes what would end a JavaScript *string*  — not the element
+    html.escape   escapes what would open an HTML *tag*         — not a JS string
+
+    asked     is the value a valid JavaScript string
+    mattered  can the value end the script element
+
+QRME's `_js` composed both correctly. This product's was bare `json.dumps`,
+and so was the inline string table it hands its script. A helper written once and copied into three
+repositories, where the copy that drifted is the one whose entire job is to be
+safe — the shape 0.59.0 found in a floor and 0.59.1 in a guard, now in a
+security primitive.
+
+**Not currently reachable.** Every value passing through these helpers is a
+database identifier or a translated constant, and a path segment cannot carry
+`</script>` because the slash breaks routing before the page is built. A
+latent hole, fixed anyway: the next value somebody escapes with it is exactly
+the one it was written for.
+
+### One primitive, and a whitelist checked rather than trusted
+
+`_js_literal` is now the single place that knows what ends a script element,
+and `_js` and the string table are both built on it. Two helpers escaping for
+the same sink is two chances to drift, and they had already taken one each.
+
+The guard's own first draft is worth recording. Its call-site check allows a
+value through if it arrives via `_js(` or `_strings(` — and when that was
+written, one product's `_strings` was a bare `json.dumps`. **The guard would
+have excused, by name, precisely the defect it exists to catch.** A whitelist
+is a claim about behaviour; it is checked as one now.
+
+### The consoles, swept and clean
+
+The same question in TypeScript is `dangerouslySetInnerHTML`, `innerHTML =`,
+`document.write`, `eval` and `new Function`. All three consoles have none of
+them. The community wall's linkifier was read too: it splits on `https?://`
+and gates on `startsWith("http")`, so a `javascript:` scheme cannot reach an
+`href`.
+
+That is a floor rather than a backlog — nothing to pay down, and the cheapest
+time to keep it that way is while it is still true.
+
+### Also
+
+- Versions moved to 0.59.5 across the console, the backend, and the iOS,
+  Android and Windows projects (build 59005).
+- `shared_guards.txt` regenerated at 405 names; the divergence record holds at
+  136.
+
 ## [0.59.4] — 2026-08-08
 
 ### The sweep that found the last one, kept

@@ -110,8 +110,41 @@ def _page(title: str, body: str, language: str = "en") -> str:
         f'<body><main class="card">{body}</main></body></html>')
 
 
+def _js_literal(obj) -> str:
+    """Any JSON value, safe to drop **inside a `<script>` element**.
+
+    The one primitive `_js` is built on, and the one the string table is built
+    on too — because they had drifted apart. `json.dumps` escapes what would
+    end a JavaScript *string*; it has nothing to say about `</script`, which
+    ends the *element* whatever the JavaScript quoting says, closing the
+    page's own nonced script and leaving everything after it to be parsed as
+    markup.
+    """
+    return html.escape(json.dumps(obj, ensure_ascii=False),
+                       quote=False).replace("</", "<\\/")
+
+
 def _js(value: str) -> str:
-    return json.dumps(value)
+    """A JS string literal safe to drop into an inline script.
+
+    `json.dumps` alone is not enough, and the difference is the whole reason
+    this function exists. Inside a `<script>` element the HTML parser ends the
+    element at the first `</script`, **whatever the JavaScript quoting says**
+    — so a value containing `</script>` closes the script early and everything
+    after it is parsed as markup. `json.dumps` escapes what would end a *JS
+    string*; it has nothing to say about what ends an *HTML element*.
+
+    QRME had this right and this product did not, for the reason 0.59.1 named
+    about a floor and 0.59.0 about a literal: a helper written once and copied
+    into three repositories drifts, and the copy that drifted was the one
+    whose entire job is to be safe. No route here currently passes a
+    caller-supplied string through it — the values are database identifiers
+    and translated constants, and a path segment cannot carry `</script>`
+    because the slash breaks routing — so this is a latent hole rather than a
+    live one. It is fixed anyway: the next value somebody escapes with this is
+    exactly the one it was written for.
+    """
+    return _js_literal(value)
 
 
 def gone(language: str = "en") -> str:
@@ -313,7 +346,7 @@ def care_page(card: dict, language: str = "en") -> str:
                        # UTF-8 and this page is deliberately one small file:
                        # \u-escaping every accented character roughly doubles
                        # the blob for a reader on cellular in a hurry.
-                       "strings": json.dumps(ensure_ascii=False, obj={
+                       "strings": _js_literal({
                            "raising": t("Raising…"),
                            "raise_": t("Raise the alarm"),
                            "failed": t("That did not go through."),
