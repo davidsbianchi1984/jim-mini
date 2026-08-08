@@ -4,6 +4,59 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.3] — 2026-08-08
+
+### The key the server never sends
+
+0.58.2 closed by naming where the seam goes next. The receivers whose type is
+known for free are checked now; the tier past them is the receiver whose
+members are *keyed* rather than named — `optString("worn")`,
+`GetProperty("mode")`, a `Decodable` property whose name **is** the wire key.
+A renamed backend field is the same silent break as a renamed method, except
+it does not fail on a build machine. It fails on a phone, as an empty list or
+a nil string, and the screen renders as though the server had nothing to say.
+
+Matching a key to the route it came from needs a type checker this machine
+does not have. Matching it to the backend's whole vocabulary does not, so the
+guard asks only what it can answer honestly:
+
+```
+is this key one the server can emit anywhere at all
+```
+
+Clean here. The finding was next door, and it was four live breaks in QRME:
+the overlay disclosure and the fine-tuning run reading keys the routes do not
+send, the referral list reading a boolean where a timestamp is, and — on both
+phones — `authorize_url` on a response that says `url`, which meant Sign in
+with Google and Apple could not start at all.
+
+### Added
+
+- `test_the_key_the_server_never_sends.py`, in all three products: every key
+  a shell decodes must be one the backend can put on a response — read from
+  all four places a key reaches the wire (a dict literal, a key assigned after
+  the dict is built, a model field, and `dict(row)`, which makes every column
+  a key).
+- A named `PROXIED` set for the eight keys that arrive verbatim from a
+  sibling product — PDI's provenance trail and QRME's localities and
+  rooms, both proxied through `return r.json()`. This backend's
+  vocabulary cannot judge them, and reporting them would be the guard
+  inventing defects out of the tandem's own architecture. Each was
+  checked by hand against the emitting product first.
+
+### The traps it walked into first
+
+Three, all in the reader. A regex that ends a struct at the first `\n}`
+swallows everything after a nested one, and `CustodyProvenance` has three.
+`var stands: Bool { valid ?? verified ?? false }` is a computed property and
+`let _: Ok = try await …` is a discarded binding; neither is a key.
+`case profileId = "profile_id"` renames it, so reporting `profileId` reports
+the shell's own spelling as the server's. And a fourth in the vocabulary
+rather than the reader: reading only dict literals reported some sixty fields
+that are on the wire every day.
+
+Suites: **1,568** passed, 1 skipped.
+
 ## [0.58.2] — 2026-08-08
 
 ### The colour that wasn't in the palette
