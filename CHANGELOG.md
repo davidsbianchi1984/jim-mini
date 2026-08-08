@@ -4,6 +4,60 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.6] — 2026-08-08
+
+### The clients agreed with each other, and they were all wrong
+
+0.58.0 asked whether the three shells sent every header the console sent, found
+`x-llm-api-key` in one client and no other, and fixed it. It has held since.
+This round found what it cannot see.
+
+**Parity is a relative check, and a relative check is satisfied by everybody
+being equally wrong.**
+
+The instance is PDI's and the shape is the estate's: a vault under customer
+custody required `x-tenant-key` on every record route, and no client in that
+product sent it outside two heir routes. The comparison passed the whole time,
+because both sides of it were wrong in the same direction — which is exactly
+the case a comparison cannot report.
+
+This product has no such header today. The guard is here anyway, because the
+question is not about that header, and a guard that arrives after the second
+instance is a guard that was written twice.
+
+    asked     do the clients send the same headers as each other
+    mattered  do the clients send the headers the routes require
+
+### The guard, in all three suites
+
+`test_a_header_a_route_needs_is_a_header_its_callers_send.py` reads the
+requirement out of the **application** rather than out of any client. FastAPI
+already resolves each route's header parameters through its whole dependency
+tree, so a header required by an auth dependency is attributed to every route
+that depends on it — the case a reader of function signatures misses entirely.
+Then, per client, per route that client actually calls: can it present what
+that route requires?
+
+A header set in a client's shared dispatcher rides every request. A header set
+beside one call rides that call. The first cut of this guard counted the two as
+one, and that alone let the console pass on a header it sends to two routes out
+of the eighty that need it.
+
+The half no dependency walk can reach — a header taken straight off the request
+inside a handler — is asked as a product-wide question, because the attribution
+is genuinely unavailable. `x-signup-key` is recorded there with its reason: an
+operator who sets it is closing registration to everybody, and a client able to
+present it would reopen the door the operator shut.
+
+### Liveness without a number
+
+The three products lean on the two readers in opposite proportions — 103 routes
+declare a header in one and a single route does in another — so a floor per
+product would be three numbers to keep honest. The question is asked the other
+way instead: every non-transport header a client sends must be one some reader
+here found. A client sending a header no reader knows about is either talking
+to itself or looking at a reader that has gone blind.
+
 ## [0.59.5] — 2026-08-08
 
 ### A value inside a script is not markup, and neither escaper knows both
