@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.58.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.58.1** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -344,6 +344,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.58.1** | **The member that isn't there** — `AppState` holds `uid` and `token`, and four iPhone screens asked it for `userId` and `userToken`; two more reached `state.api` on an object with no client at all. Thirty-eight call sites across continuity, presence, safety and the synthetic self — the crisis half of the product — none of which compile, all of them in `main`. A guard now reads every member the screens reach for against the one file that declares them |
 | **0.58.0** | **The key the phones never carried** — `x-llm-api-key`, the person's own model key, has been in the console since 0.4.3 and in no shell. A key set on the desktop ran the desktop and the phone quietly ran the deployment's. All three shells now hold one, offer a field for it, and send it; and a check reads the console's own helper so the next header cannot stay console-only |
 | **0.57.9** | The language guard could say *the header is set with the resolver* and could not say *every request carries it* — and here 15 of 16 Windows sends, 1 of 2 on iOS and 4 of 5 on Android went round the shared helper entirely. One dispatcher per shell, and the check now walks dispatch sites |
 | **0.57.8** | The untranslated-literal guard finally lands here — written in QRME at 0.54.0 and never ported, so this class of defect went unmeasured for four releases. Thirty sites on the first run: `Check-in` and `Language` as headings on all three shells, *Your name* and *What's on your mind?* on the desktop, and three Windows pages that had no `Localize()` at all. The other fifteen are wire values and are recorded with the reason |

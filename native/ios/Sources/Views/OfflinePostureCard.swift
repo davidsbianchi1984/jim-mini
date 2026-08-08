@@ -34,7 +34,7 @@ struct OfflinePostureCard: View {
             }
         }
         .task {
-            posture = try? await state.api.offlineStatus()
+            posture = try? await ApiClient.shared.offlineStatus()
         }
     }
 }

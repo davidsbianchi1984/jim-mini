@@ -4,6 +4,51 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.1] — 2026-08-08
+
+### The member that isn't there
+
+0.58.0 ended by restating the standing gap: no Swift, Kotlin or C# toolchain
+on this machine, so the native UI is asserted by reading and not by running —
+and that round widened the amount of screen riding on it. The honest response
+is not to pretend a compiler exists. It is to keep taking the classes of
+compile error that *can* be caught by reading. 0.57.5 took duplicate
+declarations and unbalanced braces; 0.57.6 took the markup; this takes the
+next one.
+
+Each shell has exactly one object the screens read their session from, and
+exactly one file that declares it — so `state.x` is not a guess about types.
+It is the one receiver in these trees whose declaration is known without
+resolving anything.
+
+```
+asked     do the screens parse, and do they say the right things
+mattered  is the thing they reach for actually there
+```
+
+### Fixed
+
+**Thirty-eight call sites across five iPhone screens, none of which compile.**
+
+- `AppState` holds `uid` and `token`. `ContinuityCard`, `PresenceView`,
+  `SafetyView` and `SelfProfileView` asked it for `userId` and `userToken` —
+  continuity, presence, safety and the synthetic self, which is the whole
+  crisis half of this product.
+- `state.api` in `SelfProfileView` and `OfflinePostureCard`, on an `AppState`
+  that has no client at all. Every other screen in the tree reaches
+  `ApiClient.shared`, which is what these now do.
+
+Swift says *value of type 'AppState' has no member 'userId'*. All of it had
+been sitting in `main`.
+
+### Added
+
+- `test_the_member_that_isnt_there.py`. Two injections, both the real thing:
+  `state.userId` restored on the safety screen, and `state.api` on the
+  offline card.
+
+Suite: **1,552 passed**, 1 skipped.
+
 ## [0.58.0] — 2026-08-08
 
 ### The key the phones never carried

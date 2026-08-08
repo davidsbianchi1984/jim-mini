@@ -229,7 +229,7 @@ struct PresenceView: View {
     private func line(_ b: PresenceBeat) -> String { b.english }
 
     private func load() async {
-        guard let uid = state.userId, let token = state.userToken else { return }
+        guard let uid = state.uid, let token = state.token else { return }
         who = try? await ApiClient.shared.presenceWho()
         day = try? await ApiClient.shared.presenceDay(uid: uid, token: token)
         base = try? await ApiClient.shared.presenceBaseline(uid: uid, token: token)
@@ -244,7 +244,7 @@ struct PresenceView: View {
     /// `/day` is the plan; `/beat` is the utterance, and asking for it is
     /// what counts as having been told.
     private func hear(_ slot: String) async {
-        guard let uid = state.userId, let token = state.userToken else { return }
+        guard let uid = state.uid, let token = state.token else { return }
         if let b = try? await ApiClient.shared.presenceBeat(
             uid: uid, token: token, slot: slot) {
             spoken[slot] = b.deepened_line ?? b.english
@@ -252,7 +252,7 @@ struct PresenceView: View {
     }
 
     private func deepen(_ slot: String) async {
-        guard let uid = state.userId, let token = state.userToken else { return }
+        guard let uid = state.uid, let token = state.token else { return }
         if let b = try? await ApiClient.shared.presenceDeepen(
             uid: uid, token: token, slot: slot) {
             spoken[slot] = b.deepened_line ?? b.english
@@ -263,26 +263,26 @@ struct PresenceView: View {
     /// is the server's: handing a client the line and letting it work out
     /// whether the room is safe is how the picker became a caption.
     private func sayIt(_ slot: String) async {
-        guard let uid = state.userId, let token = state.userToken else { return }
+        guard let uid = state.uid, let token = state.token else { return }
         aloud = try? await ApiClient.shared.presenceSay(
             uid: uid, token: token, slot: slot)
     }
 
     private func askDue() async {
-        guard let uid = state.userId, let token = state.userToken else { return }
+        guard let uid = state.uid, let token = state.token else { return }
         aloud = try? await ApiClient.shared.presenceDue(uid: uid, token: token)
     }
 
     /// The dial. A register, never a capability — so the card that changes it
     /// also renders what stays the same in both bearings.
     private func carryAs(_ bearing: String) async {
-        guard let uid = state.userId, let token = state.userToken else { return }
+        guard let uid = state.uid, let token = state.token else { return }
         carry = try? await ApiClient.shared.presenceSetBearing(
             uid: uid, token: token, bearing: bearing)
     }
 
     private func choose(_ surface: String) async {
-        guard let uid = state.userId, let token = state.userToken else { return }
+        guard let uid = state.uid, let token = state.token else { return }
         surf = try? await ApiClient.shared.presenceChooseSurface(
             uid: uid, token: token, surface: surface)
     }

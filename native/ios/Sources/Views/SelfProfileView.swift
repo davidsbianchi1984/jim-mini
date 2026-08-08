@@ -96,9 +96,9 @@ struct SelfProfileSection: View {
     }
 
     private func refresh() async {
-        guard let uid = state.userId, let token = state.userToken else { return }
-        status = try? await state.api.selfProfile(uid: uid, token: token)
-        preview = try? await state.api.previewSelfProfile(uid: uid, token: token)
+        guard let uid = state.uid, let token = state.token else { return }
+        status = try? await ApiClient.shared.selfProfile(uid: uid, token: token)
+        preview = try? await ApiClient.shared.previewSelfProfile(uid: uid, token: token)
     }
 
     private func run(_ work: @escaping () async throws -> Void,
@@ -113,31 +113,31 @@ struct SelfProfileSection: View {
     }
 
     private func link() {
-        guard let uid = state.userId, let token = state.userToken else { return }
-        run({ _ = try await state.api.linkSelfProfile(
+        guard let uid = state.uid, let token = state.token else { return }
+        run({ _ = try await ApiClient.shared.linkSelfProfile(
                 uid: uid, token: token, profileId: profileId,
                 ownerToken: ownerToken) },
             L10n.t("self.linked_note", state.language))
     }
 
     private func setConsent(_ key: String, _ on: Bool) {
-        guard let uid = state.userId, let token = state.userToken else { return }
+        guard let uid = state.uid, let token = state.token else { return }
         var next = status?.consented ?? []
         if on { next.append(key) } else { next.removeAll { $0 == key } }
-        run({ _ = try await state.api.consentSelfProfile(
+        run({ _ = try await ApiClient.shared.consentSelfProfile(
                 uid: uid, token: token, categories: next) },
             L10n.t("self.saved", state.language))
     }
 
     private func brief() {
-        guard let uid = state.userId, let token = state.userToken else { return }
-        run({ _ = try await state.api.briefSelfProfile(uid: uid, token: token) },
+        guard let uid = state.uid, let token = state.token else { return }
+        run({ _ = try await ApiClient.shared.briefSelfProfile(uid: uid, token: token) },
             L10n.t("self.sent", state.language))
     }
 
     private func unlink() {
-        guard let uid = state.userId, let token = state.userToken else { return }
-        run({ try await state.api.unlinkSelfProfile(uid: uid, token: token) },
+        guard let uid = state.uid, let token = state.token else { return }
+        run({ try await ApiClient.shared.unlinkSelfProfile(uid: uid, token: token) },
             L10n.t("self.unlinked", state.language))
     }
 }

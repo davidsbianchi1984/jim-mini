@@ -117,7 +117,7 @@ private struct AlarmsSection: View {
                             .textFieldStyle(.roundedBorder)
                         Button {
                             act { try await Api.shared.acceptAlarm(
-                                uid: state.userId ?? "", alarmId: a.id,
+                                uid: state.uid ?? "", alarmId: a.id,
                                 responder: responder, token: state.token ?? "") }
                         } label: {
                             Text(L10n.t("alarm.going", state.language)).frame(maxWidth: .infinity)
@@ -130,13 +130,13 @@ private struct AlarmsSection: View {
                     HStack {
                         Button(L10n.t("alarm.cannot_go", state.language)) {
                             act { try await Api.shared.escalateAlarm(
-                                uid: state.userId ?? "", alarmId: a.id,
+                                uid: state.uid ?? "", alarmId: a.id,
                                 token: state.token ?? "") }
                         }.tint(Theme.red).disabled(busy)
                         Spacer()
                         Button(L10n.t("alarm.clear", state.language)) {
                             act { try await Api.shared.clearAlarm(
-                                uid: state.userId ?? "", alarmId: a.id,
+                                uid: state.uid ?? "", alarmId: a.id,
                                 token: state.token ?? "") }
                         }.disabled(busy)
                     }.font(.caption)
@@ -187,7 +187,7 @@ private struct AlarmsSection: View {
     }
 
     private func load() async {
-        guard let uid = state.userId, let token = state.token else { return }
+        guard let uid = state.uid, let token = state.token else { return }
         do { rows = try await Api.shared.alarms(uid: uid, token: token) }
         catch { self.error = error.localizedDescription }
     }
