@@ -1549,8 +1549,16 @@ export const api = {
     req<Row>("/specialists/seed", { method: "POST", token }),
   seedTandemSpecialists: (token: string) =>
     req<Row>("/specialists/seed/tandem", { method: "POST", token }),
+  // An **object**, not the array the name suggests: `{area, locality,
+  // clinicians, reason?}`. Typed `Row[]` here, the Attending screen called
+  // `.map` on it and threw `clinicians.map is not a function` the moment
+  // anybody pressed *who would this reach* — and the `reason` the backend
+  // composes for an empty list ("no clinician registered") had never been
+  // shown to anybody, because the screen never got that far.
   referralClinicians: (uid: string, condition: string, token: string) =>
-    req<Row[]>(`/users/${uid}/referral/clinicians`
+    req<{ area: string; locality: string | null; clinicians: Row[];
+          reason?: string }>(
+      `/users/${uid}/referral/clinicians`
       + `?condition=${encodeURIComponent(condition)}`, { token }),
   referralRequests: (uid: string, token: string) =>
     req<Row[]>(`/users/${uid}/referral/requests`, { token }),

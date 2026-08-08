@@ -34,6 +34,8 @@ export function Attending() {
   const lang = visitorLang();
   const [specialists, setSpecialists] = useState<SpecialistRow[]>([]);
   const [clinicians, setClinicians] = useState<Row[]>([]);
+  // Why the list is empty, when the backend says. It always has.
+  const [why, setWhy] = useState<string | null>(null);
   const [requests, setRequests] = useState<Row[]>([]);
   const [tasks, setTasks] = useState<Row[]>([]);
   const [task, setTask] = useState<Row | null>(null);
@@ -131,8 +133,11 @@ export function Attending() {
                   })}>{tr("att.hand.go", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(async () => {
-                    setClinicians(await api.referralClinicians(
-                      uid!, condition, token!));
+                    const found = await api.referralClinicians(
+                      uid!, condition, token!);
+                    setClinicians(found.clinicians);
+                    setWhy(found.clinicians.length ? null
+                           : found.reason ?? null);
                   })}>{tr("att.hand.who", lang)}</button>
         </div>
         {task && (
@@ -142,6 +147,7 @@ export function Attending() {
               : `Not started — ${String(task.reason ?? "no reason given")}`}
           </p>
         )}
+        {why && <p className="muted small">{why}</p>}
         {clinicians.map((c, i) => (
           <div key={i} className="muted small" style={{ padding: "4px 0" }}>
             {String(c.label ?? c.display_name ?? JSON.stringify(c))}

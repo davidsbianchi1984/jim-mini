@@ -1,0 +1,6 @@
+# status: backlog — 0 rows
+# ceiling: 4
+#
+# Console calls whose declared shape disagrees with what the route answers,
+# and that are deliberate. Empty on purpose: a disagreement here is a screen
+# that throws or renders nothing, so the row is almost always the defect.

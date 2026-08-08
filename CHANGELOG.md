@@ -4,6 +4,65 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.7] — 2026-08-08
+
+### `req<T>` is a cast, and a cast is a claim about the server nothing checks
+
+0.59.6 read the requirement out of the application — which headers a route
+needs — and asked whether the callers could meet it. This is the same question
+pointed the other way: the route **answers** with a shape, the screen
+**declares** one, and between them sits `req<T>`, which is a TypeScript cast
+over a body parsed by `JSON.parse`. The compiler is satisfied. The screen
+crashes.
+
+    asked     does this call compile
+    mattered  is the shape it names the shape that arrives
+
+### What it was
+
+`GET /users/{uid}/referral/clinicians` answers an **object**:
+
+    {"area": …, "locality": …, "clinicians": [ … ], "reason": …}
+
+The console declared `Row[]` and the Attending screen called `.map` on it:
+
+    TypeError: clinicians.map is not a function
+
+thrown during render, the moment anybody pressed *who would this reach*. And
+the `reason` the backend composes for an empty list — *no clinician registered
+in this area* — had never been shown to a single person, because the screen
+threw before it got there. The screen now reads `.clinicians` and prints the
+reason when the list is empty.
+
+PDI had the same defect on `GET /hosting/{tenant_id}/history`.
+
+### Why nothing else covers it
+
+The route audit asks whether a path resolves and a method is accepted. The
+door audit asks whether a route has a screen. Both were fully satisfied: the
+path resolved, the method matched, the screen existed and called it. Nothing
+asked what came back. `tsc` cannot help either, and that is structural rather
+than an oversight — `req<T>` is generic over a type the caller supplies, and
+the parsed body is `any`.
+
+### The reader, and its own blind spot
+
+Per **call expression**, not per path. The first cut keyed on the path literal
+and reported sixty-odd disagreements, every one of them the reader pairing a
+`POST` with the `GET` that shares its path; reading each `req<T>(…)` call and
+taking the verb from that call's own body dropped it to one per product, and
+all of those were real.
+
+Before that, an earlier cut read **zero** call sites — its pattern stopped one
+character short of the opening backtick — and reported that the consoles
+agreed with their backends everywhere. It was right about every call it looked
+at, because it looked at none. That is why this file carries a registered
+floor (`console.calls_typed`) rather than trusting its own silence, and why
+the verb reader is asserted per verb.
+
+A union naming both shapes satisfies either: a client that copes with what
+arrives is defensive rather than wrong.
+
 ## [0.59.6] — 2026-08-08
 
 ### The clients agreed with each other, and they were all wrong

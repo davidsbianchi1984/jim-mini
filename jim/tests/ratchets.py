@@ -123,6 +123,16 @@ def _markup_strings() -> int:
     return scanned()
 
 
+def _route_shapes() -> int:
+    from .test_a_screen_expects_the_shape_the_route_returns import route_shapes
+    return len(route_shapes())
+
+
+def _calls_typed() -> int:
+    from .test_a_screen_expects_the_shape_the_route_returns import calls
+    return len(calls())
+
+
 def _guard_names() -> int:
     from .test_the_three_suites_ask_the_same_questions import TESTS, guard_names
     return len(guard_names(TESTS))
@@ -163,6 +173,10 @@ RATCHETS: tuple[Ratchet, ...] = (
             "path literals found across all four surfaces"),
     Ratchet("console.source_files", 29, _console_files,
             "TypeScript sources the console sink sweep reads"),
+    Ratchet("console.calls_typed", 195, _calls_typed,
+            "console calls that declare the shape they expect back"),
+    Ratchet("route.declared_shapes", 210, _route_shapes,
+            "routes whose answer is decisively a list or an object"),
     Ratchet("markup.strings_scanned", 7, _markup_strings,
             "f-strings in this package that build markup"),
     Ratchet("suite.guard_names", 1050, _guard_names,
