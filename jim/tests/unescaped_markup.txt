@@ -1,0 +1,43 @@
+# status: backlog — 3 rows
+#
+# Every interpolation into markup whose value the sweep cannot see reach an
+# escape. Written by `test_a_page_never_prints_what_it_was_given.py`.
+#
+# ## Why these are recorded rather than fixed
+#
+# 0.59.3 found reflected cross-site scripting on the sign-in callback:
+# `?error=<script>…` went straight into the page. It had been there for four
+# hundred releases, and what made it invisible was not that it was hard to
+# see — it is three lines of obvious — but that **nothing was looking**. The
+# escaping is the first line of defence; the Content-Security-Policy shipped
+# in the same round is the second.
+#
+#     asked     is this page correct
+#     mattered  can the next value somebody interpolates be markup
+#
+# Every row below is a composite the analysis cannot follow — a body assembled
+# from parts that were each escaped where they were built, a stylesheet
+# constant, a fragment returned by a helper with several branches. Each was
+# read once and written down here. None is a value a reader supplies.
+#
+# ## What the sweep does follow
+#
+# Single assignments (`ref = html.escape(...)` then `{ref}`), functions whose
+# every return is escaped, conditionals and joins whose every branch is safe,
+# and numeric calls. Without that, the same sweep reports 32 rows in QRME
+# instead of eight, and a record that is four-fifths noise is a record nobody
+# reads.
+#
+# It does not read prose as markup: `http://localhost:<port>` in a WebAuthn
+# diagnostic is a sentence, and the first draft called it a page.
+#
+# ## How a row leaves this file
+#
+# Escape the value where it is interpolated, or restructure so the analysis
+# can follow it. The ceiling does not move up: a new row is a value somebody
+# can put markup into.
+#
+# ceiling: 3
+landing.py:104: {_CSS}
+landing.py:104: {body}
+landing.py:274: {who}

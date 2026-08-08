@@ -113,6 +113,11 @@ def _path_literals() -> int:
     return sum(len(clientpaths.paths(lang)) for lang in SURFACES.values())
 
 
+def _markup_strings() -> int:
+    from .test_a_page_never_prints_what_it_was_given import scanned
+    return scanned()
+
+
 def _guard_names() -> int:
     from .test_the_three_suites_ask_the_same_questions import TESTS, guard_names
     return len(guard_names(TESTS))
@@ -151,6 +156,8 @@ RATCHETS: tuple[Ratchet, ...] = (
             "routes reachable by walking the included routers"),
     Ratchet("extractor.path_literals", 370, _path_literals,
             "path literals found across all four surfaces"),
+    Ratchet("markup.strings_scanned", 7, _markup_strings,
+            "f-strings in this package that build markup"),
     Ratchet("suite.guard_names", 1050, _guard_names,
             "test functions this suite declares"),
     Ratchet("sweep.files_parsed", 130, _files_swept,

@@ -4,6 +4,64 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.4] — 2026-08-08
+
+### The sweep that found the last one, kept
+
+0.59.3 found reflected cross-site scripting on the sign-in callback by walking
+every f-string that builds markup — **by hand, once, and then throwing the
+walk away.** That round shipped the second line of defence, a
+Content-Security-Policy with a nonce, and left the first one unguarded.
+
+Escaping is the first line. So the walk is a guard now.
+
+    asked     is this page correct
+    mattered  can the next value somebody interpolates be markup
+
+### Following the escape rather than looking for it
+
+Most of this estate escapes one line above the template:
+
+    ref = html.escape(card["reference"])
+    body = f'<p class="ref">{ref}</p>'
+
+A sweep that only asks whether `html.escape` appears between the braces
+reports **8 rows** here, of which the six real ones are buried. Following
+single assignments, and functions whose every return is escaped, and
+conditionals and joins whose every branch is safe, cuts it to **3** — and all
+three are composites the analysis cannot follow rather than values a reader
+supplies. A record that is four-fifths noise is a record nobody reads.
+
+It also refuses to read prose as markup. The first draft matched any f-string
+containing `<` and `>`, which flagged a WebAuthn diagnostic containing
+`http://localhost:<port>`. It now wants a closing tag, or an opening tag
+carrying an attribute.
+
+### What it catches
+
+Put 0.59.3's defect back and the guard names it — file, line and expression:
+
+    9 unescaped interpolations into markup, above the 8 recorded:
+        routers/accounts.py:247: {error or 'no code came back'}
+
+Four hundred releases of invisibility, and it was never hard to see. Nothing
+was looking.
+
+### Three attribute interpolations escaped on the way past
+
+`<html lang="{language}">` depended on the caller having negotiated one of ten
+known codes; `<option value="{value}">` on a hard-coded tuple; the policy
+nonce on `secrets.token_urlsafe`. All three were safe and all three now escape
+where they are written, which costs nothing and removes a permanent row from
+the record.
+
+### Also
+
+- Versions moved to 0.59.4 across the console, the backend, and the iOS,
+  Android and Windows projects (build 59004).
+- `shared_guards.txt` regenerated at 397 names; the divergence record holds at
+  136.
+
 ## [0.59.3] — 2026-08-08
 
 ### What a page promises a browser before it says anything else

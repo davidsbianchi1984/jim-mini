@@ -33,6 +33,7 @@ a reader would ever notice.
 from __future__ import annotations
 
 import contextvars
+import html
 import secrets
 
 #: Set per request, read by the page builders. The same shape the request-key
@@ -75,7 +76,8 @@ def script_open() -> str:
     rather than silently shipping an unprotected one.
     """
     value = nonce()
-    return f'<script nonce="{value}">' if value else "<script>"
+    return (f'<script nonce="{html.escape(value)}">' if value
+            else "<script>")
 
 
 def policy(value: str) -> str:

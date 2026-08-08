@@ -101,7 +101,8 @@ def _page(title: str, body: str, language: str = "en") -> str:
     # `dir` because Arabic is one of the ten languages this product supports.
     direction = "rtl" if language == "ar" else "ltr"
     return (
-        f'<!doctype html><html lang="{language}" dir="{direction}">'
+        f'<!doctype html><html lang="{html.escape(language)}" '
+        f'dir="{direction}">'
         '<head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1,'
         'viewport-fit=cover"><meta name="theme-color" content="#0a0f1c">'
