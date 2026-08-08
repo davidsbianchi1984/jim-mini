@@ -692,6 +692,14 @@ enum ApiError: LocalizedError {
 /// the iOS Simulator shares the host's network, so 127.0.0.1 resolves to your Mac.
 actor ApiClient {
     static let shared = ApiClient()
+
+    /// The person's own model key, pushed in by `AppState` and sent on every
+    /// request as `x-llm-api-key`. Held here rather than reached for from the
+    /// request path, which is actor-isolated and must not hop to the main
+    /// actor to build a header.
+    private var llmKey = ""
+
+    func useLlmKey(_ key: String) { llmKey = key }
     var base = URL(string: "http://127.0.0.1:8000")!
 
     func setBase(_ s: String) {
@@ -725,6 +733,12 @@ actor ApiClient {
     private func dispatch(_ req: URLRequest) async throws -> (Data, URLResponse) {
         var req = req
         req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        // The person's own model key, if this device holds one. Sent as a
+        // header rather than stored server-side: the backend puts it in a
+        // context var for the length of the call and never writes it down.
+        if !llmKey.isEmpty {
+            req.setValue(llmKey, forHTTPHeaderField: "x-llm-api-key")
+        }
         return try await URLSession.shared.data(for: req)
     }
 
@@ -739,6 +753,12 @@ actor ApiClient {
         // free, which is why the phones were the ones still answering in
         // English after the routes learned to speak.
         req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        // The person's own model key, if this device holds one. Sent as a
+        // header rather than stored server-side: the backend puts it in a
+        // context var for the length of the call and never writes it down.
+        if !llmKey.isEmpty {
+            req.setValue(llmKey, forHTTPHeaderField: "x-llm-api-key")
+        }
         if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization") }
         if let body { req.httpBody = try JSONSerialization.data(withJSONObject: body) }
 

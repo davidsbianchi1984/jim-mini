@@ -57,6 +57,12 @@ public sealed partial class OverviewPage : Page
         ModelTitle.Text = L10n.T("ov.model");
         ModelSub.Text = L10n.T("ov.model.sub");
         LanguageTitle.Text = L10n.T("ov.language");
+        KeyHead.Text = L10n.T("set.key", lang);
+        KeyLead.Text = L10n.T("set.key.pitch", lang);
+        KeyBox.Header = L10n.T("set.key.label", lang);
+        KeyBox.PlaceholderText = L10n.T("set.key.ph", lang);
+        SaveKeyButton.Content = L10n.T("set.save", lang);
+        KeyBox.Password = AppState.Current.LlmKey;
         LanguageSub.Text = L10n.T("ov.language.sub");
         PreTranslateToggle.Header = L10n.T("ov.pretranslate");
         PreTranslateToggle.OffContent = L10n.T("ov.pretranslate.sub");
@@ -401,4 +407,13 @@ public sealed partial class OverviewPage : Page
 
     private static string Cap(string s) =>
         string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s[1..];
+
+    /// <summary>Store or clear the person's own model key. An empty box is
+    /// the clear — no key means the deployment's, and there is no flag to
+    /// leave switched on by mistake.</summary>
+    private void OnSaveKey(object sender, RoutedEventArgs e)
+    {
+        AppState.Current.RememberLlmKey(KeyBox.Password);
+        KeyBox.Password = AppState.Current.LlmKey;
+    }
 }

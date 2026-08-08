@@ -1824,6 +1824,7 @@ fun LanguageCard(vm: GuardianViewModel) {
     var current by remember { mutableStateOf("en") }
     var preTranslate by remember { mutableStateOf(true) }
     var translateInput by remember { mutableStateOf("") }
+    var llmKey by remember { mutableStateOf(vm.llmKey) }
     var translated by remember { mutableStateOf<TranslateResult?>(null) }
     LaunchedEffect(Unit) {
         vm.call({ ApiClient.languages() }) { r -> languages = r.getOrDefault(emptyList()) }
@@ -1835,6 +1836,18 @@ fun LanguageCard(vm: GuardianViewModel) {
         }
     }
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // 0.58.0. The console has offered this since 0.4.3 and the phones
+        // never did: a key set there was used there, and the deployment's key
+        // used here, on the same account.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("set.key", vm.language), color = Jim.Txt, fontSize = 16.sp,
+                fontWeight = FontWeight.Bold)
+            Text(L10n.t("set.key.pitch", vm.language), color = Jim.T2, fontSize = 12.sp)
+            labeledField(L10n.t("set.key.label", vm.language), llmKey,
+                L10n.t("set.key.ph", vm.language)) { llmKey = it }
+            SmallAction(L10n.t("set.save", vm.language)) { vm.rememberLlmKey(llmKey) }
+        }
+
         Text(L10n.t("ov.language", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Text(L10n.t("ov.language.sub", vm.language),
             color = Jim.T2, fontSize = 12.sp)

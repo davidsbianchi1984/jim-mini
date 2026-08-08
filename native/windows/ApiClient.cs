@@ -571,6 +571,12 @@ public sealed class ApiClient
     private Task<HttpResponseMessage> Dispatch(HttpRequestMessage req)
     {
         req.Headers.TryAddWithoutValidation("accept-language", L10n.DeviceLanguage());
+        // The person's own model key, if this machine holds one. Sent as a
+        // header rather than stored server-side: the backend puts it in a
+        // context var for the length of the call and never writes it down.
+        var llmKey = AppState.Current.LlmKey;
+        if (!string.IsNullOrEmpty(llmKey))
+            req.Headers.TryAddWithoutValidation("x-llm-api-key", llmKey);
         return _http.SendAsync(req);
     }
 

@@ -4,6 +4,54 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.0] — 2026-08-08
+
+### The key the phones never carried
+
+0.57.9 ended by naming the shape: a guard that verifies *a* line rather than
+*every* path has a blind spot, and the same audit run on a different header
+would probably be productive. It was — but not the way it was expected to be.
+Asked of every header the console attaches to every request, the answer was
+not *some paths miss it*. It was **one header the shells do not send at all.**
+
+```
+x-llm-api-key
+```
+
+The person's own model key. Pasted into the console since 0.4.3, read by the
+backend per request into a context var and never written down, and sent by no
+native shell. A key set on the desktop was used on the desktop, and the
+deployment's key was used on the phone — same account, same profile, two
+different credentials, and nothing anywhere saying so. The phones even drew
+the provider list with *ready* / *no key* beside each row, which is the
+**deployment's** key state: the screen showed a fact about somebody else's
+credential and offered no way to supply your own.
+
+```
+asked     does every request carry the headers this client sends
+mattered  does this client send the headers the product has
+```
+
+### Added
+
+- The key on all three shells: held on the device (UserDefaults,
+  SharedPreferences, the app's local state) and never in the account, pushed
+  into the API client once and sent from the same place the language header
+  goes.
+- A field to set it, under the four rows the console has had since 0.4.3 —
+  the same keys and the same words, so no new console/native split appears.
+  Saving an empty box is the clear; there is no flag to leave switched on.
+- `test_every_header_the_console_sends_the_shells_send_too`, which reads the
+  console's own shared helper rather than a list written in the test, so a
+  header added there cannot quietly stay there.
+
+### Changed
+
+- The shells gained a Save button and use the console's own `set.save` row for
+  it rather than minting a second word for the same button.
+
+Suite: **1,546 passed**, 1 skipped.
+
 ## [0.57.9] — 2026-08-08
 
 ### A funnel only funnels what goes into it

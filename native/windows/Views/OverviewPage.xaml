@@ -44,6 +44,22 @@
                 </StackPanel>
             </Border>
 
+            <!-- 0.58.0. The console has offered this since 0.4.3 and the
+                 shells never did: a key set there was used there, and the
+                 deployment's key used here, on the same profile. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="KeyHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="KeyLead" TextWrapping="Wrap" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <PasswordBox x:Name="KeyBox" />
+                    <Button x:Name="SaveKeyButton" Click="OnSaveKey"
+                            Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                </StackPanel>
+            </Border>
+
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">

@@ -236,3 +236,71 @@ def test_the_scan_reaches_every_client():
     assert len(seen) == 3, f"only found {sorted(seen)}"
     for name, n in seen.items():
         assert n >= 2, f"{name}: only {n} request(s) built — the pattern has "
+
+
+#: Where the console attaches a header to every request it makes. The three
+#: shells are checked against *this* rather than against a list written here,
+#: so a header added to the console cannot quietly stay console-only.
+CONSOLE = "app/src/api.ts"
+
+#: A header the console sends that a phone has no business sending. Empty on
+#: purpose so far — every entry needs a reason, and "the phone does not do
+#: that" is usually a defect rather than a reason.
+CONSOLE_ONLY: set[str] = set()
+
+
+def _console_headers() -> set[str]:
+    """Headers the console's shared `req` helper sets on every call.
+
+    Read from the helper rather than the whole file: the file also builds
+    the odd one-off request, and a header set on one of those is not a
+    promise the shells have to match.
+    """
+    src = (REPO / CONSOLE).read_text(encoding="utf-8")
+    i = src.index("async function req<T>(")
+    body = src[i:src.index("\n}", i)]
+    return {h.lower() for h in re.findall(r'headers\[\s*"([\w-]+)"\s*\]', body)}
+
+
+def _shell_headers(client: str, shell: str) -> set[str]:
+    src = _code(REPO / client)
+    pat = {"ios": r'forHTTPHeaderField:\s*"([\w-]+)"',
+           "android": r'setRequestProperty\(\s*"([\w-]+)"',
+           "windows": r'Headers\.(?:TryAddWithoutValidation|Add)\(\s*"([\w-]+)"'}[shell]
+    return {h.lower() for h in re.findall(pat, src)}
+
+
+def test_every_header_the_console_sends_the_shells_send_too():
+    """0.58.0. The generalisation of the round before this one.
+
+    0.57.9 asked whether every *request* carried the header the helper set.
+    This asks the prior question: **is the set of headers the same at all?**
+    It was not. `x-llm-api-key` — the person's own model key, which the
+    backend reads per request and never stores — was sent by the console and
+    by no shell, so a key set on the desktop was used there and the
+    deployment's key used on the phone, on the same account, with nothing
+    saying so.
+
+        asked     does every request carry the headers this client sends
+        mattered  does this client send the headers the product has
+
+    Read from the console's own helper rather than from a list here, so a
+    header added there cannot quietly stay there.
+    """
+    expected = _console_headers() - CONSOLE_ONLY
+    missing = []
+    for name, _, _, _, client, _ in SHELLS:
+        if not (REPO / client).exists():
+            continue
+        for header in sorted(expected - _shell_headers(client, name)):
+            missing.append(f"{name}: {client} never sends {header!r}, which "
+                           f"the console sends on every request")
+    assert not missing, "\n    ".join([""] + missing)
+
+
+def test_the_console_helper_is_still_being_read():
+    """A helper that moved or was renamed would make the check above compare
+    the shells against an empty set, which reads exactly like passing."""
+    found = _console_headers()
+    assert len(found) >= 2, found
+    assert "authorization" in found

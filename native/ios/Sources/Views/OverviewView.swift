@@ -3,6 +3,9 @@ import SwiftUI
 /// Home: greeting, Guardian status, and the learned baseline (GET /baseline).
 struct OverviewView: View {
     @EnvironmentObject var state: AppState
+    /// Edited here and written to `AppState` on save, so a half-typed
+    /// key never reaches the wire. Saving an empty box is the clear.
+    @State private var llmKey = ""
     @State private var metrics: [BaselineMetric] = []
     @State private var loading = true
     @State private var providers: [ProviderInfo] = []
@@ -59,6 +62,26 @@ struct OverviewView: View {
                     }
                     .pickerStyle(.menu).tint(Theme.brandA)
                     .onChange(of: provider) { _ in applyModel() }
+                }.card()
+
+                // 0.58.0. The console has offered this since 0.4.3 and the
+                // phones never did: a key set there was used there, and the
+                // deployment's key used here, on the same account.
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L10n.t("set.key", state.language))
+                        .font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("set.key.pitch", state.language))
+                        .font(.footnote).foregroundStyle(Theme.t2)
+                    Text(L10n.t("set.key.label", state.language))
+                        .font(.caption).foregroundStyle(Theme.t3)
+                    SecureField(L10n.t("set.key.ph", state.language), text: $llmKey)
+                        .textFieldStyle(.plain).foregroundStyle(Theme.txt)
+                    Button(L10n.t("set.save", state.language)) {
+                        state.rememberLlmKey(llmKey)
+                    }
+                    .font(.subheadline.bold()).foregroundStyle(.white)
+                    .padding(.horizontal, 14).padding(.vertical, 9)
+                    .background(Theme.brandA).clipShape(Capsule())
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -128,7 +151,8 @@ struct OverviewView: View {
             }.padding(20)
         }
         .refreshable { await load() }
-        .task { await load() }
+        .task {
+            llmKey = state.llmKey await load() }
     }
 
     private func applyModel() {

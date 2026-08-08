@@ -10,6 +10,16 @@ final class AppState: ObservableObject {
     // The user's chosen language also drives the app chrome via L10n.
     @Published var language = "en"
 
+
+    /// The person's own model key, held on this device only and sent per
+    /// request as `x-llm-api-key`.
+    ///
+    /// The console has offered this since 0.4.3 and the phones never did — so
+    /// somebody who set their key in the console had it used there and the
+    /// deployment's key used here, on the same profile, with nothing saying
+    /// so. Never in the account and never on the wire except as the header.
+    @Published var llmKey = ""
+
     private let d = UserDefaults.standard
 
     init() {
@@ -17,6 +27,9 @@ final class AppState: ObservableObject {
         token = d.string(forKey: "jim.token")
         displayName = d.string(forKey: "jim.name") ?? ""
         language = d.string(forKey: "jim.lang") ?? "en"
+        llmKey = d.string(forKey: "jim.llmKey") ?? ""
+        let held = llmKey
+        Task { await ApiClient.shared.useLlmKey(held) }
     }
 
     var isEnrolled: Bool { uid != nil && token != nil }
@@ -31,6 +44,16 @@ final class AppState: ObservableObject {
     func signOut() {
         uid = nil; token = nil; displayName = ""
         ["jim.uid", "jim.token", "jim.name", "jim.lang"].forEach { d.removeObject(forKey: $0) }
+    }
+
+    /// Store or clear it. An empty string is the clear: there is no flag to
+    /// leave switched on by mistake, and no key means the deployment's.
+    func rememberLlmKey(_ key: String) {
+        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        llmKey = trimmed
+        if trimmed.isEmpty { d.removeObject(forKey: "jim.llmKey") }
+        else { d.set(trimmed, forKey: "jim.llmKey") }
+        Task { await ApiClient.shared.useLlmKey(trimmed) }
     }
 
     func rememberLanguage(_ code: String) {

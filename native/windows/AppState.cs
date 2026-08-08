@@ -18,6 +18,24 @@ public sealed class AppState
     // The user's chosen language also drives the app chrome via L10n.
     public string Language { get; set; } = "en";
 
+    /// <summary>The person's own model key, held on this machine only and
+    /// sent per request as <c>x-llm-api-key</c>.
+    ///
+    /// <para>The console has offered this since 0.4.3 and the shells never
+    /// did — so a key set in the console was used there and the deployment's
+    /// key used here, on the same profile, with nothing saying so.</para>
+    /// </summary>
+    public string LlmKey { get; set; } = "";
+
+    /// <summary>Store or clear it. Empty is the clear: no key means the
+    /// deployment's, and there is no flag to leave switched on by
+    /// mistake.</summary>
+    public void RememberLlmKey(string key)
+    {
+        LlmKey = (key ?? "").Trim();
+        Save();
+    }
+
     public void RememberLanguage(string code)
     {
         Language = code;
