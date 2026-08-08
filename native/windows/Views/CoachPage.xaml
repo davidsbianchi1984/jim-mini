@@ -22,7 +22,7 @@
                         <ComboBoxItem Content="relationships" />
                         <ComboBoxItem Content="personal_growth" />
                     </ComboBox>
-                    <TextBox x:Name="MessageBox" Header="Message" PlaceholderText="What's on your mind?"
+                    <TextBox x:Name="MessageBox" Header="Message"
                              AcceptsReturn="True" TextWrapping="Wrap" Height="90" />
                     <Button x:Name="AskButton" Content="Ask coach" HorizontalAlignment="Stretch"
                             Height="44" Foreground="White" Click="OnAsk">

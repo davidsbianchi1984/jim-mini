@@ -7,7 +7,7 @@
 
     <ScrollViewer>
         <StackPanel MaxWidth="640" Spacing="16" Padding="28" HorizontalAlignment="Left">
-            <TextBlock Text="Check-in" FontSize="22" FontWeight="Bold"
+            <TextBlock x:Name="TitleText" FontSize="22" FontWeight="Bold"
                        Foreground="{StaticResource JimTxtBrush}" />
             <TextBlock Text="A quick pulse on how you're doing."
                        Foreground="{StaticResource JimT2Brush}" FontSize="13" />

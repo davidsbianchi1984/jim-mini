@@ -24,9 +24,9 @@
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="12">
-                    <TextBox x:Name="NameBox" Header="Name" PlaceholderText="Your name" />
+                    <TextBox x:Name="NameBox" Header="Name" />
                     <TextBox x:Name="BirthBox" Header="Birthdate (yyyy-MM-dd)" Text="1984-01-01" />
-                    <ComboBox x:Name="LanguageBox" Header="Language" HorizontalAlignment="Stretch" />
+                    <ComboBox x:Name="LanguageBox" HorizontalAlignment="Stretch" />
                     <CheckBox x:Name="ConsentBox" Content="I consent to the terms of use"
                               Foreground="{StaticResource JimTxtBrush}" />
                 </StackPanel>

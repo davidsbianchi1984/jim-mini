@@ -5,7 +5,13 @@ namespace JimGuardian.Views;
 
 public sealed partial class CheckinPage : Page
 {
-    public CheckinPage() => InitializeComponent();
+    public CheckinPage()
+    {
+        InitializeComponent();
+        // In code rather than XAML: a XAML literal cannot be re-read when the
+        // language changes, and this heading was the English one.
+        TitleText.Text = L10n.T("tab.checkin");
+    }
 
     private async void OnLog(object sender, RoutedEventArgs e)
     {

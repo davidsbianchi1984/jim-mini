@@ -12,7 +12,8 @@ struct CheckinView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Check-in").font(.title2.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("tab.checkin", state.language))
+                    .font(.title2.bold()).foregroundStyle(Theme.txt)
                 Text("A quick pulse on how you're doing.").font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 18) {

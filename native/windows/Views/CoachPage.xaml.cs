@@ -9,6 +9,7 @@ public sealed partial class CoachPage : Page
     public CoachPage()
     {
         InitializeComponent();
+        MessageBox.PlaceholderText = L10n.T("ov.fb.placeholder");
         // In code rather than XAML: a XAML literal cannot be re-read when the
         // language changes.
         AskSpecialistButton.Content = L10n.T("spec.ask");

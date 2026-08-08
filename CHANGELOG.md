@@ -4,6 +4,88 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.8] — 2026-08-08
+
+### The rows the guard skipped were the interesting ones
+
+`test_a_shell_does_not_print_what_it_translated.py` has, since 0.54.0, opened
+its row reader with
+
+```python
+if "{" in english:
+    continue
+```
+
+Every row with a slot in it went unchecked, for four releases. That is not a
+corner of the table: a row with a slot is a row *about something*, which is
+most of what a screen actually says — and a sentence assembled around a value
+is the one a screen is most likely to hand-build, because building it is what
+the code is already doing.
+
+```
+? $"closest overlap {best}, below the {th} threshold for naming anyone"
+```
+
+against `ns.who.below` — *"closest overlap {best}, below the {threshold}
+threshold for naming anyone"* — the same sentence, hole for hole, in that same
+shell's table in ten languages.
+
+```
+asked     does a screen print a whole English row verbatim
+mattered  does a screen print an English row the reader will never see
+          translated, however it is spelled
+```
+
+Found from the other side and by accident: 0.57.7 was fixing a Windows page
+that would not parse, read the code-behind while deciding a rename, and saw
+seven of these on one screen. This closes the general case rather than the
+seven.
+
+**A slotted row is compared by its fragments**, not by rebuilding the
+sentence — the shell's holes are not the table's, and `{en.Seconds:F1}s` is
+not `{secs}`. The row is split at its slots and the literal text between them
+is matched. Fragments shorter than a phrase are dropped, so `Built {date}`
+contributes nothing; that is a deliberate miss and the file says so.
+
+### Two false findings, caught before they shipped
+
+The check's own first run against the sibling products reported two defects
+that were the reader's, not the code's, and both are now tested against:
+
+* `L10n.t("cw.sensitivity", …)` is a screen *asking* for a row, and the
+  fragment *"sensitivity"* is inside that key. A key is not something a reader
+  sees.
+* `$"{(int)Math.Round(p.Confidence * 100)}"` matched the row *"Confidence
+  {pct}% — earned from…"* on the word `Confidence`, which is a C# property
+  there and a heading here. The holes come out of the shown string too — the
+  same removal that is done to the row.
+
+Same lesson as the eighty-six protocol values that shaped the original: strip
+what is not prose before comparing prose.
+
+### Fixed
+
+The guard did not exist here — it was written in QRME at 0.54.0 and never
+ported, so this product has had the same class of defect unmeasured for four
+releases. The first run found thirty sites and the split was the same one
+QRME's first run produced: **nine were labels and are now keys**, and the rest
+are values.
+
+* `Check-in` as a screen heading on all three shells, `Language` on all three,
+  *Your name* and *What's on your mind?* on the desktop — every one of them a
+  row held and translated ten ways.
+* Three Windows pages had no `Localize()` at all and now have one for the
+  strings the table already carries. The rest of those pages is
+  `native_screens_untranslated.txt`'s business, not this file's.
+
+The fifteen recorded rows are the sensitivity ladder (`cautious`, `balanced`,
+`assertive`) and the severity ladder's `critical` — values the crash-watch
+policy API stores and compares against, already rendered through
+`sensitivityLabel` which does read the table — and four SwiftUI enum raw
+values that are the stored identity of a selected tab.
+
+Suite: **1,542 passed**, 1 skipped.
+
 ## [0.57.7] — 2026-08-08
 
 ### The files the release never touched

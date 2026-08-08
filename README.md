@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.57.7** ([changelog](CHANGELOG.md) ·
+**Current release: v0.57.8** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -344,6 +344,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.57.8** | The untranslated-literal guard finally lands here — written in QRME at 0.54.0 and never ported, so this class of defect went unmeasured for four releases. Thirty sites on the first run: `Check-in` and `Language` as headings on all three shells, *Your name* and *What's on your mind?* on the desktop, and three Windows pages that had no `Localize()` at all. The other fifteen are wire values and are recorded with the reason |
 | **0.57.7** | The version a person installs. Nine declarations across the three products said `0.1.0` or nothing at all while the release said `0.57.6` — the App Store version, the Play listing, and the version Windows shows in a file's Properties. A guard reads all three build files against `pyproject.toml`, derives the Android `versionCode` rather than keeping it by hand, and checks that every gated platform API a shell calls has its declaration |
 | **0.57.6** | The parse check reaches the XAML the Windows shell's screens are actually written in. Three pages here carried `x:Name` twice on one element — a custody note, a sealed badge and an alarm button — which stops the build at the tag. Four markup checks, all of them things the XAML compiler refuses outright |
 | **0.57.5** | The shells get a parse check — duplicate declarations in one scope, and braces that do not balance — after QRME shipped a Swift compile error no text-reading guard could see. Clean here; three injected defects confirm it can fail |

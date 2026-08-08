@@ -34,13 +34,14 @@ struct WelcomeView: View {
 
                 VStack(alignment: .leading, spacing: 14) {
                     field("Name") {
-                        TextField("Your name", text: $name).textFieldStyle(.plain).foregroundStyle(Theme.txt)
+                        TextField(L10n.t("res.name", language), text: $name)
+                            .textFieldStyle(.plain).foregroundStyle(Theme.txt)
                     }
                     field("Birthdate") {
                         DatePicker("", selection: $birthdate, displayedComponents: .date)
                             .labelsHidden().colorScheme(.dark)
                     }
-                    field("Language") {
+                    field(L10n.t("ov.language", language)) {
                         Picker("", selection: $language) {
                             Text("English").tag("en")
                             ForEach(languages.filter { $0.code != "en" }, id: \.code) { l in

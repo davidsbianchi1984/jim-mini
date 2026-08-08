@@ -148,7 +148,7 @@ fun WelcomeScreen(vm: GuardianViewModel) {
                 labeledField(L10n.t("nw.name", language), name, L10n.t("res.name", language)) { name = it }
                 labeledField(L10n.t("nw.birthdate", language), birthdate, L10n.t("nw.birthdate.ph", language)) { birthdate = it }
                 if (languages.isNotEmpty()) {
-                    Text("Language", color = Jim.T2, fontSize = 12.sp)
+                    Text(L10n.t("ov.language", language), color = Jim.T2, fontSize = 12.sp)
                     languages.chunked(3).forEach { row ->
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             row.forEach { l ->
@@ -383,7 +383,8 @@ fun CheckinScreen(vm: GuardianViewModel) {
     var result by remember { mutableStateOf<CheckinResult?>(null) }
 
     screenScroll {
-        Text("Check-in", color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("tab.checkin", vm.language), color = Jim.Txt, fontSize = 22.sp,
+             fontWeight = FontWeight.Bold)
         Text("A quick pulse on how you're doing.", color = Jim.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             ratingRow(L10n.t("ci.mood", vm.language), mood) { mood = it }

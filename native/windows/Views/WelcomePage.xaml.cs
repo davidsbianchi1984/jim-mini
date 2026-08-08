@@ -10,7 +10,12 @@ public sealed partial class WelcomePage : Page
 {
     private LanguageInfo[] _languages = Array.Empty<LanguageInfo>();
 
-    public WelcomePage() => InitializeComponent();
+    public WelcomePage()
+    {
+        InitializeComponent();
+        NameBox.PlaceholderText = L10n.T("res.name");
+        LanguageBox.Header = L10n.T("ov.language");
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
