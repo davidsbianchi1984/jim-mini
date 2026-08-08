@@ -4,6 +4,39 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.7] — 2026-08-08
+
+### A wire model is data, and data has no methods
+
+0.58.6 closed by naming its own hole: a pin whose reader goes blind reads a
+model as **empty**, an empty set is a subset of anything, and the pin passes
+against nothing while looking exactly like a pin that is holding. That is the
+only way this table can lie, so this round went after it rather than after
+more surface.
+
+### Added
+
+- Every pin now asserts on **both ends**: the model read something, and what
+  it read shares at least one key with the contract. Deliberately not a size
+  floor — `MicPlacesOut` and `ChainState` are honest one-property wrappers,
+  and a floor that called those defects would be the file inventing work.
+- Three checks read the readers themselves against a second opinion. Every
+  struct whose conformance list mentions `Decodable` must be one the pattern
+  can see; every C# record read by the finder must survive paren-matching;
+  every property the language declares must be one the property pattern finds,
+  located by where a declaration *starts* rather than where it ends.
+
+Clean here on both counts — no pin reads an empty model, and no wire model
+holds a method. The finding was next door: QRME's `SpecialistRow` was missing
+its closing brace and the `extension ApiClient` that should have followed it,
+so ninety-five client methods were declared on a two-field wire model instead
+of on the client. Brace balance could not see it — the file balances, one
+brace simply had the wrong opener — and neither could the member check, since
+the methods are in the right file, just nested in the wrong thing.
+
+
+Suites: **1,583** passed, 1 skipped.
+
 ## [0.58.6] — 2026-08-08
 
 ### The refusal surfaces, and a reader that read a struct as empty
