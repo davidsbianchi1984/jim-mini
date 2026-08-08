@@ -4,6 +4,13 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <!-- What Windows shows in the file's Properties, and the only
+         thing a problem report from an install can be pinned to.
+         Absent until 0.57.7, which meant every build since the
+         shell was written reported the 1.0.0 default. -->
+    <Version>0.57.7</Version>
+    <AssemblyVersion>0.57.7.0</AssemblyVersion>
+    <FileVersion>0.57.7.0</FileVersion>
     <RootNamespace>JimGuardian</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64;ARM64</Platforms>

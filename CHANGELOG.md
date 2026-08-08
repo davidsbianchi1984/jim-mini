@@ -4,6 +4,71 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.7] — 2026-08-08
+
+### The files the release never touched
+
+0.57.6 ended by naming its own next question: whatever a guard checks, ask
+first which files it does not open. Asked of the release itself, the answer is
+three files per product.
+
+A cut bumps `pyproject.toml`, `<pkg>/api.py`, `app/package.json`, the lock
+file, the README banner, the README release row and the changelog. That number
+reaches everything a *server* or a *console* reports. The three native shells
+report their own version from three build files no step in that list touches:
+
+```
+native/ios/project.yml               MARKETING_VERSION: "0.1.0"
+native/android/…/build.gradle.kts    versionName = "0.1.0"
+native/windows/*.csproj              (no <Version> at all)
+```
+
+```
+asked     does the product carry the version it cut
+mattered  does the thing a person installs carry it
+```
+
+Nine declarations across three products, every one of them `0.1.0` or absent,
+through every release since the shells were written.
+
+This is not cosmetic in the way a stale README is. `versionName` is the string
+on the Play listing and in Settings › Apps; `MARKETING_VERSION` is the App
+Store version and the one a crash report is filed against; the `.csproj`
+version is what Windows shows in a file's Properties. An install reporting
+`0.1.0` cannot be told apart from any other install — and these products ship
+a problem collector, which is the part that makes the omission bite.
+`versionCode` was worse: Android refuses an upload whose code does not
+increase, so a store submission was going to fail on the first try regardless.
+
+### Added
+
+- `test_the_files_the_release_never_touched.py`. The three build files are
+  read against `pyproject.toml`; `versionCode` and `CURRENT_PROJECT_VERSION`
+  are **derived** from the version rather than kept by hand, because a counter
+  beside a version string is two things to forget instead of one.
+- The same files carry what a shell is allowed to do — the plist usage
+  strings, the `uses-permission` rows — and those are checked against the
+  platform APIs each shell actually calls. iOS *terminates* an app that opens
+  a camera with no `NSCameraUsageDescription`; Android throws.
+
+### Fixed
+
+- All nine declarations now carry the release. The `.csproj` files gained
+  `<Version>`, `<AssemblyVersion>` and `<FileVersion>`, which they had never
+  had.
+
+### A trap walked into while writing this
+
+The first pass at the capability check read `LAContext` in QRME's
+`Signing.swift` and `BiometricPrompt` in `Signing.kt` and was ready to report
+two missing declarations. Both are in **comments** — prose explaining why the
+shells use WebAuthn instead, since a local biometric check is the app's own
+word about itself and an assertion is not. A guard that counts a mention as a
+use invents a defect, which is worse than missing one. Comments are stripped
+before anything is counted, and a test holds that line.
+
+Nothing in this product's shells calls a gated platform API, so the capability half finds nothing here — the check earns its place by what it will catch.
+
 ## [0.57.6] — 2026-08-07
 
 ### The half of the Windows shell that is not code
