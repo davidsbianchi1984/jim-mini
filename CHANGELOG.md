@@ -4,6 +4,87 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.9] — 2026-08-08
+
+### Ten against two hundred and seventy-nine
+
+0.58.8 audited the route reader and found the three native shells had no floor
+at all, closing by naming the next reader with the same shape available and
+unused: the one that reads the L10n tables. It has the same hole.
+
+`test_a_shell_asks_for_a_key_it_has.py` asserts each shell extracts **at least
+ten** localizer calls and holds **at least twenty** table rows, as a canary
+against the pattern silently ceasing to match. It was written when that was a
+meaningful fraction. The tables now hold 286, 301 and 312 rows and the screens
+make 279, 300 and 312 calls.
+
+    ten against two hundred and seventy-nine
+
+### Why the rest of the file does not cover for it
+
+Two of the three readers in that file are protected in both directions. If the
+table reader goes blind, every key a screen asks for stops being in the table
+and the first check reports hundreds of missing rows. If the reachability
+reader moves either way, the dead-row backlog reports undecided or stale rows.
+
+The **call** reader going blind is silent, because reachability falls back to
+a pattern that finds every dotted string literal in the sources whether or not
+a localizer call sits in front of it.
+
+Measured rather than argued. Narrowing the call pattern so it matches only
+`L10n.t("…")` — no whitespace, lowercase method — is an ordinary-looking tidy
+that blinds C# alone, because Windows spells it `L10n.T(`:
+
+    ios      300 call sites
+    android  312 call sites
+    windows    4 call sites
+
+The dead-row path barely notices, and what it notices it misnames: the only
+rows it can still see going quiet are the six in that shell without a dot in
+them. They surface as *translated rows nothing asks for* — a backlog
+complaint. Nothing in that message says the reader stopped reading.
+
+    asked     does every key a screen wants have a row
+    mattered  can the reader still see the screens asking
+
+### Two floors, because they fail differently
+
+**Absolute, per shell, on both halves** — the extracted call sites and the
+parsed table rows — set at roughly four-fifths of what each reader reaches
+today. That catches the slow case: a form dropped here, a suffix there, over
+several rounds, which no single diff makes obvious.
+
+**A spread across the three shells**, which needs no number chosen by hand.
+iOS, Android and Windows are one client written three times: the same screens,
+ported by hand, so their tables are near-identical in size. Measured, the
+quietest shell sits at 98% of the busiest in QRME, 89% in JIM-mini and 77% in
+PDI. A shell at a twentieth of its ports is not a smaller shell.
+
+The console is deliberately not a fourth port, and the reason is measured
+rather than assumed: it shares 82 rows with QRME's shells, 62 with JIM-mini's
+and **none at all** with PDI's. The desktop frame and the phone screens are
+separate vocabularies, so neither a spread rule nor a superset rule between
+them would mean anything.
+
+### And the comparison the backlog files never made
+
+`native_dead_keys.txt` carries a per-shell count — 73, 97 and 103 in QRME —
+that has never been compared across shells. The ratchet asks whether the
+number is going up; it does not ask whether one shell is carrying far more of
+it than its ports. Most of those rows are not waste: the file's own header
+says they are screens that exist on three shells and say less on one. That is
+exactly a per-shell comparison, and it was sitting in the file unmade. It is
+one-sided on purpose — a shell below its ports has paid its debt down.
+
+This product's record is empty and its ceiling is zero, so the check skips
+and says so. It is here for the same reason the floors are: the day a row is
+recorded, the comparison exists already.
+
+### Also
+
+- Versions moved to 0.58.9 across the console, the backend, and the iOS,
+  Android and Windows projects (build 58009).
+
 ## [0.58.8] — 2026-08-08
 
 ### The route reader had one floor and four clients
