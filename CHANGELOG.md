@@ -4,6 +4,57 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.2] — 2026-08-08
+
+### The colour that wasn't in the palette
+
+0.58.1 closed by naming where it should go next. `state.x` is not the only
+receiver in these trees whose type is known for free — it is only the first.
+Any receiver that exactly one file declares can be looked up the same way,
+and there are eight of them per product:
+
+```
+iOS      state.x  ApiClient.shared.x  Theme.x
+Android  vm.x     ApiClient.x         Jim.x
+Windows  AppState.Current.X           ApiClient.Shared.X   {StaticResource X}
+```
+
+Widening it found one, next door. QRME's Android problem-report card painted
+itself with `Qrme.Card2` on a theme that declares `Card` and has never
+declared a second — and Compose has no fallback for an unresolved colour, so
+the whole screen file fails to compile with it. This product paints the same
+card with the name its theme actually has. Clean here; the check lands here
+because the next one could be.
+
+```
+asked     is the thing a screen reaches for on its state object there
+mattered  is the thing it reaches for on *anything* there
+```
+
+The API clients came back clean — **1,613 call sites across nine shells**,
+every one naming a method the client actually has. That is worth asserting
+anyway. 0.58.1's own defect had been sitting in `main` for rounds; the value
+of a guard is not only what it finds on the day it is written.
+
+### Added
+
+- Every member reached on an API client, a theme object or `App.xaml` is now
+  read against the one file that declares it, alongside the state objects
+  0.58.1 covered — eight receivers per product, with a floor under each so a
+  moved file cannot quietly empty the comparison.
+
+### The trap it walked into first
+
+Widening the check to the API clients immediately reported two methods that
+are right there in the file — `Features` and `SetFeature` on the Windows
+client, whose return type is
+`Task<System.Collections.Generic.Dictionary<string, bool>>`. The C#
+declaration pattern had no dot in it. Narrow and true is the standing rule
+here, and this is the other edge of it: a pattern narrower than the language
+reports defects that do not exist. Both the dot and a test for it are in now.
+
+Suites: **1,559** passed, 1 skipped.
+
 ## [0.58.1] — 2026-08-08
 
 ### The member that isn't there
