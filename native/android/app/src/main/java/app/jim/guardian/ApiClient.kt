@@ -253,8 +253,7 @@ object ApiClient {
     /** What the Guardian carries across sessions. Counts and timings only. */
     suspend fun continuity(uid: String, token: String): ContinuityState =
         withContext(Dispatchers.IO) {
-            val o = org.json.JSONObject(
-                request("/continuity/$uid", "GET", null, token))
+            val o = request("/continuity/$uid", "GET", null, token)
             val vec = o.optJSONObject("vector")
             val means = o.optJSONObject("meanings")
             ContinuityState(
@@ -273,13 +272,12 @@ object ApiClient {
     /** Drop it — every derived thing has to be droppable by its subject. */
     suspend fun forgetContinuity(uid: String, token: String): Boolean =
         withContext(Dispatchers.IO) {
-            org.json.JSONObject(
-                request("/continuity/$uid", "DELETE", null, token))
+            request("/continuity/$uid", "DELETE", null, token)
                 .optBoolean("forgotten")
         }
 
     suspend fun offlineStatus(): OfflinePosture = withContext(Dispatchers.IO) {
-        val o = org.json.JSONObject(request("/offline/status", "GET", null, null))
+        val o = request("/offline/status", "GET", null, null)
         val gs = o.optJSONArray("guarantees")
         OfflinePosture(
             o.optBoolean("offline"),
@@ -297,7 +295,7 @@ object ApiClient {
      */
     suspend fun exportEverything(uid: String, token: String): Pair<Int, Int> =
         withContext(Dispatchers.IO) {
-            val o = org.json.JSONObject(request("/data/$uid", "GET", null, token))
+            val o = request("/data/$uid", "GET", null, token)
             val tables = o.optJSONObject("tables") ?: org.json.JSONObject()
             var rows = 0
             val names = tables.keys()
@@ -317,7 +315,7 @@ object ApiClient {
      */
     suspend fun eraseEverything(uid: String, token: String): Int =
         withContext(Dispatchers.IO) {
-            val o = org.json.JSONObject(request("/data/$uid", "DELETE", null, token))
+            val o = request("/data/$uid", "DELETE", null, token)
             val gone = o.optJSONObject("deleted") ?: org.json.JSONObject()
             var rows = 0
             val names = gone.keys()
@@ -336,8 +334,8 @@ object ApiClient {
             // backend composes on a public route is chosen from this
             // header, and no native shell was sending it.
             setRequestProperty("accept-language", L10n.deviceLanguage())
-                    llmKey.takeIf { it.isNotEmpty() }?.let {
-                        setRequestProperty("x-llm-api-key", it) }
+            llmKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-llm-api-key", it) }
             token?.let { setRequestProperty("authorization", "Bearer $it") }
             connectTimeout = 8000; readTimeout = 8000
             if (body != null) {
@@ -487,8 +485,8 @@ object ApiClient {
                     // One of the four connections in this file the shared
                     // helper's accept-language line never reached.
                     setRequestProperty("accept-language", L10n.deviceLanguage())
-                    llmKey.takeIf { it.isNotEmpty() }?.let {
-                        setRequestProperty("x-llm-api-key", it) }
+            llmKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-llm-api-key", it) }
                 setRequestProperty("authorization", "Bearer $token")
                 connectTimeout = 8000; readTimeout = 8000
             }
@@ -560,8 +558,8 @@ object ApiClient {
                     // One of the four connections in this file the shared
                     // helper's accept-language line never reached.
                     setRequestProperty("accept-language", L10n.deviceLanguage())
-                    llmKey.takeIf { it.isNotEmpty() }?.let {
-                        setRequestProperty("x-llm-api-key", it) }
+            llmKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-llm-api-key", it) }
             setRequestProperty("authorization", "Bearer $token")
             connectTimeout = 8000; readTimeout = 8000
         }
@@ -704,8 +702,8 @@ object ApiClient {
                 // The fifth connection in this file, and the last one the
                 // shared helper's accept-language line never reached.
                 setRequestProperty("accept-language", L10n.deviceLanguage())
-                    llmKey.takeIf { it.isNotEmpty() }?.let {
-                        setRequestProperty("x-llm-api-key", it) }
+            llmKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-llm-api-key", it) }
                 connectTimeout = 8000; readTimeout = 8000
             }
             val text = conn.inputStream.bufferedReader().use { it.readText() }
@@ -843,8 +841,8 @@ object ApiClient {
                     // One of the four connections in this file the shared
                     // helper's accept-language line never reached.
                     setRequestProperty("accept-language", L10n.deviceLanguage())
-                    llmKey.takeIf { it.isNotEmpty() }?.let {
-                        setRequestProperty("x-llm-api-key", it) }
+            llmKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-llm-api-key", it) }
             setRequestProperty("authorization", "Bearer $token")
             connectTimeout = 8000; readTimeout = 8000
         }

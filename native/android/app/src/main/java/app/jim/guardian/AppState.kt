@@ -25,7 +25,6 @@ class GuardianViewModel(app: Application) : AndroidViewModel(app) {
      *  and the deployment's key used here, on the same account. */
     var llmKey by mutableStateOf(prefs.getString("llmKey", "") ?: "")
         private set
-        private set
     var displayName by mutableStateOf(prefs.getString("name", "") ?: "")
         private set
     // The user's chosen language also drives the app chrome via L10n.
