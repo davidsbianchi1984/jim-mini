@@ -417,8 +417,7 @@ public sealed partial class SafetyPage : Page
             WaiverTerms.Text = waiver.Signed ? "" : string.Join("\n", waiver.Terms.Select(t => $"• {t}"));
             WaiverTerms.Visibility = waiver.Signed ? Visibility.Collapsed : Visibility.Visible;
             WaiverBlurb.Text = waiver.Signed
-                ? L10n.Fill("res.signed.by", AppState.Current.Language,
-                            ("name", waiver.Signature))
+                ? L10n.T("res.signed.by").Replace("{name}", waiver.Signature)
                 : L10n.T("res.waiver.sub");
 
             var robots = await ApiClient.Shared.Robots(s.Uid!, s.Token!);

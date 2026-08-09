@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -619,17 +620,30 @@ public sealed class ApiClient
     /// nothing anybody wrote.
     public async Task<ContinuityState> Continuity(string uid, string token) =>
         await Send<ContinuityState>(new HttpRequestMessage(HttpMethod.Get,
-            _base + $"/continuity/{uid}"), token);
+            $"/continuity/{uid}"), token);
 
     /// Drop it. Every derived thing here has to be droppable by the person it
     /// was derived from.
     public async Task<Forgotten> ForgetContinuity(string uid, string token) =>
         await Send<Forgotten>(new HttpRequestMessage(HttpMethod.Delete,
-            _base + $"/continuity/{uid}"), token);
+            $"/continuity/{uid}"), token);
 
     public async Task<OfflinePosture> OfflineStatus() =>
         await Send<OfflinePosture>(new HttpRequestMessage(HttpMethod.Get,
-            _base + "/offline/status"));
+            "/offline/status"));
+
+    /// <summary>The same send, with the caller's bearer attached.
+    ///
+    /// <para>Four calls were written against an overload that did not exist.
+    /// Rather than open-coding the header at each of them, the overload they
+    /// assumed is the one worth having: a token-bearing request is the common
+    /// case in this client, and every place that hand-rolled it is a place
+    /// that could forget to.</para></summary>
+    private Task<T> Send<T>(HttpRequestMessage req, string token)
+    {
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return Send<T>(req);
+    }
 
     private async Task<T> Send<T>(HttpRequestMessage req)
     {

@@ -152,7 +152,9 @@ struct OverviewView: View {
         }
         .refreshable { await load() }
         .task {
-            llmKey = state.llmKey await load() }
+            llmKey = state.llmKey
+            await load()
+        }
     }
 
     private func applyModel() {

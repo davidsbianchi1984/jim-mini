@@ -57,11 +57,11 @@ public sealed partial class OverviewPage : Page
         ModelTitle.Text = L10n.T("ov.model");
         ModelSub.Text = L10n.T("ov.model.sub");
         LanguageTitle.Text = L10n.T("ov.language");
-        KeyHead.Text = L10n.T("set.key", lang);
-        KeyLead.Text = L10n.T("set.key.pitch", lang);
-        KeyBox.Header = L10n.T("set.key.label", lang);
-        KeyBox.PlaceholderText = L10n.T("set.key.ph", lang);
-        SaveKeyButton.Content = L10n.T("set.save", lang);
+        KeyHead.Text = L10n.T("set.key");
+        KeyLead.Text = L10n.T("set.key.pitch");
+        KeyBox.Header = L10n.T("set.key.label");
+        KeyBox.PlaceholderText = L10n.T("set.key.ph");
+        SaveKeyButton.Content = L10n.T("set.save");
         KeyBox.Password = AppState.Current.LlmKey;
         LanguageSub.Text = L10n.T("ov.language.sub");
         PreTranslateToggle.Header = L10n.T("ov.pretranslate");
@@ -160,7 +160,7 @@ public sealed partial class OverviewPage : Page
     /// the normal state, not an error worth showing.</summary>
     private async void LoadFinetune()
     {
-        var s = AppState.Shared;
+        var s = AppState.Current;
         if (s.Uid is null || s.Token is null) return;
         try { RenderFinetune(await ApiClient.Shared.Finetune(s.Uid, s.Token)); }
         catch { /* nothing trained yet */ }
@@ -169,7 +169,7 @@ public sealed partial class OverviewPage : Page
     private void RenderFinetune(Finetune f)
     {
         _ft = f;
-        FtFrom.Text = L10n.Fill("ov.ft.from", ("n", f.Examples.ToString()));
+        FtFrom.Text = L10n.T("ov.ft.from").Replace("{n}", f.Examples.ToString());
         // The server's own sentence, shown rather than paraphrased: it is the
         // line that says whether weights or a prompt came out of this.
         FtMethod.Text = f.Method;
@@ -180,7 +180,7 @@ public sealed partial class OverviewPage : Page
 
     private async void OnTrainModel(object sender, RoutedEventArgs e)
     {
-        var s = AppState.Shared;
+        var s = AppState.Current;
         if (s.Uid is null || s.Token is null) return;
         FtTrainButton.IsEnabled = false;
         FtTrainButton.Content = L10n.T("ov.ft.training");
@@ -196,7 +196,7 @@ public sealed partial class OverviewPage : Page
     /// <summary>Training and using are two decisions.</summary>
     private async void OnUseTrainedModel(object sender, RoutedEventArgs e)
     {
-        var s = AppState.Shared;
+        var s = AppState.Current;
         if (s.Uid is null || s.Token is null || _ft is null) return;
         try
         {

@@ -17,13 +17,24 @@ name: Native apps
 # desktop-release.yml's business and need certificates this workflow
 # deliberately does not have.
 
+# **Every branch, not just `main`.** This gate was written to run on
+# `pull_request` and on `push` to `main`, and this estate merges by
+# fast-forwarding a branch onto `main` and pushing — so no pull request is
+# ever opened, and the only trigger that fired was the one that fires *after*
+# the decision to merge has already been made. The compilers ran, on every
+# push, for a hundred and twenty-three runs. Nothing consulted them.
+#
+#     asked     is the native code compiled somewhere
+#     mattered  is it compiled before the release says it is green
+#
+# Running on any branch means the answer arrives while the work is still on
+# the branch, which is the only place it can change anything.
 on:
-  pull_request:
+  push:
     paths:
       - 'native/**'
       - '.github/workflows/native.yml'
-  push:
-    branches: [main]
+  pull_request:
     paths:
       - 'native/**'
       - '.github/workflows/native.yml'
