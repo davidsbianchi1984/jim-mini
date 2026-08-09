@@ -1537,6 +1537,8 @@ private fun CustodyPanel(vm: GuardianViewModel) {
     var open by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var held by remember { mutableStateOf<String?>(null) }
+    var typed by remember { mutableStateOf("") }
+    var gone by remember { mutableStateOf<String?>(null) }
 
     fun reload() {
         vm.call({ ApiClient.custody(vm.uid!!, vm.token!!) }) { r ->
@@ -1567,6 +1569,25 @@ private fun CustodyPanel(vm: GuardianViewModel) {
             }
         }
         held?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
+
+        // The exit, beside the portability door on purpose: *take it* and
+        // *end it* are the two halves of the same claim, and this shell
+        // carried only the first one.
+        Text(L10n.t("hld.end", vm.language), color = Jim.Red, fontSize = 14.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("hld.end.pitch", vm.language), color = Jim.T2, fontSize = 12.sp)
+        OutlinedTextField(
+            value = typed, onValueChange = { typed = it }, singleLine = true,
+            placeholder = { Text(L10n.t("hld.end.ph", vm.language)) },
+            modifier = Modifier.fillMaxWidth())
+        // Armed only by the word itself. There is no undo behind this.
+        BrandButton(L10n.t("hld.end.go", vm.language), enabled = typed == "erase") {
+            vm.call({ ApiClient.eraseEverything(vm.uid ?: "", vm.token ?: "") }) { r ->
+                r.onSuccess { gone = L10n.t("hld.end.gone", vm.language); vm.signOut() }
+                r.onFailure { error = it.message }
+            }
+        }
+        gone?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
         Text("Chats with tandem specialists are sealed into the PDI vault — " +
              "encrypted, attributed, and hash-chained. This is your copy of " +
              "the proof.", color = Jim.T2, fontSize = 12.sp)

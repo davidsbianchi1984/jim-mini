@@ -307,6 +307,24 @@ object ApiClient {
             Pair(tables.length(), rows)
         }
 
+    /**
+     * The other direction, and the one this shell had no door for either.
+     *
+     * A person whose only device is a phone could take their data from
+     * 0.60.0 and could not end it. Both halves of *it is yours* have to be
+     * reachable from the same place or only one of them is true. Returns how
+     * many rows went, so the screen can say something true afterwards.
+     */
+    suspend fun eraseEverything(uid: String, token: String): Int =
+        withContext(Dispatchers.IO) {
+            val o = org.json.JSONObject(request("/data/$uid", "DELETE", null, token))
+            val gone = o.optJSONObject("deleted") ?: org.json.JSONObject()
+            var rows = 0
+            val names = gone.keys()
+            while (names.hasNext()) rows += gone.optInt(names.next())
+            rows
+        }
+
     private suspend fun request(
         path: String, method: String = "GET",
         body: JSONObject? = null, token: String? = null,

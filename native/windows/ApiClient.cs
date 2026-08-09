@@ -555,6 +555,12 @@ public record CommunityView(
     [property: JsonPropertyName("posture")] CommunityPosture Posture);
 
 /// The export bundle, counted rather than modelled.
+/// <summary>What came back from an erase: how many rows went, by table.</summary>
+public sealed class ErasedReceipt
+{
+    public Dictionary<string, int> Deleted { get; set; } = new();
+}
+
 public sealed class UserExport
 {
     public Dictionary<string, List<Dictionary<string, object>>> Tables { get; set; } = new();
@@ -581,6 +587,15 @@ public sealed class ApiClient
     /// no route at all.</para></summary>
     public Task<UserExport> ExportEverything(string uid, string token) =>
         Send<UserExport>(new HttpRequestMessage(HttpMethod.Get, $"/data/{uid}"), token);
+
+    /// <summary>
+    /// The other direction, and the one this shell had no door for either.
+    /// A person could take their data from 0.60.0 and could not end it; both
+    /// halves of <em>it is yours</em> have to be reachable from the same
+    /// place or only one of them is true.
+    /// </summary>
+    public Task<ErasedReceipt> EraseEverything(string uid, string token) =>
+        Send<ErasedReceipt>(new HttpRequestMessage(HttpMethod.Delete, $"/data/{uid}"), token);
 
     private Task<HttpResponseMessage> Dispatch(HttpRequestMessage req)
     {

@@ -135,13 +135,54 @@ DECLARES = {
 SYSTEM_BRUSHES: set[str] = set()
 
 
+#: The C# singletons a page can put in a local before using it. `var st =
+#: AppState.Current;` then `st.Uid` is the same reach as `AppState.Current.Uid`
+#: and the pattern below saw none of it — which is how a `st.UserId` on an
+#: `AppState` that holds `Uid` sat in `main` through a release: the reader
+#: found no call sites at all on that page and reported agreement.
+SINGLETONS = ("AppState.Current", "ApiClient.Shared")
+
+
+def _expand_aliases(text: str) -> str:
+    """Rewrite `st.X` back to `AppState.Current.X` where `st` is that object.
+
+    Only for a local assigned the singleton outright, which is the whole of
+    what these pages do. Anything cleverer needs a type checker, and this file
+    is explicitly the set of errors catchable without one.
+
+    **And only when the name means that and nothing else anywhere in the
+    file.** C# scopes a local to its method; this reader has no scopes, so a
+    page that says `var s = AppState.Current;` in one handler and
+    `mine.Select(s => …)` in another would have every member of every `s` in
+    it attributed to the state object. The first cut did exactly that and
+    reported twenty-eight members that are all perfectly real — which is the
+    failure mode this file's own docstring is about. A name that is bound to
+    anything else, even once, is left alone: an unexpanded alias costs a
+    missed call site, and a wrong one costs the guard its readers.
+    """
+    for singleton in SINGLETONS:
+        for local in set(re.findall(
+                rf"\b(?:var|[\w.<>?\[\]]+)\s+(\w+)\s*=\s*{re.escape(singleton)}\s*;",
+                text)):
+            bindings = re.findall(
+                rf"\b(?:var|[\w.<>?\[\]]+)\s+{local}\s*=\s*([^;]+);", text)
+            lambdas = re.search(rf"[(,]\s*{local}\s*(?:,[^)]*)?\)?\s*=>", text)
+            if lambdas or any(b.strip() != singleton for b in bindings):
+                continue
+            text = re.sub(rf"\b{local}\.", f"{singleton}.", text)
+    return text
+
+
 def _code(path: Path) -> str:
     """Source with comments stripped. Prose about a member is not a member,
     and prose about a *missing* member is how this file would report a
     sentence as a defect."""
     text = path.read_text(encoding="utf-8")
     text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-    return re.sub(r"^\s*(?://|///|\*)[^\n]*$", "", text, flags=re.M)
+    text = re.sub(r"^\s*(?://|///|\*)[^\n]*$", "", text, flags=re.M)
+    if path.suffix == ".cs":
+        text = _expand_aliases(text)
+    return text
 
 
 def _declared(lang: str, path: Path) -> set[str]:
@@ -238,6 +279,39 @@ def test_the_brush_scan_reads_the_pages():
     keys, used = _brushes()
     assert len(keys) >= 12, f"only {len(keys)} key(s) in App.xaml"
     assert len(used) >= 10, f"only {len(used)} key(s) painted with"
+
+
+def test_a_singleton_put_in_a_local_is_still_a_use(tmp_path):
+    """The gap that let a `st.UserId` ship. Every other page in these trees
+    spells the singleton out, so the row's floor stayed comfortably met while
+    the pages that alias it were read as using nothing at all."""
+    page = tmp_path / "CustodyPage.xaml.cs"
+    page.write_text("var st = AppState.Current;\n"
+                    "if (st.Uid is null || st.Token is null) return;\n")
+    reached = set(re.findall(r'\bAppState\.Current\.(\w+)', _code(page)))
+    assert reached == {"Uid", "Token"}
+
+
+def test_an_alias_does_not_leak_across_names(tmp_path):
+    """`client.Foo` is not `AppState.Current.Foo` just because some other
+    local in the file happens to hold the state."""
+    page = tmp_path / "SomePage.xaml.cs"
+    page.write_text("var st = AppState.Current;\n"
+                    "var other = Something.Else;\n"
+                    "var a = st.Uid; var b = other.Whatever;\n")
+    assert set(re.findall(r'\bAppState\.Current\.(\w+)', _code(page))) == {"Uid"}
+
+
+def test_a_name_bound_to_two_things_is_not_expanded(tmp_path):
+    """The first cut of the expansion reported twenty-eight real members as
+    missing: one page said `var s = AppState.Current;` in one handler and
+    `mine.Select(s => new Row(s.Subject))` in another, and this reader has no
+    scopes. A name that means two things is left alone."""
+    page = tmp_path / "PeoplePage.xaml.cs"
+    page.write_text("var s = AppState.Current;\n"
+                    "var a = s.Uid;\n"
+                    "CamList.ItemsSource = mine.Select(s => new Row(s.Subject));\n")
+    assert set(re.findall(r'\bAppState\.Current\.(\w+)', _code(page))) == set()
 
 
 def test_a_generic_function_is_a_declaration():

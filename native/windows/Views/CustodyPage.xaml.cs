@@ -23,6 +23,13 @@ public sealed partial class CustodyPage : Page
         ProblemsNo.Content = L10n.T("ns.pr.dont");
         ProblemsSwitch.Header = L10n.T("ns.pr.toggle");
         ProblemsPreviewButton.Content = L10n.T("ns.pr.show");
+        TakeItHead.Text = L10n.T("hld.take");
+        TakeItPitch.Text = L10n.T("hld.take.pitch");
+        TakeItButton.Content = L10n.T("hld.take.go");
+        EndItHead.Text = L10n.T("hld.end");
+        EndItPitch.Text = L10n.T("hld.end.pitch");
+        EndItBox.PlaceholderText = L10n.T("hld.end.ph");
+        EndItButton.Content = L10n.T("hld.end.go");
 
         // The card reads three stored choices, so it has to be told when
         // the page appears rather than only when a button is pressed.
@@ -182,20 +189,41 @@ public sealed partial class CustodyPage : Page
                 $"{r["op"]} → {r["status"]}  ×{r["count"]}  {r["day"]}"));
         ProblemsPreview.Visibility = Visibility.Visible;
         ProblemsPreviewButton.Content = L10n.T("ns.pr.hide");
-    
-    private async void OnTakeItWithYou(object sender,
-                                       Microsoft.UI.Xaml.RoutedEventArgs e)
+    }
+
+    private async void OnTakeItWithYou(object sender, RoutedEventArgs e)
     {
         var st = AppState.Current;
-        if (st.UserId is null || st.Token is null) return;
+        if (st.Uid is null || st.Token is null) return;
         try
         {
-            var all = await ApiClient.Shared.ExportEverything(st.UserId, st.Token);
+            var all = await ApiClient.Shared.ExportEverything(st.Uid, st.Token);
             var rows = 0;
             foreach (var t in all.Tables.Values) rows += t.Count;
-            TakeItButton.Content = $"{all.Tables.Count} table(s), {rows} row(s)";
+            TakeItButton.Content = L10n.T("hld.take.held")
+                .Replace("{t}", all.Tables.Count.ToString())
+                .Replace("{r}", rows.ToString());
         }
         catch (Exception ex) { TakeItButton.Content = ex.Message; }
     }
-}
+
+    // The exit, beside the portability door on purpose: *take it* and *end
+    // it* are the two halves of the same claim, and this shell carried only
+    // the first one.
+    private void OnEndItTyped(object sender, TextChangedEventArgs e) =>
+        EndItButton.IsEnabled = EndItBox.Text == "erase";
+
+    private async void OnEndIt(object sender, RoutedEventArgs e)
+    {
+        var st = AppState.Current;
+        if (st.Uid is null || st.Token is null) return;
+        try
+        {
+            await ApiClient.Shared.EraseEverything(st.Uid, st.Token);
+            EndItButton.Content = L10n.T("hld.end.gone");
+            EndItButton.IsEnabled = false;
+            st.SignOut();
+        }
+        catch (Exception ex) { EndItButton.Content = ex.Message; }
+    }
 }

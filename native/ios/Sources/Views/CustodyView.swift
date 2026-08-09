@@ -73,6 +73,11 @@ struct CustodySection: View {
                     }.card()
                 }
             }
+
+            // Take it, and end it. Both, in the one place a person comes
+            // looking for what this deployment holds about them.
+            TakeItWithYouCard()
+            EndItCard()
         }
         .task { await load() }
     }
@@ -128,6 +133,50 @@ struct TakeItWithYouCard: View {
                 held = L10n.t("hld.take.held", state.language)
                     .replacingOccurrences(of: "{t}", with: "\(all.tables.count)")
                     .replacingOccurrences(of: "{r}", with: "\(rows)")
+            } catch {
+                self.error = error.localizedDescription
+            }
+        }
+    }
+}
+
+/// The exit. Beside the portability door on purpose: *take it* and *end it*
+/// are the two halves of the same claim, and until now this shell carried
+/// only the first one.
+struct EndItCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var typed = ""
+    @State private var gone: String?
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L10n.t("hld.end", state.language))
+                .font(.headline).foregroundStyle(Theme.red)
+            Text(L10n.t("hld.end.pitch", state.language))
+                .font(.caption).foregroundStyle(Theme.t2)
+            TextField(L10n.t("hld.end.ph", state.language), text: $typed)
+                .textFieldStyle(.roundedBorder).autocorrectionDisabled()
+            // Armed only by the word itself. The console asks for the same
+            // word for the same reason: there is no undo behind this.
+            Button(L10n.t("hld.end.go", state.language)) { end() }
+                .font(.caption.bold()).foregroundStyle(.white)
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(typed == "erase" ? Theme.red : Theme.t3)
+                .clipShape(Capsule())
+                .disabled(typed != "erase")
+            if let gone { Text(gone).font(.caption).foregroundStyle(Theme.t2) }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }.card()
+    }
+
+    private func end() {
+        Task {
+            do {
+                _ = try await ApiClient.shared.eraseEverything(
+                    userId: state.uid ?? "", token: state.token ?? "")
+                gone = L10n.t("hld.end.gone", state.language)
+                state.signOut()
             } catch {
                 self.error = error.localizedDescription
             }

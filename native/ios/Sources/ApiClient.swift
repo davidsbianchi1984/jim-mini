@@ -752,6 +752,15 @@ actor ApiClient {
         try await request("/data/\(userId)", token: token)
     }
 
+    /// The other direction, and the one this shell had no door for either.
+    ///
+    /// A person whose only device is a phone could take their data from
+    /// 0.60.0 and could not end it. Both halves of *it is yours* have to be
+    /// reachable from the same place or only one of them is true.
+    func eraseEverything(userId: String, token: String) async throws -> ErasedReceipt {
+        try await request("/data/\(userId)", method: "DELETE", token: token)
+    }
+
     private func request<T: Decodable>(_ path: String, method: String = "GET",
                                        body: [String: Any]? = nil, token: String? = nil) async throws -> T {
         var req = URLRequest(url: base.appendingPathComponent(path))
@@ -1412,6 +1421,11 @@ struct OfflinePosture: Decodable {
 
 /// The export bundle, counted rather than modelled: reading every column of
 /// every table into Swift types would be a second copy of the schema.
+/// What came back from an erase: how many rows went, by table.
+struct ErasedReceipt: Decodable {
+    let deleted: [String: Int]
+}
+
 struct UserExport: Decodable {
     let tables: [String: [ExportRow]]
     let note: String

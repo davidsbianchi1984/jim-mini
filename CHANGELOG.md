@@ -4,6 +4,62 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.1] — 2026-08-09
+
+### A fix to the cascade fixes the next erase, not the last one
+
+0.59.9 derived `delete_user_data` from the schema. Every account erased
+*before* that release was erased by a list of twenty-one table names against a
+schema of sixty-three, and the forty-three tables it missed are still sitting
+in every deployment that has been running since — the money guardian's
+accounts and mandates, the medicine cabinet and every dose logged from it, the
+clinical captures, and the standing permissions in `crash_watches` and
+`vigils`.
+
+Nothing in the product will ever look at them again, and that is the whole
+problem. `users` is gone, so the API answers 404, so no code path visits those
+rows. A person who pressed *erase everything* has an account that reads as
+gone and a medicine cabinet that is not.
+
+    asked     does the erase work now
+    mattered  what did it leave the last time it did not
+
+### Added
+
+- `python -m jim.orphans` — a one-off maintenance sweep for the residue.
+  `survey()` reads and the command is **dry by default**; `--apply` is the
+  only thing that deletes, and `--json` gives the same survey machine-readable.
+- Its scope is the cascade's own reader (`life.user_scoped_tables()` minus
+  `life.ERASE_KEEPS`, plus the child tables in `life.ERASE_THROUGH`) rather
+  than a second list.
+- A row counts as an orphan only when its `user_id` names an account not in
+  `users`. Rows with a NULL or empty subject are left alone.
+- `test_what_the_old_cascade_left_behind.py`, whose sharp property is **does
+  it leave a living account alone**. Both directions confirmed by injection.
+- **The exit reaches the phones.** 0.60.0 gave a phone-only person a way to
+  take their data and no way to end it; `DELETE /data/{user_id}` now has a
+  door on iOS, Android and Windows, beside the portability card, armed only by
+  typing the word — the same discipline the console has used since it had the
+  button. Localized in ten languages on all three.
+
+### Fixed
+
+- **The Windows shell did not compile.** Three defects, all mine, all shipped
+  in 0.60.0's Windows door: a lost closing brace that ran `OnProblemsPreview`
+  into the next method, a `st.UserId` on an `AppState` that holds `Uid`, and a
+  response class that never landed because it was inserted against the wrong
+  declaration.
+- **`SelfProfilePage` had never compiled.** Thirty-eight reaches for
+  `s.UserId`, `s.UserToken` and `s.Api` — the synthetic self layer's whole
+  desktop surface, every handler of it, sitting in `main` since the page was
+  written.
+- Both found by widening `test_the_member_that_isnt_there.py`, which read
+  `AppState.Current.X` only when a page spelled it out in full. A page that
+  puts the singleton in a local first was read as reaching for nothing at all.
+  Aliases are now expanded, and **only** when the name means that and nothing
+  else in the file: the first cut rewrote whole files and reported twenty-eight
+  perfectly real members as missing.
+
 ## [0.60.0] — 2026-08-09
 
 ### An export is measured against the schema too — and drops the credentials

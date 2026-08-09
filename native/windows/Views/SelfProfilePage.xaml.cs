@@ -51,10 +51,10 @@ public sealed partial class SelfProfilePage : Page
     private async System.Threading.Tasks.Task LoadContinuity()
     {
         var s = AppState.Current;
-        if (s.UserId is null || s.UserToken is null) return;
+        if (s.Uid is null || s.Token is null) return;
         try
         {
-            var c = await s.Api.Continuity(s.UserId, s.UserToken);
+            var c = await ApiClient.Shared.Continuity(s.Uid, s.Token);
             ContCarries.Text = c.Carries;
             if (!c.Built || c.Vector is null)
             {
@@ -80,8 +80,8 @@ public sealed partial class SelfProfilePage : Page
     private async void OnForgetContinuity(object sender, RoutedEventArgs e)
     {
         var s = AppState.Current;
-        if (s.UserId is null || s.UserToken is null) return;
-        try { await s.Api.ForgetContinuity(s.UserId, s.UserToken); }
+        if (s.Uid is null || s.Token is null) return;
+        try { await ApiClient.Shared.ForgetContinuity(s.Uid, s.Token); }
         catch (Exception) { }
         await LoadContinuity();
     }
@@ -89,11 +89,11 @@ public sealed partial class SelfProfilePage : Page
     private async System.Threading.Tasks.Task Refresh()
     {
         var s = AppState.Current;
-        if (s.UserId is null || s.UserToken is null) return;
+        if (s.Uid is null || s.Token is null) return;
         try
         {
-            _status = await s.Api.SelfProfile(s.UserId, s.UserToken);
-            _preview = await s.Api.PreviewSelfProfile(s.UserId, s.UserToken);
+            _status = await ApiClient.Shared.SelfProfile(s.Uid, s.Token);
+            _preview = await ApiClient.Shared.PreviewSelfProfile(s.Uid, s.Token);
         }
         catch (Exception e) { Say(e.Message); return; }
 
@@ -129,10 +129,10 @@ public sealed partial class SelfProfilePage : Page
     private async void OnLink(object sender, RoutedEventArgs e)
     {
         var s = AppState.Current;
-        if (s.UserId is null || s.UserToken is null) return;
+        if (s.Uid is null || s.Token is null) return;
         try
         {
-            await s.Api.LinkSelfProfile(s.UserId, s.UserToken,
+            await ApiClient.Shared.LinkSelfProfile(s.Uid, s.Token,
                 ProfileIdBox.Text.Trim(), OwnerTokenBox.Password.Trim());
             Say(L10n.T("self.linked_note"));
         }
@@ -143,12 +143,12 @@ public sealed partial class SelfProfilePage : Page
     private async System.Threading.Tasks.Task SetConsent(string key, bool on)
     {
         var s = AppState.Current;
-        if (s.UserId is null || s.UserToken is null) return;
+        if (s.Uid is null || s.Token is null) return;
         var next = (_status?.Consented ?? Array.Empty<string>()).ToList();
         if (on) { if (!next.Contains(key)) next.Add(key); } else next.Remove(key);
         try
         {
-            await s.Api.ConsentSelfProfile(s.UserId, s.UserToken, next.ToArray());
+            await ApiClient.Shared.ConsentSelfProfile(s.Uid, s.Token, next.ToArray());
             Say(L10n.T("self.saved"));
         }
         catch (Exception ex) { Say(ex.Message); }
@@ -158,10 +158,10 @@ public sealed partial class SelfProfilePage : Page
     private async void OnBrief(object sender, RoutedEventArgs e)
     {
         var s = AppState.Current;
-        if (s.UserId is null || s.UserToken is null) return;
+        if (s.Uid is null || s.Token is null) return;
         try
         {
-            await s.Api.BriefSelfProfile(s.UserId, s.UserToken);
+            await ApiClient.Shared.BriefSelfProfile(s.Uid, s.Token);
             Say(L10n.T("self.sent"));
         }
         catch (Exception ex) { Say(ex.Message); }
@@ -171,10 +171,10 @@ public sealed partial class SelfProfilePage : Page
     private async void OnUnlink(object sender, RoutedEventArgs e)
     {
         var s = AppState.Current;
-        if (s.UserId is null || s.UserToken is null) return;
+        if (s.Uid is null || s.Token is null) return;
         try
         {
-            await s.Api.UnlinkSelfProfile(s.UserId, s.UserToken);
+            await ApiClient.Shared.UnlinkSelfProfile(s.Uid, s.Token);
             Say(L10n.T("self.unlinked"));
         }
         catch (Exception ex) { Say(ex.Message); }

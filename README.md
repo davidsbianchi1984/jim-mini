@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.60.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.60.1** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
@@ -344,6 +344,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.60.1** | **A fix to the cascade fixes the next erase, not the last one** — every account erased before 0.59.9 left 43 tables standing, and they are still there: the medicine cabinet, the money mandates, the clinical captures. `python -m jim.orphans` is the reach-back, dry by default. Plus **the exit reaches the phones** — 0.60.0 let a phone-only person take their data and not end it — and the Windows shell's `SelfProfilePage`, which had never compiled: 38 reaches for members `AppState` does not have |
 | **0.60.0** | **An export is measured against the schema too** — this product had **no export at all**. It keeps a medicine cabinet, a money guardian's accounts and mandates, clinical captures and a journal, and offered its owner a way to erase all of it and no way to take it, while the suite's Article 20 bundle listed its contribution as a progress report. `GET /data/{user_id}` now answers, derived from the schema, with live credentials dropped per column by rule |
 | **0.59.9** | **An erase is measured against the schema, not a list somebody wrote** — `delete_user_data` says *erase every trace of a user across all tables*. It named 21; the schema has **63** with a `user_id` column, so 43 survived — the money guardian's accounts and mandates, the medicine cabinet and every dose logged from it, the clinical captures, and `crash_watches` and `vigils`, which are standing permissions to act for somebody the API answers 404 for |
 | **0.59.8** | **The check that covered one client of four** — 0.59.7 asked whether the shape a screen declares is the shape its route answers with, and asked it of the console alone. The three shells decode the same answers into their own types, and a wrong one there throws the same way. Extended to all four clients (console 245 · iOS 89 · **Android 3** · Windows 88); no disagreements, and the reach is now a record that cannot go down, because a reader that stops matching reports agreement |
@@ -1433,6 +1434,32 @@ window. A backend you already run yourself is left alone.
 npm dependencies too), prints the phone URL **with a QR code right in the
 terminal**, and starts the API on the network — scan, Add to Home Screen,
 done. Flags: `--port`, `--rebuild`, `--no-build`, `--print-only`.
+
+### Maintenance: rows the old erase left behind
+
+Before 0.59.9 `delete_user_data` ran off a list of twenty-one table names
+against a schema of sixty-three. Every account erased on a build older than
+that release left forty-three tables standing — the money guardian's accounts
+and mandates, the medicine cabinet and every dose logged from it, the clinical
+captures, and the standing permissions in `crash_watches` and `vigils` — and
+nothing in the running product will ever look at them again, because `users`
+is gone and the API answers 404. Fixing the cascade fixed the next erase. It
+did not reach back.
+
+```bash
+python -m jim.orphans            # count them, change nothing
+python -m jim.orphans --json     # the same survey, machine-readable
+python -m jim.orphans --apply    # clear them
+```
+
+**Dry by default.** The command a person runs to find out how bad it is is not
+the command that changes it. A row counts as an orphan only when its `user_id`
+names an account that is not in `users`; rows with a NULL or empty subject are
+left alone. The scope is the erase cascade's own reader, so this is that
+cascade applied retroactively rather than a second list to keep in step.
+
+A deployment first installed on 0.59.9 or later has nothing to sweep, and the
+command says so in a sentence.
 
 The manual equivalent, if you prefer the steps separately:
 

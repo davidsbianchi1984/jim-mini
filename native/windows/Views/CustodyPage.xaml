@@ -57,9 +57,23 @@
 
             <!-- The portability door. Counts on the desktop shell; the
                  document itself is what the console downloads. -->
-            <Button x:Name="TakeItButton" Height="40"
-                    Content="What do you hold about me"
-                    Click="OnTakeItWithYou" />
+            <!-- Every string here is set from L10n in the constructor. A
+                 literal in this file is English behind a translated tab bar,
+                 which the guard next door counts. -->
+            <TextBlock x:Name="TakeItHead" FontWeight="Bold" FontSize="14"
+                       Foreground="{StaticResource JimTxtBrush}" />
+            <TextBlock x:Name="TakeItPitch" TextWrapping="Wrap" FontSize="12"
+                       Foreground="{StaticResource JimT2Brush}" />
+            <Button x:Name="TakeItButton" Height="40" Click="OnTakeItWithYou" />
+            <!-- The exit. Armed only by the word itself: there is no undo
+                 behind it, which is the point of it. -->
+            <TextBlock x:Name="EndItHead" FontWeight="Bold" FontSize="14"
+                       Foreground="{StaticResource JimRedBrush}" />
+            <TextBlock x:Name="EndItPitch" TextWrapping="Wrap" FontSize="12"
+                       Foreground="{StaticResource JimT2Brush}" />
+            <TextBox x:Name="EndItBox" Height="40" TextChanged="OnEndItTyped" />
+            <Button x:Name="EndItButton" Height="40" IsEnabled="False"
+                    Click="OnEndIt" />
             <Button x:Name="RefreshButton" Height="40" Click="OnRefresh"
                     Foreground="White" Background="{StaticResource JimBrandABrush}" />
             <!-- The notice that has to be answered before anything leaves this
