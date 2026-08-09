@@ -12,6 +12,18 @@ object L10n {
     fun t(key: String, lang: String): String =
         table[key]?.let { it[lang] ?: it["en"] } ?: key
 
+    /**
+     * Substitution, not concatenation. Rows carry `{n}` and friends, and
+     * building the sentence by joining pieces is how a translation ends up
+     * in English word order in nine languages. iOS has had this since the
+     * table shipped; here `L10n.fill` resolved to something else entirely.
+     */
+    fun fill(key: String, lang: String, values: Map<String, String>): String {
+        var out = t(key, lang)
+        for ((name, value) in values) out = out.replace("{$name}", value)
+        return out
+    }
+
     val supported = listOf("en", "es", "fr", "de", "pt", "it", "ja", "zh",
                            "hi", "ar")
 
@@ -374,22 +386,26 @@ object L10n {
             "en" to "Connect", "es" to "Conectar", "fr" to "Connecter",
             "de" to "Verbinden", "pt" to "Ligar", "it" to "Connetti",
             "ja" to "接続", "zh" to "连接", "hi" to "कनेक्ट", "ar" to "اتصال"),
+        "action.send" to mapOf(
             "en" to "Send", "es" to "Enviar", "fr" to "Envoyer",
             "de" to "Senden", "pt" to "Enviar", "it" to "Invia",
             "ja" to "送信", "zh" to "发送", "hi" to "भेजें", "ar" to "إرسال"),
+        "action.save" to mapOf(
             "en" to "Save", "es" to "Guardar", "fr" to "Enregistrer",
             "de" to "Speichern", "pt" to "Salvar", "it" to "Salva",
             "ja" to "保存", "zh" to "保存", "hi" to "सहेजें", "ar" to "حفظ"),
+        "action.translate" to mapOf(
             "en" to "Translate", "es" to "Traducir", "fr" to "Traduire",
             "de" to "Übersetzen", "pt" to "Traduzir", "it" to "Traduci",
-            "ja" to "翻訳", "zh" to "翻译", "hi" to "अनुवाद", "ar" to "ترجمة"),
+            "ja" to "翻訳する", "zh" to "翻译", "hi" to "अनुवाद करें", "ar" to "ترجِم"),
         "action.sign_out" to mapOf(
             "en" to "Sign out", "es" to "Cerrar sesión", "fr" to "Se déconnecter",
             "de" to "Abmelden", "pt" to "Sair", "it" to "Esci",
             "ja" to "サインアウト", "zh" to "退出登录", "hi" to "साइन आउट",
             "ar" to "تسجيل الخروج"),
+        "action.refresh" to mapOf(
             "en" to "Refresh", "es" to "Actualizar", "fr" to "Actualiser",
             "de" to "Aktualisieren", "pt" to "Atualizar", "it" to "Aggiorna",
-            "ja" to "更新", "zh" to "刷新", "hi" to "रीफ़्रेश", "ar" to "تحديث"),
+            "ja" to "更新", "zh" to "刷新", "hi" to "ताज़ा करें", "ar" to "تحديث"),
     )
 }

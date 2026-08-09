@@ -116,7 +116,7 @@ private struct AlarmsSection: View {
                         TextField(L10n.t("res.name", state.language), text: $responder)
                             .textFieldStyle(.roundedBorder)
                         Button {
-                            act { try await Api.shared.acceptAlarm(
+                            act { try await ApiClient.shared.acceptAlarm(
                                 uid: state.uid ?? "", alarmId: a.id,
                                 responder: responder, token: state.token ?? "") }
                         } label: {
@@ -129,13 +129,13 @@ private struct AlarmsSection: View {
 
                     HStack {
                         Button(L10n.t("alarm.cannot_go", state.language)) {
-                            act { try await Api.shared.escalateAlarm(
+                            act { try await ApiClient.shared.escalateAlarm(
                                 uid: state.uid ?? "", alarmId: a.id,
                                 token: state.token ?? "") }
                         }.tint(Theme.red).disabled(busy)
                         Spacer()
                         Button(L10n.t("alarm.clear", state.language)) {
-                            act { try await Api.shared.clearAlarm(
+                            act { try await ApiClient.shared.clearAlarm(
                                 uid: state.uid ?? "", alarmId: a.id,
                                 token: state.token ?? "") }
                         }.disabled(busy)
@@ -148,7 +148,7 @@ private struct AlarmsSection: View {
                             Task {
                                 busy = true; error = nil
                                 do {
-                                    guidance = try await Api.shared.alarmGuidance(
+                                    guidance = try await ApiClient.shared.alarmGuidance(
                                         alarmId: a.id, question: question,
                                         token: state.token ?? "")
                                 } catch { self.error = error.localizedDescription }
@@ -188,7 +188,7 @@ private struct AlarmsSection: View {
 
     private func load() async {
         guard let uid = state.uid, let token = state.token else { return }
-        do { rows = try await Api.shared.alarms(uid: uid, token: token) }
+        do { rows = try await ApiClient.shared.alarms(uid: uid, token: token) }
         catch { self.error = error.localizedDescription }
     }
 

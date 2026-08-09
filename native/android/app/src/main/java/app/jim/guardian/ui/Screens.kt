@@ -1138,7 +1138,7 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
     var error by remember { mutableStateOf<String?>(null) }
 
     fun load() {
-        vm.call({ ApiClient.alarms(vm.uid!!, vm.token!!) }) { rows = it }
+        vm.call({ ApiClient.alarms(vm.uid!!, vm.token!!) }) { rows = it.getOrNull() ?: emptyList() }
     }
     LaunchedEffect(Unit) { load() }
 
@@ -1172,7 +1172,7 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
                         label = { Text(L10n.t("res.name", vm.language)) })
                     Button(onClick = {
                         vm.call({ ApiClient.acceptAlarm(vm.uid!!, a.id,
-                            responder, vm.token!!) }) { said = it.note; load() }
+                            responder, vm.token!!) }) { said = it.getOrNull()?.note; load() }
                     }, enabled = responder.isNotBlank(),
                         colors = ButtonDefaults.buttonColors(containerColor = Jim.BrandA)) {
                         Text(L10n.t("alarm.going", vm.language))
@@ -1181,11 +1181,11 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = {
                         vm.call({ ApiClient.escalateAlarm(vm.uid!!, a.id,
-                            vm.token!!) }) { said = it.note; load() }
+                            vm.token!!) }) { said = it.getOrNull()?.note; load() }
                     }) { Text(L10n.t("alarm.cannot_go", vm.language), color = Jim.Red) }
                     TextButton(onClick = {
                         vm.call({ ApiClient.clearAlarm(vm.uid!!, a.id,
-                            vm.token!!) }) { said = it.note; load() }
+                            vm.token!!) }) { said = it.getOrNull()?.note; load() }
                     }) { Text(L10n.t("alarm.clear", vm.language), color = Jim.T2) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1195,7 +1195,7 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
                         modifier = Modifier.weight(1f))
                     TextButton(onClick = {
                         vm.call({ ApiClient.alarmGuidance(a.id, question,
-                            vm.token!!) }) { guidance = it }
+                            vm.token!!) }) { guidance = it.getOrNull() }
                     }, enabled = question.isNotBlank()) { Text("Ask") }
                 }
             }

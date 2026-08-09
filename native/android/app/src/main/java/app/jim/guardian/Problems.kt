@@ -283,7 +283,7 @@ object Problems {
      *
      * Blocking, and must be called off the main thread.
      */
-    fun send(appVersion: String): SendOutcome {
+    fun send(appVersion: String = BuildConfig.VERSION_NAME): SendOutcome {
         val base = collectorUrl()
         if (base.isEmpty()) return SendOutcome.NO_COLLECTOR
         if (!noticeAnswered()) return SendOutcome.AWAITING_NOTICE
