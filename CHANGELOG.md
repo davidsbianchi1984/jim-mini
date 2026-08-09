@@ -4,6 +4,22 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.5] — 2026-08-09
+
+### No change to this product
+
+PDI's console round: Carriers and Exchange localized, 225 → 154, on the
+honest count 0.60.4 established. Recorded here only to keep the three
+changelogs in step at one version.
+
+One thing in it belongs to all three. Two guards in that product still greped
+their screens for English sentences, and localizing the screens turned them
+red — the 0.48.2 lesson, *localizing a screen blinds the guards that grep it*,
+arriving in the last two guards that had not had it. Both now follow the
+sentence to wherever it lives rather than asserting the English is in the
+file. Worth a look here the next time a screen in this product moves its words
+into a table.
+
 ## [0.60.4] — 2026-08-09
 
 ### The reader this product already had turned out to be the one that was right
