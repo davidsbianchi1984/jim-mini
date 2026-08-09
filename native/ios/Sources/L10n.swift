@@ -368,7 +368,5 @@ enum L10n {
                             "de": "Abmelden", "pt": "Sair", "it": "Esci",
                             "ja": "サインアウト", "zh": "退出登录", "hi": "साइन आउट",
                             "ar": "تسجيل الخروج"],
-                           "de": "Aktualisieren", "pt": "Atualizar", "it": "Aggiorna",
-                           "ja": "更新", "zh": "刷新", "hi": "रीफ़्रेश", "ar": "تحديث"],
     ]
 }

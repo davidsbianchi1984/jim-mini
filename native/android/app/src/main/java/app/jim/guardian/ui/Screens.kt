@@ -1,6 +1,9 @@
 package app.jim.guardian.ui
 
 import android.content.Intent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.json.JSONObject
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -1299,7 +1302,7 @@ fun SafetyScreen(vm: GuardianViewModel) {
         L10n.t("cust", vm.language))
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ProblemReportingCard(vm.language)
+        ProblemReportingCard(lang)
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
             tabs.forEachIndexed { i, t ->
                 Tab(selected = tab == i, onClick = { tab = i },
