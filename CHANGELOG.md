@@ -4,6 +4,19 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.7] — 2026-08-09
+
+### No change to this product
+
+PDI's console round: the finding that a screen importing the translator is not
+a translated screen. Two of its screens had been counted as localized since
+0.48.3 while still holding fifteen English strings between them, six of which
+were strings its table already carried in all ten languages. A guard now holds
+the claim that a screen asking the table for a word may not also hard-code
+one, and five further screens were localized. 91 → 32.
+
+Recorded here only to keep the three changelogs in step at one version.
+
 ## [0.60.6] — 2026-08-09
 
 ### No change to this product
