@@ -4,6 +4,32 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.4] — 2026-08-09
+
+### The reader this product already had turned out to be the one that was right
+
+No change to this product. The round was PDI's, and it is recorded here
+because the finding is about a method all three share.
+
+PDI read its console's English with three regexes, the first being
+`>\s*([A-Z][^<>{}\n]{2,})\s*<`. This product moved off that shape rounds ago
+to `app/scripts/jsx-text.mjs`, which parses with TypeScript's own parser and
+returns every `JsxText` node. Nobody had run the two side by side until now.
+
+    asked     how much English does this pattern match
+    mattered  how much English does a person read
+
+**233 against 177**: a quarter of PDI's console prose was invisible to it —
+every wrapped sentence, every sentence with a value interpolated into the
+middle, every phrase not starting with a capital. Hidden in the direction that
+makes a ratchet look satisfied, and two of that product's localization rounds
+were graded against the low number.
+
+The lesson is not about regexes. It is that two products can carry the same
+guard by name and not by reach, and the only thing that finds it is running
+both readers over the same file and comparing. `shared_guards.txt` says the
+three suites ask the same questions; it cannot say they answer them as well.
+
 ## [0.60.3] — 2026-08-09
 
 ### A check that cannot fail before the merge is not a check
