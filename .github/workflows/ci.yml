@@ -1,8 +1,19 @@
 name: CI
 
+# When this fires is as much a part of the check as what it runs.
+#
+# It used to be `push` restricted to `main` plus `pull_request`. Releases here
+# are fast-forward merges, so no pull request is ever opened, and a push to
+# `main` happens *after* the decision to ship. Both halves of that trigger
+# therefore ran only where the answer could no longer change anything, and
+# this workflow was red for twenty-nine consecutive runs without one of them
+# reaching a decision. `native.yml` had the same trigger and had been red for
+# a hundred and twenty-three.
+#
+# Any branch push now. A check that cannot fail before the merge is not a
+# check, it is a record.
 on:
   push:
-    branches: [main]
   pull_request:
 
 jobs:
@@ -13,6 +24,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # The suite shells out to `app/scripts/jsx-text.mjs` — a TypeScript-AST
+      # reader for JSX text, used because three separate regexes over the same
+      # source each hid real strings. It imports `typescript` from the app's
+      # own `node_modules`, which this job never installed, so those guards
+      # failed on the runner while passing on a developer's machine. They are
+      # written to fail loudly rather than report a comfortable zero, and that
+      # is exactly what they did — into a log nothing read.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
       - run: pip install -e .[dev]
       - run: pytest -q
 

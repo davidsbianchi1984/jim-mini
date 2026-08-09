@@ -1,4 +1,4 @@
-# status: manifest — 430 guards carried by all three products
+# status: manifest — 445 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -32,6 +32,7 @@
 #
 # This file may grow. A name leaving it is a guard deleted from all three, or
 # one that drifted out of a single product, and both should be deliberate.
+
 test_a_body_is_read_from_its_own_call_and_not_the_next_one
 test_a_body_that_cannot_be_read_is_not_judged
 test_a_body_that_is_not_an_object_still_says_something
@@ -48,6 +49,7 @@ test_a_discarded_binding_is_not_a_key
 test_a_duplicate_that_agrees_is_not_recorded_as_a_split
 test_a_failed_first_fetch_leaves_a_dot_not_a_blank
 test_a_field_a_form_asks_for_has_the_label_the_form_shows
+test_a_gating_workflow_fires_before_the_merge
 test_a_generic_function_is_a_declaration
 test_a_handler_with_nothing_behind_it_is_caught
 test_a_healthy_deployment_reports_nothing
@@ -157,6 +159,7 @@ test_every_label_is_in_every_language
 test_every_language_in_the_contract_is_reachable_from_a_browser
 test_every_localizer_call_passes_what_that_shell_declares
 test_every_member_a_screen_reaches_for_is_declared
+test_every_named_exception_still_exists
 test_every_native_call_reaches_a_route
 test_every_offered_language_can_be_set
 test_every_page_a_stranger_reaches_carries_a_policy
@@ -376,8 +379,10 @@ test_the_pane_can_only_sit_at_the_bottom
 test_the_policy_names_a_nonce_rather_than_permitting_everything
 test_the_probe_is_actually_talking_to_a_server
 test_the_product_carries_exactly_the_languages_the_others_do
+test_the_python_suite_runs_where_it_is_checked
 test_the_raise_sites_were_actually_converted
 test_the_reader_can_still_see_this_suite
+test_the_reader_finds_the_workflows_at_all
 test_the_readers_account_for_every_header_a_client_sends
 test_the_real_android_shell_has_label_wrappers
 test_the_record_has_not_gone_stale

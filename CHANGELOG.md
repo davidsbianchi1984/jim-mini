@@ -4,6 +4,41 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.3] — 2026-08-09
+
+### A check that cannot fail before the merge is not a check
+
+0.60.2 found `native.yml` red for a hundred and twenty-three consecutive runs.
+Nothing was wrong with what it ran. What was wrong was *when*: it fired on
+`pull_request`, which never opens here because releases are fast-forward
+merges, and on `push` to `main`, which happens after somebody has decided to
+ship.
+
+`ci.yml` carried the identical trigger. It had been red for twenty-nine
+consecutive runs.
+
+    asked     does the workflow pass
+    mattered  can the workflow's answer still change the decision
+
+- **The four red guards.** They shell out to `app/scripts/jsx-text.mjs`, a
+  TypeScript-AST reader used because three separate regexes over the same
+  source each hid real strings. It imports `typescript` from the app's own
+  `node_modules`, which the job running pytest never installed. Those guards
+  are written to fail loudly rather than report a comfortable zero, and that
+  is exactly what they did — into a log nothing read. The job installs the
+  app's dependencies now.
+- **The trigger** is any branch push, the same fix `native.yml` got.
+- **`test_a_check_that_cannot_fail_before_the_merge.py`** reads the checked-in
+  triggers and fails when a gating workflow cannot fire before a merge. Three
+  workflows are deliberately post-merge — the container e2e run and the two
+  that fire on a release tag — and each is named in `POST_MERGE` with its
+  reason. Naming one is a decision; the failure this exists for was nobody
+  having made the decision at all. A named exception for a deleted workflow
+  fails too: the exemption must not outlive its reason.
+
+  It cannot tell whether a workflow is passing. It can tell whether a failure
+  would arrive in time to matter, which is the part that was missing.
+
 ## [0.60.2] — 2026-08-09
 
 ### The compiler was in the room the whole time and nothing listened
