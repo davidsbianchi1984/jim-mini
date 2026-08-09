@@ -19,6 +19,7 @@ struct LifeView: View {
             case .money: return L10n.t("life.money", lang)
             case .schedule: return L10n.t("life.schedule", lang)
             case .shop: return L10n.t("life.shops", lang)
+            case .circle: return L10n.t("life.circle", lang)
             }
         }
     }
