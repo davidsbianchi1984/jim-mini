@@ -361,6 +361,17 @@ _STORED = re.compile(
     re.M)
 _RENAME = re.compile(r'^\s*case\s+(\w+)\s*=\s*"([^"]+)"', re.M)
 _CREC = re.compile(r'public record (\w+)\(')
+# A record's parameter list ends at `);` — unless the record carries a body,
+# which is legal C# and ends the list at `)` followed by `{`. `PackInstalled`
+# is one, and reading past its close swallowed the record declared after it.
+_CREC_END = re.compile(r'\)\s*[;{]')
+
+
+def _crec_end(src: str, at: int) -> int:
+    """Index just past the record's closing paren, from the open paren."""
+    m = _CREC_END.search(src, at)
+    return m.start() if m else len(src)
+
 _CPROP = re.compile(r'JsonPropertyName\("([^"]+)"\)')
 _KFUN = re.compile(r'\n    (?:private\s+)?suspend fun\s+(\w+)\s*\([^\n]*')
 _KKEY = re.compile(r'\.(?:opt|get)'
@@ -403,7 +414,7 @@ def _code(path: Path) -> str:
 def _csharp_models(src: str) -> dict[str, set[str]]:
     out = {}
     for m in _CREC.finditer(src):
-        out[m.group(1)] = set(_CPROP.findall(src[m.end():src.find(");", m.end())]))
+        out[m.group(1)] = set(_CPROP.findall(src[m.end():_crec_end(src, m.end())]))
     return out
 
 
@@ -568,7 +579,7 @@ def test_the_csharp_reader_reads_a_whole_record():
     src = _code(REPO / WINDOWS)
     truncated = []
     for m in _CREC.finditer(src):
-        shipped = set(_CPROP.findall(src[m.end():src.find(");", m.end())]))
+        shipped = set(_CPROP.findall(src[m.end():_crec_end(src, m.end())]))
         depth, i = 1, m.end()
         while i < len(src) and depth:
             depth += (src[i] == "(") - (src[i] == ")")

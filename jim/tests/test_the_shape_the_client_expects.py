@@ -62,7 +62,9 @@ _BINDING = re.compile(r'Send<([\w\[\]]+)\??>\(\s*Get\(\s*\$?"([^"]+)"', re.S)
 # below — which needs a `,` or `)` after the property name — silently drops the
 # *last* field of every record. That is how QRME's version of this guard first
 # reported a clean client, and it is why the extractor is asserted on.
-_RECORD_BLOCK = re.compile(r'public record (\w+)\((.*?\));', re.S)
+# A record ends at `);`, or at `)` before a body — the second shape is
+# legal C# and reading past it swallows the record declared next.
+_RECORD_BLOCK = re.compile(r'public record (\w+)\((.*?\))\s*[;{]', re.S)
 _FIELD = re.compile(
     r'JsonPropertyName\("([\w_]+)"\)\]\s+([\w\[\]\?<>,\.\s]+?)\s+\w+\s*[,)]')
 
