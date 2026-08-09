@@ -4,6 +4,21 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.6] — 2026-08-09
+
+### No change to this product
+
+PDI's console round: Positions and Bridges localized, and its English count
+corrected a third time — the reader asked for a letter, a space and a letter,
+which no heading joined by `&amp;` or a hyphen has. 154 → 168 → 91. Recorded
+here only to keep the three changelogs in step at one version.
+
+The portable part is the shape rather than the code. This product's console
+reader records every extracted string verbatim in both directions, so it has no
+phrase test to be wrong about; the defect could not occur here. That is worth
+stating rather than assuming, which is why it was checked before the round was
+called PDI-only.
+
 ## [0.60.5] — 2026-08-09
 
 ### No change to this product
