@@ -4,7 +4,8 @@ import SwiftUI
 struct LifeView: View {
     enum Tab: String, CaseIterable {
         case goals = "Goals", habits = "Habits", journal = "Journal",
-             money = "Money", schedule = "Schedule", shop = "Shop"
+             money = "Money", schedule = "Schedule", shop = "Shop",
+             circle = "Circle"
 
         /// The strip said *Shop* where the backend already serves
         /// *Shops* through `i18n.shop_labels`, which the desktop

@@ -3,6 +3,7 @@ package app.jim.guardian.ui
 import android.content.Intent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import org.json.JSONObject
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -1302,7 +1303,7 @@ fun SafetyScreen(vm: GuardianViewModel) {
         L10n.t("cust", vm.language))
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        ProblemReportingCard(lang)
+        ProblemReportingCard(vm.language)
         TabRow(selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA) {
             tabs.forEachIndexed { i, t ->
                 Tab(selected = tab == i, onClick = { tab = i },
@@ -3330,7 +3331,7 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) 
 
     Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(L10n.t("self.title", lang), style = MaterialTheme.typography.titleMedium)
-        ProblemReportingCard(vm.language)
+        ProblemReportingCard(lang)
         ContinuityCard(uid, token, lang)
         Text(L10n.t("self.lead", lang), style = MaterialTheme.typography.bodySmall)
 

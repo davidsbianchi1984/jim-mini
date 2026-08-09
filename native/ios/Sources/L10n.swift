@@ -5,6 +5,18 @@ import Foundation
 /// localized server-side by the user's language setting; this table covers
 /// the frame around them. Missing keys fall back to English.
 enum L10n {
+    /// `t` with `{name}` placeholders filled. The Kotlin and C# tables have
+    /// carried this since the chrome was localized; the Swift one never grew
+    /// it, and ten call sites have named it anyway.
+    static func fill(_ key: String, _ lang: String,
+                     _ values: [String: String]) -> String {
+        var out = t(key, lang)
+        for (name, value) in values {
+            out = out.replacingOccurrences(of: "{\(name)}", with: value)
+        }
+        return out
+    }
+
     static func t(_ key: String, _ lang: String) -> String {
         table[key]?[lang] ?? table[key]?["en"] ?? key
     }

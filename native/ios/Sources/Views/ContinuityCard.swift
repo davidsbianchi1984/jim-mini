@@ -54,13 +54,13 @@ struct ContinuityCard: View {
 
     private func load() async {
         guard let uid = state.uid, let token = state.token else { return }
-        carried = try? await Api.shared.continuity(uid: uid, token: token)
+        carried = try? await ApiClient.shared.continuity(uid: uid, token: token)
     }
 
     private func forget() {
         guard let uid = state.uid, let token = state.token else { return }
         Task {
-            try? await Api.shared.forgetContinuity(uid: uid, token: token)
+            try? await ApiClient.shared.forgetContinuity(uid: uid, token: token)
             await load()
         }
     }
