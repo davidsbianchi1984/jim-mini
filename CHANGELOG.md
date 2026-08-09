@@ -4,6 +4,39 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.2] — 2026-08-09
+
+### The compiler was in the room the whole time and nothing listened
+
+`native.yml` had been failing for over a hundred runs on a trigger nothing
+in the release loop ever reached. It fires on any branch push now, and every
+line below was named by a compiler rather than found by reading.
+
+    asked     do the shells read the members they name
+    mattered  do the shells compile
+
+- **The client was parsing itself twice.** `request` returns a `JSONObject`,
+  and five call sites wrapped its result in `org.json.JSONObject(...)` — the
+  continuity read and its forget, the offline posture, and both halves of the
+  take-it/end-it pair. The constructor matched none of its three overloads,
+  so every read off the result was a reference to nothing
+- **Four rows of `L10n.kt` had lost their key line** — `action.send`,
+  `action.save`, `action.translate`, `action.refresh` — leaving a bare
+  `"en" to "Send",` where a member declaration belonged. Restored, and the
+  two that had drifted from a sibling shell brought back into line
+- **`L10n.fill` did not exist here.** iOS has carried it since the table
+  shipped and one Android call site used it anyway, where it resolved to
+  something of type `Boolean`
+- `AppState.kt` carried `private set` twice — the same bad paste the QRME
+  shell had, and the same syntax error hiding every member after it
+- The alarm card wrote four `Result`s straight into their unwrapped types;
+  `LifeView.Tab` got `circle` back last release and its `label` switch did
+  not; `SafetyView` still called `Api.shared` in five places
+- The Android L10n table is split into four functions before it reaches the
+  JVM's 64 KB per-method ceiling, which is what stopped QRME's build outright
+- Five Windows pages reach for `Dictionary`, `List` or LINQ in files whose
+  `using` lists never asked for them
+
 ## [0.60.1] — 2026-08-09
 
 ### A fix to the cascade fixes the next erase, not the last one

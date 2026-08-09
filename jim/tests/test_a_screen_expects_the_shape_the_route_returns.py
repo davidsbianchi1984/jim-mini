@@ -284,11 +284,29 @@ def _android_calls(lang):
     inline = re.compile(
         r"(?:org\.json\.)?JSON(?P<kind>Object|Array)\s*\(\s*\n?\s*request\((?P<body>.{0,300}?)\)\s*\n",
         re.S)
+    # The third spelling, and in this shell the common one: `request` parses
+    # centrally and returns a `JSONObject`, so the claim is not written at the
+    # call site — it is the return type, and every such call claims Object.
+    #
+    # The reader saw only the first two spellings, which meant it read three
+    # calls out of a client of this size. All three were code that wrapped an
+    # already-parsed `JSONObject` in the `JSONObject` constructor and had
+    # never compiled. The reader was measuring the bug.
+    direct = re.compile(r"[=\s]request\((?P<body>.{0,300}?)\)\s*(?:\n|\.)", re.S)
     bound = re.compile(r"\bval\s+(?P<var>\w+)\s*=\s*request\((?P<body>.{0,300}?)\)\s*\n", re.S)
     for f, text in _client_sources(lang):
+        seen = set()
         for m in inline.finditer(text):
+            seen.add(m.start("body"))
             yield f.name, m.group("body"), m.group("kind"), _is_json_array
+        for m in direct.finditer(text):
+            if m.start("body") in seen:
+                continue
+            seen.add(m.start("body"))
+            yield f.name, m.group("body"), "Object", _is_json_array
         for m in bound.finditer(text):
+            if m.start("body") in seen:
+                continue
             after = text[m.end():m.end() + 600]
             parsed = re.search(
                 rf"(?:org\.json\.)?JSON(Object|Array)\s*\(\s*{re.escape(m.group('var'))}\s*\)",
