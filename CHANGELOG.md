@@ -4,6 +4,66 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.9] — 2026-08-08
+
+### An erase is measured against the schema, not against a list somebody wrote
+
+`delete_user_data` says *erase every trace of a user across all tables*. It
+named twenty-one tables in a tuple. The schema has **sixty-three** with a
+`user_id` column, so the erase left forty-three standing:
+
+    accounts        money_accounts   money_mandates   money_orders
+    budgets         budget_spend     savings_goals    medications
+    med_logs        captures         care_plans       care_teams
+    care_beacons    crash_watches    vigils           mic_channels
+    mic_sessions    user_continuity  user_finetunes   user_models
+    …and twenty-three more
+
+The money guardian's accounts and mandates. The medicine cabinet and every
+dose logged from it. The clinical captures — photographs of somebody's body.
+And `crash_watches` and `vigils`, which are not records of anything: they are
+standing permissions for this product to act on that person's behalf, still
+live for an account the API answers 404 for.
+
+The sibling vault had already fixed this shape and the fix had not travelled.
+Its docstring already said the general thing: *a migration that adds a table
+is covered by writing it, not by remembering this function.*
+
+    asked     did we delete what the handler names
+    mattered  did we delete what the schema holds
+
+### Why the list kept losing
+
+It was not neglect. Both siblings' lists had been *corrected*, more than once,
+and every correction was right. JIM-mini's most recent one found a watch
+channel outliving its account and added three tables — `watch_channels`,
+`contribution_log`, `waivers` — because those three carried a live credential
+rather than a record. That fix was correct and did nothing about the next
+table, and `crash_watches` and `vigils` are the same kind of row and were
+still standing after it.
+
+A list is a claim about a schema, made once, by somebody who could see the
+schema that day.
+
+### How it is checked
+
+By writing a row into **every** scoped table, erasing, and looking. Not by
+exercising features until rows appear: the tables a test can reach through the
+API are the tables somebody thought to wire, which is the same blind spot as
+the list. The rows are synthetic and go in through SQL — the question is
+whether the cascade reaches a table, and a row is a row.
+
+Plus the structural half, which is the part that survives the next migration:
+the handler must not carry a list of table names at all, and must ask the
+schema.
+
+### The test does not borrow the reader it is checking
+
+The first cut planted rows in the cascade's own table reader. Narrowing the
+cascade narrowed the planting with it, so injecting the old hand-written list
+reported *a blind reader* rather than *forty-odd surviving tables*. It reads
+the schema itself now, and the injection names every table by name.
+
 ## [0.59.8] — 2026-08-08
 
 ### The check that covered one client of four

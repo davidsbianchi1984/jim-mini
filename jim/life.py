@@ -773,8 +773,53 @@ def access_log(user_id: str, pdi=None) -> dict:
 # erasure — "delete anything, anytime"
 # --------------------------------------------------------------------------- #
 
+#: Tables a user erase must **not** clear, and why.
+#:
+#: Empty, and that is the honest answer for this product: nothing here is a
+#: hash-chained record of the erasure itself the way PDI's audit log is. A row
+#: added to this set is a promise broken on purpose, so it needs a sentence
+#: beside it saying whose promise and why.
+ERASE_KEEPS: frozenset[str] = frozenset()
+
+#: Tables whose rows belong to a *child* of the user rather than to the user,
+#: and the column that reaches them. A habit log names its habit, not its
+#: person, so a scan for `user_id` cannot see it.
+ERASE_THROUGH = {"habit_logs": ("habits", "habit_id")}
+
+
+def user_scoped_tables() -> list[str]:
+    """Every table in this schema with a `user_id` column.
+
+    Read from the schema rather than written down. The list this replaced
+    named twenty-one tables and the schema had grown to sixty-three, so an
+    erase advertised as *every trace* left forty-three tables standing —
+    among them the money guardian's accounts and mandates, the medicine
+    cabinet, the clinical captures, and the live crash-watch and vigil rows
+    that let this product go on acting for somebody who had asked it to
+    forget them.
+
+    A migration that adds a table is covered by writing it, not by
+    remembering this function.
+    """
+    conn = db.connect()
+    found = []
+    for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' "
+            "AND name NOT LIKE 'sqlite_%'").fetchall():
+        name = row[0]
+        columns = {c[1] for c in conn.execute(f"PRAGMA table_info({name})")}
+        if "user_id" in columns:
+            found.append(name)
+    return sorted(found)
+
+
 def delete_user_data(user_id: str, pdi=None) -> dict:
-    """Erase every trace of a user across all tables — and the PDI vault."""
+    """Erase every trace of a user across all tables — and the PDI vault.
+
+    The cascade is derived from the schema (:func:`user_scoped_tables`) minus
+    :data:`ERASE_KEEPS`, plus the child tables in :data:`ERASE_THROUGH` that
+    name a parent row instead of a person.
+    """
     conn = db.connect()
     deleted = {}
     vaulted = [r["key"] for r in conn.execute(
@@ -782,32 +827,34 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
     if vaulted:
         deleted["pdi_records"] = sum(
             1 for key in vaulted if pdi is not None and pdi.delete(key))
-    habit_ids = [r["id"] for r in conn.execute(
-        "SELECT id FROM habits WHERE user_id=?", (user_id,)).fetchall()]
-    if habit_ids:
-        marks = ",".join("?" for _ in habit_ids)
-        deleted["habit_logs"] = conn.execute(
-            f"DELETE FROM habit_logs WHERE habit_id IN ({marks})", habit_ids
-        ).rowcount
+    for table, (parent, column) in sorted(ERASE_THROUGH.items()):
+        ids = [r["id"] for r in conn.execute(
+            f"SELECT id FROM {parent} WHERE user_id=?", (user_id,)).fetchall()]
+        if ids:
+            marks = ",".join("?" for _ in ids)
+            deleted[table] = conn.execute(
+                f"DELETE FROM {table} WHERE {column} IN ({marks})", ids).rowcount
     # `watch_channels`, `contribution_log` and `waivers` are the three tables
-    # here that carry a *live credential or standing permission* rather than a
+    # that carry a *live credential or standing permission* rather than a
     # record of something that happened, and all three used to survive this
     # function. The channel is the sharpest: its token is a deposit address
     # printed into somebody's Shortcut, so after an erase the wrist went on
     # writing readings back in under a user id that no longer resolved —
     # `events` rows reappearing for an account the API answers 404 for.
     #
+    # That fix was correct and it was the *shape* of the problem rather than
+    # the whole of it: it named three more tables in a list of twenty-one
+    # while the schema grew to sixty-three. `crash_watches` and `vigils` are
+    # the same kind of row and were still standing after it.
+    #
     #     asked     did we delete the user's data
     #     mattered  can anything still write more
-    for table in ("habits", "goals", "checkins", "insights", "context_events",
-                  "coach_messages", "sources", "sessions", "devices",
-                  "journal", "feedback", "vault_keys", "events",
-                  "baselines", "trend_points", "medical_cards",
-                  "watch_channels", "contribution_log", "waivers",
-                  "tandem_links", "users"):
+    for table in user_scoped_tables():
+        if table in ERASE_KEEPS:
+            continue
         deleted[table] = conn.execute(
-            f"DELETE FROM {table} WHERE {'id' if table == 'users' else 'user_id'}=?",
-            (user_id,),
-        ).rowcount
+            f"DELETE FROM {table} WHERE user_id=?", (user_id,)).rowcount
+    deleted["users"] = conn.execute(
+        "DELETE FROM users WHERE id=?", (user_id,)).rowcount
     conn.commit()
     return {"deleted": deleted}

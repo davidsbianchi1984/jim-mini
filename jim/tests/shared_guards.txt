@@ -1,4 +1,4 @@
-# status: manifest — 421 guards carried by all three products
+# status: manifest — 425 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -282,6 +282,7 @@ test_the_call_extraction_finds_something
 test_the_canary_would_have_been_found_before_the_fix
 test_the_capability_check_can_fail
 test_the_capability_check_reaches_the_calls_this_shell_makes
+test_the_cascade_is_not_a_hand_written_list
 test_the_ceiling_is_not_left_slack_after_the_backlog_falls
 test_the_check_can_fail
 test_the_check_is_looking_at_something
@@ -313,6 +314,7 @@ test_the_dot_retries_when_pressed
 test_the_duplicate_check_catches_the_defect_that_shipped
 test_the_english_behind_the_tabs_only_shrinks
 test_the_english_default_is_untouched
+test_the_erase_reaches_every_table_the_schema_scopes
 test_the_escape_decoder_reads_each_syntax
 test_the_escaper_still_produces_a_javascript_string
 test_the_escaper_survives_a_script_breakout
@@ -397,6 +399,7 @@ test_the_scan_reads_the_whole_wire_surface
 test_the_scan_would_catch_a_new_collision
 test_the_scan_would_catch_the_next_one
 test_the_scope_reader_reaches_the_whole_type
+test_the_scoped_reader_sees_the_whole_schema
 test_the_screen_extraction_finds_something
 test_the_secret_is_read_from_secrets_not_hardcoded
 test_the_sender_does_not_report_its_own_failures
@@ -452,4 +455,5 @@ test_there_are_ratchets_to_check
 test_there_are_shell_sources_to_read
 test_two_elements_of_one_name_are_caught
 test_voice_drops_the_screen_numbers
+test_what_is_kept_is_named_and_reasoned
 test_what_may_never_be_in_the_pane_is_published

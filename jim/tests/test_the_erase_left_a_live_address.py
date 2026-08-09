@@ -46,7 +46,7 @@ import ast
 import re
 from pathlib import Path
 
-from jim import db
+from jim import db, life
 
 
 def _repo_root() -> Path:
@@ -84,19 +84,20 @@ def _credential_tables() -> list[tuple[str, list[str]]]:
 
 
 def _tables_the_erase_touches() -> set[str]:
-    """Table names out of `delete_user_data`'s own string literals — bare words
-    from the loop, plus any written into an f-string statement."""
-    src = LIFE.read_text(encoding="utf-8")
-    fn = next(n for n in ast.walk(ast.parse(src))
-              if isinstance(n, ast.FunctionDef) and n.name == "delete_user_data")
-    found: set[str] = set()
-    for node in ast.walk(fn):
-        if isinstance(node, ast.Constant) and isinstance(node.value, str):
-            if re.fullmatch(r"\w+", node.value):
-                found.add(node.value)
-            found.update(re.findall(r"(?:DELETE FROM|UPDATE)\s+(\w+)",
-                                    node.value))
-    return found
+    """The tables the cascade actually clears.
+
+    This used to read string literals out of `delete_user_data`'s own source,
+    because the function was a hand-written list of table names and the
+    literals *were* the cascade. They are not any more: 0.59.9 derived the
+    cascade from the schema, and a reader looking for literals in it finds
+    none and reports every table untouched.
+
+    So it asks the function instead. That is a better question than the one
+    it replaced — a literal proved a table was *named*, and this proves it is
+    *reached*.
+    """
+    return ((set(life.user_scoped_tables()) - life.ERASE_KEEPS)
+            | set(life.ERASE_THROUGH) | {"users"})
 
 
 def test_the_erase_takes_every_live_credential_with_it(client):
