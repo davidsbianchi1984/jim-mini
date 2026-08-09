@@ -1536,6 +1536,7 @@ private fun CustodyPanel(vm: GuardianViewModel) {
     var prov by remember { mutableStateOf<Map<String, CustodyProvenance>>(emptyMap()) }
     var open by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+    var held by remember { mutableStateOf<String?>(null) }
 
     fun reload() {
         vm.call({ ApiClient.custody(vm.uid!!, vm.token!!) }) { r ->
@@ -1549,6 +1550,23 @@ private fun CustodyPanel(vm: GuardianViewModel) {
         Text(L10n.t("cust", vm.language), color = Jim.Txt, fontSize = 16.sp,
             fontWeight = FontWeight.Bold)
         OfflinePostureCard(vm)
+        // The portability door. Counts and table names on the phone; the
+        // document itself is what the console downloads. A person whose only
+        // device is a phone is exactly the person who cannot reach a console.
+        Text(L10n.t("hld.take", vm.language), color = Jim.Txt, fontSize = 14.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("hld.take.pitch", vm.language), color = Jim.T2, fontSize = 12.sp)
+        BrandButton(L10n.t("hld.take.go", vm.language), enabled = true) {
+            vm.call({ ApiClient.exportEverything(vm.uid ?: "", vm.token ?: "") }) { r ->
+                r.onSuccess { (tables, rows) ->
+                    held = L10n.t("hld.take.held", vm.language)
+                        .replace("{t}", tables.toString())
+                        .replace("{r}", rows.toString())
+                }
+                r.onFailure { error = it.message }
+            }
+        }
+        held?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
         Text("Chats with tandem specialists are sealed into the PDI vault — " +
              "encrypted, attributed, and hash-chained. This is your copy of " +
              "the proof.", color = Jim.T2, fontSize = 12.sp)

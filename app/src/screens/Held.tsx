@@ -219,6 +219,27 @@ export function Held() {
       </div>
 
       <div className="card">
+        <h3>{tr("hld.take", lang)}</h3>
+        <p className="muted small">{tr("hld.take.pitch", lang)}</p>
+        <div className="row">
+          <button className="primary" disabled={busy}
+                  onClick={() => run(async () => {
+                    // Take it before you can end it: the two belong on one
+                    // screen, and until this round only the ending was here.
+                    const all = await api.exportEverything(uid!, token!);
+                    const blob = new Blob([JSON.stringify(all, null, 2)],
+                                          { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `jim-export-${uid}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  })}>
+            {tr("hld.take.go", lang)}
+          </button>
+        </div>
+
         <h3>{tr("hld.end", lang)}</h3>
         <p className="muted small">{tr("hld.end.pitch", lang)}</p>
         <div className="row">

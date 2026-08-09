@@ -2351,6 +2351,37 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "hld.where.connectors": {
     en: "{n} connector providers catalogued — Apple, Google and the rest, each with the apps and directions it can be asked for.", es: "{n} proveedores de conectores catalogados — Apple, Google y los demás, cada uno con las apps y direcciones que se le pueden pedir.", fr: "{n} fournisseurs de connecteurs catalogués — Apple, Google et les autres, chacun avec les applis et les directions qu'on peut lui demander.", de: "{n} Konnektor-Anbieter katalogisiert — Apple, Google und die übrigen, jeweils mit den Apps und Richtungen, um die man sie bitten kann.", pt: "{n} fornecedores de conectores catalogados — Apple, Google e os restantes, cada um com as apps e direções que lhe podem ser pedidas.", it: "{n} fornitori di connettori catalogati — Apple, Google e gli altri, ciascuno con le app e le direzioni che gli si possono chiedere.", ja: "コネクタ提供元を{n}社カタログ化 — Apple、Google、その他、それぞれ依頼できるアプリと方向とともに。", zh: "已收录{n}家连接器提供方 — Apple、Google 及其余各家，各自附有可请求的应用与方向。", hi: "{n} कनेक्टर प्रदाता सूचीबद्ध — Apple, Google और बाक़ी, हर एक उन ऐप और दिशाओं के साथ जो उससे माँगी जा सकती हैं।", ar: "{n} من مزودي الموصّلات مفهرسون — Apple وGoogle وسواهما، كل منهم مع التطبيقات والاتجاهات التي يمكن طلبها منه.",
   },
+  "hld.take": {
+    en: "Take it with you", es: "Llévatelo", fr: "Emportez-le",
+    de: "Nimm es mit", pt: "Leve-o consigo", it: "Portalo con te",
+    ja: "持ち出す", zh: "带走它", hi: "इसे अपने साथ ले जाएँ",
+    ar: "خذه معك",
+  },
+  "hld.take.pitch": {
+    en: "Everything this deployment holds about you, as one file. Live "
+        + "credentials are left out — the rest is yours.",
+    es: "Todo lo que esta instalación tiene sobre ti, en un archivo. Las "
+        + "credenciales activas quedan fuera; el resto es tuyo.",
+    fr: "Tout ce que ce déploiement détient sur vous, en un fichier. Les "
+        + "identifiants actifs sont exclus ; le reste est à vous.",
+    de: "Alles, was diese Installation über Sie hat, als eine Datei. Aktive "
+        + "Zugangsdaten bleiben draußen — der Rest gehört Ihnen.",
+    pt: "Tudo o que esta instalação tem sobre si, num ficheiro. As "
+        + "credenciais activas ficam de fora; o resto é seu.",
+    it: "Tutto ciò che questa installazione ha su di te, in un file. Le "
+        + "credenziali attive restano fuori; il resto è tuo.",
+    ja: "この導入があなたについて保持しているすべてを一つのファイルに。有効な資格情報は含みません。",
+    zh: "本部署持有的关于您的全部内容，汇成一个文件。不含有效凭据，其余都是您的。",
+    hi: "यह परिनियोजन आपके बारे में जो कुछ रखता है, एक फ़ाइल में। सक्रिय क्रेडेंशियल शामिल नहीं।",
+    ar: "كل ما يحتفظ به هذا النشر عنك، في ملف واحد. لا تُدرج بيانات الاعتماد الفعّالة.",
+  },
+  "hld.take.go": {
+    en: "Download everything", es: "Descargar todo",
+    fr: "Tout télécharger", de: "Alles herunterladen",
+    pt: "Descarregar tudo", it: "Scaricare tutto",
+    ja: "すべてダウンロード", zh: "下载全部",
+    hi: "सब कुछ डाउनलोड करें", ar: "تنزيل كل شيء",
+  },
   "hld.end": {
     en: "End it", es: "Terminar con todo", fr: "Y mettre fin", de: "Beenden", pt: "Acabar com tudo", it: "Metterci fine", ja: "すべて終わらせる", zh: "结束这一切", hi: "इसे समाप्त करें", ar: "أنهِ كل شيء",
   },

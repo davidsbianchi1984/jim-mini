@@ -1,4 +1,4 @@
-# status: manifest — 425 guards carried by all three products
+# status: manifest — 430 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -318,6 +318,10 @@ test_the_erase_reaches_every_table_the_schema_scopes
 test_the_escape_decoder_reads_each_syntax
 test_the_escaper_still_produces_a_javascript_string
 test_the_escaper_survives_a_script_breakout
+test_the_export_and_the_erase_reach_the_same_tables
+test_the_export_carries_no_live_credential
+test_the_export_is_not_a_hand_written_list
+test_the_export_reaches_every_table_the_schema_scopes
 test_the_expression_inside_a_hole_is_not_prose
 test_the_extraction_finds_something
 test_the_extraction_finds_the_paths_out
@@ -380,6 +384,7 @@ test_the_records_name_only_the_three_products
 test_the_redaction_is_as_wide_as_the_console
 test_the_registry_names_are_distinct_and_sorted_by_meaning
 test_the_report_sends_only_what_the_screen_shows
+test_the_route_is_reachable_and_owner_only
 test_the_route_reader_prefers_the_declared_response_model
 test_the_route_side_is_still_being_read
 test_the_route_table_is_read_whole

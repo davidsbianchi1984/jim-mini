@@ -182,5 +182,20 @@ public sealed partial class CustodyPage : Page
                 $"{r["op"]} → {r["status"]}  ×{r["count"]}  {r["day"]}"));
         ProblemsPreview.Visibility = Visibility.Visible;
         ProblemsPreviewButton.Content = L10n.T("ns.pr.hide");
+    
+    private async void OnTakeItWithYou(object sender,
+                                       Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var st = AppState.Current;
+        if (st.UserId is null || st.Token is null) return;
+        try
+        {
+            var all = await ApiClient.Shared.ExportEverything(st.UserId, st.Token);
+            var rows = 0;
+            foreach (var t in all.Tables.Values) rows += t.Count;
+            TakeItButton.Content = $"{all.Tables.Count} table(s), {rows} row(s)";
+        }
+        catch (Exception ex) { TakeItButton.Content = ex.Message; }
     }
+}
 }

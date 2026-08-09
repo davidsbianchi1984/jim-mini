@@ -96,3 +96,41 @@ struct CustodySection: View {
         }
     }
 }
+
+/// The portability door. Counts and table names on the phone; the document
+/// itself is what the console downloads.
+struct TakeItWithYouCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var held: String?
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L10n.t("hld.take", state.language))
+                .font(.headline).foregroundStyle(Theme.txt)
+            Text(L10n.t("hld.take.pitch", state.language))
+                .font(.caption).foregroundStyle(Theme.t2)
+            Button(L10n.t("hld.take.go", state.language)) { load() }
+                .font(.caption.bold()).foregroundStyle(.white)
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(Theme.brand).clipShape(Capsule())
+            if let held { Text(held).font(.caption).foregroundStyle(Theme.t2) }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }.card()
+    }
+
+    private func load() {
+        Task {
+            do {
+                let all = try await ApiClient.shared.exportEverything(
+                    userId: state.uid ?? "", token: state.token ?? "")
+                let rows = all.tables.values.reduce(0) { $0 + $1.count }
+                held = L10n.t("hld.take.held", state.language)
+                    .replacingOccurrences(of: "{t}", with: "\(all.tables.count)")
+                    .replacingOccurrences(of: "{r}", with: "\(rows)")
+            } catch {
+                self.error = error.localizedDescription
+            }
+        }
+    }
+}

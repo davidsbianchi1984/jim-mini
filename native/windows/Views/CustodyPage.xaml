@@ -55,6 +55,11 @@
                 </StackPanel>
             </Border>
 
+            <!-- The portability door. Counts on the desktop shell; the
+                 document itself is what the console downloads. -->
+            <Button x:Name="TakeItButton" Height="40"
+                    Content="What do you hold about me"
+                    Click="OnTakeItWithYou" />
             <Button x:Name="RefreshButton" Height="40" Click="OnRefresh"
                     Foreground="White" Background="{StaticResource JimBrandABrush}" />
             <!-- The notice that has to be answered before anything leaves this

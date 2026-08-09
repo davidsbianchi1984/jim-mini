@@ -1613,6 +1613,12 @@ export const api = {
   custodyProvenance: (uid: string, key: string, token: string) =>
     req<Row>(`/custody/${uid}/provenance?key=${encodeURIComponent(key)}`,
       { token }),
+  // Everything held about a person, as one document — the answer to *what
+  // do you have*, which this product had no route for at all while offering
+  // the erase below it.
+  exportEverything: (uid: string, token: string) =>
+    req<{ user: Row | null; tables: Record<string, Row[]>; note: string }>(
+      `/data/${uid}`, { token }),
   // Erases everything held about a person. There is no undo, which is the
   // point of it.
   eraseEverything: (uid: string, token: string) =>

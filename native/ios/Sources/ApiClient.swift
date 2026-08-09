@@ -742,6 +742,16 @@ actor ApiClient {
         return try await URLSession.shared.data(for: req)
     }
 
+    /// Everything this deployment holds about a person, by table.
+    ///
+    /// The erase has been on the console since it existed and this had no
+    /// route at all. The phone needs it because a person whose only device
+    /// is a phone is exactly the person who cannot use a desktop console to
+    /// get their data out.
+    func exportEverything(userId: String, token: String) async throws -> UserExport {
+        try await request("/data/\(userId)", token: token)
+    }
+
     private func request<T: Decodable>(_ path: String, method: String = "GET",
                                        body: [String: Any]? = nil, token: String? = nil) async throws -> T {
         var req = URLRequest(url: base.appendingPathComponent(path))
@@ -1398,6 +1408,17 @@ struct OfflinePosture: Decodable {
     let external_transmission_possible: Bool
     let local_destinations_allowed: String
     let guarantees: [String]
+}
+
+/// The export bundle, counted rather than modelled: reading every column of
+/// every table into Swift types would be a second copy of the schema.
+struct UserExport: Decodable {
+    let tables: [String: [ExportRow]]
+    let note: String
+}
+
+struct ExportRow: Decodable {
+    init(from decoder: Decoder) throws { }
 }
 
 struct ContinuityState: Decodable {

@@ -90,7 +90,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="0.59.9",
+    app = FastAPI(title="JIM-mini / Guardian", version="0.60.0",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -3003,7 +3003,24 @@ def create_app(qrme_client: QRMEClient | None = None,
                 403, "the user has not consented to provider access")
         return life.provider_summary(user)
 
-    # ---- erasure ("delete anything, anytime") -----------------------------
+    # ---- portability and erasure ("take it or delete it, anytime") --------
+
+    @app.get("/data/{user_id}")
+    def export_data(user_id: str, request: Request) -> dict:
+        """Everything this deployment holds about you, by table.
+
+        There was no route here. This product keeps a medicine cabinet, a
+        money guardian's accounts and mandates, clinical captures, a journal
+        and a continuity vector, and offered its owner a way to erase all of
+        it and no way to take it — while the suite gateway's GDPR Article 20
+        bundle listed this product's contribution as a progress report.
+
+        Live credentials are dropped per column, not per table: what a watch
+        channel was for is the person's own history and its token is not
+        theirs to mail anywhere.
+        """
+        _user_or_404(user_id, request)
+        return life.export_user_data(user_id)
 
     @app.delete("/data/{user_id}")
     def delete_data(user_id: str, request: Request) -> dict:

@@ -288,6 +288,25 @@ object ApiClient {
             (0 until (gs?.length() ?: 0)).map { gs!!.getString(it) })
     }
 
+    /**
+     * Everything this deployment holds about a person, by table.
+     *
+     * The erase has been on the console since it existed and this had no
+     * route at all. A person whose only device is a phone is exactly the
+     * person who cannot use a desktop console to get their data out.
+     */
+    suspend fun exportEverything(uid: String, token: String): Pair<Int, Int> =
+        withContext(Dispatchers.IO) {
+            val o = org.json.JSONObject(request("/data/$uid", "GET", null, token))
+            val tables = o.optJSONObject("tables") ?: org.json.JSONObject()
+            var rows = 0
+            val names = tables.keys()
+            while (names.hasNext()) {
+                rows += tables.optJSONArray(names.next())?.length() ?: 0
+            }
+            Pair(tables.length(), rows)
+        }
+
     private suspend fun request(
         path: String, method: String = "GET",
         body: JSONObject? = null, token: String? = null,

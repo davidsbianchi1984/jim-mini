@@ -858,3 +858,64 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
         "DELETE FROM users WHERE id=?", (user_id,)).rowcount
     conn.commit()
     return {"deleted": deleted}
+
+#: What an export must never hand back, matched as **marks inside a column
+#: name** rather than as a list of exact names.
+#:
+#: The first cut of this was a list, and the guard next door caught it on its
+#: first run: `owner_token`, `qrme_interactor_token` and a third all sat in
+#: tables the export now reaches and none of them were in the list. A list of
+#: credential columns goes stale exactly the way the erase cascade's list of
+#: tables did, and for the same reason — somebody adds a column.
+#:
+#: Deliberately not the bare word `hash`: an audit chain's hash is a record,
+#: not a credential, and a person auditing their own export should be able to
+#: verify it.
+EXPORT_REDACTS = ("token", "secret", "password", "api_key", "private_key",
+                  "grant_hash", "check_value", "credential")
+
+
+def _public(row) -> dict:
+    """A row with every credential-bearing column dropped."""
+    return {k: v for k, v in dict(row).items()
+            if not any(mark in k.lower() for mark in EXPORT_REDACTS)}
+
+
+def export_user_data(user_id: str) -> dict:
+    """Everything this deployment holds about a person, by table.
+
+    There was no export at all. This product keeps a medicine cabinet, a
+    money guardian's accounts and mandates, clinical captures, a journal and
+    a continuity vector, and offered its owner a way to *erase* all of it and
+    no way to *take* it. The sibling profiles product had an export and
+    promised portability across the tandem on the strength of it.
+
+    Derived from the schema for the same reason the erase cascade is, and
+    redacted per column rather than per table: a row is the person's history
+    and a token inside it is a live credential in whatever they do with the
+    file.
+    """
+    conn = db.connect()
+    tables: dict[str, list[dict]] = {}
+    for table in user_scoped_tables():
+        rows = conn.execute(f"SELECT * FROM {table} WHERE user_id=?",
+                            (user_id,)).fetchall()
+        if rows:
+            tables[table] = [_public(r) for r in rows]
+    for table, (parent, column) in sorted(ERASE_THROUGH.items()):
+        ids = [r["id"] for r in conn.execute(
+            f"SELECT id FROM {parent} WHERE user_id=?", (user_id,)).fetchall()]
+        if ids:
+            marks = ",".join("?" for _ in ids)
+            rows = conn.execute(
+                f"SELECT * FROM {table} WHERE {column} IN ({marks})", ids
+            ).fetchall()
+            if rows:
+                tables[table] = [_public(r) for r in rows]
+    who = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+    return {
+        "user": _public(who) if who else None,
+        "tables": tables,
+        "note": "every table in this deployment that names this user, with "
+                "live credentials dropped per column — see EXPORT_REDACTS",
+    }

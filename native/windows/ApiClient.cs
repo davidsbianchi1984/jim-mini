@@ -554,6 +554,13 @@ public record CommunityView(
     [property: JsonPropertyName("note")] string Note,
     [property: JsonPropertyName("posture")] CommunityPosture Posture);
 
+/// The export bundle, counted rather than modelled.
+public sealed class UserExport
+{
+    public Dictionary<string, List<Dictionary<string, object>>> Tables { get; set; } = new();
+    public string Note { get; set; } = "";
+}
+
 public sealed class ApiClient
 {
     public static ApiClient Shared { get; } = new();
@@ -568,6 +575,13 @@ public sealed class ApiClient
     /// it. Those are the uploads, the streams and the raw-response reads, and
     /// every refusal they draw arrived in English no matter what the machine
     /// was set to. A funnel only funnels what goes into it.</para></summary>
+    /// <summary>Everything this deployment holds about a person, by table.
+    ///
+    /// <para>The erase has been on the console since it existed and this had
+    /// no route at all.</para></summary>
+    public Task<UserExport> ExportEverything(string uid, string token) =>
+        Send<UserExport>(new HttpRequestMessage(HttpMethod.Get, $"/data/{uid}"), token);
+
     private Task<HttpResponseMessage> Dispatch(HttpRequestMessage req)
     {
         req.Headers.TryAddWithoutValidation("accept-language", L10n.DeviceLanguage());

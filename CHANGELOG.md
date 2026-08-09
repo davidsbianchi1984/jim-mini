@@ -4,6 +4,58 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.0] — 2026-08-09
+
+### An export is measured against the schema too — and drops the credentials
+
+0.59.9 derived the **erase** from the schema in all three products, because the
+lists that stood in for it had gone stale: an operation advertised as *every
+trace* reached a third of the tables. The export is the same question turned
+round.
+
+    asked     can a person delete everything we hold
+    mattered  can a person see everything we hold
+
+### What it was
+
+There was **no export at all**. This product keeps a medicine cabinet, a money
+guardian's accounts and mandates, clinical captures, a journal and a continuity
+vector, and offered its owner a way to erase all of it and no way to take it —
+while the suite gateway's GDPR Article 20 bundle listed this product's
+contribution as *a progress report*.
+
+`GET /data/{user_id}` now answers, next to the `DELETE` that was already there.
+
+### Two properties, and the second is not the first
+
+An export must be **complete** and must **not hand back a live credential**.
+Those pull in opposite directions, and the honest resolution is per column
+rather than per table: a row is the person's own history, and a token inside it
+is a credential in whatever they do with the file — a bundle gets downloaded,
+mailed to a clinician, dropped in a cloud folder.
+
+The redaction is a **rule** rather than a list, and that is not tidiness. The
+first cut was a list of exact column names, and the new guard caught it on its
+first run — three credential columns in tables the export now reaches, none of
+them in the list. A list of columns goes stale exactly the way the cascade's
+list of tables did.
+
+Deliberately *not* the bare word `hash`: a hash-linked audit record is what a
+person verifies their own export with, and a credential is what somebody can
+present. The two are not the same and the rule says so.
+
+### The symmetry, asserted
+
+A table the erase clears and the export omits is a person who can delete
+something they were never shown. A table the export carries and the erase
+misses is 0.59.9's defect. The guard compares the two sets directly.
+
+There is one deliberate asymmetry, and only in the vault: its audit chain
+survives a wipe because it is the proof the wipe happened, and a bequest is
+*retired* rather than deleted so an heir's credential fails with **revoked**
+instead of silence. Both are still the tenant's to read, so the export carries
+what the erase keeps — the one place these two answers differ on purpose.
+
 ## [0.59.9] — 2026-08-08
 
 ### An erase is measured against the schema, not against a list somebody wrote
