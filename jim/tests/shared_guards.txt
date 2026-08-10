@@ -1,4 +1,4 @@
-# status: manifest — 448 guards carried by all three products
+# status: manifest — 450 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -436,6 +436,8 @@ test_the_shell_split_backlog_only_shrinks
 test_the_shell_table_is_a_reader_and_not_a_hard_coded_list
 test_the_source_reads_a_compiled_in_address
 test_the_split_wording_backlog_only_shrinks
+test_the_stale_release_body_record_is_readable
+test_the_stale_release_body_record_only_shrinks
 test_the_status_line_counts_the_rows_that_are_there
 test_the_statuses_are_ones_this_file_defines
 test_the_stored_record_has_no_field_that_could_hold_content

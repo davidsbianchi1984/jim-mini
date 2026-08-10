@@ -1,0 +1,98 @@
+# Does the record still describe GitHub?
+#
+# `stale_release_bodies.txt` lists the releases whose published body is the
+# frozen v0.24.0 prose. That list is only worth keeping if something compares
+# it to the thing it describes, and the thing it describes is on GitHub — so
+# this cannot be a pytest guard. The suite is hermetic on purpose: a check that
+# needs the network is a skip offline, and a skip is a check that does not run.
+#
+#     asked     does the record parse
+#     mattered  does the record still match the releases
+#
+# Two directions, because one of them is the whole finding. A recorded tag that
+# is no longer stale means a backfill landed and the row should go. A release
+# that is stale and *unrecorded* means the record stopped describing reality —
+# which is how one file came to be published onto a hundred and thirty-four
+# tags with nothing noticing.
+#
+# It is not a merge gate. It reads published releases, which exist only after
+# a tag, and it runs on a schedule and on demand. `release-integrity.yml` is
+# the per-release check that fires on publish; this is the sweep over history.
+
+name: release-bodies-sweep
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare the record against the published releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re, subprocess, sys
+
+          repo = os.environ["REPO"]
+          record = next(pathlib.Path(".").glob("**/stale_release_bodies.txt"))
+          rows = {}
+          for line in record.read_text(encoding="utf-8").splitlines():
+              if not line.strip() or line.startswith("#"):
+                  continue
+              tag, _, reason = line.partition("  ")
+              rows[tag.strip()] = reason.strip()
+
+          out = subprocess.run(
+              ["gh", "api", "--paginate", f"/repos/{repo}/releases?per_page=100"],
+              capture_output=True, text=True)
+          if out.returncode != 0:
+              sys.exit(f"::error::could not read releases: {out.stderr[:300]}")
+          rels = []
+          for chunk in re.findall(r"\[.*?\]\s*(?=\[|$)", out.stdout, re.S) or [out.stdout]:
+              try: rels += json.loads(chunk)
+              except Exception: pass
+
+          def prose(b: str) -> str:
+              for m in ("## What's Changed", "**Full Changelog**"):
+                  if m in b:
+                      b = b.split(m)[0]
+              return b.strip()
+
+          # The sentinel is the v0.24.0 body's own claim. It is the one string
+          # every inherited body carries and no rebuilt body can.
+          SENTINEL = "414 tests passing"
+          stale = {r["tag_name"] for r in rels
+                   if re.match(r"app-v\d+\.\d+\.\d+$", r.get("tag_name") or "")
+                   and SENTINEL in prose(r.get("body") or "")}
+
+          gone = sorted(t for t in rows if t not in stale)
+          new = sorted(t for t in stale if t not in rows)
+          problems = []
+          if gone:
+              problems.append(
+                  f"{len(gone)} recorded release(s) are no longer stale — strike "
+                  f"them from {record} and lower the ceiling:\n    "
+                  + "\n    ".join(gone[:20]))
+          if new:
+              problems.append(
+                  f"{len(new)} release(s) carry the frozen body and are not "
+                  f"recorded:\n    " + "\n    ".join(new[:20])
+                  + "\n  A body cannot become stale on its own. Either one was "
+                    "pasted from an older release, or the record was edited "
+                    "without the releases being repaired.")
+          if problems:
+              print(f"::error::the record and the releases disagree")
+              for p in problems:
+                  print(p)
+              sys.exit(1)
+          print(f"{len(rows)} recorded, {len(stale)} stale, and they agree")
+          PY

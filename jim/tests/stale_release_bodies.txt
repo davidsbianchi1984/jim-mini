@@ -1,0 +1,186 @@
+# status: backlog — 138 rows
+#
+# Published releases whose body says nothing about the release it belongs to.
+# Checked by `test_the_stale_release_body_record_is_readable` and
+# `test_the_stale_release_body_record_only_shrinks` here, and against GitHub
+# itself by `.github/workflows/release-bodies-sweep.yml`, which is where the
+# comparison has to live: the bodies are on GitHub and this suite is hermetic.
+#
+# ## What these rows are
+#
+# `RELEASE_NOTES.md` was last written for v0.24.0. `sync-release-notes.yml`
+# published it verbatim over every release body after it, waiting for the
+# installer build so its write would be last. It worked exactly as designed,
+# and the design was the defect: a curated body was written at tag time,
+# published, and replaced by a file thirty-six minor versions behind.
+#
+#     asked     which workflow owns the release body
+#     mattered  does the body say what shipped
+#
+# **412 of 530** releases across the three products, one identical body
+# spanning 134 tags. This product holds 138 of them. Both the file and the
+# workflow are deleted as of 0.60.8, and `app-v0.60.8` is the first release
+# that is not on this list — its curated body survived untouched, which is how
+# the deletion was confirmed to work.
+#
+# ## What a row means, and what shrinking means
+#
+# One row per release still carrying the frozen prose, worst-to-newest by tag.
+# A row leaves this file when that release's body is rebuilt from its own
+# CHANGELOG entry. The ceiling may only fall.
+#
+# A release that is **deliberately left alone keeps its row**, with the reason
+# after the tag. It does not become an exemption in code. An exemption inside a
+# guard is a decision nobody reads again; a row with a reason is a decision
+# that stays in front of the next person to open this file. That is the same
+# argument every other record in this estate is built on.
+#
+# ## The one row that is already correct
+#
+# `app-v0.24.0` is on this list and must never be backfilled. Its body *is* the
+# v0.24.0 notes, which is right for v0.24.0 and wrong for the 411 releases that
+# inherited it. It carries its reason below, and it is the row most likely to
+# be edited by reflex.
+#
+# The estate-wide count is 412: qrme 137, jim-mini 138, pdi 137. Each product
+# ratchets its own, the same way `unregistered_floors.txt` does.
+#
+# ceiling: 138
+app-v0.24.0  keep — this body IS the v0.24.0 notes, and is correct for it
+app-v0.25.0
+app-v0.28.0
+app-v0.29.0
+app-v0.30.0
+app-v0.30.1
+app-v0.30.2
+app-v0.30.3
+app-v0.30.4
+app-v0.30.5
+app-v0.30.6
+app-v0.30.7
+app-v0.30.8
+app-v0.30.9
+app-v0.40.0
+app-v0.40.1
+app-v0.40.2
+app-v0.40.3
+app-v0.40.5
+app-v0.40.6
+app-v0.40.7
+app-v0.40.9
+app-v0.41.0
+app-v0.42.0
+app-v0.42.1
+app-v0.42.2
+app-v0.42.3
+app-v0.42.4
+app-v0.42.5
+app-v0.42.6
+app-v0.42.7
+app-v0.42.8
+app-v0.42.9
+app-v0.43.0
+app-v0.43.1
+app-v0.43.2
+app-v0.43.3
+app-v0.43.4
+app-v0.43.5
+app-v0.43.6
+app-v0.43.7
+app-v0.43.8
+app-v0.43.9
+app-v0.44.0
+app-v0.44.1
+app-v0.44.2
+app-v0.44.3
+app-v0.44.4
+app-v0.44.5
+app-v0.44.6
+app-v0.44.7
+app-v0.44.8
+app-v0.44.9
+app-v0.45.0
+app-v0.45.1
+app-v0.45.2
+app-v0.45.3
+app-v0.45.4
+app-v0.45.5
+app-v0.45.6
+app-v0.45.7
+app-v0.45.8
+app-v0.45.9
+app-v0.46.0
+app-v0.46.1
+app-v0.46.2
+app-v0.46.3
+app-v0.46.4
+app-v0.46.5
+app-v0.46.6
+app-v0.46.8
+app-v0.46.9
+app-v0.47.0
+app-v0.47.1
+app-v0.47.2
+app-v0.47.3
+app-v0.47.4
+app-v0.47.5
+app-v0.47.7
+app-v0.47.8
+app-v0.47.9
+app-v0.48.0
+app-v0.48.1
+app-v0.51.0
+app-v0.52.0
+app-v0.53.0
+app-v0.53.1
+app-v0.54.0
+app-v0.54.1
+app-v0.55.0
+app-v0.56.0
+app-v0.56.1
+app-v0.56.2
+app-v0.56.3
+app-v0.56.4
+app-v0.56.5
+app-v0.56.6
+app-v0.56.7
+app-v0.56.8
+app-v0.56.9
+app-v0.57.0
+app-v0.57.1
+app-v0.57.2
+app-v0.57.3
+app-v0.57.4
+app-v0.57.5
+app-v0.57.6
+app-v0.57.7
+app-v0.57.8
+app-v0.57.9
+app-v0.58.0
+app-v0.58.1
+app-v0.58.2
+app-v0.58.3
+app-v0.58.4
+app-v0.58.5
+app-v0.58.6
+app-v0.58.7
+app-v0.58.8
+app-v0.58.9
+app-v0.59.0
+app-v0.59.1
+app-v0.59.2
+app-v0.59.3
+app-v0.59.4
+app-v0.59.5
+app-v0.59.6
+app-v0.59.7
+app-v0.59.8
+app-v0.59.9
+app-v0.60.0
+app-v0.60.1
+app-v0.60.2
+app-v0.60.3
+app-v0.60.4
+app-v0.60.5
+app-v0.60.6
+app-v0.60.7
