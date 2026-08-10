@@ -86,10 +86,24 @@ jobs:
                    if re.match(r"app-v\d+\.\d+\.\d+$", r.get("tag_name") or "")
                    and prose(r.get("body") or "").startswith(mark)}
 
+          # A `# kept:` release is deliberately left as it is, so it is
+          # expected to still carry the frozen body: neither unrecorded nor
+          # awaiting repair. The ceiling counts what is still wrong, and these
+          # are not.
+          kept = set(re.findall(r"^# kept: (app-v[\d.]+) — ",
+                                record.read_text(encoding="utf-8"), re.M))
           gone = sorted(t for t in rows if t not in stale)
-          new = sorted(t for t in stale if t not in rows)
+          new = sorted(t for t in stale if t not in rows and t not in kept)
+          lost = sorted(t for t in kept if t not in stale)
+          if lost:
+              problems.append(
+                  f"{len(lost)} kept release(s) no longer carry the frozen "
+                  f"body:\n    " + "\n    ".join(lost)
+                  + "\n  These were deliberately left alone. One changing "
+                    "means it was repaired by mistake, or the decision was "
+                    "reversed without the reason being struck.")
           problems = []
-          if gone:
+
               problems.append(
                   f"{len(gone)} recorded release(s) are no longer stale — strike "
                   f"them from {record} and lower the ceiling:\n    "

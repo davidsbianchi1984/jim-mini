@@ -27,7 +27,7 @@ _TAG = re.compile(r"^app-v\d+\.\d+\.\d+$")
 
 
 def _rows() -> list[tuple[str, str]]:
-    """`(tag, reason)` per row; reason is empty for a plain backfill target."""
+    """`(tag, reason)` per row — releases still to repair."""
     out = []
     for line in RECORD.read_text(encoding="utf-8").splitlines():
         if not line.strip() or line.startswith("#"):
@@ -35,6 +35,23 @@ def _rows() -> list[tuple[str, str]]:
         tag, _, reason = line.partition("  ")
         out.append((tag.strip(), reason.strip()))
     return out
+
+
+def _kept() -> dict[str, str]:
+    """`{tag: reason}` for releases deliberately left as they are.
+
+    These live in `# kept:` lines rather than in rows, because the ceiling
+    counts what is still wrong and they are not wrong. `app-v0.24.0`'s body
+    *is* the v0.24.0 notes; repairing it would replace a correct body to make
+    a total read zero.
+
+    They stay in the file rather than becoming an exemption in code, and the
+    sweep reads the same lines, so a kept release is expected to still carry
+    the frozen body and fails nothing.
+    """
+    return {m.group(1): m.group(2).strip() for m in re.finditer(
+        r"^# kept: (app-v[\d.]+) — (.+)$",
+        RECORD.read_text(encoding="utf-8"), re.M)}
 
 
 def test_the_stale_release_body_record_is_readable():
@@ -47,7 +64,8 @@ def test_the_stale_release_body_record_is_readable():
     # singular is correct English and the plural-only pattern crashed on
     # it, which is a guard failing at exactly the moment its subject was
     # finished.
-    stated = int(re.search(r"^# status: backlog — (\d+) rows?$", text, re.M).group(1))
+    stated = int(re.search(r"^# status: (?:backlog|floor) — (\d+) rows?$",
+                           text, re.M).group(1))
     assert stated == len(rows), (
         f"the record says {stated} rows and carries {len(rows)}")
     bad = [t for t, _ in rows if not _TAG.match(t)]
@@ -72,7 +90,9 @@ def test_the_stale_release_body_record_only_shrinks():
     assert len(rows) <= ceiling, (
         f"{len(rows)} stale bodies recorded, above the {ceiling} ceiling — "
         "this record may only shrink")
-    kept = {t: r for t, r in rows if r}
-    assert "app-v0.24.0" in kept, (
-        "app-v0.24.0 must stay recorded, with its reason: its body is the "
-        "v0.24.0 notes and backfilling it would replace a correct body")
+    kept = _kept()
+    assert "app-v0.24.0" in kept and kept["app-v0.24.0"], (
+        "app-v0.24.0 must stay in this file under `# kept:` with its reason. "
+        "Its body is the v0.24.0 notes and is correct; a file with neither a "
+        "row nor a kept line for it would read as though no release was ever "
+        "stale, which is the opposite of what happened")

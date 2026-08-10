@@ -1,4 +1,4 @@
-# status: backlog — 1 row
+# status: floor — 0 rows
 #
 # frozen-opens: Three rounds, one question
 #
@@ -51,32 +51,34 @@
 # notes, right for it and wrong for the 411 that inherited it.
 #
 #
-# ## 412 → 1
+# ## What this file counts, and why the count is zero
 #
-# Every release that inherited the frozen body has been rebuilt from its own
-# CHANGELOG entry. What is left is the one row that was never a defect.
+# The ceiling counts releases **still to repair**. It reached zero when the
+# last inherited body was rebuilt.
 #
-# Two things went wrong on the way and both are worth keeping, because both
-# were checks that reported success while doing nothing:
+# It does not count `app-v0.24.0`, which sits under `# kept:` below. That
+# release was never a defect: its body *is* the v0.24.0 notes, right for it and
+# wrong only for the 411 that inherited it. Backfilling it would replace a
+# correct body with a duplicate of the changelog to make a number look tidier.
 #
-#   * the first staleness test looked for `414 tests passing` anywhere in a
-#     body. That count is PDI's, so the sweep read zero stale in the two
-#     products where a hundred and twelve remained — and it also matched any
-#     release note that *quoted* the phrase, failing a correct release for
-#     describing the defect it fixed. Staleness is decided by how the prose
-#     opens now, from the `# frozen-opens:` header above.
-#   * the backfill then walked this record rather than the releases. The record
-#     lives on the default branch and the releases live on GitHub, so the two
-#     drift the moment a batch lands. Three runs spent their whole limit
-#     rewriting releases repaired two batches earlier, reported success, and
-#     never reached the last eleven. It reads each release before writing now.
+#     asked     how many rows are left
+#     mattered  how many releases are still wrong
 #
-#     asked     did the run succeed
-#     mattered  did the run change anything
+# So the kept release moved out of the count rather than out of the file. A
+# deliberate decision belongs where the next person reading this will see it,
+# not inside a guard as an exemption, and not deleted because it was
+# inconvenient to a total.
 #
-# This file stays at one row. It is not empty and will not become empty: an
-# empty record would say *no release was ever stale*, which is the opposite of
-# what happened here.
+# The file stays at zero. An empty file with no `# kept:` line would say *no
+# release was ever stale*, which is the opposite of what happened here: 412 of
+# 530 were, across the three products, for a hundred and thirty-four releases.
 #
-# ceiling: 1
-app-v0.24.0  keep — this body IS the v0.24.0 notes, and is correct for it
+# ## kept
+#
+# One line per release deliberately left as it is, with its reason. Both the
+# guard here and `release-bodies-sweep.yml` read these, so a kept release is
+# expected to still carry the frozen body and does not fail either.
+#
+# kept: app-v0.24.0 — its body IS the v0.24.0 notes, and is correct for it
+#
+# ceiling: 0
