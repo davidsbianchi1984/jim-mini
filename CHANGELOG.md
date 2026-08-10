@@ -4,6 +4,25 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.8] - 2026-08-10
+
+### No change to this product
+
+Two findings carried from PDI's round, both of which apply here.
+
+`release_fields.txt` -- byte-identical in all three products -- replaces the
+prose list a bump was driven from. It names every version field individually,
+including the three a search for the outgoing version string cannot find, and
+three guards read it rather than trusting that anybody did.
+
+`RELEASE_NOTES.md` and `sync-release-notes.yml` are deleted. 412 of 530
+published releases across the three products carried the same v0.24.0 prose,
+because that file was published verbatim over every curated release body since.
+`release-integrity.yml` replaces them, and reads rather than writes.
+
+PDI's console also reached a floor of zero. Recorded here to keep the three
+changelogs in step at one version.
+
 ## [0.60.7] — 2026-08-09
 
 ### No change to this product
