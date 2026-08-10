@@ -1,4 +1,4 @@
-# status: backlog — 88 rows
+# status: backlog — 13 rows
 #
 # frozen-opens: Three rounds, one question
 #
@@ -50,83 +50,8 @@
 # `app-v0.24.0` is that row and always will be: its body *is* the v0.24.0
 # notes, right for it and wrong for the 411 that inherited it.
 #
-# ceiling: 88
+# ceiling: 13
 app-v0.24.0  keep — this body IS the v0.24.0 notes, and is correct for it
-app-v0.44.8
-app-v0.44.9
-app-v0.45.0
-app-v0.45.1
-app-v0.45.2
-app-v0.45.3
-app-v0.45.4
-app-v0.45.5
-app-v0.45.6
-app-v0.45.7
-app-v0.45.8
-app-v0.45.9
-app-v0.46.0
-app-v0.46.1
-app-v0.46.2
-app-v0.46.3
-app-v0.46.4
-app-v0.46.5
-app-v0.46.6
-app-v0.46.8
-app-v0.46.9
-app-v0.47.0
-app-v0.47.1
-app-v0.47.2
-app-v0.47.3
-app-v0.47.4
-app-v0.47.5
-app-v0.47.7
-app-v0.47.8
-app-v0.47.9
-app-v0.48.0
-app-v0.48.1
-app-v0.51.0
-app-v0.52.0
-app-v0.53.0
-app-v0.53.1
-app-v0.54.0
-app-v0.54.1
-app-v0.55.0
-app-v0.56.0
-app-v0.56.1
-app-v0.56.2
-app-v0.56.3
-app-v0.56.4
-app-v0.56.5
-app-v0.56.6
-app-v0.56.7
-app-v0.56.8
-app-v0.56.9
-app-v0.57.0
-app-v0.57.1
-app-v0.57.2
-app-v0.57.3
-app-v0.57.4
-app-v0.57.5
-app-v0.57.6
-app-v0.57.7
-app-v0.57.8
-app-v0.57.9
-app-v0.58.0
-app-v0.58.1
-app-v0.58.2
-app-v0.58.3
-app-v0.58.4
-app-v0.58.5
-app-v0.58.6
-app-v0.58.7
-app-v0.58.8
-app-v0.58.9
-app-v0.59.0
-app-v0.59.1
-app-v0.59.2
-app-v0.59.3
-app-v0.59.4
-app-v0.59.5
 app-v0.59.6
 app-v0.59.7
 app-v0.59.8
