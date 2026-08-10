@@ -95,6 +95,7 @@ jobs:
           gone = sorted(t for t in rows if t not in stale)
           new = sorted(t for t in stale if t not in rows and t not in kept)
           lost = sorted(t for t in kept if t not in stale)
+          problems = []
           if lost:
               problems.append(
                   f"{len(lost)} kept release(s) no longer carry the frozen "
@@ -102,8 +103,7 @@ jobs:
                   + "\n  These were deliberately left alone. One changing "
                     "means it was repaired by mistake, or the decision was "
                     "reversed without the reason being struck.")
-          problems = []
-
+          if gone:
               problems.append(
                   f"{len(gone)} recorded release(s) are no longer stale — strike "
                   f"them from {record} and lower the ceiling:\n    "

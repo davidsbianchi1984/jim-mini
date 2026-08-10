@@ -96,3 +96,90 @@ def test_the_stale_release_body_record_only_shrinks():
         "Its body is the v0.24.0 notes and is correct; a file with neither a "
         "row nor a kept line for it would read as though no release was ever "
         "stale, which is the opposite of what happened")
+
+
+# ---------------------------------------------------------------------------
+# The two workflows that read this record embed their Python inside YAML,
+# where no interpreter, linter or test ever looks at it. That blindness
+# shipped a sweep whose script did not parse: an edit left `problems = []`
+# after the first append and dropped an `if gone:` line, so every scheduled
+# run died on an IndentationError before checking anything — a checker that
+# cannot start, failing in a place nothing was watching.
+
+WORKFLOWS = tuple(
+    (Path(__file__).resolve().parents[2] / ".github" / "workflows" / name)
+    for name in ("release-bodies-sweep.yml", "release-integrity.yml"))
+
+
+def _embedded_script(path: Path) -> str:
+    """The Python between `python3 - <<'PY'` and its closing `PY`, dedented."""
+    text = path.read_text(encoding="utf-8")
+    inside, lines = False, []
+    for line in text.splitlines():
+        if line.strip() == "python3 - <<'PY'":
+            inside = True
+            continue
+        if inside and line.strip() == "PY":
+            break
+        if inside:
+            lines.append(line)
+    assert lines, f"{path.name} carries no embedded Python heredoc"
+    import textwrap
+    return textwrap.dedent("\n".join(lines))
+
+
+def test_the_workflow_scripts_still_parse():
+    """The check that was missing when the sweep shipped unrunnable."""
+    import ast
+
+    for path in WORKFLOWS:
+        try:
+            ast.parse(_embedded_script(path))
+        except SyntaxError as exc:
+            raise AssertionError(
+                f"{path.name}'s embedded script does not parse "
+                f"(line {exc.lineno}: {exc.msg}). Every run of that workflow "
+                "dies before it checks anything, and nothing else reads this "
+                "code.") from exc
+
+
+def test_the_frozen_opening_decides_staleness_for_this_product():
+    """The decision, injected — with this repository's own frozen opening.
+
+    The sweep once looked for `414 tests passing` anywhere in the body. That
+    count is PDI's, so the check was dead in the other two products; and it
+    matched a release that *quoted* the phrase. The decision is now
+    `prose(body).startswith(opens)` with `opens` read from this record — and
+    this test drives that exact decision, taking `prose` from the sweep's own
+    script so the logic proven here is the logic that runs.
+    """
+    import ast
+
+    tree = ast.parse(_embedded_script(WORKFLOWS[0]))
+    fn = next(n for n in ast.walk(tree)
+              if isinstance(n, ast.FunctionDef) and n.name == "prose")
+    ns: dict = {}
+    exec(compile(ast.Module(body=[fn], type_ignores=[]), "<prose>", "exec"), ns)
+    prose = ns["prose"]
+
+    opens = re.search(r"^# frozen-opens: (.+)$",
+                      RECORD.read_text(encoding="utf-8"), re.M)
+    assert opens, "the record has no `# frozen-opens:` header"
+    mark = opens.group(1).strip()
+
+    frozen = (f"{mark}: **the rest of the frozen notes**\n\nBody.\n\n"
+              "**Full Changelog**: https://example.invalid/compare/a...b")
+    fresh = ("The console the policy blanked.\n\nWhat shipped, described "
+             "for this release.\n\n## What's Changed\n* generated rows")
+    quoting = (f"Strikes the old sweep: it matched any body quoting "
+               f"\u201c{mark}\u201d, like this one.")
+
+    assert prose(frozen).startswith(mark), (
+        "a body opening with this product's frozen text is not seen as "
+        "stale — the sweep has gone dead in this repository")
+    assert not prose(fresh).startswith(mark), (
+        "a fresh body is classified stale, so every honest release would "
+        "be flagged")
+    assert not prose(quoting).startswith(mark), (
+        "a body merely quoting the frozen opening is classified stale — "
+        "the defect the startswith decision replaced is back")

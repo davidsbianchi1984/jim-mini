@@ -1,4 +1,4 @@
-# status: manifest — 453 guards carried by all three products
+# status: manifest — 455 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -355,6 +355,7 @@ test_the_fixture_is_actually_there
 test_the_floors_are_under_what_is_actually_there
 test_the_frame_arrives_translated_and_the_slot_survives
 test_the_front_door_opens_on_the_console
+test_the_frozen_opening_decides_staleness_for_this_product
 test_the_guard_allows_a_record_to_decode_less_than_it_is_sent
 test_the_guard_holds_org_json_to_the_coercions_it_actually_performs
 test_the_guard_would_catch_a_fictional_field
@@ -477,6 +478,7 @@ test_the_where_marker_is_still_dropped
 test_the_width_check_reads_the_widest_row_not_the_first
 test_the_windows_shell_ships_the_version_that_shipped
 test_the_wire_shape_matches_what_the_gateway_will_accept
+test_the_workflow_scripts_still_parse
 test_there_are_build_files_to_read
 test_there_are_build_steps_to_check
 test_there_are_galleries_to_check
