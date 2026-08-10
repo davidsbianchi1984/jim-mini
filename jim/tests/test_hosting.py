@@ -59,6 +59,19 @@ def test_signup_key_gates_enrollment_when_set(client, monkeypatch):
     assert ok.json()["user_token"]
 
 
+def test_health_says_whether_signup_needs_a_key(client, monkeypatch):
+    """The signup screen reads this to know whether to ask for an invite key.
+
+    Without it, a gated deployment collects a whole form and answers 403 —
+    a refusal the person cannot act on, because nothing ever asked them for
+    the key. The flag says only that a key is required, never what it is.
+    """
+    monkeypatch.delenv("JIM_SIGNUP_KEY", raising=False)
+    assert client.get("/health").json()["signup_key"] is False
+    monkeypatch.setenv("JIM_SIGNUP_KEY", "let-me-in")
+    assert client.get("/health").json()["signup_key"] is True
+
+
 def test_no_signup_key_leaves_local_use_open(client, monkeypatch):
     """Unset = the LAN/laptop default: reaching it is enough."""
     monkeypatch.delenv("JIM_SIGNUP_KEY", raising=False)

@@ -62,6 +62,11 @@ public sealed partial class OverviewPage : Page
         KeyLead.Text = L10n.T("set.key.pitch");
         KeyBox.Header = L10n.T("set.key.label");
         KeyBox.PlaceholderText = L10n.T("set.key.ph");
+        InviteHead.Text = L10n.T("set.invite");
+        InviteLead.Text = L10n.T("set.invite.lead");
+        InviteBox.PlaceholderText = L10n.T("set.invite");
+        SaveInviteButton.Content = L10n.T("set.save");
+        InviteBox.Password = AppState.Current.SignupKey;
         SaveKeyButton.Content = L10n.T("set.save");
         KeyBox.Password = AppState.Current.LlmKey;
         LanguageSub.Text = L10n.T("ov.language.sub");
@@ -416,5 +421,13 @@ public sealed partial class OverviewPage : Page
     {
         AppState.Current.RememberLlmKey(KeyBox.Password);
         KeyBox.Password = AppState.Current.LlmKey;
+    }
+
+    /// <summary>The deployment invite key, same clearing rule: empty means
+    /// none, and a deployment that never gated signup never needs one.</summary>
+    private void OnSaveInvite(object sender, RoutedEventArgs e)
+    {
+        AppState.Current.RememberSignupKey(InviteBox.Password);
+        InviteBox.Password = AppState.Current.SignupKey;
     }
 }

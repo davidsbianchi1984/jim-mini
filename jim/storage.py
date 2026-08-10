@@ -278,7 +278,8 @@ def require(plan: str, kind: str) -> None:
     raise StorageError(
         f"{SENSITIVE[kind]}. The free plan stores everything in the clear, "
         "and this is not ours to expose on somebody else's behalf. Basic "
-        "seals it in the vault for $20 a month, and the vault itself is free "
+        "seals it in the vault — free during the beta, $20 a month after — "
+        "and the vault itself is free "
         "to host — colocation costs nothing. " + EMERGENCY_NOTE
     )
 

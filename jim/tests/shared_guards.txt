@@ -1,4 +1,4 @@
-# status: manifest — 455 guards carried by all three products
+# status: manifest — 456 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -200,6 +200,7 @@ test_every_value_entering_a_script_goes_through_the_escaper
 test_every_version_a_native_shell_ships_is_named_here
 test_every_way_out_of_this_host_consults_offline_mode
 test_every_windows_screen_is_well_formed_markup
+test_health_says_whether_signup_needs_a_key
 test_identifying_segments_are_replaced
 test_it_only_shrinks
 test_it_walks_in_order_and_remembers

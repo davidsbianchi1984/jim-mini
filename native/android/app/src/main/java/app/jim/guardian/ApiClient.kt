@@ -201,6 +201,12 @@ object ApiClient {
      *  every request as `x-llm-api-key`. Empty means the deployment's. */
     @Volatile var llmKey: String = ""
 
+    /** The deployment invite key: a published deployment sets
+     *  JIM_SIGNUP_KEY and refuses account creation without it. Sent as
+     *  `x-signup-key` on every request; the backend reads it only on the
+     *  routes it gates. */
+    @Volatile var signupKey: String = ""
+
     @Volatile var base: String = "http://10.0.2.2:8000"
 
     private fun parseGuidance(o: JSONObject?): Guidance? {
@@ -336,6 +342,8 @@ object ApiClient {
             setRequestProperty("accept-language", L10n.deviceLanguage())
             llmKey.takeIf { it.isNotEmpty() }?.let {
                 setRequestProperty("x-llm-api-key", it) }
+            signupKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-signup-key", it) }
             token?.let { setRequestProperty("authorization", "Bearer $it") }
             connectTimeout = 8000; readTimeout = 8000
             if (body != null) {
@@ -487,6 +495,8 @@ object ApiClient {
                     setRequestProperty("accept-language", L10n.deviceLanguage())
             llmKey.takeIf { it.isNotEmpty() }?.let {
                 setRequestProperty("x-llm-api-key", it) }
+            signupKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-signup-key", it) }
                 setRequestProperty("authorization", "Bearer $token")
                 connectTimeout = 8000; readTimeout = 8000
             }
@@ -560,6 +570,8 @@ object ApiClient {
                     setRequestProperty("accept-language", L10n.deviceLanguage())
             llmKey.takeIf { it.isNotEmpty() }?.let {
                 setRequestProperty("x-llm-api-key", it) }
+            signupKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-signup-key", it) }
             setRequestProperty("authorization", "Bearer $token")
             connectTimeout = 8000; readTimeout = 8000
         }
@@ -704,6 +716,8 @@ object ApiClient {
                 setRequestProperty("accept-language", L10n.deviceLanguage())
             llmKey.takeIf { it.isNotEmpty() }?.let {
                 setRequestProperty("x-llm-api-key", it) }
+            signupKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-signup-key", it) }
                 connectTimeout = 8000; readTimeout = 8000
             }
             val text = conn.inputStream.bufferedReader().use { it.readText() }
@@ -843,6 +857,8 @@ object ApiClient {
                     setRequestProperty("accept-language", L10n.deviceLanguage())
             llmKey.takeIf { it.isNotEmpty() }?.let {
                 setRequestProperty("x-llm-api-key", it) }
+            signupKey.takeIf { it.isNotEmpty() }?.let {
+                setRequestProperty("x-signup-key", it) }
             setRequestProperty("authorization", "Bearer $token")
             connectTimeout = 8000; readTimeout = 8000
         }

@@ -63,19 +63,26 @@ PLANS: dict[str, dict] = {
         "means": "the whole Guardian, with your record stored in the clear. "
                  "Same features as Basic; no vault, and nothing private.",
     },
+    # Beta pricing: both paid plans are $0 while the beta runs. The tiers
+    # keep their names and their gates — what a tester chooses is still
+    # recorded and enforced — but nobody pays to test. The intended prices
+    # ($20 Basic, $130 Pro) return when the beta ends, and each plan's own
+    # copy says so, at the moment of choosing rather than in a footnote.
     "basic": {
-        "price_usd": 20,
+        "price_usd": 0,
         "period": "month",
         "title": "Basic",
         "means": "the same Guardian as Free, with your record sealed in the "
-                 "encrypted vault under a key you can hold yourself.",
+                 "encrypted vault under a key you can hold yourself. Free "
+                 "during the beta; $20/month when the beta ends.",
     },
     "pro": {
-        "price_usd": 130,
+        "price_usd": 0,
         "period": "month",
         "title": "Pro",
         "means": "everything in Basic, plus the watch, proactive monitoring, "
-                 "the specialist marketplace, and synthetic agents.",
+                 "the specialist marketplace, and synthetic agents. Free "
+                 "during the beta; $130/month when the beta ends.",
     },
 }
 ORDER = ("visitor", "free", "basic", "pro")

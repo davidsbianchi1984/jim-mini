@@ -607,6 +607,12 @@ public sealed class ApiClient
         var llmKey = AppState.Current.LlmKey;
         if (!string.IsNullOrEmpty(llmKey))
             req.Headers.TryAddWithoutValidation("x-llm-api-key", llmKey);
+        // The deployment invite key: a published deployment sets
+        // JIM_SIGNUP_KEY and refuses account creation without it. The
+        // backend reads it only on the routes it gates.
+        var signupKey = AppState.Current.SignupKey;
+        if (!string.IsNullOrEmpty(signupKey))
+            req.Headers.TryAddWithoutValidation("x-signup-key", signupKey);
         return _http.SendAsync(req);
     }
 

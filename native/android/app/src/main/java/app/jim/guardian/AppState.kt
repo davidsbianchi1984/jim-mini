@@ -24,6 +24,7 @@ class GuardianViewModel(app: Application) : AndroidViewModel(app) {
      *  and the phones never did — so a key set in the console was used there
      *  and the deployment's key used here, on the same account. */
     var llmKey by mutableStateOf(prefs.getString("llmKey", "") ?: "")
+    var signupKey by mutableStateOf(prefs.getString("signupKey", "") ?: "")
         private set
     var displayName by mutableStateOf(prefs.getString("name", "") ?: "")
         private set
@@ -62,7 +63,7 @@ class GuardianViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { onResult(runCatching { block() }) }
     }
 
-    init { ApiClient.llmKey = llmKey }
+    init { ApiClient.llmKey = llmKey; ApiClient.signupKey = signupKey }
 
     /** Store or clear it. Empty is the clear: no key means the deployment's,
      *  and there is no flag to leave switched on by mistake. */
@@ -72,6 +73,17 @@ class GuardianViewModel(app: Application) : AndroidViewModel(app) {
         ApiClient.llmKey = trimmed
         prefs.edit().apply {
             if (trimmed.isEmpty()) remove("llmKey") else putString("llmKey", trimmed)
+        }.apply()
+    }
+
+    /** The deployment invite key, same clearing rule: empty means none, and
+     *  a deployment that never gated signup never needs one. */
+    fun rememberSignupKey(key: String) {
+        val trimmed = key.trim()
+        signupKey = trimmed
+        ApiClient.signupKey = trimmed
+        prefs.edit().apply {
+            if (trimmed.isEmpty()) remove("signupKey") else putString("signupKey", trimmed)
         }.apply()
     }
 }

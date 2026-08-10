@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, getBase, setBase } from "../api";
+import { api, getBase, setBase, getSignupKey, setSignupKey } from "../api";
 import { useSession } from "../store";
 import { t as tr, visitorLang } from "../l10n";
 
@@ -46,6 +46,11 @@ export function Onboarding() {
   const [legalName, setLegalName] = useState("");
   const [code, setCode] = useState("");
   const [delivery, setDelivery] = useState<string | null>(null);
+  // Whether this deployment requires an invite key to create an account —
+  // read from /health, so the field appears only where the gate exists. A
+  // laptop install never sees it; the beta host always does.
+  const [needsInvite, setNeedsInvite] = useState(false);
+  const [inviteKey, setInviteKey] = useState(getSignupKey());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -132,6 +137,10 @@ export function Onboarding() {
   }
 
   const passwordsMatch = password === confirm;
+
+  useEffect(() => {
+    api.health().then((h) => setNeedsInvite(!!h.signup_key)).catch(() => {});
+  }, []);
 
   const signup = async () => {
     setBusy(true); setError(null); setNotice(null);
@@ -259,6 +268,14 @@ export function Onboarding() {
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
             {tr("onb.consent", visitorLang())}
           </label>
+          {needsInvite && (<>
+            <label>{tr("onb.invite", visitorLang())}
+              <input value={inviteKey}
+                     placeholder={tr("onb.invite", visitorLang())}
+                     onChange={(e) => { setInviteKey(e.target.value); setSignupKey(e.target.value); }} />
+            </label>
+            <p className="field-hint">{tr("onb.invite.hint", visitorLang())}</p>
+          </>)}
         </>)}
 
         {mode === "code" && (<>

@@ -36,6 +36,18 @@ public sealed class AppState
         Save();
     }
 
+    /// <summary>The deployment invite key, sent per request as
+    /// <c>x-signup-key</c>. A published deployment gates account creation
+    /// behind one; empty means none, which is what every ungated
+    /// deployment wants.</summary>
+    public string SignupKey { get; set; } = "";
+
+    public void RememberSignupKey(string key)
+    {
+        SignupKey = (key ?? "").Trim();
+        Save();
+    }
+
     public void RememberLanguage(string code)
     {
         Language = code;

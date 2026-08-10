@@ -1,4 +1,4 @@
-# status: backlog — 1 row
+# status: floor — 0 rows
 # ceiling: 6
 #
 # Client/header pairs that are deliberate: a route a client has a door to
@@ -10,9 +10,17 @@
 # vault under customer custody required a header no client sent, and the
 # comparison between clients passed because they agreed.
 #
-# x-signup-key is the genuine article. An operator who sets JIM_SIGNUP_KEY
-# on a published instance is closing registration to everybody, which is
-# what the switch is for — "unset = open, the right default on a LAN". A
-# client that could present it would be a client that reopens the door the
-# operator shut.
-*: x-signup-key
+# ## The row this file used to hold, and why it was wrong
+#
+# `*: x-signup-key` sat here with a reason that read well and did not
+# survive a real host: "a client that could present it would be a client
+# that reopens the door the operator shut." But JIM_SIGNUP_KEY is not a
+# lock, it is an invitation — the operator sets it and then *hands it to
+# the people they invite*, and the backend's own refusal says "send it as
+# the x-signup-key header." With no client able to present it, the first
+# published deployment collected whole signup forms and answered each one
+# with a 403 nobody could act on — including the operator's. Every client
+# now stores an invite key and presents it, the signup screens ask for one
+# exactly when /health says the deployment is gated, and this file goes to
+# zero the way a backlog should: by the gap closing, not the reason
+# improving.

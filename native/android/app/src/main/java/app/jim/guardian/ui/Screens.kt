@@ -1887,6 +1887,7 @@ fun LanguageCard(vm: GuardianViewModel) {
     var preTranslate by remember { mutableStateOf(true) }
     var translateInput by remember { mutableStateOf("") }
     var llmKey by remember { mutableStateOf(vm.llmKey) }
+    var inviteKey by remember { mutableStateOf(vm.signupKey) }
     var translated by remember { mutableStateOf<TranslateResult?>(null) }
     LaunchedEffect(Unit) {
         vm.call({ ApiClient.languages() }) { r -> languages = r.getOrDefault(emptyList()) }
@@ -1908,6 +1909,18 @@ fun LanguageCard(vm: GuardianViewModel) {
             labeledField(L10n.t("set.key.label", vm.language), llmKey,
                 L10n.t("set.key.ph", vm.language)) { llmKey = it }
             SmallAction(L10n.t("set.save", vm.language)) { vm.rememberLlmKey(llmKey) }
+        }
+
+        // The deployment invite key. A published deployment gates account
+        // creation behind one; this phone talks to whichever backend the
+        // connection names, so it needs the same door the console has.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("set.invite", vm.language), color = Jim.Txt, fontSize = 16.sp,
+                fontWeight = FontWeight.Bold)
+            Text(L10n.t("set.invite.lead", vm.language), color = Jim.T2, fontSize = 12.sp)
+            labeledField(L10n.t("set.invite", vm.language), inviteKey,
+                L10n.t("set.invite", vm.language)) { inviteKey = it }
+            SmallAction(L10n.t("set.save", vm.language)) { vm.rememberSignupKey(inviteKey) }
         }
 
         Text(L10n.t("ov.language", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)

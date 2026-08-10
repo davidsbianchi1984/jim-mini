@@ -216,6 +216,15 @@ export const CONSOLE_VERSION: string =
 // x-llm-api-key so generations run on the user's own credential. The backend
 // never persists it; without one, the deployment's key (if any) answers.
 export function getLlmKey(): string { return localStorage.getItem("jim.llmKey") || ""; }
+// The deployment invite key: a published deployment sets JIM_SIGNUP_KEY and
+// refuses account creation without it. Stored on this device once typed,
+// sent as x-signup-key on every request — the backend reads it only on the
+// routes it gates.
+export function getSignupKey(): string { return localStorage.getItem("jim.signupKey") || ""; }
+export function setSignupKey(key: string) {
+  if (key.trim()) localStorage.setItem("jim.signupKey", key.trim());
+  else localStorage.removeItem("jim.signupKey");
+}
 export function setLlmKey(key: string) {
   if (key.trim()) localStorage.setItem("jim.llmKey", key.trim());
   else localStorage.removeItem("jim.llmKey");
@@ -258,6 +267,8 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
   if (opts.token) headers["authorization"] = `Bearer ${opts.token}`;
   const llmKey = getLlmKey();
   if (llmKey) headers["x-llm-api-key"] = llmKey;
+  const signupKey = getSignupKey();
+  if (signupKey) headers["x-signup-key"] = signupKey;
   let res: Response;
   try {
     res = await fetch(getBase() + path, {
@@ -889,7 +900,7 @@ export const api = {
     cloud_attached?: boolean;
   }>("/offline/status"),
   health: () => req<{ status: string; version?: string; tandem: boolean;
-                      console?: boolean }>("/health"),
+                      console?: boolean; signup_key?: boolean }>("/health"),
   // How to open this console on a phone: its URL on the local network.
   pair: () => req<PairInfo>("/pair"),
   enroll: (body: { display_name: string; birthdate: string; terms_consent: boolean }) =>

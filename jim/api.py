@@ -347,7 +347,12 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "tandem": app.state.qrme is not None,
                 "pdi": app.state.pdi is not None,
                 "cloud": app.state.cloud is not None,
-                "console": mobile.console_dir() is not None}
+                "console": mobile.console_dir() is not None,
+                # Whether account creation here needs an invite key, so the
+                # signup screen can ask for one instead of collecting a form
+                # that ends in a 403 the person cannot answer. Only the fact
+                # that a key is required — never the key.
+                "signup_key": bool(os.environ.get("JIM_SIGNUP_KEY"))}
 
     # -- run it from your phone ---------------------------------------------
 

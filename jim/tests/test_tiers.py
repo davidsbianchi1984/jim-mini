@@ -118,8 +118,14 @@ def test_basic_is_the_guardian_and_pro_reaches_further(client):
 
 
 def test_the_plans_are_the_prices_that_were_agreed(client):
-    assert tiers.PLANS["basic"]["price_usd"] == 20
-    assert tiers.PLANS["pro"]["price_usd"] == 130
+    # The agreement changed on 2026-08-10: every plan is $0 while the beta
+    # runs, with the returning prices named in each plan's own copy.
+    assert tiers.PLANS["basic"]["price_usd"] == 0
+    assert "beta" in tiers.PLANS["basic"]["means"]
+    assert "$20" in tiers.PLANS["basic"]["means"]
+    assert tiers.PLANS["pro"]["price_usd"] == 0
+    assert "beta" in tiers.PLANS["pro"]["means"]
+    assert "$130" in tiers.PLANS["pro"]["means"]
     assert tiers.PLANS["basic"]["period"] == "month"
     assert tiers.PLANS["pro"]["period"] == "month"
 
