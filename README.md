@@ -13,7 +13,6 @@ greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
 **Current release: v0.60.7** ([changelog](CHANGELOG.md) ·
-[release notes](RELEASE_NOTES.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so

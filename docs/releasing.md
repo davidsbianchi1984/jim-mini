@@ -49,7 +49,7 @@ anything.
 ## Cut a release
 
 1. Update [CHANGELOG.md](../CHANGELOG.md) — move `Unreleased` items under the new
-   version and date it. Refresh [RELEASE_NOTES.md](../RELEASE_NOTES.md). Do the
+   version and date it. Do the
    same in the sibling repositories, in the same pass.
 
    **Add the link definition at the bottom of the file, and repoint
@@ -107,28 +107,32 @@ anything.
 
 The `app-v*` tag triggers `.github/workflows/desktop-release.yml`, which builds
 the console into per-OS installers (`.dmg` / `.exe` / `.AppImage`) on real
-macOS / Windows / Linux runners and attaches them to a GitHub Release, with
-GitHub's generated changelog as the body.
+macOS / Windows / Linux runners and attaches them to a GitHub Release. It sets
+no body of its own.
 
-**Leave the release body empty when you create the tag.** When that workflow
-finishes, `sync-release-notes.yml` runs and lays `RELEASE_NOTES.md` over the
-top — dropping the maintainer preamble above the `---`, and keeping exactly one
-copy of the generated *What's Changed*. Anything typed by hand is replaced.
+**Set the release body when you create the tag, and nothing will overwrite it.**
+It used to be the opposite: this page said to leave the body empty, because
+`sync-release-notes.yml` laid `RELEASE_NOTES.md` over the top once the build
+finished. That file was last written for v0.24.0 and was published verbatim
+onto every release after it — 412 of 530 across the three products carried the
+same frozen prose, still claiming *414 tests passing*. The curated body handed
+over with the tag link was written, published, and then replaced, every time.
 
-Only one workflow writes that body, and it is that one. Both used to: the
-installer build published `RELEASE_NOTES.md` verbatim, preamble included, two
-to four minutes after the sync had already published it correctly. The build
-always won, so every release needed re-syncing by hand. The build no longer
-sets a body at all, and the sync waits for it rather than racing it.
+    asked     which workflow owns the release body
+    mattered  does the body say what shipped
+
+So the file and its workflow are gone. The body is set once, deliberately, by
+whoever presses the tag, and `release-integrity.yml` checks afterwards that the
+published prose is neither empty, nor byte-identical to the previous release's,
+nor the old frozen sentinel. That check runs **after** the tag — it is not a
+merge gate and cannot be one, because the body does not exist until the tag is
+pushed.
 
 Tag names are **case-sensitive** to the trigger. `App-v0.1.9` matches
 `tags: ["app-v*"]` in neither workflow and silently does nothing.
 
 A manual **Run workflow** on the build workflow uploads the installers as
-artifacts *without* publishing a Release — useful for a dry run. To repair an
-already-published body, run **sync-release-notes** manually with the tag; it
-checks out that tag, so it publishes the notes that shipped with it rather than
-whatever `main` says today.
+artifacts *without* publishing a Release — useful for a dry run.
 
 ## Code signing (optional)
 

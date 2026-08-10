@@ -157,7 +157,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4          # for RELEASE_NOTES.md
+      - uses: actions/checkout@v4
       - name: Download all installers
         uses: actions/download-artifact@v4
         with:
@@ -166,10 +166,18 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: installers/**/*
-          # No `body_path` here. This step and sync-release-notes both used to
-          # write the body from RELEASE_NOTES.md, and only the other one strips
-          # the maintainer preamble above the `---`. Two writers, one file, one
-          # of them wrong — so the body belongs to sync-release-notes, which
-          # runs after this workflow completes and lays the curated notes over
-          # the generated changelog below. This step attaches installers.
+          # No body of any kind here. The body is set once, by whoever
+          # presses the tag, and nothing in CI writes over it: RELEASE_NOTES.md
+          # and sync-release-notes.yml were deleted after 412 of 530 releases
+          # across the three products turned out to be carrying the same
+          # v0.24.0 prose, published verbatim over every curated body since.
+          #
+          # `generate_release_notes` is kept, and one thing about it is not yet
+          # established: whether it *appends* to a body that is already set or
+          # replaces it. GitHub appends when a body is sent in the same call,
+          # but this action sends none. Settling it needs a real release, which
+          # is not CI's to create — so `release-integrity.yml` answers it on
+          # the next tag instead. If a published body comes back as generated
+          # notes alone, this is why, and the fix is to drop this line and put
+          # the compare link in the curated body.
           generate_release_notes: true

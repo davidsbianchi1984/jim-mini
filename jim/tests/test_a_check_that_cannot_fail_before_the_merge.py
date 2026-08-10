@@ -40,7 +40,6 @@ header:
 
   - `e2e.yml` boots three containers and is deliberately post-merge
   - `desktop-release.yml` fires on a release tag, which only exists after
-  - `sync-release-notes.yml` publishes notes for a tag, likewise
 
 Those are named in `POST_MERGE` below. Naming one is a decision with a
 reason, which is the point: the failure this guard exists for was nobody
@@ -71,7 +70,7 @@ WORKFLOWS = REPO / ".github" / "workflows"
 # the thing whose absence let a hundred and fifty-two red runs go unread.
 POST_MERGE = {
     "desktop-release.yml",      # fires on a release tag, which post-dates the cut
-    "sync-release-notes.yml",   # publishes notes for a tag, likewise
+    "release-integrity.yml",    # reads the body a tag published, so likewise
 }
 
 

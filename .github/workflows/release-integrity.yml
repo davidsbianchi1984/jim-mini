@@ -1,0 +1,145 @@
+# Does the published release body say what shipped?
+#
+# 412 of 530 releases across the three products carried the same v0.24.0 prose,
+# still claiming *414 tests passing* against suites now in the thousands. The
+# body was written by hand at tag time, then overwritten by a workflow reading
+# a file nobody had updated since v0.24.0. Nothing compared the two, so nothing
+# noticed for a hundred and thirty-four releases.
+#
+#     asked     which workflow owns the release body
+#     mattered  does the body say what shipped
+#
+# That workflow and that file are gone. This is what replaces them: not another
+# writer, a reader.
+#
+# ## This is not a merge gate, and must never be wired as one
+#
+# `ci.yml` and `native.yml` were both moved to *any branch push* because a
+# check that only runs after the decision is a record, not a check. That lesson
+# does not apply here and applying it would break this job.
+#
+# A release body does not exist until a tag is pushed, and pushing the tag is
+# the last step of a release — after the merge, by hand, deliberately. There is
+# nothing for this to gate. It runs on the tag, it fails loudly, and the repair
+# is to edit the release body. Wiring it to a branch push would give it nothing
+# to read and it would pass on every branch forever, which is the exact shape
+# of check this estate keeps finding and deleting.
+#
+# ## It reads the prose, because that is what a person reads
+#
+# The obvious check — *does the body contain its own version* — passes on a
+# body that is entirely wrong. PDI's app-v0.60.7 contained the string `0.60.7`
+# while every word of its prose was the frozen v0.24.0 text, because GitHub's
+# auto-generated footer appends `compare/app-v0.60.6...app-v0.60.7`. The
+# version was in the body and the body was six months stale.
+#
+# So the generated sections are stripped first — everything from `## What's
+# Changed` or `**Full Changelog**` onward — and the assertions are made on what
+# is left, which is the part somebody actually reads.
+
+name: release-integrity
+
+on:
+  release:
+    types: [published, edited]
+  push:
+    tags: ["app-v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to check (e.g. app-v0.60.8)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  body:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The published body must say what shipped
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: >-
+            ${{ inputs.tag || github.event.release.tag_name
+                || github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess, sys
+
+          repo, tag = os.environ["REPO"], os.environ["TAG"]
+
+          def gh(path):
+              out = subprocess.run(["gh", "api", path], capture_output=True,
+                                   text=True)
+              return json.loads(out.stdout) if out.returncode == 0 else None
+
+          def prose(body: str) -> str:
+              """The body with GitHub's generated sections removed.
+
+              A generated footer names the tag it belongs to, so a body made
+              of nothing else still 'mentions its version'. Only what is above
+              it was written for this release by a person."""
+              for marker in ("## What's Changed", "**Full Changelog**"):
+                  if marker in body:
+                      body = body.split(marker)[0]
+              return body.strip()
+
+          this = gh(f"/repos/{repo}/releases/tags/{tag}")
+          if this is None:
+              sys.exit(f"::error::no release exists for {tag}")
+
+          mine = prose(this.get("body") or "")
+          problems = []
+
+          # 1. Empty. The failure the deletion of RELEASE_NOTES.md could
+          #    plausibly introduce: nothing writes a body now except the
+          #    person pressing the tag, so a forgotten body is silence.
+          if not mine:
+              problems.append(
+                  "the body is empty once the generated sections are removed. "
+                  "Nothing writes it automatically any more — it is set when "
+                  "the tag is pressed. Edit the release and paste the notes.")
+
+          # 2. The frozen sentinel. RELEASE_NOTES.md is deleted, but a body
+          #    pasted from an old release, or an old release re-synced by
+          #    hand, would bring it straight back.
+          if "414 tests passing" in mine:
+              problems.append(
+                  "the body carries '414 tests passing' — the v0.24.0 "
+                  "sentinel that 412 releases published verbatim. This text "
+                  "came from a file that no longer exists; it is being copied "
+                  "from an older release.")
+
+          # 3. Identical to the release before it. Two releases cannot
+          #    honestly say the same thing, and this is the shape the whole
+          #    finding took: one body, a hundred and thirty-four tags.
+          rels = gh(f"/repos/{repo}/releases?per_page=100") or []
+          def key(t):
+              m = re.match(r"app-v(\d+)\.(\d+)\.(\d+)$", t or "")
+              return tuple(int(x) for x in m.groups()) if m else None
+          here = key(tag)
+          earlier = sorted(
+              (r for r in rels
+               if key(r.get("tag_name")) and here and key(r["tag_name"]) < here),
+              key=lambda r: key(r["tag_name"]))
+          if earlier:
+              prev = earlier[-1]
+              if prose(prev.get("body") or "") == mine and mine:
+                  problems.append(
+                      f"the body is byte-identical to {prev['tag_name']}'s "
+                      "once generated sections are stripped. Two releases "
+                      "saying the same thing is how one file came to be "
+                      "published onto a hundred and thirty-four tags.")
+
+          if problems:
+              print(f"::error::{tag}: {len(problems)} problem(s) with the "
+                    "published release body")
+              for p in problems:
+                  print(f"  - {p}")
+              sys.exit(1)
+          print(f"{tag}: body is {len(mine)} characters of its own prose")
+          PY
