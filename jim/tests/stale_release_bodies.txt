@@ -1,77 +1,57 @@
-# status: backlog — 138 rows
+# status: backlog — 113 rows
 #
-# Published releases whose body says nothing about the release it belongs to.
-# Checked by `test_the_stale_release_body_record_is_readable` and
-# `test_the_stale_release_body_record_only_shrinks` here, and against GitHub
-# itself by `.github/workflows/release-bodies-sweep.yml`, which is where the
-# comparison has to live: the bodies are on GitHub and this suite is hermetic.
+# frozen-opens: Three rounds, one question
+#
+# Published releases whose body still opens with the frozen v0.24.0 prose.
+# Checked by `test_the_release_bodies_that_say_nothing.py` here, and against
+# GitHub by `.github/workflows/release-bodies-sweep.yml`.
 #
 # ## What these rows are
 #
-# `RELEASE_NOTES.md` was last written for v0.24.0. `sync-release-notes.yml`
-# published it verbatim over every release body after it, waiting for the
-# installer build so its write would be last. It worked exactly as designed,
-# and the design was the defect: a curated body was written at tag time,
-# published, and replaced by a file thirty-six minor versions behind.
+# `RELEASE_NOTES.md` was last written for v0.24.0, and `sync-release-notes.yml`
+# published it verbatim over every release body after it. 412 of 530 releases
+# across the three products, one identical body spanning 134 tags. The file and
+# the workflow are deleted as of 0.60.8.
 #
 #     asked     which workflow owns the release body
 #     mattered  does the body say what shipped
 #
-# **412 of 530** releases across the three products, one identical body
-# spanning 134 tags. This product holds 138 of them. Both the file and the
-# workflow are deleted as of 0.60.8, and `app-v0.60.8` is the first release
-# that is not on this list — its curated body survived untouched, which is how
-# the deletion was confirmed to work.
+# ## How staleness is decided, and the two ways it was decided wrongly
 #
-# ## What a row means, and what shrinking means
+# A body is stale when its prose **opens with** the line in `# frozen-opens:`
+# above. That line is per product and lives here, so the workflows read it
+# rather than carrying a copy.
 #
-# One row per release still carrying the frozen prose, worst-to-newest by tag.
-# A row leaves this file when that release's body is rebuilt from its own
-# CHANGELOG entry. The ceiling may only fall.
+# The first guards written for this asked whether the body contained the string
+# `414 tests passing` anywhere. That was wrong twice over, and both showed up on
+# the first real backfill:
 #
-# A release that is **deliberately left alone keeps its row**, with the reason
-# after the tag. It does not become an exemption in code. An exemption inside a
-# guard is a decision nobody reads again; a row with a reason is a decision
-# that stays in front of the next person to open this file. That is the same
-# argument every other record in this estate is built on.
+#   * It is **PDI's** number. QRME's and JIM-mini's frozen bodies carry their
+#     own counts, so the sweep reported zero stale in two products while 112
+#     and 113 remained — a check that passed by being blind.
+#   * It matched any body that merely **quoted** the phrase. PDI's own
+#     `app-v0.60.8` notes describe this finding, so a correct release failed
+#     the check for saying what it fixed.
 #
-# ## The one row that is already correct
+#     asked     does this body contain the sentinel
+#     mattered  does this body open as the frozen one does
 #
-# `app-v0.24.0` is on this list and must never be backfilled. Its body *is* the
-# v0.24.0 notes, which is right for v0.24.0 and wrong for the 411 releases that
-# inherited it. It carries its reason below, and it is the row most likely to
-# be edited by reflex.
+# Opening-line matching answers the second question. A release note is free to
+# discuss the frozen body; it may not *be* it.
 #
-# The estate-wide count is 412: qrme 137, jim-mini 138, pdi 137. Each product
-# ratchets its own, the same way `unregistered_floors.txt` does.
+# ## What a row means
 #
-# ceiling: 138
+# One row per stale release. A row leaves when that release's body is rebuilt
+# from its own CHANGELOG entry by `backfill-release-bodies.yml`. The ceiling may
+# only fall.
+#
+# A release deliberately left alone **keeps its row with the reason on it**,
+# rather than becoming an exemption in code where nobody reads it again.
+# `app-v0.24.0` is that row and always will be: its body *is* the v0.24.0
+# notes, right for it and wrong for the 411 that inherited it.
+#
+# ceiling: 113
 app-v0.24.0  keep — this body IS the v0.24.0 notes, and is correct for it
-app-v0.25.0
-app-v0.28.0
-app-v0.29.0
-app-v0.30.0
-app-v0.30.1
-app-v0.30.2
-app-v0.30.3
-app-v0.30.4
-app-v0.30.5
-app-v0.30.6
-app-v0.30.7
-app-v0.30.8
-app-v0.30.9
-app-v0.40.0
-app-v0.40.1
-app-v0.40.2
-app-v0.40.3
-app-v0.40.5
-app-v0.40.6
-app-v0.40.7
-app-v0.40.9
-app-v0.41.0
-app-v0.42.0
-app-v0.42.1
-app-v0.42.2
 app-v0.42.3
 app-v0.42.4
 app-v0.42.5

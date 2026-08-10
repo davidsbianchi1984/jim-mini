@@ -68,7 +68,7 @@ jobs:
                 || github.ref_name }}
         run: |
           python3 - <<'PY'
-          import json, os, re, subprocess, sys
+          import json, os, pathlib, re, subprocess, sys
 
           repo, tag = os.environ["REPO"], os.environ["TAG"]
 
@@ -104,15 +104,20 @@ jobs:
                   "Nothing writes it automatically any more — it is set when "
                   "the tag is pressed. Edit the release and paste the notes.")
 
-          # 2. The frozen sentinel. RELEASE_NOTES.md is deleted, but a body
-          #    pasted from an old release, or an old release re-synced by
-          #    hand, would bring it straight back.
-          if "414 tests passing" in mine:
+          # 2. The frozen body itself. RELEASE_NOTES.md is deleted, but a body
+          #    pasted from an old release would bring it straight back. The
+          #    test is how the prose *opens*, read from the record's
+          #    `# frozen-opens:` header — not whether it contains a phrase
+          #    somewhere, which failed a correct release for describing the
+          #    defect it fixed.
+          rec = next(pathlib.Path(".").glob("**/stale_release_bodies.txt"), None)
+          opens = (re.search(r"^# frozen-opens: (.+)$",
+                             rec.read_text(encoding="utf-8"), re.M) if rec else None)
+          if opens and mine.startswith(opens.group(1).strip()):
               problems.append(
-                  "the body carries '414 tests passing' — the v0.24.0 "
-                  "sentinel that 412 releases published verbatim. This text "
-                  "came from a file that no longer exists; it is being copied "
-                  "from an older release.")
+                  "the body opens as the frozen v0.24.0 notes do. That text "
+                  "came from a file that no longer exists, so it is being "
+                  "copied from an older release.")
 
           # 3. Identical to the release before it. Two releases cannot
           #    honestly say the same thing, and this is the shape the whole

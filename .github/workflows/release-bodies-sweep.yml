@@ -67,12 +67,24 @@ jobs:
                       b = b.split(m)[0]
               return b.strip()
 
-          # The sentinel is the v0.24.0 body's own claim. It is the one string
-          # every inherited body carries and no rebuilt body can.
-          SENTINEL = "414 tests passing"
+          # A body is stale when its prose *opens* as the frozen one does. The
+          # opening line is per product and is read from the record's own
+          # `# frozen-opens:` header, so nothing here carries a copy.
+          #
+          # This replaced a check for `414 tests passing` anywhere in the body,
+          # which was wrong twice: that count is PDI's, so the sweep reported
+          # zero stale in the two products where 112 and 113 remained; and it
+          # matched any release note that *quoted* the phrase, so PDI's own
+          # 0.60.8 notes failed for describing the finding they fixed.
+          opens = re.search(r"^# frozen-opens: (.+)$",
+                            record.read_text(encoding="utf-8"), re.M)
+          if not opens:
+              sys.exit(f"::error::{record} has no `# frozen-opens:` header, so "
+                       "staleness cannot be decided")
+          mark = opens.group(1).strip()
           stale = {r["tag_name"] for r in rels
                    if re.match(r"app-v\d+\.\d+\.\d+$", r.get("tag_name") or "")
-                   and SENTINEL in prose(r.get("body") or "")}
+                   and prose(r.get("body") or "").startswith(mark)}
 
           gone = sorted(t for t in rows if t not in stale)
           new = sorted(t for t in stale if t not in rows)
