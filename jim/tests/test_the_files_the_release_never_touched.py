@@ -59,6 +59,7 @@ holds that line.
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -286,3 +287,152 @@ def test_the_version_checks_can_fail():
     """The placeholder these three files carried for fifty-five releases."""
     assert "0.1.0" != _version()
     assert _code("0.1.0") != _code(_version())
+
+
+# --- the fields a release has to write ---------------------------------------
+#
+# `release_fields.txt` is byte-identical in all three products. It exists
+# because 0.60.7 was bumped from a prose list that named Android's two fields
+# and left iOS's unnamed, and the iOS build code is invisible to a search for
+# the version being replaced. The guards below read the file rather than
+# trusting that anybody read it: the first checks every field the checklist
+# names, the second checks that the checklist names every version a native
+# shell ships.
+
+FIELDS = Path(__file__).resolve().parent / "release_fields.txt"
+
+
+def _field_rows() -> list[tuple[str, str, str, str]]:
+    """`(glob, field, shape, locator)` for each row of the checklist."""
+    rows = []
+    for line in FIELDS.read_text(encoding="utf-8").splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        parts = [p.strip() for p in line.split("|")]
+        assert len(parts) == 4, f"malformed checklist row: {line!r}"
+        rows.append((parts[0], parts[1], parts[2], parts[3]))
+    return rows
+
+
+def _paths_for(glob: str) -> list[Path]:
+    """Files a checklist glob names, less any ` !path` it excludes."""
+    parts = glob.split(" !")
+    dropped = {p.strip() for p in parts[1:]}
+    return [p for p in sorted(REPO.glob(parts[0].strip()))
+            if str(p.relative_to(REPO)) not in dropped]
+
+
+def _shaped(shape: str, version: str) -> str:
+    return {"version": version,
+            "code": str(_code(version)),
+            "version.0": f"{version}.0",
+            "vversion": f"v{version}"}[shape]
+
+
+def _read_field(path: Path, locator: str) -> list[str]:
+    """Every value `locator` finds in `path`.
+
+    A `$.` path rather than a regex for JSON, because `"version"` appears once
+    per dependency in `package-lock.json` and a regex would read all of them.
+    """
+    if locator.startswith("$."):
+        node = json.loads(path.read_text(encoding="utf-8"))
+        for part in locator[2:].split("."):
+            key = "" if part == "<root>" else part
+            if not isinstance(node, dict) or key not in node:
+                return []
+            node = node[key]
+        return [str(node)]
+    return [m if isinstance(m, str) else m[0]
+            for m in re.findall(locator, path.read_text(encoding="utf-8"), re.M)]
+
+
+def test_the_release_checklist_is_readable():
+    """A guard on the guard. A checklist that parsed to nothing would let the
+    forward half below pass while checking no field at all — the shape of
+    failure this suite is most often bitten by.
+
+    The count it compares against lives in the file's own header rather than
+    in a number written here, so there is nothing to register as a floor and
+    nothing to drift: the row count and the stated count are edited together
+    or they disagree.
+
+    Emptying the checklist entirely does not get past this pair either. The
+    reverse guard reads the native shells for versions no row names, so a
+    checklist with no rows fails there naming every field it stopped
+    covering."""
+    rows = _field_rows()
+    stated = int(re.search(r"^# status: manifest — (\d+) fields$",
+                           FIELDS.read_text(encoding="utf-8"), re.M).group(1))
+    assert stated == len(rows), (
+        f"the checklist says {stated} fields and carries {len(rows)}")
+    assert {s for _, _, s, _ in rows} <= {"version", "code", "version.0",
+                                          "vversion"}, "unknown shape"
+
+
+def test_every_field_the_checklist_names_carries_this_version():
+    """The forward half: what the checklist names must exist, and be current.
+
+    A field named here and absent from the file is as much a failure as a
+    field carrying the wrong number — it means the checklist is describing a
+    release process that no longer matches the tree.
+    """
+    version = _version()
+    problems = []
+    for glob, field, shape, locator in _field_rows():
+        paths = _paths_for(glob)
+        if not paths:
+            problems.append(f"{glob} — the checklist names it, the tree has no such file")
+            continue
+        want = _shaped(shape, version)
+        for path in paths:
+            found = _read_field(path, locator)
+            rel = path.relative_to(REPO)
+            if not found:
+                problems.append(f"{rel}: {field} — named here, not found in the file")
+                continue
+            for got in found:
+                if got != want:
+                    problems.append(f"{rel}: {field} is {got!r}, this release is {want!r}")
+    assert not problems, (
+        f"{len(problems)} release field(s) do not carry {version}:\n    "
+        + "\n    ".join(problems)
+        + "\n  Every field above is one a person installs or a store reads.")
+
+
+def test_every_version_a_native_shell_ships_is_named_here():
+    """The reverse half: a native shell may not carry a version this file has
+    not been told about.
+
+    This is what makes the checklist keep up. Adding a shell, or a fourth
+    version field to an existing one, fails here until the row is written —
+    which is the failure that did not happen when `CURRENT_PROJECT_VERSION`
+    was added to the iOS spec and no list gained a line.
+    """
+    version = _version()
+    code = str(_code(version))
+    # A locator is matched here with a word-boundary guard in front of it,
+    # which the forward half does not need and this half cannot work without.
+    # `MARKETING_VERSION:\s*"..."` is a substring of `WATCH_MARKETING_VERSION:
+    # "..."`, so a bare search reads a brand-new unnamed field as one the
+    # checklist already covers. The injection that added exactly that field
+    # passed this guard until the lookbehind was put in. A plain `\b` will not
+    # do the job: it is false before the `<` of `<Version>`.
+    locators = [r"(?<![A-Za-z0-9_])(?:" + loc + r")"
+                for _, _, _, loc in _field_rows() if not loc.startswith("$.")]
+    problems = []
+    for path in [IOS_SPEC, GRADLE, *CSPROJ]:
+        for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if version not in line and code not in line:
+                continue
+            if line.lstrip().startswith(("#", "//", "<!--")):
+                continue
+            if any(re.search(loc, line) for loc in locators):
+                continue
+            problems.append(f"{path.relative_to(REPO)}:{n}: {line.strip()}")
+    assert not problems, (
+        f"{len(problems)} line(s) in a native shell carry this release's "
+        f"version or build code and no row of release_fields.txt names "
+        f"them:\n    " + "\n    ".join(problems)
+        + "\n  Add the field to the checklist — an unnamed version field is "
+          "one the next bump will not know to write.")

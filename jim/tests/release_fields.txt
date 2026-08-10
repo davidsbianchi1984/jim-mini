@@ -1,0 +1,104 @@
+# status: manifest — 13 fields
+#
+# Every field a release bump has to write, and the shape each one carries.
+# Byte-identical in QRME, JIM-mini and PDI. Checked by
+# `test_every_field_the_checklist_names_carries_this_version` and
+# `test_every_version_a_native_shell_ships_is_named_here`.
+#
+# ## Why this is a file and not a paragraph in a handoff
+#
+# The 0.60.7 cut nearly shipped an iOS build code of `60006` against a
+# marketing version of `0.60.7`. The bump was driven from a prose checklist
+# that listed `native/android/app/build.gradle.kts` **(code + name)** and, one
+# line below it, `native/ios/project.yml` with no fields named at all.
+#
+#     asked     which files does a release touch
+#     mattered  which fields does a release touch
+#
+# Android was bumped correctly because the list said *code + name*. iOS was
+# not, because the list said nothing, and a search for the outgoing version
+# string cannot find `60006` — a build code shares no characters with the
+# marketing version it belongs to. `test_the_iphone_ships_the_version_that_
+# shipped` caught it before the push, so nothing shipped wrong. The checklist
+# is what was wrong.
+#
+# A list where some rows name their fields and others do not teaches its
+# reader that the bare rows have nothing to name. So every row here names its
+# field, including where the field is obvious, and a guard reads this file
+# rather than trusting anybody to have read it.
+#
+# ## The fields a version search cannot find
+#
+# Three of the thirteen below share no characters with the version being
+# replaced, so the usual way of finding what to bump — search the tree for the
+# outgoing number — cannot see them:
+#
+#     native/ios/project.yml               CURRENT_PROJECT_VERSION   60007
+#     native/android/app/build.gradle.kts  versionCode               60007
+#     app/package-lock.json                packages.<root>.version   (nested)
+#
+# The first two are integers derived from the version, `0.60.7` → `60007`, by
+# the same `_code()` the shell guards use.
+#
+# Two more are found by that search and were still unguarded until this file
+# existed: `<AssemblyVersion>` and `<FileVersion>` carry the version with a
+# fourth component, which .NET requires. `<Version>` beside them was checked;
+# those two were not, and an injection setting them to `0.59.4.0` while
+# leaving `<Version>` correct passed the entire suite.
+#
+# ## What is on step 8 and not in this file
+#
+# Two release edits are not single fields and are guarded elsewhere:
+#
+#   * the README release-table row, and
+#   * the CHANGELOG entry
+#
+# both held by `test_the_readme_says_what_shipped.py`, which asserts the
+# banner names the version in `pyproject.toml`, that the newest table row is
+# this release, and that no row names a release that was never cut. They are
+# named here so this file reads as the whole of step 8 rather than only the
+# part of it that happens to be mechanical.
+#
+# ## Format
+#
+#     <path glob> | <field> | <shape> | <locator>
+#
+# Shapes: `version` is `0.60.7`; `code` is `60007`; `version.0` is `0.60.7.0`;
+# `vversion` is `v0.60.7`.
+#
+# A locator is a regex with one capture group, or — for JSON, where the same
+# key name repeats under every dependency and a regex would read hundreds of
+# them — a `$.`-prefixed path, with `<root>` standing for the empty-string key
+# npm uses for the package itself.
+#
+# A glob may match more than one file and every match is checked; a regex may
+# match more than once in a file and every occurrence is checked. A ` !path`
+# suffix on the glob drops one match.
+#
+# ## The one exclusion, and why it is written down
+#
+# `*/api.py` matches two files in QRME. The second is `cloudgw/api.py`, the
+# cloud model gateway — a separate deployable carrying its own version
+# (`0.2.0`) which no release of the three products bumps. The first run of
+# this guard found it, which a prose checklist could not have: a list of
+# *files to edit* has no way to say *and not this one*.
+#
+# The row is still byte-identical across the three because the path it
+# excludes simply does not exist in JIM-mini or PDI. An exclusion that names
+# a real file in one product and nothing in the others is the honest shape
+# here: the alternative is three different checklists, which is the defect
+# this file was written to avoid.
+
+pyproject.toml | version | version | ^version = "([^"]+)"
+app/package.json | version | version | $.version
+app/package-lock.json | version | version | $.version
+app/package-lock.json | packages.<root>.version | version | $.packages.<root>.version
+*/api.py !cloudgw/api.py | FastAPI version | version | version="([^"]+)"
+native/ios/project.yml | MARKETING_VERSION | version | MARKETING_VERSION:\s*"([^"]+)"
+native/ios/project.yml | CURRENT_PROJECT_VERSION | code | CURRENT_PROJECT_VERSION:\s*"([^"]+)"
+native/android/app/build.gradle.kts | versionName | version | versionName\s*=\s*"([^"]+)"
+native/android/app/build.gradle.kts | versionCode | code | versionCode\s*=\s*(\d+)
+native/windows/*.csproj | Version | version | <Version>([^<]+)</Version>
+native/windows/*.csproj | AssemblyVersion | version.0 | <AssemblyVersion>([^<]+)</AssemblyVersion>
+native/windows/*.csproj | FileVersion | version.0 | <FileVersion>([^<]+)</FileVersion>
+README.md | Current release banner | vversion | \*\*Current release: (v[0-9][^*]*)\*\*

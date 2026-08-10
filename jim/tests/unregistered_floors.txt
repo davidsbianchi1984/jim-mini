@@ -72,8 +72,8 @@ test_the_body_the_route_requires.py:254: len(models) >= 90
 test_the_body_the_route_requires.py:264: matched >= 85
 test_the_console_speaks_one_language.py:237: len(keys) >= 15
 test_the_desktop_and_the_phone_say_different_things.py:324: len(shared) > 40
-test_the_files_the_release_never_touched.py:231: len(sorted(REPO.glob('native/ios/Sources/**/*.swift'))) >= 24
-test_the_files_the_release_never_touched.py:232: len(sorted(REPO.glob('native/android/**/*.kt'))) >= 6
+test_the_files_the_release_never_touched.py:232: len(sorted(REPO.glob('native/ios/Sources/**/*.swift'))) >= 24
+test_the_files_the_release_never_touched.py:233: len(sorted(REPO.glob('native/android/**/*.kt'))) >= 6
 test_the_guardian_refuses_in_one_language.py:179: len(handlers) >= 9
 test_the_guardian_refuses_in_one_language.py:226: len(i18n._REFUSALS) >= 21
 test_the_guardian_refuses_in_one_language.py:305: refused.status_code >= 400
