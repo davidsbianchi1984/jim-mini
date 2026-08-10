@@ -606,6 +606,12 @@ def refused(app, lang: Language) -> list[str]:
 # So the rule this list now holds to: exempt a path because nothing should
 # ever call it, never because the audit cannot see the call.
 NOT_A_CLIENT_CALL = (
+    # The front door. When a console is built, GET / answers a redirect to
+    # /app/ so a tester who types the bare domain lands on it. No client of
+    # this product ever constructs the address — the console cannot call the
+    # page it is already standing on — so it is a page for a browser, not a
+    # call for a door.
+    "/",
     "/terms",
     "/verify-email/click",
     "/medical-id/{token}/qr.svg",

@@ -97,3 +97,38 @@ def policy(value: str) -> str:
         "base-uri 'none'",
         "frame-ancestors 'none'",
     ))
+
+
+def console_policy() -> str:
+    """The Content-Security-Policy for the packaged console under ``/app``.
+
+    The console is a built bundle, not a server-rendered page: its script and
+    stylesheet are same-origin files whose names are stamped at build time,
+    so a per-response nonce can never reach them. Served under
+    :func:`policy`, the browser refuses the bundle for want of a nonce no
+    build step could have known, and the console renders as a dark, empty
+    page — HTML 200, nothing running. That is exactly what 0.60.9 first
+    shipped to a real host, and no in-process test saw it, because a
+    ``TestClient`` reads the policy and enforces none of it.
+
+    So this policy names ``'self'`` where the page policy names a nonce, and
+    still refuses inline script — which is what the nonce was for. The other
+    sources are the console's own furniture: ``blob:`` for the previews it
+    builds from local files and the audio it synthesises, ``media-src`` for
+    the footage it plays, ``worker-src`` for the service worker,
+    ``manifest-src`` for what a phone reads when the console is added to a
+    home screen.
+    """
+    return "; ".join((
+        "default-src 'none'",
+        "script-src 'self'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob:",
+        "media-src 'self' blob:",
+        "connect-src 'self'",
+        "manifest-src 'self'",
+        "worker-src 'self'",
+        "form-action 'self'",
+        "base-uri 'none'",
+        "frame-ancestors 'none'",
+    ))

@@ -68,6 +68,16 @@ ORIGIN = "http://localhost:5173"
 #: can meet it.
 BOOM = "/__a_route_that_raises"
 
+#: The shape of a built console page: an external same-origin script with no
+#: nonce, exactly what `vite build` writes. The suite runs without a
+#: front-end build, so the fixture lays this down itself — the question here
+#: is about the headers, not the bundle.
+CONSOLE_PAGE = (
+    "<!doctype html><html><head>"
+    '<script type="module" crossorigin src="./assets/index-test.js"></script>'
+    '<link rel="stylesheet" crossorigin href="./assets/index-test.css">'
+    '</head><body><div id="root"></div></body></html>')
+
 
 def _free_port() -> int:
     with socket.socket() as s:
@@ -114,18 +124,34 @@ def _body(port: int, path: str) -> str:
 def served(monkeypatch_session=None):
     """The real app, on a real port, behind a real HTTP server."""
     import os
+    import tempfile
+    from pathlib import Path
 
     import uvicorn
 
+    # A console dist for the factory to find, whether or not app/ was built:
+    # the blanking defect below lives in the headers stamped on the console's
+    # HTML, and a suite that only measures it where somebody happened to run
+    # `npm run build` is a suite that misses it on CI.
+    dist = Path(tempfile.mkdtemp(prefix="console-dist-"))
+    (dist / "assets").mkdir()
+    (dist / "index.html").write_text(CONSOLE_PAGE)
+    (dist / "assets" / "index-test.js").write_text("/* the bundle */\n")
+    (dist / "assets" / "index-test.css").write_text("/* the styles */\n")
+
     before = os.environ.get("JIM_CORS_ORIGINS")
+    console_before = os.environ.get("JIM_CONSOLE_DIR")
     os.environ["JIM_CORS_ORIGINS"] = "*"
+    os.environ["JIM_CONSOLE_DIR"] = str(dist)
     try:
         app = create_app()
     finally:
-        if before is None:
-            os.environ.pop("JIM_CORS_ORIGINS", None)
-        else:
-            os.environ["JIM_CORS_ORIGINS"] = before
+        for name, kept in (("JIM_CORS_ORIGINS", before),
+                           ("JIM_CONSOLE_DIR", console_before)):
+            if kept is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = kept
 
     @app.get(BOOM)
     def _raises():
@@ -304,6 +330,85 @@ def test_the_page_and_its_policy_agree_about_the_nonce(served):
                              for p, _ in STRANGER_PAGES), (
         "no page reached here carries an inline script, so this check ran on "
         "nothing — the pages it was written for have moved")
+
+
+def _directives(policy: str) -> dict[str, str]:
+    """A CSP as a mapping, so an assertion can name the directive it means."""
+    out: dict[str, str] = {}
+    for part in policy.split(";"):
+        name, _, rest = part.strip().partition(" ")
+        if name:
+            out[name] = rest
+    return out
+
+
+def test_the_console_is_not_blanked_by_its_own_policy(served):
+    """The beta's first live defect, measured the only place it exists.
+
+    The console's script and stylesheet are external same-origin files whose
+    names are stamped at build time — no per-response nonce can ever reach
+    them. Under the nonce policy the browser refuses the bundle and the
+    console renders as a dark, empty page: HTML 200, nothing running. That is
+    what 0.60.9 shipped to its first real host, on all three products, while
+    every in-process test passed — a `TestClient` reads the policy and
+    enforces none of it.
+    """
+    port, _ = served
+    status, headers, body = _page(port, "/app/")
+    assert status == 200, f"/app/ answered {status}"
+    assert "<script" in body and "nonce" not in body, (
+        "the fixture's console page no longer matches the shape this test "
+        "was written for — an external script with no nonce")
+    policy = headers.get("content-security-policy", "")
+    assert policy, "/app/ went out with no Content-Security-Policy at all"
+    got = _directives(policy)
+    assert "'self'" in got.get("script-src", ""), (
+        f"script-src is {got.get('script-src')!r}: the console's bundle is "
+        "an external same-origin script with no nonce, and a policy that "
+        "does not name 'self' blanks the whole console. See "
+        "pagehead.console_policy.")
+    assert "'unsafe-inline'" not in got.get("script-src", ""), (
+        "the console policy permits inline script, which hands back exactly "
+        "what the nonce policy exists to refuse")
+    assert "'self'" in got.get("style-src", ""), (
+        f"style-src is {got.get('style-src')!r} and the console's stylesheet "
+        "is an external same-origin file")
+    for name in ("worker-src", "manifest-src"):
+        assert "'self'" in got.get(name, ""), (
+            f"{name} is {got.get(name)!r}: under default-src 'none' the "
+            "console's service worker and manifest are refused unless the "
+            "policy names them")
+    assert "blob:" in got.get("img-src", ""), (
+        "img-src refuses blob:, so every preview the console builds from a "
+        "local file renders broken")
+    assert "blob:" in got.get("media-src", ""), (
+        "media-src refuses blob:, so the wall's footage and the synthesised "
+        "audio never play")
+
+
+def test_the_stranger_pages_keep_the_nonce_policy(served):
+    """The guard on the fix. Widening the console's policy must not widen the
+    pages a stranger reaches — their scripts are inline, their policy names a
+    nonce, and a `script-src 'self'` there would be a quiet retreat."""
+    port, _ = served
+    _, headers = _ask(port, STRANGER_PAGES[0][0], origin=None)
+    got = _directives(headers["content-security-policy"])
+    assert "'nonce-" in got.get("script-src", ""), (
+        "the stranger pages lost their nonce policy — the console's wider "
+        "policy has leaked past /app")
+    assert "'self'" not in got.get("script-src", "")
+
+
+def test_the_front_door_opens_on_the_console(served):
+    """Measured live at 0.60.9: the bare domain answered
+    {"detail": "Not Found"}, and a tester types the domain, not the mount
+    point. The client here follows redirects the way a browser does — landing
+    on the console's page is the assertion."""
+    port, _ = served
+    status, _headers, body = _page(port, "/")
+    assert status == 200, f"the front door answered {status}"
+    assert 'id="root"' in body, (
+        "the root URL did not land on the console's page")
 
 
 def test_a_reflected_parameter_is_not_markup(served):

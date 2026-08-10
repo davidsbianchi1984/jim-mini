@@ -1,4 +1,4 @@
-# status: manifest — 450 guards carried by all three products
+# status: manifest — 453 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -308,6 +308,7 @@ test_the_comparison_can_tell_agreement_from_drift
 test_the_comparison_is_reading_every_client
 test_the_console_backlog_matches_the_record
 test_the_console_backlog_record_is_empty
+test_the_console_is_not_blanked_by_its_own_policy
 test_the_console_native_split_only_shrinks
 test_the_console_prefers_the_sentence_over_the_structure
 test_the_console_sweep_is_reading_the_console
@@ -353,6 +354,7 @@ test_the_fingerprint_is_the_console_s
 test_the_fixture_is_actually_there
 test_the_floors_are_under_what_is_actually_there
 test_the_frame_arrives_translated_and_the_slot_survives
+test_the_front_door_opens_on_the_console
 test_the_guard_allows_a_record_to_decode_less_than_it_is_sent
 test_the_guard_holds_org_json_to_the_coercions_it_actually_performs
 test_the_guard_would_catch_a_fictional_field
@@ -441,6 +443,7 @@ test_the_stale_release_body_record_only_shrinks
 test_the_status_line_counts_the_rows_that_are_there
 test_the_statuses_are_ones_this_file_defines
 test_the_stored_record_has_no_field_that_could_hold_content
+test_the_stranger_pages_keep_the_nonce_policy
 test_the_string_table_is_escaped_the_same_way
 test_the_survey_finds_the_rows_a_gone_subject_left
 test_the_sweep_is_actually_looking_at_something

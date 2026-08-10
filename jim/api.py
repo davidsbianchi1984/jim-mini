@@ -3038,6 +3038,17 @@ def create_app(qrme_client: QRMEClient | None = None,
         app.mount("/app", StaticFiles(directory=str(_console), html=True),
                   name="console")
 
+        # The front door. Measured live at 0.60.9: the bare domain answered
+        # {"detail": "Not Found"}, because the console lives under /app and
+        # nothing said so. A tester types the domain, not the mount point.
+        # Registered only when there is a console to land on — headless
+        # deployments keep their honest 404.
+        from fastapi.responses import RedirectResponse
+
+        @app.get("/", include_in_schema=False)
+        async def _the_front_door() -> RedirectResponse:
+            return RedirectResponse("/app/")
+
     # What a page promises a browser before it says anything else.
     #
     # These products serve HTML a person reaches without an account, on a
@@ -3063,8 +3074,17 @@ def create_app(qrme_client: QRMEClient | None = None,
         if response.headers.get("content-type", "").startswith("text/html"):
             for key, header in pagehead.HEADERS.items():
                 response.headers.setdefault(key, header)
-            response.headers.setdefault("content-security-policy",
-                                        pagehead.policy(value))
+            # Two kinds of HTML leave this app. The server-rendered pages
+            # carry an inline script the nonce policy names; the console under
+            # /app is a built bundle whose script is an external file no nonce
+            # can reach. Stamping the console with the nonce policy blanks it
+            # — the browser refuses its own bundle — which is what 0.60.9
+            # first shipped to a real host. See pagehead.console_policy.
+            path = request.url.path
+            chosen = (pagehead.console_policy()
+                      if path == "/app" or path.startswith("/app/")
+                      else pagehead.policy(value))
+            response.headers.setdefault("content-security-policy", chosen)
         return response
 
     # A failure the console can read.
