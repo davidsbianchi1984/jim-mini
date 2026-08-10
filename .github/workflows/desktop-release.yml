@@ -172,12 +172,15 @@ jobs:
           # across the three products turned out to be carrying the same
           # v0.24.0 prose, published verbatim over every curated body since.
           #
-          # `generate_release_notes` is kept, and one thing about it is not yet
-          # established: whether it *appends* to a body that is already set or
-          # replaces it. GitHub appends when a body is sent in the same call,
-          # but this action sends none. Settling it needs a real release, which
-          # is not CI's to create — so `release-integrity.yml` answers it on
-          # the next tag instead. If a published body comes back as generated
-          # notes alone, this is why, and the fix is to drop this line and put
-          # the compare link in the curated body.
+          # `generate_release_notes` is kept, and 0.60.8 settled what it does
+          # to a body that is already set: **nothing**. That release was
+          # published with its curated body, this workflow ran, and the body
+          # came back byte-for-byte intact with no generated section appended.
+          #
+          #     asked     does this flag append or replace
+          #     mattered  does the body a person wrote survive the build
+          #
+          # It was an open question here for one release because settling it
+          # needed a real tag, which is not CI's to create. It is settled now:
+          # the body set at tag time is the body that ships.
           generate_release_notes: true

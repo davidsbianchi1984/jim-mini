@@ -4,6 +4,28 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.9] - 2026-08-10
+
+### No change to this product
+
+The release-body work reaches its end. Every release that inherited the frozen
+v0.24.0 body has been rebuilt from its own CHANGELOG entry, and
+`stale_release_bodies.txt` reaches a ceiling of 0 with `app-v0.24.0` kept
+deliberately — its body *is* the v0.24.0 notes and is correct for it.
+
+    asked     how many rows are left
+    mattered  how many releases are still wrong
+
+Three checks reported success while doing nothing and are fixed: a staleness
+test keyed to a sentinel that was one product's number, a backfill that trusted
+the record instead of the releases, and a record guard whose header pattern
+required a plural and crashed when the count reached one.
+
+`generate_release_notes` is settled too: 0.60.8 published with a curated body
+and the body came back intact.
+
+Recorded here to keep the three changelogs in step at one version.
+
 ## [0.60.8] - 2026-08-10
 
 ### No change to this product
