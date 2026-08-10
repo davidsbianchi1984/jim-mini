@@ -1,0 +1,118 @@
+# Rebuild a stale release body from that release's own CHANGELOG entry.
+#
+# 412 of 530 published releases across the three products carry the frozen
+# v0.24.0 prose, because `RELEASE_NOTES.md` was published verbatim over every
+# curated body since v0.24.0. `stale_release_bodies.txt` lists this product's
+# share; this workflow is what empties it.
+#
+#     asked     which workflow owns the release body
+#     mattered  does the body say what shipped
+#
+# It runs here rather than from a session because editing a release needs
+# `contents: write`, which an interactive session's token does not carry —
+# releases are pressed by hand in this estate and the platform enforces it.
+#
+# Manual only, and batched on purpose. `limit` writes at most that many bodies
+# per run so the record can be lowered and reviewed in steps rather than in one
+# sweep over six months of published history. `dry_run` is the default: it
+# prints what it would write and touches nothing.
+#
+# `app-v0.24.0` is never written. Its body **is** the v0.24.0 notes — correct
+# for that release and wrong for the 411 that inherited it — and it keeps its
+# row in the record with that reason on it.
+
+name: backfill-release-bodies
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "How many bodies to write this run"
+        required: true
+        default: "25"
+      dry_run:
+        description: "Print what would change and write nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild bodies from CHANGELOG.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          LIMIT: ${{ inputs.limit }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re, subprocess, sys
+
+          repo = os.environ["REPO"]
+          limit = int(os.environ["LIMIT"])
+          dry = os.environ["DRY"] == "true"
+          KEEP = {"app-v0.24.0"}
+
+          record = next(pathlib.Path(".").glob("**/stale_release_bodies.txt"))
+          tags = [l.split("  ")[0].strip()
+                  for l in record.read_text(encoding="utf-8").splitlines()
+                  if l.strip() and not l.startswith("#")]
+
+          text = pathlib.Path("CHANGELOG.md").read_text(encoding="utf-8")
+          heads = list(re.finditer(r"^## \[(\d+\.\d+\.\d+)\][^\n]*$", text, re.M))
+          logs = {}
+          for i, m in enumerate(heads):
+              end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
+              logs[m.group(1)] = text[m.end():end].strip()
+
+          def gh(path, method="GET", payload=None):
+              cmd = ["gh", "api", path]
+              if method != "GET":
+                  cmd += ["-X", method, "--input", "-"]
+              out = subprocess.run(cmd, capture_output=True, text=True,
+                                   input=json.dumps(payload) if payload else None)
+              if out.returncode != 0:
+                  raise RuntimeError(out.stderr.strip()[:200])
+              return json.loads(out.stdout) if out.stdout.strip() else {}
+
+          written, failed, missing = [], [], []
+          for tag in tags:
+              if tag in KEEP:
+                  continue
+              if len(written) >= limit:
+                  break
+              body = logs.get(tag[len("app-v"):])
+              if not body:
+                  missing.append(tag)
+                  continue
+              if dry:
+                  print(f"would write {tag}: {len(body)} chars")
+                  written.append(tag)
+                  continue
+              try:
+                  rel = gh(f"/repos/{repo}/releases/tags/{tag}")
+                  gh(f"/repos/{repo}/releases/{rel['id']}", "PATCH", {"body": body})
+                  print(f"wrote {tag}: {len(body)} chars")
+                  written.append(tag)
+              except Exception as e:
+                  failed.append((tag, str(e)))
+
+          print(f"\n{'would write' if dry else 'wrote'} {len(written)}, "
+                f"{len(failed)} failed, {len(missing)} with no CHANGELOG entry")
+          for t, e in failed[:5]:
+              print(f"  FAIL {t}: {e}")
+          if missing:
+              print("  no entry: " + ", ".join(missing[:10]))
+          if not dry and written:
+              print("\nStrike these rows from " + str(record)
+                    + " and lower its ceiling by " + str(len(written)) + ":")
+              for t in written:
+                  print("  " + t)
+          if failed:
+              sys.exit(1)
+          PY

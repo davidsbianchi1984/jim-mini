@@ -72,6 +72,7 @@ POST_MERGE = {
     "desktop-release.yml",      # fires on a release tag, which post-dates the cut
     "release-integrity.yml",    # reads the body a tag published, so likewise
     "release-bodies-sweep.yml", # sweeps published bodies on a schedule
+    "backfill-release-bodies.yml",  # repairs bodies a tag already published
 }
 
 
