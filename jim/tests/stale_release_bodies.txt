@@ -1,4 +1,4 @@
-# status: backlog — 13 rows
+# status: backlog — 1 row
 #
 # frozen-opens: Three rounds, one question
 #
@@ -50,17 +50,33 @@
 # `app-v0.24.0` is that row and always will be: its body *is* the v0.24.0
 # notes, right for it and wrong for the 411 that inherited it.
 #
-# ceiling: 13
+#
+# ## 412 → 1
+#
+# Every release that inherited the frozen body has been rebuilt from its own
+# CHANGELOG entry. What is left is the one row that was never a defect.
+#
+# Two things went wrong on the way and both are worth keeping, because both
+# were checks that reported success while doing nothing:
+#
+#   * the first staleness test looked for `414 tests passing` anywhere in a
+#     body. That count is PDI's, so the sweep read zero stale in the two
+#     products where a hundred and twelve remained — and it also matched any
+#     release note that *quoted* the phrase, failing a correct release for
+#     describing the defect it fixed. Staleness is decided by how the prose
+#     opens now, from the `# frozen-opens:` header above.
+#   * the backfill then walked this record rather than the releases. The record
+#     lives on the default branch and the releases live on GitHub, so the two
+#     drift the moment a batch lands. Three runs spent their whole limit
+#     rewriting releases repaired two batches earlier, reported success, and
+#     never reached the last eleven. It reads each release before writing now.
+#
+#     asked     did the run succeed
+#     mattered  did the run change anything
+#
+# This file stays at one row. It is not empty and will not become empty: an
+# empty record would say *no release was ever stale*, which is the opposite of
+# what happened here.
+#
+# ceiling: 1
 app-v0.24.0  keep — this body IS the v0.24.0 notes, and is correct for it
-app-v0.59.6
-app-v0.59.7
-app-v0.59.8
-app-v0.59.9
-app-v0.60.0
-app-v0.60.1
-app-v0.60.2
-app-v0.60.3
-app-v0.60.4
-app-v0.60.5
-app-v0.60.6
-app-v0.60.7

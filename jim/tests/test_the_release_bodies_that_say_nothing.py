@@ -43,7 +43,11 @@ def test_the_stale_release_body_record_is_readable():
     this estate has produced more often than any other."""
     rows = _rows()
     text = RECORD.read_text(encoding="utf-8")
-    stated = int(re.search(r"^# status: backlog — (\d+) rows$", text, re.M).group(1))
+    # `rows?` because the record reaches one row and stays there — the
+    # singular is correct English and the plural-only pattern crashed on
+    # it, which is a guard failing at exactly the moment its subject was
+    # finished.
+    stated = int(re.search(r"^# status: backlog — (\d+) rows?$", text, re.M).group(1))
     assert stated == len(rows), (
         f"the record says {stated} rows and carries {len(rows)}")
     bad = [t for t, _ in rows if not _TAG.match(t)]
