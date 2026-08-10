@@ -51,15 +51,20 @@ jobs:
               tag, _, reason = line.partition("  ")
               rows[tag.strip()] = reason.strip()
 
+          # `--slurp` makes pagination one valid JSON document: an array
+          # of pages. The first version split concatenated pages with a
+          # regex that matched any `]` `[` pair — including one inside a
+          # release body's own markdown — and silently dropped whatever
+          # chunk it broke. A release the fetch loses reads as *no longer
+          # stale*, which is how the repaired sweep's first run accused
+          # app-v0.24.0 of losing a frozen body it visibly still carries.
           out = subprocess.run(
-              ["gh", "api", "--paginate", f"/repos/{repo}/releases?per_page=100"],
+              ["gh", "api", "--paginate", "--slurp",
+               f"/repos/{repo}/releases?per_page=100"],
               capture_output=True, text=True)
           if out.returncode != 0:
               sys.exit(f"::error::could not read releases: {out.stderr[:300]}")
-          rels = []
-          for chunk in re.findall(r"\[.*?\]\s*(?=\[|$)", out.stdout, re.S) or [out.stdout]:
-              try: rels += json.loads(chunk)
-              except Exception: pass
+          rels = [r for page in json.loads(out.stdout) for r in page]
 
           def prose(b: str) -> str:
               for m in ("## What's Changed", "**Full Changelog**"):
@@ -92,6 +97,18 @@ jobs:
           # are not.
           kept = set(re.findall(r"^# kept: (app-v[\d.]+) — ",
                                 record.read_text(encoding="utf-8"), re.M))
+
+          # Before comparing, prove the fetch actually returned every release
+          # this record names. A recorded or kept tag the fetch lost would
+          # read as repaired below, and the sentence printed would be about
+          # the releases when the truth is about the fetch.
+          fetched = {r.get("tag_name") for r in rels}
+          unfetched = sorted(t for t in kept | set(rows) if t not in fetched)
+          if unfetched:
+              sys.exit("::error::the fetch did not return "
+                       + ", ".join(unfetched)
+                       + " — nothing below would measure the releases, only "
+                         "the fetch")
           gone = sorted(t for t in rows if t not in stale)
           new = sorted(t for t in stale if t not in rows and t not in kept)
           lost = sorted(t for t in kept if t not in stale)
