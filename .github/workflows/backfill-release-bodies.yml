@@ -80,7 +80,33 @@ jobs:
                   raise RuntimeError(out.stderr.strip()[:200])
               return json.loads(out.stdout) if out.stdout.strip() else {}
 
-          written, failed, missing = [], [], []
+          # Staleness is read from the release, not from the record.
+          #
+          # The record is a file on the default branch and the releases are on
+          # GitHub, so the two drift the moment a batch lands and the rows have
+          # not been struck yet. A run that trusted the record re-wrote the
+          # first 25 already-repaired releases and never reached the last
+          # eleven — three runs in a row, each reporting success.
+          #
+          #     asked     which rows does the record list
+          #     mattered  which releases are still stale
+          #
+          # Asking the release makes this idempotent: already-repaired tags
+          # cost one read and are skipped, so the limit is spent only on work
+          # that remains, however far behind the record has fallen.
+          opens = re.search(r"^# frozen-opens: (.+)$",
+                            record.read_text(encoding="utf-8"), re.M)
+          if not opens:
+              sys.exit("::error::the record has no `# frozen-opens:` header")
+          mark = opens.group(1).strip()
+
+          def prose(b):
+              for m in ("## What's Changed", "**Full Changelog**"):
+                  if m in b:
+                      b = b.split(m)[0]
+              return b.strip()
+
+          written, failed, missing, already = [], [], [], []
           for tag in tags:
               if tag in KEEP:
                   continue
@@ -90,12 +116,19 @@ jobs:
               if not body:
                   missing.append(tag)
                   continue
+              try:
+                  rel = gh(f"/repos/{repo}/releases/tags/{tag}")
+              except Exception as e:
+                  failed.append((tag, str(e)))
+                  continue
+              if not prose(rel.get("body") or "").startswith(mark):
+                  already.append(tag)
+                  continue
               if dry:
                   print(f"would write {tag}: {len(body)} chars")
                   written.append(tag)
                   continue
               try:
-                  rel = gh(f"/repos/{repo}/releases/tags/{tag}")
                   gh(f"/repos/{repo}/releases/{rel['id']}", "PATCH", {"body": body})
                   print(f"wrote {tag}: {len(body)} chars")
                   written.append(tag)
@@ -103,7 +136,8 @@ jobs:
                   failed.append((tag, str(e)))
 
           print(f"\n{'would write' if dry else 'wrote'} {len(written)}, "
-                f"{len(failed)} failed, {len(missing)} with no CHANGELOG entry")
+                f"{len(already)} already repaired, {len(failed)} failed, "
+                f"{len(missing)} with no CHANGELOG entry")
           for t, e in failed[:5]:
               print(f"  FAIL {t}: {e}")
           if missing:
