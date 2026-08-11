@@ -4,6 +4,53 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.62.0] - 2026-08-11
+
+### Added
+
+- **The phones reach parity with the console.** Eleven rounds stacked into
+  one branch, and every route the backend serves now has a door a person can
+  open on iOS, Android and Windows — the per-shell doorless ledgers, which
+  opened this audit at ~300 rows each, close at the four rows that stay by
+  design (three qr.svg renderers with no native SVG door, and the watch
+  drip's token door, which is the automation's rather than a person's).
+  In order: the account the phones never had (signup, sign-in, verification,
+  password reset, OAuth with an open-browser claim poll, sittings); the
+  Guardian's day (calm, activity, context, conditions, personality, goals,
+  feedback, insights, events, the progress report, plans, the companion's
+  unprompted word); the specialist economy (roster and seeds, the QRME
+  catalog bracket, multi-step task hand-overs, medical referrals that
+  release only through the QRME signing ceremony, the consented provider's
+  view); the record and the veil (the access log with its kept-versus-empty
+  distinction, cloud status and contribution revoke, incidents, pages,
+  locality, plans); budgets and memberships; beacons a stranger can scan
+  and the relay that escalates people, not sirens; safe knowledge
+  excursions with their redaction price on the row, the community window
+  and QRME's feed through the tandem.
+- **The voice pair.** `/voice/speak` and `/voice/transcribe` land on all
+  three shells: a Talk card that plays the configured voice's audio and
+  falls back to the device's own voice when no speaking service is set —
+  silence would be the wrong failure — and a microphone that records a
+  short clip and shows what the Guardian heard. AVAudioRecorder,
+  MediaRecorder and MediaCapture respectively; the iOS spec now carries the
+  microphone usage string, Android's manifest RECORD_AUDIO, and a refused
+  microphone gets its own sentence rather than silence.
+- **PATCH from the phone that cannot say it.** Android's HttpURLConnection
+  has no PATCH; the backend honours `x-http-method-override: PATCH` on
+  POST alone, the Kotlin client translates, and
+  `test_the_verb_the_phone_cannot_say.py` pins the contract.
+
+### Changed
+
+- **The screens behind the tabs speak the reader's language.** The
+  Check-in, Coach, Life, Welcome and feedback screens on all three shells
+  swap their remaining English literals for ten-language lookups; the
+  diverged native tables are reconciled (rows Android alone carried now
+  reach iOS and Windows), the Welcome hero and pitch carry the console's
+  own translations verbatim, and the untranslated ratchet falls from
+  45/46/57 to 12/31/24 across iOS/Android/Windows — what remains is
+  enrollment/terms prose and wire vocabulary, each left deliberately.
+
 ## [0.61.1] - 2026-08-11
 
 ### Added
