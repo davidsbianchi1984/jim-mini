@@ -137,6 +137,9 @@ public sealed partial class ConnectPage : Page
         LocalizeSettingsCards();
         await LoadVoiceSettings();
         await LoadMailSettings();
+        LocalizeWristCards();
+        await LoadWatch();
+        await LoadDevices();
     }
 
     // -- Sources --
@@ -722,5 +725,203 @@ public sealed partial class ConnectPage : Page
                                                  : Visibility.Collapsed;
         }
         catch (Exception ex) { ShowMailError(ex); }
+    }
+    // -- the wrist and the doorway -------------------------------------------
+    // The drip channel's setup card and the paired embodiments. Console
+    // doors since 0.6.0 / 0.19.x; these are the desktop's.
+
+    private WatchSetup? _watch;
+    private string _deviceKind = "speaker";
+
+    private void LocalizeWristCards()
+    {
+        WtHead.Text = L10n.T("ns.wt.title");
+        WtLead.Text = L10n.T("ns.wt.lead");
+        WtAddressLabel.Text = L10n.T("ns.wt.address");
+        WtStepsButton.Content = L10n.T("ns.wt.setup");
+        WtRotateButton.Content = L10n.T("ns.bas.reset");
+        WtSeedButton.Content = L10n.T("ns.wt.seed");
+        DvHead.Text = L10n.T("ns.dv.bluetooth");
+        DvPaired.Content = L10n.T("ns.dv.paired");
+        DvAddButton.Content = L10n.T("ns.dv.bluetooth");
+    }
+
+    private async Task LoadWatch()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try { RenderWatch(await ApiClient.Shared.WatchSetup(s.Uid, s.Token)); }
+        catch { /* leave as-is */ }
+        try
+        {
+            var pair = await ApiClient.Shared.PairInfo();
+            WtPairHow.Text = string.Join("\n", pair.How);
+            WtPairUrl.Text = pair.ConsoleUrl;
+            WtPairNote.Text = pair.Note;
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private void RenderWatch(WatchSetup setup)
+    {
+        WtError.Visibility = Visibility.Collapsed;
+        _watch = setup;
+        WtAddress.Text = setup.DripUrl;
+        WtDrips.Text = $"{setup.Drips} \u00b7 {setup.LastDripAt ?? "\u2014"}";
+        WtSeedHint.Text = setup.SeedHint;
+        WtDevices.Children.Clear();
+        foreach (var device in setup.Devices)
+        {
+            var key = device.Key;
+            var chip = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
+            {
+                Content = device.Name,
+                FontSize = 11,
+                IsChecked = setup.Device == key,
+            };
+            chip.Click += async (_, _) =>
+            {
+                var st = AppState.Current;
+                try
+                {
+                    RenderWatch(await ApiClient.Shared.WatchSetup(
+                        st.Uid!, st.Token!, key));
+                }
+                catch (Exception ex) { ShowWatchError(ex); }
+            };
+            WtDevices.Children.Add(chip);
+        }
+        WtSteps.Children.Clear();
+        for (var i = 0; i < setup.Steps.Length; i++)
+            WtSteps.Children.Add(new TextBlock
+            {
+                Text = $"{i + 1}. {setup.Steps[i]}",
+                FontSize = 11,
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                    Application.Current.Resources["JimT2Brush"],
+            });
+    }
+
+    private void ShowWatchError(Exception ex)
+    {
+        WtError.Text = ex.Message;
+        WtError.Visibility = Visibility.Visible;
+    }
+
+    private void OnWatchSteps(object sender, RoutedEventArgs e) =>
+        WtSteps.Visibility = WtSteps.Visibility == Visibility.Visible
+            ? Visibility.Collapsed : Visibility.Visible;
+
+    /// Rotating invalidates the old drip token.
+    private async void OnWatchRotate(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            RenderWatch(await ApiClient.Shared.RotateWatchChannel(
+                s.Uid, s.Token));
+        }
+        catch (Exception ex) { ShowWatchError(ex); }
+    }
+
+    private async void OnWatchSeed(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var picker = new Windows.Storage.Pickers.FileOpenPicker();
+        WinRT.Interop.InitializeWithWindow.Initialize(picker,
+            WinRT.Interop.WindowNative.GetWindowHandle(App.MainAppWindow));
+        picker.FileTypeFilter.Add(".zip");
+        picker.FileTypeFilter.Add(".xml");
+        var file = await picker.PickSingleFileAsync();
+        if (file is null) return;
+        try
+        {
+            var buffer = await Windows.Storage.FileIO.ReadBufferAsync(file);
+            await ApiClient.Shared.SeedWatch(s.Uid, s.Token,
+                                             buffer.ToArray());
+        }
+        catch (Exception ex) { ShowWatchError(ex); }
+    }
+
+    private async Task LoadDevices()
+    {
+        // The server's DeviceRegister kinds, shown in its own words like
+        // the mic types are.
+        if (DvKinds.Children.Count == 0)
+        {
+            var kinds = new[] { "wearable", "stationary", "autonomous",
+                                "speaker", "phone", "glasses", "headset",
+                                "spatial", "other" };
+            StackPanel row = NewKindRow();
+            foreach (var kind in kinds)
+            {
+                if (row.Children.Count == 3)
+                {
+                    DvKinds.Children.Add(row);
+                    row = NewKindRow();
+                }
+                var chosen = kind;
+                var chip = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
+                { Content = chosen, FontSize = 11,
+                  IsChecked = _deviceKind == chosen };
+                chip.Click += (_, _) =>
+                {
+                    _deviceKind = chosen;
+                    foreach (var r in DvKinds.Children)
+                        foreach (var c in ((StackPanel)r).Children)
+                            ((Microsoft.UI.Xaml.Controls.Primitives.ToggleButton)c)
+                                .IsChecked =
+                                (string)((Microsoft.UI.Xaml.Controls.Primitives.ToggleButton)c).Content
+                                == chosen;
+                };
+                row.Children.Add(chip);
+            }
+            if (row.Children.Count > 0) DvKinds.Children.Add(row);
+        }
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var rows = await ApiClient.Shared.Devices(s.Uid, s.Token);
+            DvRows.Children.Clear();
+            foreach (var row in rows)
+                DvRows.Children.Add(new TextBlock
+                {
+                    Text = $"{row.Name} \u00b7 {row.Kind}"
+                        + (row.Paired ? " \u00b7 " + L10n.T("ns.dv.paired")
+                                      : ""),
+                    FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                        Application.Current.Resources["JimTxtBrush"],
+                });
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private static StackPanel NewKindRow() => new()
+    { Orientation = Orientation.Horizontal, Spacing = 6 };
+
+    private async void OnDeviceAdd(object sender, RoutedEventArgs e)
+    {
+        var name = DvName.Text.Trim();
+        if (name.Length == 0) return;
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            await ApiClient.Shared.RegisterDevice(s.Uid, s.Token, name,
+                _deviceKind, DvPaired.IsChecked == true);
+            DvName.Text = "";
+            await LoadDevices();
+        }
+        catch (Exception ex)
+        {
+            DvError.Text = ex.Message;
+            DvError.Visibility = Visibility.Visible;
+        }
     }
 }

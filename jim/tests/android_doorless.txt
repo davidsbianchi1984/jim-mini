@@ -16,14 +16,12 @@ GET /cloud/status
 GET /coach/{user_id}
 GET /community/{user_id}/feed
 GET /community/{user_id}/visits
-GET /devices/{user_id}
 GET /events/{user_id}
 GET /excursions/entry/{cid}
 GET /excursions/{user_id}
 GET /health
 GET /insights/{user_id}
 GET /memberships/{account_id}
-GET /pair
 GET /pair/qr.svg
 GET /plans
 GET /provider/{user_id}
@@ -43,7 +41,6 @@ GET /users/{user_id}/referral/clinicians
 GET /users/{user_id}/referral/requests
 GET /users/{user_id}/specialist-tasks
 GET /users/{user_id}/specialist-tasks/{task_id}
-GET /watch/channel/{user_id}
 PATCH /goals/{user_id}/{goal_id}
 POST /activity/{user_id}
 POST /auth/oauth/{provider}/start
@@ -52,7 +49,6 @@ POST /calm/{user_id}/{kind}
 POST /companion/{user_id}
 POST /conditions/{user_id}
 POST /context/{user_id}
-POST /devices/{user_id}
 POST /excursions/entry/{cid}/learn
 POST /excursions/{user_id}
 POST /feedback/{user_id}
@@ -78,9 +74,7 @@ POST /verify-email
 POST /verify-email/resend
 POST /voice/speak
 POST /voice/transcribe
-POST /watch/channel/{user_id}/rotate
 POST /watch/drip/{token}
-POST /watch/seed/{user_id}
 PUT /budgets/{user_id}
 PUT /personality/{user_id}
 PUT /users/{user_id}/locality

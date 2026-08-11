@@ -334,6 +334,7 @@ object ApiClient {
     private suspend fun request(
         path: String, method: String = "GET",
         body: JSONObject? = null, token: String? = null,
+        raw: ByteArray? = null,
     ): JSONObject = withContext(Dispatchers.IO) {
         val conn = (URL(base + path).openConnection() as HttpURLConnection).apply {
             requestMethod = method
@@ -351,6 +352,9 @@ object ApiClient {
             if (body != null) {
                 doOutput = true
                 outputStream.use { it.write(body.toString().toByteArray()) }
+            } else if (raw != null) {
+                doOutput = true
+                outputStream.use { it.write(raw) }
             }
         }
         val code = try {
@@ -2128,6 +2132,74 @@ object ApiClient {
         return DockWhere(o.optString("face", ""), o.optInt("screen"),
             o.optString("path", ""), o.optString("title", ""))
     }
+
+    // ---- the wrist and the doorway: watch channel, devices, pairing --------
+
+    private fun watchSetupOf(o: JSONObject): WatchSetup {
+        val devices = mutableListOf<WatchDeviceRow>()
+        o.optJSONArray("devices")?.let { a ->
+            for (i in 0 until a.length()) {
+                val d = a.getJSONObject(i)
+                devices.add(WatchDeviceRow(d.optString("key", ""),
+                                           d.optString("name", "")))
+            }
+        }
+        val steps = mutableListOf<String>()
+        o.optJSONArray("steps")?.let { a ->
+            for (i in 0 until a.length()) steps.add(a.getString(i))
+        }
+        return WatchSetup(o.optString("drip_url", ""),
+            o.optBoolean("phone_reachable", false),
+            o.optString("last_drip_at", null), o.optInt("drips"),
+            o.optString("device", ""), devices, steps,
+            o.optString("seed_hint", ""))
+    }
+
+    suspend fun watchSetup(uid: String, token: String,
+                           device: String = "apple_watch"): WatchSetup =
+        watchSetupOf(request("/watch/channel/$uid?device=$device",
+                             token = token))
+
+    /** Rotating invalidates the old drip token. */
+    suspend fun rotateWatchChannel(uid: String, token: String): WatchSetup =
+        watchSetupOf(request("/watch/channel/$uid/rotate", "POST",
+                             token = token))
+
+    /** Upload the Health app's export.zip. History folds into baselines
+     *  only — enrollment day should be quiet. */
+    suspend fun seedWatch(uid: String, token: String, data: ByteArray) {
+        request("/watch/seed/$uid", "POST", token = token, raw = data)
+    }
+
+    /** How to open the Guardian on a phone: the console's URL on this
+     *  local network. Same Wi-Fi, no app store. */
+    suspend fun pairInfo(): PairInfo {
+        val o = request("/pair")
+        val how = mutableListOf<String>()
+        o.optJSONArray("how")?.let { a ->
+            for (i in 0 until a.length()) how.add(a.getString(i))
+        }
+        return PairInfo(o.optString("console_url", ""),
+            o.optString("api_url", ""), o.optBoolean("console_built", false),
+            o.optBoolean("reachable", false), o.optBoolean("hosted", false),
+            o.optString("qr_svg", ""), how, o.optString("note", ""))
+    }
+
+    private fun deviceOf(o: JSONObject) = DeviceRow(
+        o.optString("id", ""), o.optString("name", ""),
+        o.optString("kind", ""), o.optString("transport", null),
+        o.optBoolean("has_llm", false), o.optBoolean("paired", false))
+
+    suspend fun devices(uid: String, token: String): List<DeviceRow> {
+        val arr = getArray("/devices/$uid", token)
+        return (0 until arr.length()).map { deviceOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun registerDevice(uid: String, token: String, name: String,
+                               kind: String, paired: Boolean): DeviceRow =
+        deviceOf(request("/devices/$uid", "POST",
+            JSONObject().put("name", name).put("kind", kind)
+                .put("paired", paired), token))
 }
 
 data class MoneyAccount(val id: String, val kind: String,
@@ -2310,3 +2382,18 @@ data class DockState(val userId: String, val corner: String,
 data class DockFace(val face: String, val shows: String)
 data class DockWhere(val face: String, val screen: Int, val path: String,
                      val title: String)
+
+data class WatchDeviceRow(val key: String, val name: String)
+/** The setup card: drip URL, this device's recipe, arrivals so far. */
+data class WatchSetup(val dripUrl: String, val phoneReachable: Boolean,
+                      val lastDripAt: String?, val drips: Int,
+                      val device: String, val devices: List<WatchDeviceRow>,
+                      val steps: List<String>, val seedHint: String)
+/** The local pairing card — the console's URL on this network. */
+data class PairInfo(val consoleUrl: String, val apiUrl: String,
+                    val consoleBuilt: Boolean, val reachable: Boolean,
+                    val hosted: Boolean, val qrSvg: String, val how: List<String>,
+                    val note: String)
+data class DeviceRow(val id: String, val name: String, val kind: String,
+                     val transport: String?, val hasLlm: Boolean,
+                     val paired: Boolean)

@@ -81,6 +81,9 @@ import app.jim.guardian.DockVocabulary
 import app.jim.guardian.DockState
 import app.jim.guardian.DockFace
 import app.jim.guardian.DockWhere
+import app.jim.guardian.WatchSetup
+import app.jim.guardian.PairInfo
+import app.jim.guardian.DeviceRow
 import app.jim.guardian.CommunityRoom
 import app.jim.guardian.CommunityView
 import app.jim.guardian.JournalItem
@@ -2787,7 +2790,7 @@ fun ConnectScreen(vm: GuardianViewModel) {
         when (tab) {
             // Channel 2 sits with the sources: the lent microphone is a
             // way in for the world's sound, consented the same.
-            0 -> { SourcesPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); MailSettingsPanel(vm) }
+            0 -> { SourcesPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); MailSettingsPanel(vm); WatchPanel(vm); DevicesPanel(vm) }
             1 -> SocialPanel(vm)
             2 -> AppsPanel(vm)
             3 -> CommunityPanel(vm)
@@ -4587,6 +4590,158 @@ private fun DockPanel(vm: GuardianViewModel) {
             place?.let { w ->
                 Text("\u2192 ${w.title} \u00b7 ${w.screen}", color = Jim.T3,
                     fontSize = 10.sp)
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+// ---- the wrist and the doorway ----
+// The drip channel's setup card and the paired embodiments. Console doors
+// since 0.6.0 / 0.19.x; these are the phone's.
+
+@Composable
+private fun WatchPanel(vm: GuardianViewModel) {
+    var setup by remember { mutableStateOf<WatchSetup?>(null) }
+    var pair by remember { mutableStateOf<PairInfo?>(null) }
+    var showSteps by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val picker = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            val bytes = context.contentResolver.openInputStream(uri)
+                ?.use { it.readBytes() }
+            if (bytes != null)
+                vm.call({ ApiClient.seedWatch(vm.uid!!, vm.token!!,
+                    bytes) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                }
+        }
+    }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.watchSetup(vm.uid!!, vm.token!!) }) { r ->
+            setup = r.getOrNull()
+        }
+        vm.call({ ApiClient.pairInfo() }) { r -> pair = r.getOrNull() }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.wt.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ns.wt.lead", vm.language), color = Jim.T2,
+            fontSize = 11.sp)
+        val s = setup
+        if (s != null) {
+            s.devices.chunked(2).forEach { rowDevices ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    rowDevices.forEach { device ->
+                        FilterChip(selected = s.device == device.key,
+                            onClick = {
+                                vm.call({ ApiClient.watchSetup(vm.uid!!,
+                                    vm.token!!, device.key) }) { r ->
+                                    setup = r.getOrNull() ?: setup
+                                }
+                            },
+                            label = { Text(device.name, fontSize = 10.sp) })
+                    }
+                }
+            }
+            Text(L10n.t("ns.wt.address", vm.language), color = Jim.T2,
+                fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Text(s.dripUrl, color = Jim.Txt, fontSize = 11.sp)
+            Text("${s.drips} \u00b7 ${s.lastDripAt ?: "\u2014"}",
+                color = Jim.T3, fontSize = 10.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SmallAction(L10n.t("ns.wt.setup", vm.language)) {
+                    showSteps = !showSteps
+                }
+                // Rotating invalidates the old drip token.
+                SmallAction(L10n.t("ns.bas.reset", vm.language)) {
+                    vm.call({ ApiClient.rotateWatchChannel(vm.uid!!,
+                        vm.token!!) }) { r ->
+                        error = r.exceptionOrNull()?.message
+                        setup = r.getOrNull() ?: setup
+                    }
+                }
+                SmallAction(L10n.t("ns.wt.seed", vm.language)) {
+                    picker.launch(arrayOf("application/zip", "text/xml",
+                                          "application/xml"))
+                }
+            }
+            if (showSteps) s.steps.forEachIndexed { i, step ->
+                Text("${i + 1}. $step", color = Jim.T2, fontSize = 11.sp)
+            }
+            Text(s.seedHint, color = Jim.T3, fontSize = 10.sp)
+        }
+        pair?.let { p ->
+            // The pairing card's own words, straight from the wire.
+            p.how.forEach { line ->
+                Text(line, color = Jim.T2, fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold)
+            }
+            Text(p.consoleUrl, color = Jim.Txt, fontSize = 11.sp)
+            Text(p.note, color = Jim.T3, fontSize = 10.sp)
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+@Composable
+private fun DevicesPanel(vm: GuardianViewModel) {
+    var rows by remember { mutableStateOf<List<DeviceRow>>(emptyList()) }
+    var name by remember { mutableStateOf("") }
+    var kind by remember { mutableStateOf("speaker") }
+    var paired by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+    // The server's DeviceRegister kinds, shown in its own words like the
+    // mic types are.
+    val kinds = listOf("wearable", "stationary", "autonomous", "speaker",
+                       "phone", "glasses", "headset", "spatial", "other")
+
+    fun reload() {
+        vm.call({ ApiClient.devices(vm.uid!!, vm.token!!) }) { r ->
+            rows = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.dv.bluetooth", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        rows.forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("${row.name} \u00b7 ${row.kind}", color = Jim.Txt,
+                    fontSize = 11.sp)
+                if (row.paired)
+                    Text(L10n.t("ns.dv.paired", vm.language),
+                        color = Jim.Green, fontSize = 11.sp)
+            }
+        }
+        labeledField("", name, "") { name = it }
+        kinds.chunked(3).forEach { rowKinds ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                rowKinds.forEach { choice ->
+                    FilterChip(selected = kind == choice,
+                        onClick = { kind = choice },
+                        label = { Text(choice, fontSize = 10.sp) })
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Switch(checked = paired, onCheckedChange = { paired = it })
+            Text(L10n.t("ns.dv.paired", vm.language), color = Jim.T2,
+                fontSize = 11.sp)
+        }
+        BrandButton(L10n.t("ns.dv.bluetooth", vm.language),
+            enabled = name.isNotBlank()) {
+            vm.call({ ApiClient.registerDevice(vm.uid!!, vm.token!!,
+                name.trim(), kind, paired) }) { r ->
+                error = r.exceptionOrNull()?.message
+                if (r.isSuccess) name = ""
+                reload()
             }
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }

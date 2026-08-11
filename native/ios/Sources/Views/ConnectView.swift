@@ -39,6 +39,10 @@ struct ConnectView: View {
                     // and the mail it sends through.
                     VoiceSettingsCard()
                     MailSettingsCard()
+                    // The wrist's drip channel and the paired embodiments
+                    // are sources too.
+                    WatchCard()
+                    DevicesCard()
                 case .social: SocialSection()
                 case .apps: AppsSection()
                 case .community: CommunitySection()

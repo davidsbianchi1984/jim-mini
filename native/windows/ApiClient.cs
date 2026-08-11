@@ -1777,6 +1777,45 @@ public sealed class ApiClient
     public Task<DockWhere> DockWhere(string face) =>
         Send<DockWhere>(new HttpRequestMessage(HttpMethod.Get,
             $"/dock/where/{face}"));
+
+    // ---- the wrist and the doorway: watch channel, devices, pairing --------
+
+    public Task<WatchSetup> WatchSetup(string uid, string token,
+                                       string device = "apple_watch") =>
+        Send<WatchSetup>(new HttpRequestMessage(HttpMethod.Get,
+            $"/watch/channel/{uid}?device={device}"), token);
+
+    /// Rotating invalidates the old drip token.
+    public Task<WatchSetup> RotateWatchChannel(string uid, string token) =>
+        Send<WatchSetup>(Post($"/watch/channel/{uid}/rotate", new { },
+                              token));
+
+    /// Upload the Health app's export.zip. History folds into baselines
+    /// only — enrollment day should be quiet.
+    public async Task SeedWatch(string uid, string token, byte[] data)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post,
+            $"/watch/seed/{uid}");
+        req.Content = new ByteArrayContent(data);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var res = await Dispatch(req);
+        res.EnsureSuccessStatusCode();
+    }
+
+    /// How to open the Guardian on a phone: the console's URL on this
+    /// local network. Same Wi-Fi, no app store.
+    public Task<PairInfo> PairInfo() =>
+        Send<PairInfo>(new HttpRequestMessage(HttpMethod.Get, "/pair"));
+
+    public Task<DeviceRow[]> Devices(string uid, string token) =>
+        Send<DeviceRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/devices/{uid}"), token);
+
+    public Task<DeviceRow> RegisterDevice(string uid, string token,
+                                          string name, string kind,
+                                          bool paired) =>
+        Send<DeviceRow>(Post($"/devices/{uid}",
+            new { name, kind, paired }, token));
 }
 
 public record MoneyAccount(
@@ -2226,3 +2265,37 @@ public record DockWhere(
     [property: JsonPropertyName("path")] string Path,
     [property: JsonPropertyName("title")] string Title,
     [property: JsonPropertyName("opens_dock_face")] string OpensDockFace);
+
+public record WatchDeviceRow(
+    [property: JsonPropertyName("key")] string Key,
+    [property: JsonPropertyName("name")] string Name);
+
+/// The setup card: drip URL, this device's recipe, arrivals so far.
+public record WatchSetup(
+    [property: JsonPropertyName("drip_url")] string DripUrl,
+    [property: JsonPropertyName("phone_reachable")] bool PhoneReachable,
+    [property: JsonPropertyName("last_drip_at")] string? LastDripAt,
+    [property: JsonPropertyName("drips")] int Drips,
+    [property: JsonPropertyName("device")] string Device,
+    [property: JsonPropertyName("devices")] WatchDeviceRow[] Devices,
+    [property: JsonPropertyName("steps")] string[] Steps,
+    [property: JsonPropertyName("seed_hint")] string SeedHint);
+
+/// The local pairing card — the console's URL on this network.
+public record PairInfo(
+    [property: JsonPropertyName("console_url")] string ConsoleUrl,
+    [property: JsonPropertyName("api_url")] string ApiUrl,
+    [property: JsonPropertyName("console_built")] bool ConsoleBuilt,
+    [property: JsonPropertyName("reachable")] bool Reachable,
+    [property: JsonPropertyName("hosted")] bool Hosted,
+    [property: JsonPropertyName("qr_svg")] string QrSvg,
+    [property: JsonPropertyName("how")] string[] How,
+    [property: JsonPropertyName("note")] string Note);
+
+public record DeviceRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("transport")] string? Transport,
+    [property: JsonPropertyName("has_llm")] bool HasLlm,
+    [property: JsonPropertyName("paired")] bool Paired);

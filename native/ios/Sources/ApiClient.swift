@@ -780,7 +780,8 @@ actor ApiClient {
     }
 
     private func request<T: Decodable>(_ path: String, method: String = "GET",
-                                       body: [String: Any]? = nil, token: String? = nil) async throws -> T {
+                                       body: [String: Any]? = nil, token: String? = nil,
+                                       rawBody: Data? = nil) async throws -> T {
         var req = URLRequest(url: base.appendingPathComponent(path))
         req.httpMethod = method
         req.setValue("application/json", forHTTPHeaderField: "content-type")
@@ -801,6 +802,7 @@ actor ApiClient {
         }
         if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization") }
         if let body { req.httpBody = try JSONSerialization.data(withJSONObject: body) }
+        else if let rawBody { req.httpBody = rawBody }
 
         let data: Data
         let resp: URLResponse
@@ -2505,5 +2507,91 @@ extension ApiClient {
     /// The screen that can actually do this face's job.
     func dockWhere(face: String) async throws -> DockWhere {
         try await request("/dock/where/\(face)")
+    }
+}
+
+// MARK: - The wrist and the doorway: watch channel, devices, pairing
+
+struct WatchDeviceRow: Decodable {
+    let key: String
+    let name: String
+}
+
+/// The setup card: drip URL, this device's recipe, arrivals so far — and
+/// the device list itself, so the picker renders from the API rather than
+/// being hardcoded four times.
+struct WatchSetup: Decodable {
+    let drip_url: String
+    let phone_reachable: Bool
+    let last_drip_at: String?
+    let drips: Int
+    let device: String
+    let devices: [WatchDeviceRow]
+    let steps: [String]
+    let seed_hint: String
+}
+
+/// How to open the Guardian on a phone: the console's URL on this local
+/// network. Same Wi-Fi, no app store.
+struct PairInfo: Decodable {
+    let console_url: String
+    let api_url: String
+    let console_built: Bool
+    let reachable: Bool
+    let hosted: Bool
+    let qr_svg: String
+    let how: [String]
+    let note: String
+}
+
+struct DeviceRow: Decodable {
+    let id: String
+    let user_id: String
+    let name: String
+    let kind: String
+    let transport: String?
+    let has_llm: Bool
+    let linked_to: String?
+    let paired: Bool
+    let created_at: String
+}
+
+struct SeedReceipt: Decodable {}
+
+extension ApiClient {
+
+    func watchSetup(uid: String, token: String,
+                    device: String = "apple_watch") async throws -> WatchSetup {
+        try await request("/watch/channel/\(uid)?device=\(device)",
+                          token: token)
+    }
+
+    /// Rotating invalidates the old drip token; the card re-renders with
+    /// the new address.
+    func rotateWatchChannel(uid: String, token: String) async throws -> WatchSetup {
+        try await request("/watch/channel/\(uid)/rotate", method: "POST",
+                          token: token)
+    }
+
+    /// Upload the Health app's export.zip (or bare export.xml). History
+    /// folds into baselines only — enrollment day should be quiet.
+    func seedWatch(uid: String, token: String, data: Data) async throws {
+        let _: SeedReceipt = try await request(
+            "/watch/seed/\(uid)", method: "POST", token: token, rawBody: data)
+    }
+
+    func pairInfo() async throws -> PairInfo {
+        try await request("/pair")
+    }
+
+    func devices(uid: String, token: String) async throws -> [DeviceRow] {
+        try await request("/devices/\(uid)", token: token)
+    }
+
+    func registerDevice(uid: String, token: String, name: String,
+                        kind: String, paired: Bool) async throws -> DeviceRow {
+        try await request("/devices/\(uid)", method: "POST",
+                          body: ["name": name, "kind": kind,
+                                 "paired": paired], token: token)
     }
 }
