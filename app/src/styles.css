@@ -21,12 +21,19 @@ code, .mono { font-family: ui-monospace, Menlo, monospace; }
 .green { color: var(--green); } .amber { color: var(--amber); } .muted { color: var(--t2); }
 .small { font-size: 12px; }
 
-.app { display: grid; grid-template-columns: 232px 1fr; height: 100%; }
+/* 100dvh where the browser has it: on a phone, 100% tracks the layout
+   viewport, which is taller than what is actually visible while the URL bar
+   is up — the bottom row sat under it. Browsers without dvh keep 100%. */
+.app { display: grid; grid-template-columns: 232px 1fr; height: 100%; height: 100dvh; }
 .sidebar { background: linear-gradient(180deg, #141d31, #0b1120); border-right: 1px solid var(--line);
   /* The bottom padding is the Guardian-lights widget's footprint: it is
      fixed at `left: 22px; bottom: 22px` and 176px tall, so it sits *on*
      this column — without the reserve the last tabs are under it. */
-  padding: 20px 14px 210px; display: flex; flex-direction: column; }
+  padding: 20px 14px 210px; display: flex; flex-direction: column;
+  /* A landscape phone is wider than the breakpoint, so it gets this desktop
+     column on a ~390px-tall screen: without its own scroll the lower tabs
+     were simply unreachable. min-height lets the grid track clamp it. */
+  overflow-y: auto; min-height: 0; }
 .brand { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; padding: 0 6px; }
 .brand-name { font-weight: 800; letter-spacing: 0.5px; }
 .brand-sub { font-size: 10px; color: var(--t3); }
@@ -40,7 +47,11 @@ nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .signout { background: rgba(255,255,255,0.05); color: var(--t2); border: 1px solid var(--line); border-radius: 10px; padding: 9px; font-size: 12px; }
 .dot-online { color: var(--green); font-size: 12px; }
 
-.content { overflow-y: auto; padding: 30px 34px; }
+/* min-height/min-width zero: a grid item refuses to shrink below its
+   content by default, so this pane grew past its track, the app overflowed
+   the viewport, and the page itself scrolled instead of the pane — the
+   half-stuck scroll and the portrait screen that did not fit. */
+.content { overflow-y: auto; padding: 30px 34px; min-height: 0; min-width: 0; }
 .screen { max-width: 720px; }
 .screen-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
 .screen-head h2 { margin: 0; font-size: 22px; letter-spacing: -0.3px; }
@@ -50,8 +61,8 @@ nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
   box-shadow: 0 0 18px rgba(124,92,255,0.5); }
 .orb.big { width: 76px; height: 76px; }
 
-.onboarding { display: grid; place-items: center; height: 100%; padding: 24px; }
-.onboard-card { width: 440px; background: linear-gradient(160deg, var(--card), var(--card2));
+.onboarding { display: grid; place-items: center; height: 100%; padding: 24px; overflow-y: auto; }
+.onboard-card { width: 440px; max-width: 100%; background: linear-gradient(160deg, var(--card), var(--card2));
   border: 1px solid var(--line); border-radius: 20px; padding: 28px; text-align: center; }
 .onboard-card .orb.big { margin: 4px auto 10px; }
 .onboard-card h1 { font-size: 22px; margin: 6px 0 8px; }
