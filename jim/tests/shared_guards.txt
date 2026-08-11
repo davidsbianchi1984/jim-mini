@@ -1,4 +1,4 @@
-# status: manifest — 464 guards carried by all three products
+# status: manifest — 465 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -92,6 +92,7 @@ test_a_token_slot_is_translatable
 test_a_translation_keeps_every_slot_the_template_has
 test_a_union_that_names_both_shapes_is_not_a_disagreement
 test_a_validators_own_words_are_not_repeated
+test_a_value_cannot_close_the_script_element_it_sits_in
 test_a_wire_model_holds_no_methods
 test_a_word_on_its_own_is_not_a_fragment
 test_a_wrapper_is_not_its_contents

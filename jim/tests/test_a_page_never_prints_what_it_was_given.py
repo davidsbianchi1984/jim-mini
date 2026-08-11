@@ -300,3 +300,15 @@ def test_prose_with_angle_brackets_is_not_markup():
     assert not _analyse(
         'def hint(host):\n'
         '    return f"Reach this page on http://localhost:<port> not {host}"\n')
+
+
+def test_a_value_cannot_close_the_script_element_it_sits_in():
+    """`json.dumps` escapes what would end a *JS string*; the HTML parser
+    ends the element at the first `</script` regardless of quoting. The
+    helper escapes both layers, and the test stands in all three suites,
+    because the copy that drifted was the one whose entire job is to be
+    safe — and a guard that only exists where the bug never was guards
+    nothing."""
+    from jim import landing
+    out = landing._js("</script><svg onload=x>")
+    assert "</script" not in out
