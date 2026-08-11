@@ -2349,3 +2349,161 @@ extension ApiClient {
                           body: ["to": to])
     }
 }
+
+// MARK: - The guide, the help box, and the dock in the corner
+
+/// One lesson, text mode: `what` and `screens` are present, `speak` is not.
+struct TutorialStep: Decodable {
+    let key: String
+    let chapter: String
+    let title: String
+    let try_it: String
+    let mode: String
+    let what: String?
+    let screens: [Int]?
+}
+
+struct TutorialChapter: Decodable {
+    let chapter: String
+    let steps: [TutorialStep]
+}
+
+/// The whole walkthrough, chaptered. The count is deliberately not
+/// declared: `steps` means the lesson list inside a chapter and the tally
+/// here, and one name with two meanings is not a shape to promise.
+struct TutorialOutline: Decodable {
+    let guide: String
+    let chapters: [TutorialChapter]
+}
+
+struct TutorialProgress: Decodable {
+    let learner_id: String
+    let guide: String
+    let step: TutorialStep?
+    let done: Int
+    let total: Int
+    let finished: Bool
+    let note: String
+}
+
+struct HelpTopics: Decodable {
+    let topics: [String]
+    let disclosure: String
+}
+
+struct HelpAnswer: Decodable {
+    let answer: String
+    let source: String
+    let ai: Bool
+    let disclosure: String
+}
+
+/// Everything needed to draw the pane — the product's shape, not anybody's
+/// data. `faces` is a name-to-description table here and a chosen-names
+/// list on the per-user settings; both are the wire's own words.
+struct DockVocabulary: Decodable {
+    let faces: [String: String]
+    let corners: [String: String]
+    let states: [String: String]
+    let per_surface: [String]
+    let acts: Bool
+}
+
+struct DockState: Decodable {
+    let user_id: String
+    let corner: String
+    let state: String
+    let face: String?
+    let faces: [String]
+    let `set`: Bool
+    let wanted: String
+    let forced: Bool
+    let why: String?
+}
+
+struct DockWhere: Decodable {
+    let face: String
+    let screen: Int
+    let path: String
+    let title: String
+    let opens_dock_face: String
+}
+
+struct DockFace: Decodable {
+    let face: String
+    let shows: String
+    let user_id: String
+    let surface_id: String?
+    let acts: Bool
+    let never: [String]
+}
+
+extension ApiClient {
+
+    func tutorialOutline() async throws -> TutorialOutline {
+        try await request("/tutorial")
+    }
+
+    func tutorialStep(key: String) async throws -> TutorialStep {
+        try await request("/tutorial/steps/\(key)")
+    }
+
+    /// The lesson covering a given screen, so a screen can explain itself.
+    func tutorialForScreen(number: Int) async throws -> TutorialStep {
+        try await request("/tutorial/for-screen/\(number)")
+    }
+
+    func startTutorial(learnerId: String) async throws -> TutorialProgress {
+        try await request("/tutorial/start", method: "POST",
+                          body: ["learner_id": learnerId])
+    }
+
+    func tutorialProgress(learnerId: String) async throws -> TutorialProgress {
+        try await request("/tutorial/progress/\(learnerId)")
+    }
+
+    func markTutorialDone(learnerId: String,
+                          lesson: String) async throws -> TutorialProgress {
+        try await request("/tutorial/done", method: "POST",
+                          body: ["learner_id": learnerId, "lesson": lesson])
+    }
+
+    func helpTopics() async throws -> HelpTopics {
+        try await request("/help/topics")
+    }
+
+    /// The help box: "where is the thing?" It writes nothing.
+    func askHelp(question: String) async throws -> HelpAnswer {
+        try await request("/help", method: "POST",
+                          body: ["question": question])
+    }
+
+    func dockVocabulary() async throws -> DockVocabulary {
+        try await request("/dock/faces")
+    }
+
+    func dockState(uid: String, token: String) async throws -> DockState {
+        try await request("/dock/\(uid)", token: token)
+    }
+
+    func configureDock(uid: String, token: String, corner: String?,
+                       state: String?, face: String?) async throws -> DockState {
+        var body: [String: Any] = [:]
+        if let corner { body["corner"] = corner }
+        if let state { body["state"] = state }
+        if let face { body["face"] = face }
+        return try await request("/dock/\(uid)", method: "PUT",
+                                 body: body, token: token)
+    }
+
+    /// One face, as the pane would draw it. Read-only by construction.
+    func dockFace(uid: String, token: String,
+                  name: String) async throws -> DockFace {
+        try await request("/dock/\(uid)/face/\(name)", token: token)
+    }
+
+    /// The screen that can actually do this face's job.
+    func dockWhere(face: String) async throws -> DockWhere {
+        try await request("/dock/where/\(face)")
+    }
+}

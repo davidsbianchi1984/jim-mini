@@ -1712,6 +1712,71 @@ public sealed class ApiClient
     /// Send a real message now — proof the settings can deliver.
     public Task<MailTestOut> TestMail(string to) =>
         Send<MailTestOut>(Post("/settings/mail/test", new { to }));
+
+    // ---- the guide, the help box, and the dock in the corner ---------------
+
+    public Task<TutorialOutline> TutorialOutline() =>
+        Send<TutorialOutline>(new HttpRequestMessage(HttpMethod.Get,
+            "/tutorial"));
+
+    public Task<TutorialStep> TutorialStep(string key) =>
+        Send<TutorialStep>(new HttpRequestMessage(HttpMethod.Get,
+            $"/tutorial/steps/{key}"));
+
+    /// The lesson covering a given screen, so a screen can explain itself.
+    public Task<TutorialStep> TutorialForScreen(int number) =>
+        Send<TutorialStep>(new HttpRequestMessage(HttpMethod.Get,
+            $"/tutorial/for-screen/{number}"));
+
+    public Task<TutorialProgress> StartTutorial(string learnerId) =>
+        Send<TutorialProgress>(Post("/tutorial/start",
+            new { learner_id = learnerId }));
+
+    public Task<TutorialProgress> TutorialProgress(string learnerId) =>
+        Send<TutorialProgress>(new HttpRequestMessage(HttpMethod.Get,
+            $"/tutorial/progress/{learnerId}"));
+
+    public Task<TutorialProgress> MarkTutorialDone(string learnerId,
+                                                   string lesson) =>
+        Send<TutorialProgress>(Post("/tutorial/done",
+            new { learner_id = learnerId, lesson }));
+
+    public Task<HelpTopics> HelpTopics() =>
+        Send<HelpTopics>(new HttpRequestMessage(HttpMethod.Get,
+            "/help/topics"));
+
+    /// The help box: "where is the thing?" It writes nothing.
+    public Task<HelpAnswer> AskHelp(string question) =>
+        Send<HelpAnswer>(Post("/help", new { question }));
+
+    public Task<DockVocabulary> DockVocabulary() =>
+        Send<DockVocabulary>(new HttpRequestMessage(HttpMethod.Get,
+            "/dock/faces"));
+
+    public Task<DockState> DockState(string uid, string token) =>
+        Send<DockState>(new HttpRequestMessage(HttpMethod.Get,
+            $"/dock/{uid}"), token);
+
+    public Task<DockState> ConfigureDock(string uid, string token,
+                                         string? corner, string? state,
+                                         string? face)
+    {
+        var body = new Dictionary<string, object>();
+        if (corner is { }) body["corner"] = corner;
+        if (state is { }) body["state"] = state;
+        if (face is { }) body["face"] = face;
+        return Send<DockState>(Put($"/dock/{uid}", body, token));
+    }
+
+    /// One face, as the pane would draw it. Read-only by construction.
+    public Task<DockFace> DockFace(string uid, string token, string name) =>
+        Send<DockFace>(new HttpRequestMessage(HttpMethod.Get,
+            $"/dock/{uid}/face/{name}"), token);
+
+    /// The screen that can actually do this face's job.
+    public Task<DockWhere> DockWhere(string face) =>
+        Send<DockWhere>(new HttpRequestMessage(HttpMethod.Get,
+            $"/dock/where/{face}"));
 }
 
 public record MoneyAccount(
@@ -2085,3 +2150,79 @@ public record MailSettingsOut(
 public record MailTestOut(
     [property: JsonPropertyName("sent")] bool Sent,
     [property: JsonPropertyName("to")] string To);
+
+/// One lesson, text mode: `what` and `screens` are present.
+public record TutorialStep(
+    [property: JsonPropertyName("key")] string Key,
+    [property: JsonPropertyName("chapter")] string Chapter,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("try_it")] string TryIt,
+    [property: JsonPropertyName("mode")] string Mode,
+    [property: JsonPropertyName("what")] string? What,
+    [property: JsonPropertyName("screens")] int[]? Screens);
+
+public record TutorialChapter(
+    [property: JsonPropertyName("chapter")] string Chapter,
+    [property: JsonPropertyName("steps")] TutorialStep[] Steps);
+
+/// The whole walkthrough. The count field is deliberately not declared:
+/// `steps` means the lesson list inside a chapter and the tally here, and
+/// one name with two meanings is not a shape to promise.
+public record TutorialOutline(
+    [property: JsonPropertyName("guide")] string Guide,
+    [property: JsonPropertyName("chapters")] TutorialChapter[] Chapters);
+
+public record TutorialProgress(
+    [property: JsonPropertyName("learner_id")] string LearnerId,
+    [property: JsonPropertyName("guide")] string Guide,
+    [property: JsonPropertyName("step")] TutorialStep? Step,
+    [property: JsonPropertyName("done")] int Done,
+    [property: JsonPropertyName("total")] int Total,
+    [property: JsonPropertyName("finished")] bool Finished,
+    [property: JsonPropertyName("note")] string Note);
+
+public record HelpTopics(
+    [property: JsonPropertyName("topics")] string[] Topics,
+    [property: JsonPropertyName("disclosure")] string Disclosure);
+
+public record HelpAnswer(
+    [property: JsonPropertyName("answer")] string Answer,
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("ai")] bool Ai,
+    [property: JsonPropertyName("disclosure")] string Disclosure);
+
+/// Everything needed to draw the pane. `faces` is a name-to-description
+/// table here and a chosen-names list on the per-user settings — recorded
+/// in wire_name_collisions, both being the wire's own words since 0.19.x.
+public record DockVocabulary(
+    [property: JsonPropertyName("faces")] Dictionary<string, string> Faces,
+    [property: JsonPropertyName("corners")] Dictionary<string, string> Corners,
+    [property: JsonPropertyName("states")] Dictionary<string, string> States,
+    [property: JsonPropertyName("per_surface")] string[] PerSurface,
+    [property: JsonPropertyName("acts")] bool Acts);
+
+public record DockState(
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("corner")] string Corner,
+    [property: JsonPropertyName("state")] string State,
+    [property: JsonPropertyName("face")] string? Face,
+    [property: JsonPropertyName("faces")] string[] Faces,
+    [property: JsonPropertyName("set")] bool Chosen,
+    [property: JsonPropertyName("wanted")] string Wanted,
+    [property: JsonPropertyName("forced")] bool Forced,
+    [property: JsonPropertyName("why")] string? Why);
+
+public record DockFace(
+    [property: JsonPropertyName("face")] string Face,
+    [property: JsonPropertyName("shows")] string Shows,
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("surface_id")] string? SurfaceId,
+    [property: JsonPropertyName("acts")] bool Acts,
+    [property: JsonPropertyName("never")] string[] Never);
+
+public record DockWhere(
+    [property: JsonPropertyName("face")] string Face,
+    [property: JsonPropertyName("screen")] int Screen,
+    [property: JsonPropertyName("path")] string Path,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("opens_dock_face")] string OpensDockFace);

@@ -1,5 +1,5 @@
-# status: backlog — 14 rows
-# ceiling: 14
+# status: backlog — 17 rows
+# ceiling: 17
 #
 # One wire field name carrying more than one type across this product's API.
 #
@@ -41,6 +41,15 @@
 # field is an API break that belongs to its own round, not to the round
 # that finally declared the types.
 #
+# `step` and `steps` joined when the guide reached the phones: the
+# tutorial's progress carries a lesson object and a chaptered lesson list,
+# while the first-aid playbook has carried plain instruction strings under
+# the same names since 0.15.x.
+#
+# `faces` joined when the dock reached the phones: the vocabulary's
+# name-to-description table and the per-user settings' chosen-names list
+# share the name, both served that way since 0.19.x.
+#
 # `medications` joined the same way when the cabinet reached the phones:
 # the board's rows and the adherence tally's rows are different shapes
 # under the same name, and both routes have served them that way since
@@ -49,6 +58,7 @@
 answered
 attached
 chosen
+faces
 first_aid
 goal
 helped
@@ -59,4 +69,6 @@ provenance
 providers
 sealed
 specialist
+step
+steps
 value

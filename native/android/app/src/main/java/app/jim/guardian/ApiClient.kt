@@ -1998,6 +1998,136 @@ object ApiClient {
                         JSONObject().put("to", to))
         return o.optString("to", to)
     }
+
+    // ---- the guide, the help box, and the dock in the corner ---------------
+
+    private fun tutorialStepOf(o: JSONObject): TutorialStep {
+        val screens = mutableListOf<Int>()
+        o.optJSONArray("screens")?.let { a ->
+            for (i in 0 until a.length()) screens.add(a.getInt(i))
+        }
+        return TutorialStep(o.optString("key", ""),
+            o.optString("chapter", ""), o.optString("title", ""),
+            o.optString("try_it", ""), o.optString("mode", ""),
+            o.optString("what", null), screens)
+    }
+
+    private fun tutorialProgressOf(o: JSONObject) = TutorialProgress(
+        o.optString("learner_id", ""), o.optString("guide", ""),
+        o.optJSONObject("step")?.let { tutorialStepOf(it) },
+        o.optInt("done"), o.optInt("total"),
+        o.optBoolean("finished", false), o.optString("note", ""))
+
+    suspend fun tutorialOutline(): TutorialOutline {
+        val o = request("/tutorial")
+        val chapters = mutableListOf<TutorialChapter>()
+        o.optJSONArray("chapters")?.let { a ->
+            for (i in 0 until a.length()) {
+                val c = a.getJSONObject(i)
+                val steps = mutableListOf<TutorialStep>()
+                c.optJSONArray("steps")?.let { s ->
+                    for (j in 0 until s.length())
+                        steps.add(tutorialStepOf(s.getJSONObject(j)))
+                }
+                chapters.add(TutorialChapter(c.optString("chapter", ""),
+                                             steps))
+            }
+        }
+        return TutorialOutline(o.optString("guide", ""), chapters)
+    }
+
+    suspend fun tutorialStep(key: String): TutorialStep =
+        tutorialStepOf(request("/tutorial/steps/$key"))
+
+    /** The lesson covering a given screen, so a screen can explain itself. */
+    suspend fun tutorialForScreen(number: Int): TutorialStep =
+        tutorialStepOf(request("/tutorial/for-screen/$number"))
+
+    suspend fun startTutorial(learnerId: String): TutorialProgress =
+        tutorialProgressOf(request("/tutorial/start", "POST",
+            JSONObject().put("learner_id", learnerId)))
+
+    suspend fun tutorialProgress(learnerId: String): TutorialProgress =
+        tutorialProgressOf(request("/tutorial/progress/$learnerId"))
+
+    suspend fun markTutorialDone(learnerId: String,
+                                 lesson: String): TutorialProgress =
+        tutorialProgressOf(request("/tutorial/done", "POST",
+            JSONObject().put("learner_id", learnerId).put("lesson", lesson)))
+
+    suspend fun helpTopics(): List<String> {
+        val o = request("/help/topics")
+        val out = mutableListOf<String>()
+        o.optJSONArray("topics")?.let { a ->
+            for (i in 0 until a.length()) out.add(a.getString(i))
+        }
+        return out
+    }
+
+    /** The help box: "where is the thing?" It writes nothing. */
+    suspend fun askHelp(question: String): HelpAnswer {
+        val o = request("/help", "POST",
+                        JSONObject().put("question", question))
+        return HelpAnswer(o.optString("answer", ""),
+            o.optString("source", ""), o.optBoolean("ai", false),
+            o.optString("disclosure", ""))
+    }
+
+    suspend fun dockVocabulary(): DockVocabulary {
+        val o = request("/dock/faces")
+        fun table(key: String): Map<String, String> {
+            val out = mutableMapOf<String, String>()
+            o.optJSONObject(key)?.let { t ->
+                t.keys().forEach { k -> out[k] = t.getString(k) }
+            }
+            return out
+        }
+        val perSurface = mutableListOf<String>()
+        o.optJSONArray("per_surface")?.let { a ->
+            for (i in 0 until a.length()) perSurface.add(a.getString(i))
+        }
+        return DockVocabulary(table("faces"), table("corners"),
+                              table("states"), perSurface,
+                              o.optBoolean("acts", false))
+    }
+
+    private fun dockStateOf(o: JSONObject): DockState {
+        val chosen = mutableListOf<String>()
+        o.optJSONArray("faces")?.let { a ->
+            for (i in 0 until a.length()) chosen.add(a.getString(i))
+        }
+        return DockState(o.optString("user_id", ""),
+            o.optString("corner", ""), o.optString("state", ""),
+            o.optString("face", null), chosen, o.optBoolean("set", false),
+            o.optString("wanted", ""), o.optBoolean("forced", false),
+            o.optString("why", null))
+    }
+
+    suspend fun dockState(uid: String, token: String): DockState =
+        dockStateOf(request("/dock/$uid", token = token))
+
+    suspend fun configureDock(uid: String, token: String, corner: String?,
+                              state: String?, face: String?): DockState {
+        val body = JSONObject()
+        if (corner != null) body.put("corner", corner)
+        if (state != null) body.put("state", state)
+        if (face != null) body.put("face", face)
+        return dockStateOf(request("/dock/$uid", "PUT", body, token))
+    }
+
+    /** One face, as the pane would draw it. Read-only by construction. */
+    suspend fun dockFace(uid: String, token: String,
+                         name: String): DockFace {
+        val o = request("/dock/$uid/face/$name", token = token)
+        return DockFace(o.optString("face", ""), o.optString("shows", ""))
+    }
+
+    /** The screen that can actually do this face's job. */
+    suspend fun dockWhere(face: String): DockWhere {
+        val o = request("/dock/where/$face")
+        return DockWhere(o.optString("face", ""), o.optInt("screen"),
+            o.optString("path", ""), o.optString("title", ""))
+    }
 }
 
 data class MoneyAccount(val id: String, val kind: String,
@@ -2152,3 +2282,31 @@ data class MailSettingsOut(val transport: String, val source: String,
                            val host: String?, val port: Int,
                            val username: String?, val sender: String?,
                            val publicUrl: String, val passwordSet: Boolean)
+
+/** One lesson, text mode: `what` and `screens` are present. */
+data class TutorialStep(val key: String, val chapter: String,
+                        val title: String, val tryIt: String,
+                        val mode: String, val what: String?,
+                        val screens: List<Int>)
+data class TutorialChapter(val chapter: String,
+                           val steps: List<TutorialStep>)
+data class TutorialOutline(val guide: String,
+                           val chapters: List<TutorialChapter>)
+data class TutorialProgress(val learnerId: String, val guide: String,
+                            val step: TutorialStep?, val done: Int,
+                            val total: Int, val finished: Boolean,
+                            val note: String)
+data class HelpAnswer(val answer: String, val source: String,
+                      val ai: Boolean, val disclosure: String)
+data class DockVocabulary(val faces: Map<String, String>,
+                          val corners: Map<String, String>,
+                          val states: Map<String, String>,
+                          val perSurface: List<String>, val acts: Boolean)
+data class DockState(val userId: String, val corner: String,
+                     val state: String, val face: String?,
+                     val faces: List<String>, val isSet: Boolean,
+                     val wanted: String, val forced: Boolean,
+                     val why: String?)
+data class DockFace(val face: String, val shows: String)
+data class DockWhere(val face: String, val screen: Int, val path: String,
+                     val title: String)

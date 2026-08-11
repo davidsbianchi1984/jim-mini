@@ -166,6 +166,10 @@ struct OverviewView: View {
 
                 AccessCard()
 
+                // The Guardian showing you around, and the pane it lives in.
+                GuideCard()
+                DockCard()
+
                 Button(L10n.t("action.sign_out", state.language)) { state.signOut() }
                     .font(.subheadline).foregroundStyle(Theme.t2)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)

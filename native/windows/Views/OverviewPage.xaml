@@ -253,6 +253,60 @@
                     </ItemsControl>
                 </StackPanel>
             </Border>
+
+            <!-- The Guardian showing you around, and the pane it lives in. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="GdHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="GdGuide" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="GdProgress" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="GdStepTitle" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="GdStepWhat" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="GdStepTry" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="GdStartButton" Click="OnGuideStart" />
+                        <Button x:Name="GdDoneButton" Click="OnGuideDone" Visibility="Collapsed" />
+                        <Button x:Name="GdStepButton" Click="OnGuideReadStep" Visibility="Collapsed" />
+                    </StackPanel>
+                    <NumberBox x:Name="GdScreenNumber" Value="61" Minimum="1" Maximum="200" />
+                    <Button x:Name="GdScreenButton" Click="OnGuideForScreen" />
+                    <TextBox x:Name="GdQuestion" KeyUp="OnGuideAskKey" />
+                    <TextBlock x:Name="GdAnswer" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimTxtBrush}" Visibility="Collapsed" />
+                    <TextBlock x:Name="GdDisclosure" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" Visibility="Collapsed" />
+                    <Button x:Name="GdTopicsButton" Click="OnGuideTopics" />
+                    <StackPanel x:Name="GdTopics" Spacing="2" Visibility="Collapsed" />
+                    <TextBlock x:Name="GdError" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="DkHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="DkLine" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="DkWhy" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimAmberBrush}" />
+                    <StackPanel x:Name="DkFaces" Spacing="4" />
+                    <StackPanel x:Name="DkStates" Orientation="Horizontal" Spacing="6" />
+                    <Button x:Name="DkMoveButton" Click="OnDockMove" />
+                    <TextBlock x:Name="DkDetail" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="DkError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimRedBrush}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

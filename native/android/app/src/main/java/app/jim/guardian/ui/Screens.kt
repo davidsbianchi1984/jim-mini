@@ -73,6 +73,14 @@ import app.jim.guardian.VigilState
 import app.jim.guardian.BandRow
 import app.jim.guardian.VoiceSettingsOut
 import app.jim.guardian.MailSettingsOut
+import app.jim.guardian.TutorialOutline
+import app.jim.guardian.TutorialStep
+import app.jim.guardian.TutorialProgress
+import app.jim.guardian.HelpAnswer
+import app.jim.guardian.DockVocabulary
+import app.jim.guardian.DockState
+import app.jim.guardian.DockFace
+import app.jim.guardian.DockWhere
 import app.jim.guardian.CommunityRoom
 import app.jim.guardian.CommunityView
 import app.jim.guardian.JournalItem
@@ -290,6 +298,9 @@ fun OverviewScreen(vm: GuardianViewModel) {
         AnonymityCard(vm)
         ImproveCard(vm)
         AccessCard(vm)
+        // The Guardian showing you around, and the pane it lives in.
+        GuidePanel(vm)
+        DockPanel(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Jim.Line)) {
             Text(L10n.t("action.sign_out", vm.language), color = Jim.T2)
@@ -4375,6 +4386,208 @@ private fun MailSettingsPanel(vm: GuardianViewModel) {
         }
         testSentTo?.let {
             Text("\u2713 $it", color = Jim.Green, fontSize = 11.sp)
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+// ---- the guide, the help box, and the dock in the corner ----
+// Console doors since 0.19.x; these are the phone's. The help box calls no
+// model and says so on its face; the dock never acts.
+
+@Composable
+private fun GuidePanel(vm: GuardianViewModel) {
+    var outline by remember { mutableStateOf<TutorialOutline?>(null) }
+    var progress by remember { mutableStateOf<TutorialProgress?>(null) }
+    var stepDetail by remember { mutableStateOf<TutorialStep?>(null) }
+    var screenNumber by remember { mutableStateOf("") }
+    var question by remember { mutableStateOf("") }
+    var answer by remember { mutableStateOf<HelpAnswer?>(null) }
+    var topics by remember { mutableStateOf<List<String>>(emptyList()) }
+    var showTopics by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.tutorialOutline() }) { r ->
+            outline = r.getOrNull()
+        }
+        vm.call({ ApiClient.tutorialProgress(vm.uid!!) }) { r ->
+            progress = r.getOrNull()
+        }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.gd.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        outline?.let { Text(it.guide, color = Jim.T2, fontSize = 11.sp) }
+        val p = progress
+        if (p != null) {
+            Text(L10n.t("ns.gd.progress", vm.language)
+                    .replace("{d}", p.done.toString())
+                    .replace("{t}", p.total.toString())
+                    + " \u00b7 " + p.note,
+                color = Jim.T2, fontSize = 11.sp)
+            p.step?.let { step ->
+                Text("${step.chapter} \u00b7 ${step.title}", color = Jim.Txt,
+                    fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                step.what?.let {
+                    Text(it, color = Jim.T2, fontSize = 11.sp)
+                }
+                Text(step.tryIt, color = Jim.T2, fontSize = 11.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    BrandButton(L10n.t("ns.gd.done", vm.language)) {
+                        vm.call({ ApiClient.markTutorialDone(vm.uid!!,
+                            step.key) }) { r ->
+                            error = r.exceptionOrNull()?.message
+                            r.getOrNull()?.let { progress = it }
+                            stepDetail = null
+                        }
+                    }
+                    // The canonical lesson, re-read from its own route.
+                    SmallAction(L10n.t("ns.gd.step", vm.language)) {
+                        vm.call({ ApiClient.tutorialStep(step.key) }) { r ->
+                            stepDetail = r.getOrNull()
+                        }
+                    }
+                }
+            }
+        } else {
+            BrandButton(L10n.t("ns.gd.start", vm.language)) {
+                vm.call({ ApiClient.startTutorial(vm.uid!!) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                    r.getOrNull()?.let { progress = it }
+                }
+            }
+        }
+        stepDetail?.let { step ->
+            Text("${step.chapter} \u00b7 ${step.title}", color = Jim.Txt,
+                fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            step.what?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+            Text(step.tryIt, color = Jim.T2, fontSize = 11.sp)
+        }
+        // A screen can explain itself: the gallery number is enough.
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            labeledField(L10n.t("ns.gd.screen", vm.language), screenNumber,
+                "61") { screenNumber = it }
+        }
+        SmallAction(L10n.t("ns.gd.screen", vm.language)) {
+            screenNumber.trim().toIntOrNull()?.let { number ->
+                vm.call({ ApiClient.tutorialForScreen(number) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                    stepDetail = r.getOrNull()
+                }
+            }
+        }
+        labeledField("", question,
+            L10n.t("ns.gd.ask.ph", vm.language)) { question = it }
+        SmallAction(L10n.t("ns.gd.ask.ph", vm.language)) {
+            if (question.isNotBlank())
+                vm.call({ ApiClient.askHelp(question.trim()) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                    answer = r.getOrNull()
+                }
+        }
+        answer?.let { a ->
+            Text(a.answer, color = Jim.Txt, fontSize = 11.sp)
+            Text(a.disclosure, color = Jim.T3, fontSize = 10.sp)
+        }
+        SmallAction(L10n.t("ns.gd.topics", vm.language)) {
+            showTopics = !showTopics
+            if (showTopics)
+                vm.call({ ApiClient.helpTopics() }) { r ->
+                    topics = r.getOrDefault(emptyList())
+                }
+        }
+        if (showTopics) topics.take(8).forEach {
+            Text(it, color = Jim.T2, fontSize = 11.sp)
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+@Composable
+private fun DockPanel(vm: GuardianViewModel) {
+    var vocabulary by remember { mutableStateOf<DockVocabulary?>(null) }
+    var dock by remember { mutableStateOf<DockState?>(null) }
+    var detail by remember { mutableStateOf<DockFace?>(null) }
+    var place by remember { mutableStateOf<DockWhere?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun configure(corner: String? = null, state: String? = null,
+                  face: String? = null) {
+        vm.call({ ApiClient.configureDock(vm.uid!!, vm.token!!, corner,
+            state, face) }) { r ->
+            error = r.exceptionOrNull()?.message
+            r.getOrNull()?.let { dock = it }
+        }
+    }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.dockVocabulary() }) { r ->
+            vocabulary = r.getOrNull()
+        }
+        vm.call({ ApiClient.dockState(vm.uid!!, vm.token!!) }) { r ->
+            dock = r.getOrNull()
+        }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.dk.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        val d = dock
+        if (d != null) {
+            Text(L10n.t("ns.dk.line", vm.language)
+                    .replace("{corner}", d.corner)
+                    .replace("{state}", d.state)
+                    .replace("{forced}", if (d.forced) " !" else "")
+                    .replace("{face}", d.face ?: ""),
+                color = Jim.T2, fontSize = 11.sp)
+            d.why?.let { Text(it, color = Jim.Amber, fontSize = 11.sp) }
+        }
+        val v = vocabulary
+        if (v != null && d != null) {
+            // Per-surface faces are configured only — their detail needs a
+            // particular surface to be about, which this card is not.
+            v.faces.keys.sorted().chunked(3).forEach { rowNames ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    rowNames.forEach { name ->
+                        FilterChip(selected = d.face == name,
+                            onClick = {
+                                configure(face = name)
+                                if (name !in v.perSurface) {
+                                    vm.call({ ApiClient.dockFace(vm.uid!!,
+                                        vm.token!!, name) }) { r ->
+                                        detail = r.getOrNull()
+                                    }
+                                    vm.call({ ApiClient.dockWhere(name) }) { r ->
+                                        place = r.getOrNull()
+                                    }
+                                }
+                            },
+                            label = { Text(name, fontSize = 10.sp) })
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                v.states.keys.sorted().forEach { name ->
+                    FilterChip(selected = d.wanted == name,
+                        onClick = { configure(state = name) },
+                        label = { Text(name, fontSize = 10.sp) })
+                }
+            }
+            SmallAction(L10n.t("ns.dk.move", vm.language)) {
+                v.corners.keys.firstOrNull { it != d.corner }?.let {
+                    configure(corner = it)
+                }
+            }
+        }
+        detail?.let { f ->
+            Text(f.face, color = Jim.Txt, fontSize = 12.sp,
+                fontWeight = FontWeight.Bold)
+            Text(f.shows, color = Jim.T2, fontSize = 11.sp)
+            place?.let { w ->
+                Text("\u2192 ${w.title} \u00b7 ${w.screen}", color = Jim.T3,
+                    fontSize = 10.sp)
+            }
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
     }

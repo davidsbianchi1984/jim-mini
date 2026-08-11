@@ -113,6 +113,9 @@ public sealed partial class OverviewPage : Page
     {
         RefreshButton.Content = L10n.T("action.refresh");
         await Load();
+        LocalizeGuideAndDock();
+        await LoadGuide();
+        await LoadDock();
     }
 
     private async void OnRefresh(object sender, RoutedEventArgs e) => await Load();
@@ -486,5 +489,252 @@ public sealed partial class OverviewPage : Page
     {
         AppState.Current.RememberSignupKey(InviteBox.Password);
         InviteBox.Password = AppState.Current.SignupKey;
+    }
+    // -- the guide, the help box, and the dock in the corner -----------------
+    // Console doors since 0.19.x; these are the desktop's. The help box
+    // calls no model and says so on its face; the dock never acts.
+
+    private TutorialStep? _gdStep;
+    private DockVocabulary? _dkVocab;
+    private DockState? _dkState;
+
+    private void LocalizeGuideAndDock()
+    {
+        GdHead.Text = L10n.T("ns.gd.title");
+        GdStartButton.Content = L10n.T("ns.gd.start");
+        GdDoneButton.Content = L10n.T("ns.gd.done");
+        GdStepButton.Content = L10n.T("ns.gd.step");
+        GdScreenNumber.Header = L10n.T("ns.gd.screen");
+        GdScreenButton.Content = L10n.T("ns.gd.screen");
+        GdQuestion.PlaceholderText = L10n.T("ns.gd.ask.ph");
+        GdTopicsButton.Content = L10n.T("ns.gd.topics");
+        DkHead.Text = L10n.T("ns.dk.title");
+        DkMoveButton.Content = L10n.T("ns.dk.move");
+    }
+
+    private async System.Threading.Tasks.Task LoadGuide()
+    {
+        try
+        {
+            var outline = await ApiClient.Shared.TutorialOutline();
+            GdGuide.Text = outline.Guide;
+        }
+        catch { /* leave as-is */ }
+        var s = AppState.Current;
+        if (s.Uid is null) return;
+        try
+        {
+            RenderProgress(await ApiClient.Shared.TutorialProgress(s.Uid));
+        }
+        catch { /* not started — the start button stands */ }
+    }
+
+    private void RenderProgress(TutorialProgress p)
+    {
+        GdError.Visibility = Visibility.Collapsed;
+        GdProgress.Text = L10n.T("ns.gd.progress")
+            .Replace("{d}", p.Done.ToString())
+            .Replace("{t}", p.Total.ToString()) + " \u00b7 " + p.Note;
+        _gdStep = p.Step;
+        RenderStep(p.Step);
+        GdStartButton.Visibility = Visibility.Collapsed;
+        GdDoneButton.Visibility = p.Step is null ? Visibility.Collapsed
+                                                 : Visibility.Visible;
+        GdStepButton.Visibility = GdDoneButton.Visibility;
+    }
+
+    private void RenderStep(TutorialStep? step)
+    {
+        GdStepTitle.Text = step is null ? ""
+            : $"{step.Chapter} \u00b7 {step.Title}";
+        GdStepWhat.Text = step?.What ?? "";
+        GdStepTry.Text = step?.TryIt ?? "";
+    }
+
+    private void ShowGuideError(Exception ex)
+    {
+        GdError.Text = ex.Message;
+        GdError.Visibility = Visibility.Visible;
+    }
+
+    private async void OnGuideStart(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null) return;
+        try { RenderProgress(await ApiClient.Shared.StartTutorial(s.Uid)); }
+        catch (Exception ex) { ShowGuideError(ex); }
+    }
+
+    private async void OnGuideDone(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || _gdStep is null) return;
+        try
+        {
+            RenderProgress(await ApiClient.Shared.MarkTutorialDone(
+                s.Uid, _gdStep.Key));
+        }
+        catch (Exception ex) { ShowGuideError(ex); }
+    }
+
+    /// The canonical lesson, re-read from its own route.
+    private async void OnGuideReadStep(object sender, RoutedEventArgs e)
+    {
+        if (_gdStep is null) return;
+        try { RenderStep(await ApiClient.Shared.TutorialStep(_gdStep.Key)); }
+        catch (Exception ex) { ShowGuideError(ex); }
+    }
+
+    private async void OnGuideForScreen(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            RenderStep(await ApiClient.Shared.TutorialForScreen(
+                (int)GdScreenNumber.Value));
+        }
+        catch (Exception ex) { ShowGuideError(ex); }
+    }
+
+    private async void OnGuideAskKey(object sender,
+                                     Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+    {
+        if (e.Key != Windows.System.VirtualKey.Enter) return;
+        var question = GdQuestion.Text.Trim();
+        if (question.Length == 0) return;
+        try
+        {
+            var answer = await ApiClient.Shared.AskHelp(question);
+            GdAnswer.Text = answer.Answer;
+            GdDisclosure.Text = answer.Disclosure;
+            GdAnswer.Visibility = Visibility.Visible;
+            GdDisclosure.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowGuideError(ex); }
+    }
+
+    private async void OnGuideTopics(object sender, RoutedEventArgs e)
+    {
+        if (GdTopics.Visibility == Visibility.Visible)
+        {
+            GdTopics.Visibility = Visibility.Collapsed;
+            return;
+        }
+        try
+        {
+            var topics = await ApiClient.Shared.HelpTopics();
+            GdTopics.Children.Clear();
+            foreach (var topic in topics.Topics.Take(8))
+                GdTopics.Children.Add(new TextBlock
+                {
+                    Text = topic,
+                    FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                        Application.Current.Resources["JimT2Brush"],
+                });
+            GdTopics.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowGuideError(ex); }
+    }
+
+    private async System.Threading.Tasks.Task LoadDock()
+    {
+        try { _dkVocab = await ApiClient.Shared.DockVocabulary(); }
+        catch { /* leave as-is */ }
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            RenderDock(await ApiClient.Shared.DockState(s.Uid, s.Token));
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private void RenderDock(DockState d)
+    {
+        DkError.Visibility = Visibility.Collapsed;
+        _dkState = d;
+        DkLine.Text = L10n.T("ns.dk.line")
+            .Replace("{corner}", d.Corner).Replace("{state}", d.State)
+            .Replace("{forced}", d.Forced ? " !" : "")
+            .Replace("{face}", d.Face ?? "");
+        DkWhy.Text = d.Why ?? "";
+        DkWhy.Visibility = d.Why is null ? Visibility.Collapsed
+                                         : Visibility.Visible;
+        if (_dkVocab is null) return;
+        // Per-surface faces are configured only — their detail needs a
+        // particular surface to be about, which this card is not.
+        DkFaces.Children.Clear();
+        var row = new StackPanel
+        { Orientation = Orientation.Horizontal, Spacing = 6 };
+        foreach (var name in _dkVocab.Faces.Keys.OrderBy(n => n))
+        {
+            if (row.Children.Count == 3)
+            {
+                DkFaces.Children.Add(row);
+                row = new StackPanel
+                { Orientation = Orientation.Horizontal, Spacing = 6 };
+            }
+            var chosen = name;
+            var chip = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
+            { Content = chosen, FontSize = 11, IsChecked = d.Face == chosen };
+            chip.Click += async (_, _) =>
+            {
+                await ConfigureDock(face: chosen);
+                if (!_dkVocab.PerSurface.Contains(chosen))
+                    await ShowDockFace(chosen);
+            };
+            row.Children.Add(chip);
+        }
+        if (row.Children.Count > 0) DkFaces.Children.Add(row);
+        DkStates.Children.Clear();
+        foreach (var name in _dkVocab.States.Keys.OrderBy(n => n))
+        {
+            var chosen = name;
+            var chip = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
+            { Content = chosen, FontSize = 11, IsChecked = d.Wanted == chosen };
+            chip.Click += async (_, _) => await ConfigureDock(state: chosen);
+            DkStates.Children.Add(chip);
+        }
+    }
+
+    private async System.Threading.Tasks.Task ConfigureDock(
+        string? corner = null, string? state = null, string? face = null)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            RenderDock(await ApiClient.Shared.ConfigureDock(
+                s.Uid, s.Token, corner, state, face));
+        }
+        catch (Exception ex)
+        {
+            DkError.Text = ex.Message;
+            DkError.Visibility = Visibility.Visible;
+        }
+    }
+
+    private async System.Threading.Tasks.Task ShowDockFace(string name)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var face = await ApiClient.Shared.DockFace(s.Uid, s.Token, name);
+            var place = await ApiClient.Shared.DockWhere(name);
+            DkDetail.Text = $"{face.Face} \u2014 {face.Shows} "
+                + $"\u2192 {place.Title} \u00b7 {place.Screen}";
+            DkDetail.Visibility = Visibility.Visible;
+        }
+        catch { /* per-surface or unknown — the chips already filtered */ }
+    }
+
+    private async void OnDockMove(object sender, RoutedEventArgs e)
+    {
+        if (_dkVocab is null || _dkState is null) return;
+        var other = _dkVocab.Corners.Keys.FirstOrDefault(
+            c => c != _dkState.Corner);
+        if (other is { }) await ConfigureDock(corner: other);
     }
 }
