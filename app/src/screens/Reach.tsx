@@ -301,8 +301,7 @@ export function Reach() {
         <h3>{tr("rch.wrist", lang)}</h3>
         <p className="muted small">
           {tr("rch.wrist.visits", lang)
-            .replace("{n}", String(visits.length))
-            .replace("{s}", visits.length === 1 ? "" : "s")}
+            .replace("{n}", String(visits.length))}
         </p>
         <div className="row">
           <input value={dripToken} placeholder={tr("rch.wrist.token.ph", lang)}

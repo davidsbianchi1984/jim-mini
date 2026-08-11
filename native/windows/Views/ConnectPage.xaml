@@ -439,6 +439,92 @@
                         </StackPanel>
                     </Border>
 
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="AskTitle" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="AskTopicBox" FontSize="12" />
+                            <TextBox x:Name="AskQuestionBox" FontSize="12" />
+                            <Button x:Name="AskGoButton" Click="OnStartExcursion"
+                                    Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                            <ItemsControl x:Name="ExcursionList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,4,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Topic}"
+                                                           Foreground="{StaticResource JimTxtBrush}" />
+                                                <!-- Redactions, colored by whether the question
+                                                     left this host. The price line below says
+                                                     what the number and the color mean. -->
+                                                <TextBlock Text="{Binding Redactions}" FontSize="11"
+                                                           Foreground="{Binding HostBrush}" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Content="{Binding ReadLabel}" Tag="{Binding Id}"
+                                                    Click="OnReadExcursion" VerticalAlignment="Center"
+                                                    Background="Transparent" FontSize="12"
+                                                    Foreground="{StaticResource JimBrandABrush}" />
+                                            <Button Grid.Column="2" Content="{Binding KeepLabel}" Tag="{Binding Id}"
+                                                    Click="OnKeepExcursion" VerticalAlignment="Center"
+                                                    IsEnabled="{Binding KeepEnabled}"
+                                                    Background="Transparent" FontSize="12"
+                                                    Foreground="{StaticResource JimBrandABrush}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock x:Name="ExcursionEntryText" FontSize="12" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="ExcursionLearnedText" FontSize="12" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{StaticResource JimGreenBrush}" />
+                            <TextBlock x:Name="AskPrice" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="VisitsLine" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="VisitList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" FontSize="11"
+                                                   Foreground="{StaticResource JimT3Brush}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock x:Name="FeedTitle" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="FeedRefused" FontSize="12" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{StaticResource JimT3Brush}" />
+                            <TextBlock x:Name="FeedNote" FontSize="12" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="FeedCannotPost" FontSize="11" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{StaticResource JimT3Brush}" />
+                            <TextBlock x:Name="FeedEmpty" FontSize="12" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <ItemsControl x:Name="FeedList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" FontSize="12"
+                                                   Foreground="{StaticResource JimT2Brush}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button x:Name="OpenInQrmeButton" Click="OnOpenFeedInQrme" Visibility="Collapsed"
+                                    Background="Transparent" FontSize="12"
+                                    Foreground="{StaticResource JimBrandABrush}" />
+                        </StackPanel>
+                    </Border>
+
                     <TextBlock x:Name="VisitStatus" FontSize="12" Visibility="Collapsed"
                                TextWrapping="Wrap" Foreground="{StaticResource JimGreenBrush}" />
                     <TextBlock x:Name="CommunityError" FontSize="13" Visibility="Collapsed"

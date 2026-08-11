@@ -56,6 +56,27 @@ public sealed partial class ConnectPage : Page
         public int Listings { get; init; }
     }
 
+    public sealed class ExcursionVm
+    {
+        public string Id { get; init; } = "";
+        public string Topic { get; init; } = "";
+        public int Redactions { get; init; }
+        public bool LeftHost { get; init; }
+        // Amber if the question left this host, green if it stayed — the
+        // price line on the card says what the number and the color mean.
+        public Microsoft.UI.Xaml.Media.Brush HostBrush =>
+            (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[
+                LeftHost ? "JimAmberBrush" : "JimGreenBrush"];
+        public bool KeepEnabled { get; init; }
+        public string ReadLabel => L10n.T("rch.ask.read");
+        public string KeepLabel => L10n.T("rch.ask.keep");
+    }
+
+    public sealed class LineVm
+    {
+        public string Line { get; init; } = "";
+    }
+
     public sealed class CatalogVm
     {
         public string Provider { get; init; } = "";
@@ -114,6 +135,15 @@ public sealed partial class ConnectPage : Page
         RoomsEmpty.Text = L10n.T("jcon.rooms.none");
         NearTitle.Text = L10n.T("jcon.near");
         PlacesEmpty.Text = L10n.T("jcon.places.none");
+        AskTitle.Text = L10n.T("rch.ask");
+        AskTopicBox.PlaceholderText = L10n.T("rch.ask.topic.ph");
+        AskQuestionBox.PlaceholderText = L10n.T("rch.ask.q.ph");
+        AskGoButton.Content = L10n.T("rch.ask.go");
+        AskPrice.Text = L10n.T("rch.ask.price");
+        FeedTitle.Text = L10n.T("feed.title");
+        FeedCannotPost.Text = L10n.T("feed.cannotpost");
+        FeedEmpty.Text = L10n.T("feed.empty");
+        OpenInQrmeButton.Content = L10n.T("feed.openinqrme");
         MicHead.Text = L10n.T("ns.ch.mic");
         MicNone.Text = L10n.T("ns.ch.mic.none");
         MicDevice.Header = L10n.T("ns.ch.mic.kind");
@@ -136,6 +166,7 @@ public sealed partial class ConnectPage : Page
         await ReloadSocial();
         await ReloadApps();
         await ReloadCommunity();
+        await ReloadExcursions();
         await ReloadMic();
         LocalizeSettingsCards();
         await LoadVoiceSettings();
@@ -426,6 +457,117 @@ public sealed partial class ConnectPage : Page
     {
         CommunityError.Text = message;
         CommunityError.Visibility = Visibility.Visible;
+    }
+
+    // -- The excursion and the window: safe knowledge excursions, the noted
+    //    visits, and QRME's public feed through the tandem --
+
+    private string? _feedUrl;
+
+    private async Task ReloadExcursions()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var rows = await ApiClient.Shared.Excursions(s.Uid, s.Token);
+            ExcursionList.ItemsSource = rows.Select(r => new ExcursionVm
+            {
+                Id = r.Id,
+                Topic = r.Topic,
+                Redactions = r.Redactions,
+                LeftHost = r.LeftHost,
+                KeepEnabled = !r.Learned,
+            }).ToList();
+
+            var visits = await ApiClient.Shared.CommunityVisits(s.Uid, s.Token);
+            VisitsLine.Text = L10n.T("rch.wrist.visits")
+                .Replace("{n}", $"{visits.Length}");
+            VisitList.ItemsSource = visits.Take(5)
+                .Select(v => new LineVm { Line = $"{v.RoomId} · {v.At}" })
+                .ToList();
+        }
+        catch (Exception ex) { ShowCommunityError(ex.Message); }
+
+        try
+        {
+            var feed = await ApiClient.Shared.CommunityFeed(s.Uid, s.Token);
+            FeedNote.Text = feed.Note;
+            FeedNote.Visibility = Visibility.Visible;
+            FeedCannotPost.Visibility = Visibility.Visible;
+            FeedEmpty.Visibility = feed.Items.Length == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            FeedList.ItemsSource = feed.Items.Take(6).Select(i => new LineVm
+            {
+                Line = $"{i.Title ?? i.Topic ?? ""} · {i.Kind ?? ""}",
+            }).ToList();
+            _feedUrl = feed.OpenInQrme;
+            OpenInQrmeButton.Visibility = _feedUrl is null
+                ? Visibility.Collapsed : Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            // No QRME endpoint is a posture, not a fault: the 409 carries the
+            // server's own sentence and the card shows it.
+            FeedRefused.Text = ex.Message;
+            FeedRefused.Visibility = Visibility.Visible;
+        }
+    }
+
+    private async void OnStartExcursion(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var topic = AskTopicBox.Text.Trim();
+        var question = AskQuestionBox.Text.Trim();
+        if (topic.Length == 0 || question.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.StartExcursion(s.Uid, s.Token, topic, question);
+            AskTopicBox.Text = "";
+            AskQuestionBox.Text = "";
+            await ReloadExcursions();
+        }
+        catch (Exception ex) { ShowCommunityError(ex.Message); }
+    }
+
+    private async void OnReadExcursion(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button b || b.Tag is not string cid) return;
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            var row = await ApiClient.Shared.ExcursionEntry(cid, s.Token);
+            ExcursionEntryText.Text = row.Findings ?? "";
+            ExcursionEntryText.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowCommunityError(ex.Message); }
+    }
+
+    private async void OnKeepExcursion(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button b || b.Tag is not string cid) return;
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            var got = await ApiClient.Shared.LearnExcursion(cid, s.Token);
+            if (got.Note is { Length: > 0 } note)
+            {
+                ExcursionLearnedText.Text = note;
+                ExcursionLearnedText.Visibility = Visibility.Visible;
+            }
+            await ReloadExcursions();
+        }
+        catch (Exception ex) { ShowCommunityError(ex.Message); }
+    }
+
+    private async void OnOpenFeedInQrme(object sender, RoutedEventArgs e)
+    {
+        if (_feedUrl is null) return;
+        if (Uri.TryCreate(_feedUrl, UriKind.Absolute, out var uri))
+            await Windows.System.Launcher.LaunchUriAsync(uri);
     }
 
     // -- channel 2, the lent microphone ----------------------------------

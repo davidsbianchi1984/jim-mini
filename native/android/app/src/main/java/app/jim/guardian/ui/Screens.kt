@@ -3937,7 +3937,10 @@ fun ConnectScreen(vm: GuardianViewModel) {
             0 -> { SourcesPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); MailSettingsPanel(vm); WatchPanel(vm); DevicesPanel(vm); SittingPanel(vm) }
             1 -> SocialPanel(vm)
             2 -> AppsPanel(vm)
-            3 -> CommunityPanel(vm)
+            3 -> {
+                CommunityPanel(vm)
+                ExcursionsPanel(vm)
+            }
             // The synthetic self shipped as a composable nothing called. It
             // had its strings in ten languages and a guard checking they were
             // there.
@@ -4228,6 +4231,127 @@ private fun CommunityPanel(vm: GuardianViewModel) {
     opened?.let {
         Text(L10n.t("jcon.noted", vm.language).replace("{room}", it),
             color = Jim.Green, fontSize = 12.sp)
+    }
+    error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+}
+
+/** The excursion and the window: study a topic without carrying PHI out,
+ *  the community doors this account opened, and QRME's public feed through
+ *  the tandem. Console doors (Reach, Feed); this is the phone's. */
+@Composable
+private fun ExcursionsPanel(vm: GuardianViewModel) {
+    val context = LocalContext.current
+    var rows by remember { mutableStateOf<List<ExcursionRowK>>(emptyList()) }
+    var topic by remember { mutableStateOf("") }
+    var question by remember { mutableStateOf("") }
+    var entry by remember { mutableStateOf<ExcursionRowK?>(null) }
+    var learned by remember { mutableStateOf<ExcursionLearnedK?>(null) }
+    var visits by remember { mutableStateOf<List<CommunityVisitRowK>>(emptyList()) }
+    var feed by remember { mutableStateOf<CommunityFeedViewK?>(null) }
+    var feedRefused by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        val uid = vm.uid ?: return
+        val token = vm.token ?: return
+        vm.call({ ApiClient.excursions(uid, token) }) { r ->
+            r.fold({ rows = it }, { error = it.message })
+        }
+        vm.call({ ApiClient.communityVisits(uid, token) }) { r ->
+            r.fold({ visits = it }, { error = it.message })
+        }
+        vm.call({ ApiClient.communityFeed(uid, token) }) { r ->
+            r.fold({ feed = it }, { feedRefused = it.message })
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("rch.ask", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        labeledField(L10n.t("rch.ask", vm.language), topic,
+            L10n.t("rch.ask.topic.ph", vm.language)) { topic = it }
+        labeledField(L10n.t("rch.ask", vm.language), question,
+            L10n.t("rch.ask.q.ph", vm.language)) { question = it }
+        BrandButton(L10n.t("rch.ask.go", vm.language),
+            enabled = topic.isNotBlank() && question.isNotBlank()) {
+            val uid = vm.uid ?: return@BrandButton
+            val token = vm.token ?: return@BrandButton
+            vm.call({ ApiClient.startExcursion(uid, token, topic.trim(),
+                question.trim()) }) { r ->
+                r.fold({ topic = ""; question = ""; reload() },
+                    { error = it.message })
+            }
+        }
+        rows.forEach { row ->
+            Row(Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(row.topic, color = Jim.Txt, fontSize = 13.sp)
+                    // Redactions, colored by whether the question left this
+                    // host — amber left, green stayed. `rch.ask.price` below
+                    // says what the two mean.
+                    Text("${row.redactions}",
+                        color = if (row.leftHost) Jim.Amber else Jim.Green,
+                        fontSize = 11.sp)
+                }
+                SmallAction(L10n.t("rch.ask.read", vm.language)) {
+                    val token = vm.token ?: return@SmallAction
+                    vm.call({ ApiClient.excursionEntry(row.id, token) }) { r ->
+                        r.fold({ entry = it }, { error = it.message })
+                    }
+                }
+                SmallAction(L10n.t("rch.ask.keep", vm.language),
+                    enabled = !row.learned) {
+                    val token = vm.token ?: return@SmallAction
+                    vm.call({ ApiClient.learnExcursion(row.id, token) }) { r ->
+                        r.fold({ learned = it; reload() }, { error = it.message })
+                    }
+                }
+            }
+        }
+        entry?.let {
+            Text(it.findings ?: "", color = Jim.T2, fontSize = 12.sp)
+        }
+        learned?.note?.let { Text(it, color = Jim.Green, fontSize = 12.sp) }
+        Text(L10n.t("rch.ask.price", vm.language), color = Jim.T3, fontSize = 11.sp)
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(L10n.t("rch.wrist.visits", vm.language)
+            .replace("{n}", "${visits.size}"), color = Jim.T2, fontSize = 12.sp)
+        visits.take(5).forEach { visit ->
+            Text("${visit.roomId} \u00b7 ${visit.at}", color = Jim.T3,
+                fontSize = 11.sp)
+        }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(L10n.t("feed.title", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        feedRefused?.let { Text(it, color = Jim.T3, fontSize = 12.sp) }
+        feed?.let { f ->
+            Text(f.note, color = Jim.T2, fontSize = 12.sp)
+            Text(L10n.t("feed.cannotpost", vm.language), color = Jim.T3,
+                fontSize = 11.sp)
+            if (f.items.isEmpty()) {
+                Text(L10n.t("feed.empty", vm.language), color = Jim.T3,
+                    fontSize = 12.sp)
+            }
+            f.items.take(6).forEach { item ->
+                // An elvis inside the interpolation reads to the English
+                // counter as a truncated literal; named vals keep it clean.
+                val name = item.title ?: item.topic ?: ""
+                val kind = item.kind ?: ""
+                Text("$name \u00b7 $kind", color = Jim.T2, fontSize = 12.sp)
+            }
+            f.openInQrme?.let { url ->
+                SmallAction(L10n.t("feed.openinqrme", vm.language)) {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                }
+            }
+        }
     }
     error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
 }

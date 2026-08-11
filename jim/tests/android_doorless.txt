@@ -1,13 +1,7 @@
 GET /c/{bid}/qr.svg
-GET /community/{user_id}/feed
-GET /community/{user_id}/visits
-GET /excursions/entry/{cid}
-GET /excursions/{user_id}
 GET /health
 GET /pair/qr.svg
 GET /social/connection/{cid}/qr.svg
-POST /excursions/entry/{cid}/learn
-POST /excursions/{user_id}
 POST /voice/speak
 POST /voice/transcribe
 POST /watch/drip/{token}

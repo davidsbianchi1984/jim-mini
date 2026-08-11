@@ -48,7 +48,12 @@ struct ConnectView: View {
                     SessionsCard()
                 case .social: SocialSection()
                 case .apps: AppsSection()
-                case .community: CommunitySection()
+                case .community:
+                    CommunitySection()
+                    // Safe knowledge excursions and the window onto QRME's
+                    // feed sit with the community door: all three are the
+                    // Guardian pointing outward without carrying PHI out.
+                    ExcursionsCard()
                 // The synthetic self shipped as a section nothing switched to.
                 // It had its strings in ten languages and a guard checking
                 // they were there.

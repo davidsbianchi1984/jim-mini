@@ -2145,6 +2145,33 @@ public sealed class ApiClient
         return new BeaconPage(html, page);
     }
 
+    // ---- safe knowledge excursions + the community window ----
+
+    public Task<ExcursionRow[]> Excursions(string uid, string token) =>
+        Send<ExcursionRow[]>(Get($"/excursions/{uid}", token));
+
+    /// <summary>Study a topic without carrying the person's PHI out; the
+    /// row answers with the redaction count and whether it left this host.</summary>
+    public Task<ExcursionRow> StartExcursion(string uid, string token,
+                                             string topic, string question) =>
+        Send<ExcursionRow>(Post($"/excursions/{uid}",
+            new { topic, question }, token));
+
+    public Task<ExcursionRow> ExcursionEntry(string cid, string token) =>
+        Send<ExcursionRow>(Get($"/excursions/entry/{cid}", token));
+
+    /// <summary>Fold the findings into guidance context; the local model
+    /// uses them from then on.</summary>
+    public Task<ExcursionLearned> LearnExcursion(string cid, string token) =>
+        Send<ExcursionLearned>(Post($"/excursions/entry/{cid}/learn",
+            new { }, token));
+
+    public Task<CommunityVisitRow[]> CommunityVisits(string uid, string token) =>
+        Send<CommunityVisitRow[]>(Get($"/community/{uid}/visits", token));
+
+    public Task<CommunityFeedView> CommunityFeed(string uid, string token) =>
+        Send<CommunityFeedView>(Get($"/community/{uid}/feed", token));
+
     public Task<RelayChannel> RelayChannel() =>
         Send<RelayChannel>(new HttpRequestMessage(HttpMethod.Get,
             "/relay/channel"));
@@ -3069,3 +3096,38 @@ public record RobotUnbound(
     [property: JsonPropertyName("id")] string? Id);
 
 public record BeaconPage(string Html, Uri Page);
+
+// ---- safe knowledge excursions + the community window ----
+
+/// <summary>One studied topic: how much of the person was redacted out
+/// before the question left, and whether it left this host at all.</summary>
+public record ExcursionRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("topic")] string Topic,
+    [property: JsonPropertyName("redactions")] int Redactions,
+    [property: JsonPropertyName("left_host")] bool LeftHost,
+    [property: JsonPropertyName("findings")] string? Findings,
+    [property: JsonPropertyName("learned")] bool Learned);
+
+public record ExcursionLearned(
+    [property: JsonPropertyName("learned")] bool Learned,
+    [property: JsonPropertyName("already_learned")] bool AlreadyLearned,
+    [property: JsonPropertyName("note")] string? Note);
+
+/// <summary>A community door that was opened — the room's id and the time,
+/// and nothing from inside the room.</summary>
+public record CommunityVisitRow(
+    [property: JsonPropertyName("room_id")] string? RoomId,
+    [property: JsonPropertyName("at")] string? At);
+
+public record CommunityFeedItem(
+    [property: JsonPropertyName("kind")] string? Kind,
+    [property: JsonPropertyName("title")] string? Title,
+    [property: JsonPropertyName("topic")] string? Topic);
+
+/// <summary>QRME's public feed through the tandem — read-only by
+/// construction, and a 409 in the server's words without an endpoint.</summary>
+public record CommunityFeedView(
+    [property: JsonPropertyName("note")] string Note,
+    [property: JsonPropertyName("open_in_qrme")] string? OpenInQrme,
+    [property: JsonPropertyName("items")] CommunityFeedItem[] Items);

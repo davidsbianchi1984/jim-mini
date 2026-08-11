@@ -2656,6 +2656,64 @@ object ApiClient {
         request("/robots/$uid/$robotId", "DELETE", token = token)
     }
 
+    // ---- safe knowledge excursions + the community window ----
+
+    private fun excursionOf(o: JSONObject) = ExcursionRowK(
+        o.getString("id"), o.optString("topic", ""), o.optInt("redactions", 0),
+        o.optBoolean("left_host"),
+        if (o.isNull("findings")) null else o.optString("findings"),
+        o.optBoolean("learned"))
+
+    suspend fun excursions(uid: String, token: String): List<ExcursionRowK> {
+        val arr = getArray("/excursions/$uid", token)
+        return (0 until arr.length()).map { i -> excursionOf(arr.getJSONObject(i)) }
+    }
+
+    /** Study a topic without carrying the person's PHI out: the row answers
+     *  with how much was redacted and whether the question left this host. */
+    suspend fun startExcursion(uid: String, token: String, topic: String,
+                               question: String): ExcursionRowK =
+        excursionOf(request("/excursions/$uid", "POST",
+            JSONObject().put("topic", topic).put("question", question), token))
+
+    suspend fun excursionEntry(cid: String, token: String): ExcursionRowK =
+        excursionOf(request("/excursions/entry/$cid", token = token))
+
+    /** Fold the findings into guidance context; the local model uses them. */
+    suspend fun learnExcursion(cid: String, token: String): ExcursionLearnedK {
+        val o = request("/excursions/entry/$cid/learn", "POST", JSONObject(), token)
+        return ExcursionLearnedK(o.optBoolean("learned"),
+            o.optBoolean("already_learned"),
+            if (o.isNull("note")) null else o.optString("note"))
+    }
+
+    /** The doors that were opened — the room's id and the time, and nothing
+     *  from inside the room. */
+    suspend fun communityVisits(uid: String, token: String): List<CommunityVisitRowK> {
+        val arr = getArray("/community/$uid/visits", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            CommunityVisitRowK(o.optString("room_id", ""), o.optString("at", ""))
+        }
+    }
+
+    /** QRME's public feed through the tandem — read-only by construction,
+     *  and a 409 in the server's words when no QRME endpoint is set. */
+    suspend fun communityFeed(uid: String, token: String): CommunityFeedViewK {
+        val o = request("/community/$uid/feed", token = token)
+        val arr = o.optJSONArray("items")
+        val items = (0 until (arr?.length() ?: 0)).map { i ->
+            val it = arr!!.getJSONObject(i)
+            CommunityFeedItemK(
+                if (it.isNull("kind")) null else it.optString("kind"),
+                if (it.isNull("title")) null else it.optString("title"),
+                if (it.isNull("topic")) null else it.optString("topic"))
+        }
+        return CommunityFeedViewK(o.optString("note", ""),
+            if (o.isNull("open_in_qrme")) null else o.optString("open_in_qrme"),
+            items)
+    }
+
     // ---- the purse and the membership ----
 
     suspend fun budgets(uid: String, token: String): List<BudgetRowK> {
@@ -3066,3 +3124,14 @@ data class RelayRosterK(val roster: List<String>, val ceiling: String,
 data class RelayRotaK(val timezone: String, val onNow: List<String>,
                       val anybodyOnShift: Boolean, val note: String)
 data class BeaconPageK(val html: String, val url: String)
+
+data class ExcursionRowK(val id: String, val topic: String, val redactions: Int,
+                         val leftHost: Boolean, val findings: String?,
+                         val learned: Boolean)
+data class ExcursionLearnedK(val learned: Boolean, val alreadyLearned: Boolean,
+                             val note: String?)
+data class CommunityVisitRowK(val roomId: String, val at: String)
+data class CommunityFeedItemK(val kind: String?, val title: String?,
+                              val topic: String?)
+data class CommunityFeedViewK(val note: String, val openInQrme: String?,
+                              val items: List<CommunityFeedItemK>)

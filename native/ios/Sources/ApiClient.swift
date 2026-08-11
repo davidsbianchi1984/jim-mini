@@ -3459,4 +3459,80 @@ extension ApiClient {
         try await request("/robots/\(uid)/\(robotId)", method: "DELETE",
                           token: token)
     }
+
+    // ---- safe knowledge excursions + the community window ----
+
+    func excursions(uid: String, token: String) async throws -> [ExcursionRow] {
+        try await request("/excursions/\(uid)", token: token)
+    }
+
+    func startExcursion(uid: String, token: String, topic: String,
+                        question: String) async throws -> ExcursionRow {
+        try await request("/excursions/\(uid)", method: "POST",
+                          body: ["topic": topic, "question": question],
+                          token: token)
+    }
+
+    func excursionEntry(cid: String, token: String) async throws -> ExcursionRow {
+        try await request("/excursions/entry/\(cid)", token: token)
+    }
+
+    func learnExcursion(cid: String, token: String) async throws -> ExcursionLearned {
+        try await request("/excursions/entry/\(cid)/learn", method: "POST",
+                          body: [:], token: token)
+    }
+
+    func communityVisits(uid: String, token: String) async throws -> [CommunityVisitRow] {
+        try await request("/community/\(uid)/visits", token: token)
+    }
+
+    func communityFeed(uid: String, token: String) async throws -> CommunityFeedView {
+        try await request("/community/\(uid)/feed", token: token)
+    }
+}
+
+// ---- safe knowledge excursions + the community window ----
+
+/// One studied topic: what was asked, how much of the person was redacted
+/// out before the question left, whether it left this host at all, and what
+/// came back.
+struct ExcursionRow: Decodable {
+    let id: String
+    let topic: String
+    let brief: String?
+    let redactions: Int
+    let left_host: Bool
+    let findings: String?
+    let learned: Bool
+}
+
+struct ExcursionLearned: Decodable {
+    let learned: Bool
+    let already_learned: Bool
+    let note: String?
+}
+
+/// A community door that was opened: the room's id and the time, on the
+/// person's own timeline, and nothing from inside the room.
+struct CommunityVisitRow: Decodable {
+    let room_id: String?
+    let at: String?
+}
+
+struct CommunityFeedItem: Decodable {
+    let id: String?
+    let kind: String?
+    let title: String?
+    let topic: String?
+}
+
+/// QRME's public feed through the tandem — read-only by construction, and a
+/// 409 with the server's own sentence when no QRME endpoint is configured.
+struct CommunityFeedView: Decodable {
+    let qrme_url: String?
+    let language: String?
+    let items: [CommunityFeedItem]
+    let cursor: String?
+    let note: String
+    let open_in_qrme: String?
 }
