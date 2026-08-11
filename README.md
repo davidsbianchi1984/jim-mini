@@ -76,6 +76,35 @@ specialist → moderated guidance, escalating to an emergency contact on critica
 events.*
 
 
+## Ability is not a gate
+
+If how a person's body or mind works stands between them and this product,
+that is a defect in the product — not in them. This is stated upfront,
+before features, because a health guardian that assumes an able body has
+misunderstood its own job: we build for blind and low-vision people, deaf
+and hard-of-hearing people, mute and nonspeaking people, people with
+limited mobility or amputation or tremor, autistic and cognitively
+different people, people with dyslexia, people sensitive to motion — and
+for every need not on that list, which is a gap in the list, not in the
+person.
+
+What is true today, enforced by the suite rather than promised: every
+function works by text alone and voice is always optional; every image in
+the console carries a description (`test_ability_is_not_a_gate.py` fails
+on one that does not); no step is timed; the console honours
+`prefers-reduced-motion`; and the known gaps live in
+[`jim/tests/a11y_backlog.txt`](jim/tests/a11y_backlog.txt), a ledger that
+only shrinks. Anything that stands in your way can be reported from the
+**Accessibility** screen — reachable *before* enrollment (`#access`), in
+ten languages, with three questions and no diagnosis: what were you trying
+to do, what stood in the way, what would help. Reports stay on the
+deployment that received them (sealed to the PDI vault when one is
+configured, never relayed to the shared error collector), are read with
+the deployment's reviewer token (`JIM_ADMIN_TOKEN`), and become rows in
+that only-shrinks ledger. That is the whole loop: your words become
+tracked work.
+
+
 ## Desktop app
 
 A wide, multi-panel desktop form of Jim Mini — sidebar nav and an operator workspace, in the guardian-green identity — complementing the phone app and the watch. Each is a self-contained SVG; regenerate with `python3 docs/desktop/build.py`.
@@ -260,6 +289,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/105-what-this-tab-wont-do.svg" width="160" alt="105 What This Tab Won't Do"><br><sub>105 · What This Tab Won't Do</sub></td>
 <td align="center" width="25%"><img src="docs/screens/106-presence.svg" width="160" alt="106 Presence"><br><sub>106 · Presence</sub></td>
 <td align="center" width="25%"><img src="docs/screens/107-what-it-will-not-be.svg" width="160" alt="107 What It Will Not Be"><br><sub>107 · What It Will Not Be</sub></td>
+<td align="center" width="25%"><img src="docs/screens/108-ability-is-not-a-gate.svg" width="160" alt="108 Ability Is Not A Gate"><br><sub>108 · Ability Is Not A Gate</sub></td>
 </tr>
 </table>
 

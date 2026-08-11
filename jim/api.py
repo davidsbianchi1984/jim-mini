@@ -50,6 +50,7 @@ from .models import (
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
+    AccessReportSubmit,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     FinetuneSwitch, PresenceBearing, PresenceSurface,
     RobotBind, RelayAccept, RelayQuestion,
@@ -2952,6 +2953,63 @@ def create_app(qrme_client: QRMEClient | None = None,
                 tally[row["category"]] = row["n"]
         return {"mine": mine, "tally": tally, "total": sum(tally.values()),
                 "categories": list(_IMPROVE_CATEGORIES)}
+
+    # ---- ability is not a gate: the accessibility door --------------------
+    # Three questions and none is a diagnosis. Deliberately account-free and
+    # unlinked: the table has no submitter column, because a report about
+    # ability must not become a record about a body — and the person this
+    # door exists for may be the person the enrollment shut out. The words
+    # stay on this deployment (sealed to the PDI vault when configured) and
+    # are never relayed to the shared problems collector, which is
+    # content-free by design where this is nothing but content.
+
+    @app.post("/access/reports", status_code=201)
+    def submit_access_report(body: AccessReportSubmit,
+                             request: Request) -> dict:
+        """File an accessibility report — no account, no diagnosis."""
+        doing = body.doing.strip()
+        wall = body.wall.strip()
+        if not doing or not wall:
+            raise HTTPException(
+                422, "say what you were trying to do and what stood in the way")
+        lang = body.lang if body.lang in i18n.SUPPORTED else "en"
+
+        rid = db.new_id("acc")
+        at = db.utcnow()
+
+        pdi_key = None
+        pdi = app.state.pdi
+        if pdi is not None:
+            pdi_key = f"jim/access/reports/{rid}"
+            payload = {"report_id": rid, "lang": lang, "doing": doing,
+                       "wall": wall,
+                       "help": (body.help or "").strip() or None, "at": at}
+            try:
+                pdi.put(pdi_key, json.dumps(payload))
+            except Exception:
+                pdi_key = None   # vault unreachable — the local row stands
+
+        conn = db.connect()
+        conn.execute(
+            "INSERT INTO access_reports (id, lang, doing, wall, help,"
+            " status, pdi_key, created_at) VALUES (?,?,?,?,?,'received',?,?)",
+            (rid, lang, doing, wall, (body.help or "").strip() or None,
+             pdi_key, at))
+        conn.commit()
+        return {"id": rid, "status": "received",
+                "note": "thank you — this becomes tracked work, and it "
+                        "stays on this deployment"}
+
+    @app.get("/access/reports")
+    def read_access_reports(request: Request) -> dict:
+        """Every report, newest first — for the deployment's steward."""
+        auth.require_reviewer(request)
+        conn = db.connect()
+        reports = [dict(r) for r in conn.execute(
+            "SELECT id, lang, doing, wall, help, status, pdi_key, created_at"
+            " FROM access_reports"
+            " ORDER BY created_at DESC, rowid DESC").fetchall()]
+        return {"reports": reports, "total": len(reports)}
 
     @app.get("/report/{user_id}")
     def progress_report(user_id: str, request: Request) -> dict:

@@ -1,6 +1,6 @@
 # JIM-mini (Guardian) Terms of Service
 
-*Version 1.1 — effective 2026-08-10. Served by the API at `GET /terms`;
+*Version 1.2 — effective 2026-08-10. Served by the API at `GET /terms`;
 acceptance is required to enroll and is recorded (version + timestamp) on
 the account. This is a template maintained with the product — have counsel
 review and localize it before commercial launch.*
@@ -137,11 +137,15 @@ safety content, provenance-cited guidance — documented in the README.*
 
 Ability is not a gate to this Service. Every feature is usable by text
 alone — nothing requires hearing or speech — and voice interaction is an
-additional input path, never a requirement. The operator maintains an
-active accessibility program driving screen-reader, keyboard-only,
-reduced-motion and related support to complete, with gaps recorded as
-tracked work. If a disability — named anywhere or not — stands between
-you and any part of the Service, say so through the Service's help
-surface; such reports are treated as sensitive and become tracked work.
-Nothing in these Terms limits rights you hold under applicable
+additional input path, never a requirement. Interface images carry text
+descriptions, no step is timed, and reduced-motion preferences are
+honoured; the operator maintains an active accessibility program driving
+screen-reader, keyboard-only and related support to complete, with gaps
+recorded as tracked work. If a disability — named anywhere or not —
+stands between you and any part of the Service, report it from the
+Service's Accessibility screen, which is reachable without an account,
+asks three questions and no diagnosis, and keeps your words on the
+deployment that received them (never relayed to any shared error
+collector). Such reports are treated as sensitive and become tracked
+work. Nothing in these Terms limits rights you hold under applicable
 accessibility law.

@@ -1744,6 +1744,27 @@ export const api = {
   sendFeedback: (uid: string, body: { rating: "up" | "down"; note?: string },
                  token: string) =>
     req<Row>(`/feedback/${uid}`, { method: "POST", body, token }),
+
+  // The accessibility door. The POST is deliberately tokenless — the person
+  // it exists for may be the person the enrollment shut out — and the GET
+  // takes the *reviewer* token (JIM_ADMIN_TOKEN), never a user's: reports
+  // are read by whoever stands for the deployment.
+  sendAccessReport: (body: { doing: string; wall: string; help?: string;
+                             lang?: string }) =>
+    req<{ id: string; status: string; note: string }>(
+      "/access/reports", { method: "POST", body }),
+  accessReports: (reviewerToken: string) =>
+    req<AccessReports>("/access/reports", { token: reviewerToken }),
+};
+
+/** Accessibility reports, for the deployment's reviewer. Three answers in
+ *  the writer's own words and language — never a name, never a diagnosis:
+ *  the table they come from has no submitter column to select. */
+export type AccessReports = {
+  reports: { id: string; lang: string; doing: string; wall: string;
+             help: string | null; status: string; pdi_key: string | null;
+             created_at: string }[];
+  total: number;
 };
 
 export type SelfProfileStatus = {

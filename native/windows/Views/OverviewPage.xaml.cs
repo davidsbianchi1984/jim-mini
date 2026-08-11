@@ -82,6 +82,15 @@ public sealed partial class OverviewPage : Page
         ImproveRating.Header = L10n.T("ov.fb.rating");
         SendImproveButton.Content = L10n.T("ov.fb.send");
         ImproveMineHeader.Text = L10n.T("ov.fb.yours");
+        AccHead.Text = L10n.T("ns.acc");
+        AccLead.Text = L10n.T("ns.acc.lead");
+        AccDoing.PlaceholderText = L10n.T("ns.acc.doing.ph");
+        AccWall.PlaceholderText = L10n.T("ns.acc.wall.ph");
+        AccHelp.PlaceholderText = L10n.T("ns.acc.help.ph");
+        AccSend.Content = L10n.T("ns.acc.send");
+        AccReviewerBox.PlaceholderText = L10n.T("ns.acc.token.ph");
+        AccLoad.Content = L10n.T("ns.acc.load");
+        AccEmpty.Text = L10n.T("ns.acc.none");
         LearnedTitle.Text = L10n.T("ov.learned");
         SealedText.Text = L10n.T("ov.sealed");
         RebuildButton.Content = L10n.T("ov.rebuild");
@@ -294,6 +303,48 @@ public sealed partial class OverviewPage : Page
                 mine.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
         catch { /* backend offline — leave empty */ }
+    }
+
+    // The accessibility door: tokenless on purpose — the person it exists
+    // for may be the person the enrollment shut out.
+    private async void OnSendAccessReport(object sender, RoutedEventArgs e)
+    {
+        var doing = AccDoing.Text.Trim();
+        var wall = AccWall.Text.Trim();
+        if (doing.Length == 0 || wall.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.SendAccessReport(
+                doing, wall, AccHelp.Text.Trim(), AppState.Current.Language);
+            AccDoing.Text = ""; AccWall.Text = ""; AccHelp.Text = "";
+            AccThanks.Text = L10n.T("ns.acc.sent");
+            AccThanks.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            AccThanks.Text = ex.Message;
+            AccThanks.Visibility = Visibility.Visible;
+        }
+    }
+
+    private async void OnLoadAccessReports(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var state = await ApiClient.Shared.AccessReports(AccReviewerBox.Password.Trim());
+            AccEmpty.Visibility = state.Total == 0 ? Visibility.Visible : Visibility.Collapsed;
+            AccReportsList.ItemsSource = state.Reports.Take(6).Select(r => new LineVm
+            {
+                Line = $"{r.Doing} — {r.Wall}"
+                       + (r.Help is { Length: > 0 } h ? $" ({h})" : "")
+                       + $" · {r.Lang} · {r.CreatedAt}",
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            AccThanks.Text = ex.Message;
+            AccThanks.Visibility = Visibility.Visible;
+        }
     }
 
     private async void OnSendImprovement(object sender, RoutedEventArgs e)

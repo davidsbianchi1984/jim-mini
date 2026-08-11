@@ -8,7 +8,7 @@ Bump TERMS_VERSION when the document materially changes.
 
 from __future__ import annotations
 
-TERMS_VERSION = "1.1"
+TERMS_VERSION = "1.2"
 
 DOCUMENT = "docs/terms.md"
 
@@ -17,8 +17,9 @@ KEY_POINTS = [
     "fees are charged while the beta runs — displayed plan prices begin "
     "only after the beta, with notice and renewed agreement.",
     "Ability is not a gate: everything works by text alone, voice is "
-    "optional, and anything that stands in your way, reported through "
-    "the help surface, becomes tracked work.",
+    "optional, and anything that stands in your way can be reported from "
+    "the Accessibility screen — no account, no diagnosis — where it "
+    "becomes tracked work.",
     "JIM-mini is a wellness tool, not a medical device — it does not "
     "diagnose or treat, and no doctor-patient relationship is formed.",
     "In an emergency call 911 first; in crisis call or text 988 (US). "

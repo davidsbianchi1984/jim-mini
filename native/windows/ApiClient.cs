@@ -353,6 +353,17 @@ public record ImproveState(
     [property: JsonPropertyName("tally")] System.Collections.Generic.Dictionary<string, int> Tally,
     [property: JsonPropertyName("total")] int Total);
 
+public record AccessReportRow(
+    [property: JsonPropertyName("doing")] string Doing,
+    [property: JsonPropertyName("wall")] string Wall,
+    [property: JsonPropertyName("help")] string? Help,
+    [property: JsonPropertyName("lang")] string Lang,
+    [property: JsonPropertyName("created_at")] string CreatedAt);
+
+public record AccessReportsState(
+    [property: JsonPropertyName("reports")] AccessReportRow[] Reports,
+    [property: JsonPropertyName("total")] int Total);
+
 /// <summary>
 /// Async client for the JIM Guardian backend. Windows reaches the local dev
 /// server directly on 127.0.0.1.
@@ -1166,6 +1177,28 @@ public sealed class ApiClient
         var req = new HttpRequestMessage(HttpMethod.Get, "/improve");
         if (token is { Length: > 0 }) req.Headers.Add("authorization", $"Bearer {token}");
         return Send<ImproveState>(req);
+    }
+
+    // The accessibility door: tokenless on purpose — the person it exists
+    // for may be the person the enrollment shut out. The words stay on the
+    // deployment; nothing here reaches the problems collector.
+    public async Task<string> SendAccessReport(string doing, string wall,
+                                               string? help, string lang)
+    {
+        object body = help is { Length: > 0 } h
+            ? new { doing, wall, help = h, lang }
+            : new { doing, wall, lang };
+        var res = await Dispatch(Post("/access/reports", body, null));
+        res.EnsureSuccessStatusCode();
+        return "received";
+    }
+
+    // Reviewer-token read — the deployment's steward, never a user.
+    public Task<AccessReportsState> AccessReports(string reviewerToken)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, "/access/reports");
+        req.Headers.Add("authorization", $"Bearer {reviewerToken}");
+        return Send<AccessReportsState>(req);
     }
 
     // MARK: Community — the door into QRME, and the visit note

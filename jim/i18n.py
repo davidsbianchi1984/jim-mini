@@ -1560,6 +1560,69 @@ def refuse(request, status: int, content, headers: dict | None = None):
 #: languages. What is not here is recorded in
 #: `jim/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    'reviewer token required': {
+        'es': 'se requiere el token de revisor',
+        'fr': 'jeton de réviseur requis',
+        'de': 'Prüfer-Token erforderlich',
+        'pt': 'token de revisor necessário',
+        'it': 'è richiesto il token del revisore',
+        'ja': 'レビュアートークンが必要です',
+        'zh': '需要审阅者令牌',
+        'hi': 'समीक्षक टोकन आवश्यक है',
+        'ar': 'رمز المراجع مطلوب',
+    },
+    'invalid reviewer token': {
+        'es': 'token de revisor no válido',
+        'fr': 'jeton de réviseur invalide',
+        'de': 'ungültiges Prüfer-Token',
+        'pt': 'token de revisor inválido',
+        'it': 'token del revisore non valido',
+        'ja': 'レビュアートークンが無効です',
+        'zh': '审阅者令牌无效',
+        'hi': 'अमान्य समीक्षक टोकन',
+        'ar': 'رمز المراجع غير صالح',
+    },
+    'this deployment is reachable beyond localhost but has no '
+    'JIM_ADMIN_TOKEN configured — the accessibility reports stay closed '
+    'until it is': {
+        'es': 'esta instalación es accesible más allá de localhost pero no '
+              'tiene JIM_ADMIN_TOKEN configurado — los informes de '
+              'accesibilidad permanecen cerrados hasta que lo esté',
+        'fr': "cette installation est accessible au-delà de localhost mais "
+              "n'a pas de JIM_ADMIN_TOKEN configuré — les signalements "
+              "d'accessibilité restent fermés jusqu'à ce qu'il le soit",
+        'de': 'diese Installation ist über localhost hinaus erreichbar, hat '
+              'aber kein JIM_ADMIN_TOKEN konfiguriert — die '
+              'Barrierefreiheits-Berichte bleiben geschlossen, bis eines '
+              'gesetzt ist',
+        'pt': 'esta instalação é acessível além de localhost mas não tem '
+              'JIM_ADMIN_TOKEN configurado — os relatos de acessibilidade '
+              'permanecem fechados até que esteja',
+        'it': 'questa installazione è raggiungibile oltre localhost ma non '
+              'ha JIM_ADMIN_TOKEN configurato — le segnalazioni di '
+              'accessibilità restano chiuse finché non lo è',
+        'ja': 'この環境は localhost の外から到達できますが JIM_ADMIN_TOKEN が'
+              '設定されていません — 設定されるまでアクセシビリティ報告は閉じられたままです',
+        'zh': '此部署可从 localhost 之外访问，但未配置 JIM_ADMIN_TOKEN — '
+              '在配置之前，无障碍报告保持关闭',
+        'hi': 'यह परिनियोजन localhost से परे पहुँचा जा सकता है लेकिन '
+              'JIM_ADMIN_TOKEN कॉन्फ़िगर नहीं है — जब तक यह नहीं होता, '
+              'सुलभता रिपोर्टें बंद रहती हैं',
+        'ar': 'هذا النشر يمكن الوصول إليه من خارج localhost لكن لا يوجد '
+              'JIM_ADMIN_TOKEN مضبوط — تبقى بلاغات إمكانية الوصول مغلقة '
+              'حتى يُضبط',
+    },
+    'say what you were trying to do and what stood in the way': {
+        'es': 'di qué intentabas hacer y qué se interpuso',
+        'fr': "dites ce que vous essayiez de faire et ce qui s'y est opposé",
+        'de': 'sag, was du versucht hast und was im Weg stand',
+        'pt': 'diga o que você estava tentando fazer e o que ficou no caminho',
+        'it': 'di\' cosa stavi cercando di fare e cosa ti ha ostacolato',
+        'ja': '何をしようとして、何が妨げになったかを書いてください',
+        'zh': '请写出你想做什么，以及是什么挡住了你',
+        'hi': 'बताइए कि आप क्या करने की कोशिश कर रहे थे और क्या आड़े आया',
+        'ar': 'اذكر ما كنت تحاول فعله وما الذي وقف في طريقك',
+    },
     'nothing has been trained yet': {
         'es': 'todavía no se ha entrenado nada',
         'fr': "rien n'a encore été entraîné",
@@ -2561,6 +2624,12 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    # The accessibility report's three questions, worded as the form asks
+    # them — a refusal that names one of these should read like the form.
+    'doing': {'en': 'What were you trying to do?', 'es': '¿Qué intentabas hacer?', 'fr': 'Qu’essayiez-vous de faire ?', 'de': 'Was hast du versucht zu tun?', 'pt': 'O que você estava tentando fazer?', 'it': 'Cosa stavi cercando di fare?', 'ja': '何をしようとしていましたか？', 'zh': '你当时想做什么？', 'hi': 'आप क्या करने की कोशिश कर रहे थे?', 'ar': 'ما الذي كنت تحاول فعله؟'},
+    'wall': {'en': 'What stood in the way?', 'es': '¿Qué se interpuso?', 'fr': 'Qu’est-ce qui a fait obstacle ?', 'de': 'Was stand im Weg?', 'pt': 'O que ficou no caminho?', 'it': 'Cosa ti ha ostacolato?', 'ja': '何が妨げになりましたか？', 'zh': '是什么挡住了你？', 'hi': 'क्या आड़े आया?', 'ar': 'ما الذي وقف في الطريق؟'},
+    'help': {'en': 'What would help?', 'es': '¿Qué ayudaría?', 'fr': 'Qu’est-ce qui aiderait ?', 'de': 'Was würde helfen?', 'pt': 'O que ajudaria?', 'it': 'Cosa aiuterebbe?', 'ja': '何があれば助かりますか？', 'zh': '什么会有帮助？', 'hi': 'क्या मदद करेगा?', 'ar': 'ما الذي قد يساعد؟'},
+    'lang': {'en': 'Language', 'es': 'Idioma', 'fr': 'Langue', 'de': 'Sprache', 'pt': 'Idioma', 'it': 'Lingua', 'ja': '言語', 'zh': '语言', 'hi': 'भाषा', 'ar': 'اللغة'},
     'stress_level': {'en': 'Stress level', 'es': 'Nivel de estrés', 'fr': "Niveau de stress", 'de': 'Stressniveau', 'pt': 'Nível de stress', 'it': 'Livello di stress', 'ja': 'ストレスの度合い', 'zh': '压力水平', 'hi': 'तनाव का स्तर', 'ar': 'مستوى التوتر'},
     'active': {'en': 'Use the trained model', 'es': 'Usar el modelo entrenado', 'fr': 'Utiliser le modèle entraîné', 'de': 'Trainiertes Modell verwenden', 'pt': 'Usar o modelo treinado', 'it': 'Usa il modello addestrato', 'ja': '学習済みモデルを使う', 'zh': '使用已训练的模型', 'hi': 'प्रशिक्षित मॉडल का उपयोग करें', 'ar': 'استخدام النموذج المدرَّب'},
     'bearing': {'en': 'How it carries itself', 'es': 'Cómo se comporta', 'fr': 'Comment il se tient', 'de': 'Wie es sich gibt', 'pt': 'Como se porta', 'it': 'Come si pone', 'ja': 'どう構えるか', 'zh': '以什么姿态', 'hi': 'कैसा रुख़ रखे', 'ar': 'كيف يتصرّف'},

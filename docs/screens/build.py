@@ -1888,6 +1888,22 @@ SCREENS = [
         dict(icon="warn", color="violet", k="No quiet goodbye",
              s="if it is going, you hear it first"),
     ]),
+    # 108: ability is not a gate. The statement, the behavior behind it,
+    # and the report door — reachable before enrollment, because the person
+    # it exists for may be the person the enrollment shut out. The form's
+    # three questions are the cards; none is a diagnosis.
+    dict(num=108, title="Ability is not a gate",
+         sub="Say what stood in the way",
+         accent="green", cards=[
+        dict(icon="check", color="green", k="Works by text alone",
+             s="voice optional, nothing timed"),
+        dict(icon="person", color="brand", k="No name, no diagnosis",
+             s="doing, the wall, what would help"),
+        dict(icon="lock", color="violet", k="Stays on this deployment",
+             s="never relayed anywhere"),
+        dict(icon="warn", color="amber", k="Becomes tracked work",
+             s="a ledger that only shrinks"),
+    ], button=("Send the report", "brand")),
 ]
 
 

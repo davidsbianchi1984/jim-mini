@@ -136,6 +136,38 @@
                 </StackPanel>
             </Border>
 
+            <!-- Ability is not a gate: the accessibility report door. Three
+                 questions, none a diagnosis, sent with no token. The reviewer
+                 row reads them back with the deployment's own token. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="AccHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="AccLead"
+                               Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                    <TextBox x:Name="AccDoing" TextWrapping="Wrap" AcceptsReturn="True" Height="56" />
+                    <TextBox x:Name="AccWall" TextWrapping="Wrap" AcceptsReturn="True" Height="72" />
+                    <TextBox x:Name="AccHelp" TextWrapping="Wrap" AcceptsReturn="True" Height="56" />
+                    <Button x:Name="AccSend" Click="OnSendAccessReport"
+                            Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
+                    <TextBlock x:Name="AccThanks" Foreground="{StaticResource JimGreenBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <PasswordBox x:Name="AccReviewerBox" />
+                    <Button x:Name="AccLoad" Click="OnLoadAccessReports" FontSize="12" />
+                    <TextBlock x:Name="AccEmpty" Foreground="{StaticResource JimT2Brush}" FontSize="11"
+                               Visibility="Collapsed" />
+                    <ItemsControl x:Name="AccReportsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimT2Brush}"
+                                           FontSize="11" TextWrapping="Wrap" Margin="0,2" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
             <!-- Claim 11's user-specific model, in plain terms. -->
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">

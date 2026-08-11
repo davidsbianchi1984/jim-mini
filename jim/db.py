@@ -680,6 +680,23 @@ CREATE TABLE IF NOT EXISTS improvements (
     created_at TEXT NOT NULL
 );
 
+-- Accessibility reports: what somebody was trying to do, what stood in the
+-- way, and what would have helped — in their own words, in their own
+-- language. Deliberately narrower than improvements: there is no submitter
+-- column at all, because a report about ability must not require disclosing
+-- anything about the body that wrote it. When a PDI vault is configured the
+-- report is sealed there too (pdi_key), same custody as the tandem.
+CREATE TABLE IF NOT EXISTS access_reports (
+    id         TEXT PRIMARY KEY,
+    lang       TEXT NOT NULL DEFAULT 'en',
+    doing      TEXT NOT NULL,           -- what the person was trying to do
+    wall       TEXT NOT NULL,           -- what stood in the way
+    help       TEXT,                    -- what would help, if they said
+    status     TEXT NOT NULL DEFAULT 'received',  -- received | accepted | built
+    pdi_key    TEXT,
+    created_at TEXT NOT NULL
+);
+
 -- Proactive nudges generated from check-ins, goals, streaks, and context.
 CREATE TABLE IF NOT EXISTS insights (
     id         TEXT PRIMARY KEY,

@@ -362,3 +362,13 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
     left: 12px; bottom: calc(76px + env(safe-area-inset-bottom));
   }
 }
+
+/* When the device asks for reduced motion, nothing here moves. The
+   accessibility statement says so, which makes this rule the sentence's
+   behavior rather than a preference. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

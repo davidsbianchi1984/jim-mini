@@ -187,6 +187,8 @@ data class MedicalCard(val name: String?, val age: Int?, val conditions: List<St
 
 data class ImproveItem(val category: String, val message: String, val status: String)
 data class ImproveState(val mine: List<ImproveItem>, val tally: Map<String, Int>, val total: Int)
+data class AccessReportRow(val doing: String, val wall: String, val help: String?,
+                           val lang: String, val createdAt: String)
 
 class ApiException(message: String) : Exception(message)
 
@@ -1025,6 +1027,32 @@ object ApiClient {
         val tallyObj = o.optJSONObject("tally") ?: JSONObject()
         val tally = tallyObj.keys().asSequence().associateWith { tallyObj.optInt(it) }
         return ImproveState(mine, tally, o.optInt("total"))
+    }
+
+    // ---- ability is not a gate: the accessibility door ----
+
+    /** Tokenless on purpose — the person it exists for may be the person
+     *  the enrollment shut out. The words stay on the deployment; nothing
+     *  here reaches the problems collector. */
+    suspend fun sendAccessReport(doing: String, wall: String, help: String?,
+                                 lang: String): String {
+        val body = JSONObject().put("doing", doing).put("wall", wall)
+            .put("lang", lang)
+        help?.takeIf { it.isNotBlank() }?.let { body.put("help", it) }
+        return request("/access/reports", "POST", body)
+            .optString("status", "received")
+    }
+
+    /** Reviewer-token read — the deployment's steward, never a user. */
+    suspend fun accessReports(reviewerToken: String): List<AccessReportRow> {
+        val o = request("/access/reports", token = reviewerToken)
+        val arr = o.optJSONArray("reports")
+        return (0 until (arr?.length() ?: 0)).map { i ->
+            val r = arr!!.getJSONObject(i)
+            AccessReportRow(r.optString("doing", ""), r.optString("wall", ""),
+                r.optString("help", "").takeIf { it.isNotBlank() },
+                r.optString("lang", ""), r.optString("created_at", ""))
+        }
     }
 
     // ---- community: the door into QRME, and the visit note ----

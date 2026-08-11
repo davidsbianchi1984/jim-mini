@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "./store";
 import { t as tr, visitorLang } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
@@ -28,8 +28,9 @@ import { Attending } from "./screens/Attending";
 import { Reach } from "./screens/Reach";
 import { Bearing } from "./screens/Bearing";
 import { Held } from "./screens/Held";
+import { Access } from "./screens/Access";
 
-type Tab = "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "settings";
+type Tab = "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "access" | "settings";
 // Labels live in `l10n.ts` and are looked up by id — see `nav.*` there.
 //
 // They used to sit here as English literals, which made the console's own
@@ -58,15 +59,43 @@ const NAV: { id: Tab; icon: string }[] = [
   { id: "feed", icon: "▶" },
   { id: "channel", icon: "🎙" },
   { id: "held", icon: "🗄" },
+  { id: "access", icon: "♿" },
   { id: "settings", icon: "🛡" },
 ];
 
 export function App() {
   const { session, signOut } = useSession();
   const [tab, setTab] = useState<Tab>("home");
+  // The accessibility statement and its report door open before sign-in —
+  // the person that screen exists for may be the person the enrollment
+  // shut out. `#access` in the URL lands there directly, so a line in an
+  // email can point at the form rather than at a sign-up page.
+  const [publicAccess, setPublicAccess] = useState(
+    window.location.hash === "#access");
+  // The document's own language attribute, so a screen reader pronounces
+  // the page in the language it is actually written in — index.html ships
+  // lang="en" and the app renders ten languages under it.
+  useEffect(() => { document.documentElement.lang = visitorLang(); }, []);
   // The guard wraps onboarding too: a mismatched backend at sign-up is
   // the same trap, one screen earlier.
-  if (!session.userId) return <><VersionGuard /><Onboarding /><Help /></>;
+  if (!session.userId) {
+    if (publicAccess) {
+      return (
+        <>
+          <VersionGuard />
+          <div className="content" style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
+            <button className="linkish" onClick={() => {
+              setPublicAccess(false);
+              if (window.location.hash) window.location.hash = "";
+            }}>{tr("onb.back", visitorLang())}</button>
+            <Access />
+          </div>
+          <Help />
+        </>
+      );
+    }
+    return <><VersionGuard /><Onboarding onAccess={() => setPublicAccess(true)} /><Help /></>;
+  }
   return (
     <div className="app">
       <VersionGuard />
@@ -111,6 +140,7 @@ export function App() {
         {tab === "reach" && <Reach />}
         {tab === "bearing" && <Bearing />}
         {tab === "held" && <Held />}
+        {tab === "access" && <Access />}
         {tab === "settings" && <Settings />}
       </main>
       {/* Part of the shell: the help box is on every screen, like the

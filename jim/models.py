@@ -320,6 +320,14 @@ class ImprovementSubmit(BaseModel):
     rating: int | None = None          # optional 1..5 satisfaction
 
 
+class AccessReportSubmit(BaseModel):
+    """An accessibility report: three answers, none of them a diagnosis."""
+    doing: str                         # what you were trying to do
+    wall: str                          # what stood in the way
+    help: str | None = None           # what would help, in your words
+    lang: str = "en"                  # the language the report is written in
+
+
 class ConditionDeclare(BaseModel):
     condition: Condition
     note: str | None = None

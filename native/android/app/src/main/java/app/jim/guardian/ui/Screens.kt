@@ -272,6 +272,7 @@ fun OverviewScreen(vm: GuardianViewModel) {
         TrainedModelCard(vm)
         AnonymityCard(vm)
         ImproveCard(vm)
+        AccessCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Jim.Line)) {
             Text(L10n.t("action.sign_out", vm.language), color = Jim.T2)
@@ -2005,6 +2006,55 @@ private fun feedbackCategory(kind: String, lang: String): String = when (kind) {
     "bug" -> L10n.t("ov.fb.cat.bug", lang)
     "praise" -> L10n.t("ov.fb.cat.praise", lang)
     else -> L10n.t("ov.fb.cat.other", lang)
+}
+
+/** Ability is not a gate: the accessibility report door. Three questions,
+ *  none a diagnosis, sent with no token — the person this card exists for
+ *  may be the person the enrollment shut out. The reviewer row reads them
+ *  back with the deployment's own token, never a user's. */
+@Composable
+fun AccessCard(vm: GuardianViewModel) {
+    var doing by remember { mutableStateOf("") }
+    var wall by remember { mutableStateOf("") }
+    var help by remember { mutableStateOf("") }
+    var thanks by remember { mutableStateOf<String?>(null) }
+    var reviewer by remember { mutableStateOf("") }
+    var reports by remember { mutableStateOf<List<AccessReportRow>?>(null) }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.acc", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("ns.acc.lead", vm.language), color = Jim.T2, fontSize = 12.sp)
+        labeledField("", doing, L10n.t("ns.acc.doing.ph", vm.language)) { doing = it }
+        labeledField("", wall, L10n.t("ns.acc.wall.ph", vm.language)) { wall = it }
+        labeledField("", help, L10n.t("ns.acc.help.ph", vm.language)) { help = it }
+        BrandButton(L10n.t("ns.acc.send", vm.language),
+            enabled = doing.isNotBlank() && wall.isNotBlank()) {
+            vm.call({ ApiClient.sendAccessReport(doing.trim(), wall.trim(),
+                help.trim(), vm.language) }) {
+                thanks = L10n.t("ns.acc.sent", vm.language)
+                doing = ""; wall = ""; help = ""
+            }
+        }
+        thanks?.let { Text(it, color = Jim.Green, fontSize = 12.sp) }
+        labeledField("", reviewer, L10n.t("ns.acc.token.ph", vm.language)) { reviewer = it }
+        BrandButton(L10n.t("ns.acc.load", vm.language)) {
+            vm.call({ ApiClient.accessReports(reviewer.trim()) }) { r ->
+                reports = r.getOrNull()
+            }
+        }
+        reports?.let { rs ->
+            if (rs.isEmpty())
+                Text(L10n.t("ns.acc.none", vm.language), color = Jim.T3, fontSize = 11.sp)
+            else rs.take(6).forEach { r ->
+                Text(r.doing, color = Jim.Txt, fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold)
+                Text(r.wall, color = Jim.T2, fontSize = 11.sp)
+                r.help?.let { h -> Text(h, color = Jim.T2, fontSize = 11.sp) }
+                Text("${r.lang} · ${r.createdAt}", color = Jim.T3, fontSize = 10.sp)
+            }
+        }
+    }
 }
 
 @Composable

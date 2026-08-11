@@ -29,7 +29,7 @@ function PasswordField(props: {
   );
 }
 
-export function Onboarding() {
+export function Onboarding({ onAccess }: { onAccess?: () => void } = {}) {
   const { setSession } = useSession();
   const [mode, setMode] = useState<Mode>("signup");
   // No pre-filled identity. A name sitting in the box is the one most people
@@ -387,6 +387,14 @@ export function Onboarding() {
           </button>
           <button className="linkish" onClick={() => switchMode("signin")}>{tr("onb.back", visitorLang())}</button>
         </>)}
+        {/* The accessibility statement and its report door, before the
+            account — the person it exists for may be the person this
+            enrollment shut out. */}
+        {onAccess && (
+          <button className="linkish" onClick={onAccess}>
+            {tr("acc.title", visitorLang())}
+          </button>
+        )}
       </div>
     </div>
   );

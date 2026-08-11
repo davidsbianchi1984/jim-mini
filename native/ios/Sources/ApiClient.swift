@@ -675,6 +675,13 @@ struct ImproveItem: Decodable, Identifiable {
     let status: String
 }
 
+struct AccessReceipt: Decodable { let id: String; let status: String; let note: String? }
+struct AccessReportRow: Decodable, Identifiable {
+    let id: String; let lang: String; let doing: String; let wall: String
+    let help: String?; let status: String; let created_at: String
+}
+struct AccessReportsState: Decodable { let reports: [AccessReportRow]; let total: Int }
+
 struct ImproveState: Decodable {
     let mine: [ImproveItem]
     let tally: [String: Int]
@@ -1252,6 +1259,22 @@ actor ApiClient {
 
     func improvements(token: String?) async throws -> ImproveState {
         try await request("/improve", token: token)
+    }
+
+    /// The accessibility door: tokenless on purpose — the person it exists
+    /// for may be the person the enrollment shut out. The words stay on the
+    /// deployment; nothing here reaches the problems collector.
+    func sendAccessReport(doing: String, wall: String, help: String?,
+                          lang: String) async throws -> AccessReceipt {
+        var body: [String: Any] = ["doing": doing, "wall": wall, "lang": lang]
+        if let help, !help.isEmpty { body["help"] = help }
+        return try await request("/access/reports", method: "POST", body: body,
+                                 token: nil)
+    }
+
+    /// Reviewer-token read — the deployment's steward, never a user.
+    func accessReports(reviewerToken: String) async throws -> AccessReportsState {
+        try await request("/access/reports", token: reviewerToken)
     }
 
     func revokeMedicalCard(uid: String, token: String) async throws {

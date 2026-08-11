@@ -99,3 +99,36 @@ def require_signup_key(request: Request) -> None:
         raise HTTPException(
             403, "this deployment requires a signup key to enroll — send it "
                  "as the x-signup-key header")
+
+
+# Starlette's in-process sentinel names no socket, so no network peer can
+# present it. Same set QRME and the cloud gateway use, for the same reason.
+_LOCAL_CALLERS = frozenset({"127.0.0.1", "::1", "localhost", "testclient"})
+
+
+def require_reviewer(request: Request) -> None:
+    """Guard the deployment-steward surfaces — today, the accessibility
+    reports.
+
+    A dedicated reviewer role sits outside user accounts: whoever reads the
+    reports stands for the deployment, not for any one person's data, and is
+    held via ``JIM_ADMIN_TOKEN``. Unset is development mode, and development
+    mode means localhost — QRME's objection review learned the hard way that
+    "unset means everyone" is exactly wrong for the deployment least likely
+    to have configured anything. A remote caller with no token configured
+    gets a 503 naming the variable, not a pass.
+    """
+    required = os.environ.get("JIM_ADMIN_TOKEN")
+    if not required:
+        host = request.client.host if request.client else ""
+        if host in _LOCAL_CALLERS:
+            return
+        raise HTTPException(
+            503, "this deployment is reachable beyond localhost but has no "
+                 "JIM_ADMIN_TOKEN configured — the accessibility reports "
+                 "stay closed until it is")
+    token = bearer(request)
+    if not token:
+        raise HTTPException(401, "reviewer token required")
+    if not secrets.compare_digest(token, required):
+        raise HTTPException(403, "invalid reviewer token")

@@ -455,6 +455,22 @@ LESSONS: tuple[dict, ...] = (
          screens=(106, 107),
          try_it="Set where it speaks to the speaker, then ask it to say a "
                 "beat — the answer tells you what it held and why."),
+    dict(key="access", chapter="Day to day", title="Ability is not a gate",
+         what="The accessibility statement, and the door it promises. If "
+              "how your body or mind works stands between you and this "
+              "guardian, that is a defect in the guardian — not in you. "
+              "The statement lists who is expected here (blind, deaf, "
+              "mute, motor, cognitive, dyslexic, motion-sensitive people — "
+              "and every need the list forgot), and the report asks three "
+              "questions and no diagnosis: what were you trying to do, "
+              "what stood in the way, what would help. No account — "
+              "`#access` in the URL opens it before enrollment — no name, "
+              "and your words stay on this deployment, read with the "
+              "reviewer token and turned into rows in a backlog that only "
+              "shrinks.",
+         screens=(108,),
+         try_it="Sign out, open the Accessibility link under the sign-in "
+                "form, and read the statement in your own language."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

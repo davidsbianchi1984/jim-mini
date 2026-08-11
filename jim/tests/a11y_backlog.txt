@@ -1,0 +1,19 @@
+# status: backlog — 2 rows
+# ceiling: 2
+#
+# Accessibility gaps this product knows about and has not yet closed. One
+# gap per line, stated as what a person meets, not as a component name.
+#
+# This is the "tracked work" the accessibility statement promises. A report
+# accepted through /access/reports lands here as a row **by raising the
+# ceiling in the same commit** — deliberate, visible in the diff, the same
+# bargain as the doorless files. Closing a gap strikes the row and lowers
+# the ceiling. The ceiling never rises silently: the count is checked by
+# test_ability_is_not_a_gate.py, so a regression that reopens a struck gap
+# has to argue with a failing test instead of nobody.
+#
+# What does NOT belong here: gaps in claims the statement makes. Those are
+# defects to fix now, not backlog — the statement only says what is true.
+
+console: coach and check-in replies appear with no aria-live region, so a screen reader is not told an answer arrived
+shells: ios/android/windows carry the report form and its lead, not the per-need statement the console shows
