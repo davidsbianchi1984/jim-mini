@@ -42,7 +42,7 @@ struct SafetyView: View {
                 }.pickerStyle(.segmented)
 
                 switch tab {
-                case .alarms: AlarmsSection()
+                case .alarms: AlarmsSection(); BeaconsCard()
                 case .sos: SOSSection()
                 // The vigil is the crash watch's chronic sibling: one fires
                 // on a bad reading, the other on no readings at all.
@@ -609,6 +609,11 @@ private struct RobotsSection: View {
                         Text((r.status ?? "docked").replacingOccurrences(of: "_", with: " ")
                              .capitalized)
                             .font(.caption).foregroundStyle(Theme.t2)
+                        Button(L10n.t("rch.body.unbind", state.language)) {
+                            unbind(r)
+                        }
+                        .font(.caption2).foregroundStyle(Theme.red)
+                        .disabled(busy)
                     }
                     if let d = r.escalation_directive {
                         Text(L10n.fill("rob.onesc", state.language,
@@ -752,6 +757,20 @@ private struct RobotsSection: View {
         catalog = (try? await ApiClient.shared.roboticsCatalog())?.robots ?? []
         robots = (try? await ApiClient.shared.robots(uid: uid, token: token)) ?? []
         waiver = try? await ApiClient.shared.waiver(uid: uid, token: token)
+    }
+
+    private func unbind(_ r: Robot) {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                _ = try await ApiClient.shared.unbindRobot(uid: uid,
+                                                           token: token,
+                                                           robotId: r.id)
+                await load()
+            } catch { self.error = error.localizedDescription }
+            busy = false
+        }
     }
 
     private func bind() {

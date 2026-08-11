@@ -144,6 +144,12 @@ import app.jim.guardian.PageRowK
 import app.jim.guardian.PlanRowK
 import app.jim.guardian.BudgetRowK
 import app.jim.guardian.MembershipK
+import app.jim.guardian.BeaconAlarmK
+import app.jim.guardian.BeaconCardK
+import app.jim.guardian.BeaconRowK
+import app.jim.guardian.RelayChannelK
+import app.jim.guardian.RelayRosterK
+import app.jim.guardian.RelayRotaK
 import kotlin.math.roundToInt
 
 @Composable
@@ -1245,6 +1251,129 @@ private fun BudgetPanel(vm: GuardianViewModel) {
                 r.onFailure { error = it.message }
                 busy = false; category = ""; reload()
             }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+    }
+}
+
+
+/** The sticker and the relay: beacons a stranger can scan to reach help on
+ *  your behalf, and the relay that escalates people, not sirens. */
+@Composable
+private fun BeaconsPanel(vm: GuardianViewModel) {
+    val context = LocalContext.current
+    var rows by remember { mutableStateOf<List<BeaconRowK>>(emptyList()) }
+    var label by remember { mutableStateOf("") }
+    var placement by remember { mutableStateOf("") }
+    var card by remember { mutableStateOf<BeaconCardK?>(null) }
+    var alarm by remember { mutableStateOf<BeaconAlarmK?>(null) }
+    var channel by remember { mutableStateOf<RelayChannelK?>(null) }
+    var roster by remember { mutableStateOf<RelayRosterK?>(null) }
+    var rota by remember { mutableStateOf<RelayRotaK?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    fun reload() {
+        vm.call({ ApiClient.beacons(vm.uid!!, vm.token!!) }) { r ->
+            rows = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) {
+        reload()
+        runCatching { ApiClient.relayChannel() }.onSuccess { channel = it }
+        runCatching { ApiClient.relayRoster() }.onSuccess { roster = it }
+        runCatching { ApiClient.relayRota() }.onSuccess { rota = it }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(L10n.t("sfy.beacons", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("sfy.beacons.pitch", vm.language), color = Jim.T2, fontSize = 11.sp)
+        rows.forEach { row ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(row.label, color = Jim.Txt, fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold)
+                Text(" " + L10n.t("sfy.beacons.scans", vm.language)
+                    .replace("{n}", row.scans.toString()),
+                    color = Jim.T2, fontSize = 11.sp, modifier = Modifier.weight(1f))
+                if (!row.active) {
+                    Text(L10n.t("sfy.beacons.retired", vm.language),
+                        color = Jim.T3, fontSize = 10.sp)
+                }
+                SmallAction(L10n.t("att.open", vm.language), enabled = !busy) {
+                    busy = true; error = null
+                    vm.call({ ApiClient.scannedBeaconPage(row.id) }) { r ->
+                        r.onSuccess { page ->
+                            // Fetched to prove the door is live; a stranger
+                            // reads it in a browser, so hand it to one.
+                            context.startActivity(Intent(Intent.ACTION_VIEW,
+                                Uri.parse(page.url)))
+                        }.onFailure { error = it.message }
+                        busy = false
+                    }
+                }
+                SmallAction(L10n.t("rch.acc.beacon", vm.language), enabled = !busy) {
+                    busy = true
+                    vm.call({ ApiClient.beaconCard(row.id) }) { r ->
+                        r.onSuccess { card = it }.onFailure { error = it.message }
+                        busy = false
+                    }
+                }
+                SmallAction(L10n.t("aim.budget.remove", vm.language),
+                    enabled = !busy && row.active) {
+                    busy = true
+                    vm.call({ ApiClient.retireBeacon(row.id, vm.token!!) }) {
+                        busy = false; reload()
+                    }
+                }
+            }
+        }
+        card?.let { c ->
+            Text(c.firstName, color = Jim.Txt, fontSize = 12.sp,
+                fontWeight = FontWeight.Bold)
+            Text(c.note, color = Jim.T2, fontSize = 11.sp)
+            Text(c.badge, color = Jim.T3, fontSize = 10.sp)
+            SmallAction(L10n.t("att.alarm.raise", vm.language), enabled = !busy) {
+                busy = true
+                vm.call({ ApiClient.raiseBeaconAlarm(c.beacon) }) { r ->
+                    r.onSuccess { alarm = it }.onFailure { error = it.message }
+                    busy = false
+                }
+            }
+        }
+        alarm?.let { Text("${it.badge} ${it.note}", color = Jim.Amber, fontSize = 11.sp) }
+        labeledField(L10n.t("sfy.beacons", vm.language), label,
+            L10n.t("sfy.beacons.label.ph", vm.language)) { label = it }
+        labeledField(L10n.t("sfy.beacons", vm.language), placement,
+            L10n.t("sfy.beacons.where.ph", vm.language)) { placement = it }
+        BrandButton(L10n.t("sfy.beacons.place", vm.language),
+            enabled = !busy && label.isNotBlank(), busy = busy) {
+            busy = true; error = null
+            vm.call({ ApiClient.placeBeacon(vm.uid!!, vm.token!!, label.trim(),
+                placement) }) { r ->
+                r.onFailure { error = it.message }
+                busy = false; label = ""; placement = ""; reload()
+            }
+        }
+
+        Text(L10n.t("att.relay", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        channel?.let { c ->
+            Text(L10n.t("att.relay.channel", vm.language) + ": " + c.envelope,
+                color = Jim.T2, fontSize = 11.sp)
+            Text(c.note, color = Jim.T3, fontSize = 10.sp)
+        }
+        roster?.let { r ->
+            val names = r.roster.joinToString(", ")
+            Text(L10n.t("att.relay.roster", vm.language)
+                .replace("{list}", names).replace("{c}", r.ceiling),
+                color = Jim.T2, fontSize = 11.sp)
+            Text(r.note, color = Jim.T3, fontSize = 10.sp)
+        }
+        rota?.let { r ->
+            val onNow = r.onNow.joinToString(", ")
+            Text("$onNow \u00b7 ${r.timezone}",
+                color = if (r.anybodyOnShift) Jim.Green else Jim.T3, fontSize = 11.sp)
+            Text(r.note, color = Jim.T3, fontSize = 10.sp)
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
     }
@@ -2378,7 +2507,7 @@ fun SafetyScreen(vm: GuardianViewModel) {
             }
         }
         when (tab) {
-            0 -> AlarmsPanel(vm)
+            0 -> { AlarmsPanel(vm); BeaconsPanel(vm) }
             1 -> SOSPanel(vm)
             // The vigil is the crash watch's chronic sibling: one fires on
             // a bad reading, the other on no readings at all.
@@ -2835,6 +2964,10 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                 }
                 rob.directive?.let {
                     Text("On escalation: ${it.replace('_', ' ')}", color = Jim.Amber, fontSize = 12.sp)
+                }
+                SmallAction(L10n.t("rch.body.unbind", vm.language)) {
+                    vm.call({ ApiClient.unbindRobot(vm.uid!!, vm.token!!,
+                        rob.id) }) { reload() }
                 }
                 if ("fetch_aed" in rob.commands) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -3900,6 +4033,19 @@ private fun SocialPanel(vm: GuardianViewModel) {
                                     .replace("{platform}", pretty(c.platform))
                             }
                                 .onFailure { error = it.message }
+                        }
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    smallAction(L10n.t("rch.acc.beacon", vm.language)) {
+                        vm.call({ ApiClient.socialBeacon(c.id, vm.token!!) }) { r ->
+                            r.onSuccess { status = it }
+                                .onFailure { error = it.message }
+                        }
+                    }
+                    smallAction(L10n.t("rch.acc.disconnect", vm.language)) {
+                        vm.call({ ApiClient.disconnectSocial(c.id, vm.token!!) }) {
+                            reload()
                         }
                     }
                 }

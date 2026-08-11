@@ -30,6 +30,8 @@ public sealed partial class ConnectPage : Page
             Collect ? Visibility.Collapsed : Visibility.Visible;
         public string CollectSampleLabel => L10n.T("jcon.collect.sample");
         public string PublishUpdateLabel => L10n.T("jcon.publish.update");
+        public string BeaconLabel => L10n.T("rch.acc.beacon");
+        public string DisconnectLabel => L10n.T("rch.acc.disconnect");
     }
 
     public sealed class PostureVm
@@ -927,6 +929,35 @@ public sealed partial class ConnectPage : Page
             DvError.Text = ex.Message;
             DvError.Visibility = Visibility.Visible;
         }
+    }
+
+
+    // ---- the beacon on a social presence, and the way out of one ----
+
+    private async void OnSocialBeacon(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string cid) return;
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            var beacon = await ApiClient.Shared.SocialBeacon(cid, s.Token);
+            ShowSocialStatus($"{beacon.Handle} → {beacon.PresenceUrl}");
+        }
+        catch (Exception ex) { ShowSocialError(ex.Message); }
+    }
+
+    private async void OnSocialDisconnect(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string cid) return;
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            await ApiClient.Shared.DisconnectSocial(cid, s.Token);
+            await ReloadSocial();
+        }
+        catch (Exception ex) { ShowSocialError(ex.Message); }
     }
 
     // ---- this sitting: a named login session ----

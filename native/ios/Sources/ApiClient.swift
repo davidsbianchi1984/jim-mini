@@ -3326,3 +3326,137 @@ extension ApiClient {
                           token: token)
     }
 }
+
+// MARK: - The sticker and the relay
+
+/// A sticker someone can scan to reach help on your behalf. The scanner
+/// needs no account and sees only what the owner chose to put on the card.
+struct BeaconRow: Decodable {
+    let id: String
+    let label: String
+    let placement: String?
+    let kind: String
+    let scans: Int
+    let active: Bool
+    let scan_url: String
+}
+
+struct BeaconCardOut: Decodable {
+    let beacon: String
+    let first_name: String?
+    let watched: Bool?
+    let note: String?
+    let badge: String?
+    let call_first: String?
+}
+
+struct BeaconAlarm: Decodable {
+    let alarm: String
+    let raised: Bool
+    let tier: String?
+    let badge: String?
+    let note: String?
+}
+
+struct BeaconRetired: Decodable { let id: String; let active: Bool }
+
+struct RelayChannel: Decodable {
+    let configured: Bool
+    let envelope: String?
+    let note: String
+}
+
+struct RelayRoster: Decodable {
+    let configured: Bool
+    let roster: [String]
+    let ceiling: String
+    let note: String
+}
+
+struct RelayRota: Decodable {
+    let configured: Bool
+    let timezone: String
+    let on_now: [String]
+    let anybody_on_shift: Bool
+    let note: String
+}
+
+struct SocialBeacon: Decodable {
+    let connection: String
+    let platform: String
+    let handle: String
+    let presence_url: String
+}
+
+struct SocialGone: Decodable { let id: String; let status: String }
+
+struct RobotUnbound: Decodable { let id: String? }
+
+extension ApiClient {
+
+    func beacons(uid: String, token: String) async throws -> [BeaconRow] {
+        try await request("/users/\(uid)/beacons", token: token)
+    }
+
+    func placeBeacon(uid: String, token: String, label: String,
+                     placement: String?) async throws -> BeaconRow {
+        var body: [String: Any] = ["kind": "site", "label": label]
+        if let placement, !placement.isEmpty { body["placement"] = placement }
+        return try await request("/users/\(uid)/beacons", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func retireBeacon(bid: String, token: String) async throws -> BeaconRetired {
+        try await request("/beacons/\(bid)", method: "DELETE", token: token)
+    }
+
+    /// What a stranger sees before deciding to raise the alarm — public on
+    /// purpose, the scanner has no account.
+    func beaconCard(bid: String) async throws -> BeaconCardOut {
+        try await request("/c/\(bid)/card")
+    }
+
+    func raiseBeaconAlarm(bid: String,
+                          situation: String?) async throws -> BeaconAlarm {
+        var body: [String: Any] = [:]
+        if let situation, !situation.isEmpty { body["situation"] = situation }
+        return try await request("/c/\(bid)/alarm", method: "POST", body: body)
+    }
+
+    /// The scanned page itself is HTML for a stranger's browser; fetching it
+    /// proves the door is live before handing the page to the system one.
+    func scannedBeaconPage(bid: String) async throws -> String {
+        var req = URLRequest(url: base.appendingPathComponent("/c/\(bid)"))
+        req.httpMethod = "GET"
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        let (data, _) = try await URLSession.shared.data(for: req)
+        return String(data: data, encoding: .utf8) ?? ""
+    }
+
+    func relayChannel() async throws -> RelayChannel {
+        try await request("/relay/channel")
+    }
+
+    func relayRoster() async throws -> RelayRoster {
+        try await request("/relay/roster")
+    }
+
+    func relayRota() async throws -> RelayRota {
+        try await request("/relay/rota")
+    }
+
+    func socialBeacon(cid: String, token: String) async throws -> SocialBeacon {
+        try await request("/social/connection/\(cid)/beacon", token: token)
+    }
+
+    func disconnectSocial(cid: String, token: String) async throws -> SocialGone {
+        try await request("/social/connection/\(cid)", method: "DELETE",
+                          token: token)
+    }
+
+    func unbindRobot(uid: String, token: String,
+                     robotId: String) async throws -> RobotUnbound {
+        try await request("/robots/\(uid)/\(robotId)", method: "DELETE",
+                          token: token)
+    }
+}

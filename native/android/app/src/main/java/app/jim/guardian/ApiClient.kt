@@ -2569,6 +2569,93 @@ object ApiClient {
 
 
 
+
+    // ---- the sticker and the relay ----
+
+    /** A sticker someone can scan to reach help on your behalf. */
+    suspend fun beacons(uid: String, token: String): List<BeaconRowK> {
+        val arr = getArray("/users/$uid/beacons", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            BeaconRowK(o.getString("id"), o.optString("label", ""),
+                o.optInt("scans", 0), o.optBoolean("active", true))
+        }
+    }
+
+    suspend fun placeBeacon(uid: String, token: String, label: String,
+                            placement: String?) {
+        val body = JSONObject().put("kind", "site").put("label", label)
+        if (!placement.isNullOrBlank()) body.put("placement", placement)
+        request("/users/$uid/beacons", "POST", body, token)
+    }
+
+    suspend fun retireBeacon(bid: String, token: String) {
+        request("/beacons/$bid", "DELETE", token = token)
+    }
+
+    /** What a stranger sees before deciding to raise the alarm — public on
+     *  purpose, the scanner has no account. */
+    suspend fun beaconCard(bid: String): BeaconCardK {
+        val o = request("/c/$bid/card")
+        return BeaconCardK(o.getString("beacon"), o.optString("first_name", ""),
+            o.optString("note", ""), o.optString("badge", ""))
+    }
+
+    suspend fun raiseBeaconAlarm(bid: String): BeaconAlarmK {
+        val o = request("/c/$bid/alarm", "POST", JSONObject())
+        return BeaconAlarmK(o.optString("badge", ""), o.optString("note", ""))
+    }
+
+    /** The scanned page itself is HTML for a stranger's browser; fetching
+     *  it proves the door is live before handing it to the system one. */
+    suspend fun scannedBeaconPage(bid: String): BeaconPageK =
+        withContext(Dispatchers.IO) {
+            val url = URL("$base/c/$bid")
+            val conn = (url.openConnection() as HttpURLConnection)
+            conn.setRequestProperty("accept-language", L10n.deviceLanguage())
+            val text = conn.inputStream.bufferedReader().use { it.readText() }
+            conn.disconnect(); BeaconPageK(text, url.toString())
+        }
+
+    suspend fun relayChannel(): RelayChannelK {
+        val o = request("/relay/channel")
+        return RelayChannelK(o.optBoolean("configured", false),
+            o.optString("envelope", ""), o.optString("note", ""))
+    }
+
+    suspend fun relayRoster(): RelayRosterK {
+        val o = request("/relay/roster")
+        val names = mutableListOf<String>()
+        o.optJSONArray("roster")?.let { a ->
+            for (i in 0 until a.length()) names.add(a.getString(i))
+        }
+        return RelayRosterK(names, o.optString("ceiling", ""),
+            o.optString("note", ""))
+    }
+
+    suspend fun relayRota(): RelayRotaK {
+        val o = request("/relay/rota")
+        val onNow = mutableListOf<String>()
+        o.optJSONArray("on_now")?.let { a ->
+            for (i in 0 until a.length()) onNow.add(a.getString(i))
+        }
+        return RelayRotaK(o.optString("timezone", ""), onNow,
+            o.optBoolean("anybody_on_shift", false), o.optString("note", ""))
+    }
+
+    suspend fun socialBeacon(cid: String, token: String): String {
+        val o = request("/social/connection/$cid/beacon", token = token)
+        return "${o.optString("handle", "")} \u2192 ${o.optString("presence_url", "")}"
+    }
+
+    suspend fun disconnectSocial(cid: String, token: String) {
+        request("/social/connection/$cid", "DELETE", token = token)
+    }
+
+    suspend fun unbindRobot(uid: String, token: String, robotId: String) {
+        request("/robots/$uid/$robotId", "DELETE", token = token)
+    }
+
     // ---- the purse and the membership ----
 
     suspend fun budgets(uid: String, token: String): List<BudgetRowK> {
@@ -2966,3 +3053,16 @@ data class BudgetRowK(val category: String, val monthlyLimit: Double,
 data class MembershipK(val plan: String, val title: String,
                        val priceUsd: Double, val means: String,
                        val whoCanRead: List<String>)
+
+data class BeaconRowK(val id: String, val label: String, val scans: Int,
+                      val active: Boolean)
+data class BeaconCardK(val beacon: String, val firstName: String,
+                       val note: String, val badge: String)
+data class BeaconAlarmK(val badge: String, val note: String)
+data class RelayChannelK(val configured: Boolean, val envelope: String,
+                         val note: String)
+data class RelayRosterK(val roster: List<String>, val ceiling: String,
+                        val note: String)
+data class RelayRotaK(val timezone: String, val onNow: List<String>,
+                      val anybodyOnShift: Boolean, val note: String)
+data class BeaconPageK(val html: String, val url: String)

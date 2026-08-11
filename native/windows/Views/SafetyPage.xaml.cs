@@ -22,6 +22,7 @@ public sealed partial class SafetyPage : Page
         public bool Perform { get; init; }
         public bool PerformingCpr { get; init; }
         public bool Waived { get; init; }
+        public string UnbindLabel => L10n.T("rch.body.unbind");
         public Visibility AssistVisibility =>
             Assist ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PerformVisibility =>
@@ -144,7 +145,10 @@ public sealed partial class SafetyPage : Page
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         LocalizeAlarmSurface();
+        LocalizeBeacons();
         await LoadAlarms();
+        await LoadBeacons();
+        await LoadRelay();
         await LoadPolicy();
         await LoadRobots();
         await LoadCrashWatch();
@@ -759,5 +763,195 @@ public sealed partial class SafetyPage : Page
             RenderVigil(await ApiClient.Shared.ResolveVigil(s.Uid!, s.Token!));
         }
         catch (Exception ex) { ShowVigilError(ex); }
+    }
+
+
+    private async void OnUnbindRobot(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string robotId)
+            return;
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            await ApiClient.Shared.UnbindRobot(s.Uid, s.Token, robotId);
+            await LoadRobots();
+        }
+        catch { /* the row keeps its state */ }
+    }
+
+    // ---- the sticker and the relay ----
+
+    private string? _previewBeacon;
+
+    private void LocalizeBeacons()
+    {
+        BcnHead.Text = L10n.T("sfy.beacons");
+        BcnPitch.Text = L10n.T("sfy.beacons.pitch");
+        BcnLabel.PlaceholderText = L10n.T("sfy.beacons.label.ph");
+        BcnWhere.PlaceholderText = L10n.T("sfy.beacons.where.ph");
+        BcnPlaceButton.Content = L10n.T("sfy.beacons.place");
+        BcnRaiseButton.Content = L10n.T("att.alarm.raise");
+        RelHead.Text = L10n.T("att.relay");
+    }
+
+    private static TextBlock BcnLine(string text, string brush) => new()
+    {
+        Text = text,
+        FontSize = 11,
+        TextWrapping = TextWrapping.Wrap,
+        Foreground = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources[brush],
+    };
+
+    private async System.Threading.Tasks.Task LoadBeacons()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var rows = await ApiClient.Shared.Beacons(s.Uid, s.Token);
+            BcnRows.Children.Clear();
+            foreach (var row in rows)
+            {
+                var line = new StackPanel
+                { Orientation = Orientation.Horizontal, Spacing = 8 };
+                var scans = L10n.T("sfy.beacons.scans")
+                    .Replace("{n}", row.Scans.ToString());
+                var retired = row.Active ? "" : " · " + L10n.T("sfy.beacons.retired");
+                line.Children.Add(BcnLine($"{row.Label} · {scans}{retired}",
+                                          "JimT2Brush"));
+                var bid = row.Id;
+                var open = new Button
+                {
+                    Content = L10n.T("att.open"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                open.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        // Fetched to prove the door is live; a stranger reads
+                        // it in a browser, so hand it to one.
+                        var page = await ApiClient.Shared.ScannedBeaconPage(bid);
+                        if (page.Html.Length > 0)
+                            await Windows.System.Launcher.LaunchUriAsync(page.Page);
+                    }
+                    catch (Exception ex) { ShowBeaconError(ex.Message); }
+                };
+                line.Children.Add(open);
+                var preview = new Button
+                {
+                    Content = L10n.T("rch.acc.beacon"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                preview.Click += async (_, _) => await PreviewBeacon(bid);
+                line.Children.Add(preview);
+                var retire = new Button
+                {
+                    Content = L10n.T("aim.budget.remove"), FontSize = 11,
+                    IsEnabled = row.Active,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                retire.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.RetireBeacon(bid, s.Token);
+                        await LoadBeacons();
+                    }
+                    catch (Exception ex) { ShowBeaconError(ex.Message); }
+                };
+                line.Children.Add(retire);
+                BcnRows.Children.Add(line);
+            }
+        }
+        catch { /* backend offline */ }
+    }
+
+    /// What a stranger sees before deciding to raise the alarm.
+    private async System.Threading.Tasks.Task PreviewBeacon(string bid)
+    {
+        try
+        {
+            var card = await ApiClient.Shared.BeaconCard(bid);
+            _previewBeacon = card.Beacon;
+            BcnCardName.Text = card.FirstName ?? "";
+            BcnCardName.Visibility = Visibility.Visible;
+            BcnCardNote.Text = card.Note ?? "";
+            BcnCardNote.Visibility = Visibility.Visible;
+            BcnCardBadge.Text = card.Badge ?? "";
+            BcnCardBadge.Visibility = Visibility.Visible;
+            BcnRaiseButton.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowBeaconError(ex.Message); }
+    }
+
+    private async void OnRaiseBeaconAlarm(object sender, RoutedEventArgs e)
+    {
+        if (_previewBeacon is not { } bid) return;
+        try
+        {
+            var alarm = await ApiClient.Shared.RaiseBeaconAlarm(bid);
+            BcnAlarmLine.Text = $"{alarm.Badge ?? ""} {alarm.Note ?? ""}";
+            BcnAlarmLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowBeaconError(ex.Message); }
+    }
+
+    private async void OnPlaceBeacon(object sender, RoutedEventArgs e)
+    {
+        var label = BcnLabel.Text.Trim();
+        if (label.Length == 0) return;
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            await ApiClient.Shared.PlaceBeacon(s.Uid, s.Token, label,
+                                               BcnWhere.Text.Trim());
+            BcnLabel.Text = ""; BcnWhere.Text = "";
+            await LoadBeacons();
+        }
+        catch (Exception ex) { ShowBeaconError(ex.Message); }
+    }
+
+    private async System.Threading.Tasks.Task LoadRelay()
+    {
+        try
+        {
+            var channel = await ApiClient.Shared.RelayChannel();
+            RelChannel.Text = L10n.T("att.relay.channel") + ": "
+                + (channel.Envelope ?? "");
+            RelChannel.Visibility = Visibility.Visible;
+            RelChannelNote.Text = channel.Note;
+            RelChannelNote.Visibility = Visibility.Visible;
+        }
+        catch { /* backend offline */ }
+        try
+        {
+            var roster = await ApiClient.Shared.RelayRoster();
+            RelRoster.Text = L10n.T("att.relay.roster")
+                .Replace("{list}", string.Join(", ", roster.Roster))
+                .Replace("{c}", roster.Ceiling);
+            RelRoster.Visibility = Visibility.Visible;
+        }
+        catch { /* leave as-is */ }
+        try
+        {
+            var rota = await ApiClient.Shared.RelayRota();
+            RelRota.Text = $"{string.Join(", ", rota.OnNow)} · {rota.Timezone}"
+                + $" — {rota.Note}";
+            RelRota.Visibility = Visibility.Visible;
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private void ShowBeaconError(string message)
+    {
+        BcnError.Text = message;
+        BcnError.Visibility = Visibility.Visible;
     }
 }

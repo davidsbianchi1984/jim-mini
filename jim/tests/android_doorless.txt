@@ -1,8 +1,3 @@
-DELETE /beacons/{bid}
-DELETE /robots/{user_id}/{robot_id}
-DELETE /social/connection/{cid}
-GET /c/{bid}
-GET /c/{bid}/card
 GET /c/{bid}/qr.svg
 GET /community/{user_id}/feed
 GET /community/{user_id}/visits
@@ -10,16 +5,9 @@ GET /excursions/entry/{cid}
 GET /excursions/{user_id}
 GET /health
 GET /pair/qr.svg
-GET /relay/channel
-GET /relay/roster
-GET /relay/rota
-GET /social/connection/{cid}/beacon
 GET /social/connection/{cid}/qr.svg
-GET /users/{user_id}/beacons
-POST /c/{bid}/alarm
 POST /excursions/entry/{cid}/learn
 POST /excursions/{user_id}
-POST /users/{user_id}/beacons
 POST /voice/speak
 POST /voice/transcribe
 POST /watch/drip/{token}

@@ -107,6 +107,7 @@ private struct SocialSection: View {
     @State private var handle = ""
     @State private var conns: [SocialConn] = []
     @State private var status: String?
+    @State private var shownBeacon: SocialBeacon?
     @State private var error: String?
 
     private let platforms = ["instagram", "x", "tiktok", "facebook", "linkedin",
@@ -148,11 +149,40 @@ private struct SocialSection: View {
                         } else {
                             smallButton(L10n.t("jcon.publish.update", state.language)) { publish(c) }
                         }
+                        Button(L10n.t("rch.acc.beacon", state.language)) { beacon(c) }
+                            .font(.caption2).foregroundStyle(Theme.brandA)
+                        Button(L10n.t("rch.acc.disconnect", state.language)) { disconnect(c) }
+                            .font(.caption2).foregroundStyle(Theme.red)
+                    }
+                    if let shown = shownBeacon, shown.connection == c.id {
+                        Text("\(shown.handle) → \(shown.presence_url)")
+                            .font(.caption2).foregroundStyle(Theme.t2)
                     }
                 }.card()
             }
         }
         .task { await load() }
+    }
+
+    private func beacon(_ c: SocialConn) {
+        guard let token = state.token else { return }
+        Task {
+            do {
+                shownBeacon = try await ApiClient.shared.socialBeacon(
+                    cid: c.id, token: token)
+            } catch { self.error = error.localizedDescription }
+        }
+    }
+
+    private func disconnect(_ c: SocialConn) {
+        guard let token = state.token else { return }
+        Task {
+            do {
+                _ = try await ApiClient.shared.disconnectSocial(cid: c.id,
+                                                                token: token)
+                await load()
+            } catch { self.error = error.localizedDescription }
+        }
     }
 
     private func smallButton(_ label: String, _ action: @escaping () -> Void) -> some View {

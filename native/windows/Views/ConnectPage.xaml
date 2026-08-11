@@ -265,6 +265,12 @@
                                             <Button Content="{Binding PublishUpdateLabel}" Tag="{Binding Id}" Click="OnPublish"
                                                     Visibility="{Binding PublishVisibility}"
                                                     Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
+                                            <Button Content="{Binding BeaconLabel}" Tag="{Binding Id}" Click="OnSocialBeacon"
+                                                    Background="Transparent" FontSize="12"
+                                                    Foreground="{StaticResource JimBrandABrush}" />
+                                            <Button Content="{Binding DisconnectLabel}" Tag="{Binding Id}" Click="OnSocialDisconnect"
+                                                    Background="Transparent" FontSize="12"
+                                                    Foreground="{StaticResource JimRedBrush}" />
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>

@@ -61,6 +61,47 @@
                                Foreground="{StaticResource JimT2Brush}" />
                     <TextBlock x:Name="AlarmNotEmergency" TextWrapping="Wrap" FontSize="11"
                                Foreground="{StaticResource JimT2Brush}" />
+
+                    <!-- The sticker and the relay: beacons a stranger can
+                         scan, and the relay that escalates people. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="BcnHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="BcnPitch" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <StackPanel x:Name="BcnRows" Spacing="4" />
+                            <TextBlock x:Name="BcnCardName" FontWeight="Bold" FontSize="12" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="BcnCardNote" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="BcnCardBadge" FontSize="10" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <Button x:Name="BcnRaiseButton" Click="OnRaiseBeaconAlarm" Visibility="Collapsed"
+                                    Background="Transparent" FontSize="12"
+                                    Foreground="{StaticResource JimRedBrush}" />
+                            <TextBlock x:Name="BcnAlarmLine" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimAmberBrush}" />
+                            <TextBox x:Name="BcnLabel" />
+                            <TextBox x:Name="BcnWhere" />
+                            <Button x:Name="BcnPlaceButton" Click="OnPlaceBeacon" Foreground="White"
+                                    Background="{StaticResource JimBrandABrush}" />
+
+                            <TextBlock x:Name="RelHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="RelChannel" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="RelChannelNote" FontSize="10" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <TextBlock x:Name="RelRoster" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="RelRota" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <TextBlock x:Name="BcnError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimRedBrush}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>
@@ -346,6 +387,9 @@
                                         </Grid>
                                         <TextBlock Text="{Binding Directive}" FontSize="12"
                                                    Foreground="{StaticResource JimT2Brush}" />
+                                        <Button Content="{Binding UnbindLabel}" Tag="{Binding Id}"
+                                                Click="OnUnbindRobot" Background="Transparent" FontSize="11"
+                                                Foreground="{StaticResource JimRedBrush}" />
                                         <StackPanel Orientation="Horizontal" Spacing="6"
                                                     Visibility="{Binding AssistVisibility}">
                                             <Button Content="{Binding AedLabel}" Tag="{Binding Id}" Click="OnFetchAed"

@@ -629,6 +629,10 @@ public sealed class ApiClient
 
     public void SetBase(string url) => _http.BaseAddress = new Uri(url.TrimEnd('/'));
 
+    /// The address this client talks to — for the rare door that hands a
+    /// page to the system browser instead of reading it itself.
+    public Uri Base => _http.BaseAddress!;
+
 
     /// <summary>What the deployment can and cannot reach. Read-only: the
     /// posture is set in the deployment's environment, not in the app.</summary>
@@ -2101,6 +2105,70 @@ public sealed class ApiClient
     public Task<MembershipView> CancelMembership(string uid, string token) =>
         Send<MembershipView>(new HttpRequestMessage(HttpMethod.Delete,
             $"/memberships/{uid}"), token);
+
+    // ---- the sticker and the relay ----
+
+    /// A sticker someone can scan to reach help on your behalf.
+    public Task<BeaconRow[]> Beacons(string uid, string token) =>
+        Send<BeaconRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/beacons"), token);
+
+    public Task<BeaconRow> PlaceBeacon(string uid, string token, string label,
+                                       string placement) =>
+        Send<BeaconRow>(Post($"/users/{uid}/beacons",
+            placement is { Length: > 0 }
+                ? new { kind = "site", label, placement }
+                : (object)new { kind = "site", label }, token));
+
+    public Task<BeaconRetired> RetireBeacon(string bid, string token) =>
+        Send<BeaconRetired>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/beacons/{bid}"), token);
+
+    /// What a stranger sees before deciding to raise the alarm — public on
+    /// purpose, the scanner has no account.
+    public Task<BeaconCardOut> BeaconCard(string bid) =>
+        Send<BeaconCardOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/c/{bid}/card"));
+
+    public Task<BeaconAlarm> RaiseBeaconAlarm(string bid) =>
+        Send<BeaconAlarm>(Post($"/c/{bid}/alarm", new { }));
+
+    /// The scanned page itself is HTML for a stranger's browser; fetching it
+    /// proves the door is live before handing it to the system one.
+    public async Task<BeaconPage> ScannedBeaconPage(string bid)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/c/{bid}");
+        var res = await Dispatch(req);
+        var html = await res.Content.ReadAsStringAsync();
+        var page = res.RequestMessage?.RequestUri
+                   ?? new Uri(Base, req.RequestUri!.ToString());
+        return new BeaconPage(html, page);
+    }
+
+    public Task<RelayChannel> RelayChannel() =>
+        Send<RelayChannel>(new HttpRequestMessage(HttpMethod.Get,
+            "/relay/channel"));
+
+    public Task<RelayRoster> RelayRoster() =>
+        Send<RelayRoster>(new HttpRequestMessage(HttpMethod.Get,
+            "/relay/roster"));
+
+    public Task<RelayRota> RelayRota() =>
+        Send<RelayRota>(new HttpRequestMessage(HttpMethod.Get,
+            "/relay/rota"));
+
+    public Task<SocialBeacon> SocialBeacon(string cid, string token) =>
+        Send<SocialBeacon>(new HttpRequestMessage(HttpMethod.Get,
+            $"/social/connection/{cid}/beacon"), token);
+
+    public Task<SocialGone> DisconnectSocial(string cid, string token) =>
+        Send<SocialGone>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/social/connection/{cid}"), token);
+
+    public Task<RobotUnbound> UnbindRobot(string uid, string token,
+                                          string robotId) =>
+        Send<RobotUnbound>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/robots/{uid}/{robotId}"), token);
 }
 
 public record MoneyAccount(
@@ -2940,3 +3008,64 @@ public record MembershipView(
     [property: JsonPropertyName("includes")] string[] Includes,
     [property: JsonPropertyName("locked")] string[] Locked,
     [property: JsonPropertyName("storage")] StoragePosture Storage);
+
+public record BeaconRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("placement")] string? Placement,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("scans")] int Scans,
+    [property: JsonPropertyName("active")] bool Active,
+    [property: JsonPropertyName("scan_url")] string ScanUrl);
+
+public record BeaconCardOut(
+    [property: JsonPropertyName("beacon")] string Beacon,
+    [property: JsonPropertyName("first_name")] string? FirstName,
+    [property: JsonPropertyName("watched")] bool? Watched,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("badge")] string? Badge,
+    [property: JsonPropertyName("call_first")] string? CallFirst);
+
+public record BeaconAlarm(
+    [property: JsonPropertyName("alarm")] string Alarm,
+    [property: JsonPropertyName("raised")] bool Raised,
+    [property: JsonPropertyName("tier")] string? Tier,
+    [property: JsonPropertyName("badge")] string? Badge,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record BeaconRetired(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("active")] bool Active);
+
+public record RelayChannel(
+    [property: JsonPropertyName("configured")] bool Configured,
+    [property: JsonPropertyName("envelope")] string? Envelope,
+    [property: JsonPropertyName("note")] string Note);
+
+public record RelayRoster(
+    [property: JsonPropertyName("configured")] bool Configured,
+    [property: JsonPropertyName("roster")] string[] Roster,
+    [property: JsonPropertyName("ceiling")] string Ceiling,
+    [property: JsonPropertyName("note")] string Note);
+
+public record RelayRota(
+    [property: JsonPropertyName("configured")] bool Configured,
+    [property: JsonPropertyName("timezone")] string Timezone,
+    [property: JsonPropertyName("on_now")] string[] OnNow,
+    [property: JsonPropertyName("anybody_on_shift")] bool AnybodyOnShift,
+    [property: JsonPropertyName("note")] string Note);
+
+public record SocialBeacon(
+    [property: JsonPropertyName("connection")] string Connection,
+    [property: JsonPropertyName("platform")] string Platform,
+    [property: JsonPropertyName("handle")] string Handle,
+    [property: JsonPropertyName("presence_url")] string PresenceUrl);
+
+public record SocialGone(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("status")] string Status);
+
+public record RobotUnbound(
+    [property: JsonPropertyName("id")] string? Id);
+
+public record BeaconPage(string Html, Uri Page);
