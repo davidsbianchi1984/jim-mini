@@ -37,11 +37,14 @@ import pytest
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 README = REPO / "README.md"
+GALLERY = REPO / "docs" / "gallery.md"
 
 TABLE = re.compile(r"<table>(.*?)</table>", re.S)
 ROW = re.compile(r"<tr>(.*?)</tr>", re.S)
 CELL = re.compile(r"<td\b.*?</td>", re.S)
-PICTURE = re.compile(r'<img src="docs/([\w/]+)/')
+# The README says `docs/<folder>/…`; the gallery page lives inside docs/
+# and says `<folder>/…` — a link is relative to the file it renders from.
+PICTURE = re.compile(r'<img src="(?:docs/)?([\w/]+)/')
 
 # Screens and watch faces are small enough to sit four across on a phone.
 # Desktop frames are not, and go two.
@@ -50,7 +53,8 @@ ACROSS = {"screens": 4, "watch": 4, "desktop": 2}
 
 def _galleries():
     """(folder, [row lengths]) for every table that is a list of pictures."""
-    src = README.read_text(encoding="utf-8")
+    src = (GALLERY.read_text(encoding="utf-8") + "\n"
+           + README.read_text(encoding="utf-8"))
     for table in TABLE.findall(src):
         rows = [CELL.findall(r) for r in ROW.findall(table)]
         cells = [c for row in rows for c in row]
