@@ -1,5 +1,5 @@
-# status: backlog — 2 rows
-# ceiling: 2
+# status: backlog — 0 rows
+# ceiling: 0
 #
 # Accessibility gaps this product knows about and has not yet closed. One
 # gap per line, stated as what a person meets, not as a component name.
@@ -14,6 +14,3 @@
 #
 # What does NOT belong here: gaps in claims the statement makes. Those are
 # defects to fix now, not backlog — the statement only says what is true.
-
-console: coach and check-in replies appear with no aria-live region, so a screen reader is not told an answer arrived
-shells: ios/android/windows carry the report form and its lead, not the per-need statement the console shows

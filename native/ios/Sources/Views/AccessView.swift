@@ -24,6 +24,18 @@ struct AccessCard: View {
             Text(L10n.t("ns.acc.lead", state.language))
                 .font(.caption).foregroundStyle(Theme.t2)
 
+            // The per-need statement the console makes, not just its form:
+            // who is expected here, named need by need.
+            Text(L10n.t("ns.acc.needs.title", state.language))
+                .font(.caption.bold()).foregroundStyle(Theme.txt)
+            ForEach(["blind", "deaf", "mute", "motor", "cognitive",
+                     "dyslexia", "motion"], id: \.self) { need in
+                Text("• " + L10n.t("ns.acc.needs.\(need)", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            Text(L10n.t("ns.acc.needs.more", state.language))
+                .font(.caption2).italic().foregroundStyle(Theme.t2)
+
             field(L10n.t("ns.acc.doing.ph", state.language), text: $doing)
             field(L10n.t("ns.acc.wall.ph", state.language), text: $wall)
             field(L10n.t("ns.acc.help.ph", state.language), text: $help)

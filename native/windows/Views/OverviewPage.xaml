@@ -146,6 +146,13 @@
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="AccLead"
                                Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                    <!-- The per-need statement the console makes, not just its form. -->
+                    <TextBlock x:Name="AccNeedsTitle" FontWeight="Bold" FontSize="13"
+                               Foreground="{StaticResource JimTxtBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="AccNeedsList"
+                               Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                    <TextBlock x:Name="AccNeedsMore" FontStyle="Italic"
+                               Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
                     <TextBox x:Name="AccDoing" TextWrapping="Wrap" AcceptsReturn="True" Height="56" />
                     <TextBox x:Name="AccWall" TextWrapping="Wrap" AcceptsReturn="True" Height="72" />
                     <TextBox x:Name="AccHelp" TextWrapping="Wrap" AcceptsReturn="True" Height="56" />

@@ -38,8 +38,10 @@ export function Checkin() {
         <button className="primary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save check-in"}</button>
         {error && <div className="error">⚠ {error}</div>}
       </div>
+      {/* role=status + aria-live: the check-in's verdict is announced to a
+          screen reader instead of appearing silently below the sliders. */}
       {result && (
-        <div className="card">
+        <div className="card" role="status" aria-live="polite">
           <h3>{tr("chk.logged", lang)}</h3>
           <div className="muted small">{tr("chk.result", lang)
             .replace("{mood}", String(result.mood))

@@ -84,6 +84,12 @@ public sealed partial class OverviewPage : Page
         ImproveMineHeader.Text = L10n.T("ov.fb.yours");
         AccHead.Text = L10n.T("ns.acc");
         AccLead.Text = L10n.T("ns.acc.lead");
+        AccNeedsTitle.Text = L10n.T("ns.acc.needs.title");
+        AccNeedsList.Text = string.Join("\n", new[]
+        {
+            "blind", "deaf", "mute", "motor", "cognitive", "dyslexia", "motion",
+        }.Select(need => "• " + L10n.T($"ns.acc.needs.{need}")));
+        AccNeedsMore.Text = L10n.T("ns.acc.needs.more");
         AccDoing.PlaceholderText = L10n.T("ns.acc.doing.ph");
         AccWall.PlaceholderText = L10n.T("ns.acc.wall.ph");
         AccHelp.PlaceholderText = L10n.T("ns.acc.help.ph");

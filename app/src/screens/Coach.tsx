@@ -95,8 +95,10 @@ export function Coach() {
         </div>
         {error && <div className="error">⚠ {error}</div>}
       </div>
+      {/* role=status + aria-live: a screen reader is told the coach's
+          answer arrived, instead of the card appearing silently. */}
       {reply?.content && (
-        <div className="card guidance">
+        <div className="card guidance" role="status" aria-live="polite">
           <div className="guidance-src">{tr("cch.guidance", lang)
             .replace("{area}", area.replace("_", " "))}</div>
           <p>{reply.content}</p>
@@ -138,7 +140,7 @@ export function Coach() {
       )}
 
       {fromSpecialist && (
-        <div className="card guidance">
+        <div className="card guidance" role="status" aria-live="polite">
           <div className="guidance-src">
             {fromSpecialist.specialist?.label || tr("spec.fallback", lang)} · {tr("spec.via", lang)}
           </div>

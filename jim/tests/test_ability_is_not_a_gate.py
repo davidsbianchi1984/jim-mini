@@ -104,3 +104,52 @@ def test_the_a11y_backlog_only_shrinks():
         "added without raising the ceiling in the same deliberate edit")
     for row in rows:
         assert ": " in row, f"a backlog row names no surface: {row!r}"
+
+
+def test_the_coach_and_the_checkin_tell_the_screen_reader():
+    """A struck backlog row, held shut: the coach's guidance cards and the
+    check-in's verdict are aria-live regions, so a screen reader hears the
+    answer arrive instead of sitting in silence wondering."""
+    coach = (CONSOLE / "screens" / "Coach.tsx").read_text(encoding="utf-8")
+    checkin = (CONSOLE / "screens" / "Checkin.tsx").read_text(encoding="utf-8")
+    assert coach.count('aria-live=') >= 2, (
+        "Coach.tsx lost an aria-live region (guidance or specialist card)")
+    assert 'aria-live=' in checkin, (
+        "Checkin.tsx lost its aria-live result region")
+
+
+def test_the_shells_carry_the_statement():
+    """A struck backlog row, held shut: the phones and the desktop carry
+    the same per-need statement the console makes — every named need, in
+    every supported language — not just the report form under a lead."""
+    needs = ["title", "blind", "deaf", "mute", "motor", "cognitive",
+             "dyslexia", "motion", "more"]
+    langs = ["en", "es", "fr", "de", "pt", "it", "ja", "zh", "hi", "ar"]
+    l10n_files = [
+        REPO / "native" / "ios" / "Sources" / "L10n.swift",
+        REPO / "native" / "android" / "app" / "src" / "main" / "java"
+             / "app" / "jim" / "guardian" / "L10n.kt",
+        REPO / "native" / "windows" / "L10n.cs",
+    ]
+    for path in l10n_files:
+        src = path.read_text(encoding="utf-8")
+        for need in needs:
+            key_line = next((line for line in src.splitlines()
+                             if f"ns.acc.needs.{need}" in line), None)
+            assert key_line, f"{path.name} lacks ns.acc.needs.{need}"
+            for lang in langs:
+                assert f'"{lang}"' in key_line, (
+                    f"{path.name} ns.acc.needs.{need} lacks {lang}")
+    views = [
+        REPO / "native" / "ios" / "Sources" / "Views" / "AccessView.swift",
+        REPO / "native" / "android" / "app" / "src" / "main" / "java"
+             / "app" / "jim" / "guardian" / "ui" / "Screens.kt",
+        REPO / "native" / "windows" / "Views" / "OverviewPage.xaml.cs",
+    ]
+    for path in views:
+        src = path.read_text(encoding="utf-8")
+        assert "ns.acc.needs.title" in src and "ns.acc.needs.more" in src, (
+            f"{path.name} shows the form without the statement")
+        for need in ["blind", "deaf", "mute", "motor", "cognitive",
+                     "dyslexia", "motion"]:
+            assert need in src, f"{path.name} dropped the need {need!r}"
