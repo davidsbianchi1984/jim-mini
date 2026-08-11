@@ -13,6 +13,8 @@ public sealed partial class WelcomePage : Page
     public WelcomePage()
     {
         InitializeComponent();
+        HeroText.Text = L10n.T("nw.hero");
+        PitchLine.Text = L10n.T("nw.pitch");
         NameBox.Header = L10n.T("nw.name");
         NameBox.PlaceholderText = L10n.T("res.name");
         BirthBox.Header = L10n.T("nw.birthdate");

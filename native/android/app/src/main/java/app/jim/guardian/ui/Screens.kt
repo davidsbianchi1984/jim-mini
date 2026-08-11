@@ -231,9 +231,9 @@ fun WelcomeScreen(vm: GuardianViewModel) {
                 contentAlignment = Alignment.Center) {
                 Text("🛡", fontSize = 34.sp)
             }
-            Text("Your Guardian, always here", color = Jim.Txt, fontSize = 22.sp,
+            Text(L10n.t("nw.hero", language), color = Jim.Txt, fontSize = 22.sp,
                 fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
-            Text("Monitor, predict, guide, escalate — grounded in your baseline, on your device.",
+            Text(L10n.t("nw.pitch", language),
                 color = Jim.T2, fontSize = 13.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
 
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(12.dp)) {

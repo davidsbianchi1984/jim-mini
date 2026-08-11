@@ -26,8 +26,8 @@ struct WelcomeView: View {
                     .padding(.top, 40)
 
                 VStack(spacing: 6) {
-                    Text("Your Guardian, always here").font(.title2.bold()).foregroundStyle(Theme.txt)
-                    Text("Monitor, predict, guide, escalate — grounded in your baseline, on your device.")
+                    Text(L10n.t("nw.hero", language)).font(.title2.bold()).foregroundStyle(Theme.txt)
+                    Text(L10n.t("nw.pitch", language))
                         .font(.footnote).foregroundStyle(Theme.t2)
                         .multilineTextAlignment(.center)
                 }

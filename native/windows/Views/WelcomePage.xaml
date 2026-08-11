@@ -15,9 +15,9 @@
                     </LinearGradientBrush>
                 </Ellipse.Fill>
             </Ellipse>
-            <TextBlock Text="Your Guardian, always here" FontSize="22" FontWeight="Bold"
+            <TextBlock x:Name="HeroText" FontSize="22" FontWeight="Bold"
                        Foreground="{StaticResource JimTxtBrush}" HorizontalAlignment="Center" TextWrapping="Wrap" />
-            <TextBlock Text="Monitor, predict, guide, escalate — grounded in your baseline, on your device."
+            <TextBlock x:Name="PitchLine"
                        FontSize="13" Foreground="{StaticResource JimT2Brush}" HorizontalAlignment="Center"
                        TextAlignment="Center" TextWrapping="Wrap" />
 

@@ -15,15 +15,17 @@ struct ImproveCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Help us improve").font(.headline).foregroundStyle(Theme.txt)
-            Text("Tell us how to make the app better — an idea, a rough edge, a bug, or what you love. It goes straight to the team.")
+            Text(L10n.t("ov.fb", state.language)).font(.headline).foregroundStyle(Theme.txt)
+            Text(L10n.t("ov.fb.sub", state.language))
                 .font(.caption).foregroundStyle(Theme.t2)
 
             Picker("", selection: $category) {
-                ForEach(categories, id: \.self) { Text($0.capitalized).tag($0) }
+                ForEach(categories, id: \.self) {
+                    Text(catLabel($0)).tag($0)
+                }
             }.pickerStyle(.segmented)
 
-            TextField(L10n.t("coach.msg.ph", state.language), text: $message,
+            TextField(L10n.t("ov.fb.placeholder", state.language), text: $message,
                       axis: .vertical)
                 .lineLimit(2...5).foregroundStyle(Theme.txt)
                 .padding(10).background(Theme.scrBot)
@@ -31,7 +33,7 @@ struct ImproveCard: View {
                 .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
 
             HStack(spacing: 6) {
-                Text("Rating").font(.caption).foregroundStyle(Theme.t2)
+                Text(L10n.t("ov.fb.rating", state.language)).font(.caption).foregroundStyle(Theme.t2)
                 ForEach(1...5, id: \.self) { n in
                     Button { rating = (rating == n ? 0 : n) } label: {
                         Image(systemName: n <= rating ? "star.fill" : "star")
@@ -40,7 +42,7 @@ struct ImproveCard: View {
                 }
             }
 
-            Button("Send feedback") { send() }
+            Button(L10n.t("ov.fb.send", state.language)) { send() }
                 .font(.caption.bold()).foregroundStyle(.white)
                 .padding(.horizontal, 12).padding(.vertical, 9)
                 .background(Theme.brandA).clipShape(Capsule())
@@ -50,12 +52,13 @@ struct ImproveCard: View {
 
             if let st, st.total > 0 {
                 Divider().overlay(Theme.line)
-                Text("So far: " + categories.compactMap { c in
+                Text(L10n.t("ov.fb.sofar", state.language) + " "
+                     + categories.compactMap { c in
                     (st.tally[c] ?? 0) > 0 ? "\(st.tally[c]!) \(c)" : nil
                 }.joined(separator: " · "))
                     .font(.caption2).foregroundStyle(Theme.t3)
                 if !st.mine.isEmpty {
-                    Text("Yours").font(.caption.bold()).foregroundStyle(Theme.txt)
+                    Text(L10n.t("ov.fb.yours", state.language)).font(.caption.bold()).foregroundStyle(Theme.txt)
                     ForEach(st.mine.prefix(4)) { f in
                         HStack {
                             Text("[\(f.category)] \(f.message)")
@@ -71,6 +74,19 @@ struct ImproveCard: View {
         .task { await load() }
     }
 
+    /// The wire word stays the tag; the label is the table's. Literal
+    /// keys on purpose — the key guard reads them, and a spliced key is
+    /// one it cannot.
+    private func catLabel(_ category: String) -> String {
+        switch category {
+        case "idea": return L10n.t("ov.fb.cat.idea", state.language)
+        case "improvement": return L10n.t("ov.fb.cat.improvement", state.language)
+        case "bug": return L10n.t("ov.fb.cat.bug", state.language)
+        case "praise": return L10n.t("ov.fb.cat.praise", state.language)
+        default: return L10n.t("ov.fb.cat.other", state.language)
+        }
+    }
+
     private func load() async {
         st = try? await ApiClient.shared.improvements(token: state.token)
     }
@@ -82,7 +98,7 @@ struct ImproveCard: View {
                     category: category,
                     message: message.trimmingCharacters(in: .whitespaces),
                     rating: rating == 0 ? nil : rating, token: state.token)
-                status = "Thank you — sent."
+                status = L10n.t("ov.fb.thanks", state.language)
                 message = ""; rating = 0
             } catch { status = error.localizedDescription }
             await load()
