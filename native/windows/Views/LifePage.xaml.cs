@@ -19,7 +19,10 @@ public sealed partial class LifePage : Page
         public Visibility DoneVisibility =>
             Active ? Visibility.Visible : Visibility.Collapsed;
     }
-    public record HabitRow(string Id, string Name, string Streak);
+    public record HabitRow(string Id, string Name, string Streak)
+    {
+        public string LogLabel => L10n.T("habit.log");
+    }
     public record JournalRow(string Text, string Date);
 
     public LifePage()
@@ -31,6 +34,19 @@ public sealed partial class LifePage : Page
         GoalsPivot.Header = L10n.T("life.goals");
         HabitsPivot.Header = L10n.T("life.habits");
         JournalPivot.Header = L10n.T("life.journal");
+        GoalNewHead.Text = L10n.T("goal.new");
+        GoalArea.Header = L10n.T("coach.area");
+        GoalTitle.Header = L10n.T("goal.title");
+        GoalTitle.PlaceholderText = L10n.T("goal.title.ph");
+        AddGoalButton.Content = L10n.T("goal.add");
+        HabitNewHead.Text = L10n.T("habit.new");
+        HabitName.Header = L10n.T("habit.name");
+        HabitName.PlaceholderText = L10n.T("habit.name.ph");
+        AddHabitButton.Content = L10n.T("habit.add");
+        JournalNewHead.Text = L10n.T("jrn.new");
+        JournalText.Header = L10n.T("jrn.entry");
+        JournalText.PlaceholderText = L10n.T("jrn.entry.ph");
+        SaveEntryButton.Content = L10n.T("jrn.save");
         LocalizeMeds();
         ActHead.Text = L10n.T("aim.activity");
         ActPitch.Text = L10n.T("aim.activity.pitch");
@@ -145,7 +161,9 @@ public sealed partial class LifePage : Page
         {
             var habits = await ApiClient.Shared.Habits(s.Uid!, s.Token!);
             HabitsList.ItemsSource = habits.Select(h =>
-                new HabitRow(h.Id, h.Name, $"🔥 {h.Streak ?? 0} day streak")).ToList();
+                new HabitRow(h.Id, h.Name,
+                    L10n.T("habit.streak")
+                        .Replace("{n}", $"{h.Streak ?? 0}"))).ToList();
         }
         catch { /* leave as-is */ }
     }

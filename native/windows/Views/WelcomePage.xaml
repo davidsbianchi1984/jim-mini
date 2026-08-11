@@ -24,8 +24,8 @@
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="12">
-                    <TextBox x:Name="NameBox" Header="Name" />
-                    <TextBox x:Name="BirthBox" Header="Birthdate (yyyy-MM-dd)" Text="1984-01-01" />
+                    <TextBox x:Name="NameBox" />
+                    <TextBox x:Name="BirthBox" Text="1984-01-01" />
                     <ComboBox x:Name="LanguageBox" HorizontalAlignment="Stretch" />
                     <CheckBox x:Name="ConsentBox"
                               Foreground="{StaticResource JimTxtBrush}" />
@@ -38,7 +38,7 @@
             <TextBlock x:Name="ErrorText" Foreground="{StaticResource JimRed}" FontSize="13"
                        TextWrapping="Wrap" Visibility="Collapsed" />
 
-            <Button x:Name="StartButton" Content="Get Started" HorizontalAlignment="Stretch"
+            <Button x:Name="StartButton" HorizontalAlignment="Stretch"
                     Height="46" Foreground="White" Click="OnStart">
                 <Button.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">

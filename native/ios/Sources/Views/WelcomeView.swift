@@ -33,11 +33,11 @@ struct WelcomeView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 14) {
-                    field("Name") {
+                    field(L10n.t("nw.name", language)) {
                         TextField(L10n.t("res.name", language), text: $name)
                             .textFieldStyle(.plain).foregroundStyle(Theme.txt)
                     }
-                    field("Birthdate") {
+                    field(L10n.t("nw.birthdate", language)) {
                         DatePicker("", selection: $birthdate, displayedComponents: .date)
                             .labelsHidden().colorScheme(.dark)
                     }
@@ -57,7 +57,7 @@ struct WelcomeView: View {
                 if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
 
                 Button(action: enroll) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Get Started").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("nw.start", language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 14)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 13))

@@ -13,7 +13,11 @@ public sealed partial class WelcomePage : Page
     public WelcomePage()
     {
         InitializeComponent();
+        NameBox.Header = L10n.T("nw.name");
         NameBox.PlaceholderText = L10n.T("res.name");
+        BirthBox.Header = L10n.T("nw.birthdate");
+        BirthBox.PlaceholderText = L10n.T("nw.birthdate.ph");
+        StartButton.Content = L10n.T("nw.start");
         LanguageBox.Header = L10n.T("ov.language");
         ConsentBox.Content = L10n.T("onb.consent");
         ModeUpButton.Content = L10n.T("onb.create");

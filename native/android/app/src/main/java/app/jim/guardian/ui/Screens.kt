@@ -1781,7 +1781,7 @@ private fun GoalsPanel(vm: GuardianViewModel) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("New goal", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("goal.new", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             areaChips(vm, area) { area = it }
             labeledField(L10n.t("goal.title", vm.language), title, L10n.t("goal.title.ph", vm.language)) { title = it }
             BrandButton(L10n.t("goal.add", vm.language), enabled = title.isNotBlank(), busy = busy) {
@@ -1821,7 +1821,7 @@ private fun HabitsPanel(vm: GuardianViewModel) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("New habit", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("habit.new", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             labeledField(L10n.t("habit.name", vm.language), name, L10n.t("habit.name.ph", vm.language)) { name = it }
             BrandButton(L10n.t("habit.add", vm.language), enabled = name.isNotBlank(), busy = busy) {
                 busy = true
@@ -1834,11 +1834,13 @@ private fun HabitsPanel(vm: GuardianViewModel) {
             Row(Modifier.card(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(h.name, color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text("🔥 ${h.streak ?: 0} day streak", color = Jim.Amber, fontSize = 12.sp)
+                    Text(L10n.t("habit.streak", vm.language)
+                        .replace("{n}", "${h.streak ?: 0}"),
+                        color = Jim.Amber, fontSize = 12.sp)
                 }
                 TextButton(onClick = {
                     vm.call({ ApiClient.logHabit(vm.uid!!, vm.token!!, h.id) }) { reload() }
-                }) { Text("Log", color = Jim.BrandA, fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+                }) { Text(L10n.t("habit.log", vm.language), color = Jim.BrandA, fontSize = 13.sp, fontWeight = FontWeight.Bold) }
             }
         }
     }
@@ -1854,7 +1856,7 @@ private fun JournalPanel(vm: GuardianViewModel) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("New entry", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("jrn.new", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             labeledField(L10n.t("jrn.entry", vm.language), text, L10n.t("jrn.entry.ph", vm.language)) { text = it }
             BrandButton(L10n.t("jrn.save", vm.language), enabled = text.isNotBlank(), busy = busy) {
                 busy = true

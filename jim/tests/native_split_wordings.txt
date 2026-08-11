@@ -1,4 +1,4 @@
-# status: backlog — 4 rows
+# status: backlog — 6 rows
 #
 # One English string carried by two or more keys whose ten translations do not
 # agree. Checked by test_the_same_sentence_translated_twice.py, matched exactly
@@ -46,8 +46,10 @@
 # must never say. The split stays on purpose, same category as the Name row:
 # one English phrase over two things the other nine languages tell apart.
 #
-# ceiling: 4
+# ceiling: 6
 android: habit.name med.name ns.med.name nw.name  ("Name" — a habit, a medicine, a person)
+windows: habit.name ns.med.name nw.name  ("Name" — the same deliberate split, joined when 0.61.x gave the habit form its header)
+ios: med.name ns.med.name nw.name  ("Name" — the same split again; nw.name joined the iOS table when the Welcome form got its keys)
 ios: att.sit.end hld.end  ("End it" — a login session, a crisis hold)
 android: att.sit.end hld.end  ("End it" — a login session, a crisis hold)
 windows: att.sit.end hld.end  ("End it" — a login session, a crisis hold)

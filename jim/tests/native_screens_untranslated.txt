@@ -109,6 +109,6 @@
 # sets say *Shops* and *Your circle*, which the desktop has been rendering all
 # along.
 
-ios: 32
-android: 38
-windows: 40
+ios: 20
+android: 33
+windows: 26

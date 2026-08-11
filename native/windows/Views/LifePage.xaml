@@ -14,7 +14,9 @@
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <ComboBox x:Name="GoalArea" Header="Area" SelectedIndex="5" HorizontalAlignment="Stretch">
+                            <TextBlock x:Name="GoalNewHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <ComboBox x:Name="GoalArea" SelectedIndex="5" HorizontalAlignment="Stretch">
                                 <ComboBoxItem Content="mental_health" />
                                 <ComboBoxItem Content="health_fitness" />
                                 <ComboBoxItem Content="career" />
@@ -22,8 +24,8 @@
                                 <ComboBoxItem Content="relationships" />
                                 <ComboBoxItem Content="personal_growth" />
                             </ComboBox>
-                            <TextBox x:Name="GoalTitle" Header="Title" PlaceholderText="What do you want to achieve?" />
-                            <Button Content="Add goal" HorizontalAlignment="Stretch" Height="42"
+                            <TextBox x:Name="GoalTitle" />
+                            <Button x:Name="AddGoalButton" HorizontalAlignment="Stretch" Height="42"
                                     Foreground="White" Click="OnAddGoal">
                                 <Button.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -81,8 +83,10 @@
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <TextBox x:Name="HabitName" Header="Name" PlaceholderText="e.g. Walk 20 minutes" />
-                            <Button Content="Add habit" HorizontalAlignment="Stretch" Height="42"
+                            <TextBlock x:Name="HabitNewHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="HabitName" />
+                            <Button x:Name="AddHabitButton" HorizontalAlignment="Stretch" Height="42"
                                     Foreground="White" Click="OnAddHabit">
                                 <Button.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -104,7 +108,7 @@
                                                        Foreground="{StaticResource JimTxtBrush}" />
                                             <TextBlock Text="{Binding Streak}" Foreground="{StaticResource JimT2Brush}" FontSize="12" />
                                         </StackPanel>
-                                        <Button Content="Log" Tag="{Binding Id}" Click="OnLogHabit"
+                                        <Button Content="{Binding LogLabel}" Tag="{Binding Id}" Click="OnLogHabit"
                                                 HorizontalAlignment="Right" VerticalAlignment="Center"
                                                 Background="Transparent" Foreground="{StaticResource JimBrandABrush}" />
                                     </Grid>
@@ -123,9 +127,11 @@
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <TextBox x:Name="JournalText" Header="Entry" PlaceholderText="How was today?"
+                            <TextBlock x:Name="JournalNewHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="JournalText"
                                      AcceptsReturn="True" TextWrapping="Wrap" Height="90" />
-                            <Button Content="Save entry" HorizontalAlignment="Stretch" Height="42"
+                            <Button x:Name="SaveEntryButton" HorizontalAlignment="Stretch" Height="42"
                                     Foreground="White" Click="OnAddJournal">
                                 <Button.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">

@@ -67,15 +67,15 @@ private struct GoalsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("New goal").font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("goal.new", state.language)).font(.headline).foregroundStyle(Theme.txt)
                 Picker("", selection: $area) {
                     ForEach(areas, id: \.self) { Text($0.replacingOccurrences(of: "_", with: " ").capitalized).tag($0) }
                 }.pickerStyle(.menu).tint(Theme.brandA)
-                TextField("What do you want to achieve?", text: $title).foregroundStyle(Theme.txt)
+                TextField(L10n.t("goal.title.ph", state.language), text: $title).foregroundStyle(Theme.txt)
                     .padding(10).background(Theme.scrBot).clipShape(RoundedRectangle(cornerRadius: 11))
                     .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
                 Button(action: add) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Add goal").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("goal.add", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -140,12 +140,12 @@ private struct HabitsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("New habit").font(.headline).foregroundStyle(Theme.txt)
-                TextField("e.g. Walk 20 minutes", text: $name).foregroundStyle(Theme.txt)
+                Text(L10n.t("habit.new", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                TextField(L10n.t("habit.name.ph", state.language), text: $name).foregroundStyle(Theme.txt)
                     .padding(10).background(Theme.scrBot).clipShape(RoundedRectangle(cornerRadius: 11))
                     .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
                 Button(action: add) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Add habit").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("habit.add", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -156,10 +156,12 @@ private struct HabitsSection: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(h.name).font(.subheadline.bold()).foregroundStyle(Theme.txt)
-                        Text("🔥 \(h.streak ?? 0) day streak").font(.caption).foregroundStyle(Theme.amber)
+                        Text(L10n.t("habit.streak", state.language)
+                                .replacingOccurrences(of: "{n}",
+                                                      with: String(h.streak ?? 0))).font(.caption).foregroundStyle(Theme.amber)
                     }
                     Spacer()
-                    Button("Log") { logHabit(h.id) }
+                    Button(L10n.t("habit.log", state.language)) { logHabit(h.id) }
                         .font(.caption.bold()).foregroundStyle(.white)
                         .padding(.horizontal, 14).padding(.vertical, 8)
                         .background(Theme.brandA).clipShape(Capsule())
@@ -198,13 +200,14 @@ private struct JournalSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("New entry").font(.headline).foregroundStyle(Theme.txt)
-                TextField("How was today?", text: $text, axis: .vertical)
+                Text(L10n.t("jrn.new", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                TextField(L10n.t("jrn.entry.ph", state.language), text: $text,
+                          axis: .vertical)
                     .lineLimit(2...5).foregroundStyle(Theme.txt)
                     .padding(10).background(Theme.scrBot).clipShape(RoundedRectangle(cornerRadius: 11))
                     .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
                 Button(action: add) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Save entry").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("jrn.save", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
