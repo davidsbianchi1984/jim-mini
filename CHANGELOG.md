@@ -4,6 +4,37 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.63.0] - 2026-08-11
+
+### Added
+
+- **The imported link, finally visited.** A `collect` connection has
+  carried the account's public address since the day it was made, and the
+  collect door only ever stored what the owner pasted.
+  `POST /social/connection/{cid}/scrape` goes to the address and ingests
+  what a browser would show anybody — the title, the metadata bio, the
+  visible text — as a `social:<platform>` context event, so the Guardian
+  understands more of the life it is looking after. An offline deployment
+  refuses before any socket opens (the gate lives inside the fetcher
+  itself, so a second caller added tomorrow inherits the check); a
+  connection without a handle is told so; publish connections do not
+  scrape. Doors on the console and all three shells, and the three
+  refusal tests share their names with the sibling products' copies of
+  the same door.
+
+### Fixed
+
+- **The console fits the phone it runs on.** The two field reports —
+  the portrait screen that did not fit, and the long landscape list that
+  stuck halfway and had to be forced — share one root: a grid item
+  refuses to shrink below its content, so the content pane grew past its
+  track, the app overflowed the viewport, and the page itself
+  half-scrolled instead of the pane. `min-height` and `min-width` zero
+  let the tracks clamp; the app height tracks `100dvh` where the browser
+  has it, so the bottom row sits above the URL bar; and the sidebar
+  scrolls on its own where a landscape phone gets the desktop column.
+  The same defect was in all three consoles and is fixed in all three.
+
 ## [0.62.0] - 2026-08-11
 
 ### Added
