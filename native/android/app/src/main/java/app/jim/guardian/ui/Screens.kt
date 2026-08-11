@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.jim.guardian.AccessReportRow
 import app.jim.guardian.AppConn
 import app.jim.guardian.BaselineMetric
 import app.jim.guardian.CatalogApp
