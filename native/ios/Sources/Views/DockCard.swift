@@ -87,7 +87,7 @@ struct DockCard: View {
                     Text(detail.shows).font(.caption2)
                         .foregroundStyle(Theme.t2)
                     if let place {
-                        Text("\u2192 \(place.title) \u00b7 \(place.screen)")
+                        Text("→ \(place.title) · \(place.screen)")
                             .font(.caption2).foregroundStyle(Theme.t3)
                     }
                 }
