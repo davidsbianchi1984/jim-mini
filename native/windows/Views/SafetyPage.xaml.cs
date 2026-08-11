@@ -148,6 +148,8 @@ public sealed partial class SafetyPage : Page
         await LoadPolicy();
         await LoadRobots();
         await LoadCrashWatch();
+        LocalizeVigil();
+        await SweepVigil();
     }
 
     // -- alarms --
@@ -641,4 +643,121 @@ public sealed partial class SafetyPage : Page
 
     private static string Cap(string s) =>
         string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s[1..];
+
+    // -- the vigil (console door since 0.8.0; this is the desktop's) --
+    //
+    // The alarm that fires on the ABSENCE of readings: a steward, named and
+    // worded in advance, is asked to check on the person when the signals
+    // stop. It never calls emergency services — it knocks on a door.
+
+    private void LocalizeVigil()
+    {
+        VgHead.Text = L10n.T("ns.vg.title");
+        VgPitch.Text = L10n.T("ns.vg.pitch");
+        VgOkayButton.Content = L10n.T("ns.vg.okay");
+        VgName.Header = L10n.T("ns.vg.name");
+        VgName.PlaceholderText = L10n.T("ns.vg.name.ph");
+        VgChannel.Header = L10n.T("ns.vg.reach");
+        VgChannel.PlaceholderText = L10n.T("ns.vg.reach.ph");
+        VgDays.Header = L10n.T("ns.vg.days");
+        VgWords.Header = L10n.T("ns.vg.words") + L10n.T("ns.vg.words.note");
+        VgWords.PlaceholderText = L10n.T("ns.vg.words.ph");
+        VgArmButton.Content = L10n.T("ns.vg.arm");
+        VgDisarmButton.Content = L10n.T("ns.vg.disarm");
+        VgCheckButton.Content = L10n.T("ns.vg.check");
+    }
+
+    private void RenderVigil(VigilState st)
+    {
+        VgError.Visibility = Visibility.Collapsed;
+        var tripped = st.Tripped == true;
+        VgTrippedNote.Visibility = tripped ? Visibility.Visible
+                                           : Visibility.Collapsed;
+        VgOkayButton.Visibility = tripped ? Visibility.Visible
+                                          : Visibility.Collapsed;
+        if (tripped)
+            VgTrippedNote.Text = L10n.T("ns.vg.tripped")
+                .Replace("{name}", st.StewardName ?? "")
+                .Replace("{after}", L10n.T("ns.vg.after")
+                    .Replace("{n}", (st.QuietDays ?? 0).ToString()));
+        VgArmedNote.Visibility = !tripped && st.Armed
+            ? Visibility.Visible : Visibility.Collapsed;
+        if (st.Armed)
+        {
+            VgArmedNote.Text = L10n.T("ns.vg.armed")
+                .Replace("{when}", st.SilentHours is { } h
+                    ? $"{(int)h} h" : "\u2014")
+                .Replace("{name}", st.StewardName ?? "");
+            if (VgName.Text.Length == 0) VgName.Text = st.StewardName ?? "";
+            if (VgChannel.Text.Length == 0)
+                VgChannel.Text = st.StewardChannel ?? "";
+            if (st.QuietDays is { } days) VgDays.Value = days;
+            if (VgWords.Text.Length == 0) VgWords.Text = st.Note ?? "";
+        }
+        VgArmButton.Content = st.Armed ? L10n.T("ns.vg.update")
+                                       : L10n.T("ns.vg.arm");
+        VgDisarmButton.Visibility = st.Armed ? Visibility.Visible
+                                             : Visibility.Collapsed;
+    }
+
+    private void ShowVigilError(Exception ex)
+    {
+        VgError.Text = ex.Message;
+        VgError.Visibility = Visibility.Visible;
+    }
+
+    /// Opening the screen sweeps — idempotent, trips at most once, and
+    /// opening the app is the natural moment to ask whether anybody has
+    /// gone quiet. Same choice the console made.
+    private async System.Threading.Tasks.Task SweepVigil()
+    {
+        var s = AppState.Current;
+        try { RenderVigil(await ApiClient.Shared.SweepVigil(s.Uid!, s.Token!)); }
+        catch { /* leave as-is */ }
+    }
+
+    private async void OnVigilArm(object sender, RoutedEventArgs e)
+    {
+        var name = VgName.Text.Trim();
+        var channel = VgChannel.Text.Trim();
+        if (name.Length == 0 || channel.Length == 0) return;
+        var s = AppState.Current;
+        try
+        {
+            RenderVigil(await ApiClient.Shared.ArmVigil(s.Uid!, s.Token!,
+                name, channel, VgDays.Value, VgWords.Text.Trim()));
+        }
+        catch (Exception ex) { ShowVigilError(ex); }
+    }
+
+    private async void OnVigilDisarm(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try
+        {
+            RenderVigil(await ApiClient.Shared.DisarmVigil(s.Uid!, s.Token!));
+        }
+        catch (Exception ex) { ShowVigilError(ex); }
+    }
+
+    /// A read, not a sweep — the way to look without acting.
+    private async void OnVigilCheck(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try
+        {
+            RenderVigil(await ApiClient.Shared.VigilStatus(s.Uid!, s.Token!));
+        }
+        catch (Exception ex) { ShowVigilError(ex); }
+    }
+
+    private async void OnVigilOkay(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try
+        {
+            RenderVigil(await ApiClient.Shared.ResolveVigil(s.Uid!, s.Token!));
+        }
+        catch (Exception ex) { ShowVigilError(ex); }
+    }
 }

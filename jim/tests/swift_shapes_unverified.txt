@@ -1,5 +1,5 @@
-# status: backlog — 27 rows
-# ceiling: 27
+# status: backlog — 29 rows
+# ceiling: 29
 #
 # iOS fields the Swift shape guard saw a route not return, which are real.
 #
@@ -62,3 +62,6 @@ CareTeamState.credential_held
 CareTeamState.latest_plan
 MicStateRow.note              # attach/handover/release send it; the state GET
                               # never does, and the struct is shared
+MedRow.taken_today            # only on as-needed rows; the fixture's first
+MedRow.max_per_day            # row is scheduled, and the checker reads the
+                              # first row of the list

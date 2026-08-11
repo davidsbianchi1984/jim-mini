@@ -22,6 +22,7 @@ public sealed partial class LifePage : Page
         GoalsPivot.Header = L10n.T("life.goals");
         HabitsPivot.Header = L10n.T("life.habits");
         JournalPivot.Header = L10n.T("life.journal");
+        LocalizeMeds();
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -33,6 +34,7 @@ public sealed partial class LifePage : Page
         await LoadSchedule();
         await LoadTandemShops();
         await LoadCircle();
+        await LoadMeds();
     }
 
     private static string Pretty(string s) =>
@@ -562,5 +564,248 @@ public sealed partial class LifePage : Page
             CircleStatus.Text = "";
         }
         catch (Exception ex) { CircleStatus.Text = ex.Message; }
+    }
+
+    // -- The medicine cabinet (console door since 0.9.0; this is the
+    //    desktop's). The board is rebuilt in code because a med row nests
+    //    slot rows with their own buttons, which an ItemsControl template
+    //    cannot express without a view-model layer this page doesn't have.
+
+    private void LocalizeMeds()
+    {
+        MedHead.Text = L10n.T("ns.med.title");
+        MedToday.Text = L10n.T("ns.med.today");
+        MedNone.Text = L10n.T("ns.med.none");
+        MedAdherenceButton.Content =
+            L10n.T("ns.med.last").Replace("{n}", "7");
+        MedAddToggle.Content = L10n.T("ns.med.add");
+        MedAddPitch.Text = L10n.T("ns.med.add.pitch");
+        MedName.Header = L10n.T("ns.med.name");
+        MedName.PlaceholderText = L10n.T("ns.med.name.ph");
+        MedDose.Header = L10n.T("ns.med.dose");
+        MedDose.PlaceholderText = L10n.T("ns.med.dose.ph");
+        MedPurpose.Header = L10n.T("ns.med.purpose");
+        MedPurpose.PlaceholderText = L10n.T("ns.med.purpose.ph");
+        MedAsNeeded.Content = L10n.T("ns.med.asneeded");
+        MedTimes.Header = L10n.T("ns.med.times") + L10n.T("ns.med.times.note");
+        MedCeiling.Header = L10n.T("ns.med.ceiling") + " "
+            + L10n.T("ns.med.ceiling.note");
+        MedCritical.Content = L10n.T("ns.med.critical");
+        MedAddButton.Content = L10n.T("ns.med.add");
+    }
+
+    private async System.Threading.Tasks.Task LoadMeds()
+    {
+        var s = AppState.Current;
+        try
+        {
+            RenderMeds(await ApiClient.Shared.MedsBoard(s.Uid!, s.Token!));
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private void RenderMeds(MedsBoard board)
+    {
+        MedError.Visibility = Visibility.Collapsed;
+        MedMissed.Visibility = board.MissedCritical.Length > 0
+            ? Visibility.Visible : Visibility.Collapsed;
+        if (board.MissedCritical.Length > 0)
+            MedMissed.Text = L10n.T("ns.med.missed").Replace("{list}",
+                string.Join(", ", board.MissedCritical.Select(
+                    m => $"{m.Name} ({m.Slot})")));
+        MedNone.Visibility = board.Medications.Length == 0
+            ? Visibility.Visible : Visibility.Collapsed;
+        MedDisclaimer.Text = board.Disclaimer;
+
+        MedRows.Children.Clear();
+        foreach (var med in board.Medications)
+        {
+            var row = new StackPanel { Spacing = 2 };
+            var head = new StackPanel
+            { Orientation = Orientation.Horizontal, Spacing = 8 };
+            head.Children.Add(new TextBlock
+            {
+                Text = $"{med.Name} · {med.Dose}",
+                FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                FontSize = 12,
+                Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                    Application.Current.Resources["JimTxtBrush"],
+            });
+            var stop = new Button
+            { Content = L10n.T("ns.med.stop"), FontSize = 11 };
+            var medId = med.Id;
+            stop.Click += async (_, _) =>
+            {
+                var st = AppState.Current;
+                try
+                {
+                    await ApiClient.Shared.StopMed(st.Uid!, st.Token!, medId);
+                    await LoadMeds();
+                }
+                catch (Exception ex) { ShowMedError(ex); }
+            };
+            head.Children.Add(stop);
+            row.Children.Add(head);
+            if (med.Purpose is { Length: > 0 })
+                row.Children.Add(SmallText(med.Purpose, "JimT2Brush", 11));
+            // The console's "worth a check-in" checkbox, as a toggle.
+            var critical = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
+            {
+                Content = L10n.T("ns.med.critical"),
+                FontSize = 10,
+                IsChecked = med.Critical,
+            };
+            var wasCritical = med.Critical;
+            critical.Click += async (_, _) =>
+            {
+                var st = AppState.Current;
+                try
+                {
+                    await ApiClient.Shared.SetMedCritical(st.Uid!, st.Token!,
+                                                          medId, !wasCritical);
+                    await LoadMeds();
+                }
+                catch (Exception ex) { ShowMedError(ex); }
+            };
+            row.Children.Add(critical);
+            if (med.Kind == "as_needed")
+            {
+                var line = new StackPanel
+                { Orientation = Orientation.Horizontal, Spacing = 8 };
+                line.Children.Add(SmallText(
+                    L10n.T("ns.med.asneeded.line")
+                        .Replace("{n}", (med.TakenToday ?? 0).ToString())
+                        .Replace("{max}", med.MaxPerDay is { } max
+                            ? L10n.T("ns.med.asneeded.max")
+                                .Replace("{max}", max.ToString())
+                            : ""),
+                    "JimT2Brush", 11));
+                var take = new Button
+                { Content = L10n.T("ns.med.tookone"), FontSize = 11 };
+                take.Click += (_, _) => LogDose(medId, "taken", null);
+                line.Children.Add(take);
+                row.Children.Add(line);
+            }
+            else foreach (var slot in med.Slots ?? Array.Empty<MedSlot>())
+            {
+                var line = new StackPanel
+                { Orientation = Orientation.Horizontal, Spacing = 8 };
+                line.Children.Add(SmallText($"{slot.Slot} · {slot.Status}",
+                    slot.Status == "missed" ? "JimAmberBrush" : "JimT2Brush",
+                    11));
+                if (slot.Status is "due" or "missed")
+                {
+                    var slotName = slot.Slot;
+                    var take = new Button
+                    { Content = L10n.T("ns.med.take"), FontSize = 11 };
+                    take.Click += (_, _) => LogDose(medId, "taken", slotName);
+                    var skip = new Button
+                    { Content = L10n.T("ns.med.skip"), FontSize = 11 };
+                    skip.Click += (_, _) => LogDose(medId, "skipped", slotName);
+                    line.Children.Add(take);
+                    line.Children.Add(skip);
+                }
+                row.Children.Add(line);
+            }
+            MedRows.Children.Add(row);
+        }
+    }
+
+    private static TextBlock SmallText(string text, string brush, int size) =>
+        new()
+        {
+            Text = text,
+            FontSize = size,
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                Application.Current.Resources[brush],
+        };
+
+    private void ShowMedError(Exception ex)
+    {
+        MedError.Text = ex.Message;
+        MedError.Visibility = Visibility.Visible;
+    }
+
+    private async void LogDose(string medId, string action, string? slot)
+    {
+        var s = AppState.Current;
+        try
+        {
+            // The log answers with the refreshed board — one round trip.
+            RenderMeds(await ApiClient.Shared.LogDose(s.Uid!, s.Token!,
+                                                      medId, action, slot));
+        }
+        catch (Exception ex) { ShowMedError(ex); }
+    }
+
+    private async void OnMedAdherence(object sender, RoutedEventArgs e)
+    {
+        if (MedAdherenceRows.Visibility == Visibility.Visible)
+        {
+            MedAdherenceRows.Visibility = Visibility.Collapsed;
+            return;
+        }
+        var s = AppState.Current;
+        try
+        {
+            var adherence = await ApiClient.Shared.MedAdherence(s.Uid!,
+                                                                s.Token!);
+            MedAdherenceRows.Children.Clear();
+            foreach (var row in adherence.Medications)
+                MedAdherenceRows.Children.Add(SmallText(
+                    $"{row.Name} — " + L10n.T("ns.med.of")
+                        .Replace("{taken}", row.Taken.ToString())
+                        .Replace("{expected}", row.Expected.ToString()),
+                    "JimT2Brush", 11));
+            MedAdherenceRows.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowMedError(ex); }
+    }
+
+    private void OnMedAddToggle(object sender, RoutedEventArgs e) =>
+        MedAddForm.Visibility = MedAddForm.Visibility == Visibility.Visible
+            ? Visibility.Collapsed : Visibility.Visible;
+
+    private void OnMedAsNeededToggle(object sender, RoutedEventArgs e)
+    {
+        var asNeeded = MedAsNeeded.IsChecked == true;
+        MedTimes.Visibility = asNeeded ? Visibility.Collapsed
+                                       : Visibility.Visible;
+        MedCeiling.Visibility = asNeeded ? Visibility.Visible
+                                         : Visibility.Collapsed;
+    }
+
+    private async void OnMedAdd(object sender, RoutedEventArgs e)
+    {
+        var name = MedName.Text.Trim();
+        var dose = MedDose.Text.Trim();
+        if (name.Length == 0 || dose.Length == 0) return;
+        object schedule;
+        if (MedAsNeeded.IsChecked == true)
+            schedule = int.TryParse(MedCeiling.Text.Trim(), out var max)
+                       && max > 0
+                ? new { as_needed = true, max_per_day = max }
+                : (object)new { as_needed = true };
+        else
+        {
+            var times = MedTimes.Text.Split(',')
+                .Select(t => t.Trim()).Where(t => t.Length > 0).ToArray();
+            if (times.Length == 0) return;
+            schedule = new { times };
+        }
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.AddMed(s.Uid!, s.Token!, name, dose,
+                schedule, MedPurpose.Text.Trim(),
+                MedCritical.IsChecked == true);
+            MedName.Text = ""; MedDose.Text = ""; MedPurpose.Text = "";
+            MedTimes.Text = ""; MedCeiling.Text = "";
+            MedAsNeeded.IsChecked = false; MedCritical.IsChecked = false;
+            MedAddForm.Visibility = Visibility.Collapsed;
+            await LoadMeds();
+        }
+        catch (Exception ex) { ShowMedError(ex); }
     }
 }

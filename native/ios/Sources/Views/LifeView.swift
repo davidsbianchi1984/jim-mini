@@ -42,7 +42,8 @@ struct LifeView: View {
                 case .habits: HabitsSection()
                 case .journal: JournalSection()
                 case .money: MoneySection()
-                case .schedule: ScheduleSection()
+                // The dose board is a schedule the body keeps.
+                case .schedule: ScheduleSection(); MedsCard()
                 case .shop: ShoppingSection()
                 case .circle: CircleSection()
                 }

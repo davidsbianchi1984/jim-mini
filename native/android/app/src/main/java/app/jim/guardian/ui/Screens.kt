@@ -67,6 +67,10 @@ import app.jim.guardian.MicTypeChoices
 import app.jim.guardian.MicGainChoices
 import app.jim.guardian.CaptureVocabulary
 import app.jim.guardian.CaptureRecord
+import app.jim.guardian.MedsBoard
+import app.jim.guardian.AdherenceRow
+import app.jim.guardian.VigilState
+import app.jim.guardian.BandRow
 import app.jim.guardian.CommunityRoom
 import app.jim.guardian.CommunityView
 import app.jim.guardian.JournalItem
@@ -396,6 +400,9 @@ fun MonitorScreen(vm: GuardianViewModel) {
         // Clinical captures live with monitoring: what the body shows,
         // sealed beside what the body reports.
         CapturesPanel(vm)
+
+        // Your normal, and where its edges sit.
+        BandsPanel(vm)
     }
 }
 
@@ -602,7 +609,8 @@ fun LifeScreen(vm: GuardianViewModel) {
             1 -> HabitsPanel(vm)
             2 -> JournalPanel(vm)
             3 -> MoneyPanel(vm)
-            4 -> SchedulePanel(vm)
+            // The dose board is a schedule the body keeps.
+            4 -> { SchedulePanel(vm); MedsPanel(vm) }
             5 -> TandemShopPanel(vm)
             else -> CirclePanel(vm)
         }
@@ -1348,7 +1356,9 @@ fun SafetyScreen(vm: GuardianViewModel) {
         when (tab) {
             0 -> AlarmsPanel(vm)
             1 -> SOSPanel(vm)
-            2 -> CrashWatchPanel(vm)
+            // The vigil is the crash watch's chronic sibling: one fires on
+            // a bad reading, the other on no readings at all.
+            2 -> { CrashWatchPanel(vm); VigilPanel(vm) }
             3 -> MedicalPanel(vm)
             4 -> PolicyPanel(vm)
             5 -> RobotsPanel(vm)
@@ -3823,6 +3833,365 @@ private fun CapturesPanel(vm: GuardianViewModel) {
                     bitmap = bmp.asImageBitmap(),
                     contentDescription = L10n.t("ns.ch.cam", vm.language),
                     modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)))
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+// ---- the health core: the cabinet, the vigil, and the baseline bands ----
+// Console doors since 0.9.0 / 0.8.0 / 0.6.0; these are the phone's.
+
+@Composable
+private fun MedsPanel(vm: GuardianViewModel) {
+    var board by remember { mutableStateOf<MedsBoard?>(null) }
+    var adherence by remember { mutableStateOf<List<AdherenceRow>>(emptyList()) }
+    var showAdherence by remember { mutableStateOf(false) }
+    var showAdd by remember { mutableStateOf(false) }
+    var name by remember { mutableStateOf("") }
+    var dose by remember { mutableStateOf("") }
+    var purpose by remember { mutableStateOf("") }
+    var times by remember { mutableStateOf("") }
+    var asNeeded by remember { mutableStateOf(false) }
+    var ceiling by remember { mutableStateOf("") }
+    var critical by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.medsBoard(vm.uid!!, vm.token!!) }) { r ->
+            board = r.getOrNull()
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.med.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        val b = board
+        if (b != null) {
+            if (b.missedCritical.isNotEmpty())
+                Text(L10n.t("ns.med.missed", vm.language).replace("{list}",
+                        b.missedCritical.joinToString(", ") {
+                            "${it.name} (${it.slot})" }),
+                    color = Jim.Amber, fontSize = 11.sp)
+            Text(L10n.t("ns.med.today", vm.language), color = Jim.T2,
+                fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            if (b.medications.isEmpty())
+                Text(L10n.t("ns.med.none", vm.language), color = Jim.T3,
+                    fontSize = 11.sp)
+            b.medications.forEach { med ->
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("${med.name} · ${med.dose}", color = Jim.Txt,
+                            fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        SmallAction(L10n.t("ns.med.stop", vm.language)) {
+                            vm.call({ ApiClient.stopMed(vm.uid!!, vm.token!!,
+                                med.id) }) { reload() }
+                        }
+                    }
+                    med.purpose?.let {
+                        Text(it, color = Jim.T2, fontSize = 11.sp)
+                    }
+                    // The console's "worth a check-in" checkbox, as a chip.
+                    FilterChip(selected = med.critical,
+                        onClick = {
+                            vm.call({ ApiClient.setMedCritical(vm.uid!!,
+                                vm.token!!, med.id, !med.critical) }) {
+                                reload()
+                            }
+                        },
+                        label = { Text(L10n.t("ns.med.critical", vm.language),
+                            fontSize = 10.sp) })
+                    if (med.kind == "as_needed") {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(L10n.t("ns.med.asneeded.line", vm.language)
+                                    .replace("{n}", (med.takenToday ?: 0).toString())
+                                    .replace("{max}", med.maxPerDay?.let {
+                                        L10n.t("ns.med.asneeded.max", vm.language)
+                                            .replace("{max}", it.toString())
+                                    } ?: ""),
+                                color = Jim.T2, fontSize = 11.sp)
+                            SmallAction(L10n.t("ns.med.tookone", vm.language)) {
+                                vm.call({ ApiClient.logDose(vm.uid!!, vm.token!!,
+                                    med.id, "taken", null) }) { r ->
+                                    error = r.exceptionOrNull()?.message
+                                    r.getOrNull()?.let { board = it }
+                                }
+                            }
+                        }
+                    } else med.slots?.forEach { slot ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("${slot.slot} · ${slot.status}",
+                                color = if (slot.status == "missed") Jim.Amber
+                                        else Jim.T2,
+                                fontSize = 11.sp)
+                            if (slot.status == "due" || slot.status == "missed") {
+                                SmallAction(L10n.t("ns.med.take", vm.language)) {
+                                    vm.call({ ApiClient.logDose(vm.uid!!,
+                                        vm.token!!, med.id, "taken",
+                                        slot.slot) }) { r ->
+                                        error = r.exceptionOrNull()?.message
+                                        r.getOrNull()?.let { board = it }
+                                    }
+                                }
+                                SmallAction(L10n.t("ns.med.skip", vm.language)) {
+                                    vm.call({ ApiClient.logDose(vm.uid!!,
+                                        vm.token!!, med.id, "skipped",
+                                        slot.slot) }) { r ->
+                                        error = r.exceptionOrNull()?.message
+                                        r.getOrNull()?.let { board = it }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // The board's own honesty line, verbatim from the wire.
+            Text(b.disclaimer, color = Jim.T3, fontSize = 10.sp)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SmallAction(L10n.t("ns.med.last", vm.language)
+                    .replace("{n}", "7")) {
+                showAdherence = !showAdherence
+                if (showAdherence)
+                    vm.call({ ApiClient.medAdherence(vm.uid!!, vm.token!!) }) { r ->
+                        adherence = r.getOrDefault(emptyList())
+                    }
+            }
+            SmallAction(L10n.t("ns.med.add", vm.language)) {
+                showAdd = !showAdd
+            }
+        }
+        if (showAdherence) adherence.forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(row.name, color = Jim.Txt, fontSize = 11.sp)
+                Text(L10n.t("ns.med.of", vm.language)
+                        .replace("{taken}", row.taken.toString())
+                        .replace("{expected}", row.expected.toString()),
+                    color = Jim.T2, fontSize = 11.sp)
+            }
+        }
+        if (showAdd) {
+            Text(L10n.t("ns.med.add.pitch", vm.language), color = Jim.T2,
+                fontSize = 11.sp)
+            labeledField(L10n.t("ns.med.name", vm.language), name,
+                L10n.t("ns.med.name.ph", vm.language)) { name = it }
+            labeledField(L10n.t("ns.med.dose", vm.language), dose,
+                L10n.t("ns.med.dose.ph", vm.language)) { dose = it }
+            labeledField(L10n.t("ns.med.purpose", vm.language), purpose,
+                L10n.t("ns.med.purpose.ph", vm.language)) { purpose = it }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(checked = asNeeded,
+                    onCheckedChange = { asNeeded = it })
+                Text(L10n.t("ns.med.asneeded", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+            }
+            if (asNeeded)
+                labeledField(L10n.t("ns.med.ceiling", vm.language) + " "
+                        + L10n.t("ns.med.ceiling.note", vm.language),
+                    ceiling, "3") { ceiling = it }
+            else
+                labeledField(L10n.t("ns.med.times", vm.language)
+                        + L10n.t("ns.med.times.note", vm.language),
+                    times, "08:00, 20:00") { times = it }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(checked = critical,
+                    onCheckedChange = { critical = it })
+                Text(L10n.t("ns.med.critical", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+            }
+            BrandButton(L10n.t("ns.med.add", vm.language),
+                enabled = name.isNotBlank() && dose.isNotBlank()
+                        && (asNeeded || times.isNotBlank())) {
+                val schedule = org.json.JSONObject()
+                if (asNeeded) {
+                    schedule.put("as_needed", true)
+                    ceiling.trim().toIntOrNull()?.let {
+                        if (it > 0) schedule.put("max_per_day", it)
+                    }
+                } else {
+                    val arr = org.json.JSONArray()
+                    times.split(",").map { it.trim() }
+                        .filter { it.isNotEmpty() }.forEach { arr.put(it) }
+                    schedule.put("times", arr)
+                }
+                vm.call({ ApiClient.addMed(vm.uid!!, vm.token!!, name.trim(),
+                    dose.trim(), schedule, purpose.trim(), critical) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                    if (r.isSuccess) {
+                        name = ""; dose = ""; purpose = ""; times = ""
+                        ceiling = ""; asNeeded = false; critical = false
+                        showAdd = false
+                    }
+                    reload()
+                }
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+@Composable
+private fun VigilPanel(vm: GuardianViewModel) {
+    var status by remember { mutableStateOf<VigilState?>(null) }
+    var stewardName by remember { mutableStateOf("") }
+    var stewardChannel by remember { mutableStateOf("") }
+    var quietDays by remember { mutableStateOf("3") }
+    var note by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun took(r: Result<VigilState>) {
+        error = r.exceptionOrNull()?.message
+        r.getOrNull()?.let { st ->
+            status = st
+            if (st.armed) {
+                if (stewardName.isBlank()) stewardName = st.stewardName ?: ""
+                if (stewardChannel.isBlank())
+                    stewardChannel = st.stewardChannel ?: ""
+                st.quietDays?.let { quietDays = it.toString() }
+                if (note.isBlank()) note = st.note ?: ""
+            }
+        }
+    }
+    // Opening the screen sweeps — idempotent, trips at most once, and
+    // opening the app is the natural moment to ask whether anybody has
+    // gone quiet. Same choice the console made.
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.sweepVigil(vm.uid!!, vm.token!!) }) { took(it) }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.vg.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ns.vg.pitch", vm.language), color = Jim.T2,
+            fontSize = 11.sp)
+        val st = status
+        if (st?.tripped == true) {
+            Text(L10n.t("ns.vg.tripped", vm.language)
+                    .replace("{name}", st.stewardName ?: "")
+                    .replace("{after}", L10n.t("ns.vg.after", vm.language)
+                        .replace("{n}", (st.quietDays ?: 0.0).toString())),
+                color = Jim.Amber, fontSize = 12.sp,
+                fontWeight = FontWeight.Bold)
+            BrandButton(L10n.t("ns.vg.okay", vm.language)) {
+                vm.call({ ApiClient.resolveVigil(vm.uid!!, vm.token!!) }) {
+                    took(it)
+                }
+            }
+        } else if (st?.armed == true) {
+            Text(L10n.t("ns.vg.armed", vm.language)
+                    .replace("{when}", st.silentHours?.let {
+                        "${it.toInt()} h" } ?: "—")
+                    .replace("{name}", st.stewardName ?: ""),
+                color = Jim.Green, fontSize = 11.sp)
+        }
+        labeledField(L10n.t("ns.vg.name", vm.language), stewardName,
+            L10n.t("ns.vg.name.ph", vm.language)) { stewardName = it }
+        labeledField(L10n.t("ns.vg.reach", vm.language), stewardChannel,
+            L10n.t("ns.vg.reach.ph", vm.language)) { stewardChannel = it }
+        labeledField(L10n.t("ns.vg.days", vm.language), quietDays,
+            "3") { quietDays = it }
+        labeledField(L10n.t("ns.vg.words", vm.language)
+                + L10n.t("ns.vg.words.note", vm.language), note,
+            L10n.t("ns.vg.words.ph", vm.language)) { note = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            BrandButton(L10n.t(if (st?.armed == true) "ns.vg.update"
+                               else "ns.vg.arm", vm.language),
+                enabled = stewardName.isNotBlank()
+                        && stewardChannel.isNotBlank()) {
+                vm.call({ ApiClient.armVigil(vm.uid!!, vm.token!!,
+                    stewardName.trim(), stewardChannel.trim(),
+                    quietDays.trim().toDoubleOrNull() ?: 3.0,
+                    note.trim()) }) { took(it) }
+            }
+            if (st?.armed == true)
+                SmallAction(L10n.t("ns.vg.disarm", vm.language)) {
+                    vm.call({ ApiClient.disarmVigil(vm.uid!!, vm.token!!) }) {
+                        took(it)
+                    }
+                }
+            // A read, not a sweep — the way to look without acting.
+            SmallAction(L10n.t("ns.vg.check", vm.language)) {
+                vm.call({ ApiClient.vigilStatus(vm.uid!!, vm.token!!) }) {
+                    took(it)
+                }
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+@Composable
+private fun BandsPanel(vm: GuardianViewModel) {
+    var bands by remember { mutableStateOf<List<BandRow>>(emptyList()) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.bands(vm.uid!!, vm.token!!) }) { r ->
+            bands = r.getOrDefault(emptyList())
+        }
+    }
+    fun change(band: BandRow, margin: Double?, high: Boolean?,
+               low: Boolean?) {
+        vm.call({ ApiClient.setBand(vm.uid!!, vm.token!!, band.metric,
+            margin, high, low) }) { r ->
+            error = r.exceptionOrNull()?.message
+            reload()
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.bas.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ns.bas.sub", vm.language), color = Jim.T2,
+            fontSize = 11.sp)
+        if (bands.isEmpty())
+            Text(L10n.t("ns.bas.none", vm.language), color = Jim.T3,
+                fontSize = 11.sp)
+        bands.forEach { band ->
+            val step = if (band.unit == "°C") 0.1 else 0.5
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(band.label, color = Jim.Txt, fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold)
+                    Text("±${band.margin}${band.unit}", color = Jim.T2,
+                        fontSize = 11.sp)
+                }
+                if (band.provisional)
+                    Text(L10n.t("ns.bas.learning", vm.language)
+                            .replace("{n}", band.samples.toString()),
+                        color = Jim.T3, fontSize = 11.sp)
+                else
+                    Text(L10n.t("ns.bas.usual", vm.language)
+                            .replace("{v}", "${band.baseline}${band.unit}")
+                            .replace("{lo}", "${band.lowEdge}${band.unit}")
+                            .replace("{hi}", "${band.highEdge}${band.unit}"),
+                        color = Jim.T2, fontSize = 11.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Narrower is told sooner; wider tolerates a wanderer.
+                    SmallAction("−") {
+                        if (band.margin - step > 0)
+                            change(band, band.margin - step, null, null)
+                    }
+                    SmallAction("+") {
+                        change(band, band.margin + step, null, null)
+                    }
+                    FilterChip(selected = band.watchLow,
+                        onClick = { change(band, null, null, !band.watchLow) },
+                        label = { Text(L10n.t("ns.bas.drop", vm.language),
+                            fontSize = 10.sp) })
+                    FilterChip(selected = band.watchHigh,
+                        onClick = { change(band, null, !band.watchHigh, null) },
+                        label = { Text(L10n.t("ns.bas.climb", vm.language),
+                            fontSize = 10.sp) })
+                    if (band.source == "user")
+                        SmallAction(L10n.t("ns.bas.reset", vm.language)) {
+                            vm.call({ ApiClient.resetBand(vm.uid!!, vm.token!!,
+                                band.metric) }) { reload() }
+                        }
+                }
+            }
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
     }

@@ -44,7 +44,9 @@ struct SafetyView: View {
                 switch tab {
                 case .alarms: AlarmsSection()
                 case .sos: SOSSection()
-                case .crash: CrashWatchSection()
+                // The vigil is the crash watch's chronic sibling: one fires
+                // on a bad reading, the other on no readings at all.
+                case .crash: CrashWatchSection(); VigilCard()
                 case .medical: MedicalSection()
                 case .policy: PolicySection()
                 case .robots: RobotsSection()

@@ -36,12 +36,16 @@ public sealed partial class MonitorPage : Page
         CapNote.PlaceholderText = L10n.T("ns.ch.cam.note");
         CapConsent.Header = L10n.T("ns.ch.cam.consent");
         CapPickButton.Content = L10n.T("ns.ch.cam.attach");
+        BandHead.Text = L10n.T("ns.bas.title");
+        BandSub.Text = L10n.T("ns.bas.sub");
+        BandNone.Text = L10n.T("ns.bas.none");
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         await LoadFollowups();
         await LoadCaptures();
+        await LoadBands();
     }
 
     // MARK: [0039] — the effectiveness loop
@@ -370,5 +374,129 @@ public sealed partial class MonitorPage : Page
             await LoadCaptures();
         }
         catch (Exception ex) { CaptureError(ex); }
+    }
+    // -- baseline bands (console door since 0.6.0; this is the desktop's) --
+    //
+    // Your normal, and how far from it counts. Crossing a band is a
+    // check-in, never an escalation; the alarm layer lives elsewhere.
+
+    private async Task LoadBands()
+    {
+        var s = AppState.Current;
+        try { RenderBands((await ApiClient.Shared.Bands(s.Uid!, s.Token!)).Bands); }
+        catch { /* leave as-is */ }
+    }
+
+    private void RenderBands(BandRow[] bands)
+    {
+        BandError.Visibility = Visibility.Collapsed;
+        BandNone.Visibility = bands.Length == 0 ? Visibility.Visible
+                                                : Visibility.Collapsed;
+        BandRows.Children.Clear();
+        foreach (var band in bands)
+        {
+            var metric = band.Metric;
+            var step = band.Unit == "\u00b0C" ? 0.1 : 0.5;
+            var row = new StackPanel { Spacing = 2 };
+            var head = new StackPanel
+            { Orientation = Orientation.Horizontal, Spacing = 8 };
+            head.Children.Add(new TextBlock
+            {
+                Text = band.Label,
+                FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                FontSize = 12,
+                Foreground = (Brush)Application.Current.Resources["JimTxtBrush"],
+            });
+            head.Children.Add(BandText(
+                $"\u00b1{band.Margin}{band.Unit}", "JimT2Brush"));
+            row.Children.Add(head);
+            row.Children.Add(BandText(band.Provisional
+                ? L10n.T("ns.bas.learning")
+                    .Replace("{n}", band.Samples.ToString())
+                : L10n.T("ns.bas.usual")
+                    .Replace("{v}", $"{band.Baseline}{band.Unit}")
+                    .Replace("{lo}", $"{band.LowEdge}{band.Unit}")
+                    .Replace("{hi}", $"{band.HighEdge}{band.Unit}"),
+                band.Provisional ? "JimT3Brush" : "JimT2Brush"));
+
+            var actions = new StackPanel
+            { Orientation = Orientation.Horizontal, Spacing = 6 };
+            // Narrower is told sooner; wider tolerates a wanderer.
+            var narrow = new Button { Content = "\u2212", FontSize = 11 };
+            narrow.Click += (_, _) =>
+            {
+                if (band.Margin - step > 0)
+                    ChangeBand(metric, band.Margin - step, null, null);
+            };
+            var widen = new Button { Content = "+", FontSize = 11 };
+            widen.Click += (_, _) =>
+                ChangeBand(metric, band.Margin + step, null, null);
+            actions.Children.Add(narrow);
+            actions.Children.Add(widen);
+            var drop = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
+            {
+                Content = L10n.T("ns.bas.drop"),
+                FontSize = 11,
+                IsChecked = band.WatchLow,
+            };
+            drop.Click += (_, _) =>
+                ChangeBand(metric, null, null, !band.WatchLow);
+            var climb = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
+            {
+                Content = L10n.T("ns.bas.climb"),
+                FontSize = 11,
+                IsChecked = band.WatchHigh,
+            };
+            climb.Click += (_, _) =>
+                ChangeBand(metric, null, !band.WatchHigh, null);
+            actions.Children.Add(drop);
+            actions.Children.Add(climb);
+            if (band.Source == "user")
+            {
+                var reset = new Button
+                { Content = L10n.T("ns.bas.reset"), FontSize = 11 };
+                reset.Click += async (_, _) =>
+                {
+                    var st = AppState.Current;
+                    try
+                    {
+                        await ApiClient.Shared.ResetBand(st.Uid!, st.Token!,
+                                                         metric);
+                        await LoadBands();
+                    }
+                    catch (Exception ex) { ShowBandError(ex); }
+                };
+                actions.Children.Add(reset);
+            }
+            row.Children.Add(actions);
+            BandRows.Children.Add(row);
+        }
+    }
+
+    private static TextBlock BandText(string text, string brush) => new()
+    {
+        Text = text,
+        FontSize = 11,
+        TextWrapping = TextWrapping.Wrap,
+        Foreground = (Brush)Application.Current.Resources[brush],
+    };
+
+    private void ShowBandError(Exception ex)
+    {
+        BandError.Text = ex.Message;
+        BandError.Visibility = Visibility.Visible;
+    }
+
+    private async void ChangeBand(string metric, double? margin,
+                                  bool? watchHigh, bool? watchLow)
+    {
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.SetBand(s.Uid!, s.Token!, metric, margin,
+                                           watchHigh, watchLow);
+            await LoadBands();
+        }
+        catch (Exception ex) { ShowBandError(ex); }
     }
 }

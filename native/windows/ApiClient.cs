@@ -1578,6 +1578,90 @@ public sealed class ApiClient
         var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
+
+    // ---- the health core: the cabinet, the vigil, and the baseline bands --
+
+    public Task<MedsBoard> MedsBoard(string uid, string token) =>
+        Send<MedsBoard>(new HttpRequestMessage(HttpMethod.Get,
+            $"/meds/{uid}"), token);
+
+    public Task<MedRow> AddMed(string uid, string token, string name,
+                               string dose, object schedule, string purpose,
+                               bool critical) =>
+        Send<MedRow>(Post($"/meds/{uid}",
+            purpose is { Length: > 0 }
+                ? new { name, dose, schedule, critical, purpose }
+                : (object)new { name, dose, schedule, critical }, token));
+
+    public Task<MedRow> SetMedCritical(string uid, string token,
+                                       string medId, bool critical) =>
+        Send<MedRow>(Put($"/meds/{uid}/{medId}", new { critical }, token));
+
+    /// Stopped, not deleted — the route keeps the history honest.
+    public Task<MedRow> StopMed(string uid, string token, string medId) =>
+        Send<MedRow>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/meds/{uid}/{medId}"), token);
+
+    public Task<MedsBoard> LogDose(string uid, string token, string medId,
+                                   string action, string? slot) =>
+        Send<MedsBoard>(Post($"/meds/{uid}/{medId}/log",
+            slot is null ? new { action } : (object)new { action, slot },
+            token));
+
+    public Task<MedAdherence> MedAdherence(string uid, string token) =>
+        Send<MedAdherence>(new HttpRequestMessage(HttpMethod.Get,
+            $"/meds/{uid}/adherence"), token);
+
+    public Task<VigilState> VigilStatus(string uid, string token) =>
+        Send<VigilState>(new HttpRequestMessage(HttpMethod.Get,
+            $"/vigil/{uid}"), token);
+
+    public Task<VigilState> ArmVigil(string uid, string token,
+                                     string stewardName, string stewardChannel,
+                                     double quietDays, string note) =>
+        Send<VigilState>(Put($"/vigil/{uid}",
+            note is { Length: > 0 }
+                ? new { steward_name = stewardName,
+                        steward_channel = stewardChannel,
+                        quiet_days = quietDays, note }
+                : (object)new { steward_name = stewardName,
+                                steward_channel = stewardChannel,
+                                quiet_days = quietDays }, token));
+
+    public Task<VigilState> DisarmVigil(string uid, string token) =>
+        Send<VigilState>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/vigil/{uid}"), token);
+
+    /// Idempotent silence check; trips at most once. Opening the screen is
+    /// the natural moment to ask whether anybody has gone quiet.
+    public Task<VigilState> SweepVigil(string uid, string token) =>
+        Send<VigilState>(Post($"/vigil/{uid}/sweep", new { }, token));
+
+    /// The "I'm okay" button.
+    public Task<VigilState> ResolveVigil(string uid, string token) =>
+        Send<VigilState>(Post($"/vigil/{uid}/resolve", new { }, token));
+
+    public Task<BandsOverview> Bands(string uid, string token) =>
+        Send<BandsOverview>(new HttpRequestMessage(HttpMethod.Get,
+            $"/bands/{uid}"), token);
+
+    public Task<BandRow> SetBand(string uid, string token, string metric,
+                                 double? margin, bool? watchHigh,
+                                 bool? watchLow)
+    {
+        // BandSet keeps whatever is in force for omitted fields, so only
+        // the fields the caller actually set ride the wire.
+        var body = new Dictionary<string, object>();
+        if (margin is { } m) body["margin"] = m;
+        if (watchHigh is { } h) body["watch_high"] = h;
+        if (watchLow is { } l) body["watch_low"] = l;
+        return Send<BandRow>(Put($"/bands/{uid}/{metric}", body, token));
+    }
+
+    /// Back to the default width for this metric.
+    public Task<BandRow> ResetBand(string uid, string token, string metric) =>
+        Send<BandRow>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/bands/{uid}/{metric}"), token);
 }
 
 public record MoneyAccount(
@@ -1839,3 +1923,84 @@ public record CaptureImageRow(
 public record CaptureAttachOutcome(
     [property: JsonPropertyName("attached")] string[]? Attached,
     [property: JsonPropertyName("explicit")] string[]? Explicit);
+
+/// One dose slot of a scheduled medication:
+/// taken | skipped | upcoming | due | missed.
+public record MedSlot(
+    [property: JsonPropertyName("slot")] string Slot,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("note")] string? Note);
+
+/// A medication on today's board. Scheduled rows carry Slots; as-needed
+/// rows carry TakenToday and MaxPerDay instead — the same union the
+/// console renders.
+public record MedRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("dose")] string Dose,
+    [property: JsonPropertyName("purpose")] string? Purpose,
+    [property: JsonPropertyName("critical")] bool Critical,
+    [property: JsonPropertyName("notes")] string? Notes,
+    [property: JsonPropertyName("archived")] bool Archived,
+    [property: JsonPropertyName("created_at")] string? CreatedAt,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("slots")] MedSlot[]? Slots,
+    [property: JsonPropertyName("taken_today")] int? TakenToday,
+    [property: JsonPropertyName("max_per_day")] int? MaxPerDay);
+
+public record MissedDose(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("slot")] string Slot);
+
+public record MedsBoard(
+    [property: JsonPropertyName("date")] string Date,
+    [property: JsonPropertyName("medications")] MedRow[] Medications,
+    [property: JsonPropertyName("missed_critical")] MissedDose[] MissedCritical,
+    [property: JsonPropertyName("disclaimer")] string Disclaimer);
+
+public record AdherenceRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("expected")] int Expected,
+    [property: JsonPropertyName("taken")] int Taken,
+    [property: JsonPropertyName("rate")] double? Rate);
+
+public record MedAdherence(
+    [property: JsonPropertyName("days")] int Days,
+    [property: JsonPropertyName("medications")] AdherenceRow[] Medications);
+
+/// The vigil's whole answer. Until armed the route says {"armed": false}
+/// and nothing else, which is why everything past Armed is nullable.
+public record VigilState(
+    [property: JsonPropertyName("armed")] bool Armed,
+    [property: JsonPropertyName("steward_name")] string? StewardName,
+    [property: JsonPropertyName("steward_channel")] string? StewardChannel,
+    [property: JsonPropertyName("quiet_days")] double? QuietDays,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("last_heard_at")] string? LastHeardAt,
+    [property: JsonPropertyName("silent_hours")] double? SilentHours,
+    [property: JsonPropertyName("threshold_hours")] double? ThresholdHours,
+    [property: JsonPropertyName("tripped")] bool? Tripped,
+    [property: JsonPropertyName("tripped_at")] string? TrippedAt,
+    [property: JsonPropertyName("resolved_at")] string? ResolvedAt);
+
+/// One metric's band: the learned baseline and where the edges sit. Edges
+/// are null until the baseline stops being provisional.
+public record BandRow(
+    [property: JsonPropertyName("metric")] string Metric,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("unit")] string Unit,
+    [property: JsonPropertyName("margin")] double Margin,
+    [property: JsonPropertyName("watch_high")] bool WatchHigh,
+    [property: JsonPropertyName("watch_low")] bool WatchLow,
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("baseline")] double? Baseline,
+    [property: JsonPropertyName("samples")] int Samples,
+    [property: JsonPropertyName("provisional")] bool Provisional,
+    [property: JsonPropertyName("low_edge")] double? LowEdge,
+    [property: JsonPropertyName("high_edge")] double? HighEdge);
+
+public record BandsOverview(
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("sensitivity")] string Sensitivity,
+    [property: JsonPropertyName("bands")] BandRow[] Bands);

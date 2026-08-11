@@ -208,6 +208,23 @@ def _standing(client) -> tuple[str, str]:
         "attempts": 3, "window_minutes": 5.0,
         "contact_emergency_services": False})
     client.post(f"/adaptation/{uid}", json={})
+    # 0.61.1+ typed the phones against the vigil and the cabinet, whose
+    # routes also answer short until the feature is on: `/vigil/{id}` says
+    # `{"armed": false}` and nothing else, and an empty cabinet's board has
+    # no medication row to check a shape against. Arming and stocking are
+    # three calls — driving into the state still beats recording that you
+    # did not. The scheduled medication comes first because the checkers
+    # read the first row of a list, and the scheduled row is the fuller
+    # union member; the as-needed fields it lacks are recorded.
+    client.put(f"/vigil/{uid}", json={
+        "steward_name": "Rae", "steward_channel": "rae@example.com",
+        "quiet_days": 3.0, "note": "please knock"})
+    client.post(f"/meds/{uid}", json={
+        "name": "Lisinopril", "dose": "10 mg",
+        "schedule": {"times": ["08:00", "20:00"]}, "critical": True})
+    client.post(f"/meds/{uid}", json={
+        "name": "Ibuprofen", "dose": "200 mg",
+        "schedule": {"as_needed": True, "max_per_day": 3}})
     return uid, other
 
 

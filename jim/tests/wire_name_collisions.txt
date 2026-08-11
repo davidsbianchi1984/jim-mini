@@ -1,5 +1,5 @@
-# status: backlog — 13 rows
-# ceiling: 13
+# status: backlog — 14 rows
+# ceiling: 14
 #
 # One wire field name carrying more than one type across this product's API.
 #
@@ -41,6 +41,11 @@
 # field is an API break that belongs to its own round, not to the round
 # that finally declared the types.
 #
+# `medications` joined the same way when the cabinet reached the phones:
+# the board's rows and the adherence tally's rows are different shapes
+# under the same name, and both routes have served them that way since
+# 0.9.0.
+#
 answered
 attached
 chosen
@@ -48,6 +53,7 @@ first_aid
 goal
 helped
 intimate
+medications
 messages
 provenance
 providers

@@ -1780,6 +1780,158 @@ object ApiClient {
                                 captureId: String) {
         request("/users/$uid/captures/$captureId", "DELETE", token = token)
     }
+
+    // ---- the health core: the cabinet, the vigil, and the baseline bands --
+
+    private fun medSlotOf(o: JSONObject) = MedSlot(
+        o.optString("slot", ""), o.optString("status", ""),
+        o.optString("note", null))
+
+    private fun medOf(o: JSONObject): MedRow {
+        val slots = o.optJSONArray("slots")?.let { a ->
+            (0 until a.length()).map { medSlotOf(a.getJSONObject(it)) }
+        }
+        return MedRow(
+            o.optString("id", ""), o.optString("name", ""),
+            o.optString("dose", ""), o.optString("purpose", null),
+            o.optBoolean("critical", false), o.optString("notes", null),
+            o.optBoolean("archived", false), o.optString("kind", ""),
+            slots,
+            if (o.has("taken_today")) o.optInt("taken_today") else null,
+            if (o.has("max_per_day") && !o.isNull("max_per_day"))
+                o.optInt("max_per_day") else null)
+    }
+
+    private fun medsBoardOf(o: JSONObject): MedsBoard {
+        val meds = mutableListOf<MedRow>()
+        o.optJSONArray("medications")?.let { a ->
+            for (i in 0 until a.length()) meds.add(medOf(a.getJSONObject(i)))
+        }
+        val missed = mutableListOf<MissedDose>()
+        o.optJSONArray("missed_critical")?.let { a ->
+            for (i in 0 until a.length()) {
+                val m = a.getJSONObject(i)
+                missed.add(MissedDose(m.optString("name", ""),
+                                      m.optString("slot", "")))
+            }
+        }
+        return MedsBoard(o.optString("date", ""), meds, missed,
+                         o.optString("disclaimer", ""))
+    }
+
+    suspend fun medsBoard(uid: String, token: String): MedsBoard =
+        medsBoardOf(request("/meds/$uid", token = token))
+
+    suspend fun addMed(uid: String, token: String, name: String, dose: String,
+                       schedule: JSONObject, purpose: String,
+                       critical: Boolean): MedRow {
+        val body = JSONObject().put("name", name).put("dose", dose)
+            .put("schedule", schedule).put("critical", critical)
+        if (purpose.isNotBlank()) body.put("purpose", purpose)
+        return medOf(request("/meds/$uid", "POST", body, token))
+    }
+
+    suspend fun setMedCritical(uid: String, token: String, medId: String,
+                               critical: Boolean): MedRow =
+        medOf(request("/meds/$uid/$medId", "PUT",
+                      JSONObject().put("critical", critical), token))
+
+    /** Stopped, not deleted — the route keeps the history honest. */
+    suspend fun stopMed(uid: String, token: String, medId: String): MedRow =
+        medOf(request("/meds/$uid/$medId", "DELETE", token = token))
+
+    suspend fun logDose(uid: String, token: String, medId: String,
+                        action: String, slot: String?): MedsBoard {
+        val body = JSONObject().put("action", action)
+        if (slot != null) body.put("slot", slot)
+        return medsBoardOf(request("/meds/$uid/$medId/log", "POST", body,
+                                   token))
+    }
+
+    suspend fun medAdherence(uid: String, token: String): List<AdherenceRow> {
+        val o = request("/meds/$uid/adherence", token = token)
+        val out = mutableListOf<AdherenceRow>()
+        o.optJSONArray("medications")?.let { a ->
+            for (i in 0 until a.length()) {
+                val m = a.getJSONObject(i)
+                out.add(AdherenceRow(
+                    m.optString("id", ""), m.optString("name", ""),
+                    m.optInt("expected"), m.optInt("taken"),
+                    if (m.isNull("rate")) null else m.optDouble("rate")))
+            }
+        }
+        return out
+    }
+
+    private fun vigilOf(o: JSONObject) = VigilState(
+        o.optBoolean("armed", false),
+        o.optString("steward_name", null),
+        o.optString("steward_channel", null),
+        if (o.has("quiet_days")) o.optDouble("quiet_days") else null,
+        o.optString("note", null),
+        o.optString("last_heard_at", null),
+        if (o.has("silent_hours") && !o.isNull("silent_hours"))
+            o.optDouble("silent_hours") else null,
+        o.optBoolean("tripped", false))
+
+    suspend fun vigilStatus(uid: String, token: String): VigilState =
+        vigilOf(request("/vigil/$uid", token = token))
+
+    suspend fun armVigil(uid: String, token: String, stewardName: String,
+                         stewardChannel: String, quietDays: Double,
+                         note: String): VigilState {
+        val body = JSONObject().put("steward_name", stewardName)
+            .put("steward_channel", stewardChannel)
+            .put("quiet_days", quietDays)
+        if (note.isNotBlank()) body.put("note", note)
+        return vigilOf(request("/vigil/$uid", "PUT", body, token))
+    }
+
+    suspend fun disarmVigil(uid: String, token: String): VigilState =
+        vigilOf(request("/vigil/$uid", "DELETE", token = token))
+
+    /** Idempotent silence check; trips at most once. Opening the screen is
+     *  the natural moment to ask whether anybody has gone quiet. */
+    suspend fun sweepVigil(uid: String, token: String): VigilState =
+        vigilOf(request("/vigil/$uid/sweep", "POST", token = token))
+
+    /** The "I'm okay" button. */
+    suspend fun resolveVigil(uid: String, token: String): VigilState =
+        vigilOf(request("/vigil/$uid/resolve", "POST", token = token))
+
+    private fun bandOf(o: JSONObject) = BandRow(
+        o.optString("metric", ""), o.optString("label", ""),
+        o.optString("unit", ""), o.optDouble("margin"),
+        o.optBoolean("watch_high", false), o.optBoolean("watch_low", false),
+        o.optString("source", ""),
+        if (o.isNull("baseline")) null else o.optDouble("baseline"),
+        o.optInt("samples"), o.optBoolean("provisional", true),
+        if (o.isNull("low_edge")) null else o.optDouble("low_edge"),
+        if (o.isNull("high_edge")) null else o.optDouble("high_edge"))
+
+    suspend fun bands(uid: String, token: String): List<BandRow> {
+        val o = request("/bands/$uid", token = token)
+        val out = mutableListOf<BandRow>()
+        o.optJSONArray("bands")?.let { a ->
+            for (i in 0 until a.length()) out.add(bandOf(a.getJSONObject(i)))
+        }
+        return out
+    }
+
+    suspend fun setBand(uid: String, token: String, metric: String,
+                        margin: Double?, watchHigh: Boolean?,
+                        watchLow: Boolean?): BandRow {
+        val body = JSONObject()
+        if (margin != null) body.put("margin", margin)
+        if (watchHigh != null) body.put("watch_high", watchHigh)
+        if (watchLow != null) body.put("watch_low", watchLow)
+        return bandOf(request("/bands/$uid/$metric", "PUT", body, token))
+    }
+
+    /** Back to the default width for this metric. */
+    suspend fun resetBand(uid: String, token: String,
+                          metric: String): BandRow =
+        bandOf(request("/bands/$uid/$metric", "DELETE", token = token))
 }
 
 data class MoneyAccount(val id: String, val kind: String,
@@ -1890,3 +2042,34 @@ data class CaptureVocabulary(val kinds: Map<String, String>,
 data class CaptureRecord(val id: String, val kind: String, val site: String,
                          val note: String?, val intimate: Boolean,
                          val sealed: Boolean, val createdAt: String?)
+
+/** One dose slot of a scheduled medication:
+ *  taken | skipped | upcoming | due | missed. */
+data class MedSlot(val slot: String, val status: String, val note: String?)
+/** A medication on today's board. Scheduled rows carry `slots`; as-needed
+ *  rows carry `takenToday` and `maxPerDay` instead. */
+data class MedRow(val id: String, val name: String, val dose: String,
+                  val purpose: String?, val critical: Boolean,
+                  val notes: String?, val archived: Boolean,
+                  val kind: String, val slots: List<MedSlot>?,
+                  val takenToday: Int?, val maxPerDay: Int?)
+data class MissedDose(val name: String, val slot: String)
+data class MedsBoard(val date: String, val medications: List<MedRow>,
+                     val missedCritical: List<MissedDose>,
+                     val disclaimer: String)
+data class AdherenceRow(val id: String, val name: String, val expected: Int,
+                        val taken: Int, val rate: Double?)
+/** The vigil's answer. Until armed the route says `{"armed": false}` and
+ *  nothing else, which is why everything past `armed` is nullable. */
+data class VigilState(val armed: Boolean, val stewardName: String?,
+                      val stewardChannel: String?, val quietDays: Double?,
+                      val note: String?, val lastHeardAt: String?,
+                      val silentHours: Double?, val tripped: Boolean)
+/** One metric's band: the learned baseline and where the edges sit. Edges
+ *  are null until the baseline stops being provisional. */
+data class BandRow(val metric: String, val label: String, val unit: String,
+                   val margin: Double, val watchHigh: Boolean,
+                   val watchLow: Boolean, val source: String,
+                   val baseline: Double?, val samples: Int,
+                   val provisional: Boolean, val lowEdge: Double?,
+                   val highEdge: Double?)

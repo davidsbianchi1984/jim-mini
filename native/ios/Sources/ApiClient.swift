@@ -2071,3 +2071,195 @@ extension ApiClient {
             token: token)
     }
 }
+
+// MARK: - The health core: the cabinet, the vigil, and the baseline bands
+
+/// One dose slot of a scheduled medication, as the board answers it:
+/// taken | skipped | upcoming | due | missed.
+struct MedSlot: Decodable {
+    let slot: String
+    let status: String
+    let note: String?
+}
+
+/// A medication on today's board. Scheduled rows carry `slots`; as-needed
+/// rows carry `taken_today` and `max_per_day` instead — the same union the
+/// console renders.
+struct MedRow: Decodable {
+    let id: String
+    let name: String
+    let dose: String
+    let purpose: String?
+    let critical: Bool
+    let notes: String?
+    let archived: Bool
+    let created_at: String
+    let kind: String
+    let slots: [MedSlot]?
+    let taken_today: Int?
+    let max_per_day: Int?
+}
+
+struct MissedDose: Decodable {
+    let name: String
+    let slot: String
+}
+
+struct MedsBoard: Decodable {
+    let date: String
+    let medications: [MedRow]
+    let missed_critical: [MissedDose]
+    let disclaimer: String
+}
+
+struct AdherenceRow: Decodable {
+    let id: String
+    let name: String
+    let expected: Int
+    let taken: Int
+    let rate: Double?
+}
+
+struct MedAdherence: Decodable {
+    let days: Int
+    let medications: [AdherenceRow]
+}
+
+/// The vigil's whole answer. Until armed the route says `{"armed": false}`
+/// and nothing else, which is why everything past `armed` is optional.
+struct VigilStatus: Decodable {
+    let armed: Bool
+    let steward_name: String?
+    let steward_channel: String?
+    let quiet_days: Double?
+    let note: String?
+    let last_heard_at: String?
+    let silent_hours: Double?
+    let threshold_hours: Double?
+    let tripped: Bool?
+    let tripped_at: String?
+    let resolved_at: String?
+}
+
+/// One metric's band: the learned baseline and where the edges sit. Edges
+/// are null until the baseline stops being provisional — a threshold drawn
+/// around two readings would be noise wearing a ruler.
+struct BandRow: Decodable {
+    let metric: String
+    let label: String
+    let unit: String
+    let margin: Double
+    let watch_high: Bool
+    let watch_low: Bool
+    let source: String
+    let baseline: Double?
+    let samples: Int
+    let provisional: Bool
+    let low_edge: Double?
+    let high_edge: Double?
+}
+
+struct BandsOverview: Decodable {
+    let user_id: String
+    let sensitivity: String
+    let bands: [BandRow]
+}
+
+extension ApiClient {
+
+    // MARK: Medicine cabinet
+
+    func medsBoard(uid: String, token: String) async throws -> MedsBoard {
+        try await request("/meds/\(uid)", token: token)
+    }
+
+    func addMed(uid: String, token: String, name: String, dose: String,
+                schedule: [String: Any], purpose: String?,
+                critical: Bool) async throws -> MedRow {
+        var body: [String: Any] = ["name": name, "dose": dose,
+                                   "schedule": schedule, "critical": critical]
+        if let purpose, !purpose.isEmpty { body["purpose"] = purpose }
+        return try await request("/meds/\(uid)", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func setMedCritical(uid: String, token: String, medId: String,
+                        critical: Bool) async throws -> MedRow {
+        try await request("/meds/\(uid)/\(medId)", method: "PUT",
+                          body: ["critical": critical], token: token)
+    }
+
+    /// Stopped, not deleted — the route keeps the history honest.
+    func stopMed(uid: String, token: String, medId: String) async throws -> MedRow {
+        try await request("/meds/\(uid)/\(medId)", method: "DELETE",
+                          token: token)
+    }
+
+    func logDose(uid: String, token: String, medId: String, action: String,
+                 slot: String?) async throws -> MedsBoard {
+        var body: [String: Any] = ["action": action]
+        if let slot { body["slot"] = slot }
+        return try await request("/meds/\(uid)/\(medId)/log", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func medAdherence(uid: String, token: String) async throws -> MedAdherence {
+        try await request("/meds/\(uid)/adherence", token: token)
+    }
+
+    // MARK: The vigil
+
+    func vigilStatus(uid: String, token: String) async throws -> VigilStatus {
+        try await request("/vigil/\(uid)", token: token)
+    }
+
+    func armVigil(uid: String, token: String, stewardName: String,
+                  stewardChannel: String, quietDays: Double,
+                  note: String?) async throws -> VigilStatus {
+        var body: [String: Any] = ["steward_name": stewardName,
+                                   "steward_channel": stewardChannel,
+                                   "quiet_days": quietDays]
+        if let note, !note.isEmpty { body["note"] = note }
+        return try await request("/vigil/\(uid)", method: "PUT",
+                                 body: body, token: token)
+    }
+
+    func disarmVigil(uid: String, token: String) async throws -> VigilStatus {
+        try await request("/vigil/\(uid)", method: "DELETE", token: token)
+    }
+
+    /// Idempotent silence check; trips at most once. Opening the screen is
+    /// the natural moment to ask whether anybody has gone quiet.
+    func sweepVigil(uid: String, token: String) async throws -> VigilStatus {
+        try await request("/vigil/\(uid)/sweep", method: "POST", token: token)
+    }
+
+    /// The "I'm okay" button.
+    func resolveVigil(uid: String, token: String) async throws -> VigilStatus {
+        try await request("/vigil/\(uid)/resolve", method: "POST", token: token)
+    }
+
+    // MARK: Baseline bands
+
+    func bands(uid: String, token: String) async throws -> BandsOverview {
+        try await request("/bands/\(uid)", token: token)
+    }
+
+    func setBand(uid: String, token: String, metric: String,
+                 margin: Double?, watchHigh: Bool?,
+                 watchLow: Bool?) async throws -> BandRow {
+        var body: [String: Any] = [:]
+        if let margin { body["margin"] = margin }
+        if let watchHigh { body["watch_high"] = watchHigh }
+        if let watchLow { body["watch_low"] = watchLow }
+        return try await request("/bands/\(uid)/\(metric)", method: "PUT",
+                                 body: body, token: token)
+    }
+
+    /// Back to the default width for this metric.
+    func resetBand(uid: String, token: String,
+                   metric: String) async throws -> BandRow {
+        try await request("/bands/\(uid)/\(metric)", method: "DELETE",
+                          token: token)
+    }
+}

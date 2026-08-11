@@ -145,6 +145,23 @@
                                Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
+
+            <!-- Your normal, and where its edges sit. -->
+            <Border Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1" CornerRadius="16"
+                    Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="BandHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="BandSub" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="BandNone" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="BandRows" Spacing="8" />
+                    <TextBlock x:Name="BandError" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

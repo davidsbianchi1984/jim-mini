@@ -249,6 +249,44 @@
                                        Foreground="{StaticResource JimT2Brush}" />
                         </StackPanel>
                     </Border>
+
+                    <!-- The dose board is a schedule the body keeps. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MedHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="MedMissed" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimAmberBrush}" />
+                            <TextBlock x:Name="MedToday" FontWeight="Bold" FontSize="12"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="MedNone" FontSize="11" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <StackPanel x:Name="MedRows" Spacing="6" />
+                            <TextBlock x:Name="MedDisclaimer" FontSize="10" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="MedAdherenceButton" Click="OnMedAdherence" />
+                                <Button x:Name="MedAddToggle" Click="OnMedAddToggle" />
+                            </StackPanel>
+                            <StackPanel x:Name="MedAdherenceRows" Spacing="2" Visibility="Collapsed" />
+                            <StackPanel x:Name="MedAddForm" Spacing="8" Visibility="Collapsed">
+                                <TextBlock x:Name="MedAddPitch" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{StaticResource JimT2Brush}" />
+                                <TextBox x:Name="MedName" />
+                                <TextBox x:Name="MedDose" />
+                                <TextBox x:Name="MedPurpose" />
+                                <CheckBox x:Name="MedAsNeeded" Click="OnMedAsNeededToggle" />
+                                <TextBox x:Name="MedTimes" PlaceholderText="08:00, 20:00" />
+                                <TextBox x:Name="MedCeiling" PlaceholderText="3" Visibility="Collapsed" />
+                                <CheckBox x:Name="MedCritical" />
+                                <Button x:Name="MedAddButton" HorizontalAlignment="Stretch"
+                                        Click="OnMedAdd" />
+                            </StackPanel>
+                            <TextBlock x:Name="MedError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimRedBrush}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>

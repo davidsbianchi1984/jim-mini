@@ -31,6 +31,9 @@ struct MonitorView: View {
                 // shows, sealed beside what the body reports.
                 CapturesCard()
 
+                // Your normal, and where its edges sit.
+                BandsCard()
+
                 Button(action: send) {
                     HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("mon.send", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 14)

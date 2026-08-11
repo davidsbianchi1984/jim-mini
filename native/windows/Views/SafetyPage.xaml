@@ -151,6 +151,42 @@
                     </Border>
                     <TextBlock x:Name="CrashError" Visibility="Collapsed" FontSize="12"
                                Foreground="{StaticResource JimRedBrush}" TextWrapping="Wrap" />
+
+                    <!-- The vigil is the crash watch's chronic sibling: one
+                         fires on a bad reading, the other on no readings at
+                         all. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="VgHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="VgPitch" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="VgTrippedNote" FontWeight="Bold" FontSize="12"
+                                       TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimAmberBrush}" />
+                            <Button x:Name="VgOkayButton" Click="OnVigilOkay" Visibility="Collapsed"
+                                    HorizontalAlignment="Stretch"
+                                    Background="{StaticResource JimGreenBrush}" Foreground="Black" />
+                            <TextBlock x:Name="VgArmedNote" FontSize="11" TextWrapping="Wrap"
+                                       Visibility="Collapsed"
+                                       Foreground="{StaticResource JimGreenBrush}" />
+                            <TextBox x:Name="VgName" />
+                            <TextBox x:Name="VgChannel" />
+                            <NumberBox x:Name="VgDays" Value="3" Minimum="0.5" Maximum="30"
+                                       SpinButtonPlacementMode="Inline" />
+                            <TextBox x:Name="VgWords" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="VgArmButton" Click="OnVigilArm" />
+                                <Button x:Name="VgDisarmButton" Click="OnVigilDisarm"
+                                        Visibility="Collapsed" Foreground="{StaticResource JimRedBrush}" />
+                                <Button x:Name="VgCheckButton" Click="OnVigilCheck" />
+                            </StackPanel>
+                            <TextBlock x:Name="VgError" FontSize="11" TextWrapping="Wrap"
+                                       Visibility="Collapsed"
+                                       Foreground="{StaticResource JimRedBrush}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>

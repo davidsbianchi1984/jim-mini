@@ -41,4 +41,4 @@
 # thing said two ways for no reason. Reconciled.
 #
 # ceiling: 1
-android: habit.name med.name nw.name  ("Name" — a habit, a medicine, a person)
+android: habit.name med.name ns.med.name nw.name  ("Name" — a habit, a medicine, a person)
