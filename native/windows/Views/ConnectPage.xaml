@@ -114,6 +114,35 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- The voice pair itself: say it aloud, and talk back.
+                         No speaking service is a posture, not a fault — the
+                         device's own voice answers and the card says so. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="TalkTitle" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="TalkText" FontSize="12" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="TalkSpeakButton" Click="OnSpeakAloud"
+                                        Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                                <Button x:Name="TalkMicButton" Click="OnTalkMic"
+                                        Background="Transparent" FontSize="12"
+                                        Foreground="{StaticResource JimBrandABrush}" />
+                            </StackPanel>
+                            <TextBlock x:Name="TalkDeviceSpoke" FontSize="11" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{StaticResource JimAmberBrush}" />
+                            <TextBlock x:Name="TalkMicRefused" FontSize="11" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{StaticResource JimAmberBrush}" />
+                            <TextBlock x:Name="TalkHeard" FontSize="12" Visibility="Collapsed"
+                                       TextWrapping="Wrap" Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="TalkHealth" FontSize="10" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <TextBlock x:Name="TalkError" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
+                        </StackPanel>
+                    </Border>
+
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="8">

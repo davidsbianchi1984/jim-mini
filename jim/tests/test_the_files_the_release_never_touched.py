@@ -234,23 +234,19 @@ def test_there_are_build_files_to_read():
 
 
 def test_the_capability_check_reaches_the_calls_this_shell_makes():
-    """This product's shells call **no** gated platform API — no camera, no
-    microphone, no location, no health store — so there is no count to floor
-    here, and pretending otherwise would be a floor of zero dressed up.
-
-    What is floored instead is the reading: the tables are non-empty and the
-    files they are applied to exist and are numerous. The check earns its
-    place by what it will catch, not by what it catches today — the sibling
-    product opens a camera and a microphone on both phones, and the first
-    screen here to do the same must bring its declaration with it.
+    """This test's first draft said the shells call **no** gated platform
+    API, and told whoever falsified that to raise the floor to a count. The
+    voice round falsified it: the Talk cards open the microphone on both
+    phones, so the count is now the record — the exact APIs, in the exact
+    files, each covered by the declaration tests above. A new gated call
+    shows up here by name, with its declaration, or not at all.
     """
     ios = _used(sorted(REPO.glob("native/ios/Sources/**/*.swift")), IOS_NEEDS)
     android = _used(sorted(REPO.glob("native/android/**/*.kt")), ANDROID_NEEDS)
     assert len(IOS_NEEDS) >= 8 and len(ANDROID_NEEDS) >= 5
-    assert not ios and not android, (
-        "a shell here has started calling a gated platform API — good, but "
-        "this floor was written on the fact that none did, so raise it to a "
-        f"count now that there is one to count: {ios} {android}")
+    assert ios == {"AVAudioRecorder": "TalkCard.swift",
+                   "AVAudioSession": "TalkCard.swift"}, ios
+    assert android == {"MediaRecorder": "Screens.kt"}, android
 
 
 def test_a_platform_api_named_in_a_comment_is_not_a_use(tmp_path):

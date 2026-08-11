@@ -2172,6 +2172,31 @@ public sealed class ApiClient
     public Task<CommunityFeedView> CommunityFeed(string uid, string token) =>
         Send<CommunityFeedView>(Get($"/community/{uid}/feed", token));
 
+    // ---- the voice pair: say it aloud, and hear what was said ----
+
+    /// <summary>Text in, audio out. A deployment with no speaking service
+    /// answers 503 — the card falls back to the device's own voice,
+    /// because silence would be the wrong failure.</summary>
+    public async Task<byte[]> SpeakAloud(string text)
+    {
+        var req = Post("/voice/speak", new { text }, null);
+        var res = await Dispatch(req);
+        if (!res.IsSuccessStatusCode)
+            throw new HttpRequestException(await res.Content.ReadAsStringAsync());
+        return await res.Content.ReadAsByteArrayAsync();
+    }
+
+    /// <summary>Recorded speech in, words out. The audio is not stored
+    /// server-side.</summary>
+    public Task<Transcribed> Transcribe(string audioBase64, string filename) =>
+        Send<Transcribed>(Post("/voice/transcribe",
+            new { audio_base64 = audioBase64, filename }, null));
+
+    /// <summary>The backend's own pulse, and whether a QRME tandem stands
+    /// behind it.</summary>
+    public Task<HealthOut> Health() =>
+        Send<HealthOut>(new HttpRequestMessage(HttpMethod.Get, "/health"));
+
     public Task<RelayChannel> RelayChannel() =>
         Send<RelayChannel>(new HttpRequestMessage(HttpMethod.Get,
             "/relay/channel"));
@@ -3131,3 +3156,11 @@ public record CommunityFeedView(
     [property: JsonPropertyName("note")] string Note,
     [property: JsonPropertyName("open_in_qrme")] string? OpenInQrme,
     [property: JsonPropertyName("items")] CommunityFeedItem[] Items);
+
+// ---- the voice pair: say it aloud, and hear what was said ----
+
+public record Transcribed([property: JsonPropertyName("text")] string Text);
+
+public record HealthOut(
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("tandem")] bool Tandem);

@@ -38,6 +38,8 @@ struct ConnectView: View {
                     // The deployment's own plumbing: the voice it speaks in
                     // and the mail it sends through.
                     VoiceSettingsCard()
+                    // The voice pair itself: say it aloud, and talk back.
+                    TalkCard()
                     MailSettingsCard()
                     // The wrist's drip channel and the paired embodiments
                     // are sources too.

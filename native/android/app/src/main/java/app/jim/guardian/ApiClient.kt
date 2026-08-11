@@ -2697,6 +2697,54 @@ object ApiClient {
         }
     }
 
+    // ---- the voice pair: say it aloud, and hear what was said ----
+
+    /** Text in, audio out. A deployment with no speaking service answers
+     *  503 — the panel falls back to the device's own voice, because
+     *  silence would be the wrong failure. */
+    suspend fun speakAloud(text: String): ByteArray = withContext(Dispatchers.IO) {
+        val conn = (URL("$base/voice/speak").openConnection() as HttpURLConnection).apply {
+            requestMethod = "POST"
+            setRequestProperty("content-type", "application/json")
+            setRequestProperty("accept-language", L10n.deviceLanguage())
+            connectTimeout = 8000; readTimeout = 20000
+            doOutput = true
+            outputStream.use {
+                it.write(JSONObject().put("text", text).toString().toByteArray())
+            }
+        }
+        val code = conn.responseCode
+        if (code !in 200..299) {
+            val said = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            conn.disconnect()
+            // The path from the connection itself, not a second literal
+            // the route audit would have to attribute on its own.
+            Problems.record("POST", conn.url.path, code)
+            val message = runCatching {
+                JSONObject(said).optString("message").ifBlank {
+                    JSONObject(said).optString("detail")
+                }
+            }.getOrNull()
+            throw ApiException(if (message.isNullOrBlank()) "HTTP $code" else message)
+        }
+        val bytes = conn.inputStream.use { it.readBytes() }
+        conn.disconnect()
+        bytes
+    }
+
+    /** Recorded speech in, words out. The audio is not stored server-side. */
+    suspend fun transcribe(audioBase64: String, filename: String): TranscribedK {
+        val o = request("/voice/transcribe", "POST",
+            JSONObject().put("audio_base64", audioBase64).put("filename", filename))
+        return TranscribedK(o.optString("text", ""))
+    }
+
+    /** The backend's own pulse, and whether a QRME tandem stands behind it. */
+    suspend fun health(): HealthK {
+        val o = request("/health")
+        return HealthK(o.optString("status", ""), o.optBoolean("tandem"))
+    }
+
     /** QRME's public feed through the tandem — read-only by construction,
      *  and a 409 in the server's words when no QRME endpoint is set. */
     suspend fun communityFeed(uid: String, token: String): CommunityFeedViewK {
@@ -3135,3 +3183,6 @@ data class CommunityFeedItemK(val kind: String?, val title: String?,
                               val topic: String?)
 data class CommunityFeedViewK(val note: String, val openInQrme: String?,
                               val items: List<CommunityFeedItemK>)
+
+data class TranscribedK(val text: String)
+data class HealthK(val status: String, val tandem: Boolean)

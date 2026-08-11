@@ -33,6 +33,9 @@ targets:
         UIUserInterfaceStyle: Dark
         UIStatusBarStyle: UIStatusBarStyleLightContent
         UILaunchScreen: {}
+        # The Talk card records a short clip for /voice/transcribe.
+        # iOS kills an app that opens the microphone without this string.
+        NSMicrophoneUsageDescription: "JIM records a short clip only while you hold the talk button, to hear what you said. The audio is sent for transcription and not stored."
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         UISupportedInterfaceOrientations:

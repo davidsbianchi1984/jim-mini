@@ -135,6 +135,12 @@ public sealed partial class ConnectPage : Page
         RoomsEmpty.Text = L10n.T("jcon.rooms.none");
         NearTitle.Text = L10n.T("jcon.near");
         PlacesEmpty.Text = L10n.T("jcon.places.none");
+        TalkTitle.Text = L10n.T("ns.vs.title");
+        TalkText.PlaceholderText = L10n.T("ns.vc.say.ph");
+        TalkSpeakButton.Content = L10n.T("ns.vc.speak");
+        TalkMicButton.Content = L10n.T("ns.vc.talk");
+        TalkDeviceSpoke.Text = L10n.T("ns.vc.device");
+        TalkMicRefused.Text = L10n.T("ns.vc.mic.refused");
         AskTitle.Text = L10n.T("rch.ask");
         AskTopicBox.PlaceholderText = L10n.T("rch.ask.topic.ph");
         AskQuestionBox.PlaceholderText = L10n.T("rch.ask.q.ph");
@@ -167,6 +173,7 @@ public sealed partial class ConnectPage : Page
         await ReloadApps();
         await ReloadCommunity();
         await ReloadExcursions();
+        await LoadHealthLine();
         await ReloadMic();
         LocalizeSettingsCards();
         await LoadVoiceSettings();
@@ -568,6 +575,126 @@ public sealed partial class ConnectPage : Page
         if (_feedUrl is null) return;
         if (Uri.TryCreate(_feedUrl, UriKind.Absolute, out var uri))
             await Windows.System.Launcher.LaunchUriAsync(uri);
+    }
+
+    // -- The voice pair: say it aloud, and hear what was said --
+
+    private Windows.Media.Playback.MediaPlayer? _player;
+    private Windows.Media.Capture.MediaCapture? _capture;
+    private Windows.Storage.StorageFile? _clip;
+    private bool _talkRecording;
+
+    /// <summary>The backend's own pulse, shown as one small line — the
+    /// route every deployment answers without an account.</summary>
+    private async Task LoadHealthLine()
+    {
+        try
+        {
+            var h = await ApiClient.Shared.Health();
+            TalkHealth.Text = $"{h.Status} · {h.Tandem}";
+            TalkHealth.Visibility = Visibility.Visible;
+        }
+        catch { /* an unreachable backend already shows everywhere else */ }
+    }
+
+    private void PlayStream(Windows.Storage.Streams.IRandomAccessStream stream,
+                            string contentType)
+    {
+        _player?.Dispose();
+        _player = new Windows.Media.Playback.MediaPlayer
+        {
+            Source = Windows.Media.Core.MediaSource.CreateFromStream(
+                stream, contentType),
+        };
+        _player.Play();
+    }
+
+    /// The configured voice when the deployment has one; the device's own
+    /// otherwise — the same two layers, in the same order, as the console.
+    private async void OnSpeakAloud(object sender, RoutedEventArgs e)
+    {
+        var toSay = TalkText.Text.Trim();
+        if (toSay.Length == 0) return;
+        TalkDeviceSpoke.Visibility = Visibility.Collapsed;
+        TalkError.Visibility = Visibility.Collapsed;
+        try
+        {
+            var bytes = await ApiClient.Shared.SpeakAloud(toSay);
+            var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+            await stream.WriteAsync(bytes.AsBuffer());
+            stream.Seek(0);
+            PlayStream(stream, "audio/mpeg");
+        }
+        catch
+        {
+            // 503 and everything else: the device's own voice reads it.
+            try
+            {
+                using var synth =
+                    new Windows.Media.SpeechSynthesis.SpeechSynthesizer();
+                var spoken = await synth.SynthesizeTextToStreamAsync(toSay);
+                PlayStream(spoken, spoken.ContentType);
+                TalkDeviceSpoke.Visibility = Visibility.Visible;
+            }
+            catch (Exception inner) { ShowTalkError(inner.Message); }
+        }
+    }
+
+    private async void OnTalkMic(object sender, RoutedEventArgs e)
+    {
+        if (!_talkRecording)
+        {
+            TalkMicRefused.Visibility = Visibility.Collapsed;
+            TalkError.Visibility = Visibility.Collapsed;
+            try
+            {
+                _capture = new Windows.Media.Capture.MediaCapture();
+                await _capture.InitializeAsync(
+                    new Windows.Media.Capture.MediaCaptureInitializationSettings
+                    {
+                        StreamingCaptureMode =
+                            Windows.Media.Capture.StreamingCaptureMode.Audio,
+                    });
+                var folder = await Windows.Storage.StorageFolder
+                    .GetFolderFromPathAsync(System.IO.Path.GetTempPath());
+                _clip = await folder.CreateFileAsync("speech.m4a",
+                    Windows.Storage.CreationCollisionOption.ReplaceExisting);
+                await _capture.StartRecordToStorageFileAsync(
+                    Windows.Media.MediaProperties.MediaEncodingProfile.CreateM4a(
+                        Windows.Media.MediaProperties.AudioEncodingQuality.Auto),
+                    _clip);
+                _talkRecording = true;
+                TalkMicButton.Content = L10n.T("ns.vc.stop");
+            }
+            catch
+            {
+                // Initialization is where a refused microphone surfaces.
+                TalkMicRefused.Visibility = Visibility.Visible;
+            }
+            return;
+        }
+
+        try
+        {
+            await _capture!.StopRecordAsync();
+            _capture.Dispose();
+            _capture = null;
+            _talkRecording = false;
+            TalkMicButton.Content = L10n.T("ns.vc.talk");
+            if (_clip is null) return;
+            var buffer = await Windows.Storage.FileIO.ReadBufferAsync(_clip);
+            var got = await ApiClient.Shared.Transcribe(
+                Convert.ToBase64String(buffer.ToArray()), "speech.m4a");
+            TalkHeard.Text = got.Text;
+            TalkHeard.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowTalkError(ex.Message); }
+    }
+
+    private void ShowTalkError(string message)
+    {
+        TalkError.Text = message;
+        TalkError.Visibility = Visibility.Visible;
     }
 
     // -- channel 2, the lent microphone ----------------------------------

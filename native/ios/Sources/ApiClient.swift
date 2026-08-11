@@ -3489,7 +3489,47 @@ extension ApiClient {
     func communityFeed(uid: String, token: String) async throws -> CommunityFeedView {
         try await request("/community/\(uid)/feed", token: token)
     }
+
+    // ---- the voice pair: say it aloud, and hear what was said ----
+
+    /// Text in, audio out. A deployment with no speaking service answers
+    /// 503 — the card falls back to the device's own voice, because
+    /// silence would be the wrong failure.
+    func speakAloud(text: String, voiceId: String? = nil) async throws -> Data {
+        var req = URLRequest(url: base.appendingPathComponent("/voice/speak"))
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "content-type")
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        var body: [String: Any] = ["text": text]
+        if let voiceId, !voiceId.isEmpty { body["voice_id"] = voiceId }
+        req.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            let status = (resp as? HTTPURLResponse)?.statusCode ?? 0
+            // The path from the request itself, not a second literal the
+            // route audit would have to attribute on its own.
+            Problems.record(method: "POST", path: req.url?.path ?? "",
+                            status: status)
+            let said = (try? JSONSerialization.jsonObject(with: data))
+                as? [String: Any]
+            let message = (said?["message"] as? String)
+                ?? (said?["detail"] as? String) ?? "HTTP \(status)"
+            throw ApiError.http(message)
+        }
+        return data
+    }
+
+    /// Recorded speech in, words out. The audio is not stored server-side.
+    func transcribe(audioBase64: String,
+                    filename: String) async throws -> Transcribed {
+        try await request("/voice/transcribe", method: "POST",
+                          body: ["audio_base64": audioBase64,
+                                 "filename": filename])
+    }
 }
+
+struct Transcribed: Decodable { let text: String }
 
 // ---- safe knowledge excursions + the community window ----
 

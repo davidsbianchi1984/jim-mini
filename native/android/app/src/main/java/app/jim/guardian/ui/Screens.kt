@@ -45,6 +45,8 @@ import app.jim.guardian.CommunityFeedViewK
 import app.jim.guardian.CommunityVisitRowK
 import app.jim.guardian.ExcursionLearnedK
 import app.jim.guardian.ExcursionRowK
+import app.jim.guardian.HealthK
+import app.jim.guardian.TranscribedK
 import app.jim.guardian.GuardianFace
 import app.jim.guardian.EmergencyResult
 import app.jim.guardian.EscalationPolicy
@@ -3939,7 +3941,7 @@ fun ConnectScreen(vm: GuardianViewModel) {
         when (tab) {
             // Channel 2 sits with the sources: the lent microphone is a
             // way in for the world's sound, consented the same.
-            0 -> { SourcesPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); MailSettingsPanel(vm); WatchPanel(vm); DevicesPanel(vm); SittingPanel(vm) }
+            0 -> { SourcesPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); TalkPanel(vm); MailSettingsPanel(vm); WatchPanel(vm); DevicesPanel(vm); SittingPanel(vm) }
             1 -> SocialPanel(vm)
             2 -> AppsPanel(vm)
             3 -> {
@@ -6031,5 +6033,128 @@ private fun DevicesPanel(vm: GuardianViewModel) {
             }
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+// The voice pair, spoken and heard: text goes out through /voice/speak
+// and comes back as audio — or the device's own voice reads it when no
+// speaking service is configured, because silence would be the wrong
+// failure. The microphone records a short clip and /voice/transcribe
+// hands back the words; the audio is not stored server-side. The health
+// line at the bottom is the backend's own pulse. Console door (the
+// Coach's orb); this is the phone's.
+//
+// Line comments on purpose: the release-parse guard strips block
+// comments before counting braces, and the image mime literal in
+// CapturesPanel above reads to that stripper as a block-comment opener.
+// A block comment anywhere after it would hand the stripper its closing
+// half and swallow the thousand lines between.
+@Composable
+private fun TalkPanel(vm: GuardianViewModel) {
+    val context = LocalContext.current
+    var text by remember { mutableStateOf("") }
+    var heard by remember { mutableStateOf("") }
+    var deviceSpoke by remember { mutableStateOf(false) }
+    var recording by remember { mutableStateOf(false) }
+    var micRefused by remember { mutableStateOf(false) }
+    var health by remember { mutableStateOf<HealthK?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    val recorder = remember { mutableStateOf<android.media.MediaRecorder?>(null) }
+    val clip = remember { mutableStateOf<java.io.File?>(null) }
+    val tts = remember { mutableStateOf<android.speech.tts.TextToSpeech?>(null) }
+    DisposableEffect(Unit) {
+        val engine = android.speech.tts.TextToSpeech(context) { }
+        tts.value = engine
+        onDispose { engine.shutdown() }
+    }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.health() }) { r -> r.fold({ health = it }, { }) }
+    }
+
+    fun sendClip() {
+        val file = clip.value ?: return
+        val encoded = android.util.Base64.encodeToString(
+            file.readBytes(), android.util.Base64.NO_WRAP)
+        vm.call({ ApiClient.transcribe(encoded, "speech.m4a") }) { r ->
+            r.fold({ heard = it.text }, { error = it.message })
+        }
+    }
+
+    fun beginRecording() {
+        val file = java.io.File(context.cacheDir, "speech.m4a")
+        @Suppress("DEPRECATION") val rec = android.media.MediaRecorder()
+        try {
+            rec.setAudioSource(android.media.MediaRecorder.AudioSource.MIC)
+            rec.setOutputFormat(android.media.MediaRecorder.OutputFormat.MPEG_4)
+            rec.setAudioEncoder(android.media.MediaRecorder.AudioEncoder.AAC)
+            rec.setOutputFile(file.absolutePath)
+            rec.prepare(); rec.start()
+            recorder.value = rec; clip.value = file; recording = true
+        } catch (e: Exception) { error = e.message }
+    }
+
+    val ask = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { granted -> if (granted) beginRecording() else micRefused = true }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.vs.title", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        labeledField(L10n.t("ns.vs.title", vm.language), text,
+            L10n.t("ns.vc.say.ph", vm.language)) { text = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            BrandButton(L10n.t("ns.vc.speak", vm.language),
+                enabled = text.isNotBlank()) {
+                deviceSpoke = false; error = null
+                val toSay = text.trim()
+                vm.call({ ApiClient.speakAloud(toSay) }) { r ->
+                    r.fold({ bytes ->
+                        try {
+                            val out = java.io.File(context.cacheDir, "said.mp3")
+                            out.writeBytes(bytes)
+                            android.media.MediaPlayer().apply {
+                                setDataSource(out.absolutePath)
+                                setOnCompletionListener { release() }
+                                prepare(); start()
+                            }
+                        } catch (e: Exception) { error = e.message }
+                    }, {
+                        // 503 and everything else: the device's own voice.
+                        tts.value?.speak(toSay,
+                            android.speech.tts.TextToSpeech.QUEUE_FLUSH,
+                            null, "jim-say")
+                        deviceSpoke = true
+                    })
+                }
+            }
+            SmallAction(L10n.t(if (recording) "ns.vc.stop" else "ns.vc.talk",
+                    vm.language)) {
+                if (recording) {
+                    try { recorder.value?.stop() } catch (_: Exception) { }
+                    recorder.value?.release(); recorder.value = null
+                    recording = false
+                    sendClip()
+                } else {
+                    micRefused = false
+                    ask.launch(android.Manifest.permission.RECORD_AUDIO)
+                }
+            }
+        }
+        if (deviceSpoke) {
+            Text(L10n.t("ns.vc.device", vm.language), color = Jim.Amber,
+                fontSize = 11.sp)
+        }
+        if (micRefused) {
+            Text(L10n.t("ns.vc.mic.refused", vm.language), color = Jim.Amber,
+                fontSize = 11.sp)
+        }
+        if (heard.isNotEmpty()) {
+            Text(heard, color = Jim.T2, fontSize = 12.sp)
+        }
+        health?.let {
+            Text("${it.status} \u00b7 ${it.tandem}", color = Jim.T3,
+                fontSize = 10.sp)
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
     }
 }

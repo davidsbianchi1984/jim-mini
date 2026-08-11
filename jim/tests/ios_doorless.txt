@@ -1,6 +1,4 @@
 GET /c/{bid}/qr.svg
 GET /pair/qr.svg
 GET /social/connection/{cid}/qr.svg
-POST /voice/speak
-POST /voice/transcribe
 POST /watch/drip/{token}
