@@ -23,7 +23,8 @@ struct ImproveCard: View {
                 ForEach(categories, id: \.self) { Text($0.capitalized).tag($0) }
             }.pickerStyle(.segmented)
 
-            TextField("What's on your mind?", text: $message, axis: .vertical)
+            TextField(L10n.t("coach.msg.ph", state.language), text: $message,
+                      axis: .vertical)
                 .lineLimit(2...5).foregroundStyle(Theme.txt)
                 .padding(10).background(Theme.scrBot)
                 .clipShape(RoundedRectangle(cornerRadius: 11))

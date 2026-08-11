@@ -7,14 +7,14 @@
 
     <ScrollViewer>
         <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
-            <TextBlock Text="Life Coach" FontSize="22" FontWeight="Bold" Foreground="{StaticResource JimTxtBrush}" />
-            <TextBlock Text="Talk something through. Your coach knows your baseline and goals."
+            <TextBlock x:Name="CoachTitle" FontSize="22" FontWeight="Bold" Foreground="{StaticResource JimTxtBrush}" />
+            <TextBlock x:Name="CoachPitch"
                        Foreground="{StaticResource JimT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <ComboBox x:Name="AreaBox" Header="Area" SelectedIndex="0" HorizontalAlignment="Stretch">
+                    <ComboBox x:Name="AreaBox" SelectedIndex="0" HorizontalAlignment="Stretch">
                         <ComboBoxItem Content="mental_health" />
                         <ComboBoxItem Content="health_fitness" />
                         <ComboBoxItem Content="career" />
@@ -22,9 +22,9 @@
                         <ComboBoxItem Content="relationships" />
                         <ComboBoxItem Content="personal_growth" />
                     </ComboBox>
-                    <TextBox x:Name="MessageBox" Header="Message"
+                    <TextBox x:Name="MessageBox"
                              AcceptsReturn="True" TextWrapping="Wrap" Height="90" />
-                    <Button x:Name="AskButton" Content="Ask coach" HorizontalAlignment="Stretch"
+                    <Button x:Name="AskButton" HorizontalAlignment="Stretch"
                             Height="44" Foreground="White" Click="OnAsk">
                         <Button.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -43,7 +43,7 @@
                     BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1" CornerRadius="16"
                     Padding="16" Visibility="Collapsed">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Coach" FontWeight="Bold" FontSize="16" Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="ReplyHead" FontWeight="Bold" FontSize="16" Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="ReplyProvenance" Foreground="{StaticResource JimT2Brush}"
                                FontSize="11" TextWrapping="Wrap" Visibility="Collapsed" />
                     <TextBlock x:Name="ReplyText" Foreground="{StaticResource JimTxtBrush}"

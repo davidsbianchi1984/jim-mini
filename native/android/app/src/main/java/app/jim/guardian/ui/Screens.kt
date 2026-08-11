@@ -1578,14 +1578,14 @@ fun CheckinScreen(vm: GuardianViewModel) {
     screenScroll {
         Text(L10n.t("tab.checkin", vm.language), color = Jim.Txt, fontSize = 22.sp,
              fontWeight = FontWeight.Bold)
-        Text("A quick pulse on how you're doing.", color = Jim.T2, fontSize = 13.sp)
+        Text(L10n.t("ci.pitch", vm.language), color = Jim.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             ratingRow(L10n.t("ci.mood", vm.language), mood) { mood = it }
             ratingRow(L10n.t("ci.energy", vm.language), energy) { energy = it }
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Note", color = Jim.Txt, fontSize = 14.sp)
+                Text(L10n.t("ci.note", vm.language), color = Jim.Txt, fontSize = 14.sp)
                 OutlinedTextField(value = note, onValueChange = { note = it },
-                    placeholder = { Text("Anything on your mind?", color = Jim.T3) },
+                    placeholder = { Text(L10n.t("ci.note.ph", vm.language), color = Jim.T3) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -1602,7 +1602,7 @@ fun CheckinScreen(vm: GuardianViewModel) {
         }
         result?.guidance?.let { g ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Guidance", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("ci.guidance", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text(g.content, color = Jim.Txt, fontSize = 14.sp)
                 GuidanceExtras(g)
             }
@@ -1644,11 +1644,11 @@ fun CoachScreen(vm: GuardianViewModel) {
     var fromSpecialist by remember { mutableStateOf<SpecialistAnswer?>(null) }
 
     screenScroll {
-        Text("Life Coach", color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("Talk something through. Your coach knows your baseline and goals.",
+        Text(L10n.t("coach.title", vm.language), color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("coach.pitch", vm.language),
             color = Jim.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            areaChips(area) { area = it }
+            areaChips(vm, area) { area = it }
             labeledField(L10n.t("coach.msg", vm.language), message, L10n.t("coach.msg.ph", vm.language)) { message = it }
         }
         BrandButton(L10n.t("coach.ask", vm.language), enabled = message.isNotBlank(), busy = busy) {
@@ -1660,7 +1660,7 @@ fun CoachScreen(vm: GuardianViewModel) {
         }
         reply?.let { g ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Coach", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("tab.coach", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text(g.content, color = Jim.Txt, fontSize = 14.sp)
                 GuidanceExtras(g)
 
@@ -1709,8 +1709,9 @@ fun CoachScreen(vm: GuardianViewModel) {
 }
 
 @Composable
-private fun areaChips(selected: String, onPick: (String) -> Unit) {
-    Text("Area", color = Jim.T2, fontSize = 12.sp)
+private fun areaChips(vm: GuardianViewModel, selected: String,
+                      onPick: (String) -> Unit) {
+    Text(L10n.t("coach.area", vm.language), color = Jim.T2, fontSize = 12.sp)
     FlowRowChips(LIFE_AREAS, selected, onPick)
 }
 
@@ -1781,7 +1782,7 @@ private fun GoalsPanel(vm: GuardianViewModel) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("New goal", color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            areaChips(area) { area = it }
+            areaChips(vm, area) { area = it }
             labeledField(L10n.t("goal.title", vm.language), title, L10n.t("goal.title.ph", vm.language)) { title = it }
             BrandButton(L10n.t("goal.add", vm.language), enabled = title.isNotBlank(), busy = busy) {
                 busy = true

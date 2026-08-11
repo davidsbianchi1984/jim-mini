@@ -14,14 +14,15 @@ struct CheckinView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text(L10n.t("tab.checkin", state.language))
                     .font(.title2.bold()).foregroundStyle(Theme.txt)
-                Text("A quick pulse on how you're doing.").font(.footnote).foregroundStyle(Theme.t2)
+                Text(L10n.t("ci.pitch", state.language)).font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 18) {
                     rating(L10n.t("ci.mood", state.language), value: $mood)
                     rating(L10n.t("ci.energy", state.language), value: $energy)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Note").font(.subheadline).foregroundStyle(Theme.txt)
-                        TextField("Anything on your mind?", text: $note, axis: .vertical)
+                        Text(L10n.t("ci.note", state.language)).font(.subheadline).foregroundStyle(Theme.txt)
+                        TextField(L10n.t("ci.note.ph", state.language), text: $note,
+                                  axis: .vertical)
                             .lineLimit(2...4).foregroundStyle(Theme.txt)
                             .padding(10).background(Theme.scrBot)
                             .clipShape(RoundedRectangle(cornerRadius: 11))
@@ -30,7 +31,7 @@ struct CheckinView: View {
                 }.card()
 
                 Button(action: submit) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Log check-in").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("ci.log", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 14)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 13))
@@ -38,7 +39,7 @@ struct CheckinView: View {
 
                 if let g = result?.guardian.guidance {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Guidance").font(.headline).foregroundStyle(Theme.txt)
+                        Text(L10n.t("ci.guidance", state.language)).font(.headline).foregroundStyle(Theme.txt)
                         Text(g.content).font(.subheadline).foregroundStyle(Theme.txt)
                         GuidanceExtras(guidance: g)
                     }.card()

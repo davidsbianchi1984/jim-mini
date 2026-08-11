@@ -16,20 +16,21 @@ struct CoachView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Life Coach").font(.title2.bold()).foregroundStyle(Theme.txt)
-                Text("Talk something through. Your coach knows your baseline and goals.")
+                Text(L10n.t("coach.title", state.language)).font(.title2.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("coach.pitch", state.language))
                     .font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Area").font(.caption).foregroundStyle(Theme.t2)
+                    Text(L10n.t("coach.area", state.language)).font(.caption).foregroundStyle(Theme.t2)
                     Picker("", selection: $area) {
                         ForEach(areas, id: \.self) {
                             Text($0.replacingOccurrences(of: "_", with: " ").capitalized).tag($0)
                         }
                     }.pickerStyle(.menu).tint(Theme.brandA)
 
-                    Text("Message").font(.caption).foregroundStyle(Theme.t2)
-                    TextField("What's on your mind?", text: $message, axis: .vertical)
+                    Text(L10n.t("coach.msg", state.language)).font(.caption).foregroundStyle(Theme.t2)
+                    TextField(L10n.t("coach.msg.ph", state.language), text: $message,
+                              axis: .vertical)
                         .lineLimit(2...5).foregroundStyle(Theme.txt)
                         .padding(10).background(Theme.scrBot)
                         .clipShape(RoundedRectangle(cornerRadius: 11))
@@ -37,7 +38,7 @@ struct CoachView: View {
                 }.card()
 
                 Button(action: send) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Ask coach").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("coach.ask", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 14)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 13))
@@ -47,7 +48,7 @@ struct CoachView: View {
 
                 if let g = reply {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Coach").font(.headline).foregroundStyle(Theme.txt)
+                        Text(L10n.t("tab.coach", state.language)).font(.headline).foregroundStyle(Theme.txt)
                         Text(g.content).font(.subheadline).foregroundStyle(Theme.txt)
                         GuidanceExtras(guidance: g)
 

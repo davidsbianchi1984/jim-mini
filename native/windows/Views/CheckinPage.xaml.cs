@@ -19,6 +19,13 @@ public sealed partial class CheckinPage : Page
         // In code rather than XAML: a XAML literal cannot be re-read when the
         // language changes, and this heading was the English one.
         TitleText.Text = L10n.T("tab.checkin");
+        PitchText.Text = L10n.T("ci.pitch");
+        Mood.Header = L10n.T("ci.mood");
+        Energy.Header = L10n.T("ci.energy");
+        NoteBox.Header = L10n.T("ci.note");
+        NoteBox.PlaceholderText = L10n.T("ci.note.ph");
+        LogButton.Content = L10n.T("ci.log");
+        GuidanceHead.Text = L10n.T("ci.guidance");
         CalmHead.Text = L10n.T("wel.calm");
         CalmPitch.Text = L10n.T("wel.calm.pitch").Replace("{spoken}", "");
         WorkHead.Text = L10n.T("wel.work");
