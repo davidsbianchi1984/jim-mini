@@ -137,6 +137,11 @@ import app.jim.guardian.SpecialistRowK
 import app.jim.guardian.SpecialistTaskRowK
 import app.jim.guardian.SpecialistTaskViewK
 import app.jim.guardian.TaskStartedK
+import app.jim.guardian.AccessLogK
+import app.jim.guardian.CloudStatusK
+import app.jim.guardian.ContributionK
+import app.jim.guardian.PageRowK
+import app.jim.guardian.PlanRowK
 import kotlin.math.roundToInt
 
 @Composable
@@ -1027,6 +1032,127 @@ private fun SpecialistsPanel(vm: GuardianViewModel) {
                 color = Jim.T2, fontSize = 11.sp)
         }
         providerRefused?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+    }
+}
+
+
+/** The record and the veil: who has read your record, where the answers
+ *  come from, what you contribute and how to stop, what went out in your
+ *  name, and the plans this deployment offers. */
+@Composable
+private fun VeilPanel(vm: GuardianViewModel) {
+    var log by remember { mutableStateOf<AccessLogK?>(null) }
+    var cloud by remember { mutableStateOf<CloudStatusK?>(null) }
+    var contribution by remember { mutableStateOf<ContributionK?>(null) }
+    var revokedNote by remember { mutableStateOf<String?>(null) }
+    var incidentLines by remember { mutableStateOf<List<String>>(emptyList()) }
+    var pageRows by remember { mutableStateOf<List<PageRowK>>(emptyList()) }
+    var locality by remember { mutableStateOf("") }
+    var savedLocality by remember { mutableStateOf<String?>(null) }
+    var planRows by remember { mutableStateOf<List<PlanRowK>>(emptyList()) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        runCatching { ApiClient.cloudStatus() }.onSuccess { cloud = it }
+        runCatching { ApiClient.plans() }.onSuccess { planRows = it }
+        vm.call({ ApiClient.accessLog(vm.uid!!, vm.token!!) }) { r ->
+            r.onSuccess { log = it }
+        }
+        vm.call({ ApiClient.cloudContribution(vm.uid!!, vm.token!!) }) { r ->
+            r.onSuccess { contribution = it }
+        }
+        vm.call({ ApiClient.incidents(vm.uid!!, vm.token!!) }) { r ->
+            r.onSuccess { incidentLines = it }
+        }
+        vm.call({ ApiClient.pages(vm.uid!!, vm.token!!) }) { r ->
+            r.onSuccess { pageRows = it }
+        }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(L10n.t("hld.log", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        log?.let { l ->
+            if (l.vaulted) {
+                Text(L10n.t("hld.log.vaulted", vm.language), color = Jim.Green,
+                    fontSize = 11.sp)
+            }
+            if (l.recordKept) {
+                Text(L10n.t("hld.log.kept", vm.language), color = Jim.T2, fontSize = 11.sp)
+                l.entries.take(5).forEach { Text(it, color = Jim.T3, fontSize = 11.sp) }
+            } else {
+                Text(L10n.t("hld.log.empty", vm.language), color = Jim.T3, fontSize = 11.sp)
+            }
+            Text(l.note, color = Jim.T3, fontSize = 10.sp)
+        }
+
+        Text(L10n.t("hld.where", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        cloud?.let { c ->
+            Text(L10n.t("hld.where.cloud", vm.language)
+                .replace("{model}", c.model ?: "none")
+                .replace("{fallback}", c.fallback), color = Jim.T2, fontSize = 11.sp)
+            Text(c.contribution, color = Jim.T3, fontSize = 10.sp)
+        }
+
+        Text(L10n.t("set.cloud", vm.language), color = Jim.T2, fontSize = 12.sp,
+            fontWeight = FontWeight.Bold)
+        contribution?.let { c ->
+            Text(c.policy, color = Jim.T3, fontSize = 10.sp)
+            if (c.optedIn) {
+                SmallAction(L10n.t("set.cloud.stop", vm.language), enabled = !busy) {
+                    busy = true; error = null
+                    vm.call({ ApiClient.revokeCloudContribution(vm.uid!!, vm.token!!) }) { r ->
+                        r.onSuccess { revokedNote = it }
+                            .onFailure { error = it.message }
+                        busy = false
+                        vm.call({ ApiClient.cloudContribution(vm.uid!!, vm.token!!) }) { again ->
+                            again.onSuccess { contribution = it }
+                        }
+                    }
+                }
+            }
+        }
+        revokedNote?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+
+        Text(L10n.t("sfy.pages", vm.language), color = Jim.T2, fontSize = 12.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("sfy.pages.pitch", vm.language), color = Jim.T3, fontSize = 10.sp)
+        if (pageRows.isEmpty()) {
+            Text(L10n.t("sfy.pages.none", vm.language), color = Jim.T3, fontSize = 11.sp)
+        }
+        pageRows.take(5).forEach { p ->
+            Text("${p.to} \u00b7 ${p.sentAt}",
+                color = if (p.delivered) Jim.Green else Jim.T2, fontSize = 11.sp)
+        }
+        Text(L10n.t("sfy.history", vm.language), color = Jim.T2, fontSize = 12.sp,
+            fontWeight = FontWeight.Bold)
+        if (incidentLines.isEmpty()) {
+            Text(L10n.t("sfy.history.none", vm.language), color = Jim.T3, fontSize = 11.sp)
+        }
+        incidentLines.take(5).forEach { Text(it, color = Jim.Amber, fontSize = 11.sp) }
+
+        Text(L10n.t("set.loc", vm.language), color = Jim.T2, fontSize = 12.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("set.loc.pitch", vm.language), color = Jim.T3, fontSize = 10.sp)
+        labeledField(L10n.t("set.loc", vm.language), locality,
+            L10n.t("set.loc.ph", vm.language)) { locality = it }
+        SmallAction(L10n.t("set.save", vm.language), enabled = !busy) {
+            busy = true; error = null
+            vm.call({ ApiClient.setLocality(vm.uid!!, vm.token!!,
+                locality.trim()) }) { r ->
+                r.onSuccess { savedLocality = it }.onFailure { error = it.message }
+                busy = false
+            }
+        }
+        savedLocality?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+
+        Text(L10n.t("hld.plan", vm.language), color = Jim.T2, fontSize = 12.sp,
+            fontWeight = FontWeight.Bold)
+        planRows.forEach { p ->
+            Text("${p.title} \u00b7 $${p.priceUsd}", color = Jim.T2, fontSize = 11.sp)
+        }
         error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
     }
 }
@@ -2167,7 +2293,7 @@ fun SafetyScreen(vm: GuardianViewModel) {
             3 -> MedicalPanel(vm)
             4 -> PolicyPanel(vm)
             5 -> RobotsPanel(vm)
-            else -> CustodyPanel(vm)
+            else -> { CustodyPanel(vm); VeilPanel(vm) }
         }
     }
 }

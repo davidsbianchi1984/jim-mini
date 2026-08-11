@@ -22,6 +22,21 @@ public sealed partial class CustodyPage : Page
         BreaksHead.Text = L10n.T("cust.breaks");
         ProblemsYes.Content = L10n.T("ns.pr.send");
         ProblemsNo.Content = L10n.T("ns.pr.dont");
+        VeilLogHead.Text = L10n.T("hld.log");
+        VeilVaulted.Text = L10n.T("hld.log.vaulted");
+        VeilWhereHead.Text = L10n.T("hld.where");
+        VeilCloudHead.Text = L10n.T("set.cloud");
+        VeilStopButton.Content = L10n.T("set.cloud.stop");
+        VeilPagesHead.Text = L10n.T("sfy.pages");
+        VeilPagesPitch.Text = L10n.T("sfy.pages.pitch");
+        VeilPagesNone.Text = L10n.T("sfy.pages.none");
+        VeilHistoryHead.Text = L10n.T("sfy.history");
+        VeilHistoryNone.Text = L10n.T("sfy.history.none");
+        VeilLocHead.Text = L10n.T("set.loc");
+        VeilLocPitch.Text = L10n.T("set.loc.pitch");
+        VeilLocBox.PlaceholderText = L10n.T("set.loc.ph");
+        VeilLocSave.Content = L10n.T("set.save");
+        VeilPlanHead.Text = L10n.T("hld.plan");
         ProblemsSwitch.Header = L10n.T("ns.pr.toggle");
         ProblemsPreviewButton.Content = L10n.T("ns.pr.show");
         TakeItHead.Text = L10n.T("hld.take");
@@ -41,6 +56,7 @@ public sealed partial class CustodyPage : Page
     {
         base.OnNavigatedTo(e);
         await Load();
+        await LoadVeil();
     }
 
     private async void OnRefresh(object sender, RoutedEventArgs e) => await Load();
@@ -226,5 +242,126 @@ public sealed partial class CustodyPage : Page
             st.SignOut();
         }
         catch (Exception ex) { EndItButton.Content = ex.Message; }
+    }
+
+    // ---- the record and the veil ----
+
+    private static TextBlock VeilLine(string text, string brush) => new()
+    {
+        Text = text,
+        FontSize = 11,
+        TextWrapping = TextWrapping.Wrap,
+        Foreground = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources[brush],
+    };
+
+    private async System.Threading.Tasks.Task LoadVeil()
+    {
+        var s = AppState.Current;
+        try
+        {
+            var cloud = await ApiClient.Shared.CloudStatus();
+            VeilCloudLine.Text = L10n.T("hld.where.cloud")
+                .Replace("{model}", cloud.Model ?? "none")
+                .Replace("{fallback}", cloud.Fallback);
+            VeilCloudNote.Text = cloud.Contribution;
+        }
+        catch { /* backend offline */ }
+        try
+        {
+            VeilPlans.Children.Clear();
+            foreach (var plan in (await ApiClient.Shared.Plans()).Plans)
+                VeilPlans.Children.Add(VeilLine(
+                    $"{plan.Title} · ${(int)plan.PriceUsd}", "JimT2Brush"));
+        }
+        catch { /* leave as-is */ }
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var log = await ApiClient.Shared.AccessLog(s.Uid, s.Token);
+            VeilVaulted.Visibility = log.Vaulted
+                ? Visibility.Visible : Visibility.Collapsed;
+            VeilLogEntries.Children.Clear();
+            if (log.RecordKept)
+            {
+                VeilLogState.Text = L10n.T("hld.log.kept");
+                foreach (var entry in log.Entries.Take(5))
+                    VeilLogEntries.Children.Add(VeilLine(
+                        $"{entry.Action ?? ""} · {entry.At ?? ""}", "JimT3Brush"));
+            }
+            else VeilLogState.Text = L10n.T("hld.log.empty");
+            VeilLogNote.Text = log.Note;
+        }
+        catch { /* leave as-is */ }
+        try
+        {
+            var contribution = await ApiClient.Shared.CloudContribution(
+                s.Uid, s.Token);
+            VeilPolicy.Text = contribution.Policy;
+            VeilStopButton.Visibility = contribution.OptedIn
+                ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch { /* leave as-is */ }
+        try
+        {
+            var pages = await ApiClient.Shared.Pages(s.Uid, s.Token);
+            VeilPages.Children.Clear();
+            VeilPagesNone.Visibility = pages.Length == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            foreach (var page in pages.Take(5))
+                VeilPages.Children.Add(VeilLine(
+                    $"{page.To ?? ""} · {page.SentAt ?? ""}",
+                    page.Delivered == true ? "JimGreenBrush" : "JimT2Brush"));
+        }
+        catch { /* leave as-is */ }
+        try
+        {
+            var incidents = await ApiClient.Shared.Incidents(s.Uid, s.Token);
+            VeilIncidents.Children.Clear();
+            VeilHistoryNone.Visibility = incidents.Length == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            foreach (var incident in incidents.Take(5))
+                VeilIncidents.Children.Add(VeilLine(
+                    $"{incident.Kind ?? ""} · {incident.At ?? ""}",
+                    "JimAmberBrush"));
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private async void OnStopContributing(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var revoked = await ApiClient.Shared.RevokeCloudContribution(
+                s.Uid, s.Token);
+            VeilRevoked.Text = revoked.Note;
+            VeilRevoked.Visibility = Visibility.Visible;
+            VeilStopButton.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception ex)
+        {
+            VeilError.Text = ex.Message;
+            VeilError.Visibility = Visibility.Visible;
+        }
+    }
+
+    private async void OnSaveLocality(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var saved = await ApiClient.Shared.SetLocality(
+                s.Uid, s.Token, VeilLocBox.Text.Trim());
+            VeilLocSaved.Text = saved.Locality ?? "";
+            VeilLocSaved.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            VeilError.Text = ex.Message;
+            VeilError.Visibility = Visibility.Visible;
+        }
     }
 }

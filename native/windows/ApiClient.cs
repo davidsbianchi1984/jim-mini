@@ -2028,6 +2028,46 @@ public sealed class ApiClient
     public Task<ProviderSummary> ProviderSummary(string uid, string token) =>
         Send<ProviderSummary>(new HttpRequestMessage(HttpMethod.Get,
             $"/provider/{uid}"), token);
+
+    // ---- the record and the veil ----
+
+    /// An empty list with no record kept is a different fact from nobody
+    /// having looked, and the shape says which.
+    public Task<AccessLog> AccessLog(string uid, string token) =>
+        Send<AccessLog>(new HttpRequestMessage(HttpMethod.Get,
+            $"/access-log/{uid}"), token);
+
+    public Task<CloudStatus> CloudStatus() =>
+        Send<CloudStatus>(new HttpRequestMessage(HttpMethod.Get,
+            "/cloud/status"));
+
+    public Task<ContributionView> CloudContribution(string uid, string token) =>
+        Send<ContributionView>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/cloud-contribution"), token);
+
+    public Task<ContributionRevoked> RevokeCloudContribution(string uid,
+                                                             string token) =>
+        Send<ContributionRevoked>(Post(
+            $"/users/{uid}/cloud-contribution/revoke", new { }, token));
+
+    /// Open, unaccepted alarms on this account's site beacons.
+    public Task<IncidentRow[]> Incidents(string uid, string token) =>
+        Send<IncidentRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/incidents"), token);
+
+    /// Escalations and whether each reached anyone.
+    public Task<PageRow[]> Pages(string uid, string token) =>
+        Send<PageRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/pages"), token);
+
+    /// Used only to find local rooms and events through the community door.
+    public Task<LocalitySaved> SetLocality(string uid, string token,
+                                           string locality) =>
+        Send<LocalitySaved>(Put($"/users/{uid}/locality",
+            new { locality }, token));
+
+    public Task<PlansOut> Plans() =>
+        Send<PlansOut>(new HttpRequestMessage(HttpMethod.Get, "/plans"));
 }
 
 public record MoneyAccount(
@@ -2786,3 +2826,54 @@ public record ProviderSummary(
     [property: JsonPropertyName("known_conditions")] string[] KnownConditions,
     [property: JsonPropertyName("escalations")] int Escalations,
     [property: JsonPropertyName("avg_mood")] double? AvgMood);
+
+public record AccessLogEntry(
+    [property: JsonPropertyName("action")] string? Action,
+    [property: JsonPropertyName("at")] string? At);
+
+/// Who has read your record. An empty list with no record kept is a
+/// different fact from nobody having looked.
+public record AccessLog(
+    [property: JsonPropertyName("vaulted")] bool Vaulted,
+    [property: JsonPropertyName("access_record_kept")] bool RecordKept,
+    [property: JsonPropertyName("entries")] AccessLogEntry[] Entries,
+    [property: JsonPropertyName("note")] string Note);
+
+public record CloudStatus(
+    [property: JsonPropertyName("cloud")] bool Cloud,
+    [property: JsonPropertyName("model")] string? Model,
+    [property: JsonPropertyName("fallback")] string Fallback,
+    [property: JsonPropertyName("contribution")] string Contribution);
+
+public record ContributionView(
+    [property: JsonPropertyName("opted_in")] bool OptedIn,
+    [property: JsonPropertyName("policy")] string Policy);
+
+public record ContributionRevoked(
+    [property: JsonPropertyName("opted_in")] bool OptedIn,
+    [property: JsonPropertyName("revoked")] int Revoked,
+    [property: JsonPropertyName("note")] string Note);
+
+public record IncidentRow(
+    [property: JsonPropertyName("id")] string? Id,
+    [property: JsonPropertyName("kind")] string? Kind,
+    [property: JsonPropertyName("at")] string? At);
+
+public record PageRow(
+    [property: JsonPropertyName("id")] string? Id,
+    [property: JsonPropertyName("to")] string? To,
+    [property: JsonPropertyName("delivered")] bool? Delivered,
+    [property: JsonPropertyName("sent_at")] string? SentAt);
+
+public record LocalitySaved(
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("locality")] string? Locality);
+
+public record PlanRow(
+    [property: JsonPropertyName("plan")] string Plan,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("price_usd")] double PriceUsd,
+    [property: JsonPropertyName("period")] string? Period);
+
+public record PlansOut(
+    [property: JsonPropertyName("plans")] PlanRow[] Plans);

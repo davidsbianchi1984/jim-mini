@@ -2567,6 +2567,80 @@ object ApiClient {
             o.optString("next_phase", null), o.optString("note", null))
     }
 
+
+    // ---- the record and the veil ----
+
+    /** An empty list with no record kept is a different fact from nobody
+     *  having looked, and the shape says which. */
+    suspend fun accessLog(uid: String, token: String): AccessLogK {
+        val o = request("/access-log/$uid", token = token)
+        val entries = mutableListOf<String>()
+        o.optJSONArray("entries")?.let { a ->
+            for (i in 0 until a.length()) {
+                val e = a.optJSONObject(i) ?: continue
+                entries.add("${e.optString("action", "")} \u00b7 ${e.optString("at", "")}")
+            }
+        }
+        return AccessLogK(o.optBoolean("vaulted", false),
+            o.optBoolean("access_record_kept", false), entries,
+            o.optString("note", ""))
+    }
+
+    suspend fun cloudStatus(): CloudStatusK {
+        val o = request("/cloud/status")
+        return CloudStatusK(o.optBoolean("cloud", false),
+            o.optString("model", null), o.optString("fallback", ""),
+            o.optString("contribution", ""))
+    }
+
+    suspend fun cloudContribution(uid: String, token: String): ContributionK {
+        val o = request("/users/$uid/cloud-contribution", token = token)
+        return ContributionK(o.optBoolean("opted_in", false),
+            o.optString("policy", ""))
+    }
+
+    suspend fun revokeCloudContribution(uid: String, token: String): String =
+        request("/users/$uid/cloud-contribution/revoke", "POST", token = token)
+            .optString("note", "")
+
+    /** Open, unaccepted alarms on this account's site beacons. */
+    suspend fun incidents(uid: String, token: String): List<String> {
+        val arr = getArray("/users/$uid/incidents", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            "${o.optString("kind", "")} \u00b7 ${o.optString("at", "")}"
+        }
+    }
+
+    /** Escalations and whether each reached anyone. */
+    suspend fun pages(uid: String, token: String): List<PageRowK> {
+        val arr = getArray("/users/$uid/pages", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            PageRowK(o.optString("to", ""), o.optBoolean("delivered", false),
+                o.optString("sent_at", ""))
+        }
+    }
+
+    /** Used only to find local rooms and events through the community door. */
+    suspend fun setLocality(uid: String, token: String, locality: String): String =
+        request("/users/$uid/locality", "PUT",
+            JSONObject().put("locality", locality), token)
+            .optString("locality", "")
+
+    suspend fun plans(): List<PlanRowK> {
+        val o = request("/plans")
+        val out = mutableListOf<PlanRowK>()
+        o.optJSONArray("plans")?.let { a ->
+            for (i in 0 until a.length()) {
+                val p = a.getJSONObject(i)
+                out.add(PlanRowK(p.getString("plan"), p.optString("title", ""),
+                    p.optInt("price_usd", 0)))
+            }
+        }
+        return out
+    }
+
     /** What a consented care provider sees — and so what the person can see
      *  that they see. */
     suspend fun providerSummary(uid: String, token: String): ProviderSummaryK {
@@ -2824,3 +2898,11 @@ data class SpecialistTaskViewK(val status: String, val nextPhase: String?,
                                val note: String?)
 data class ProviderSummaryK(val displayName: String, val conditions: List<String>,
                             val escalations: Int)
+
+data class AccessLogK(val vaulted: Boolean, val recordKept: Boolean,
+                      val entries: List<String>, val note: String)
+data class CloudStatusK(val cloud: Boolean, val model: String?,
+                        val fallback: String, val contribution: String)
+data class ContributionK(val optedIn: Boolean, val policy: String)
+data class PageRowK(val to: String, val delivered: Boolean, val sentAt: String)
+data class PlanRowK(val plan: String, val title: String, val priceUsd: Int)

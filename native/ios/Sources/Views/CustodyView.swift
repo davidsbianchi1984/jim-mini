@@ -76,6 +76,9 @@ struct CustodySection: View {
 
             // Take it, and end it. Both, in the one place a person comes
             // looking for what this deployment holds about them.
+            // Who read it, where answers come from, what leaves, what went
+            // out in your name.
+            VeilCard()
             TakeItWithYouCard()
             EndItCard()
         }

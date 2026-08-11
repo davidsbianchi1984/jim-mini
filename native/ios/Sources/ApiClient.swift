@@ -3143,3 +3143,108 @@ extension ApiClient {
         try await request("/provider/\(uid)", token: token)
     }
 }
+
+// MARK: - The record and the veil
+
+/// Who has read your record. An empty list with no record being kept is a
+/// different fact from nobody having looked, and the shape says which.
+struct AccessLog: Decodable {
+    let vaulted: Bool
+    let access_record_kept: Bool
+    let entries: [AccessLogEntry]
+    let note: String
+}
+
+struct AccessLogEntry: Decodable {
+    let action: String?
+    let at: String?
+}
+
+struct CloudStatus: Decodable {
+    let cloud: Bool
+    let model: String?
+    let fallback: String
+    let contribution: String
+}
+
+struct ContributionView: Decodable {
+    let opted_in: Bool
+    let policy: String
+}
+
+struct ContributionRevoked: Decodable {
+    let opted_in: Bool
+    let revoked: Int
+    let note: String
+}
+
+struct IncidentRow: Decodable {
+    let id: String?
+    let kind: String?
+    let at: String?
+}
+
+struct PageRow: Decodable {
+    let id: String?
+    let to: String?
+    let delivered: Bool?
+    let sent_at: String?
+}
+
+struct LocalitySaved: Decodable {
+    let user_id: String
+    let locality: String?
+}
+
+struct PlanRow: Decodable {
+    let plan: String
+    let title: String
+    let price_usd: Double
+    let period: String?
+}
+
+struct PlansOut: Decodable { let plans: [PlanRow] }
+
+extension ApiClient {
+
+    func accessLog(uid: String, token: String) async throws -> AccessLog {
+        try await request("/access-log/\(uid)", token: token)
+    }
+
+    func cloudStatus() async throws -> CloudStatus {
+        try await request("/cloud/status")
+    }
+
+    func cloudContribution(uid: String,
+                           token: String) async throws -> ContributionView {
+        try await request("/users/\(uid)/cloud-contribution", token: token)
+    }
+
+    func revokeCloudContribution(uid: String,
+                                 token: String) async throws -> ContributionRevoked {
+        try await request("/users/\(uid)/cloud-contribution/revoke",
+                          method: "POST", token: token)
+    }
+
+    /// Open, unaccepted alarms on this account's site beacons — incident
+    /// scope, never person scope.
+    func incidents(uid: String, token: String) async throws -> [IncidentRow] {
+        try await request("/users/\(uid)/incidents", token: token)
+    }
+
+    /// Escalations and whether each reached anyone.
+    func pages(uid: String, token: String) async throws -> [PageRow] {
+        try await request("/users/\(uid)/pages", token: token)
+    }
+
+    /// Used only to find local rooms and events through the community door.
+    func setLocality(uid: String, token: String,
+                     locality: String) async throws -> LocalitySaved {
+        try await request("/users/\(uid)/locality", method: "PUT",
+                          body: ["locality": locality], token: token)
+    }
+
+    func plans() async throws -> PlansOut {
+        try await request("/plans")
+    }
+}

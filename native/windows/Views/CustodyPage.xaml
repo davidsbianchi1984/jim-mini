@@ -101,6 +101,72 @@
                                Foreground="{StaticResource JimT2Brush}" />
                 </StackPanel>
             </Border>
+
+            <!-- Who read it, where answers come from, what leaves, what went
+                 out in your name. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="VeilLogHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="VeilVaulted" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource JimGreenBrush}" />
+                    <TextBlock x:Name="VeilLogState" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="VeilLogEntries" Spacing="2" />
+                    <TextBlock x:Name="VeilLogNote" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+
+                    <TextBlock x:Name="VeilWhereHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="VeilCloudLine" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="VeilCloudNote" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+
+                    <TextBlock x:Name="VeilCloudHead" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="VeilPolicy" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <Button x:Name="VeilStopButton" Click="OnStopContributing" Visibility="Collapsed"
+                            Background="Transparent" FontSize="12"
+                            Foreground="{StaticResource JimRedBrush}" />
+                    <TextBlock x:Name="VeilRevoked" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+
+                    <TextBlock x:Name="VeilPagesHead" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="VeilPagesPitch" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <TextBlock x:Name="VeilPagesNone" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="VeilPages" Spacing="2" />
+                    <TextBlock x:Name="VeilHistoryHead" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="VeilHistoryNone" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="VeilIncidents" Spacing="2" />
+
+                    <TextBlock x:Name="VeilLocHead" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="VeilLocPitch" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="VeilLocBox" MinWidth="180" />
+                        <Button x:Name="VeilLocSave" Click="OnSaveLocality"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="VeilLocSaved" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+
+                    <TextBlock x:Name="VeilPlanHead" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel x:Name="VeilPlans" Spacing="2" />
+                    <TextBlock x:Name="VeilError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimRedBrush}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>
