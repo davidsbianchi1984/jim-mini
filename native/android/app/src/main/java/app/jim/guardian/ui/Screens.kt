@@ -59,6 +59,14 @@ import app.jim.guardian.AnonymityPosture
 import app.jim.guardian.FollowupAnswered
 import app.jim.guardian.OpenFollowup
 import app.jim.guardian.CommunityPlace
+import app.jim.guardian.CareTeamState
+import app.jim.guardian.CarePlanRow
+import app.jim.guardian.MicState
+import app.jim.guardian.MicEvent
+import app.jim.guardian.MicTypeChoices
+import app.jim.guardian.MicGainChoices
+import app.jim.guardian.CaptureVocabulary
+import app.jim.guardian.CaptureRecord
 import app.jim.guardian.CommunityRoom
 import app.jim.guardian.CommunityView
 import app.jim.guardian.JournalItem
