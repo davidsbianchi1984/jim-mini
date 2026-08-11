@@ -100,6 +100,51 @@
                                Foreground="{StaticResource JimT3Brush}" />
                 </StackPanel>
             </Border>
+
+            <!-- Clinical captures live with monitoring: what the body
+                 shows, sealed beside what the body reports. -->
+            <Border Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="CapHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="CapFor" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <ComboBox x:Name="CapSite" HorizontalAlignment="Stretch" />
+                    <TextBox x:Name="CapNote" />
+                    <ToggleSwitch x:Name="CapConsent" Visibility="Collapsed" />
+                    <Button x:Name="CapPickButton" Click="OnPickCapture"
+                            Background="{StaticResource JimBrandABrush}"
+                            Foreground="White" FontSize="12" />
+                    <ItemsControl x:Name="CapRows">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Spacing="2" Margin="0,4">
+                                    <TextBlock Text="{Binding Title}" FontWeight="Bold"
+                                               FontSize="12" TextWrapping="Wrap"
+                                               Foreground="{StaticResource JimTxtBrush}" />
+                                    <TextBlock Text="{Binding Note}" FontSize="11"
+                                               TextWrapping="Wrap"
+                                               Foreground="{StaticResource JimT2Brush}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="{Binding ShowLabel}" Tag="{Binding Id}"
+                                                Click="OnShowCapture" FontSize="11" />
+                                        <Button Content="{Binding AttachLabel}" Tag="{Binding Id}"
+                                                Click="OnAttachCapture" FontSize="11" />
+                                        <Button Content="{Binding WithdrawLabel}" Tag="{Binding Id}"
+                                                Click="OnWithdrawCapture" FontSize="11"
+                                                Foreground="{StaticResource JimRedBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Image x:Name="CapImage" MaxHeight="220" Visibility="Collapsed" />
+                    <TextBlock x:Name="CapError" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

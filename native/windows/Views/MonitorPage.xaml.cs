@@ -5,6 +5,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace JimGuardian.Views;
 
@@ -28,10 +30,19 @@ public sealed partial class MonitorPage : Page
         FollowupNote.PlaceholderText = L10n.T("mon.add");
         HelpedButton.Content = L10n.T("mon.helped");
         DidNotButton.Content = L10n.T("mon.didnot");
+        CapHead.Text = L10n.T("ns.ch.cam");
+        CapFor.Text = L10n.T("ns.ch.cam.for");
+        CapSite.Header = L10n.T("ns.ch.cam.site");
+        CapNote.PlaceholderText = L10n.T("ns.ch.cam.note");
+        CapConsent.Header = L10n.T("ns.ch.cam.consent");
+        CapPickButton.Content = L10n.T("ns.ch.cam.attach");
     }
 
-    protected override async void OnNavigatedTo(NavigationEventArgs e) =>
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
+    {
         await LoadFollowups();
+        await LoadCaptures();
+    }
 
     // MARK: [0039] — the effectiveness loop
 
@@ -217,4 +228,147 @@ public sealed partial class MonitorPage : Page
 
     private static string Cap(string s) =>
         string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s[1..];
+    // -- clinical captures ------------------------------------------------
+
+    public sealed class CaptureVm
+    {
+        public string Id { get; init; } = "";
+        public string Title { get; init; } = "";
+        public string Note { get; init; } = "";
+        public string ShowLabel { get; init; } = "";
+        public string AttachLabel { get; init; } = "";
+        public string WithdrawLabel { get; init; } = "";
+    }
+
+    private CaptureVocabulary? _vocabulary;
+    private Dictionary<string, string> _siteByLabel = new();
+
+    private async Task LoadCaptures()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            _vocabulary ??= await ApiClient.Shared.CaptureVocabulary();
+            if (CapSite.Items.Count == 0)
+            {
+                _siteByLabel = _vocabulary.Sites
+                    .ToDictionary(kv => kv.Value, kv => kv.Key);
+                CapSite.ItemsSource = _vocabulary.Sites.Values
+                    .OrderBy(v => v).ToList();
+                CapSite.SelectedIndex = 0;
+                CapSite.SelectionChanged += (_, _) => RefreshConsentVisibility();
+                RefreshConsentVisibility();
+            }
+            var rows = await ApiClient.Shared.Captures(s.Uid, s.Token);
+            // An intimate site is marked in words on the row itself.
+            CapRows.ItemsSource = rows.Take(6).Select(r => new CaptureVm
+            {
+                Id = r.Id,
+                Title = (_vocabulary.Sites.TryGetValue(r.Site, out var label)
+                            ? label : r.Site)
+                        + (r.Intimate ? " · " + L10n.T("ns.ch.cam.intimate") : ""),
+                Note = r.Note ?? "",
+                ShowLabel = L10n.T("ns.ch.cam.where"),
+                // A referral releases only what is chosen by name, and this
+                // button is the choosing — never done silently.
+                AttachLabel = L10n.T("ns.ch.cam.tick"),
+                WithdrawLabel = L10n.T("ns.ch.cam.withdraw"),
+            }).ToList();
+        }
+        catch (Exception e) { CaptureError(e); }
+    }
+
+    private string? SelectedSite() =>
+        CapSite.SelectedItem is string label
+        && _siteByLabel.TryGetValue(label, out var site) ? site : null;
+
+    private void RefreshConsentVisibility()
+    {
+        var site = SelectedSite();
+        CapConsent.Visibility =
+            site is not null && _vocabulary?.Intimate.Contains(site) == true
+                ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void CaptureError(Exception e)
+    {
+        CapError.Text = e.Message;
+        CapError.Visibility = Visibility.Visible;
+    }
+
+    private async void OnPickCapture(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var site = SelectedSite();
+        if (s.Uid is null || s.Token is null || site is null) return;
+        if (CapConsent.Visibility == Visibility.Visible && !CapConsent.IsOn) return;
+        CapError.Visibility = Visibility.Collapsed;
+        try
+        {
+            var picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+            // WinUI 3 desktop: the picker has no window of its own.
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainAppWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+            var file = await picker.PickSingleFileAsync();
+            if (file is null) return;
+            var buffer = await Windows.Storage.FileIO.ReadBufferAsync(file);
+            var bytes = new byte[buffer.Length];
+            using (var reader = Windows.Storage.Streams.DataReader.FromBuffer(buffer))
+                reader.ReadBytes(bytes);
+            await ApiClient.Shared.TakeCapture(s.Uid, s.Token, site,
+                Convert.ToBase64String(bytes), CapNote.Text.Trim(),
+                CapConsent.IsOn);
+            CapNote.Text = "";
+            await LoadCaptures();
+        }
+        catch (Exception ex) { CaptureError(ex); }
+    }
+
+    private async void OnShowCapture(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        if ((sender as FrameworkElement)?.Tag is not string id) return;
+        try
+        {
+            var image = await ApiClient.Shared.CaptureImage(s.Uid, s.Token, id);
+            var bytes = Convert.FromBase64String(image.Content);
+            var bmp = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
+            using (var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream())
+            {
+                await stream.WriteAsync(bytes.AsBuffer());
+                stream.Seek(0);
+                await bmp.SetSourceAsync(stream);
+            }
+            CapImage.Source = bmp;
+            CapImage.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { CaptureError(ex); }
+    }
+
+    private async void OnAttachCapture(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        if ((sender as FrameworkElement)?.Tag is not string id) return;
+        try { await ApiClient.Shared.AttachCaptures(s.Uid, s.Token, new[] { id }); }
+        catch (Exception ex) { CaptureError(ex); }
+    }
+
+    private async void OnWithdrawCapture(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        if ((sender as FrameworkElement)?.Tag is not string id) return;
+        try
+        {
+            await ApiClient.Shared.WithdrawCapture(s.Uid, s.Token, id);
+            await LoadCaptures();
+        }
+        catch (Exception ex) { CaptureError(ex); }
+    }
 }

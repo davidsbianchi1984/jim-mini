@@ -27,6 +27,10 @@ struct MonitorView: View {
                     slider(L10n.t("ci.stress", state.language), value: $stress, range: 0...1, unit: "", tint: Theme.amber, percent: true)
                 }.card()
 
+                // Clinical captures live with monitoring: what the body
+                // shows, sealed beside what the body reports.
+                CapturesCard()
+
                 Button(action: send) {
                     HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("mon.send", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 14)

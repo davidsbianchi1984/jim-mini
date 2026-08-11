@@ -30,7 +30,11 @@ struct ConnectView: View {
                 }.pickerStyle(.segmented)
 
                 switch tab {
-                case .sources: SourcesSection()
+                case .sources:
+                    SourcesSection()
+                    // Channel 2 sits with the sources: the lent microphone
+                    // is a way in for the world's sound, consented the same.
+                    MicCard()
                 case .social: SocialSection()
                 case .apps: AppsSection()
                 case .community: CommunitySection()

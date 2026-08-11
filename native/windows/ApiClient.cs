@@ -1465,6 +1465,119 @@ public sealed class ApiClient
             new { enabled, cap_per_order = capPerOrder, monthly_cap = monthlyCap,
                   asset_classes = new[] { "index_funds" }, scope }, token));
 
+
+    // -- care team, clinical captures, and channel 2 — the console doors
+    // task #106 built that the desktop shell never got. ------------------
+
+    public Task<CareTeamState> CareTeamState(string uid, string token) =>
+        Send<CareTeamState>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/care-team"), token);
+
+    public Task<CareTeamState> CareTeamLink(string uid, string token,
+                                            string orgId, string departmentId,
+                                            string ownerToken) =>
+        Send<CareTeamState>(Put($"/users/{uid}/care-team",
+            new { org_id = orgId, department_id = departmentId,
+                  owner_token = ownerToken }, token));
+
+    public async Task CareTeamUnlink(string uid, string token)
+    {
+        // 204: the server says nothing on success, deliberately.
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+            $"/users/{uid}/care-team");
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var res = await Dispatch(req);
+        res.EnsureSuccessStatusCode();
+    }
+
+    public Task<CarePlanRow> CareTeamCoordinate(string uid, string token,
+                                                string goal) =>
+        Send<CarePlanRow>(Post($"/users/{uid}/care-team/coordinate",
+            new { goal }, token));
+
+    public Task<CarePlanRow[]> CareTeamPlans(string uid, string token) =>
+        Send<CarePlanRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/care-team/plans"), token);
+
+    public Task<MicTypeChoices> MicTypes() =>
+        Send<MicTypeChoices>(new HttpRequestMessage(HttpMethod.Get,
+            "/mic/types"));
+
+    public Task<MicGainChoices> MicGains() =>
+        Send<MicGainChoices>(new HttpRequestMessage(HttpMethod.Get,
+            "/mic/gains"));
+
+    public Task<MicState> MicState(string uid, string token) =>
+        Send<MicState>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/mic"), token);
+
+    public Task<MicState> AttachMic(string uid, string token,
+                                    string deviceName, string micType) =>
+        Send<MicState>(Put($"/users/{uid}/mic",
+            new { device_name = deviceName, mic_type = micType }, token));
+
+    public Task<MicState> DetachMic(string uid, string token) =>
+        Send<MicState>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/users/{uid}/mic"), token);
+
+    public Task<MicState> SetMicGain(string uid, string token, string gain) =>
+        Send<MicState>(Put($"/users/{uid}/mic/gain", new { gain }, token));
+
+    /// "earpiece": the hand-over requires the occupying call to be on a
+    /// private route — jim/mic.py refuses it on speaker, where the watch
+    /// would hear both sides.
+    public Task<MicState> HandOverMic(string uid, string token,
+                                      string reason) =>
+        Send<MicState>(Post($"/users/{uid}/mic/handover",
+            new { reason, route = "earpiece" }, token));
+
+    public Task<MicState> ReleaseMic(string uid, string token) =>
+        Send<MicState>(Post($"/users/{uid}/mic/release", new { }, token));
+
+    public Task<MicEventRow[]> MicHistory(string uid, string token) =>
+        Send<MicEventRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/mic/history"), token);
+
+    public Task<CaptureVocabulary> CaptureVocabulary() =>
+        Send<CaptureVocabulary>(new HttpRequestMessage(HttpMethod.Get,
+            "/captures/vocabulary"));
+
+    public Task<CaptureRecord[]> Captures(string uid, string token) =>
+        Send<CaptureRecord[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/captures"), token);
+
+    public Task<CaptureRecord> TakeCapture(string uid, string token,
+                                           string site, string contentBase64,
+                                           string note,
+                                           bool intimateConsent) =>
+        Send<CaptureRecord>(Post($"/users/{uid}/captures",
+            note is { Length: > 0 }
+                ? new { kind = "photo", site, content = contentBase64,
+                        provenance = "captured",
+                        intimate_consent = intimateConsent, note }
+                : (object)new { kind = "photo", site, content = contentBase64,
+                                provenance = "captured",
+                                intimate_consent = intimateConsent }, token));
+
+    public Task<CaptureImageRow> CaptureImage(string uid, string token,
+                                              string captureId) =>
+        Send<CaptureImageRow>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/captures/{captureId}/image"), token);
+
+    public Task<CaptureAttachOutcome> AttachCaptures(string uid, string token,
+                                                     string[] captureIds) =>
+        Send<CaptureAttachOutcome>(Post($"/users/{uid}/captures/attach",
+            new { capture_ids = captureIds }, token));
+
+    public async Task WithdrawCapture(string uid, string token,
+                                      string captureId)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+            $"/users/{uid}/captures/{captureId}");
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var res = await Dispatch(req);
+        res.EnsureSuccessStatusCode();
+    }
 }
 
 public record MoneyAccount(
@@ -1654,3 +1767,75 @@ public record SpecialistAnswer(
     [property: JsonPropertyName("held_for_owner_approval")] bool HeldForOwnerApproval,
     [property: JsonPropertyName("specialist")] SpecialistWho? Specialist,
     [property: JsonPropertyName("provenance")] SpecialistProvenance? Provenance);
+
+public record CarePlanRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("goal")] string Goal,
+    [property: JsonPropertyName("plan")] string? Plan,
+    [property: JsonPropertyName("sealed_in_qrme_vault")] bool SealedInQrmeVault,
+    [property: JsonPropertyName("created_at")] string? CreatedAt);
+
+public record CareTeamState(
+    [property: JsonPropertyName("linked")] bool Linked,
+    [property: JsonPropertyName("org_id")] string? OrgId,
+    [property: JsonPropertyName("department_id")] string? DepartmentId,
+    [property: JsonPropertyName("latest_plan")] CarePlanRow? LatestPlan);
+
+/// Channel 2's current state. `capped` means a call is in progress and the
+/// agent has narrowed itself regardless of the owner's setting.
+public record MicState(
+    [property: JsonPropertyName("listening")] bool Listening,
+    [property: JsonPropertyName("attached")] bool Attached,
+    [property: JsonPropertyName("device")] string? Device,
+    [property: JsonPropertyName("mic_type")] string? MicType,
+    [property: JsonPropertyName("gain")] string? Gain,
+    [property: JsonPropertyName("capped")] bool Capped,
+    [property: JsonPropertyName("hears")] string? Hears,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record MicEventRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("device")] string Device,
+    [property: JsonPropertyName("mic_type")] string MicType,
+    [property: JsonPropertyName("gain")] string Gain,
+    [property: JsonPropertyName("live")] bool Live,
+    [property: JsonPropertyName("started_at")] string StartedAt);
+
+public record MicTypeChoices(
+    [property: JsonPropertyName("personal")] string[] Personal,
+    [property: JsonPropertyName("ambient")] string[] Ambient,
+    [property: JsonPropertyName("rule")] string? Rule);
+
+public record MicGainLevel(
+    [property: JsonPropertyName("gain")] string Gain,
+    [property: JsonPropertyName("reaches_others")] bool ReachesOthers,
+    [property: JsonPropertyName("describes")] string? Describes);
+
+public record MicGainChoices(
+    [property: JsonPropertyName("levels")] MicGainLevel[] Levels,
+    [property: JsonPropertyName("default")] string Default,
+    [property: JsonPropertyName("rule")] string? Rule);
+
+public record CaptureVocabulary(
+    [property: JsonPropertyName("kinds")] Dictionary<string, string> Kinds,
+    [property: JsonPropertyName("sites")] Dictionary<string, string> Sites,
+    [property: JsonPropertyName("intimate")] string[] Intimate,
+    [property: JsonPropertyName("vault_required")] bool VaultRequired);
+
+public record CaptureRecord(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("site")] string Site,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("intimate")] bool Intimate,
+    [property: JsonPropertyName("sealed")] bool Sealed,
+    [property: JsonPropertyName("created_at")] string? CreatedAt);
+
+public record CaptureImageRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("content")] string Content);
+
+public record CaptureAttachOutcome(
+    [property: JsonPropertyName("attached")] string[]? Attached,
+    [property: JsonPropertyName("explicit")] string[]? Explicit);

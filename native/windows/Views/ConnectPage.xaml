@@ -38,6 +38,57 @@
                             </ItemsControl>
                         </StackPanel>
                     </Border>
+
+                    <!-- Channel 2 sits with the sources: the lent microphone
+                         is a way in for the world's sound, consented the same. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MicHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <StackPanel x:Name="MicAttachForm" Spacing="8">
+                                <TextBlock x:Name="MicNone" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{StaticResource JimT3Brush}" />
+                                <TextBox x:Name="MicDevice" />
+                                <ComboBox x:Name="MicKind" HorizontalAlignment="Stretch" />
+                                <Button x:Name="MicAttachButton" Click="OnAttachMic"
+                                        Background="{StaticResource JimBrandABrush}"
+                                        Foreground="White" FontSize="12" />
+                            </StackPanel>
+                            <StackPanel x:Name="MicAttached" Spacing="8" Visibility="Collapsed">
+                                <TextBlock x:Name="MicLine" FontWeight="Bold" FontSize="13"
+                                           Foreground="{StaticResource JimTxtBrush}" />
+                                <TextBlock x:Name="MicHears" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{StaticResource JimT2Brush}" />
+                                <TextBlock x:Name="MicCapped" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{StaticResource JimAmberBrush}" Visibility="Collapsed" />
+                                <ComboBox x:Name="MicGain" HorizontalAlignment="Stretch"
+                                          SelectionChanged="OnMicGainPicked" />
+                                <TextBox x:Name="MicHandoverReason" />
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Button x:Name="MicHandoverButton" Click="OnHandOverMic"
+                                            Background="{StaticResource JimBrandABrush}"
+                                            Foreground="White" FontSize="12" />
+                                    <Button x:Name="MicReleaseButton" Click="OnReleaseMic"
+                                            FontSize="12" Visibility="Collapsed" />
+                                    <Button x:Name="MicDetachButton" Click="OnDetachMic"
+                                            Background="{StaticResource JimRedBrush}"
+                                            Foreground="White" FontSize="12" />
+                                </StackPanel>
+                            </StackPanel>
+                            <Button x:Name="MicHistoryButton" Click="OnMicHistory" FontSize="11" />
+                            <ItemsControl x:Name="MicHistoryList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" FontSize="11"
+                                                   Foreground="{StaticResource JimT2Brush}" Margin="0,2" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock x:Name="MicError" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>

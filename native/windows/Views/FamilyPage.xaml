@@ -118,6 +118,64 @@
                                Foreground="{StaticResource JimT2Brush}" />
                 </StackPanel>
             </Border>
+
+            <!-- The care team: the household's coordination layer, linked
+                 from the same screen that watches over its members. -->
+            <Border Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="CtHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="CtSub" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel x:Name="CtLinkForm" Spacing="8">
+                        <TextBlock x:Name="CtPitch" FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{StaticResource JimT2Brush}" />
+                        <TextBox x:Name="CtOrg" />
+                        <TextBox x:Name="CtDept" />
+                        <PasswordBox x:Name="CtToken" />
+                        <Button x:Name="CtLinkButton" Click="OnCareTeamLink"
+                                Background="{StaticResource JimBrandABrush}"
+                                Foreground="White" FontSize="12" />
+                    </StackPanel>
+                    <StackPanel x:Name="CtLinked" Spacing="8" Visibility="Collapsed">
+                        <TextBlock x:Name="CtLinkedHead" FontWeight="Bold" FontSize="13"
+                                   Foreground="{StaticResource JimGreenBrush}" />
+                        <TextBlock x:Name="CtLinkedPitch" FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{StaticResource JimT2Brush}" />
+                        <TextBlock x:Name="CtLinkedLine" FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{StaticResource JimT2Brush}" />
+                        <TextBox x:Name="CtGoal" />
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button x:Name="CtCoordinateButton" Click="OnCareTeamCoordinate"
+                                    Background="{StaticResource JimBrandABrush}"
+                                    Foreground="White" FontSize="12" />
+                            <Button x:Name="CtUnlinkButton" Click="OnCareTeamUnlink"
+                                    Background="{StaticResource JimRedBrush}"
+                                    Foreground="White" FontSize="12" />
+                        </StackPanel>
+                        <TextBlock x:Name="CtPlansEmpty" FontSize="11"
+                                   Foreground="{StaticResource JimT3Brush}" />
+                        <ItemsControl x:Name="CtPlans">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Spacing="2" Margin="0,4">
+                                        <TextBlock Text="{Binding Goal}" FontWeight="Bold"
+                                                   FontSize="12" TextWrapping="Wrap"
+                                                   Foreground="{StaticResource JimTxtBrush}" />
+                                        <TextBlock Text="{Binding Plan}" FontSize="11"
+                                                   TextWrapping="Wrap" MaxLines="4"
+                                                   Foreground="{StaticResource JimT2Brush}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <TextBlock x:Name="CtError" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

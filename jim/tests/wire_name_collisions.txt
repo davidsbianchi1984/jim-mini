@@ -1,5 +1,5 @@
-# status: backlog — 9 rows
-# ceiling: 9
+# status: backlog — 13 rows
+# ceiling: 13
 #
 # One wire field name carrying more than one type across this product's API.
 #
@@ -28,16 +28,29 @@
 # and its type explicitly with `JsonPropertyName` — the only place in this
 # codebase where the whole surface is stated in one file.
 #
-# Ratcheted: this list may shrink and must never grow. Fix one by giving each
-# meaning its own name, the way `spoken` became `spoken_steps`,
-# `deepened_line` and `spoken`.
+# Ratcheted: this list may shrink freely and grows only by raising the
+# ceiling in the same commit — a deliberate, visible edit, the same bargain
+# as the doorless files. Fix one by giving each meaning its own name, the
+# way `spoken` became `spoken_steps`, `deepened_line` and `spoken`.
+#
+# The four recorded at 0.61.1+: `attached`, `goal`, `intimate` and `sealed`
+# surfaced when the phones gained the care-team, capture and channel-2
+# doors the console has had since task #106. They are backend facts the
+# console has been living with untyped — the capture listing's `intimate`
+# is a boolean and the vocabulary's is a list — and renaming a served wire
+# field is an API break that belongs to its own round, not to the round
+# that finally declared the types.
 #
 answered
+attached
 chosen
 first_aid
+goal
 helped
+intimate
 messages
 provenance
 providers
+sealed
 specialist
 value

@@ -1,5 +1,5 @@
-# status: backlog — 22 rows
-# ceiling: 22
+# status: backlog — 27 rows
+# ceiling: 27
 #
 # iOS fields the Swift shape guard saw a route not return, which are real.
 #
@@ -21,8 +21,16 @@
 # helpfulness answers over time, and there is no route that builds one. A
 # fixture that faked the history would be asserting against its own fiction.
 #
-# Ratcheted: this list may shrink and must never grow. A row leaves it when
-# somebody writes a test that lives the history and reads the field.
+# The care-team and mic rows joined when 0.61.1+ typed the phones. The
+# care-team route answers `{"linked": false}` and nothing else until the
+# household links its QRME organization, and linking is validated across the
+# tandem — no fixture inside this suite can stand up a real org. `note` is
+# sent by attach, handover and release — the state GET this guard drives
+# never carries it, and the struct is shared.
+#
+# Ratcheted: this list may shrink freely and grows only by raising the
+# ceiling in the same commit — a deliberate, visible edit. A row leaves it
+# when somebody writes a test that lives the state and reads the field.
 #
 AdaptationProfile.note        # only while `built` is false — the sentence
                               # saying there is no profile yet
@@ -48,3 +56,9 @@ PresenceSpoken.due            # once a beat is scheduled
 PresenceSpoken.slot_from_hour
 PresenceBeat.deepened_line    # only when a real model answers — under the stub
                               # `deepen` returns the offline line and says so
+CareTeamState.org_id          # only once linked, and linking needs a real
+CareTeamState.department_id   # QRME organization through the tandem
+CareTeamState.credential_held
+CareTeamState.latest_plan
+MicStateRow.note              # attach/handover/release send it; the state GET
+                              # never does, and the struct is shared

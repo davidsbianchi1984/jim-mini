@@ -43,6 +43,24 @@ public sealed partial class FamilyPage : Page
         UnlinkButton.Content = L10n.T("fam.unlink.this");
         UnlinkAsk.Text = L10n.T("fam.unlink.ask");
         UnlinkTheirs.Text = L10n.T("fam.theirs");
+
+        CtHead.Text = L10n.T("ns.ct.title");
+        CtSub.Text = L10n.T("ns.ct.sub");
+        CtPitch.Text = L10n.T("ns.ct.link.pitch");
+        CtOrg.Header = L10n.T("ns.ct.link.org");
+        CtOrg.PlaceholderText = L10n.T("ns.ct.link.org.ph");
+        CtDept.Header = L10n.T("ns.ct.link.dept");
+        CtDept.PlaceholderText = L10n.T("ns.ct.link.dept.ph");
+        CtToken.Header = L10n.T("ns.ct.link.token");
+        CtToken.PlaceholderText = L10n.T("ns.ct.link.token.ph");
+        CtLinkButton.Content = L10n.T("ns.ct.link.go");
+        CtLinkedHead.Text = L10n.T("ns.ct.linked");
+        CtLinkedPitch.Text = L10n.T("ns.ct.linked.pitch");
+        CtGoal.Header = L10n.T("ns.ct.linked.goal");
+        CtGoal.PlaceholderText = L10n.T("ns.ct.linked.goal.ph");
+        CtCoordinateButton.Content = L10n.T("ns.ct.linked.goal");
+        CtUnlinkButton.Content = L10n.T("ns.ct.linked.unlink");
+        CtPlansEmpty.Text = L10n.T("ns.ct.plans.none");
         UnlinkConfirmButton.Content = L10n.T("fam.unlink");
         KeepLinkButton.Content = L10n.T("fam.keep");
     }
@@ -86,6 +104,7 @@ public sealed partial class FamilyPage : Page
     {
         base.OnNavigatedTo(e);
         await Reload();
+        await LoadCareTeam();
     }
 
     /// Each branch resolves on its own line, rather than picking a key and
@@ -248,5 +267,79 @@ public sealed partial class FamilyPage : Page
             ErrorText.Visibility = Visibility.Visible;
         }
         await Reload();
+    }
+    // -- the care team ----------------------------------------------------
+
+    private async Task LoadCareTeam()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var team = await ApiClient.Shared.CareTeamState(s.Uid, s.Token);
+            CtLinked.Visibility = team.Linked ? Visibility.Visible : Visibility.Collapsed;
+            CtLinkForm.Visibility = team.Linked ? Visibility.Collapsed : Visibility.Visible;
+            if (team.Linked)
+            {
+                CtLinkedLine.Text = L10n.T("ns.ct.linked.line")
+                    .Replace("{org}", team.OrgId ?? "")
+                    .Replace("{dept}", team.DepartmentId ?? "");
+                var plans = await ApiClient.Shared.CareTeamPlans(s.Uid, s.Token);
+                CtPlans.ItemsSource = plans.Take(4).ToList();
+                CtPlansEmpty.Visibility = plans.Length == 0
+                    ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+        catch (Exception e) { CareTeamError(e); }
+    }
+
+    private void CareTeamError(Exception e)
+    {
+        CtError.Text = e.Message;
+        CtError.Visibility = Visibility.Visible;
+    }
+
+    private async void OnCareTeamLink(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        CtError.Visibility = Visibility.Collapsed;
+        try
+        {
+            await ApiClient.Shared.CareTeamLink(s.Uid, s.Token,
+                CtOrg.Text.Trim(), CtDept.Text.Trim(), CtToken.Password.Trim());
+            CtToken.Password = "";
+            await LoadCareTeam();
+        }
+        catch (Exception ex) { CareTeamError(ex); }
+    }
+
+    private async void OnCareTeamUnlink(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        CtError.Visibility = Visibility.Collapsed;
+        try
+        {
+            await ApiClient.Shared.CareTeamUnlink(s.Uid, s.Token);
+            await LoadCareTeam();
+        }
+        catch (Exception ex) { CareTeamError(ex); }
+    }
+
+    private async void OnCareTeamCoordinate(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var goal = CtGoal.Text.Trim();
+        if (goal.Length == 0) return;
+        CtError.Visibility = Visibility.Collapsed;
+        try
+        {
+            await ApiClient.Shared.CareTeamCoordinate(s.Uid, s.Token, goal);
+            CtGoal.Text = "";
+            await LoadCareTeam();
+        }
+        catch (Exception ex) { CareTeamError(ex); }
     }
 }

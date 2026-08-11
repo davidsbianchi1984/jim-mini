@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -383,6 +384,10 @@ fun MonitorScreen(vm: GuardianViewModel) {
                 a.reason?.let { Text(it, color = Jim.T3, fontSize = 12.sp) }
             }
         }
+
+        // Clinical captures live with monitoring: what the body shows,
+        // sealed beside what the body reports.
+        CapturesPanel(vm)
     }
 }
 
@@ -2721,6 +2726,10 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                 }
             }
         }
+
+        // The care team: the household's coordination layer, linked from
+        // the same screen that watches over its members.
+        CareTeamPanel(vm)
     }
 }
 
@@ -2745,7 +2754,9 @@ fun ConnectScreen(vm: GuardianViewModel) {
             }
         }
         when (tab) {
-            0 -> SourcesPanel(vm)
+            // Channel 2 sits with the sources: the lent microphone is a
+            // way in for the world's sound, consented the same.
+            0 -> { SourcesPanel(vm); MicPanel(vm) }
             1 -> SocialPanel(vm)
             2 -> AppsPanel(vm)
             3 -> CommunityPanel(vm)
@@ -3490,5 +3501,321 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) 
             }
         }
         note?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+    }
+}
+
+// ---- care team, clinical captures, and channel 2 — the console doors
+// task #106 built that the phones never got ----
+
+@Composable
+private fun CareTeamPanel(vm: GuardianViewModel) {
+    var team by remember { mutableStateOf<CareTeamState?>(null) }
+    var plans by remember { mutableStateOf<List<CarePlanRow>>(emptyList()) }
+    var orgId by remember { mutableStateOf("") }
+    var departmentId by remember { mutableStateOf("") }
+    var ownerToken by remember { mutableStateOf("") }
+    var goal by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.careTeamState(vm.uid!!, vm.token!!) }) { r ->
+            team = r.getOrNull()
+            if (team?.linked == true)
+                vm.call({ ApiClient.careTeamPlans(vm.uid!!, vm.token!!) }) { p ->
+                    plans = p.getOrDefault(emptyList())
+                }
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.ct.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ns.ct.sub", vm.language), color = Jim.T2, fontSize = 12.sp)
+        val t = team
+        if (t?.linked == true) {
+            Text(L10n.t("ns.ct.linked", vm.language), color = Jim.Green,
+                fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("ns.ct.linked.pitch", vm.language), color = Jim.T2,
+                fontSize = 11.sp)
+            Text(L10n.t("ns.ct.linked.line", vm.language)
+                    .replace("{org}", t.orgId ?: "")
+                    .replace("{dept}", t.departmentId ?: ""),
+                color = Jim.T2, fontSize = 11.sp)
+            labeledField(L10n.t("ns.ct.linked.goal", vm.language), goal,
+                L10n.t("ns.ct.linked.goal.ph", vm.language)) { goal = it }
+            BrandButton(L10n.t("ns.ct.linked.goal", vm.language),
+                enabled = goal.isNotBlank()) {
+                vm.call({ ApiClient.careTeamCoordinate(vm.uid!!, vm.token!!,
+                    goal.trim()) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                    goal = ""; reload()
+                }
+            }
+            SmallAction(L10n.t("ns.ct.linked.unlink", vm.language)) {
+                vm.call({ ApiClient.careTeamUnlink(vm.uid!!, vm.token!!) }) {
+                    team = null; plans = emptyList(); reload()
+                }
+            }
+            if (plans.isEmpty())
+                Text(L10n.t("ns.ct.plans.none", vm.language), color = Jim.T3,
+                    fontSize = 11.sp)
+            else plans.take(4).forEach { plan ->
+                Text(plan.goal, color = Jim.Txt, fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold)
+                plan.plan?.let { Text(it, color = Jim.T2, fontSize = 11.sp,
+                    maxLines = 4) }
+            }
+        } else {
+            Text(L10n.t("ns.ct.link.pitch", vm.language), color = Jim.T2,
+                fontSize = 11.sp)
+            labeledField(L10n.t("ns.ct.link.org", vm.language), orgId,
+                L10n.t("ns.ct.link.org.ph", vm.language)) { orgId = it }
+            labeledField(L10n.t("ns.ct.link.dept", vm.language), departmentId,
+                L10n.t("ns.ct.link.dept.ph", vm.language)) { departmentId = it }
+            labeledField(L10n.t("ns.ct.link.token", vm.language), ownerToken,
+                L10n.t("ns.ct.link.token.ph", vm.language)) { ownerToken = it }
+            BrandButton(L10n.t("ns.ct.link.go", vm.language),
+                enabled = orgId.isNotBlank() && departmentId.isNotBlank()
+                        && ownerToken.isNotBlank()) {
+                vm.call({ ApiClient.careTeamLink(vm.uid!!, vm.token!!,
+                    orgId.trim(), departmentId.trim(), ownerToken.trim()) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                    ownerToken = ""; reload()
+                }
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+@Composable
+private fun MicPanel(vm: GuardianViewModel) {
+    var mic by remember { mutableStateOf<MicState?>(null) }
+    var types by remember { mutableStateOf<MicTypeChoices?>(null) }
+    var gains by remember { mutableStateOf<MicGainChoices?>(null) }
+    var history by remember { mutableStateOf<List<MicEvent>>(emptyList()) }
+    var showHistory by remember { mutableStateOf(false) }
+    var deviceName by remember { mutableStateOf("") }
+    var micType by remember { mutableStateOf("") }
+    var handoverReason by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun run(work: suspend () -> MicState) {
+        vm.call({ work() }) { r ->
+            error = r.exceptionOrNull()?.message
+            r.getOrNull()?.let { mic = it }
+        }
+    }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.micState(vm.uid!!, vm.token!!) }) { r -> mic = r.getOrNull() }
+        vm.call({ ApiClient.micTypes() }) { r ->
+            types = r.getOrNull()
+            if (micType.isBlank()) micType = types?.personal?.firstOrNull() ?: ""
+        }
+        vm.call({ ApiClient.micGains() }) { r -> gains = r.getOrNull() }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.ch.mic", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        val m = mic
+        if (m?.attached == true) {
+            Text("${m.device ?: ""} · ${m.micType ?: ""}", color = Jim.Txt,
+                fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            m.hears?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+            if (m.capped)
+                Text(L10n.t("ns.ch.mic.capped", vm.language), color = Jim.Amber,
+                    fontSize = 11.sp)
+            gains?.let { g ->
+                Text(L10n.t("ns.ch.mic.which", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    g.levels.forEach { level ->
+                        FilterChip(
+                            selected = (m.gain ?: g.default) == level.gain,
+                            onClick = { run { ApiClient.setMicGain(vm.uid!!,
+                                vm.token!!, level.gain) } },
+                            label = { Text(level.gain, fontSize = 11.sp) },
+                        )
+                    }
+                }
+            }
+            labeledField("", handoverReason,
+                L10n.t("ns.ch.mic.handover", vm.language)) { handoverReason = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SmallAction(L10n.t("ns.ch.mic.handover", vm.language)) {
+                    if (handoverReason.isNotBlank()) {
+                        val reason = handoverReason.trim()
+                        handoverReason = ""
+                        run { ApiClient.handOverMic(vm.uid!!, vm.token!!, reason) }
+                    }
+                }
+                if (m.listening)
+                    SmallAction(L10n.t("ns.ch.mic.release", vm.language)) {
+                        run { ApiClient.releaseMic(vm.uid!!, vm.token!!) }
+                    }
+                SmallAction(L10n.t("ns.ch.mic.detach", vm.language)) {
+                    run { ApiClient.detachMic(vm.uid!!, vm.token!!) }
+                }
+            }
+        } else {
+            Text(L10n.t("ns.ch.mic.none", vm.language), color = Jim.T3,
+                fontSize = 11.sp)
+            labeledField(L10n.t("ns.ch.mic.kind", vm.language), deviceName,
+                L10n.t("ns.ch.mic.kind", vm.language)) { deviceName = it }
+            types?.let { t ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    (t.personal + t.ambient).take(4).forEach { kind ->
+                        FilterChip(selected = micType == kind,
+                            onClick = { micType = kind },
+                            label = { Text(kind, fontSize = 11.sp) })
+                    }
+                }
+            }
+            BrandButton(L10n.t("ns.ch.mic.attach", vm.language),
+                enabled = deviceName.isNotBlank() && micType.isNotBlank()) {
+                run { ApiClient.attachMic(vm.uid!!, vm.token!!,
+                    deviceName.trim(), micType) }
+            }
+        }
+        SmallAction(L10n.t("ns.ch.hist", vm.language)) {
+            showHistory = !showHistory
+            if (showHistory)
+                vm.call({ ApiClient.micHistory(vm.uid!!, vm.token!!) }) { r ->
+                    history = r.getOrDefault(emptyList())
+                }
+        }
+        if (showHistory) history.take(6).forEach { event ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("${event.device} · ${event.gain}", color = Jim.T2,
+                    fontSize = 11.sp)
+                if (event.live)
+                    Text(L10n.t("ns.ch.hist.live", vm.language),
+                        color = Jim.Green, fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold)
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+@Composable
+private fun CapturesPanel(vm: GuardianViewModel) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var vocabulary by remember { mutableStateOf<CaptureVocabulary?>(null) }
+    var rows by remember { mutableStateOf<List<CaptureRecord>>(emptyList()) }
+    var site by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf("") }
+    var intimateConsent by remember { mutableStateOf(false) }
+    var openImage by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.captures(vm.uid!!, vm.token!!) }) { r ->
+            rows = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.captureVocabulary() }) { r ->
+            vocabulary = r.getOrNull()
+            if (site.isBlank())
+                site = vocabulary?.sites?.keys?.sorted()?.firstOrNull() ?: ""
+        }
+        reload()
+    }
+
+    // The system picker hands over one image and nothing else — the app
+    // never reads the photo library, only what the person chose.
+    val picker = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            val bytes = context.contentResolver.openInputStream(uri)
+                ?.use { it.readBytes() }
+            if (bytes != null) {
+                val encoded = android.util.Base64.encodeToString(
+                    bytes, android.util.Base64.NO_WRAP)
+                vm.call({ ApiClient.takeCapture(vm.uid!!, vm.token!!, site,
+                    encoded, note.trim(), intimateConsent) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                    note = ""; reload()
+                }
+            }
+        }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.ch.cam", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ns.ch.cam.for", vm.language), color = Jim.T2,
+            fontSize = 11.sp)
+        vocabulary?.let { v ->
+            Text(L10n.t("ns.ch.cam.site", vm.language), color = Jim.T2,
+                fontSize = 11.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                v.sites.keys.sorted().take(4).forEach { key ->
+                    FilterChip(selected = site == key,
+                        onClick = { site = key },
+                        label = { Text(v.sites[key] ?: key, fontSize = 10.sp) })
+                }
+            }
+            labeledField("", note,
+                L10n.t("ns.ch.cam.note", vm.language)) { note = it }
+            if (v.intimate.contains(site))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Switch(checked = intimateConsent,
+                        onCheckedChange = { intimateConsent = it },
+                        colors = SwitchDefaults.colors(checkedTrackColor = Jim.Amber))
+                    Text(L10n.t("ns.ch.cam.consent", vm.language),
+                        color = Jim.T2, fontSize = 11.sp)
+                }
+            BrandButton(L10n.t("ns.ch.cam.attach", vm.language),
+                enabled = site.isNotBlank()
+                        && (!v.intimate.contains(site) || intimateConsent)) {
+                picker.launch("image/*")
+            }
+        }
+        rows.take(6).forEach { row ->
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(vocabulary?.sites?.get(row.site) ?: row.site,
+                    color = Jim.Txt, fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold)
+                if (row.intimate)
+                    Text(L10n.t("ns.ch.cam.intimate", vm.language),
+                        color = Jim.Amber, fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold)
+                row.note?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SmallAction(L10n.t("ns.ch.cam.where", vm.language)) {
+                        vm.call({ ApiClient.captureImage(vm.uid!!, vm.token!!,
+                            row.id) }) { r -> openImage = r.getOrNull() }
+                    }
+                    // A referral releases only what is chosen by name, and
+                    // this button is the choosing — never done silently.
+                    SmallAction(L10n.t("ns.ch.cam.tick", vm.language)) {
+                        vm.call({ ApiClient.attachCaptures(vm.uid!!, vm.token!!,
+                            listOf(row.id)) }) { r ->
+                            error = r.exceptionOrNull()?.message
+                        }
+                    }
+                    SmallAction(L10n.t("ns.ch.cam.withdraw", vm.language)) {
+                        vm.call({ ApiClient.withdrawCapture(vm.uid!!, vm.token!!,
+                            row.id) }) { reload() }
+                    }
+                }
+            }
+        }
+        openImage?.takeIf { it.isNotBlank() }?.let { b64 ->
+            val bytes = android.util.Base64.decode(b64, android.util.Base64.DEFAULT)
+            val bmp = android.graphics.BitmapFactory
+                .decodeByteArray(bytes, 0, bytes.size)
+            if (bmp != null)
+                androidx.compose.foundation.Image(
+                    bitmap = bmp.asImageBitmap(),
+                    contentDescription = L10n.t("ns.ch.cam", vm.language),
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)))
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
     }
 }

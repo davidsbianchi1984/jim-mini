@@ -1614,6 +1614,172 @@ object ApiClient {
         request("/money/$uid/mandate", "PUT", body, token)
     }
 
+
+    // MARK: care team, clinical captures, and channel 2 — the console
+    // doors task #106 built that the phones never got.
+
+    private fun carePlanOf(o: JSONObject) = CarePlanRow(
+        o.getString("id"), o.optString("goal", ""),
+        o.optString("plan", null),
+        o.optBoolean("sealed_in_qrme_vault", false),
+        o.optString("created_at", null))
+
+    private fun careTeamOf(o: JSONObject) = CareTeamState(
+        o.optBoolean("linked", false),
+        o.optString("org_id", null), o.optString("department_id", null),
+        o.optJSONObject("latest_plan")?.let { carePlanOf(it) })
+
+    suspend fun careTeamState(uid: String, token: String): CareTeamState =
+        careTeamOf(request("/users/$uid/care-team", token = token))
+
+    suspend fun careTeamLink(uid: String, token: String, orgId: String,
+                             departmentId: String,
+                             ownerToken: String): CareTeamState {
+        val body = JSONObject()
+            .put("org_id", orgId).put("department_id", departmentId)
+            .put("owner_token", ownerToken)
+        return careTeamOf(request("/users/$uid/care-team", "PUT", body, token))
+    }
+
+    suspend fun careTeamUnlink(uid: String, token: String) {
+        // 204: the server says nothing on success, and request() hands
+        // back an empty object rather than choking on the silence.
+        request("/users/$uid/care-team", "DELETE", token = token)
+    }
+
+    suspend fun careTeamCoordinate(uid: String, token: String,
+                                   goal: String): CarePlanRow =
+        carePlanOf(request("/users/$uid/care-team/coordinate", "POST",
+                           JSONObject().put("goal", goal), token))
+
+    suspend fun careTeamPlans(uid: String, token: String): List<CarePlanRow> {
+        val arr = getArray("/users/$uid/care-team/plans", token)
+        return (0 until arr.length()).map { carePlanOf(arr.getJSONObject(it)) }
+    }
+
+    private fun micStateOf(o: JSONObject) = MicState(
+        o.optBoolean("listening", false), o.optBoolean("attached", false),
+        o.optString("device", null), o.optString("mic_type", null),
+        o.optString("gain", null), o.optBoolean("capped", false),
+        o.optString("hears", null))
+
+    suspend fun micTypes(): MicTypeChoices {
+        val o = request("/mic/types")
+        fun names(key: String): List<String> {
+            val a = o.optJSONArray(key) ?: return emptyList()
+            return (0 until a.length()).map { a.getString(it) }
+        }
+        return MicTypeChoices(names("personal"), names("ambient"),
+                              o.optString("rule", null))
+    }
+
+    suspend fun micGains(): MicGainChoices {
+        val o = request("/mic/gains")
+        val levels = mutableListOf<MicGainLevel>()
+        o.optJSONArray("levels")?.let { a ->
+            for (i in 0 until a.length()) {
+                val l = a.getJSONObject(i)
+                levels.add(MicGainLevel(l.getString("gain"),
+                    l.optBoolean("reaches_others", false),
+                    l.optString("describes", null)))
+            }
+        }
+        return MicGainChoices(levels, o.optString("default", ""),
+                              o.optString("rule", null))
+    }
+
+    suspend fun micState(uid: String, token: String): MicState =
+        micStateOf(request("/users/$uid/mic", token = token))
+
+    suspend fun attachMic(uid: String, token: String, deviceName: String,
+                          micType: String): MicState =
+        micStateOf(request("/users/$uid/mic", "PUT",
+            JSONObject().put("device_name", deviceName)
+                .put("mic_type", micType), token))
+
+    suspend fun detachMic(uid: String, token: String): MicState =
+        micStateOf(request("/users/$uid/mic", "DELETE", token = token))
+
+    suspend fun setMicGain(uid: String, token: String, gain: String): MicState =
+        micStateOf(request("/users/$uid/mic/gain", "PUT",
+                           JSONObject().put("gain", gain), token))
+
+    // "earpiece": the hand-over requires the occupying call to be on a
+    // private route — jim/mic.py refuses it on speaker, where the watch
+    // would hear both sides.
+    suspend fun handOverMic(uid: String, token: String,
+                            reason: String): MicState =
+        micStateOf(request("/users/$uid/mic/handover", "POST",
+            JSONObject().put("reason", reason).put("route", "earpiece"),
+            token))
+
+    suspend fun releaseMic(uid: String, token: String): MicState =
+        micStateOf(request("/users/$uid/mic/release", "POST", token = token))
+
+    suspend fun micHistory(uid: String, token: String): List<MicEvent> {
+        val arr = getArray("/users/$uid/mic/history", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            MicEvent(o.getString("id"), o.optString("device", ""),
+                o.optString("mic_type", ""), o.optString("gain", ""),
+                o.optBoolean("live", false), o.optString("started_at", ""))
+        }
+    }
+
+    private fun captureOf(o: JSONObject) = CaptureRecord(
+        o.getString("id"), o.optString("kind", "photo"),
+        o.optString("site", ""), o.optString("note", null),
+        o.optBoolean("intimate", false), o.optBoolean("sealed", false),
+        o.optString("created_at", null))
+
+    suspend fun captureVocabulary(): CaptureVocabulary {
+        val o = request("/captures/vocabulary")
+        fun table(key: String): Map<String, String> {
+            val t = o.optJSONObject(key) ?: return emptyMap()
+            val out = mutableMapOf<String, String>()
+            t.keys().forEach { k -> out[k] = t.getString(k) }
+            return out
+        }
+        val intimate = mutableListOf<String>()
+        o.optJSONArray("intimate")?.let { a ->
+            for (i in 0 until a.length()) intimate.add(a.getString(i))
+        }
+        return CaptureVocabulary(table("kinds"), table("sites"), intimate,
+                                 o.optBoolean("vault_required", false))
+    }
+
+    suspend fun captures(uid: String, token: String): List<CaptureRecord> {
+        val arr = getArray("/users/$uid/captures", token)
+        return (0 until arr.length()).map { captureOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun takeCapture(uid: String, token: String, site: String,
+                            contentBase64: String, note: String,
+                            intimateConsent: Boolean): CaptureRecord {
+        val body = JSONObject().put("kind", "photo").put("site", site)
+            .put("content", contentBase64).put("provenance", "captured")
+            .put("intimate_consent", intimateConsent)
+        if (note.isNotBlank()) body.put("note", note)
+        return captureOf(request("/users/$uid/captures", "POST", body, token))
+    }
+
+    suspend fun captureImage(uid: String, token: String,
+                             captureId: String): String =
+        request("/users/$uid/captures/$captureId/image", token = token)
+            .optString("content", "")
+
+    suspend fun attachCaptures(uid: String, token: String,
+                               captureIds: List<String>) {
+        val ids = org.json.JSONArray()
+        captureIds.forEach { ids.put(it) }
+        request("/users/$uid/captures/attach", "POST",
+                JSONObject().put("capture_ids", ids), token)
+    }
+
+    suspend fun withdrawCapture(uid: String, token: String,
+                                captureId: String) {
+        request("/users/$uid/captures/$captureId", "DELETE", token = token)
+    }
 }
 
 data class MoneyAccount(val id: String, val kind: String,
@@ -1696,3 +1862,31 @@ data class ContinuityState(val built: Boolean,
                            val vector: Map<String, Double>,
                            val meanings: Map<String, String>,
                            val method: String?)
+
+data class CarePlanRow(val id: String, val goal: String, val plan: String?,
+                       val sealedInQrmeVault: Boolean, val createdAt: String?)
+data class CareTeamState(val linked: Boolean, val orgId: String?,
+                         val departmentId: String?,
+                         val latestPlan: CarePlanRow?)
+/** Channel 2's current state. `capped` means a call is in progress and the
+ *  agent has narrowed itself regardless of the owner's setting. */
+data class MicState(val listening: Boolean, val attached: Boolean,
+                    val device: String?, val micType: String?,
+                    val gain: String?, val capped: Boolean,
+                    val hears: String?)
+data class MicEvent(val id: String, val device: String, val micType: String,
+                    val gain: String, val live: Boolean,
+                    val startedAt: String)
+data class MicTypeChoices(val personal: List<String>,
+                          val ambient: List<String>, val rule: String?)
+data class MicGainLevel(val gain: String, val reachesOthers: Boolean,
+                        val describes: String?)
+data class MicGainChoices(val levels: List<MicGainLevel>,
+                          val default: String, val rule: String?)
+data class CaptureVocabulary(val kinds: Map<String, String>,
+                             val sites: Map<String, String>,
+                             val intimate: List<String>,
+                             val vaultRequired: Boolean)
+data class CaptureRecord(val id: String, val kind: String, val site: String,
+                         val note: String?, val intimate: Boolean,
+                         val sealed: Boolean, val createdAt: String?)

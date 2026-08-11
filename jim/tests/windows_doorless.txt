@@ -7,9 +7,6 @@ DELETE /robots/{user_id}/{robot_id}
 DELETE /settings/mail
 DELETE /settings/voice
 DELETE /social/connection/{cid}
-DELETE /users/{user_id}/captures/{capture_id}
-DELETE /users/{user_id}/care-team
-DELETE /users/{user_id}/mic
 DELETE /vigil/{user_id}
 GET /access-log/{user_id}
 GET /auth/oauth/claim
@@ -21,7 +18,6 @@ GET /c/{bid}/card
 GET /c/{bid}/qr.svg
 GET /calm
 GET /calm/{user_id}/history
-GET /captures/vocabulary
 GET /cloud/status
 GET /coach/{user_id}
 GET /community/{user_id}/feed
@@ -40,8 +36,6 @@ GET /insights/{user_id}
 GET /meds/{user_id}
 GET /meds/{user_id}/adherence
 GET /memberships/{account_id}
-GET /mic/gains
-GET /mic/types
 GET /pair
 GET /pair/qr.svg
 GET /plans
@@ -61,14 +55,8 @@ GET /tutorial/for-screen/{number}
 GET /tutorial/progress/{learner_id}
 GET /tutorial/steps/{key}
 GET /users/{user_id}/beacons
-GET /users/{user_id}/captures
-GET /users/{user_id}/captures/{capture_id}/image
-GET /users/{user_id}/care-team
-GET /users/{user_id}/care-team/plans
 GET /users/{user_id}/cloud-contribution
 GET /users/{user_id}/incidents
-GET /users/{user_id}/mic
-GET /users/{user_id}/mic/history
 GET /users/{user_id}/pages
 GET /users/{user_id}/referral/clinicians
 GET /users/{user_id}/referral/requests
@@ -107,12 +95,7 @@ POST /specialists/seed/tandem
 POST /tutorial/done
 POST /tutorial/start
 POST /users/{user_id}/beacons
-POST /users/{user_id}/captures
-POST /users/{user_id}/captures/attach
-POST /users/{user_id}/care-team/coordinate
 POST /users/{user_id}/cloud-contribution/revoke
-POST /users/{user_id}/mic/handover
-POST /users/{user_id}/mic/release
 POST /users/{user_id}/referral/prepare
 POST /users/{user_id}/referral/requests/{request_id}/released
 POST /users/{user_id}/specialist-tasks
@@ -133,8 +116,5 @@ PUT /meds/{user_id}/{med_id}
 PUT /personality/{user_id}
 PUT /settings/mail
 PUT /settings/voice
-PUT /users/{user_id}/care-team
 PUT /users/{user_id}/locality
-PUT /users/{user_id}/mic
-PUT /users/{user_id}/mic/gain
 PUT /vigil/{user_id}

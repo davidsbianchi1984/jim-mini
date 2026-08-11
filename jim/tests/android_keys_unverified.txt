@@ -1,5 +1,5 @@
-# status: backlog — 6 rows
-# ceiling: 6
+# status: backlog — 9 rows
+# ceiling: 9
 #
 # Keys the Android client asks for that the route does not send *yet*, which
 # are real.
@@ -20,8 +20,18 @@
 # no route builds one. A fixture that faked the history would be asserting
 # against its own fiction.
 #
-# Ratcheted: this list may shrink and must never grow. A row leaves it when
-# somebody writes a test that lives the history and reads the key.
+# The care-team rows joined when 0.61.1+ typed the phones against
+# /users/{id}/care-team. The route's unlinked answer is `{"linked": false}`
+# and nothing else; the linked answer carries the organization, department
+# and latest plan. Linking requires a standing organization on the QRME side
+# of the tandem — `careteam.link` calls across to QRME to verify the org —
+# and no fixture inside this suite can stand one up. Same class as
+# continuity: a state the guard cannot manufacture without asserting against
+# its own fiction.
+#
+# Ratcheted: this list may shrink freely and grows only by raising the
+# ceiling in the same commit — a deliberate, visible edit. A row leaves it
+# when somebody writes a test that lives the state and reads the key.
 #
 /adaptation/{id} note           # only while `built` is false — the sentence
                                 # saying there is no profile yet
@@ -30,3 +40,6 @@
 /continuity/{id} vector         # time
 /continuity/{id} meanings
 /continuity/{id} method
+/users/{id}/care-team org_id         # only once linked, and linking needs a
+/users/{id}/care-team department_id  # real QRME organization through the
+/users/{id}/care-team latest_plan    # tandem

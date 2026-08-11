@@ -1839,3 +1839,235 @@ extension ApiClient {
                           token: token)
     }
 }
+
+// MARK: - Care team, clinical captures, and channel 2 (jim/careteam.py,
+// jim/capture.py, jim/secondear.py) — the three console doors task #106
+// built that the phones never got.
+
+struct CareTeamPlanRow: Decodable, Identifiable {
+    let id: String
+    let goal: String
+    let plan: String?
+    let sealed_in_qrme_vault: Bool?
+    let created_at: String?
+}
+
+struct CareTeamState: Decodable {
+    let linked: Bool
+    let org_id: String?
+    let department_id: String?
+    let credential_held: Bool?
+    let latest_plan: CareTeamPlanRow?
+}
+
+/// Channel 2's current state. `capped` means a call is in progress and the
+/// agent has narrowed itself regardless of the owner's setting.
+struct MicStateRow: Decodable {
+    let listening: Bool?
+    let attached: Bool?
+    let device: String?
+    let mic_type: String?
+    let gain: String?
+    let effective_gain: String?
+    let capped: Bool?
+    let hears: String?
+    let reason: String?
+    let route: String?
+    let note: String?
+}
+
+struct MicEventRow: Decodable, Identifiable {
+    let id: String
+    let device: String
+    let mic_type: String
+    let gain: String
+    let reason: String?
+    let live: Bool
+    let started_at: String
+    let ended_at: String?
+}
+
+struct MicTypeChoices: Decodable {
+    let personal: [String]
+    let ambient: [String]
+    let rule: String?
+}
+
+/// Gain is not volume: every level is the owner at a different distance,
+/// and `reaches_others` says plainly whether anyone else falls inside it.
+struct MicGainChoices: Decodable {
+    struct Level: Decodable { let gain: String; let reaches_others: Bool
+                              let describes: String? }
+    let levels: [Level]
+    let defaultGain: String
+    let rule: String?
+    enum CodingKeys: String, CodingKey {
+        case levels, rule
+        case defaultGain = "default"
+    }
+}
+
+/// The server describes the whole capture form: what may be photographed,
+/// which of those sites are intimate, and how big a file may be.
+struct CaptureVocabularyRow: Decodable {
+    let kinds: [String: String]
+    let sites: [String: String]
+    let intimate: [String]
+    let vault_required: Bool?
+    let max_bytes: Int?
+}
+
+struct CaptureRecord: Decodable, Identifiable {
+    let id: String
+    let kind: String
+    let site: String
+    let provenance: String?
+    let note: String?
+    let condition: String?
+    let intimate: Bool?
+    let sealed: Bool?
+    let created_at: String?
+}
+
+struct CaptureImageRow: Decodable {
+    let id: String
+    let kind: String
+    let content: String    // base64, straight from the vault
+}
+
+struct CaptureAttachOutcome: Decodable {
+    let attached: [String]?
+    let explicit: [String]?
+}
+
+extension ApiClient {
+    // -- the care team --------------------------------------------------
+
+    func careTeamState(uid: String, token: String) async throws -> CareTeamState {
+        try await request("/users/\(uid)/care-team", token: token)
+    }
+
+    func careTeamLink(uid: String, token: String, orgId: String,
+                      departmentId: String,
+                      ownerToken: String) async throws -> CareTeamState {
+        try await request("/users/\(uid)/care-team", method: "PUT",
+                          body: ["org_id": orgId,
+                                 "department_id": departmentId,
+                                 "owner_token": ownerToken], token: token)
+    }
+
+    func careTeamUnlink(uid: String, token: String) async throws {
+        // The path is written out here, not handed to a helper: the client
+        // scan reads paths at `request(` call sites, and a door it cannot
+        // see is a door it counts as missing.
+        struct Nothing: Decodable {}
+        do {
+            let _: Nothing = try await request("/users/\(uid)/care-team",
+                                               method: "DELETE", token: token)
+        } catch is DecodingError {
+            // 204: empty body on success is exactly what the route promises.
+        }
+    }
+
+    func careTeamCoordinate(uid: String, token: String,
+                            goal: String) async throws -> CareTeamPlanRow {
+        try await request("/users/\(uid)/care-team/coordinate",
+                          method: "POST", body: ["goal": goal], token: token)
+    }
+
+    func careTeamPlans(uid: String,
+                       token: String) async throws -> [CareTeamPlanRow] {
+        try await request("/users/\(uid)/care-team/plans", token: token)
+    }
+
+    // -- channel 2, the lent microphone ---------------------------------
+
+    func micTypes() async throws -> MicTypeChoices {
+        try await request("/mic/types")
+    }
+
+    func micGains() async throws -> MicGainChoices {
+        try await request("/mic/gains")
+    }
+
+    func micState(uid: String, token: String) async throws -> MicStateRow {
+        try await request("/users/\(uid)/mic", token: token)
+    }
+
+    func attachMic(uid: String, token: String, deviceName: String,
+                   micType: String) async throws -> MicStateRow {
+        try await request("/users/\(uid)/mic", method: "PUT",
+                          body: ["device_name": deviceName,
+                                 "mic_type": micType], token: token)
+    }
+
+    func detachMic(uid: String, token: String) async throws -> MicStateRow {
+        try await request("/users/\(uid)/mic", method: "DELETE", token: token)
+    }
+
+    func setMicGain(uid: String, token: String,
+                    gain: String) async throws -> MicStateRow {
+        try await request("/users/\(uid)/mic/gain", method: "PUT",
+                          body: ["gain": gain], token: token)
+    }
+
+    func handOverMic(uid: String, token: String, reason: String,
+                     route: String) async throws -> MicStateRow {
+        try await request("/users/\(uid)/mic/handover", method: "POST",
+                          body: ["reason": reason, "route": route],
+                          token: token)
+    }
+
+    func releaseMic(uid: String, token: String) async throws -> MicStateRow {
+        try await request("/users/\(uid)/mic/release", method: "POST",
+                          token: token)
+    }
+
+    func micHistory(uid: String, token: String) async throws -> [MicEventRow] {
+        try await request("/users/\(uid)/mic/history", token: token)
+    }
+
+    // -- clinical captures ----------------------------------------------
+
+    func captureVocabulary() async throws -> CaptureVocabularyRow {
+        try await request("/captures/vocabulary")
+    }
+
+    func captures(uid: String, token: String) async throws -> [CaptureRecord] {
+        try await request("/users/\(uid)/captures", token: token)
+    }
+
+    func takeCapture(uid: String, token: String, kind: String, site: String,
+                     contentBase64: String, note: String?,
+                     intimateConsent: Bool) async throws -> CaptureRecord {
+        var body: [String: Any] = ["kind": kind, "site": site,
+                                   "content": contentBase64,
+                                   "provenance": "captured",
+                                   "intimate_consent": intimateConsent]
+        if let note, !note.isEmpty { body["note"] = note }
+        return try await request("/users/\(uid)/captures", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func captureImage(uid: String, token: String,
+                      captureId: String) async throws -> CaptureImageRow {
+        try await request("/users/\(uid)/captures/\(captureId)/image",
+                          token: token)
+    }
+
+    func attachCaptures(uid: String, token: String,
+                        captureIds: [String]) async throws -> CaptureAttachOutcome {
+        try await request("/users/\(uid)/captures/attach", method: "POST",
+                          body: ["capture_ids": captureIds], token: token)
+    }
+
+    func withdrawCapture(uid: String, token: String,
+                         captureId: String) async throws {
+        // The route answers with the tombstoned record, not a verdict —
+        // the row remains so a clinician who was shown it sees "withdrawn"
+        // rather than a dangling reference.
+        let _: CaptureRecord = try await request(
+            "/users/\(uid)/captures/\(captureId)", method: "DELETE",
+            token: token)
+    }
+}

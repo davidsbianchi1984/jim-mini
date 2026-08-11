@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace JimGuardian.Views;
 
@@ -110,6 +111,18 @@ public sealed partial class ConnectPage : Page
         RoomsEmpty.Text = L10n.T("jcon.rooms.none");
         NearTitle.Text = L10n.T("jcon.near");
         PlacesEmpty.Text = L10n.T("jcon.places.none");
+        MicHead.Text = L10n.T("ns.ch.mic");
+        MicNone.Text = L10n.T("ns.ch.mic.none");
+        MicDevice.Header = L10n.T("ns.ch.mic.kind");
+        MicKind.Header = L10n.T("ns.ch.mic.which");
+        MicAttachButton.Content = L10n.T("ns.ch.mic.attach");
+        MicCapped.Text = L10n.T("ns.ch.mic.capped");
+        MicGain.Header = L10n.T("ns.ch.mic.which");
+        MicHandoverReason.PlaceholderText = L10n.T("ns.ch.mic.handover");
+        MicHandoverButton.Content = L10n.T("ns.ch.mic.handover");
+        MicReleaseButton.Content = L10n.T("ns.ch.mic.release");
+        MicDetachButton.Content = L10n.T("ns.ch.mic.detach");
+        MicHistoryButton.Content = L10n.T("ns.ch.hist");
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -120,6 +133,7 @@ public sealed partial class ConnectPage : Page
         await ReloadSocial();
         await ReloadApps();
         await ReloadCommunity();
+        await ReloadMic();
     }
 
     // -- Sources --
@@ -405,4 +419,127 @@ public sealed partial class ConnectPage : Page
         CommunityError.Visibility = Visibility.Visible;
     }
 
+    // -- channel 2, the lent microphone ----------------------------------
+
+    public sealed class MicHistoryVm { public string Line { get; init; } = ""; }
+
+    private bool _micGainLoading;
+
+    private async Task ReloadMic()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            if (MicKind.Items.Count == 0)
+            {
+                var types = await ApiClient.Shared.MicTypes();
+                MicKind.ItemsSource = types.Personal.Concat(types.Ambient).ToList();
+                MicKind.SelectedIndex = 0;
+            }
+            var mic = await ApiClient.Shared.MicState(s.Uid, s.Token);
+            Render(mic);
+        }
+        catch (Exception e) { MicFailed(e); }
+    }
+
+    private async void Render(MicState mic)
+    {
+        MicAttached.Visibility = mic.Attached ? Visibility.Visible : Visibility.Collapsed;
+        MicAttachForm.Visibility = mic.Attached ? Visibility.Collapsed : Visibility.Visible;
+        if (!mic.Attached) return;
+        MicLine.Text = $"{mic.Device} · {mic.MicType}";
+        MicHears.Text = mic.Hears ?? "";
+        MicCapped.Visibility = mic.Capped ? Visibility.Visible : Visibility.Collapsed;
+        MicReleaseButton.Visibility = mic.Listening ? Visibility.Visible : Visibility.Collapsed;
+        try
+        {
+            if (MicGain.Items.Count == 0)
+            {
+                var gains = await ApiClient.Shared.MicGains();
+                _micGainLoading = true;
+                MicGain.ItemsSource = gains.Levels.Select(l => l.Gain).ToList();
+                _micGainLoading = false;
+            }
+            _micGainLoading = true;
+            MicGain.SelectedItem = mic.Gain;
+            _micGainLoading = false;
+        }
+        catch (Exception e) { MicFailed(e); }
+    }
+
+    private void MicFailed(Exception e)
+    {
+        MicError.Text = e.Message;
+        MicError.Visibility = Visibility.Visible;
+    }
+
+    private async void OnAttachMic(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        if (MicKind.SelectedItem is not string kind) return;
+        MicError.Visibility = Visibility.Collapsed;
+        try { Render(await ApiClient.Shared.AttachMic(s.Uid, s.Token,
+                  MicDevice.Text.Trim(), kind)); }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    private async void OnDetachMic(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        MicError.Visibility = Visibility.Collapsed;
+        try { Render(await ApiClient.Shared.DetachMic(s.Uid, s.Token)); }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    private async void OnMicGainPicked(object sender, SelectionChangedEventArgs e)
+    {
+        if (_micGainLoading) return;
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        if (MicGain.SelectedItem is not string gain) return;
+        try { Render(await ApiClient.Shared.SetMicGain(s.Uid, s.Token, gain)); }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    private async void OnHandOverMic(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var reason = MicHandoverReason.Text.Trim();
+        if (reason.Length == 0) return;
+        MicError.Visibility = Visibility.Collapsed;
+        try
+        {
+            Render(await ApiClient.Shared.HandOverMic(s.Uid, s.Token, reason));
+            MicHandoverReason.Text = "";
+        }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    private async void OnReleaseMic(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try { Render(await ApiClient.Shared.ReleaseMic(s.Uid, s.Token)); }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    private async void OnMicHistory(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var rows = await ApiClient.Shared.MicHistory(s.Uid, s.Token);
+            MicHistoryList.ItemsSource = rows.Take(6).Select(r => new MicHistoryVm
+            {
+                Line = $"{r.Device} · {r.Gain}"
+                       + (r.Live ? " · " + L10n.T("ns.ch.hist.live") : ""),
+            }).ToList();
+        }
+        catch (Exception ex) { MicFailed(ex); }
+    }
 }
