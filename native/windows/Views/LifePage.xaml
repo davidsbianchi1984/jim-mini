@@ -34,6 +34,24 @@
                             </Button>
                         </StackPanel>
                     </Border>
+
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="ActHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="ActPitch" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="ActWhat" />
+                            <TextBox x:Name="ActNote" />
+                            <Button x:Name="ActLogButton" Click="OnActivityLog" Foreground="White"
+                                    Background="{StaticResource JimBrandABrush}" />
+                            <TextBlock x:Name="ActIntervention" FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimAmberBrush}" />
+                            <TextBlock x:Name="ActError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimRedBrush}" />
+                        </StackPanel>
+                    </Border>
                     <ItemsControl x:Name="GoalsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -43,6 +61,10 @@
                                         <TextBlock Text="{Binding Title}" FontWeight="Bold"
                                                    Foreground="{StaticResource JimTxtBrush}" />
                                         <TextBlock Text="{Binding Meta}" Foreground="{StaticResource JimT2Brush}" FontSize="12" />
+                                        <Button Content="{Binding DoneLabel}" Tag="{Binding Id}"
+                                                Click="OnGoalDone" Visibility="{Binding DoneVisibility}"
+                                                Background="Transparent" FontSize="12"
+                                                Foreground="{StaticResource JimGreenBrush}" />
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>

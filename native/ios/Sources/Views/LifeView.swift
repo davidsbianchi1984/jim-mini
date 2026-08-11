@@ -38,7 +38,7 @@ struct LifeView: View {
                 }.pickerStyle(.segmented)
 
                 switch tab {
-                case .goals: GoalsSection()
+                case .goals: GoalsSection(); ActivityCard()
                 case .habits: HabitsSection()
                 case .journal: JournalSection()
                 case .money: MoneySection()
@@ -90,6 +90,11 @@ private struct GoalsSection: View {
                             .font(.caption).foregroundStyle(Theme.t2)
                         Spacer()
                         Text((g.status ?? "active").capitalized).font(.caption).foregroundStyle(Theme.t3)
+                        if (g.status ?? "active") == "active" {
+                            Button(L10n.t("aim.goals.done", state.language)) { finish(g.id) }
+                                .font(.caption2).foregroundStyle(Theme.green)
+                                .disabled(busy)
+                        }
                     }
                 }.card()
             }
@@ -109,6 +114,17 @@ private struct GoalsSection: View {
         Task {
             _ = try? await ApiClient.shared.addGoal(uid: uid, token: token, area: area, title: title, target: nil)
             title = ""; await load(); busy = false
+        }
+    }
+
+    private func finish(_ goalId: String) {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true
+        Task {
+            _ = try? await ApiClient.shared.updateGoal(
+                uid: uid, token: token, goalId: goalId, progress: 1.0,
+                status: "completed")
+            await load(); busy = false
         }
     }
 }

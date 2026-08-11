@@ -3130,6 +3130,19 @@ def create_app(qrme_client: QRMEClient | None = None,
     #
     #     asked     is the page correct
     #     mattered  what can a page do that is not
+    # Android's HttpURLConnection refuses to speak PATCH — a
+    # ProtocolException, not a preference — so that shell sends POST with
+    # `x-http-method-override: PATCH`. Honoured for PATCH alone: the two
+    # verbs the stack can already say need no override, and an override to
+    # anything else is ignored rather than obeyed.
+    @app.middleware("http")
+    async def _the_verb_the_phone_cannot_say(request: Request, call_next):
+        if (request.method == "POST"
+                and request.headers.get("x-http-method-override", "")
+                    .upper() == "PATCH"):
+            request.scope["method"] = "PATCH"
+        return await call_next(request)
+
     @app.middleware("http")
     async def _what_a_page_promises_a_browser(request: Request, call_next):
         value = pagehead.new_nonce()

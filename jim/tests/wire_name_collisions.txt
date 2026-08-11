@@ -1,5 +1,5 @@
-# status: backlog — 17 rows
-# ceiling: 17
+# status: backlog — 20 rows
+# ceiling: 20
 #
 # One wire field name carrying more than one type across this product's API.
 #
@@ -58,6 +58,9 @@
 answered
 attached
 chosen
+cue
+days
+insights
 faces
 first_aid
 goal

@@ -1872,6 +1872,86 @@ public sealed class ApiClient
                                          string sessionId) =>
         Send<SessionEnded>(Post($"/sessions/{uid}/{sessionId}/end",
             new { }, token));
+
+    // ---- the Guardian learns the day ----
+
+    public Task<CalmCatalog> CalmCatalog() =>
+        Send<CalmCatalog>(new HttpRequestMessage(HttpMethod.Get, "/calm"));
+
+    /// A protocol, not a generation — the counts never vary.
+    public Task<CalmStarted> StartCalm(string uid, string token, string kind) =>
+        Send<CalmStarted>(Post($"/calm/{uid}/{kind}", new { }, token));
+
+    public Task<CalmHistoryRow[]> CalmHistory(string uid, string token) =>
+        Send<CalmHistoryRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/calm/{uid}/history"), token);
+
+    public Task<WorkoutPlan> WorkoutPlan(string uid, string token, int minutes,
+                                         string level, string focus) =>
+        Send<WorkoutPlan>(Post($"/fitness/{uid}/plan",
+            new { minutes, level, focus }, token));
+
+    public Task<MealPlan> MealPlan(string uid, string token, string goal,
+                                   int days) =>
+        Send<MealPlan>(Post($"/nutrition/{uid}/plan",
+            new { goal, preferences = Array.Empty<string>(), days }, token));
+
+    /// Ambient watching: an ordinary activity is context, not a reading.
+    public Task<ActivityWatch> ObserveActivity(string uid, string token,
+                                               string activity, string note) =>
+        Send<ActivityWatch>(Post($"/activity/{uid}",
+            note is { Length: > 0 }
+                ? new { activity, note }
+                : (object)new { activity }, token));
+
+    public Task<ConditionsKnown> DeclareCondition(string uid, string token,
+                                                  string condition,
+                                                  string note) =>
+        Send<ConditionsKnown>(Post($"/conditions/{uid}",
+            note is { Length: > 0 }
+                ? new { condition, note }
+                : (object)new { condition }, token));
+
+    public Task<PersonalitySaved> SetPersonality(string uid, string token,
+                                                 string tone) =>
+        Send<PersonalitySaved>(Put($"/personality/{uid}", new { tone }, token));
+
+    /// The server checks the consent, not this shell.
+    public Task<ContextAdded> GiveContext(string uid, string token,
+                                          string source, string kind) =>
+        Send<ContextAdded>(Post($"/context/{uid}",
+            new { source, kind, data = new { title = "something on the calendar" } },
+            token));
+
+    public Task<Goal> UpdateGoal(string uid, string token, string goalId,
+                                 double progress, string status) =>
+        Send<Goal>(new HttpRequestMessage(HttpMethod.Patch,
+            $"/goals/{uid}/{goalId}")
+        { Content = JsonContent.Create(new { progress, status }) }, token);
+
+    public Task<InsightRow[]> Insights(string uid, string token) =>
+        Send<InsightRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/insights/{uid}"), token);
+
+    public Task<EventRow[]> Events(string uid, string token) =>
+        Send<EventRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/events/{uid}"), token);
+
+    public Task<ProgressReport> ProgressReport(string uid, string token) =>
+        Send<ProgressReport>(new HttpRequestMessage(HttpMethod.Get,
+            $"/report/{uid}"), token);
+
+    /// An ambient, unprompted word from the coach.
+    public Task<CompanionSaid> CompanionCheckin(string uid, string token) =>
+        Send<CompanionSaid>(Post($"/companion/{uid}", new { }, token));
+
+    public Task<FeedbackSaved> SendGuidanceFeedback(string uid, string token,
+                                                    string rating) =>
+        Send<FeedbackSaved>(Post($"/feedback/{uid}", new { rating }, token));
+
+    public Task<CoachExchange[]> CoachHistory(string uid, string token) =>
+        Send<CoachExchange[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/coach/{uid}"), token);
 }
 
 public record MoneyAccount(
@@ -2426,3 +2506,128 @@ public record SessionStarted(
 public record SessionEnded(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("ended")] bool Ended);
+
+public record CalmSessionRow(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("minutes")] int Minutes,
+    [property: JsonPropertyName("what")] string What);
+
+public record CalmCatalog(
+    [property: JsonPropertyName("sessions")] CalmSessionRow[] Sessions);
+
+public record CalmStep(
+    [property: JsonPropertyName("say")] string Say,
+    [property: JsonPropertyName("seconds")] int Seconds);
+
+/// A protocol, not a generation — the counts never vary.
+public record CalmStarted(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("what")] string What,
+    [property: JsonPropertyName("total_seconds")] int TotalSeconds,
+    [property: JsonPropertyName("steps")] CalmStep[] Steps,
+    [property: JsonPropertyName("note")] string Note);
+
+public record CalmHistoryRow(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("seconds")] int Seconds,
+    [property: JsonPropertyName("at")] string At);
+
+public record WorkoutBlock(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("seconds")] int Seconds,
+    [property: JsonPropertyName("cue")] string Cue);
+
+public record WorkoutPlan(
+    [property: JsonPropertyName("minutes_asked")] int MinutesAsked,
+    [property: JsonPropertyName("level")] string Level,
+    [property: JsonPropertyName("focus")] string Focus,
+    [property: JsonPropertyName("rest_seconds_between_blocks")] int RestSeconds,
+    [property: JsonPropertyName("blocks")] WorkoutBlock[] Blocks);
+
+public record MealRow(
+    [property: JsonPropertyName("slot")] string Slot,
+    [property: JsonPropertyName("name")] string Name);
+
+public record MealDay(
+    [property: JsonPropertyName("day")] int Day,
+    [property: JsonPropertyName("meals")] MealRow[] Meals);
+
+public record MealShape(
+    [property: JsonPropertyName("meals_per_day")] int MealsPerDay,
+    [property: JsonPropertyName("orientation_calories")] int OrientationCalories,
+    [property: JsonPropertyName("why")] string Why);
+
+public record MealPlan(
+    [property: JsonPropertyName("goal")] string Goal,
+    [property: JsonPropertyName("preferences")] string[] Preferences,
+    [property: JsonPropertyName("shape")] MealShape Shape,
+    [property: JsonPropertyName("days")] MealDay[] Days,
+    [property: JsonPropertyName("disclaimer")] string Disclaimer);
+
+/// Ambient watching: the why behind a moved heart rate.
+public record ActivityWatch(
+    [property: JsonPropertyName("activity")] string? Activity,
+    [property: JsonPropertyName("proactive")] bool Proactive,
+    [property: JsonPropertyName("watching")] bool Watching,
+    [property: JsonPropertyName("intervention")] Guidance? Intervention);
+
+public record ConditionsKnown(
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("known_conditions")] string[] KnownConditions);
+
+public record PersonalitySaved(
+    [property: JsonPropertyName("user_id")] string UserId);
+
+public record InsightRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("area")] string Area,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("message")] string Message,
+    [property: JsonPropertyName("source")] string? Source);
+
+public record ContextAdded(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("vaulted")] bool Vaulted,
+    [property: JsonPropertyName("insights")] InsightRow[] Insights);
+
+public record FeedbackSaved(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("rating")] string Rating,
+    [property: JsonPropertyName("contributed")] bool Contributed);
+
+public record EventRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("condition")] string? Condition,
+    [property: JsonPropertyName("severity")] string? Severity,
+    [property: JsonPropertyName("created_at")] string CreatedAt);
+
+public record ReportCheckins(
+    [property: JsonPropertyName("count")] int Count,
+    [property: JsonPropertyName("avg_mood")] double? AvgMood,
+    [property: JsonPropertyName("avg_energy")] double? AvgEnergy,
+    [property: JsonPropertyName("avg_stress")] double? AvgStress);
+
+public record ProgressReport(
+    [property: JsonPropertyName("checkins")] ReportCheckins Checkins,
+    [property: JsonPropertyName("detections")] Dictionary<string, int> Detections,
+    [property: JsonPropertyName("insights")] int Insights,
+    [property: JsonPropertyName("journal_entries")] int JournalEntries,
+    [property: JsonPropertyName("feedback")] Dictionary<string, int> Feedback);
+
+public record CompanionSaid(
+    [property: JsonPropertyName("delivered")] bool Delivered,
+    [property: JsonPropertyName("unprompted")] bool Unprompted,
+    [property: JsonPropertyName("content")] string Content);
+
+public record CoachExchange(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("area")] string Area,
+    [property: JsonPropertyName("role")] string Role,
+    [property: JsonPropertyName("content")] string Content,
+    [property: JsonPropertyName("created_at")] string CreatedAt);

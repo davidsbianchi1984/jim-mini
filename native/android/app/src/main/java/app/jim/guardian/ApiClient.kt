@@ -337,7 +337,14 @@ object ApiClient {
         raw: ByteArray? = null,
     ): JSONObject = withContext(Dispatchers.IO) {
         val conn = (URL(base + path).openConnection() as HttpURLConnection).apply {
-            requestMethod = method
+            // HttpURLConnection's verb list is hard-coded and PATCH is not
+            // on it — a ProtocolException, not a preference. The server
+            // honours x-http-method-override for PATCH alone, so the call
+            // sites keep saying PATCH and the wire carries the override.
+            requestMethod = if (method == "PATCH") "POST" else method
+            if (method == "PATCH") {
+                setRequestProperty("x-http-method-override", "PATCH")
+            }
             setRequestProperty("content-type", "application/json")
             // The language the reader actually speaks. Every sentence the
             // backend composes on a public route is chosen from this
@@ -2295,6 +2302,158 @@ object ApiClient {
     suspend fun endSession(uid: String, token: String, sessionId: String): Boolean =
         request("/sessions/$uid/$sessionId/end", "POST", token = token)
             .optBoolean("ended", false)
+
+    // ---- the Guardian learns the day ----
+
+    suspend fun calmCatalog(): List<CalmSessionRow> {
+        val o = request("/calm")
+        val out = mutableListOf<CalmSessionRow>()
+        o.optJSONArray("sessions")?.let { a ->
+            for (i in 0 until a.length()) {
+                val s = a.getJSONObject(i)
+                out.add(CalmSessionRow(s.getString("kind"), s.getString("title"),
+                    s.optInt("minutes", 0), s.optString("what", "")))
+            }
+        }
+        return out
+    }
+
+    /** A protocol, not a generation — the counts never vary. */
+    suspend fun startCalm(uid: String, token: String, kind: String): CalmStarted {
+        val o = request("/calm/$uid/$kind", "POST", token = token)
+        val steps = mutableListOf<CalmStep>()
+        o.optJSONArray("steps")?.let { a ->
+            for (i in 0 until a.length()) {
+                val s = a.getJSONObject(i)
+                steps.add(CalmStep(s.getString("say"), s.optInt("seconds", 0)))
+            }
+        }
+        return CalmStarted(o.getString("kind"), o.getString("title"),
+            steps, o.optString("note", ""))
+    }
+
+    suspend fun calmHistory(uid: String, token: String): List<CalmHistoryRow> {
+        val arr = getArray("/calm/$uid/history", token)
+        return (0 until arr.length()).map { i ->
+            val s = arr.getJSONObject(i)
+            CalmHistoryRow(s.optString("title", ""), s.optString("at", ""))
+        }
+    }
+
+    suspend fun workoutPlan(uid: String, token: String, minutes: Int,
+                            level: String, focus: String): WorkoutPlanK {
+        val o = request("/fitness/$uid/plan", "POST",
+            JSONObject().put("minutes", minutes).put("level", level)
+                .put("focus", focus), token)
+        val blocks = mutableListOf<WorkoutBlockK>()
+        o.optJSONArray("blocks")?.let { a ->
+            for (i in 0 until a.length()) {
+                val b = a.getJSONObject(i)
+                blocks.add(WorkoutBlockK(b.getString("name"),
+                    b.optInt("seconds", 0), b.optString("cue", "")))
+            }
+        }
+        return WorkoutPlanK(o.getString("level"), o.optString("focus", ""), blocks)
+    }
+
+    suspend fun mealPlan(uid: String, token: String, goal: String,
+                         days: Int): MealPlanK {
+        val o = request("/nutrition/$uid/plan", "POST",
+            JSONObject().put("goal", goal)
+                .put("preferences", org.json.JSONArray()).put("days", days),
+            token)
+        val shape = o.optJSONObject("shape")
+        val dayRows = mutableListOf<MealDayK>()
+        o.optJSONArray("days")?.let { a ->
+            for (i in 0 until a.length()) {
+                val d = a.getJSONObject(i)
+                val meals = mutableListOf<String>()
+                d.optJSONArray("meals")?.let { m ->
+                    for (j in 0 until m.length()) {
+                        val row = m.getJSONObject(j)
+                        meals.add("${row.optString("slot", "")}: ${row.optString("name", "")}")
+                    }
+                }
+                dayRows.add(MealDayK(d.optInt("day", i + 1), meals))
+            }
+        }
+        return MealPlanK(shape?.optString("why", "") ?: "",
+            shape?.optInt("orientation_calories", 0) ?: 0, dayRows,
+            o.optString("disclaimer", ""))
+    }
+
+    /** Ambient watching: an ordinary activity is context, not a reading. */
+    suspend fun observeActivity(uid: String, token: String, activity: String,
+                                note: String?): ActivityWatchK {
+        val body = JSONObject().put("activity", activity)
+        if (!note.isNullOrBlank()) body.put("note", note)
+        val o = request("/activity/$uid", "POST", body, token)
+        return ActivityWatchK(o.optBoolean("proactive", false),
+            o.optBoolean("watching", false),
+            parseGuidance(o.optJSONObject("intervention")))
+    }
+
+    suspend fun declareCondition(uid: String, token: String, condition: String,
+                                 note: String?): List<String> {
+        val body = JSONObject().put("condition", condition)
+        if (!note.isNullOrBlank()) body.put("note", note)
+        val o = request("/conditions/$uid", "POST", body, token)
+        val out = mutableListOf<String>()
+        o.optJSONArray("known_conditions")?.let { a ->
+            for (i in 0 until a.length()) out.add(a.getString(i))
+        }
+        return out
+    }
+
+    suspend fun setPersonality(uid: String, token: String, tone: String) {
+        request("/personality/$uid", "PUT", JSONObject().put("tone", tone),
+            token)
+    }
+
+    /** The server checks the consent, not this shell — a refusal arrives in
+     *  the server's words. */
+    suspend fun giveContext(uid: String, token: String, source: String,
+                            kind: String, data: JSONObject): String =
+        request("/context/$uid", "POST",
+            JSONObject().put("source", source).put("kind", kind)
+                .put("data", data), token).getString("id")
+
+    suspend fun updateGoal(uid: String, token: String, goalId: String,
+                           progress: Double, status: String) {
+        request("/goals/$uid/$goalId", "PATCH",
+            JSONObject().put("progress", progress).put("status", status),
+            token)
+    }
+
+    suspend fun insights(uid: String, token: String): List<InsightRowK> {
+        val arr = getArray("/insights/$uid", token)
+        return (0 until arr.length()).map { i ->
+            val s = arr.getJSONObject(i)
+            InsightRowK(s.optString("id", ""), s.optString("message", ""))
+        }
+    }
+
+    suspend fun eventsCount(uid: String, token: String): Int =
+        getArray("/events/$uid", token).length()
+
+    suspend fun progressReport(uid: String, token: String): ReportK {
+        val o = request("/report/$uid", token = token)
+        val checkins = o.optJSONObject("checkins")
+        return ReportK(checkins?.optInt("count", 0) ?: 0,
+            checkins?.optDouble("avg_mood") ?: Double.NaN)
+    }
+
+    /** An ambient, unprompted word from the coach. */
+    suspend fun companionCheckin(uid: String, token: String): String =
+        request("/companion/$uid", "POST", token = token).getString("content")
+
+    suspend fun sendGuidanceFeedback(uid: String, token: String, rating: String) {
+        request("/feedback/$uid", "POST", JSONObject().put("rating", rating),
+            token)
+    }
+
+    suspend fun coachExchangeCount(uid: String, token: String): Int =
+        getArray("/coach/$uid", token).length()
 }
 
 data class MoneyAccount(val id: String, val kind: String,
@@ -2508,3 +2667,20 @@ data class ContinuityTurn(val role: String, val content: String)
 data class SessionStarted(val id: String, val priorSessions: Int,
                           val memory: String?, val turns: List<ContinuityTurn>,
                           val continuityNote: String?)
+
+data class CalmSessionRow(val kind: String, val title: String,
+                          val minutes: Int, val what: String)
+data class CalmStep(val say: String, val seconds: Int)
+data class CalmStarted(val kind: String, val title: String,
+                       val steps: List<CalmStep>, val note: String)
+data class CalmHistoryRow(val title: String, val at: String)
+data class WorkoutBlockK(val name: String, val seconds: Int, val cue: String)
+data class WorkoutPlanK(val level: String, val focus: String,
+                        val blocks: List<WorkoutBlockK>)
+data class MealDayK(val day: Int, val meals: List<String>)
+data class MealPlanK(val why: String, val kcal: Int,
+                     val days: List<MealDayK>, val disclaimer: String)
+data class ActivityWatchK(val proactive: Boolean, val watching: Boolean,
+                          val intervention: Guidance?)
+data class InsightRowK(val id: String, val message: String)
+data class ReportK(val checkinCount: Int, val avgMood: Double)

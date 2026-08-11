@@ -46,6 +46,46 @@
                                FontSize="12" TextWrapping="Wrap" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
+
+            <!-- The wellness protocols sit with the pulse they steady. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="CalmHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="CalmPitch" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel x:Name="CalmTiles" Spacing="4" />
+                    <StackPanel x:Name="CalmSteps" Spacing="2" />
+                    <TextBlock x:Name="CalmNote" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="CalmHistory" Spacing="2" />
+
+                    <TextBlock x:Name="WorkHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <Slider x:Name="WorkMinutes" Minimum="5" Maximum="90" Value="20"
+                            StepFrequency="5" />
+                    <ComboBox x:Name="WorkLevel" HorizontalAlignment="Stretch" SelectedIndex="0" />
+                    <TextBox x:Name="WorkFocus" Text="mobility" />
+                    <Button x:Name="WorkBuildButton" Click="OnBuildWorkout" Foreground="White"
+                            Background="{StaticResource JimBrandABrush}" />
+                    <StackPanel x:Name="WorkBlocks" Spacing="2" />
+
+                    <TextBlock x:Name="MealHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <ComboBox x:Name="MealGoal" HorizontalAlignment="Stretch" SelectedIndex="2" />
+                    <Slider x:Name="MealDays" Minimum="1" Maximum="7" Value="2" StepFrequency="1" />
+                    <Button x:Name="MealPlanButton" Click="OnPlanMeals" Foreground="White"
+                            Background="{StaticResource JimBrandABrush}" />
+                    <TextBlock x:Name="MealShape" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel x:Name="MealDaysList" Spacing="2" />
+                    <TextBlock x:Name="MealDisclaimer" FontSize="10" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <TextBlock x:Name="WelError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimRedBrush}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

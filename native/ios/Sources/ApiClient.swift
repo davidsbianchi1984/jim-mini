@@ -2737,3 +2737,230 @@ extension ApiClient {
                           token: token)
     }
 }
+
+// MARK: - The Guardian learns the day
+
+struct CalmSessionRow: Decodable {
+    let kind: String
+    let title: String
+    let minutes: Int
+    let what: String
+}
+
+struct CalmCatalog: Decodable { let sessions: [CalmSessionRow] }
+
+struct CalmStep: Decodable { let say: String; let seconds: Int }
+
+/// A protocol, not a generation — the counts never vary.
+struct CalmStarted: Decodable {
+    let kind: String
+    let title: String
+    let what: String
+    let total_seconds: Int
+    let steps: [CalmStep]
+    let note: String
+}
+
+struct CalmHistoryRow: Decodable {
+    let kind: String
+    let title: String
+    let seconds: Int
+    let at: String
+}
+
+struct WorkoutBlock: Decodable { let name: String; let seconds: Int; let cue: String }
+
+struct WorkoutPlan: Decodable {
+    let minutes_asked: Int
+    let level: String
+    let focus: String
+    let rest_seconds_between_blocks: Int
+    let blocks: [WorkoutBlock]
+}
+
+struct MealRow: Decodable { let slot: String; let name: String }
+
+struct MealDay: Decodable { let day: Int; let meals: [MealRow] }
+
+struct MealShape: Decodable {
+    let meals_per_day: Int
+    let orientation_calories: Int
+    let why: String
+}
+
+struct MealPlan: Decodable {
+    let goal: String
+    let preferences: [String]
+    let shape: MealShape
+    let days: [MealDay]
+    let disclaimer: String
+}
+
+/// Ambient watching: the Guardian noting an ordinary activity so a moved
+/// heart rate has a why before it has to guess one.
+struct ActivityWatch: Decodable {
+    let activity: String?
+    let proactive: Bool
+    let watching: Bool
+    let intervention: Guidance?
+}
+
+struct ConditionsKnown: Decodable {
+    let user_id: String
+    let known_conditions: [String]
+}
+
+struct PersonalitySaved: Decodable { let user_id: String }
+
+struct InsightRow: Decodable {
+    let id: String
+    let area: String
+    let kind: String
+    let message: String
+    let source: String?
+}
+
+struct ContextAdded: Decodable {
+    let id: String
+    let source: String
+    let kind: String
+    let vaulted: Bool
+    let insights: [InsightRow]
+}
+
+struct FeedbackSaved: Decodable {
+    let id: String
+    let rating: String
+    let contributed: Bool
+}
+
+struct EventRow: Decodable {
+    let id: String
+    let type: String
+    let condition: String?
+    let severity: String?
+    let created_at: String
+}
+
+struct ReportCheckins: Decodable {
+    let count: Int
+    let avg_mood: Double?
+    let avg_energy: Double?
+    let avg_stress: Double?
+}
+
+struct ProgressReport: Decodable {
+    let checkins: ReportCheckins
+    let detections: [String: Int]
+    let insights: Int
+    let journal_entries: Int
+    let feedback: [String: Int]
+}
+
+struct CompanionSaid: Decodable {
+    let delivered: Bool
+    let unprompted: Bool
+    let content: String
+}
+
+struct CoachExchange: Decodable {
+    let id: String
+    let area: String
+    let role: String
+    let content: String
+    let created_at: String
+}
+
+extension ApiClient {
+
+    func calmCatalog() async throws -> CalmCatalog {
+        try await request("/calm")
+    }
+
+    func startCalm(uid: String, token: String,
+                   kind: String) async throws -> CalmStarted {
+        try await request("/calm/\(uid)/\(kind)", method: "POST", token: token)
+    }
+
+    func calmHistory(uid: String, token: String) async throws -> [CalmHistoryRow] {
+        try await request("/calm/\(uid)/history", token: token)
+    }
+
+    func workoutPlan(uid: String, token: String, minutes: Int, level: String,
+                     focus: String) async throws -> WorkoutPlan {
+        try await request("/fitness/\(uid)/plan", method: "POST",
+                          body: ["minutes": minutes, "level": level,
+                                 "focus": focus], token: token)
+    }
+
+    func mealPlan(uid: String, token: String, goal: String,
+                  preferences: [String], days: Int) async throws -> MealPlan {
+        try await request("/nutrition/\(uid)/plan", method: "POST",
+                          body: ["goal": goal, "preferences": preferences,
+                                 "days": days], token: token)
+    }
+
+    func observeActivity(uid: String, token: String, activity: String,
+                         note: String?) async throws -> ActivityWatch {
+        var body: [String: Any] = ["activity": activity]
+        if let note, !note.isEmpty { body["note"] = note }
+        return try await request("/activity/\(uid)", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func declareCondition(uid: String, token: String, condition: String,
+                          note: String?) async throws -> ConditionsKnown {
+        var body: [String: Any] = ["condition": condition]
+        if let note, !note.isEmpty { body["note"] = note }
+        return try await request("/conditions/\(uid)", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func setPersonality(uid: String, token: String,
+                        tone: String) async throws -> PersonalitySaved {
+        try await request("/personality/\(uid)", method: "PUT",
+                          body: ["tone": tone], token: token)
+    }
+
+    /// The server checks the consent, not this shell — a refusal is shown
+    /// in the server's words.
+    func giveContext(uid: String, token: String, source: String, kind: String,
+                     data: [String: Any]) async throws -> ContextAdded {
+        try await request("/context/\(uid)", method: "POST",
+                          body: ["source": source, "kind": kind,
+                                 "data": data], token: token)
+    }
+
+    func updateGoal(uid: String, token: String, goalId: String,
+                    progress: Double, status: String) async throws -> Goal {
+        try await request("/goals/\(uid)/\(goalId)", method: "PATCH",
+                          body: ["progress": progress, "status": status],
+                          token: token)
+    }
+
+    func insights(uid: String, token: String) async throws -> [InsightRow] {
+        try await request("/insights/\(uid)", token: token)
+    }
+
+    func events(uid: String, token: String) async throws -> [EventRow] {
+        try await request("/events/\(uid)", token: token)
+    }
+
+    func progressReport(uid: String, token: String) async throws -> ProgressReport {
+        try await request("/report/\(uid)", token: token)
+    }
+
+    func companionCheckin(uid: String, token: String) async throws -> CompanionSaid {
+        try await request("/companion/\(uid)", method: "POST", token: token)
+    }
+
+    func sendGuidanceFeedback(uid: String, token: String,
+                              rating: String) async throws -> FeedbackSaved {
+        try await request("/feedback/\(uid)", method: "POST",
+                          body: ["rating": rating], token: token)
+    }
+
+    func coachHistory(uid: String, token: String) async throws -> [CoachExchange] {
+        try await request("/coach/\(uid)", token: token)
+    }
+}

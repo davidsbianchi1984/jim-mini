@@ -90,6 +90,10 @@ struct CoachView: View {
                         }
                     }.card()
                 }
+            
+                // The Guardian's bearing: tone, what it was told, whether
+                // its answers landed, and what it made of that.
+                BearingCard()
             }.padding(20)
         }
     }

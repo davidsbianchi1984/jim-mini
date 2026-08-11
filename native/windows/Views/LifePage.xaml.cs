@@ -9,7 +9,16 @@ namespace JimGuardian.Views;
 
 public sealed partial class LifePage : Page
 {
-    public record GoalRow(string Title, string Meta);
+    public sealed class GoalRow
+    {
+        public string Id { get; init; } = "";
+        public string Title { get; init; } = "";
+        public string Meta { get; init; } = "";
+        public bool Active { get; init; }
+        public string DoneLabel => L10n.T("aim.goals.done");
+        public Visibility DoneVisibility =>
+            Active ? Visibility.Visible : Visibility.Collapsed;
+    }
     public record HabitRow(string Id, string Name, string Streak);
     public record JournalRow(string Text, string Date);
 
@@ -23,6 +32,11 @@ public sealed partial class LifePage : Page
         HabitsPivot.Header = L10n.T("life.habits");
         JournalPivot.Header = L10n.T("life.journal");
         LocalizeMeds();
+        ActHead.Text = L10n.T("aim.activity");
+        ActPitch.Text = L10n.T("aim.activity.pitch");
+        ActWhat.PlaceholderText = L10n.T("aim.activity.ph");
+        ActNote.PlaceholderText = L10n.T("brg.told.note.ph");
+        ActLogButton.Content = L10n.T("aim.activity.log");
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -49,9 +63,57 @@ public sealed partial class LifePage : Page
         {
             var goals = await ApiClient.Shared.Goals(s.Uid!, s.Token!);
             GoalsList.ItemsSource = goals.Select(g =>
-                new GoalRow(g.Title, $"{Pretty(g.Area)} · {Pretty(g.Status ?? "active")}")).ToList();
+                new GoalRow
+                {
+                    Id = g.Id,
+                    Title = g.Title,
+                    Meta = $"{Pretty(g.Area)} · {Pretty(g.Status ?? "active")}",
+                    Active = (g.Status ?? "active") == "active",
+                }).ToList();
         }
         catch { /* leave as-is */ }
+    }
+
+
+    private async void OnGoalDone(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string goalId) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.UpdateGoal(s.Uid!, s.Token!, goalId, 1.0,
+                                              "completed");
+            await LoadGoals();
+        }
+        catch { /* the row keeps its state */ }
+    }
+
+    // Tell it what you did: an ordinary activity is context, not a reading.
+    private async void OnActivityLog(object sender, RoutedEventArgs e)
+    {
+        var what = ActWhat.Text.Trim();
+        if (what.Length == 0) return;
+        var s = AppState.Current;
+        ActError.Visibility = Visibility.Collapsed;
+        ActIntervention.Visibility = Visibility.Collapsed;
+        try
+        {
+            var watch = await ApiClient.Shared.ObserveActivity(
+                s.Uid!, s.Token!, what, ActNote.Text.Trim());
+            ActWhat.Text = ""; ActNote.Text = "";
+            if (watch.Intervention is { } spoke)
+            {
+                // The proactive voice: it noticed a struggle building and
+                // spoke before being asked.
+                ActIntervention.Text = spoke.Content;
+                ActIntervention.Visibility = Visibility.Visible;
+            }
+        }
+        catch (Exception ex)
+        {
+            ActError.Text = ex.Message;
+            ActError.Visibility = Visibility.Visible;
+        }
     }
 
     private async void OnAddGoal(object sender, RoutedEventArgs e)

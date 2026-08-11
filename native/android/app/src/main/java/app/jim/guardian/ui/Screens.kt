@@ -120,6 +120,14 @@ import app.jim.guardian.ShoppingOverview
 import app.jim.guardian.EnrollResult
 import app.jim.guardian.OAuthDoor
 import app.jim.guardian.SessionStarted
+import app.jim.guardian.ActivityWatchK
+import app.jim.guardian.CalmHistoryRow
+import app.jim.guardian.CalmSessionRow
+import app.jim.guardian.CalmStarted
+import app.jim.guardian.InsightRowK
+import app.jim.guardian.MealPlanK
+import app.jim.guardian.ReportK
+import app.jim.guardian.WorkoutPlanK
 import kotlin.math.roundToInt
 
 @Composable
@@ -459,6 +467,347 @@ private fun SittingPanel(vm: GuardianViewModel) {
     }
 }
 
+
+/** Tell it what you did: an ordinary activity is context, not a reading —
+ *  the why behind a moved heart rate before it has to guess one. */
+@Composable
+private fun ActivityPanel(vm: GuardianViewModel) {
+    var activity by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf("") }
+    var watch by remember { mutableStateOf<ActivityWatchK?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(L10n.t("aim.activity", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("aim.activity.pitch", vm.language), color = Jim.T2, fontSize = 12.sp)
+        labeledField(L10n.t("aim.activity", vm.language), activity,
+            L10n.t("aim.activity.ph", vm.language)) { activity = it }
+        labeledField(L10n.t("brg.told.note.ph", vm.language), note, "") { note = it }
+        BrandButton(L10n.t("aim.activity.log", vm.language),
+            enabled = !busy && activity.isNotBlank(), busy = busy) {
+            busy = true; error = null
+            vm.call({ ApiClient.observeActivity(vm.uid!!, vm.token!!,
+                activity.trim(), note) }) { r ->
+                r.onSuccess { watch = it; activity = ""; note = "" }
+                    .onFailure { error = it.message }
+                busy = false
+            }
+        }
+        watch?.intervention?.let { g ->
+            // The proactive voice: it noticed a struggle building and spoke
+            // before being asked.
+            Text(g.content, color = Jim.Amber, fontSize = 12.sp)
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+    }
+}
+
+/** Guided calm, a workout for the time you have, and a day of meals that
+ *  fits: protocols and templates, not generations. */
+@Composable
+private fun WellnessPanel(vm: GuardianViewModel) {
+    var catalog by remember { mutableStateOf<List<CalmSessionRow>>(emptyList()) }
+    var started by remember { mutableStateOf<CalmStarted?>(null) }
+    var history by remember { mutableStateOf<List<CalmHistoryRow>>(emptyList()) }
+    var minutes by remember { mutableIntStateOf(20) }
+    var level by remember { mutableStateOf("beginner") }
+    var focus by remember { mutableStateOf("mobility") }
+    var workout by remember { mutableStateOf<WorkoutPlanK?>(null) }
+    var goal by remember { mutableStateOf("eat_healthier") }
+    var days by remember { mutableIntStateOf(2) }
+    var meals by remember { mutableStateOf<MealPlanK?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    fun reloadHistory() {
+        vm.call({ ApiClient.calmHistory(vm.uid!!, vm.token!!) }) { r ->
+            history = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) {
+        runCatching { ApiClient.calmCatalog() }.onSuccess { catalog = it }
+        reloadHistory()
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(L10n.t("wel.calm", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("wel.calm.pitch", vm.language).replace("{spoken}", ""),
+            color = Jim.T2, fontSize = 12.sp)
+        catalog.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                row.forEach { session ->
+                    FilterChip(selected = started?.kind == session.kind,
+                        onClick = {
+                            busy = true; error = null
+                            vm.call({ ApiClient.startCalm(vm.uid!!, vm.token!!,
+                                session.kind) }) { r ->
+                                r.onSuccess { started = it; reloadHistory() }
+                                    .onFailure { error = it.message }
+                                busy = false
+                            }
+                        },
+                        label = { Text(L10n.t("wel.calm.tile", vm.language)
+                            .replace("{title}", session.title)
+                            .replace("{n}", session.minutes.toString()),
+                            fontSize = 11.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Jim.BrandA,
+                            selectedLabelColor = Color.White, labelColor = Jim.T2))
+                }
+            }
+        }
+        started?.let { s ->
+            s.steps.forEachIndexed { index, step ->
+                Text(L10n.t("wel.calm.step", vm.language)
+                    .replace("{i}", (index + 1).toString())
+                    .replace("{n}", s.steps.size.toString())
+                    .replace("{sec}", step.seconds.toString())
+                    + " \u2014 " + step.say, color = Jim.T2, fontSize = 11.sp)
+            }
+            Text(s.note, color = Jim.T3, fontSize = 11.sp)
+        }
+        history.take(3).forEach { row ->
+            Text("${row.title} \u00b7 ${row.at}", color = Jim.T3, fontSize = 11.sp)
+        }
+
+        Text(L10n.t("wel.work", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            Text(L10n.t("wel.work.minutes", vm.language), color = Jim.T2, fontSize = 12.sp)
+            listOf(10, 20, 40).forEach { m ->
+                FilterChip(selected = minutes == m, onClick = { minutes = m },
+                    label = { Text("$m", fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Jim.BrandA,
+                        selectedLabelColor = Color.White, labelColor = Jim.T2))
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            Text(L10n.t("wel.work.level", vm.language), color = Jim.T2, fontSize = 12.sp)
+            listOf("beginner", "intermediate", "advanced").forEach { l ->
+                FilterChip(selected = level == l, onClick = { level = l },
+                    label = { Text(l, fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Jim.BrandA,
+                        selectedLabelColor = Color.White, labelColor = Jim.T2))
+            }
+        }
+        labeledField(L10n.t("wel.work.focus", vm.language), focus, "") { focus = it }
+        BrandButton(L10n.t("wel.work.build", vm.language), enabled = !busy, busy = busy) {
+            busy = true; error = null
+            vm.call({ ApiClient.workoutPlan(vm.uid!!, vm.token!!, minutes,
+                level, focus.trim()) }) { r ->
+                r.onSuccess { workout = it }.onFailure { error = it.message }
+                busy = false
+            }
+        }
+        workout?.blocks?.take(8)?.forEach { block ->
+            Text(block.name + L10n.t("wel.work.block", vm.language)
+                .replace("{sec}", block.seconds.toString())
+                .replace("{cue}", block.cue), color = Jim.T2, fontSize = 11.sp)
+        }
+
+        Text(L10n.t("wel.meals", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            Text(L10n.t("wel.meals.goal", vm.language), color = Jim.T2, fontSize = 12.sp)
+        }
+        listOf("lose_weight" to "wel.meals.lose", "gain_muscle" to "wel.meals.gain",
+               "eat_healthier" to "wel.meals.healthier").chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                row.forEach { (value, key) ->
+                    FilterChip(selected = goal == value, onClick = { goal = value },
+                        label = { Text(L10n.t(key, vm.language), fontSize = 11.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Jim.BrandA,
+                            selectedLabelColor = Color.White, labelColor = Jim.T2))
+                }
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            Text(L10n.t("wel.meals.days", vm.language), color = Jim.T2, fontSize = 12.sp)
+            listOf(1, 2, 3, 7).forEach { d ->
+                FilterChip(selected = days == d, onClick = { days = d },
+                    label = { Text("$d", fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Jim.BrandA,
+                        selectedLabelColor = Color.White, labelColor = Jim.T2))
+            }
+        }
+        BrandButton(L10n.t("wel.meals.plan", vm.language), enabled = !busy, busy = busy) {
+            busy = true; error = null
+            vm.call({ ApiClient.mealPlan(vm.uid!!, vm.token!!, goal, days) }) { r ->
+                r.onSuccess { meals = it }.onFailure { error = it.message }
+                busy = false
+            }
+        }
+        meals?.let { m ->
+            Text(L10n.t("wel.meals.shape", vm.language)
+                .replace("{why}", m.why).replace("{kcal}", m.kcal.toString()),
+                color = Jim.T2, fontSize = 11.sp)
+            m.days.forEach { day ->
+                Text(L10n.t("wel.meals.day", vm.language)
+                    .replace("{n}", day.day.toString()),
+                    color = Jim.T2, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                day.meals.forEach { Text(it, color = Jim.T3, fontSize = 11.sp) }
+            }
+            Text(m.disclaimer, color = Jim.T3, fontSize = 10.sp)
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+    }
+}
+
+/** The Guardian's bearing: the tone it speaks in, what it was told, whether
+ *  its answers landed, and what it made of all that. */
+@Composable
+private fun BearingPanel(vm: GuardianViewModel) {
+    var tone by remember { mutableStateOf("balanced") }
+    var condition by remember { mutableStateOf("anxiety") }
+    var conditionNote by remember { mutableStateOf("") }
+    var known by remember { mutableStateOf<List<String>>(emptyList()) }
+    var source by remember { mutableStateOf("") }
+    var refused by remember { mutableStateOf<String?>(null) }
+    var said by remember { mutableStateOf<String?>(null) }
+    var report by remember { mutableStateOf<ReportK?>(null) }
+    var insightRows by remember { mutableStateOf<List<InsightRowK>>(emptyList()) }
+    var eventCount by remember { mutableIntStateOf(0) }
+    var calmCount by remember { mutableIntStateOf(0) }
+    var exchangeCount by remember { mutableIntStateOf(0) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        runCatching { ApiClient.progressReport(vm.uid!!, vm.token!!) }
+            .onSuccess { report = it }
+        // Insights are a Pro capability; a plan refusal reads as none yet.
+        runCatching { ApiClient.insights(vm.uid!!, vm.token!!) }
+            .onSuccess { insightRows = it }
+        runCatching { ApiClient.eventsCount(vm.uid!!, vm.token!!) }
+            .onSuccess { eventCount = it }
+        runCatching { ApiClient.calmHistory(vm.uid!!, vm.token!!) }
+            .onSuccess { calmCount = it.size }
+        runCatching { ApiClient.coachExchangeCount(vm.uid!!, vm.token!!) }
+            .onSuccess { exchangeCount = it }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(L10n.t("brg.speak.tone", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            listOf("direct" to "brg.speak.direct", "balanced" to "brg.speak.balanced",
+                   "cautious" to "brg.speak.cautious").forEach { (t, key) ->
+                FilterChip(selected = tone == t, onClick = { tone = t },
+                    label = { Text(L10n.t(key, vm.language), fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Jim.BrandA,
+                        selectedLabelColor = Color.White, labelColor = Jim.T2))
+            }
+            SmallAction(L10n.t("brg.speak.go", vm.language), enabled = !busy) {
+                busy = true; error = null
+                vm.call({ ApiClient.setPersonality(vm.uid!!, vm.token!!, tone) }) {
+                    busy = false
+                }
+            }
+        }
+
+        Text(L10n.t("brg.told", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        listOf("anxiety", "depression", "stress", "phobia", "financial_stress",
+               "relationship", "physical_distress", "physical_injury")
+            .chunked(3).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                row.forEach { c ->
+                    FilterChip(selected = condition == c, onClick = { condition = c },
+                        label = { Text(c, fontSize = 10.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Jim.BrandA,
+                            selectedLabelColor = Color.White, labelColor = Jim.T2))
+                }
+            }
+        }
+        labeledField(L10n.t("brg.told", vm.language), conditionNote,
+            L10n.t("brg.told.note.ph", vm.language)) { conditionNote = it }
+        BrandButton(L10n.t("brg.told.tell", vm.language), enabled = !busy, busy = busy) {
+            busy = true; error = null
+            vm.call({ ApiClient.declareCondition(vm.uid!!, vm.token!!,
+                condition, conditionNote) }) { r ->
+                r.onSuccess { known = it; conditionNote = "" }
+                    .onFailure { error = it.message }
+                busy = false
+            }
+        }
+        if (known.isNotEmpty()) {
+            Text(known.joinToString(" \u00b7 "), color = Jim.T2, fontSize = 12.sp)
+        }
+        labeledField(L10n.t("brg.told.ctx", vm.language), source,
+            L10n.t("brg.told.src.ph", vm.language)) { source = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            SmallAction(L10n.t("brg.told.ctx", vm.language),
+                enabled = !busy && source.isNotBlank()) {
+                busy = true; refused = null
+                vm.call({ ApiClient.giveContext(vm.uid!!, vm.token!!,
+                    source.trim(), "event",
+                    org.json.JSONObject().put("title", "something on the calendar")) }) { r ->
+                    r.onFailure { refused = it.message }
+                    busy = false
+                }
+            }
+            SmallAction(L10n.t("brg.told.say", vm.language), enabled = !busy) {
+                busy = true; error = null
+                vm.call({ ApiClient.companionCheckin(vm.uid!!, vm.token!!) }) { r ->
+                    r.onSuccess { said = it }.onFailure { error = it.message }
+                    busy = false
+                }
+            }
+        }
+        refused?.let {
+            Text(L10n.t("brg.told.refused", vm.language).replace("{err}", it),
+                color = Jim.Amber, fontSize = 11.sp)
+        }
+        said?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
+
+        Text(L10n.t("brg.tell", vm.language), color = Jim.T2, fontSize = 12.sp,
+            fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SmallAction(L10n.t("brg.tell.good", vm.language), enabled = !busy) {
+                busy = true
+                vm.call({ ApiClient.sendGuidanceFeedback(vm.uid!!, vm.token!!, "up") }) {
+                    busy = false
+                }
+            }
+            SmallAction(L10n.t("brg.tell.bad", vm.language), enabled = !busy) {
+                busy = true
+                vm.call({ ApiClient.sendGuidanceFeedback(vm.uid!!, vm.token!!, "down") }) {
+                    busy = false
+                }
+            }
+        }
+
+        Text(L10n.t("brg.made", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        report?.let { r ->
+            Text(L10n.t("brg.made.stats", vm.language)
+                .replace("{c}", r.checkinCount.toString())
+                .replace("{m}", if (r.avgMood.isNaN()) "\u2014"
+                                else String.format("%.1f", r.avgMood))
+                .replace("{i}", insightRows.size.toString())
+                .replace("{e}", eventCount.toString())
+                .replace("{s}", calmCount.toString())
+                .replace("{x}", exchangeCount.toString()),
+                color = Jim.T2, fontSize = 12.sp)
+        }
+        insightRows.take(3).forEach { Text(it.message, color = Jim.T3, fontSize = 11.sp) }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+    }
+}
+
 // ---- Overview ----
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -680,6 +1029,8 @@ fun CheckinScreen(vm: GuardianViewModel) {
                 GuidanceExtras(g)
             }
         }
+        // The wellness protocols sit with the pulse they steady.
+        WellnessPanel(vm)
     }
 }
 
@@ -773,6 +1124,9 @@ fun CoachScreen(vm: GuardianViewModel) {
                 a.shared?.let { Text(L10n.t("spec.shared", vm.language) + ": $it", color = Jim.T2, fontSize = 11.sp) }
             }
         }
+        // The Guardian's bearing: tone, what it was told, whether its
+        // answers landed, and what it made of that.
+        BearingPanel(vm)
     }
 }
 
@@ -865,8 +1219,16 @@ private fun GoalsPanel(vm: GuardianViewModel) {
                     Text(pretty(g.area), color = Jim.T2, fontSize = 12.sp)
                     Text(pretty(g.status ?: "active"), color = Jim.T3, fontSize = 12.sp)
                 }
+                if ((g.status ?: "active") == "active") {
+                    SmallAction(L10n.t("aim.goals.done", vm.language), enabled = !busy) {
+                        busy = true
+                        vm.call({ ApiClient.updateGoal(vm.uid!!, vm.token!!,
+                            g.id, 1.0, "completed") }) { busy = false; reload() }
+                    }
+                }
             }
         }
+        ActivityPanel(vm)
     }
 }
 

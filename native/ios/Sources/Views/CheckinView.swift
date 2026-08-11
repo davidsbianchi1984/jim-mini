@@ -43,6 +43,9 @@ struct CheckinView: View {
                         GuidanceExtras(guidance: g)
                     }.card()
                 }
+
+                // The wellness protocols sit with the pulse they steady.
+                WellnessCard()
             }.padding(20)
         }
     }

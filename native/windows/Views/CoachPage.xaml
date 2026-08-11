@@ -77,6 +77,63 @@
                                Foreground="{StaticResource JimT2Brush}" />
                 </StackPanel>
             </Border>
+
+            <!-- The Guardian's bearing: tone, what it was told, whether its
+                 answers landed, and what it made of that. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="ToneHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ComboBox x:Name="ToneBox" SelectedIndex="1" />
+                        <Button x:Name="ToneGoButton" Click="OnSetTone"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                    </StackPanel>
+
+                    <TextBlock x:Name="ToldHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <ComboBox x:Name="ConditionBox" SelectedIndex="0" HorizontalAlignment="Stretch" />
+                    <TextBox x:Name="ConditionNote" />
+                    <Button x:Name="TellButton" Click="OnTellCondition" Foreground="White"
+                            Background="{StaticResource JimBrandABrush}" />
+                    <TextBlock x:Name="KnownLine" FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBox x:Name="ContextSource" MinWidth="160" />
+                        <Button x:Name="ContextButton" Click="OnGiveContext"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                        <Button x:Name="SayButton" Click="OnSaySomething"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="RefusedLine" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimAmberBrush}" />
+                    <TextBlock x:Name="SaidLine" FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+
+                    <TextBlock x:Name="TellUsHead" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="GoodButton" Click="OnRateGood"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimGreenBrush}" />
+                        <Button x:Name="BadButton" Click="OnRateBad"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimRedBrush}" />
+                    </StackPanel>
+
+                    <TextBlock x:Name="MadeHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="MadeStats" FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel x:Name="InsightLines" Spacing="2" />
+                    <TextBlock x:Name="BearingError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimRedBrush}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>
