@@ -35,6 +35,10 @@ struct ConnectView: View {
                     // Channel 2 sits with the sources: the lent microphone
                     // is a way in for the world's sound, consented the same.
                     MicCard()
+                    // The deployment's own plumbing: the voice it speaks in
+                    // and the mail it sends through.
+                    VoiceSettingsCard()
+                    MailSettingsCard()
                 case .social: SocialSection()
                 case .apps: AppsSection()
                 case .community: CommunitySection()

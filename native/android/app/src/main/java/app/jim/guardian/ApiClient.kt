@@ -1932,6 +1932,72 @@ object ApiClient {
     suspend fun resetBand(uid: String, token: String,
                           metric: String): BandRow =
         bandOf(request("/bands/$uid/$metric", "DELETE", token = token))
+
+    // ---- deployment settings: the voice and the mail desk ------------------
+
+    private fun voiceSettingsOf(o: JSONObject): VoiceSettingsOut {
+        val voices = mutableListOf<VoiceRow>()
+        o.optJSONArray("voices")?.let { a ->
+            for (i in 0 until a.length()) {
+                val v = a.getJSONObject(i)
+                voices.add(VoiceRow(v.optString("id", ""),
+                    v.optString("name", ""), v.optString("gender", ""),
+                    v.optString("note", "")))
+            }
+        }
+        return VoiceSettingsOut(
+            o.optString("provider", ""), o.optString("voice_id", null),
+            o.optBoolean("speak_replies", true),
+            o.optBoolean("key_set", false), o.optString("key_source", ""),
+            voices, o.optBoolean("device_fallback", true))
+    }
+
+    suspend fun voiceSettings(): VoiceSettingsOut =
+        voiceSettingsOf(request("/settings/voice"))
+
+    suspend fun saveVoiceSettings(provider: String, apiKey: String,
+                                  voiceId: String,
+                                  speakReplies: Boolean): VoiceSettingsOut {
+        val body = JSONObject().put("provider", provider)
+            .put("speak_replies", speakReplies)
+        if (apiKey.isNotBlank()) body.put("api_key", apiKey)
+        if (voiceId.isNotBlank()) body.put("voice_id", voiceId)
+        return voiceSettingsOf(request("/settings/voice", "PUT", body))
+    }
+
+    suspend fun clearVoiceSettings(): VoiceSettingsOut =
+        voiceSettingsOf(request("/settings/voice", "DELETE"))
+
+    private fun mailSettingsOf(o: JSONObject) = MailSettingsOut(
+        o.optString("transport", ""), o.optString("source", ""),
+        o.optString("host", null), o.optInt("port"),
+        o.optString("username", null), o.optString("sender", null),
+        o.optString("public_url", ""), o.optBoolean("password_set", false))
+
+    suspend fun mailSettings(): MailSettingsOut =
+        mailSettingsOf(request("/settings/mail"))
+
+    suspend fun saveMailSettings(host: String, port: Int, username: String,
+                                 password: String, sender: String,
+                                 publicUrl: String): MailSettingsOut {
+        val body = JSONObject().put("host", host).put("port", port)
+        if (username.isNotBlank()) body.put("username", username)
+        if (password.isNotBlank()) body.put("password", password)
+        if (sender.isNotBlank()) body.put("sender", sender)
+        if (publicUrl.isNotBlank()) body.put("public_url", publicUrl)
+        return mailSettingsOf(request("/settings/mail", "PUT", body))
+    }
+
+    /** Forget the mail server; delivery falls back to the console. */
+    suspend fun clearMailSettings(): MailSettingsOut =
+        mailSettingsOf(request("/settings/mail", "DELETE"))
+
+    /** Send a real message now — proof the settings can deliver. */
+    suspend fun testMail(to: String): String {
+        val o = request("/settings/mail/test", "POST",
+                        JSONObject().put("to", to))
+        return o.optString("to", to)
+    }
 }
 
 data class MoneyAccount(val id: String, val kind: String,
@@ -2073,3 +2139,16 @@ data class BandRow(val metric: String, val label: String, val unit: String,
                    val baseline: Double?, val samples: Int,
                    val provisional: Boolean, val lowEdge: Double?,
                    val highEdge: Double?)
+
+data class VoiceRow(val id: String, val name: String, val gender: String,
+                    val note: String)
+/** What the API may say about the voice — never the key itself. */
+data class VoiceSettingsOut(val provider: String, val voiceId: String?,
+                            val speakReplies: Boolean, val keySet: Boolean,
+                            val keySource: String, val voices: List<VoiceRow>,
+                            val deviceFallback: Boolean)
+/** The mail configuration — never the password, only whether one is set. */
+data class MailSettingsOut(val transport: String, val source: String,
+                           val host: String?, val port: Int,
+                           val username: String?, val sender: String?,
+                           val publicUrl: String, val passwordSet: Boolean)

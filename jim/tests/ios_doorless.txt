@@ -2,8 +2,6 @@ DELETE /beacons/{bid}
 DELETE /budgets/{user_id}/{category}
 DELETE /memberships/{account_id}
 DELETE /robots/{user_id}/{robot_id}
-DELETE /settings/mail
-DELETE /settings/voice
 DELETE /social/connection/{cid}
 GET /access-log/{user_id}
 GET /auth/oauth/claim
@@ -37,8 +35,6 @@ GET /relay/channel
 GET /relay/roster
 GET /relay/rota
 GET /report/{user_id}
-GET /settings/mail
-GET /settings/voice
 GET /social/connection/{cid}/beacon
 GET /social/connection/{cid}/qr.svg
 GET /specialists
@@ -76,7 +72,6 @@ POST /password/reset
 POST /password/reset/request
 POST /sessions/{user_id}
 POST /sessions/{user_id}/{session_id}/end
-POST /settings/mail/test
 POST /signin
 POST /signup
 POST /specialists
@@ -100,6 +95,4 @@ POST /watch/seed/{user_id}
 PUT /budgets/{user_id}
 PUT /dock/{user_id}
 PUT /personality/{user_id}
-PUT /settings/mail
-PUT /settings/voice
 PUT /users/{user_id}/locality

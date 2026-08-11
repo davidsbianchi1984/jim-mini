@@ -2263,3 +2263,89 @@ extension ApiClient {
                           token: token)
     }
 }
+
+// MARK: - Deployment settings: the voice it speaks in, the mail it sends through
+
+struct VoiceRow: Decodable {
+    let id: String
+    let name: String
+    let gender: String
+    let note: String
+}
+
+/// What the API may say about the voice — never the key itself.
+struct VoiceSettingsOut: Decodable {
+    let provider: String
+    let voice_id: String?
+    let speak_replies: Bool
+    let key_set: Bool
+    let key_source: String
+    let voices: [VoiceRow]
+    let device_fallback: Bool
+}
+
+/// The mail configuration — never the password, only whether one is set.
+struct MailSettingsOut: Decodable {
+    let transport: String
+    let source: String
+    let host: String?
+    let port: Int
+    let username: String?
+    let sender: String?
+    let public_url: String
+    let password_set: Bool
+}
+
+struct MailTestOut: Decodable {
+    let sent: Bool
+    let to: String
+}
+
+extension ApiClient {
+
+    func voiceSettings() async throws -> VoiceSettingsOut {
+        try await request("/settings/voice")
+    }
+
+    func saveVoiceSettings(provider: String, apiKey: String, voiceId: String,
+                           speakReplies: Bool) async throws -> VoiceSettingsOut {
+        var body: [String: Any] = ["provider": provider,
+                                   "speak_replies": speakReplies]
+        if !apiKey.isEmpty { body["api_key"] = apiKey }
+        if !voiceId.isEmpty { body["voice_id"] = voiceId }
+        return try await request("/settings/voice", method: "PUT",
+                                 body: body, token: nil)
+    }
+
+    func clearVoiceSettings() async throws -> VoiceSettingsOut {
+        try await request("/settings/voice", method: "DELETE")
+    }
+
+    func mailSettings() async throws -> MailSettingsOut {
+        try await request("/settings/mail")
+    }
+
+    func saveMailSettings(host: String, port: Int, username: String,
+                          password: String, sender: String,
+                          publicUrl: String) async throws -> MailSettingsOut {
+        var body: [String: Any] = ["host": host, "port": port]
+        if !username.isEmpty { body["username"] = username }
+        if !password.isEmpty { body["password"] = password }
+        if !sender.isEmpty { body["sender"] = sender }
+        if !publicUrl.isEmpty { body["public_url"] = publicUrl }
+        return try await request("/settings/mail", method: "PUT", body: body)
+    }
+
+    /// Forget the mail server; delivery falls back to the console.
+    func clearMailSettings() async throws -> MailSettingsOut {
+        try await request("/settings/mail", method: "DELETE")
+    }
+
+    /// Send a real message now — a settings screen that saves without ever
+    /// proving it can deliver is how an app ends up insisting it emailed
+    /// somebody.
+    func testMail(to: String) async throws -> MailTestOut {
+        try await request("/settings/mail/test", method: "POST",
+                          body: ["to": to])
+    }
+}

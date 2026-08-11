@@ -89,6 +89,57 @@
                                        Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
                         </StackPanel>
                     </Border>
+
+                    <!-- The deployment's own plumbing: the voice it speaks
+                         in and the mail it sends through. Keys and the
+                         password are write-only. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="VsHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="VsStatus" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <StackPanel x:Name="VsProviders" Orientation="Horizontal" Spacing="6" />
+                            <StackPanel x:Name="VsVoices" Spacing="4" />
+                            <PasswordBox x:Name="VsKey" />
+                            <CheckBox x:Name="VsHear" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="VsSaveButton" Click="OnVoiceSave" />
+                                <Button x:Name="VsResetButton" Click="OnVoiceReset"
+                                        Foreground="{StaticResource JimRedBrush}" />
+                            </StackPanel>
+                            <TextBlock x:Name="VsError" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MlHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="MlStatus" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="MlHost" />
+                            <NumberBox x:Name="MlPort" Value="587" Minimum="1" Maximum="65535" />
+                            <TextBox x:Name="MlUser" />
+                            <PasswordBox x:Name="MlPass" />
+                            <TextBox x:Name="MlFrom" />
+                            <TextBox x:Name="MlLink" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="MlSaveButton" Click="OnMailSave" />
+                                <Button x:Name="MlResetButton" Click="OnMailReset"
+                                        Foreground="{StaticResource JimRedBrush}" />
+                            </StackPanel>
+                            <TextBox x:Name="MlTestTo" />
+                            <Button x:Name="MlTestButton" Click="OnMailTest" />
+                            <TextBlock x:Name="MlTestNote" FontSize="11" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimGreenBrush}" />
+                            <TextBlock x:Name="MlError" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>

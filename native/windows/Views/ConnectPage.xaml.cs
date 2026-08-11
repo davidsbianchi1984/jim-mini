@@ -134,6 +134,9 @@ public sealed partial class ConnectPage : Page
         await ReloadApps();
         await ReloadCommunity();
         await ReloadMic();
+        LocalizeSettingsCards();
+        await LoadVoiceSettings();
+        await LoadMailSettings();
     }
 
     // -- Sources --
@@ -541,5 +544,183 @@ public sealed partial class ConnectPage : Page
             }).ToList();
         }
         catch (Exception ex) { MicFailed(ex); }
+    }
+    // -- deployment settings: the voice and the mail desk --------------------
+    // Console doors since 0.6.0 / 0.4.x; these are the desktop's. Keys and
+    // the password are write-only: the routes say whether one is set and
+    // never say it back.
+
+    private string _vsProvider = "";
+    private string _vsVoiceId = "";
+
+    private void LocalizeSettingsCards()
+    {
+        VsHead.Text = L10n.T("ns.vs.title");
+        VsHear.Content = L10n.T("ns.vs.hear");
+        VsSaveButton.Content = L10n.T("ns.set.save");
+        VsResetButton.Content = L10n.T("ns.bas.reset");
+        MlHead.Text = L10n.T("ns.ml.title");
+        MlHost.Header = L10n.T("ns.ml.host");
+        MlHost.PlaceholderText = L10n.T("ns.ml.host.ph");
+        MlPort.Header = L10n.T("ns.ml.port");
+        MlUser.Header = L10n.T("ns.ml.user");
+        MlUser.PlaceholderText = L10n.T("ns.ml.user.ph");
+        MlPass.Header = L10n.T("ns.ml.pass");
+        MlFrom.Header = L10n.T("ns.ml.from");
+        MlFrom.PlaceholderText = L10n.T("ns.ml.user.ph");
+        MlLink.Header = L10n.T("ns.ml.link") + L10n.T("ns.ml.link.note");
+        MlLink.PlaceholderText = L10n.T("ns.ml.link.ph");
+        MlSaveButton.Content = L10n.T("ns.set.save");
+        MlResetButton.Content = L10n.T("ns.bas.reset");
+        MlTestTo.Header = L10n.T("ns.ml.test");
+        MlTestTo.PlaceholderText = L10n.T("ns.ml.test.ph");
+        MlTestButton.Content = L10n.T("ns.ml.test");
+    }
+
+    private async Task LoadVoiceSettings()
+    {
+        try { RenderVoiceSettings(await ApiClient.Shared.VoiceSettings()); }
+        catch { /* leave as-is */ }
+    }
+
+    private void RenderVoiceSettings(VoiceSettingsOut s)
+    {
+        VsError.Visibility = Visibility.Collapsed;
+        if (_vsProvider.Length == 0) _vsProvider = s.Provider;
+        if (_vsVoiceId.Length == 0) _vsVoiceId = s.VoiceId ?? "";
+        VsHear.IsChecked = s.SpeakReplies;
+        VsStatus.Text = s.Provider == "device"
+            ? L10n.T("ns.vs.pitch")
+            : L10n.T("ns.vs.through").Replace("{provider}", s.Provider)
+                .Replace("{env}", s.KeySource == "environment" ? " (env)" : "");
+        VsKey.PlaceholderText = s.KeySet ? L10n.T("ns.ml.saved") : "sk-\u2026";
+
+        // The provider vocabulary is the backend's PROVIDERS tuple; the
+        // describe route answers the current one but does not enumerate.
+        VsProviders.Children.Clear();
+        foreach (var name in new[] { "elevenlabs", "openai", "device" })
+        {
+            var chosen = name;
+            var chip = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
+            { Content = chosen, FontSize = 11, IsChecked = _vsProvider == chosen };
+            chip.Click += (_, _) =>
+            { _vsProvider = chosen; RenderVoiceSettings(s); };
+            VsProviders.Children.Add(chip);
+        }
+        VsVoices.Children.Clear();
+        if (_vsProvider != "device")
+            foreach (var voice in s.Voices)
+            {
+                var id = voice.Id;
+                var chip = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
+                {
+                    Content = $"{voice.Name} \u00b7 {voice.Note}",
+                    FontSize = 11,
+                    IsChecked = _vsVoiceId == id,
+                };
+                chip.Click += (_, _) =>
+                { _vsVoiceId = id; RenderVoiceSettings(s); };
+                VsVoices.Children.Add(chip);
+            }
+        VsKey.Visibility = _vsProvider == "device" ? Visibility.Collapsed
+                                                   : Visibility.Visible;
+    }
+
+    private void ShowVoiceError(Exception ex)
+    {
+        VsError.Text = ex.Message;
+        VsError.Visibility = Visibility.Visible;
+    }
+
+    private async void OnVoiceSave(object sender, RoutedEventArgs e)
+    {
+        if (_vsProvider.Length == 0) return;
+        try
+        {
+            RenderVoiceSettings(await ApiClient.Shared.SaveVoiceSettings(
+                _vsProvider, VsKey.Password.Trim(), _vsVoiceId,
+                VsHear.IsChecked == true));
+            VsKey.Password = "";
+        }
+        catch (Exception ex) { ShowVoiceError(ex); }
+    }
+
+    private async void OnVoiceReset(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var s = await ApiClient.Shared.ClearVoiceSettings();
+            _vsProvider = s.Provider; _vsVoiceId = "";
+            RenderVoiceSettings(s);
+        }
+        catch (Exception ex) { ShowVoiceError(ex); }
+    }
+
+    private async Task LoadMailSettings()
+    {
+        try { RenderMailSettings(await ApiClient.Shared.MailSettings()); }
+        catch { /* leave as-is */ }
+    }
+
+    private void RenderMailSettings(MailSettingsOut s)
+    {
+        MlError.Visibility = Visibility.Collapsed;
+        MlStatus.Text = s.Transport == "smtp"
+            ? L10n.T("ns.ml.smtp").Replace("{host}", s.Host ?? "")
+                .Replace("{env}", s.Source == "environment" ? " (env)" : "")
+            : L10n.T("ns.ml.none");
+        if (MlHost.Text.Length == 0) MlHost.Text = s.Host ?? "";
+        MlPort.Value = s.Port;
+        if (MlUser.Text.Length == 0) MlUser.Text = s.Username ?? "";
+        if (MlFrom.Text.Length == 0) MlFrom.Text = s.Sender ?? "";
+        if (MlLink.Text.Length == 0) MlLink.Text = s.PublicUrl;
+        MlPass.Header = L10n.T("ns.ml.pass")
+            + (s.PasswordSet ? " " + L10n.T("ns.ml.saved") : "");
+        MlPass.PlaceholderText = L10n.T("ns.ml.pass.ph");
+    }
+
+    private void ShowMailError(Exception ex)
+    {
+        MlError.Text = ex.Message;
+        MlError.Visibility = Visibility.Visible;
+    }
+
+    private async void OnMailSave(object sender, RoutedEventArgs e)
+    {
+        var host = MlHost.Text.Trim();
+        if (host.Length == 0) return;
+        try
+        {
+            RenderMailSettings(await ApiClient.Shared.SaveMailSettings(
+                host, (int)MlPort.Value, MlUser.Text.Trim(),
+                MlPass.Password, MlFrom.Text.Trim(), MlLink.Text.Trim()));
+            MlPass.Password = "";
+        }
+        catch (Exception ex) { ShowMailError(ex); }
+    }
+
+    private async void OnMailReset(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            MlHost.Text = ""; MlUser.Text = ""; MlPass.Password = "";
+            MlFrom.Text = "";
+            RenderMailSettings(await ApiClient.Shared.ClearMailSettings());
+        }
+        catch (Exception ex) { ShowMailError(ex); }
+    }
+
+    private async void OnMailTest(object sender, RoutedEventArgs e)
+    {
+        var to = MlTestTo.Text.Trim();
+        if (to.Length == 0) return;
+        try
+        {
+            var outcome = await ApiClient.Shared.TestMail(to);
+            MlTestNote.Text = "\u2713 " + outcome.To;
+            MlTestNote.Visibility = outcome.Sent ? Visibility.Visible
+                                                 : Visibility.Collapsed;
+        }
+        catch (Exception ex) { ShowMailError(ex); }
     }
 }

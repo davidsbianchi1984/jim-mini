@@ -1662,6 +1662,56 @@ public sealed class ApiClient
     public Task<BandRow> ResetBand(string uid, string token, string metric) =>
         Send<BandRow>(new HttpRequestMessage(HttpMethod.Delete,
             $"/bands/{uid}/{metric}"), token);
+
+    // ---- deployment settings: the voice and the mail desk ------------------
+
+    public Task<VoiceSettingsOut> VoiceSettings() =>
+        Send<VoiceSettingsOut>(new HttpRequestMessage(HttpMethod.Get,
+            "/settings/voice"));
+
+    public Task<VoiceSettingsOut> SaveVoiceSettings(string provider,
+                                                    string apiKey,
+                                                    string voiceId,
+                                                    bool speakReplies)
+    {
+        var body = new Dictionary<string, object>
+        { ["provider"] = provider, ["speak_replies"] = speakReplies };
+        if (apiKey is { Length: > 0 }) body["api_key"] = apiKey;
+        if (voiceId is { Length: > 0 }) body["voice_id"] = voiceId;
+        return Send<VoiceSettingsOut>(Put("/settings/voice", body));
+    }
+
+    public Task<VoiceSettingsOut> ClearVoiceSettings() =>
+        Send<VoiceSettingsOut>(new HttpRequestMessage(HttpMethod.Delete,
+            "/settings/voice"));
+
+    public Task<MailSettingsOut> MailSettings() =>
+        Send<MailSettingsOut>(new HttpRequestMessage(HttpMethod.Get,
+            "/settings/mail"));
+
+    public Task<MailSettingsOut> SaveMailSettings(string host, int port,
+                                                  string username,
+                                                  string password,
+                                                  string sender,
+                                                  string publicUrl)
+    {
+        var body = new Dictionary<string, object>
+        { ["host"] = host, ["port"] = port };
+        if (username is { Length: > 0 }) body["username"] = username;
+        if (password is { Length: > 0 }) body["password"] = password;
+        if (sender is { Length: > 0 }) body["sender"] = sender;
+        if (publicUrl is { Length: > 0 }) body["public_url"] = publicUrl;
+        return Send<MailSettingsOut>(Put("/settings/mail", body));
+    }
+
+    /// Forget the mail server; delivery falls back to the console.
+    public Task<MailSettingsOut> ClearMailSettings() =>
+        Send<MailSettingsOut>(new HttpRequestMessage(HttpMethod.Delete,
+            "/settings/mail"));
+
+    /// Send a real message now — proof the settings can deliver.
+    public Task<MailTestOut> TestMail(string to) =>
+        Send<MailTestOut>(Post("/settings/mail/test", new { to }));
 }
 
 public record MoneyAccount(
@@ -2004,3 +2054,34 @@ public record BandsOverview(
     [property: JsonPropertyName("user_id")] string UserId,
     [property: JsonPropertyName("sensitivity")] string Sensitivity,
     [property: JsonPropertyName("bands")] BandRow[] Bands);
+
+public record VoiceRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("gender")] string Gender,
+    [property: JsonPropertyName("note")] string Note);
+
+/// What the API may say about the voice — never the key itself.
+public record VoiceSettingsOut(
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("voice_id")] string? VoiceId,
+    [property: JsonPropertyName("speak_replies")] bool SpeakReplies,
+    [property: JsonPropertyName("key_set")] bool KeySet,
+    [property: JsonPropertyName("key_source")] string KeySource,
+    [property: JsonPropertyName("voices")] VoiceRow[] Voices,
+    [property: JsonPropertyName("device_fallback")] bool DeviceFallback);
+
+/// The mail configuration — never the password, only whether one is set.
+public record MailSettingsOut(
+    [property: JsonPropertyName("transport")] string Transport,
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("host")] string? Host,
+    [property: JsonPropertyName("port")] int Port,
+    [property: JsonPropertyName("username")] string? Username,
+    [property: JsonPropertyName("sender")] string? Sender,
+    [property: JsonPropertyName("public_url")] string PublicUrl,
+    [property: JsonPropertyName("password_set")] bool PasswordSet);
+
+public record MailTestOut(
+    [property: JsonPropertyName("sent")] bool Sent,
+    [property: JsonPropertyName("to")] string To);

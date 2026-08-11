@@ -71,6 +71,8 @@ import app.jim.guardian.MedsBoard
 import app.jim.guardian.AdherenceRow
 import app.jim.guardian.VigilState
 import app.jim.guardian.BandRow
+import app.jim.guardian.VoiceSettingsOut
+import app.jim.guardian.MailSettingsOut
 import app.jim.guardian.CommunityRoom
 import app.jim.guardian.CommunityView
 import app.jim.guardian.JournalItem
@@ -2774,7 +2776,7 @@ fun ConnectScreen(vm: GuardianViewModel) {
         when (tab) {
             // Channel 2 sits with the sources: the lent microphone is a
             // way in for the world's sound, consented the same.
-            0 -> { SourcesPanel(vm); MicPanel(vm) }
+            0 -> { SourcesPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); MailSettingsPanel(vm) }
             1 -> SocialPanel(vm)
             2 -> AppsPanel(vm)
             3 -> CommunityPanel(vm)
@@ -4192,6 +4194,187 @@ private fun BandsPanel(vm: GuardianViewModel) {
                         }
                 }
             }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+// ---- deployment settings: the voice and the mail desk ----
+// Console doors since 0.6.0 / 0.4.x; these are the phone's. The key and
+// the password are write-only: the routes say whether one is set and never
+// say it back.
+
+@Composable
+private fun VoiceSettingsPanel(vm: GuardianViewModel) {
+    var settings by remember { mutableStateOf<VoiceSettingsOut?>(null) }
+    var provider by remember { mutableStateOf("") }
+    var voiceId by remember { mutableStateOf("") }
+    var apiKey by remember { mutableStateOf("") }
+    var speakReplies by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun took(r: Result<VoiceSettingsOut>) {
+        error = r.exceptionOrNull()?.message
+        r.getOrNull()?.let { s ->
+            settings = s
+            if (provider.isBlank()) provider = s.provider
+            if (voiceId.isBlank()) voiceId = s.voiceId ?: ""
+            speakReplies = s.speakReplies
+        }
+    }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.voiceSettings() }) { took(it) }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.vs.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        val s = settings
+        if (s != null) {
+            if (s.provider == "device")
+                Text(L10n.t("ns.vs.pitch", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+            else
+                Text(L10n.t("ns.vs.through", vm.language)
+                        .replace("{provider}", s.provider)
+                        .replace("{env}", if (s.keySource == "environment")
+                            " (env)" else ""),
+                    color = Jim.Green, fontSize = 11.sp)
+        }
+        // The provider vocabulary is the backend's PROVIDERS tuple; the
+        // describe route answers the current one but does not enumerate.
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf("elevenlabs", "openai", "device").forEach { name ->
+                FilterChip(selected = provider == name,
+                    onClick = { provider = name },
+                    label = { Text(name, fontSize = 10.sp) })
+            }
+        }
+        if (provider != "device") s?.voices?.take(6)?.forEach { voice ->
+            FilterChip(selected = voiceId == voice.id,
+                onClick = { voiceId = voice.id },
+                label = { Text("${voice.name} \u00b7 ${voice.note}",
+                    fontSize = 10.sp) })
+        }
+        if (provider != "device")
+            labeledField("", apiKey,
+                if (s?.keySet == true) L10n.t("ns.ml.saved", vm.language)
+                else "sk-\u2026") { apiKey = it }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Switch(checked = speakReplies,
+                onCheckedChange = { speakReplies = it })
+            Text(L10n.t("ns.vs.hear", vm.language), color = Jim.T2,
+                fontSize = 11.sp)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            BrandButton(L10n.t("ns.set.save", vm.language),
+                enabled = provider.isNotBlank()) {
+                vm.call({ ApiClient.saveVoiceSettings(provider,
+                    apiKey.trim(), voiceId, speakReplies) }) { r ->
+                    took(r)
+                    if (r.isSuccess) apiKey = ""
+                }
+            }
+            SmallAction(L10n.t("ns.bas.reset", vm.language)) {
+                vm.call({ ApiClient.clearVoiceSettings() }) { r ->
+                    took(r)
+                    r.getOrNull()?.let { provider = it.provider; voiceId = "" }
+                }
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+    }
+}
+
+@Composable
+private fun MailSettingsPanel(vm: GuardianViewModel) {
+    var settings by remember { mutableStateOf<MailSettingsOut?>(null) }
+    var host by remember { mutableStateOf("") }
+    var port by remember { mutableStateOf("587") }
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var sender by remember { mutableStateOf("") }
+    var publicUrl by remember { mutableStateOf("") }
+    var testTo by remember { mutableStateOf("") }
+    var testSentTo by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun took(r: Result<MailSettingsOut>) {
+        error = r.exceptionOrNull()?.message
+        r.getOrNull()?.let { s ->
+            settings = s
+            if (host.isBlank()) host = s.host ?: ""
+            port = s.port.toString()
+            if (username.isBlank()) username = s.username ?: ""
+            if (sender.isBlank()) sender = s.sender ?: ""
+            if (publicUrl.isBlank()) publicUrl = s.publicUrl
+        }
+    }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.mailSettings() }) { took(it) }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.ml.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        val s = settings
+        if (s != null) {
+            if (s.transport == "smtp")
+                Text(L10n.t("ns.ml.smtp", vm.language)
+                        .replace("{host}", s.host ?: "")
+                        .replace("{env}", if (s.source == "environment")
+                            " (env)" else ""),
+                    color = Jim.Green, fontSize = 11.sp)
+            else
+                Text(L10n.t("ns.ml.none", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+        }
+        labeledField(L10n.t("ns.ml.host", vm.language), host,
+            L10n.t("ns.ml.host.ph", vm.language)) { host = it }
+        labeledField(L10n.t("ns.ml.port", vm.language), port,
+            "587") { port = it }
+        labeledField(L10n.t("ns.ml.user", vm.language), username,
+            L10n.t("ns.ml.user.ph", vm.language)) { username = it }
+        labeledField(L10n.t("ns.ml.pass", vm.language)
+                + (if (s?.passwordSet == true)
+                    " " + L10n.t("ns.ml.saved", vm.language) else ""),
+            password,
+            L10n.t("ns.ml.pass.ph", vm.language)) { password = it }
+        labeledField(L10n.t("ns.ml.from", vm.language), sender,
+            L10n.t("ns.ml.user.ph", vm.language)) { sender = it }
+        labeledField(L10n.t("ns.ml.link", vm.language)
+                + L10n.t("ns.ml.link.note", vm.language), publicUrl,
+            L10n.t("ns.ml.link.ph", vm.language)) { publicUrl = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            BrandButton(L10n.t("ns.set.save", vm.language),
+                enabled = host.isNotBlank()) {
+                vm.call({ ApiClient.saveMailSettings(host.trim(),
+                    port.trim().toIntOrNull() ?: 587, username.trim(),
+                    password, sender.trim(), publicUrl.trim()) }) { r ->
+                    took(r)
+                    if (r.isSuccess) password = ""
+                }
+            }
+            SmallAction(L10n.t("ns.bas.reset", vm.language)) {
+                vm.call({ ApiClient.clearMailSettings() }) { r ->
+                    took(r)
+                    if (r.isSuccess) {
+                        host = ""; username = ""; password = ""; sender = ""
+                    }
+                }
+            }
+        }
+        labeledField(L10n.t("ns.ml.test", vm.language), testTo,
+            L10n.t("ns.ml.test.ph", vm.language)) { testTo = it }
+        SmallAction(L10n.t("ns.ml.test", vm.language)) {
+            if (testTo.isNotBlank())
+                vm.call({ ApiClient.testMail(testTo.trim()) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                    testSentTo = r.getOrNull()
+                }
+        }
+        testSentTo?.let {
+            Text("\u2713 $it", color = Jim.Green, fontSize = 11.sp)
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
     }
