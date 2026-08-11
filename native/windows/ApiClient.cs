@@ -1816,6 +1816,62 @@ public sealed class ApiClient
                                           bool paired) =>
         Send<DeviceRow>(Post($"/devices/{uid}",
             new { name, kind, paired }, token));
+
+    // ---- the account the phones never had ----
+
+    /// A deployment with mail answers pending and sends the code; a local
+    /// install with no mail transport activates directly and answers with
+    /// the session.
+    public Task<SignupResult> Signup(string email, string password,
+                                     string name, string? language = null) =>
+        Send<SignupResult>(Post("/signup",
+            language is { Length: > 0 } && language != "en"
+                ? new { email, password, display_name = name,
+                        terms_consent = true, language }
+                : (object)new { email, password, display_name = name,
+                                terms_consent = true }));
+
+    public Task<SignInResult> Signin(string email, string password) =>
+        Send<SignInResult>(Post("/signin", new { email, password }));
+
+    /// The code proves the inbox; the user is enrolled here, not at signup,
+    /// which is why this answers with the same shape enrollment does.
+    public Task<EnrollResult> VerifyEmail(string email, string code) =>
+        Send<EnrollResult>(Post("/verify-email", new { email, code }));
+
+    public Task<CodeDelivery> ResendCode(string email) =>
+        Send<CodeDelivery>(Post("/verify-email/resend", new { email }));
+
+    public Task<CodeDelivery> RequestPasswordReset(string email) =>
+        Send<CodeDelivery>(Post("/password/reset/request", new { email }));
+
+    /// Every existing session dies with the old password.
+    public Task<ResetDone> ResetPassword(string email, string code,
+                                         string newPassword) =>
+        Send<ResetDone>(Post("/password/reset",
+            new { email, code, new_password = newPassword }));
+
+    public Task<OauthProviders> OauthProviders() =>
+        Send<OauthProviders>(new HttpRequestMessage(HttpMethod.Get,
+            "/auth/oauth/providers"));
+
+    /// No redirect_uri: the backend defaults to its own callback page, and
+    /// this shell polls the claim rather than intercepting the browser.
+    public Task<OauthStarted> OauthStart(string provider) =>
+        Send<OauthStarted>(Post($"/auth/oauth/{provider}/start", new { }));
+
+    public Task<OauthClaim> OauthClaim(string state) =>
+        Send<OauthClaim>(new HttpRequestMessage(HttpMethod.Get,
+            $"/auth/oauth/claim?state={state}"));
+
+    public Task<SessionStarted> StartSession(string uid, string token,
+                                             string device) =>
+        Send<SessionStarted>(Post($"/sessions/{uid}", new { device }, token));
+
+    public Task<SessionEnded> EndSession(string uid, string token,
+                                         string sessionId) =>
+        Send<SessionEnded>(Post($"/sessions/{uid}/{sessionId}/end",
+            new { }, token));
 }
 
 public record MoneyAccount(
@@ -2299,3 +2355,74 @@ public record DeviceRow(
     [property: JsonPropertyName("transport")] string? Transport,
     [property: JsonPropertyName("has_llm")] bool HasLlm,
     [property: JsonPropertyName("paired")] bool Paired);
+
+/// Signup's two shapes under one roof, the way the route answers: pending
+/// with the code out, or — on a local install with no mail transport —
+/// activated directly with the session fields filled.
+public record SignupResult(
+    [property: JsonPropertyName("email")] string Email,
+    [property: JsonPropertyName("verified")] bool Verified,
+    [property: JsonPropertyName("verification")] string Verification,
+    [property: JsonPropertyName("account_id")] string? AccountId,
+    [property: JsonPropertyName("code_delivery")] string? CodeDelivery,
+    [property: JsonPropertyName("id")] string? Id,
+    [property: JsonPropertyName("display_name")] string? DisplayName,
+    [property: JsonPropertyName("user_token")] string? UserToken);
+
+public record SignInResult(
+    [property: JsonPropertyName("account_id")] string AccountId,
+    [property: JsonPropertyName("email")] string Email,
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("display_name")] string? DisplayName,
+    [property: JsonPropertyName("user_token")] string UserToken);
+
+public record CodeDelivery(
+    [property: JsonPropertyName("email")] string Email,
+    [property: JsonPropertyName("code_delivery")] string Delivery);
+
+public record ResetDone(
+    [property: JsonPropertyName("email")] string Email,
+    [property: JsonPropertyName("reset")] bool Reset);
+
+public record OauthProviderRow(
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("configured")] bool Configured,
+    [property: JsonPropertyName("setup")] string? Setup);
+
+public record OauthProviders(
+    [property: JsonPropertyName("providers")] OauthProviderRow[] Providers);
+
+public record OauthStarted(
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("state")] string State,
+    [property: JsonPropertyName("url")] string Url);
+
+/// The claim is polled: not-ready is `ready` alone, and ready carries the
+/// session — a fresh account's full enrollment or a returning one's token.
+public record OauthClaim(
+    [property: JsonPropertyName("ready")] bool Ready,
+    [property: JsonPropertyName("id")] string? Id,
+    [property: JsonPropertyName("display_name")] string? DisplayName,
+    [property: JsonPropertyName("user_token")] string? UserToken,
+    [property: JsonPropertyName("email")] string? Email);
+
+public record ContinuityTurn(
+    [property: JsonPropertyName("role")] string Role,
+    [property: JsonPropertyName("content")] string Content);
+
+public record SessionContinuity(
+    [property: JsonPropertyName("with")] string With,
+    [property: JsonPropertyName("recent_turns")] ContinuityTurn[] RecentTurns,
+    [property: JsonPropertyName("note")] string Note);
+
+public record SessionStarted(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("device")] string? Device,
+    [property: JsonPropertyName("prior_sessions")] int PriorSessions,
+    [property: JsonPropertyName("memory")] string? Memory,
+    [property: JsonPropertyName("continuity")] SessionContinuity? Continuity);
+
+public record SessionEnded(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("ended")] bool Ended);

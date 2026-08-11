@@ -50,7 +50,7 @@ struct WelcomeView: View {
                         }.pickerStyle(.menu).tint(Theme.brandA)
                     }
                     Toggle(isOn: $consent) {
-                        Text("I consent to the terms of use").font(.footnote).foregroundStyle(Theme.txt)
+                        Text(L10n.t("onb.consent", language)).font(.footnote).foregroundStyle(Theme.txt)
                     }.tint(Theme.green)
                 }.card()
 
@@ -67,6 +67,10 @@ struct WelcomeView: View {
 
                 Text("By enrolling you agree to the Terms of Service — JIM-mini is a wellness tool, not a medical device; in an emergency call 911 first. You assume the risks of AI guidance and monitoring. Full terms: GET /terms · docs/terms.md")
                     .font(.caption2).foregroundStyle(Theme.t3)
+
+                // Or a real account: email-verified, recoverable, and the
+                // same one the console and the other devices share.
+                AccountCard(language: language)
 
                 Text("Start the backend:  JIM_CORS_ORIGINS=* uvicorn jim.api:app")
                     .font(.system(size: 10, design: .monospaced)).foregroundStyle(Theme.t3)

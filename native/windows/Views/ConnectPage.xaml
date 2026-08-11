@@ -192,6 +192,29 @@
                                        Foreground="{StaticResource JimRedBrush}" />
                         </StackPanel>
                     </Border>
+
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="SitHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="SitStartButton" Click="OnSitStart" />
+                                <Button x:Name="SitEndButton" Click="OnSitEnd" IsEnabled="False"
+                                        Background="Transparent" FontSize="12"
+                                        Foreground="{StaticResource JimRedBrush}" />
+                            </StackPanel>
+                            <TextBlock x:Name="SitLine" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="SitMemory" FontSize="10" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <StackPanel x:Name="SitTurns" Spacing="2" />
+                            <TextBlock x:Name="SitNote" FontSize="10" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <TextBlock x:Name="SitError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimRedBrush}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>

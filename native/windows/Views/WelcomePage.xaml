@@ -27,7 +27,7 @@
                     <TextBox x:Name="NameBox" Header="Name" />
                     <TextBox x:Name="BirthBox" Header="Birthdate (yyyy-MM-dd)" Text="1984-01-01" />
                     <ComboBox x:Name="LanguageBox" HorizontalAlignment="Stretch" />
-                    <CheckBox x:Name="ConsentBox" Content="I consent to the terms of use"
+                    <CheckBox x:Name="ConsentBox"
                               Foreground="{StaticResource JimTxtBrush}" />
                 </StackPanel>
             </Border>
@@ -47,6 +47,45 @@
                     </LinearGradientBrush>
                 </Button.Background>
             </Button>
+
+
+            <!-- Or a real account: email-verified, recoverable, and the same
+                 one the console and the other devices share. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="ModeUpButton" Click="OnModeUp" FontSize="12" />
+                        <Button x:Name="ModeInButton" Click="OnModeIn" FontSize="12" />
+                        <Button x:Name="ModeResetButton" Click="OnModeReset" FontSize="12" />
+                    </StackPanel>
+                    <TextBox x:Name="AccountEmailBox" />
+                    <TextBox x:Name="AccountNameBox" />
+                    <PasswordBox x:Name="AccountPasswordBox" />
+                    <CheckBox x:Name="AccountConsentBox"
+                              Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="ResetHint" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="VerifyHint" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBox x:Name="AccountCodeBox" Visibility="Collapsed" PlaceholderText="123456" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="AccountGoButton" Click="OnAccountGo" Foreground="White"
+                                Background="{StaticResource JimBrandABrush}" />
+                        <Button x:Name="ResendButton" Click="OnResend" Visibility="Collapsed"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                        <Button x:Name="ResetSendButton" Click="OnResetSend" Visibility="Collapsed"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                    </StackPanel>
+                    <StackPanel x:Name="OauthDoors" Spacing="6" />
+                    <TextBlock x:Name="AccountNotice" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="AccountError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimRed}" />
+                </StackPanel>
+            </Border>
 
             <TextBlock Text="Start the backend:  JIM_CORS_ORIGINS=* uvicorn jim.api:app"
                        FontFamily="Consolas" FontSize="11" Foreground="{StaticResource JimT2Brush}"

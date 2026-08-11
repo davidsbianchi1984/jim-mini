@@ -43,6 +43,9 @@ struct ConnectView: View {
                     // are sources too.
                     WatchCard()
                     DevicesCard()
+                    // The sitting itself is a source of continuity: any
+                    // device that starts one resumes the same thread.
+                    SessionsCard()
                 case .social: SocialSection()
                 case .apps: AppsSection()
                 case .community: CommunitySection()

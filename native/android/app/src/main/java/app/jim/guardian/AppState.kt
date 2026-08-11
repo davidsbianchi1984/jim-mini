@@ -54,6 +54,15 @@ class GuardianViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** The moment a session exists — enrolled anonymously, verified by
+     *  code, signed back in, or vouched for by an OAuth provider — the
+     *  identity is kept the same way, whoever minted it. */
+    fun signIn(r: EnrollResult) {
+        uid = r.id; token = r.userToken; displayName = r.displayName
+        prefs.edit().putString("uid", r.id).putString("token", r.userToken)
+            .putString("name", r.displayName).apply()
+    }
+
     fun signOut() {
         uid = null; token = null; displayName = ""
         prefs.edit().clear().apply()

@@ -2200,6 +2200,101 @@ object ApiClient {
         deviceOf(request("/devices/$uid", "POST",
             JSONObject().put("name", name).put("kind", kind)
                 .put("paired", paired), token))
+
+    // ---- the account the phones never had ----
+
+    private fun sessionOf(o: JSONObject): EnrollResult = EnrollResult(
+        o.getString("id"), o.optString("display_name", ""),
+        o.getString("user_token"))
+
+    /** A deployment with mail answers pending and sends the code; a local
+     *  install with no transport activates directly and answers with the
+     *  session. */
+    suspend fun signup(email: String, password: String, name: String,
+                       language: String? = null): SignupResult {
+        val body = JSONObject().put("email", email).put("password", password)
+            .put("display_name", name).put("terms_consent", true)
+        if (!language.isNullOrBlank() && language != "en") body.put("language", language)
+        val o = request("/signup", "POST", body)
+        return SignupResult(o.getString("email"), o.optBoolean("verified", false),
+            o.optString("verification", ""), o.optString("code_delivery", null),
+            if (o.has("user_token")) sessionOf(o) else null)
+    }
+
+    suspend fun signin(email: String, password: String): SignInResult {
+        val o = request("/signin", "POST",
+            JSONObject().put("email", email).put("password", password))
+        return SignInResult(o.getString("email"), o.getString("user_id"),
+            o.optString("display_name", ""), o.getString("user_token"))
+    }
+
+    /** The code proves the inbox; the user is enrolled here, not at signup,
+     *  which is why this answers with the same shape enrollment does. */
+    suspend fun verifyEmail(email: String, code: String): EnrollResult =
+        sessionOf(request("/verify-email", "POST",
+            JSONObject().put("email", email).put("code", code)))
+
+    suspend fun resendCode(email: String): String =
+        request("/verify-email/resend", "POST",
+            JSONObject().put("email", email)).optString("code_delivery", "")
+
+    suspend fun requestPasswordReset(email: String): String =
+        request("/password/reset/request", "POST",
+            JSONObject().put("email", email)).optString("code_delivery", "")
+
+    /** Every existing session dies with the old password. */
+    suspend fun resetPassword(email: String, code: String, newPassword: String): Boolean =
+        request("/password/reset", "POST",
+            JSONObject().put("email", email).put("code", code)
+                .put("new_password", newPassword)).optBoolean("reset", false)
+
+    suspend fun oauthProviders(): List<OAuthDoor> {
+        val o = request("/auth/oauth/providers")
+        val out = mutableListOf<OAuthDoor>()
+        o.optJSONArray("providers")?.let { a ->
+            for (i in 0 until a.length()) {
+                val d = a.getJSONObject(i)
+                out.add(OAuthDoor(d.getString("provider"), d.getString("name"),
+                    d.optBoolean("configured", false)))
+            }
+        }
+        return out
+    }
+
+    /** No redirect_uri: the backend defaults to its own callback page, and
+     *  the phone polls the claim rather than intercepting the browser. */
+    suspend fun oauthStart(provider: String): OAuthStarted {
+        val o = request("/auth/oauth/$provider/start", "POST", JSONObject())
+        return OAuthStarted(o.getString("state"), o.getString("url"))
+    }
+
+    suspend fun oauthClaim(state: String): OAuthClaim {
+        val o = request("/auth/oauth/claim?state=$state")
+        if (!o.optBoolean("ready", false)) return OAuthClaim(false, null)
+        return OAuthClaim(true, sessionOf(o))
+    }
+
+    suspend fun startSession(uid: String, token: String, device: String): SessionStarted {
+        val o = request("/sessions/$uid", "POST",
+            JSONObject().put("device", device), token)
+        val turns = mutableListOf<ContinuityTurn>()
+        var continuityNote: String? = null
+        o.optJSONObject("continuity")?.let { c ->
+            continuityNote = c.optString("note", "")
+            c.optJSONArray("recent_turns")?.let { a ->
+                for (i in 0 until a.length()) {
+                    val t = a.getJSONObject(i)
+                    turns.add(ContinuityTurn(t.getString("role"), t.getString("content")))
+                }
+            }
+        }
+        return SessionStarted(o.getString("id"), o.optInt("prior_sessions", 0),
+            o.optString("memory", null), turns, continuityNote)
+    }
+
+    suspend fun endSession(uid: String, token: String, sessionId: String): Boolean =
+        request("/sessions/$uid/$sessionId/end", "POST", token = token)
+            .optBoolean("ended", false)
 }
 
 data class MoneyAccount(val id: String, val kind: String,
@@ -2397,3 +2492,19 @@ data class PairInfo(val consoleUrl: String, val apiUrl: String,
 data class DeviceRow(val id: String, val name: String, val kind: String,
                      val transport: String?, val hasLlm: Boolean,
                      val paired: Boolean)
+
+/** Signup's two shapes under one roof: `session` is filled on a local
+ *  install that activates directly, `codeDelivery` when the code is out. */
+data class SignupResult(val email: String, val verified: Boolean,
+                        val verification: String, val codeDelivery: String?,
+                        val session: EnrollResult?)
+data class SignInResult(val email: String, val userId: String,
+                        val displayName: String, val userToken: String)
+data class OAuthDoor(val provider: String, val name: String,
+                     val configured: Boolean)
+data class OAuthStarted(val state: String, val url: String)
+data class OAuthClaim(val ready: Boolean, val session: EnrollResult?)
+data class ContinuityTurn(val role: String, val content: String)
+data class SessionStarted(val id: String, val priorSessions: Int,
+                          val memory: String?, val turns: List<ContinuityTurn>,
+                          val continuityNote: String?)

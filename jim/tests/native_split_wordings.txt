@@ -1,4 +1,4 @@
-# status: backlog — 1 row
+# status: backlog — 4 rows
 #
 # One English string carried by two or more keys whose ten translations do not
 # agree. Checked by test_the_same_sentence_translated_twice.py, matched exactly
@@ -40,5 +40,14 @@
 # were the third kind the sibling's copy of this guard describes: the same
 # thing said two ways for no reason. Reconciled.
 #
-# ceiling: 1
+# **`att.sit.end` and `hld.end` both read *End it* in English.** One ends a
+# login session, the other a crisis hold — and the hold's translations say
+# *end it all* (*Terminar con todo*, すべて終わらせる), which a session button
+# must never say. The split stays on purpose, same category as the Name row:
+# one English phrase over two things the other nine languages tell apart.
+#
+# ceiling: 4
 android: habit.name med.name ns.med.name nw.name  ("Name" — a habit, a medicine, a person)
+ios: att.sit.end hld.end  ("End it" — a login session, a crisis hold)
+android: att.sit.end hld.end  ("End it" — a login session, a crisis hold)
+windows: att.sit.end hld.end  ("End it" — a login session, a crisis hold)

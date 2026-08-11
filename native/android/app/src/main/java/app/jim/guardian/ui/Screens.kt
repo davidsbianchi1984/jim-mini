@@ -3,6 +3,7 @@ package app.jim.guardian.ui
 import android.content.Intent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import org.json.JSONArray
 import org.json.JSONObject
 import android.net.Uri
@@ -116,6 +117,9 @@ import app.jim.guardian.PresenceWho
 import app.jim.guardian.Problems
 import app.jim.guardian.ScheduleOverview
 import app.jim.guardian.ShoppingOverview
+import app.jim.guardian.EnrollResult
+import app.jim.guardian.OAuthDoor
+import app.jim.guardian.SessionStarted
 import kotlin.math.roundToInt
 
 @Composable
@@ -219,7 +223,7 @@ fun WelcomeScreen(vm: GuardianViewModel) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = consent, onCheckedChange = { consent = it },
                         colors = CheckboxDefaults.colors(checkedColor = Jim.Green))
-                    Text("I consent to the terms of use", color = Jim.Txt, fontSize = 13.sp)
+                    Text(L10n.t("onb.consent", language), color = Jim.Txt, fontSize = 13.sp)
                 }
             }
             error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
@@ -234,6 +238,9 @@ fun WelcomeScreen(vm: GuardianViewModel) {
             color = Jim.T3, fontSize = 9.sp)
         Text("Start the backend:  JIM_CORS_ORIGINS=* uvicorn jim.api:app",
                 color = Jim.T3, fontSize = 10.sp)
+            // Or a real account: email-verified, recoverable, and the same
+            // one the console and the other devices share.
+            AccountPanel(vm, language)
         }
     }
 }
@@ -252,6 +259,203 @@ private fun labeledField(label: String, value: String, placeholder: String, onCh
                 focusedContainerColor = Jim.ScrBot, unfocusedContainerColor = Jim.ScrBot,
             ),
         )
+    }
+}
+
+
+/** The account the phones never had: the shells enrolled anonymously while
+ *  the console signed up with an email, verified the inbox, recovered lost
+ *  passwords and opened the "Sign in with ..." doors. Same routes, this
+ *  screen. */
+@Composable
+private fun AccountPanel(vm: GuardianViewModel, language: String) {
+    var mode by remember { mutableStateOf("up") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var code by remember { mutableStateOf("") }
+    var consent by remember { mutableStateOf(false) }
+    var pending by remember { mutableStateOf(false) }
+    var doors by remember { mutableStateOf<List<OAuthDoor>>(emptyList()) }
+    var notice by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        runCatching { ApiClient.oauthProviders() }.onSuccess { doors = it }
+    }
+    fun act(block: suspend () -> Unit) {
+        busy = true; error = null; notice = null
+        scope.launch {
+            runCatching { block() }.onFailure { error = it.message }
+            busy = false
+        }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf("up" to L10n.t("onb.create", language),
+                   "in" to L10n.t("onb.signin", language),
+                   "reset" to L10n.t("onb.forgot", language)).forEach { (value, label) ->
+                FilterChip(selected = mode == value,
+                    onClick = { mode = value; error = null; notice = null },
+                    label = { Text(label, fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Jim.BrandA,
+                        selectedLabelColor = Color.White, labelColor = Jim.T2))
+            }
+        }
+        labeledField(L10n.t("onb.email", language), email,
+            L10n.t("onb.email.ph", language)) { email = it }
+
+        if (mode == "up" && !pending) {
+            labeledField(L10n.t("onb.yourname", language), name, "") { name = it }
+            labeledField(L10n.t("onb.password.min", language), password, "") { password = it }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = consent, onCheckedChange = { consent = it },
+                    colors = CheckboxDefaults.colors(checkedColor = Jim.Green))
+                Text(L10n.t("onb.consent", language), color = Jim.Txt, fontSize = 12.sp)
+            }
+            BrandButton(L10n.t("onb.create", language),
+                enabled = !busy && consent && email.isNotBlank()
+                        && password.isNotBlank() && name.isNotBlank(), busy = busy) {
+                act {
+                    val r = ApiClient.signup(email.trim(), password, name, language)
+                    if (r.verified && r.session != null) vm.signIn(r.session)
+                    else { pending = true; notice = r.codeDelivery }
+                }
+            }
+        }
+
+        if (mode == "up" && pending) {
+            Text("${L10n.t("onb.verify.sent", language)} $email",
+                color = Jim.T2, fontSize = 12.sp)
+            Text(L10n.t("onb.verify.type", language), color = Jim.T3, fontSize = 11.sp)
+            labeledField(L10n.t("onb.code", language), code, "123456") { code = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                BrandButton(L10n.t("onb.signin", language),
+                    enabled = !busy && code.isNotBlank(), busy = busy) {
+                    act { vm.signIn(ApiClient.verifyEmail(email.trim(), code.trim())) }
+                }
+                SmallAction(L10n.t("onb.code.resend", language)) {
+                    act { notice = ApiClient.resendCode(email.trim()) }
+                }
+            }
+        }
+
+        if (mode == "in") {
+            labeledField(L10n.t("onb.password.min", language), password, "") { password = it }
+            BrandButton(L10n.t("onb.signin", language),
+                enabled = !busy && email.isNotBlank() && password.isNotBlank(),
+                busy = busy) {
+                act {
+                    val r = ApiClient.signin(email.trim(), password)
+                    vm.signIn(EnrollResult(r.userId, r.displayName, r.userToken))
+                }
+            }
+        }
+
+        if (mode == "reset") {
+            Text(L10n.t("onb.reset.hint", language), color = Jim.T2, fontSize = 12.sp)
+            SmallAction(L10n.t("onb.reset.send", language)) {
+                act { notice = ApiClient.requestPasswordReset(email.trim()) }
+            }
+            labeledField(L10n.t("onb.reset.code", language), code, "123456") { code = it }
+            labeledField(L10n.t("onb.password.min", language), password, "") { password = it }
+            BrandButton(L10n.t("onb.reset.send", language),
+                enabled = !busy && email.isNotBlank() && code.isNotBlank()
+                        && password.isNotBlank(), busy = busy) {
+                act {
+                    // Every old session died with the old password; sign in
+                    // fresh with the new one.
+                    ApiClient.resetPassword(email.trim(), code.trim(), password)
+                    code = ""; mode = "in"
+                    notice = L10n.t("onb.signin", language)
+                }
+            }
+        }
+
+        if (doors.isNotEmpty() && mode != "reset") {
+            doors.forEach { door ->
+                val label = L10n.t("onb.signwith", language)
+                    .replace("{mode}", L10n.t(
+                        if (mode == "up") "onb.mode.up" else "onb.mode.in", language))
+                    .replace("{provider}", door.name)
+                SmallAction(if (door.configured) label
+                            else label + L10n.t("onb.oauth.absent", language)) {
+                    // Open the provider's page in the system browser, then
+                    // poll the claim: the phone never sees the provider
+                    // conversation — only whether its state was honoured.
+                    if (door.configured && !busy) act {
+                        val started = ApiClient.oauthStart(door.provider)
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(started.url)))
+                        for (i in 0 until 40) {
+                            delay(3000)
+                            val claim = ApiClient.oauthClaim(started.state)
+                            if (claim.ready) {
+                                claim.session?.let { vm.signIn(it) }
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        notice?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+    }
+}
+
+/** This sitting: a named login session, so any device that starts one
+ *  resumes the same conversational thread — including one begun with a
+ *  QRME specialist from another product. */
+@Composable
+private fun SittingPanel(vm: GuardianViewModel) {
+    var session by remember { mutableStateOf<SessionStarted?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(L10n.t("att.sit", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            BrandButton(L10n.t("att.sit.start", vm.language),
+                enabled = !busy, busy = busy) {
+                busy = true; error = null
+                vm.call({ ApiClient.startSession(vm.uid!!, vm.token!!, "android") }) { r ->
+                    r.onSuccess { session = it }.onFailure { error = it.message }
+                    busy = false
+                }
+            }
+            SmallAction(L10n.t("att.sit.end", vm.language)) {
+                session?.let { sitting ->
+                    if (!busy) {
+                        busy = true; error = null
+                        vm.call({ ApiClient.endSession(vm.uid!!, vm.token!!, sitting.id) }) { r ->
+                            r.onSuccess { session = null }.onFailure { error = it.message }
+                            busy = false
+                        }
+                    }
+                }
+            }
+        }
+        session?.let { s ->
+            Text(L10n.t("att.sit.prior", vm.language)
+                    .replace("{id}", s.id).replace("{n}", s.priorSessions.toString()),
+                color = Jim.T2, fontSize = 12.sp)
+            s.memory?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
+            s.turns.forEach { turn ->
+                Text("${turn.role}: ${turn.content}", color = Jim.T2,
+                    fontSize = 11.sp, maxLines = 2)
+            }
+            s.continuityNote?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
     }
 }
 
@@ -2790,7 +2994,7 @@ fun ConnectScreen(vm: GuardianViewModel) {
         when (tab) {
             // Channel 2 sits with the sources: the lent microphone is a
             // way in for the world's sound, consented the same.
-            0 -> { SourcesPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); MailSettingsPanel(vm); WatchPanel(vm); DevicesPanel(vm) }
+            0 -> { SourcesPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); MailSettingsPanel(vm); WatchPanel(vm); DevicesPanel(vm); SittingPanel(vm) }
             1 -> SocialPanel(vm)
             2 -> AppsPanel(vm)
             3 -> CommunityPanel(vm)

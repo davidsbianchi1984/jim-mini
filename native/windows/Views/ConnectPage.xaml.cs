@@ -745,6 +745,9 @@ public sealed partial class ConnectPage : Page
         DvHead.Text = L10n.T("ns.dv.bluetooth");
         DvPaired.Content = L10n.T("ns.dv.paired");
         DvAddButton.Content = L10n.T("ns.dv.bluetooth");
+        SitHead.Text = L10n.T("att.sit");
+        SitStartButton.Content = L10n.T("att.sit.start");
+        SitEndButton.Content = L10n.T("att.sit.end");
     }
 
     private async Task LoadWatch()
@@ -923,6 +926,73 @@ public sealed partial class ConnectPage : Page
         {
             DvError.Text = ex.Message;
             DvError.Visibility = Visibility.Visible;
+        }
+    }
+
+    // ---- this sitting: a named login session ----
+
+    private SessionStarted? _sitting;
+
+    private async void OnSitStart(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        SitError.Visibility = Visibility.Collapsed;
+        try
+        {
+            _sitting = await ApiClient.Shared.StartSession(s.Uid, s.Token,
+                                                           "windows");
+            SitEndButton.IsEnabled = true;
+            SitLine.Text = L10n.T("att.sit.prior")
+                .Replace("{id}", _sitting.Id)
+                .Replace("{n}", _sitting.PriorSessions.ToString());
+            SitLine.Visibility = Visibility.Visible;
+            SitMemory.Text = _sitting.Memory ?? "";
+            SitMemory.Visibility = _sitting.Memory is null
+                ? Visibility.Collapsed : Visibility.Visible;
+            SitTurns.Children.Clear();
+            if (_sitting.Continuity is { } continuity)
+            {
+                foreach (var turn in continuity.RecentTurns)
+                    SitTurns.Children.Add(new TextBlock
+                    {
+                        Text = $"{turn.Role}: {turn.Content}",
+                        FontSize = 10,
+                        TextWrapping = TextWrapping.Wrap,
+                        Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                            Application.Current.Resources["JimT2Brush"],
+                    });
+                SitNote.Text = continuity.Note;
+                SitNote.Visibility = Visibility.Visible;
+            }
+            else SitNote.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception ex)
+        {
+            SitError.Text = ex.Message;
+            SitError.Visibility = Visibility.Visible;
+        }
+    }
+
+    private async void OnSitEnd(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null || _sitting is null) return;
+        SitError.Visibility = Visibility.Collapsed;
+        try
+        {
+            await ApiClient.Shared.EndSession(s.Uid, s.Token, _sitting.Id);
+            _sitting = null;
+            SitEndButton.IsEnabled = false;
+            SitLine.Visibility = Visibility.Collapsed;
+            SitMemory.Visibility = Visibility.Collapsed;
+            SitNote.Visibility = Visibility.Collapsed;
+            SitTurns.Children.Clear();
+        }
+        catch (Exception ex)
+        {
+            SitError.Text = ex.Message;
+            SitError.Visibility = Visibility.Visible;
         }
     }
 }

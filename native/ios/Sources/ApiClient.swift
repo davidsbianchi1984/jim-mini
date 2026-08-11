@@ -2595,3 +2595,145 @@ extension ApiClient {
                                  "paired": paired], token: token)
     }
 }
+
+// MARK: - The account the phones never had
+
+/// Two shapes under one roof, the way the route answers: a deployment with
+/// mail sends the code and answers pending; a local install with no mail
+/// transport activates directly and answers with the session.
+struct SignupResult: Decodable {
+    let email: String
+    let verified: Bool
+    let verification: String
+    let account_id: String?
+    let code_delivery: String?
+    let id: String?
+    let display_name: String?
+    let user_token: String?
+}
+
+struct SignInResult: Decodable {
+    let account_id: String
+    let email: String
+    let user_id: String
+    let display_name: String?
+    let user_token: String
+}
+
+struct CodeDelivery: Decodable { let email: String; let code_delivery: String }
+
+struct ResetDone: Decodable { let email: String; let reset: Bool }
+
+struct OAuthProviderRow: Decodable {
+    let provider: String
+    let name: String
+    let configured: Bool
+    let setup: String?
+}
+
+struct OAuthProviders: Decodable { let providers: [OAuthProviderRow] }
+
+struct OAuthStarted: Decodable {
+    let provider: String
+    let state: String
+    let url: String
+}
+
+/// The claim is polled: not-ready is `ready` alone, and ready carries the
+/// session — a fresh account's full enrollment or a returning one's token.
+struct OAuthClaim: Decodable {
+    let ready: Bool
+    let id: String?
+    let display_name: String?
+    let user_token: String?
+    let email: String?
+}
+
+struct ContinuityTurn: Decodable { let role: String; let content: String }
+
+struct SessionContinuity: Decodable {
+    let with: String
+    let recent_turns: [ContinuityTurn]
+    let note: String
+}
+
+struct SessionStarted: Decodable {
+    let id: String
+    let device: String?
+    let prior_sessions: Int
+    let memory: String?
+    let continuity: SessionContinuity?
+}
+
+struct SessionEnded: Decodable { let id: String; let ended: Bool }
+
+extension ApiClient {
+
+    func signup(email: String, password: String, name: String,
+                birthdate: String? = nil,
+                language: String? = nil) async throws -> SignupResult {
+        var body: [String: Any] = ["email": email, "password": password,
+                                   "display_name": name,
+                                   "terms_consent": true]
+        if let birthdate, !birthdate.isEmpty { body["birthdate"] = birthdate }
+        if let language, language != "en" { body["language"] = language }
+        return try await request("/signup", method: "POST", body: body)
+    }
+
+    func signin(email: String, password: String) async throws -> SignInResult {
+        try await request("/signin", method: "POST",
+                          body: ["email": email, "password": password])
+    }
+
+    /// The code proves the inbox; the user is enrolled here, not at signup,
+    /// which is why this answers with the same shape enrollment does.
+    func verifyEmail(email: String, code: String) async throws -> EnrollResult {
+        try await request("/verify-email", method: "POST",
+                          body: ["email": email, "code": code])
+    }
+
+    func resendCode(email: String) async throws -> CodeDelivery {
+        try await request("/verify-email/resend", method: "POST",
+                          body: ["email": email])
+    }
+
+    func requestPasswordReset(email: String) async throws -> CodeDelivery {
+        try await request("/password/reset/request", method: "POST",
+                          body: ["email": email])
+    }
+
+    /// Every existing session dies with the old password.
+    func resetPassword(email: String, code: String,
+                       newPassword: String) async throws -> ResetDone {
+        try await request("/password/reset", method: "POST",
+                          body: ["email": email, "code": code,
+                                 "new_password": newPassword])
+    }
+
+    func oauthProviders() async throws -> OAuthProviders {
+        try await request("/auth/oauth/providers")
+    }
+
+    /// No redirect_uri: the backend defaults to its own callback page, and
+    /// the phone polls the claim rather than intercepting the browser.
+    func oauthStart(provider: String) async throws -> OAuthStarted {
+        try await request("/auth/oauth/\(provider)/start", method: "POST",
+                          body: [:])
+    }
+
+    func oauthClaim(state: String) async throws -> OAuthClaim {
+        try await request("/auth/oauth/claim?state=\(state)")
+    }
+
+    func startSession(uid: String, token: String,
+                      device: String) async throws -> SessionStarted {
+        try await request("/sessions/\(uid)", method: "POST",
+                          body: ["device": device], token: token)
+    }
+
+    func endSession(uid: String, token: String,
+                    sessionId: String) async throws -> SessionEnded {
+        try await request("/sessions/\(uid)/\(sessionId)/end", method: "POST",
+                          token: token)
+    }
+}
