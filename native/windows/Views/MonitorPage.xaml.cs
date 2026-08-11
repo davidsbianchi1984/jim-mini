@@ -94,7 +94,7 @@ public sealed partial class MonitorPage : Page
             FollowupNote.Text = "";
 
             AnsweredTitle.Text = a.Helped == true
-                ? "Monitoring resumes" : "Bringing in a person";
+                ? L10n.T("mon.resumes") : L10n.T("mon.person");
             AnsweredTitle.Foreground = new SolidColorBrush(a.Helped == true
                 ? Microsoft.UI.Colors.MediumSpringGreen
                 : Microsoft.UI.Colors.Orange);

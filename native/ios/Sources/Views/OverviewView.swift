@@ -292,7 +292,7 @@ private struct AdaptationCard: View {
                       + "on record, here on your own device's backend.")
                     .font(.caption).foregroundStyle(Theme.t2)
             }
-            Button(busy ? "Rebuilding…" : "Rebuild from my history") { rebuild() }
+            Button(busy ? "Rebuilding…" : L10n.t("ov.rebuild", state.language)) { rebuild() }
                 .font(.caption.bold()).foregroundStyle(.white)
                 .padding(.horizontal, 12).padding(.vertical, 9)
                 .background(Theme.brandA).clipShape(Capsule())

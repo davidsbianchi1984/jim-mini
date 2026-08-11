@@ -14,14 +14,7 @@
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <ComboBox x:Name="AreaBox" SelectedIndex="0" HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="mental_health" />
-                        <ComboBoxItem Content="health_fitness" />
-                        <ComboBoxItem Content="career" />
-                        <ComboBoxItem Content="finance" />
-                        <ComboBoxItem Content="relationships" />
-                        <ComboBoxItem Content="personal_growth" />
-                    </ComboBox>
+                    <ComboBox x:Name="AreaBox" SelectedIndex="0" HorizontalAlignment="Stretch" />
                     <TextBox x:Name="MessageBox"
                              AcceptsReturn="True" TextWrapping="Wrap" Height="90" />
                     <Button x:Name="AskButton" HorizontalAlignment="Stretch"

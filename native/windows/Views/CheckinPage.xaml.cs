@@ -33,6 +33,7 @@ public sealed partial class CheckinPage : Page
         WorkLevel.Header = L10n.T("wel.work.level");
         WorkLevel.ItemsSource = Levels.ToList();
         WorkFocus.Header = L10n.T("wel.work.focus");
+        WorkFocus.Text = "mobility";
         WorkBuildButton.Content = L10n.T("wel.work.build");
         MealHead.Text = L10n.T("wel.meals");
         MealGoal.Header = L10n.T("wel.meals.goal");

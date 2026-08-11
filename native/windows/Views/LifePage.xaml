@@ -16,14 +16,7 @@
                         <StackPanel Spacing="10">
                             <TextBlock x:Name="GoalNewHead" FontWeight="Bold" FontSize="16"
                                        Foreground="{StaticResource JimTxtBrush}" />
-                            <ComboBox x:Name="GoalArea" SelectedIndex="5" HorizontalAlignment="Stretch">
-                                <ComboBoxItem Content="mental_health" />
-                                <ComboBoxItem Content="health_fitness" />
-                                <ComboBoxItem Content="career" />
-                                <ComboBoxItem Content="finance" />
-                                <ComboBoxItem Content="relationships" />
-                                <ComboBoxItem Content="personal_growth" />
-                            </ComboBox>
+                            <ComboBox x:Name="GoalArea" SelectedIndex="5" HorizontalAlignment="Stretch" />
                             <TextBox x:Name="GoalTitle" />
                             <Button x:Name="AddGoalButton" HorizontalAlignment="Stretch" Height="42"
                                     Foreground="White" Click="OnAddGoal">

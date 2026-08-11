@@ -25,6 +25,12 @@ public sealed partial class LifePage : Page
     }
     public record JournalRow(string Text, string Date);
 
+    // The wire word is the tag; the shown label derives from it the same
+    // way the iOS and Android pickers spell it — never a second English.
+    private static readonly string[] GoalAreas =
+        { "mental_health", "health_fitness", "career", "finance",
+          "relationships", "personal_growth" };
+
     public LifePage()
     {
         InitializeComponent();
@@ -36,6 +42,7 @@ public sealed partial class LifePage : Page
         JournalPivot.Header = L10n.T("life.journal");
         GoalNewHead.Text = L10n.T("goal.new");
         GoalArea.Header = L10n.T("coach.area");
+        GoalArea.ItemsSource = GoalAreas.Select(a => a.Replace('_', ' ')).ToList();
         GoalTitle.Header = L10n.T("goal.title");
         GoalTitle.PlaceholderText = L10n.T("goal.title.ph");
         AddGoalButton.Content = L10n.T("goal.add");
@@ -141,7 +148,7 @@ public sealed partial class LifePage : Page
     {
         var title = GoalTitle.Text.Trim();
         if (title.Length == 0) return;
-        var area = (GoalArea.SelectedItem as ComboBoxItem)?.Content as string ?? "personal_growth";
+        var area = GoalAreas[GoalArea.SelectedIndex >= 0 ? GoalArea.SelectedIndex : 5];
         var s = AppState.Current;
         try
         {

@@ -452,7 +452,7 @@ public sealed partial class OverviewPage : Page
         {
             _providers = (await ApiClient.Shared.Models()).Providers;
             ProviderBox.ItemsSource = _providers.Select(p =>
-                $"{p.Label}  ({(p.Configured ? "ready" : "no key")})").ToList();
+                $"{p.Label}  ({(p.Configured ? L10n.T("ov.ready") : L10n.T("ov.nokey"))})").ToList();
             var current = await ApiClient.Shared.UserModel(s.Uid!, s.Token!);
             var idx = System.Array.FindIndex(_providers, p => p.Name == current.Provider);
             ProviderBox.SelectedIndex = idx >= 0 ? idx : 0;

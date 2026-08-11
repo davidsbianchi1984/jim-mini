@@ -109,6 +109,29 @@
 # sets say *Shops* and *Your circle*, which the desktop has been rendering all
 # along.
 
-ios: 12
-android: 31
-windows: 24
+# **0.62.x — the floor, named.** What the counts below still hold is no
+# longer a backlog: every surviving row is a decision with a reason, the
+# same posture QRME's console record reached at its one quoted row.
+#
+# - The terms-consent sentence, on all three Welcome screens. Legal prose
+#   is the founder's wording to translate, not this suite's — it stays
+#   English until translated words carry his sign-off.
+# - "Start the backend: JIM_CORS_ORIGINS=* uvicorn jim.api:app" — a
+#   command line, quoted, on all three.
+# - The first-aid surface: step content, the CPR unlock sentence, the
+#   escalation lines and the CPR waiver. The screen itself tells the
+#   reader why: safety steps stay in English for this language, never
+#   machine-mangled. The alarm surface — the question, the three answers,
+#   the cannot-call-an-ambulance line — is translated by name and checked
+#   by `test_the_alarm_surface_is_translated_on_every_shell`.
+# - "LIVE · QRME" — a quoted badge the tandem itself paints.
+# - "English" in the language picker — a language named in itself, the
+#   way every row of that picker names its own.
+# - "Rosa" / "rosa@example.com" — sample contact placeholders.
+# - "{n} bpm" — a unit the profession writes in Latin letters everywhere.
+# - The remainder is the counter's own mis-parses: interpolation
+#   fragments like `\(L10n.t(` that contain letters and no words a
+#   reader ever sees.
+ios: 10
+android: 16
+windows: 4

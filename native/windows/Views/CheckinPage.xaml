@@ -66,7 +66,7 @@
                     <Slider x:Name="WorkMinutes" Minimum="5" Maximum="90" Value="20"
                             StepFrequency="5" />
                     <ComboBox x:Name="WorkLevel" HorizontalAlignment="Stretch" SelectedIndex="0" />
-                    <TextBox x:Name="WorkFocus" Text="mobility" />
+                    <TextBox x:Name="WorkFocus" />
                     <Button x:Name="WorkBuildButton" Click="OnBuildWorkout" Foreground="White"
                             Background="{StaticResource JimBrandABrush}" />
                     <StackPanel x:Name="WorkBlocks" Spacing="2" />

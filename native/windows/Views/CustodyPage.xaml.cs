@@ -91,8 +91,8 @@ public sealed partial class CustodyPage : Page
         {
             var c = await ApiClient.Shared.Custody(s.Uid!, s.Token!);
             ChainText.Text = c.ChainIntact == true
-                ? "🔗 Audit chain intact"
-                : "⚠️ Audit chain status unknown";
+                ? L10n.T("cust.chain.ok")
+                : L10n.T("cust.chain.unknown");
             ChainText.Visibility = Visibility.Visible;
             RecordsList.ItemsSource = c.Records;
             EmptyNote.Visibility = c.Records.Length == 0
@@ -116,11 +116,16 @@ public sealed partial class CustodyPage : Page
         {
             var p = await ApiClient.Shared.CustodyProvenance(s.Uid!, s.Token!, key);
             ProvTitle.Text = $"🔒 {key}";
-            var lines = new List<string> { $"Origin: {p.Origin}" };
-            if (p.Sealed?.Cipher is { } cipher) lines.Add($"Seal: {cipher}");
-            if (p.Audit is { } audit) lines.Add($"Audit events: {audit.Count}");
+            var lines = new List<string>
+            {
+                L10n.T("cst.origin").Replace("{x}", p.Origin),
+            };
+            if (p.Sealed?.Cipher is { } cipher)
+                lines.Add(L10n.T("cst.seal").Replace("{x}", cipher));
+            if (p.Audit is { } audit)
+                lines.Add(L10n.T("cust.events").Replace("{n}", $"{audit.Count}"));
             lines.Add(p.Chain?.Intact == true
-                ? "Hash chain: intact" : "Hash chain: unknown");
+                ? L10n.T("cust.chain.ok") : L10n.T("cust.chain.unknown"));
             ProvText.Text = string.Join("\n", lines);
             ProvCard.Visibility = Visibility.Visible;
         }

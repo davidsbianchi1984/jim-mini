@@ -12,6 +12,11 @@ public sealed partial class CoachPage : Page
     // a word the table already carries.
     private static readonly string[] ToneKeys =
         { "brg.speak.direct", "brg.speak.balanced", "brg.speak.cautious" };
+    // The wire word is the tag; the shown label derives from it the same
+    // way the iOS and Android pickers spell it — never a second English.
+    private static readonly string[] Areas =
+        { "mental_health", "health_fitness", "career", "finance",
+          "relationships", "personal_growth" };
     private static readonly string[] Conditions =
         { "anxiety", "depression", "stress", "phobia", "financial_stress",
           "relationship", "physical_distress", "physical_injury" };
@@ -22,6 +27,7 @@ public sealed partial class CoachPage : Page
         CoachTitle.Text = L10n.T("coach.title");
         CoachPitch.Text = L10n.T("coach.pitch");
         AreaBox.Header = L10n.T("coach.area");
+        AreaBox.ItemsSource = Areas.Select(a => a.Replace('_', ' ')).ToList();
         MessageBox.Header = L10n.T("coach.msg");
         MessageBox.PlaceholderText = L10n.T("coach.msg.ph");
         AskButton.Content = L10n.T("coach.ask");
@@ -171,7 +177,7 @@ public sealed partial class CoachPage : Page
     {
         var message = MessageBox.Text.Trim();
         if (message.Length == 0) { ShowError("Type a message to your coach."); return; }
-        var area = (AreaBox.SelectedItem as ComboBoxItem)?.Content as string ?? "mental_health";
+        var area = Areas[AreaBox.SelectedIndex >= 0 ? AreaBox.SelectedIndex : 0];
 
         var s = AppState.Current;
         AskButton.IsEnabled = false;
@@ -208,8 +214,7 @@ public sealed partial class CoachPage : Page
     {
         var message = MessageBox.Text.Trim();
         if (message.Length == 0) return;
-        var area = (AreaBox.SelectedItem as ComboBoxItem)?.Content as string
-                   ?? "mental_health";
+        var area = Areas[AreaBox.SelectedIndex >= 0 ? AreaBox.SelectedIndex : 0];
         var s = AppState.Current;
         AskSpecialistButton.IsEnabled = false;
         try

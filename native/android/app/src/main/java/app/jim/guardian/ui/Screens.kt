@@ -1469,7 +1469,7 @@ fun MonitorScreen(vm: GuardianViewModel) {
 
     screenScroll {
         Text(L10n.t("mon", vm.language), color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("Send a sample. The Guardian compares it to your baseline.", color = Jim.T2, fontSize = 13.sp)
+        Text(L10n.t("mon.sub", vm.language), color = Jim.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             sliderRow(L10n.t("ci.hr", vm.language), "${hr.roundToInt()} bpm", Jim.Red, hr, 40f..180f) { hr = it }
             sliderRow(L10n.t("ci.stress", vm.language), "${(stress * 100).roundToInt()}%", Jim.Amber, stress, 0f..1f) { stress = it }
@@ -1491,7 +1491,7 @@ fun MonitorScreen(vm: GuardianViewModel) {
                 r.guidance?.let {
                     HorizontalDivider(color = Jim.Line)
                     Text(it.content, color = Jim.Txt, fontSize = 14.sp)
-                    GuidanceExtras(it)
+                    GuidanceExtras(it, vm.language)
                 }
             }
         }
@@ -1501,7 +1501,7 @@ fun MonitorScreen(vm: GuardianViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(f.question, color = Jim.Txt, fontSize = 16.sp,
                     fontWeight = FontWeight.Bold)
-                Text("About the guidance for ${f.condition}.",
+                Text(L10n.t("fu.about", vm.language).replace("{c}", f.condition),
                     color = Jim.T2, fontSize = 12.sp)
                 labeledField("", note, L10n.t("mon.add", vm.language)) { note = it }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -1604,7 +1604,7 @@ fun CheckinScreen(vm: GuardianViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(L10n.t("ci.guidance", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text(g.content, color = Jim.Txt, fontSize = 14.sp)
-                GuidanceExtras(g)
+                GuidanceExtras(g, vm.language)
             }
         }
         // The wellness protocols sit with the pulse they steady.
@@ -1662,7 +1662,7 @@ fun CoachScreen(vm: GuardianViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(L10n.t("tab.coach", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text(g.content, color = Jim.Txt, fontSize = 14.sp)
-                GuidanceExtras(g)
+                GuidanceExtras(g, vm.language)
 
                 // A specialist covers this area. An offer, not a send: what
                 // would cross the tandem is what this person just wrote, so
@@ -2383,7 +2383,7 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
                     TextButton(onClick = {
                         vm.call({ ApiClient.alarmGuidance(a.id, question,
                             vm.token!!) }) { guidance = it.getOrNull() }
-                    }, enabled = question.isNotBlank()) { Text("Ask") }
+                    }, enabled = question.isNotBlank()) { Text(L10n.t("fu.ask", vm.language)) }
                 }
             }
         }
@@ -2565,7 +2565,7 @@ private fun SOSPanel(vm: GuardianViewModel) {
         error?.let { Text(it, color = Jim.Red, fontSize = 13.sp) }
         result?.let { r ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Coordinated response", color = Jim.Txt, fontSize = 16.sp,
+                Text(L10n.t("sos.coord", vm.language), color = Jim.Txt, fontSize = 16.sp,
                     fontWeight = FontWeight.Bold)
                 r.flow.forEachIndexed { i, s ->
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -2619,7 +2619,7 @@ private fun PolicyPanel(vm: GuardianViewModel) {
         }
         policy?.let { p ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("How each severity resolves", color = Jim.Txt, fontSize = 16.sp,
+                Text(L10n.t("sos.severity", vm.language), color = Jim.Txt, fontSize = 16.sp,
                     fontWeight = FontWeight.Bold)
                 listOf("info", "guidance", "critical").forEach { sev ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -2635,7 +2635,7 @@ private fun PolicyPanel(vm: GuardianViewModel) {
 }
 
 @Composable
-private fun GuidanceExtras(g: Guidance) {
+private fun GuidanceExtras(g: Guidance, lang: String) {
     g.specialist?.let { who ->
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically) {
@@ -2653,7 +2653,7 @@ private fun GuidanceExtras(g: Guidance) {
     g.custody?.let { c ->
         if (c.vaulted && c.pdiKey != null) {
             Column {
-                Text("🔒 Sealed in the PDI vault", color = Jim.Green,
+                Text(L10n.t("gd.sealed", lang), color = Jim.Green,
                     fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 Text(c.pdiKey, color = Jim.T3, fontSize = 9.sp, maxLines = 1)
             }
@@ -2672,7 +2672,8 @@ private fun GuidanceExtras(g: Guidance) {
                 Text("${i + 1}. $step", color = Jim.Txt, fontSize = 12.sp)
             }
             aid.pace?.let { pace ->
-                Text("Pace: ${pace.perMinute}/min · ${pace.ratio}",
+                Text(L10n.t("gd.pace", lang).replace("{rate}", "${pace.perMinute}")
+                    .replace("{ratio}", pace.ratio),
                     color = Jim.Amber, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 pace.lightCue?.let { Text("💡 $it", color = Jim.T2, fontSize = 11.sp) }
                 pace.audioCue?.let { Text("🔊 $it", color = Jim.T2, fontSize = 11.sp) }
@@ -2689,16 +2690,17 @@ private fun GuidanceExtras(g: Guidance) {
     g.provenance?.let { p ->
         Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
             HorizontalDivider(color = Jim.Line)
-            Text("Derived from", color = Jim.Txt, fontSize = 12.sp,
+            Text(L10n.t("gd.derived", lang), color = Jim.Txt, fontSize = 12.sp,
                 fontWeight = FontWeight.Bold)
             p.evidence.forEach { e ->
                 Text("${e.publisher} — ${e.title}", color = Jim.Txt, fontSize = 11.sp)
                 e.supports?.let {
-                    Text("supports: $it", color = Jim.T2, fontSize = 10.sp)
+                    Text(L10n.t("gd.supports", lang).replace("{s}", it), color = Jim.T2, fontSize = 10.sp)
                 }
                 Text(e.url, color = Jim.BrandA, fontSize = 10.sp)
             }
-            Text("${p.method} · generated by ${p.generatedBy}",
+            Text(L10n.t("gd.provenance", lang).replace("{method}", p.method)
+                    .replace("{model}", p.generatedBy),
                 color = Jim.T3, fontSize = 10.sp)
             Text(p.disclaimer, color = Jim.T3, fontSize = 10.sp)
         }
@@ -2800,7 +2802,7 @@ private fun CustodyPanel(vm: GuardianViewModel) {
             }
         }
         gone?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
-        Text("Chats with tandem specialists are sealed into the PDI vault — " +
+        Text(L10n.t("cst.sealedchats", vm.language) + " " +
              "encrypted, attributed, and hash-chained. This is your copy of " +
              "the proof.", color = Jim.T2, fontSize = 12.sp)
         error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
@@ -2810,7 +2812,7 @@ private fun CustodyPanel(vm: GuardianViewModel) {
                 color = if (c.chainIntact == true) Jim.Green else Jim.Amber,
                 fontSize = 12.sp, fontWeight = FontWeight.Bold)
             if (c.records.isEmpty())
-                Text("No sealed exchanges yet — they appear after a tandem " +
+                Text(L10n.t("cst.sealednone", vm.language) + " " +
                      "specialist chat.", color = Jim.T2, fontSize = 12.sp)
             c.records.forEach { key ->
                 Column(
@@ -2829,11 +2831,11 @@ private fun CustodyPanel(vm: GuardianViewModel) {
                 ) {
                     Text("🔒 $key", color = Jim.Txt, fontSize = 11.sp, maxLines = 1)
                     if (open == key) prov[key]?.let { p ->
-                        Text("Origin: ${p.origin}", color = Jim.Txt, fontSize = 11.sp)
+                        Text(L10n.t("cst.origin", vm.language).replace("{x}", p.origin), color = Jim.Txt, fontSize = 11.sp)
                         p.cipher?.let {
-                            Text("Seal: $it", color = Jim.T2, fontSize = 10.sp)
+                            Text(L10n.t("cst.seal", vm.language).replace("{x}", it), color = Jim.T2, fontSize = 10.sp)
                         }
-                        Text("Audit events: ${p.auditCount}", color = Jim.T2,
+                        Text(L10n.t("cust.events", vm.language).replace("{n}", "${p.auditCount}"), color = Jim.T2,
                             fontSize = 10.sp)
                         Text(L10n.t(if (p.chainIntact == true) "cust.hash.ok"
                                     else "cust.hash.unknown", vm.language),
