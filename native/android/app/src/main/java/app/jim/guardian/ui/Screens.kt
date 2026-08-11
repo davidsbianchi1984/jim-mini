@@ -40,6 +40,11 @@ import app.jim.guardian.CrashWatch
 import app.jim.guardian.ChildCreated
 import app.jim.guardian.ChildOverview
 import app.jim.guardian.ChildSummary
+import app.jim.guardian.CommunityFeedItemK
+import app.jim.guardian.CommunityFeedViewK
+import app.jim.guardian.CommunityVisitRowK
+import app.jim.guardian.ExcursionLearnedK
+import app.jim.guardian.ExcursionRowK
 import app.jim.guardian.GuardianFace
 import app.jim.guardian.EmergencyResult
 import app.jim.guardian.EscalationPolicy
