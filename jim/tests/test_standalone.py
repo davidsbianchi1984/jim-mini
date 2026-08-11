@@ -24,6 +24,20 @@ def test_health_reports_no_tandem(client):
     assert body["status"] == "ok" and body["tandem"] is False
 
 
+def test_the_footsteps_count_enrolled_people(client):
+    """The counter in the corner: how many people are enrolled here.
+
+    An aggregate, never a roster — the payload carries the number and
+    nothing else about anybody. A user row only exists once enrollment
+    finished (an email account creates its user at verification), so the
+    count is people, not attempts.
+    """
+    before = client.get("/health").json()["footsteps"]
+    enroll(client)
+    joined = 1
+    assert client.get("/health").json()["footsteps"] == before + joined
+
+
 def test_enroll_requires_terms_consent(client):
     r = client.post("/enroll", json={"display_name": "X", "terms_consent": False})
     assert r.status_code == 403

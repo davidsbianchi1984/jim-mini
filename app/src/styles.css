@@ -236,6 +236,14 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .vg-close { margin-left: auto; background: none; border: 0; color: #ffb3c0;
   font-size: 18px; line-height: 1; cursor: pointer; }
 
+/* The footsteps in the corner: how many people hold accounts here. A quiet
+   chip, not a banner — it shares the fixed layer with the version guard but
+   never competes with it for attention. */
+.footsteps { position: fixed; top: 10px; right: 12px; z-index: 90;
+  padding: 4px 10px; border-radius: 999px; background: rgba(13, 23, 41, .85);
+  border: 1px solid #2f4a72; color: #9fb4d8; font-size: 12px;
+  line-height: 1.4; pointer-events: auto; }
+
 /* The error-reporting notice: shown once, before anything is sent. Calm on
    purpose — the version guard above is an alarm, this is a question. */
 .problem-notice { margin: 12px 0; padding: 14px 16px; border-radius: 12px;

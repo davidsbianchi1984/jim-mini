@@ -900,7 +900,8 @@ export const api = {
     cloud_attached?: boolean;
   }>("/offline/status"),
   health: () => req<{ status: string; version?: string; tandem: boolean;
-                      console?: boolean; signup_key?: boolean }>("/health"),
+                      console?: boolean; signup_key?: boolean;
+                      footsteps?: number }>("/health"),
   // How to open this console on a phone: its URL on the local network.
   pair: () => req<PairInfo>("/pair"),
   enroll: (body: { display_name: string; birthdate: string; terms_consent: boolean }) =>

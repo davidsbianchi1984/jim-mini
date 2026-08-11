@@ -344,6 +344,15 @@ def create_app(qrme_client: QRMEClient | None = None,
         # install answers /health perfectly well and then serves an older
         # API — which is how a user who installed three upgrades kept
         # meeting the first version's signup.
+        # The footsteps: how many people are enrolled here. An aggregate,
+        # not a roster — no name, pseudonym or id rides with the number.
+        # It lives on /health rather than a route of its own because every
+        # client already reads /health at launch for the version check, so
+        # the count arrives through a door that already exists. A user row
+        # only exists once enrollment finished (an email account creates
+        # its user at verification), so the count is people, not attempts.
+        footsteps = db.connect().execute(
+            "SELECT COUNT(*) FROM users").fetchone()[0]
         return {"status": "ok", "version": app.version,
                 "tandem": app.state.qrme is not None,
                 "pdi": app.state.pdi is not None,
@@ -353,7 +362,8 @@ def create_app(qrme_client: QRMEClient | None = None,
                 # signup screen can ask for one instead of collecting a form
                 # that ends in a 403 the person cannot answer. Only the fact
                 # that a key is required — never the key.
-                "signup_key": bool(os.environ.get("JIM_SIGNUP_KEY"))}
+                "signup_key": bool(os.environ.get("JIM_SIGNUP_KEY")),
+                "footsteps": footsteps}
 
     # -- run it from your phone ---------------------------------------------
 

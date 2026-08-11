@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "./store";
 import { t as tr, visitorLang } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
+import { Footsteps } from "./Footsteps";
 import { VersionGuard } from "./VersionGuard";
 import { GuardianLights } from "./GuardianLights";
 import { Help } from "./Help";
@@ -83,6 +84,7 @@ export function App() {
       return (
         <>
           <VersionGuard />
+          <Footsteps />
           <div className="content" style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
             <button className="linkish" onClick={() => {
               setPublicAccess(false);
@@ -94,11 +96,12 @@ export function App() {
         </>
       );
     }
-    return <><VersionGuard /><Onboarding onAccess={() => setPublicAccess(true)} /><Help /></>;
+    return <><VersionGuard /><Footsteps /><Onboarding onAccess={() => setPublicAccess(true)} /><Help /></>;
   }
   return (
     <div className="app">
       <VersionGuard />
+      <Footsteps />
       <aside className="sidebar">
         <div className="brand">
           <span className="orb" />

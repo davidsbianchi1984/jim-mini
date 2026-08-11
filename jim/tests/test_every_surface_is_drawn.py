@@ -56,6 +56,7 @@ NOT_A_SURFACE = {
     "Help",         # the assistant dock, drawn inside the screens it floats over
     "WatchLights",  # the always-on widget; its own gallery lives in the watch faces
     "GuardianLights", # the same widget, this product's own — same reasoning
+    "Footsteps",   # the corner counter; fixed chrome over every screen, like the version guard
     "VersionGuard", # a failure banner, deliberately not part of the tour
 }
 
