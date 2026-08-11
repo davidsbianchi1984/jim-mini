@@ -1952,6 +1952,82 @@ public sealed class ApiClient
     public Task<CoachExchange[]> CoachHistory(string uid, string token) =>
         Send<CoachExchange[]>(new HttpRequestMessage(HttpMethod.Get,
             $"/coach/{uid}"), token);
+
+    // ---- the specialist economy ----
+
+    public Task<SpecialistRow[]> Specialists() =>
+        Send<SpecialistRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            "/specialists"));
+
+    public Task<SpecialistsSeeded> SeedSpecialists() =>
+        Send<SpecialistsSeeded>(Post("/specialists/seed", new { }));
+
+    public Task<SpecialistsSeeded> SeedTandemSpecialists() =>
+        Send<SpecialistsSeeded>(Post("/specialists/seed/tandem", new { }));
+
+    public Task<SpecialistCatalog> SpecialistsCatalog() =>
+        Send<SpecialistCatalog>(new HttpRequestMessage(HttpMethod.Get,
+            "/specialists/catalog"));
+
+    public Task<SpecialistRow> AttachSpecialist(string condition,
+                                                string qrmeProfileId,
+                                                string label) =>
+        Send<SpecialistRow>(Post("/specialists",
+            new { condition, mode = "tandem",
+                  qrme_profile_id = qrmeProfileId, label }));
+
+    public Task<ClinicianSearch> ReferralClinicians(string uid, string token,
+                                                    string condition) =>
+        Send<ClinicianSearch>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/referral/clinicians?condition={condition}"), token);
+
+    /// Nothing is released by preparing — the signing ceremony is QRME's.
+    public Task<ReferralPrepared> PrepareReferral(string uid, string token,
+                                                  string condition,
+                                                  string providerId) =>
+        Send<ReferralPrepared>(Post($"/users/{uid}/referral/prepare",
+            new { condition, provider_id = providerId }, token));
+
+    /// A report, not an action: JIM cannot observe QRME's ceremony.
+    public Task<ReferralReleased> MarkReferralReleased(string uid, string token,
+                                                       string requestId) =>
+        Send<ReferralReleased>(Post(
+            $"/users/{uid}/referral/requests/{requestId}/released",
+            new { }, token));
+
+    public Task<ReferralRequestRow[]> ReferralRequests(string uid,
+                                                       string token) =>
+        Send<ReferralRequestRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/referral/requests"), token);
+
+    /// A refusal is started:false with a reason — information, not a fault.
+    public Task<SpecialistTaskStarted> StartSpecialistTask(string uid,
+                                                           string token,
+                                                           string condition,
+                                                           string goal) =>
+        Send<SpecialistTaskStarted>(Post($"/users/{uid}/specialist-tasks",
+            new { condition, goal }, token));
+
+    public Task<SpecialistTaskRow[]> SpecialistTasks(string uid, string token) =>
+        Send<SpecialistTaskRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/specialist-tasks"), token);
+
+    public Task<SpecialistTaskView> SpecialistTask(string uid, string token,
+                                                   string taskId) =>
+        Send<SpecialistTaskView>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/specialist-tasks/{taskId}"), token);
+
+    public Task<SpecialistTaskView> AdvanceSpecialistTask(string uid,
+                                                          string token,
+                                                          string taskId) =>
+        Send<SpecialistTaskView>(Post(
+            $"/users/{uid}/specialist-tasks/{taskId}/advance", new { }, token));
+
+    /// What a consented care provider sees — and so what the person can see
+    /// that they see.
+    public Task<ProviderSummary> ProviderSummary(string uid, string token) =>
+        Send<ProviderSummary>(new HttpRequestMessage(HttpMethod.Get,
+            $"/provider/{uid}"), token);
 }
 
 public record MoneyAccount(
@@ -2631,3 +2707,82 @@ public record CoachExchange(
     [property: JsonPropertyName("role")] string Role,
     [property: JsonPropertyName("content")] string Content,
     [property: JsonPropertyName("created_at")] string CreatedAt);
+
+public record SpecialistRow(
+    [property: JsonPropertyName("condition")] string Condition,
+    [property: JsonPropertyName("mode")] string Mode,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("qrme_profile_id")] string? QrmeProfileId);
+
+public record SpecialistsSeeded(
+    [property: JsonPropertyName("created")] int Created,
+    [property: JsonPropertyName("skipped")] int Skipped,
+    [property: JsonPropertyName("conditions")] int Conditions);
+
+public record CatalogStarter(
+    [property: JsonPropertyName("profile_id")] string? ProfileId,
+    [property: JsonPropertyName("display_name")] string? DisplayName);
+
+public record SpecialistCatalog(
+    [property: JsonPropertyName("starters")] CatalogStarter[]? Starters,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record ClinicianRow(
+    [property: JsonPropertyName("id")] string? Id,
+    [property: JsonPropertyName("label")] string? Label,
+    [property: JsonPropertyName("display_name")] string? DisplayName);
+
+public record ClinicianSearch(
+    [property: JsonPropertyName("area")] string Area,
+    [property: JsonPropertyName("locality")] string? Locality,
+    [property: JsonPropertyName("clinicians")] ClinicianRow[] Clinicians,
+    [property: JsonPropertyName("reason")] string? Reason);
+
+/// Nothing is released by preparing: the package is for the user to read,
+/// and the signing ceremony belongs to QRME.
+public record ReferralPrepared(
+    [property: JsonPropertyName("prepared")] bool Prepared,
+    [property: JsonPropertyName("reason")] string? Reason,
+    [property: JsonPropertyName("referral_request_id")] string? RequestId,
+    [property: JsonPropertyName("display_text")] string? DisplayText,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record ReferralRequestRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("condition")] string Condition,
+    [property: JsonPropertyName("provider_id")] string ProviderId,
+    [property: JsonPropertyName("qrme_referral_id")] string? QrmeReferralId,
+    [property: JsonPropertyName("created_at")] string CreatedAt);
+
+public record ReferralReleased(
+    [property: JsonPropertyName("referral_request_id")] string RequestId);
+
+/// A refusal is a 200-shaped answer with started:false and a reason.
+public record SpecialistTaskStarted(
+    [property: JsonPropertyName("started")] bool Started,
+    [property: JsonPropertyName("reason")] string? Reason,
+    [property: JsonPropertyName("id")] string? Id);
+
+public record SpecialistTaskRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("goal")] string Goal,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("qrme_profile_id")] string? QrmeProfileId,
+    [property: JsonPropertyName("created_at")] string CreatedAt,
+    [property: JsonPropertyName("updated_at")] string UpdatedAt);
+
+public record SpecialistTaskView(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("goal")] string Goal,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("reachable")] bool Reachable,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("next_phase")] string? NextPhase);
+
+/// What a consented care provider sees.
+public record ProviderSummary(
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("display_name")] string? DisplayName,
+    [property: JsonPropertyName("known_conditions")] string[] KnownConditions,
+    [property: JsonPropertyName("escalations")] int Escalations,
+    [property: JsonPropertyName("avg_mood")] double? AvgMood);

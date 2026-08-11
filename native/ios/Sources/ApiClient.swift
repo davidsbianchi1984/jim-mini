@@ -2964,3 +2964,182 @@ extension ApiClient {
         try await request("/coach/\(uid)", token: token)
     }
 }
+
+// MARK: - The specialist economy
+
+struct SpecialistRow: Decodable {
+    let condition: String
+    let mode: String
+    let label: String
+    let qrme_profile_id: String?
+}
+
+struct SpecialistsSeeded: Decodable {
+    let created: Int
+    let skipped: Int
+    let conditions: Int
+}
+
+struct CatalogStarter: Decodable {
+    let profile_id: String?
+    let display_name: String?
+}
+
+struct SpecialistCatalog: Decodable {
+    let starters: [CatalogStarter]?
+    let note: String?
+}
+
+struct ClinicianRow: Decodable {
+    let id: String?
+    let label: String?
+    let display_name: String?
+}
+
+struct ClinicianSearch: Decodable {
+    let area: String
+    let locality: String?
+    let clinicians: [ClinicianRow]
+    let reason: String?
+}
+
+/// Nothing is released by preparing: the response carries the package for
+/// the user to read, and the signing ceremony belongs to QRME.
+struct ReferralPrepared: Decodable {
+    let prepared: Bool
+    let reason: String?
+    let referral_request_id: String?
+    let display_text: String?
+    let note: String?
+}
+
+struct ReferralRequestRow: Decodable {
+    let id: String
+    let condition: String
+    let provider_id: String
+    let qrme_referral_id: String?
+    let created_at: String
+}
+
+struct ReferralReleased: Decodable { let referral_request_id: String }
+
+/// A refusal is a 200-shaped answer with `started: false` and a reason —
+/// "this specialist doesn't accept delegated work" is information, not a
+/// fault.
+struct SpecialistTaskStarted: Decodable {
+    let started: Bool
+    let reason: String?
+    let id: String?
+}
+
+struct SpecialistTaskRow: Decodable {
+    let id: String
+    let goal: String
+    let status: String
+    let qrme_profile_id: String?
+    let created_at: String
+    let updated_at: String
+}
+
+struct SpecialistTaskView: Decodable {
+    let id: String
+    let goal: String
+    let status: String
+    let reachable: Bool
+    let note: String?
+    let next_phase: String?
+}
+
+/// What a consented care provider sees — and therefore what the person can
+/// see that they see.
+struct ProviderSummary: Decodable {
+    let user_id: String
+    let display_name: String?
+    let known_conditions: [String]
+    let escalations: Int
+    let avg_mood: Double?
+}
+
+extension ApiClient {
+
+    func specialists() async throws -> [SpecialistRow] {
+        try await request("/specialists")
+    }
+
+    func seedSpecialists() async throws -> SpecialistsSeeded {
+        try await request("/specialists/seed", method: "POST")
+    }
+
+    func seedTandemSpecialists() async throws -> SpecialistsSeeded {
+        try await request("/specialists/seed/tandem", method: "POST")
+    }
+
+    func specialistsCatalog() async throws -> SpecialistCatalog {
+        try await request("/specialists/catalog")
+    }
+
+    func attachSpecialist(condition: String, qrmeProfileId: String,
+                          label: String) async throws -> SpecialistRow {
+        try await request("/specialists", method: "POST",
+                          body: ["condition": condition, "mode": "tandem",
+                                 "qrme_profile_id": qrmeProfileId,
+                                 "label": label])
+    }
+
+    func referralClinicians(uid: String, token: String,
+                            condition: String) async throws -> ClinicianSearch {
+        try await request(
+            "/users/\(uid)/referral/clinicians?condition=\(condition)",
+            token: token)
+    }
+
+    func prepareReferral(uid: String, token: String, condition: String,
+                         providerId: String) async throws -> ReferralPrepared {
+        try await request("/users/\(uid)/referral/prepare", method: "POST",
+                          body: ["condition": condition,
+                                 "provider_id": providerId], token: token)
+    }
+
+    /// A report, not an action: the signature was raised against QRME's
+    /// relying party, which this Guardian cannot observe.
+    func markReferralReleased(uid: String, token: String,
+                              requestId: String) async throws -> ReferralReleased {
+        try await request(
+            "/users/\(uid)/referral/requests/\(requestId)/released",
+            method: "POST", token: token)
+    }
+
+    func referralRequests(uid: String,
+                          token: String) async throws -> [ReferralRequestRow] {
+        try await request("/users/\(uid)/referral/requests", token: token)
+    }
+
+    func startSpecialistTask(uid: String, token: String, condition: String,
+                             goal: String) async throws -> SpecialistTaskStarted {
+        try await request("/users/\(uid)/specialist-tasks", method: "POST",
+                          body: ["condition": condition, "goal": goal],
+                          token: token)
+    }
+
+    func specialistTasks(uid: String,
+                         token: String) async throws -> [SpecialistTaskRow] {
+        try await request("/users/\(uid)/specialist-tasks", token: token)
+    }
+
+    func specialistTask(uid: String, token: String,
+                        taskId: String) async throws -> SpecialistTaskView {
+        try await request("/users/\(uid)/specialist-tasks/\(taskId)",
+                          token: token)
+    }
+
+    func advanceSpecialistTask(uid: String, token: String,
+                               taskId: String) async throws -> SpecialistTaskView {
+        try await request("/users/\(uid)/specialist-tasks/\(taskId)/advance",
+                          method: "POST", token: token)
+    }
+
+    func providerSummary(uid: String,
+                         token: String) async throws -> ProviderSummary {
+        try await request("/provider/\(uid)", token: token)
+    }
+}

@@ -576,7 +576,7 @@ object ApiClient {
             prov?.optString("shared"))
     }
 
-    private suspend fun getArray(path: String, token: String): org.json.JSONArray = withContext(Dispatchers.IO) {
+    private suspend fun getArray(path: String, token: String? = null): org.json.JSONArray = withContext(Dispatchers.IO) {
         val conn = (URL("$base$path").openConnection() as HttpURLConnection).apply {
                     // One of the four connections in this file the shared
                     // helper's accept-language line never reached.
@@ -585,7 +585,7 @@ object ApiClient {
                 setRequestProperty("x-llm-api-key", it) }
             signupKey.takeIf { it.isNotEmpty() }?.let {
                 setRequestProperty("x-signup-key", it) }
-            setRequestProperty("authorization", "Bearer $token")
+            token?.let { setRequestProperty("authorization", "Bearer $it") }
             connectTimeout = 8000; readTimeout = 8000
         }
         val text = conn.inputStream.bufferedReader().use { it.readText() }
@@ -2454,6 +2454,130 @@ object ApiClient {
 
     suspend fun coachExchangeCount(uid: String, token: String): Int =
         getArray("/coach/$uid", token).length()
+
+    // ---- the specialist economy ----
+
+    suspend fun specialists(): List<SpecialistRowK> {
+        val arr = getArray("/specialists")
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            SpecialistRowK(o.getString("condition"), o.optString("mode", ""),
+                o.optString("label", ""))
+        }
+    }
+
+    suspend fun seedSpecialists(): Int =
+        request("/specialists/seed", "POST").optInt("created", 0)
+
+    suspend fun seedTandemSpecialists(): Int =
+        request("/specialists/seed/tandem", "POST").optInt("created", 0)
+
+    suspend fun specialistsCatalog(): List<CatalogStarterK> {
+        val o = request("/specialists/catalog")
+        val out = mutableListOf<CatalogStarterK>()
+        o.optJSONArray("starters")?.let { a ->
+            for (i in 0 until a.length()) {
+                val s = a.optJSONObject(i) ?: continue
+                out.add(CatalogStarterK(s.optString("profile_id", null),
+                    s.optString("display_name", null)))
+            }
+        }
+        return out
+    }
+
+    suspend fun attachSpecialist(condition: String, qrmeProfileId: String,
+                                 label: String) {
+        request("/specialists", "POST",
+            JSONObject().put("condition", condition).put("mode", "tandem")
+                .put("qrme_profile_id", qrmeProfileId).put("label", label))
+    }
+
+    suspend fun referralClinicians(uid: String, token: String,
+                                   condition: String): ClinicianSearchK {
+        val o = request("/users/$uid/referral/clinicians?condition=$condition",
+            token = token)
+        val labels = mutableListOf<String>()
+        o.optJSONArray("clinicians")?.let { a ->
+            for (i in 0 until a.length()) {
+                val c = a.optJSONObject(i) ?: continue
+                labels.add(c.optString("label",
+                    c.optString("display_name", "")))
+            }
+        }
+        return ClinicianSearchK(labels, o.optString("reason", null))
+    }
+
+    /** Nothing is released by preparing — the signing ceremony is QRME's. */
+    suspend fun prepareReferral(uid: String, token: String, condition: String,
+                                providerId: String): ReferralPreparedK {
+        val o = request("/users/$uid/referral/prepare", "POST",
+            JSONObject().put("condition", condition)
+                .put("provider_id", providerId), token)
+        return ReferralPreparedK(o.optBoolean("prepared", false),
+            o.optString("reason", null), o.optString("note", null))
+    }
+
+    /** A report, not an action: JIM cannot observe QRME's ceremony. */
+    suspend fun markReferralReleased(uid: String, token: String,
+                                     requestId: String) {
+        request("/users/$uid/referral/requests/$requestId/released", "POST",
+            token = token)
+    }
+
+    suspend fun referralRequests(uid: String,
+                                 token: String): List<ReferralRequestRowK> {
+        val arr = getArray("/users/$uid/referral/requests", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            ReferralRequestRowK(o.getString("id"), o.optString("condition", ""))
+        }
+    }
+
+    /** A refusal is started:false with a reason — information, not a fault. */
+    suspend fun startSpecialistTask(uid: String, token: String,
+                                    condition: String, goal: String): TaskStartedK {
+        val o = request("/users/$uid/specialist-tasks", "POST",
+            JSONObject().put("condition", condition).put("goal", goal), token)
+        return TaskStartedK(o.optBoolean("started", false),
+            o.optString("reason", null), o.optString("id", null))
+    }
+
+    suspend fun specialistTasks(uid: String,
+                                token: String): List<SpecialistTaskRowK> {
+        val arr = getArray("/users/$uid/specialist-tasks", token)
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            SpecialistTaskRowK(o.getString("id"), o.optString("goal", ""),
+                o.optString("status", ""))
+        }
+    }
+
+    suspend fun specialistTask(uid: String, token: String,
+                               taskId: String): SpecialistTaskViewK {
+        val o = request("/users/$uid/specialist-tasks/$taskId", token = token)
+        return SpecialistTaskViewK(o.optString("status", ""),
+            o.optString("next_phase", null), o.optString("note", null))
+    }
+
+    suspend fun advanceSpecialistTask(uid: String, token: String,
+                                      taskId: String): SpecialistTaskViewK {
+        val o = request("/users/$uid/specialist-tasks/$taskId/advance", "POST",
+            token = token)
+        return SpecialistTaskViewK(o.optString("status", ""),
+            o.optString("next_phase", null), o.optString("note", null))
+    }
+
+    /** What a consented care provider sees — and so what the person can see
+     *  that they see. */
+    suspend fun providerSummary(uid: String, token: String): ProviderSummaryK {
+        val o = request("/provider/$uid", token = token)
+        val conditions = mutableListOf<String>()
+        o.optJSONArray("known_conditions")?.let { a ->
+            for (i in 0 until a.length()) conditions.add(a.getString(i))
+        }
+        return ProviderSummaryK(o.optString("display_name", ""), conditions,
+            o.optInt("escalations", 0))
+    }
 }
 
 data class MoneyAccount(val id: String, val kind: String,
@@ -2684,3 +2808,19 @@ data class ActivityWatchK(val proactive: Boolean, val watching: Boolean,
                           val intervention: Guidance?)
 data class InsightRowK(val id: String, val message: String)
 data class ReportK(val checkinCount: Int, val avgMood: Double)
+
+data class SpecialistRowK(val condition: String, val mode: String,
+                          val label: String)
+data class CatalogStarterK(val profileId: String?, val displayName: String?)
+data class ClinicianSearchK(val labels: List<String>, val reason: String?)
+data class ReferralPreparedK(val prepared: Boolean, val reason: String?,
+                             val note: String?)
+data class ReferralRequestRowK(val id: String, val condition: String)
+data class TaskStartedK(val started: Boolean, val reason: String?,
+                        val id: String?)
+data class SpecialistTaskRowK(val id: String, val goal: String,
+                              val status: String)
+data class SpecialistTaskViewK(val status: String, val nextPhase: String?,
+                               val note: String?)
+data class ProviderSummaryK(val displayName: String, val conditions: List<String>,
+                            val escalations: Int)

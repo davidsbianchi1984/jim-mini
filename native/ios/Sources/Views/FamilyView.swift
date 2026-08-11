@@ -195,6 +195,9 @@ struct FamilyView: View {
                 // The care team: the household's coordination layer, linked
                 // from the same screen that watches over its members.
                 CareTeamCard()
+                // The specialists who stand behind the household's
+                // conditions, and everything handed to them.
+                SpecialistsCard()
             }.padding(20)
         }
         .task { await load() }

@@ -176,6 +176,72 @@
                                Foreground="{StaticResource JimRedBrush}" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
+
+            <!-- The specialists who stand behind the household's conditions,
+                 and everything handed to them. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="SpHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="SpSeedLocal" Click="OnSeedLocal"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                        <Button x:Name="SpSeedHosted" Click="OnSeedHosted"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="SpNone" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="SpRoster" Spacing="2" />
+
+                    <TextBlock x:Name="SpCatalogHead" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="SpCatalogChoose" FontSize="11"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <TextBlock x:Name="SpCatalogNote" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="SpStarters" Spacing="4" />
+
+                    <TextBlock x:Name="SpHandHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <ComboBox x:Name="SpCondition" SelectedIndex="0" HorizontalAlignment="Stretch" />
+                    <TextBox x:Name="SpGoal" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="SpHandButton" Click="OnHandOver" Foreground="White"
+                                Background="{StaticResource JimBrandABrush}" />
+                        <Button x:Name="SpWhoButton" Click="OnWho"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="SpStarted" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel x:Name="SpClinicians" Spacing="2" />
+                    <StackPanel x:Name="SpTasks" Spacing="4" />
+                    <TextBlock x:Name="SpOpened" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+
+                    <TextBlock x:Name="SpRefHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <Button x:Name="SpPrepButton" Click="OnPrepare"
+                            Background="Transparent" FontSize="12"
+                            Foreground="{StaticResource JimBrandABrush}" />
+                    <TextBlock x:Name="SpPrepared" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="SpRefNone" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="SpRequests" Spacing="4" />
+
+                    <Button x:Name="SpSeeButton" Click="OnSeeProvider"
+                            Background="Transparent" FontSize="12"
+                            Foreground="{StaticResource JimBrandABrush}" />
+                    <TextBlock x:Name="SpProvider" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="SpError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimRedBrush}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

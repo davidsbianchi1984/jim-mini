@@ -128,6 +128,15 @@ import app.jim.guardian.InsightRowK
 import app.jim.guardian.MealPlanK
 import app.jim.guardian.ReportK
 import app.jim.guardian.WorkoutPlanK
+import app.jim.guardian.CatalogStarterK
+import app.jim.guardian.ClinicianSearchK
+import app.jim.guardian.ProviderSummaryK
+import app.jim.guardian.ReferralPreparedK
+import app.jim.guardian.ReferralRequestRowK
+import app.jim.guardian.SpecialistRowK
+import app.jim.guardian.SpecialistTaskRowK
+import app.jim.guardian.SpecialistTaskViewK
+import app.jim.guardian.TaskStartedK
 import kotlin.math.roundToInt
 
 @Composable
@@ -804,6 +813,220 @@ private fun BearingPanel(vm: GuardianViewModel) {
                 color = Jim.T2, fontSize = 12.sp)
         }
         insightRows.take(3).forEach { Text(it.message, color = Jim.T3, fontSize = 11.sp) }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+    }
+}
+
+
+/** The specialist economy: who stands behind each condition, the QRME
+ *  attach bracket, handing over multi-step work, preparing a referral
+ *  (nothing releases without QRME's signing ceremony), and the consented
+ *  provider's view of you. */
+@Composable
+private fun SpecialistsPanel(vm: GuardianViewModel) {
+    var roster by remember { mutableStateOf<List<SpecialistRowK>>(emptyList()) }
+    var starters by remember { mutableStateOf<List<CatalogStarterK>?>(null) }
+    var catalogRefused by remember { mutableStateOf<String?>(null) }
+    var condition by remember { mutableStateOf("anxiety") }
+    var goal by remember { mutableStateOf("") }
+    var started by remember { mutableStateOf<TaskStartedK?>(null) }
+    var tasks by remember { mutableStateOf<List<SpecialistTaskRowK>>(emptyList()) }
+    var opened by remember { mutableStateOf<SpecialistTaskViewK?>(null) }
+    var clinicians by remember { mutableStateOf<ClinicianSearchK?>(null) }
+    var prepared by remember { mutableStateOf<ReferralPreparedK?>(null) }
+    var requests by remember { mutableStateOf<List<ReferralRequestRowK>>(emptyList()) }
+    var provider by remember { mutableStateOf<ProviderSummaryK?>(null) }
+    var providerRefused by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    fun reloadRoster() {
+        vm.call({ ApiClient.specialists() }) { r -> roster = r.getOrDefault(emptyList()) }
+    }
+    fun reloadTasks() {
+        vm.call({ ApiClient.specialistTasks(vm.uid!!, vm.token!!) }) { r ->
+            tasks = r.getOrDefault(emptyList())
+        }
+    }
+    fun reloadRequests() {
+        vm.call({ ApiClient.referralRequests(vm.uid!!, vm.token!!) }) { r ->
+            requests = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) {
+        reloadRoster()
+        vm.call({ ApiClient.specialistsCatalog() }) { r ->
+            r.onSuccess { starters = it }.onFailure { catalogRefused = it.message }
+        }
+        reloadTasks(); reloadRequests()
+    }
+    fun act(block: suspend () -> Unit, then: () -> Unit = {}) {
+        busy = true; error = null
+        vm.call({ block() }) { r ->
+            r.onFailure { error = it.message }
+            busy = false; then()
+        }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(L10n.t("att.spec", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SmallAction(L10n.t("att.spec.local", vm.language), enabled = !busy) {
+                act({ ApiClient.seedSpecialists() }) { reloadRoster() }
+            }
+            SmallAction(L10n.t("att.spec.hosted", vm.language), enabled = !busy) {
+                act({ ApiClient.seedTandemSpecialists() }) { reloadRoster() }
+            }
+        }
+        if (roster.isEmpty()) {
+            Text(L10n.t("att.spec.none", vm.language), color = Jim.T3, fontSize = 11.sp)
+        }
+        roster.forEach { row ->
+            Text("${row.condition} \u2014 ${row.label} \u00b7 ${row.mode}",
+                color = Jim.T2, fontSize = 11.sp)
+        }
+
+        Text(L10n.t("ct.spec", vm.language), color = Jim.T2, fontSize = 12.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("ct.spec.choose", vm.language), color = Jim.T3, fontSize = 11.sp)
+        catalogRefused?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
+        starters?.let { rows ->
+            if (rows.isEmpty()) {
+                Text(L10n.t("ct.spec.empty", vm.language), color = Jim.T3, fontSize = 11.sp)
+            }
+            rows.take(6).forEach { starter ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(starter.displayName ?: starter.profileId ?: "",
+                        color = Jim.Txt, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                    SmallAction(L10n.t("ct.spec.attach", vm.language),
+                        enabled = !busy && starter.profileId != null) {
+                        act({ ApiClient.attachSpecialist(condition,
+                            starter.profileId!!, starter.displayName
+                                ?: starter.profileId!!) }) { reloadRoster() }
+                    }
+                }
+            }
+        }
+
+        Text(L10n.t("att.hand", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        listOf("anxiety", "depression", "stress", "phobia", "financial_stress",
+               "relationship", "physical_distress", "physical_injury")
+            .chunked(3).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                row.forEach { c ->
+                    FilterChip(selected = condition == c, onClick = { condition = c },
+                        label = { Text(c, fontSize = 10.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Jim.BrandA,
+                            selectedLabelColor = Color.White, labelColor = Jim.T2))
+                }
+            }
+        }
+        labeledField(L10n.t("att.hand", vm.language), goal,
+            L10n.t("att.hand.ph", vm.language)) { goal = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            BrandButton(L10n.t("att.hand.go", vm.language),
+                enabled = !busy && goal.isNotBlank(), busy = busy) {
+                busy = true; error = null
+                vm.call({ ApiClient.startSpecialistTask(vm.uid!!, vm.token!!,
+                    condition, goal.trim()) }) { r ->
+                    r.onSuccess { started = it; goal = "" }
+                        .onFailure { error = it.message }
+                    busy = false; reloadTasks()
+                }
+            }
+            SmallAction(L10n.t("att.hand.who", vm.language), enabled = !busy) {
+                busy = true; error = null
+                vm.call({ ApiClient.referralClinicians(vm.uid!!, vm.token!!,
+                    condition) }) { r ->
+                    r.onSuccess { clinicians = it }.onFailure { error = it.message }
+                    busy = false
+                }
+            }
+        }
+        started?.let { s ->
+            Text(if (s.started) (s.id ?: "") else (s.reason ?: ""),
+                color = if (s.started) Jim.Green else Jim.Amber, fontSize = 11.sp)
+        }
+        clinicians?.let { c ->
+            c.labels.take(4).forEach { Text(it, color = Jim.T2, fontSize = 11.sp) }
+            if (c.labels.isEmpty()) c.reason?.let {
+                Text(it, color = Jim.T3, fontSize = 11.sp)
+            }
+        }
+        tasks.forEach { task ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("${task.goal} \u00b7 ${task.status}", color = Jim.T2,
+                    fontSize = 11.sp, modifier = Modifier.weight(1f))
+                SmallAction(L10n.t("att.open", vm.language), enabled = !busy) {
+                    busy = true
+                    vm.call({ ApiClient.specialistTask(vm.uid!!, vm.token!!,
+                        task.id) }) { r ->
+                        r.onSuccess { opened = it }.onFailure { error = it.message }
+                        busy = false
+                    }
+                }
+                SmallAction(L10n.t("att.advance", vm.language), enabled = !busy) {
+                    busy = true
+                    vm.call({ ApiClient.advanceSpecialistTask(vm.uid!!, vm.token!!,
+                        task.id) }) { r ->
+                        r.onSuccess { opened = it }.onFailure { error = it.message }
+                        busy = false; reloadTasks()
+                    }
+                }
+            }
+        }
+        opened?.let { o ->
+            Text(o.status + (o.nextPhase?.let { " \u00b7 $it" } ?: "")
+                + (o.note?.let { " \u2014 $it" } ?: ""),
+                color = Jim.T3, fontSize = 11.sp)
+        }
+
+        Text(L10n.t("att.ref", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        SmallAction(L10n.t("att.ref.prep", vm.language).replace("{c}", condition),
+            enabled = !busy) {
+            busy = true; error = null
+            vm.call({ ApiClient.prepareReferral(vm.uid!!, vm.token!!, condition,
+                "prv_local") }) { r ->
+                r.onSuccess { prepared = it }.onFailure { error = it.message }
+                busy = false; reloadRequests()
+            }
+        }
+        prepared?.let { p ->
+            Text(if (p.prepared) (p.note ?: "") else (p.reason ?: ""),
+                color = if (p.prepared) Jim.T2 else Jim.Amber, fontSize = 11.sp)
+        }
+        if (requests.isEmpty()) {
+            Text(L10n.t("att.ref.none", vm.language), color = Jim.T3, fontSize = 11.sp)
+        }
+        requests.forEach { request ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(request.condition, color = Jim.T2, fontSize = 11.sp,
+                    modifier = Modifier.weight(1f))
+                SmallAction(L10n.t("att.ref.released", vm.language), enabled = !busy) {
+                    act({ ApiClient.markReferralReleased(vm.uid!!, vm.token!!,
+                        request.id) })
+                }
+            }
+        }
+
+        SmallAction(L10n.t("att.med.see", vm.language), enabled = !busy) {
+            busy = true; providerRefused = null
+            vm.call({ ApiClient.providerSummary(vm.uid!!, vm.token!!) }) { r ->
+                r.onSuccess { provider = it }
+                    .onFailure { providerRefused = it.message }
+                busy = false
+            }
+        }
+        provider?.let { p ->
+            val joined = p.conditions.joinToString(", ")
+            Text("${p.displayName} \u00b7 $joined \u00b7 ${p.escalations}",
+                color = Jim.T2, fontSize = 11.sp)
+        }
+        providerRefused?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
         error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
     }
 }
@@ -3330,6 +3553,9 @@ private fun FamilyPanel(vm: GuardianViewModel) {
         // The care team: the household's coordination layer, linked from
         // the same screen that watches over its members.
         CareTeamPanel(vm)
+        // The specialists who stand behind the household's conditions, and
+        // everything handed to them.
+        SpecialistsPanel(vm)
     }
 }
 

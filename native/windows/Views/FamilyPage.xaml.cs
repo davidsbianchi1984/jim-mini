@@ -28,6 +28,21 @@ public sealed partial class FamilyPage : Page
     {
         PageTitle.Text = L10n.T("tab.family");
         IntroText.Text = L10n.T("fam.intro");
+        SpHead.Text = L10n.T("att.spec");
+        SpSeedLocal.Content = L10n.T("att.spec.local");
+        SpSeedHosted.Content = L10n.T("att.spec.hosted");
+        SpNone.Text = L10n.T("att.spec.none");
+        SpCatalogHead.Text = L10n.T("ct.spec");
+        SpCatalogChoose.Text = L10n.T("ct.spec.choose");
+        SpHandHead.Text = L10n.T("att.hand");
+        SpCondition.ItemsSource = SpConditions.ToList();
+        SpGoal.PlaceholderText = L10n.T("att.hand.ph");
+        SpHandButton.Content = L10n.T("att.hand.go");
+        SpWhoButton.Content = L10n.T("att.hand.who");
+        SpRefHead.Text = L10n.T("att.ref");
+        SpRefNone.Text = L10n.T("att.ref.none");
+        SpSeeButton.Content = L10n.T("att.med.see");
+        RenderPrepLabel();
         ChildName.Header = L10n.T("fam.child.name");
         ChildBirthdate.Header = L10n.T("fam.child.dob");
         GuardianPhone.Header = L10n.T("fam.child.phone");
@@ -105,6 +120,10 @@ public sealed partial class FamilyPage : Page
         base.OnNavigatedTo(e);
         await Reload();
         await LoadCareTeam();
+        await ReloadSpecialists();
+        await LoadCatalog();
+        await ReloadTasks();
+        await ReloadRequests();
     }
 
     /// Each branch resolves on its own line, rather than picking a key and
@@ -341,5 +360,276 @@ public sealed partial class FamilyPage : Page
             await LoadCareTeam();
         }
         catch (Exception ex) { CareTeamError(ex); }
+    }
+
+    // ---- the specialist economy ----
+
+    private static readonly string[] SpConditions =
+        { "anxiety", "depression", "stress", "phobia", "financial_stress",
+          "relationship", "physical_distress", "physical_injury" };
+
+    private string SpPicked => SpConditions[
+        SpCondition.SelectedIndex >= 0 ? SpCondition.SelectedIndex : 0];
+
+    private void RenderPrepLabel() =>
+        SpPrepButton.Content = L10n.T("att.ref.prep").Replace("{c}", SpPicked);
+
+    private static TextBlock SpLine(string text, string brush) => new()
+    {
+        Text = text,
+        FontSize = 11,
+        TextWrapping = TextWrapping.Wrap,
+        Foreground = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources[brush],
+    };
+
+    private async Task ReloadSpecialists()
+    {
+        try
+        {
+            var roster = await ApiClient.Shared.Specialists();
+            SpRoster.Children.Clear();
+            foreach (var row in roster)
+                SpRoster.Children.Add(SpLine(
+                    $"{row.Condition} — {row.Label} · {row.Mode}", "JimT2Brush"));
+            SpNone.Visibility = roster.Length == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch { /* backend offline */ }
+    }
+
+    private async Task LoadCatalog()
+    {
+        try
+        {
+            var catalog = await ApiClient.Shared.SpecialistsCatalog();
+            SpStarters.Children.Clear();
+            var starters = catalog.Starters ?? Array.Empty<CatalogStarter>();
+            if (starters.Length == 0)
+            {
+                SpCatalogNote.Text = L10n.T("ct.spec.empty");
+                SpCatalogNote.Visibility = Visibility.Visible;
+                return;
+            }
+            foreach (var starter in starters.Take(6))
+            {
+                if (starter.ProfileId is not { } pid) continue;
+                var button = new Button
+                {
+                    Content = $"{starter.DisplayName ?? pid} — "
+                              + L10n.T("ct.spec.attach"),
+                    FontSize = 12,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                var label = starter.DisplayName ?? pid;
+                button.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.AttachSpecialist(SpPicked, pid,
+                                                                label);
+                        await ReloadSpecialists();
+                    }
+                    catch (Exception ex) { ShowSpError(ex.Message); }
+                };
+                SpStarters.Children.Add(button);
+            }
+        }
+        catch (Exception ex)
+        {
+            // No QRME endpoint is a posture, not a fault — shown in the
+            // server's words.
+            SpCatalogNote.Text = ex.Message;
+            SpCatalogNote.Visibility = Visibility.Visible;
+        }
+    }
+
+    private async void OnSeedLocal(object sender, RoutedEventArgs e)
+    {
+        try { await ApiClient.Shared.SeedSpecialists(); await ReloadSpecialists(); }
+        catch (Exception ex) { ShowSpError(ex.Message); }
+    }
+
+    private async void OnSeedHosted(object sender, RoutedEventArgs e)
+    {
+        try { await ApiClient.Shared.SeedTandemSpecialists(); await ReloadSpecialists(); }
+        catch (Exception ex) { ShowSpError(ex.Message); }
+    }
+
+    private async void OnHandOver(object sender, RoutedEventArgs e)
+    {
+        var goal = SpGoal.Text.Trim();
+        if (goal.Length == 0) return;
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var started = await ApiClient.Shared.StartSpecialistTask(
+                s.Uid, s.Token, SpPicked, goal);
+            SpGoal.Text = "";
+            SpStarted.Text = started.Started
+                ? started.Id ?? "" : started.Reason ?? "";
+            SpStarted.Visibility = Visibility.Visible;
+            await ReloadTasks();
+        }
+        catch (Exception ex) { ShowSpError(ex.Message); }
+    }
+
+    private async void OnWho(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        RenderPrepLabel();
+        try
+        {
+            var found = await ApiClient.Shared.ReferralClinicians(
+                s.Uid, s.Token, SpPicked);
+            SpClinicians.Children.Clear();
+            foreach (var clinician in found.Clinicians.Take(4))
+                SpClinicians.Children.Add(SpLine(
+                    clinician.Label ?? clinician.DisplayName ?? "", "JimT2Brush"));
+            if (found.Clinicians.Length == 0 && found.Reason is { } why)
+                SpClinicians.Children.Add(SpLine(why, "JimT3Brush"));
+        }
+        catch (Exception ex) { ShowSpError(ex.Message); }
+    }
+
+    private async Task ReloadTasks()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var tasks = await ApiClient.Shared.SpecialistTasks(s.Uid, s.Token);
+            SpTasks.Children.Clear();
+            foreach (var task in tasks)
+            {
+                var row = new StackPanel
+                { Orientation = Orientation.Horizontal, Spacing = 8 };
+                row.Children.Add(SpLine($"{task.Goal} · {task.Status}",
+                                        "JimT2Brush"));
+                var open = new Button
+                {
+                    Content = L10n.T("att.open"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                var taskId = task.Id;
+                open.Click += async (_, _) => await OpenTask(taskId, false);
+                row.Children.Add(open);
+                var advance = new Button
+                {
+                    Content = L10n.T("att.advance"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                advance.Click += async (_, _) => await OpenTask(taskId, true);
+                row.Children.Add(advance);
+                SpTasks.Children.Add(row);
+            }
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private async Task OpenTask(string taskId, bool advance)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var view = advance
+                ? await ApiClient.Shared.AdvanceSpecialistTask(s.Uid, s.Token,
+                                                               taskId)
+                : await ApiClient.Shared.SpecialistTask(s.Uid, s.Token, taskId);
+            SpOpened.Text = $"{view.Status} · {view.NextPhase ?? ""}"
+                + (view.Note is { } note ? $" — {note}" : "");
+            SpOpened.Visibility = Visibility.Visible;
+            if (advance) await ReloadTasks();
+        }
+        catch (Exception ex) { ShowSpError(ex.Message); }
+    }
+
+    private async void OnPrepare(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            // The console's own placeholder clinician on a deployment with
+            // no QRME directory.
+            var prepared = await ApiClient.Shared.PrepareReferral(
+                s.Uid, s.Token, SpPicked, "prv_local");
+            SpPrepared.Text = prepared.Prepared
+                ? prepared.Note ?? "" : prepared.Reason ?? "";
+            SpPrepared.Visibility = Visibility.Visible;
+            await ReloadRequests();
+        }
+        catch (Exception ex) { ShowSpError(ex.Message); }
+    }
+
+    private async Task ReloadRequests()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var requests = await ApiClient.Shared.ReferralRequests(s.Uid,
+                                                                   s.Token);
+            SpRequests.Children.Clear();
+            SpRefNone.Visibility = requests.Length == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            foreach (var request in requests)
+            {
+                var row = new StackPanel
+                { Orientation = Orientation.Horizontal, Spacing = 8 };
+                row.Children.Add(SpLine(request.Condition, "JimT2Brush"));
+                var released = new Button
+                {
+                    Content = L10n.T("att.ref.released"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                var requestId = request.Id;
+                released.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.MarkReferralReleased(
+                            s.Uid, s.Token, requestId);
+                    }
+                    catch (Exception ex) { ShowSpError(ex.Message); }
+                };
+                row.Children.Add(released);
+                SpRequests.Children.Add(row);
+            }
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private async void OnSeeProvider(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var summary = await ApiClient.Shared.ProviderSummary(s.Uid,
+                                                                 s.Token);
+            SpProvider.Text = $"{summary.DisplayName ?? ""} · "
+                + string.Join(", ", summary.KnownConditions)
+                + $" · {summary.Escalations}";
+        }
+        catch (Exception ex)
+        {
+            // Not consented is the usual answer, in the server's words.
+            SpProvider.Text = ex.Message;
+        }
+        SpProvider.Visibility = Visibility.Visible;
+    }
+
+    private void ShowSpError(string message)
+    {
+        SpError.Text = message;
+        SpError.Visibility = Visibility.Visible;
     }
 }
