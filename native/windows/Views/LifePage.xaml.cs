@@ -37,6 +37,10 @@ public sealed partial class LifePage : Page
         ActWhat.PlaceholderText = L10n.T("aim.activity.ph");
         ActNote.PlaceholderText = L10n.T("brg.told.note.ph");
         ActLogButton.Content = L10n.T("aim.activity.log");
+        BudHead.Text = L10n.T("aim.budget");
+        BudNone.Text = L10n.T("aim.budget.none");
+        BudCategory.PlaceholderText = L10n.T("aim.budget.cat.ph");
+        BudSetButton.Content = L10n.T("aim.budget.set");
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -45,6 +49,7 @@ public sealed partial class LifePage : Page
         await LoadHabits();
         await LoadJournal();
         await LoadMoney();
+        await LoadBudgets();
         await LoadSchedule();
         await LoadTandemShops();
         await LoadCircle();
@@ -869,5 +874,78 @@ public sealed partial class LifePage : Page
             await LoadMeds();
         }
         catch (Exception ex) { ShowMedError(ex); }
+    }
+
+    // ---- budgets: this much per month for this category ----
+
+    private async System.Threading.Tasks.Task LoadBudgets()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var sheet = await ApiClient.Shared.Budgets(s.Uid, s.Token);
+            BudRows.Children.Clear();
+            BudNone.Visibility = sheet.Rows.Length == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            foreach (var row in sheet.Rows)
+            {
+                var line = new StackPanel
+                { Orientation = Orientation.Horizontal, Spacing = 8 };
+                line.Children.Add(new TextBlock
+                {
+                    Text = row.Category + " " + L10n.T("aim.budget.line")
+                        .Replace("{spent}", $"${(int)row.Spent}")
+                        .Replace("{limit}", $"${(int)row.MonthlyLimit}")
+                        .Replace("{standing}", row.Standing),
+                    FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                        Application.Current.Resources["JimT2Brush"],
+                });
+                var remove = new Button
+                {
+                    Content = L10n.T("aim.budget.remove"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                var category = row.Category;
+                remove.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.ClearBudget(s.Uid, s.Token,
+                                                           category);
+                        await LoadBudgets();
+                    }
+                    catch (Exception ex) { ShowBudgetError(ex.Message); }
+                };
+                line.Children.Add(remove);
+                BudRows.Children.Add(line);
+            }
+        }
+        catch { /* backend offline */ }
+    }
+
+    private async void OnSetBudget(object sender, RoutedEventArgs e)
+    {
+        var category = BudCategory.Text.Trim();
+        if (category.Length == 0) return;
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            await ApiClient.Shared.SetBudget(s.Uid, s.Token, category,
+                                             BudLimit.Value);
+            BudCategory.Text = "";
+            await LoadBudgets();
+        }
+        catch (Exception ex) { ShowBudgetError(ex.Message); }
+    }
+
+    private void ShowBudgetError(string message)
+    {
+        BudError.Text = message;
+        BudError.Visibility = Visibility.Visible;
     }
 }

@@ -235,6 +235,24 @@
                                        Foreground="{StaticResource JimT2Brush}" />
                         </StackPanel>
                     </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="BudHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="BudNone" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <StackPanel x:Name="BudRows" Spacing="4" />
+                            <TextBox x:Name="BudCategory" />
+                            <Slider x:Name="BudLimit" Minimum="10" Maximum="2000" Value="100"
+                                    StepFrequency="10" />
+                            <Button x:Name="BudSetButton" Click="OnSetBudget" Foreground="White"
+                                    Background="{StaticResource JimBrandABrush}" />
+                            <TextBlock x:Name="BudError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimRedBrush}" />
+                        </StackPanel>
+                    </Border>
+
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>

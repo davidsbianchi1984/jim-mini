@@ -142,6 +142,8 @@ import app.jim.guardian.CloudStatusK
 import app.jim.guardian.ContributionK
 import app.jim.guardian.PageRowK
 import app.jim.guardian.PlanRowK
+import app.jim.guardian.BudgetRowK
+import app.jim.guardian.MembershipK
 import kotlin.math.roundToInt
 
 @Composable
@@ -1051,10 +1053,14 @@ private fun VeilPanel(vm: GuardianViewModel) {
     var locality by remember { mutableStateOf("") }
     var savedLocality by remember { mutableStateOf<String?>(null) }
     var planRows by remember { mutableStateOf<List<PlanRowK>>(emptyList()) }
+    var current by remember { mutableStateOf<MembershipK?>(null) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
         runCatching { ApiClient.cloudStatus() }.onSuccess { cloud = it }
+        vm.call({ ApiClient.membership(vm.uid!!, vm.token!!) }) { r ->
+            r.onSuccess { current = it }
+        }
         runCatching { ApiClient.plans() }.onSuccess { planRows = it }
         vm.call({ ApiClient.accessLog(vm.uid!!, vm.token!!) }) { r ->
             r.onSuccess { log = it }
@@ -1150,8 +1156,95 @@ private fun VeilPanel(vm: GuardianViewModel) {
 
         Text(L10n.t("hld.plan", vm.language), color = Jim.T2, fontSize = 12.sp,
             fontWeight = FontWeight.Bold)
+        current?.let { m ->
+            Text("${m.title} \u00b7 $${m.priceUsd.toInt()}", color = Jim.Txt,
+                fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(m.means, color = Jim.T3, fontSize = 10.sp)
+            val readers = m.whoCanRead.joinToString(", ")
+            Text(L10n.t("hld.plan.canread", vm.language).replace("{list}", readers),
+                color = Jim.T2, fontSize = 11.sp)
+        }
         planRows.forEach { p ->
-            Text("${p.title} \u00b7 $${p.priceUsd}", color = Jim.T2, fontSize = 11.sp)
+            SmallAction("${p.title} \u00b7 $${p.priceUsd}",
+                enabled = !busy && current?.plan != p.plan) {
+                busy = true; error = null
+                vm.call({ ApiClient.subscribe(vm.uid!!, vm.token!!, p.plan) }) { r ->
+                    r.onSuccess { current = it }.onFailure { error = it.message }
+                    busy = false
+                }
+            }
+        }
+        SmallAction(L10n.t("hld.plan.cancel", vm.language), enabled = !busy) {
+            busy = true; error = null
+            vm.call({ ApiClient.cancelMembership(vm.uid!!, vm.token!!) }) { r ->
+                r.onSuccess { current = it }.onFailure { error = it.message }
+                busy = false
+            }
+        }
+        error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
+    }
+}
+
+
+/** Budgets: this much per month for this category. Financial stress is one
+ *  of the eight conditions the Guardian takes on, and a budget is how it
+ *  learns the shape of yours. */
+@Composable
+private fun BudgetPanel(vm: GuardianViewModel) {
+    var rows by remember { mutableStateOf<List<BudgetRowK>>(emptyList()) }
+    var category by remember { mutableStateOf("") }
+    var limit by remember { mutableIntStateOf(100) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    fun reload() {
+        vm.call({ ApiClient.budgets(vm.uid!!, vm.token!!) }) { r ->
+            rows = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(L10n.t("aim.budget", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        if (rows.isEmpty()) {
+            Text(L10n.t("aim.budget.none", vm.language), color = Jim.T3, fontSize = 11.sp)
+        }
+        rows.forEach { row ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(row.category, color = Jim.Txt, fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold)
+                Text(" " + L10n.t("aim.budget.line", vm.language)
+                    .replace("{spent}", "$" + row.spent.toInt().toString())
+                    .replace("{limit}", "$" + row.monthlyLimit.toInt().toString())
+                    .replace("{standing}", row.standing),
+                    color = Jim.T2, fontSize = 11.sp, modifier = Modifier.weight(1f))
+                SmallAction(L10n.t("aim.budget.remove", vm.language), enabled = !busy) {
+                    busy = true
+                    vm.call({ ApiClient.clearBudget(vm.uid!!, vm.token!!,
+                        row.category) }) { busy = false; reload() }
+                }
+            }
+        }
+        labeledField(L10n.t("aim.budget", vm.language), category,
+            L10n.t("aim.budget.cat.ph", vm.language)) { category = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            listOf(50, 100, 200, 400).forEach { amount ->
+                FilterChip(selected = limit == amount, onClick = { limit = amount },
+                    label = { Text("$$amount", fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Jim.BrandA,
+                        selectedLabelColor = Color.White, labelColor = Jim.T2))
+            }
+        }
+        BrandButton(L10n.t("aim.budget.set", vm.language),
+            enabled = !busy && category.isNotBlank(), busy = busy) {
+            busy = true; error = null
+            vm.call({ ApiClient.setBudget(vm.uid!!, vm.token!!, category.trim(),
+                limit.toDouble()) }) { r ->
+                r.onFailure { error = it.message }
+                busy = false; category = ""; reload()
+            }
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
     }
@@ -1531,7 +1624,7 @@ fun LifeScreen(vm: GuardianViewModel) {
             0 -> GoalsPanel(vm)
             1 -> HabitsPanel(vm)
             2 -> JournalPanel(vm)
-            3 -> MoneyPanel(vm)
+            3 -> { MoneyPanel(vm); BudgetPanel(vm) }
             // The dose board is a schedule the body keeps.
             4 -> { SchedulePanel(vm); MedsPanel(vm) }
             5 -> TandemShopPanel(vm)

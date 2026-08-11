@@ -2568,6 +2568,60 @@ object ApiClient {
     }
 
 
+
+    // ---- the purse and the membership ----
+
+    suspend fun budgets(uid: String, token: String): List<BudgetRowK> {
+        val o = request("/budgets/$uid", token = token)
+        val out = mutableListOf<BudgetRowK>()
+        o.optJSONArray("budgets")?.let { a ->
+            for (i in 0 until a.length()) {
+                val b = a.getJSONObject(i)
+                out.add(BudgetRowK(b.getString("category"),
+                    b.optDouble("monthly_limit", 0.0),
+                    b.optDouble("spent", 0.0), b.optString("standing", "")))
+            }
+        }
+        return out
+    }
+
+    /** This much per month for this category. */
+    suspend fun setBudget(uid: String, token: String, category: String,
+                          monthlyLimit: Double) {
+        request("/budgets/$uid", "PUT",
+            JSONObject().put("category", category)
+                .put("monthly_limit", monthlyLimit), token)
+    }
+
+    suspend fun clearBudget(uid: String, token: String, category: String) {
+        request("/budgets/$uid/$category", "DELETE", token = token)
+    }
+
+    /** The route says account and means the person: tiers are keyed by the
+     *  user id, and the bearer must be that user's own. */
+    suspend fun membership(uid: String, token: String): MembershipK =
+        membershipOf(request("/memberships/$uid", token = token))
+
+    /** Join a plan or move between them. Billing is simulated. */
+    suspend fun subscribe(uid: String, token: String, plan: String): MembershipK =
+        membershipOf(request("/memberships/$uid", "POST",
+            JSONObject().put("plan", plan), token))
+
+    /** End it. The person keeps their record and every emergency path. */
+    suspend fun cancelMembership(uid: String, token: String): MembershipK =
+        membershipOf(request("/memberships/$uid", "DELETE", token = token))
+
+    private fun membershipOf(o: JSONObject): MembershipK {
+        val storage = o.optJSONObject("storage")
+        val readers = mutableListOf<String>()
+        storage?.optJSONArray("who_can_read")?.let { a ->
+            for (i in 0 until a.length()) readers.add(a.getString(i))
+        }
+        return MembershipK(o.getString("plan"), o.optString("title", ""),
+            o.optDouble("price_usd", 0.0),
+            storage?.optString("means", "") ?: "", readers)
+    }
+
     // ---- the record and the veil ----
 
     /** An empty list with no record kept is a different fact from nobody
@@ -2906,3 +2960,9 @@ data class CloudStatusK(val cloud: Boolean, val model: String?,
 data class ContributionK(val optedIn: Boolean, val policy: String)
 data class PageRowK(val to: String, val delivered: Boolean, val sentAt: String)
 data class PlanRowK(val plan: String, val title: String, val priceUsd: Int)
+
+data class BudgetRowK(val category: String, val monthlyLimit: Double,
+                      val spent: Double, val standing: String)
+data class MembershipK(val plan: String, val title: String,
+                       val priceUsd: Double, val means: String,
+                       val whoCanRead: List<String>)

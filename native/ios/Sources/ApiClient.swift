@@ -3248,3 +3248,81 @@ extension ApiClient {
         try await request("/plans")
     }
 }
+
+// MARK: - The purse and the membership
+
+struct BudgetRow: Decodable {
+    let category: String
+    let monthly_limit: Double
+    let spent: Double
+    let standing: String
+}
+
+struct BudgetsOut: Decodable {
+    let month: String
+    let days_left: Int
+    let budgets: [BudgetRow]
+}
+
+struct BudgetRemoved: Decodable { let removed: Bool }
+
+/// The storage posture a plan buys, in the plan sheet's own words.
+struct StoragePosture: Decodable {
+    let title: String
+    let means: String
+    let who_can_read: [String]
+}
+
+struct MembershipView: Decodable {
+    let account_id: String
+    let plan: String
+    let title: String
+    let price_usd: Double
+    let period: String?
+    let includes: [String]
+    let locked: [String]
+    let storage: StoragePosture
+}
+
+extension ApiClient {
+
+    func budgets(uid: String, token: String) async throws -> BudgetsOut {
+        try await request("/budgets/\(uid)", token: token)
+    }
+
+    /// This much per month for this category.
+    func setBudget(uid: String, token: String, category: String,
+                   monthlyLimit: Double) async throws -> BudgetRow {
+        try await request("/budgets/\(uid)", method: "PUT",
+                          body: ["category": category,
+                                 "monthly_limit": monthlyLimit], token: token)
+    }
+
+    func clearBudget(uid: String, token: String,
+                     category: String) async throws -> BudgetRemoved {
+        try await request("/budgets/\(uid)/\(category)", method: "DELETE",
+                          token: token)
+    }
+
+    /// The route says account and means the person: tiers are keyed by the
+    /// user id, and the bearer must be that user's own.
+    func membership(uid: String, token: String) async throws -> MembershipView {
+        try await request("/memberships/\(uid)", token: token)
+    }
+
+    /// Join a plan or move between them. Billing is simulated and the
+    /// response says so.
+    func subscribe(uid: String, token: String,
+                   plan: String) async throws -> MembershipView {
+        try await request("/memberships/\(uid)", method: "POST",
+                          body: ["plan": plan], token: token)
+    }
+
+    /// End it. The person keeps their record, their conditions and every
+    /// emergency path.
+    func cancelMembership(uid: String,
+                          token: String) async throws -> MembershipView {
+        try await request("/memberships/\(uid)", method: "DELETE",
+                          token: token)
+    }
+}

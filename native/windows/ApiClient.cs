@@ -2068,6 +2068,39 @@ public sealed class ApiClient
 
     public Task<PlansOut> Plans() =>
         Send<PlansOut>(new HttpRequestMessage(HttpMethod.Get, "/plans"));
+
+    // ---- the purse and the membership ----
+
+    public Task<BudgetsOut> Budgets(string uid, string token) =>
+        Send<BudgetsOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/budgets/{uid}"), token);
+
+    /// This much per month for this category.
+    public Task<BudgetRow> SetBudget(string uid, string token,
+                                     string category, double monthlyLimit) =>
+        Send<BudgetRow>(Put($"/budgets/{uid}",
+            new { category, monthly_limit = monthlyLimit }, token));
+
+    public Task<BudgetRemoved> ClearBudget(string uid, string token,
+                                           string category) =>
+        Send<BudgetRemoved>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/budgets/{uid}/{category}"), token);
+
+    /// The route says account and means the person: tiers are keyed by the
+    /// user id, and the bearer must be that user's own.
+    public Task<MembershipView> Membership(string uid, string token) =>
+        Send<MembershipView>(new HttpRequestMessage(HttpMethod.Get,
+            $"/memberships/{uid}"), token);
+
+    /// Join a plan or move between them. Billing is simulated.
+    public Task<MembershipView> Subscribe(string uid, string token,
+                                          string plan) =>
+        Send<MembershipView>(Post($"/memberships/{uid}", new { plan }, token));
+
+    /// End it. The person keeps their record and every emergency path.
+    public Task<MembershipView> CancelMembership(string uid, string token) =>
+        Send<MembershipView>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/memberships/{uid}"), token);
 }
 
 public record MoneyAccount(
@@ -2877,3 +2910,33 @@ public record PlanRow(
 
 public record PlansOut(
     [property: JsonPropertyName("plans")] PlanRow[] Plans);
+
+public record BudgetRow(
+    [property: JsonPropertyName("category")] string Category,
+    [property: JsonPropertyName("monthly_limit")] double MonthlyLimit,
+    [property: JsonPropertyName("spent")] double Spent,
+    [property: JsonPropertyName("standing")] string Standing);
+
+public record BudgetsOut(
+    [property: JsonPropertyName("month")] string Month,
+    [property: JsonPropertyName("days_left")] int DaysLeft,
+    [property: JsonPropertyName("budgets")] BudgetRow[] Rows);
+
+public record BudgetRemoved(
+    [property: JsonPropertyName("removed")] bool Removed);
+
+/// The storage posture a plan buys, in the plan sheet's own words.
+public record StoragePosture(
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("means")] string Means,
+    [property: JsonPropertyName("who_can_read")] string[] WhoCanRead);
+
+public record MembershipView(
+    [property: JsonPropertyName("account_id")] string AccountId,
+    [property: JsonPropertyName("plan")] string Plan,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("price_usd")] double PriceUsd,
+    [property: JsonPropertyName("period")] string? Period,
+    [property: JsonPropertyName("includes")] string[] Includes,
+    [property: JsonPropertyName("locked")] string[] Locked,
+    [property: JsonPropertyName("storage")] StoragePosture Storage);

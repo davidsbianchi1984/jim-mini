@@ -37,6 +37,7 @@ public sealed partial class CustodyPage : Page
         VeilLocBox.PlaceholderText = L10n.T("set.loc.ph");
         VeilLocSave.Content = L10n.T("set.save");
         VeilPlanHead.Text = L10n.T("hld.plan");
+        VeilPlanCancel.Content = L10n.T("hld.plan.cancel");
         ProblemsSwitch.Header = L10n.T("ns.pr.toggle");
         ProblemsPreviewButton.Content = L10n.T("ns.pr.show");
         TakeItHead.Text = L10n.T("hld.take");
@@ -271,10 +272,21 @@ public sealed partial class CustodyPage : Page
         {
             VeilPlans.Children.Clear();
             foreach (var plan in (await ApiClient.Shared.Plans()).Plans)
-                VeilPlans.Children.Add(VeilLine(
-                    $"{plan.Title} · ${(int)plan.PriceUsd}", "JimT2Brush"));
+            {
+                var join = new Button
+                {
+                    Content = $"{plan.Title} · ${(int)plan.PriceUsd}",
+                    FontSize = 12,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                var name = plan.Plan;
+                join.Click += async (_, _) => await Join(name);
+                VeilPlans.Children.Add(join);
+            }
         }
         catch { /* leave as-is */ }
+        await RenderMembership(null);
         if (s.Uid is null || s.Token is null) return;
         try
         {
@@ -357,6 +369,65 @@ public sealed partial class CustodyPage : Page
                 s.Uid, s.Token, VeilLocBox.Text.Trim());
             VeilLocSaved.Text = saved.Locality ?? "";
             VeilLocSaved.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            VeilError.Text = ex.Message;
+            VeilError.Visibility = Visibility.Visible;
+        }
+    }
+
+    // ---- the membership: the plan the refusals name ----
+
+    private async System.Threading.Tasks.Task RenderMembership(
+        MembershipView? known)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var current = known
+                ?? await ApiClient.Shared.Membership(s.Uid, s.Token);
+            VeilPlanCurrent.Text = $"{current.Title} · ${(int)current.PriceUsd}";
+            VeilPlanCurrent.Visibility = Visibility.Visible;
+            VeilPlanMeans.Text = current.Storage.Means;
+            VeilPlanMeans.Visibility = Visibility.Visible;
+            VeilPlanReaders.Text = L10n.T("hld.plan.canread")
+                .Replace("{list}", string.Join(", ",
+                                               current.Storage.WhoCanRead));
+            VeilPlanReaders.Visibility = Visibility.Visible;
+        }
+        catch { /* leave as-is */ }
+    }
+
+    /// Billing is simulated and the server's own sheet says so.
+    private async System.Threading.Tasks.Task Join(string plan)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var current = await ApiClient.Shared.Subscribe(s.Uid, s.Token,
+                                                           plan);
+            await RenderMembership(current);
+        }
+        catch (Exception ex)
+        {
+            VeilError.Text = ex.Message;
+            VeilError.Visibility = Visibility.Visible;
+        }
+    }
+
+    /// The person keeps their record and every emergency path.
+    private async void OnCancelMembership(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var current = await ApiClient.Shared.CancelMembership(s.Uid,
+                                                                  s.Token);
+            await RenderMembership(current);
         }
         catch (Exception ex)
         {

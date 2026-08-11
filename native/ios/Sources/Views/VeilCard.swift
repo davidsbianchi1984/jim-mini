@@ -16,6 +16,7 @@ struct VeilCard: View {
     @State private var locality = ""
     @State private var saved: LocalitySaved?
     @State private var planRows: [PlanRow] = []
+    @State private var current: MembershipView?
     @State private var busy = false
     @State private var error: String?
 
@@ -131,10 +132,29 @@ struct VeilCard: View {
             Divider().background(Theme.line)
             Text(L10n.t("hld.plan", state.language))
                 .font(.caption2.bold()).foregroundStyle(Theme.t2)
-            ForEach(planRows, id: \.plan) { plan in
-                Text("\(plan.title) · $\(Int(plan.price_usd))")
+            if let current {
+                Text("\(current.title) · $\(Int(current.price_usd))")
+                    .font(.caption2.bold()).foregroundStyle(Theme.txt)
+                Text(current.storage.means)
+                    .font(.caption2).foregroundStyle(Theme.t3)
+                let readers = current.storage.who_can_read
+                    .joined(separator: ", ")
+                Text(L10n.t("hld.plan.canread", state.language)
+                        .replacingOccurrences(of: "{list}", with: readers))
                     .font(.caption2).foregroundStyle(Theme.t2)
             }
+            ForEach(planRows, id: \.plan) { plan in
+                Button("\(plan.title) · $\(Int(plan.price_usd))") {
+                    join(plan.plan)
+                }
+                .font(.caption2)
+                .foregroundStyle(current?.plan == plan.plan ? Theme.green
+                                                            : Theme.brandA)
+                .disabled(busy || current?.plan == plan.plan)
+            }
+            Button(L10n.t("hld.plan.cancel", state.language)) { cancel() }
+                .font(.caption2).foregroundStyle(Theme.red)
+                .disabled(busy)
             if let error {
                 Text(error).font(.caption2).foregroundStyle(Theme.red)
             }
@@ -154,6 +174,35 @@ struct VeilCard: View {
             uid: uid, token: token)) ?? []
         pageRows = (try? await ApiClient.shared.pages(uid: uid,
                                                       token: token)) ?? []
+        current = try? await ApiClient.shared.membership(uid: uid,
+                                                         token: token)
+    }
+
+    /// Billing is simulated and the server's own sheet says so.
+    private func join(_ plan: String) {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                current = try await ApiClient.shared.subscribe(
+                    uid: uid, token: token, plan: plan)
+            } catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    /// The person keeps their record, their conditions and every emergency
+    /// path.
+    private func cancel() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                current = try await ApiClient.shared.cancelMembership(
+                    uid: uid, token: token)
+            } catch { self.error = error.localizedDescription }
+            busy = false
+        }
     }
 
     private func revoke() {

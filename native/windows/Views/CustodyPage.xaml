@@ -162,7 +162,16 @@
 
                     <TextBlock x:Name="VeilPlanHead" FontWeight="Bold" FontSize="12"
                                Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="VeilPlanCurrent" FontWeight="Bold" FontSize="12" Visibility="Collapsed"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="VeilPlanMeans" FontSize="10" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <TextBlock x:Name="VeilPlanReaders" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT2Brush}" />
                     <StackPanel x:Name="VeilPlans" Spacing="2" />
+                    <Button x:Name="VeilPlanCancel" Click="OnCancelMembership"
+                            Background="Transparent" FontSize="12"
+                            Foreground="{StaticResource JimRedBrush}" />
                     <TextBlock x:Name="VeilError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
                                Foreground="{StaticResource JimRedBrush}" />
                 </StackPanel>
