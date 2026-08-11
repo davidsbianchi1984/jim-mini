@@ -153,6 +153,9 @@ private struct SocialSection: View {
                     HStack(spacing: 8) {
                         if c.direction == "collect" {
                             smallButton(L10n.t("jcon.collect.sample", state.language)) { collect(c) }
+                            if let h = c.handle, !h.isEmpty {
+                                smallButton(L10n.t("jcon.scrape", state.language)) { scrape(c) }
+                            }
                         } else {
                             smallButton(L10n.t("jcon.publish.update", state.language)) { publish(c) }
                         }
@@ -225,6 +228,17 @@ private struct SocialSection: View {
                 try await ApiClient.shared.socialCollect(
                     cid: c.id, token: token, content: "sample post from \(c.platform)")
                 status = L10n.t("jcon.collected.one", state.language)
+                    .replacingOccurrences(of: "{platform}", with: c.platform.capitalized)
+            } catch { self.error = error.localizedDescription }
+        }
+    }
+
+    private func scrape(_ c: SocialConn) {
+        guard let token = state.token else { return }
+        Task {
+            do {
+                try await ApiClient.shared.socialScrape(cid: c.id, token: token)
+                status = L10n.t("jcon.scraped.one", state.language)
                     .replacingOccurrences(of: "{platform}", with: c.platform.capitalized)
             } catch { self.error = error.localizedDescription }
         }

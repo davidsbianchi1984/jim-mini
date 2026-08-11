@@ -2029,6 +2029,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "rch.acc.publish": {
     en: "Publish", es: "Publicar", fr: "Publier", de: "Veröffentlichen", pt: "Publicar", it: "Pubblica", ja: "発信する", zh: "发布", hi: "प्रकाशित करें", ar: "انشر",
   },
+  "rch.acc.scrape": {
+    en: "Fetch the page", es: "Traer la página", fr: "Récupérer la page", de: "Die Seite holen", pt: "Buscar a página", it: "Recupera la pagina", ja: "ページを取得", zh: "抓取页面", hi: "पेज लाएँ", ar: "جلب الصفحة",
+  },
   "rch.acc.collect": {
     en: "Collect", es: "Recopilar", fr: "Collecter", de: "Sammeln", pt: "Recolher", it: "Raccogli", ja: "集める", zh: "收集", hi: "एकत्र करें", ar: "اجمع",
   },

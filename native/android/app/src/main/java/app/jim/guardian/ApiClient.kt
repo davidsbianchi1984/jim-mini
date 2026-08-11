@@ -957,6 +957,10 @@ object ApiClient {
                 .put(JSONObject().put("content", content))), token)
     }
 
+    suspend fun socialScrape(cid: String, token: String) {
+        request("/social/connection/$cid/scrape", "POST", JSONObject(), token)
+    }
+
     suspend fun socialPublish(cid: String, token: String, content: String) {
         request("/social/connection/$cid/publish", "POST",
             JSONObject().put("content", content), token)

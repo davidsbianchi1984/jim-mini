@@ -1,4 +1,4 @@
-# status: manifest — 461 guards carried by all three products
+# status: manifest — 464 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -42,6 +42,7 @@ test_a_callers_key_is_echoed_when_it_looks_like_a_field_name
 test_a_comma_inside_an_argument_does_not_shift_the_positions
 test_a_computed_property_is_not_a_key
 test_a_computed_property_is_still_not_a_key
+test_a_connection_without_an_address_is_told_so
 test_a_container_pin_reads_the_element_not_the_wrapper
 test_a_control_the_page_never_names_is_caught
 test_a_decorative_floor_is_caught
@@ -256,6 +257,7 @@ test_nothing_a_caller_sent_comes_back
 test_nothing_is_refused_when_offline_mode_is_off
 test_nothing_is_sent_before_the_person_has_been_asked
 test_nothing_leaves_before_somebody_has_been_asked
+test_offline_refuses_before_any_socket
 test_only_the_top_level_of_a_body_is_read
 test_optional_is_believed_and_required_is_not
 test_pairing_advertises_the_published_url_when_hosted
@@ -270,6 +272,7 @@ test_progress_is_per_step_not_a_cursor
 test_prose_about_a_member_is_not_a_use
 test_prose_with_angle_brackets_is_not_markup
 test_public_base_normalises_trailing_slash
+test_publish_connections_do_not_scrape
 test_resolving_a_language_never_raises
 test_sending_is_impossible_without_an_address_somebody_configured
 test_sentence_of_reads_each_shape_and_invents_nothing

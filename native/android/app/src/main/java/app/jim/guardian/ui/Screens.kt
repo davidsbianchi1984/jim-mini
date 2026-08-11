@@ -4039,6 +4039,18 @@ private fun SocialPanel(vm: GuardianViewModel) {
                                 .onFailure { error = it.message }
                         }
                     }
+                    val h = c.handle
+                    if (h != null && h.isNotEmpty()) {
+                        smallAction(L10n.t("jcon.scrape", vm.language)) {
+                            vm.call({ ApiClient.socialScrape(c.id, vm.token!!) }) { r ->
+                                r.onSuccess {
+                                    status = L10n.t("jcon.scraped.one", vm.language)
+                                        .replace("{platform}", pretty(c.platform))
+                                }
+                                    .onFailure { error = it.message }
+                            }
+                        }
+                    }
                 } else {
                     smallAction(L10n.t("jcon.publish.update", vm.language)) {
                         vm.call({ ApiClient.socialPublish(c.id, vm.token!!,

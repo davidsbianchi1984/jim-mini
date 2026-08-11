@@ -2172,6 +2172,22 @@ def create_app(qrme_client: QRMEClient | None = None,
         return social.collect(row, [i.model_dump() for i in body.items],
                               pdi=_vault(row["user_id"]))
 
+    @app.post("/social/connection/{cid}/scrape", status_code=201)
+    def social_scrape(cid: str, request: Request) -> dict:
+        row = _social_or_404(cid, request)
+        if row["direction"] != "collect":
+            raise HTTPException(409, "this connection is for publishing, not collecting")
+        if row["status"] != "active":
+            raise HTTPException(409, "connection has been revoked")
+        try:
+            return social.fetch_page(row, _public_base(), pdi=_vault(row["user_id"]))
+        except ValueError as e:
+            raise HTTPException(409, str(e))
+        except LookupError as e:
+            raise HTTPException(400, str(e))
+        except Exception as e:                                # noqa: BLE001
+            raise HTTPException(502, f"could not fetch — {e.__class__.__name__}: {e}")
+
     @app.post("/social/connection/{cid}/publish", status_code=201)
     def social_publish(cid: str, body: SocialPublish, request: Request) -> dict:
         row = _social_or_404(cid, request)

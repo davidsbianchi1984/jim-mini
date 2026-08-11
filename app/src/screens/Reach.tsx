@@ -240,6 +240,13 @@ export function Reach() {
                           String(a.id),
                           { items: [{ content: "a post from elsewhere" }] },
                           token!))}>{tr("rch.acc.collect", lang)}</button>
+                {a.handle ? (
+                  <button disabled={busy}
+                          onClick={() => run(() => api.scrapeSocial(
+                            String(a.id), token!))}>
+                    {tr("rch.acc.scrape", lang)}
+                  </button>
+                ) : null}
               </div>
             )}
           </div>

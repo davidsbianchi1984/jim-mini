@@ -291,6 +291,9 @@
                                             <Button Content="{Binding CollectSampleLabel}" Tag="{Binding Id}" Click="OnCollect"
                                                     Visibility="{Binding CollectVisibility}"
                                                     Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
+                                            <Button Content="{Binding ScrapeLabel}" Tag="{Binding Id}" Click="OnScrape"
+                                                    Visibility="{Binding ScrapeVisibility}"
+                                                    Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />
                                             <Button Content="{Binding PublishUpdateLabel}" Tag="{Binding Id}" Click="OnPublish"
                                                     Visibility="{Binding PublishVisibility}"
                                                     Background="{StaticResource JimBrandABrush}" Foreground="White" FontSize="12" />

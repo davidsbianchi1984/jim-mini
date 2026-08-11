@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import json
 
-from . import db, life
+from . import db, life, offline, scrape
 
 _PLATFORM_URL = {
     "instagram": "https://instagram.com/{h}",
@@ -114,6 +114,39 @@ def collect(row: dict, items: list[dict], pdi=None) -> dict:
     return {"connection": row["id"], "platform": row["platform"],
             "ingested": ingested,
             "note": "collected posts now inform this user's guidance"}
+
+
+def fetch_page(row: dict, public_base: str, pdi=None) -> dict:
+    """Visit the account's public page and ingest what a browser would show.
+
+    The collect door stores what the owner pastes; this one goes to the
+    address the connection has carried since it was made and takes the title,
+    the metadata bio and the visible text, as a single ``social:<platform>``
+    context event with its URL and fetch time written in.
+    """
+    if offline.enabled():
+        raise ValueError(
+            "offline: this deployment sends nothing off the machine, so the "
+            "page cannot be fetched — paste the content into collect instead")
+    if not row["handle"] or row["platform"] not in _PLATFORM_URL:
+        raise LookupError(
+            "no public address to visit — reconnect with the account's handle")
+    url = _PLATFORM_URL[row["platform"]].format(h=row["handle"])
+    page = scrape.extract(scrape.fetch(url))
+    parts = [p for p in (page["description"], page["text"]) if p]
+    if not (page["title"] or parts):
+        raise ValueError(f"{url} answered with nothing readable")
+    body = "\n\n".join(([page["title"]] if page["title"] else []) + parts)
+    body += f"\n\nFetched from {url} at {db.utcnow()}"
+    life.add_context(row["user_id"], f"social:{row['platform']}",
+                     "social_post", {"content": body}, pdi=pdi)
+    conn = db.connect()
+    conn.execute("UPDATE social_connections SET collected = collected + 1 WHERE id=?",
+                 (row["id"],))
+    conn.commit()
+    return {"connection": row["id"], "platform": row["platform"], "url": url,
+            "title": page["title"], "ingested": 1,
+            "note": "the page's public words now inform this user's guidance"}
 
 
 def publish(row: dict, content: str, topic: str | None) -> dict:

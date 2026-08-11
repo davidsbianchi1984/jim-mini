@@ -28,7 +28,11 @@ public sealed partial class ConnectPage : Page
             Collect ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PublishVisibility =>
             Collect ? Visibility.Collapsed : Visibility.Visible;
+        public bool HasHandle { get; init; }
+        public Visibility ScrapeVisibility =>
+            Collect && HasHandle ? Visibility.Visible : Visibility.Collapsed;
         public string CollectSampleLabel => L10n.T("jcon.collect.sample");
+        public string ScrapeLabel => L10n.T("jcon.scrape");
         public string PublishUpdateLabel => L10n.T("jcon.publish.update");
         public string BeaconLabel => L10n.T("rch.acc.beacon");
         public string DisconnectLabel => L10n.T("rch.acc.disconnect");
@@ -228,6 +232,7 @@ public sealed partial class ConnectPage : Page
                 Id = c.Id,
                 Title = $"{Pretty(c.Platform)} · {c.Direction}",
                 Handle = c.Handle is { } h ? $"@{h}" : "",
+                HasHandle = !string.IsNullOrEmpty(c.Handle),
                 Collect = c.Direction == "collect",
             }).ToList();
         }
@@ -264,6 +269,21 @@ public sealed partial class ConnectPage : Page
                 cid, s.Token!, $"sample post from {conn?.Platform}");
             ShowSocialStatus(L10n.T("jcon.collected.one")
                 .Replace("{platform}", Pretty(conn?.Platform ?? "")));
+        }
+        catch (Exception ex) { ShowSocialError(ex.Message); }
+    }
+
+    private async void OnScrape(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not string cid) return;
+        var conn = _social.FirstOrDefault(c => c.Id == cid);
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.SocialScrape(cid, s.Token!);
+            ShowSocialStatus(L10n.T("jcon.scraped.one")
+                .Replace("{platform}", conn?.Platform ?? ""));
+            await ReloadSocial();
         }
         catch (Exception ex) { ShowSocialError(ex.Message); }
     }

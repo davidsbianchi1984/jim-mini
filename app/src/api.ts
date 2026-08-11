@@ -1532,6 +1532,8 @@ export const api = {
   collectFromSocial: (cid: string, body: Body, token: string) =>
     req<Row>(`/social/connection/${cid}/collect`,
       { method: "POST", body, token }),
+  scrapeSocial: (cid: string, token: string) =>
+    req<Row>(`/social/connection/${cid}/scrape`, { method: "POST", token }),
   publishToSocial: (cid: string, body: Body, token: string) =>
     req<Row>(`/social/connection/${cid}/publish`,
       { method: "POST", body, token }),
