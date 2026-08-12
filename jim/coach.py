@@ -54,6 +54,20 @@ def _context(user_id: str) -> str:
     # whole team wrote deserves a mention, never an assignment.
     from . import careteam
     lines.extend(careteam.coach_context(user_id))
+    # What the connected apps collected (jim/app_connectors.py) — the
+    # sentence under /apps/connector/{cid}/collect says it "now informs
+    # guidance", and this line is where that stops being a claim. Unvaulted
+    # rows only; sealed ones stay sealed.
+    import json as _json
+    for r in db.connect().execute(
+            "SELECT data FROM context_events WHERE user_id=? AND"
+            " kind='linked_context' ORDER BY created_at DESC, rowid DESC"
+            " LIMIT 6", (user_id,)).fetchall():
+        data = _json.loads(r["data"])
+        if not data.get("vaulted") and data.get("content"):
+            lines.append(f"collected context: {data['content'][:160]}")
+            if sum(l.startswith("collected context:") for l in lines) >= 3:
+                break
     return "\n".join(lines) if lines else "no recent check-ins or goals"
 
 

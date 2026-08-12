@@ -71,17 +71,44 @@ def revoke(row: dict) -> dict:
 
 
 def collect(row: dict, items: list[dict], pdi=None) -> dict:
-    ingested = 0
+    """Route each collected item to where it actually does work.
+
+    A "reading" walks through the same intake the watch uses — vigil
+    stand-down, detection, drift, baseline — because a heart rate from a
+    connected health app is a heart rate. An "environment" item lands as
+    the context the offline stack's environment layer reads, deliberately
+    unvaulted: it describes the room, not the person, and sealing it would
+    blind the on-device coach to it. Everything else is linked context,
+    vaulted when a vault stands.
+    """
+    source = f"app:{row['provider']}:{row['app']}"
+    ingested = readings = environment = 0
+    drifts: list[dict] = []
     for item in items:
-        life.add_context(row["user_id"], f"app:{row['provider']}:{row['app']}",
-                         "linked_context", {"content": item.get("content", "")},
-                         pdi=pdi)
+        kind = item.get("kind") or "context"
+        if kind == "reading" and item.get("metric") and item.get("value") is not None:
+            from . import guardian
+            result = guardian.monitor(
+                row["user_id"], {item["metric"]: item["value"]},
+                note=f"collected from {row['label']}", pdi=pdi)
+            if result.get("drift"):
+                drifts.extend(result["drift"]["crossings"])
+            readings += 1
+        elif kind == "environment":
+            life.add_context(row["user_id"], source, "environment",
+                             {"content": item.get("content", "")}, pdi=None)
+            environment += 1
+        else:
+            life.add_context(row["user_id"], source, "linked_context",
+                             {"content": item.get("content", "")}, pdi=pdi)
         ingested += 1
     db.connect().execute(
         "UPDATE app_connectors SET collected = collected + ? WHERE id=?",
         (ingested, row["id"]))
     db.connect().commit()
     return {"connector": row["id"], "app": row["app"], "ingested": ingested,
+            "readings": readings, "environment": environment,
+            "drift_crossings": drifts,
             "note": f"context from {row['label']} now informs guidance"}
 
 

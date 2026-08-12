@@ -505,8 +505,18 @@ class AppConnect(BaseModel):
 
 
 class AppItem(BaseModel):
+    """One collected thing from a connected app.
+
+    ``kind`` routes it (jim/app_connectors.py): "reading" carries a
+    biometric sample (``metric`` + ``value``) into the same intake the
+    watch uses; "environment" lands where the offline stack's
+    environment layer reads; anything else is linked context.
+    """
     content: str
     title: str | None = None
+    kind: str | None = None      # "context" (default) | "environment" | "reading"
+    metric: str | None = None    # reading only, e.g. heart_rate
+    value: float | None = None   # reading only
 
 
 class AppCollect(BaseModel):
