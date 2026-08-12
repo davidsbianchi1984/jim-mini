@@ -268,7 +268,7 @@ struct Drill: Decodable, Identifiable {
     let kind: String
     let question: String
     let probes: [String]?
-    let feedback: String?
+    let critique: String?
     let described_by: String?
     let answered_at: String?
 }

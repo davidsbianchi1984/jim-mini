@@ -25,7 +25,7 @@ def test_the_drill_deals_reads_and_reaches_the_coach(client):
     read = r.json()
     # Stub provider: the checklist stands in, and says so.
     assert read["described_by"] == "checklist"
-    assert read["feedback"] is None
+    assert read["critique"] is None
     assert read["probes"] == drill["probes"]
 
     # Answering twice is refused; the drill is one question, one answer.

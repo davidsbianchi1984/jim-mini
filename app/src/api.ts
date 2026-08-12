@@ -511,7 +511,7 @@ export interface DrillRow {
   question: string;
   probes?: string[];
   response?: string | null;
-  feedback?: string | null;
+  critique?: string | null;
   described_by?: string | null;   // model | checklist
   created_at?: string;
   answered_at?: string | null;

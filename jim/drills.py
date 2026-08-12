@@ -136,33 +136,33 @@ def answer(user: dict, drill_id: str, response: str, cloud=None) -> dict:
                          "question")
 
     probes = row["probes"].split("\n")
-    feedback, described_by = None, "checklist"
+    critique, described_by = None, "checklist"
     result = llm.generate_for_user(
         user_id, _COACH_SYSTEM,
         "Question: " + row["question"] + "\nProbes:\n- "
         + "\n- ".join(probes) + "\nAnswer:\n" + text, cloud=cloud)
     said = (result.get("text") or "").strip()
     if said and result.get("provider") not in (None, "stub"):
-        feedback, described_by = said, "model"
+        critique, described_by = said, "model"
 
     conn.execute(
         "UPDATE drills SET response=?, feedback=?, described_by=?,"
         " answered_at=? WHERE id=?",
-        (text, feedback, described_by, db.utcnow(), drill_id))
+        (text, critique, described_by, db.utcnow(), drill_id))
     conn.commit()
     # The practice reaches the career area's readable context, like any
     # local note — the coach that plans your week should know you drilled.
     life.add_context(user_id, "drills", "career_drill",
                      {"content": "practiced: " + row["question"]}, pdi=None)
     return {"id": drill_id, "question": row["question"], "probes": probes,
-            "feedback": feedback, "described_by": described_by}
+            "critique": critique, "described_by": described_by}
 
 
 def history(user_id: str, limit: int = 20) -> list[dict]:
     """Recent drills, newest first — question, whether answered, and how
     the reading was made."""
     rows = db.connect().execute(
-        "SELECT id, kind, question, response, feedback, described_by,"
+        "SELECT id, kind, question, response, feedback AS critique, described_by,"
         " created_at, answered_at FROM drills WHERE user_id=?"
         " ORDER BY created_at DESC, rowid DESC LIMIT ?",
         (user_id, limit)).fetchall()

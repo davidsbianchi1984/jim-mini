@@ -251,8 +251,8 @@ export function Aims() {
         )}
         {reading && (
           <p className="muted small">
-            {reading.described_by === "model" && reading.feedback
-              ? reading.feedback
+            {reading.described_by === "model" && reading.critique
+              ? reading.critique
               : tr("drl.checklist", lang)}
           </p>
         )}

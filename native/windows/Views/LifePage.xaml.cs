@@ -304,7 +304,7 @@ public sealed partial class LifePage : Page
         {
             var read = await ApiClient.Shared.AnswerDrill(
                 s.Uid!, _drillId, answer, s.Token!);
-            DrillLine.Text = read.Feedback ?? _drillProbes;
+            DrillLine.Text = read.Critique ?? _drillProbes;
             DrillAnswerBox.Text = ""; _drillId = "";
             DrillQuestion.Text = ""; DrillProbes.Text = "";
             await LoadDrills();

@@ -759,7 +759,7 @@ object ApiClient {
                             token: String): String {
         val o = JSONObject(request("/users/$uid/drills/$drillId/answer",
             "POST", JSONObject().put("answer", answer), token))
-        return if (o.isNull("feedback")) "" else o.optString("feedback")
+        return if (o.isNull("critique")) "" else o.optString("critique")
     }
 
     suspend fun drills(uid: String, token: String): List<String> {

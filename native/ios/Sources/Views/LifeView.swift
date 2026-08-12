@@ -165,7 +165,7 @@ private struct GoalsSection: View {
             let read = try? await ApiClient.shared.answerDrill(
                 uid: uid, token: token, drillId: d.id, answer: drillAnswer)
             // The reading, or the probes to measure against, honestly.
-            drillLine = read?.feedback
+            drillLine = read?.critique
                 ?? (d.probes ?? []).joined(separator: " · ")
             drill = nil; drillAnswer = ""; busy = false
         }

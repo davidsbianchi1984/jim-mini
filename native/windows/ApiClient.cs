@@ -206,7 +206,7 @@ public record Drill(
     [property: JsonPropertyName("kind")] string Kind,
     [property: JsonPropertyName("question")] string Question,
     [property: JsonPropertyName("probes")] string[]? Probes,
-    [property: JsonPropertyName("feedback")] string? Feedback,
+    [property: JsonPropertyName("critique")] string? Critique,
     [property: JsonPropertyName("described_by")] string? DescribedBy,
     [property: JsonPropertyName("answered_at")] string? AnsweredAt);
 
