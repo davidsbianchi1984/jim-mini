@@ -201,6 +201,13 @@ public record Meal(
     [property: JsonPropertyName("photo_sealed")] bool PhotoSealed,
     [property: JsonPropertyName("created_at")] string? CreatedAt);
 
+public record Letter(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("week_start")] string WeekStart,
+    [property: JsonPropertyName("body")] string Body,
+    [property: JsonPropertyName("described_by")] string DescribedBy,
+    [property: JsonPropertyName("created_at")] string? CreatedAt);
+
 public record JournalItem(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("text")] string? Text,
@@ -937,6 +944,13 @@ public sealed class ApiClient
 
     public Task<Meal[]> Meals(string uid, string token) =>
         Send<Meal[]>(Get($"/users/{uid}/meals", token));
+
+    /// <summary>The weekly letter: composed only from what was logged.</summary>
+    public Task<Letter> WriteLetter(string uid, string token) =>
+        Send<Letter>(Post($"/users/{uid}/letters", new { }, token));
+
+    public Task<Letter[]> Letters(string uid, string token) =>
+        Send<Letter[]>(Get($"/users/{uid}/letters", token));
 
     // -- model selection --
 

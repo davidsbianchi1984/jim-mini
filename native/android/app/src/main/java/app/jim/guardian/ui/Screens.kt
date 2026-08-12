@@ -1897,9 +1897,11 @@ private fun JournalPanel(vm: GuardianViewModel) {
     var busy by remember { mutableStateOf(false) }
     var meals by remember { mutableStateOf<List<String>>(emptyList()) }
     var mealNote by remember { mutableStateOf("") }
+    var letters by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     fun reload() {
         vm.call({ ApiClient.journal(vm.uid!!, vm.token!!) }) { r -> entries = r.getOrDefault(emptyList()) }
         vm.call({ ApiClient.meals(vm.uid!!, vm.token!!) }) { r -> meals = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.letters(vm.uid!!, vm.token!!) }) { r -> letters = r.getOrDefault(emptyList()) }
     }
     LaunchedEffect(Unit) { reload() }
 
@@ -1925,6 +1927,19 @@ private fun JournalPanel(vm: GuardianViewModel) {
                 }
             }
             meals.forEach { Text(it, color = Jim.T2, fontSize = 12.sp) }
+        }
+        // The weekly letter: composed only from what was logged.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("let.title", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            BrandButton(L10n.t("let.write", vm.language)) {
+                vm.call({ ApiClient.writeLetter(vm.uid!!, vm.token!!) }) { reload() }
+            }
+            letters.forEach { (week, body) ->
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(week, color = Jim.T3, fontSize = 11.sp)
+                    Text(body, color = Jim.T2, fontSize = 12.sp)
+                }
+            }
         }
         entries.asReversed().forEach { e ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {

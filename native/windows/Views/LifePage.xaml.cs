@@ -57,6 +57,8 @@ public sealed partial class LifePage : Page
         MealHead.Text = L10n.T("mea.title");
         MealNote.PlaceholderText = L10n.T("mea.ph");
         LogMealButton.Content = L10n.T("mea.log");
+        LetterHead.Text = L10n.T("let.title");
+        WriteLetterButton.Content = L10n.T("let.write");
         LocalizeMeds();
         ActHead.Text = L10n.T("aim.activity");
         ActPitch.Text = L10n.T("aim.activity.pitch");
@@ -75,6 +77,7 @@ public sealed partial class LifePage : Page
         await LoadHabits();
         await LoadJournal();
         await LoadMeals();
+        await LoadLetters();
         await LoadMoney();
         await LoadBudgets();
         await LoadSchedule();
@@ -251,6 +254,31 @@ public sealed partial class LifePage : Page
                     m.CreatedAt ?? "")).ToList();
         }
         catch { /* leave as-is */ }
+    }
+
+    // -- The weekly letter: composed only from what was logged --
+
+    private async System.Threading.Tasks.Task LoadLetters()
+    {
+        var s = AppState.Current;
+        try
+        {
+            var letters = await ApiClient.Shared.Letters(s.Uid!, s.Token!);
+            LettersList.ItemsSource = letters
+                .Select(l => new JournalRow(l.Body, l.WeekStart)).ToList();
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private async void OnWriteLetter(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.WriteLetter(s.Uid!, s.Token!);
+            await LoadLetters();
+        }
+        catch { /* ignore */ }
     }
 
     private async void OnLogMeal(object sender, RoutedEventArgs e)

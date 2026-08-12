@@ -1121,6 +1121,18 @@ CREATE TABLE IF NOT EXISTS meals (
     created_at   TEXT NOT NULL
 );
 
+-- The weekly letter: composed only from what was logged, the digest kept
+-- beside the prose so the reader can always see the facts under the words.
+CREATE TABLE IF NOT EXISTS letters (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL,
+    week_start   TEXT NOT NULL,      -- YYYY-MM-DD, seven days ending at compose
+    body         TEXT NOT NULL,
+    described_by TEXT NOT NULL,      -- model | digest
+    digest       TEXT NOT NULL,
+    created_at   TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS gaps (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

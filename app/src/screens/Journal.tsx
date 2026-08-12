@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api, type JournalRow, type MealRow } from "../api";
+import { api, type JournalRow, type LetterRow, type MealRow } from "../api";
 import { listen, type Listener } from "../speech";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
@@ -26,6 +26,7 @@ export function Journal() {
   const [meals, setMeals] = useState<MealRow[]>([]);
   const [mealNote, setMealNote] = useState("");
   const [mealPhoto, setMealPhoto] = useState<string | null>(null);
+  const [letters, setLetters] = useState<LetterRow[]>([]);
 
   function load() {
     if (!session.userId || !session.userToken) return;
@@ -35,6 +36,19 @@ export function Journal() {
     api.meals(session.userId, session.userToken)
       .then(setMeals)
       .catch(() => setMeals([]));
+    api.letters(session.userId, session.userToken)
+      .then(setLetters)
+      .catch(() => setLetters([]));
+  }
+
+  async function writeLetter() {
+    if (!session.userId || !session.userToken) return;
+    setBusy(true); setError(null);
+    try {
+      await api.writeLetter(session.userId, session.userToken);
+      load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
   }
 
   async function logMeal() {
@@ -140,6 +154,27 @@ export function Journal() {
               {m.photo_sealed ? " · " + tr("mea.sealed", lang) : ""}
             </div>
             <div>{m.logged}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* The weekly letter: composed only from what was logged — no
+          invented feelings, no homework. A week with nothing logged gets
+          no letter, and the refusal says so. */}
+      <div className="card">
+        <h3>{tr("let.title", lang)}</h3>
+        <p className="muted small">{tr("let.pitch", lang)}</p>
+        <button className="primary" disabled={busy} onClick={writeLetter}>
+          {tr("let.write", lang)}
+        </button>
+        {letters.length === 0 && (
+          <div className="muted small">{tr("let.none", lang)}</div>
+        )}
+        {letters.map((l) => (
+          <div key={l.id}
+               style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
+            <div className="muted small">{l.week_start}</div>
+            <div style={{ whiteSpace: "pre-wrap" }}>{l.body}</div>
           </div>
         ))}
       </div>

@@ -505,6 +505,13 @@ export interface MealRow {
 export interface JournalRow {
   id: string; text: string; created_at: string; vaulted?: boolean;
 }
+export interface LetterRow {
+  id: string;
+  week_start: string;
+  body: string;
+  described_by: string;      // model | digest
+  created_at?: string;
+}
 
 export interface CalmSession {
   kind: string; title: string; what: string; total_seconds: number;
@@ -1088,6 +1095,12 @@ export const api = {
         body: contentB64 ? { note, content: contentB64 } : { note }, token }),
   meals: (uid: string, token: string) =>
     req<MealRow[]>(`/users/${uid}/meals`, { token }),
+
+  // The weekly letter: what the last seven days actually held, in words.
+  writeLetter: (uid: string, token: string) =>
+    req<LetterRow>(`/users/${uid}/letters`, { method: "POST", body: {}, token }),
+  letters: (uid: string, token: string) =>
+    req<LetterRow[]>(`/users/${uid}/letters`, { token }),
 
   // Guided wellness: calm protocols, workout plans, meal plans.
   calmCatalog: () =>

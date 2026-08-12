@@ -3205,6 +3205,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "mea.sealed": {
     en: "photo sealed", es: "foto sellada", fr: "photo scellée", de: "Foto versiegelt", pt: "foto selada", it: "foto sigillata", ja: "写真は封印済み", zh: "照片已封存", hi: "फ़ोटो सील", ar: "الصورة مختومة",
   },
+  "let.title": {
+    en: "Weekly letter", es: "Carta semanal", fr: "Lettre hebdomadaire", de: "Wochenbrief", pt: "Carta semanal", it: "Lettera settimanale", ja: "今週の手紙", zh: "每周信", hi: "साप्ताहिक पत्र", ar: "رسالة الأسبوع",
+  },
+  "let.pitch": {
+    en: "What your week actually held, in words — written only from what you logged, never invented.", es: "Lo que tu semana realmente contuvo, en palabras — escrita solo a partir de lo que registraste, nunca inventada.", fr: "Ce que votre semaine a réellement contenu, en mots — écrite uniquement à partir de ce que vous avez consigné, jamais inventée.", de: "Was Ihre Woche wirklich enthielt, in Worten — geschrieben nur aus dem, was Sie eingetragen haben, nie erfunden.", pt: "O que a sua semana realmente conteve, em palavras — escrita apenas a partir do que registou, nunca inventada.", it: "Ciò che la tua settimana ha davvero contenuto, in parole — scritta solo da ciò che hai registrato, mai inventata.", ja: "あなたの一週間に実際にあったことを、言葉で — 記録したことだけから書かれ、決して創作しません。", zh: "你这一周真正发生了什么，用文字写出 — 只根据你记录的内容，绝不编造。", hi: "आपके सप्ताह में वास्तव में क्या था, शब्दों में — केवल आपके दर्ज किए से लिखा, कभी गढ़ा नहीं।", ar: "ما حملته أسبوعك فعلًا، بالكلمات — تُكتب فقط مما سجّلته، ولا تُخترع أبدًا.",
+  },
+  "let.write": {
+    en: "Write this week's letter", es: "Escribir la carta de esta semana", fr: "Écrire la lettre de cette semaine", de: "Den Brief dieser Woche schreiben", pt: "Escrever a carta desta semana", it: "Scrivi la lettera di questa settimana", ja: "今週の手紙を書く", zh: "写这周的信", hi: "इस सप्ताह का पत्र लिखें", ar: "اكتب رسالة هذا الأسبوع",
+  },
+  "let.none": {
+    en: "No letters yet.", es: "Aún no hay cartas.", fr: "Pas encore de lettre.", de: "Noch keine Briefe.", pt: "Ainda não há cartas.", it: "Nessuna lettera finora.", ja: "まだ手紙はありません。", zh: "还没有信。", hi: "अभी कोई पत्र नहीं।", ar: "لا رسائل بعد.",
+  },
   "jrn.title": {
     en: "Journal", es: "Diario", fr: "Journal", de: "Tagebuch", pt: "Diário", it: "Diario", ja: "日記", zh: "日志", hi: "डायरी", ar: "اليوميات",
   },

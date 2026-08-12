@@ -263,6 +263,14 @@ struct Meal: Decodable, Identifiable {
     let created_at: String?
 }
 
+struct Letter: Decodable, Identifiable {
+    let id: String
+    let week_start: String
+    let body: String
+    let described_by: String
+    let created_at: String?
+}
+
 struct JournalItem: Decodable {
     let id: String
     let text: String?
@@ -1027,6 +1035,15 @@ actor ApiClient {
 
     func meals(uid: String, token: String) async throws -> [Meal] {
         try await request("/users/\(uid)/meals", token: token)
+    }
+
+    func writeLetter(uid: String, token: String) async throws -> Letter {
+        try await request("/users/\(uid)/letters", method: "POST",
+                          body: [:], token: token)
+    }
+
+    func letters(uid: String, token: String) async throws -> [Letter] {
+        try await request("/users/\(uid)/letters", token: token)
     }
 
     // MARK: Model selection

@@ -196,6 +196,7 @@ private struct JournalSection: View {
     @State private var entries: [JournalItem] = []
     @State private var meals: [Meal] = []
     @State private var mealNote = ""
+    @State private var letters: [Letter] = []
     @State private var text = ""
     @State private var busy = false
 
@@ -238,6 +239,19 @@ private struct JournalSection: View {
                         .font(.caption).foregroundStyle(Theme.t2)
                 }
             }.card()
+
+            // The weekly letter: composed only from what was logged.
+            VStack(alignment: .leading, spacing: 8) {
+                Text(L10n.t("let.title", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                Button(L10n.t("let.write", state.language)) { writeLetter() }
+                    .font(.caption.bold()).disabled(busy)
+                ForEach(letters, id: \.id) { l in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(l.week_start).font(.caption2).foregroundStyle(Theme.t3)
+                        Text(l.body).font(.caption).foregroundStyle(Theme.t2)
+                    }
+                }
+            }.card()
         }
         .task { await load() }
     }
@@ -246,6 +260,14 @@ private struct JournalSection: View {
         guard let uid = state.uid, let token = state.token else { return }
         entries = (try? await ApiClient.shared.journal(uid: uid, token: token)) ?? []
         meals = (try? await ApiClient.shared.meals(uid: uid, token: token)) ?? []
+        letters = (try? await ApiClient.shared.letters(uid: uid, token: token)) ?? []
+    }
+
+    private func writeLetter() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true
+        Task { _ = try? await ApiClient.shared.writeLetter(uid: uid, token: token)
+            await load(); busy = false }
     }
 
     private func logMeal() {

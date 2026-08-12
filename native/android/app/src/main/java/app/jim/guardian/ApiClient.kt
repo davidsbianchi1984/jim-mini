@@ -731,6 +731,20 @@ object ApiClient {
         }
     }
 
+    /** The weekly letter: composed only from what was logged. */
+    suspend fun writeLetter(uid: String, token: String): String {
+        val o = JSONObject(request("/users/$uid/letters", "POST", JSONObject(), token))
+        return o.optString("body")
+    }
+
+    suspend fun letters(uid: String, token: String): List<Pair<String, String>> {
+        val a = org.json.JSONArray(request("/users/$uid/letters", token = token))
+        return (0 until a.length()).map { i ->
+            val o = a.getJSONObject(i)
+            o.optString("week_start") to o.optString("body")
+        }
+    }
+
     // ---- model selection ----
 
     suspend fun models(): List<ProviderInfo> {

@@ -936,6 +936,26 @@ def create_app(qrme_client: QRMEClient | None = None,
         from . import meals as meals_mod
         return meals_mod.board(user_id)
 
+    @app.post("/users/{user_id}/letters", status_code=201)
+    def write_letter(user_id: str, request: Request) -> dict:
+        """The weekly letter: what the last seven days actually held, in
+        words — composed only from what was logged. A week with nothing
+        logged gets no letter."""
+        user = _user_or_404(user_id, request)
+        from . import letter as letter_mod
+        try:
+            return letter_mod.compose(user, cloud=app.state.cloud)
+        except letter_mod.LetterError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/users/{user_id}/letters")
+    def letter_shelf(user_id: str, request: Request) -> list[dict]:
+        """Past weekly letters, newest first, each carrying the digest the
+        words were written from."""
+        _user_or_404(user_id, request)
+        from . import letter as letter_mod
+        return letter_mod.shelf(user_id)
+
     @app.get("/captures/vocabulary")
     def capture_vocabulary() -> dict:
         """Kinds, body sites, which are intimate, and what an agent may see.
