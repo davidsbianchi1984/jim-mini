@@ -1,4 +1,4 @@
-# status: backlog — 99 rows
+# status: backlog — 98 rows
 #
 # Request-model fields with no row in `i18n._FIELD_LABELS`, so a 422 that
 # names one shows the API's identifier rather than the label on the form.
