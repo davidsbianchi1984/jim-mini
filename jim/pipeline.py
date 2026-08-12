@@ -173,6 +173,26 @@ def run(user_id: str, area: str, message: str) -> dict:
     context.extend(signals)
     layers.append({"layer": "norm.signals", "kept": len(signals)})
 
+    # -- add what the plug-ins collected ---------------------------------
+    # Linked context from connected apps (jim/app_connectors.py). Only
+    # unvaulted rows can be read here — this stack never leaves the device,
+    # and neither does a vault key — so sealed rows are counted, honestly,
+    # rather than pretended into the context.
+    collected, sealed = [], 0
+    for r in db.connect().execute(
+            "SELECT data FROM context_events WHERE user_id=? AND"
+            " kind='linked_context' ORDER BY created_at DESC, rowid DESC"
+            " LIMIT 12", (user_id,)).fetchall():
+        data = json.loads(r["data"])
+        if data.get("vaulted"):
+            sealed += 1
+        elif len(collected) < 5 and _norm_text(data.get("content", "")):
+            collected.append(_norm_text(data["content"]))
+    layers.append({"layer": "add.collected", "added": len(collected),
+                   "sealed": sealed})
+    context.extend(collected)
+    layers.append({"layer": "norm.collected", "kept": len(collected)})
+
     # -- add the learned layers (the attention the product already computes) -
     from . import adaptation, continuity
     adaptation.ensure_fresh(user_id)
