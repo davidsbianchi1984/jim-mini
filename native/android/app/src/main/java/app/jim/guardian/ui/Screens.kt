@@ -1719,7 +1719,7 @@ fun CoachScreen(vm: GuardianViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(L10n.t("cch.knows", vm.language), color = Jim.Txt,
                     fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                val counts = "${k.pack} · +${k.learned.size} · +${k.deposits.size}"
+                val counts = "${k.pack} · +${k.excursions.size} · +${k.deposits.size}"
                 Text(counts, color = Jim.T2, fontSize = 12.sp)
                 val s = syllabus
                 if (s != null && s.suggested.isNotEmpty()) {

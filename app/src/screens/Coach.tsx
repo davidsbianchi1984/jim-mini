@@ -173,7 +173,7 @@ export function Coach() {
           <div className="muted small">
             {tr("cch.knows.counts", lang)
               .replace("{pack}", String(knows.pack))
-              .replace("{learned}", String(knows.learned.length))
+              .replace("{learned}", String(knows.excursions.length))
               .replace("{deposits}", String(knows.deposits.length))}
           </div>
           {syllabus && syllabus.suggested.length > 0 && (

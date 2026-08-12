@@ -107,7 +107,7 @@ public sealed partial class CoachPage : Page
             var knows = await ApiClient.Shared.CoachStore(s.Uid!, s.Token!);
             var syllabus = await ApiClient.Shared.CoachCurriculum(s.Uid!, s.Token!);
             KnowsCounts.Text =
-                $"{knows.Pack} · +{knows.Learned.Length} · +{knows.Deposits.Length}";
+                $"{knows.Pack} · +{knows.Excursions.Length} · +{knows.Deposits.Length}";
             StudyPanel.Children.Clear();
             foreach (var sug in syllabus.Suggested)
             {

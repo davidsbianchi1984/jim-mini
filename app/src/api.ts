@@ -335,7 +335,7 @@ export interface Guidance { delivered: boolean; source?: string; content: string
 // draw on, what JIM should study next, and what one press of study did.
 export interface CoachStoreEntry { topic: string; lesson: string;
   source: string; model: string | null; area?: string }
-export interface CoachStore { pack: number; learned: CoachStoreEntry[];
+export interface CoachStore { pack: number; excursions: CoachStoreEntry[];
   deposits: CoachStoreEntry[] }
 export interface CoachSuggestion { area: string; topic: string; why: string }
 export interface CoachCurriculum { suggested: CoachSuggestion[]; note: string }

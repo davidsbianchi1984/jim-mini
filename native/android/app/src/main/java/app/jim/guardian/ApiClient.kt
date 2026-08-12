@@ -41,7 +41,7 @@ data class SpecialistAnswer(val delivered: Boolean, val content: String?,
 // predicts from, what JIM should study next, and what one press of study did.
 data class CoachStoreEntry(val topic: String, val lesson: String,
                            val source: String, val model: String?)
-data class CoachStore(val pack: Int, val learned: List<CoachStoreEntry>,
+data class CoachStore(val pack: Int, val excursions: List<CoachStoreEntry>,
                       val deposits: List<CoachStoreEntry>)
 data class CoachSuggestion(val area: String, val topic: String, val why: String)
 data class CoachCurriculum(val suggested: List<CoachSuggestion>, val note: String)
@@ -581,7 +581,7 @@ object ApiClient {
                     if (e.isNull("model")) null else e.optString("model"))
             }
         }
-        return CoachStore(o.getInt("pack"), rows("learned"), rows("deposits"))
+        return CoachStore(o.getInt("pack"), rows("excursions"), rows("deposits"))
     }
 
     suspend fun coachCurriculum(uid: String, token: String): CoachCurriculum {

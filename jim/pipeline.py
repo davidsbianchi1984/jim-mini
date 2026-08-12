@@ -78,7 +78,7 @@ def store(user_id: str) -> dict:
     # On the wire the entry's text is `lesson`, not `guidance` — `guidance`
     # is already an object type on this API (the coach reply), and one wire
     # name carries one type.
-    learned = [
+    excursions = [
         {"topic": r["topic"], "lesson": _norm_text(r["findings"]),
          "source": "excursion", "model": None}
         for r in conn.execute(
@@ -91,7 +91,7 @@ def store(user_id: str) -> dict:
         for r in conn.execute(
             "SELECT * FROM deposits WHERE user_id=? ORDER BY created_at, rowid",
             (user_id,)).fetchall()]
-    return {"pack": len(knowledge.ENTRIES), "learned": learned,
+    return {"pack": len(knowledge.ENTRIES), "excursions": excursions,
             "deposits": deposits}
 
 
@@ -100,7 +100,7 @@ def _personal_entries(user_id: str) -> list[dict]:
     predictor scores them all. Keywords are the topic's own words."""
     out = []
     s = store(user_id)
-    for row in s["learned"] + s["deposits"]:
+    for row in s["excursions"] + s["deposits"]:
         words = [w for w in re.findall(r"[a-z]{4,}", row["topic"].lower())]
         out.append({"topic": row["topic"], "area": row.get("area"),
                     "keywords": words, "guidance": row["lesson"],
@@ -249,7 +249,7 @@ def curriculum(user_id: str) -> dict:
     straight into an excursion topic."""
     covered = {e["topic"].lower() for e in knowledge.ENTRIES}
     s = store(user_id)
-    covered |= {r["topic"].lower() for r in s["learned"] + s["deposits"]}
+    covered |= {r["topic"].lower() for r in s["excursions"] + s["deposits"]}
 
     suggested = []
     # The misses come first: these are questions actually asked, answered

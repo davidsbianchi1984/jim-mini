@@ -2433,7 +2433,7 @@ public record CoachStoreEntry(
 
 public record CoachStore(
     [property: JsonPropertyName("pack")] int Pack,
-    [property: JsonPropertyName("learned")] CoachStoreEntry[] Learned,
+    [property: JsonPropertyName("excursions")] CoachStoreEntry[] Excursions,
     [property: JsonPropertyName("deposits")] CoachStoreEntry[] Deposits);
 
 public record CoachSuggestion(

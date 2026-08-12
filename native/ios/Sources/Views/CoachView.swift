@@ -78,7 +78,7 @@ struct CoachView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(L10n.t("cch.knows", state.language))
                             .font(.headline).foregroundStyle(Theme.txt)
-                        let counts = "\(k.pack) · +\(k.learned.count) · +\(k.deposits.count)"
+                        let counts = "\(k.pack) · +\(k.excursions.count) · +\(k.deposits.count)"
                         Text(counts).font(.caption).foregroundStyle(Theme.t2)
                         if let s = syllabus, !s.suggested.isEmpty {
                             Text(L10n.t("cch.study.head", state.language))

@@ -69,7 +69,7 @@ struct CoachStoreEntry: Decodable {
 
 struct CoachStore: Decodable {
     let pack: Int
-    let learned: [CoachStoreEntry]
+    let excursions: [CoachStoreEntry]
     let deposits: [CoachStoreEntry]
 }
 

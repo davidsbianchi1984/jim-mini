@@ -61,7 +61,7 @@ def test_a_learned_excursion_reaches_the_offline_answer(client):
     client.post(f"/excursions/entry/{exc['id']}/learn")
     store = client.get(f"/coach/{user}/store").json()
     assert any(e["topic"] == "cold plunge recovery routines"
-               for e in store["learned"])
+               for e in store["excursions"])
     body = _reply(client, user,
                   "thinking about cold plunge recovery again",
                   area="health_fitness")
@@ -164,4 +164,4 @@ def test_a_miss_becomes_a_gap_and_one_press_of_study_fills_it(client):
     cur2 = client.get(f"/coach/{user}/curriculum").json()
     assert not any("beehive" in s["topic"] for s in cur2["suggested"])
     store = client.get(f"/coach/{user}/store").json()
-    assert any("beehive" in e["topic"] for e in store["learned"])
+    assert any("beehive" in e["topic"] for e in store["excursions"])
