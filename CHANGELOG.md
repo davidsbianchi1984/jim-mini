@@ -4,6 +4,44 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.68.0] - 2026-08-12
+
+### Added
+
+- **The plate is the receipt.** `POST /users/{id}/meals`: point the camera at
+  the plate, say a few words, done. The photo is sealed like a clinical
+  capture (metadata stripped, vaulted, refused without a vault); the note is
+  the log, kept local so the offline coach's nutrition area can read today's
+  meals with the network cut. An online model, when standing, tidies the note
+  into a coarse items-and-portions line and never invents what the note
+  doesn't say (`described_by: note | model | photo`).
+- **The week in words.** `POST /users/{id}/letters` writes one short letter
+  about the last seven days, composed only from what was logged — check-in
+  averages, meals, habit marks, journal entries, goal movement — with the
+  digest stored beside the prose. A week with nothing logged gets no letter.
+- **The answer before the room.** `POST /users/{id}/drills` deals an
+  interview question from a curated local bank with what it probes stated up
+  front; the answer is read against the probes by the online coach when one
+  is standing, and by the checklist itself when not (`described_by: model |
+  checklist`). One question, one answer; the practice reaches the career
+  coach's readable context.
+- **The statement is the reading, and the consent is written down.**
+  `POST /money/{id}/statements` seals a statement file in the vault and reads
+  it by deterministic local CSV arithmetic — a closing balance walks the same
+  observe path a hand-typed reading takes, so the guardian ladder wakes off
+  the file itself. `POST /money/{id}/links` writes a bank-link consent
+  through an aggregator (plaid, tink, truelayer, mx) that registers a
+  watchable account; sync answers with the exact truth instead of inventing
+  balances, and revoking is never gated.
+
+### Fixed
+
+- The Android client's newest response parsing used constructors this
+  shell's `request` never matched; rewritten to `request(...)` /
+  `getArray(...)` so the shell compiles.
+- The drill's reading travels the wire as `critique` — `feedback` already
+  meant a map of ratings, and one name means one type.
+
 ## [0.67.0] - 2026-08-12
 
 ### Added
