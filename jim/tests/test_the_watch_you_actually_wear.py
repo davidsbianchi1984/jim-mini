@@ -32,7 +32,8 @@ def test_the_card_lists_every_wearable_it_can_teach(client):
     card = client.get(f"/watch/channel/{u['id']}",
                       headers=_auth(u)).json()
     keys = {d["key"] for d in card["devices"]}
-    assert {"apple_watch", "wear_os", "fitbit", "garmin"} <= keys
+    assert {"apple_watch", "wear_os", "fitbit", "garmin",
+            "another_watch"} <= keys
     # Names are for humans; every entry has one.
     assert all(d["name"] for d in card["devices"])
     # The default is what shipped first, so nothing that learned the old
@@ -58,6 +59,12 @@ def test_each_family_gets_its_own_platforms_truth(client):
     # Garmin's hint is honest that its export is not parseable here yet,
     # rather than promising an upload that would be refused.
     assert "not parseable here yet" in steps("garmin")
+    # The fifth family is every other wrist, and its recipe is a check
+    # rather than a promise: it must say the captive-data truth out loud
+    # instead of implying every vendor app can be bridged. The field
+    # report behind it was a watch whose app never asks for Health
+    # access at all.
+    assert "captive" in steps("another_watch")
 
 
 def test_a_wrong_device_names_every_right_one(client):

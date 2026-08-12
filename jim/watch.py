@@ -418,6 +418,14 @@ DEVICES = {
     "wear_os": "Android watch (Wear OS \u2014 Pixel, Galaxy)",
     "fitbit": "Fitbit",
     "garmin": "Garmin",
+    # The fifth family is every other wrist: the budget watch whose own
+    # app is the only thing it talks to. Its recipe is a check, not a
+    # promise \u2014 some of those apps feed the phone's health store and the
+    # existing bridge works unchanged; some never ask for access at all,
+    # and then the readings are captive to the vendor. The field report
+    # behind it: a GT4 Pro-1 paired to Olywear, which appears nowhere in
+    # Health's app list because it never requests HealthKit.
+    "another_watch": "Another brand's watch (via its own app)",
 }
 
 
@@ -491,6 +499,32 @@ def _recipe(device: str, drip_url: str) -> dict:
             "Garmin's account export (garmin.com \u2192 Export Your "
             "Data) is not parseable here yet \u2014 the drip carries "
             "the baseline instead, a few days of readings at a time."}
+    if device == "another_watch":
+        return {"steps": [
+            "Your watch only talks to its own app, so the question is "
+            "whether that app passes the readings on. In the app's "
+            "settings, look for 'Sync to Apple Health' (iPhone) or "
+            "'Health Connect' (Android) and turn it on if it exists.",
+            "Now verify on the phone's side, because the toggle often "
+            "is not in the app's menus: iPhone \u2192 Health app \u2192 "
+            "your picture \u2192 Apps; Android \u2192 Health Connect "
+            "\u2192 App permissions. Your watch's app must appear in "
+            "that list.",
+            "If it appears: grant its write categories, then follow the "
+            "Apple Watch or Wear OS recipe on this screen \u2014 the "
+            "drip reads the phone's health store, not the watch, so it "
+            "works for any wrist whose app feeds it.",
+            "If it never appears, the app does not request health "
+            "access, and the readings are captive to it \u2014 no app "
+            "can honestly claim to read them, this one included. Common "
+            "on budget watches. Type what the watch's screen shows on "
+            "the Monitor screen instead; a handful of honest readings "
+            "still builds the drift bands.",
+        ], "seed_hint":
+            "If the app feeds the phone's health store, the Apple "
+            "Health export upload works here as usual. If it never "
+            "asks for access, there is nothing to export \u2014 the "
+            "history is inside the vendor's app and stays there."}
     return {"steps": [
         "On the iPhone, open the Shortcuts app \u2192 Automation tab "
         "\u2192 + New Automation.",
