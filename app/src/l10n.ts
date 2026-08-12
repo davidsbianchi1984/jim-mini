@@ -263,6 +263,11 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Desk", es: "Mostrador", fr: "Comptoir", de: "Theke", pt: "Balcão",
     it: "Banco", ja: "受付", zh: "服务台", hi: "डेस्क", ar: "المكتب",
   },
+  "feed.kind.party": {
+    en: "Watch party", es: "Sala de visionado", fr: "Séance partagée",
+    de: "Watch-Party", pt: "Sessão conjunta", it: "Visione insieme",
+    ja: "ウォッチパーティ", zh: "放映会", hi: "वॉच पार्टी", ar: "جلسة مشاهدة",
+  },
   "feed.play": {
     en: "Play it", es: "Reproducirlo", fr: "Le lire", de: "Abspielen",
     pt: "Reproduzir", it: "Riproducilo", ja: "再生する", zh: "播放",

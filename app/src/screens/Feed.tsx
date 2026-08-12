@@ -153,6 +153,26 @@ export function Feed() {
             </>
           )}
 
+          {item.kind === "party" && (
+            <>
+              <p><strong>{item.title || tr("feed.room.untitled", lang)}</strong></p>
+              <p className="muted small">
+                {item.video?.platform_name}
+                {typeof item.people === "number" ? ` · ${item.people}` : ""}
+              </p>
+              {/* Before the link. Joining puts your name in the room — and
+                  it happens in QRME, under the user's own QRME identity,
+                  the same rule the room and desk cards run on. */}
+              <p className="muted small">{item.joining}</p>
+              {view?.qrme_url && item.join && (
+                <a className="primary" href={view.qrme_url + item.join}
+                   target="_blank" rel="noreferrer">
+                  {tr("feed.enter", lang)}
+                </a>
+              )}
+            </>
+          )}
+
           {item.kind === "desk" && (
             <>
               <p><strong>{item.display_name}</strong> — {item.trade}</p>

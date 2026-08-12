@@ -797,7 +797,7 @@ export type CaptureAttachResult = {
 };
 
 export interface QrmeFeedItem {
-  kind: "video" | "offsite" | "room" | "desk";
+  kind: "video" | "offsite" | "room" | "desk" | "party";
   id: string;
   reason: string;
   at: string;
@@ -834,6 +834,14 @@ export interface QrmeFeedItem {
                  currency: string }[];
     open: string;
   } | null;
+  /** party — a QRME watch party whose host chose to be found. Counts and a
+   *  facade, passed through whole; joining happens in QRME. */
+  video?: { platform: string; platform_name: string; video_id: string;
+            url: string } | null;
+  profiles?: number;
+  playing?: boolean;
+  joining?: string;
+  join?: string;
 }
 
 export interface QrmeFeedView {
