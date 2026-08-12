@@ -4,6 +4,42 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.64.0] - 2026-08-12
+
+### Added
+
+- **The footsteps.** A counter in the console's top-right corner: how
+  many people are enrolled here, as an aggregate — no name, pseudonym
+  or id rides with the number. It travels on `/health`, the request
+  every client already makes at launch for the version handshake, so it
+  cost no new door. Only finished enrollments count; an attempt that
+  never verified is a mistyped address as often as a person. The
+  sibling products carry the same chip in the same corner in the same
+  ten-language wording.
+- **The fifth wearable family is every other wrist.** The watch picker
+  gains "Another brand's watch (via its own app)", and its recipe is a
+  check, not a promise: look for the health-store sync in the vendor
+  app, verify on the phone's side because the toggle often is not in
+  the app's menus, and follow the existing recipes when the app appears
+  in the store's list — the drip reads the phone's health store, not
+  the watch. When the app never appears, the card says the captive-data
+  truth out loud and points at the Monitor screen. One dict entry, no
+  client changes. The field report: a GT4 Pro-1 paired to Olywear,
+  which never requests Health access at all.
+
+### Changed
+
+- **The footsteps chip shrank to a footprint** — just the mark and the
+  number, the sentence in the tooltip — after the first, wordier
+  version sat on top of a screen in the sibling product.
+
+### Fixed
+
+- **The guard that only existed where the bug never was.** The
+  `</script>` hardening of `_js` shipped in 0.63.0 in all three
+  products; the test holding it existed in none. It stands in all three
+  suites now and enters the shared manifest.
+
 ## [0.63.0] - 2026-08-11
 
 ### Added

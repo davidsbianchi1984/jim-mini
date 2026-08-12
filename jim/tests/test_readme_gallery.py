@@ -22,25 +22,13 @@ import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 README = os.path.join(ROOT, "README.md")
-GALLERY = os.path.join(ROOT, "docs", "gallery.md")
 SCREENS = os.path.join(ROOT, "docs", "screens")
 WATCH = os.path.join(ROOT, "docs", "watch")
 
 
 def _readme() -> str:
-    """The gallery page and the README, together.
-
-    The tour moved whole to docs/gallery.md so the front page reads as a
-    front page; the README keeps a curated handful. The guards hold the
-    pair: a screen is shown if either page shows it, every reference on
-    either page must resolve, and the sequence is the gallery page's —
-    because that is the tour.
-    """
-    out = []
-    for path in (GALLERY, README):
-        with open(path, encoding="utf-8") as fh:
-            out.append(fh.read())
-    return "\n".join(out)
+    with open(README, encoding="utf-8") as fh:
+        return fh.read()
 
 
 def _on_disk(folder: str) -> set[str]:
@@ -49,11 +37,7 @@ def _on_disk(folder: str) -> set[str]:
 
 def _referenced(folder_name: str) -> list[str]:
     seen: dict[str, None] = {}
-    # The README says `docs/<folder>/…`; the gallery page lives inside
-    # docs/ and says `<folder>/…`, because a link is written relative to
-    # the file it renders from. Both are the same folder.
-    for name in re.findall(rf"(?:docs/)?{folder_name}/([\w\-.'%]+\.svg)",
-                           _readme()):
+    for name in re.findall(rf"docs/{folder_name}/([\w\-.'%]+\.svg)", _readme()):
         seen.setdefault(name, None)
     return list(seen)
 
