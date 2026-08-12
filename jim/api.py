@@ -67,7 +67,7 @@ from .models import (
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
     CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark, MealLog,
-    DrillStart, DrillAnswer,
+    DrillStart, DrillAnswer, StatementDrop, BankLink,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -2470,6 +2470,67 @@ def create_app(qrme_client: QRMEClient | None = None,
             return money.observe(user_id, body.account_id, body.balance,
                                  body.note, _money_lang(user_id),
                                  pdi=_vault(user_id), qrme=app.state.qrme)
+        except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.post("/money/{user_id}/statements", status_code=201)
+    def money_drop_statement(user_id: str, body: StatementDrop,
+                             request: Request) -> dict:
+        """Drop a statement file: sealed in the vault, read locally by
+        deterministic arithmetic, and — when it closes with a balance —
+        walked through the same observe path a hand-typed reading takes."""
+        _user_or_404(user_id, request)
+        try:
+            return money.drop_statement(
+                user_id, body.account_id, body.filename or "", body.content,
+                _money_lang(user_id), pdi=_vault(user_id),
+                qrme=app.state.qrme)
+        except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.get("/money/{user_id}/statements")
+    def money_statements(user_id: str, request: Request) -> list[dict]:
+        """Dropped statements, newest first — the readings, never the
+        files; those stay sealed."""
+        _user_or_404(user_id, request)
+        return money.statements_for(user_id)
+
+    @app.post("/money/{user_id}/links", status_code=201)
+    def money_link_bank(user_id: str, body: BankLink,
+                        request: Request) -> dict:
+        """Write down a bank-link consent through an aggregator. Status
+        stays `consented` until the deployment can actually sync — the
+        record never claims data that was not pulled."""
+        _user_or_404(user_id, request)
+        try:
+            return money.link_bank(user_id, body.institution,
+                                   body.aggregator, body.kind,
+                                   pdi=_vault(user_id))
+        except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.get("/money/{user_id}/links")
+    def money_links(user_id: str, request: Request) -> list[dict]:
+        _user_or_404(user_id, request)
+        return money.links_for(user_id)
+
+    @app.post("/money/{user_id}/links/{link_id}/sync")
+    def money_sync_bank(user_id: str, link_id: str,
+                        request: Request) -> dict:
+        """Pull balances through the link — or hear exactly why not."""
+        _user_or_404(user_id, request)
+        try:
+            return money.sync_bank(user_id, link_id)
+        except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/money/{user_id}/links/{link_id}")
+    def money_revoke_link(user_id: str, link_id: str,
+                          request: Request) -> dict:
+        """Taking your hands back is never gated."""
+        _user_or_404(user_id, request)
+        try:
+            return money.revoke_link(user_id, link_id)
         except money.MoneyError as exc:
             raise HTTPException(422, str(exc))
 

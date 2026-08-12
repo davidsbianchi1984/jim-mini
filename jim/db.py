@@ -1121,6 +1121,33 @@ CREATE TABLE IF NOT EXISTS meals (
     created_at   TEXT NOT NULL
 );
 
+-- Statements: the raw file lives in the vault; the row is the reading.
+CREATE TABLE IF NOT EXISTS statements (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL,
+    account_id  TEXT NOT NULL,
+    filename    TEXT NOT NULL,
+    line_count  INTEGER NOT NULL,
+    total_in    REAL NOT NULL,
+    total_out   REAL NOT NULL,
+    end_balance REAL,
+    created_at  TEXT NOT NULL
+);
+
+-- Bank links: a written aggregator consent; status never claims data
+-- that was not pulled (consented | revoked; linked when credentials and
+-- a client actually stand behind it).
+CREATE TABLE IF NOT EXISTS bank_links (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL,
+    account_id  TEXT NOT NULL,
+    institution TEXT NOT NULL,
+    aggregator  TEXT NOT NULL,
+    status      TEXT NOT NULL,
+    created_at  TEXT NOT NULL,
+    revoked_at  TEXT
+);
+
 -- Interview drills: the question bank is code; the table is the practice.
 CREATE TABLE IF NOT EXISTS drills (
     id           TEXT PRIMARY KEY,

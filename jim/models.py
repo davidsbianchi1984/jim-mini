@@ -611,6 +611,21 @@ class HomepageIn(BaseModel):
     top_friends: list[str] | None = None
 
 
+class StatementDrop(BaseModel):
+    """A statement file for the vault: base64 in ``content`` like every
+    capture door, read locally, never modeled."""
+    account_id: str
+    filename: str | None = None
+    content: str
+
+
+class BankLink(BaseModel):
+    """A written aggregator consent; the tokens live in the vault."""
+    institution: str
+    aggregator: str
+    kind: str = "checking"
+
+
 class MoneyObserve(BaseModel):
     """A balance reading against a registered account."""
     account_id: str

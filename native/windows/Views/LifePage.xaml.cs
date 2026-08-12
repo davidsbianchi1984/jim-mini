@@ -360,6 +360,8 @@ public sealed partial class LifePage : Page
     // the overview loads, the controls carry no words at all.
 
     public record AccountRow(string Line, string Balance);
+    public record LinkRow(string Id, string Text, string SyncLabel,
+                          string UnlinkLabel);
 
     private System.Collections.Generic.Dictionary<string, string> _moneyLabels = new();
 
@@ -396,8 +398,83 @@ public sealed partial class LifePage : Page
             MoneyOrdersText.Text = v.Orders.Length == 0 ? "" :
                 L("orders") + "\n" + string.Join("\n",
                     v.Orders.Select(o => $"{o.AssetClass} {o.Amount:F0} · {o.Status}"));
+            MoneyStatementsTitle.Text = L("statements");
+            MoneyStatementButton.Content = L("drop_statement");
+            MoneyLinksTitle.Text = L("links");
+            MoneyLinkInstitution.Header = L("institution");
+            MoneyLinkButton.Content = L("link_bank");
+            var readings = await ApiClient.Shared.MoneyStatements(s.Uid!, s.Token!);
+            MoneyStatementsList.ItemsSource = readings.Select(r => new Row(
+                $"{r.Filename} · {r.LineCount} · +{r.TotalIn:F2} −{r.TotalOut:F2}"))
+                .ToList();
+            var links = await ApiClient.Shared.MoneyLinks(s.Uid!, s.Token!);
+            MoneyLinksList.ItemsSource = links.Select(l => new LinkRow(
+                l.Id, $"{l.Institution} · {l.Aggregator} · {l.Status}",
+                L("sync"), L("revoke_link"))).ToList();
         }
         catch { /* leave as-is */ }
+    }
+
+    // -- Statements and bank links: the file to the vault, the consent
+    // written down, and a sync that only ever tells the truth --
+
+    private async void OnMoneyDropStatement(object sender, RoutedEventArgs e)
+    {
+        var text = MoneyStatementBox.Text.Trim();
+        if (text.Length == 0) return;
+        var s = AppState.Current;
+        try
+        {
+            var v = await ApiClient.Shared.MoneyOverview(s.Uid!, s.Token!);
+            var first = v.Accounts.FirstOrDefault();
+            if (first is null) return;
+            var b64 = System.Convert.ToBase64String(
+                System.Text.Encoding.UTF8.GetBytes(text));
+            await ApiClient.Shared.MoneyDropStatement(
+                s.Uid!, s.Token!, first.Id, b64);
+            MoneyStatementBox.Text = "";
+            await LoadMoney();
+        }
+        catch (Exception ex) { MoneyStatus.Text = ex.Message; }
+    }
+
+    private async void OnMoneyLinkBank(object sender, RoutedEventArgs e)
+    {
+        var institution = MoneyLinkInstitution.Text.Trim();
+        if (institution.Length == 0) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.MoneyLinkBank(
+                s.Uid!, s.Token!, institution, "plaid");
+            MoneyLinkInstitution.Text = "";
+            await LoadMoney();
+        }
+        catch (Exception ex) { MoneyStatus.Text = ex.Message; }
+    }
+
+    private async void OnMoneySyncBank(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string linkId) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.MoneySyncBank(s.Uid!, s.Token!, linkId);
+            await LoadMoney();
+        }
+        catch (Exception ex) { MoneyStatus.Text = ex.Message; }
+    }
+
+    private async void OnMoneyRevokeLink(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string linkId) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.MoneyRevokeLink(s.Uid!, s.Token!, linkId);
+            await LoadMoney();
+        }
+        catch (Exception ex) { MoneyStatus.Text = ex.Message; }
     }
 
     private async void OnMoneyAdd(object sender, RoutedEventArgs e)

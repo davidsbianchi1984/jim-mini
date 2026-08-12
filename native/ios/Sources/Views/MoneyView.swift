@@ -28,8 +28,14 @@ struct MoneySection: View {
     @State private var warnings: [MoneyWarning] = []
     @State private var note: String?
     @State private var busy = false
+    @State private var statementText = ""
+    @State private var statements: [ApiClient.StatementRow] = []
+    @State private var links: [ApiClient.BankLinkRow] = []
+    @State private var linkInstitution = ""
+    @State private var linkAggregator = "plaid"
 
     private let kinds = ["checking", "savings", "brokerage", "crypto"]
+    private let aggregators = ["plaid", "tink", "truelayer", "mx"]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -111,6 +117,55 @@ struct MoneySection: View {
                     }.card()
                 }
 
+                // The statement is the reading: pasted here, sealed in
+                // the vault, summed locally; a closing balance walks the
+                // observe path.
+                if let first = v.accounts.first {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(L["statements"] ?? "").font(.subheadline.bold())
+                            .foregroundStyle(Theme.txt)
+                        TextField(L["drop_statement"] ?? "",
+                                  text: $statementText, axis: .vertical)
+                            .lineLimit(2...4).textFieldStyle(.roundedBorder)
+                        Button(L["drop_statement"] ?? "") { drop(first.id) }
+                            .font(.caption.bold())
+                            .disabled(busy || statementText.isEmpty)
+                        ForEach(statements) { s in
+                            let line = s.filename + " · " + String(s.line_count)
+                                + " · +" + String(format: "%.2f", s.total_in)
+                                + " −" + String(format: "%.2f", s.total_out)
+                            Text(line).font(.caption2).foregroundStyle(Theme.t2)
+                        }
+                    }.card()
+                }
+
+                // A bank link is a written consent; its status never
+                // claims data that was not pulled.
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L["links"] ?? "").font(.subheadline.bold())
+                        .foregroundStyle(Theme.txt)
+                    TextField(L["institution"] ?? "", text: $linkInstitution)
+                        .textFieldStyle(.roundedBorder)
+                    Picker("", selection: $linkAggregator) {
+                        ForEach(aggregators, id: \.self) { Text($0).tag($0) }
+                    }.pickerStyle(.segmented)
+                    Button(L["link_bank"] ?? "") { linkBank() }
+                        .font(.caption.bold())
+                        .disabled(busy || linkInstitution.isEmpty)
+                    ForEach(links) { l in
+                        HStack {
+                            Text(l.institution + " · " + l.aggregator
+                                 + " · " + l.status)
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                            Spacer()
+                            Button(L["sync"] ?? "") { syncBank(l.id) }
+                                .font(.caption2).disabled(busy)
+                            Button(L["revoke_link"] ?? "") { unlink(l.id) }
+                                .font(.caption2).disabled(busy)
+                        }
+                    }
+                }.card()
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text(L["savings_goal"] ?? "").font(.subheadline.bold())
                         .foregroundStyle(Theme.txt)
@@ -166,6 +221,10 @@ struct MoneySection: View {
     private func load() async {
         guard let uid = state.uid, let token = state.token else { return }
         view = try? await ApiClient.shared.moneyOverview(uid: uid, token: token)
+        statements = (try? await ApiClient.shared.moneyStatements(
+            uid: uid, token: token)) ?? []
+        links = (try? await ApiClient.shared.moneyLinks(
+            uid: uid, token: token)) ?? []
     }
 
     private func run(_ op: @escaping () async throws -> Void) {
@@ -204,6 +263,39 @@ struct MoneySection: View {
         run {
             _ = try await ApiClient.shared.moneySetSavings(
                 uid: state.uid!, token: state.token!, goal: value)
+        }
+    }
+
+    private func drop(_ accountId: String) {
+        run {
+            let b64 = Data(statementText.utf8).base64EncodedString()
+            _ = try await ApiClient.shared.moneyDropStatement(
+                uid: state.uid!, token: state.token!, accountId: accountId,
+                filename: "statement.csv", contentB64: b64)
+            statementText = ""
+        }
+    }
+
+    private func linkBank() {
+        run {
+            _ = try await ApiClient.shared.moneyLinkBank(
+                uid: state.uid!, token: state.token!,
+                institution: linkInstitution, aggregator: linkAggregator)
+            linkInstitution = ""
+        }
+    }
+
+    private func syncBank(_ linkId: String) {
+        run {
+            _ = try await ApiClient.shared.moneySyncBank(
+                uid: state.uid!, token: state.token!, linkId: linkId)
+        }
+    }
+
+    private func unlink(_ linkId: String) {
+        run {
+            _ = try await ApiClient.shared.moneyRevokeLink(
+                uid: state.uid!, token: state.token!, linkId: linkId)
         }
     }
 

@@ -402,6 +402,227 @@ def orders_for(user_id: str) -> list[dict]:
 
 
 # --------------------------------------------------------------------------
+# statements — the file is the reading
+
+#: Aggregators this module knows how to hold a consent for. The link is a
+#: written consent and a registration; syncing needs the deployment to hold
+#: that aggregator's credentials, and this module never pretends it does.
+AGGREGATORS = ("plaid", "tink", "truelayer", "mx")
+
+
+def drop_statement(user_id: str, account_id: str, filename: str,
+                   content_b64: str, lang: str, pdi=None,
+                   qrme=None) -> dict:
+    """A statement file dropped into the vault and read locally.
+
+    The raw file is sealed exactly as account credentials are (rule 1: the
+    vault or nowhere). The reading is deterministic CSV arithmetic on the
+    device — a statement is exact numbers, and a model adds nothing to
+    exactness but risk. When the statement closes with a balance, that
+    balance walks the same `observe` path a hand-typed reading does, so the
+    guardian ladder and its doors wake off the file itself.
+    """
+    import base64 as _b64
+
+    account = _account(account_id)
+    if account["user_id"] != user_id:
+        raise MoneyError("that account belongs to somebody else")
+    if pdi is None:
+        raise MoneyError(
+            "a bank statement is private data and only ever lives in the "
+            "vault; this plan has no vault, so nothing was stored")
+    if not (content_b64 or "").strip():
+        raise MoneyError("an empty drop holds no statement")
+    try:
+        raw = _b64.b64decode(content_b64, validate=True)
+    except Exception:
+        raise MoneyError("the statement could not be read — it is not "
+                         "base64") from None
+
+    summary = _read_csv_statement(raw)
+    statement_id = db.new_id("stm")
+    pdi.put(f"jim/{user_id}/statements/{statement_id}",
+            _b64.b64encode(raw).decode())
+
+    conn = db.connect()
+    conn.execute(
+        "INSERT INTO statements (id, user_id, account_id, filename,"
+        " line_count, total_in, total_out, end_balance, created_at)"
+        " VALUES (?,?,?,?,?,?,?,?,?)",
+        (statement_id, user_id, account_id, (filename or "statement").strip(),
+         summary["line_count"], summary["total_in"], summary["total_out"],
+         summary["end_balance"], db.utcnow()))
+    conn.commit()
+
+    out = {"id": statement_id, "account_id": account_id,
+           "filename": (filename or "statement").strip(),
+           "statement_sealed": True, **summary}
+    if summary["end_balance"] is not None:
+        out["observed"] = observe(
+            user_id, account_id, summary["end_balance"],
+            "statement " + (filename or "statement").strip(), lang,
+            pdi=pdi, qrme=qrme)
+    return out
+
+
+def _read_csv_statement(raw: bytes) -> dict:
+    """Deterministic local arithmetic over a delimited statement.
+
+    Shape assumed: one transaction per line, the amount in the last column
+    that parses as a number — or, when a header names ``amount`` and/or
+    ``balance``, those columns by name. Unreadable files summarize as zero
+    lines; the file is sealed either way, and nothing is guessed.
+    """
+    text = raw.decode("utf-8", errors="replace")
+    rows = [line for line in text.splitlines() if line.strip()]
+    if not rows:
+        return {"line_count": 0, "total_in": 0.0, "total_out": 0.0,
+                "end_balance": None}
+    delim = ";" if rows[0].count(";") > rows[0].count(",") else ","
+
+    def _num(cell: str) -> float | None:
+        cell = cell.strip().replace("$", "").replace("\u20ac", "")
+        try:
+            return float(cell.replace(",", "")) if cell else None
+        except ValueError:
+            return None
+
+    header = [c.strip().lower() for c in rows[0].split(delim)]
+    amount_col = header.index("amount") if "amount" in header else None
+    balance_col = header.index("balance") if "balance" in header else None
+    data = rows[1:] if amount_col is not None or all(
+        _num(c) is None for c in rows[0].split(delim)) else rows
+
+    total_in = total_out = 0.0
+    line_count = 0
+    end_balance = None
+    for line in data:
+        cells = line.split(delim)
+        if amount_col is not None and amount_col < len(cells):
+            amount = _num(cells[amount_col])
+        else:
+            nums = [n for n in (_num(c) for c in cells) if n is not None]
+            amount = nums[-1] if nums else None
+        if amount is None:
+            continue
+        line_count += 1
+        if amount >= 0:
+            total_in += amount
+        else:
+            total_out += -amount
+        if balance_col is not None and balance_col < len(cells):
+            balance = _num(cells[balance_col])
+            if balance is not None:
+                end_balance = balance
+    return {"line_count": line_count, "total_in": round(total_in, 2),
+            "total_out": round(total_out, 2), "end_balance": end_balance}
+
+
+def statements_for(user_id: str, limit: int = 12) -> list[dict]:
+    rows = db.connect().execute(
+        "SELECT id, account_id, filename, line_count, total_in, total_out,"
+        " end_balance, created_at FROM statements WHERE user_id=?"
+        " ORDER BY created_at DESC, rowid DESC LIMIT ?",
+        (user_id, limit)).fetchall()
+    return [{**dict(r), "statement_sealed": True} for r in rows]
+
+
+# --------------------------------------------------------------------------
+# bank links — a consent is written down, never assumed
+
+def link_bank(user_id: str, institution: str, aggregator: str,
+              kind: str = "checking", pdi=None) -> dict:
+    """Write down a bank-link consent through an aggregator.
+
+    The link registers the account and records which aggregator the owner
+    consented to. It needs the vault standing (the tokens an aggregator
+    hands back are exactly the private data rule 1 exists for), and its
+    status tells the truth: ``consented`` until this deployment holds that
+    aggregator's credentials — no data is ever pretended in."""
+    if aggregator not in AGGREGATORS:
+        raise MoneyError(f"unknown aggregator {aggregator!r}; this module "
+                         f"holds consents for {', '.join(AGGREGATORS)}")
+    if kind not in ACCOUNT_KINDS:
+        raise MoneyError(
+            f"unknown account kind {kind!r}; expected one of "
+            f"{', '.join(ACCOUNT_KINDS)}")
+    if not (institution or "").strip():
+        raise MoneyError("name the institution — a bank, a broker, an "
+                         "exchange")
+    if pdi is None:
+        raise MoneyError(
+            "a bank link's tokens are private data and only ever live in "
+            "the vault; this plan has no vault, so no link was made")
+
+    account = add_account(user_id, kind, institution.strip(),
+                          institution.strip(), None, None, None, pdi)
+    conn = db.connect()
+    link_id = db.new_id("bnk")
+    conn.execute(
+        "INSERT INTO bank_links (id, user_id, account_id, institution,"
+        " aggregator, status, created_at) VALUES (?,?,?,?,?,?,?)",
+        (link_id, user_id, account["id"], institution.strip(), aggregator,
+         "consented", db.utcnow()))
+    conn.commit()
+    return _link(link_id)
+
+
+def _link(link_id: str) -> dict:
+    row = db.connect().execute(
+        "SELECT * FROM bank_links WHERE id=?", (link_id,)).fetchone()
+    if row is None:
+        raise MoneyError("no such bank link")
+    return dict(row)
+
+
+def links_for(user_id: str) -> list[dict]:
+    rows = db.connect().execute(
+        "SELECT id FROM bank_links WHERE user_id=? ORDER BY created_at",
+        (user_id,)).fetchall()
+    return [_link(r["id"]) for r in rows]
+
+
+def sync_bank(user_id: str, link_id: str) -> dict:
+    """Pull balances through the link — or say exactly why not.
+
+    This deployment holds no aggregator credentials, so the sync refuses
+    with the truth instead of inventing balances: the consent stands, and
+    a statement drop or a hand-typed reading feeds the same ladder today.
+    """
+    import os
+
+    link = _link(link_id)
+    if link["user_id"] != user_id:
+        raise MoneyError("that bank link belongs to somebody else")
+    if link["status"] == "revoked":
+        raise MoneyError("this bank link was revoked; link again to sync")
+    if not os.environ.get(f"{link['aggregator'].upper()}_CLIENT_ID"):
+        raise MoneyError(
+            f"this deployment holds no {link['aggregator']} credentials — "
+            "the consent stands and will sync when the aggregator is "
+            "configured; until then, drop a statement or observe a "
+            "balance by hand")
+    # Credentials present: the client call would land here, tokens to the
+    # vault and balances through `observe`. Until a client is wired, the
+    # truth is the same refusal — nothing is pretended in.
+    raise MoneyError(
+        f"the {link['aggregator']} client is not wired into this build; "
+        "the consent stands, and nothing was invented in its name")
+
+
+def revoke_link(user_id: str, link_id: str) -> dict:
+    link = _link(link_id)
+    if link["user_id"] != user_id:
+        raise MoneyError("that bank link belongs to somebody else")
+    conn = db.connect()
+    conn.execute(
+        "UPDATE bank_links SET status='revoked', revoked_at=? WHERE id=?",
+        (db.utcnow(), link_id))
+    conn.commit()
+    return _link(link_id)
+
+
+# --------------------------------------------------------------------------
 # the overview
 
 def view(user_id: str, lang: str, qrme=None) -> dict:

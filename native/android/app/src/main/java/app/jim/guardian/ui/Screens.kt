@@ -2001,8 +2001,16 @@ private fun MoneyPanel(vm: GuardianViewModel) {
     var warnings by remember { mutableStateOf<List<MoneyWarning>>(emptyList()) }
     var note by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
+    var statementText by remember { mutableStateOf("") }
+    var statements by remember { mutableStateOf<List<String>>(emptyList()) }
+    var links by remember { mutableStateOf<List<Triple<String, String, String>>>(emptyList()) }
+    var linkInstitution by remember { mutableStateOf("") }
 
-    fun reload() { vm.call({ ApiClient.moneyOverview(vm.uid!!, vm.token!!) }) { r -> view = r.getOrNull() } }
+    fun reload() {
+        vm.call({ ApiClient.moneyOverview(vm.uid!!, vm.token!!) }) { r -> view = r.getOrNull() }
+        vm.call({ ApiClient.moneyStatements(vm.uid!!, vm.token!!) }) { r -> statements = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.moneyLinks(vm.uid!!, vm.token!!) }) { r -> links = r.getOrDefault(emptyList()) }
+    }
     LaunchedEffect(Unit) { reload() }
     fun act(block: suspend () -> Unit) {
         busy = true; note = null
@@ -2066,6 +2074,54 @@ private fun MoneyPanel(vm: GuardianViewModel) {
                         w.specialist?.let { Text("· $it", color = Jim.T2, fontSize = 11.sp) }
                         w.desks.forEach { d ->
                             Text("· ${d.name} — ${d.trade} ${d.location}", color = Jim.T2, fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+        }
+
+        // The statement is the reading: pasted here, sealed in the vault,
+        // summed locally; a closing balance walks the observe path.
+        v.accounts.firstOrNull()?.let { first ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(labels["statements"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                labeledField(labels["statements"] ?: "", statementText,
+                    labels["drop_statement"] ?: "") { statementText = it }
+                BrandButton(labels["drop_statement"] ?: "",
+                            enabled = statementText.isNotBlank(), busy = busy) {
+                    act {
+                        val b64 = android.util.Base64.encodeToString(
+                            statementText.toByteArray(), android.util.Base64.NO_WRAP)
+                        ApiClient.moneyDropStatement(vm.uid!!, vm.token!!, first.id, b64)
+                        statementText = ""
+                    }
+                }
+                statements.forEach { Text(it, color = Jim.T2, fontSize = 11.sp) }
+            }
+        }
+
+        // A bank link is a written consent; its status never claims data.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["links"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            labeledField(labels["institution"] ?: "", linkInstitution,
+                labels["aggregator"] ?: "") { linkInstitution = it }
+            BrandButton(labels["link_bank"] ?: "",
+                        enabled = linkInstitution.isNotBlank(), busy = busy) {
+                act {
+                    ApiClient.moneyLinkBank(vm.uid!!, vm.token!!,
+                        linkInstitution, "plaid")
+                    linkInstitution = ""
+                }
+            }
+            links.forEach { (id, name, status) ->
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(name + " \u00b7 " + status, color = Jim.T2, fontSize = 11.sp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SmallAction(labels["sync"] ?: "", enabled = !busy) {
+                            act { ApiClient.moneySyncBank(vm.uid!!, vm.token!!, id) }
+                        }
+                        SmallAction(labels["revoke_link"] ?: "", enabled = !busy) {
+                            act { ApiClient.moneyRevokeLink(vm.uid!!, vm.token!!, id) }
                         }
                     }
                 }

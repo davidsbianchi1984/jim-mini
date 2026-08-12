@@ -1423,6 +1423,38 @@ public sealed class ApiClient
     public Task<MoneyOverview> MoneyOverview(string uid, string token) =>
         Send<MoneyOverview>(Get($"/money/{uid}", token));
 
+    /// <summary>The statement file goes to the vault; the reading is local.</summary>
+    public Task<StatementReading> MoneyDropStatement(string uid, string token,
+        string accountId, string contentB64) =>
+        Send<StatementReading>(Post($"/money/{uid}/statements",
+            new { account_id = accountId, content = contentB64 }, token));
+
+    public Task<StatementReading[]> MoneyStatements(string uid, string token) =>
+        Send<StatementReading[]>(Get($"/money/{uid}/statements", token));
+
+    /// <summary>A written aggregator consent; status never claims data.</summary>
+    public Task<BankLinkOut> MoneyLinkBank(string uid, string token,
+        string institution, string aggregator) =>
+        Send<BankLinkOut>(Post($"/money/{uid}/links",
+            new { institution, aggregator }, token));
+
+    public Task<BankLinkOut[]> MoneyLinks(string uid, string token) =>
+        Send<BankLinkOut[]>(Get($"/money/{uid}/links", token));
+
+    public Task<BankLinkOut> MoneySyncBank(string uid, string token,
+        string linkId) =>
+        Send<BankLinkOut>(Post($"/money/{uid}/links/{linkId}/sync",
+            new { }, token));
+
+    public Task<BankLinkOut> MoneyRevokeLink(string uid, string token,
+        string linkId)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+            $"/money/{uid}/links/{linkId}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<BankLinkOut>(req);
+    }
+
     public Task<MoneyAccount> MoneyAddAccount(string uid, string token,
                                               string kind, string institution,
                                               string? accountNumber,
@@ -2337,6 +2369,20 @@ public record MoneyWarning(
     [property: JsonPropertyName("kind")] string Kind,
     [property: JsonPropertyName("message")] string Message,
     [property: JsonPropertyName("doors")] MoneyDoors? Doors);
+
+public record StatementReading(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("filename")] string Filename,
+    [property: JsonPropertyName("line_count")] int LineCount,
+    [property: JsonPropertyName("total_in")] double TotalIn,
+    [property: JsonPropertyName("total_out")] double TotalOut,
+    [property: JsonPropertyName("end_balance")] double? EndBalance);
+
+public record BankLinkOut(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("institution")] string Institution,
+    [property: JsonPropertyName("aggregator")] string Aggregator,
+    [property: JsonPropertyName("status")] string Status);
 
 public record MoneyOverview(
     [property: JsonPropertyName("accounts")] MoneyAccount[] Accounts,

@@ -308,6 +308,53 @@
                                        Foreground="{StaticResource JimT2Brush}" />
                         </StackPanel>
                     </Border>
+                    <!-- The statement is the reading: pasted, sealed in the
+                         vault, summed locally. All words from the overview's
+                         own labels. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MoneyStatementsTitle" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="MoneyStatementBox" AcceptsReturn="True" TextWrapping="Wrap" Height="70" />
+                            <Button x:Name="MoneyStatementButton" Click="OnMoneyDropStatement" />
+                            <ItemsControl x:Name="MoneyStatementsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Line}" Foreground="{StaticResource JimT2Brush}"
+                                                   FontSize="12" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                    <!-- A bank link is a written consent; its status never
+                         claims data that was not pulled. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MoneyLinksTitle" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="MoneyLinkInstitution" />
+                            <Button x:Name="MoneyLinkButton" Click="OnMoneyLinkBank" />
+                            <ItemsControl x:Name="MoneyLinksList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,4">
+                                            <TextBlock Text="{Binding Text}" Foreground="{StaticResource JimT2Brush}"
+                                                       FontSize="12" VerticalAlignment="Center" />
+                                            <Button Content="{Binding SyncLabel}" Tag="{Binding Id}" Click="OnMoneySyncBank"
+                                                    Background="Transparent" FontSize="11"
+                                                    Foreground="{StaticResource JimBrandABrush}" />
+                                            <Button Content="{Binding UnlinkLabel}" Tag="{Binding Id}" Click="OnMoneyRevokeLink"
+                                                    Background="Transparent" FontSize="11"
+                                                    Foreground="{StaticResource JimRedBrush}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="8">

@@ -718,12 +718,12 @@ object ApiClient {
                         contentB64: String? = null): String {
         val body = JSONObject().put("note", note)
         if (contentB64 != null) body.put("content", contentB64)
-        val o = JSONObject(request("/users/$uid/meals", "POST", body, token))
+        val o = (request("/users/$uid/meals", "POST", body, token))
         return o.optString("logged")
     }
 
     suspend fun meals(uid: String, token: String): List<String> {
-        val a = org.json.JSONArray(request("/users/$uid/meals", token = token))
+        val a = getArray("/users/$uid/meals", token)
         return (0 until a.length()).map { i ->
             val o = a.getJSONObject(i)
             o.optString("logged") +
@@ -733,12 +733,12 @@ object ApiClient {
 
     /** The weekly letter: composed only from what was logged. */
     suspend fun writeLetter(uid: String, token: String): String {
-        val o = JSONObject(request("/users/$uid/letters", "POST", JSONObject(), token))
+        val o = (request("/users/$uid/letters", "POST", JSONObject(), token))
         return o.optString("body")
     }
 
     suspend fun letters(uid: String, token: String): List<Pair<String, String>> {
-        val a = org.json.JSONArray(request("/users/$uid/letters", token = token))
+        val a = getArray("/users/$uid/letters", token)
         return (0 until a.length()).map { i ->
             val o = a.getJSONObject(i)
             o.optString("week_start") to o.optString("body")
@@ -747,7 +747,7 @@ object ApiClient {
 
     /** Interview drills: deal one question; Triple(id, question, probes). */
     suspend fun startDrill(uid: String, token: String): Triple<String, String, String> {
-        val o = JSONObject(request("/users/$uid/drills", "POST", JSONObject(), token))
+        val o = (request("/users/$uid/drills", "POST", JSONObject(), token))
         val probes = o.optJSONArray("probes")
         val joined = (0 until (probes?.length() ?: 0))
             .joinToString(" · ") { probes!!.getString(it) }
@@ -757,13 +757,13 @@ object ApiClient {
     /** The reading, or empty when the checklist stands in. */
     suspend fun answerDrill(uid: String, drillId: String, answer: String,
                             token: String): String {
-        val o = JSONObject(request("/users/$uid/drills/$drillId/answer",
+        val o = (request("/users/$uid/drills/$drillId/answer",
             "POST", JSONObject().put("answer", answer), token))
         return if (o.isNull("critique")) "" else o.optString("critique")
     }
 
     suspend fun drills(uid: String, token: String): List<String> {
-        val a = org.json.JSONArray(request("/users/$uid/drills", token = token))
+        val a = getArray("/users/$uid/drills", token)
         return (0 until a.length()).map { i ->
             a.getJSONObject(i).optString("question")
         }
@@ -1503,6 +1503,57 @@ object ApiClient {
         val goal = o.optJSONObject("savings")
         return MoneyOverview(accounts, goal?.optDouble("goal"), orders,
                              o.optString("note"), labels)
+    }
+
+    /** The statement file goes to the vault; the reading is local. */
+    suspend fun moneyDropStatement(uid: String, token: String,
+                                   accountId: String,
+                                   contentB64: String): String {
+        val o = (request("/money/$uid/statements", "POST",
+            JSONObject().put("account_id", accountId)
+                .put("content", contentB64), token))
+        return o.optString("filename") + " \u00b7 " + o.optInt("line_count") +
+            " \u00b7 +" + o.optDouble("total_in") + " \u2212" +
+            o.optDouble("total_out")
+    }
+
+    suspend fun moneyStatements(uid: String, token: String): List<String> {
+        val a = getArray("/money/$uid/statements", token)
+        return (0 until a.length()).map { i ->
+            val o = a.getJSONObject(i)
+            o.optString("filename") + " \u00b7 " + o.optInt("line_count")
+        }
+    }
+
+    /** A written aggregator consent; the status never claims data. */
+    suspend fun moneyLinkBank(uid: String, token: String, institution: String,
+                              aggregator: String): String {
+        val o = (request("/money/$uid/links", "POST",
+            JSONObject().put("institution", institution)
+                .put("aggregator", aggregator), token))
+        return o.optString("status")
+    }
+
+    suspend fun moneyLinks(uid: String, token: String): List<Triple<String, String, String>> {
+        val a = getArray("/money/$uid/links", token)
+        return (0 until a.length()).map { i ->
+            val o = a.getJSONObject(i)
+            Triple(o.optString("id"),
+                o.optString("institution") + " \u00b7 " + o.optString("aggregator"),
+                o.optString("status"))
+        }
+    }
+
+    suspend fun moneySyncBank(uid: String, token: String, linkId: String): String {
+        val o = (request("/money/$uid/links/$linkId/sync", "POST",
+            JSONObject(), token))
+        return o.optString("status")
+    }
+
+    suspend fun moneyRevokeLink(uid: String, token: String, linkId: String): String {
+        val o = (request("/money/$uid/links/$linkId", "DELETE",
+            token = token))
+        return o.optString("status")
     }
 
     suspend fun moneyAddAccount(uid: String, token: String, kind: String,

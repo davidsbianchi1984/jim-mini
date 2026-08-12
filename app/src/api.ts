@@ -662,6 +662,15 @@ export type CircleView = {
 export type CircleMailbox = { threads?: CircleThread[]; with?: string;
   messages?: CircleMessage[] };
 
+export interface StatementRow {
+  id: string; account_id: string; filename: string;
+  line_count: number; total_in: number; total_out: number;
+  end_balance: number | null; statement_sealed: boolean; created_at?: string;
+}
+export interface BankLinkRow {
+  id: string; account_id: string; institution: string; aggregator: string;
+  status: string; created_at?: string; revoked_at?: string | null;
+}
 export type MoneyView = {
   accounts: MoneyAccount[]; savings: SavingsGoal | null;
   mandate: MoneyMandate | null; orders: MoneyOrder[];
@@ -1410,6 +1419,26 @@ export const api = {
     note?: string }, token: string) =>
     req<MoneyObservation>(`/money/${uid}/observe`,
       { method: "POST", body, token }),
+  // Statements: sealed in the vault, read locally. Links: written
+  // aggregator consents whose status never claims data not pulled.
+  moneyDropStatement: (uid: string, body: { account_id: string;
+      filename?: string; content: string }, token: string) =>
+    req<StatementRow>(`/money/${uid}/statements`,
+      { method: "POST", body, token }),
+  moneyStatements: (uid: string, token: string) =>
+    req<StatementRow[]>(`/money/${uid}/statements`, { token }),
+  moneyLinkBank: (uid: string, body: { institution: string;
+      aggregator: string; kind?: string }, token: string) =>
+    req<BankLinkRow>(`/money/${uid}/links`,
+      { method: "POST", body, token }),
+  moneyLinks: (uid: string, token: string) =>
+    req<BankLinkRow[]>(`/money/${uid}/links`, { token }),
+  moneySyncBank: (uid: string, linkId: string, token: string) =>
+    req<BankLinkRow>(`/money/${uid}/links/${linkId}/sync`,
+      { method: "POST", body: {}, token }),
+  moneyRevokeLink: (uid: string, linkId: string, token: string) =>
+    req<BankLinkRow>(`/money/${uid}/links/${linkId}`,
+      { method: "DELETE", token }),
   moneySetSavings: (uid: string, body: { goal: number; note?: string },
     token: string) =>
     req<SavingsGoal>(`/money/${uid}/savings`,

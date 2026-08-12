@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { t as tr, visitorLang } from "../l10n";
-import { api, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState, type MoneyView,
+import { api, type BankLinkRow, type StatementRow, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState, type MoneyView,
          type AnonymityPosture, type CloudContribution, type PairInfo,
          type SeedReport, type VigilStatus,
          type WatchChannel, type Finetune } from "../api";
@@ -298,11 +298,30 @@ function MoneyCard() {
   const [capMonth, setCapMonth] = useState("");
   const [said, setSaid] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [statements, setStatements] = useState<StatementRow[]>([]);
+  const [stmAccount, setStmAccount] = useState("");
+  const [stmFile, setStmFile] = useState<{ name: string; b64: string } | null>(null);
+  const [links, setLinks] = useState<BankLinkRow[]>([]);
+  const [linkInst, setLinkInst] = useState("");
+  const [linkAgg, setLinkAgg] = useState("plaid");
 
   const uid = session.userId, token = session.userToken;
   function load() {
     if (!uid || !token) return;
     api.moneyView(uid, token).then(setView).catch(() => setView(null));
+    api.moneyStatements(uid, token).then(setStatements)
+      .catch(() => setStatements([]));
+    api.moneyLinks(uid, token).then(setLinks).catch(() => setLinks([]));
+  }
+
+  function pickStatement(file: File | null) {
+    if (!file) { setStmFile(null); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = String(reader.result || "");
+      setStmFile({ name: file.name, b64: url.slice(url.indexOf(",") + 1) });
+    };
+    reader.readAsDataURL(file);
   }
   useEffect(load, [uid]);
   if (!uid || !token || !view) return null;
@@ -371,6 +390,73 @@ function MoneyCard() {
           {L.record_balance}
         </button>
       </div>
+
+      {/* Statements: the file is sealed in the vault and read locally;
+          a closing balance walks the same observe path a typed one does. */}
+      <h4>{L.statements}</h4>
+      <div className="row">
+        <select value={stmAccount}
+          onChange={(e) => setStmAccount(e.target.value)}>
+          <option value=""></option>
+          {view.accounts.map((a) => (
+            <option key={a.id} value={a.id}>{a.label}</option>
+          ))}
+        </select>
+        <input type="file" accept=".csv,.txt,.pdf"
+          onChange={(e) => pickStatement(e.target.files?.[0] ?? null)} />
+        <button disabled={!stmAccount || !stmFile}
+          onClick={() => run(async () => {
+            const out = await api.moneyDropStatement(uid, {
+              account_id: stmAccount, filename: stmFile!.name,
+              content: stmFile!.b64 }, token);
+            setStmFile(null);
+            setSaid(`${out.filename} · ${out.line_count} · +${out.total_in}` +
+                    ` −${out.total_out}` +
+                    (out.end_balance != null ? ` · ${out.end_balance}` : ""));
+          })}>
+          {L.drop_statement}
+        </button>
+      </div>
+      {statements.map((s) => (
+        <p key={s.id} className="muted small">
+          {s.filename} · {s.line_count} · +{s.total_in} −{s.total_out}
+          {s.end_balance != null ? ` · ${s.end_balance}` : ""}
+        </p>
+      ))}
+
+      {/* Bank links: a written aggregator consent; the status never
+          claims data that was not pulled. */}
+      <h4>{L.links}</h4>
+      <div className="row">
+        <input placeholder={L.institution} value={linkInst}
+          onChange={(e) => setLinkInst(e.target.value)} />
+        <select value={linkAgg} onChange={(e) => setLinkAgg(e.target.value)}>
+          {["plaid", "tink", "truelayer", "mx"].map((a) => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+        </select>
+        <button disabled={!linkInst.trim()}
+          onClick={() => run(() => api.moneyLinkBank(uid, {
+            institution: linkInst.trim(), aggregator: linkAgg }, token))}>
+          {L.link_bank}
+        </button>
+      </div>
+      {links.map((l) => (
+        <div key={l.id} className="row">
+          <span className="muted small" style={{ flex: 1 }}>
+            {l.institution} · {l.aggregator} · {l.status}
+          </span>
+          <button onClick={() => run(() => api.moneySyncBank(uid, l.id, token))}>
+            {L.sync}
+          </button>
+          {l.status !== "revoked" && (
+            <button className="danger"
+              onClick={() => run(() => api.moneyRevokeLink(uid, l.id, token))}>
+              {L.revoke_link}
+            </button>
+          )}
+        </div>
+      ))}
 
       <h4>{L.savings_goal}</h4>
       <div className="row">

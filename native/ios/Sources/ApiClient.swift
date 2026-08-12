@@ -1735,6 +1735,61 @@ extension ApiClient {
                           token: token)
     }
 
+    struct StatementRow: Decodable, Identifiable {
+        let id: String
+        let filename: String
+        let line_count: Int
+        let total_in: Double
+        let total_out: Double
+        let end_balance: Double?
+    }
+
+    /// The statement file goes to the vault; the reading is local.
+    func moneyDropStatement(uid: String, token: String, accountId: String,
+                            filename: String,
+                            contentB64: String) async throws -> StatementRow {
+        try await request("/money/\(uid)/statements", method: "POST",
+                          body: ["account_id": accountId,
+                                 "filename": filename,
+                                 "content": contentB64], token: token)
+    }
+
+    func moneyStatements(uid: String,
+                         token: String) async throws -> [StatementRow] {
+        try await request("/money/\(uid)/statements", token: token)
+    }
+
+    struct BankLinkRow: Decodable, Identifiable {
+        let id: String
+        let institution: String
+        let aggregator: String
+        let status: String
+    }
+
+    /// A written aggregator consent; the status never claims data.
+    func moneyLinkBank(uid: String, token: String, institution: String,
+                       aggregator: String) async throws -> BankLinkRow {
+        try await request("/money/\(uid)/links", method: "POST",
+                          body: ["institution": institution,
+                                 "aggregator": aggregator], token: token)
+    }
+
+    func moneyLinks(uid: String, token: String) async throws -> [BankLinkRow] {
+        try await request("/money/\(uid)/links", token: token)
+    }
+
+    func moneySyncBank(uid: String, token: String,
+                       linkId: String) async throws -> BankLinkRow {
+        try await request("/money/\(uid)/links/\(linkId)/sync",
+                          method: "POST", body: [:], token: token)
+    }
+
+    func moneyRevokeLink(uid: String, token: String,
+                         linkId: String) async throws -> BankLinkRow {
+        try await request("/money/\(uid)/links/\(linkId)",
+                          method: "DELETE", token: token)
+    }
+
     func moneySetSavings(uid: String, token: String,
                          goal: Double) async throws -> SavingsGoal {
         try await request("/money/\(uid)/savings", method: "PUT",
