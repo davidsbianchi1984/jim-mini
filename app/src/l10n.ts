@@ -3187,6 +3187,24 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "chk.noconcern": {
     en: "No concern detected — logged to your day.", es: "Sin motivo de preocupación — registrado en tu día.", fr: "Rien d'inquiétant — enregistré dans votre journée.", de: "Nichts Besorgniserregendes — in Ihren Tag eingetragen.", pt: "Sem motivo de preocupação — registado no seu dia.", it: "Nessuna preoccupazione — registrato nella tua giornata.", ja: "気がかりな点はありません — その日の記録に加えました。", zh: "未发现值得担忧之处 — 已记入你的一天。", hi: "कोई चिंता की बात नहीं — आपके दिन में दर्ज।", ar: "لا ما يقلق — سُجّل في يومك.",
   },
+  "mea.title": {
+    en: "Meals", es: "Comidas", fr: "Repas", de: "Mahlzeiten", pt: "Refeições", it: "Pasti", ja: "食事", zh: "餐食", hi: "भोजन", ar: "الوجبات",
+  },
+  "mea.ph": {
+    en: "What was on the plate? A few words is enough", es: "¿Qué había en el plato? Bastan unas palabras", fr: "Qu'y avait-il dans l'assiette ? Quelques mots suffisent", de: "Was war auf dem Teller? Ein paar Worte genügen", pt: "O que estava no prato? Bastam algumas palavras", it: "Cosa c'era nel piatto? Bastano poche parole", ja: "お皿には何が？ひと言で十分です", zh: "盘子里有什么？几个字就够", hi: "थाली में क्या था? कुछ शब्द काफ़ी हैं", ar: "ماذا كان في الطبق؟ كلمات قليلة تكفي",
+  },
+  "mea.log": {
+    en: "Log the meal", es: "Registrar la comida", fr: "Consigner le repas", de: "Mahlzeit erfassen", pt: "Registar a refeição", it: "Registra il pasto", ja: "食事を記録", zh: "记录餐食", hi: "भोजन दर्ज करें", ar: "سجّل الوجبة",
+  },
+  "mea.receipt": {
+    en: "The photo is the receipt — sealed like a clinical capture, never read by anything automatic. The note is the log; when an online model is standing it tidies the note, and it never invents what the note doesn't say.", es: "La foto es el recibo — sellada como una captura clínica, nunca leída por nada automático. La nota es el registro; si hay un modelo en línea la ordena, y nunca inventa lo que la nota no dice.", fr: "La photo est le reçu — scellée comme une capture clinique, jamais lue par un automatisme. La note est le journal ; quand un modèle en ligne est là, il la met au propre, sans jamais inventer ce qu'elle ne dit pas.", de: "Das Foto ist der Beleg — versiegelt wie eine klinische Aufnahme, nie von etwas Automatischem gelesen. Die Notiz ist das Protokoll; steht ein Online-Modell bereit, ordnet es die Notiz, und es erfindet nie, was sie nicht sagt.", pt: "A foto é o recibo — selada como uma captura clínica, nunca lida por nada automático. A nota é o registo; quando há um modelo online, ele arruma a nota e nunca inventa o que ela não diz.", it: "La foto è la ricevuta — sigillata come una cattura clinica, mai letta da nulla di automatico. La nota è il registro; quando c'è un modello online la riordina, e non inventa mai ciò che la nota non dice.", ja: "写真はレシートです — 臨床キャプチャと同じく封印され、自動処理には読まれません。メモが記録です。オンラインモデルがあればメモを整えますが、メモにないことは決して作りません。", zh: "照片就是凭证 — 像临床拍摄一样封存，任何自动流程都不会读取。备注才是记录；在线模型可把备注整理成清单，但绝不编造备注没说的内容。", hi: "फ़ोटो रसीद है — क्लिनिकल कैप्चर की तरह सील, कोई स्वचालित चीज़ उसे नहीं पढ़ती। नोट ही लॉग है; ऑनलाइन मॉडल हो तो वह नोट को व्यवस्थित करता है, और जो नोट में नहीं है वह कभी नहीं गढ़ता।", ar: "الصورة هي الإيصال — مختومة كأي التقاط سريري، لا يقرؤها شيء آلي أبدًا. والملاحظة هي السجل؛ وإن وُجد نموذج متصل رتّبها، ولا يخترع أبدًا ما لم تقله الملاحظة.",
+  },
+  "mea.none": {
+    en: "No meals logged yet.", es: "Aún no hay comidas registradas.", fr: "Aucun repas consigné pour l'instant.", de: "Noch keine Mahlzeiten erfasst.", pt: "Ainda não há refeições registadas.", it: "Nessun pasto registrato finora.", ja: "まだ食事の記録はありません。", zh: "还没有记录任何餐食。", hi: "अभी तक कोई भोजन दर्ज नहीं।", ar: "لا وجبات مسجلة بعد.",
+  },
+  "mea.sealed": {
+    en: "photo sealed", es: "foto sellada", fr: "photo scellée", de: "Foto versiegelt", pt: "foto selada", it: "foto sigillata", ja: "写真は封印済み", zh: "照片已封存", hi: "फ़ोटो सील", ar: "الصورة مختومة",
+  },
   "jrn.title": {
     en: "Journal", es: "Diario", fr: "Journal", de: "Tagebuch", pt: "Diário", it: "Diario", ja: "日記", zh: "日志", hi: "डायरी", ar: "اليوميات",
   },

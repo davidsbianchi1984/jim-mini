@@ -1895,7 +1895,12 @@ private fun JournalPanel(vm: GuardianViewModel) {
     var entries by remember { mutableStateOf<List<JournalItem>>(emptyList()) }
     var text by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
-    fun reload() { vm.call({ ApiClient.journal(vm.uid!!, vm.token!!) }) { r -> entries = r.getOrDefault(emptyList()) } }
+    var meals by remember { mutableStateOf<List<String>>(emptyList()) }
+    var mealNote by remember { mutableStateOf("") }
+    fun reload() {
+        vm.call({ ApiClient.journal(vm.uid!!, vm.token!!) }) { r -> entries = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.meals(vm.uid!!, vm.token!!) }) { r -> meals = r.getOrDefault(emptyList()) }
+    }
     LaunchedEffect(Unit) { reload() }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -1908,6 +1913,18 @@ private fun JournalPanel(vm: GuardianViewModel) {
                     text = ""; busy = false; reload()
                 }
             }
+        }
+        // Meals: the note is the log; a photo, when the app attaches one,
+        // is a sealed receipt. No pretended vision.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("mea.title", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            labeledField(L10n.t("mea.title", vm.language), mealNote, L10n.t("mea.ph", vm.language)) { mealNote = it }
+            BrandButton(L10n.t("mea.log", vm.language), enabled = mealNote.isNotBlank()) {
+                vm.call({ ApiClient.logMeal(vm.uid!!, mealNote, vm.token!!) }) {
+                    mealNote = ""; reload()
+                }
+            }
+            meals.forEach { Text(it, color = Jim.T2, fontSize = 12.sp) }
         }
         entries.asReversed().forEach { e ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {

@@ -39,6 +39,14 @@ class CaptureTake(BaseModel):
     intimate_consent: bool = False
 
 
+class MealLog(BaseModel):
+    """One meal (jim/meals.py): the note is the log, the photo (base64, in
+    ``content`` like every capture door) is the sealed receipt. Either alone
+    is enough; both together are the usual case."""
+    note: str | None = None
+    content: str | None = None
+
+
 class CaptureAttach(BaseModel):
     """Which captures a referral releases."""
     capture_ids: list[str] = []

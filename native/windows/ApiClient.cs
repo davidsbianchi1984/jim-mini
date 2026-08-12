@@ -193,6 +193,14 @@ public record Habit(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("streak")] int? Streak);
 
+public record Meal(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("logged")] string Logged,
+    [property: JsonPropertyName("described_by")] string DescribedBy,
+    [property: JsonPropertyName("photo_sealed")] bool PhotoSealed,
+    [property: JsonPropertyName("created_at")] string? CreatedAt);
+
 public record JournalItem(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("text")] string? Text,
@@ -919,6 +927,16 @@ public sealed class ApiClient
         var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
+
+    /// <summary>Meals: the note is the log, the photo the sealed receipt.</summary>
+    public Task<Meal> LogMeal(string uid, string note, string token,
+        string? contentB64 = null) =>
+        Send<Meal>(Post($"/users/{uid}/meals",
+            contentB64 is null ? new { note } : new { note, content = contentB64 },
+            token));
+
+    public Task<Meal[]> Meals(string uid, string token) =>
+        Send<Meal[]>(Get($"/users/{uid}/meals", token));
 
     // -- model selection --
 

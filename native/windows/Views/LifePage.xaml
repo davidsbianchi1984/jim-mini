@@ -135,6 +135,34 @@
                             </Button>
                         </StackPanel>
                     </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="10">
+                            <TextBlock x:Name="MealHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="MealNote" />
+                            <Button x:Name="LogMealButton" HorizontalAlignment="Stretch" Height="42"
+                                    Foreground="White" Click="OnLogMeal">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="{StaticResource JimBrandA}" Offset="0" />
+                                        <GradientStop Color="#FF3AA0FF" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                            </Button>
+                            <ItemsControl x:Name="MealsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Spacing="2" Margin="0,0,0,6">
+                                            <TextBlock Text="{Binding Text}" Foreground="{StaticResource JimTxtBrush}"
+                                                       TextWrapping="Wrap" FontSize="13" />
+                                            <TextBlock Text="{Binding Date}" Foreground="{StaticResource JimT2Brush}" FontSize="11" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
                     <ItemsControl x:Name="JournalList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>

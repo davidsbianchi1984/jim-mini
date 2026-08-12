@@ -66,7 +66,7 @@ from .models import (
     VoiceSettings, VoiceSpeak, VoiceTranscribe, WaiverSign,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
-    CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark,
+    CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark, MealLog,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -908,6 +908,33 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(exc.status, exc.detail)
 
     # ---- showing it, rather than describing it ----------------------------
+
+    @app.post("/users/{user_id}/meals", status_code=201)
+    def log_meal(user_id: str, body: MealLog, request: Request) -> dict:
+        """Point the camera at the plate: the note is the log (tidied by the
+        online model when one is standing), the photo is sealed like any
+        capture, and the log line reaches the offline coach's nutrition
+        area."""
+        user = _user_or_404(user_id, request)
+        from . import meals as meals_mod
+        try:
+            return meals_mod.log(user, body.note, body.content,
+                                 pdi=app.state.pdi, cloud=app.state.cloud)
+        except capture_mod.VaultRequired as exc:
+            raise HTTPException(503, str(exc)) from None
+        except storage.StorageError:
+            raise
+        except (meals_mod.MealError, capture_mod.CaptureError) as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/users/{user_id}/meals")
+    def meal_board(user_id: str, request: Request) -> list[dict]:
+        """Recent meals, newest first — log lines and whether a sealed
+        receipt stands behind each. The photos themselves need the capture
+        image door; a board is not a gallery."""
+        _user_or_404(user_id, request)
+        from . import meals as meals_mod
+        return meals_mod.board(user_id)
 
     @app.get("/captures/vocabulary")
     def capture_vocabulary() -> dict:

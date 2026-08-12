@@ -54,6 +54,9 @@ public sealed partial class LifePage : Page
         JournalText.Header = L10n.T("jrn.entry");
         JournalText.PlaceholderText = L10n.T("jrn.entry.ph");
         SaveEntryButton.Content = L10n.T("jrn.save");
+        MealHead.Text = L10n.T("mea.title");
+        MealNote.PlaceholderText = L10n.T("mea.ph");
+        LogMealButton.Content = L10n.T("mea.log");
         LocalizeMeds();
         ActHead.Text = L10n.T("aim.activity");
         ActPitch.Text = L10n.T("aim.activity.pitch");
@@ -71,6 +74,7 @@ public sealed partial class LifePage : Page
         await LoadGoals();
         await LoadHabits();
         await LoadJournal();
+        await LoadMeals();
         await LoadMoney();
         await LoadBudgets();
         await LoadSchedule();
@@ -229,6 +233,36 @@ public sealed partial class LifePage : Page
             await ApiClient.Shared.AddJournal(s.Uid!, s.Token!, text);
             JournalText.Text = "";
             await LoadJournal();
+        }
+        catch { /* ignore */ }
+    }
+
+    // -- Meals: the note is the log; a sealed receipt shows as a lock --
+
+    private async System.Threading.Tasks.Task LoadMeals()
+    {
+        var s = AppState.Current;
+        try
+        {
+            var meals = await ApiClient.Shared.Meals(s.Uid!, s.Token!);
+            MealsList.ItemsSource = meals
+                .Select(m => new JournalRow(
+                    m.PhotoSealed ? m.Logged + " · 🔒" : m.Logged,
+                    m.CreatedAt ?? "")).ToList();
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private async void OnLogMeal(object sender, RoutedEventArgs e)
+    {
+        var note = MealNote.Text.Trim();
+        if (note.Length == 0) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.LogMeal(s.Uid!, note, s.Token!);
+            MealNote.Text = "";
+            await LoadMeals();
         }
         catch { /* ignore */ }
     }

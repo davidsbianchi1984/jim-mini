@@ -713,6 +713,24 @@ object ApiClient {
         request("/journal/$uid", "POST", JSONObject().put("text", text), token)
     }
 
+    /** Meals: the note is the log, the photo (base64) the sealed receipt. */
+    suspend fun logMeal(uid: String, note: String, token: String,
+                        contentB64: String? = null): String {
+        val body = JSONObject().put("note", note)
+        if (contentB64 != null) body.put("content", contentB64)
+        val o = JSONObject(request("/users/$uid/meals", "POST", body, token))
+        return o.optString("logged")
+    }
+
+    suspend fun meals(uid: String, token: String): List<String> {
+        val a = org.json.JSONArray(request("/users/$uid/meals", token = token))
+        return (0 until a.length()).map { i ->
+            val o = a.getJSONObject(i)
+            o.optString("logged") +
+                (if (o.optBoolean("photo_sealed")) " \u00b7 \ud83d\udd12" else "")
+        }
+    }
+
     // ---- model selection ----
 
     suspend fun models(): List<ProviderInfo> {

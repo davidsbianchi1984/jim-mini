@@ -494,6 +494,14 @@ export interface CrashWatchStatus {
   tripped?: boolean;
   tripped_at?: string | null;
 }
+export interface MealRow {
+  id: string;
+  note?: string | null;
+  logged: string;
+  described_by: string;      // note | model | photo
+  photo_sealed: boolean;
+  created_at?: string;
+}
 export interface JournalRow {
   id: string; text: string; created_at: string; vaulted?: boolean;
 }
@@ -1072,6 +1080,14 @@ export const api = {
       `/journal/${uid}`, { method: "POST", body: { text }, token }),
   journal: (uid: string, token: string) =>
     req<JournalRow[]>(`/journal/${uid}`, { token }),
+
+  // Meals: the photo is the receipt, the note is the log.
+  logMeal: (uid: string, note: string, token: string, contentB64?: string) =>
+    req<MealRow>(`/users/${uid}/meals`,
+      { method: "POST",
+        body: contentB64 ? { note, content: contentB64 } : { note }, token }),
+  meals: (uid: string, token: string) =>
+    req<MealRow[]>(`/users/${uid}/meals`, { token }),
 
   // Guided wellness: calm protocols, workout plans, meal plans.
   calmCatalog: () =>

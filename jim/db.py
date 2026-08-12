@@ -1106,6 +1106,21 @@ CREATE TABLE IF NOT EXISTS deposits (
 -- Questions the offline stack had no stored answer for (jim/pipeline.py):
 -- the coach's own misses, recorded so JIM can study exactly what was
 -- missing. The need writes the shopping list.
+-- One logged meal (jim/meals.py): the note is the log (kept local so the
+-- offline coach's nutrition area can read it), `logged` is that note tidied
+-- by the online model when one stood — `described_by` says which — and the
+-- photo, if any, is a sealed capture referenced here and never unsealed by
+-- anything automatic.
+CREATE TABLE IF NOT EXISTS meals (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL,
+    note         TEXT,
+    logged       TEXT NOT NULL,
+    described_by TEXT NOT NULL,     -- note | model | photo
+    capture_id   TEXT,
+    created_at   TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS gaps (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

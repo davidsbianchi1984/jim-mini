@@ -254,6 +254,15 @@ struct Habit: Decodable {
     let streak: Int?
 }
 
+struct Meal: Decodable, Identifiable {
+    let id: String
+    let note: String?
+    let logged: String
+    let described_by: String
+    let photo_sealed: Bool
+    let created_at: String?
+}
+
 struct JournalItem: Decodable {
     let id: String
     let text: String?
@@ -1005,6 +1014,19 @@ actor ApiClient {
     func addJournal(uid: String, token: String, text: String) async throws {
         struct Ok: Decodable {}
         let _: Ok = try await request("/journal/\(uid)", method: "POST", body: ["text": text], token: token)
+    }
+
+    /// Meals: the note is the log, the photo (base64) is the sealed receipt.
+    func logMeal(uid: String, token: String, note: String,
+                 contentB64: String? = nil) async throws -> Meal {
+        var body: [String: Any] = ["note": note]
+        if let contentB64 { body["content"] = contentB64 }
+        return try await request("/users/\(uid)/meals", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func meals(uid: String, token: String) async throws -> [Meal] {
+        try await request("/users/\(uid)/meals", token: token)
     }
 
     // MARK: Model selection

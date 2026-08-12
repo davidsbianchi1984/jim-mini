@@ -194,6 +194,8 @@ private struct HabitsSection: View {
 private struct JournalSection: View {
     @EnvironmentObject var state: AppState
     @State private var entries: [JournalItem] = []
+    @State private var meals: [Meal] = []
+    @State private var mealNote = ""
     @State private var text = ""
     @State private var busy = false
 
@@ -220,6 +222,22 @@ private struct JournalSection: View {
                     if let d = e.created_at { Text(d).font(.caption2).foregroundStyle(Theme.t3) }
                 }.card()
             }
+
+            // Meals: the note is the log; the photo, when the phone app
+            // attaches one, is a sealed receipt. No pretended vision.
+            VStack(alignment: .leading, spacing: 8) {
+                Text(L10n.t("mea.title", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                HStack {
+                    TextField(L10n.t("mea.ph", state.language), text: $mealNote)
+                        .textFieldStyle(.roundedBorder)
+                    Button(L10n.t("mea.log", state.language)) { logMeal() }
+                        .font(.caption.bold()).disabled(busy || mealNote.isEmpty)
+                }
+                ForEach(meals, id: \.id) { m in
+                    Text(m.logged + (m.photo_sealed ? " · 🔒" : ""))
+                        .font(.caption).foregroundStyle(Theme.t2)
+                }
+            }.card()
         }
         .task { await load() }
     }
@@ -227,6 +245,14 @@ private struct JournalSection: View {
     private func load() async {
         guard let uid = state.uid, let token = state.token else { return }
         entries = (try? await ApiClient.shared.journal(uid: uid, token: token)) ?? []
+        meals = (try? await ApiClient.shared.meals(uid: uid, token: token)) ?? []
+    }
+
+    private func logMeal() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true
+        Task { _ = try? await ApiClient.shared.logMeal(uid: uid, token: token, note: mealNote)
+            mealNote = ""; await load(); busy = false }
     }
 
     private func add() {

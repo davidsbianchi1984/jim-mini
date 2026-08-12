@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api, type JournalRow } from "../api";
+import { api, type JournalRow, type MealRow } from "../api";
 import { listen, type Listener } from "../speech";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
@@ -23,12 +23,39 @@ export function Journal() {
   const [error, setError] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
   const recorder = useRef<Listener | null>(null);
+  const [meals, setMeals] = useState<MealRow[]>([]);
+  const [mealNote, setMealNote] = useState("");
+  const [mealPhoto, setMealPhoto] = useState<string | null>(null);
 
   function load() {
     if (!session.userId || !session.userToken) return;
     api.journal(session.userId, session.userToken)
       .then(setEntries)
       .catch((e) => setError((e as Error).message));
+    api.meals(session.userId, session.userToken)
+      .then(setMeals)
+      .catch(() => setMeals([]));
+  }
+
+  async function logMeal() {
+    if (!session.userId || !session.userToken || !mealNote.trim()) return;
+    setBusy(true); setError(null);
+    try {
+      await api.logMeal(session.userId, mealNote.trim(), session.userToken,
+                        mealPhoto ?? undefined);
+      setMealNote(""); setMealPhoto(null); load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  function pickMealPhoto(file: File | null) {
+    if (!file) { setMealPhoto(null); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = String(reader.result || "");
+      setMealPhoto(url.slice(url.indexOf(",") + 1) || null);
+    };
+    reader.readAsDataURL(file);
   }
   useEffect(load, [session.userId]);
 
@@ -86,6 +113,35 @@ export function Journal() {
           </button>
         </div>
         <p className="muted small">{tr("jrn.sealed", lang)}</p>
+      </div>
+
+      {/* Meals: the photo is the receipt, the note is the log. No pretended
+          vision — the log comes from the person's words, tidied by the
+          online model when one is standing. */}
+      <div className="card">
+        <h3>{tr("mea.title", lang)}</h3>
+        <div className="row">
+          <input value={mealNote} placeholder={tr("mea.ph", lang)}
+                 onChange={(e) => setMealNote(e.target.value)} style={{ flex: 1 }} />
+          <input type="file" accept="image/*"
+                 onChange={(e) => pickMealPhoto(e.target.files?.[0] ?? null)} />
+          <button className="primary" disabled={busy || !mealNote.trim()}
+                  onClick={logMeal}>{tr("mea.log", lang)}</button>
+        </div>
+        <p className="muted small">{tr("mea.receipt", lang)}</p>
+        {meals.length === 0 && (
+          <div className="muted small">{tr("mea.none", lang)}</div>
+        )}
+        {meals.map((m) => (
+          <div key={m.id}
+               style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
+            <div className="muted small">
+              {m.created_at ? new Date(m.created_at).toLocaleString() : ""}
+              {m.photo_sealed ? " · " + tr("mea.sealed", lang) : ""}
+            </div>
+            <div>{m.logged}</div>
+          </div>
+        ))}
       </div>
 
       {error && <div className="error">⚠ {error}</div>}
