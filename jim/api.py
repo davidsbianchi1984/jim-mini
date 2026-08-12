@@ -613,8 +613,20 @@ def create_app(qrme_client: QRMEClient | None = None,
         the server terminal when no mail is configured), never the code."""
         if not body.terms_consent:
             raise HTTPException(403, "consent to terms of use is required to enroll")
-        if body.birthdate and _age(body.birthdate) < 18 and not body.guardian_consent:
-            raise HTTPException(403, "minors require parent/guardian consent")
+        if body.birthdate and _age(body.birthdate) < 18:
+            if not body.guardian_consent:
+                raise HTTPException(403, "minors require parent/guardian consent")
+            # Spec [0024]/[0030]: on the account path the consent is
+            # *verified*, not asserted — the activation code is delivered to
+            # the guardian's own inbox, so it must exist and be theirs.
+            if not (body.guardian_email or "").strip():
+                raise HTTPException(
+                    403, "a minor's verification code goes to their parent "
+                         "or guardian — provide guardian_email")
+            if body.guardian_email.strip().lower() == body.email.strip().lower():
+                raise HTTPException(
+                    422, "the guardian's address must be different from "
+                         "the minor's own")
         if body.language and body.language not in i18n.SUPPORTED:
             raise HTTPException(
                 422, i18n.fill(i18n.MUST_BE_ONE_OF, field="language",

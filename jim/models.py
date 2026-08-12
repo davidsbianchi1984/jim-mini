@@ -71,6 +71,10 @@ class Enroll(BaseModel):
     cloud_contribution: bool = False        # opt-in: anonymized guidance outcomes
                                             # improve the shared cloud model
     guardian_consent: bool = False
+    # Spec [0024]/[0030]: for a minor, consent is *verified*, not asserted —
+    # the account's verification code is delivered to this address, so the
+    # click that activates the account is the parent or guardian's own.
+    guardian_email: str | None = None
     emergency_name: str | None = None
     emergency_phone: str | None = None
     contact_consent: bool = False

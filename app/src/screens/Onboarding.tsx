@@ -5,6 +5,18 @@ import { t as tr, visitorLang } from "../l10n";
 
 type Mode = "signup" | "code" | "signin" | "reset";
 
+/** Under 18 on the day they sign up — the bar the backend applies. */
+function isMinor(birthdate: string): boolean {
+  if (!birthdate) return false;
+  const b = new Date(birthdate + "T00:00:00");
+  if (isNaN(b.getTime())) return false;
+  const now = new Date();
+  let age = now.getFullYear() - b.getFullYear();
+  if (now.getMonth() < b.getMonth()
+      || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age -= 1;
+  return age < 18;
+}
+
 // A password input with the conventional show/hide toggle: hidden characters
 // are the reason typos survive, and letting people look is the standard cure
 // (alongside typing it twice on the signup form).
@@ -38,6 +50,7 @@ export function Onboarding({ onAccess }: { onAccess?: () => void } = {}) {
   const [name, setName] = useState("");
   const [birthdate, setBirthdate] = useState("");
   const [email, setEmail] = useState("");
+  const [guardianEmail, setGuardianEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [consent, setConsent] = useState(false);
@@ -147,6 +160,9 @@ export function Onboarding({ onAccess }: { onAccess?: () => void } = {}) {
     try {
       const r = await api.signup({ email: email.trim(), password, display_name: name.trim(),
                                    birthdate, terms_consent: consent, anonymous,
+                                   guardian_consent: isMinor(birthdate) || undefined,
+                                   guardian_email: isMinor(birthdate) && guardianEmail.trim()
+                                     ? guardianEmail.trim() : undefined,
                                    legal_name: anonymous && legalName.trim() ? legalName.trim() : undefined });
       if (r.verification === "local" && r.user_token) {
         // No mail transport on this deployment (the desktop install): the
@@ -254,6 +270,13 @@ export function Onboarding({ onAccess }: { onAccess?: () => void } = {}) {
                      onChange={(e) => setLegalName(e.target.value)} /></label>
           </>)}
           <label>{tr("onb.birthdate", visitorLang())}<input type="date" value={birthdate} onChange={(e) => setBirthdate(e.target.value)} /></label>
+          {isMinor(birthdate) && (
+            /* Verified parental consent: the activation code goes to this
+               address, so the click that opens the account is the
+               guardian's own. */
+            <label>{tr("onb.guardian", visitorLang())}<input type="email" value={guardianEmail}
+                   onChange={(e) => setGuardianEmail(e.target.value)} /></label>
+          )}
           <label>{tr("onb.email", visitorLang())}<input type="email" value={email} placeholder={tr("onb.email.ph", visitorLang())} onChange={(e) => setEmail(e.target.value)} /></label>
           <PasswordField label="Password" value={password} placeholder={tr("onb.password.min", visitorLang())} onChange={setPassword} />
           <p className="field-hint">{tr("onb.password.min", visitorLang())}</p>

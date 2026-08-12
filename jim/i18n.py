@@ -1560,6 +1560,28 @@ def refuse(request, status: int, content, headers: dict | None = None):
 #: languages. What is not here is recorded in
 #: `jim/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    "a minor's verification code goes to their parent or guardian — provide guardian_email": {
+        'es': 'el código de verificación de un menor va a su padre, madre o tutor — indique guardian_email',
+        'fr': "le code de vérification d'un mineur est envoyé à son parent ou tuteur — renseignez guardian_email",
+        'de': 'der Bestätigungscode eines Minderjährigen geht an Eltern oder Erziehungsberechtigte — guardian_email angeben',
+        'pt': 'o código de verificação de um menor vai para o pai, mãe ou responsável — indique guardian_email',
+        'it': 'il codice di verifica di un minore va al genitore o tutore — indicare guardian_email',
+        'ja': '未成年者の確認コードは保護者に送られます — guardian_email を入力してください',
+        'zh': '未成年人的验证码会发送给其父母或监护人 — 请提供 guardian_email',
+        'hi': 'नाबालिग का सत्यापन कोड उनके माता-पिता या अभिभावक के पास जाता है — guardian_email दें',
+        'ar': 'رمز التحقق للقاصر يُرسل إلى الوالد أو الوصي — قدّم guardian_email',
+    },
+    "the guardian's address must be different from the minor's own": {
+        'es': 'la dirección del tutor debe ser distinta de la del menor',
+        'fr': "l'adresse du tuteur doit être différente de celle du mineur",
+        'de': 'die Adresse des Erziehungsberechtigten muss sich von der des Minderjährigen unterscheiden',
+        'pt': 'o endereço do responsável deve ser diferente do endereço do menor',
+        'it': "l'indirizzo del tutore deve essere diverso da quello del minore",
+        'ja': '保護者のアドレスは未成年者本人のものと別である必要があります',
+        'zh': '监护人的邮箱必须与未成年人本人的不同',
+        'hi': 'अभिभावक का पता नाबालिग के अपने पते से अलग होना चाहिए',
+        'ar': 'يجب أن يكون عنوان الوصي مختلفًا عن عنوان القاصر نفسه',
+    },
     'reviewer token required': {
         'es': 'se requiere el token de revisor',
         'fr': 'jeton de réviseur requis',
@@ -2675,6 +2697,7 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'monthly_cap': {'en': 'Monthly cap', 'es': 'Límite mensual', 'fr': 'Plafond mensuel', 'de': 'Monatslimit', 'pt': 'Limite mensal', 'it': 'Tetto mensile', 'ja': '月間上限', 'zh': '每月上限', 'hi': 'मासिक सीमा', 'ar': 'الحد الشهري'},
     'routing_number': {'en': 'Routing number', 'es': 'Número de ruta', 'fr': "Numéro d'acheminement", 'de': 'Routingnummer', 'pt': 'Número de encaminhamento', 'it': 'Numero di instradamento', 'ja': 'ルーティング番号', 'zh': '路由号', 'hi': 'राउटिंग नंबर', 'ar': 'رقم التوجيه'},
     'scope': {'en': 'Scope', 'es': 'Alcance', 'fr': 'Périmètre', 'de': 'Umfang', 'pt': 'Âmbito', 'it': 'Ambito', 'ja': '範囲', 'zh': '范围', 'hi': 'दायरा', 'ar': 'النطاق'},
+    'guardian_email': {'en': 'Parent or guardian email', 'es': 'Correo del padre, madre o tutor', 'fr': 'Courriel du parent ou tuteur', 'de': 'E-Mail der Eltern oder Erziehungsberechtigten', 'pt': 'Email do pai, mãe ou responsável', 'it': 'Email del genitore o tutore', 'ja': '保護者のメールアドレス', 'zh': '父母或监护人邮箱', 'hi': 'माता-पिता या अभिभावक का ईमेल', 'ar': 'البريد الإلكتروني للوالد أو الوصي'},
     'birthdate': {'en': 'Date of birth', 'es': 'Fecha de nacimiento', 'fr': 'Date de naissance', 'de': 'Geburtsdatum', 'pt': 'Data de nascimento', 'it': 'Data di nascita', 'ja': '生年月日', 'zh': '出生日期', 'hi': 'जन्म तिथि', 'ar': 'تاريخ الميلاد'},
     'content': {'en': 'Content', 'es': 'Contenido', 'fr': 'Contenu', 'de': 'Inhalt', 'pt': 'Conteúdo', 'it': 'Contenuto', 'ja': '内容', 'zh': '内容', 'hi': 'सामग्री', 'ar': 'المحتوى'},
     'display_name': {'en': 'Profile name', 'es': 'Nombre del perfil', 'fr': 'Nom du profil', 'de': 'Profilname', 'pt': 'Nome do perfil', 'it': 'Nome del profilo', 'ja': 'プロフィール名', 'zh': '资料名称', 'hi': 'प्रोफ़ाइल नाम', 'ar': 'اسم الملف'},

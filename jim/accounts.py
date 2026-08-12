@@ -61,7 +61,8 @@ def _public_url() -> str:
     return mailer.public_url()
 
 
-def _send_code(email: str, purpose: str = "verify") -> str:
+def _send_code(email: str, purpose: str = "verify",
+               deliver_to: str | None = None) -> str:
     """Issue a fresh code for ``email`` (retiring any previous ones for the
     same purpose), deliver it, and return the transport name — never the
     code. Verification mail leads with a **clickable link** (the shape every
@@ -97,6 +98,24 @@ def _send_code(email: str, purpose: str = "verify") -> str:
             f"It expires in {CODE_TTL_MINUTES} minutes. If you did not ask to "
             "reset your password, ignore this message — your password is "
             "unchanged without it.",
+        )
+    if deliver_to and deliver_to != email:
+        # Verified parental consent (spec [0024]/[0030]): the code and link
+        # stay keyed to the minor's account address, but the mail lands in
+        # the guardian's inbox — activating the account is the guardian's
+        # act, and the message says exactly what it authorizes.
+        return mailer.deliver(
+            deliver_to,
+            "A minor is asking to join JIM Guardian — your consent is needed",
+            f"Someone under 18 has created a JIM Guardian account with "
+            f"{email} and named you as their parent or guardian.\n\n"
+            f"If you consent, click to activate the account:\n\n"
+            f"{_public_url()}/verify-email/click?token={link_token}\n\n"
+            f"Or enter this code in the app: {code} (you can pass it to "
+            f"them to type in — either way the consent is yours to give)\n\n"
+            f"Both expire in {CODE_TTL_MINUTES} minutes. If you do not "
+            "consent, ignore this message — without it the account cannot "
+            "be activated.",
         )
     return mailer.deliver(
         email,
@@ -187,21 +206,28 @@ def signup(email: str, password: str, enroll_payload: dict) -> dict:
         user["verified"] = True
         user["verification"] = "local"
         return user
-    delivery = _send_code(email)
+    guardian_to = (enroll_payload.get("guardian_email") or "").strip() or None
+    delivery = _send_code(email, deliver_to=guardian_to)
     return {"account_id": account_id, "email": email, "verified": False,
-            "code_delivery": delivery, "verification": "email"}
+            "code_delivery": delivery, "verification": "email",
+            "code_sent_to": "guardian" if guardian_to else "account"}
 
 
 def resend(email: str) -> dict:
     email = _normalize(email)
     row = db.connect().execute(
-        "SELECT verified_at FROM accounts WHERE email=?", (email,)
+        "SELECT verified_at, pending_profile FROM accounts WHERE email=?",
+        (email,)
     ).fetchone()
     # One response either way a code could not be sent: an endpoint that
     # answers "no such account" to strangers is an address oracle.
     if row is None or row["verified_at"]:
         return {"email": email, "code_delivery": "none"}
-    return {"email": email, "code_delivery": _send_code(email)}
+    # A minor's resend goes where the original went: the guardian's inbox.
+    pending = json.loads(row["pending_profile"] or "{}")
+    guardian_to = (pending.get("guardian_email") or "").strip() or None
+    return {"email": email,
+            "code_delivery": _send_code(email, deliver_to=guardian_to)}
 
 
 def _activate(account) -> dict:
@@ -224,6 +250,16 @@ def _activate(account) -> dict:
         " WHERE id=?",
         (user["id"], db.utcnow(), account["id"]),
     )
+    # Verified parental consent: the code that just activated this account
+    # was delivered to the guardian's inbox, so the proof is theirs — record
+    # whose it was and when it landed.
+    if payload.get("guardian_email"):
+        conn.execute(
+            "UPDATE users SET guardian_email=?, guardian_verified_at=?"
+            " WHERE id=?",
+            (payload["guardian_email"], db.utcnow(), user["id"]))
+        user["guardian_email"] = payload["guardian_email"]
+        user["guardian_verified_at"] = db.utcnow()
     conn.commit()
     user["user_token"] = auth.issue("user", user["id"])
     user["account_id"] = account["id"]

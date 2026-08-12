@@ -1602,6 +1602,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "साइन इन पर वापस जाएँ",
     ar: "العودة إلى تسجيل الدخول",
   },
+  "onb.guardian": {
+    en: "Parent or guardian email — the activation code goes to them",
+    es: "Correo del padre, madre o tutor — el código de activación les llega a ellos",
+    fr: "Courriel du parent ou tuteur — le code d'activation leur est envoyé",
+    de: "E-Mail der Eltern oder Erziehungsberechtigten — der Aktivierungscode geht an sie",
+    pt: "Email do pai, mãe ou responsável — o código de ativação vai para eles",
+    it: "Email del genitore o tutore — il codice di attivazione arriva a loro",
+    ja: "保護者のメールアドレス — 有効化コードは保護者に届きます",
+    zh: "父母或监护人邮箱 — 激活码会发送给他们",
+    hi: "माता-पिता या अभिभावक का ईमेल — सक्रियण कोड उन्हें जाता है",
+    ar: "بريد الوالد أو الوصي — يُرسل رمز التفعيل إليهم",
+  },
   "onb.birthdate": {
     en: "Birthdate",
     es: "Fecha de nacimiento",

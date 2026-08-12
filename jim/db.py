@@ -1148,6 +1148,11 @@ _NEW_COLUMNS = [
     # the browser's chooser paired is a different fact from a name typed
     # into the manual row, and the card should be able to say which.
     ("devices", "paired", "INTEGER NOT NULL DEFAULT 0"),
+    # Verified parental consent (spec [0024]/[0030]): the guardian address a
+    # minor's verification code was delivered to, and when that inbox proved
+    # it. NULL for adults and for the asserted-only token path.
+    ("users", "guardian_email", "TEXT"),
+    ("users", "guardian_verified_at", "TEXT"),
 ]
 
 

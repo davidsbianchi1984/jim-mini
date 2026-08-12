@@ -928,9 +928,13 @@ export const api = {
           display_name?: string; user_token?: string }>(
       `/auth/oauth/claim?state=${encodeURIComponent(state)}`),
   signup: (body: { email: string; password: string; display_name: string; birthdate: string; terms_consent: boolean;
-                   anonymous?: boolean; legal_name?: string }) =>
+                   anonymous?: boolean; legal_name?: string;
+                   // A minor's activation code is delivered here — verified
+                   // parental consent, not an asserted checkbox.
+                   guardian_consent?: boolean; guardian_email?: string }) =>
     req<{ account_id: string; email: string; verified: boolean; code_delivery?: string;
           verification: "local" | "email";
+          code_sent_to?: "guardian" | "account";
           // Present when verification is "local" (no mail transport — the
           // machine owner is trusted and the account activates directly).
           id?: string; display_name?: string; user_token?: string }>(
