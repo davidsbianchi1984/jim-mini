@@ -1,31 +1,34 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  api, type AlarmRow, type BeaconRow, type IncidentRow, type PageRow,
+  api, type AlarmRow, type BeaconRow, type CrashWatchStatus,
+  type IncidentRow, type PageRow,
 } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
- * The answering end of the crash watch.
+ * The safety front door — reframed by a field report.
  *
- * JIM could already raise an alarm — an unanswered check-in, a scanned
- * beacon, a fall through the watch drip — and every route for *resolving*
- * one had existed for versions with nothing calling it. Accepting an alarm,
- * clearing it, escalating it, seeing which pages went out and which
- * incidents were recorded: all reachable from the backend, none reachable
- * from a person. An alarm nobody can answer is worse than no alarm at all,
- * because the system has told somebody help is coming.
+ * The report, in its own words: "say if you collapse on the floor and
+ * needed help and assistance how are you gonna put a sticker on a door".
+ * This screen used to lead with beacons — the *bystander's* path — while
+ * the person collapsing had no button at all: the coordinated emergency
+ * response existed on the backend and its only console door was on the
+ * carer's screen. So the screen now runs in the order of who is pressing:
  *
- * Three things here are deliberate:
+ * - **Get help now** leads: the account holder's own dispatch-help press,
+ *   driving `POST /emergency/{uid}` — emergency contact, Medical ID,
+ *   first aid, every connected device — and rendering the server's own
+ *   honest note that JIM cannot dial 911 itself.
+ * - **When you can't answer** is the automatic path: the crash watch's
+ *   live status, and where to arm it if it is not.
+ * - **Beacons are the bystander's path** and now say so, below the doors
+ *   the person themselves can press.
  *
- * - **Open alarms first, and separately.** Arriving at this screen during an
- *   emergency, the only question is what still needs a human. History is
- *   below the fold, not mixed in.
- * - **Accepting names a responder.** The backend requires it, and it is the
- *   right requirement: "someone is coming" is not a state, it is a person.
- * - **Escalation is not hidden behind a confirm.** In the moment it is
- *   needed, a modal is an obstacle. Clearing is the one that asks, because
- *   clearing is the irreversible direction.
+ * The rest is the answering end, unchanged: open alarms first, accepting
+ * names a responder, escalation is never behind a confirm. First-aid and
+ * crisis sentences stay the server's English, rendered verbatim — the
+ * house rule on safety text — while the chrome around them translates.
  */
 export function Safety() {
   const { session } = useSession();
@@ -39,6 +42,9 @@ export function Safety() {
   const [placement, setPlacement] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [situation, setSituation] = useState("");
+  const [sent, setSent] = useState<Record<string, unknown> | null>(null);
+  const [watch, setWatch] = useState<CrashWatchStatus | null>(null);
 
   const uid = session.userId;
   const token = session.userToken;
@@ -51,6 +57,7 @@ export function Safety() {
     api.incidents(uid, token).then(setIncidents).catch(() => setIncidents([]));
     api.pages(uid, token).then(setPages).catch(() => setPages([]));
     api.beacons(uid, token).then(setBeacons).catch(() => setBeacons([]));
+    api.crashWatch(uid, token).then(setWatch).catch(() => setWatch(null));
   }, [uid, token]);
   useEffect(load, [load]);
 
@@ -78,6 +85,69 @@ export function Safety() {
     <section className="screen">
       <h2>{tr("sfy.title", lang)}</h2>
       {error && <p className="error">{error}</p>}
+
+      <h3>{tr("sfy.help", lang)}</h3>
+      <p className="muted">{tr("sfy.help.pitch", lang)}</p>
+      <div className="card">
+        <div className="row">
+          <input value={situation} placeholder={tr("sfy.help.ph", lang)}
+            onChange={(e) => setSituation(e.target.value)} />
+          <button className="primary" disabled={busy}
+            onClick={() => run(async () => {
+              setSent(await api.raiseEmergency(uid, {
+                situation: situation.trim() || undefined,
+              }, token) as Record<string, unknown>);
+            })}>
+            {tr("sfy.help.go", lang)}
+          </button>
+        </div>
+        {sent && (
+          <>
+            {/* The server's own words, verbatim and first: what it cannot
+                do. Safety sentences stay English by house rule. */}
+            {(() => {
+              const call = sent.call_emergency_services as
+                Record<string, string> | undefined;
+              return call && (
+                <p><strong>{call.action} — {call.number}.</strong>{" "}
+                  {call.note}</p>
+              );
+            })()}
+            {(() => {
+              const fam = sent.contact_family as
+                Record<string, unknown> | null | undefined;
+              return fam
+                ? <p>{tr("sfy.help.contacted", lang)
+                    .replace("{who}", String(fam.name ?? fam.phone ?? ""))}</p>
+                : <p className="muted">{tr("sfy.help.nocontact", lang)}</p>;
+            })()}
+            {(() => {
+              const g = sent.ai_guidance as
+                Record<string, unknown> | null | undefined;
+              return g?.content
+                ? <p className="muted">{String(g.content)}</p> : null;
+            })()}
+            {Array.isArray(sent.dispatched_alerts)
+              && sent.dispatched_alerts.length > 0 && (
+              <p className="muted">{tr("sfy.help.devices", lang)
+                .replace("{n}", String(sent.dispatched_alerts.length))}</p>
+            )}
+          </>
+        )}
+      </div>
+
+      <h3>{tr("sfy.auto", lang)}</h3>
+      {watch?.armed ? (
+        <p className="muted">
+          {tr("sfy.auto.on", lang)
+            .replace("{who}", String(watch.trusted_name ?? ""))
+            .replace("{n}", String(watch.attempts ?? ""))}
+          {watch.contact_emergency_services === true
+            && <> {tr("sfy.auto.also", lang)}</>}
+        </p>
+      ) : (
+        <p className="muted">{tr("sfy.auto.off", lang)}</p>
+      )}
 
       <h3>{tr("sfy.needs", lang)} {open.length > 0 && <span className="pill">{open.length}</span>}</h3>
       {open.length === 0 && <p className="muted">{tr("sfy.needs.none", lang)}</p>}
@@ -127,6 +197,7 @@ export function Safety() {
 
       <h3>{tr("sfy.beacons", lang)}</h3>
       <p className="muted">{tr("sfy.beacons.pitch", lang)}</p>
+      <p className="muted">{tr("sfy.beacons.bystander", lang)}</p>
       {beacons.map((b) => (
         <div key={b.id} className="card">
           <div className="row">

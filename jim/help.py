@@ -26,10 +26,14 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "Your Baseline shows the bands drawn around your own normal, per "
         "metric, each one adjustable — a crossing becomes a question, "
         "never an alarm.",
-    ("crash", "emergency", "unresponsive", "911", "trusted"):
-        "The crash watch lives on Your Baseline: arm it with a trusted "
-        "person, and if a critical reading goes unanswered too many times, "
-        "help is sent the way you programmed.",
+    ("crash", "emergency", "unresponsive", "911", "trusted", "sos",
+     "collapse", "get help now"):
+        "Safety → Get help now is your own press: one button reaches your "
+        "emergency contact, your Medical ID, first aid and every connected "
+        "device — and says plainly that JIM cannot dial 911 itself. The "
+        "crash watch is the automatic path when you cannot press anything: "
+        "arm it on Your Baseline with a trusted person, and its status "
+        "shows on Safety.",
     ("med", "pill", "dose", "cabinet", "prescription"):
         "Medications is the cabinet: what you take in your own words, the "
         "day's dose board, and adherence — a missed dose is a check-in, "

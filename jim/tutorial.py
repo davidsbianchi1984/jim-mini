@@ -392,16 +392,21 @@ LESSONS: tuple[dict, ...] = (
          screens=(101,),
          try_it="Link the profile, tick nothing, and read the empty brief."),
     dict(key="safety", chapter="When it matters", title="Answering an alarm",
-         what="The answering end of the crash watch. JIM can raise an alarm "
-              "— an unanswered check-in, a scanned beacon, a fall — and "
-              "this is where a person takes it: accepting names a "
-              "responder, because 'someone is coming' is a person and not "
-              "a state; escalating is one press with no modal in the way; "
-              "clearing is the direction that asks, because clearing is "
-              "the irreversible one. What paged out and what was recorded "
-              "sit below the fold, history under the urgent.",
+         what="The safety screen runs in the order of who is pressing. Get "
+              "help now leads — your own one press, reaching your emergency "
+              "contact, your Medical ID, first aid and every connected "
+              "device, and saying plainly that JIM cannot dial 911 itself. "
+              "Below it, the automatic path: the crash watch's status, and "
+              "where to arm it while you are fine. Beacons come after, "
+              "named for what they are — the bystander's path, for somebody "
+              "who finds you. Then the answering end: accepting an alarm "
+              "names a responder, because 'someone is coming' is a person "
+              "and not a state; escalating is one press with no modal in "
+              "the way; clearing is the direction that asks, because "
+              "clearing is the irreversible one. What paged out and what "
+              "was recorded sit below the fold, history under the urgent.",
          screens=(102,),
-         try_it="Open an alarm and read what accepting will ask of you."),
+         try_it="Read what Get help now will do before you need it."),
     dict(key="wellness", chapter="Day to day", title="Wellness",
          what="The on-purpose half of guidance: a guided calm session the "
               "app paces and can speak, a workout shaped to the minutes "
