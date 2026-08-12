@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, type BudgetBoard, type GoalArea, type GoalRow,
-         type HabitRow } from "../api";
+import { api, type BudgetBoard, type DrillRow, type GoalArea,
+         type GoalRow, type HabitRow } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
@@ -50,6 +50,10 @@ export function Aims() {
   const [category, setCategory] = useState("groceries");
   const [limit, setLimit] = useState("400");
   const [activity, setActivity] = useState("");
+  const [drill, setDrill] = useState<DrillRow | null>(null);
+  const [drillAnswer, setDrillAnswer] = useState("");
+  const [reading, setReading] = useState<DrillRow | null>(null);
+  const [drillLog, setDrillLog] = useState<DrillRow[]>([]);
 
   const uid = session.userId;
   const token = session.userToken;
@@ -59,6 +63,7 @@ export function Aims() {
     api.goals(uid, token).then(setGoals).catch(fail);
     api.habits(uid, token).then(setHabits).catch(fail);
     api.budgets(uid, token).then(setBoard).catch(fail);
+    api.drills(uid, token).then(setDrillLog).catch(() => setDrillLog([]));
   }
   function fail(e: unknown) { setError((e as Error).message); }
   useEffect(load, [uid]);
@@ -213,6 +218,50 @@ export function Aims() {
                   })}>{tr("aim.activity.log", lang)}</button>
         </div>
         <p className="muted small">{tr("aim.activity.pitch", lang)}</p>
+      </div>
+
+      {/* Interview drills: the question bank is local, so practice works
+          with the network cut; the reading says who made it — the online
+          coach, or the probe checklist standing in honestly. */}
+      <div className="card">
+        <h3>{tr("drl.title", lang)}</h3>
+        <p className="muted small">{tr("drl.pitch", lang)}</p>
+        <button className="primary" disabled={busy}
+                onClick={() => run(async () => {
+                  setReading(null); setDrillAnswer("");
+                  setDrill(await api.startDrill(uid!, token!));
+                })}>{tr("drl.deal", lang)}</button>
+        {drill && (
+          <>
+            <p><strong>{drill.question}</strong></p>
+            <p className="muted small">
+              {tr("drl.probes", lang)}: {(drill.probes ?? []).join(" · ")}
+            </p>
+            <textarea rows={4} value={drillAnswer}
+                      placeholder={tr("drl.answer.ph", lang)}
+                      onChange={(e) => setDrillAnswer(e.target.value)} />
+            <button className="primary"
+                    disabled={busy || !drillAnswer.trim()}
+                    onClick={() => run(async () => {
+                      setReading(await api.answerDrill(
+                        uid!, drill.id, drillAnswer.trim(), token!));
+                      setDrill(null); setDrillAnswer("");
+                    })}>{tr("drl.read", lang)}</button>
+          </>
+        )}
+        {reading && (
+          <p className="muted small">
+            {reading.described_by === "model" && reading.feedback
+              ? reading.feedback
+              : tr("drl.checklist", lang)}
+          </p>
+        )}
+        {drillLog.filter((d) => d.answered_at).slice(0, 5).map((d) => (
+          <div key={d.id} className="muted small"
+               style={{ padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
+            {d.question}
+          </div>
+        ))}
       </div>
     </div>
   );

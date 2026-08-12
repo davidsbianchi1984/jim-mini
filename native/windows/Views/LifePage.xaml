@@ -47,6 +47,25 @@
                                        Foreground="{StaticResource JimRedBrush}" />
                         </StackPanel>
                     </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="DrillHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <Button x:Name="DealDrillButton" Click="OnDealDrill" Foreground="White"
+                                    Background="{StaticResource JimBrandABrush}" />
+                            <TextBlock x:Name="DrillQuestion" FontSize="13" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="DrillProbes" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="DrillAnswerBox" AcceptsReturn="True" TextWrapping="Wrap" Height="70" />
+                            <Button x:Name="ReadDrillButton" Click="OnReadDrill" Foreground="White"
+                                    Background="{StaticResource JimBrandABrush}" />
+                            <TextBlock x:Name="DrillLine" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="DrillLog" />
+                        </StackPanel>
+                    </Border>
                     <ItemsControl x:Name="GoalsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>

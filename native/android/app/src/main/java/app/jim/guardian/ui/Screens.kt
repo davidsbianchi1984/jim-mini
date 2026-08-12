@@ -1820,7 +1820,14 @@ private fun GoalsPanel(vm: GuardianViewModel) {
     var area by remember { mutableStateOf("personal_growth") }
     var title by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
-    fun reload() { vm.call({ ApiClient.goals(vm.uid!!, vm.token!!) }) { r -> goals = r.getOrDefault(emptyList()) } }
+    var drill by remember { mutableStateOf<Triple<String, String, String>?>(null) }
+    var drillAnswer by remember { mutableStateOf("") }
+    var drillLine by remember { mutableStateOf<String?>(null) }
+    var drillLog by remember { mutableStateOf<List<String>>(emptyList()) }
+    fun reload() {
+        vm.call({ ApiClient.goals(vm.uid!!, vm.token!!) }) { r -> goals = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.drills(vm.uid!!, vm.token!!) }) { r -> drillLog = r.getOrDefault(emptyList()) }
+    }
     LaunchedEffect(Unit) { reload() }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -1850,6 +1857,33 @@ private fun GoalsPanel(vm: GuardianViewModel) {
                     }
                 }
             }
+        }
+        // Interview drills: deal, answer, and the reading names who made
+        // it — the coach, or the probe checklist standing in honestly.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("drl.title", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            BrandButton(L10n.t("drl.deal", vm.language), enabled = !busy) {
+                drillLine = null
+                vm.call({ ApiClient.startDrill(vm.uid!!, vm.token!!) }) { r ->
+                    drill = r.getOrNull()
+                }
+            }
+            drill?.let { d ->
+                Text(d.second, color = Jim.Txt, fontSize = 13.sp)
+                Text(d.third, color = Jim.T3, fontSize = 11.sp)
+                labeledField(L10n.t("drl.title", vm.language), drillAnswer,
+                    L10n.t("drl.answer.ph", vm.language)) { drillAnswer = it }
+                BrandButton(L10n.t("drl.read", vm.language),
+                    enabled = drillAnswer.isNotBlank()) {
+                    vm.call({ ApiClient.answerDrill(vm.uid!!, d.first,
+                        drillAnswer, vm.token!!) }) { r ->
+                        drillLine = r.getOrNull()?.ifEmpty { d.third }
+                        drill = null; drillAnswer = ""
+                    }
+                }
+            }
+            drillLine?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
+            drillLog.take(3).forEach { Text(it, color = Jim.T3, fontSize = 11.sp) }
         }
         ActivityPanel(vm)
     }

@@ -505,6 +505,17 @@ export interface MealRow {
 export interface JournalRow {
   id: string; text: string; created_at: string; vaulted?: boolean;
 }
+export interface DrillRow {
+  id: string;
+  kind: string;
+  question: string;
+  probes?: string[];
+  response?: string | null;
+  feedback?: string | null;
+  described_by?: string | null;   // model | checklist
+  created_at?: string;
+  answered_at?: string | null;
+}
 export interface LetterRow {
   id: string;
   week_start: string;
@@ -1095,6 +1106,16 @@ export const api = {
         body: contentB64 ? { note, content: contentB64 } : { note }, token }),
   meals: (uid: string, token: string) =>
     req<MealRow[]>(`/users/${uid}/meals`, { token }),
+
+  // Interview drills: the question bank is local; practice works offline.
+  startDrill: (uid: string, token: string, kind?: string) =>
+    req<DrillRow>(`/users/${uid}/drills`,
+      { method: "POST", body: kind ? { kind } : {}, token }),
+  answerDrill: (uid: string, drillId: string, answer: string, token: string) =>
+    req<DrillRow>(`/users/${uid}/drills/${drillId}/answer`,
+      { method: "POST", body: { answer }, token }),
+  drills: (uid: string, token: string) =>
+    req<DrillRow[]>(`/users/${uid}/drills`, { token }),
 
   // The weekly letter: what the last seven days actually held, in words.
   writeLetter: (uid: string, token: string) =>

@@ -263,6 +263,16 @@ struct Meal: Decodable, Identifiable {
     let created_at: String?
 }
 
+struct Drill: Decodable, Identifiable {
+    let id: String
+    let kind: String
+    let question: String
+    let probes: [String]?
+    let feedback: String?
+    let described_by: String?
+    let answered_at: String?
+}
+
 struct Letter: Decodable, Identifiable {
     let id: String
     let week_start: String
@@ -1044,6 +1054,23 @@ actor ApiClient {
 
     func letters(uid: String, token: String) async throws -> [Letter] {
         try await request("/users/\(uid)/letters", token: token)
+    }
+
+    /// Interview drills: the bank is server-local; practice works offline.
+    func startDrill(uid: String, token: String) async throws -> Drill {
+        try await request("/users/\(uid)/drills", method: "POST",
+                          body: [:], token: token)
+    }
+
+    func answerDrill(uid: String, token: String, drillId: String,
+                     answer: String) async throws -> Drill {
+        try await request("/users/\(uid)/drills/\(drillId)/answer",
+                          method: "POST", body: ["answer": answer],
+                          token: token)
+    }
+
+    func drills(uid: String, token: String) async throws -> [Drill] {
+        try await request("/users/\(uid)/drills", token: token)
     }
 
     // MARK: Model selection

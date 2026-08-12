@@ -59,6 +59,10 @@ public sealed partial class LifePage : Page
         LogMealButton.Content = L10n.T("mea.log");
         LetterHead.Text = L10n.T("let.title");
         WriteLetterButton.Content = L10n.T("let.write");
+        DrillHead.Text = L10n.T("drl.title");
+        DealDrillButton.Content = L10n.T("drl.deal");
+        DrillAnswerBox.PlaceholderText = L10n.T("drl.answer.ph");
+        ReadDrillButton.Content = L10n.T("drl.read");
         LocalizeMeds();
         ActHead.Text = L10n.T("aim.activity");
         ActPitch.Text = L10n.T("aim.activity.pitch");
@@ -78,6 +82,7 @@ public sealed partial class LifePage : Page
         await LoadJournal();
         await LoadMeals();
         await LoadLetters();
+        await LoadDrills();
         await LoadMoney();
         await LoadBudgets();
         await LoadSchedule();
@@ -254,6 +259,57 @@ public sealed partial class LifePage : Page
                     m.CreatedAt ?? "")).ToList();
         }
         catch { /* leave as-is */ }
+    }
+
+    // -- Interview drills: the bank is local; the reading names who
+    // made it -- the coach, or the probe checklist standing in honestly --
+
+    private string _drillId = "";
+    private string _drillProbes = "";
+
+    private async System.Threading.Tasks.Task LoadDrills()
+    {
+        var s = AppState.Current;
+        try
+        {
+            var rows = await ApiClient.Shared.Drills(s.Uid!, s.Token!);
+            DrillLog.ItemsSource = rows.Take(3)
+                .Select(d => new JournalRow(d.Question, d.AnsweredAt ?? ""))
+                .ToList();
+        }
+        catch { /* leave as-is */ }
+    }
+
+    private async void OnDealDrill(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try
+        {
+            var d = await ApiClient.Shared.StartDrill(s.Uid!, s.Token!);
+            _drillId = d.Id;
+            _drillProbes = string.Join(" · ", d.Probes ?? System.Array.Empty<string>());
+            DrillQuestion.Text = d.Question;
+            DrillProbes.Text = _drillProbes;
+            DrillLine.Text = "";
+        }
+        catch { /* ignore */ }
+    }
+
+    private async void OnReadDrill(object sender, RoutedEventArgs e)
+    {
+        var answer = DrillAnswerBox.Text.Trim();
+        if (answer.Length == 0 || _drillId.Length == 0) return;
+        var s = AppState.Current;
+        try
+        {
+            var read = await ApiClient.Shared.AnswerDrill(
+                s.Uid!, _drillId, answer, s.Token!);
+            DrillLine.Text = read.Feedback ?? _drillProbes;
+            DrillAnswerBox.Text = ""; _drillId = "";
+            DrillQuestion.Text = ""; DrillProbes.Text = "";
+            await LoadDrills();
+        }
+        catch { /* ignore */ }
     }
 
     // -- The weekly letter: composed only from what was logged --

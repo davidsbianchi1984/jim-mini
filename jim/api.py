@@ -67,6 +67,7 @@ from .models import (
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
     CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark, MealLog,
+    DrillStart, DrillAnswer,
 )
 from .cloud import CloudModelClient
 from .pdi_client import PDIClient
@@ -935,6 +936,38 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         from . import meals as meals_mod
         return meals_mod.board(user_id)
+
+    @app.post("/users/{user_id}/drills", status_code=201)
+    def start_drill(user_id: str, body: DrillStart, request: Request) -> dict:
+        """Deal one interview question from the local bank, with what it
+        probes stated up front — practice works with the network cut."""
+        user = _user_or_404(user_id, request)
+        from . import drills as drills_mod
+        try:
+            return drills_mod.start(user, body.kind)
+        except drills_mod.DrillError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.post("/users/{user_id}/drills/{drill_id}/answer")
+    def answer_drill(user_id: str, drill_id: str, body: DrillAnswer,
+                     request: Request) -> dict:
+        """Read one practice answer against what the question probes — by
+        the online coach when one is standing, by the checklist itself when
+        not, and the reading says which it was."""
+        user = _user_or_404(user_id, request)
+        from . import drills as drills_mod
+        try:
+            return drills_mod.answer(user, drill_id, body.answer,
+                                     cloud=app.state.cloud)
+        except drills_mod.DrillError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/users/{user_id}/drills")
+    def drill_history(user_id: str, request: Request) -> list[dict]:
+        """Recent drills, newest first."""
+        _user_or_404(user_id, request)
+        from . import drills as drills_mod
+        return drills_mod.history(user_id)
 
     @app.post("/users/{user_id}/letters", status_code=201)
     def write_letter(user_id: str, request: Request) -> dict:

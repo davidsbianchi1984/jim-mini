@@ -60,6 +60,10 @@ private struct GoalsSection: View {
     @State private var area = "personal_growth"
     @State private var title = ""
     @State private var busy = false
+    @State private var drill: Drill?
+    @State private var drillAnswer = ""
+    @State private var drillLine: String?
+    @State private var drillLog: [Drill] = []
 
     private let areas = ["mental_health", "health_fitness", "career",
                          "finance", "relationships", "personal_growth"]
@@ -80,6 +84,31 @@ private struct GoalsSection: View {
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }.disabled(title.isEmpty || busy)
+            }.card()
+
+            // Interview drills: deal, answer, and the reading names who
+            // made it — the coach, or the checklist standing in honestly.
+            VStack(alignment: .leading, spacing: 8) {
+                Text(L10n.t("drl.title", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                Button(L10n.t("drl.deal", state.language)) { deal() }
+                    .font(.caption.bold()).disabled(busy)
+                if let d = drill {
+                    Text(d.question).font(.caption).foregroundStyle(Theme.txt)
+                    Text((d.probes ?? []).joined(separator: " · "))
+                        .font(.caption2).foregroundStyle(Theme.t3)
+                    TextField(L10n.t("drl.answer.ph", state.language),
+                              text: $drillAnswer)
+                        .textFieldStyle(.roundedBorder)
+                    Button(L10n.t("drl.read", state.language)) { readAnswer() }
+                        .font(.caption.bold())
+                        .disabled(busy || drillAnswer.isEmpty)
+                }
+                if let drillLine {
+                    Text(drillLine).font(.caption2).foregroundStyle(Theme.t2)
+                }
+                ForEach(drillLog.prefix(3)) { d in
+                    Text(d.question).font(.caption2).foregroundStyle(Theme.t3)
+                }
             }.card()
 
             ForEach(goals, id: \.id) { g in
@@ -106,6 +135,7 @@ private struct GoalsSection: View {
     private func load() async {
         guard let uid = state.uid, let token = state.token else { return }
         goals = (try? await ApiClient.shared.goals(uid: uid, token: token)) ?? []
+        drillLog = (try? await ApiClient.shared.drills(uid: uid, token: token)) ?? []
     }
 
     private func add() {
@@ -114,6 +144,30 @@ private struct GoalsSection: View {
         Task {
             _ = try? await ApiClient.shared.addGoal(uid: uid, token: token, area: area, title: title, target: nil)
             title = ""; await load(); busy = false
+        }
+    }
+
+    private func deal() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true
+        Task {
+            drillLine = nil
+            drill = try? await ApiClient.shared.startDrill(uid: uid, token: token)
+            busy = false
+        }
+    }
+
+    private func readAnswer() {
+        guard let uid = state.uid, let token = state.token,
+              let d = drill else { return }
+        busy = true
+        Task {
+            let read = try? await ApiClient.shared.answerDrill(
+                uid: uid, token: token, drillId: d.id, answer: drillAnswer)
+            // The reading, or the probes to measure against, honestly.
+            drillLine = read?.feedback
+                ?? (d.probes ?? []).joined(separator: " · ")
+            drill = nil; drillAnswer = ""; busy = false
         }
     }
 

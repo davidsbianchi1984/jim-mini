@@ -1121,6 +1121,20 @@ CREATE TABLE IF NOT EXISTS meals (
     created_at   TEXT NOT NULL
 );
 
+-- Interview drills: the question bank is code; the table is the practice.
+CREATE TABLE IF NOT EXISTS drills (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL,
+    kind         TEXT NOT NULL,
+    question     TEXT NOT NULL,
+    probes       TEXT NOT NULL,      -- newline-joined, as dealt
+    response     TEXT,
+    feedback     TEXT,               -- NULL when the checklist stood in
+    described_by TEXT,               -- model | checklist
+    created_at   TEXT NOT NULL,
+    answered_at  TEXT
+);
+
 -- The weekly letter: composed only from what was logged, the digest kept
 -- beside the prose so the reader can always see the facts under the words.
 CREATE TABLE IF NOT EXISTS letters (

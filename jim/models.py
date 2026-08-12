@@ -39,6 +39,17 @@ class CaptureTake(BaseModel):
     intimate_consent: bool = False
 
 
+class DrillStart(BaseModel):
+    """Deal one interview question (jim/drills.py); ``kind`` narrows the
+    bank, or None deals from the whole of it."""
+    kind: str | None = None
+
+
+class DrillAnswer(BaseModel):
+    """One practice answer, read against what the question probes."""
+    answer: str
+
+
 class MealLog(BaseModel):
     """One meal (jim/meals.py): the note is the log, the photo (base64, in
     ``content`` like every capture door) is the sealed receipt. Either alone

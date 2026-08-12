@@ -2692,6 +2692,7 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'cap_per_order': {'en': 'Cap per order', 'es': 'Límite por orden', 'fr': 'Plafond par ordre', 'de': 'Limit pro Auftrag', 'pt': 'Limite por ordem', 'it': 'Tetto per ordine', 'ja': '注文ごとの上限', 'zh': '单笔上限', 'hi': 'प्रति आदेश सीमा', 'ar': 'الحد لكل أمر'},
     'enabled': {'en': 'Enabled', 'es': 'Activado', 'fr': 'Activé', 'de': 'Aktiviert', 'pt': 'Ativado', 'it': 'Attivo', 'ja': '有効', 'zh': '启用', 'hi': 'सक्रिय', 'ar': 'مفعّل'},
     'institution': {'en': 'Institution', 'es': 'Institución', 'fr': 'Établissement', 'de': 'Institut', 'pt': 'Instituição', 'it': 'Istituto', 'ja': '金融機関', 'zh': '机构', 'hi': 'संस्था', 'ar': 'المؤسسة'},
+    'answer': {'en': 'Your answer', 'es': 'Tu respuesta', 'fr': 'Votre réponse', 'de': 'Ihre Antwort', 'pt': 'A sua resposta', 'it': 'La tua risposta', 'ja': 'あなたの答え', 'zh': '你的回答', 'hi': 'आपका उत्तर', 'ar': 'إجابتك'},
     'kind': {'en': 'Kind', 'es': 'Tipo', 'fr': 'Type', 'de': 'Art', 'pt': 'Tipo', 'it': 'Tipo', 'ja': '種類', 'zh': '类型', 'hi': 'प्रकार', 'ar': 'النوع'},
     'label': {'en': 'Label', 'es': 'Etiqueta', 'fr': 'Libellé', 'de': 'Bezeichnung', 'pt': 'Etiqueta', 'it': 'Etichetta', 'ja': 'ラベル', 'zh': '标签', 'hi': 'लेबल', 'ar': 'التسمية'},
     'monthly_cap': {'en': 'Monthly cap', 'es': 'Límite mensual', 'fr': 'Plafond mensuel', 'de': 'Monatslimit', 'pt': 'Limite mensal', 'it': 'Tetto mensile', 'ja': '月間上限', 'zh': '每月上限', 'hi': 'मासिक सीमा', 'ar': 'الحد الشهري'},

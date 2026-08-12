@@ -745,6 +745,30 @@ object ApiClient {
         }
     }
 
+    /** Interview drills: deal one question; Triple(id, question, probes). */
+    suspend fun startDrill(uid: String, token: String): Triple<String, String, String> {
+        val o = JSONObject(request("/users/$uid/drills", "POST", JSONObject(), token))
+        val probes = o.optJSONArray("probes")
+        val joined = (0 until (probes?.length() ?: 0))
+            .joinToString(" · ") { probes!!.getString(it) }
+        return Triple(o.optString("id"), o.optString("question"), joined)
+    }
+
+    /** The reading, or empty when the checklist stands in. */
+    suspend fun answerDrill(uid: String, drillId: String, answer: String,
+                            token: String): String {
+        val o = JSONObject(request("/users/$uid/drills/$drillId/answer",
+            "POST", JSONObject().put("answer", answer), token))
+        return if (o.isNull("feedback")) "" else o.optString("feedback")
+    }
+
+    suspend fun drills(uid: String, token: String): List<String> {
+        val a = org.json.JSONArray(request("/users/$uid/drills", token = token))
+        return (0 until a.length()).map { i ->
+            a.getJSONObject(i).optString("question")
+        }
+    }
+
     // ---- model selection ----
 
     suspend fun models(): List<ProviderInfo> {

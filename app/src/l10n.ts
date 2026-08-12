@@ -3205,6 +3205,27 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "mea.sealed": {
     en: "photo sealed", es: "foto sellada", fr: "photo scellée", de: "Foto versiegelt", pt: "foto selada", it: "foto sigillata", ja: "写真は封印済み", zh: "照片已封存", hi: "फ़ोटो सील", ar: "الصورة مختومة",
   },
+  "drl.title": {
+    en: "Interview drill", es: "Simulacro de entrevista", fr: "Exercice d'entretien", de: "Interview-Übung", pt: "Treino de entrevista", it: "Simulazione di colloquio", ja: "面接ドリル", zh: "面试演练", hi: "साक्षात्कार अभ्यास", ar: "تدريب المقابلة",
+  },
+  "drl.pitch": {
+    en: "Practice the answer before the room is real — the questions live on your device, so drilling works offline.", es: "Practica la respuesta antes de que la sala sea real — las preguntas viven en tu dispositivo, así que el ensayo funciona sin conexión.", fr: "Entraînez votre réponse avant que la salle ne soit réelle — les questions vivent sur votre appareil, l'exercice fonctionne donc hors ligne.", de: "Üben Sie die Antwort, bevor der Raum echt ist — die Fragen liegen auf Ihrem Gerät, das Üben funktioniert also offline.", pt: "Pratique a resposta antes de a sala ser real — as perguntas vivem no seu dispositivo, por isso o treino funciona offline.", it: "Prova la risposta prima che la stanza sia reale — le domande vivono sul tuo dispositivo, quindi l'esercizio funziona offline.", ja: "本番の前に答えを練習しましょう — 質問は端末内にあるので、オフラインでも練習できます。", zh: "在真正走进面试间之前练习你的回答 — 题目就在你的设备上，离线也能演练。", hi: "कमरा असली होने से पहले उत्तर का अभ्यास करें — प्रश्न आपके डिवाइस पर हैं, इसलिए अभ्यास ऑफ़लाइन भी चलता है।", ar: "تدرّب على الإجابة قبل أن تصبح الغرفة حقيقية — الأسئلة على جهازك، فالتدريب يعمل دون اتصال.",
+  },
+  "drl.deal": {
+    en: "Deal a question", es: "Sacar una pregunta", fr: "Tirer une question", de: "Eine Frage ziehen", pt: "Tirar uma pergunta", it: "Pesca una domanda", ja: "質問を引く", zh: "抽一道题", hi: "एक प्रश्न निकालें", ar: "اسحب سؤالًا",
+  },
+  "drl.probes": {
+    en: "What it probes", es: "Qué sondea", fr: "Ce qu'elle sonde", de: "Was sie prüft", pt: "O que sonda", it: "Cosa sonda", ja: "問われていること", zh: "考察什么", hi: "यह क्या परखता है", ar: "ما الذي يسبره",
+  },
+  "drl.answer.ph": {
+    en: "Say it out loud, then write what you said", es: "Dilo en voz alta y luego escribe lo que dijiste", fr: "Dites-le à voix haute, puis écrivez ce que vous avez dit", de: "Sagen Sie es laut, dann schreiben Sie auf, was Sie gesagt haben", pt: "Diga em voz alta e depois escreva o que disse", it: "Dillo ad alta voce, poi scrivi ciò che hai detto", ja: "声に出して言ってから、言ったことを書きましょう", zh: "先大声说出来，再写下你说的话", hi: "पहले ज़ोर से कहें, फिर जो कहा वह लिखें", ar: "قلها بصوت عالٍ ثم اكتب ما قلته",
+  },
+  "drl.read": {
+    en: "Read my answer", es: "Leer mi respuesta", fr: "Lire ma réponse", de: "Meine Antwort lesen", pt: "Ler a minha resposta", it: "Leggi la mia risposta", ja: "答えを読む", zh: "点评我的回答", hi: "मेरा उत्तर पढ़ें", ar: "اقرأ إجابتي",
+  },
+  "drl.checklist": {
+    en: "No online coach is standing — measure your answer against the probes above, honestly.", es: "No hay coach en línea — mide tu respuesta contra las sondas de arriba, con honestidad.", fr: "Aucun coach en ligne — mesurez votre réponse aux sondes ci-dessus, honnêtement.", de: "Kein Online-Coach verfügbar — messen Sie Ihre Antwort ehrlich an den Prüfpunkten oben.", pt: "Nenhum coach online disponível — meça a sua resposta contra as sondas acima, com honestidade.", it: "Nessun coach online disponibile — misura la tua risposta sulle sonde qui sopra, onestamente.", ja: "オンラインコーチは不在です — 上の観点に照らして、自分の答えを正直に測ってください。", zh: "没有在线教练 — 请诚实地按上面的考察点衡量你的回答。", hi: "कोई ऑनलाइन कोच नहीं है — ऊपर के बिंदुओं पर अपना उत्तर ईमानदारी से परखें।", ar: "لا مدرب متصل الآن — قِس إجابتك على النقاط أعلاه بصدق.",
+  },
   "let.title": {
     en: "Weekly letter", es: "Carta semanal", fr: "Lettre hebdomadaire", de: "Wochenbrief", pt: "Carta semanal", it: "Lettera settimanale", ja: "今週の手紙", zh: "每周信", hi: "साप्ताहिक पत्र", ar: "رسالة الأسبوع",
   },

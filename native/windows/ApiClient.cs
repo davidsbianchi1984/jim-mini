@@ -201,6 +201,15 @@ public record Meal(
     [property: JsonPropertyName("photo_sealed")] bool PhotoSealed,
     [property: JsonPropertyName("created_at")] string? CreatedAt);
 
+public record Drill(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("question")] string Question,
+    [property: JsonPropertyName("probes")] string[]? Probes,
+    [property: JsonPropertyName("feedback")] string? Feedback,
+    [property: JsonPropertyName("described_by")] string? DescribedBy,
+    [property: JsonPropertyName("answered_at")] string? AnsweredAt);
+
 public record Letter(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("week_start")] string WeekStart,
@@ -951,6 +960,18 @@ public sealed class ApiClient
 
     public Task<Letter[]> Letters(string uid, string token) =>
         Send<Letter[]>(Get($"/users/{uid}/letters", token));
+
+    /// <summary>Interview drills: the bank is local; works offline.</summary>
+    public Task<Drill> StartDrill(string uid, string token) =>
+        Send<Drill>(Post($"/users/{uid}/drills", new { }, token));
+
+    public Task<Drill> AnswerDrill(string uid, string drillId,
+        string answer, string token) =>
+        Send<Drill>(Post($"/users/{uid}/drills/{drillId}/answer",
+            new { answer }, token));
+
+    public Task<Drill[]> Drills(string uid, string token) =>
+        Send<Drill[]>(Get($"/users/{uid}/drills", token));
 
     // -- model selection --
 
