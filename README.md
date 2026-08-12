@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.66.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.67.0** ([changelog](CHANGELOG.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -373,6 +373,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.67.0** | **The tandem carries the pulse** — connected apps route their collections to where they do work (a reading walks the watch intake, the room lands where the coach reads it); the readings that trigger a detection cross the Guardian→QRME handoff as real biometrics, so the specialist answers the pulse and not a sentence about it; collected rooms are scanned by an offline, referenced hazard table that warns before it wounds; and a minor's activation code goes to their parent or guardian, so consent is a verified click and not a ticked box |
 | **0.66.0** | **The coach answers with the network cut** — the offline coach engine lands as the patents drew it: an add-and-norm stack over stored knowledge and current readings, every layer on the record, never touching the network; the curated pack jampacked to thirty-nine entries across all six areas; learned excursions finally reach the coach, paid model turns deposit their answers so no gap is bought twice, misses write the curriculum, and one press of study fills them — store, curriculum and study each with four doors in ten languages |
 | **0.65.0** | **Cut in step** — no JIM code changed; QRME's standing rooms learned to be one place instead of a stamp, its lobby's join pitch gained the door it promised, and its friend faces open the friend's page |
 | **0.64.0** | **The footsteps show, and the fifth wearable family is every other wrist** — a footsteps counter rides `/health` into the console's top-right corner (enrolled people, as an aggregate, in ten languages, shrunk to a footprint on a same-evening field report); and the watch picker gains "Another brand's watch (via its own app)", whose recipe is a check rather than a promise — verify the vendor app in the phone's health-store list, follow the existing recipes when it appears, and hear the captive-data truth out loud when it never does |

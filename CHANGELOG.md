@@ -4,6 +4,32 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.67.0] - 2026-08-12
+
+### Added
+
+- **The plug-ins carry the readings.** Connected apps' collections route to
+  where they actually do work: a `reading` walks the same intake the watch
+  uses — vigil stand-down, detection, drift, baseline — an `environment`
+  item lands where the offline stack's environment layer reads it, and
+  everything else rides as linked context, vaulted when a vault stands.
+- **The tandem carries the pulse.** The readings that trigger a detection
+  cross the Guardian→QRME handoff as the chat's biometrics, so the
+  specialist's reply is conditioned on the pulse itself. Only what was
+  actually measured ships — the stored resting baseline never travels as a
+  current reading, and a note-only crisis carries prose alone. The vitals
+  are sealed in the vault record beside the message.
+- **The room warns before it wounds.** Collected environment items are read
+  for the room's dangers on arrival — a deterministic, offline, auditable
+  hazard table (gas, carbon monoxide, smoke, falls, heat, cold, ergonomic
+  strain, air quality), every entry carrying the reference its advice is
+  drawn from. Hazards land as Life insights and ride back on the collect
+  response, worst first.
+- **The guardian holds the code.** A minor's signup requires a parent or
+  guardian address distinct from their own; the activation code and link are
+  delivered to that inbox, resends follow it, and activation records whose
+  address consented and when. Consent is a verified click, not a ticked box.
+
 ## [0.66.0] - 2026-08-12
 
 ### Added
