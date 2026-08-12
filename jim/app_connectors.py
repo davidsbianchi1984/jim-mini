@@ -84,6 +84,7 @@ def collect(row: dict, items: list[dict], pdi=None) -> dict:
     source = f"app:{row['provider']}:{row['app']}"
     ingested = readings = environment = 0
     drifts: list[dict] = []
+    room_hazards: list[dict] = []
     for item in items:
         kind = item.get("kind") or "context"
         if kind == "reading" and item.get("metric") and item.get("value") is not None:
@@ -98,6 +99,18 @@ def collect(row: dict, items: list[dict], pdi=None) -> dict:
             life.add_context(row["user_id"], source, "environment",
                              {"content": item.get("content", "")}, pdi=None)
             environment += 1
+            # The room is read for its dangers on arrival (P001 clause 2:
+            # environmental hazards and ergonomic risks, caught before they
+            # manifest). Each hazard lands as an insight the Life view
+            # shows, with referenced advice — and rides back to the caller.
+            from . import hazards
+            for hazard in hazards.scan(item.get("content", "")):
+                life._insight(
+                    row["user_id"], "hazard",
+                    f"{hazard['hazard'].replace('_', ' ')} — "
+                    f"{hazard['advice']} ({hazard['reference']})",
+                    area="physical_health", source=source)
+                room_hazards.append(hazard)
         else:
             life.add_context(row["user_id"], source, "linked_context",
                              {"content": item.get("content", "")}, pdi=pdi)
@@ -108,7 +121,7 @@ def collect(row: dict, items: list[dict], pdi=None) -> dict:
     db.connect().commit()
     return {"connector": row["id"], "app": row["app"], "ingested": ingested,
             "readings": readings, "environment": environment,
-            "drift_crossings": drifts,
+            "drift_crossings": drifts, "room_hazards": room_hazards,
             "note": f"context from {row['label']} now informs guidance"}
 
 
