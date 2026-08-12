@@ -38,12 +38,16 @@ class FakeQRME:
     def __init__(self, hold=False):
         self.hold = hold
         self._n = 0
+        # Every chat payload this fake received, newest last — so a test can
+        # assert on what actually crossed the tandem, not just on the reply.
+        self.chats = []
 
     def post(self, path, json=None, headers=None):
         if path == "/interactors":
             self._n += 1
             return _Resp(201, {"id": f"usr_fake{self._n}"})
         if path.startswith("/profiles/") and path.endswith("/chat"):
+            self.chats.append(dict(json or {}))
             if self.hold:
                 return _Resp(200, {"profile_message": {
                     "content": None, "status": "pending",

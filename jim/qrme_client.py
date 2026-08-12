@@ -412,15 +412,25 @@ class QRMEClient:
             return None
         return r.json() if r.status_code < 300 else None
 
-    def specialist_reply(self, profile_id: str, interactor_id: str, message: str) -> dict:
+    def specialist_reply(self, profile_id: str, interactor_id: str,
+                         message: str, biometrics: dict | None = None) -> dict:
         """Send a message to a QRME specialist profile and return its reply.
 
         The reply has already passed QRME's moderation pipeline; ``content`` is
         ``None`` if QRME held it for owner approval.
+
+        ``biometrics`` carries the readings that triggered the handoff
+        (amended claim 6: real-time biometric data modifies the interaction
+        as it happens). QRME conditions the specialist's reply on them and
+        folds them into its latent embedding — the same current-readings
+        conditioning the offline coach applies locally.
         """
+        payload: dict = {"interactor_id": interactor_id, "message": message}
+        if biometrics:
+            payload["biometrics"] = biometrics
         r = self._client.post(
             f"/profiles/{profile_id}/chat",
-            json={"interactor_id": interactor_id, "message": message},
+            json=payload,
         )
         if r.status_code >= 300:
             raise RuntimeError(f"QRME chat failed: {r.status_code}")

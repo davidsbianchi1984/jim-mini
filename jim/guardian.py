@@ -739,6 +739,12 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
     from . import vigil as _vigil
     _vigil.note_signal(user_id)
     user = get_user(user_id)
+    # What the caller actually presented, before the stored baseline is
+    # folded in below. Only these readings may cross the tandem as
+    # biometrics — a baseline shipped as a current reading would tell the
+    # specialist something nobody measured just now.
+    presented = {k: v for k, v in sample.items()
+                 if k not in ("note", "source_device")}
     resting = _effective_resting_hr(user_id, user, sample)
     if resting is not None and "resting_heart_rate" not in sample:
         sample = {**sample, "resting_heart_rate": resting}
@@ -911,7 +917,7 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
     else:
         result["guidance"] = _deliver(user_id, user, detection, note, qrme,
                                       source_device=sample.get("source_device"),
-                                      pdi=pdi)
+                                      pdi=pdi, vitals=presented or None)
         # Spec [0039]: guidance that went out gets asked about. The loop's
         # closing edge — "did that help?" — opens here and is answered at
         # POST /followup/{user_id} (jim/followup.py). An unhelped answer
@@ -1056,7 +1062,7 @@ def emergency(user_id: str, situation: str | None = None,
                                       sensitivity=sensitivity)
         if detection is not None:
             guidance = _deliver(user_id, user, detection, situation, qrme,
-                                pdi=pdi)
+                                pdi=pdi, vitals=sample or None)
         elif situation:
             guidance = {
                 "delivered": True, "source": "local", "content": (
@@ -1161,7 +1167,8 @@ def observe_activity(user_id: str, activity: str | None, signals: dict,
            severity=detection.severity,
            detail={"reason": detection.reason, "signals": detection.signals,
                    "proactive": True})
-    guidance = _deliver(user_id, user, detection, note, qrme, pdi=pdi)
+    guidance = _deliver(user_id, user, detection, note, qrme, pdi=pdi,
+                        vitals=signals or None)
     life._insight(
         user_id, "suggestion",
         f"I noticed you might be stuck — {detection.reason}. Offered a hand.",
@@ -1207,7 +1214,7 @@ def _tandem_safe(user, profile_id, qrme) -> tuple[bool, str | None]:
 
 
 def _deliver(user_id, user, detection, note, qrme, source_device=None,
-             pdi=None) -> dict:
+             pdi=None, vitals=None) -> dict:
     spec = _specialist(detection.condition)
     wants_tandem = bool(
         spec and spec["mode"] == "tandem" and spec["qrme_profile_id"])
@@ -1219,11 +1226,19 @@ def _deliver(user_id, user, detection, note, qrme, source_device=None,
         if not safe:
             use_tandem, safety_note = False, reason
 
+    # Vitals cross the tandem only when the detection was signal-driven —
+    # the readings that actually triggered it (amended claim 6). A note-only
+    # crisis carries prose alone: the sample dict may hold the user's stored
+    # baseline, and a baseline shipped as a current reading would tell the
+    # specialist something nobody measured just now.
+    if not getattr(detection, "signals", None):
+        vitals = None
+
     delivered = None
     if use_tandem:
         try:
             delivered = _tandem_guidance(user_id, user, detection, note, spec,
-                                         qrme, pdi=pdi)
+                                         qrme, pdi=pdi, vitals=vitals)
         except RuntimeError:
             # QRME refused (e.g. its own age-gate) — never leave the user
             # without help; fall back to local guidance.
@@ -1292,8 +1307,16 @@ def tandem_safe(user, profile_id, qrme) -> tuple[bool, str | None]:
 
 
 def _tandem_guidance(user_id, user, detection, note, spec, qrme,
-                     pdi=None) -> dict:
-    """Delegate guidance to a QRME specialist profile over HTTP."""
+                     pdi=None, vitals=None) -> dict:
+    """Delegate guidance to a QRME specialist profile over HTTP.
+
+    ``vitals`` are the readings that triggered the detection. They travel as
+    the chat's ``biometrics`` (amended claim 6: real-time biometric data
+    modifies the interaction as it happens), so the specialist's reply is
+    conditioned on the pulse itself — not just on a sentence describing it —
+    and QRME's specialist-handoff machinery sees the same signal Guardian
+    saw.
+    """
     conn = db.connect()
     interactor_id = interactor_for(user_id, user, qrme)
 
@@ -1304,7 +1327,8 @@ def _tandem_guidance(user_id, user, detection, note, spec, qrme,
         + (f' They said: "{note}".' if note else "")
         + " Please offer brief, supportive guidance."
     )
-    reply = qrme.specialist_reply(spec["qrme_profile_id"], interactor_id, message)
+    reply = qrme.specialist_reply(spec["qrme_profile_id"], interactor_id,
+                                  message, biometrics=vitals)
     out = {
         "delivered": reply["content"] is not None,
         "source": "tandem",
@@ -1330,6 +1354,7 @@ def _tandem_guidance(user_id, user, detection, note, spec, qrme,
                 "qrme_profile_id": spec["qrme_profile_id"],
                 "qrme_interactor_id": interactor_id,
                 "message": message,
+                "vitals": vitals,
                 "reply": reply["content"],
                 "reply_status": reply["status"],
                 "at": db.utcnow(),
