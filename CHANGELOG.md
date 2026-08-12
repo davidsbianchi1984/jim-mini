@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.65.0] - 2026-08-12
+
+### Version alignment
+
+No JIM code changed this round. The work was QRME's rooms: the join
+door its lobby pitch had promised, the standing rooms learning to be
+one place instead of a stamp, and the home screen's friend faces
+opening the friend's page. The three products are cut together, so one
+number names one combination of all three.
+
 ## [0.64.0] - 2026-08-12
 
 ### Added

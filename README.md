@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.64.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.65.0** ([changelog](CHANGELOG.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -373,6 +373,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.65.0** | **Cut in step** — no JIM code changed; QRME's standing rooms learned to be one place instead of a stamp, its lobby's join pitch gained the door it promised, and its friend faces open the friend's page |
 | **0.64.0** | **The footsteps show, and the fifth wearable family is every other wrist** — a footsteps counter rides `/health` into the console's top-right corner (enrolled people, as an aggregate, in ten languages, shrunk to a footprint on a same-evening field report); and the watch picker gains "Another brand's watch (via its own app)", whose recipe is a check rather than a promise — verify the vendor app in the phone's health-store list, follow the existing recipes when it appears, and hear the captive-data truth out loud when it never does |
 | **0.63.0** | **The imported link is visited, and the console fits the phone** — `POST /social/connection/{cid}/scrape` goes to the public address a collect connection has always carried and ingests what a browser would show anybody as a `social:<platform>` context event, the Guardian understanding more of the life it looks after; offline refuses before any socket opens, and the door opens from the console and all three shells. The field-reported layout defects — the screen that did not fit, the list that stuck halfway — trace to one root: grid items refusing to shrink; the tracks clamp now, the app height follows `100dvh`, and the sidebar scrolls on its own |
 | **0.62.0** | **The phones reach parity with the console** — eleven rounds in one branch: every backend route now has a door on iOS, Android and Windows, the doorless ledgers closing at the four by-design rows; the voice pair lands on all three shells with the device's own voice as the fallback and the microphone asking before it listens; Android learns to say PATCH through the override the backend pins with a test; and the most-touched screens swap their English for the ten-language tables, the untranslated ratchet falling to 12/31/24 |
