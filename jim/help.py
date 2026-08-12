@@ -119,6 +119,38 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "Bearing: what you set (language, tone, sensitivity), what you told "
         "it (conditions, context, sources), and what it made of that — the "
         "insights and follow-ups it wrote about you.",
+    ("meal", "plate", "what i ate", "food photo", "log a meal", "ate today"):
+        "Journal → Meals: photograph the plate and say a sentence about it "
+        "— the photo seals like a clinical capture, the note is the log the "
+        "offline coach reads, and the day's meals read back newest first.",
+    ("weekly letter", "letter", "my week in words", "week in review"):
+        "Journal → Weekly letter: a short letter composed only from what "
+        "you actually logged that week — check-ins, meals, habits, journal "
+        "entries, goal movement — and a week with nothing in it says so "
+        "rather than inventing one.",
+    ("interview", "drill", "drills", "practice an answer",
+     "rehearse an answer", "job question"):
+        "Aims → Interview drills: a question dealt from a local bank with "
+        "three probes under it, and an honest reading of your answer — a "
+        "model's when one is reachable, a written checklist's when not, "
+        "and it says which.",
+    ("statement", "bank", "aggregator", "plaid", "csv", "link my bank"):
+        "Settings → Money: drop a CSV statement into the vault — the "
+        "reading is deterministic and the closing balance wakes the same "
+        "warning ladder as spending — and record a bank-link consent "
+        "beside it; sync answers honestly that this deployment holds no "
+        "aggregator credentials rather than inventing a balance.",
+    ("hazard", "carbon monoxide", "gas leak", "smoke", "air quality",
+     "is my room safe", "dangers at home"):
+        "Connected apps' room readings are scanned on arrival by an "
+        "offline hazard table — gas, carbon monoxide, smoke, falls, heat, "
+        "cold, strain, air quality — each warning carrying the reference "
+        "it draws on, landing as Life insights worst first.",
+    ("guardian consent", "parent consent", "activation code", "minor",
+     "under 18", "my parent"):
+        "A minor's signup asks for a parent or guardian address distinct "
+        "from their own — the activation code and link go to that inbox, "
+        "and activation records whose address consented and when.",
 }
 
 

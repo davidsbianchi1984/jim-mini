@@ -217,7 +217,13 @@ LESSONS: tuple[dict, ...] = (
               "first, so a transcription slip is yours to fix before it "
               "becomes the record. Entries are sealed in your vault on a "
               "private plan, and an entry that says you're in danger is "
-              "read exactly like a reading that says so.",
+              "read exactly like a reading that says so. Meals live here "
+              "too: photograph the plate, say a sentence about it — the "
+              "photo seals like a clinical capture and the note is the log "
+              "the offline coach reads. And once a week you can ask for a "
+              "letter: your week in words, composed only from what you "
+              "actually logged, and a week with nothing in it says so "
+              "rather than inventing one.",
          screens=(87,),
          try_it="Open Journal and write one sentence about today."),
     dict(key="crashwatch", chapter="Being watched over",
@@ -301,7 +307,11 @@ LESSONS: tuple[dict, ...] = (
               "financial stress — which is one of the eight conditions it "
               "will take on rather than a footnote to the others. Telling it "
               "what you did is context, not a reading: it explains a heart "
-              "rate before JIM has to guess at one.",
+              "rate before JIM has to guess at one. Interview drills live "
+              "here too: a question dealt from a local bank, three probes "
+              "under it, and an honest reading of your answer — a model's "
+              "when one is reachable, a written checklist's when not, and "
+              "it says which.",
          screens=(95,),
          try_it="Set one goal and one habit, then log something you did."),
     dict(key="wards", chapter="Looking after somebody", title="Who you watch",
