@@ -4,6 +4,49 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.66.0] - 2026-08-12
+
+### Added
+
+- **The coach answers with the network cut.** The always-on half of
+  the product, built the way the owner drew it — the Transformer
+  diagram read as architecture. `jim/pipeline.py` is the offline coach
+  engine: the question arrives as the input, and context joins it as
+  residual add layers — [user data] first, then the current readings
+  ([vitals] from the bands, [speech], [tone], [environment]) — each
+  add followed by a norm that beats the block into a fixed shape.
+  Prediction chooses from the stored knowledge weighted by the
+  normalized context, the output side gets its own norm, and every
+  layer lands in the reply's provenance. The module never touches the
+  network — no provider import, no socket — and a guard reads its
+  imports and holds that promise. The expensive model is a teacher
+  hired occasionally; the coach is the graduate who lives with you.
+- **The store the stack predicts from grows three ways.** The curated
+  pack was jampacked to thirty-nine hand-written, referenced entries
+  with a real shelf in every one of the six areas — two ratchets hold
+  the total and the thinnest area. JIM's learned excursions now
+  actually reach the coach: the note under
+  `/excursions/entry/{cid}/learn` had said "the local model now uses
+  them" while nothing read them — the claim has behavior now. And a
+  paid model turn deposits its distilled answer into the store on the
+  way out, deduped by topic, so the same gap is never bought twice:
+  every token burned becomes a permanent asset.
+- **JIM imports knowledge as the coach needs it.** A question nothing
+  stored could answer is recorded as a gap; the curriculum
+  (`GET /coach/{user_id}/curriculum`) lists the gaps first, then reads
+  the monitored surface — bands with a learned baseline, active goals,
+  the dose board — minus what the store already covers, each
+  suggestion naming the monitor that asked. One press of study
+  (`POST /coach/{user_id}/study`) runs the excursion and learns the
+  findings in the same motion, closing the gap it came from. The store
+  is readable in full at `GET /coach/{user_id}/store`, provenance on
+  every entry — the user's own asset, grown by use. All three routes
+  carry their four doors (console, iPhone, Android, Windows), every
+  new word from the ten-language tables, and an empty curriculum with
+  no topic named refuses in ten languages. On the wire the store's
+  list is `excursions` and its text is `lesson` — one wire name, one
+  type.
+
 ## [0.65.0] - 2026-08-12
 
 ### Version alignment
