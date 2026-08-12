@@ -46,16 +46,94 @@ export async function say(text: string): Promise<"service" | "device"> {
 
 export interface Listener { stop: () => void }
 
+/** The minimal face of the platform's own recogniser. Typed here because
+ *  the DOM lib does not ship one, and `any` would hide the contract. */
+interface DeviceRecognition {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult:
+    ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void)
+    | null;
+  onerror: ((e: { error?: string }) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+}
+
+function deviceRecogniser(): (new () => DeviceRecognition) | null {
+  const w = window as unknown as Record<string, unknown>;
+  const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+  return typeof SR === "function"
+    ? (SR as new () => DeviceRecognition) : null;
+}
+
+/** Listen with the device's own recogniser — live, free, and no account.
+ *  Returns null where the platform ships none (some packaged webviews),
+ *  which is what the record-and-send path below exists for. */
+function deviceListener(
+  onText: (text: string) => void,
+  onError: (message: string) => void,
+): Listener | null {
+  const SR = deviceRecogniser();
+  if (SR === null) return null;
+  const rec = new SR();
+  rec.lang = navigator.language || "en";
+  rec.interimResults = false;
+  rec.continuous = false;
+  let heard = "";
+  let failed = false;
+  rec.onresult = (e) => {
+    heard = Array.from({ length: e.results.length },
+      (_, i) => e.results[i][0].transcript).join(" ").trim();
+  };
+  rec.onerror = (e) => {
+    failed = true;
+    onError(e.error === "not-allowed"
+      ? "no microphone available — check the app's microphone permission"
+      : `the device's recogniser could not hear that (${e.error || "unknown"})`);
+  };
+  rec.onend = () => {
+    if (failed) return;
+    if (heard) onText(heard);
+    else onError("nothing was heard in that");
+  };
+  rec.start();
+  return { stop: () => rec.stop() };
+}
+
+// Set when the configured service refuses, so the next tap goes straight to
+// the recogniser that works instead of failing the same way twice. Never
+// set by a transport blip on the settings read — only by the service
+// itself saying no.
+let preferDevice = false;
+
 /** Listen to the microphone and hand back what was said.
  *
- *  Recording and sending it to a transcription service is tried first,
- *  because it works the same in a packaged desktop app as in a browser. The
- *  browser's own recogniser is the fallback where no service is configured.
+ *  Which path listens is decided by what is configured, not by hope: a
+ *  deployment with a transcription key records and sends, because that
+ *  works the same in a packaged desktop app as in a browser; one without
+ *  uses the recogniser the device already ships — the fallback this
+ *  module's header always promised and, until a field report caught it,
+ *  this function never actually had.
  */
 export async function listen(
   onText: (text: string) => void,
   onError: (message: string) => void,
 ): Promise<Listener> {
+  let hasService = false;
+  try {
+    const s = await api.getVoiceSettings();
+    hasService = s.provider !== "device" && s.key_set;
+  } catch { /* an unreachable settings read never blocks listening */ }
+
+  if (!hasService || preferDevice) {
+    const dev = deviceListener(onText, onError);
+    if (dev) return dev;
+    // No recogniser either: record anyway, so the server's own honest
+    // refusal is what the person reads rather than a guess made here.
+  }
+
   let stream: MediaStream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -81,12 +159,18 @@ export async function listen(
       else onError("nothing was heard in that");
     } catch (e) {
       const msg = (e as Error).message;
-      // 503 = nothing configured. The browser's recogniser is the answer,
-      // but it cannot transcribe a finished recording — so say what to do
-      // rather than pretending.
-      onError(msg.includes("device")
-        ? "no transcription service is set up — add an OpenAI or ElevenLabs key in Settings to talk to the Guardian"
-        : msg);
+      // The recogniser cannot transcribe a finished recording, so these
+      // words are lost either way — but the next tap does not have to
+      // fail the same way twice.
+      if (deviceRecogniser() !== null) {
+        preferDevice = true;
+        onError(msg + " — tap the mic again and the device's own recogniser "
+          + "will listen instead");
+      } else {
+        onError(msg.includes("device")
+          ? "no transcription service is set up — add an OpenAI or ElevenLabs key in Settings to talk to the Guardian"
+          : msg);
+      }
     }
   };
   rec.start();

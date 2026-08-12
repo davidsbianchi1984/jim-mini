@@ -246,9 +246,11 @@ def transcribe(audio: bytes, filename: str = "speech.webm") -> str:
     # Before the `try`, deliberately: the clauses below turn transport errors
     # into a `VoiceError` a screen shows, and a refusal swallowed into one
     # would read as the provider being unreachable rather than as nothing
-    # being sent.
+    # being sent. The purpose names what actually leaves: recorded speech,
+    # sent to be recognised — this line said "speaking aloud" for versions,
+    # which described the other direction.
     from . import offline
-    offline.allow(url, "speaking aloud")
+    offline.allow(url, "transcribing recorded speech")
     try:
         with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
             data = json.loads(resp.read() or b"{}")
