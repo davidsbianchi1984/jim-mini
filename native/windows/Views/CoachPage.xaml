@@ -58,6 +58,27 @@
                 </StackPanel>
             </Border>
 
+            <!-- The offline coach's store and JIM's syllabus for it
+                 (jim/pipeline.py): what the stack predicts from, and the
+                 one-press study that deepens it. -->
+            <Border x:Name="KnowsCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="KnowsHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="KnowsCounts" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="StudyHead" FontWeight="Bold" FontSize="14"
+                               Foreground="{StaticResource JimTxtBrush}"
+                               Visibility="Collapsed" />
+                    <StackPanel x:Name="StudyPanel" Spacing="4" />
+                    <TextBlock x:Name="StudiedNote" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}"
+                               Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+
             <Border x:Name="SpecialistCard" Background="{StaticResource JimCardBrush}"
                     BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
                     CornerRadius="16" Padding="16" Visibility="Collapsed">

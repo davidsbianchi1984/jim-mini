@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
-import { api, type Guidance, type SpecialistAnswer } from "../api";
+import { useEffect, useRef, useState } from "react";
+import { api, type CoachCurriculum, type CoachStore, type Guidance,
+         type SpecialistAnswer } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { hush, listen, say, type Listener } from "../speech";
 import { useSession } from "../store";
@@ -19,6 +20,33 @@ export function Coach() {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const recorder = useRef<Listener | null>(null);
+
+  // The store the offline stack predicts from, and JIM's syllabus for it.
+  const [knows, setKnows] = useState<CoachStore | null>(null);
+  const [syllabus, setSyllabus] = useState<CoachCurriculum | null>(null);
+  const [studied, setStudied] = useState<string | null>(null);
+  const [studying, setStudying] = useState(false);
+
+  async function loadKnows() {
+    if (!session.userId || !session.userToken) return;
+    try {
+      setKnows(await api.coachStore(session.userId, session.userToken));
+      setSyllabus(await api.coachCurriculum(session.userId, session.userToken));
+    } catch { /* the ask card stands on its own */ }
+  }
+  useEffect(() => { loadKnows(); }, [session.userId]);
+
+  async function study(topic?: string, sArea?: string) {
+    if (!session.userId || !session.userToken) return;
+    setStudying(true); setError(null);
+    try {
+      const r = await api.coachStudy(session.userId,
+        { topic, area: sArea }, session.userToken);
+      setStudied(r.studied);
+      await loadKnows();
+    } catch (e) { setError((e as Error).message); }
+    finally { setStudying(false); }
+  }
 
   async function ask(text?: string) {
     const said = (text ?? message).trim();
@@ -135,6 +163,40 @@ export function Coach() {
                 finally { setBusy(false); }
               }}>{tr("spec.ask", lang)}</button>
             </div>
+          )}
+        </div>
+      )}
+
+      {knows && (
+        <div className="card">
+          <b>{tr("cch.knows", lang)}</b>
+          <div className="muted small">
+            {tr("cch.knows.counts", lang)
+              .replace("{pack}", String(knows.pack))
+              .replace("{learned}", String(knows.learned.length))
+              .replace("{deposits}", String(knows.deposits.length))}
+          </div>
+          {syllabus && syllabus.suggested.length > 0 && (
+            <>
+              <div className="muted small" style={{ marginTop: 8 }}>
+                <b>{tr("cch.study.head", lang)}</b>
+              </div>
+              {syllabus.suggested.map((s) => (
+                <div key={s.topic} className="spec-row">
+                  <div>
+                    {s.topic}
+                    <div className="muted small">{s.why}</div>
+                  </div>
+                  <button disabled={studying}
+                          onClick={() => study(s.topic, s.area)}>
+                    {tr("cch.study.go", lang)}
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+          {studied && (
+            <div className="muted small">✓ {studied} — {tr("cch.study.done", lang)}</div>
           )}
         </div>
       )}

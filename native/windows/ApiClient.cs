@@ -765,6 +765,20 @@ public sealed class ApiClient
     public Task<Guidance> Coach(string uid, string token, string area, string message) =>
         Send<Guidance>(Post($"/coach/{uid}", new { area, message }, token));
 
+    // The offline coach's store and syllabus (jim/pipeline.py): what the
+    // stack predicts from, what JIM should study next, and the one-press
+    // study that imports the findings.
+    public Task<CoachStore> CoachStore(string uid, string token) =>
+        Send<CoachStore>(Get($"/coach/{uid}/store", token));
+
+    public Task<CoachCurriculum> CoachCurriculum(string uid, string token) =>
+        Send<CoachCurriculum>(Get($"/coach/{uid}/curriculum", token));
+
+    public Task<CoachStudied> CoachStudy(string uid, string token,
+                                         string? topic, string? area) =>
+        Send<CoachStudied>(Post($"/coach/{uid}/study",
+            new { topic, area }, token));
+
     public async Task<BaselineMetric[]> Baseline(string uid, string token)
     {
         var req = new HttpRequestMessage(HttpMethod.Get, $"/baseline/{uid}");
@@ -2408,6 +2422,32 @@ public record SpecialistWho(
 public record SpecialistProvenance(
     [property: JsonPropertyName("method")] string Method,
     [property: JsonPropertyName("shared")] string Shared);
+
+// The offline coach's store and syllabus (jim/pipeline.py): what the stack
+// predicts from, what JIM should study next, and what one press of study did.
+public record CoachStoreEntry(
+    [property: JsonPropertyName("topic")] string Topic,
+    [property: JsonPropertyName("lesson")] string Lesson,
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("model")] string? Model);
+
+public record CoachStore(
+    [property: JsonPropertyName("pack")] int Pack,
+    [property: JsonPropertyName("learned")] CoachStoreEntry[] Learned,
+    [property: JsonPropertyName("deposits")] CoachStoreEntry[] Deposits);
+
+public record CoachSuggestion(
+    [property: JsonPropertyName("area")] string Area,
+    [property: JsonPropertyName("topic")] string Topic,
+    [property: JsonPropertyName("why")] string Why);
+
+public record CoachCurriculum(
+    [property: JsonPropertyName("suggested")] CoachSuggestion[] Suggested,
+    [property: JsonPropertyName("note")] string Note);
+
+public record CoachStudied(
+    [property: JsonPropertyName("studied")] string Studied,
+    [property: JsonPropertyName("folded")] bool Folded);
 
 public record SpecialistAnswer(
     [property: JsonPropertyName("delivered")] bool Delivered,

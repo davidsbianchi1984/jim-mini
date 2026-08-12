@@ -10,6 +10,12 @@ struct CoachView: View {
     @State private var error: String?
     @State private var fromSpecialist: SpecialistAnswer?
 
+    // The offline coach's store and JIM's syllabus for it (jim/pipeline.py).
+    @State private var knows: CoachStore?
+    @State private var syllabus: CoachCurriculum?
+    @State private var studied: String?
+    @State private var studying = false
+
     private let areas = ["mental_health", "health_fitness", "career",
                          "finance", "relationships", "personal_growth"]
 
@@ -68,6 +74,39 @@ struct CoachView: View {
                     }.card()
                 }
 
+                if let k = knows {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(L10n.t("cch.knows", state.language))
+                            .font(.headline).foregroundStyle(Theme.txt)
+                        let counts = "\(k.pack) · +\(k.learned.count) · +\(k.deposits.count)"
+                        Text(counts).font(.caption).foregroundStyle(Theme.t2)
+                        if let s = syllabus, !s.suggested.isEmpty {
+                            Text(L10n.t("cch.study.head", state.language))
+                                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                            ForEach(s.suggested, id: \.topic) { sug in
+                                HStack(alignment: .top) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(sug.topic).font(.caption)
+                                            .foregroundStyle(Theme.txt)
+                                        Text(sug.why).font(.caption2)
+                                            .foregroundStyle(Theme.t2)
+                                    }
+                                    Spacer()
+                                    Button(L10n.t("cch.study.go", state.language)) {
+                                        study(sug)
+                                    }.font(.caption).tint(Theme.brandA)
+                                        .disabled(studying)
+                                }
+                            }
+                        }
+                        if let studied {
+                            let done = L10n.t("cch.study.done", state.language)
+                            Text("✓ \(studied) — \(done)")
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                        }
+                    }.card()
+                }
+
                 if let a = fromSpecialist {
                     VStack(alignment: .leading, spacing: 6) {
                         Text((a.specialist?.label ?? L10n.t("spec.fallback", state.language))
@@ -96,6 +135,30 @@ struct CoachView: View {
                 // its answers landed, and what it made of that.
                 BearingCard()
             }.padding(20)
+        }
+        .onAppear { loadKnows() }
+    }
+
+    private func loadKnows() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            knows = try? await ApiClient.shared.coachStore(uid: uid, token: token)
+            syllabus = try? await ApiClient.shared.coachCurriculum(uid: uid,
+                                                                   token: token)
+        }
+    }
+
+    private func study(_ sug: CoachSuggestion) {
+        guard let uid = state.uid, let token = state.token else { return }
+        studying = true
+        Task {
+            do {
+                let r = try await ApiClient.shared.coachStudy(
+                    uid: uid, token: token, topic: sug.topic, area: sug.area)
+                studied = r.studied
+                loadKnows()
+            } catch { self.error = error.localizedDescription }
+            studying = false
         }
     }
 

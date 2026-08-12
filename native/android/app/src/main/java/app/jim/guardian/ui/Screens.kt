@@ -1643,6 +1643,19 @@ fun CoachScreen(vm: GuardianViewModel) {
     var reply by remember { mutableStateOf<Guidance?>(null) }
     var fromSpecialist by remember { mutableStateOf<SpecialistAnswer?>(null) }
 
+    // The offline coach's store and JIM's syllabus for it (jim/pipeline.py).
+    var knows by remember { mutableStateOf<CoachStore?>(null) }
+    var syllabus by remember { mutableStateOf<CoachCurriculum?>(null) }
+    var studied by remember { mutableStateOf<String?>(null) }
+    var studying by remember { mutableStateOf(false) }
+    var reloads by remember { mutableStateOf(0) }
+    LaunchedEffect(reloads) {
+        val uid = vm.uid ?: return@LaunchedEffect
+        val token = vm.token ?: return@LaunchedEffect
+        knows = runCatching { ApiClient.coachStore(uid, token) }.getOrNull()
+        syllabus = runCatching { ApiClient.coachCurriculum(uid, token) }.getOrNull()
+    }
+
     screenScroll {
         Text(L10n.t("coach.title", vm.language), color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text(L10n.t("coach.pitch", vm.language),
@@ -1700,6 +1713,37 @@ fun CoachScreen(vm: GuardianViewModel) {
                 }
                 a.method?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
                 a.shared?.let { Text(L10n.t("spec.shared", vm.language) + ": $it", color = Jim.T2, fontSize = 11.sp) }
+            }
+        }
+        knows?.let { k ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("cch.knows", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                val counts = "${k.pack} · +${k.learned.size} · +${k.deposits.size}"
+                Text(counts, color = Jim.T2, fontSize = 12.sp)
+                val s = syllabus
+                if (s != null && s.suggested.isNotEmpty()) {
+                    Text(L10n.t("cch.study.head", vm.language), color = Jim.Txt,
+                        fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    s.suggested.forEach { sug ->
+                        Text(sug.topic, color = Jim.Txt, fontSize = 13.sp)
+                        Text(sug.why, color = Jim.T2, fontSize = 11.sp)
+                        TextButton(enabled = !studying, onClick = {
+                            studying = true
+                            vm.call({ ApiClient.coachStudy(
+                                vm.uid!!, vm.token!!, sug.topic, sug.area) }) {
+                                studying = false
+                                studied = it.getOrNull()?.studied
+                                reloads += 1
+                            }
+                        }) { Text(L10n.t("cch.study.go", vm.language),
+                                  color = Jim.BrandA, fontSize = 12.sp) }
+                    }
+                }
+                studied?.let {
+                    val done = L10n.t("cch.study.done", vm.language)
+                    Text("✓ $it — $done", color = Jim.T2, fontSize = 11.sp)
+                }
             }
         }
         // The Guardian's bearing: tone, what it was told, whether its

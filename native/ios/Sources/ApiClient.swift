@@ -56,6 +56,40 @@ struct Guidance: Decodable {
     let custody: Custody?              // tandem exchanges sealed in PDI
 }
 
+// The offline coach's store and syllabus (jim/pipeline.py): what the
+// stack predicts from, what JIM should study next, and what one press
+// of study did.
+struct CoachStoreEntry: Decodable {
+    let topic: String
+    let lesson: String
+    let source: String
+    let model: String?
+    let area: String?
+}
+
+struct CoachStore: Decodable {
+    let pack: Int
+    let learned: [CoachStoreEntry]
+    let deposits: [CoachStoreEntry]
+}
+
+struct CoachSuggestion: Decodable {
+    let area: String
+    let topic: String
+    let why: String
+}
+
+struct CoachCurriculum: Decodable {
+    let suggested: [CoachSuggestion]
+    let note: String
+}
+
+struct CoachStudied: Decodable {
+    let studied: String
+    let folded: Bool
+    let left_host: Bool
+}
+
 struct LanguageInfo: Decodable {
     let code: String
     let label: String
@@ -871,6 +905,26 @@ actor ApiClient {
                          message: String) async throws -> SpecialistAnswer {
         try await request("/coach/\(uid)/specialist", method: "POST",
                           body: ["area": area, "message": message], token: token)
+    }
+
+    // The offline coach's store and syllabus (jim/pipeline.py): what the
+    // stack predicts from, what JIM should study next, and the one-press
+    // study that imports the findings.
+    func coachStore(uid: String, token: String) async throws -> CoachStore {
+        try await request("/coach/\(uid)/store", token: token)
+    }
+
+    func coachCurriculum(uid: String, token: String) async throws -> CoachCurriculum {
+        try await request("/coach/\(uid)/curriculum", token: token)
+    }
+
+    func coachStudy(uid: String, token: String, topic: String?,
+                    area: String?) async throws -> CoachStudied {
+        var body: [String: Any] = [:]
+        if let topic { body["topic"] = topic }
+        if let area { body["area"] = area }
+        return try await request("/coach/\(uid)/study", method: "POST",
+                                 body: body, token: token)
     }
 
     func baseline(uid: String, token: String) async throws -> [BaselineMetric] {

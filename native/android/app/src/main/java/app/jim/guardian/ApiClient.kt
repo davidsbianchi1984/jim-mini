@@ -37,6 +37,15 @@ data class SpecialistAnswer(val delivered: Boolean, val content: String?,
                             val heldForOwnerApproval: Boolean,
                             val label: String?, val method: String?,
                             val shared: String?)
+// The offline coach's store and syllabus (jim/pipeline.py): what the stack
+// predicts from, what JIM should study next, and what one press of study did.
+data class CoachStoreEntry(val topic: String, val lesson: String,
+                           val source: String, val model: String?)
+data class CoachStore(val pack: Int, val learned: List<CoachStoreEntry>,
+                      val deposits: List<CoachStoreEntry>)
+data class CoachSuggestion(val area: String, val topic: String, val why: String)
+data class CoachCurriculum(val suggested: List<CoachSuggestion>, val note: String)
+data class CoachStudied(val studied: String, val folded: Boolean)
 data class LanguageInfo(val code: String, val label: String, val safetyTranslated: Boolean)
 data class TranslateResult(val translation: String, val engine: String, val note: String?)
 data class ChildCreated(val id: String, val childToken: String,
@@ -556,6 +565,42 @@ object ApiClient {
         val o = request("/coach/$uid", "POST",
             JSONObject().put("area", area).put("message", message), token)
         return parseGuidance(o)!!
+    }
+
+    // The offline coach's store and syllabus (jim/pipeline.py): what the
+    // stack predicts from, what JIM should study next, and the one-press
+    // study that imports the findings.
+    suspend fun coachStore(uid: String, token: String): CoachStore {
+        val o = request("/coach/$uid/store", token = token)
+        fun rows(key: String): List<CoachStoreEntry> {
+            val arr = o.optJSONArray(key) ?: return emptyList()
+            return (0 until arr.length()).map { i ->
+                val e = arr.getJSONObject(i)
+                CoachStoreEntry(e.getString("topic"), e.getString("lesson"),
+                    e.getString("source"),
+                    if (e.isNull("model")) null else e.optString("model"))
+            }
+        }
+        return CoachStore(o.getInt("pack"), rows("learned"), rows("deposits"))
+    }
+
+    suspend fun coachCurriculum(uid: String, token: String): CoachCurriculum {
+        val o = request("/coach/$uid/curriculum", token = token)
+        val arr = o.getJSONArray("suggested")
+        return CoachCurriculum((0 until arr.length()).map { i ->
+            val s = arr.getJSONObject(i)
+            CoachSuggestion(s.getString("area"), s.getString("topic"),
+                s.getString("why"))
+        }, o.getString("note"))
+    }
+
+    suspend fun coachStudy(uid: String, token: String, topic: String?,
+                           area: String?): CoachStudied {
+        val body = JSONObject()
+        if (topic != null) body.put("topic", topic)
+        if (area != null) body.put("area", area)
+        val o = request("/coach/$uid/study", "POST", body, token)
+        return CoachStudied(o.getString("studied"), o.getBoolean("folded"))
     }
 
     /** Send this question to the QRME specialist covering the area. */

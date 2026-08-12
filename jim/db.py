@@ -1088,6 +1088,33 @@ CREATE TABLE IF NOT EXISTS memberships (
 CREATE INDEX IF NOT EXISTS memberships_live
     ON memberships (account_id, ended_at);
 
+-- The offline coach's growing floor (jim/pipeline.py): what a paid model
+-- turn or a learned excursion left behind, one row per lesson. The stack
+-- predicts from these before the curated pack, because they were learned
+-- for this user in particular.
+CREATE TABLE IF NOT EXISTS deposits (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    area       TEXT NOT NULL,
+    topic      TEXT NOT NULL,
+    guidance   TEXT NOT NULL,
+    source     TEXT NOT NULL,   -- coach | excursion
+    model      TEXT,            -- who taught it, when a model did
+    created_at TEXT NOT NULL
+);
+
+-- Questions the offline stack had no stored answer for (jim/pipeline.py):
+-- the coach's own misses, recorded so JIM can study exactly what was
+-- missing. The need writes the shopping list.
+CREATE TABLE IF NOT EXISTS gaps (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    area       TEXT NOT NULL,
+    question   TEXT NOT NULL,
+    filled     INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS robots (
     id           TEXT PRIMARY KEY,
     user_id      TEXT NOT NULL REFERENCES users(id),

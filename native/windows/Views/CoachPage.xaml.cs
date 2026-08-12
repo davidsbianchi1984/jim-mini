@@ -49,6 +49,8 @@ public sealed partial class CoachPage : Page
         GoodButton.Content = L10n.T("brg.tell.good");
         BadButton.Content = L10n.T("brg.tell.bad");
         MadeHead.Text = L10n.T("brg.made");
+        KnowsHead.Text = L10n.T("cch.knows");
+        StudyHead.Text = L10n.T("cch.study.head");
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -90,6 +92,71 @@ public sealed partial class CoachPage : Page
                 });
         }
         catch { /* backend offline */ }
+        await LoadKnows();
+    }
+
+    /// The offline coach's store and JIM's syllabus for it
+    /// (jim/pipeline.py) — and the one-press study that imports the
+    /// findings into the store.
+    private async System.Threading.Tasks.Task LoadKnows()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var knows = await ApiClient.Shared.CoachStore(s.Uid!, s.Token!);
+            var syllabus = await ApiClient.Shared.CoachCurriculum(s.Uid!, s.Token!);
+            KnowsCounts.Text =
+                $"{knows.Pack} · +{knows.Learned.Length} · +{knows.Deposits.Length}";
+            StudyPanel.Children.Clear();
+            foreach (var sug in syllabus.Suggested)
+            {
+                var row = new StackPanel { Spacing = 2 };
+                row.Children.Add(new TextBlock
+                {
+                    Text = sug.Topic, FontSize = 13, TextWrapping = TextWrapping.Wrap,
+                    Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                        Application.Current.Resources["JimTxtBrush"],
+                });
+                row.Children.Add(new TextBlock
+                {
+                    Text = sug.Why, FontSize = 11, TextWrapping = TextWrapping.Wrap,
+                    Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                        Application.Current.Resources["JimT2Brush"],
+                });
+                var go = new Button
+                {
+                    Content = L10n.T("cch.study.go"),
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                    Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                        Application.Current.Resources["JimBrandABrush"],
+                    FontSize = 12,
+                };
+                var topic = sug.Topic; var area = sug.Area;
+                go.Click += async (_, _) =>
+                {
+                    go.IsEnabled = false;
+                    try
+                    {
+                        var r = await ApiClient.Shared.CoachStudy(
+                            s.Uid!, s.Token!, topic, area);
+                        var done = L10n.T("cch.study.done");
+                        StudiedNote.Text = $"✓ {r.Studied} — {done}";
+                        StudiedNote.Visibility = Visibility.Visible;
+                        await LoadKnows();
+                    }
+                    catch (Exception ex) { ShowError(ex.Message); }
+                    finally { go.IsEnabled = true; }
+                };
+                row.Children.Add(go);
+                StudyPanel.Children.Add(row);
+            }
+            StudyHead.Visibility = syllabus.Suggested.Length > 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            KnowsCard.Visibility = Visibility.Visible;
+        }
+        catch { /* the ask card stands on its own */ }
     }
 
     private async void OnSetTone(object sender, RoutedEventArgs e)

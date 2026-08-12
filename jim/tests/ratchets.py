@@ -153,6 +153,16 @@ def _files_swept() -> int:
     return parsed_files()
 
 
+def _pack_entries() -> int:
+    from jim import knowledge
+    return len(knowledge.ENTRIES)
+
+
+def _pack_thinnest_area() -> int:
+    from jim import knowledge
+    return min(len(t) for t in knowledge.catalog()["areas"].values())
+
+
 #: The registry. Every entry replaced a bare literal inside an assertion; the
 #: assertion now reads its number from here, which is what takes it out of the
 #: unregistered backlog.
@@ -197,6 +207,11 @@ RATCHETS: tuple[Ratchet, ...] = (
             "test functions this suite declares"),
     Ratchet("sweep.files_parsed", 130, _files_swept,
             "test files the bare-floor sweep can read"),
+    Ratchet("knowledge.entries", 39, _pack_entries,
+            "hand-written entries in the offline pack"),
+    Ratchet("knowledge.thinnest_area", 5, _pack_thinnest_area,
+            "entries in the offline pack's thinnest area — the target was "
+            "'jampacked', held per area rather than in total"),
 )
 
 _BY_NAME = {r.name: r for r in RATCHETS}

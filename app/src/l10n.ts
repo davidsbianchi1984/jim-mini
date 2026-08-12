@@ -3199,6 +3199,21 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cch.title": {
     en: "Coach", es: "Coach", fr: "Coach", de: "Coach", pt: "Coach", it: "Coach", ja: "コーチ", zh: "教练", hi: "कोच", ar: "مدرب",
   },
+  "cch.knows": {
+    en: "What the coach holds", es: "Lo que el coach guarda", fr: "Ce que le coach détient", de: "Was der Coach bereithält", pt: "O que o coach guarda", it: "Ciò che il coach custodisce", ja: "コーチが持っている知識", zh: "教练掌握的内容", hi: "कोच के पास क्या है", ar: "ما يحتفظ به المدرب",
+  },
+  "cch.knows.counts": {
+    en: "{pack} curated entries · {learned} learned by JIM · {deposits} deposited from model turns — answered offline, on this device", es: "{pack} entradas seleccionadas · {learned} aprendidas por JIM · {deposits} depositadas de turnos del modelo — respondido sin conexión, en este dispositivo", fr: "{pack} entrées sélectionnées · {learned} apprises par JIM · {deposits} déposées depuis des tours du modèle — répondu hors ligne, sur cet appareil", de: "{pack} kuratierte Einträge · {learned} von JIM gelernt · {deposits} aus Modell-Antworten hinterlegt — offline beantwortet, auf diesem Gerät", pt: "{pack} entradas selecionadas · {learned} aprendidas pelo JIM · {deposits} depositadas de respostas do modelo — respondido offline, neste dispositivo", it: "{pack} voci curate · {learned} apprese da JIM · {deposits} depositate dai turni del modello — risposto offline, su questo dispositivo", ja: "厳選エントリ {pack} 件 · JIM が学んだもの {learned} 件 · モデル回答からの蓄積 {deposits} 件 — この端末上でオフライン回答", zh: "{pack} 条精选条目 · JIM 学到 {learned} 条 · 模型回答沉淀 {deposits} 条——在本设备离线作答", hi: "{pack} चुनी हुई प्रविष्टियाँ · JIM ने {learned} सीखीं · मॉडल उत्तरों से {deposits} जमा — इसी डिवाइस पर ऑफ़लाइन उत्तर", ar: "{pack} مدخلات منسّقة · تعلّم JIM ‏{learned} · ‏{deposits} مودَعة من ردود النموذج — يُجاب دون اتصال، على هذا الجهاز",
+  },
+  "cch.study.head": {
+    en: "What JIM should study next", es: "Lo próximo que JIM debería estudiar", fr: "Ce que JIM devrait étudier ensuite", de: "Was JIM als Nächstes studieren sollte", pt: "O que o JIM deve estudar a seguir", it: "Cosa dovrebbe studiare JIM adesso", ja: "JIM が次に学ぶべきこと", zh: "JIM 接下来该学什么", hi: "JIM को आगे क्या पढ़ना चाहिए", ar: "ما الذي ينبغي أن يدرسه JIM تاليًا",
+  },
+  "cch.study.go": {
+    en: "Study it", es: "Estudiarlo", fr: "L'étudier", de: "Studieren", pt: "Estudar", it: "Studialo", ja: "学ばせる", zh: "去学习", hi: "पढ़ो", ar: "ادرسه",
+  },
+  "cch.study.done": {
+    en: "Studied — the offline coach reads it from now on", es: "Estudiado — el coach sin conexión lo consulta desde ahora", fr: "Étudié — le coach hors ligne le consulte désormais", de: "Studiert — der Offline-Coach liest es von jetzt an", pt: "Estudado — o coach offline passa a consultá-lo", it: "Studiato — il coach offline lo consulta d'ora in poi", ja: "学習完了 — 今後はオフラインのコーチが参照します", zh: "已学习——离线教练从现在起可以引用它", hi: "पढ़ लिया — ऑफ़लाइन कोच अब से इसे पढ़ेगा", ar: "تمت الدراسة — سيقرؤه المدرب دون اتصال من الآن فصاعدًا",
+  },
   "cch.sub": {
     en: "24/7 across your life", es: "24/7 en toda tu vida", fr: "24h/24, dans toute votre vie", de: "rund um die Uhr, durch Ihr ganzes Leben", pt: "24/7 em toda a sua vida", it: "24 ore su 24, in tutta la tua vita", ja: "生活のあらゆる場面で、24時間365日", zh: "全天候陪伴你的生活", hi: "आपके जीवन भर, चौबीसों घंटे", ar: "على مدار الساعة في كل جوانب حياتك",
   },

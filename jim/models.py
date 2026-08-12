@@ -657,6 +657,14 @@ class CoachMessage(BaseModel):
     message: str
 
 
+class CoachStudy(BaseModel):
+    """One press of study (jim/pipeline.py curriculum): JIM runs an
+    excursion on ``topic`` — or, when omitted, on the curriculum's top
+    suggestion — and learns the findings straight into the coach's store."""
+    topic: str | None = None
+    area: LifeArea | None = None
+
+
 class BeaconPlace(BaseModel):
     """Print a watched person's beacon onto something.
 

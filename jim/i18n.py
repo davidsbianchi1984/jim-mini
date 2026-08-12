@@ -2118,6 +2118,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': 'इस परिनियोजन में नामांकन हेतु साइनअप कुंजी चाहिए — इसे x-signup-key हेडर में भेजें',
         'ar': 'يتطلّب هذا النشر مفتاح تسجيل — أرسله في ترويسة x-signup-key',
     },
+    'nothing to study — the curriculum is empty and no topic was named': {
+        'es': 'nada que estudiar — el plan de estudio está vacío y no se nombró ningún tema',
+        'fr': 'rien à étudier — le programme est vide et aucun sujet n\'a été nommé',
+        'de': 'nichts zu studieren — der Lehrplan ist leer und kein Thema wurde genannt',
+        'pt': 'nada para estudar — o currículo está vazio e nenhum tema foi indicado',
+        'it': 'niente da studiare — il programma è vuoto e nessun argomento è stato indicato',
+        'ja': '学ぶものがありません — カリキュラムは空で、テーマも指定されていません',
+        'zh': '没有可学习的内容——学习计划为空，也未指定主题',
+        'hi': 'पढ़ने के लिए कुछ नहीं — पाठ्यक्रम खाली है और कोई विषय नहीं बताया गया',
+        'ar': 'لا شيء للدراسة — المنهج فارغ ولم يُذكر أي موضوع',
+    },
     'this excursion has no findings to learn': {
         'es': 'esta excursión no tiene hallazgos que aprender',
         'fr': 'cette excursion n\'a aucun résultat à apprendre',

@@ -151,17 +151,28 @@ def reply(user_id: str, area: str, message: str) -> dict:
     gen = llm.generate_for_user(user_id, system, message)
     text = gen["text"]
 
-    # When the stub is what answered, the offline knowledge pack answers
-    # better: curated, referenced remedies across the six areas and the
-    # sensor-borne conditions — the floor under the coach until a model key
-    # is configured. A real model keeps its nuance; the pack never overrides
-    # one.
+    # When the stub is what answered, the offline stack answers better: the
+    # add-&-norm pipeline (jim/pipeline.py) over the curated pack, JIM's
+    # learned excursions and every deposit a paid turn left — chosen by the
+    # question *and* the current readings. A real model keeps its nuance;
+    # the stack never overrides one.
     knowledge_entry = None
+    pipeline_layers = None
     if gen["provider"] == "stub" or gen.get("degraded"):
-        from . import knowledge
-        knowledge_entry = knowledge.search(message, area)
-        if knowledge_entry is not None:
-            text = knowledge_entry["guidance"]
+        from . import pipeline
+        ran = pipeline.run(user_id, area, message)
+        pipeline_layers = ran["layers"]
+        if ran["text"] is not None:
+            knowledge_entry = ran["entry"]
+            text = ran["text"]
+    else:
+        # The paid turn becomes a permanent asset: distilled into the store
+        # the offline stack predicts from, so the same gap is never bought
+        # twice. The user's own words are the topic — it is their store.
+        from . import pipeline
+        if not _DENY.search(text):
+            pipeline.deposit(user_id, area, message, text, "coach",
+                             gen["provider"])
 
     safe = not _DENY.search(text)
     conn = db.connect()
@@ -222,9 +233,10 @@ def reply(user_id: str, area: str, message: str) -> dict:
             "bearing": carried,
             "adapted_bearing": adapted_bearing,
             "provenance": {
-                "method": ("offline knowledge pack — curated, deterministic, "
-                           "referenced; a configured model key replaces this "
-                           "with real conversation")
+                "method": ("offline pipeline — stored knowledge and current "
+                           "readings through an add-and-norm stack, every "
+                           "layer on the record; a configured model key "
+                           "replaces this with real conversation")
                           if knowledge_entry is not None else
                           "model-generated coaching grounded in this user's "
                           "own check-ins and goals — general habits advice, "
@@ -237,6 +249,10 @@ def reply(user_id: str, area: str, message: str) -> dict:
                 "degraded": gen["degraded"],
                 "degraded_reason": gen["reason"],
                 "evidence": (knowledge_entry or {}).get("references", []),
+                # The stack itself, layer by layer, when it ran — each add
+                # and each norm with what it contributed. A pipeline nobody
+                # can audit is a claim, not a mechanism.
+                "pipeline": pipeline_layers,
                 "disclaimer": "For medical, legal, or investment decisions, "
                               "consult a qualified professional.",
             }}

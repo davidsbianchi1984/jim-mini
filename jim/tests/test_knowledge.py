@@ -4,6 +4,7 @@ silent rather than wrong-topic.
 """
 
 from jim import knowledge
+from jim.tests import ratchets
 from jim.tests.conftest import enroll
 
 
@@ -15,7 +16,7 @@ def test_the_stub_coach_answers_from_the_pack(client):
     assert body["delivered"] is True
     assert "false alarm" in body["content"]
     prov = body["provenance"]
-    assert "knowledge pack" in prov["method"]
+    assert "offline pipeline" in prov["method"]
     assert any("panic" in r.lower() for r in prov["evidence"])
 
 
@@ -28,17 +29,21 @@ def test_below_the_threshold_the_pack_stays_silent(client):
         "area": "career",
         "message": "What do you think about my plan for tomorrow?"}).json()
     assert body["delivered"] is True
-    assert "knowledge pack" not in body["provenance"]["method"]
+    assert "offline pipeline" not in body["provenance"]["method"]
 
 
 def test_every_entry_carries_references_and_stays_on_the_guidance_side():
-    assert len(knowledge.ENTRIES) >= 15
+    assert len(knowledge.ENTRIES) >= ratchets.floor("knowledge.entries")
     for e in knowledge.ENTRIES:
         assert e["references"], e["topic"]
         assert e["area"] in {"mental_health", "health_fitness", "nutrition",
                              "career", "finance", "relationships"}, e["topic"]
     cat = knowledge.catalog()
-    # All six industries covered.
+    # All six industries covered — and each with a real shelf, not a token
+    # row. The owner's word for the target was "jampacked"; five per area
+    # is the floor that holds it.
     assert set(cat["areas"]) == {"mental_health", "health_fitness",
                                  "nutrition", "career", "finance",
                                  "relationships"}
+    for topics in cat["areas"].values():
+        assert len(topics) >= ratchets.floor("knowledge.thinnest_area")

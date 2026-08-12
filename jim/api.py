@@ -45,7 +45,7 @@ from .models import (
     ChildEnroll,
     CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
-    Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
+    CoachStudy, Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet,
@@ -2339,7 +2339,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         db.connect().execute("UPDATE excursions SET learned=1 WHERE id=?", (cid,))
         db.connect().commit()
         return {"learned": True, "already_learned": False,
-                "note": "findings folded into guidance context; the local model now uses them"}
+                "note": "findings folded into the coach's store; the offline "
+                        "pipeline reads them on the next question"}
 
     # ---- the money guardian (jim/money.py) --------------------------------
     # Credentials vault-or-refused; warnings ride the proactive ladder at
@@ -2655,6 +2656,65 @@ def create_app(qrme_client: QRMEClient | None = None,
                       area: str | None = None) -> list[dict]:
         _user_or_404(user_id, request)
         return coach.history(user_id, area)
+
+    @app.get("/coach/{user_id}/store")
+    def coach_store(user_id: str, request: Request) -> dict:
+        """What the offline coach can draw on for this user, provenance and
+        all: the curated pack's size, JIM's learned excursions, and the
+        deposits paid model turns left behind. This store is the user's own
+        asset — readable in full, grown by use."""
+        _user_or_404(user_id, request)
+        from . import pipeline
+        return pipeline.store(user_id)
+
+    @app.get("/coach/{user_id}/curriculum")
+    def coach_curriculum(user_id: str, request: Request) -> dict:
+        """What JIM should study next for this coach — the coach's own
+        recorded misses first, then where the user actually put the AI in
+        their life (bands with a learned baseline, active goals, the dose
+        board), minus what the store already covers. Each suggestion feeds
+        an excursion topic."""
+        _user_or_404(user_id, request)
+        from . import pipeline
+        return pipeline.curriculum(user_id)
+
+    @app.post("/coach/{user_id}/study", status_code=201)
+    def coach_study(user_id: str, body: CoachStudy, request: Request) -> dict:
+        """JIM imports knowledge for coach, in one press: an excursion on
+        the named topic — or the curriculum's top suggestion — with the
+        findings learned straight into the store. Online when a model can
+        be reached, honestly local when not; either way the store deepens
+        and any matching recorded miss closes."""
+        _user_or_404(user_id, request)
+        from . import pipeline
+        topic, area = body.topic, body.area
+        if not topic:
+            head = pipeline.curriculum(user_id)["suggested"][:1]
+            if not head:
+                raise HTTPException(409, "nothing to study — the curriculum "
+                                         "is empty and no topic was named")
+            topic, area = head[0]["topic"], head[0]["area"]
+        cloud = app.state.cloud
+        brief, redactions = research.sanitize(user_id, topic, [])
+        left_host = research.would_leave(cloud)
+        findings = research.gather(brief, cloud)
+        cid = db.new_id("exc")
+        conn = db.connect()
+        conn.execute(
+            "INSERT INTO excursions (id, user_id, topic, brief, redactions,"
+            " left_host, findings, learned, created_at) VALUES (?,?,?,?,?,?,?,1,?)",
+            (cid, user_id, topic, brief, redactions, int(left_host),
+             findings, db.utcnow()))
+        conn.execute(
+            "UPDATE gaps SET filled=1 WHERE user_id=? AND lower(question)=lower(?)",
+            (user_id, topic))
+        conn.commit()
+        # `folded`, not `learned`: the store route's `learned` is a list of
+        # entries, and one wire name carries one type.
+        return {"studied": topic, "area": area, "folded": True,
+                "left_host": left_host, "excursion_id": cid,
+                "note": "findings folded into the coach's store; the offline "
+                        "pipeline reads them on the next question"}
 
     @app.get("/insights/{user_id}")
     def get_insights(user_id: str, request: Request) -> list[dict]:

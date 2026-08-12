@@ -331,6 +331,16 @@ export interface Guidance { delivered: boolean; source?: string; content: string
   first_aid?: FirstAid | null;
   specialist_offer?: SpecialistOffer | null;
   provenance?: { generated_by?: string; degraded?: boolean; degraded_reason?: string | null } }
+// The offline coach's store and syllabus (jim/pipeline.py): what it can
+// draw on, what JIM should study next, and what one press of study did.
+export interface CoachStoreEntry { topic: string; lesson: string;
+  source: string; model: string | null; area?: string }
+export interface CoachStore { pack: number; learned: CoachStoreEntry[];
+  deposits: CoachStoreEntry[] }
+export interface CoachSuggestion { area: string; topic: string; why: string }
+export interface CoachCurriculum { suggested: CoachSuggestion[]; note: string }
+export interface CoachStudied { studied: string; area: string | null;
+  folded: boolean; left_host: boolean; excursion_id: string; note: string }
 export interface DriftCrossing {
   metric: string; label: string; unit: string; direction: "above" | "below";
   value: number; baseline: number; edge: number; delta: number; note: string;
@@ -1228,6 +1238,14 @@ export const api = {
   // is what they wrote.
   coachSpecialist: (uid: string, body: { area: string; message: string }, token: string) =>
     req<SpecialistAnswer>(`/coach/${uid}/specialist`, { method: "POST", body, token }),
+  // The store the offline stack predicts from, the syllabus read off the
+  // monitored surface, and the one-press study that imports the findings.
+  coachStore: (uid: string, token: string) =>
+    req<CoachStore>(`/coach/${uid}/store`, { token }),
+  coachCurriculum: (uid: string, token: string) =>
+    req<CoachCurriculum>(`/coach/${uid}/curriculum`, { token }),
+  coachStudy: (uid: string, body: { topic?: string; area?: string }, token: string) =>
+    req<CoachStudied>(`/coach/${uid}/study`, { method: "POST", body, token }),
   baseline: (uid: string, token: string) =>
     req<BaselineMetric[]>(`/baseline/${uid}`, { token }),
 
