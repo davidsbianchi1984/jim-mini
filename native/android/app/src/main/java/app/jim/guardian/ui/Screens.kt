@@ -682,7 +682,7 @@ private fun WellnessPanel(vm: GuardianViewModel) {
                 color = Jim.T2, fontSize = 11.sp)
             m.days.forEach { day ->
                 Text(L10n.t("wel.meals.day", vm.language)
-                    .replace("{n}", day.day.toString()),
+                    .replace("{n}", day.dayNumber.toString()),
                     color = Jim.T2, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 day.meals.forEach { Text(it, color = Jim.T3, fontSize = 11.sp) }
             }

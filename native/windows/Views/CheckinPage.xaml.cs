@@ -151,7 +151,7 @@ public sealed partial class CheckinPage : Page
             foreach (var day in plan.Days)
             {
                 MealDaysList.Children.Add(Line(L10n.T("wel.meals.day")
-                    .Replace("{n}", day.Day.ToString()), "JimT2Brush"));
+                    .Replace("{n}", day.DayNumber.ToString()), "JimT2Brush"));
                 foreach (var meal in day.Meals)
                     MealDaysList.Children.Add(Line($"{meal.Slot}: {meal.Name}",
                                                    "JimT3Brush"));

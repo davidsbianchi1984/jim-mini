@@ -1,4 +1,4 @@
-# status: manifest — 468 guards carried by all three products
+# status: manifest — 469 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -64,6 +64,7 @@ test_a_mistyped_form_answers_with_a_sentence
 test_a_name_bound_to_two_things_is_not_expanded
 test_a_name_that_does_not_resolve_is_not_local
 test_a_narrowed_reader_is_caught
+test_a_nested_data_class_is_a_declaration
 test_a_nested_declaration_is_not_the_outer_scopes
 test_a_nested_struct_does_not_end_the_outer_one
 test_a_non_loopback_bind_never_defaults_cors_open

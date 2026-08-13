@@ -118,8 +118,14 @@ RECEIVERS = (
 DECLARES = {
     "swift": [r'\b(?:var|let)\s+(\w+)', r'\bfunc\s+(\w+)'],
     # `fun <T> call(` — the type parameter sits between the keyword and the
-    # name, and the first pass read straight past it.
-    "kotlin": [r'\b(?:var|val)\s+(\w+)', r'\bfun\s*(?:<[^>]*>\s*)?(\w+)'],
+    # name, and the first pass read straight past it. And `data class
+    # ProblemRow(` — a type nested in the client object is a member too
+    # (`ApiClient.ProblemRow` in a screen is an unresolved reference without
+    # it), which this row learned the evening the problems reader landed in
+    # all three products at once.
+    "kotlin": [r'\b(?:var|val)\s+(\w+)', r'\bfun\s*(?:<[^>]*>\s*)?(\w+)',
+               r'\b(?:data\s+|enum\s+|sealed\s+)?class\s+(\w+)',
+               r'\bobject\s+(\w+)'],
     # `public bool IsSignedIn => …` has neither `{` nor `(` after the name,
     # and `public Task<System.Collections.Generic.Dictionary<string, bool>>
     # Features(` puts dots inside the return type — which is how widening
@@ -322,6 +328,19 @@ def test_a_generic_function_is_a_declaration():
     for pattern in DECLARES["kotlin"]:
         found |= set(re.findall(pattern, src))
     assert "call" in found
+
+
+def test_a_nested_data_class_is_a_declaration():
+    """`data class ProblemRow(` inside the client object. A screen that says
+    `ApiClient.ProblemRow` is reaching for a member exactly the way it
+    reaches for a method, and the first pass reported it missing in all
+    three products the evening the problems reader landed."""
+    src = ("    data class ProblemRow(val op: String, val statusCode: Int,\n"
+           "                          val count: Int)")
+    found = set()
+    for pattern in DECLARES["kotlin"]:
+        found |= set(re.findall(pattern, src))
+    assert "ProblemRow" in found
 
 
 def test_an_expression_bodied_property_is_a_declaration():

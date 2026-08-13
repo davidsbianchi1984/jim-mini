@@ -148,10 +148,10 @@ struct WellnessCard: View {
                             of: "{kcal}",
                             with: String(meals.shape.orientation_calories)))
                     .font(.caption2).foregroundStyle(Theme.t2)
-                ForEach(meals.days, id: \.day) { day in
+                ForEach(meals.days, id: \.day_number) { day in
                     Text(L10n.t("wel.meals.day", state.language)
                             .replacingOccurrences(of: "{n}",
-                                                  with: String(day.day)))
+                                                  with: String(day.day_number)))
                         .font(.caption2.bold()).foregroundStyle(Theme.t2)
                     ForEach(day.meals, id: \.slot) { meal in
                         Text("\(meal.slot): \(meal.name)")

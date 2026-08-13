@@ -2551,7 +2551,7 @@ object ApiClient {
                         meals.add("${row.optString("slot", "")}: ${row.optString("name", "")}")
                     }
                 }
-                dayRows.add(MealDayK(d.optInt("day", i + 1), meals))
+                dayRows.add(MealDayK(d.optInt("day_number", i + 1), meals))
             }
         }
         return MealPlanK(shape?.optString("why", "") ?: "",
@@ -3299,7 +3299,7 @@ data class CalmHistoryRow(val title: String, val at: String)
 data class WorkoutBlockK(val name: String, val seconds: Int, val cue: String)
 data class WorkoutPlanK(val level: String, val focus: String,
                         val blocks: List<WorkoutBlockK>)
-data class MealDayK(val day: Int, val meals: List<String>)
+data class MealDayK(val dayNumber: Int, val meals: List<String>)
 data class MealPlanK(val why: String, val kcal: Int,
                      val days: List<MealDayK>, val disclaimer: String)
 data class ActivityWatchK(val proactive: Boolean, val watching: Boolean,

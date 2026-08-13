@@ -2985,7 +2985,7 @@ public record MealRow(
     [property: JsonPropertyName("name")] string Name);
 
 public record MealDay(
-    [property: JsonPropertyName("day")] int Day,
+    [property: JsonPropertyName("day_number")] int DayNumber,
     [property: JsonPropertyName("meals")] MealRow[] Meals);
 
 public record MealShape(

@@ -2980,7 +2980,7 @@ struct WorkoutPlan: Decodable {
 
 struct MealRow: Decodable { let slot: String; let name: String }
 
-struct MealDay: Decodable { let day: Int; let meals: [MealRow] }
+struct MealDay: Decodable { let day_number: Int; let meals: [MealRow] }
 
 struct MealShape: Decodable {
     let meals_per_day: Int

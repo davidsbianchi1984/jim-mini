@@ -199,9 +199,9 @@ export function Wellness() {
               .replace("{kcal}",
                 String(meals.shape.orientation_calories))}</p>
             {meals.days.map((d) => (
-              <div key={d.day} style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
+              <div key={d.day_number} style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
                 <b>{tr("wel.meals.day", lang)
-                  .replace("{n}", String(d.day))}</b>
+                  .replace("{n}", String(d.day_number))}</b>
                 {d.meals.map((m) => (
                   <div key={m.slot} className="muted small">
                     {m.slot}: {m.name}

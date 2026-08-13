@@ -138,7 +138,11 @@ def plan(user_id: str, goal: str, preferences: list[str] | None = None,
                 pool = plant_pool or pool
             meal = pool[d % len(pool)]
             meals.append({"slot": slot, "name": meal["name"]})
-        day_plans.append({"day": d + 1, "meals": meals})
+        # `day_number`, not `day`: on this product's wire, `day` is a calendar
+        # date string everywhere else (habit logs, problem counters), and a
+        # 1-based ordinal wearing the same name forced every reader to hold
+        # one name as two types.
+        day_plans.append({"day_number": d + 1, "meals": meals})
 
     out = {
         "goal": goal, "preferences": preferences,

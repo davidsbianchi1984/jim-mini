@@ -99,6 +99,8 @@
                     <TextBlock x:Name="ProblemsPreview" FontSize="11" TextWrapping="Wrap"
                                FontFamily="Consolas" Visibility="Collapsed"
                                Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="ProblemsServerTitle" FontWeight="SemiBold"
+                               FontSize="13" Foreground="{StaticResource JimTxtBrush}" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <PasswordBox x:Name="ProblemsKeyBox" Width="220" />
                         <Button x:Name="ProblemsFetchButton" Click="OnProblemsFetch" />

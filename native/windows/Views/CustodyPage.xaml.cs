@@ -40,6 +40,7 @@ public sealed partial class CustodyPage : Page
         VeilPlanCancel.Content = L10n.T("hld.plan.cancel");
         ProblemsSwitch.Header = L10n.T("ns.pr.toggle");
         ProblemsPreviewButton.Content = L10n.T("ns.pr.show");
+        ProblemsServerTitle.Text = L10n.T("prob.server");
         ProblemsKeyBox.PlaceholderText = L10n.T("prob.key.ph");
         ProblemsFetchButton.Content = L10n.T("prob.fetch");
         TakeItHead.Text = L10n.T("hld.take");

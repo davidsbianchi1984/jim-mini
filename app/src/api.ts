@@ -536,7 +536,7 @@ export interface WorkoutPlan {
 export interface MealPlan {
   goal: string; preferences: string[];
   shape: { meals_per_day: number; orientation_calories: number; why: string };
-  days: { day: number; meals: { slot: string; name: string }[] }[];
+  days: { day_number: number; meals: { slot: string; name: string }[] }[];
   disclaimer: string;
 }
 
