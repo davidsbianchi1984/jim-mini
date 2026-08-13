@@ -486,7 +486,10 @@ def create_app(qrme_client: QRMEClient | None = None,
     def ask_help(body: HelpAsk) -> dict:
         """The help box on every screen. Public on purpose — "where is
         the thing?" arrives before a sign-in does. It writes nothing."""
-        return help_mod.ask(body.question)
+        try:
+            return help_mod.ask(body.question, body.mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(422, str(exc)) from None
 
     @app.get("/tutorial")
     def tutorial_outline(mode: str = "text") -> dict:

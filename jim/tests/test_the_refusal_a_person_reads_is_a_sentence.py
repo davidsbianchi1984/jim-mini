@@ -165,7 +165,7 @@ def test_the_sentence_arrives_in_the_readers_language(client, language):
     assert i18n.tr_refusal("Field required", language) in said
 
 
-def test_an_unlabelled_field_keeps_its_identifier_and_that_is_deliberate(client):
+def test_an_unlabelled_field_still_keeps_its_identifier(client):
     """Half in one language and half in another is the failure
     `refusals_untranslated.txt` will not record its way out of.
 
@@ -369,3 +369,15 @@ def test_no_label_is_built_from_anything_but_a_constant():
     assert not bad, (
         "the label table is not all literals, so a value could reach the "
         "sentence through it:\n    " + "\n    ".join(bad))
+
+
+def test_the_sentence_is_wholly_in_one_language(client):
+    """Half in one language and half in another is the failure
+    `refusals_untranslated.txt` refuses to ship. The fields a person types
+    into the enroll form carry the form's own labels, so the Portuguese
+    sentence is Portuguese on both sides of the dash."""
+    said = client.post("/enroll", json={},
+                       headers={"accept-language": "pt"}).json()["message"]
+    assert " — " in said, said
+    assert "display_name" not in said and "terms_consent" not in said, (
+        f"an identifier is still in the sentence: {said!r}")

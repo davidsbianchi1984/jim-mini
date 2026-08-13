@@ -164,3 +164,9 @@ def test_removing_the_alarm_face_over_http_is_a_422(client):
     r = client.put(f"/dock/{user}", json={"faces": ["helper", "vitals"]})
     assert r.status_code == 422
     assert "cannot be removed" in r.json()["detail"]
+
+
+def test_a_pane_with_no_faces_is_the_button_on_its_own(client):
+    user = enroll(client)
+    with pytest.raises(dock.DockError):
+        dock.configure(user, faces=[])

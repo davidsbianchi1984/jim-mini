@@ -782,6 +782,7 @@ class MealPlanAsk(BaseModel):
 
 class HelpAsk(BaseModel):
     question: str = ""
+    mode: str = "text"                  # text | voice
 
 
 class CrashWatchArm(BaseModel):

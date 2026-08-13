@@ -39,7 +39,7 @@ def test_every_screen_is_covered_by_a_lesson(client):
     assert not missing, f"screens no lesson explains: {missing}"
 
 
-def test_no_lesson_points_at_a_missing_screen(client):
+def test_no_lesson_points_at_a_screen_that_is_not_there(client):
     root = pathlib.Path(__file__).resolve().parents[2] / "docs" / "screens"
     drawn = {int(p.name.split("-", 1)[0]) for p in root.glob("*.svg")
              if p.name.split("-", 1)[0].isdigit()}
@@ -105,7 +105,7 @@ def test_a_screen_can_ask_which_lesson_it_is(client):
     assert client.get("/tutorial/for-screen/9999").status_code == 404
 
 
-def test_the_outline_is_chaptered(client):
+def test_the_outline_is_public_and_chaptered(client):
     out = client.get("/tutorial").json()
     assert [c["chapter"] for c in out["chapters"]] == list(tutorial.CHAPTERS)
     assert out["guide"] == tutorial.GUIDE
@@ -113,3 +113,62 @@ def test_the_outline_is_chaptered(client):
 
 def test_an_unknown_step_is_a_404(client):
     assert client.get("/tutorial/steps/nothing").status_code == 404
+
+
+# -- the questions the other two suites already ask, asked here too -----------
+
+
+def test_an_unknown_mode_is_refused(client):
+    with pytest.raises(tutorial.TutorialError):
+        tutorial.step(tutorial.LESSONS[0]["key"], "semaphore")
+
+
+def test_both_modes_come_from_one_lesson(client):
+    """Two hand-written versions would drift, and the spoken one would be
+    the one nobody re-read."""
+    for lesson in tutorial.LESSONS:
+        spoken = tutorial.say(lesson, "voice")["speak"]
+        assert lesson["what"] in spoken
+        assert lesson["try_it"] in spoken
+
+
+def test_the_order_introduces_nothing_before_it_exists(client):
+    """You are enrolled before you are watched over, and watched over
+    before the life layer builds on it. Asserted by chapter order rather
+    than by reading."""
+    order = [le["chapter"] for le in tutorial.LESSONS]
+    assert order == sorted(order, key=lambda c: tutorial.CHAPTERS.index(c))
+    assert tutorial.CHAPTERS[0] == "Getting started"
+
+
+def test_the_walkthrough_writes_nothing_but_progress(client):
+    """A tutorial that took a reading or armed an alarm "to show you how"
+    would act on somebody's account before they understood what it was."""
+    import inspect
+
+    src = inspect.getsource(tutorial)
+    for write in ("INSERT INTO", "UPDATE ", "DELETE FROM"):
+        for line in src.splitlines():
+            if write in line:
+                assert "tutorial_progress" in line, (
+                    f"the walkthrough writes outside its own progress: {line}")
+
+
+def test_an_ordinary_question_still_gets_an_answer(client):
+    """The walkthrough match must not swallow the help box."""
+    out = client.post("/help",
+                      json={"question": "where are my medications"}).json()
+    assert "walkthrough" not in out
+    assert out["answer"].strip()
+
+
+def test_the_assistant_can_speak_the_tour(client):
+    """Voice is a mode on the existing help box rather than a second
+    endpoint: a spoken assistant and a written one answering differently is
+    two products, and the spoken one would be the one nobody re-read."""
+    spoken = client.post("/help", json={"question": "show me around",
+                                        "mode": "voice"}).json()
+    written = client.post("/help", json={"question": "show me around"}).json()
+    assert spoken["walkthrough"]["step"]["screens"] == []
+    assert written["walkthrough"]["step"]["screens"]
+    assert spoken["answer"] and written["answer"]

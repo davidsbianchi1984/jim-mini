@@ -164,14 +164,36 @@ def topics() -> list[str]:
     return [answer for answer in DIRECTIONS.values()]
 
 
-def ask(question: str) -> dict:
+#: Questions that are a request for the tour rather than for one door.
+#: Matched before DIRECTIONS so "show me around" starts the walkthrough
+#: instead of hitting whichever keyword happens to overlap.
+_WALKTHROUGH = ("show me around", "walk me through", "walkthrough",
+                "tutorial", "guided tour", "give me the tour")
+
+
+def ask(question: str, mode: str = "text") -> dict:
     """One written direction, or an honest hand-off. Never writes anything,
-    never calls a model — see the module docstring."""
+    never calls a model — see the module docstring.
+
+    ``mode="voice"`` renders the walkthrough for listening rather than
+    reading — one lesson rendered twice, not a second script. QRME and PDI
+    both answer the tour from their help box; this product used to answer
+    it only from /tutorial, which the help box never mentioned.
+    """
     q = (question or "").strip().lower()
     if not q:
         return {"answer": "Ask where anything lives in this app — "
                           "“where are my medications?” works.",
                 "source": "written", "ai": False, "disclosure": DISCLOSURE}
+    if any(k in q for k in _WALKTHROUGH):
+        from . import tutorial
+        step = tutorial.say(tutorial.LESSONS[0], mode)
+        return {"answer": step.get("speak")
+                          or f"{step['title']}. {step['what']}",
+                "source": "written", "ai": False, "disclosure": DISCLOSURE,
+                "walkthrough": {"started": True, "step": step,
+                                "steps": len(tutorial.LESSONS),
+                                "next": "/tutorial/done"}}
     for keywords, answer in DIRECTIONS.items():
         if any(k in q for k in keywords):
             return {"answer": answer, "source": "written", "ai": False,

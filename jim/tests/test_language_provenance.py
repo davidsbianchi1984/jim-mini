@@ -10,7 +10,7 @@ supports — plus how and by what it was produced.
 from jim.tests.conftest import enroll
 
 
-def test_language_catalog(client):
+def test_language_catalog_and_choice(client):
     r = client.get("/languages").json()
     codes = {l["code"]: l for l in r["languages"]}
     assert r["default"] == "en"

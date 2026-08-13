@@ -35,6 +35,10 @@ GUIDE = ("This is your Guardian — the same one that watches your signals and "
          "being introduced by the thing that will be looking after you is the "
          "introduction.")
 
+# Ordered by chapter — a walkthrough that bounced between chapters was
+# the defect test_the_order_introduces_nothing_before_it_exists caught
+# on arrival. Batch history (which lessons closed which backlog) lives
+# in the log, not in the list.
 LESSONS: tuple[dict, ...] = (
     dict(key="what", chapter="Getting started", title="What JIM-mini is",
          what="It watches the signals you allow it — from a watch, a band, a "
@@ -58,6 +62,15 @@ LESSONS: tuple[dict, ...] = (
               "over.",
          screens=(6, 7, 8, 9, 10, 11, 12),
          try_it="Open your sources and switch one off."),
+    dict(key="anonymity", chapter="Getting started", title="Your name here",
+         what="You can enroll under a pseudonym. Every emergency path still "
+              "works exactly the same — detection, guidance, escalation, the "
+              "emergency contact — and your own baselines and records stay "
+              "yours. The one cost is stated plainly: an emergency briefing "
+              "cannot hand responders a legal name unless you left one for "
+              "that purpose alone.",
+         screens=(91,),
+         try_it="Read the keeps and costs before you choose."),
     dict(key="conditions", chapter="Being watched over",
          title="Conditions it knows",
          what="You tell it what to watch for — the ones you live with, in your "
@@ -75,6 +88,86 @@ LESSONS: tuple[dict, ...] = (
               "live help. You choose who, and you can see every time it did.",
          screens=(29, 30, 31, 32, 33, 34, 35, 36),
          try_it="Set an emergency contact, and read the escalation log."),
+    dict(key="bands", chapter="Being watched over", title="Your own normal",
+         what="Beside the alarm layer sits a quieter question: are you "
+              "drifting from your own baseline? Each metric has a band "
+              "around the number JIM learned from you — not from a textbook "
+              "— and crossing a watched edge earns a question, never an "
+              "alarm. A band still learning says so and stays silent. One "
+              "dial makes every band tighter or looser at once.",
+         screens=(81,),
+         try_it="Open Your Baseline and find the band that is still "
+                "learning."),
+    dict(key="meds", chapter="Being watched over", title="The medicine cabinet",
+         what="What you take, in your own words — 'the little white one, "
+              "10 mg' is a valid name and dose. The board knows done, due, "
+              "and missed (with humane grace: 9:07 is not 'missed' for the "
+              "8:00 pill), one slot has one correctable answer, and an "
+              "as-needed ceiling refuses to log past itself. A missed dose "
+              "is a question, never an alarm, and JIM is not a pharmacist — "
+              "interactions are your pharmacist's call, and the board says "
+              "so on its face.",
+         screens=(85,),
+         try_it="Add one medication and tap Take on today's dose."),
+    dict(key="careteam", chapter="Being watched over",
+         title="The care team, coordinated",
+         what="Link your own QRME organization and name the desk that "
+              "speaks for the Guardian. When concerns stack — a reading "
+              "drifting outside your band while doses slip — JIM takes the "
+              "situation to the whole team as one goal, and the joint plan "
+              "comes back for you to read. Your own credential, pasted "
+              "knowingly; summaries cross, never raw readings; once a day "
+              "at most, on the calm path only.",
+         screens=(86,),
+         try_it="Link your org and read the latest plan."),
+    dict(key="journal", chapter="Being watched over",
+         title="The journal, in your own words",
+         what="Type an entry or speak it — the mic writes into the box "
+              "first, so a transcription slip is yours to fix before it "
+              "becomes the record. Entries are sealed in your vault on a "
+              "private plan, and an entry that says you're in danger is "
+              "read exactly like a reading that says so. Meals live here "
+              "too: photograph the plate, say a sentence about it — the "
+              "photo seals like a clinical capture and the note is the log "
+              "the offline coach reads. And once a week you can ask for a "
+              "letter: your week in words, composed only from what you "
+              "actually logged, and a week with nothing in it says so "
+              "rather than inventing one.",
+         screens=(87,),
+         try_it="Open Journal and write one sentence about today."),
+    dict(key="crashwatch", chapter="Being watched over",
+         title="The crash watch",
+         what="Armed by you, in advance, off by default: name a trusted "
+              "person, how many unanswered “are you okay?” "
+              "attempts is too many, and whether emergency services may be "
+              "asked for. A critical reading — a fall the watch felt, a collapsing pulse — opens the question; silence "
+              "through every attempt sends the help you programmed; any "
+              "sign of you — the button, a normal reading — calls "
+              "it off. Gentle drift check-ins can never trigger it.",
+         screens=(88,),
+         try_it="Open Your Baseline and arm the crash watch."),
+    dict(key="followup", chapter="Being watched over",
+         title="Did that help?",
+         what="Guidance that goes out gets asked about. Saying it helped "
+              "resumes monitoring; saying it did not is not filed away as a "
+              "complaint — the escalation ladder runs again with that fact in "
+              "it, and the screen names the people who can help right now: a "
+              "support line, your emergency contact, whoever is on shift. The "
+              "question waits for you rather than expiring, so one you missed "
+              "is still there next time you open the app.",
+         screens=(89,),
+         try_it="Answer an open follow-up honestly, even if it did not help."),
+    dict(key="adaptation", chapter="Being watched over",
+         title="What JIM has learned about you",
+         what="A profile of you built from your own history: which guidance "
+              "has actually worked, how often, the tone you asked for, the "
+              "work you named. It is shown as counts rather than a score, and "
+              "its confidence is earned from how much you have on record — a "
+              "thin history says so instead of pretending. Nothing was sent "
+              "to a model vendor to build it; the sealed copy lives in your "
+              "own vault.",
+         screens=(90,),
+         try_it="Open Settings and read what it thinks helps you."),
     dict(key="life", chapter="The life layer", title="Check-ins and goals",
          what="Mood and energy, smart goals, habit streaks, and a coach across "
               "six life areas. The part that is not about emergencies.",
@@ -85,6 +178,14 @@ LESSONS: tuple[dict, ...] = (
               "each one sees. A guardian's view is not the same as a friend's.",
          screens=(49, 50, 51, 52, 53, 54, 55, 56),
          try_it="Invite somebody and choose what they get."),
+    dict(key="speak", chapter="The life layer", title="Talking out loud",
+         what="The coach has a microphone and a voice. Speak a question and "
+              "the answer comes back spoken — through ElevenLabs or OpenAI "
+              "if a key is set, in your device's own voice if not. Type "
+              "instead and it stays quiet: a spoken question gets a spoken "
+              "answer, a typed one gets text.",
+         screens=(82,),
+         try_it="Hold the microphone on the coach screen and ask anything."),
     dict(key="tandem", chapter="Beyond the app", title="The tandem",
          what="When configured, JIM-mini hands a question to a QRME specialist "
               "profile and brings the answer back — moderated, and marked as "
@@ -163,24 +264,6 @@ LESSONS: tuple[dict, ...] = (
               "opens on the alarm whatever you had it set to.",
          screens=(71,),
          try_it="Tap the helper button and cycle the faces."),
-    dict(key="bands", chapter="Being watched over", title="Your own normal",
-         what="Beside the alarm layer sits a quieter question: are you "
-              "drifting from your own baseline? Each metric has a band "
-              "around the number JIM learned from you — not from a textbook "
-              "— and crossing a watched edge earns a question, never an "
-              "alarm. A band still learning says so and stays silent. One "
-              "dial makes every band tighter or looser at once.",
-         screens=(81,),
-         try_it="Open Your Baseline and find the band that is still "
-                "learning."),
-    dict(key="speak", chapter="The life layer", title="Talking out loud",
-         what="The coach has a microphone and a voice. Speak a question and "
-              "the answer comes back spoken — through ElevenLabs or OpenAI "
-              "if a key is set, in your device's own voice if not. Type "
-              "instead and it stays quiet: a spoken question gets a spoken "
-              "answer, a typed one gets text.",
-         screens=(82,),
-         try_it="Hold the microphone on the coach screen and ask anything."),
     dict(key="model", chapter="Beyond the app", title="Who is answering",
          what="Every reply comes from a model you can see and change — a "
               "tile per provider, one click to swap. The reply names who "
@@ -189,54 +272,6 @@ LESSONS: tuple[dict, ...] = (
               "canned text wear a model's name.",
          screens=(83,),
          try_it="Open Which Model Answers and read which tile is active."),
-    dict(key="meds", chapter="Being watched over", title="The medicine cabinet",
-         what="What you take, in your own words — 'the little white one, "
-              "10 mg' is a valid name and dose. The board knows done, due, "
-              "and missed (with humane grace: 9:07 is not 'missed' for the "
-              "8:00 pill), one slot has one correctable answer, and an "
-              "as-needed ceiling refuses to log past itself. A missed dose "
-              "is a question, never an alarm, and JIM is not a pharmacist — "
-              "interactions are your pharmacist's call, and the board says "
-              "so on its face.",
-         screens=(85,),
-         try_it="Add one medication and tap Take on today's dose."),
-    dict(key="careteam", chapter="Being watched over",
-         title="The care team, coordinated",
-         what="Link your own QRME organization and name the desk that "
-              "speaks for the Guardian. When concerns stack — a reading "
-              "drifting outside your band while doses slip — JIM takes the "
-              "situation to the whole team as one goal, and the joint plan "
-              "comes back for you to read. Your own credential, pasted "
-              "knowingly; summaries cross, never raw readings; once a day "
-              "at most, on the calm path only.",
-         screens=(86,),
-         try_it="Link your org and read the latest plan."),
-    dict(key="journal", chapter="Being watched over",
-         title="The journal, in your own words",
-         what="Type an entry or speak it — the mic writes into the box "
-              "first, so a transcription slip is yours to fix before it "
-              "becomes the record. Entries are sealed in your vault on a "
-              "private plan, and an entry that says you're in danger is "
-              "read exactly like a reading that says so. Meals live here "
-              "too: photograph the plate, say a sentence about it — the "
-              "photo seals like a clinical capture and the note is the log "
-              "the offline coach reads. And once a week you can ask for a "
-              "letter: your week in words, composed only from what you "
-              "actually logged, and a week with nothing in it says so "
-              "rather than inventing one.",
-         screens=(87,),
-         try_it="Open Journal and write one sentence about today."),
-    dict(key="crashwatch", chapter="Being watched over",
-         title="The crash watch",
-         what="Armed by you, in advance, off by default: name a trusted "
-              "person, how many unanswered “are you okay?” "
-              "attempts is too many, and whether emergency services may be "
-              "asked for. A critical reading — a fall the watch felt, a collapsing pulse — opens the question; silence "
-              "through every attempt sends the help you programmed; any "
-              "sign of you — the button, a normal reading — calls "
-              "it off. Gentle drift check-ins can never trigger it.",
-         screens=(88,),
-         try_it="Open Your Baseline and arm the crash watch."),
     dict(key="watch", chapter="Beyond the app", title="The watch finds a way",
          what="No app store needed: an iPhone Shortcut drips Health "
               "readings to your personal deposit-only address on a "
@@ -245,37 +280,6 @@ LESSONS: tuple[dict, ...] = (
               "same day, raising nothing about the past.",
          screens=(84,),
          try_it="Open Settings → Apple Watch and copy your drip address."),
-    dict(key="followup", chapter="Being watched over",
-         title="Did that help?",
-         what="Guidance that goes out gets asked about. Saying it helped "
-              "resumes monitoring; saying it did not is not filed away as a "
-              "complaint — the escalation ladder runs again with that fact in "
-              "it, and the screen names the people who can help right now: a "
-              "support line, your emergency contact, whoever is on shift. The "
-              "question waits for you rather than expiring, so one you missed "
-              "is still there next time you open the app.",
-         screens=(89,),
-         try_it="Answer an open follow-up honestly, even if it did not help."),
-    dict(key="adaptation", chapter="Being watched over",
-         title="What JIM has learned about you",
-         what="A profile of you built from your own history: which guidance "
-              "has actually worked, how often, the tone you asked for, the "
-              "work you named. It is shown as counts rather than a score, and "
-              "its confidence is earned from how much you have on record — a "
-              "thin history says so instead of pretending. Nothing was sent "
-              "to a model vendor to build it; the sealed copy lives in your "
-              "own vault.",
-         screens=(90,),
-         try_it="Open Settings and read what it thinks helps you."),
-    dict(key="anonymity", chapter="Getting started", title="Your name here",
-         what="You can enroll under a pseudonym. Every emergency path still "
-              "works exactly the same — detection, guidance, escalation, the "
-              "emergency contact — and your own baselines and records stay "
-              "yours. The one cost is stated plainly: an emergency briefing "
-              "cannot hand responders a legal name unless you left one for "
-              "that purpose alone.",
-         screens=(91,),
-         try_it="Read the keeps and costs before you choose."),
     dict(key="community", chapter="Beyond the app", title="Community",
          what="Rooms, forums and local events live in QRME, and JIM opens the "
               "door rather than building a second one. Nothing is mirrored "
@@ -301,62 +305,6 @@ LESSONS: tuple[dict, ...] = (
               "machine.",
          screens=(93, 94),
          try_it="Open Privacy and press 'Show me exactly what would be shared'."),
-
-    # The six that closed the console backlog. A route the desktop app could
-    # not reach was, for a desktop user, a feature that did not exist — and a
-    # walkthrough that skipped them would have gone on teaching the phone.
-    dict(key="aims", chapter="Day to day", title="What you're working on",
-         what="Goals, habits and a monthly budget. None of it is a list for "
-              "its own sake: a goal is read by the coach and by the daily "
-              "suggestion, a habit's streak is one of the signals a quiet "
-              "week shows up in, and a budget is how JIM learns the shape of "
-              "financial stress — which is one of the eight conditions it "
-              "will take on rather than a footnote to the others. Telling it "
-              "what you did is context, not a reading: it explains a heart "
-              "rate before JIM has to guess at one. Interview drills live "
-              "here too: a question dealt from a local bank, three probes "
-              "under it, and an honest reading of your answer — a model's "
-              "when one is reachable, a written checklist's when not, and "
-              "it says which.",
-         screens=(95,),
-         try_it="Set one goal and one habit, then log something you did."),
-    dict(key="wards", chapter="Looking after somebody", title="Who you watch",
-         what="A child linked here gets their own account and their own "
-              "token. You are linked to it; you do not hold it. What an adult "
-              "can see is a board — a light, an age, how many critical events "
-              "and escalations in the last day — and a history of events, "
-              "never the readings behind them. The controls pause everyday "
-              "guidance and set quiet hours, and JIM says the limit in its "
-              "own words every time you use one: monitoring, crisis "
-              "escalation and the emergency path never pause. A guardian who "
-              "believed otherwise would have been told something false.",
-         screens=(96,),
-         try_it="Link a child, then press Pause and read what it says it did."),
-    dict(key="held", chapter="What is yours", title="What's held about you",
-         what="Four questions on one screen: is it sealed, is anybody's "
-              "reading of it being written down, what sources may it look at, "
-              "and what does your plan actually buy. The access log answers "
-              "the second one first and deliberately — on a deployment with "
-              "no vault the list of readers is empty because nothing is "
-              "recorded, not because nobody looked, and those are opposite "
-              "facts. Consent for a source is enforced rather than asked: "
-              "giving JIM context from a source you have not allowed is "
-              "refused by the server, not politely skipped.",
-         screens=(97,),
-         try_it="Read the access log, then allow a source and give it context."),
-    dict(key="attending", chapter="Looking after somebody",
-         title="Who else is looking",
-         what="The specialists JIM can hand a thing to, the clinicians a "
-              "referral can reach, the people a relay would wake, and the "
-              "ladder it climbs to reach them — log, self-guidance, check in, "
-              "notify a contact, emergency services, with the floors and the "
-              "one ceiling shown. The ceiling is the part worth reading: a "
-              "stranger who scanned your care code can wake the people "
-              "watching over you and stops there. Only your own credential "
-              "reaches an ambulance, which is why the emergency button on "
-              "this screen is yours and the one on a scanned code is not.",
-         screens=(98,),
-         try_it="Read the ladder, then look at where the ceiling sits."),
     dict(key="reach", chapter="Beyond the app", title="What reaches out",
          what="Everything here crosses a boundary, so everything here shows "
               "what the crossing costs. A robot's first-aid rating says "
@@ -369,19 +317,6 @@ LESSONS: tuple[dict, ...] = (
               "at all: the findings without that is half an answer.",
          screens=(99,),
          try_it="Place a code, then look at the card a stranger would see."),
-    dict(key="bearing", chapter="What is yours", title="Bearing",
-         what="Three things kept apart on purpose. What you set — language, "
-              "tone, sensitivity, the voice. What you told it — conditions, "
-              "context, consented sources. And what it made of that: the "
-              "insights it wrote, the events it logged, the follow-ups it "
-              "asked that you have not answered. The third is the half of a "
-              "guardian product easiest to leave out, because nobody "
-              "complains about not being shown what a thing thinks of them. "
-              "The guide and the corner dock live here too — a walkthrough "
-              "whose own job is explaining the app had no door of its own "
-              "until this screen.",
-         screens=(100,),
-         try_it="Read what JIM has written about you, then set the tone."),
     dict(key="selfprofile", chapter="Beyond the app",
          title="Your own profile",
          what="QRME has a profile that is you — not a specialist somebody "
@@ -397,25 +332,21 @@ LESSONS: tuple[dict, ...] = (
               "transcripts never cross at any setting.",
          screens=(101,),
          try_it="Link the profile, tick nothing, and read the empty brief."),
-    dict(key="safety", chapter="When it matters", title="Answering an alarm",
-         what="The safety screen runs in the order of who is pressing. Get "
-              "help now leads — your own one press, reaching your emergency "
-              "contact, your Medical ID, first aid and every connected "
-              "device, and saying plainly that JIM cannot dial 911 itself. "
-              "Below it, the automatic path: the crash watch's status, and "
-              "where to arm it while you are fine. Beacons come after, "
-              "named for what they are — the bystander's path, for somebody "
-              "who finds you. Then the answering end, and every way help "
-              "gets summoned lands in it: a scanned beacon, and the crash "
-              "watch's own trip, standing first in the queue until somebody "
-              "says they are going. Accepting an alarm "
-              "names a responder, because 'someone is coming' is a person "
-              "and not a state; escalating is one press with no modal in "
-              "the way; clearing is the direction that asks, because "
-              "clearing is the irreversible one. What paged out and what "
-              "was recorded sit below the fold, history under the urgent.",
-         screens=(102,),
-         try_it="Read what Get help now will do before you need it."),
+    dict(key="aims", chapter="Day to day", title="What you're working on",
+         what="Goals, habits and a monthly budget. None of it is a list for "
+              "its own sake: a goal is read by the coach and by the daily "
+              "suggestion, a habit's streak is one of the signals a quiet "
+              "week shows up in, and a budget is how JIM learns the shape of "
+              "financial stress — which is one of the eight conditions it "
+              "will take on rather than a footnote to the others. Telling it "
+              "what you did is context, not a reading: it explains a heart "
+              "rate before JIM has to guess at one. Interview drills live "
+              "here too: a question dealt from a local bank, three probes "
+              "under it, and an honest reading of your answer — a model's "
+              "when one is reachable, a written checklist's when not, and "
+              "it says which.",
+         screens=(95,),
+         try_it="Set one goal and one habit, then log something you did."),
     dict(key="wellness", chapter="Day to day", title="Wellness",
          what="The on-purpose half of guidance: a guided calm session the "
               "app paces and can speak, a workout shaped to the minutes "
@@ -495,6 +426,75 @@ LESSONS: tuple[dict, ...] = (
          screens=(108,),
          try_it="Sign out, open the Accessibility link under the sign-in "
                 "form, and read the statement in your own language."),
+    dict(key="wards", chapter="Looking after somebody", title="Who you watch",
+         what="A child linked here gets their own account and their own "
+              "token. You are linked to it; you do not hold it. What an adult "
+              "can see is a board — a light, an age, how many critical events "
+              "and escalations in the last day — and a history of events, "
+              "never the readings behind them. The controls pause everyday "
+              "guidance and set quiet hours, and JIM says the limit in its "
+              "own words every time you use one: monitoring, crisis "
+              "escalation and the emergency path never pause. A guardian who "
+              "believed otherwise would have been told something false.",
+         screens=(96,),
+         try_it="Link a child, then press Pause and read what it says it did."),
+    dict(key="attending", chapter="Looking after somebody",
+         title="Who else is looking",
+         what="The specialists JIM can hand a thing to, the clinicians a "
+              "referral can reach, the people a relay would wake, and the "
+              "ladder it climbs to reach them — log, self-guidance, check in, "
+              "notify a contact, emergency services, with the floors and the "
+              "one ceiling shown. The ceiling is the part worth reading: a "
+              "stranger who scanned your care code can wake the people "
+              "watching over you and stops there. Only your own credential "
+              "reaches an ambulance, which is why the emergency button on "
+              "this screen is yours and the one on a scanned code is not.",
+         screens=(98,),
+         try_it="Read the ladder, then look at where the ceiling sits."),
+    dict(key="held", chapter="What is yours", title="What's held about you",
+         what="Four questions on one screen: is it sealed, is anybody's "
+              "reading of it being written down, what sources may it look at, "
+              "and what does your plan actually buy. The access log answers "
+              "the second one first and deliberately — on a deployment with "
+              "no vault the list of readers is empty because nothing is "
+              "recorded, not because nobody looked, and those are opposite "
+              "facts. Consent for a source is enforced rather than asked: "
+              "giving JIM context from a source you have not allowed is "
+              "refused by the server, not politely skipped.",
+         screens=(97,),
+         try_it="Read the access log, then allow a source and give it context."),
+    dict(key="bearing", chapter="What is yours", title="Bearing",
+         what="Three things kept apart on purpose. What you set — language, "
+              "tone, sensitivity, the voice. What you told it — conditions, "
+              "context, consented sources. And what it made of that: the "
+              "insights it wrote, the events it logged, the follow-ups it "
+              "asked that you have not answered. The third is the half of a "
+              "guardian product easiest to leave out, because nobody "
+              "complains about not being shown what a thing thinks of them. "
+              "The guide and the corner dock live here too — a walkthrough "
+              "whose own job is explaining the app had no door of its own "
+              "until this screen.",
+         screens=(100,),
+         try_it="Read what JIM has written about you, then set the tone."),
+    dict(key="safety", chapter="When it matters", title="Answering an alarm",
+         what="The safety screen runs in the order of who is pressing. Get "
+              "help now leads — your own one press, reaching your emergency "
+              "contact, your Medical ID, first aid and every connected "
+              "device, and saying plainly that JIM cannot dial 911 itself. "
+              "Below it, the automatic path: the crash watch's status, and "
+              "where to arm it while you are fine. Beacons come after, "
+              "named for what they are — the bystander's path, for somebody "
+              "who finds you. Then the answering end, and every way help "
+              "gets summoned lands in it: a scanned beacon, and the crash "
+              "watch's own trip, standing first in the queue until somebody "
+              "says they are going. Accepting an alarm "
+              "names a responder, because 'someone is coming' is a person "
+              "and not a state; escalating is one press with no modal in "
+              "the way; clearing is the direction that asks, because "
+              "clearing is the irreversible one. What paged out and what "
+              "was recorded sit below the fold, history under the urgent.",
+         screens=(102,),
+         try_it="Read what Get help now will do before you need it."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))
