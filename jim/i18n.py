@@ -1560,6 +1560,17 @@ def refuse(request, status: int, content, headers: dict | None = None):
 #: languages. What is not here is recorded in
 #: `jim/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    "a responder needs a name — 'someone accepted it' is the thing this loop exists to stop being enough": {
+        'es': "quien responde necesita un nombre — 'alguien lo aceptó' es justo lo que este circuito existe para que deje de bastar",
+        'fr': "un répondant a besoin d'un nom — « quelqu'un l'a accepté » est précisément ce que cette boucle existe pour rendre insuffisant",
+        'de': "wer kommt, braucht einen Namen — 'jemand hat es angenommen' ist genau das, was diese Schleife nicht mehr genügen lassen soll",
+        'pt': "quem responde precisa de um nome — 'alguém aceitou' é exatamente o que este circuito existe para deixar de bastar",
+        'it': "chi risponde ha bisogno di un nome — 'qualcuno ha accettato' è proprio ciò che questo anello esiste per non far più bastare",
+        'ja': "対応者には名前が必要です — 「誰かが引き受けた」で済ませないために、この仕組みはあります",
+        'zh': "响应者需要一个名字 — “有人接受了”正是这个环节要终结的说法",
+        'hi': "जवाब देने वाले का नाम चाहिए — 'किसी ने स्वीकार कर लिया' को नाकाफ़ी बनाने के लिए ही यह कड़ी है",
+        'ar': "المستجيب يحتاج إلى اسم — «قبِلها أحدهم» هو بالضبط ما وُجدت هذه الحلقة لكي لا يعود كافيًا",
+    },
     "a minor's verification code goes to their parent or guardian — provide guardian_email": {
         'es': 'el código de verificación de un menor va a su padre, madre o tutor — indique guardian_email',
         'fr': "le code de vérification d'un mineur est envoyé à son parent ou tuteur — renseignez guardian_email",
