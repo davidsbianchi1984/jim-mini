@@ -39,6 +39,11 @@
 // can delay a launch, or produce an error of its own, has stopped being worth
 // having.
 
+// A deliberate cycle: `api.ts` imports `recordProblem` from here, and this
+// imports `getBase` back. Both are used strictly inside function bodies, so
+// the live bindings resolve long after both modules finish evaluating.
+import { getBase } from "./api";
+
 const KEY = "app.problems";
 const COLLECTOR_KEY = "app.problems.collector";
 const SEND_KEY = "app.problems.send";
@@ -319,7 +324,13 @@ export type SendOutcome = "sent" | "nothing-to-send" | "turned-off"
  * the story of its own delivery and nothing else.
  */
 export async function sendProblems(appVersion: string): Promise<SendOutcome> {
-  const base = collectorUrl();
+  // No collector stamped in or stored? The backend this console already
+  // talks to serves the same intake at the same path, so the reports
+  // funnel back to whoever runs the deployment — which is where
+  // corrections get made. The notice and the switch gate this exactly
+  // as they gate an external collector; "content-free" is a property
+  // of the report, not of the address.
+  const base = collectorUrl() || getBase();
   if (!base) return "no-collector";
   if (!sendingEnabled()) return "turned-off";
   if (!noticeAnswered()) return "awaiting-notice";

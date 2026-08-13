@@ -665,6 +665,13 @@ journal, a provider-shareable summary. Identity is proven by a bearer
 - **Open (no token):** `GET /health`, `GET /cloud/status`, `POST /enroll`,
   the account routes above (they are how a token is first obtained),
   and `POST /specialists` (service setup).
+- **Error reports come home:** `POST /v1/problems` — the same content-free
+  intake the Cloud Model Gateway serves (whitelist screening, folded into
+  counters, never a message or an id), on this backend, so a deployment with
+  no gateway still collects its own failures; the console falls back to it
+  when no collector is stamped into the build, behind the same first-run
+  notice and switch. `GET /v1/problems` is the operator's read —
+  `JIM_PROBLEMS_KEY`, or the backend's own machine.
 - `DELETE /data/{user_id}` erases the user **and** revokes their token.
 
 ## The pane in the corner

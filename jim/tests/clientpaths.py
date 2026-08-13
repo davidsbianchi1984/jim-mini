@@ -634,17 +634,16 @@ NOT_A_CLIENT_CALL = (
 #
 # Not the same thing as NOT_A_CLIENT_CALL above, and kept apart on purpose.
 # That list is for paths nothing should ever call; these are called, on every
-# launch, deliberately — just not here. The Cloud Model Gateway (`cloudgw/`)
-# is a separate deployment with its own address, and the shells reach it with
-# the collector URL a release stamps in, never with this product's base URL.
+# launch, deliberately — just not here.
 #
 # The rule for this list: a path goes here only when a *different* service
 # owns it and something in this repo can be pointed at that service. If the
 # path could ever be served by this app, it does not belong here — it belongs
-# in the router.
-ANOTHER_SERVICE = (
-    "/v1/problems",
-)
+# in the router. `/v1/problems` sat here while only the Cloud Model Gateway
+# served it; the product's own backend serves it now, so by this list's own
+# rule it moved to the router and the audit checks its doors like any other
+# route's.
+ANOTHER_SERVICE: tuple[str, ...] = ()
 
 
 def all_routes(app) -> list:
