@@ -4,6 +4,56 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.70.0] - 2026-08-13
+
+### Fixed
+
+- **The care beacon's alarm sends the message it always claimed.**
+  `POST /c/{id}/alarm` answered every finder with "The people watching over
+  this person have been alerted" while nothing was sent to anyone. A
+  personal beacon now pages a real channel when one exists — a minor's
+  guardian inbox, an adult's own trusted crash-watch channel — every attempt
+  lands in the `relay_pages` ledger under the alarm's id, and the sentence
+  the finder reads is derived from the outcome rather than asserted. One
+  honest "No message went out from this page…" for every way it can fail;
+  which way it was is the owner's information, in their ledger.
+- **The apology for a failed route is in the reader's language.** The
+  catch-all is a middleware — `@app.exception_handler(Exception)` sits
+  outside the CORS layer, so a 500 raised there comes back without the
+  header and the console reads it as unreachable — and being a middleware,
+  no guard was asking it anything. Its sentence sat inline in English;
+  `i18n.SERVER_ERROR` is now a named constant translated like every other
+  refusal.
+- The tutorial's lessons had been appended to over many rounds and no longer
+  ran in chapter order; the help box could not start the tour it described.
+- Android's first-aid surface spoke English at the worst moment — heading,
+  the call-emergency-services line, the waiver sentences and the revoke note
+  now ride the same keys the iPhone already held.
+
+### Added
+
+- **The reports come home.** `POST /v1/problems` on this backend, with
+  `GET /v1/problems` behind `JIM_PROBLEMS_KEY` or the backend's own machine.
+  Strictness matters more here, where the messages a report must never carry
+  can be health content: anything outside the whitelist is a 422 naming the
+  field, and rows fold into counters.
+- The last four doors reach the phones: the three `qr.svg` codes as URL
+  builders with their address shown as selectable text, and the watch drip
+  as a button — one reading by hand through the door the automation uses.
+
+### Changed
+
+- `day` carried two types on this product's wire — a calendar date on habit
+  logs and problem counters, a 1-based ordinal on the meal plan. The ordinal
+  is `day_number` now, on the server and in all four clients.
+- The console-untranslated record reads 93 rows where it read zero. The zero
+  was never true: the extractor could not see a sentence chosen at render
+  time, and the first honest reading under the widened reader is written
+  down with the decision that raised the ceiling.
+- The watch lights and their minimized dot clear the phone's tab bar.
+- The three-repo guard estate: `shared_guards.txt` 469 → 489,
+  `guard_divergences.txt` 136 → 121, both byte-identical in the three repos.
+
 ## [0.68.0] - 2026-08-12
 
 ### Added
@@ -7830,7 +7880,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.16.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.70.0...HEAD
+[0.70.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.70.0
 [0.61.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.61.1
 [0.19.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.19.1
 [0.19.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.19.0
