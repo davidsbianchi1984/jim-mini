@@ -142,6 +142,7 @@ def status(user_id: str) -> dict:
         "tripped": bool(row["tripped_at"]) and not row["resolved_at"],
         "tripped_at": row["tripped_at"],
         "resolved_at": row["resolved_at"],
+        "accepted_by": row["accepted_by"],
     }
 
 
@@ -263,6 +264,11 @@ def _trip(user_id: str, row, t: datetime) -> dict:
             delivery = "email"
         except Exception:  # noqa: BLE001 — the trip still stands, undelivered
             delivery = "email_failed"
+    # The page lands in the same ledger the workplace relay writes, so
+    # "What went out" shows the crash watch's pages beside everybody
+    # else's — a message that failed to deliver is the one the morning
+    # most needs to know about.
+    _record_page(user_id, row["trusted_name"], delivery)
     # Autonomous coordinated response, same as the clinical ladder: every
     # connected system the user registered relays the alert, so whichever
     # is nearest can surface it — or a human near it can act.
@@ -294,3 +300,126 @@ def _trip(user_id: str, row, t: datetime) -> dict:
          json.dumps(detail), now_iso))
     conn.commit()
     return status(user_id)
+
+
+# -- the trip on the Needs-a-person queue -------------------------------------
+
+#: The id a tripped watch answers to on the alarm queue. A constant rather
+#: than a row id: one watch per user means at most one open crash alarm,
+#: and a name says what it is on every client that renders it.
+ALARM_ID = "crash-watch"
+
+
+def as_alarm(user_id: str) -> dict | None:
+    """The tripped watch, shaped like an alarm.
+
+    The trip used to be fire-and-forget: one email to the trusted contact
+    and a dispatch request, with nobody ever confirming a human is coming —
+    while the Needs-a-person queue sat one screen up with exactly the
+    accept-by-name loop this needs, fed only by beacon alarms. Shaping the
+    trip as an alarm row puts every way help gets summoned on one answering
+    surface, worked with the doors that already exist on every client.
+    """
+    row = _row(user_id)
+    if row is None or not row["tripped_at"] or row["resolved_at"]:
+        return None
+    return {
+        "id": ALARM_ID,
+        "beacon_id": None,
+        "kind": "crash_watch",
+        "messages": [{
+            "from": "crash watch",
+            "text": (f"an alarming reading ({row['concern']}) went "
+                     f"unanswered through {row['attempts']} check-in(s); "
+                     f"{row['trusted_name']} was contacted"),
+        }],
+        "state": "open",
+        "tier": ("emergency_services" if row["contact_ems"]
+                 else "notify_contact"),
+        "accepted_by": row["accepted_by"],
+        "created_at": row["tripped_at"],
+        "cleared_at": None,
+    }
+
+
+def accept_alarm(user_id: str, responder: str) -> dict | None:
+    """A human takes the trip. Accepting says somebody is coming; clearing
+    says it is over — the relay's distinction, kept on this queue too."""
+    if not responder.strip():
+        raise CrashWatchError(
+            422, "a responder needs a name — 'someone accepted it' is the "
+                 "thing this loop exists to stop being enough")
+    if as_alarm(user_id) is None:
+        return None
+    conn = db.connect()
+    now = db.utcnow()
+    conn.execute(
+        "UPDATE crash_watches SET accepted_by=?, accepted_at=?, updated_at=?"
+        " WHERE user_id=?", (responder.strip(), now, now, user_id))
+    conn.commit()
+    from . import guardian
+    guardian._event(user_id, "crash_watch",
+                    detail={"alarm": ALARM_ID,
+                            "accepted_by": responder.strip()})
+    return {"alarm": ALARM_ID, "accepted_by": responder.strip(),
+            "state": "open"}
+
+
+def clear_alarm(user_id: str) -> dict | None:
+    """A responder says it is over. Resolves the trip the way the person's
+    own "I'm okay" would — the difference is who said it, and the
+    acceptance record keeps that difference legible."""
+    if as_alarm(user_id) is None:
+        return None
+    conn = db.connect()
+    now = db.utcnow()
+    conn.execute(
+        "UPDATE crash_watches SET resolved_at=?, updated_at=? WHERE user_id=?",
+        (now, now, user_id))
+    conn.commit()
+    return {"id": ALARM_ID, "state": "cleared"}
+
+
+def escalate_alarm(user_id: str) -> dict | None:
+    """Page the trusted channel again. The workplace relay works a roster;
+    a personal deployment has one trusted person, so escalating means the
+    one page is not the only page."""
+    row = _row(user_id)
+    if as_alarm(user_id) is None:
+        return None
+    from . import guardian, mailer
+    user = guardian.get_user(user_id) or {}
+    name = user.get("display_name", "someone you care about")
+    delivery = "console"
+    if mailer.configured_transport() == "smtp" and "@" in row["trusted_channel"]:
+        try:
+            mailer.deliver(
+                row["trusted_channel"],
+                f"{name} is still not answering — please act",
+                f"This is {name}'s JIM Guardian, paging again: the crash "
+                f"watch tripped ({row['concern']}) and nobody has confirmed "
+                "they are going. Please treat it as real until they tell "
+                "you otherwise.")
+            delivery = "email"
+        except Exception:  # noqa: BLE001 — the escalation still stands
+            delivery = "email_failed"
+    _record_page(user_id, row["trusted_name"], delivery)
+    return {"alarm": ALARM_ID, "re_paged": row["trusted_name"],
+            "delivery": delivery}
+
+
+def _record_page(user_id: str, responder: str, delivery: str) -> None:
+    """One row in the ledger the relay writes. `alarm_id` carries the
+    constant — this schema's foreign keys are declarative, and the pages
+    list is a flat read."""
+    conn = db.connect()
+    now = db.utcnow()
+    conn.execute(
+        "INSERT INTO relay_pages (id, alarm_id, user_id, responder, role,"
+        " on_shift, state, attempts, last_error, created_at, sent_at)"
+        " VALUES (?,?,?,?,?,1,?,1,NULL,?,?)",
+        (db.new_id("page"), ALARM_ID, user_id, responder, "trusted contact",
+         "sent" if delivery == "email"
+         else ("failed" if delivery == "email_failed" else "queued"),
+         now, now if delivery == "email" else None))
+    conn.commit()

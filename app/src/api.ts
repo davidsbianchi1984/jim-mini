@@ -552,6 +552,9 @@ export type AlarmRow = {
   id: string;
   state: string;
   tier: string;
+  /** "crash_watch" when the row is the tripped crash watch standing in the
+   *  same queue; absent on beacon alarms. */
+  kind?: string;
   beacon_id?: string | null;
   accepted_by?: string | null;
   created_at?: string;

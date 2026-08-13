@@ -1596,14 +1596,24 @@ def create_app(qrme_client: QRMEClient | None = None,
     def list_alarms(user_id: str, request: Request,
                     open_only: bool = False) -> list[dict]:
         """Who rang while they were away — their token only. Who called on
-        somebody is theirs, not a visitor's to browse."""
+        somebody is theirs, not a visitor's to browse.
+
+        Every way help gets summoned lands here: beacon alarms, and — first,
+        because it is the acute one — the crash watch's trip, shaped as an
+        alarm so one queue answers everything. The sweep runs so a deadline
+        that passed since the last look trips before the list is read."""
         _user_or_404(user_id, request)
-        return beacons.alarms_for(user_id, open_only)
+        crashwatch.sweep(user_id)
+        crash = crashwatch.as_alarm(user_id)
+        rows = beacons.alarms_for(user_id, open_only)
+        return [crash] + rows if crash else rows
 
     @app.post("/users/{user_id}/alarms/{alarm_id}/clear")
     def clear_alarm(user_id: str, alarm_id: str, request: Request) -> dict:
         _user_or_404(user_id, request)
-        out = beacons.clear(user_id, alarm_id)
+        out = (crashwatch.clear_alarm(user_id)
+               if alarm_id == crashwatch.ALARM_ID
+               else beacons.clear(user_id, alarm_id))
         if out is None:
             raise HTTPException(404, "no open alarm with that id")
         return out
@@ -1737,7 +1747,9 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.post("/users/{user_id}/alarms/{alarm_id}/escalate")
     def relay_escalate(user_id: str, alarm_id: str, request: Request) -> dict:
         _user_or_404(user_id, request)
-        out = relay.escalate(user_id, alarm_id)
+        out = (crashwatch.escalate_alarm(user_id)
+               if alarm_id == crashwatch.ALARM_ID
+               else relay.escalate(user_id, alarm_id))
         if out is None:
             raise HTTPException(404, "no alarm with that id")
         return out
@@ -1747,7 +1759,9 @@ def create_app(qrme_client: QRMEClient | None = None,
                      request: Request) -> dict:
         _user_or_404(user_id, request)
         try:
-            out = relay.accept(user_id, alarm_id, body.responder)
+            out = (crashwatch.accept_alarm(user_id, body.responder)
+                   if alarm_id == crashwatch.ALARM_ID
+                   else relay.accept(user_id, alarm_id, body.responder))
         except ValueError as exc:
             raise HTTPException(422, str(exc))
         if out is None:

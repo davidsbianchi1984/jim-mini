@@ -1221,6 +1221,12 @@ _NEW_COLUMNS = [
     # it. NULL for adults and for the asserted-only token path.
     ("users", "guardian_email", "TEXT"),
     ("users", "guardian_verified_at", "TEXT"),
+    # The crash watch's trip on the Needs-a-person queue (jim/crashwatch.py):
+    # who said "I'm going", and when. Columns on the watch row rather than a
+    # new table, because one watch per user means at most one open crash
+    # alarm — the same reason its alarm id can be a constant.
+    ("crash_watches", "accepted_by", "TEXT"),
+    ("crash_watches", "accepted_at", "TEXT"),
 ]
 
 
