@@ -90,7 +90,9 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "and the status code — never the error message, which quotes what you "
         "typed, and never an id, which would name a capture of you. The card "
         "shows the exact payload before anything leaves, and the switch beside "
-        "it stops the sending for good.",
+        "it stops the sending for good. The same card reads the other end: "
+        "the aggregate every client's reports fold into, behind "
+        "JIM_PROBLEMS_KEY or from the backend's own machine.",
     # Six doors that existed only on the phone until 0.22.0. A person who
     # went looking for one of these on the desktop was told, correctly, that
     # it was beyond the app's own doors — which it was.

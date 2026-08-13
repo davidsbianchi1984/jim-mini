@@ -292,7 +292,13 @@ LESSONS: tuple[dict, ...] = (
               "site on your body. Not the path as it was called, because a "
               "capture id names a photograph of you. You read the message when "
               "it happens: it is yours. Before a single report is sent, JIM "
-              "asks, and shows you the exact thing it would send.",
+              "asks, and shows you the exact thing it would send. And the "
+              "reports funnel home now: with no external collector stamped "
+              "into the build, the console posts to this deployment's own "
+              "backend, and the same card retrieves the aggregate — every "
+              "client's failures folded into counters, no messages to leak — "
+              "behind JIM_PROBLEMS_KEY, or freely from the backend's own "
+              "machine.",
          screens=(93, 94),
          try_it="Open Privacy and press 'Show me exactly what would be shared'."),
 
