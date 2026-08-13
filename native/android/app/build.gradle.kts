@@ -12,8 +12,8 @@ android {
         applicationId = "app.jim.guardian"
         minSdk = 26
         targetSdk = 34
-        versionCode = 70000
-        versionName = "0.70.0"
+        versionCode = 70001
+        versionName = "0.70.1"
 
         // Where content-free problem reports go, and the token to post them
         // with. The console's equivalent is the `define` block in
