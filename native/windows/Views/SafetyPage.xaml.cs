@@ -868,6 +868,11 @@ public sealed partial class SafetyPage : Page
                 };
                 line.Children.Add(retire);
                 BcnRows.Children.Add(line);
+                // The sticker's own image: the door is the URL a browser or
+                // printer fetches.
+                BcnRows.Children.Add(BcnLine(
+                    L10n.T("qr.addr") + " " + ApiClient.Shared.BeaconQrUrl(row.Id),
+                    "JimT3Brush"));
             }
         }
         catch { /* backend offline */ }

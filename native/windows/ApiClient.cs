@@ -1914,6 +1914,23 @@ public sealed class ApiClient
             $"/watch/channel/{uid}?device={device}"), token);
 
     /// Rotating invalidates the old drip token.
+    // The three QR images: the JSON sender cannot carry an image, so the
+    // door is the request the opener makes, and Get(...) is what the route
+    // audit reads.
+    public string PairQrUrl() => Get("/pair/qr.svg").RequestUri!.ToString();
+
+    public string BeaconQrUrl(string bid) =>
+        Get($"/c/{bid}/qr.svg").RequestUri!.ToString();
+
+    public string ConnectionQrUrl(string cid) =>
+        Get($"/social/connection/{cid}/qr.svg").RequestUri!.ToString();
+
+    // One reading through the Shortcut's own door — the token in the path
+    // is the whole credential, so no account token rides along.
+    public Task<DripAck> WatchDrip(string dripToken, int heartRate) =>
+        Send<DripAck>(Post($"/watch/drip/{dripToken}",
+                           new { heart_rate = heartRate }));
+
     public Task<WatchSetup> RotateWatchChannel(string uid, string token) =>
         Send<WatchSetup>(Post($"/watch/channel/{uid}/rotate", new { },
                               token));
@@ -2840,6 +2857,10 @@ public record WatchDeviceRow(
     [property: JsonPropertyName("name")] string Name);
 
 /// The setup card: drip URL, this device's recipe, arrivals so far.
+public record DripAck(
+    [property: JsonPropertyName("received")] int Received,
+    [property: JsonPropertyName("noticed")] bool Noticed);
+
 public record WatchSetup(
     [property: JsonPropertyName("drip_url")] string DripUrl,
     [property: JsonPropertyName("phone_reachable")] bool PhoneReachable,

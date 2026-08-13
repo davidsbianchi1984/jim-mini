@@ -13,6 +13,8 @@ struct WatchCard: View {
     @State private var importing = false
     @State private var busy = false
     @State private var error: String?
+    @State private var dripValue = ""
+    @State private var dripAck: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -43,6 +45,19 @@ struct WatchCard: View {
                     .textSelection(.enabled)
                 Text("\(setup.drips) · \(setup.last_drip_at ?? "—")")
                     .font(.caption2).foregroundStyle(Theme.t3)
+                // One reading by hand, through the same door the
+                // automation uses — the cheapest proof the tether is live.
+                HStack(spacing: 8) {
+                    TextField(L10n.t("ns.wt.drip.ph", state.language),
+                              text: $dripValue)
+                        .font(.caption2)
+                    Button(L10n.t("ns.wt.drip.now", state.language)) { drip() }
+                        .font(.caption2).foregroundStyle(Theme.brandA)
+                        .disabled(busy || Int(dripValue) == nil)
+                }
+                if let dripAck {
+                    Text(dripAck).font(.caption2).foregroundStyle(Theme.t2)
+                }
                 HStack {
                     Button(L10n.t("ns.wt.setup", state.language)) {
                         showSteps.toggle()
@@ -78,6 +93,10 @@ struct WatchCard: View {
                     .font(.caption2.monospaced()).foregroundStyle(Theme.txt)
                     .textSelection(.enabled)
                 Text(pair.note).font(.caption2).foregroundStyle(Theme.t3)
+                Text(L10n.t("qr.addr", state.language) + " "
+                     + ApiClient.shared.pairQrUrl().absoluteString)
+                    .font(.caption2.monospaced()).foregroundStyle(Theme.t3)
+                    .textSelection(.enabled)
             }
             if let error {
                 Text(error).font(.caption2).foregroundStyle(Theme.red)
@@ -103,6 +122,24 @@ struct WatchCard: View {
             // The card is per-family; the query rides the same route.
             setup = try? await ApiClient.shared.watchSetup(
                 uid: uid, token: token, device: device)
+        }
+    }
+
+    private func drip() {
+        guard let setup, let hr = Int(dripValue),
+              let token = setup.drip_url.split(separator: "/").last
+        else { return }
+        busy = true
+        Task {
+            do {
+                let ack = try await ApiClient.shared.watchDrip(
+                    dripToken: String(token), heartRate: hr)
+                dripAck = L10n.t(ack.noticed ? "ns.wt.drip.noticed"
+                                             : "ns.wt.drip.ok",
+                                 state.language)
+                    .replacingOccurrences(of: "{n}", with: String(ack.received))
+            } catch { self.error = error.localizedDescription }
+            busy = false
         }
     }
 

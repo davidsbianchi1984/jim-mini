@@ -187,6 +187,12 @@
                             <TextBlock x:Name="WtDrips" FontSize="10"
                                        Foreground="{StaticResource JimT3Brush}" />
                             <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBox x:Name="WtDripBox" Width="120" FontSize="11" />
+                                <Button x:Name="WtDripButton" Click="OnWatchDrip" FontSize="11" />
+                            </StackPanel>
+                            <TextBlock x:Name="WtDripAck" FontSize="10" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
                                 <Button x:Name="WtStepsButton" Click="OnWatchSteps" />
                                 <Button x:Name="WtRotateButton" Click="OnWatchRotate"
                                         Foreground="{StaticResource JimRedBrush}" />
@@ -200,6 +206,8 @@
                             <TextBlock x:Name="WtPairUrl" FontSize="11" IsTextSelectionEnabled="True"
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <TextBlock x:Name="WtPairNote" FontSize="10" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                            <TextBlock x:Name="WtPairQr" FontSize="10" TextWrapping="Wrap" IsTextSelectionEnabled="True"
                                        Foreground="{StaticResource JimT3Brush}" />
                             <TextBlock x:Name="WtError" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
                                        Foreground="{StaticResource JimRedBrush}" />
@@ -304,6 +312,8 @@
                                                     Background="Transparent" FontSize="12"
                                                     Foreground="{StaticResource JimRedBrush}" />
                                         </StackPanel>
+                                        <TextBlock Text="{Binding QrLine}" FontSize="10" IsTextSelectionEnabled="True"
+                                                   TextWrapping="Wrap" Foreground="{StaticResource JimT3Brush}" />
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>

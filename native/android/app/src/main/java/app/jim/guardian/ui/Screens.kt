@@ -1335,6 +1335,11 @@ private fun BeaconsPanel(vm: GuardianViewModel) {
                     }
                 }
             }
+            // The sticker's own image: the door is the URL a browser or
+            // printer fetches.
+            Text(L10n.t("qr.addr", vm.language) + " "
+                + ApiClient.beaconQrUrl(row.id),
+                color = Jim.T3, fontSize = 9.sp)
         }
         card?.let { c ->
             Text(c.firstName, color = Jim.Txt, fontSize = 12.sp,
@@ -4196,6 +4201,9 @@ private fun SocialPanel(vm: GuardianViewModel) {
                         fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     c.handle?.let { Text("@$it", color = Jim.T3, fontSize = 12.sp) }
                 }
+                Text(L10n.t("qr.addr", vm.language) + " "
+                    + ApiClient.connectionQrUrl(c.id),
+                    color = Jim.T3, fontSize = 9.sp)
                 if (c.direction == "collect") {
                     smallAction(L10n.t("jcon.collect.sample", vm.language)) {
                         vm.call({ ApiClient.socialCollect(c.id, vm.token!!,
@@ -6161,6 +6169,32 @@ private fun WatchPanel(vm: GuardianViewModel) {
             Text(s.dripUrl, color = Jim.Txt, fontSize = 11.sp)
             Text("${s.drips} \u00b7 ${s.lastDripAt ?: "\u2014"}",
                 color = Jim.T3, fontSize = 10.sp)
+            // One reading by hand, through the same door the automation
+            // uses — the cheapest proof the tether is live.
+            var dripValue by remember { mutableStateOf("") }
+            var dripAck by remember { mutableStateOf<String?>(null) }
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(Modifier.weight(1f)) {
+                    labeledField(L10n.t("ns.wt.drip.ph", vm.language),
+                        dripValue, L10n.t("ns.wt.drip.ph", vm.language)) {
+                        dripValue = it
+                    }
+                }
+                SmallAction(L10n.t("ns.wt.drip.now", vm.language),
+                    enabled = dripValue.toIntOrNull() != null) {
+                    val hr = dripValue.toIntOrNull() ?: return@SmallAction
+                    val token = s.dripUrl.substringAfterLast("/")
+                    vm.call({ ApiClient.watchDrip(token, hr) }) { r ->
+                        r.onSuccess { ack ->
+                            dripAck = L10n.t(if (ack.noticed) "ns.wt.drip.noticed"
+                                             else "ns.wt.drip.ok", vm.language)
+                                .replace("{n}", ack.received.toString())
+                        }.onFailure { error = it.message }
+                    }
+                }
+            }
+            dripAck?.let { Text(it, color = Jim.T2, fontSize = 10.sp) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SmallAction(L10n.t("ns.wt.setup", vm.language)) {
                     showSteps = !showSteps
@@ -6191,6 +6225,8 @@ private fun WatchPanel(vm: GuardianViewModel) {
             }
             Text(p.consoleUrl, color = Jim.Txt, fontSize = 11.sp)
             Text(p.note, color = Jim.T3, fontSize = 10.sp)
+            Text(L10n.t("qr.addr", vm.language) + " " + ApiClient.pairQrUrl(),
+                color = Jim.T3, fontSize = 10.sp)
         }
         error?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
     }

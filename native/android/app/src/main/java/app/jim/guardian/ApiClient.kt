@@ -1061,6 +1061,25 @@ object ApiClient {
         o.getString("id"), o.optString("platform", ""), o.optString("direction", ""),
         o.optString("handle", null))
 
+    /** The three QR images. The JSON helper cannot carry an image, and
+     *  the door is the fetch the opener does; building the URL here is
+     *  what the route audit reads. */
+    fun pairQrUrl(): String = java.net.URL("$base/pair/qr.svg").toString()
+
+    fun beaconQrUrl(bid: String): String =
+        java.net.URL("$base/c/$bid/qr.svg").toString()
+
+    fun connectionQrUrl(cid: String): String =
+        java.net.URL("$base/social/connection/$cid/qr.svg").toString()
+
+    /** One reading through the Shortcut's own door — the token in the path
+     *  is the whole credential, so no account token rides along. */
+    suspend fun watchDrip(dripToken: String, heartRate: Int): DripAckK {
+        val o = request("/watch/drip/$dripToken", "POST",
+            JSONObject().put("heart_rate", heartRate))
+        return DripAckK(o.optInt("received"), o.optBoolean("noticed"))
+    }
+
     suspend fun socialConnections(uid: String, token: String): List<SocialConn> {
         val arr = getArray("/social/$uid", token)
         return (0 until arr.length()).map { socialConnOf(arr.getJSONObject(it)) }
@@ -3266,6 +3285,7 @@ data class WatchSetup(val dripUrl: String, val phoneReachable: Boolean,
                       val device: String, val devices: List<WatchDeviceRow>,
                       val steps: List<String>, val seedHint: String)
 /** The local pairing card — the console's URL on this network. */
+data class DripAckK(val received: Int, val noticed: Boolean)
 data class PairInfo(val consoleUrl: String, val apiUrl: String,
                     val consoleBuilt: Boolean, val reachable: Boolean,
                     val hosted: Boolean, val qrSvg: String, val how: List<String>,

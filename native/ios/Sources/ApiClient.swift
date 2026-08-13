@@ -2733,6 +2733,11 @@ struct WatchSetup: Decodable {
 
 /// How to open the Guardian on a phone: the console's URL on this local
 /// network. Same Wi-Fi, no app store.
+struct DripAck: Decodable {
+    let received: Int
+    let noticed: Bool
+}
+
 struct PairInfo: Decodable {
     let console_url: String
     let api_url: String
@@ -2782,6 +2787,30 @@ extension ApiClient {
 
     func pairInfo() async throws -> PairInfo {
         try await request("/pair")
+    }
+
+    /// The three QR images. The JSON helper cannot carry an image, so the
+    /// door is the URL the opener fetches; building it here is what the
+    /// route audit reads. Absent a verb, GET stands — URLSession's own
+    /// default for a bare URL.
+    func pairQrUrl() -> URL {
+        base.appendingPathComponent("/pair/qr.svg")
+    }
+
+    func beaconQrUrl(bid: String) -> URL {
+        base.appendingPathComponent("/c/\(bid)/qr.svg")
+    }
+
+    func connectionQrUrl(cid: String) -> URL {
+        base.appendingPathComponent("/social/connection/\(cid)/qr.svg")
+    }
+
+    /// One reading through the Shortcut's own door. The token in the path
+    /// is the whole credential, so no account token rides along — and the
+    /// reply carries counts and nothing else, by that route's own rule.
+    func watchDrip(dripToken: String, heartRate: Int) async throws -> DripAck {
+        try await request("/watch/drip/\(dripToken)", method: "POST",
+                          body: ["heart_rate": heartRate])
     }
 
     func devices(uid: String, token: String) async throws -> [DeviceRow] {

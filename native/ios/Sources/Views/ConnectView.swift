@@ -168,6 +168,10 @@ private struct SocialSection: View {
                         Text("\(shown.handle) → \(shown.presence_url)")
                             .font(.caption2).foregroundStyle(Theme.t2)
                     }
+                    Text(L10n.t("qr.addr", state.language) + " "
+                         + ApiClient.shared.connectionQrUrl(cid: c.id).absoluteString)
+                        .font(.caption2.monospaced()).foregroundStyle(Theme.t3)
+                        .textSelection(.enabled)
                 }.card()
             }
         }

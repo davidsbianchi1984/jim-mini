@@ -56,6 +56,12 @@ struct BeaconsCard: View {
                     .font(.caption2).foregroundStyle(Theme.red)
                     .disabled(busy || !row.active)
                 }
+                // The sticker's own image: the door is the URL a browser
+                // or printer fetches.
+                Text(L10n.t("qr.addr", state.language) + " "
+                     + ApiClient.shared.beaconQrUrl(bid: row.id).absoluteString)
+                    .font(.caption2.monospaced()).foregroundStyle(Theme.t3)
+                    .textSelection(.enabled)
             }
             if let card {
                 VStack(alignment: .leading, spacing: 2) {

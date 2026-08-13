@@ -29,6 +29,7 @@ public sealed partial class ConnectPage : Page
         public Visibility PublishVisibility =>
             Collect ? Visibility.Collapsed : Visibility.Visible;
         public bool HasHandle { get; init; }
+        public string QrLine { get; init; } = "";
         public Visibility ScrapeVisibility =>
             Collect && HasHandle ? Visibility.Visible : Visibility.Collapsed;
         public string CollectSampleLabel => L10n.T("jcon.collect.sample");
@@ -234,9 +235,32 @@ public sealed partial class ConnectPage : Page
                 Handle = c.Handle is { } h ? $"@{h}" : "",
                 HasHandle = !string.IsNullOrEmpty(c.Handle),
                 Collect = c.Direction == "collect",
+                QrLine = L10n.T("qr.addr") + " "
+                    + ApiClient.Shared.ConnectionQrUrl(c.Id),
             }).ToList();
         }
         catch (Exception ex) { ShowSocialError(ex.Message); }
+    }
+
+    // One reading by hand, through the same door the automation uses —
+    // the cheapest proof the tether is live.
+    private async void OnWatchDrip(object sender, RoutedEventArgs e)
+    {
+        if (_watch is null || !int.TryParse(WtDripBox.Text, out var hr)) return;
+        var token = _watch.DripUrl.Split('/').Last();
+        try
+        {
+            var ack = await ApiClient.Shared.WatchDrip(token, hr);
+            WtDripAck.Text = L10n.T(ack.Noticed ? "ns.wt.drip.noticed"
+                                                : "ns.wt.drip.ok")
+                .Replace("{n}", ack.Received.ToString());
+            WtDripAck.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            WtError.Text = ex.Message;
+            WtError.Visibility = Visibility.Visible;
+        }
     }
 
     private void OnConnectCollect(object sender, RoutedEventArgs e) => Connect("collect");
@@ -1033,6 +1057,8 @@ public sealed partial class ConnectPage : Page
         WtStepsButton.Content = L10n.T("ns.wt.setup");
         WtRotateButton.Content = L10n.T("ns.bas.reset");
         WtSeedButton.Content = L10n.T("ns.wt.seed");
+        WtDripBox.PlaceholderText = L10n.T("ns.wt.drip.ph");
+        WtDripButton.Content = L10n.T("ns.wt.drip.now");
         DvHead.Text = L10n.T("ns.dv.bluetooth");
         DvPaired.Content = L10n.T("ns.dv.paired");
         DvAddButton.Content = L10n.T("ns.dv.bluetooth");
@@ -1053,6 +1079,8 @@ public sealed partial class ConnectPage : Page
             WtPairHow.Text = string.Join("\n", pair.How);
             WtPairUrl.Text = pair.ConsoleUrl;
             WtPairNote.Text = pair.Note;
+            WtPairQr.Text = L10n.T("qr.addr") + " "
+                + ApiClient.Shared.PairQrUrl();
         }
         catch { /* leave as-is */ }
     }
