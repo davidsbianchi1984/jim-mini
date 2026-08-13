@@ -124,6 +124,24 @@ both safer and faster than anything the button could do.
 An alarm is an **event**, so it appears in the owner's own event stream and in
 a parent's oversight view under the existing `alerts_only` / `full` rules.
 
+`notify_contact` is also a **send**, not just a tier. A personal beacon's
+alarm pages a real channel when one exists — a minor's goes to the guardian
+inbox that verified their consent, an adult's to the trusted channel they
+armed their crash watch with — and the attempt lands in the same
+`relay_pages` ledger the workplace relay and the crash watch write, under the
+alarm's own id, so "What went out" shows a page that could not be sent as a
+`queued` row rather than a silence. The finder's sentence is derived from
+that outcome, never asserted: *a message has been sent* only when one was,
+and otherwise *no message went out from this page* — because a stranger who
+walks away from a person on the ground believing a QR code summoned help is
+the worst failure this feature can have. Which of the three ways a message
+can fail to go out — an unmailable contact, a delivery failure, or nobody
+configured at all — is the owner's information, readable in their ledger; a
+beacon never tells a stranger how watched a person is. A **site** beacon's
+alarm sends nothing here: a worker's personal emergency contact is the wrong
+recipient for a workplace incident, and the roster relay below is that
+deployment's answer.
+
 ## Rate limiting, and why dropping is the wrong failure
 
 QRME caps an anonymous ring per desk at 30 seconds, because a printed code is

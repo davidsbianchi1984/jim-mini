@@ -478,3 +478,147 @@ def test_the_page_does_not_depend_on_an_animation_to_be_visible(client):
     html = client.get(f"/c/{b['id']}").text
     assert "prefers-reduced-motion" in html
     assert "opacity:0" not in html.replace(" ", "")
+
+
+# --- the page behind the sentence -----------------------------------------
+#
+# The finder's note used to be one unconditional claim — "the people watching
+# over this person have been alerted" — capping a function that sent nothing
+# to anyone. These tests hold the sentence to what actually happened.
+
+def _mail_spy(monkeypatch):
+    from jim import mailer
+    sent: list[dict] = []
+
+    def fake_deliver(to, subject, body):
+        sent.append({"to": to, "subject": subject, "body": body})
+        return "smtp"
+
+    monkeypatch.setattr(mailer, "deliver", fake_deliver)
+    monkeypatch.setattr(mailer, "configured_transport", lambda: "smtp")
+    return sent
+
+
+def test_a_phone_only_contact_makes_the_page_a_queued_row(client, monkeypatch):
+    """`Kin` is a phone number, and this product sends mail. The sentence
+    says no message went out, and the ledger records the attempt that could
+    not be made — the row the morning most needs to see."""
+    _mail_spy(monkeypatch)
+    u = _adult(client)
+    b = _place(client, u["id"], u["user_token"])
+    r = client.post(f"/c/{b['id']}/alarm", json={"message": "on the floor"})
+    assert r.status_code == 201
+    body = r.json()
+    assert body["message_sent"] is False
+    assert "No message went out from this page" in body["note"]
+    pages = client.get(f"/users/{u['id']}/pages",
+                       headers=_auth(u["user_token"])).json()
+    mine = [p for p in pages if p["alarm"] == body["alarm"]]
+    assert len(mine) == 1
+    assert mine[0]["responder"] == "Kin"
+    assert mine[0]["state"] == "queued"
+
+
+def test_an_armed_watch_makes_the_beacon_page_real(client, monkeypatch):
+    """The trusted channel the user armed their crash watch with is the
+    person they designated to be woken — a beacon alarm wakes them too."""
+    from jim import crashwatch
+    sent = _mail_spy(monkeypatch)
+    u = _adult(client)
+    crashwatch.arm(u["id"], "Rosa", "rosa@example.test")
+    b = _place(client, u["id"], u["user_token"], label="front door")
+    r = client.post(f"/c/{b['id']}/alarm", json={"message": "collapsed"})
+    body = r.json()
+    assert body["message_sent"] is True
+    assert "A message has been sent" in body["note"]
+    assert len(sent) == 1
+    assert sent[0]["to"] == "rosa@example.test"
+    assert "front door" in sent[0]["body"]
+    pages = client.get(f"/users/{u['id']}/pages",
+                       headers=_auth(u["user_token"])).json()
+    mine = [p for p in pages if p["alarm"] == body["alarm"]]
+    assert mine and mine[0]["state"] == "sent"
+
+
+def test_the_stranger_is_never_told_who_was_woken(client, monkeypatch):
+    """The name lives in the ledger, for the owner. A passer-by learns that
+    a message went out, never to whom."""
+    from jim import crashwatch
+    _mail_spy(monkeypatch)
+    u = _adult(client)
+    crashwatch.arm(u["id"], "Rosa", "rosa@example.test")
+    b = _place(client, u["id"], u["user_token"])
+    r = client.post(f"/c/{b['id']}/alarm", json={"message": "hello"})
+    assert "Rosa" not in json.dumps(r.json())
+    assert "rosa@example.test" not in json.dumps(r.json())
+
+
+def test_a_minors_alarm_mails_the_consent_inbox(client, monkeypatch):
+    """A child's page goes to the guardian address that verified their
+    consent — and the clinical stage stays shut exactly as before."""
+    from jim import db
+    sent = _mail_spy(monkeypatch)
+    parent = _adult(client, name="Parent Page")
+    child = _child(client, parent)
+    conn = db.connect()
+    conn.execute("UPDATE users SET guardian_email=? WHERE id=?",
+                 ("parent@example.test", child["id"]))
+    conn.commit()
+    r = client.post(f"/users/{child['id']}/beacons", json={"label": "backpack"},
+                    headers=_auth(parent["user_token"]))
+    b = r.json()
+    out = client.post(f"/c/{b['id']}/alarm", json={"message": "lost"}).json()
+    assert out["message_sent"] is True
+    assert "guardian has been sent a message" in out["note"]
+    assert out["medical_id"] is None
+    assert sent and sent[0]["to"] == "parent@example.test"
+
+
+def test_a_second_finder_reads_what_actually_went_out(client, monkeypatch):
+    """The cooldown coalesces the second press into the open alarm: one
+    message per alarm, and the second finder's sentence reports the truth
+    of the first send rather than a fresh claim."""
+    from jim import crashwatch
+    sent = _mail_spy(monkeypatch)
+    u = _adult(client)
+    crashwatch.arm(u["id"], "Rosa", "rosa@example.test")
+    b = _place(client, u["id"], u["user_token"])
+    first = client.post(f"/c/{b['id']}/alarm", json={"message": "one"}).json()
+    second = client.post(f"/c/{b['id']}/alarm", json={"message": "two"}).json()
+    assert second["joined_existing"] is True
+    assert second["alarm"] == first["alarm"]
+    assert second["message_sent"] is True
+    assert len(sent) == 1
+
+
+def test_nobody_configured_means_no_row_and_an_honest_sentence(client,
+                                                               monkeypatch):
+    """No contact, no watch: nothing to attempt, so the ledger stays empty
+    and the finder is told to call for help themselves."""
+    _mail_spy(monkeypatch)
+    u = _adult(client, emergency_name=None, emergency_phone=None)
+    b = _place(client, u["id"], u["user_token"])
+    body = client.post(f"/c/{b['id']}/alarm", json={"message": "hm"}).json()
+    assert body["message_sent"] is False
+    assert "No message went out from this page" in body["note"]
+    pages = client.get(f"/users/{u['id']}/pages",
+                       headers=_auth(u["user_token"])).json()
+    assert [p for p in pages if p["alarm"] == body["alarm"]] == []
+
+
+def test_a_site_incident_never_pages_the_workers_family(client, monkeypatch):
+    """The relay module draws this line and the raise respects it: a
+    workplace incident is worked through the site roster, not sent to the
+    worker's personal emergency contact."""
+    from jim import crashwatch
+    sent = _mail_spy(monkeypatch)
+    u = _adult(client)
+    crashwatch.arm(u["id"], "Rosa", "rosa@example.test")
+    b = _place(client, u["id"], u["user_token"], kind="site",
+               label="plant room 2")
+    body = client.post(f"/c/{b['id']}/alarm", json={"message": "down"}).json()
+    assert sent == []
+    assert body["message_sent"] is False
+    pages = client.get(f"/users/{u['id']}/pages",
+                       headers=_auth(u["user_token"])).json()
+    assert [p for p in pages if p["alarm"] == body["alarm"]] == []

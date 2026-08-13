@@ -55,6 +55,28 @@ COOLDOWN_MINUTES = 15
 BADGE_BEFORE = "Scanning this did not call for help."
 BADGE_AFTER = "The alarm is raised. This is not an emergency service."
 
+# What the finder reads after pressing the button — derived from what
+# actually happened, never asserted. This used to be one unconditional
+# sentence, "the people watching over this person have been alerted", while
+# the function it capped sent nothing to anyone: no mail, no page, no ledger
+# row — the alert only existed inside an app the contact may never open. A
+# stranger who walks away from a person on the ground believing help is
+# coming, because a QR page said so, is the worst failure this feature has.
+NOTE_SENT = ("A message has been sent to the people watching over this "
+             "person. If this is an emergency, call your local emergency "
+             "number — this page cannot.")
+NOTE_MINOR_SENT = ("This person's guardian has been sent a message. If this "
+                   "is an emergency, call your local emergency number.")
+# One sentence for every way a message can fail to go out — contact set but
+# unreachable from here, mail undelivered, or nobody set up at all. The
+# difference matters to the owner, who reads it in the pages ledger; telling
+# a stranger at the door which of the three it was would publish how watched
+# this person is, which is the question a beacon must never answer.
+NOTE_UNSENT = ("No message went out from this page — the alarm is recorded "
+               "on this person's account. If this is an emergency, call "
+               "your local emergency number yourself; this page cannot "
+               "call anyone.")
+
 
 class BeaconError(Exception):
     pass
@@ -207,6 +229,78 @@ def _medical_id_for(user_id: str) -> dict | None:
     return guardian._medical_id(user_id, user) if user else None
 
 
+def _reachable(user: dict, minor: bool) -> tuple[str | None, str | None]:
+    """Who to page for this person, and a mailable address when one exists.
+
+    The name is for the ledger, never for the stranger. A minor's page goes
+    to the guardian inbox that verified their consent; an adult's goes to
+    the trusted channel they armed their own crash watch with — the person
+    they themselves designated to be woken. An emergency contact who is
+    only a phone number is still a name worth recording an attempt against,
+    because the morning-after ledger exists precisely to show the message
+    that never went out.
+    """
+    if minor:
+        email = (user.get("guardian_email") or "").strip()
+        return (user.get("emergency_name") or "guardian",
+                email if "@" in email else None)
+    from . import crashwatch
+    watch = crashwatch.status(user["id"])
+    channel = (watch.get("trusted_channel") or "").strip()
+    if watch.get("armed") and "@" in channel:
+        return watch["trusted_name"], channel
+    if user.get("emergency_name") or user.get("emergency_phone"):
+        return (user.get("emergency_name") or "emergency contact"), None
+    return None, None
+
+
+def _page_out(alarm_id: str, user_id: str, responder: str,
+              address: str | None, user: dict, label: str,
+              role: str) -> str:
+    """One attempt to reach the person the note talks about, in the ledger.
+
+    The same ledger the workplace relay and the crash watch write, with this
+    alarm's real id — so "What went out" shows a beacon's page beside
+    everybody else's, and a page that could not be sent is a `queued` row
+    rather than a silence.
+    """
+    from . import mailer
+    name = user.get("display_name") or "someone"
+    delivery = "queued"
+    if address and mailer.configured_transport() == "smtp":
+        body = (f"This is {name}'s JIM Guardian. A passer-by pressed the "
+                f"alarm on their care beacon '{label}'. They asked that you "
+                "be contacted when exactly this happens — please treat it "
+                "as real until they tell you otherwise. If you believe this "
+                "is an emergency, call your local emergency number "
+                "yourself; this message cannot.")
+        try:
+            mailer.deliver(address, f"{name} may need help — a care beacon "
+                           "was pressed", body)
+            delivery = "sent"
+        except Exception:  # noqa: BLE001 — the alarm stands, undelivered
+            delivery = "failed"
+    conn = db.connect()
+    now = db.utcnow()
+    conn.execute(
+        "INSERT INTO relay_pages (id, alarm_id, user_id, responder, role,"
+        " on_shift, state, attempts, last_error, created_at, sent_at)"
+        " VALUES (?,?,?,?,?,1,?,?,NULL,?,?)",
+        (db.new_id("page"), alarm_id, user_id, responder, role, delivery,
+         1 if delivery != "queued" else 0, now,
+         now if delivery == "sent" else None))
+    conn.commit()
+    return delivery
+
+
+def _ever_sent(alarm_id: str) -> bool:
+    """Whether any page for this alarm actually left the building — what a
+    second finder is told, instead of a recount of the first one's raise."""
+    return db.connect().execute(
+        "SELECT 1 FROM relay_pages WHERE alarm_id=? AND state='sent'"
+        " LIMIT 1", (alarm_id,)).fetchone() is not None
+
+
 def alarm(beacon_id: str, message: str | None = None,
           qrme=None) -> dict | None:
     """Stage two. A passer-by raises the people who are watching.
@@ -258,7 +352,21 @@ def alarm(beacon_id: str, message: str | None = None,
             detail={"source": "care_beacon", "beacon": beacon_id,
                     "tier": tier, "alarm": alarm_id})
         joined = False
+        # Actually try to reach somebody, and record the attempt either way.
+        # The cooldown coalesces a second finder into the open alarm above,
+        # so the page goes out once per alarm rather than once per press.
+        # Never for a site beacon: a worker's personal emergency contact is
+        # the wrong recipient for a workplace incident (see jim/relay.py) —
+        # the roster relay is that deployment's answer, worked through its
+        # own escalate loop.
+        if row["kind"] != "site":
+            responder, address = _reachable(user, minor)
+            if responder:
+                _page_out(alarm_id, row["user_id"], responder, address, user,
+                          row["label"], "guardian" if minor
+                          else "emergency contact")
 
+    sent = _ever_sent(alarm_id)
     out = {
         "alarm": alarm_id,
         "raised": True,
@@ -266,9 +374,8 @@ def alarm(beacon_id: str, message: str | None = None,
         "tier": tier,
         "badge": BADGE_AFTER,
         "call_emergency_services_yourself": True,
-        "note": ("The people watching over this person have been alerted. "
-                 "If this is an emergency, call your local emergency number "
-                 "— this page cannot."),
+        "message_sent": sent,
+        "note": NOTE_SENT if sent else NOTE_UNSENT,
     }
 
     if minor:
@@ -279,8 +386,7 @@ def alarm(beacon_id: str, message: str | None = None,
         out["medical_id"] = None
         out["minor"] = True
         out["routed_to"] = "guardian"
-        out["note"] = ("This person's guardian has been alerted. If this is "
-                       "an emergency, call your local emergency number.")
+        out["note"] = NOTE_MINOR_SENT if sent else NOTE_UNSENT
     else:
         out["medical_id"] = _medical_id_for(row["user_id"])
     return out
