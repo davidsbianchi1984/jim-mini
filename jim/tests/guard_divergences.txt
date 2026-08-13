@@ -1,4 +1,4 @@
-# status: backlog — 124 rows
+# status: backlog — 122 rows
 #
 # Guards carried by two of the three products and not the third. Each row
 # names the product that lacks it.
@@ -35,7 +35,7 @@
 #
 # The ceiling does not move up. A new divergence is a fix that did not travel.
 #
-# ceiling: 124
+# ceiling: 122
 jim: test_directions_never_name_a_lesson_that_is_gone
 jim: test_the_guide_has_no_name_and_no_face
 jim: test_the_table_is_complete_in_every_language
@@ -62,7 +62,6 @@ pdi: test_authenticated_submitter_sees_only_their_own
 pdi: test_clearing_settings_returns_to_the_console_transport
 pdi: test_configuring_mail_turns_signup_back_into_real_verification
 pdi: test_console_mail_survives_a_cp1252_stdout
-pdi: test_custody_is_never_described_as_ownership
 pdi: test_custom_provider_stays_dark_until_its_url_is_set
 pdi: test_deepseek_and_the_founders_own_algorithm_are_on_the_menu
 pdi: test_every_capability_the_gate_names_has_a_translation
@@ -77,7 +76,6 @@ pdi: test_every_plan_in_the_catalogue_states_its_posture
 pdi: test_every_provider_on_the_menu_can_be_chosen
 pdi: test_every_refusable_plan_has_a_billing_period
 pdi: test_every_sensitive_kind_is_enforced_somewhere
-pdi: test_every_test_count_the_readme_claims_is_true
 pdi: test_every_wrapper_that_swallows_a_failure_records_who_answered
 pdi: test_focus_does_not_stand_in_for_the_cap
 pdi: test_forgot_password_resets_via_emailed_code
