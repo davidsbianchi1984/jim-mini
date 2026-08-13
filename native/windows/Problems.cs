@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -356,7 +357,11 @@ public static class Problems
             var content = new System.Net.Http.StringContent(
                 JsonSerializer.Serialize(payload), Encoding.UTF8,
                 "application/json");
-            var res = await http.PostAsync($"{baseUrl}/v1/problems", content);
+            // An explicit HttpRequestMessage rather than PostAsync, so the
+            // route audit can read this call — the send was invisible to it.
+            var req = new HttpRequestMessage(HttpMethod.Post,
+                baseUrl + "/v1/problems") { Content = content };
+            var res = await http.SendAsync(req);
             if (!res.IsSuccessStatusCode) return SendOutcome.Failed;
         }
         catch { return SendOutcome.Failed; }

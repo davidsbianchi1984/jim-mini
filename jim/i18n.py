@@ -1571,6 +1571,56 @@ def refuse(request, status: int, content, headers: dict | None = None):
 #: languages. What is not here is recorded in
 #: `jim/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    'reading the failure map requires the JIM_PROBLEMS_KEY bearer token': {
+        'es': 'leer el mapa de fallos requiere el token portador '
+              'JIM_PROBLEMS_KEY',
+        'fr': 'lire la carte des échecs exige le jeton porteur '
+              'JIM_PROBLEMS_KEY',
+        'de': 'das Lesen der Fehlerkarte erfordert das '
+              'JIM_PROBLEMS_KEY-Bearer-Token',
+        'pt': 'ler o mapa de falhas requer o token portador '
+              'JIM_PROBLEMS_KEY',
+        'it': 'leggere la mappa dei guasti richiede il token bearer '
+              'JIM_PROBLEMS_KEY',
+        'ja': '障害マップの閲覧には JIM_PROBLEMS_KEY のベアラートークンが必要です',
+        'zh': '读取故障图需要 JIM_PROBLEMS_KEY 持有者令牌',
+        'hi': 'विफलता मानचित्र पढ़ने के लिए JIM_PROBLEMS_KEY बियरर टोकन चाहिए',
+        'ar': 'قراءة خريطة الأعطال تتطلب رمز JIM_PROBLEMS_KEY الحامل',
+    },
+    'wrong problems key': {
+        'es': 'clave de problemas incorrecta',
+        'fr': 'mauvaise clé des problèmes',
+        'de': 'falscher Problems-Schlüssel',
+        'pt': 'chave de problemas errada',
+        'it': 'chiave dei problemi sbagliata',
+        'ja': 'problemsキーが違います',
+        'zh': '问题密钥不正确',
+        'hi': 'समस्याओं की कुंजी ग़लत है',
+        'ar': 'مفتاح المشاكل خاطئ',
+    },
+    'the failure aggregate is readable from this machine only until '
+    'JIM_PROBLEMS_KEY is set — behind a proxy, set it': {
+        'es': 'el agregado de fallos solo se puede leer desde esta máquina '
+              'hasta que se fije JIM_PROBLEMS_KEY — tras un proxy, fíjala',
+        'fr': "l'agrégat des échecs n'est lisible que depuis cette machine "
+              "tant que JIM_PROBLEMS_KEY n'est pas définie — derrière un "
+              'proxy, définissez-la',
+        'de': 'das Fehleraggregat ist nur von dieser Maschine lesbar, bis '
+              'JIM_PROBLEMS_KEY gesetzt ist — hinter einem Proxy: setzen',
+        'pt': 'o agregado de falhas só pode ser lido a partir desta máquina '
+              'até JIM_PROBLEMS_KEY estar definida — atrás de um proxy, '
+              'defina-a',
+        'it': "l'aggregato dei guasti è leggibile solo da questa macchina "
+              'finché JIM_PROBLEMS_KEY non è impostata — dietro un proxy, '
+              'impostala',
+        'ja': '障害の集計は JIM_PROBLEMS_KEY を設定するまでこの機械からしか読めません — '
+              'プロキシの背後では設定してください',
+        'zh': '在设置 JIM_PROBLEMS_KEY 之前，故障汇总只能从本机读取——在代理之后请务必设置',
+        'hi': 'जब तक JIM_PROBLEMS_KEY निर्धारित नहीं होती, विफलता समग्र केवल इसी '
+              'मशीन से पढ़ा जा सकता है — प्रॉक्सी के पीछे इसे निर्धारित करें',
+        'ar': 'لا يمكن قراءة مجمّع الأعطال إلا من هذا الجهاز حتى يُعيَّن '
+              'JIM_PROBLEMS_KEY — خلف وكيل، عيِّنه',
+    },
     "a responder needs a name — 'someone accepted it' is the thing this loop exists to stop being enough": {
         'es': "quien responde necesita un nombre — 'alguien lo aceptó' es justo lo que este circuito existe para que deje de bastar",
         'fr': "un répondant a besoin d'un nom — « quelqu'un l'a accepté » est précisément ce que cette boucle existe pour rendre insuffisant",

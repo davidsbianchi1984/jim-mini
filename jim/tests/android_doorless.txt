@@ -2,3 +2,4 @@ GET /c/{bid}/qr.svg
 GET /pair/qr.svg
 GET /social/connection/{cid}/qr.svg
 POST /watch/drip/{token}
+GET /v1/problems

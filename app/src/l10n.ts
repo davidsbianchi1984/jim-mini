@@ -430,7 +430,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     de: "der Problems-Schlüssel, falls diese Installation einen gesetzt hat",
     pt: "a chave de problemas, se esta instalação definiu uma",
     it: "la chiave dei problemi, se questa installazione ne ha una",
-    ja: "この配備で設定されていれば、そのproblemsキー",
+    ja: "この配備で設定されていれば、その「problems」キー",
     zh: "如果此部署设置了问题密钥，请输入",
     hi: "समस्याओं की कुंजी, अगर इस परिनियोजन ने कोई रखी है",
     ar: "مفتاح المشاكل، إن كان هذا النشر قد عيّن واحدًا",

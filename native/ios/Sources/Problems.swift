@@ -278,7 +278,11 @@ enum Problems {
         let payload = report(appVersion: appVersion)
         guard let rows = payload["problems"] as? [[String: Any]],
               !rows.isEmpty else { return .nothingToSend }
-        guard let url = URL(string: "\(base)/v1/problems"),
+        // `appendingPathComponent` rather than string splicing, so the route
+        // audit can read this call — the send was invisible to it before.
+        guard let baseUrl = URL(string: base) else { return .failed }
+        let url = baseUrl.appendingPathComponent("/v1/problems")
+        guard
               let body = try? JSONSerialization.data(withJSONObject: payload)
         else { return .failed }
 

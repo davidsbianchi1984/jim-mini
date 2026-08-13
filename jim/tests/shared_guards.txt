@@ -1,4 +1,4 @@
-# status: manifest — 465 guards carried by all three products
+# status: manifest — 468 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -80,6 +80,7 @@ test_a_reflected_parameter_is_not_markup
 test_a_refusal_reaches_the_reader
 test_a_refusal_with_nothing_readable_is_not_given_an_invented_sentence
 test_a_renamed_case_is_the_wire_key
+test_a_report_lands_and_folds
 test_a_report_needs_no_account_and_keeps_no_name
 test_a_route_that_fails_still_answers_the_console
 test_a_row_with_no_subject_is_left_alone
@@ -274,6 +275,7 @@ test_prose_about_a_member_is_not_a_use
 test_prose_with_angle_brackets_is_not_markup
 test_public_base_normalises_trailing_slash
 test_publish_connections_do_not_scrape
+test_reading_is_narrower_than_writing
 test_resolving_a_language_never_raises
 test_sending_is_impossible_without_an_address_somebody_configured
 test_sentence_of_reads_each_shape_and_invents_nothing
@@ -371,6 +373,7 @@ test_the_guard_would_catch_all_three_shapes_of_defect
 test_the_guard_would_catch_both_shapes_of_defect
 test_the_handler_is_registered
 test_the_header_is_read_the_way_the_other_products_read_it
+test_the_intake_is_a_whitelist
 test_the_iphone_ships_the_version_that_shipped
 test_the_key_this_product_asks_for_is_sendable_by_every_client
 test_the_kotlin_client_passes_a_path_where_a_path_goes
