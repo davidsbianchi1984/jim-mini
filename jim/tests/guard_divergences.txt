@@ -1,4 +1,4 @@
-# status: backlog — 122 rows
+# status: backlog — 121 rows
 #
 # Guards carried by two of the three products and not the third. Each row
 # names the product that lacks it.
@@ -35,7 +35,7 @@
 #
 # The ceiling does not move up. A new divergence is a fix that did not travel.
 #
-# ceiling: 122
+# ceiling: 121
 jim: test_directions_never_name_a_lesson_that_is_gone
 jim: test_the_guide_has_no_name_and_no_face
 jim: test_the_table_is_complete_in_every_language
@@ -135,7 +135,6 @@ qrme: test_a_page_is_signed_when_a_secret_is_set
 qrme: test_a_retired_code_is_indistinguishable_from_one_that_never_existed
 qrme: test_a_wrapping_shift_belongs_to_the_day_it_started
 qrme: test_each_new_screen_calls_its_family
-qrme: test_every_handler_returns_through_the_one_place
 qrme: test_every_surface_is_actually_being_scanned
 qrme: test_healthcheck_matches_the_port_the_suite_harness_expects
 qrme: test_invoke_and_grants

@@ -1566,11 +1566,30 @@ def refuse(request, status: int, content, headers: dict | None = None):
     return JSONResponse(status_code=status, content=body, headers=headers)
 
 
+#: The one sentence a person can meet on any route in this product,
+#: because it is the answer to a route that failed. Named here so
+#: `_REFUSALS` can carry it and the middleware can look it up — a
+#: refusal built inline is a refusal in English.
+SERVER_ERROR = ("Something went wrong on our side. "
+                "Nothing you sent was recorded.")
+
+
 #: Keyed on the English source, so editing the English falls back loudly to
 #: the new English rather than quietly serving the old sentence in nine
 #: languages. What is not here is recorded in
 #: `jim/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    'Something went wrong on our side. Nothing you sent was recorded.': {
+        'es': 'Algo falló de nuestro lado. No se registró nada de lo que envió.',
+        'fr': "Quelque chose a échoué de notre côté. Rien de ce que vous avez envoyé n'a été enregistré.",
+        'de': 'Auf unserer Seite ist etwas schiefgegangen. Nichts von dem, was Sie gesendet haben, wurde gespeichert.',
+        'pt': 'Algo correu mal do nosso lado. Nada do que enviou ficou registado.',
+        'it': 'Qualcosa è andato storto dalla nostra parte. Nulla di ciò che ha inviato è stato registrato.',
+        'ja': 'こちら側で問題が発生しました。送信された内容は記録されていません。',
+        'zh': '我们这边出了问题。您发送的内容没有被记录。',
+        'hi': 'हमारी ओर से कुछ गड़बड़ हो गई। आपने जो भेजा, वह दर्ज नहीं हुआ।',
+        'ar': 'حدث خطأ من جانبنا. لم يُسجَّل أي شيء أرسلته.',
+    },
     'reading the failure map requires the JIM_PROBLEMS_KEY bearer token': {
         'es': 'leer el mapa de fallos requiere el token portador '
               'JIM_PROBLEMS_KEY',

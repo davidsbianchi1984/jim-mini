@@ -3504,11 +3504,17 @@ def create_app(qrme_client: QRMEClient | None = None,
         except Exception:
             _log.exception("unhandled error on %s %s",
                            request.method, request.url.path)
+            # In the reader's language, like every other refusal here. The
+            # sentence was written inline for three releases, so the one
+            # answer every route can give — the one a person meets when the
+            # product is already failing them — was the one answer that only
+            # ever came back in English.
             return JSONResponse(
                 status_code=500,
                 content={"detail": "server_error",
-                         "message": "Something went wrong on our side. "
-                                    "Nothing you sent was recorded."})
+                         "message": i18n.tr_refusal(
+                             i18n.SERVER_ERROR,
+                             i18n.refusal_language(request))})
 
     # Last on purpose, and this is load-bearing. `add_middleware` inserts at
     # the front, so the middleware registered last is the outermost — and CORS
