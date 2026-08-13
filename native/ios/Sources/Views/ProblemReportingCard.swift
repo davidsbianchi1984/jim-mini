@@ -89,9 +89,11 @@ struct ProblemReportingCard: View {
                 } else {
                     ForEach(rows.indices, id: \.self) { i in
                         let r = rows[i]
-                        Text("\(r["op"] as? String ?? "") → "
-                             + "\(r["status"] as? Int ?? 0)  ×"
-                             + "\(r["count"] as? Int ?? 0)  \(r["day"] as? String ?? "")")
+                        let line = (r["op"] as? String ?? "") + " → "
+                            + String(r["status"] as? Int ?? 0) + "  ×"
+                            + String(r["count"] as? Int ?? 0) + "  "
+                            + (r["day"] as? String ?? "")
+                        Text(line)
                             .font(.system(.caption2, design: .monospaced))
                             .foregroundStyle(Theme.t2)
                     }

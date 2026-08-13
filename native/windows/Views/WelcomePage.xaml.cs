@@ -14,6 +14,8 @@ public sealed partial class WelcomePage : Page
     {
         InitializeComponent();
         HeroText.Text = L10n.T("nw.hero");
+        TermsText.Text = L10n.T("wel.terms");
+        BackendText.Text = L10n.T("wel.backend");
         PitchLine.Text = L10n.T("nw.pitch");
         NameBox.Header = L10n.T("nw.name");
         NameBox.PlaceholderText = L10n.T("res.name");

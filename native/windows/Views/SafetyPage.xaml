@@ -177,8 +177,8 @@
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <TextBlock x:Name="CrashSub"
                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
-                            <TextBox x:Name="CrashName" PlaceholderText="Rosa" />
-                            <TextBox x:Name="CrashChannel" PlaceholderText="rosa@example.com" />
+                            <TextBox x:Name="CrashName" />
+                            <TextBox x:Name="CrashChannel" />
                             <NumberBox x:Name="CrashAttempts" Value="3"
                                        Minimum="1" Maximum="10" SpinButtonPlacementMode="Inline" />
                             <NumberBox x:Name="CrashWindow" Value="5"

@@ -54,7 +54,7 @@ struct AccountCard: View {
             }
 
             if mode == "up" && pending {
-                Text("\(L10n.t("onb.verify.sent", language)) \(email)")
+                Text(L10n.t("onb.verify.sent", language) + " " + email)
                     .font(.caption2).foregroundStyle(Theme.t2)
                 Text(L10n.t("onb.verify.type", language))
                     .font(.caption2).foregroundStyle(Theme.t3)

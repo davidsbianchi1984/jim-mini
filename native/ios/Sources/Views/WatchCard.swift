@@ -43,7 +43,8 @@ struct WatchCard: View {
                 Text(setup.drip_url)
                     .font(.caption2.monospaced()).foregroundStyle(Theme.txt)
                     .textSelection(.enabled)
-                Text("\(setup.drips) · \(setup.last_drip_at ?? "—")")
+                let line = "\(setup.drips)" + " · " + (setup.last_drip_at ?? "—")
+                Text(line)
                     .font(.caption2).foregroundStyle(Theme.t3)
                 // One reading by hand, through the same door the
                 // automation uses — the cheapest proof the tether is live.

@@ -23,7 +23,8 @@ struct MicCard: View {
                 .font(.subheadline.bold()).foregroundStyle(Theme.txt)
 
             if let mic, mic.attached == true {
-                Text("\(mic.device ?? "") · \(mic.mic_type ?? "")")
+                let line = (mic.device ?? "") + " · " + (mic.mic_type ?? "")
+                Text(line)
                     .font(.caption.bold()).foregroundStyle(Theme.txt)
                 if let hears = mic.hears, !hears.isEmpty {
                     Text(hears).font(.caption2).foregroundStyle(Theme.t2)

@@ -87,7 +87,9 @@ public sealed partial class SafetyPage : Page
         CrashHead.Text = L10n.T("cw");
         CrashSub.Text = L10n.T("cw.sub");
         CrashName.Header = L10n.T("cw.trusted");
+        CrashName.PlaceholderText = "Rosa";
         CrashChannel.Header = L10n.T("cw.reach");
+        CrashChannel.PlaceholderText = "rosa@example.com";
         CrashAttempts.Header = L10n.T("cw.attempts");
         CrashWindow.Header = L10n.T("cw.minutes");
         CrashArmButton.Content = L10n.T("cw.arm");

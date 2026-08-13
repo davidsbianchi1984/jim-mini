@@ -269,11 +269,9 @@ fun WelcomeScreen(vm: GuardianViewModel) {
                 vm.enroll(name, birthdate, language,
                     onError = { error = it }, onBusy = { busy = it })
             }
-            Text("By enrolling you agree to the Terms of Service — JIM-mini is a wellness tool, " +
-             "not a medical device; in an emergency call 911 first. You assume the risks of " +
-             "AI guidance and monitoring. Full terms: GET /terms · docs/terms.md",
+            Text(L10n.t("wel.terms", language),
             color = Jim.T3, fontSize = 9.sp)
-        Text("Start the backend:  JIM_CORS_ORIGINS=* uvicorn jim.api:app",
+        Text(L10n.t("wel.backend", language),
                 color = Jim.T3, fontSize = 10.sp)
             // Or a real account: email-verified, recoverable, and the same
             // one the console and the other devices share.
@@ -366,7 +364,7 @@ private fun AccountPanel(vm: GuardianViewModel, language: String) {
         }
 
         if (mode == "up" && pending) {
-            Text("${L10n.t("onb.verify.sent", language)} $email",
+            Text(L10n.t("onb.verify.sent", language) + " " + email,
                 color = Jim.T2, fontSize = 12.sp)
             Text(L10n.t("onb.verify.type", language), color = Jim.T3, fontSize = 11.sp)
             labeledField(L10n.t("onb.code", language), code, "123456") { code = it }
@@ -1478,7 +1476,7 @@ fun MonitorScreen(vm: GuardianViewModel) {
         Text(L10n.t("mon", vm.language), color = Jim.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text(L10n.t("mon.sub", vm.language), color = Jim.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            sliderRow(L10n.t("ci.hr", vm.language), "${hr.roundToInt()} bpm", Jim.Red, hr, 40f..180f) { hr = it }
+            sliderRow(L10n.t("ci.hr", vm.language), hr.roundToInt().toString() + " bpm", Jim.Red, hr, 40f..180f) { hr = it }
             sliderRow(L10n.t("ci.stress", vm.language), "${(stress * 100).roundToInt()}%", Jim.Amber, stress, 0f..1f) { stress = it }
         }
         BrandButton(L10n.t("mon.send", vm.language), busy = busy) {
@@ -2815,7 +2813,7 @@ private fun GuidanceExtras(g: Guidance, lang: String) {
             Text(who, color = Jim.Txt, fontSize = 12.sp,
                 fontWeight = FontWeight.Bold)
             if (g.source == "tandem")
-                Text("LIVE · QRME", color = Jim.Green, fontSize = 10.sp,
+                Text(L10n.t("fa.live", lang), color = Jim.Green, fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .background(Jim.Green.copy(alpha = 0.16f),
@@ -2836,10 +2834,10 @@ private fun GuidanceExtras(g: Guidance, lang: String) {
     }
     g.firstAid?.let { aid ->
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("First aid — ${aid.kind.uppercase()}", color = Jim.Red,
-                fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("fa", lang) + " \u00b7 " + aid.kind.uppercase(),
+                color = Jim.Red, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             if (aid.callEms)
-                Text("📞 Call emergency services now", color = Jim.Red,
+                Text(L10n.t("fa.call", lang), color = Jim.Red,
                     fontSize = 12.sp, fontWeight = FontWeight.Bold)
             aid.steps.forEachIndexed { i, step ->
                 Text("${i + 1}. $step", color = Jim.Txt, fontSize = 12.sp)
@@ -3096,9 +3094,8 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                         fontWeight = FontWeight.Bold)
             }
             if (waiver?.signed == true) {
-                Text("Signed by ${waiver?.signature ?: ""} — CPR-rated robots may start " +
-                    "compressions automatically and operate a fully-automatic AED. A shock " +
-                    "still only follows the AED's own rhythm analysis.",
+                Text(L10n.t("res.signed.by", vm.language)
+                    .replace("{name}", waiver?.signature ?: ""),
                     color = Jim.T2, fontSize = 12.sp)
                 TextButton(onClick = {
                     vm.call({ ApiClient.revokeWaiver(vm.uid!!, vm.token!!) }) {
@@ -3107,10 +3104,7 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                     }
                 }) { Text(L10n.t("res.revoke", vm.language), color = Jim.Red, fontSize = 12.sp) }
             } else {
-                Text("Unlock automatic operation: CPR that starts on detection, and a " +
-                    "fully-automatic AED that shocks on its own analysis after the robot " +
-                    "verifies everyone is clear. Until signed, every start needs an " +
-                    "on-scene confirmation and no shock is ever delivered.",
+                Text(L10n.t("res.waiver.sub", vm.language),
                     color = Jim.T2, fontSize = 12.sp)
                 waiver?.terms?.forEach { t ->
                     Text("• $t", color = Jim.T3, fontSize = 10.sp)
@@ -3148,7 +3142,9 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                         color = Jim.T2, fontSize = 12.sp)
                 }
                 rob.directive?.let {
-                    Text("On escalation: ${it.replace('_', ' ')}", color = Jim.Amber, fontSize = 12.sp)
+                    Text(L10n.t("rob.onesc", vm.language)
+                        .replace("{directive}", it.replace('_', ' ')),
+                        color = Jim.Amber, fontSize = 12.sp)
                 }
                 SmallAction(L10n.t("rch.body.unbind", vm.language)) {
                     vm.call({ ApiClient.unbindRobot(vm.uid!!, vm.token!!,
@@ -3181,7 +3177,7 @@ private fun RobotsPanel(vm: GuardianViewModel) {
                                     command(rob, "perform_cpr", "confirmed")
                                 }
                                 TextButton(onClick = { confirmingCpr = null }) {
-                                    Text("Cancel", color = Jim.T2, fontSize = 12.sp)
+                                    Text(L10n.t("hld.plan.cancel", vm.language), color = Jim.T2, fontSize = 12.sp)
                                 }
                             }
                             else -> RobotAction(L10n.t("fa.perform", vm.language), Jim.Red) {
@@ -3316,7 +3312,7 @@ fun LanguageCard(vm: GuardianViewModel) {
         }
         val chosen = languages.firstOrNull { it.code == current }
         if (chosen != null && !chosen.safetyTranslated)
-            Text("Safety steps stay in English for this language (never machine-mangled).",
+            Text(L10n.t("fa.english", vm.language),
                 color = Jim.Amber, fontSize = 10.sp)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -4076,9 +4072,10 @@ private fun FamilyPanel(vm: GuardianViewModel) {
                             color = Jim.Red, fontSize = 12.sp,
                             fontWeight = FontWeight.Bold)
                     o.events.forEach { e ->
-                        Text("${e.type}${e.condition?.let { " · $it" } ?: ""}" +
-                             (e.severity?.let { " · ${it.uppercase()}" } ?: ""),
-                            color = Jim.T2, fontSize = 11.sp)
+                        val eventLine = e.type +
+                            (e.condition?.let { " \u00b7 $it" } ?: "") +
+                            (e.severity?.let { " \u00b7 ${it.uppercase()}" } ?: "")
+                        Text(eventLine, color = Jim.T2, fontSize = 11.sp)
                     }
                     if (o.events.isEmpty())
                         Text(L10n.t("fam.quiet", vm.language),
@@ -4840,8 +4837,10 @@ fun ProblemReportingCard(lang: String = "en") {
                          style = MaterialTheme.typography.bodySmall)
                 } else {
                     owed.forEach { r ->
-                        Text("${r.optString("op")} → ${r.optInt("status")}  " +
-                             "×${r.optInt("count")}  ${r.optString("day")}",
+                        val problemLine = r.optString("op") + " \u2192 " +
+                            r.optInt("status") + "  \u00d7" + r.optInt("count") +
+                            "  " + r.optString("day")
+                        Text(problemLine,
                              style = MaterialTheme.typography.bodySmall)
                     }
                 }
@@ -5170,7 +5169,8 @@ private fun MicPanel(vm: GuardianViewModel) {
             fontSize = 16.sp, fontWeight = FontWeight.Bold)
         val m = mic
         if (m?.attached == true) {
-            Text("${m.device ?: ""} · ${m.micType ?: ""}", color = Jim.Txt,
+            val micLine = (m.device ?: "") + " \u00b7 " + (m.micType ?: "")
+            Text(micLine, color = Jim.Txt,
                 fontSize = 13.sp, fontWeight = FontWeight.Bold)
             m.hears?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
             if (m.capped)
@@ -6167,7 +6167,8 @@ private fun WatchPanel(vm: GuardianViewModel) {
             Text(L10n.t("ns.wt.address", vm.language), color = Jim.T2,
                 fontSize = 11.sp, fontWeight = FontWeight.Bold)
             Text(s.dripUrl, color = Jim.Txt, fontSize = 11.sp)
-            Text("${s.drips} \u00b7 ${s.lastDripAt ?: "\u2014"}",
+            val dripLine = "${s.drips}" + " \u00b7 " + (s.lastDripAt ?: "\u2014")
+            Text(dripLine,
                 color = Jim.T3, fontSize = 10.sp)
             // One reading by hand, through the same door the automation
             // uses — the cheapest proof the tether is live.

@@ -62,7 +62,8 @@ struct MonitorView: View {
                             Text(g.content).font(.subheadline).foregroundStyle(Theme.txt)
                             GuidanceExtras(guidance: g)
                             if let src = g.source {
-                                Text("via \(src)").font(.caption).foregroundStyle(Theme.t3)
+                                Text(L10n.t("ci.via", state.language) + " " + src)
+                                    .font(.caption).foregroundStyle(Theme.t3)
                             }
                         }
                     }.card()

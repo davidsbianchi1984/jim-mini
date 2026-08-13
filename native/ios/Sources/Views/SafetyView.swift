@@ -469,7 +469,9 @@ private struct SOSSection: View {
                         }
                     }
                     ForEach(directives, id: \.robot) { d in
-                        Text("🤖 \(d.robot): \(d.directive.replacingOccurrences(of: "_", with: " "))")
+                        let line = "🤖 " + d.robot + ": "
+                            + d.directive.replacingOccurrences(of: "_", with: " ")
+                        Text(line)
                             .font(.caption).foregroundStyle(Theme.amber)
                     }
                 }.card()

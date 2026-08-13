@@ -132,6 +132,6 @@
 # - The remainder is the counter's own mis-parses: interpolation
 #   fragments like `\(L10n.t(` that contain letters and no words a
 #   reader ever sees.
-ios: 10
-android: 16
-windows: 4
+ios: 1
+android: 0
+windows: 0

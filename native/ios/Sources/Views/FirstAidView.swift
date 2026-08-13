@@ -14,7 +14,7 @@ struct GuidanceExtras: View {
                     .font(.caption).foregroundStyle(Theme.brandA)
                 Text(who).font(.caption.bold()).foregroundStyle(Theme.txt)
                 if guidance.source == "tandem" {
-                    Text("LIVE · QRME").font(.caption2.bold())
+                    Text(L10n.t("fa.live", state.language)).font(.caption2.bold())
                         .padding(.horizontal, 7).padding(.vertical, 3)
                         .background(Theme.green.opacity(0.16))
                         .foregroundStyle(Theme.green)
