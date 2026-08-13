@@ -676,7 +676,7 @@ journal, a provider-shareable summary. Identity is proven by a bearer
 
 ## The pane in the corner
 
-`jim/dock.py`, 5 routes, 15 tests, screen **71**.
+`jim/dock.py`, 5 routes, 16 tests, screen **71**.
 
 The same idea as QRME's: a small pane in the bottom corner of the app carrying
 the glances a watch face would, tucked behind the helper button until wanted.
