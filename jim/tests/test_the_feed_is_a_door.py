@@ -160,3 +160,22 @@ def test_an_unreachable_qrme_is_a_quiet_screen(make_tandem, monkeypatch):
     # And the posture still says what it says, because it is JIM's to state
     # whether or not QRME answered.
     assert body["posture"]["can_post_from_jim"] is False
+
+
+def test_the_door_carries_an_address_a_phone_can_open(make_tandem,
+                                                      monkeypatch):
+    """`Open it in QRME` used to carry `qrme.base_url` — how *this backend*
+    reaches QRME, which on a composed deployment is an internal hostname no
+    phone can resolve. A field report tapped it and landed somewhere wrong.
+    JIM_QRME_PUBLIC_URL names the address a browser can open; unset, the
+    tandem address stands, which is the single-machine case where the two
+    are genuinely the same."""
+    monkeypatch.setenv("JIM_QRME_PUBLIC_URL", "https://sntheticprofiles.com/")
+    tc = make_tandem()
+    user = enroll(tc)
+    body = tc.get(f"/community/{user}/feed").json()
+    assert body["open_in_qrme"] == "https://sntheticprofiles.com/app/#/feed"
+    assert body["qrme_url"] == "https://sntheticprofiles.com"
+    rooms = tc.get(f"/community/{user}").json()
+    assert all(r["url"].startswith("https://sntheticprofiles.com")
+               for r in rooms["rooms"])

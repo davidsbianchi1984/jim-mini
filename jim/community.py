@@ -27,7 +27,25 @@ it never posts on the user's behalf.
 
 from __future__ import annotations
 
+import os
+
 from . import db, i18n
+
+
+def _public_qrme(qrme) -> str | None:
+    """The QRME address a *person's browser* can reach, not the tandem's.
+
+    ``qrme.base_url`` is how this backend talks to QRME — on a composed
+    deployment that is an internal hostname (``http://qrme:8000``) which a
+    phone cannot resolve. A field report tapped "Open it in QRME" and landed
+    somewhere wrong, because the link carried the backend's own address.
+
+    ``JIM_QRME_PUBLIC_URL`` names the public one (``https://sntheticprofiles
+    .com`` on the beta). Unset, the tandem address stands — the self-hosted
+    single-machine case, where the two are genuinely the same.
+    """
+    public = os.environ.get("JIM_QRME_PUBLIC_URL", "").strip().rstrip("/")
+    return public or getattr(qrme, "base_url", None)
 
 
 def _room_url(base: str | None, room_id: str) -> str | None:
@@ -49,7 +67,7 @@ def view(user_id: str, qrme, locality: str | None = None) -> dict:
                   if needle in str(p.get("locality", "")).lower()]
 
     language = i18n.effective_language(user_id)
-    base = getattr(qrme, "base_url", None)
+    base = _public_qrme(qrme)
     return {
         "qrme_url": base,
         "language": language,
@@ -115,7 +133,7 @@ def feed(user_id: str, qrme, cursor: str | None = None) -> dict:
     a room.
     """
     page = qrme.feed(cursor=cursor)
-    base = getattr(qrme, "base_url", None)
+    base = _public_qrme(qrme)
     items = page.get("items") or []
     return {
         "qrme_url": base,

@@ -1458,6 +1458,9 @@ of the screens above and want to know what it does, this is where to find it.
 pip install -e .[dev]
 uvicorn jim.api:app            # standalone
 JIM_QRME_URL=http://localhost:8000 uvicorn jim.api:app   # tandem with QRME
+# JIM_QRME_PUBLIC_URL — the QRME address a *browser* can open, when the
+# tandem address is an internal hostname (composed deployments). The
+# community and feed doors carry this one to the phone.
 JIM_PDI_URL=http://localhost:8100 JIM_PDI_TOKEN=pdi_... uvicorn jim.api:app  # + PDI vault
 ```
 
