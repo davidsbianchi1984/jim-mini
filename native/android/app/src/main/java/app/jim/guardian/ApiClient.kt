@@ -340,6 +340,27 @@ object ApiClient {
             rows
         }
 
+
+    data class ProblemRow(val op: String, val statusCode: Int, val count: Int,
+                          val source: String, val appVersion: String,
+                          val platform: String, val day: String)
+
+    // The failure aggregate this backend keeps. Reading is the operator's:
+    // the problems key as the token, or nothing when asking from the machine
+    // the backend runs on.
+    suspend fun problemRows(key: String): List<ProblemRow> {
+        val o = JSONObject(request("/v1/problems",
+            token = key.ifBlank { null }))
+        val arr = o.optJSONArray("rows") ?: return emptyList()
+        return (0 until arr.length()).map { i ->
+            val r = arr.getJSONObject(i)
+            ProblemRow(r.optString("op"), r.optInt("status_code"),
+                r.optInt("count"), r.optString("source"),
+                r.optString("app_version"), r.optString("platform"),
+                r.optString("day"))
+        }
+    }
+
     private suspend fun request(
         path: String, method: String = "GET",
         body: JSONObject? = null, token: String? = null,

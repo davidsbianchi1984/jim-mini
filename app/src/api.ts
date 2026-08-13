@@ -957,9 +957,15 @@ export const api = {
   // token, or nothing when asking from the machine the backend runs on.
   problemRows: (key?: string) =>
     req<{ rows: { source: string; app_version: string; platform: string;
-                  op: string; status: number; day: string; count: number;
+                  op: string; status_code: number; day: string; count: number;
                   last_seen: string }[] }>(
       "/v1/problems", key ? { token: key } : {}),
+  // The sending half of the same wire, for the screen's own button — the
+  // launch-time auto-sender lives in errors.ts and may point at an external
+  // collector; this one posts to the backend this console already talks to.
+  reportProblems: (body: Record<string, unknown>) =>
+    req<{ accepted: boolean; problems: number; failures: number }>(
+      "/v1/problems", { method: "POST", body }),
   offlineStatus: () => req<{
     offline: boolean; external_transmission_possible: boolean;
     local_destinations_allowed: string; guarantees: string[];

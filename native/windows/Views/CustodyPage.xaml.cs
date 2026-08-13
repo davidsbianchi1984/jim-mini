@@ -40,6 +40,8 @@ public sealed partial class CustodyPage : Page
         VeilPlanCancel.Content = L10n.T("hld.plan.cancel");
         ProblemsSwitch.Header = L10n.T("ns.pr.toggle");
         ProblemsPreviewButton.Content = L10n.T("ns.pr.show");
+        ProblemsKeyBox.PlaceholderText = L10n.T("prob.key.ph");
+        ProblemsFetchButton.Content = L10n.T("prob.fetch");
         TakeItHead.Text = L10n.T("hld.take");
         TakeItPitch.Text = L10n.T("hld.take.pitch");
         TakeItButton.Content = L10n.T("hld.take.go");
@@ -194,6 +196,25 @@ public sealed partial class CustodyPage : Page
 
     private void OnProblemsToggled(object sender, RoutedEventArgs e) =>
         Problems.SetSending(ProblemsSwitch.IsOn);
+
+
+    // The other end of the wire: what has reached this deployment's own
+    // backend, from every client of it. Reading needs the problems key (or a
+    // caller on the backend's machine); a refusal is rendered verbatim.
+    private async void OnProblemsFetch(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var r = await ApiClient.Shared.ProblemRows(ProblemsKeyBox.Password);
+            ProblemsServerRows.Text = r.Rows.Length == 0
+                ? L10n.T("prob.none")
+                : string.Join("\n", r.Rows.Select(row =>
+                    $"{row.Op}  {row.StatusCode}  ×{row.Count}  " +
+                    $"{row.Source} {row.AppVersion} · {row.Platform} · {row.Day}"));
+        }
+        catch (Exception ex) { ProblemsServerRows.Text = ex.Message; }
+        ProblemsServerRows.Visibility = Visibility.Visible;
+    }
 
     private void OnProblemsPreview(object sender, RoutedEventArgs e)
     {

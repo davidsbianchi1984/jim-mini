@@ -156,7 +156,14 @@ def add(payload: dict) -> int:
 
 
 def rows() -> list[dict]:
-    """The aggregate, worst first — for whoever is fixing the bugs."""
-    return [dict(r) for r in db.connect().execute(
-        "SELECT * FROM problem_reports"
-        " ORDER BY count DESC, last_seen DESC").fetchall()]
+    """The aggregate, worst first — for whoever is fixing the bugs.
+
+    `status_code` on the wire, not `status`: one name, one type, in every
+    product — `status` is a string on a dozen other payloads, and the native
+    readers declare their fields.
+    """
+    return [
+        {k: v for k, v in {**dict(r), "status_code": r["status"]}.items()
+         if k != "status"} for r in db.connect().execute(
+            "SELECT * FROM problem_reports"
+            " ORDER BY count DESC, last_seen DESC").fetchall()]

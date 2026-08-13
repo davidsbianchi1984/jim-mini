@@ -29,6 +29,27 @@ struct ProblemReportingCard: View {
         (Problems.report()["problems"] as? [[String: Any]]) ?? []
     }
 
+
+    @State private var readerKey = ""
+    @State private var serverRows: [ApiClient.ProblemRow]? = nil
+    @State private var serverText = ""
+
+    private func fetchRows() {
+        Task {
+            do {
+                let r = try await ApiClient.shared.problemRows(key: readerKey)
+                serverRows = r.rows
+                serverText = r.rows.map {
+                    "\($0.op)  \($0.status_code)  ×\($0.count)  " +
+                    "\($0.source) \($0.app_version) · \($0.platform) · \($0.day)"
+                }.joined(separator: "\n")
+            } catch {
+                serverRows = []
+                serverText = ""
+            }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(L10n.t("ns.pr", state.language)).font(.headline)
@@ -76,6 +97,26 @@ struct ProblemReportingCard: View {
                     }
                 }
             }
+            // The other end of the wire: what has reached this deployment's
+            // own backend, from every client of it. Reading needs the
+            // problems key (or a caller on the backend's machine); a
+            // refusal is rendered verbatim.
+            Divider()
+            Text(L10n.t("prob.server", state.language))
+                .font(.subheadline).foregroundStyle(Theme.txt)
+            HStack(spacing: 8) {
+                SecureField(L10n.t("prob.key.ph", state.language),
+                            text: $readerKey)
+                    .font(.footnote)
+                Button(L10n.t("prob.fetch", state.language)) { fetchRows() }
+                    .buttonStyle(.bordered).font(.footnote)
+            }
+            if let serverRows {
+                Text(serverRows.isEmpty
+                     ? L10n.t("prob.none", state.language) : serverText)
+                    .font(.caption2.monospaced()).foregroundStyle(Theme.t2)
+            }
+
         }
         .padding(14)
         .background(Theme.card).clipShape(RoundedRectangle(cornerRadius: 12))

@@ -294,7 +294,7 @@ export function problemReport(appVersion: string): Record<string, unknown> {
 }
 
 /** Move the watermark up by what a report just carried. */
-function markReported(report: Record<string, unknown>): void {
+export function markReported(report: Record<string, unknown>): void {
   const carried = new Map<string, number>();
   for (const p of (report.problems as Problem[]) || []) {
     carried.set(p.fingerprint, p.count);

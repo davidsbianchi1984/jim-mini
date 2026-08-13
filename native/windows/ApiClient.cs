@@ -812,6 +812,24 @@ public sealed class ApiClient
 
     // -- life: goals, habits, journal --
 
+
+    public record ProblemRow(
+        [property: JsonPropertyName("source")] string Source,
+        [property: JsonPropertyName("app_version")] string AppVersion,
+        [property: JsonPropertyName("platform")] string Platform,
+        [property: JsonPropertyName("op")] string Op,
+        [property: JsonPropertyName("status_code")] int StatusCode,
+        [property: JsonPropertyName("day")] string Day,
+        [property: JsonPropertyName("count")] int Count);
+    public record ProblemRowsResponse(
+        [property: JsonPropertyName("rows")] ProblemRow[] Rows);
+
+    // The failure aggregate this backend keeps. Reading is the operator's:
+    // the problems key as the token, or nothing when asking from the machine
+    // the backend runs on.
+    public Task<ProblemRowsResponse> ProblemRows(string key) =>
+        Send<ProblemRowsResponse>(Get("/v1/problems", key));
+
     private HttpRequestMessage Get(string path, string token)
     {
         var req = new HttpRequestMessage(HttpMethod.Get, path);

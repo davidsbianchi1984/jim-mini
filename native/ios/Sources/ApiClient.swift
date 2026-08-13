@@ -840,6 +840,25 @@ actor ApiClient {
         try await request("/data/\(userId)", method: "DELETE", token: token)
     }
 
+
+    struct ProblemRow: Decodable {
+        let source: String
+        let app_version: String
+        let platform: String
+        let op: String
+        let status_code: Int
+        let day: String
+        let count: Int
+    }
+    struct ProblemRows: Decodable { let rows: [ProblemRow] }
+
+    /// The failure aggregate this backend keeps. Reading is the operator's:
+    /// the problems key as the token, or nothing when asking from the
+    /// machine the backend runs on.
+    func problemRows(key: String) async throws -> ProblemRows {
+        try await request("/v1/problems", token: key)
+    }
+
     private func request<T: Decodable>(_ path: String, method: String = "GET",
                                        body: [String: Any]? = nil, token: String? = nil,
                                        rawBody: Data? = nil) async throws -> T {

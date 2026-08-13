@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { api, CONSOLE_VERSION, getBase } from "./api";
 import {
-  clearProblems, collectorUrl, problemReport, problems, sendProblems,
-  sendingEnabled, setSending, type Problem, type SendOutcome,
+  clearProblems, collectorUrl, markReported, problemReport, problems,
+  sendProblems, sendingEnabled, setSending, type Problem, type SendOutcome,
 } from "./errors";
 import { t as tr, visitorLang } from "./l10n";
 
@@ -101,8 +101,22 @@ export function Problems() {
             disabled={sending || !unsent}
             onClick={async () => {
               setSendingNow(true);
-              const outcome = await sendProblems(CONSOLE_VERSION);
-              setSaid(OUTCOME[outcome]);
+              // An external collector goes through the auto-sender's own
+              // gate; the backend goes through the app's ordinary wire, so
+              // this button is itself the console's door to POST
+              // /v1/problems — audit-readable where a raw fetch against a
+              // variable address cannot be.
+              if (collectorUrl()) {
+                setSaid(OUTCOME[await sendProblems(CONSOLE_VERSION)]);
+              } else {
+                try {
+                  await api.reportProblems(payload);
+                  markReported(payload);
+                  setSaid(OUTCOME["sent"]);
+                } catch {
+                  setSaid(OUTCOME["failed"]);
+                }
+              }
               setRows(problems());
               setSendingNow(false);
             }}>
@@ -184,7 +198,7 @@ export function Problems() {
       {serverRows && serverRows.map((r, i) => (
         <div className="row" key={i}>
           <code>{r.op}</code>
-          <span className="muted">{r.status}</span>
+          <span className="muted">{r.status_code}</span>
           <span className="muted">×{r.count}</span>
           <span className="muted">
             {r.source} {r.app_version} · {r.platform} · {r.day}

@@ -4780,6 +4780,9 @@ fun ProblemReportingCard(lang: String = "en") {
     var sending by remember { mutableStateOf(Problems.sendingEnabled()) }
     var showing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var readerKey by remember { mutableStateOf("") }
+    var serverRows by remember {
+        mutableStateOf<List<ApiClient.ProblemRow>?>(null) }
     val owed = remember(showing, answered, sending) {
         val arr = Problems.report().optJSONArray("problems")
         (0 until (arr?.length() ?: 0)).mapNotNull { arr?.optJSONObject(it) }
@@ -4835,6 +4838,37 @@ fun ProblemReportingCard(lang: String = "en") {
                     }
                 }
             }
+            // The other end of the wire: what has reached this deployment's
+            // own backend, from every client of it. Reading needs the
+            // problems key (or a caller on the backend's machine); a refusal
+            // is rendered verbatim.
+            HorizontalDivider()
+            Text(L10n.t("prob.server", lang),
+                 style = MaterialTheme.typography.titleSmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(value = readerKey,
+                    onValueChange = { readerKey = it },
+                    placeholder = { Text(L10n.t("prob.key.ph", lang)) },
+                    modifier = Modifier.weight(1f), singleLine = true)
+                OutlinedButton(onClick = {
+                    scope.launch(Dispatchers.IO) {
+                        serverRows = try { ApiClient.problemRows(readerKey) }
+                                     catch (e: Exception) { emptyList() }
+                    }
+                }) { Text(L10n.t("prob.fetch", lang)) }
+            }
+            serverRows?.let { rows ->
+                if (rows.isEmpty()) {
+                    Text(L10n.t("prob.none", lang),
+                         style = MaterialTheme.typography.bodySmall)
+                } else rows.forEach { r ->
+                    Text("${r.op}  ${r.statusCode}  ×${r.count}  " +
+                         "${r.source} ${r.appVersion} · ${r.platform} · ${r.day}",
+                         style = MaterialTheme.typography.bodySmall)
+                }
+            }
+
         }
     }
 }
