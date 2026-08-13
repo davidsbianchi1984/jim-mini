@@ -24,6 +24,9 @@ struct BeaconsCard: View {
                 .font(.subheadline.bold()).foregroundStyle(Theme.txt)
             Text(L10n.t("sfy.beacons.pitch", state.language))
                 .font(.caption2).foregroundStyle(Theme.t2)
+            // Named for what it is: the bystander's path, not yours.
+            Text(L10n.t("sfy.beacons.bystander", state.language))
+                .font(.caption2).foregroundStyle(Theme.t2)
             ForEach(rows, id: \.id) { row in
                 HStack(spacing: 8) {
                     Text(row.label)

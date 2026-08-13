@@ -327,12 +327,16 @@ def as_alarm(user_id: str) -> dict | None:
         "id": ALARM_ID,
         "beacon_id": None,
         "kind": "crash_watch",
-        "messages": [{
-            "from": "crash watch",
-            "text": (f"an alarming reading ({row['concern']}) went "
-                     f"unanswered through {row['attempts']} check-in(s); "
-                     f"{row['trusted_name']} was contacted"),
-        }],
+        # Plain strings, because that is what this queue's messages are —
+        # every finder's words on a beacon alarm are strings, and every
+        # shell decodes exactly that. The first version of this row carried
+        # {from, text} objects and would have failed the whole alarm-list
+        # decode on every phone the moment a trip was live.
+        "messages": [
+            (f"an alarming reading ({row['concern']}) went unanswered "
+             f"through {row['attempts']} check-in(s); "
+             f"{row['trusted_name']} was contacted"),
+        ],
         "state": "open",
         "tier": ("emergency_services" if row["contact_ems"]
                  else "notify_contact"),

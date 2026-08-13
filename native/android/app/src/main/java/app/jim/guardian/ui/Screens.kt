@@ -1295,6 +1295,8 @@ private fun BeaconsPanel(vm: GuardianViewModel) {
         Text(L10n.t("sfy.beacons", vm.language), color = Jim.Txt, fontSize = 16.sp,
             fontWeight = FontWeight.Bold)
         Text(L10n.t("sfy.beacons.pitch", vm.language), color = Jim.T2, fontSize = 11.sp)
+        // Named for what it is: the bystander's path, not yours.
+        Text(L10n.t("sfy.beacons.bystander", vm.language), color = Jim.T2, fontSize = 11.sp)
         rows.forEach { row ->
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(row.label, color = Jim.Txt, fontSize = 12.sp,

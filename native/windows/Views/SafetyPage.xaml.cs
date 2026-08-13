@@ -788,6 +788,7 @@ public sealed partial class SafetyPage : Page
     {
         BcnHead.Text = L10n.T("sfy.beacons");
         BcnPitch.Text = L10n.T("sfy.beacons.pitch");
+        BcnBystander.Text = L10n.T("sfy.beacons.bystander");
         BcnLabel.PlaceholderText = L10n.T("sfy.beacons.label.ph");
         BcnWhere.PlaceholderText = L10n.T("sfy.beacons.where.ph");
         BcnPlaceButton.Content = L10n.T("sfy.beacons.place");

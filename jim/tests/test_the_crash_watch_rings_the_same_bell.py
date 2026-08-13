@@ -38,7 +38,8 @@ def test_a_trip_stands_first_on_the_alarm_queue(client):
     assert first["kind"] == "crash_watch"
     assert first["state"] == "open"
     assert first["accepted_by"] is None
-    assert "Rosa was contacted" in first["messages"][0]["text"]
+    # A plain string, the queue's one shape — the shells decode [String].
+    assert "Rosa was contacted" in first["messages"][0]
 
 
 def test_the_tier_says_what_the_arming_chose(client):

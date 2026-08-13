@@ -559,7 +559,9 @@ export type AlarmRow = {
   accepted_by?: string | null;
   created_at?: string;
   cleared_at?: string | null;
-  messages?: { from?: string; text?: string; at?: string }[];
+  /** Plain strings — a finder's words, or the crash watch's sentence. The
+   *  shells decode [String]; one queue, one shape. */
+  messages?: string[];
 };
 
 /** What accept / escalate / clear answer with. The three differ, so the

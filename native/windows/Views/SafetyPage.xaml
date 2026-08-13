@@ -71,6 +71,10 @@
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <TextBlock x:Name="BcnPitch" FontSize="11" TextWrapping="Wrap"
                                        Foreground="{StaticResource JimT2Brush}" />
+                            <!-- Named for what it is: the bystander's path,
+                                 not yours. -->
+                            <TextBlock x:Name="BcnBystander" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
                             <StackPanel x:Name="BcnRows" Spacing="4" />
                             <TextBlock x:Name="BcnCardName" FontWeight="Bold" FontSize="12" Visibility="Collapsed"
                                        Foreground="{StaticResource JimTxtBrush}" />
