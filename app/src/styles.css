@@ -168,6 +168,21 @@ button.danger { background: rgba(255,77,94,0.14) !important; color: var(--red) !
   .help-fab, .help-panel {
     bottom: calc(76px + env(safe-area-inset-bottom));
   }
+
+  /* The same rule, for the widget on the other corner. The fab was lifted
+     when it was reported; the lights were left at 22px, so a 176px face sat
+     over the left-hand tabs — the shape a PDI field report named as
+     "blocking the menus". On a phone they ride above the bar and shrink a
+     notch: still a watch face, just a smaller wrist. */
+  .watch-lights {
+    left: 12px; bottom: calc(76px + env(safe-area-inset-bottom));
+    width: 132px; height: 132px; padding: 12px; gap: 4px;
+  }
+  .wl-dot {
+    left: 12px; bottom: calc(76px + env(safe-area-inset-bottom));
+    width: 22px; height: 22px; opacity: 0.75;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
 }
 
 /* Pick which model answers, and which voice speaks — tiles, not dropdowns. */

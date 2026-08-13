@@ -11,10 +11,17 @@
  *
  * Every awkward case that has actually broken a version of this check lives
  * here: a generic that looks like a tag, a handler with an arrow in it, a
- * sentence wrapped around an interpolation, and a paragraph split over
- * several source lines.
+ * sentence wrapped around an interpolation, a paragraph split over several
+ * source lines, and — since a field report found the vault light saying
+ * *vault answering* in English on a console that translates everything else
+ * — a sentence chosen by a ternary in child position, which is text to the
+ * person reading it and an expression to a parser.
  */
 import { useState } from "react";
+
+/** Stands in for `t(key, lang)`: a call whose argument is a key rather than
+ *  a word, so the extractor must not read it. */
+const helper = (key: string) => key.length;
 
 /* A comment containing a sentence that must never be reported. */
 export function Fixture({ count }: { count: number }) {
@@ -28,6 +35,9 @@ export function Fixture({ count }: { count: number }) {
         nonetheless one sentence to whoever reads it.
       </p>
       <p>Wrapped around {count} an interpolated value.</p>
+      <span>{count > 0 ? "a chosen branch" : "the other branch"}</span>
+      <span>{value && "a guarded phrase"}</span>
+      <span>{helper("not a rendered word")}</span>
       <input placeholder="a placeholder" title="a title"
              value={value ?? ""} onChange={(e) => setValue(e.target.value)} />
       <button aria-label="an aria label" onClick={() => setValue(null)}>

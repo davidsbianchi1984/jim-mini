@@ -134,25 +134,54 @@ def test_the_backlog_only_shrinks():
         "guard started at")
 
 
-def test_no_screen_of_this_console_speaks_only_english():
-    """The record is empty, and this is what keeps it empty.
+#: What the record is allowed to hold, written here rather than only in the
+#: data file, so that moving it is an edit somebody reviews.
+#:
+#: This was 0 for two releases and the emptiness was asserted on purpose: a
+#: count of zero decays the moment somebody adds a screen, so the file could
+#: only be re-populated by a person who raised this number in the same
+#: commit. That is exactly what happened, and the reason belongs here.
+#:
+#: A field report on the PDI console — "It seems to be blocking the PDI
+#: menus" — ended in this estate's text extractor. The pill it reported said
+#: *vault answering* in English on a console that translates everything
+#: else, and the extractor read the file as clean, because
+#: `{ok ? "vault answering" : "vault degraded"}` is a `ConditionalExpression`
+#: and not a `JsxText` node. A sentence chosen at render time was text to
+#: whoever read the screen and nothing at all to whoever read the source.
+#:
+#:     asked     what text does this file place between its tags
+#:     mattered  what words does this screen put on the glass
+#:
+#: The extractor now reads string literals in child position, and the zero
+#: it had been reporting was never true — it was the answer to a question
+#: narrower than the one this file asks. Ninety-three is the first honest
+#: reading of the console under the widened reader, and it follows the
+#: precedent `native_screens_untranslated.txt` set when its own reader
+#: improved: record the true number and say why, rather than keep a clean
+#: one that was only clean because nobody could see past it.
+CEILING = 93
 
-    Every screen — pre-session and gated alike — reads its words out of the
-    table now, so the honest measurement of what is left is zero. A count of
-    zero is a fact that decays the moment somebody adds a screen, which is
-    why the emptiness is asserted rather than merely reached: the file above
-    can only be re-populated on purpose, by a person who writes the row down
-    and raises the ceiling in the same commit.
+
+def test_no_screen_of_this_console_speaks_only_english():
+    """The ceiling is a number somebody chose, and this is where they chose it.
+
+    Asserted for equality in both directions. Raising it is allowed — it is
+    how a newly-visible screen gets recorded — and lowering it is the whole
+    point of the backlog; either way the change lands in a reviewed line
+    instead of drifting inside a data file.
     """
     ceiling = int(re.search(r"# ceiling: (\d+)",
                             SNAPSHOT.read_text(encoding="utf-8")).group(1))
-    assert ceiling == 0, (
-        "the console-untranslated ceiling left zero. Raising it is allowed — "
-        "it is how a new screen gets recorded — but it is a decision, and "
-        "this line is where somebody has to make it deliberately.")
-    assert _recorded() == set(), (
-        "rows are back in an emptied record: "
-        + ", ".join(sorted(_recorded())[:8]))
+    assert ceiling == CEILING, (
+        f"the console-untranslated ceiling is {ceiling} and this guard was "
+        f"told {CEILING}. Moving it is allowed — raising it is how a new "
+        "screen gets recorded, lowering it is how the backlog closes — but "
+        "it is a decision, and this line is where somebody makes it "
+        "deliberately.")
+    assert len(_recorded()) == ceiling, (
+        f"the record holds {len(_recorded())} rows against a ceiling of "
+        f"{ceiling}; the ceiling is this measurement, so bring them level")
 
 
 def test_the_extractor_can_still_see():
@@ -174,6 +203,11 @@ def test_the_extractor_can_still_see():
         "nonetheless one sentence to whoever reads it.",
         "Wrapped around",
         "an interpolated value.",
+        # Chosen at render time, laid out as text: the shape a field report
+        # found the vault light hiding two English words in.
+        "a chosen branch",
+        "the other branch",
+        "a guarded phrase",
         "a placeholder",
         "a title",
         "an aria label",

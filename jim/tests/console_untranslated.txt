@@ -1,6 +1,30 @@
-# status: floor — 0 rows
+# status: backlog — 93 rows
 #
-# English on the JIM console. Checked by
+# ## 0.69.1: the reader learned to see a sentence chosen at render time
+#
+# A field report on PDI — "It seems to be blocking the PDI menus" — began
+# with a pill sitting on a tab bar and ended here. The pill's own words,
+# *vault answering*, were English on a console that translates everything
+# else, and the extractor behind every count in this estate reported the
+# file clean: `{ok ? "vault answering" : "vault degraded"}` is a
+# `ConditionalExpression`, not a `JsxText` node, so a sentence chosen at
+# render time was text to the reader and nothing at all to the reader of
+# the reader.
+#
+#     asked     what text does this file place between its tags
+#     mattered  what words does this screen put on the glass
+#
+# The extractor now reads string literals in child position — both branches
+# of a ternary, either side of `&&`, the pieces of a concatenation — and
+# skips anything with no letter in it, because a spacer is drawn but is not
+# a word. It still refuses call arguments, so `t("key", lang)` stays a key.
+#
+# 93 rows below are what that widening found. They are not new English;
+# they are English this file has been unable to see for as long as it has
+# existed, and the honest thing is the number rather than the floor it was
+# resting on. The direction of travel is unchanged — the rows come off one
+# screen at a time — but the count they come off is the true one.
+## English on the JIM console. Checked by
 # test_the_console_speaks_one_language.py, both directions, and ratcheted.
 #
 # **A floor as of 0.45.1.** Every screen of this console — pre-session and
@@ -13,7 +37,6 @@
 # — 700-odd strings across nineteen gated screens, recorded here so the
 # remainder is a decision somebody wrote down rather than a surface nobody
 # looked at."
-# ceiling: 0
 #
 # **Corrected in 0.30.10.** Sixty-two of the rows here were separators, not
 # English: a bare `:`, a `·`, a `%`, a `⚠` — fragments left between two
@@ -26,3 +49,102 @@
 #
 # The same mistake the shells' version of this guard made with
 # `"\(dim): \(n)%"`, one file over and one release later.
+# ceiling: 93
+#
+# The ceiling was 0 and is 93: the reader widened, not the console.
+# Every row it gained was already on the glass. Raising a ceiling is the
+# one move this estate treats as a claim rather than a chore, so it is
+# written here beside the reason, and the next rounds take it back down.
+Attending: , signed
+Attending: Nobody is on shift
+Attending: configured
+Attending: not configured
+Baseline: (yours)
+Baseline: Arm the crash watch
+Baseline: Update the crash watch
+Baseline: learning — wear the watch and sleep in it
+Bearing: (safety text in English)
+Bearing: Open it
+Bearing: Tuck it away
+CareTeam: Coordinate
+CareTeam: Coordinating…
+CareTeam: nobody yet
+CareTeam: sealed in the vault ·
+Channel: (intimate)
+Channel: Look at it
+Channel: Sealed in the vault; a private plan is required.
+Channel: Shown
+Channel: · reaches others
+Checkin: Save check-in
+Checkin: Saving…
+Coach: Ask the coach
+Coach: Thinking…
+Coach: an online model
+Coach: listening — tap to stop
+Coach: speaking — tap to hush
+Coach: the model could not be reached
+Coach: ■ Stop
+Coach: ◉ Listening — tap to send
+Coach: 🎙 Talk to it
+Coach: 🔊 Read it aloud
+Community: Looking…
+Community: Show places
+Held: Allow
+Held: Withdraw
+Held: no
+Held: yes
+Journal: Add to the journal
+Journal: Saving…
+Journal: · sealed in the vault
+Journal: ◼ listening…
+Journal: 🎙 speak
+Meds: Add to the cabinet
+Meds: Saving…
+Meds: · critical
+Monitor: Analyzing…
+Monitor: First aid, step by step
+Monitor: Send to Guardian
+Onboarding: Checking…
+Onboarding: Create account
+Onboarding: Creating…
+Onboarding: Hide
+Onboarding: Resetting…
+Onboarding: Set new password
+Onboarding: Show
+Onboarding: Sign in
+Onboarding: Signing in…
+Onboarding: Verify & get started
+Reach: left this host
+Reach: stayed here
+Safety: delivered
+Safety: not delivered
+Settings: Arm the vigil
+Settings: Clear key
+Settings: Copied ✓
+Settings: Copy address
+Settings: Device voice
+Settings: ElevenLabs
+Settings: Every path out of this host refuses any address that is not
+Settings: Not contributing. Nothing from this account has gone to the shared model.
+Settings: Nothing built yet.
+Settings: Nothing has arrived yet — run the automation once by hand to test it.
+Settings: Offline — nothing leaves this host
+Settings: Online
+Settings: OpenAI
+Settings: Save
+Settings: Save key
+Settings: Save mail settings
+Settings: Save voice settings
+Settings: Saved ✓
+Settings: Saving…
+Settings: Send test email
+Settings: Sending…
+Settings: This deployment can reach other machines.
+Settings: Update the vigil
+Settings: this machine or its own network.
+Settings: · sealed in the vault
+Wards: Automatic resuscitation
+Wards: Pause guidance
+Wards: Resume guidance
+Wards: Waiver
+Wards: · paused
