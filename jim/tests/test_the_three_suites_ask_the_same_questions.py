@@ -245,3 +245,26 @@ def test_the_record_matches_the_siblings_when_they_are_checked_out():
     assert not problems, "\n\n".join(problems) + (
         "\n  Both records are byte-identical in the three repositories; "
         "regenerate and copy them across together.")
+
+def test_the_manifest_says_how_many_it_carries():
+    """The count in the header is the number of rows beneath it.
+
+    It said 482 while the file carried 490 — eight guards added over eight
+    rounds, each one appending a line and none touching the sentence above
+    them. Nothing read that number, so nothing noticed, and a header nobody
+    checks is a comment wearing a status.
+
+        asked     is the row here
+        mattered  does the file still describe itself
+
+    Cheap, and it earns its place by catching the edit that adds a name
+    without thinking about the whole: the two go in together or they
+    disagree. `release_fields.txt` has carried exactly this pairing since it
+    was written, and is the reason its count never drifted.
+    """
+    lines = MANIFEST.read_text(encoding="utf-8").splitlines()
+    stated = int(re.search(r"^# status: manifest — (\d+) guards", lines[0]).group(1))
+    assert stated == len(_rows(MANIFEST)), (
+        f"shared_guards.txt says it carries {stated} guards and lists "
+        f"{len(_rows(MANIFEST))}"
+    )

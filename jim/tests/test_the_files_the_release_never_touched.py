@@ -432,3 +432,84 @@ def test_every_version_a_native_shell_ships_is_named_here():
         f"them:\n    " + "\n    ".join(problems)
         + "\n  Add the field to the checklist — an unnamed version field is "
           "one the next bump will not know to write.")
+
+
+# The checklist a person actually follows is the prose in docs/releasing.md,
+# not the manifest above it. Those two drifted apart twice.
+RELEASING = REPO / "docs" / "releasing.md"
+
+# Only as far as the counts this repo could plausibly reach. A number word
+# outside this range means the sentence was rewritten into a shape the guard
+# no longer recognises, which `test_the_prose_names_a_count_at_all` catches
+# rather than silently skipping.
+_WORDS = {
+    "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14,
+    "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18,
+    "nineteen": 19, "twenty": 20,
+}
+_COUNT = re.compile(r"\*\*all (" + "|".join(_WORDS) + r"|\d+) places\*\*")
+
+
+def _prose_count() -> int:
+    m = _COUNT.search(RELEASING.read_text(encoding="utf-8"))
+    assert m, (
+        "docs/releasing.md no longer says '**all N places**'. That sentence "
+        "is the one a person cutting a release reads, and this guard is the "
+        "only thing keeping it honest — rewriting it out of existence "
+        "removes the check, so the phrase is part of the contract."
+    )
+    word = m.group(1)
+    return int(word) if word.isdigit() else _WORDS[word]
+
+
+def test_the_prose_and_the_manifest_agree_on_how_many():
+    """The number in the doc is the number of rows in the manifest.
+
+    Everything else in this file checks the *tree* against the manifest.
+    Nothing checked the **doc** against it, and the doc is what a person
+    follows at 2am with a tag half-written. It said "five places" for sixty
+    releases while the tree had twelve; corrected to "twelve", it was still
+    one short, because the `README.md` banner sat in the table without being
+    counted in the sentence above it.
+
+        asked     does the tree carry the version everywhere
+        mattered  does the instruction that produces the tree say so too
+
+    Both halves are cheap and neither implies the other: a manifest can gain
+    a row without the prose noticing, and prose can be rewritten without the
+    manifest moving. Tying them means the next field added has to pass
+    through the sentence on its way in.
+    """
+    rows = len(_field_rows())
+    stated = _prose_count()
+    assert stated == rows, (
+        f"docs/releasing.md says the version lives in {stated} places; "
+        f"{FIELDS.relative_to(REPO)} carries {rows} rows. The tree follows "
+        f"the manifest and the person follows the prose, so a release cut "
+        f"from this doc misses {abs(rows - stated)} field(s)."
+    )
+
+
+def test_the_prose_names_every_file_the_manifest_does():
+    """A count can agree while the list underneath it does not.
+
+    Thirteen is thirteen whether or not the sentence happens to name the
+    right thirteen files, and a reader looking for what to edit reads the
+    table, not the total. So every path the manifest carries has to appear
+    somewhere in the doc — which is what makes adding a field to a new file
+    fail here until somebody writes the line explaining where it lives.
+    """
+    doc = RELEASING.read_text(encoding="utf-8")
+    missing = sorted({
+        glob for glob, *_ in _field_rows()
+        # A glob is not a path. `native/windows/*.csproj` is written in the
+        # doc under its real name, and `*/api.py !cloudgw/api.py` is an
+        # exclusion expression no prose would ever carry, so both are
+        # compared by the resolved files they actually match.
+        if not any(str(p.relative_to(REPO)) in doc for p in _paths_for(glob))
+    })
+    assert not missing, (
+        "the manifest names files docs/releasing.md never mentions, so the "
+        f"checklist cannot be followed to them: {missing}"
+    )

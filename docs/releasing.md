@@ -66,14 +66,14 @@ anything.
    `[Unreleased]` link quietly diffing against a tag three releases old.
    0.1.9, 0.2.0 and 0.2.1 were all cut without it.
 
-2. Bump the version string in **all twelve places**. Five are the backend
+2. Bump the version string in **all thirteen places**. Five are the backend
    and the console: `pyproject.toml`, the `FastAPI(...)` call in `jim/api.py`,
    `app/package.json`, and the **two root entries** in
    `app/package-lock.json` — the top-level `"version"` and the one under
    `packages` → `""`. Leave every other version in the lockfile alone;
    dependency pins look identical and are not yours.
 
-   Seven more are the shells and the front page, and they are the ones that
+   Eight more are the shells and the front page, and they are the ones that
    get missed, because nothing you run day to day reads them:
 
    | file | fields |
@@ -81,7 +81,11 @@ anything.
    | `native/ios/project.yml` | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` |
    | `native/android/app/build.gradle.kts` | `versionName`, `versionCode` |
    | `native/windows/JimGuardian.csproj` | `Version`, `AssemblyVersion`, `FileVersion` |
-   | `README.md` | the **Current release** banner, and a row in the release history |
+   | `README.md` | the **Current release** banner |
+
+   The release-history row in `README.md` is a fourteenth edit and is not one
+   of the thirteen: it adds a line rather than changing a number, so nothing
+   can check it against the version and nothing here counts it.
 
    The two integer fields are not the version: `CURRENT_PROJECT_VERSION` and
    `versionCode` are `major*1000 + minor*100 + patch` — 0.72.0 is `72000`,
@@ -93,8 +97,17 @@ anything.
    other seven, on the release that first ran it — a checklist wrong in the
    direction of *fewer* steps is worse than none, because it gets trusted.
 
+   **Then it said "twelve" and was still wrong**, because the `README.md`
+   banner sat in the table without being counted in the prose above it. The
+   manifest the guards read had thirteen rows the whole time; only this
+   sentence disagreed, and a sentence is what a person cutting a release
+   actually follows. So the number here is checked against that manifest
+   now — see `test_the_prose_and_the_manifest_agree_on_how_many`. Two
+   corrections in two directions is the argument for checking rather than
+   re-reading.
+
        asked     does the checklist name the places
-       mattered  does it name all of them
+       mattered  does it name all of them, and does anything notice when it stops
 3. Tag and push:
 
    ```bash

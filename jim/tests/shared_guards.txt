@@ -1,4 +1,4 @@
-# status: manifest — 482 guards carried by all three products
+# status: manifest — 493 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -395,6 +395,7 @@ test_the_label_follows_the_reader_not_the_deployment
 test_the_lifted_sentence_is_the_translated_one
 test_the_light_stays_inside_the_glass
 test_the_manifest_has_not_gone_stale
+test_the_manifest_says_how_many_it_carries
 test_the_markup_check_catches_the_defect_that_shipped
 test_the_markup_checks_pass_a_page_that_is_right
 test_the_markup_checks_reach_the_windows_screens
@@ -413,6 +414,8 @@ test_the_pane_can_only_sit_at_the_bottom
 test_the_policy_names_a_nonce_rather_than_permitting_everything
 test_the_probe_is_actually_talking_to_a_server
 test_the_product_carries_exactly_the_languages_the_others_do
+test_the_prose_and_the_manifest_agree_on_how_many
+test_the_prose_names_every_file_the_manifest_does
 test_the_python_suite_runs_where_it_is_checked
 test_the_raise_sites_were_actually_converted
 test_the_reader_can_still_see_this_suite
