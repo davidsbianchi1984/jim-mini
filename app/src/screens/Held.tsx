@@ -131,6 +131,13 @@ export function Held() {
               (storage.who_can_read as string[]).join(", "))}
           </p>
         )}
+        {/* Whether the gate is actually running. The prices below are what
+            each tier will cost; while the beta stands enforcement down,
+            nobody is refused for the plan they hold, and a price list that
+            cannot say so is quoting a paywall that is not there. */}
+        {plans?.enforcing === false && plans?.beta_note != null && (
+          <p className="muted small">{String(plans.beta_note)}</p>
+        )}
         <div className="row">
           {((plans?.plans ?? []) as Row[]).map((p) => (
             <button key={String(p.plan)} disabled={busy}

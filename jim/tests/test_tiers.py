@@ -378,3 +378,32 @@ def test_standing_the_gate_down_does_not_rewrite_what_a_plan_means(client,
     free = next(p for p in listed if p["plan"] == "free")
     assert "synthetic_agents" not in free["includes"]
     assert "synthetic_agents" in free["locked"]
+
+
+def test_the_price_list_says_whether_the_gate_is_running(client, monkeypatch):
+    """A reader can tell the price from the posture, and both are true.
+
+    `locked` answers what a plan will cost. It cannot answer whether anybody
+    is being refused today, and for one release nothing could: the beta
+    stand-down was a module constant that no response mentioned.
+
+    QRME's cross-product smoke is what found it. That run drives a Basic
+    account into `synthetic_agents` and asserts the 402 — correct while the
+    gate stands, wrong the moment it does not, and it had nowhere to ask.
+    Every test in this file kept passing, because they all force the flag on.
+
+        asked     does the price list say what a plan costs
+        mattered  does it say whether the gate is running
+    """
+    monkeypatch.setattr(tiers, "BETA_EVERYTHING_INCLUDED", True)
+    stood_down = client.get("/plans").json()
+    assert stood_down["enforcing"] is False
+    assert stood_down["beta_note"], "a stood-down gate says so in words"
+    # And the prices are unchanged by it — the other half of the promise.
+    free = next(p for p in stood_down["plans"] if p["plan"] == "free")
+    assert "synthetic_agents" in free["locked"]
+
+    monkeypatch.setattr(tiers, "BETA_EVERYTHING_INCLUDED", False)
+    running = client.get("/plans").json()
+    assert running["enforcing"] is True
+    assert running["beta_note"] is None

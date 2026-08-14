@@ -542,6 +542,25 @@ def catalogue() -> dict:
              "storage": storage.describe(p)}
             for p in ORDER],
         "capabilities": CAPABILITIES,
+        # Whether the gate described above is actually running. `locked` says
+        # what a plan will cost, which is the question a price list exists to
+        # answer; this says whether anybody is being refused today, which is
+        # a different question and was unanswerable from here.
+        #
+        # It went unpublished for exactly one release and the cost showed up
+        # immediately: QRME's cross-product smoke drives a Basic account into
+        # the `synthetic_agents` gate and asserts the 402, and it had no way
+        # to ask whether that gate was standing. Every tier test in this repo
+        # passed — they force enforcement on, deliberately — while the one
+        # run that exercises the gate for real broke.
+        #
+        #     asked     does the price list say what a plan costs
+        #     mattered  does it say whether the gate is running
+        "enforcing": enforcing(),
+        "beta_note": None if enforcing() else
+        "while the beta runs no capability gate refuses anybody, whatever "
+        "plan the account records — the prices above are what each tier "
+        "will cost, not what is being withheld today",
         "never_gated": list(NEVER_GATED_SAMPLES),
         "storage": storage.vocabulary(),
         "the_difference": "Free and Basic run the same app. The difference is "

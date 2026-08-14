@@ -1097,7 +1097,7 @@ yet.
 
 ## Membership
 
-`jim/tiers.py`, 4 routes, 28 tests, screens **69** and **70**.
+`jim/tiers.py`, 4 routes, 29 tests, screens **69** and **70**.
 
 | | | |
 | --- | --- | --- |
