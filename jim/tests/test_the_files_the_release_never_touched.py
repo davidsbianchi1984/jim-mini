@@ -119,14 +119,55 @@ def _code(version: str) -> int:
 
 
 def _uncommented(path: Path) -> str:
-    """Source with comments removed.
+    """Source with comments removed, and string literals left alone.
 
     See the docstring: `LAContext` and `BiometricPrompt` both appear in this
     repo only inside prose about why they are *not* used, and reading them as
     calls produced two findings that were the reader's, not the code's.
+
+    The removal is a left-to-right scan rather than a regex over the whole
+    file, because a regex cannot tell a comment from a string that contains
+    one. `picker.launch("image/*")` — a MIME wildcard — opened a block
+    comment that the next `*/` below it closed, and everything between them
+    vanished, including the `MediaRecorder` call this guard exists to find.
+    The shell lost a gated API from the record without anybody editing the
+    shell.
+
+        asked     is this `/*` a comment
+        mattered  is it inside a string
     """
-    src = re.sub(r'/\*.*?\*/', '', path.read_text(encoding="utf-8"), flags=re.S)
-    return re.sub(r'^\s*(?://|///|\*)[^\n]*$', '', src, flags=re.M)
+    src = path.read_text(encoding="utf-8")
+    out, i, n = [], 0, len(src)
+    while i < n:
+        c = src[i]
+        if c == '"':
+            j = _skip_quoted(src, i)
+            out.append(src[i:j + 1])
+            i = j + 1
+            continue
+        if c == "/" and i + 1 < n:
+            if src[i + 1] == "/" and not (i and src[i - 1] == ":"):
+                j = src.find("\n", i)
+                i = n if j == -1 else j
+                continue
+            if src[i + 1] == "*":
+                j = src.find("*/", i + 2)
+                i = n if j == -1 else j + 2
+                continue
+        out.append(c)
+        i += 1
+    # A leading `*` is a continuation line of a block comment that had no
+    # terminator on its own line; those are gone above, but Swift and Kotlin
+    # doc blocks written with `///` per line are not.
+    return re.sub(r'^\s*(?:///)[^\n]*$', '', "".join(out), flags=re.M)
+
+
+def _skip_quoted(text: str, i: int) -> int:
+    """Index of the closing quote of the literal starting at `i`."""
+    i += 1
+    while i < len(text) and text[i] != '"':
+        i += 2 if text[i] == "\\" else 1
+    return min(i, len(text) - 1)
 
 
 def _used(paths, apis) -> dict[str, str]:

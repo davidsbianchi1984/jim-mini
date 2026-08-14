@@ -170,29 +170,60 @@ def _duplicates(paths, scope: re.Pattern, member: re.Pattern) -> list[str]:
 
 
 def _unbalanced(paths) -> list[str]:
-    """Files whose braces do not close, ignoring strings and comments."""
+    """Files whose braces do not close, ignoring strings and comments.
+
+    One left-to-right pass, not two regexes over the whole file. Stripping
+    comments before skipping strings reads `picker.launch("image/*")` — a
+    MIME wildcard — as the start of a block comment, and then the next
+    `*/` anywhere below closes a comment that never opened, deleting the
+    code between them along with its braces.
+
+        asked     is this `/*` a comment
+        mattered  is it inside a string
+
+    That mis-read was silent for as long as nothing below the string ended
+    a comment: with no partner the regex matched nothing, the file parsed,
+    and this guard passed. It surfaced the moment a KDoc was written at the
+    end of the file — four braces vanished, and the failure pointed at the
+    new code rather than at the sentence that had been wrong all along.
+    A scanner that does not know what is inside a literal is the same
+    defect as the Swift reader that stopped at a quote inside an
+    interpolation, arrived at from the other side.
+    """
     bad = []
     for path in paths:
-        src = re.sub(r'/\*.*?\*/', '', path.read_text(encoding="utf-8"), flags=re.S)
-        src = re.sub(r'(?<!:)//[^\n]*', '', src)
-        depth, i = 0, 0
-        while i < len(src):
+        src = path.read_text(encoding="utf-8")
+        depth, i, n = 0, 0, len(src)
+        broke = False
+        while i < n:
             c = src[i]
             if c == '"':
-                i = _skip_strings(src, i)
-            elif c == "{":
+                i = _skip_strings(src, i) + 1
+                continue
+            if c == "/" and i + 1 < n:
+                # `://` in a URL is not a comment, which is what the old
+                # lookbehind on the line-comment regex was for.
+                if src[i + 1] == "/" and not (i and src[i - 1] == ":"):
+                    j = src.find("\n", i)
+                    i = n if j == -1 else j
+                    continue
+                if src[i + 1] == "*":
+                    j = src.find("*/", i + 2)
+                    i = n if j == -1 else j + 2
+                    continue
+            if c == "{":
                 depth += 1
             elif c == "}":
                 depth -= 1
                 if depth < 0:
                     bad.append(f"{_shown(path)}: a closing brace "
                                f"with nothing open")
+                    broke = True
                     break
             i += 1
-        else:
-            if depth:
-                bad.append(f"{_shown(path)}: {depth} brace(s) left "
-                           f"open at end of file")
+        if not broke and depth:
+            bad.append(f"{_shown(path)}: {depth} brace(s) left "
+                       f"open at end of file")
     return bad
 
 
