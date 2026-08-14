@@ -2305,6 +2305,12 @@ public sealed class ApiClient
         Send<SpecialistCatalog>(new HttpRequestMessage(HttpMethod.Get,
             "/specialists/catalog"));
 
+    /// <summary>Anyone on QRME, not only the thirty-four on the shelf.
+    /// Takes a <c>@handle</c>, a <c>prof_…</c> id, or words.</summary>
+    public Task<SpecialistSearch> SearchSpecialists(string query) =>
+        Send<SpecialistSearch>(new HttpRequestMessage(HttpMethod.Get,
+            "/specialists/search?q=" + Uri.EscapeDataString(query)));
+
     public Task<SpecialistRow> AttachSpecialist(string condition,
                                                 string qrmeProfileId,
                                                 string label) =>
@@ -3295,6 +3301,22 @@ public record CatalogStarter(
 public record SpecialistCatalog(
     [property: JsonPropertyName("starters")] CatalogStarter[]? Starters,
     [property: JsonPropertyName("note")] string? Note);
+
+/// <summary>One QRME profile the attach bracket found, beyond the curated
+/// shelf. <c>Attachable</c> and <c>Standing</c> are two fields rather than
+/// one: an age-restricted profile <em>is</em> attachable and still carries a
+/// caveat somebody needs to read.</summary>
+public record SpecialistFound(
+    [property: JsonPropertyName("profile_id")] string ProfileId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("purpose")] string? Purpose,
+    [property: JsonPropertyName("attachable")] bool Attachable,
+    [property: JsonPropertyName("standing")] string? Standing);
+
+public record SpecialistSearch(
+    [property: JsonPropertyName("results")] SpecialistFound[]? Results,
+    [property: JsonPropertyName("capped")] bool Capped,
+    [property: JsonPropertyName("limit")] int Limit);
 
 public record ClinicianRow(
     [property: JsonPropertyName("id")] string? Id,

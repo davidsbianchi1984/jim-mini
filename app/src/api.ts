@@ -513,6 +513,26 @@ export interface SeedReport {
   seeded: Record<string, { days: number; baseline: number; provisional: boolean }>;
 }
 
+/** One QRME profile the attach bracket found, in the same shape a starter
+ *  card arrives in — so a client renders both with the same code.
+ *
+ *  `attachable` and `standing` are two fields rather than one for the same
+ *  reason the undo trail keeps `reversible` separate from
+ *  `irreversible_because`: an age-restricted profile *is* attachable and
+ *  still carries a caveat somebody needs to read, and collapsing the pair
+ *  would either hide the caveat or refuse a profile that works. */
+export interface SpecialistFound {
+  profile_id: string;
+  display_name: string;
+  purpose?: string | null;
+  blurb?: string | null;
+  tags: string[];
+  avatar?: string | null;
+  avatar_kind?: string | null;
+  found_by: "handle" | "id" | "words";
+  attachable: boolean;
+  standing: string | null;
+}
 export interface CareTeamStatus {
   linked: boolean;
   org_id?: string;
@@ -1110,6 +1130,14 @@ export const api = {
                       tags: string[]; avatar?: string | null;
                       avatar_kind?: string | null }[];
           note: string }>("/specialists/catalog"),
+  // Anyone on QRME, not only the thirty-four on the shelf. A `@handle` or a
+  // `prof_…` id resolves to exactly one profile; anything else is matched
+  // against QRME's own public discovery cards. Every row says whether it
+  // could actually stand behind a condition — see `guardian.standing`.
+  searchSpecialists: (q: string) =>
+    req<{ query: string; limit: number; capped: boolean;
+          results: SpecialistFound[] }>(
+      `/specialists/search?q=${encodeURIComponent(q)}`),
   attachSpecialist: (body: { condition: string; mode: "tandem";
                              label?: string; qrme_profile_id: string }) =>
     req<{ condition: string; label?: string }>(

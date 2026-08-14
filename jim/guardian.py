@@ -1213,6 +1213,132 @@ def _tandem_safe(user, profile_id, qrme) -> tuple[bool, str | None]:
     return True, None
 
 
+#: What the attach bracket may say about a profile it found. Keys rather
+#: than sentences, so the door translates them like every other refusal.
+STANDING_DEPARTED = "specialist.departed"
+STANDING_NOT_ACTIVE = "specialist.not_active"
+STANDING_ADULTS_ONLY = "specialist.adults_only"
+STANDING_UNREACHABLE = "specialist.unreachable"
+
+#: How many rows one search may return. A bracket is a place to choose from,
+#: not a directory to page through: past this the person needs better words,
+#: and the door says so rather than making them scroll.
+FIND_LIMIT = 25
+
+
+def standing(profile_id: str, qrme) -> tuple[bool, str | None]:
+    """Whether this QRME profile could stand behind a condition at all, and
+    the key naming why not.
+
+    This is `_tandem_safe` asked one turn earlier. That function decides
+    whether *this user, right now* may be handed to a specialist, and when
+    the answer is no it falls back to standalone guidance — correct at
+    delivery, and invisible at attach. Somebody who attaches a departed
+    profile is told nothing, sees it listed as attached, and every delivery
+    afterwards quietly takes the fallback.
+
+        asked     can you attach the specialist you found
+        mattered  will the one you attached ever answer
+
+    So the two share their reading of a profile's standing and differ in
+    what they do with it: `_tandem_safe` degrades, this refuses.
+
+    The age question cannot be settled here and deliberately is not. Whether
+    an age-restricted profile may be used depends on who is asking, and this
+    bracket is not per-user — so it rides as a caveat the reader can act on
+    rather than a refusal, and `_tandem_safe` still holds the line per
+    delivery.
+
+    Unreachable is allowed, for the reason `_tandem_safe` allows it: a QRME
+    that cannot be read right now is not evidence about the profile, and
+    refusing on it would empty the bracket whenever the tandem blinks.
+    """
+    info = qrme.profile_info(profile_id) if qrme else None
+    if info is None:
+        return True, STANDING_UNREACHABLE
+    if info.get("status") == "departed":
+        return False, STANDING_DEPARTED
+    if info.get("status") not in (None, "active"):
+        return False, STANDING_NOT_ACTIVE
+    if info.get("adult_mode"):
+        return True, STANDING_ADULTS_ONLY
+    return True, None
+
+
+def _card(row: dict, pid: str, found_by: str, ok: bool,
+          why: str | None) -> dict:
+    """One result, in the shape the starters already arrive in, so a client
+    can render a found profile and a starter with the same code."""
+    return {
+        "profile_id": pid,
+        "display_name": row.get("display_name") or pid,
+        "purpose": row.get("purpose"),
+        "blurb": row.get("blurb"),
+        "tags": row.get("tags") or [],
+        "avatar": row.get("avatar"),
+        "avatar_kind": row.get("avatar_kind"),
+        "found_by": found_by,
+        "attachable": ok,
+        "standing": why,
+    }
+
+
+def find_specialists(query: str, qrme) -> list[dict]:
+    """QRME profiles matching what somebody typed, each with its standing.
+
+    Three ways to arrive at the same card, because people know who they want
+    in three different ways: a `@handle` they were given, a `prof_…` id they
+    copied, or words they remember. The first two resolve to exactly one
+    profile and are tried first — somebody who pastes an id means *that*
+    profile, and burying it in a word search would answer worse than the
+    question was asked.
+
+    The word search reads the marketplace, which is QRME's own public
+    discovery surface: it lists only active profiles and already substitutes
+    the silhouette for anonymous ones, so nothing here can surface a face or
+    a profile QRME itself would not show a stranger. Matching happens on this
+    side rather than through a new QRME search route, because the tandem
+    contract is that JIM speaks QRME's *public* API and adds no private one —
+    and a filter over a list QRME already publishes needs no new door.
+    """
+    query = (query or "").strip()
+    if not query or qrme is None:
+        return []
+
+    exact, found_by, known = None, None, None
+    if query.startswith("@"):
+        exact, found_by = qrme.resolve_handle(query), "handle"
+    elif query.startswith("prof_") and " " not in query:
+        # The id is the thing that was typed, not something the answer has
+        # to give back. `/profiles/{id}` returns the card, and whether that
+        # card echoes its own id is QRME's business — depending on it made a
+        # pasted id find nothing at all, which is the one query where the
+        # person had already told us exactly who they meant.
+        exact, found_by, known = qrme.profile_info(query), "id", query
+    if exact:
+        pid = known or exact.get("profile_id") or exact.get("id")
+        if pid:
+            ok, why = standing(pid, qrme)
+            return [_card(exact, pid, found_by, ok, why)]
+
+    needle = query.casefold()
+    out = []
+    for card in qrme.marketplace():
+        pid = card.get("profile_id")
+        if not pid:
+            continue
+        hay = " ".join(str(card.get(k) or "")
+                       for k in ("display_name", "purpose", "blurb"))
+        hay += " " + " ".join(card.get("tags") or [])
+        if needle not in hay.casefold():
+            continue
+        ok, why = standing(pid, qrme)
+        out.append(_card(card, pid, "words", ok, why))
+        if len(out) >= FIND_LIMIT:
+            break
+    return out
+
+
 def _deliver(user_id, user, detection, note, qrme, source_device=None,
              pdi=None, vitals=None) -> dict:
     spec = _specialist(detection.condition)

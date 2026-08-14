@@ -86,7 +86,41 @@ PLANS: dict[str, dict] = {
     },
 }
 ORDER = ("visitor", "free", "basic", "pro")
-DEFAULT_PLAN = "free"
+
+#: What an account that never chose gets. Pro while the beta runs, because
+#: both paid plans cost nothing during it and somebody who did not choose
+#: should be testing the whole product rather than the bottom of it. A plan
+#: chosen deliberately is still honoured — this is only the answer when
+#: nobody answered.
+DEFAULT_PLAN = "pro"
+
+#: While the beta runs, no capability gate refuses anybody, whatever plan
+#: their account records.
+#:
+#: `DEFAULT_PLAN` alone would have reached only accounts created after it
+#: changed. Everybody already testing is recorded as Free, from the days when
+#: that was the default, and would have gone on meeting a paywall quoting a
+#: price of $0 — the worst of both readings, since it withholds a feature and
+#: cannot even say what withholding it is worth.
+#:
+#:     asked     does a new account start on the best plan
+#:     mattered  can the people already testing use it
+#:
+#: So enforcement stands down without one stored membership being rewritten:
+#: nobody's recorded choice is edited on their behalf, and the day this flips
+#: back, the plan each person actually holds is the plan that applies.
+#:
+#: `entitles` is deliberately untouched. The pricing page must keep saying
+#: what each tier means, because that is what it will cost — a beta that
+#: quietly reports everything as included in Free would be advertising a
+#: product that does not exist.
+#:
+#: Storage posture is a separate question and is deliberately not covered;
+#: see `jim/storage.py`. Whether a record is sealed in the vault or kept in
+#: the clear is about where bytes live rather than what somebody may press,
+#: and flipping it under an account that has already written in the clear
+#: would move nothing already written while implying that it had.
+BETA_EVERYTHING_INCLUDED = True
 
 CAPABILITIES: dict[str, dict] = {
     # `guardian` and `emergency` both start at **free**, and that is the whole
@@ -351,7 +385,28 @@ def refusal(plan: str, capability: str):
         period=i18n.Term(spec["period"]), have=PLANS[plan]["title"])
 
 
+def enforcing() -> bool:
+    """Whether a capability gate may refuse anybody right now.
+
+    Both enforcement points ask this rather than each testing the flag
+    themselves, and the reason is the mistake that produced this function:
+    the beta stand-down went into `require` first, every tier test still
+    passed, and nothing changed for the person who reported the problem —
+    because `gate`, the application-wide chokepoint and the only one a
+    person actually meets, had been calling `entitles` on its own all along.
+
+        asked     is the gate stood down
+        mattered  is the gate a person meets stood down
+
+    Two places deciding the same thing is how one of them gets missed. This
+    is that decision, once.
+    """
+    return not BETA_EVERYTHING_INCLUDED
+
+
 def require(account_id: str, capability: str) -> None:
+    if not enforcing():
+        return
     plan = plan_of(account_id)
     if not entitles(plan, capability):
         raise TierError(refusal(plan, capability))
@@ -406,6 +461,8 @@ def account_of(request: Request) -> str | None:
 
 def gate(request: Request) -> None:
     """The chokepoint. Installed once, application-wide."""
+    if not enforcing():
+        return
     capability = capability_for(request.method, request.url.path)
     if capability is None:
         return

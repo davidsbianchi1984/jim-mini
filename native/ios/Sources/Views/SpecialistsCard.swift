@@ -20,8 +20,35 @@ struct SpecialistsCard: View {
     @State private var requests: [ReferralRequestRow] = []
     @State private var provider: ProviderSummary?
     @State private var providerRefused: String?
+    @State private var query = ""
+    @State private var found: [SpecialistFound] = []
+    @State private var searched = false
+    @State private var capped = false
+    @State private var limit = 0
     @State private var busy = false
     @State private var error: String?
+
+    /// The sentence beside a found profile, or nothing when its standing is
+    /// unremarkable.
+    ///
+    /// Written as a switch over literal keys rather than a dictionary
+    /// lookup, because the guard that finds strings translated and never
+    /// read follows literal arguments — a key reached only through a table
+    /// reads to it as dead.
+    private func standingLine(_ standing: String?) -> String? {
+        switch standing {
+        case "specialist.departed":
+            return L10n.t("ct.spec.stand.departed", state.language)
+        case "specialist.not_active":
+            return L10n.t("ct.spec.stand.not_active", state.language)
+        case "specialist.adults_only":
+            return L10n.t("ct.spec.stand.adults_only", state.language)
+        case "specialist.unreachable":
+            return L10n.t("ct.spec.stand.unreachable", state.language)
+        default:
+            return nil
+        }
+    }
 
     // The server's own condition vocabulary, as ConditionDeclare spells it.
     private let conditions = ["anxiety", "depression", "stress", "phobia",
@@ -74,6 +101,54 @@ struct SpecialistsCard: View {
                         .font(.caption2).foregroundStyle(Theme.brandA)
                         .disabled(busy || starter.profile_id == nil)
                     }
+                }
+            }
+
+            // Someone not on the shelf. The Starter Collection above is the
+            // curated bracket and the right first answer; it is the wrong
+            // *only* answer, because somebody who already sees a
+            // physiotherapist had no way in at all.
+            Text(L10n.t("ct.spec.other", state.language))
+                .font(.caption2.bold()).foregroundStyle(Theme.t2)
+            HStack(spacing: 8) {
+                TextField(L10n.t("ct.spec.find.hint", state.language),
+                          text: $query)
+                    .padding(8).background(Theme.scrBot)
+                    .clipShape(RoundedRectangle(cornerRadius: 9))
+                Button(L10n.t("ct.spec.find.go", state.language)) { search() }
+                    .font(.caption2).foregroundStyle(Theme.brandA)
+                    .disabled(busy || query.trimmingCharacters(
+                        in: .whitespaces).isEmpty)
+            }
+            if searched && found.isEmpty {
+                Text(L10n.t("ct.spec.find.none", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t3)
+            }
+            if capped {
+                Text(L10n.t("ct.spec.find.capped", state.language)
+                        .replacingOccurrences(of: "{n}", with: String(limit)))
+                    .font(.caption2).foregroundStyle(Theme.t3)
+            }
+            ForEach(found) { row in
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(row.display_name)
+                            .font(.caption2).foregroundStyle(Theme.txt)
+                        if let why = standingLine(row.standing) {
+                            Text(why).font(.caption2)
+                                .foregroundStyle(row.attachable ? Theme.t3
+                                                                : Theme.amber)
+                        }
+                    }
+                    Spacer()
+                    Button(L10n.t("ct.spec.attach", state.language)) {
+                        attachFound(row)
+                    }
+                    .font(.caption2).foregroundStyle(Theme.brandA)
+                    // Refused here as well as at the door, so a profile that
+                    // could only ever fall back is not a button somebody
+                    // presses and then has to wonder about.
+                    .disabled(busy || !row.attachable)
                 }
             }
 
@@ -233,6 +308,27 @@ struct SpecialistsCard: View {
             _ = try await ApiClient.shared.attachSpecialist(
                 condition: condition, qrmeProfileId: pid,
                 label: starter.display_name ?? pid)
+            roster = (try? await ApiClient.shared.specialists()) ?? []
+        }
+    }
+
+    private func search() {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else { return }
+        run {
+            let out = try await ApiClient.shared.searchSpecialists(query: q)
+            found = out.results
+            capped = out.capped
+            limit = out.limit
+            searched = true
+        }
+    }
+
+    private func attachFound(_ row: SpecialistFound) {
+        run {
+            _ = try await ApiClient.shared.attachSpecialist(
+                condition: condition, qrmeProfileId: row.profile_id,
+                label: row.display_name)
             roster = (try? await ApiClient.shared.specialists()) ?? []
         }
     }

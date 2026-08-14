@@ -855,6 +855,11 @@ private fun SpecialistsPanel(vm: GuardianViewModel) {
     var requests by remember { mutableStateOf<List<ReferralRequestRowK>>(emptyList()) }
     var provider by remember { mutableStateOf<ProviderSummaryK?>(null) }
     var providerRefused by remember { mutableStateOf<String?>(null) }
+    var query by remember { mutableStateOf("") }
+    var found by remember { mutableStateOf<List<SpecialistFoundK>>(emptyList()) }
+    var searched by remember { mutableStateOf(false) }
+    var capped by remember { mutableStateOf(false) }
+    var limit by remember { mutableStateOf(0) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     fun reloadRoster() {
@@ -922,6 +927,83 @@ private fun SpecialistsPanel(vm: GuardianViewModel) {
                             starter.profileId!!, starter.displayName
                                 ?: starter.profileId!!) }) { reloadRoster() }
                     }
+                }
+            }
+        }
+
+        // Someone not on the shelf. The Starter Collection above is the
+        // curated bracket and the right first answer; it is the wrong *only*
+        // answer, because somebody who already sees a physiotherapist had no
+        // way in at all.
+        Text(L10n.t("ct.spec.other", vm.language), color = Jim.T2,
+            fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Row(Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = query, onValueChange = { query = it }, singleLine = true,
+                placeholder = {
+                    Text(L10n.t("ct.spec.find.hint", vm.language),
+                        color = Jim.T3, fontSize = 11.sp)
+                },
+                modifier = Modifier.weight(1f),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Jim.Txt, unfocusedTextColor = Jim.Txt,
+                    focusedBorderColor = Jim.BrandA,
+                    unfocusedBorderColor = Jim.Line,
+                    focusedContainerColor = Jim.ScrBot,
+                    unfocusedContainerColor = Jim.ScrBot,
+                ),
+            )
+            SmallAction(L10n.t("ct.spec.find.go", vm.language),
+                enabled = !busy && query.isNotBlank()) {
+                act({
+                    val out = ApiClient.searchSpecialists(query.trim())
+                    found = out.results; capped = out.capped
+                    limit = out.limit; searched = true
+                })
+            }
+        }
+        if (searched && found.isEmpty()) {
+            Text(L10n.t("ct.spec.find.none", vm.language), color = Jim.T3,
+                fontSize = 11.sp)
+        }
+        if (capped) {
+            Text(L10n.t("ct.spec.find.capped", vm.language)
+                    .replace("{n}", limit.toString()),
+                color = Jim.T3, fontSize = 11.sp)
+        }
+        found.forEach { row ->
+            Row(Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(row.displayName, color = Jim.Txt, fontSize = 12.sp)
+                    // Literal branches rather than a lookup table: the guard
+                    // that finds strings translated and never read follows
+                    // literal arguments, and a key reached only through a map
+                    // reads to it as dead.
+                    when (row.standing) {
+                        "specialist.departed" -> Text(
+                            L10n.t("ct.spec.stand.departed", vm.language),
+                            color = Jim.Amber, fontSize = 11.sp)
+                        "specialist.not_active" -> Text(
+                            L10n.t("ct.spec.stand.not_active", vm.language),
+                            color = Jim.Amber, fontSize = 11.sp)
+                        "specialist.adults_only" -> Text(
+                            L10n.t("ct.spec.stand.adults_only", vm.language),
+                            color = Jim.T3, fontSize = 11.sp)
+                        "specialist.unreachable" -> Text(
+                            L10n.t("ct.spec.stand.unreachable", vm.language),
+                            color = Jim.T3, fontSize = 11.sp)
+                    }
+                }
+                // Refused here as well as at the door, so a profile that
+                // could only ever fall back is not a button somebody presses
+                // and then has to wonder about.
+                SmallAction(L10n.t("ct.spec.attach", vm.language),
+                    enabled = !busy && row.attachable) {
+                    act({ ApiClient.attachSpecialist(condition, row.profileId,
+                        row.displayName) }) { reloadRoster() }
                 }
             }
         }

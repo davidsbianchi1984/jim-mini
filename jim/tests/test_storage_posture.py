@@ -123,8 +123,17 @@ def test_a_paid_plan_carries_no_free_disclosure(client):
 
 
 def test_the_order_runs_visitor_free_basic_pro(client):
+    """The ladder is the ladder whatever the default is.
+
+    `DEFAULT_PLAN` moved to Pro while the beta runs — both paid plans cost
+    nothing during it, and somebody who never chose should be testing the
+    whole product. The order it sits in did not move, and that is what this
+    test is about; it asserts membership rather than a particular rung so
+    the two questions stop being one.
+    """
     assert tiers.ORDER == ("visitor", "free", "basic", "pro")
-    assert tiers.DEFAULT_PLAN == "free"
+    assert tiers.DEFAULT_PLAN in tiers.ORDER
+    assert tiers.DEFAULT_PLAN != "visitor"    # never the accountless rung
 
 
 def test_every_plan_has_a_posture(client):
@@ -161,15 +170,23 @@ def test_every_plan_in_the_catalogue_states_its_posture(client):
         assert row["storage"]["posture"] in storage.POSTURES
 
 
-def test_enrolling_without_a_plan_lands_on_free_and_is_told_so(client):
+def test_enrolling_without_a_plan_is_told_where_its_record_lives(client):
+    """Whichever plan the default is, the posture arrives with it.
+
+    The point has never been the word "free" — it is that nobody writes a
+    line into this product without first being told, in the enrolment
+    response, whether that line is sealed or in the clear. Read against
+    `storage.describe` so this keeps holding when the default moves.
+    """
     r = client.post("/enroll", json={
         "display_name": "Sam", "birthdate": "1990-01-01",
         "terms_consent": True, "resting_heart_rate": 60})
     assert r.status_code == 201, r.text
     out = r.json()["membership"]
-    assert out["plan"] == "free"
-    assert out["storage"]["private"] is False
-    assert out["storage"]["disclosure"]
+    assert out["plan"] == tiers.DEFAULT_PLAN
+    expected = storage.describe(tiers.DEFAULT_PLAN)
+    assert out["storage"]["private"] is expected["private"]
+    assert out["storage"]["disclosure"] == expected["disclosure"]
 
 
 # -- the emergency path is never a storage decision ----------------------------
@@ -430,7 +447,15 @@ def test_a_free_account_still_reaches_the_guardian(client):
                        json={"name": "walk"}).status_code in (200, 201)
 
 
-def test_free_is_still_refused_the_paid_capabilities(client):
+def test_free_is_still_refused_the_paid_capabilities(client, monkeypatch):
+    """With the gate enforcing — see `tiers.BETA_EVERYTHING_INCLUDED`.
+
+    The beta stands enforcement down for everybody, which is a posture and
+    not a change to what the plans mean. This test is about what Free is
+    entitled to, so it asks the question the product will ask again the day
+    the beta ends.
+    """
+    monkeypatch.setattr(tiers, "BETA_EVERYTHING_INCLUDED", False)
     user = enroll(client, plan="free")
     r = client.post(f"/devices/{user}", json={"kind": "watch",
                                               "label": "Wrist"})

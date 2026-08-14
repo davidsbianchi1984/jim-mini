@@ -3455,6 +3455,30 @@ struct SpecialistCatalog: Decodable {
     let note: String?
 }
 
+/// One QRME profile the attach bracket found, beyond the curated shelf.
+///
+/// `attachable` and `standing` are two fields rather than one: an
+/// age-restricted profile *is* attachable and still carries a caveat
+/// somebody needs to read, so collapsing the pair would either hide the
+/// caveat or refuse a profile that works.
+struct SpecialistFound: Decodable, Identifiable {
+    let profile_id: String
+    let display_name: String
+    let purpose: String?
+    let blurb: String?
+    let found_by: String?
+    let attachable: Bool
+    let standing: String?
+
+    var id: String { profile_id }
+}
+
+struct SpecialistSearch: Decodable {
+    let results: [SpecialistFound]
+    let capped: Bool
+    let limit: Int
+}
+
 struct ClinicianRow: Decodable {
     let id: String?
     let label: String?
@@ -3541,6 +3565,14 @@ extension ApiClient {
 
     func specialistsCatalog() async throws -> SpecialistCatalog {
         try await request("/specialists/catalog")
+    }
+
+    /// Anyone on QRME, not only the thirty-four on the shelf. Takes a
+    /// `@handle`, a `prof_…` id, or words.
+    func searchSpecialists(query: String) async throws -> SpecialistSearch {
+        let q = query.addingPercentEncoding(
+            withAllowedCharacters: .urlQueryAllowed) ?? query
+        return try await request("/specialists/search?q=\(q)")
     }
 
     func attachSpecialist(condition: String, qrmeProfileId: String,

@@ -1578,7 +1578,73 @@ SERVER_ERROR = ("Something went wrong on our side. "
 #: the new English rather than quietly serving the old sentence in nine
 #: languages. What is not here is recorded in
 #: `jim/tests/refusals_untranslated.txt` and ratcheted.
+#: What the attach bracket may say about a QRME profile it found, keyed the
+#: way `guardian.standing` reports it.
+#:
+#: Keys on the wire and sentences here, for the reason the widget runner
+#: keeps its refusals this way: the search results carry the key so each
+#: client renders the caveat in its own table beside the row, while the
+#: attach door raises the sentence and the ordinary refusal handler
+#: translates it. One reading of a profile's standing, two renderings.
+SPECIALIST_STANDING: dict[str, str] = {
+    "specialist.departed":
+        "that specialist has departed — their memorial remains on QRME, but "
+        "they cannot stand behind a condition",
+    "specialist.not_active":
+        "that profile is not active on QRME, so it cannot stand behind a "
+        "condition",
+    "specialist.adults_only":
+        "that specialist is age-restricted — it will answer for an adult "
+        "and be stepped around for anybody else",
+    "specialist.unreachable":
+        "QRME could not be reached, so this profile's standing is unknown",
+}
+
 _REFUSALS: dict[str, dict[str, str]] = {
+    "that specialist has departed — their memorial remains on QRME, but they cannot stand behind a condition": {
+        'es': "ese especialista ha fallecido: su memorial permanece en QRME, pero no puede respaldar una afección",
+        'fr': "ce spécialiste s'en est allé — son mémorial demeure sur QRME, mais il ne peut plus répondre d'une condition",
+        'de': "diese Fachperson ist verstorben — ihre Gedenkseite bleibt auf QRME, aber sie kann für kein Anliegen mehr einstehen",
+        'pt': "esse especialista partiu — o seu memorial permanece no QRME, mas não pode responder por uma condição",
+        'it': "quello specialista se n'è andato: il suo memoriale resta su QRME, ma non può più farsi carico di una condizione",
+        'ja': "その専門家は旅立ちました。QRME に追悼のページは残りますが、症状を受け持つことはできません。",
+        'zh': "那位专家已经离世——他的纪念页仍在 QRME 上，但无法再为某个状况把关。",
+        'hi': "वह विशेषज्ञ जा चुके हैं — उनका स्मृति-पृष्ठ QRME पर बना रहेगा, पर वे किसी स्थिति के पीछे खड़े नहीं हो सकते।",
+        'ar': "لقد رحل ذلك المختص — تبقى صفحة تأبينه على QRME، لكنه لا يستطيع أن يقف خلف حالة.",
+    },
+    "that profile is not active on QRME, so it cannot stand behind a condition": {
+        'es': "ese perfil no está activo en QRME, así que no puede respaldar una afección",
+        'fr': "ce profil n'est pas actif sur QRME ; il ne peut donc pas répondre d'une condition",
+        'de': "dieses Profil ist auf QRME nicht aktiv und kann daher für kein Anliegen einstehen",
+        'pt': "esse perfil não está ativo no QRME, por isso não pode responder por uma condição",
+        'it': "quel profilo non è attivo su QRME, quindi non può farsi carico di una condizione",
+        'ja': "そのプロフィールは QRME で有効ではないため、症状を受け持つことはできません。",
+        'zh': "该档案在 QRME 上并非活跃状态，因此不能为某个状况把关。",
+        'hi': "वह प्रोफ़ाइल QRME पर सक्रिय नहीं है, इसलिए वह किसी स्थिति के पीछे खड़ी नहीं हो सकती।",
+        'ar': "هذا الملف غير نشط على QRME، فلا يمكنه أن يقف خلف حالة.",
+    },
+    "that specialist is age-restricted — it will answer for an adult and be stepped around for anybody else": {
+        'es': "ese especialista tiene restricción de edad: responderá a una persona adulta y se omitirá para cualquier otra",
+        'fr': "ce spécialiste est réservé aux adultes — il répondra à une personne majeure et sera contourné pour toute autre",
+        'de': "diese Fachperson ist altersbeschränkt — sie antwortet Erwachsenen und wird für alle anderen übergangen",
+        'pt': "esse especialista tem restrição de idade — responderá a um adulto e será contornado para qualquer outra pessoa",
+        'it': "quello specialista è riservato agli adulti: risponderà a una persona adulta e verrà aggirato per chiunque altro",
+        'ja': "その専門家は年齢制限つきです。成人には応じますが、それ以外の方には迂回されます。",
+        'zh': "该专家有年龄限制——它会为成年人作答，对其他人则会被绕过。",
+        'hi': "वह विशेषज्ञ आयु-प्रतिबंधित है — वयस्क के लिए जवाब देगा, बाकी किसी के लिए उसे छोड़ दिया जाएगा।",
+        'ar': "ذلك المختص مقيَّد بالعمر — سيجيب البالغين ويُتجاوَز مع سواهم.",
+    },
+    "QRME could not be reached, so this profile's standing is unknown": {
+        'es': "no se pudo contactar con QRME, así que no se conoce la situación de este perfil",
+        'fr': "QRME est injoignable ; l'état de ce profil est donc inconnu",
+        'de': "QRME war nicht erreichbar, daher ist der Stand dieses Profils unbekannt",
+        'pt': "não foi possível contactar o QRME, por isso a situação deste perfil é desconhecida",
+        'it': "non è stato possibile raggiungere QRME, quindi la posizione di questo profilo è ignota",
+        'ja': "QRME に接続できなかったため、このプロフィールの状態は分かりません。",
+        'zh': "无法连接 QRME，因此这个档案的状态未知。",
+        'hi': "QRME तक पहुँच नहीं हो सकी, इसलिए इस प्रोफ़ाइल की स्थिति अज्ञात है।",
+        'ar': "تعذّر الوصول إلى QRME، فحالة هذا الملف غير معروفة.",
+    },
     "an engaged session needs the online model — the offline one can answer you, but it cannot do anything for you. Nothing was changed.": {
         'es': "una sesión activa necesita el modelo en línea: el sin conexión puede responderte, pero no puede hacer nada por ti. No se cambió nada.",
         'fr': "une session engagée a besoin du modèle en ligne — celui hors ligne peut vous répondre, mais il ne peut rien faire pour vous. Rien n'a été modifié.",

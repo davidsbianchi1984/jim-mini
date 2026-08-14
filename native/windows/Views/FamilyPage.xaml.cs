@@ -34,6 +34,9 @@ public sealed partial class FamilyPage : Page
         SpNone.Text = L10n.T("att.spec.none");
         SpCatalogHead.Text = L10n.T("ct.spec");
         SpCatalogChoose.Text = L10n.T("ct.spec.choose");
+        SpOtherHead.Text = L10n.T("ct.spec.other");
+        SpFindQuery.PlaceholderText = L10n.T("ct.spec.find.hint");
+        SpFindButton.Content = L10n.T("ct.spec.find.go");
         SpHandHead.Text = L10n.T("att.hand");
         SpCondition.ItemsSource = SpConditions.ToList();
         SpGoal.PlaceholderText = L10n.T("att.hand.ph");
@@ -443,6 +446,78 @@ public sealed partial class FamilyPage : Page
             SpCatalogNote.Text = ex.Message;
             SpCatalogNote.Visibility = Visibility.Visible;
         }
+    }
+
+    /// <summary>The standing caveat beside a found profile, or null when
+    /// there is nothing to say.</summary>
+    ///
+    /// Written as a switch over literal keys rather than a dictionary
+    /// lookup, because the guard that finds strings translated and never
+    /// read follows literal arguments — a key reached only through a table
+    /// reads to it as dead.
+    private static string? StandingLine(string? standing) => standing switch
+    {
+        "specialist.departed" => L10n.T("ct.spec.stand.departed"),
+        "specialist.not_active" => L10n.T("ct.spec.stand.not_active"),
+        "specialist.adults_only" => L10n.T("ct.spec.stand.adults_only"),
+        "specialist.unreachable" => L10n.T("ct.spec.stand.unreachable"),
+        _ => null,
+    };
+
+    private async void OnFindSpecialist(object sender, RoutedEventArgs e)
+    {
+        var q = SpFindQuery.Text?.Trim() ?? "";
+        if (q.Length == 0) return;
+        SpFound.Children.Clear();
+        SpFindNote.Visibility = Visibility.Collapsed;
+        try
+        {
+            var out_ = await ApiClient.Shared.SearchSpecialists(q);
+            var rows = out_.Results ?? Array.Empty<SpecialistFound>();
+            if (rows.Length == 0)
+            {
+                SpFindNote.Text = L10n.T("ct.spec.find.none");
+                SpFindNote.Visibility = Visibility.Visible;
+                return;
+            }
+            if (out_.Capped)
+            {
+                SpFindNote.Text = L10n.T("ct.spec.find.capped")
+                    .Replace("{n}", out_.Limit.ToString());
+                SpFindNote.Visibility = Visibility.Visible;
+            }
+            foreach (var row in rows)
+            {
+                var caveat = StandingLine(row.Standing);
+                var button = new Button
+                {
+                    Content = row.DisplayName
+                              + (caveat is null ? "" : $" — {caveat}")
+                              + " — " + L10n.T("ct.spec.attach"),
+                    FontSize = 12,
+                    // Refused here as well as at the door, so a profile that
+                    // could only ever fall back is not a button somebody
+                    // presses and then has to wonder about.
+                    IsEnabled = row.Attachable,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                var pid = row.ProfileId;
+                var label = row.DisplayName;
+                button.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.AttachSpecialist(SpPicked, pid,
+                                                                label);
+                        await ReloadSpecialists();
+                    }
+                    catch (Exception ex) { ShowSpError(ex.Message); }
+                };
+                SpFound.Children.Add(button);
+            }
+        }
+        catch (Exception ex) { ShowSpError(ex.Message); }
     }
 
     private async void OnSeedLocal(object sender, RoutedEventArgs e)

@@ -20,6 +20,23 @@ from jim import tiers
 from jim.tests.conftest import as_user, enroll, user_header
 
 
+@pytest.fixture(autouse=True)
+def _enforcing(monkeypatch):
+    """Every test in this file asks what the gate does when it is enforcing.
+
+    `tiers.BETA_EVERYTHING_INCLUDED` stands the gate down while the beta
+    runs, and without this fixture that would quietly empty this whole file:
+    every `== 402` would meet a 200 instead, and the temptation would be to
+    soften the assertions until they matched. The mechanism has to stay
+    covered *while* it is switched off, because the day it switches back on
+    is the day it has to still work.
+
+    `test_the_beta_stands_the_whole_gate_down` is the other half: it turns
+    the flag back on and checks it does what it says.
+    """
+    monkeypatch.setattr(tiers, "BETA_EVERYTHING_INCLUDED", False)
+
+
 # -- the paywall never stands in front of an emergency ------------------------
 
 def test_no_gated_pattern_can_reach_a_safety_path(client):
@@ -221,17 +238,27 @@ def test_what_a_plan_includes_is_computed_not_typed(client):
 
 # -- joining, moving, leaving --------------------------------------------------
 
-def test_enrolling_puts_a_new_person_on_free(client):
-    """And the response says what free means before they have written
-    anything — see `test_storage_posture.py`. Nobody is asked for a card to
-    reach the Guardian; what $20 buys is the vault."""
+def test_enrolling_puts_a_new_person_on_the_default_plan(client):
+    """Which is Pro while the beta runs, and the response still says what
+    that plan's storage posture means before they have written anything —
+    see `test_storage_posture.py`.
+
+    This asserted `free` for most of this product's life, and the reason it
+    changed is worth keeping: nobody is asked for a card either way, both
+    paid plans cost nothing during the beta, and a tester who never chose was
+    landing on the bottom tier and meeting a paywall quoting a price of $0.
+    Read against `tiers.DEFAULT_PLAN` rather than a literal, so the day that
+    constant moves back this test moves with it instead of failing.
+    """
     r = client.post("/enroll", json={"display_name": "Sam",
                                      "birthdate": "1990-01-01",
                                      "terms_consent": True})
     assert r.status_code == 201, r.text
     membership = r.json()["membership"]
-    assert membership["plan"] == "free"
-    assert membership["storage"]["not_private"] is True
+    assert membership["plan"] == tiers.DEFAULT_PLAN
+    from jim import storage
+    assert membership["storage"]["not_private"] is (
+        not storage.is_private(tiers.DEFAULT_PLAN))
 
 
 def test_moving_plan_replaces_rather_than_stacks(client):
@@ -307,3 +334,47 @@ def test_a_user_token_is_the_account(client):
         method="GET", url=types.SimpleNamespace(path=f"/insights/{user}"),
         headers=user_header(client.headers["authorization"].split()[1]))
     assert tiers.account_of(fake) == user
+
+
+# -- the beta stands the whole gate down --------------------------------------
+#
+# Everything above runs with `_enforcing` forcing the gate on, which is the
+# state this product ships back to. These two are the other half: what a
+# tester actually meets today.
+
+
+def test_the_beta_stands_the_whole_gate_down(client, monkeypatch):
+    """Both enforcement points, through the door a person actually meets.
+
+    The first attempt at this stood `require` down and left `gate` — the
+    application-wide chokepoint — refusing exactly as before. Every test in
+    this file still passed, because none of them reach the gate through
+    `require`. So this drives HTTP: a Free account, a Pro-only capability,
+    and a 200.
+    """
+    monkeypatch.setattr(tiers, "BETA_EVERYTHING_INCLUDED", True)
+    user = enroll(client, plan="free")
+    assert tiers.plan_of(user) == "free"
+    # Pro-only, and the one the field report arrived about.
+    assert client.get("/engaged/reach").status_code == 200
+    opened = client.post(f"/engaged/{user}", json={"area": "personal_growth"})
+    assert opened.status_code != 402, opened.text
+    # And the non-HTTP path, which is the one `require` guards.
+    tiers.require(user, "synthetic_agents")
+
+
+def test_standing_the_gate_down_does_not_rewrite_what_a_plan_means(client,
+                                                                   monkeypatch):
+    """The pricing page keeps telling the truth about what is being sold.
+
+    `entitles` is what `/plans` reads, and it must go on answering about the
+    plans as they will be charged for — a beta that reported everything as
+    included in Free would be advertising a product that does not exist.
+    """
+    monkeypatch.setattr(tiers, "BETA_EVERYTHING_INCLUDED", True)
+    assert tiers.entitles("free", "synthetic_agents") is False
+    assert tiers.entitles("pro", "synthetic_agents") is True
+    listed = client.get("/plans").json()["plans"]
+    free = next(p for p in listed if p["plan"] == "free")
+    assert "synthetic_agents" not in free["includes"]
+    assert "synthetic_agents" in free["locked"]

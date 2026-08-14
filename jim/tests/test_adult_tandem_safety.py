@@ -66,7 +66,22 @@ def _enroll(client, birthdate):
 
 
 def _register_tandem(client):
-    client.post("/specialists", json={
+    """Attach the tandem specialist, past the door's own standing check.
+
+    `POST /specialists` now refuses a profile that could never answer, so
+    that an attach cannot leave somebody believing in a link the delivery
+    path only ever steps around. That gate is a good thing, and it is tested
+    below in `test_the_attach_door_refuses_one_that_could_never_answer`.
+
+    It is the wrong gate for *these* tests, and the reason is what they are
+    about: a specialist does not usually depart before you attach them, it
+    departs afterwards. The state modelled here is a link attached while the
+    profile was healthy and gone bad since — so it is written the way that
+    history leaves it, and the question is what delivery does then. Going
+    through the door would test the door instead.
+    """
+    from jim import guardian
+    guardian.register_specialist({
         "condition": "anxiety", "mode": "tandem",
         "qrme_profile_id": "prf_adult", "label": "QRME anxiety specialist"})
 
@@ -141,4 +156,42 @@ def test_non_adult_profile_handoff_unaffected(tmp_path, monkeypatch):
 
     assert fake.chat_calls == 1                    # safe: normal handoff
     assert r["guidance"]["source"] == "tandem"
+    client.__exit__(None, None, None)
+
+
+def test_the_attach_door_refuses_one_that_could_never_answer(tmp_path,
+                                                             monkeypatch):
+    """The other half of `_register_tandem`'s note.
+
+    Everything above is about a link that went bad after it was made. This is
+    the case the attach door can still catch: somebody choosing, right now, a
+    profile that has already departed. Before this gate the attach succeeded,
+    the bracket listed it as attached, and every delivery afterwards quietly
+    took the fallback — a binding that was never a door.
+    """
+    fake = FakeQRMEProfile(adult_mode=False, status="departed")
+    client = _app(fake, tmp_path, monkeypatch)
+    r = client.post("/specialists", json={
+        "condition": "anxiety", "mode": "tandem",
+        "qrme_profile_id": "prf_adult", "label": "QRME anxiety specialist"})
+    assert r.status_code == 422, r.text
+    assert "departed" in r.json()["detail"]
+    client.__exit__(None, None, None)
+
+
+def test_an_age_restricted_specialist_attaches_and_is_gated_per_delivery(
+        tmp_path, monkeypatch):
+    """Adults-only is a caveat, not a refusal.
+
+    Whether an age-restricted profile may be used depends on who is asking,
+    and the attach bracket is not per-user — so the door lets it through and
+    `_tandem_safe` holds the line at each delivery, which the minor case
+    above already proves it does.
+    """
+    fake = FakeQRMEProfile(adult_mode=True, status="active")
+    client = _app(fake, tmp_path, monkeypatch)
+    r = client.post("/specialists", json={
+        "condition": "anxiety", "mode": "tandem",
+        "qrme_profile_id": "prf_adult", "label": "QRME anxiety specialist"})
+    assert r.status_code == 200, r.text
     client.__exit__(None, None, None)

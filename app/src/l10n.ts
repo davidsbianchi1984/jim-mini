@@ -2934,6 +2934,33 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "ct.spec.empty": {
     en: "The QRME tandem answered with an empty shelf — install the Starter Collection there (Discover → Install), then reload.", es: "El tándem de QRME respondió con un estante vacío — instala allí la Colección Inicial (Descubrir → Instalar) y luego recarga.", fr: "Le tandem QRME a répondu avec une étagère vide — installez-y la Collection de départ (Découvrir → Installer), puis rechargez.", de: "Das QRME-Tandem antwortete mit einem leeren Regal — installieren Sie dort die Starter-Sammlung (Entdecken → Installieren) und laden Sie neu.", pt: "O tandem QRME respondeu com uma prateleira vazia — instale lá a Coleção Inicial (Descobrir → Instalar) e recarregue.", it: "Il tandem QRME ha risposto con uno scaffale vuoto — installa lì la Collezione iniziale (Scopri → Installa), poi ricarica.", ja: "QRMEタンデムは空の棚を返しました — 向こうでスターターコレクションを導入し（Discover → Install）、再読み込みしてください。", zh: "QRME 串联端返回的是一个空货架 — 请先在那边安装入门合集（发现 → 安装），然后重新加载。", hi: "QRME टेंडम ने ख़ाली शेल्फ़ लौटाया — वहाँ स्टार्टर संग्रह इंस्टॉल करें (Discover → Install), फिर पुनः लोड करें।", ar: "أجاب ترادف QRME برفٍّ فارغ — ثبّت المجموعة الأولى هناك (Discover ← Install)، ثم أعد التحميل.",
   },
+  "ct.spec.find.capped": {
+    en: "Showing the first {n} — narrower words will reach the rest.", es: "Se muestran los primeros {n}: con palabras más precisas verá el resto.", fr: "Les {n} premiers sont affichés — des mots plus précis atteindront les autres.", de: "Die ersten {n} werden gezeigt — genauere Wörter erreichen die übrigen.", pt: "A mostrar os primeiros {n} — palavras mais precisas alcançam os restantes.", it: "Mostra i primi {n}: parole più precise raggiungeranno gli altri.", ja: "最初の {n} 件を表示しています。絞った言葉で残りに届きます。", zh: "显示前 {n} 条——用更精确的词可以找到其余的。", hi: "पहले {n} दिखाए जा रहे हैं — अधिक सटीक शब्दों से बाकी तक पहुँचेंगे।", ar: "تُعرض أول {n} — كلمات أدقّ تصل إلى الباقي.",
+  },
+  "ct.spec.find.go": {
+    en: "Search", es: "Buscar", fr: "Rechercher", de: "Suchen", pt: "Procurar", it: "Cerca", ja: "検索", zh: "搜索", hi: "खोजें", ar: "ابحث",
+  },
+  "ct.spec.find.hint": {
+    en: "a name, an industry, a @handle, or a prof_… id", es: "un nombre, un sector, un @alias o un id prof_…", fr: "un nom, un secteur, un @pseudo ou un identifiant prof_…", de: "ein Name, eine Branche, ein @Handle oder eine prof_…-ID", pt: "um nome, um setor, um @identificador ou um id prof_…", it: "un nome, un settore, un @handle o un id prof_…", ja: "名前、業種、@ハンドル、または prof_… の ID", zh: "姓名、行业、@handle，或 prof_… 开头的 id", hi: "नाम, उद्योग, कोई @handle, या prof_… वाला id", ar: "اسم أو مجال أو @معرّف أو رقم prof_…",
+  },
+  "ct.spec.find.none": {
+    en: "Nothing matched that.", es: "Nada coincidió con eso.", fr: "Rien ne correspond.", de: "Dazu passte nichts.", pt: "Nada correspondeu a isso.", it: "Non ha trovato nulla.", ja: "一致するものはありませんでした。", zh: "没有匹配的结果。", hi: "उससे कुछ मेल नहीं खाया।", ar: "لم يطابق ذلك شيء.",
+  },
+  "ct.spec.other": {
+    en: "Someone not on the shelf", es: "Alguien que no está en el estante", fr: "Quelqu'un qui n'est pas sur l'étagère", de: "Jemand, der nicht im Regal steht", pt: "Alguém que não está na prateleira", it: "Qualcuno che non è sullo scaffale", ja: "棚にいない人", zh: "货架上没有的人", hi: "शेल्फ़ पर मौजूद नहीं कोई", ar: "شخص ليس على الرفّ",
+  },
+  "ct.spec.stand.adults_only": {
+    en: "age-restricted — answers for an adult only", es: "con restricción de edad: solo responde a personas adultas", fr: "réservé aux adultes — ne répond qu'à une personne majeure", de: "altersbeschränkt — antwortet nur Erwachsenen", pt: "com restrição de idade — só responde a adultos", it: "riservato agli adulti: risponde solo a una persona adulta", ja: "年齢制限つき — 成人にのみ応じます", zh: "有年龄限制——仅为成年人作答", hi: "आयु-प्रतिबंधित — केवल वयस्क के लिए जवाब देता है", ar: "مقيَّد بالعمر — يجيب البالغين وحدهم",
+  },
+  "ct.spec.stand.departed": {
+    en: "has departed — cannot stand behind a condition", es: "ha fallecido: no puede respaldar una afección", fr: "s'en est allé — ne peut pas répondre d'une condition", de: "ist verstorben — kann für kein Anliegen einstehen", pt: "partiu — não pode responder por uma condição", it: "se n'è andato: non può farsi carico di una condizione", ja: "旅立ちました — 症状を受け持てません", zh: "已离世——无法为某个状况把关", hi: "जा चुके हैं — किसी स्थिति के पीछे खड़े नहीं हो सकते", ar: "قد رحل — لا يستطيع أن يقف خلف حالة",
+  },
+  "ct.spec.stand.not_active": {
+    en: "not active on QRME", es: "no está activo en QRME", fr: "pas actif sur QRME", de: "auf QRME nicht aktiv", pt: "não está ativo no QRME", it: "non è attivo su QRME", ja: "QRME で有効ではありません", zh: "在 QRME 上并非活跃状态", hi: "QRME पर सक्रिय नहीं", ar: "غير نشط على QRME",
+  },
+  "ct.spec.stand.unreachable": {
+    en: "QRME unreachable — standing unknown", es: "QRME inaccesible: situación desconocida", fr: "QRME injoignable — état inconnu", de: "QRME nicht erreichbar — Stand unbekannt", pt: "QRME inacessível — situação desconhecida", it: "QRME irraggiungibile: posizione ignota", ja: "QRME に接続できません — 状態は不明です", zh: "无法连接 QRME——状态未知", hi: "QRME तक पहुँच नहीं — स्थिति अज्ञात", ar: "تعذّر الوصول إلى QRME — الحالة غير معروفة",
+  },
   "sfy.title": {
     en: "Safety", es: "Seguridad", fr: "Sécurité", de: "Sicherheit", pt: "Segurança", it: "Sicurezza", ja: "安全", zh: "安全", hi: "सुरक्षा", ar: "السلامة",
   },
@@ -3477,28 +3504,28 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
 
   // -- engaged sessions (jim/engaged.py) ---------------------------------
   "nav.engaged": {
-    en: "Engaged",
-    es: "En sesión",
-    fr: "En session",
-    de: "Verbunden",
-    pt: "Em sessão",
-    it: "In sessione",
-    ja: "接続中",
-    zh: "会话中",
-    hi: "जुड़ा हुआ",
-    ar: "في جلسة",
+    en: "Activate JIM",
+    es: "Activar JIM",
+    fr: "Activer JIM",
+    de: "JIM aktivieren",
+    pt: "Ativar o JIM",
+    it: "Attiva JIM",
+    ja: "JIMを起動",
+    zh: "启动 JIM",
+    hi: "JIM चालू करें",
+    ar: "تفعيل JIM",
   },
   "engaged.title": {
-    en: "Engaged",
-    es: "En sesión",
-    fr: "En session",
-    de: "Verbunden",
-    pt: "Em sessão",
-    it: "In sessione",
-    ja: "接続中",
-    zh: "会话中",
-    hi: "जुड़ा हुआ",
-    ar: "في جلسة",
+    en: "Activate JIM",
+    es: "Activar JIM",
+    fr: "Activer JIM",
+    de: "JIM aktivieren",
+    pt: "Ativar o JIM",
+    it: "Attiva JIM",
+    ja: "JIMを起動",
+    zh: "启动 JIM",
+    hi: "JIM चालू करें",
+    ar: "تفعيل JIM",
   },
   "engaged.blurb": {
     en: "The coach answers one turn at a time. This stays open until you sign off, can do things for you while it is open, and lists everything it did so you can take it back.",

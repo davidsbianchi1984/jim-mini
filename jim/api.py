@@ -1360,10 +1360,48 @@ def create_app(qrme_client: QRMEClient | None = None,
                     "guidance through it in tandem",
         }
 
+    @app.get("/specialists/search")
+    def search_specialists(q: str) -> dict:
+        """Any QRME profile, not only the thirty-four on the shelf.
+
+        The catalog above is a curated bracket — the Starter Collection, each
+        carrying its industry's knowledge pack. That is the right first answer
+        and the wrong only answer: somebody who wants the physiotherapist they
+        already see, or a specialist they were handed a handle for, had no way
+        in at all. This is that way in, and it takes a `@handle`, a `prof_…`
+        id, or words.
+
+        Every row says whether it could actually stand behind a condition, so
+        the bracket can refuse here rather than store a link that only ever
+        falls back to standalone guidance.
+        """
+        if app.state.qrme is None:
+            raise HTTPException(
+                409, "no QRME endpoint configured (set JIM_QRME_URL)")
+        results = guardian.find_specialists(q, app.state.qrme)
+        return {
+            "query": q,
+            "results": results,
+            # Named rather than left for a client to infer by comparing the
+            # row count against a number it hardcoded — that is the wire that
+            # drifts the first time the cap moves.
+            "capped": len(results) >= guardian.FIND_LIMIT,
+            "limit": guardian.FIND_LIMIT,
+        }
+
     @app.post("/specialists")
     def register_specialist(body: SpecialistRegister) -> dict:
         if body.mode == "tandem" and not body.qrme_profile_id:
             raise HTTPException(422, "tandem specialists require a qrme_profile_id")
+        # A binding is not a door. Attaching a profile that can never answer
+        # stores a link the person believes in and the delivery path steps
+        # silently around — so the reading of standing that `_tandem_safe`
+        # makes per delivery is made once here, where it can still be a
+        # refusal somebody reads.
+        if body.mode == "tandem" and app.state.qrme is not None:
+            ok, why = guardian.standing(body.qrme_profile_id, app.state.qrme)
+            if not ok:
+                raise HTTPException(422, i18n.SPECIALIST_STANDING[why])
         return guardian.register_specialist(body.model_dump())
 
     @app.post("/monitor/{user_id}")

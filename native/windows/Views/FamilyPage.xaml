@@ -204,6 +204,22 @@
                                Foreground="{StaticResource JimT3Brush}" />
                     <StackPanel x:Name="SpStarters" Spacing="4" />
 
+                    <!-- Someone not on the shelf. The Starter Collection above
+                         is the curated bracket and the right first answer; it
+                         is the wrong only answer, because somebody who already
+                         sees a physiotherapist had no way in at all. -->
+                    <TextBlock x:Name="SpOtherHead" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="SpFindQuery" Width="240" />
+                        <Button x:Name="SpFindButton" Click="OnFindSpecialist"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource JimBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="SpFindNote" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="SpFound" Spacing="4" />
+
                     <TextBlock x:Name="SpHandHead" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource JimTxtBrush}" />
                     <ComboBox x:Name="SpCondition" SelectedIndex="0" HorizontalAlignment="Stretch" />

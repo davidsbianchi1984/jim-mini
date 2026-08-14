@@ -2886,6 +2886,28 @@ object ApiClient {
         return out
     }
 
+    /** Anyone on QRME, not only the thirty-four on the shelf. Takes a
+     *  `@handle`, a `prof_…` id, or words. */
+    suspend fun searchSpecialists(query: String): SpecialistSearchK {
+        val q = java.net.URLEncoder.encode(query, "UTF-8")
+        val o = request("/specialists/search?q=$q")
+        val rows = mutableListOf<SpecialistFoundK>()
+        o.optJSONArray("results")?.let { a ->
+            for (i in 0 until a.length()) {
+                val s = a.optJSONObject(i) ?: continue
+                val pid = s.optString("profile_id", null) ?: continue
+                rows.add(SpecialistFoundK(
+                    pid,
+                    s.optString("display_name", pid),
+                    s.optString("purpose", null),
+                    s.optBoolean("attachable", true),
+                    s.optString("standing", null)))
+            }
+        }
+        return SpecialistSearchK(rows, o.optBoolean("capped", false),
+            o.optInt("limit", 0))
+    }
+
     suspend fun attachSpecialist(condition: String, qrmeProfileId: String,
                                  label: String) {
         request("/specialists", "POST",
@@ -3535,6 +3557,19 @@ data class ReportK(val checkinCount: Int, val avgMood: Double)
 data class SpecialistRowK(val condition: String, val mode: String,
                           val label: String)
 data class CatalogStarterK(val profileId: String?, val displayName: String?)
+
+/** One QRME profile the attach bracket found, beyond the curated shelf.
+ *
+ *  `attachable` and `standing` are two fields rather than one: an
+ *  age-restricted profile *is* attachable and still carries a caveat
+ *  somebody needs to read, so collapsing them would either hide the caveat
+ *  or refuse a profile that works. */
+data class SpecialistFoundK(val profileId: String, val displayName: String,
+                            val purpose: String?, val attachable: Boolean,
+                            val standing: String?)
+
+data class SpecialistSearchK(val results: List<SpecialistFoundK>,
+                             val capped: Boolean, val limit: Int)
 data class ClinicianSearchK(val labels: List<String>, val reason: String?)
 data class ReferralPreparedK(val prepared: Boolean, val reason: String?,
                              val note: String?)
