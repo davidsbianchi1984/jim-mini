@@ -1208,6 +1208,62 @@ CREATE TABLE IF NOT EXISTS problem_reports (
     last_seen   TEXT NOT NULL,
     PRIMARY KEY (source, app_version, platform, op, status)
 );
+
+-- An engaged session (jim/engaged.py): the online Guardian, left running
+-- until the person signs off rather than closed after a turn. One open row
+-- per user at a time — "engaged" is a state somebody is in, not a resource
+-- they accumulate — which `engaged.open_session` keeps true by handing back
+-- the open one rather than making a second.
+CREATE TABLE IF NOT EXISTS engagements (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    area          TEXT NOT NULL,
+    opened_at     TEXT NOT NULL,
+    signed_off_at TEXT              -- NULL while it is still open
+);
+
+-- The transcript, kept here rather than by the console. A session a person
+-- was told stays open until they sign off must survive the app being closed,
+-- and one held in a browser tab does not.
+CREATE TABLE IF NOT EXISTS engagement_turns (
+    engagement_id TEXT NOT NULL REFERENCES engagements(id),
+    seq           INTEGER NOT NULL,
+    role          TEXT NOT NULL,    -- 'user' | 'assistant'
+    content       TEXT NOT NULL,
+    created_at    TEXT NOT NULL,
+    PRIMARY KEY (engagement_id, seq)
+);
+
+-- The undo trail. `undo` holds the request that would take the act back,
+-- built at act time because the material it needs — the id the write
+-- returned, the value it overwrote — is only knowable then. `irreversible`
+-- names why, in the rows where there is no way back; every acting row in
+-- `engaged.TOOLS` carries exactly one of the two.
+CREATE TABLE IF NOT EXISTS engagement_acts (
+    id            TEXT PRIMARY KEY,
+    engagement_id TEXT NOT NULL REFERENCES engagements(id),
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    tool          TEXT NOT NULL,
+    says          TEXT NOT NULL,    -- the sentence a person reads
+    status        INTEGER NOT NULL,
+    undo          TEXT,             -- JSON: {method, path, body} or NULL
+    irreversible  TEXT,             -- refusal key naming why, or NULL
+    created_at    TEXT NOT NULL,
+    undone_at     TEXT
+);
+
+-- What the offline Guardian keeps holding after somebody signs off. The
+-- handover made concrete: a sentence said to the online model while engaged
+-- becomes a sentence the offline one is carrying once they have gone.
+CREATE TABLE IF NOT EXISTS standing_watches (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    engagement_id TEXT,
+    topic         TEXT NOT NULL,
+    area          TEXT,
+    created_at    TEXT NOT NULL,
+    cleared_at    TEXT
+);
 """
 
 _local = threading.local()

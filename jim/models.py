@@ -844,3 +844,39 @@ class SelfProfileConsent(BaseModel):
     """
 
     categories: list[str] = Field(default_factory=list)
+
+
+class EngageOpen(BaseModel):
+    """Opening a session with the online Guardian (jim/engaged.py).
+
+    ``area`` is a hint for the handover, not a topic lock: what a person
+    brings to an engaged session is whatever they bring, and the area is what
+    the deposit is filed under when they sign off.
+    """
+
+    area: LifeArea = "personal_growth"
+
+
+class EngagedSaid(BaseModel):
+    """One thing said inside an open engagement."""
+
+    message: str
+
+
+class SignOff(BaseModel):
+    """Ending an engagement, and what the offline Guardian keeps holding.
+
+    ``topics`` is the standing-watch list — plain sentences in the person's
+    own words, because the coach that reads them afterwards is a language
+    model and not a rules engine, and a taxonomy here would only lose what
+    they actually said.
+    """
+
+    topics: list[str] = Field(default_factory=list)
+
+
+class WatchFor(BaseModel):
+    """One thing to keep an eye on while somebody is away."""
+
+    topic: str
+    area: LifeArea | None = None

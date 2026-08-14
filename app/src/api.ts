@@ -341,6 +341,55 @@ export interface CoachSuggestion { area: string; topic: string; why: string }
 export interface CoachCurriculum { suggested: CoachSuggestion[]; note: string }
 export interface CoachStudied { studied: string; area: string | null;
   folded: boolean; left_host: boolean; excursion_id: string; note: string }
+
+// -- engaged sessions (jim/engaged.py) -----------------------------------
+//
+// `reversible` and `irreversible_because` are carried separately rather than
+// derived from one another, because the honest third state is a row that
+// acted and can no longer be taken back — already undone, or one whose way
+// back the backend could not build. A screen that renders `!reversible` as
+// "irreversible" would tell somebody their journal entry left the app.
+export interface EngagedTool {
+  name: string; says: string; acts: boolean; reversible: boolean;
+  irreversible_because: string | null;
+}
+export interface EngagedReach {
+  can: EngagedTool[]; tools_per_turn: number; acts_per_session: number;
+  watch_ceiling: number;
+}
+export interface EngagedStep {
+  tool: string | null; answered?: number | null; says?: string;
+  acts?: boolean; reversible?: boolean;
+  irreversible_because?: string | null; refused?: string;
+}
+export interface EngagedAct {
+  id: string; tool: string; says: string; answered: number;
+  created_at: string; undone_at: string | null; reversible: boolean;
+  irreversible_because: string | null;
+}
+export interface StandingWatch {
+  id: string; topic: string; area: string | null; created_at: string;
+  cleared_at: string | null; engagement_id: string | null;
+}
+export interface EngagedSessionTurn {
+  role: "user" | "assistant"; content: string; created_at: string;
+}
+export interface EngagedSession {
+  engaged: boolean; id: string | null; area: string | null;
+  opened_at: string | null;
+  turns: EngagedSessionTurn[]; acted: EngagedAct[];
+  watches: StandingWatch[];
+}
+export interface EngagedTurn {
+  engagement_id: string; reply: string; did: EngagedStep[];
+  stopped: string | null; engaged: boolean; watches: StandingWatch[];
+  provenance: { generated_by: string; degraded: boolean;
+    degraded_reason: string | null };
+}
+export interface EngagedSignOff {
+  engagement_id: string; signed_off: boolean; deposited: number;
+  watches: StandingWatch[]; acted: EngagedAct[];
+}
 export interface DriftCrossing {
   metric: string; label: string; unit: string; direction: "above" | "below";
   value: number; baseline: number; edge: number; delta: number; note: string;
@@ -1338,6 +1387,57 @@ export const api = {
     req<CoachStudied>(`/coach/${uid}/study`, { method: "POST", body, token }),
   baseline: (uid: string, token: string) =>
     req<BaselineMetric[]>(`/baseline/${uid}`, { token }),
+
+  // -- engaged: the online Guardian you leave running ---------------------
+  //
+  // `coach` above is a turn. These are a session: it stays open until you
+  // sign off, it can act on your account while it is open, and everything it
+  // does lands on a trail you can take back one row at a time. See
+  // jim/engaged.py for what it may touch and why the reach is a written list
+  // rather than the token's full authority.
+  //
+  // `engagedReach` carries no token on purpose — it is how somebody decides
+  // whether to open one at all, and a list of what a feature would be
+  // allowed to touch is not the feature.
+  engagedReach: () => req<EngagedReach>("/engaged/reach"),
+  engaged: (uid: string, token: string) =>
+    req<EngagedSession>(`/engaged/${uid}`, { token }),
+  engage: (uid: string, body: { area: string }, token: string) =>
+    req<EngagedSession>(`/engaged/${uid}`, { method: "POST", body, token }),
+  engagedTurn: (uid: string, body: { message: string }, token: string) =>
+    req<EngagedTurn>(`/engaged/${uid}/turn`, { method: "POST", body, token }),
+  engagedSignOff: (uid: string, body: { topics: string[] }, token: string) =>
+    req<EngagedSignOff>(`/engaged/${uid}/sign-off`,
+      { method: "POST", body, token }),
+  engagedActs: (uid: string, token: string) =>
+    req<EngagedAct[]>(`/engaged/${uid}/acts`, { token }),
+  engagedUndo: (uid: string, actId: string, token: string) =>
+    req<Row>(`/engaged/${uid}/acts/${actId}/undo`,
+      { method: "POST", token }),
+  engagedWatches: (uid: string, token: string) =>
+    req<StandingWatch[]>(`/engaged/${uid}/watches`, { token }),
+  engagedWatch: (uid: string, body: { topic: string; area?: string },
+                 token: string) =>
+    req<StandingWatch>(`/engaged/${uid}/watches`,
+      { method: "POST", body, token }),
+  engagedClearWatch: (uid: string, watchId: string, token: string) =>
+    req<Row>(`/engaged/${uid}/watches/${watchId}`,
+      { method: "DELETE", token }),
+
+  // The ways back the undo trail replays, and the doors a person should
+  // always have had: until an engaged session needed to take a check-in
+  // back, nothing in this product could delete one.
+  removeCheckin: (uid: string, checkinId: string, token: string) =>
+    req<Row>(`/checkin/${uid}/${checkinId}`, { method: "DELETE", token }),
+  removeJournal: (uid: string, entryId: string, token: string) =>
+    req<Row>(`/journal/${uid}/${entryId}`, { method: "DELETE", token }),
+  removeGoal: (uid: string, goalId: string, token: string) =>
+    req<Row>(`/goals/${uid}/${goalId}`, { method: "DELETE", token }),
+  removeHabit: (uid: string, habitId: string, token: string) =>
+    req<Row>(`/habits/${uid}/${habitId}`, { method: "DELETE", token }),
+  unlogHabit: (uid: string, habitId: string, day: string, token: string) =>
+    req<Row>(`/habits/${uid}/${habitId}/log/${day}`,
+      { method: "DELETE", token }),
 
   // ---------------------------------------------------------------------
   // Doors the backend had been holding open with nobody on the other side.

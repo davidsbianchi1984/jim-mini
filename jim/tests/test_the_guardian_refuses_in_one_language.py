@@ -104,6 +104,28 @@ def _details(root: Path) -> tuple[set[str], int]:
     return literals, interpolated
 
 
+def _tabled() -> set[str]:
+    """Refusal sentences that live in a table rather than at the raise site.
+
+    `jim/engaged.py` raises `EngagedError("engaged.not_engaged")` — a *key* —
+    and the handler looks the sentence up in `engaged.REFUSALS` before
+    `i18n.refuse` sends it. The AST walk above sees the key, which is not a
+    sentence and must never be translated, so sixteen real sentences would
+    have gone out in English while this file reported a comfortable zero.
+
+        asked     is every refusal *raised with a sentence* translated
+        mattered  is every refusal *a person reads* translated
+
+    A separate source rather than a branch inside `_details`, because
+    `_details` is measured by its own guard against a synthetic module and
+    must find exactly the shapes it documents there — and rather than putting
+    `EngagedError` in `DOMAIN_ERRORS`, which would have demanded translations
+    for the keys.
+    """
+    from jim import engaged
+    return {sentence for _status, sentence in engaged.REFUSALS.values()}
+
+
 def _translated() -> set[str]:
     """Both tables. A sentence already hand-translated as safety content is
     not owed a second entry — see `tr_refusal`, and the argument there about
@@ -121,6 +143,7 @@ def test_every_refusal_is_translated_or_written_down():
     """Both directions. A refusal that is neither is a sentence somebody will
     read in a language they did not choose, that nobody decided about."""
     literals, _ = _details(PKG)
+    literals |= _tabled()
     undecided = sorted(literals - _translated() - _recorded())
     stale = sorted(_recorded() - literals)
     problems = []

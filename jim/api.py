@@ -21,6 +21,7 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                careteam, community,
                catalog,
                coach,
+               engaged,
                mailer,
                circle, contribution, db, money, schedule, shopping,
                escalation, family, followup, guardian, handoff, i18n, identity,
@@ -46,7 +47,8 @@ from .models import (
     ChildEnroll,
     CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
-    CoachStudy, Enroll, ExcursionStart, FamilyControls, GoalCreate, GoalUpdate,
+    CoachStudy, EngageOpen, EngagedSaid, Enroll, ExcursionStart,
+    FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet,
@@ -61,7 +63,7 @@ from .models import (
     MedCreate, MedLog, MedUpdate,
     MicAttach, MicGain, MicHandover,
     ReferralPrepare, ResendCode, ResetPassword, ResetRequest, RobotCommand,
-    SignIn, Signup,
+    SignIn, SignOff, Signup, WatchFor,
     TranslateRequest, VerifyEmail,
     VigilArm,
     VoiceSettings, VoiceSpeak, VoiceTranscribe, WaiverSign,
@@ -174,6 +176,15 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.exception_handler(crashwatch.CrashWatchError)
     def _crashwatch_refusal(request: Request, exc: crashwatch.CrashWatchError):
         return i18n.refuse(request, exc.status, {"detail": exc.message})
+
+    # An engaged session refuses with a key (jim/engaged.py REFUSALS). Two
+    # readers, one refusal: the model is handed the key so it stops asking,
+    # and a person is handed the sentence — through here, in their language,
+    # like every other refusal in this product.
+    @app.exception_handler(engaged.EngagedError)
+    def _engaged_refusal(request: Request, exc: engaged.EngagedError):
+        return i18n.refuse(request, exc.status,
+                           {"detail": exc.message, "refusal": exc.key})
 
     @app.exception_handler(calm_mod.CalmError)
     def _calm_refusal(request: Request, exc: calm_mod.CalmError):
@@ -2808,6 +2819,20 @@ def create_app(qrme_client: QRMEClient | None = None,
                 pdi=_vault(user_id))
         return result
 
+    @app.delete("/checkin/{user_id}/{checkin_id}")
+    def remove_checkin(user_id: str, checkin_id: str,
+                       request: Request) -> dict:
+        """Take a check-in back.
+
+        Missing until an engaged session needed a way to undo one: a person
+        could say how they felt and had no way to unsay it, on the screen
+        that also feeds the crisis pipeline.
+        """
+        _user_or_404(user_id, request)
+        if not life.remove_checkin(user_id, checkin_id):
+            raise HTTPException(404, "check-in not found")
+        return {"checkin_id": checkin_id, "removed": True}
+
     # ---- smart goals ------------------------------------------------------
 
     @app.get("/goals/{user_id}")
@@ -2829,6 +2854,19 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(404, "goal not found")
         return updated
 
+    @app.delete("/goals/{user_id}/{goal_id}")
+    def remove_goal(user_id: str, goal_id: str, request: Request) -> dict:
+        """Delete a goal, as against parking it with a status.
+
+        The way back from `engaged.set_goal`, and a door a person did not
+        have: a goal set by mistake could be marked abandoned and never
+        removed.
+        """
+        _user_or_404(user_id, request)
+        if not life.remove_goal(user_id, goal_id):
+            raise HTTPException(404, "goal not found")
+        return {"goal_id": goal_id, "removed": True}
+
     # ---- habits & streaks -------------------------------------------------
 
     @app.get("/habits/{user_id}")
@@ -2841,6 +2879,14 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return life.add_habit(user_id, body.name)
 
+    @app.delete("/habits/{user_id}/{habit_id}")
+    def remove_habit(user_id: str, habit_id: str, request: Request) -> dict:
+        """Drop a habit and everything logged against it."""
+        _user_or_404(user_id, request)
+        if not life.remove_habit(user_id, habit_id):
+            raise HTTPException(404, "habit not found")
+        return {"habit_id": habit_id, "removed": True}
+
     @app.post("/habits/{user_id}/{habit_id}/log")
     def log_habit(user_id: str, habit_id: str, request: Request,
                   body: HabitLog | None = None) -> dict:
@@ -2849,6 +2895,17 @@ def create_app(qrme_client: QRMEClient | None = None,
         if logged is None:
             raise HTTPException(404, "habit not found")
         return logged
+
+    @app.delete("/habits/{user_id}/{habit_id}/log/{day}")
+    def unlog_habit(user_id: str, habit_id: str, day: date,
+                    request: Request) -> dict:
+        """Untick one day — a mis-tapped tick, or the way back from
+        `engaged.log_habit`."""
+        _user_or_404(user_id, request)
+        unlogged = life.unlog_habit(user_id, habit_id, day)
+        if unlogged is None:
+            raise HTTPException(404, "habit not found")
+        return unlogged
 
     # ---- life coach & insights --------------------------------------------
 
@@ -2869,6 +2926,118 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return coach.ask_specialist(user_id, body.area, body.message,
                                     app.state.qrme, pdi=app.state.pdi)
+
+    # ---- engaged: the online Guardian you leave running --------------------
+    #
+    # `/coach/{id}` is a turn; this is a session. See jim/engaged.py for what
+    # it may touch, why the reach is a list rather than the caller's full
+    # authority, and how every act it takes records the request that would
+    # take it back.
+
+    @app.get("/engaged/reach")
+    def engaged_reach() -> dict:
+        """Everything an engaged session can do to you, as sentences.
+
+        Deliberately outside the token: somebody deciding whether to open one
+        should be able to read what it may touch *before* they have anything
+        it could touch. Names no user and returns the same list to everyone.
+        """
+        return {"can": engaged.what_it_can_touch(),
+                "tools_per_turn": engaged.STEPS,
+                "acts_per_session": engaged.ACTS_PER_ENGAGEMENT,
+                "watch_ceiling": engaged.WATCH_CEILING}
+
+    @app.post("/engaged/{user_id}", status_code=201)
+    def engage(user_id: str, body: EngageOpen, request: Request) -> dict:
+        """Open an engagement — or hand back the one already open."""
+        _user_or_404(user_id, request)
+        return engaged.open_session(user_id, body.area)
+
+    @app.get("/engaged/{user_id}")
+    def engaged_session(user_id: str, request: Request) -> dict:
+        """The open engagement with its transcript, or ``engaged: false``.
+
+        Answering with a shape rather than a 404 because "nobody is engaged"
+        is a state a screen renders, not an error it reports.
+        """
+        _user_or_404(user_id, request)
+        session = engaged.current(user_id)
+        if session is None:
+            # The same keys either way. A shape whose fields appear and
+            # disappear with the state is one a typed client cannot declare —
+            # the Swift and C# structs would each have to guess which half
+            # they were being handed. Null is the answer to "which session",
+            # and it is an answer.
+            return {"engaged": False, "id": None, "area": None,
+                    "opened_at": None, "turns": [], "acted": [],
+                    "watches": engaged.watches(user_id)}
+        return {**session, "watches": engaged.watches(user_id)}
+
+    @app.post("/engaged/{user_id}/turn")
+    def engaged_turn(user_id: str, body: EngagedSaid,
+                     request: Request) -> dict:
+        """Say something to an engaged Guardian, and let it act.
+
+        The caller's own credential is forwarded to every door the session
+        goes through, so its reach is exactly theirs — no wider, and no
+        longer-lived.
+        """
+        _user_or_404(user_id, request)
+        return engaged.converse(
+            user_id, body.message, app=app,
+            authorization=request.headers.get("authorization"),
+            cloud=app.state.cloud)
+
+    @app.post("/engaged/{user_id}/sign-off")
+    def engaged_sign_off(user_id: str, body: SignOff,
+                         request: Request) -> dict:
+        """End the engagement and hand it over.
+
+        The session closes, what it was about is deposited into the store the
+        offline stack predicts from, and anything named becomes a standing
+        watch. Somebody who signs off has not stopped being looked after.
+        """
+        _user_or_404(user_id, request)
+        return engaged.sign_off(user_id, topics=body.topics)
+
+    @app.get("/engaged/{user_id}/acts")
+    def engaged_acts(user_id: str, request: Request) -> list[dict]:
+        """Everything an engaged session has done to this account, and which
+        of it can still be taken back."""
+        _user_or_404(user_id, request)
+        rows = []
+        for row in db.connect().execute(
+                "SELECT * FROM engagement_acts WHERE user_id=?"
+                " ORDER BY rowid DESC LIMIT 200", (user_id,)):
+            rows.append(engaged._act_row(row))
+        return rows
+
+    @app.post("/engaged/{user_id}/acts/{act_id}/undo")
+    def engaged_undo(user_id: str, act_id: str, request: Request) -> dict:
+        """Take one act back, through the door that would have undone it by
+        hand."""
+        _user_or_404(user_id, request)
+        return engaged.undo(user_id, act_id, app=app,
+                            authorization=request.headers.get("authorization"))
+
+    @app.get("/engaged/{user_id}/watches")
+    def engaged_watches(user_id: str, request: Request) -> list[dict]:
+        """What the offline Guardian is holding on to while you are away."""
+        _user_or_404(user_id, request)
+        return engaged.watches(user_id)
+
+    @app.post("/engaged/{user_id}/watches", status_code=201)
+    def engaged_watch(user_id: str, body: WatchFor, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        session = engaged.current(user_id)
+        return engaged.watch_for(user_id, body.topic, body.area,
+                                 session["id"] if session else None)
+
+    @app.delete("/engaged/{user_id}/watches/{watch_id}")
+    def engaged_clear_watch(user_id: str, watch_id: str,
+                            request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return engaged.clear_watch(user_id, watch_id)
 
     @app.get("/coach/{user_id}")
     def coach_history(user_id: str, request: Request,
@@ -2962,6 +3131,15 @@ def create_app(qrme_client: QRMEClient | None = None,
     def get_journal(user_id: str, request: Request) -> list[dict]:
         _user_or_404(user_id, request)
         return life.journal_entries(user_id, pdi=app.state.pdi)
+
+    @app.delete("/journal/{user_id}/{entry_id}")
+    def remove_journal(user_id: str, entry_id: str, request: Request) -> dict:
+        """Delete a journal entry — the way back from `engaged.write_journal`,
+        and a door somebody writing their own diary should always have had."""
+        _user_or_404(user_id, request)
+        if not life.remove_journal(user_id, entry_id):
+            raise HTTPException(404, "journal entry not found")
+        return {"entry_id": entry_id, "removed": True}
 
     @app.post("/feedback/{user_id}", status_code=201)
     def add_feedback(user_id: str, body: GuidanceFeedback,

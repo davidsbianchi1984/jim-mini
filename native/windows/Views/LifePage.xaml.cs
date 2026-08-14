@@ -16,14 +16,22 @@ public sealed partial class LifePage : Page
         public string Meta { get; init; } = "";
         public bool Active { get; init; }
         public string DoneLabel => L10n.T("aim.goals.done");
+        public string RemoveLabel => L10n.T("aim.goals.remove");
         public Visibility DoneVisibility =>
             Active ? Visibility.Visible : Visibility.Collapsed;
     }
     public record HabitRow(string Id, string Name, string Streak)
     {
         public string LogLabel => L10n.T("habit.log");
+        public string UntickLabel => L10n.T("aim.habits.undid");
+        public string DropLabel => L10n.T("aim.habits.drop");
     }
-    public record JournalRow(string Text, string Date);
+    // `Id` arrived with the delete door: the row rendered text and a date and
+    // had nothing to delete *by*.
+    public record JournalRow(string Id, string Text, string Date)
+    {
+        public string RemoveLabel => L10n.T("jrn.remove");
+    }
 
     // The wire word is the tag; the shown label derives from it the same
     // way the iOS and Android pickers spell it — never a second English.
@@ -114,6 +122,63 @@ public sealed partial class LifePage : Page
         catch { /* leave as-is */ }
     }
 
+
+    // The ways back an undo trail needed, and doors a person should always
+    // have had: until an engaged session needed to take a check-in back,
+    // nothing in this product could delete one.
+    private async void OnGoalRemove(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string goalId) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.RemoveGoal(s.Uid!, s.Token!, goalId);
+            await LoadGoals();
+        }
+        catch { /* the row keeps its state */ }
+    }
+
+    private async void OnUntickHabit(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string habitId) return;
+        var s = AppState.Current;
+        try
+        {
+            // Composed rather than formatted: a `"yyyy-MM-dd"` literal is a
+            // string this shell's own table happens to carry, so the
+            // English-in-the-screen guard reads it as prose. The date is the
+            // same either way.
+            var today = DateTime.UtcNow;
+            await ApiClient.Shared.UnlogHabit(s.Uid!, s.Token!, habitId,
+                $"{today.Year:D4}-{today.Month:D2}-{today.Day:D2}");
+            await LoadHabits();
+        }
+        catch { /* the row keeps its state */ }
+    }
+
+    private async void OnDropHabit(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string habitId) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.RemoveHabit(s.Uid!, s.Token!, habitId);
+            await LoadHabits();
+        }
+        catch { /* the row keeps its state */ }
+    }
+
+    private async void OnJournalRemove(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string entryId) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.RemoveJournal(s.Uid!, s.Token!, entryId);
+            await LoadJournal();
+        }
+        catch { /* the row keeps its state */ }
+    }
 
     private async void OnGoalDone(object sender, RoutedEventArgs e)
     {
@@ -226,7 +291,7 @@ public sealed partial class LifePage : Page
             // MemoryExtensions' in-place void overload and the .Select below
             // then has nothing to attach to.
             JournalList.ItemsSource = Enumerable.Reverse(entries)
-                .Select(j => new JournalRow(j.Text ?? "—", j.CreatedAt ?? "")).ToList();
+                .Select(j => new JournalRow(j.Id, j.Text ?? "—", j.CreatedAt ?? "")).ToList();
         }
         catch { /* leave as-is */ }
     }

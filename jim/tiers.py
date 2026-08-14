@@ -140,6 +140,25 @@ GATED: tuple[tuple[str, str], ...] = (
     (r"^/specialists(/|$)", "marketplace"),
     (r"^/users/[^/]+/specialist-tasks(/|$)", "synthetic_agents"),
     (r"^/excursions(/|$)", "synthetic_agents"),
+    # An engaged session (jim/engaged.py) is the same family as an excursion
+    # or a specialist task: a model doing work on the account rather than
+    # answering a question.
+    #
+    # Three exemptions, and they are the same shape as `/monitor` on the
+    # never-gated list below — a paywall in the wrong place here does not
+    # withhold a feature, it strands somebody inside one:
+    #
+    #   reach     how a person decides whether to open a session at all. A
+    #             list of what a feature would be allowed to touch is not
+    #             the feature.
+    #   sign-off  a plan that lapses mid-session must not leave the session
+    #             open forever, undeposited, with the handover never made.
+    #             The exit is not the product.
+    #   undo      taking back what the agent already did. Charging for the
+    #             way out of a change somebody did not want is the one
+    #             version of this that could not be defended.
+    (r"^/engaged/(?!reach$)(?![^/]+/(sign-off|acts/[^/]+/undo)$)",
+     "synthetic_agents"),
 )
 
 # Where reading is gated too, because the read *is* the feature.

@@ -54,6 +54,12 @@ def _context(user_id: str) -> str:
     # whole team wrote deserves a mention, never an assignment.
     from . import careteam
     lines.extend(careteam.coach_context(user_id))
+    # The handover (jim/engaged.py). Somebody who signed off from an engaged
+    # session named things for the Guardian to keep an eye on while they were
+    # gone, and this is the line where that stops being a promise: the coach
+    # answering them offline is carrying what they said to the online one.
+    from . import engaged
+    lines.extend(engaged.watch_lines(user_id))
     # What the connected apps collected (jim/app_connectors.py) — the
     # sentence under /apps/connector/{cid}/collect says it "now informs
     # guidance", and this line is where that stops being a claim. Unvaulted

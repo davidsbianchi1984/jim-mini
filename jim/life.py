@@ -453,6 +453,23 @@ def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
             "stress": stress, "insights": generated}
 
 
+def remove_checkin(user_id: str, checkin_id: str) -> bool:
+    """Take a check-in back.
+
+    Written for `jim/engaged.py`'s undo trail and missing long before it: a
+    person could record how they felt and had no way to unrecord it, on a
+    screen that also feeds the crisis pipeline. The trend point the check-in
+    left in `continuity` is deliberately not rewound — that is a count, not a
+    record of the moment, and a history that could be edited backwards is a
+    baseline nobody should be judged against.
+    """
+    conn = db.connect()
+    cursor = conn.execute("DELETE FROM checkins WHERE id=? AND user_id=?",
+                          (checkin_id, user_id))
+    conn.commit()
+    return cursor.rowcount > 0
+
+
 def checkins(user_id: str) -> list[dict]:
     rows = db.connect().execute(
         "SELECT * FROM checkins WHERE user_id=? ORDER BY created_at, rowid",
@@ -508,6 +525,21 @@ def update_goal(user_id: str, goal_id: str,
             f"Great job! Goal complete: {goal['title']}. You're on track.",
             area=goal["area"], source="goals"))
     return result
+
+
+def remove_goal(user_id: str, goal_id: str) -> bool:
+    """Delete a goal outright, as against parking it.
+
+    `update_goal` could already set a status, which is what somebody who has
+    given up on a goal wants. This is the other case — a goal set by mistake,
+    or by an engaged session that misread what was asked for — and it is the
+    inverse `engaged.set_goal` records.
+    """
+    conn = db.connect()
+    cursor = conn.execute("DELETE FROM goals WHERE id=? AND user_id=?",
+                          (goal_id, user_id))
+    conn.commit()
+    return cursor.rowcount > 0
 
 
 def goals(user_id: str) -> list[dict]:
@@ -581,6 +613,33 @@ def streak(habit_id: str) -> int:
     return count
 
 
+def remove_habit(user_id: str, habit_id: str) -> bool:
+    """Drop a habit and everything logged against it."""
+    if _habit(user_id, habit_id) is None:
+        return False
+    conn = db.connect()
+    conn.execute("DELETE FROM habit_logs WHERE habit_id=?", (habit_id,))
+    conn.execute("DELETE FROM habits WHERE id=? AND user_id=?",
+                 (habit_id, user_id))
+    conn.commit()
+    return True
+
+
+def unlog_habit(user_id: str, habit_id: str, day: date) -> dict | None:
+    """Untick one day. The streak is recomputed rather than decremented —
+    removing a day out of the middle does not shorten a streak by one, it
+    breaks it, and arithmetic on the count would quietly disagree with the
+    days on record."""
+    if _habit(user_id, habit_id) is None:
+        return None
+    conn = db.connect()
+    conn.execute("DELETE FROM habit_logs WHERE habit_id=? AND day=?",
+                 (habit_id, day.isoformat()))
+    conn.commit()
+    return {"habit_id": habit_id, "day": day.isoformat(),
+            "streak": streak(habit_id)}
+
+
 def habits(user_id: str) -> list[dict]:
     rows = db.connect().execute(
         "SELECT * FROM habits WHERE user_id=? ORDER BY created_at, rowid",
@@ -623,6 +682,23 @@ def journal_entries(user_id: str, pdi=None) -> list[dict]:
             item["text"] = json.loads(raw)["text"] if raw else None
         out.append(item)
     return out
+
+
+def remove_journal(user_id: str, entry_id: str) -> bool:
+    """Delete a journal entry.
+
+    A sealed entry's *text* lives in the PDI vault and only its key lives
+    here, so this drops the key and the vault holds a ciphertext nobody can
+    name. That is the vault's own erasure story (`DELETE /data/{user_id}` is
+    the door that empties it), not something a single entry's delete should
+    reach across the tandem to do — and pretending otherwise would be the
+    worse lie: a "deleted" that quietly depends on a second product being up.
+    """
+    conn = db.connect()
+    cursor = conn.execute("DELETE FROM journal WHERE id=? AND user_id=?",
+                          (entry_id, user_id))
+    conn.commit()
+    return cursor.rowcount > 0
 
 
 def add_feedback(user_id: str, rating: str, note: str | None) -> dict:

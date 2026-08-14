@@ -53,6 +53,24 @@ export function Checkin() {
               {result.guardian.guidance?.content && <p>{result.guardian.guidance.content}</p>}
             </div>
           ) : <div className="ok-note" style={{ marginTop: 10 }}>{tr("chk.noconcern", lang)}</div>}
+          {/* Until an engaged session needed a way to undo one, nothing in
+              this product could delete a check-in: a person could say how
+              they felt and had no way to unsay it. */}
+          {result.id && (
+            <button style={{ marginTop: 10 }} disabled={busy}
+                    onClick={async () => {
+                      if (!session.userId || !session.userToken) return;
+                      setBusy(true);
+                      try {
+                        await api.removeCheckin(session.userId,
+                          String(result.id), session.userToken);
+                        setResult(null);
+                      } catch (e) { setError((e as Error).message); }
+                      finally { setBusy(false); }
+                    }}>
+              {tr("chk.remove", lang)}
+            </button>
+          )}
         </div>
       )}
     </div>

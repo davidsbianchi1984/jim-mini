@@ -45,6 +45,22 @@ struct CheckinView: View {
                     }.card()
                 }
 
+                // Until an engaged session needed a way to undo one, nothing
+                // in this product could delete a check-in: a person could say
+                // how they felt and had no way to unsay it, on the screen that
+                // also feeds the crisis pipeline.
+                if let logged = result {
+                    Button(L10n.t("chk.remove", state.language)) {
+                        Task {
+                            guard let uid = state.uid, let token = state.token
+                            else { return }
+                            try? await ApiClient.shared.removeCheckin(
+                                uid: uid, token: token, checkinId: logged.id)
+                            result = nil
+                        }
+                    }.font(.caption).foregroundStyle(Theme.t2).disabled(busy)
+                }
+
                 // The wellness protocols sit with the pulse they steady.
                 WellnessCard()
             }.padding(20)

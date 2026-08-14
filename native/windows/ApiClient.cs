@@ -112,6 +112,116 @@ public record CustodyProvenance(
     [property: JsonPropertyName("audit")] CustodyAudit? Audit,
     [property: JsonPropertyName("chain")] CustodyChain? Chain);
 
+// --- engaged sessions (jim/engaged.py) -------------------------------------
+//
+// `Coach` is a turn. These are a session: open until sign-off, able to act on
+// this person's own records while it is open, and every act landing on a trail
+// with the request that would take it back.
+//
+// `Reversible` and `IrreversibleBecause` are carried separately rather than
+// derived from one another. An act that acted and can no longer be taken back
+// is a real third state — already undone, or one whose way back the backend
+// could not build — and a screen rendering `!Reversible` as "irreversible"
+// would tell somebody their journal entry had left the app.
+public record EngagedTool(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("says")] string Says,
+    [property: JsonPropertyName("acts")] bool Acts,
+    [property: JsonPropertyName("reversible")] bool Reversible,
+    [property: JsonPropertyName("irreversible_because")] string? IrreversibleBecause);
+
+public record EngagedReach(
+    [property: JsonPropertyName("can")] EngagedTool[] Can,
+    [property: JsonPropertyName("tools_per_turn")] int ToolsPerTurn,
+    [property: JsonPropertyName("acts_per_session")] int ActsPerSession,
+    [property: JsonPropertyName("watch_ceiling")] int WatchCeiling);
+
+public record EngagedStep(
+    [property: JsonPropertyName("tool")] string? Tool,
+    [property: JsonPropertyName("answered")] int? Answered,
+    [property: JsonPropertyName("says")] string? Says,
+    [property: JsonPropertyName("acts")] bool Acts,
+    [property: JsonPropertyName("reversible")] bool Reversible,
+    [property: JsonPropertyName("irreversible_because")] string? IrreversibleBecause,
+    [property: JsonPropertyName("refused")] string? Refused);
+
+public record EngagedAct(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("tool")] string Tool,
+    [property: JsonPropertyName("says")] string Says,
+    [property: JsonPropertyName("answered")] int Answered,
+    [property: JsonPropertyName("created_at")] string CreatedAt,
+    [property: JsonPropertyName("undone_at")] string? UndoneAt,
+    [property: JsonPropertyName("reversible")] bool Reversible,
+    [property: JsonPropertyName("irreversible_because")] string? IrreversibleBecause);
+
+public record StandingWatch(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("topic")] string Topic,
+    [property: JsonPropertyName("area")] string? Area,
+    [property: JsonPropertyName("created_at")] string CreatedAt);
+
+public record EngagedSessionTurn(
+    [property: JsonPropertyName("role")] string Role,
+    [property: JsonPropertyName("content")] string Content,
+    [property: JsonPropertyName("created_at")] string CreatedAt);
+
+public record EngagedSession(
+    [property: JsonPropertyName("engaged")] bool Engaged,
+    [property: JsonPropertyName("id")] string? Id,
+    [property: JsonPropertyName("area")] string? Area,
+    [property: JsonPropertyName("turns")] EngagedSessionTurn[] Turns,
+    [property: JsonPropertyName("acted")] EngagedAct[] Acted,
+    [property: JsonPropertyName("watches")] StandingWatch[] Watches);
+
+public record EngagedProvenance(
+    [property: JsonPropertyName("generated_by")] string GeneratedBy,
+    [property: JsonPropertyName("degraded")] bool Degraded,
+    [property: JsonPropertyName("degraded_reason")] string? DegradedReason);
+
+public record EngagedTurnResult(
+    [property: JsonPropertyName("engagement_id")] string EngagementId,
+    [property: JsonPropertyName("reply")] string Reply,
+    // `did`, not `acted`: a session's `acted` is the trail of completed
+    // changes, and a turn's list includes refusals, which are not acts. One
+    // name may not carry two shapes on the wire.
+    [property: JsonPropertyName("did")] EngagedStep[] Did,
+    [property: JsonPropertyName("stopped")] string? Stopped,
+    [property: JsonPropertyName("engaged")] bool Engaged,
+    [property: JsonPropertyName("watches")] StandingWatch[] Watches,
+    [property: JsonPropertyName("provenance")] EngagedProvenance Provenance);
+
+public record EngagedSignOff(
+    [property: JsonPropertyName("engagement_id")] string EngagementId,
+    [property: JsonPropertyName("signed_off")] bool SignedOff,
+    [property: JsonPropertyName("deposited")] int Deposited,
+    [property: JsonPropertyName("watches")] StandingWatch[] Watches);
+
+public record EngagedUndone(
+    [property: JsonPropertyName("act_id")] string ActId,
+    [property: JsonPropertyName("undone")] bool Undone,
+    [property: JsonPropertyName("tool")] string Tool,
+    [property: JsonPropertyName("says")] string Says);
+
+public record WatchCleared(
+    [property: JsonPropertyName("watch_id")] string WatchId,
+    [property: JsonPropertyName("cleared")] bool Cleared,
+    [property: JsonPropertyName("topic")] string Topic);
+
+/// The acknowledgement every `remove` door answers with. One shape rather than
+/// five near-identical ones: what a caller reads is `removed`, and the id it
+/// echoes back is already the id the caller sent.
+public record Removed(
+    [property: JsonPropertyName("removed")] bool Yes);
+
+/// What a habit's day answers with, ticked or unticked. `streak` is recomputed
+/// rather than adjusted — removing a day out of the middle does not shorten a
+/// streak by one, it breaks it.
+public record HabitLogged(
+    [property: JsonPropertyName("habit_id")] string HabitId,
+    [property: JsonPropertyName("day")] string Day,
+    [property: JsonPropertyName("streak")] int Streak);
+
 public record Guidance(
     [property: JsonPropertyName("delivered")] bool Delivered,
     [property: JsonPropertyName("source")] string? Source,
@@ -785,6 +895,87 @@ public sealed class ApiClient
                                                   string area, string message) =>
         Send<SpecialistAnswer>(Post($"/coach/{uid}/specialist",
             new { area, message }, token));
+
+    // --- engaged sessions -------------------------------------------------
+    //
+    // The session you leave running. See jim/engaged.py for what it may touch
+    // and why the reach is a written list rather than this token's full
+    // authority.
+
+    /// <summary>
+    /// What an engaged session can do to you, in sentences. No token,
+    /// deliberately: this is how somebody decides whether to open one at all,
+    /// and a list of what a feature would be allowed to touch is not the
+    /// feature.
+    /// </summary>
+    public Task<EngagedReach> EngagedReach() =>
+        Send<EngagedReach>(new HttpRequestMessage(HttpMethod.Get, "/engaged/reach"));
+
+    public Task<EngagedSession> Engaged(string uid, string token) =>
+        Send<EngagedSession>(Get($"/engaged/{uid}", token));
+
+    public Task<EngagedSession> Engage(string uid, string token,
+                                       string area = "personal_growth") =>
+        Send<EngagedSession>(Post($"/engaged/{uid}", new { area }, token));
+
+    public Task<EngagedTurnResult> EngagedTurn(string uid, string token,
+                                               string message) =>
+        Send<EngagedTurnResult>(Post($"/engaged/{uid}/turn",
+            new { message }, token));
+
+    /// <summary>
+    /// End the engagement and hand it over. <c>topics</c> becomes the standing
+    /// watch list the offline Guardian keeps while this person is away.
+    /// </summary>
+    public Task<EngagedSignOff> EngagedSignOff(string uid, string token,
+                                               string[] topics) =>
+        Send<EngagedSignOff>(Post($"/engaged/{uid}/sign-off",
+            new { topics }, token));
+
+    public Task<EngagedAct[]> EngagedActs(string uid, string token) =>
+        Send<EngagedAct[]>(Get($"/engaged/{uid}/acts", token));
+
+    /// Take one act back, through the door that would have undone it by hand.
+    public Task<EngagedUndone> EngagedUndo(string uid, string token,
+                                           string actId) =>
+        Send<EngagedUndone>(new HttpRequestMessage(HttpMethod.Post,
+            $"/engaged/{uid}/acts/{actId}/undo"), token);
+
+    public Task<StandingWatch[]> EngagedWatches(string uid, string token) =>
+        Send<StandingWatch[]>(Get($"/engaged/{uid}/watches", token));
+
+    public Task<StandingWatch> EngagedWatch(string uid, string token,
+                                            string topic) =>
+        Send<StandingWatch>(Post($"/engaged/{uid}/watches", new { topic }, token));
+
+    public Task<WatchCleared> EngagedClearWatch(string uid, string token,
+                                                string watchId) =>
+        Send<WatchCleared>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/engaged/{uid}/watches/{watchId}"), token);
+
+    // The ways back the undo trail replays — and doors a person should always
+    // have had. Until an engaged session needed to take a check-in back,
+    // nothing in this product could delete one.
+    public Task<Removed> RemoveCheckin(string uid, string token, string checkinId) =>
+        Send<Removed>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/checkin/{uid}/{checkinId}"), token);
+
+    public Task<Removed> RemoveJournal(string uid, string token, string entryId) =>
+        Send<Removed>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/journal/{uid}/{entryId}"), token);
+
+    public Task<Removed> RemoveGoal(string uid, string token, string goalId) =>
+        Send<Removed>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/goals/{uid}/{goalId}"), token);
+
+    public Task<Removed> RemoveHabit(string uid, string token, string habitId) =>
+        Send<Removed>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/habits/{uid}/{habitId}"), token);
+
+    public Task<HabitLogged> UnlogHabit(string uid, string token,
+                                        string habitId, string day) =>
+        Send<HabitLogged>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/habits/{uid}/{habitId}/log/{day}"), token);
 
     public Task<Guidance> Coach(string uid, string token, string area, string message) =>
         Send<Guidance>(Post($"/coach/{uid}", new { area, message }, token));

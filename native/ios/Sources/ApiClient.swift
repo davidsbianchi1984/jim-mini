@@ -59,6 +59,137 @@ struct Guidance: Decodable {
 // The offline coach's store and syllabus (jim/pipeline.py): what the
 // stack predicts from, what JIM should study next, and what one press
 // of study did.
+// MARK: - engaged sessions (jim/engaged.py)
+//
+// `coach` above is a turn. These are a session: open until sign-off, able to
+// act on this person's own records while it is open, and every act landing on
+// a trail with the request that would take it back.
+//
+// `reversible` and `irreversible_because` are carried separately rather than
+// derived from one another. An act that acted and can no longer be taken back
+// is a real third state — already undone, or one whose way back the backend
+// could not build — and a screen rendering `!reversible` as "irreversible"
+// would tell somebody their journal entry had left the app.
+
+struct EngagedTool: Decodable, Identifiable {
+    let name: String
+    let says: String
+    let acts: Bool
+    let reversible: Bool
+    let irreversible_because: String?
+    var id: String { name }
+}
+
+struct EngagedReach: Decodable {
+    let can: [EngagedTool]
+    let tools_per_turn: Int
+    let acts_per_session: Int
+    let watch_ceiling: Int
+}
+
+struct EngagedStep: Decodable, Identifiable {
+    let tool: String?
+    let answered: Int?
+    let says: String?
+    let acts: Bool?
+    let reversible: Bool?
+    let irreversible_because: String?
+    let refused: String?
+    var id: String { (tool ?? "?") + (refused ?? "") + String(answered ?? 0) }
+}
+
+struct EngagedAct: Decodable, Identifiable {
+    let id: String
+    let tool: String
+    let says: String
+    let answered: Int
+    let created_at: String
+    let undone_at: String?
+    let reversible: Bool
+    let irreversible_because: String?
+}
+
+struct StandingWatch: Decodable, Identifiable {
+    let id: String
+    let topic: String
+    let area: String?
+    let created_at: String
+    let cleared_at: String?
+    let engagement_id: String?
+}
+
+struct EngagedSessionTurn: Decodable, Identifiable {
+    let role: String
+    let content: String
+    let created_at: String
+    var id: String { created_at + role }
+}
+
+struct EngagedSession: Decodable {
+    let engaged: Bool
+    let id: String?
+    let area: String?
+    let opened_at: String?
+    let turns: [EngagedSessionTurn]
+    let acted: [EngagedAct]
+    let watches: [StandingWatch]
+}
+
+struct EngagedProvenance: Decodable {
+    let generated_by: String
+    let degraded: Bool
+    let degraded_reason: String?
+}
+
+struct EngagedTurnResult: Decodable {
+    let engagement_id: String
+    let reply: String
+    // `did`, not `acted`: a session's `acted` is the trail of completed
+    // changes, and a turn's list includes refusals, which are not acts. One
+    // name may not carry two shapes on the wire.
+    let did: [EngagedStep]
+    let stopped: String?
+    let engaged: Bool
+    let watches: [StandingWatch]
+    let provenance: EngagedProvenance
+}
+
+struct EngagedSignOff: Decodable {
+    let engagement_id: String
+    let signed_off: Bool
+    let deposited: Int
+    let watches: [StandingWatch]
+    let acted: [EngagedAct]
+}
+
+struct EngagedUndone: Decodable {
+    let act_id: String
+    let undone: Bool
+    let answered: Int
+    let tool: String
+    let says: String
+}
+
+/// The acknowledgement every `remove` door answers with. One shape rather
+/// than five near-identical ones: what a caller reads is `removed`, and the
+/// id it echoes back is already the id the caller sent.
+struct Removed: Decodable { let removed: Bool }
+
+/// What a habit's day answers with, ticked or unticked. `streak` is
+/// recomputed rather than adjusted — removing a day out of the middle does
+/// not shorten a streak by one, it breaks it.
+struct HabitLogged: Decodable {
+    let habit_id: String
+    let day: String
+    let streak: Int
+}
+
+struct WatchCleared: Decodable {
+    let watch_id: String
+    let cleared: Bool
+    let topic: String
+}
+
 struct CoachStoreEntry: Decodable {
     let topic: String
     let lesson: String
@@ -936,6 +1067,111 @@ actor ApiClient {
     func checkin(uid: String, token: String, mood: Int, energy: Int, note: String) async throws -> CheckinResult {
         try await request("/checkin/\(uid)", method: "POST",
                           body: ["mood": mood, "energy": energy, "note": note], token: token)
+    }
+
+    // MARK: engaged sessions
+    //
+    // The session you leave running. See jim/engaged.py for what it may
+    // touch and why the reach is a written list rather than this token's
+    // full authority.
+
+    /// What an engaged session can do to you, in sentences.
+    ///
+    /// No token, deliberately: this is how somebody decides whether to open
+    /// one at all, and a list of what a feature would be allowed to touch is
+    /// not the feature.
+    func engagedReach() async throws -> EngagedReach {
+        try await request("/engaged/reach")
+    }
+
+    func engaged(uid: String, token: String) async throws -> EngagedSession {
+        try await request("/engaged/\(uid)", token: token)
+    }
+
+    func engage(uid: String, token: String,
+                area: String = "personal_growth") async throws -> EngagedSession {
+        try await request("/engaged/\(uid)", method: "POST",
+                          body: ["area": area], token: token)
+    }
+
+    func engagedTurn(uid: String, token: String,
+                     message: String) async throws -> EngagedTurnResult {
+        try await request("/engaged/\(uid)/turn", method: "POST",
+                          body: ["message": message], token: token)
+    }
+
+    /// End the engagement and hand it over. `topics` becomes the standing
+    /// watch list the offline Guardian keeps while this person is away.
+    func engagedSignOff(uid: String, token: String,
+                        topics: [String]) async throws -> EngagedSignOff {
+        try await request("/engaged/\(uid)/sign-off", method: "POST",
+                          body: ["topics": topics], token: token)
+    }
+
+    func engagedActs(uid: String, token: String) async throws -> [EngagedAct] {
+        try await request("/engaged/\(uid)/acts", token: token)
+    }
+
+    /// Take one act back, through the door that would have undone it by hand.
+    func engagedUndo(uid: String, token: String,
+                     actId: String) async throws -> EngagedUndone {
+        try await request("/engaged/\(uid)/acts/\(actId)/undo",
+                          method: "POST", token: token)
+    }
+
+    func engagedWatches(uid: String, token: String) async throws -> [StandingWatch] {
+        try await request("/engaged/\(uid)/watches", token: token)
+    }
+
+    func engagedWatch(uid: String, token: String,
+                      topic: String) async throws -> StandingWatch {
+        try await request("/engaged/\(uid)/watches", method: "POST",
+                          body: ["topic": topic], token: token)
+    }
+
+    @discardableResult
+    func engagedClearWatch(uid: String, token: String,
+                           watchId: String) async throws -> WatchCleared {
+        try await request("/engaged/\(uid)/watches/\(watchId)",
+                          method: "DELETE", token: token)
+    }
+
+    // The ways back the undo trail replays — and doors a person should
+    // always have had. Until an engaged session needed to take a check-in
+    // back, nothing in this product could delete one.
+    @discardableResult
+    func removeCheckin(uid: String, token: String,
+                       checkinId: String) async throws -> Removed {
+        try await request("/checkin/\(uid)/\(checkinId)",
+                          method: "DELETE", token: token)
+    }
+
+    @discardableResult
+    func removeJournal(uid: String, token: String,
+                       entryId: String) async throws -> Removed {
+        try await request("/journal/\(uid)/\(entryId)",
+                          method: "DELETE", token: token)
+    }
+
+    @discardableResult
+    func removeGoal(uid: String, token: String,
+                    goalId: String) async throws -> Removed {
+        try await request("/goals/\(uid)/\(goalId)", method: "DELETE",
+                          token: token)
+    }
+
+    @discardableResult
+    func removeHabit(uid: String, token: String,
+                     habitId: String) async throws -> Removed {
+        try await request("/habits/\(uid)/\(habitId)", method: "DELETE",
+                          token: token)
+    }
+
+    @discardableResult
+    func unlogHabit(uid: String, token: String, habitId: String,
+                    day: String) async throws -> HabitLogged {
+        try await request("/habits/\(uid)/\(habitId)/log/\(day)",
+                          method: "DELETE", token: token)
     }
 
     func coach(uid: String, token: String, area: String, message: String) async throws -> Guidance {

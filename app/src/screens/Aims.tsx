@@ -131,6 +131,16 @@ export function Aims() {
                         uid!, g.id, { status: "done" }, token!))}>
                 {tr("aim.goals.done", lang)}
               </button>
+              {/* Parking a goal and deleting one are different things, and
+                  until now only the first had a door: a goal set by mistake
+                  could be marked abandoned and never removed. */}
+              <button disabled={busy}
+                      onClick={() => run(async () => {
+                        await api.removeGoal(uid!, g.id, token!);
+                        setGoals(await api.goals(uid!, token!));
+                      })}>
+                {tr("aim.goals.remove", lang)}
+              </button>
             </div>
           </div>
         ))}
@@ -159,6 +169,24 @@ export function Aims() {
             <button disabled={busy}
                     onClick={() => run(() => api.logHabit(uid!, h.id, token!))}>
               {tr("aim.habits.did", lang)}
+            </button>
+            {/* A mis-tapped tick, and the way back from an engaged session
+                that ticked it for you. */}
+            <button disabled={busy}
+                    onClick={() => run(async () => {
+                      await api.unlogHabit(
+                        uid!, h.id, new Date().toISOString().slice(0, 10),
+                        token!);
+                      setHabits(await api.habits(uid!, token!));
+                    })}>
+              {tr("aim.habits.undid", lang)}
+            </button>
+            <button disabled={busy}
+                    onClick={() => run(async () => {
+                      await api.removeHabit(uid!, h.id, token!);
+                      setHabits(await api.habits(uid!, token!));
+                    })}>
+              {tr("aim.habits.drop", lang)}
             </button>
           </div>
         ))}

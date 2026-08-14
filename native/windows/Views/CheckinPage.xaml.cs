@@ -20,6 +20,7 @@ public sealed partial class CheckinPage : Page
         // language changes, and this heading was the English one.
         TitleText.Text = L10n.T("tab.checkin");
         PitchText.Text = L10n.T("ci.pitch");
+        TakeBackButton.Content = L10n.T("chk.remove");
         Mood.Header = L10n.T("ci.mood");
         Energy.Header = L10n.T("ci.energy");
         NoteBox.Header = L10n.T("ci.note");
@@ -185,6 +186,8 @@ public sealed partial class CheckinPage : Page
         {
             var r = await ApiClient.Shared.Checkin(s.Uid!, s.Token!,
                 (int)Mood.Value, (int)Energy.Value, NoteBox.Text);
+            _lastCheckin = r.Id;
+            TakeBackButton.Visibility = Visibility.Visible;
             var guidance = r.Guardian?.Guidance?.Content;
             if (!string.IsNullOrEmpty(guidance))
             {
@@ -215,4 +218,24 @@ public sealed partial class CheckinPage : Page
             LogButton.IsEnabled = true;
         }
     }
+
+    /// The id of the check-in just logged, so it can be taken back. Held
+    /// rather than re-fetched: what a person means by "that one" is the one
+    /// they are looking at.
+    private string? _lastCheckin;
+
+    private async void OnTakeBack(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (_lastCheckin is null || s.Uid is null || s.Token is null) return;
+        try
+        {
+            await ApiClient.Shared.RemoveCheckin(s.Uid, s.Token, _lastCheckin);
+            _lastCheckin = null;
+            TakeBackButton.Visibility = Visibility.Collapsed;
+            GuidanceCard.Visibility = Visibility.Collapsed;
+        }
+        catch { /* the card keeps its state */ }
+    }
+
 }

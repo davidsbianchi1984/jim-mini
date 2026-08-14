@@ -44,6 +44,15 @@
                                FontSize="14" TextWrapping="Wrap" />
                     <TextBlock x:Name="GuidanceRefs" Foreground="{StaticResource JimGreenBrush}"
                                FontSize="12" TextWrapping="Wrap" Visibility="Collapsed" />
+                    <!-- Until an engaged session needed a way to undo one,
+                         nothing in this product could delete a check-in: a
+                         person could say how they felt and had no way to
+                         unsay it, on the screen that also feeds the crisis
+                         pipeline. -->
+                    <Button x:Name="TakeBackButton" Click="OnTakeBack"
+                            Background="Transparent" FontSize="12"
+                            Visibility="Collapsed"
+                            Foreground="{StaticResource JimT2Brush}" />
                 </StackPanel>
             </Border>
 

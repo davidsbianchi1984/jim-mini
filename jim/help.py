@@ -45,6 +45,12 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
     ("coach", "advice", "talk", "voice", "speak"):
         "Coach is the 24/7 conversation — type or press “Talk to "
         "it” and speak; it answers out loud when you spoke first.",
+    ("engaged", "engage", "session", "sign off", "signoff", "undo",
+     "take it back", "watch for", "leave it running"):
+        "Engaged is the session you leave running — it stays open until you "
+        "sign off, does things for you while it is open, and lists every "
+        "change with the way back beside it. Sign off and the offline coach "
+        "keeps an eye on whatever you named.",
     ("check-in", "checkin", "mood", "energy"):
         "Check-in is the daily minute: mood, energy, and a note if you "
         "want — the Guardian reads it the way it reads a reading.",

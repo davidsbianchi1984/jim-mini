@@ -495,6 +495,28 @@ LESSONS: tuple[dict, ...] = (
               "was recorded sit below the fold, history under the urgent.",
          screens=(102,),
          try_it="Read what Get help now will do before you need it."),
+    dict(key="engaged", chapter="Being looked after",
+         title="Leaving it engaged",
+         what="The coach answers one turn at a time. An engaged session is "
+              "the other thing: you open it and it stays open — through "
+              "closing the app, through tomorrow — until you sign off. While "
+              "it is open it can do things rather than describe them: write "
+              "in your journal, set you a goal, move one along, tick off a "
+              "habit, book something, change how it talks to you. What it "
+              "may touch is a written list you can read before you open one, "
+              "and nothing on it raises an alarm, moves money, or ends "
+              "anything — those doors are not on the list at all. Everything "
+              "it changes lands on a trail with the way back beside it, so "
+              "you can take any of it back afterwards. One thing cannot be "
+              "taken back and says so: putting your question to a specialist "
+              "outside JIM, because nothing here can unsay what somebody "
+              "else has read. Signing off is a handover, not a close — what "
+              "the session was about goes to the offline coach, and anything "
+              "you name on the way out becomes something the Guardian keeps "
+              "an eye on and raises unprompted while you are away.",
+         screens=(109,),
+         try_it="Open Engaged and read the list of what it can touch before "
+                "you press Engage."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

@@ -1904,6 +1904,22 @@ SCREENS = [
         dict(icon="warn", color="amber", k="Becomes tracked work",
              s="a ledger that only shrinks"),
     ], button=("Send the report", "brand")),
+    # 109 — the online Guardian you leave running (jim/engaged.py). The card
+    # order is the argument: what it may touch first, then what it did with
+    # the way back, then the handover. A screen that led with the chat box
+    # would be selling the conversation and burying the terms.
+    dict(num=109, title="Engaged",
+         sub="Open until you sign off",
+         accent="violet", cards=[
+        dict(icon="chat", color="violet", k="Stays open",
+             s="through closing the app, until you sign off"),
+        dict(icon="lock", color="brand", k="A written list, not your account",
+             s="no alarm, no money, nothing that ends anything"),
+        dict(icon="check", color="green", k="Everything it did, with the way back",
+             s="one press takes an act back"),
+        dict(icon="leaf", color="cyan", k="Signing off is a handover",
+             s="the offline coach keeps watching what you named"),
+    ], button=("Engage", "brand")),
 ]
 
 

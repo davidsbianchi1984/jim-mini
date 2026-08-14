@@ -25,9 +25,17 @@ public sealed partial class ShellPage : Page
                 // `tab.presence` row would put the same English under two
                 // keys in one table — the defect the 0.48.0 sweep spent a
                 // round removing.
-                nvi.Content = tag == "presence"
-                    ? L10n.T("presence.tab")
-                    : L10n.T($"tab.{tag}");
+                //
+                // `engaged` is the second exception and arrives for the same
+                // reason: its label is `eng.tab`, shared byte-for-byte with
+                // the other two shells, and a `tab.engaged` row would be the
+                // same English under two keys again.
+                nvi.Content = tag switch
+                {
+                    "presence" => L10n.T("presence.tab"),
+                    "engaged" => L10n.T("eng.tab"),
+                    _ => L10n.T($"tab.{tag}"),
+                };
         // Not a menu item: this one sits in the pane footer, which the loop
         // above does not walk. It said "Sign out" in every language until this
         // round — and the sibling product found and fixed exactly this two
@@ -47,6 +55,8 @@ public sealed partial class ShellPage : Page
             case "monitor": ContentFrame.Navigate(typeof(MonitorPage)); break;
             case "checkin": ContentFrame.Navigate(typeof(CheckinPage)); break;
             case "coach": ContentFrame.Navigate(typeof(CoachPage)); break;
+            // The coach answers a turn; this one stays engaged and can act.
+            case "engaged": ContentFrame.Navigate(typeof(EngagedPage)); break;
             // The coach answers; the presence speaks first.
             case "presence": ContentFrame.Navigate(typeof(PresencePage)); break;
             case "life": ContentFrame.Navigate(typeof(LifePage)); break;

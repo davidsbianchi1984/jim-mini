@@ -1612,6 +1612,18 @@ fun CheckinScreen(vm: GuardianViewModel) {
                 GuidanceExtras(g, vm.language)
             }
         }
+        // Until an engaged session needed a way to undo one, nothing in this
+        // product could delete a check-in: a person could say how they felt
+        // and had no way to unsay it, on the screen that also feeds the
+        // crisis pipeline.
+        result?.let { r ->
+            TextButton(enabled = !busy, onClick = {
+                busy = true
+                vm.call({ ApiClient.removeCheckin(vm.uid!!, vm.token!!, r.id) }) {
+                    result = null; busy = false
+                }
+            }) { Text(L10n.t("chk.remove", vm.language), color = Jim.T2, fontSize = 12.sp) }
+        }
         // The wellness protocols sit with the pulse they steady.
         WellnessPanel(vm)
     }
@@ -1861,6 +1873,15 @@ private fun GoalsPanel(vm: GuardianViewModel) {
                             g.id, 1.0, "completed") }) { busy = false; reload() }
                     }
                 }
+                // Parking a goal and deleting one are different things, and
+                // until now only the first had a door: a goal set by mistake
+                // could be marked abandoned and never removed.
+                SmallAction(L10n.t("aim.goals.remove", vm.language), enabled = !busy) {
+                    busy = true
+                    vm.call({ ApiClient.removeGoal(vm.uid!!, vm.token!!, g.id) }) {
+                        busy = false; reload()
+                    }
+                }
             }
         }
         // Interview drills: deal, answer, and the reading names who made
@@ -1924,6 +1945,15 @@ private fun HabitsPanel(vm: GuardianViewModel) {
                 TextButton(onClick = {
                     vm.call({ ApiClient.logHabit(vm.uid!!, vm.token!!, h.id) }) { reload() }
                 }) { Text(L10n.t("habit.log", vm.language), color = Jim.BrandA, fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+                // A mis-tapped tick, and the way back from an engaged session
+                // that ticked it for you.
+                TextButton(onClick = {
+                    vm.call({ ApiClient.unlogHabit(vm.uid!!, vm.token!!, h.id,
+                        java.time.LocalDate.now().toString()) }) { reload() }
+                }) { Text(L10n.t("aim.habits.undid", vm.language), color = Jim.T2, fontSize = 12.sp) }
+                TextButton(onClick = {
+                    vm.call({ ApiClient.removeHabit(vm.uid!!, vm.token!!, h.id) }) { reload() }
+                }) { Text(L10n.t("aim.habits.drop", vm.language), color = Jim.T2, fontSize = 12.sp) }
             }
         }
     }
@@ -1984,6 +2014,12 @@ private fun JournalPanel(vm: GuardianViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(e.text ?: "—", color = Jim.Txt, fontSize = 14.sp)
                 e.createdAt?.let { Text(it, color = Jim.T3, fontSize = 11.sp) }
+                // Somebody writing their own diary should always have had
+                // this, and it is the way back from an engaged session that
+                // wrote an entry for them.
+                TextButton(onClick = {
+                    vm.call({ ApiClient.removeJournal(vm.uid!!, vm.token!!, e.id) }) { reload() }
+                }) { Text(L10n.t("jrn.remove", vm.language), color = Jim.T2, fontSize = 12.sp) }
             }
         }
     }
@@ -3573,6 +3609,7 @@ fun CareScreen(vm: GuardianViewModel) {
         L10n.t("tab.monitor", vm.language),
         L10n.t("tab.checkin", vm.language),
         L10n.t("tab.coach", vm.language),
+        L10n.t("eng.tab", vm.language),
         L10n.t("presence.tab", vm.language),
         L10n.t("tab.family", vm.language),
     )
@@ -3590,9 +3627,249 @@ fun CareScreen(vm: GuardianViewModel) {
             0 -> MonitorScreen(vm)
             1 -> CheckinScreen(vm)
             2 -> CoachScreen(vm)
+            // The coach answers a turn; this one stays engaged and can act.
+            3 -> EngagedScreen(vm)
             // The coach answers; the presence speaks first.
-            3 -> PresencePanel(vm)
+            4 -> PresencePanel(vm)
             else -> FamilyPanel(vm)
+        }
+    }
+}
+
+// ---- engaged: the Guardian you leave running ----
+
+/**
+ * `CoachScreen` is a turn: you ask, it answers, nothing is left holding. This
+ * is a session — open until sign-off, able to act on this person's own records
+ * while it is open, and every act on a trail they can take back.
+ *
+ * Three things this screen owes a person that the backend cannot:
+ *
+ * **The reach comes before the button.** `engagedReach()` carries no token
+ * because it is how somebody decides whether to open one at all, so it renders
+ * above Engage rather than behind a disclosure.
+ *
+ * **An act is never drawn as reversible when it is not.** `reversible` and
+ * `irreversibleBecause` are two fields for a reason: an act that acted and can
+ * no longer be taken back is a real third state, and `!reversible` alone would
+ * tell somebody their journal entry had left the app.
+ *
+ * **Sign-off is a handover.** The topics field sits on the sign-off card,
+ * filled in before the button, because the whole promise is that leaving does
+ * not mean being unwatched.
+ */
+@Composable
+fun EngagedScreen(vm: GuardianViewModel) {
+    var reach by remember { mutableStateOf<EngagedReach?>(null) }
+    var session by remember { mutableStateOf<EngagedSession?>(null) }
+    var acts by remember { mutableStateOf<List<EngagedAct>>(emptyList()) }
+    var watching by remember { mutableStateOf<List<StandingWatch>>(emptyList()) }
+    var said by remember { mutableStateOf("") }
+    var steps by remember { mutableStateOf<List<EngagedStep>>(emptyList()) }
+    var stopped by remember { mutableStateOf<String?>(null) }
+    var degraded by remember { mutableStateOf(false) }
+    var topics by remember { mutableStateOf("") }
+    var newWatch by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    var reloads by remember { mutableStateOf(0) }
+
+    LaunchedEffect(reloads) {
+        val uid = vm.uid ?: return@LaunchedEffect
+        val token = vm.token ?: return@LaunchedEffect
+        reach = runCatching { ApiClient.engagedReach() }.getOrNull()
+        session = runCatching { ApiClient.engaged(uid, token) }.getOrNull()
+        acts = runCatching { ApiClient.engagedActs(uid, token) }.getOrElse { emptyList() }
+        // From the watch list rather than the session's copy of it: this card
+        // shows what is being watched for whether or not anybody is engaged —
+        // that is what makes a watch *standing* — and taking it from the
+        // session would go stale the moment one closed.
+        watching = runCatching { ApiClient.engagedWatches(uid, token) }.getOrElse { emptyList() }
+    }
+
+    val open = session?.engaged == true
+
+    screenScroll {
+        Text(L10n.t("eng.title", vm.language), color = Jim.Txt, fontSize = 22.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("eng.pitch", vm.language), color = Jim.T2, fontSize = 13.sp)
+
+        // What it may do to you, before you let it near anything.
+        reach?.let { r ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("eng.reach", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("eng.reach.note", vm.language), color = Jim.T2, fontSize = 11.sp)
+                r.can.forEach { tool ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            if (tool.acts) L10n.t("eng.acts", vm.language)
+                            else L10n.t("eng.reads", vm.language),
+                            color = if (tool.acts) Jim.Amber else Jim.T2,
+                            fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Column {
+                            Text(tool.says, color = Jim.Txt, fontSize = 12.sp)
+                            if (tool.irreversibleBecause != null) {
+                                Text(L10n.t("eng.forever", vm.language),
+                                    color = Jim.Red, fontSize = 11.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // The session itself.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (!open) {
+                Text(L10n.t("eng.none", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("eng.none.note", vm.language), color = Jim.T2, fontSize = 11.sp)
+                BrandButton(L10n.t("eng.open", vm.language), busy = busy) {
+                    busy = true
+                    vm.call({ ApiClient.engage(vm.uid!!, vm.token!!) }) {
+                        busy = false; reloads++
+                    }
+                }
+            } else {
+                session?.turns?.forEach { turn ->
+                    Text(
+                        if (turn.role == "user") L10n.t("eng.you", vm.language)
+                        else L10n.t("eng.jim", vm.language),
+                        color = Jim.T2, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(turn.content, color = Jim.Txt, fontSize = 14.sp)
+                }
+
+                // What it did this turn, under the reply where it can be
+                // checked. An assistant that changes something and then
+                // describes the change in prose is asking to be believed.
+                steps.forEach { step ->
+                    if (step.refused != null) {
+                        Text(step.refused, color = Jim.Red, fontSize = 11.sp)
+                    } else {
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text("${step.answered ?: 0}", color = Jim.T2,
+                                fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(step.says ?: step.tool ?: "", color = Jim.Txt,
+                                fontSize = 12.sp)
+                            if (step.acts && !step.reversible) {
+                                Text(L10n.t("eng.forever", vm.language),
+                                    color = Jim.Red, fontSize = 11.sp)
+                            }
+                        }
+                    }
+                }
+
+                // The one stop this screen has that the coach does not: the
+                // offline model can answer but cannot act, so a turn it served
+                // says so rather than handing over canned prose from a surface
+                // that acts.
+                if (stopped == "engaged.needs_the_online_model" || degraded) {
+                    Text(L10n.t("eng.offline", vm.language), color = Jim.Amber,
+                        fontSize = 11.sp)
+                }
+
+                labeledField(L10n.t("eng.say", vm.language), said,
+                    L10n.t("eng.say.ph", vm.language)) { said = it }
+                BrandButton(L10n.t("eng.say", vm.language),
+                    enabled = said.isNotBlank(), busy = busy) {
+                    busy = true
+                    val message = said
+                    vm.call({ ApiClient.engagedTurn(vm.uid!!, vm.token!!, message) }) { r ->
+                        r.getOrNull()?.let {
+                            steps = it.acted; stopped = it.stopped
+                            degraded = it.degraded
+                        }
+                        said = ""; busy = false; reloads++
+                    }
+                }
+            }
+        }
+
+        // The undo trail. Shown whether or not a session is open, because the
+        // thing somebody wants to take back is usually noticed afterwards.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(L10n.t("eng.trail", vm.language), color = Jim.Txt, fontSize = 16.sp,
+                fontWeight = FontWeight.Bold)
+            Text(L10n.t("eng.trail.note", vm.language), color = Jim.T2, fontSize = 11.sp)
+            if (acts.isEmpty()) {
+                Text(L10n.t("eng.trail.none", vm.language), color = Jim.T2, fontSize = 12.sp)
+            }
+            acts.forEach { act ->
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(act.says, color = Jim.Txt, fontSize = 12.sp,
+                        modifier = Modifier.weight(1f))
+                    when {
+                        act.undoneAt != null ->
+                            Text(L10n.t("eng.undone", vm.language), color = Jim.T2,
+                                fontSize = 11.sp)
+                        act.reversible ->
+                            TextButton(enabled = !busy, onClick = {
+                                busy = true
+                                vm.call({ ApiClient.engagedUndo(vm.uid!!, vm.token!!, act.id) }) {
+                                    busy = false; reloads++
+                                }
+                            }) {
+                                Text(L10n.t("eng.undo", vm.language), color = Jim.BrandA,
+                                    fontSize = 12.sp)
+                            }
+                        else ->
+                            Text(L10n.t("eng.forever", vm.language), color = Jim.Red,
+                                fontSize = 11.sp)
+                    }
+                }
+            }
+        }
+
+        // Signing off, and what stays behind.
+        if (open) {
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("eng.off", vm.language), color = Jim.Txt, fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold)
+                Text(L10n.t("eng.off.note", vm.language), color = Jim.T2, fontSize = 11.sp)
+                labeledField(L10n.t("eng.off", vm.language), topics,
+                    L10n.t("eng.off.ph", vm.language)) { topics = it }
+                TextButton(enabled = !busy, onClick = {
+                    busy = true
+                    val named = topics.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
+                    vm.call({ ApiClient.engagedSignOff(vm.uid!!, vm.token!!, named) }) {
+                        topics = ""; steps = emptyList(); stopped = null
+                        busy = false; reloads++
+                    }
+                }) { Text(L10n.t("eng.off", vm.language), color = Jim.BrandA, fontSize = 12.sp) }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(L10n.t("eng.watch", vm.language), color = Jim.Txt, fontSize = 16.sp,
+                fontWeight = FontWeight.Bold)
+            Text(L10n.t("eng.watch.note", vm.language), color = Jim.T2, fontSize = 11.sp)
+            if (watching.isEmpty()) {
+                Text(L10n.t("eng.watch.none", vm.language), color = Jim.T2, fontSize = 12.sp)
+            }
+            watching.forEach { w ->
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(w.topic, color = Jim.Txt, fontSize = 12.sp,
+                        modifier = Modifier.weight(1f))
+                    TextButton(enabled = !busy, onClick = {
+                        busy = true
+                        vm.call({ ApiClient.engagedClearWatch(vm.uid!!, vm.token!!, w.id) }) {
+                            busy = false; reloads++
+                        }
+                    }) {
+                        Text(L10n.t("eng.watch.stop", vm.language), color = Jim.T2,
+                            fontSize = 11.sp)
+                    }
+                }
+            }
+            labeledField(L10n.t("eng.watch", vm.language), newWatch,
+                L10n.t("eng.watch.ph", vm.language)) { newWatch = it }
+            TextButton(enabled = !busy && newWatch.isNotBlank(), onClick = {
+                busy = true
+                val topic = newWatch
+                vm.call({ ApiClient.engagedWatch(vm.uid!!, vm.token!!, topic) }) {
+                    newWatch = ""; busy = false; reloads++
+                }
+            }) { Text(L10n.t("eng.open", vm.language), color = Jim.BrandA, fontSize = 12.sp) }
         }
     }
 }

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="JimGuardian.Views.EngagedPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource JimScrBotBrush}">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
+            <TextBlock x:Name="Title" FontSize="22" FontWeight="Bold"
+                       Foreground="{StaticResource JimTxtBrush}" />
+            <TextBlock x:Name="Pitch" Foreground="{StaticResource JimT2Brush}"
+                       FontSize="13" TextWrapping="Wrap" />
+
+            <TextBlock x:Name="ErrorText" Foreground="{StaticResource JimRed}"
+                       FontSize="13" TextWrapping="Wrap" Visibility="Collapsed" />
+
+            <!-- What it may do to you, before you let it near anything. The
+                 reach carries no token because it is how somebody decides
+                 whether to open a session at all, so it sits above the
+                 button rather than behind a disclosure. -->
+            <Border Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="ReachHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="ReachNote" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="12" TextWrapping="Wrap" />
+                    <StackPanel x:Name="ReachList" Spacing="4" />
+                </StackPanel>
+            </Border>
+
+            <!-- The session itself. -->
+            <Border Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="SessionHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="SessionNote" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="12" TextWrapping="Wrap" />
+                    <Button x:Name="EngageButton" HorizontalAlignment="Stretch"
+                            Height="44" Foreground="White" Click="OnEngage">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="{StaticResource JimBrandA}" Offset="0" />
+                                <GradientStop Color="#FF3AA0FF" Offset="1" />
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+
+                    <StackPanel x:Name="Transcript" Spacing="6" Visibility="Collapsed" />
+                    <StackPanel x:Name="Steps" Spacing="4" Visibility="Collapsed" />
+                    <TextBlock x:Name="OfflineNote" Foreground="{StaticResource JimAmber}"
+                               FontSize="12" TextWrapping="Wrap" Visibility="Collapsed" />
+
+                    <TextBox x:Name="SayBox" AcceptsReturn="True" TextWrapping="Wrap"
+                             Height="80" Visibility="Collapsed" />
+                    <Button x:Name="SayButton" HorizontalAlignment="Stretch" Height="40"
+                            Click="OnSay" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+
+            <!-- The undo trail. Shown whether or not a session is open,
+                 because the thing somebody wants to take back is usually
+                 noticed afterwards. -->
+            <Border Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="TrailHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="TrailNote" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="12" TextWrapping="Wrap" />
+                    <StackPanel x:Name="TrailList" Spacing="4" />
+                </StackPanel>
+            </Border>
+
+            <!-- Signing off, and what stays behind. -->
+            <Border x:Name="SignOffCard" Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="SignOffHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="SignOffNote" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="12" TextWrapping="Wrap" />
+                    <TextBox x:Name="TopicsBox" AcceptsReturn="True" TextWrapping="Wrap"
+                             Height="70" />
+                    <Button x:Name="SignOffButton" HorizontalAlignment="Stretch"
+                            Height="40" Click="OnSignOff" />
+                </StackPanel>
+            </Border>
+
+            <Border Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="WatchHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="WatchNote" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="12" TextWrapping="Wrap" />
+                    <StackPanel x:Name="WatchList" Spacing="4" />
+                    <TextBox x:Name="WatchBox" />
+                    <Button x:Name="WatchButton" HorizontalAlignment="Stretch"
+                            Height="36" Click="OnWatch" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

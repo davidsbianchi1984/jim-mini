@@ -20,6 +20,53 @@ data class Custody(val vaulted: Boolean, val pdiKey: String?, val note: String?)
 data class CustodyList(val records: List<String>, val chainIntact: Boolean?)
 data class CustodyProvenance(val origin: String, val cipher: String?,
                              val auditCount: Int, val chainIntact: Boolean?)
+// --- engaged sessions (jim/engaged.py) -------------------------------------
+//
+// `coach` is a turn. These are a session: open until sign-off, able to act on
+// this person's own records while it is open, and every act landing on a
+// trail with the request that would take it back.
+//
+// `reversible` and `irreversibleBecause` are carried separately rather than
+// derived from one another. An act that acted and can no longer be taken back
+// is a real third state — already undone, or one whose way back the backend
+// could not build — and a screen rendering `!reversible` as "irreversible"
+// would tell somebody their journal entry had left the app.
+data class EngagedTool(val name: String, val says: String, val acts: Boolean,
+                       val reversible: Boolean,
+                       val irreversibleBecause: String?)
+
+data class EngagedReach(val can: List<EngagedTool>, val toolsPerTurn: Int,
+                        val actsPerSession: Int, val watchCeiling: Int)
+
+data class EngagedStep(val tool: String?, val answered: Int?, val says: String?,
+                       val acts: Boolean, val reversible: Boolean,
+                       val irreversibleBecause: String?, val refused: String?)
+
+data class EngagedAct(val id: String, val tool: String, val says: String,
+                      val answered: Int, val createdAt: String,
+                      val undoneAt: String?, val reversible: Boolean,
+                      val irreversibleBecause: String?)
+
+data class StandingWatch(val id: String, val topic: String, val area: String?,
+                         val createdAt: String)
+
+data class EngagedTurnRow(val role: String, val content: String,
+                          val createdAt: String)
+
+data class EngagedSession(val engaged: Boolean, val id: String?,
+                          val area: String?,
+                          val turns: List<EngagedTurnRow>,
+                          val acted: List<EngagedAct>,
+                          val watching: List<StandingWatch>)
+
+data class EngagedTurnResult(val reply: String, val acted: List<EngagedStep>,
+                             val stopped: String?, val degraded: Boolean,
+                             val generatedBy: String,
+                             val watching: List<StandingWatch>)
+
+data class EngagedSignOff(val signedOff: Boolean, val deposited: Int,
+                          val watching: List<StandingWatch>)
+
 data class Guidance(val delivered: Boolean, val source: String?, val content: String,
                     val references: List<String> = emptyList(), val firstAid: FirstAid? = null,
                     val provenance: Provenance? = null, val translationNote: String? = null,
@@ -580,6 +627,164 @@ object ApiClient {
             o.optJSONObject("audit")?.optInt("count") ?: 0,
             if (chain == null || chain.isNull("intact")) null
             else chain.getBoolean("intact"))
+    }
+
+    // --- engaged sessions -------------------------------------------------
+    //
+    // The session you leave running. See jim/engaged.py for what it may touch
+    // and why the reach is a written list rather than this token's full
+    // authority.
+
+    private fun watchRow(o: JSONObject) = StandingWatch(
+        o.getString("id"), o.optString("topic", ""),
+        if (o.isNull("area")) null else o.optString("area"),
+        o.optString("created_at", ""))
+
+    private fun actRow(o: JSONObject) = EngagedAct(
+        o.getString("id"), o.optString("tool", ""), o.optString("says", ""),
+        o.optInt("answered"), o.optString("created_at", ""),
+        if (o.isNull("undone_at")) null else o.optString("undone_at"),
+        o.optBoolean("reversible", false),
+        if (o.isNull("irreversible_because")) null
+        else o.optString("irreversible_because"))
+
+    private fun watches(arr: JSONArray?): List<StandingWatch> =
+        (0 until (arr?.length() ?: 0)).map { watchRow(arr!!.getJSONObject(it)) }
+
+    /**
+     * What an engaged session can do to you, in sentences.
+     *
+     * No token, deliberately: this is how somebody decides whether to open
+     * one at all, and a list of what a feature would be allowed to touch is
+     * not the feature.
+     */
+    suspend fun engagedReach(): EngagedReach {
+        val o = request("/engaged/reach")
+        val arr = o.optJSONArray("can") ?: JSONArray()
+        return EngagedReach(
+            (0 until arr.length()).map { i ->
+                val t = arr.getJSONObject(i)
+                EngagedTool(t.getString("name"), t.optString("says", ""),
+                    t.optBoolean("acts", false),
+                    t.optBoolean("reversible", false),
+                    if (t.isNull("irreversible_because")) null
+                    else t.optString("irreversible_because"))
+            },
+            o.optInt("tools_per_turn"), o.optInt("acts_per_session"),
+            o.optInt("watch_ceiling"))
+    }
+
+    private fun session(o: JSONObject): EngagedSession {
+        val turns = o.optJSONArray("turns") ?: JSONArray()
+        val acted = o.optJSONArray("acted") ?: JSONArray()
+        return EngagedSession(
+            o.optBoolean("engaged", false),
+            if (o.isNull("id")) null else o.optString("id"),
+            if (o.isNull("area")) null else o.optString("area"),
+            (0 until turns.length()).map { i ->
+                val t = turns.getJSONObject(i)
+                EngagedTurnRow(t.optString("role", ""), t.optString("content", ""),
+                    t.optString("created_at", ""))
+            },
+            (0 until acted.length()).map { actRow(acted.getJSONObject(it)) },
+            watches(o.optJSONArray("watches")))
+    }
+
+    suspend fun engaged(uid: String, token: String): EngagedSession =
+        session(request("/engaged/$uid", token = token))
+
+    suspend fun engage(uid: String, token: String,
+                       area: String = "personal_growth"): EngagedSession =
+        session(request("/engaged/$uid", "POST",
+            JSONObject().put("area", area), token))
+
+    suspend fun engagedTurn(uid: String, token: String,
+                            message: String): EngagedTurnResult {
+        val o = request("/engaged/$uid/turn", "POST",
+            JSONObject().put("message", message), token)
+        // `did`, not `acted`: a session's `acted` is the trail of completed
+        // changes, and a turn's list includes refusals, which are not acts.
+        val arr = o.optJSONArray("did") ?: JSONArray()
+        val pv = o.optJSONObject("provenance")
+        return EngagedTurnResult(
+            o.optString("reply", ""),
+            (0 until arr.length()).map { i ->
+                val st = arr.getJSONObject(i)
+                EngagedStep(
+                    if (st.isNull("tool")) null else st.optString("tool"),
+                    if (st.isNull("answered")) null else st.optInt("answered"),
+                    if (st.isNull("says")) null else st.optString("says"),
+                    st.optBoolean("acts", false),
+                    st.optBoolean("reversible", false),
+                    if (st.isNull("irreversible_because")) null
+                    else st.optString("irreversible_because"),
+                    if (st.isNull("refused")) null else st.optString("refused"))
+            },
+            if (o.isNull("stopped")) null else o.optString("stopped"),
+            pv?.optBoolean("degraded", false) ?: false,
+            pv?.optString("generated_by", "") ?: "",
+            watches(o.optJSONArray("watches")))
+    }
+
+    /**
+     * End the engagement and hand it over. `topics` becomes the standing
+     * watch list the offline Guardian keeps while this person is away.
+     */
+    suspend fun engagedSignOff(uid: String, token: String,
+                               topics: List<String>): EngagedSignOff {
+        val body = JSONObject().put("topics", JSONArray(topics))
+        val o = request("/engaged/$uid/sign-off", "POST", body, token)
+        return EngagedSignOff(o.optBoolean("signed_off", false),
+            o.optInt("deposited"), watches(o.optJSONArray("watches")))
+    }
+
+    suspend fun engagedActs(uid: String, token: String): List<EngagedAct> {
+        val arr = getArray("/engaged/$uid/acts", token)
+        return (0 until arr.length()).map { actRow(arr.getJSONObject(it)) }
+    }
+
+    /** Take one act back, through the door that would have undone it by hand. */
+    suspend fun engagedUndo(uid: String, token: String, actId: String): Boolean =
+        request("/engaged/$uid/acts/$actId/undo", "POST", token = token)
+            .optBoolean("undone", false)
+
+    suspend fun engagedWatches(uid: String, token: String): List<StandingWatch> {
+        val arr = getArray("/engaged/$uid/watches", token)
+        return (0 until arr.length()).map { watchRow(arr.getJSONObject(it)) }
+    }
+
+    suspend fun engagedWatch(uid: String, token: String,
+                             topic: String): StandingWatch =
+        watchRow(request("/engaged/$uid/watches", "POST",
+            JSONObject().put("topic", topic), token))
+
+    suspend fun engagedClearWatch(uid: String, token: String,
+                                  watchId: String): Boolean =
+        request("/engaged/$uid/watches/$watchId", "DELETE", token = token)
+            .optBoolean("cleared", false)
+
+    // The ways back the undo trail replays — and doors a person should always
+    // have had. Until an engaged session needed to take a check-in back,
+    // nothing in this product could delete one.
+    suspend fun removeCheckin(uid: String, token: String, checkinId: String) {
+        request("/checkin/$uid/$checkinId", "DELETE", token = token)
+    }
+
+    suspend fun removeJournal(uid: String, token: String, entryId: String) {
+        request("/journal/$uid/$entryId", "DELETE", token = token)
+    }
+
+    suspend fun removeGoal(uid: String, token: String, goalId: String) {
+        request("/goals/$uid/$goalId", "DELETE", token = token)
+    }
+
+    suspend fun removeHabit(uid: String, token: String, habitId: String) {
+        request("/habits/$uid/$habitId", "DELETE", token = token)
+    }
+
+    suspend fun unlogHabit(uid: String, token: String, habitId: String,
+                           day: String) {
+        request("/habits/$uid/$habitId/log/$day", "DELETE", token = token)
     }
 
     suspend fun coach(uid: String, token: String, area: String, message: String): Guidance {

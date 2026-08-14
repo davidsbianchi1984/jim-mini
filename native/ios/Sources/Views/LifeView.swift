@@ -124,6 +124,19 @@ private struct GoalsSection: View {
                                 .font(.caption2).foregroundStyle(Theme.green)
                                 .disabled(busy)
                         }
+                        // Parking a goal and deleting one are different
+                        // things, and until now only the first had a door:
+                        // a goal set by mistake could be marked abandoned
+                        // and never removed.
+                        Button(L10n.t("aim.goals.remove", state.language)) {
+                            Task {
+                                guard let uid = state.uid, let token = state.token
+                                else { return }
+                                try? await ApiClient.shared.removeGoal(
+                                    uid: uid, token: token, goalId: g.id)
+                                await load()
+                            }
+                        }.font(.caption2).foregroundStyle(Theme.t2).disabled(busy)
                     }
                 }.card()
             }
@@ -219,6 +232,29 @@ private struct HabitsSection: View {
                         .font(.caption.bold()).foregroundStyle(.white)
                         .padding(.horizontal, 14).padding(.vertical, 8)
                         .background(Theme.brandA).clipShape(Capsule())
+                    // A mis-tapped tick, and the way back from an engaged
+                    // session that ticked it for you.
+                    Button(L10n.t("aim.habits.undid", state.language)) {
+                        Task {
+                            guard let uid = state.uid, let token = state.token
+                            else { return }
+                            let today = ISO8601DateFormatter()
+                                .string(from: Date()).prefix(10)
+                            try? await ApiClient.shared.unlogHabit(
+                                uid: uid, token: token, habitId: h.id,
+                                day: String(today))
+                            await load()
+                        }
+                    }.font(.caption2).foregroundStyle(Theme.t2)
+                    Button(L10n.t("aim.habits.drop", state.language)) {
+                        Task {
+                            guard let uid = state.uid, let token = state.token
+                            else { return }
+                            try? await ApiClient.shared.removeHabit(
+                                uid: uid, token: token, habitId: h.id)
+                            await load()
+                        }
+                    }.font(.caption2).foregroundStyle(Theme.t2)
                 }.card()
             }
         }
@@ -275,6 +311,18 @@ private struct JournalSection: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(e.text ?? "—").font(.subheadline).foregroundStyle(Theme.txt)
                     if let d = e.created_at { Text(d).font(.caption2).foregroundStyle(Theme.t3) }
+                    // Somebody writing their own diary should always have had
+                    // this, and it is the way back from an engaged session
+                    // that wrote an entry for them.
+                    Button(L10n.t("jrn.remove", state.language)) {
+                        Task {
+                            guard let uid = state.uid, let token = state.token
+                            else { return }
+                            try? await ApiClient.shared.removeJournal(
+                                uid: uid, token: token, entryId: e.id)
+                            await load()
+                        }
+                    }.font(.caption2).foregroundStyle(Theme.t2)
                 }.card()
             }
 

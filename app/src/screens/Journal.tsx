@@ -194,6 +194,19 @@ export function Journal() {
               {e.vaulted ? " · sealed in the vault" : ""}
             </div>
             <div>{e.text}</div>
+            {/* Somebody writing their own diary should always have had this,
+                and it is the way back from an engaged session that wrote an
+                entry for them. */}
+            <button disabled={busy}
+                    onClick={async () => {
+                      if (!session.userId || !session.userToken) return;
+                      await api.removeJournal(session.userId, String(e.id),
+                                              session.userToken);
+                      setEntries(await api.journal(session.userId,
+                                                   session.userToken));
+                    }}>
+              {tr("jrn.remove", lang)}
+            </button>
           </div>
         ))}
       </div>

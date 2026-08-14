@@ -4,6 +4,99 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The session you leave running.** Until now this product had one
+  conversational door, `POST /coach/{user_id}`, and it was a *turn*: you said
+  something, it said something, and nothing was left holding. Which model
+  answered depended on `PUT /model/{user_id}`, so "the online one" and "the
+  offline one" were the same route with a different provider behind it —
+  distinguishable only by the amber banner when a turn degraded.
+
+  `jim/engaged.py` is the thing that was missing. `POST /engaged/{user_id}`
+  opens a session; it stays open across turns and through the app being
+  closed, and ends when you sign off rather than when you stop typing. Three
+  consequences:
+
+  - **It does things rather than describing them.** Twenty-six tools —
+    writing a journal entry, setting or moving a goal, starting or ticking a
+    habit, adding a medication, booking something, changing how it talks to
+    you, changing which model answers — each one going through the app's own
+    door with *your* credential forwarded, so its reach is exactly yours and
+    no longer-lived. `GET /engaged/reach` lists them in sentences, carries no
+    token, and is exempt from the plan gate: how somebody decides whether to
+    open one is not the thing being sold.
+  - **Everything it changes can be taken back.** Every acting row declares
+    its own inverse as data — a `remove` that deletes what was created, or a
+    `replace` that reads the prior value *before* the write and replays it
+    after. `GET /engaged/{user_id}/acts` is the trail and
+    `POST /engaged/{user_id}/acts/{act_id}/undo` is the way back. One act
+    cannot be taken back and says so in words: putting your question to a
+    QRME specialist sends your own words outside this product, and nothing
+    here can unsay that.
+  - **Signing off is a handover, not a close.** What the session was about is
+    deposited into the store the offline stack predicts from — the same path
+    a paid coach turn already takes — and anything named on the way out
+    becomes a standing watch: carried into every offline coach answer, and
+    raised unprompted by `presence.beat` above everything the product noticed
+    by itself.
+
+  What it may **never** touch is a carve-out enforced against the registry
+  rather than trusted to review: emergencies, alarms, escalation, the vigil,
+  the crash watch, the beacon, the referral release, every money path,
+  membership, erasure, the synthetic self, and anything belonging to another
+  person. Those are refused by absence — the agent cannot call what is not in
+  the list — and `engaged.NEVER` is checked both ways, so an entry that
+  matches no route fails the suite rather than sitting there looking like a
+  protection.
+
+- **Ways back that were missing long before an undo trail needed them.**
+  `DELETE /journal/{user_id}/{entry_id}`, `DELETE /checkin/{user_id}/{id}`,
+  `DELETE /goals/{user_id}/{goal_id}`, `DELETE /habits/{user_id}/{habit_id}`
+  and `DELETE /habits/{user_id}/{habit_id}/log/{day}`. A person could write
+  in their own diary and had no way to unwrite it; could record how they felt
+  on the screen that feeds the crisis pipeline and had no way to unrecord it;
+  could mark a goal abandoned and never remove it. These are the inverses the
+  trail replays, and each is a door worth having on its own account.
+
+- **All four clients, in the same round.** The console gets screen 109; the
+  iOS, Android and Windows shells each get the same surface — the reach card
+  above the button, the transcript, the undo trail, sign-off with its topics
+  field, and the standing watches. Thirty-four strings in ten languages,
+  emitted into Swift, Kotlin and C# from one source so the three tables cannot
+  drift from each other.
+
+  It landed everywhere at once rather than on the console first, and the
+  reason is the feature's own bargain: full-act autonomy is defensible
+  *because* every act is listed with the way back beside it. A client that
+  could open a session and speak into it but could not show the trail would
+  have taken the permission and dropped the condition it was granted under.
+
+### Changed
+
+- **An engaged turn the offline model served says so instead of answering.**
+  `coach.reply` degrades gracefully — when the stub answers, the offline
+  pipeline takes over and produces something genuinely useful. That is right
+  for a screen whose job is to *say* something. This screen's job is to *do*
+  something, and the stub cannot ask for a tool, so an engaged session on a
+  box with no key would have answered in canned prose, taken no action, and
+  looked exactly like one that had considered the request and decided against
+  it. It now stops with `engaged.needs_the_online_model`, the session stays
+  open, and nothing was changed.
+
+      asked     did the turn come back with text
+      mattered  did the model that can act answer it
+
+- **The refusal audit reads sentences that live in a table.**
+  `test_the_guardian_refuses_in_one_language` walked the AST for
+  `HTTPException` and the domain error classes, which sees a raise site.
+  `engaged` raises a *key* and the handler resolves the sentence afterwards,
+  so sixteen real refusals would have gone out in English while the guard
+  reported zero. Asked whether every refusal *raised with a sentence* was
+  translated; what mattered was every refusal *a person reads*.
+
 ## [0.70.1] - 2026-08-13
 
 **There are no functional changes to JIM-mini in this release**: cut with

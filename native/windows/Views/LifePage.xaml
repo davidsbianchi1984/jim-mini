@@ -79,6 +79,13 @@
                                                 Click="OnGoalDone" Visibility="{Binding DoneVisibility}"
                                                 Background="Transparent" FontSize="12"
                                                 Foreground="{StaticResource JimGreenBrush}" />
+                                        <!-- Parking a goal and deleting one
+                                             are different things, and until
+                                             now only the first had a door. -->
+                                        <Button Content="{Binding RemoveLabel}" Tag="{Binding Id}"
+                                                Click="OnGoalRemove"
+                                                Background="Transparent" FontSize="12"
+                                                Foreground="{StaticResource JimT2Brush}" />
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
@@ -120,9 +127,20 @@
                                                        Foreground="{StaticResource JimTxtBrush}" />
                                             <TextBlock Text="{Binding Streak}" Foreground="{StaticResource JimT2Brush}" FontSize="12" />
                                         </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Center">
                                         <Button Content="{Binding LogLabel}" Tag="{Binding Id}" Click="OnLogHabit"
-                                                HorizontalAlignment="Right" VerticalAlignment="Center"
                                                 Background="Transparent" Foreground="{StaticResource JimBrandABrush}" />
+                                        <!-- A mis-tapped tick, and the way
+                                             back from an engaged session that
+                                             ticked it for you. -->
+                                        <Button Content="{Binding UntickLabel}" Tag="{Binding Id}" Click="OnUntickHabit"
+                                                Background="Transparent" FontSize="12"
+                                                Foreground="{StaticResource JimT2Brush}" />
+                                        <Button Content="{Binding DropLabel}" Tag="{Binding Id}" Click="OnDropHabit"
+                                                Background="Transparent" FontSize="12"
+                                                Foreground="{StaticResource JimT2Brush}" />
+                                        </StackPanel>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -176,6 +194,12 @@
                                             <TextBlock Text="{Binding Text}" Foreground="{StaticResource JimTxtBrush}"
                                                        TextWrapping="Wrap" FontSize="13" />
                                             <TextBlock Text="{Binding Date}" Foreground="{StaticResource JimT2Brush}" FontSize="11" />
+                                        <!-- Somebody writing their own diary
+                                             should always have had this. -->
+                                        <Button Content="{Binding RemoveLabel}" Tag="{Binding Id}"
+                                                Click="OnJournalRemove"
+                                                Background="Transparent" FontSize="12"
+                                                Foreground="{StaticResource JimT2Brush}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

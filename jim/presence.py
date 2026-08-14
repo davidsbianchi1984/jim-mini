@@ -251,6 +251,9 @@ LINES: dict[str, str] = {
         "it smaller, or let it go?",
     "presence.nudge.followup":
         "I asked you something and never heard back. Did it help?",
+    "presence.nudge.watching":
+        "You asked me to keep an eye on {topic} while you were away. I have "
+        "been. How is it?",
     "presence.celebrate.streak":
         "{days} days on {habit}. That is not luck any more.",
     "presence.celebrate.goal":
@@ -431,6 +434,7 @@ def beat(user_id: str, slot: str = "morning", record: bool = True) -> dict:
     # beat points away from here rather than deeper into it.
     chosen = (_drift_beat(user_id, base)
               or _followup_beat(user_id)
+              or _watch_beat(user_id)
               or _alone_beat(user_id, carried)
               or _mood_beat(base)
               or _stale_goal_beat(base)
@@ -540,6 +544,32 @@ def _followup_beat(user_id: str) -> dict | None:
     return {"register": "nudging", "area": "mental_health",
             "line_key": "presence.nudge.followup", "slots": {},
             "because": [f"{len(open_ones)} follow-up(s) still open"]}
+
+
+def _watch_beat(user_id: str) -> dict | None:
+    """Something they asked the Guardian to hold on to before they signed off.
+
+    Ranked directly under the unanswered follow-up and above everything the
+    product noticed by itself, and the reason is the whole handover: a person
+    who named a thing out loud on their way out told you what to pay attention
+    to, and a presence that then leads with a streak compliment was not
+    listening.
+
+    Oldest first, so a watch does not sit at the bottom of the list forever
+    while newer ones keep jumping it.
+    """
+    try:
+        from . import engaged
+        held = engaged.watches(user_id)
+    except Exception:
+        return None
+    if not held:
+        return None
+    row = held[0]
+    return {"register": "nudging", "area": row["area"] or "personal_growth",
+            "line_key": "presence.nudge.watching",
+            "slots": {"topic": row["topic"]},
+            "because": ["they asked me to watch this while they were away"]}
 
 
 def _mood_beat(base: dict) -> dict | None:
@@ -943,6 +973,11 @@ SPOKEN_CARRIES: dict[str, tuple[str, ...]] = {
     "presence.notice.mood": ("condition",),
     "presence.nudge.goal": (),
     "presence.nudge.followup": ("condition",),
+    # A standing watch is the person's own sentence, and they wrote it about
+    # whatever was on their mind — money, a diagnosis, somebody they live
+    # with. There is no category that covers "anything they might have said",
+    # so this one is not read aloud on a shared surface at all.
+    "presence.nudge.watching": NOT_ALOUD_IN_COMPANY,
     "presence.celebrate.streak": (),
     "presence.celebrate.goal": (),
     "presence.curious.area": (),

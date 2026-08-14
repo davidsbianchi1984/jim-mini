@@ -291,6 +291,9 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="docs/screens/107-what-it-will-not-be.svg" width="160" alt="107 What It Will Not Be"><br><sub>107 · What It Will Not Be</sub></td>
 <td align="center" width="25%"><img src="docs/screens/108-ability-is-not-a-gate.svg" width="160" alt="108 Ability Is Not A Gate"><br><sub>108 · Ability Is Not A Gate</sub></td>
 </tr>
+<tr>
+<td align="center" width="25%"><img src="docs/screens/109-engaged.svg" width="160" alt="109 Engaged"><br><sub>109 · Engaged</sub></td>
+</tr>
 </table>
 
 The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 72 Pick a Plan → 73 Payment → 46 All Set**, landing on **78 You're on Free** — or **74 You're on Basic** if the plan step was paid — then hands off to the daily app and, at the other end, **41 End Session**.
@@ -1631,6 +1634,9 @@ this machine's address and restart.
 <tr><td valign="top"><sub><code>POST /checkin/{user_id}</code></sub></td><td valign="top"><sub>Mood & energy check-in; a worrying note still runs the full Guardian detect → escalate pipeline</sub></td></tr>
 <tr><td valign="top"><sub><code>GET</code>/<code>POST /goals/{user_id}</code>, <code>PATCH /goals/{user_id}/{goal_id}</code></sub></td><td valign="top"><sub>Smart goals with progress; completion earns a praise insight</sub></td></tr>
 <tr><td valign="top"><sub><code>GET</code>/<code>POST /habits/{user_id}</code>, <code>POST …/{habit_id}/log</code></sub></td><td valign="top"><sub>Habit tracking with streaks; milestones (7/30/100 days) earn insights</sub></td></tr>
+<tr><td valign="top"><sub><code>POST</code>/<code>GET /engaged/{user_id}</code>, <code>POST /engaged/{user_id}/turn</code>, <code>POST /engaged/{user_id}/sign-off</code></sub></td><td valign="top"><sub>the session you leave running: open until sign-off, acts across your own records through the written allowlist in <code>jim/engaged.py</code>, and hands over to the offline coach with standing watches</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /engaged/reach</code>, <code>GET /engaged/{user_id}/acts</code>, <code>POST /engaged/{user_id}/acts/{act_id}/undo</code></sub></td><td valign="top"><sub>what it may touch (no token — how you decide before opening one), everything it did, and the request that takes one act back</sub></td></tr>
+<tr><td valign="top"><sub><code>GET</code>/<code>POST /engaged/{user_id}/watches</code>, <code>DELETE /engaged/{user_id}/watches/{watch_id}</code></sub></td><td valign="top"><sub>what the offline Guardian keeps holding while you are away — carried into every coach answer and raised unprompted</sub></td></tr>
 <tr><td valign="top"><sub><code>POST</code>/<code>GET /coach/{user_id}</code></sub></td><td valign="top"><sub>24/7 life coach across <code>mental_health</code>, <code>health_fitness</code>, <code>career</code>, <code>finance</code>, <code>relationships</code>, <code>personal_growth</code>, grounded in recent check-ins and active goals</sub></td></tr>
 <tr><td valign="top"><sub><code>POST /companion/{user_id}</code></sub></td><td valign="top"><sub>Ambient companion check-in: the coach reaches out first, grounded in the latest mood, goals, and personality preferences — invoked explicitly, never on a hidden schedule</sub></td></tr>
 <tr><td valign="top"><sub><code>GET /insights/{user_id}</code></sub></td><td valign="top"><sub>Proactive nudges: spending alerts, sleep praise, interview prep, mindful-break suggestions, milestones</sub></td></tr>

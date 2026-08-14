@@ -72,10 +72,10 @@ test_the_console_speaks_one_language.py:271: len(keys) >= 15
 test_the_desktop_and_the_phone_say_different_things.py:324: len(shared) > 40
 test_the_files_the_release_never_touched.py:232: len(sorted(REPO.glob('native/ios/Sources/**/*.swift'))) >= 24
 test_the_files_the_release_never_touched.py:233: len(sorted(REPO.glob('native/android/**/*.kt'))) >= 6
-test_the_guardian_refuses_in_one_language.py:179: len(handlers) >= 9
-test_the_guardian_refuses_in_one_language.py:280: len(i18n._REFUSALS) >= 21
-test_the_guardian_refuses_in_one_language.py:359: refused.status_code >= 400
-test_the_guardian_refuses_in_one_language.py:385: refused.status_code >= 400
+test_the_guardian_refuses_in_one_language.py:202: len(handlers) >= 9
+test_the_guardian_refuses_in_one_language.py:303: len(i18n._REFUSALS) >= 21
+test_the_guardian_refuses_in_one_language.py:382: refused.status_code >= 400
+test_the_guardian_refuses_in_one_language.py:408: refused.status_code >= 400
 test_the_key_the_server_never_sends.py:228: len(vocabulary) >= 500
 test_the_keys_the_android_client_reads.py:358: len(reads) >= 40
 test_the_keys_the_android_client_reads.py:359: sum((len(k) for _, k in reads)) >= 155

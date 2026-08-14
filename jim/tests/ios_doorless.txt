@@ -1,0 +1,22 @@
+# status: floor — 0 rows
+#
+# Every route this shell can reach. Held at zero.
+#
+# ## 0.71.0: engaged sessions landed on all four clients at once
+#
+# `jim/engaged.py` is the online Guardian a person leaves running: open until
+# they sign off, acting across their own records through a written allowlist,
+# and recording the request that would take each act back.
+#
+# It arrived here in the same round as the console rather than a round later,
+# and the reason is the feature's own bargain. Full-act autonomy is defensible
+# *because* every act is listed with the way back beside it. A shell that could
+# open a session and speak into it, but could not show the undo trail, would
+# have taken the permission and dropped the condition it was granted under.
+# All fifteen or none.
+#
+# Six of the fifteen are `DELETE` routes that are also doors somebody should
+# always have had: until this round nothing in this product could delete a
+# journal entry, a check-in, a goal or a habit. Those are worth having on a
+# phone on their own account, and they landed with the screen that made them
+# necessary.

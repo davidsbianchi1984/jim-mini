@@ -5,7 +5,8 @@ import SwiftUI
 struct CareView: View {
     enum Tab: String, CaseIterable {
         case monitor = "Monitor", checkin = "Check-in",
-             coach = "Coach", presence = "Presence", family = "Family"
+             coach = "Coach", engaged = "Engaged",
+             presence = "Presence", family = "Family"
 
         /// English lived in the `case` clause, where no `Text("…")`
         /// pattern looks — the same shape ConnectView had, written
@@ -17,6 +18,7 @@ struct CareView: View {
             case .monitor: return L10n.t("tab.monitor", lang)
             case .checkin: return L10n.t("tab.checkin", lang)
             case .coach: return L10n.t("tab.coach", lang)
+            case .engaged: return L10n.t("eng.tab", lang)
             case .presence: return L10n.t("presence.tab", lang)
             case .family: return L10n.t("tab.family", lang)
             }
@@ -41,6 +43,12 @@ struct CareView: View {
             case .monitor: MonitorView()
             case .checkin: CheckinView()
             case .coach: CoachView()
+            // The coach answers a turn; this one stays engaged and can act.
+            // Same group for the same reason the presence is here — they are
+            // faces of one thing, and splitting them across the bar would
+            // ask a person to know which of three doors they wanted before
+            // they knew what they were asking for.
+            case .engaged: EngagedView()
             // The coach answers; the presence speaks first. Same screen
             // group because they are two halves of one thing.
             case .presence: PresenceView()
