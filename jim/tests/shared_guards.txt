@@ -1,4 +1,4 @@
-# status: manifest — 481 guards carried by all three products
+# status: manifest — 482 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -485,6 +485,7 @@ test_the_sweep_is_actually_reading_pages
 test_the_sweep_reaches_the_thing_it_is_sweeping
 test_the_swift_reader_reads_every_property_it_can_see
 test_the_swift_reader_sees_every_decodable_struct
+test_the_swift_scan_reads_past_a_literal_inside_an_interpolation
 test_the_swift_table_has_no_unbraced_unicode_escape
 test_the_tables_still_parse
 test_the_tables_still_parse_and_still_overlap

@@ -106,8 +106,8 @@ test_the_shells_still_parse.py:375: len(XAML) >= 13
 test_the_shells_still_parse.py:378: named >= 340
 test_the_shells_still_parse.py:380: checked >= 80
 test_the_shells_still_parse.py:382: driven >= 300
-test_the_tabs_are_translated_and_the_screens_are_not.py:433: english + calls >= 50
-test_the_tabs_are_translated_and_the_screens_are_not.py:622: len(rows) >= 10
+test_the_tabs_are_translated_and_the_screens_are_not.py:528: english + calls >= 50
+test_the_tabs_are_translated_and_the_screens_are_not.py:749: len(rows) >= 10
 test_the_watch_you_actually_wear.py:118: metrics['resting_heart_rate']['value'] > 60
 test_vigil.py:75: st['silent_hours'] >= 48
 test_watch.py:145: metrics['heart_rate']['samples'] >= 6

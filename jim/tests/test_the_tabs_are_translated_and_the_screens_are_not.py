@@ -123,6 +123,97 @@ _SWIFT = [
     r'\bToggle\(\s*"([^"]{2,})"', r'\bSection\(\s*"([^"]{2,})"',
     r'\bLabel\(\s*"([^"]{2,})"', r'\.navigationTitle\(\s*"([^"]{2,})"',
 ]
+#: **The sixth shape: a string literal inside a Swift interpolation.**
+#:
+#: `[^"]` stops at the first quote it meets, and in Swift that quote is not
+#: always the end of the string — an interpolation may contain a literal of
+#: its own:
+#:
+#:     Text("\(m.kind ?? "—") · \(m.alt ?? m.name ?? m.id ?? "—")")
+#:
+#: The pattern captured `\(m.kind ?? `, which is not a string and is not
+#: English. `_HOLE` could not strip it either, because the fragment has no
+#: closing paren, so the letters left behind were a *property name* — and the
+#: row was counted as an untranslated sentence on a card that has none. That
+#: is the same false reading the `"\(dim): \(n)%"` note above records, arrived
+#: at from the other side.
+#:
+#:     asked     does the pattern find a literal
+#:     mattered  does it find the whole literal
+#:
+#: Blanking interpolations before matching would have fixed the false count
+#: and opened a worse hole: a label whose *only* English sits inside one —
+#: `Text("\(name ?? "nobody")")` — would then strip to nothing and pass. So
+#: the literal is scanned rather than matched: interpolations are replaced by
+#: a hole for the outer test, and each literal nested inside them is returned
+#: as a candidate in its own right.
+_SWIFT_OPENERS = [re.compile(p.replace('"([^"]{2,})"', '"'))
+                  for p in _SWIFT]
+
+
+def _swift_strings(text: str) -> set[str]:
+    """Every on-screen Swift literal, whole, plus the literals nested in its
+    interpolations."""
+    out: set[str] = set()
+    for opener in _SWIFT_OPENERS:
+        for head in opener.finditer(text):
+            outer: list[str] = []
+            depth = 0          # how deep inside `\(` … `)` we are
+            i = head.end()     # first character after the opening quote
+            while i < len(text):
+                ch = text[i]
+                if ch == "\\" and text[i:i + 2] == "\\(":
+                    depth += 1
+                    # One hole for the whole interpolation, in the shape
+                    # `_HOLE` already knows how to strip.
+                    if depth == 1:
+                        outer.append("\\(x)")
+                    i += 2
+                    continue
+                if ch == "\\":                      # any other escape
+                    i += 2
+                    continue
+                if depth and ch == ")":
+                    depth -= 1
+                elif depth and ch == "(":
+                    depth += 1
+                elif ch == '"':
+                    if depth == 0:                  # the literal ends here
+                        break
+                    nested, i = _swift_nested(text, i)
+                    if nested is None:
+                        break
+                    if len(nested) >= 2:
+                        out.add(nested)
+                    continue
+                elif depth == 0:
+                    outer.append(ch)
+                i += 1
+            whole = "".join(outer)
+            if len(whole) >= 2:
+                out.add(whole)
+    return out
+
+
+def _swift_nested(text: str, i: int) -> tuple[str | None, int]:
+    """The literal starting at the quote `text[i]`, and the index after it.
+    `(None, i)` when it never closes — an unterminated literal is a parse this
+    scanner should abandon rather than guess at."""
+    body: list[str] = []
+    i += 1
+    while i < len(text):
+        if text[i] == "\\":
+            i += 2
+            continue
+        if text[i] == '"':
+            return "".join(body), i + 1
+        if text[i] == "\n":
+            return None, i
+        body.append(text[i])
+        i += 1
+    return None, i
+
+
 _KOTLIN = [r'\bText\(\s*"([^"]{2,})"']
 _XAML = [r'\bText="([^"]{2,})"', r'\bContent="([^"]{2,})"',
          r'\bHeader="([^"]{2,})"', r'\bPlaceholderText="([^"]{2,})"']
@@ -365,8 +456,12 @@ def _measure(shell: str) -> tuple[int, int]:
         if path.suffix not in suffixes or "L10n" in path.name:
             continue
         text = _code(path)
-        found = {s for pat in patterns for s in re.findall(pat, text)
-                 if _HAS_LETTER.search(_HOLE.sub("", s))}
+        # Swift is scanned rather than matched — see `_swift_strings`. A
+        # regex cannot find the end of a literal whose interpolation holds a
+        # literal of its own, and Swift's does.
+        raw = (_swift_strings(text) if shell == "ios"
+               else {s for pat in patterns for s in re.findall(pat, text)})
+        found = {s for s in raw if _HAS_LETTER.search(_HOLE.sub("", s))}
         # `re.findall` on a two-group pattern yields tuples, one per branch.
         found |= {s for pat in _TERNARY for pair in re.findall(pat, text)
                   for s in pair
@@ -437,6 +532,38 @@ def test_the_measurement_still_measures(shell):
     assert calls >= 1, (
         f"{shell} makes no localizer calls at all — either the call pattern "
         "broke or the shell lost its localization entirely")
+
+
+def test_the_swift_scan_reads_past_a_literal_inside_an_interpolation():
+    """A guard on the sixth widening, in both directions.
+
+    The regex it replaced stopped at the first quote inside `\\(…)` and
+    handed back `\\(m.kind ?? ` — not a string, not English, and counted as
+    an untranslated sentence because the property name in it has letters.
+
+    The obvious repair is to blank interpolations before matching, and it is
+    wrong in the more dangerous direction: it makes a label whose only
+    English lives *inside* one disappear, so the ratchet would have passed on
+    a sentence no non-English reader can read. Both are asserted here, which
+    is the only reason this test is worth its length.
+    """
+    counted = lambda src: {s for s in _swift_strings(src)
+                           if _HAS_LETTER.search(_HOLE.sub("", s))}
+
+    # The row that produced the false count: an em-dash fallback, a kind and
+    # an alt text. Every letter belongs to a property name.
+    assert counted(r'Text("\(m.kind ?? "—") · \(m.alt ?? m.name ?? "—")")') == set()
+
+    # The hole blanking would have opened: the sentence is only inside.
+    assert counted(r'Text("\(name ?? "nobody has said")")') == {"nobody has said"}
+
+    # Outside and inside at once — both are read by somebody, both counted.
+    assert counted(r'Button("Save \(what ?? "it") now")') == {"Save \\(x) now", "it"}
+
+    # And the two findings this file already records still hold: a plain
+    # label counts, a format fragment does not.
+    assert counted('Text("Put a photograph up")') == {"Put a photograph up"}
+    assert counted(r'Text("\(dim): \(n)%")') == set()
 
 
 def test_the_ternary_scan_can_find_one():
