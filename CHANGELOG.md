@@ -6,7 +6,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.72.2] - 2026-08-14
+## [0.73.0] - 2026-08-14
+
+### Added
+
+- **The phones say when the backend is a different version.** `/health`
+  answers a `version`, and the console has compared it against its own build
+  since a stale backend first cost somebody an evening — an older install
+  answers perfectly well and then serves an older API, so the app looks
+  alive while every newer screen says "Not Found" for no stated reason. The
+  native shells can be pointed at that same address, and said nothing at
+  all.
+
+      asked     is the backend reachable
+      mattered  is it the backend this build was written against
+
+  The answer was already on the wire and every shell decoded it away — nine
+  places where the field was in the response and out of the struct. All nine
+  now read it and say so: a dismissible banner naming both versions and the
+  address, above the tab bar and above the welcome flow both, because a
+  stale backend breaks the screens a signed-out person meets first. Ten
+  languages each, dismissed per launch rather than remembered — the
+  condition holds until the address or the backend changes, and a
+  permanently silenced warning about a broken deployment is worse than none.
 
 ### Fixed
 
@@ -8171,8 +8193,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.72.2...HEAD
-[0.72.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.2
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.73.0...HEAD
+[0.73.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.73.0
 [0.72.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.1
 [0.72.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.0
 [0.71.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.71.1
