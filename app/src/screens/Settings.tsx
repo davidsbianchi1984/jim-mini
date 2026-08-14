@@ -781,7 +781,12 @@ function VoicePanel() {
     try {
       await api.saveVoiceSettings({
         provider: next?.provider ?? provider,
-        api_key: apiKey || undefined,
+        // Trimmed, like the three phone shells always did. This console was
+        // the odd one out, and a key pasted from a dashboard carries a
+        // trailing newline often enough that it is the normal case, not the
+        // edge one — it reached an HTTP header verbatim and took the whole
+        // request down with a 500.
+        api_key: apiKey.trim() || undefined,
         voice_id: next?.voice_id ?? voiceId,
         speak_replies: next?.speak_replies,
       });

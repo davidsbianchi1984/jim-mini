@@ -105,6 +105,9 @@ def save_settings(provider: str, api_key: str = "", voice_id: str = "",
                   speak_replies: bool | None = None) -> dict:
     if provider not in PROVIDERS:
         raise ValueError(f"provider must be one of {', '.join(PROVIDERS)}")
+    # Stripped here as well as at the point of use, so the stored value is
+    # clean rather than merely tolerated. See `_resolved`.
+    api_key = (api_key or "").strip()
     current = stored_settings() or {}
     if provider != "device" and not (api_key or current.get("api_key")
                                      or _env_key(provider)):
@@ -167,7 +170,23 @@ def _house_provider() -> str:
 def _resolved() -> dict:
     row = stored_settings() or {}
     provider = row.get("provider") or _house_provider()
-    key = row.get("api_key") or _env_key(provider)
+    # Stripped at the point of use, not only where it is stored.
+    #
+    # A key with a newline on the end is not a bad key — it is a *paste*, and
+    # it is what the ElevenLabs dashboard's copy button hands you. It went
+    # into an HTTP header verbatim, and `http.client` refuses that with
+    # `ValueError: Invalid header value`, which is not a `URLError` and so
+    # went straight past both `except` clauses in `_subscription` and out of
+    # the route as a 500 — the one shape a person can do nothing with.
+    #
+    #     asked     is the key a working key
+    #     mattered  is the key even sendable
+    #
+    # Found in the field on the first night `/settings/voice/check` existed,
+    # against a key saved from the console — which was the one client of four
+    # that did not trim its input. The other three did, so this could only
+    # ever have been reproduced the way it was.
+    key = (row.get("api_key") or _env_key(provider) or "").strip()
     if provider != "device" and not key:
         # Configured for a provider whose key has since gone: the device
         # voice still works, and silence would be the wrong failure.
@@ -238,6 +257,10 @@ KEY_VERDICTS: dict[str, str] = {
         "or rotate it. The one you want begins sk_ and is much longer",
     "key.refused":
         "the service did not accept that key",
+    "key.unpaid":
+        "the key works — the account behind it has an unpaid invoice. "
+        "ElevenLabs stops serving until the latest one is settled, and "
+        "nothing in this app can change that",
     "key.unchecked":
         "the key is saved, but nothing could be reached to check it — it "
         "will be tried the first time the Guardian speaks",
@@ -301,7 +324,22 @@ def verify() -> dict:
         verdict = "key.unchecked"
     except VoiceError as exc:
         said = str(exc)
+        # `payment_issue` is checked before the generic HTTP branch, and the
+        # order is the whole point. ElevenLabs answers **401** to an unpaid
+        # subscription — the same status as a bad credential — so a
+        # classifier that only asks "was there an HTTP error" calls a
+        # perfectly good key refused and tells its owner to paste it again.
+        #
+        #     asked     did the service say no
+        #     mattered  did it say no to the key, or to the account
+        #
+        # Found in the field: the key authenticated, and the answer was
+        # "subscription has a failed or incomplete payment". Advice to
+        # replace that key would have sent somebody hunting a credential
+        # that was never the problem.
         verdict = ("key.is_an_id" if "api_key_id_used_as_api_key" in said
+                   else "key.unpaid" if ("payment_issue" in said
+                                         or "payment_required" in said)
                    else "key.refused" if "HTTP" in said
                    else "key.unchecked")
     else:

@@ -6,6 +6,44 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.72.1] - 2026-08-14
+
+### Fixed
+
+- **A pasted key took the key check down with a 500.** A credential copied
+  from a dashboard arrives with a trailing newline. It went into an HTTP
+  header verbatim, where `http.client` refuses it with `ValueError: Invalid
+  header value` — not a `URLError`, so it passed both `except` clauses in
+  `_subscription` and left the route as a 500: the one answer a person can
+  do nothing with, on the screen built to tell them what to do about their
+  key.
+
+      asked     is the key a working key
+      mattered  is the key even sendable
+
+  Found in the field on the first night `/settings/voice/check` existed.
+  Three of the four clients trimmed their input — iOS, Android and Windows
+  — and the console did not, which is the client the deployment was
+  configured from. So the key is stripped where it is stored *and* where it
+  is used: the environment half never passes through a form to be tidied on
+  the way in, and a `.env` line or a Docker `environment:` entry carries
+  whitespace as easily as a paste does.
+
+- **An unpaid account read as a bad key.** ElevenLabs answers **401** to a
+  subscription with a failed invoice — the same status it answers to a
+  credential it does not know. The verdict classifier asked only whether
+  there had been an HTTP error, so it called a working key `key.refused`,
+  and the sentence attached to that verdict tells its owner to paste it
+  again or create a new one.
+
+      asked     did the service say no
+      mattered  did it say no to the key, or to the account
+
+  That is worse than silence: it sends somebody hunting a credential that
+  was never the problem, while the actual remedy goes unmentioned.
+  `key.unpaid` is its own verdict now, in ten languages on all four
+  clients, and it names the invoice.
+
 ## [0.72.0] - 2026-08-14
 
 ### Fixed
@@ -8091,7 +8129,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.72.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.72.1...HEAD
+[0.72.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.1
 [0.72.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.0
 [0.71.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.71.1
 [0.71.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.71.0

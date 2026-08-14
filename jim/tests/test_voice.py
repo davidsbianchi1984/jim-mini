@@ -304,6 +304,98 @@ def test_a_key_that_is_not_a_key_is_named_at_the_moment_it_is_saved(
     assert good["verdict"] == "key.works" and good["ok"] is True
 
 
+def test_a_pasted_key_carries_a_newline_and_is_still_sendable(client,
+                                                              monkeypatch):
+    """The field failure, on the first night the check existed.
+
+    A key copied from a dashboard arrives with a trailing newline. That is
+    not a bad key, it is a *paste*, and it went into an HTTP header verbatim
+    — where `http.client` refuses it with `ValueError: Invalid header
+    value`. `ValueError` is not a `URLError`, so it went past both `except`
+    clauses in `_subscription` and out of the route as a 500: the one answer
+    a person can do nothing with, on the screen built to tell them what to
+    do about their key.
+
+        asked     is the key a working key
+        mattered  is the key even sendable
+
+    Three of the four clients trimmed their input. The console did not, and
+    the console is what the deployment was configured from — so no test that
+    posted a tidy key could have found it.
+    """
+    client.put("/settings/voice", json={
+        "provider": "elevenlabs", "api_key": "  sk_pasted_with_space\n"})
+
+    seen = {}
+
+    def capture(req, timeout=0):
+        seen["key"] = req.headers.get("Xi-api-key")
+
+        class R:
+            def read(self): return b'{"character_count":0,"character_limit":9}'
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+        return R()
+
+    monkeypatch.setattr(voice.urllib.request, "urlopen", capture)
+    r = client.post("/settings/voice/check")
+    assert r.status_code == 200, r.text
+    assert r.json()["verdict"] == "key.works"
+    assert seen["key"] == "sk_pasted_with_space", (
+        "the key reached the wire with whitespace still on it")
+    # Stored clean as well as used clean — a value only tolerated at the
+    # point of use is one the next reader has to remember to tolerate too.
+    assert voice.stored_settings()["api_key"] == "sk_pasted_with_space"
+
+    # And the same for the *house* key, which is the half `save_settings`
+    # cannot reach. A `.env` line, a Docker `environment:` entry and a shell
+    # export can all carry trailing whitespace, and that key never passes
+    # through a form to be tidied on the way in — so the strip has to live
+    # at the point of use as well.
+    voice.clear_settings()
+    monkeypatch.setenv("ELEVENLABS_API_KEY", "sk_from_the_host \n")
+    seen.clear()
+    r = client.post("/settings/voice/check")
+    assert r.status_code == 200, r.text
+    assert client.get("/settings/voice").json()["key_source"] == "environment"
+    assert seen["key"] == "sk_from_the_host", (
+        "the environment key reached the wire with whitespace still on it")
+
+
+def test_an_unpaid_account_is_not_a_bad_key(client, monkeypatch):
+    """The second field finding, an hour after the first.
+
+    ElevenLabs answers **401** to a subscription with an unpaid invoice —
+    the same status it answers to a credential it does not recognise. A
+    classifier that asks only "was there an HTTP error" therefore calls a
+    perfectly good key *refused*, and the sentence attached to that verdict
+    tells its owner to paste it again or make a new one.
+
+        asked     did the service say no
+        mattered  did it say no to the key, or to the account
+
+    That is worse than saying nothing. It sends somebody hunting a
+    credential that was never the problem, on the screen built to stop
+    exactly that kind of hunt, while the actual remedy — settle the invoice
+    — goes unmentioned.
+    """
+    client.put("/settings/voice", json={
+        "provider": "elevenlabs", "api_key": "sk_a_good_key"})
+    monkeypatch.setattr(voice.urllib.request, "urlopen", _refuses(
+        401, b'{"detail":{"status":"payment_issue","message":"subscription '
+             b'has a failed or incomplete payment. Complete the latest '
+             b'invoice to continue usage."}}'))
+
+    body = client.post("/settings/voice/check").json()
+    assert body["verdict"] == "key.unpaid", (
+        "an unpaid account reads as a refused key, and the advice that "
+        "follows sends somebody to replace a credential that works")
+    assert body["ok"] is False, "the voice still will not speak"
+    assert body["checked"] is True, "the service did answer — this is its answer"
+    assert "invoice" in body["detail"], (
+        "the sentence has to name the thing a person can actually do")
+
+
 def test_every_verdict_a_key_check_can_reach_has_a_sentence():
     """`KEY_VERDICTS` is what each client renders from. A verdict the
     backend can return and no table has a row for is a blank line where an
