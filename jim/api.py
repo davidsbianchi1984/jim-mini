@@ -756,6 +756,42 @@ def create_app(qrme_client: QRMEClient | None = None,
     def delete_voice_settings() -> dict:
         return voice.clear_settings()
 
+    @app.post("/settings/voice/check")
+    def check_voice_key() -> dict:
+        """Is the saved key a working key?
+
+        Saving answered the wrong question: it wrote the string and the
+        screen said "Saved.", which was true and said nothing about whether
+        what was saved could speak. The first anybody knew otherwise was a
+        raw provider error at the moment they asked to be spoken to —
+        typically `api_key_id_used_as_api_key`, because the dashboard shows
+        the key's ID permanently and the key itself once.
+
+        503 when there is no key to check, or the provider is one this
+        check does not cover.
+        """
+        try:
+            return voice.verify()
+        except voice.VoiceUnavailable as exc:
+            raise HTTPException(503, str(exc))
+
+    @app.get("/voice/quota")
+    def voice_quota() -> dict:
+        """How much speaking this deployment has left.
+
+        A spent allowance is the one voice failure nothing here reported.
+        The send is refused, every client falls back to the device's own
+        voice on any non-ok status, and the Guardian keeps talking in a
+        flatter voice with nobody told why. 503 when there is no provider,
+        or the provider publishes no allowance; 502 when it refuses.
+        """
+        try:
+            return voice.remaining()
+        except voice.VoiceUnavailable as exc:
+            raise HTTPException(503, str(exc))
+        except voice.VoiceError as exc:
+            raise HTTPException(502, str(exc))
+
     @app.post("/voice/speak")
     def voice_speak(body: VoiceSpeak) -> Response:
         """Say something aloud: text in, audio out. A deployment with no

@@ -6095,12 +6095,21 @@ private fun BandsPanel(vm: GuardianViewModel) {
 @Composable
 private fun VoiceSettingsPanel(vm: GuardianViewModel) {
     var settings by remember { mutableStateOf<VoiceSettingsOut?>(null) }
+    var quota by remember { mutableStateOf<VoiceQuotaOut?>(null) }
     var provider by remember { mutableStateOf("") }
     var voiceId by remember { mutableStateOf("") }
     var apiKey by remember { mutableStateOf("") }
     var speakReplies by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
+    // The allowance, refreshed whenever the settings are — saving can change
+    // the provider, and with it whether there is a balance at all. A
+    // deployment on the device's own voice, or on a provider that publishes
+    // none, answers 503 here; the failure is dropped rather than shown, so
+    // the line is simply absent. `error` stays reserved for the settings.
+    fun refreshQuota() {
+        vm.call({ ApiClient.voiceQuota() }) { r -> quota = r.getOrNull() }
+    }
     fun took(r: Result<VoiceSettingsOut>) {
         error = r.exceptionOrNull()?.message
         r.getOrNull()?.let { s ->
@@ -6112,6 +6121,7 @@ private fun VoiceSettingsPanel(vm: GuardianViewModel) {
     }
     LaunchedEffect(Unit) {
         vm.call({ ApiClient.voiceSettings() }) { took(it) }
+        refreshQuota()
     }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -6128,6 +6138,18 @@ private fun VoiceSettingsPanel(vm: GuardianViewModel) {
                         .replace("{env}", if (s.keySource == "environment")
                             " (env)" else ""),
                     color = Jim.Green, fontSize = 11.sp)
+        }
+        // The allowance. A spent one used to be invisible here: the send is
+        // refused, this shell falls back to the device's own voice on any
+        // non-ok status, and the Guardian went on talking in a flatter voice
+        // with nobody told why. Amber rather than red — it still speaks.
+        quota?.let { q ->
+            Text(L10n.t(if (q.exhausted) "ns.vs.spent" else "ns.vs.left",
+                        vm.language)
+                    .replace("{left}", q.left.toString())
+                    .replace("{limit}", q.limit.toString()),
+                color = if (q.exhausted) Jim.Amber else Jim.T2,
+                fontSize = 11.sp)
         }
         // The provider vocabulary is the backend's PROVIDERS tuple; the
         // describe route answers the current one but does not enumerate.
@@ -6160,13 +6182,29 @@ private fun VoiceSettingsPanel(vm: GuardianViewModel) {
                 vm.call({ ApiClient.saveVoiceSettings(provider,
                     apiKey.trim(), voiceId, speakReplies) }) { r ->
                     took(r)
-                    if (r.isSuccess) apiKey = ""
+                    if (r.isSuccess) {
+                        apiKey = ""
+                        refreshQuota()
+                        // And whether what was saved is a key at all.
+                        // Saving used to report only that the string had
+                        // been written down; a key the service refuses
+                        // looked identical to one it accepts until
+                        // somebody asked to be spoken to.
+                        vm.call({ ApiClient.checkVoiceKey() }) { c ->
+                            c.getOrNull()?.let { v ->
+                                if (!v.ok)
+                                    error = L10n.t("ns.vs.${v.verdict}",
+                                                   vm.language)
+                            }
+                        }
+                    }
                 }
             }
             SmallAction(L10n.t("ns.bas.reset", vm.language)) {
                 vm.call({ ApiClient.clearVoiceSettings() }) { r ->
                     took(r)
                     r.getOrNull()?.let { provider = it.provider; voiceId = "" }
+                    refreshQuota()
                 }
             }
         }

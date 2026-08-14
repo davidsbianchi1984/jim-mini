@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, type AccessLog, type CloudStatus, type Row } from "../api";
+import { api, type AccessLog, type CloudStatus, type Row,
+         type VoiceQuota } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
@@ -39,6 +40,8 @@ export function Held() {
   const [connectors, setConnectors] = useState<Row | null>(null);
   const [provider, setProvider] = useState<Row | null>(null);
   const [providerError, setProviderError] = useState<string | null>(null);
+  const [quota, setQuota] = useState<VoiceQuota | null>(null);
+  const [quotaError, setQuotaError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState("");
@@ -62,6 +65,11 @@ export function Held() {
       .catch((e) => setCustodyError((e as Error).message));
     api.providerFor(uid, token).then(setProvider)
       .catch((e) => setProviderError((e as Error).message));
+    // Same shape, third time: a deployment on the device voice, or on a
+    // provider that publishes no balance, answers 503 here. That is the
+    // answer, not a failure of the screen.
+    api.voiceQuota().then(setQuota)
+      .catch((e) => setQuotaError((e as Error).message));
   }
   function fail(e: unknown) { setError((e as Error).message); }
   useEffect(load, [uid]);
@@ -223,6 +231,33 @@ export function Held() {
           {tr("hld.where.connectors", lang).replace("{n}",
             String(((connectors?.providers ?? []) as Row[]).length))}
         </p>
+        {/* The allowance. Until this line existed, a spent one was invisible:
+            the send is refused, this console and all three phones fall back
+            to the device's own voice on any non-ok status, and the Guardian
+            went on talking in a flatter voice with nobody told why. The
+            exhausted case says what happens next rather than only that a
+            number reached zero — "0 left" is a fact, and "it will read to
+            you in the device's own voice from here" is the consequence. */}
+        {quotaError && <p className="muted small">{quotaError}</p>}
+        {quota && (
+          <p className="muted small">
+            {/* Each key spelled out at its own `tr` rather than chosen by a
+                ternary inside one. The dead-key guard reads literal
+                arguments, so a key selected before the call is a key it
+                reports as translated into ten languages and read by
+                nothing — which is exactly what it says when a screen has
+                quietly stopped using one. */}
+            {quota.exhausted
+              ? tr("hld.where.voice.spent", lang)
+                  .replace("{provider}", quota.provider)
+              : tr("hld.where.voice", lang)
+                  .replace("{provider}", quota.provider)
+                  .replace("{left}", quota.left.toLocaleString())
+                  .replace("{limit}", quota.limit.toLocaleString())}
+            {quota.resets_at && " " + tr("hld.where.voice.resets", lang)
+              .replace("{when}", quota.resets_at.slice(0, 10))}
+          </p>
+        )}
       </div>
 
       <div className="card">

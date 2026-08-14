@@ -13,7 +13,14 @@ import pytest
 from jim import voice
 
 
-def test_without_configuration_the_device_voice_is_the_answer(client):
+def test_without_configuration_the_device_voice_is_the_answer(client,
+                                                              monkeypatch):
+    # Both keys cleared explicitly. A host that sets `ELEVENLABS_API_KEY` is
+    # *meant* to turn the voice on — see the house-key test below — so this
+    # one has to say which world it is asserting about rather than depending
+    # on the developer's shell.
+    monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     body = client.get("/settings/voice").json()
     assert body["provider"] == "device"
     assert body["device_fallback"] is True
@@ -130,6 +137,183 @@ def test_a_provider_whose_key_vanished_falls_back_to_the_device(client):
     conn.execute("UPDATE voice_settings SET api_key='' WHERE id=1")
     conn.commit()
     assert client.get("/settings/voice").json()["provider"] == "device"
+
+
+def _answers(payload: dict):
+    """A stand-in for ElevenLabs' account read, at the urlopen boundary."""
+    import json
+
+    class R:
+        def read(self): return json.dumps(payload).encode()
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+    return lambda req, timeout=0: R()
+
+
+def _refuses(status: int, body: bytes):
+    import io
+    import urllib.error
+
+    def raise_it(req, timeout=0):
+        raise urllib.error.HTTPError(req.full_url, status, "no", {},
+                                     io.BytesIO(body))
+    return raise_it
+
+
+def test_a_host_key_turns_the_voice_on_for_everybody(client, monkeypatch):
+    """A deployment that pays for the voice on everyone's behalf.
+
+    `ELEVENLABS_API_KEY` was read and thrown away. `_resolved` defaulted the
+    provider to ``device`` and then asked ``_env_key("device")``, which is
+    empty by construction, so the branch that falls back to the device voice
+    fired every time and the host key was never consulted. Setting it did
+    nothing, silently, and the only symptom was a Guardian that kept using
+    the device's own voice on a deployment that was paying not to.
+
+        asked     is the environment key read
+        mattered  does setting it turn the voice on
+    """
+    monkeypatch.setenv("ELEVENLABS_API_KEY", "sk_house")
+    body = client.get("/settings/voice").json()
+    assert body["provider"] == "elevenlabs"
+    assert body["key_set"] is True
+    assert body["key_source"] == "environment"
+    assert body["voice_id"] == voice.DEFAULT_VOICE["elevenlabs"]
+    assert "sk_house" not in str(body)
+
+
+def test_a_language_key_does_not_become_a_speaking_key(client, monkeypatch):
+    """Only ElevenLabs is inferred from the environment.
+
+    ``OPENAI_API_KEY`` is the *language* key — `jim/llm.py` reads it to do
+    the thinking. A deployment that sets it is buying reasoning, not speech,
+    and inferring TTS from it would start spending somebody's tokens on
+    audio they never asked for. Choosing OpenAI for speech stays explicit.
+    """
+    monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-language-only")
+    assert client.get("/settings/voice").json()["provider"] == "device"
+
+
+def test_the_allowance_is_what_is_left_not_what_was_spent(client, monkeypatch):
+    """The provider's field is named for the wrong end of the subtraction.
+
+    ``character_count`` is what has been *used*. Read as a balance — which
+    is what the name invites — a fresh account with a large allowance shows
+    as nearly out, and a spent one shows as full. So the route publishes
+    `left`, already subtracted and floored at zero, because a spent account
+    reports a count *above* its limit and a screen doing its own arithmetic
+    would print a negative number.
+    """
+    client.put("/settings/voice", json={
+        "provider": "elevenlabs", "api_key": "sk_eleven"})
+
+    monkeypatch.setattr(voice.urllib.request, "urlopen", _answers({
+        "tier": "creator", "character_count": 0, "character_limit": 100000,
+        "next_character_count_reset_unix": 1788220800}))
+    fresh = client.get("/voice/quota").json()
+    assert fresh["left"] == 100000 and fresh["used"] == 0
+    assert fresh["exhausted"] is False
+    assert fresh["resets_at"] == "2026-09-01T00:00:00Z"
+
+    # Spent, and over: the provider reports more used than the limit.
+    monkeypatch.setattr(voice.urllib.request, "urlopen", _answers({
+        "character_count": 100500, "character_limit": 100000}))
+    spent = client.get("/voice/quota").json()
+    assert spent["left"] == 0, "a floor at zero, not a negative balance"
+    assert spent["exhausted"] is True
+
+
+def test_nothing_reported_a_spent_allowance_until_this_route(client,
+                                                             monkeypatch):
+    """The quiet failure this route exists for.
+
+    A spent allowance refuses the send, `speak` raises `VoiceError`, the
+    route answers 502, and every client — console, iOS, Android, Windows —
+    falls back to the device's own voice on any non-ok status. That fallback
+    is right and it is also silent: the Guardian keeps talking in a flatter
+    voice and the person paying finds out by noticing.
+
+        asked     does a spent allowance still speak
+        mattered  does anybody find out it was spent
+    """
+    client.put("/settings/voice", json={
+        "provider": "elevenlabs", "api_key": "sk_eleven"})
+    monkeypatch.setattr(voice.urllib.request, "urlopen", _refuses(
+        401, b'{"detail":{"status":"quota_exceeded"}}'))
+    # Speaking degrades — the old, silent behaviour, unchanged and correct.
+    assert client.post("/voice/speak", json={"text": "hello"}).status_code == 502
+    # And now it is also *sayable*, which is the whole of this round.
+    assert client.get("/voice/quota").status_code == 502
+
+
+def test_the_device_voice_has_no_allowance_to_run_out(client, monkeypatch):
+    monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
+    r = client.get("/voice/quota")
+    assert r.status_code == 503
+    assert "device" in r.json()["detail"]
+    # And the check has nothing to check.
+    assert client.post("/settings/voice/check").status_code == 503
+
+
+def test_a_key_that_is_not_a_key_is_named_at_the_moment_it_is_saved(
+        client, monkeypatch):
+    """The field bug David hit on the beta, driven from the boundary.
+
+    Saving answered the wrong question. `save_settings` wrote the string and
+    the console said **Saved.** — true, and silent about whether what was
+    saved could speak. ElevenLabs' dashboard shows each key's **ID**
+    permanently, beside its name, and shows the key itself exactly once, at
+    creation; so the string in front of you whenever you go looking is the
+    wrong one. Pasting it produced a deployment that was configured,
+    reported itself configured, and answered this at the moment somebody
+    asked to be spoken to, several screens from the field they typed into:
+
+        HTTP 400 {"detail":{"status":"api_key_id_used_as_api_key", ...}}
+
+        asked     was the key saved
+        mattered  is the saved key a key
+
+    The verdict is a key on the wire rather than a sentence, so each client
+    renders it from its own ten-language table.
+    """
+    client.put("/settings/voice", json={
+        "provider": "elevenlabs", "api_key": "3f9c2a7e1b"})
+
+    monkeypatch.setattr(voice.urllib.request, "urlopen", _refuses(
+        400, b'{"detail":{"status":"api_key_id_used_as_api_key","message":'
+             b'"key ID used as API key - only valid API keys can be used. '
+             b"API keys start with 'sk_' and are shown when the key is "
+             b'created or rotated."}}'))
+    body = client.post("/settings/voice/check").json()
+    assert body["verdict"] == "key.is_an_id", (
+        "the one refusal worth telling apart from any other 400 — it names "
+        "an action the person can take")
+    assert body["ok"] is False and body["checked"] is True
+    assert "3f9c2a7e1b" not in str(body), "the key is used, never returned"
+
+    # Any other refusal is still a refusal, and says so plainly.
+    monkeypatch.setattr(voice.urllib.request, "urlopen",
+                        _refuses(401, b'{"detail":"unauthorized"}'))
+    assert client.post("/settings/voice/check").json()["verdict"] == "key.refused"
+
+    # And a key the service accepts is confirmed, rather than assumed.
+    monkeypatch.setattr(voice.urllib.request, "urlopen", _answers({
+        "tier": "creator", "character_count": 10, "character_limit": 100000}))
+    good = client.post("/settings/voice/check").json()
+    assert good["verdict"] == "key.works" and good["ok"] is True
+
+
+def test_every_verdict_a_key_check_can_reach_has_a_sentence():
+    """`KEY_VERDICTS` is what each client renders from. A verdict the
+    backend can return and no table has a row for is a blank line where an
+    instruction should be."""
+    for verdict, sentence in voice.KEY_VERDICTS.items():
+        assert verdict.startswith("key."), verdict
+        assert sentence and sentence[0].islower(), (
+            f"{verdict}: these are read as a continuation of the sentence "
+            "the screen already started, the way every other refusal in "
+            "this product is")
 
 
 def test_the_voices_we_offer_are_voices_that_exist():

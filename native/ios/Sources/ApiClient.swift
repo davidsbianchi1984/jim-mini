@@ -2722,6 +2722,35 @@ struct VoiceSettingsOut: Decodable {
     let device_fallback: Bool
 }
 
+/// The verdict on a saved speaking key.
+///
+/// `verdict` is the key, not the sentence — it travels on the wire so each
+/// client renders it from its own table. `detail` is the English behind it,
+/// for a verdict this shell has no row for yet.
+struct VoiceKeyCheckOut: Decodable {
+    let provider: String
+    let ok: Bool
+    let checked: Bool
+    let verdict: String
+    let detail: String
+}
+
+/// What is left of the speaking allowance.
+///
+/// `used` is what has been *spent* — the provider's own field is named
+/// `character_count`, which reads like a balance and is not one. The
+/// backend does the subtraction and floors it at zero, because a spent
+/// account reports a count above its limit.
+struct VoiceQuotaOut: Decodable {
+    let provider: String
+    let tier: String?
+    let used: Int
+    let limit: Int
+    let left: Int
+    let exhausted: Bool
+    let resets_at: String?
+}
+
 /// The mail configuration — never the password, only whether one is set.
 struct MailSettingsOut: Decodable {
     let transport: String
@@ -2757,6 +2786,21 @@ extension ApiClient {
 
     func clearVoiceSettings() async throws -> VoiceSettingsOut {
         try await request("/settings/voice", method: "DELETE")
+    }
+
+    /// Is the saved key a working key? Saving only ever reported that the
+    /// string was written down, and the first anybody knew otherwise was a
+    /// raw provider error at the moment they asked to be spoken to.
+    func checkVoiceKey() async throws -> VoiceKeyCheckOut {
+        try await request("/settings/voice/check", method: "POST",
+                          body: [:], token: nil)
+    }
+
+    /// How much speaking is left. Throws on a deployment using the device's
+    /// own voice, or a provider that publishes no balance — the card treats
+    /// that as "no line to show" rather than as an error worth a red row.
+    func voiceQuota() async throws -> VoiceQuotaOut {
+        try await request("/voice/quota")
     }
 
     func mailSettings() async throws -> MailSettingsOut {

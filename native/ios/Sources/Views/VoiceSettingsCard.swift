@@ -7,6 +7,7 @@ import SwiftUI
 struct VoiceSettingsCard: View {
     @EnvironmentObject var state: AppState
     @State private var settings: VoiceSettingsOut?
+    @State private var quota: VoiceQuotaOut?
     @State private var provider = ""
     @State private var voiceId = ""
     @State private var apiKey = ""
@@ -35,6 +36,22 @@ struct VoiceSettingsCard: View {
                                     ? " (env)" : ""))
                         .font(.caption2).foregroundStyle(Theme.green)
                 }
+            }
+
+            // The allowance. A spent one used to be invisible here: the send
+            // is refused, this shell falls back to the device's own voice on
+            // any non-ok status, and the Guardian went on talking in a
+            // flatter voice with nobody told why. Amber rather than red —
+            // it still speaks, just not in the chosen voice.
+            if let quota {
+                Text(L10n.t(quota.exhausted ? "ns.vs.spent" : "ns.vs.left",
+                            state.language)
+                        .replacingOccurrences(of: "{left}",
+                                              with: "\(quota.left)")
+                        .replacingOccurrences(of: "{limit}",
+                                              with: "\(quota.limit)"))
+                    .font(.caption2)
+                    .foregroundStyle(quota.exhausted ? Theme.amber : Theme.t2)
             }
 
             HStack(spacing: 8) {
@@ -99,6 +116,10 @@ struct VoiceSettingsCard: View {
 
     private func load() async {
         settings = try? await ApiClient.shared.voiceSettings()
+        // `try?` deliberately: a deployment on the device voice, or on a
+        // provider that publishes no balance, answers 503 here, and that is
+        // an absence of a line rather than a failure to report.
+        quota = try? await ApiClient.shared.voiceQuota()
         if let settings {
             if provider.isEmpty { provider = settings.provider }
             if voiceId.isEmpty { voiceId = settings.voice_id ?? "" }
@@ -115,6 +136,18 @@ struct VoiceSettingsCard: View {
                     apiKey: apiKey.trimmingCharacters(in: .whitespaces),
                     voiceId: voiceId, speakReplies: speakReplies)
                 apiKey = ""
+                // The provider may have just changed, and with it whether
+                // there is an allowance to show at all.
+                quota = try? await ApiClient.shared.voiceQuota()
+                // And whether what was saved is a key at all. Saving used to
+                // report only that the string had been written down; a key
+                // the service refuses looked identical to one it accepts
+                // until somebody asked to be spoken to.
+                if let check = try? await ApiClient.shared.checkVoiceKey(),
+                   !check.ok {
+                    self.error = L10n.t("ns.vs.\(check.verdict)",
+                                        state.language)
+                }
             } catch { self.error = error.localizedDescription }
             busy = false
         }
@@ -127,6 +160,7 @@ struct VoiceSettingsCard: View {
                 settings = try await ApiClient.shared.clearVoiceSettings()
                 provider = settings?.provider ?? ""
                 voiceId = ""
+                quota = try? await ApiClient.shared.voiceQuota()
             } catch { self.error = error.localizedDescription }
             busy = false
         }

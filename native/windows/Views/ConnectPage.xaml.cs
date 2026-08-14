@@ -900,6 +900,28 @@ public sealed partial class ConnectPage : Page
     {
         try { RenderVoiceSettings(await ApiClient.Shared.VoiceSettings()); }
         catch { /* leave as-is */ }
+        await LoadVoiceQuota();
+    }
+
+    /// The allowance, refreshed whenever the settings are — saving can
+    /// change the provider, and with it whether there is a balance at all.
+    /// A deployment on the device's own voice, or on a provider that
+    /// publishes none, answers 503; the line is then absent rather than
+    /// red, because having no allowance is not a failure to report one.
+    private async Task LoadVoiceQuota()
+    {
+        try
+        {
+            var q = await ApiClient.Shared.VoiceQuota();
+            VsQuota.Text = L10n.T(q.Exhausted ? "ns.vs.spent" : "ns.vs.left")
+                .Replace("{left}", q.Left.ToString())
+                .Replace("{limit}", q.Limit.ToString());
+            VsQuota.Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                Application.Current.Resources[
+                    q.Exhausted ? "JimAmberBrush" : "JimT2Brush"];
+            VsQuota.Visibility = Visibility.Visible;
+        }
+        catch { VsQuota.Visibility = Visibility.Collapsed; }
     }
 
     private void RenderVoiceSettings(VoiceSettingsOut s)
@@ -960,6 +982,21 @@ public sealed partial class ConnectPage : Page
                 _vsProvider, VsKey.Password.Trim(), _vsVoiceId,
                 VsHear.IsChecked == true));
             VsKey.Password = "";
+            await LoadVoiceQuota();
+            // And whether what was saved is a key at all. Saving used to
+            // report only that the string had been written down; a key the
+            // service refuses looked identical to one it accepts until
+            // somebody asked to be spoken to.
+            try
+            {
+                var check = await ApiClient.Shared.CheckVoiceKey();
+                if (!check.Ok)
+                {
+                    VsError.Text = L10n.T($"ns.vs.{check.Verdict}");
+                    VsError.Visibility = Visibility.Visible;
+                }
+            }
+            catch { /* 503: nothing here to check */ }
         }
         catch (Exception ex) { ShowVoiceError(ex); }
     }

@@ -164,6 +164,33 @@ export type CloudStatus = {
   contribution: string;
 };
 
+/**
+ * What is left of the speaking allowance.
+ *
+ * `used` is what has been spent — the provider calls it `character_count`,
+ * which reads like a balance and is not one. `left` is the subtraction
+ * already done, floored at zero, because a spent account reports a count
+ * above its limit and a screen doing its own arithmetic would print a
+ * negative number.
+ */
+export type VoiceQuota = {
+  provider: string; tier?: string | null; status?: string | null;
+  used: number; limit: number; left: number; exhausted: boolean;
+  resets_at?: string | null;
+};
+
+/**
+ * The verdict on a saved speaking key.
+ *
+ * `verdict` is the key, not the sentence: it travels on the wire so each
+ * client renders it from its own table. `detail` is the English behind it,
+ * for a client that has no row for a verdict added later.
+ */
+export type VoiceKeyCheck = {
+  provider: string; ok: boolean; checked: boolean;
+  verdict: string; detail: string;
+};
+
 export type DockState = {
   user_id: string; corner: string; state: string; face: string;
   faces: string[]; set: boolean; wanted: string; forced: boolean;
@@ -1115,6 +1142,14 @@ export const api = {
   saveVoiceSettings: (body: { provider: string; api_key?: string;
                               voice_id?: string; speak_replies?: boolean }) =>
     req<{ provider: string }>("/settings/voice", { method: "PUT", body }),
+  // What is left of the speaking allowance. Answers 503 on a deployment
+  // with no speaking provider, or one whose provider publishes no balance —
+  // the refusal is the information, so the screen catches and shows it.
+  voiceQuota: () => req<VoiceQuota>("/voice/quota"),
+  // Is the saved key a working key? Saving only ever answered whether the
+  // string was written down. 503 when there is nothing to check.
+  checkVoiceKey: () =>
+    req<VoiceKeyCheck>("/settings/voice/check", { method: "POST" }),
   transcribe: (audio_base64: string) =>
     req<{ text: string }>("/voice/transcribe",
       { method: "POST", body: { audio_base64 } }),

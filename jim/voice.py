@@ -141,9 +141,32 @@ def _env_key(provider: str) -> str:
     }.get(provider, "")
 
 
+def _house_provider() -> str:
+    """The provider a host key implies when nothing has been chosen.
+
+    A deployment that sets ``ELEVENLABS_API_KEY`` is paying for the voice on
+    behalf of everyone who opens the app, which was the whole point of a
+    house key — and until this function existed the key was read and thrown
+    away. ``_resolved`` defaulted the provider to ``device`` and then asked
+    ``_env_key("device")``, which is empty by construction, so the branch
+    that falls back to the device voice fired every time and the host key
+    was never consulted.
+
+        asked     is the environment key read
+        mattered  does setting it turn the voice on
+
+    Only ElevenLabs is inferred. ``OPENAI_API_KEY`` is the *language* key
+    in :mod:`jim.llm` — a deployment that sets it is buying thinking, not
+    speech, and inferring TTS from it would start spending somebody's
+    tokens on audio they never asked for. Choosing OpenAI for speech stays
+    an explicit act in Settings.
+    """
+    return "elevenlabs" if os.environ.get("ELEVENLABS_API_KEY", "") else "device"
+
+
 def _resolved() -> dict:
     row = stored_settings() or {}
-    provider = row.get("provider") or "device"
+    provider = row.get("provider") or _house_provider()
     key = row.get("api_key") or _env_key(provider)
     if provider != "device" and not key:
         # Configured for a provider whose key has since gone: the device
@@ -181,6 +204,190 @@ def voices_for(provider: str) -> list[dict]:
     if provider == "openai":
         return OPENAI_VOICES
     return []
+
+
+def _subscription(key: str, purpose: str) -> dict:
+    """ElevenLabs' account row: the allowance, the tier, and — because it
+    answers 401 to a key it does not know — whether the key is a key.
+
+    One call, no audio, no spend. Both callers below need exactly this.
+    """
+    url = "https://api.elevenlabs.io/v1/user/subscription"
+    req = urllib.request.Request(url, headers={"xi-api-key": key})
+    from . import offline
+    offline.allow(url, purpose)
+    try:
+        with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
+            return json.loads(resp.read() or b"{}")
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode(errors="replace")[:300]
+        raise VoiceError(f"elevenlabs refused it: HTTP {exc.code} {detail}")
+    except (urllib.error.URLError, TimeoutError) as exc:
+        raise VoiceError(f"could not reach elevenlabs: {exc}")
+
+
+#: What a key check can conclude, keyed the way `SPECIALIST_STANDING` is in
+#: :mod:`jim.i18n` — the key travels on the wire so each client renders the
+#: sentence from its own table, and the English lives here in one place.
+KEY_VERDICTS: dict[str, str] = {
+    "key.works":
+        "that key works",
+    "key.is_an_id":
+        "that is the key's ID, not the key. The dashboard lists the ID "
+        "beside every key, and shows the key itself once — when you create "
+        "or rotate it. The one you want begins sk_ and is much longer",
+    "key.refused":
+        "the service did not accept that key",
+    "key.unchecked":
+        "the key is saved, but nothing could be reached to check it — it "
+        "will be tried the first time the Guardian speaks",
+}
+
+
+def verify() -> dict:
+    """Ask the provider whether the stored key is a working key.
+
+    ## The finding
+
+    Saving a key answered the wrong question. `save_settings` writes the
+    string and the console says **Saved.** — which is true, and says nothing
+    about whether what was saved is a key. The first time anybody found out
+    otherwise was at the moment they asked to be spoken to or listened to,
+    several screens away from the field they typed it into, as a raw
+    provider error:
+
+        HTTP 400 {"detail":{"status":"api_key_id_used_as_api_key",
+        "message":"key ID used as API key — only valid API keys can be
+        used. API keys start with 'sk_' and are shown when the key is
+        created or rotated."}}
+
+    That is not a rare slip. ElevenLabs' dashboard shows the **key ID** in
+    the list of keys, permanently and next to the name, and shows the key
+    itself exactly once. The ID is therefore the string in front of you
+    every time you go looking, and it is the wrong one — so the obvious
+    action produces a deployment that is configured, reports itself
+    configured, and cannot speak.
+
+        asked     was the key saved
+        mattered  is the saved key a key
+
+    ## Why the check is the subscription call
+
+    It costs nothing, sends no audio, and the provider is the only authority
+    on its own keys. Checking the *shape* here instead would encode today's
+    format as a rule and refuse tomorrow's — and would still have to guess
+    at every other way a key can be wrong. The service is asked, and its
+    answer is turned into a sentence naming what to do about it.
+
+    Never raises for a refusal: a refusal is the answer this returns. The
+    key is used and never returned.
+    """
+    r = _resolved()
+    if r["provider"] == "device":
+        raise VoiceUnavailable(
+            "no speaking service is configured — there is no key to check")
+    if r["provider"] != "elevenlabs":
+        # OpenAI's key is checked by `jim.llm`'s own settings screen, and
+        # this one has no cheap read that is certain to be permitted on a
+        # key scoped to audio alone. Saying so beats a check that fails for
+        # a reason unrelated to the key.
+        raise VoiceUnavailable(
+            f"{r['provider']} keys are not checked here — this check is the "
+            "ElevenLabs account read")
+    from . import offline
+    try:
+        _subscription(r["api_key"], "checking the speaking key")
+    except offline.LeftTheHost:
+        verdict = "key.unchecked"
+    except VoiceError as exc:
+        said = str(exc)
+        verdict = ("key.is_an_id" if "api_key_id_used_as_api_key" in said
+                   else "key.refused" if "HTTP" in said
+                   else "key.unchecked")
+    else:
+        verdict = "key.works"
+    return {
+        "provider": r["provider"],
+        "ok": verdict == "key.works",
+        "checked": verdict != "key.unchecked",
+        "verdict": verdict,
+        "detail": KEY_VERDICTS[verdict],
+    }
+
+
+def remaining() -> dict:
+    """How much speaking this account has left, from the provider itself.
+
+    Nothing in this app read a quota until now, and the failure that hides
+    is a quiet one: when an ElevenLabs allowance runs out the send answers
+    HTTP 401 with ``quota_exceeded``, :func:`speak` raises
+    :class:`VoiceError`, the route answers 502, and every client — console,
+    iOS, Android, Windows — falls back to the device's own voice on any
+    non-ok status. That fallback is correct and it is also silent. The
+    Guardian keeps talking in a flatter voice and nobody is told why, so
+    the person paying for the account finds out by noticing.
+
+        asked     does a spent allowance still speak
+        mattered  does anybody find out it was spent
+
+    ElevenLabs publishes the numbers on ``/v1/user/subscription``. The one
+    trap in that payload is the name: ``character_count`` is what has been
+    *used*, not what is left, and reading it as a balance would show a
+    fresh account with a large allowance as nearly out. What is left is
+    ``character_limit - character_count``, floored at zero — a spent
+    account can report a count above its limit.
+
+    Raises :class:`VoiceUnavailable` when this deployment has no speaking
+    provider, or has one that publishes no allowance; :class:`VoiceError`
+    when the service is unreachable or refuses. The key is used and never
+    returned.
+    """
+    r = _resolved()
+    if r["provider"] == "device":
+        raise VoiceUnavailable(
+            "no speaking service is configured — the device's own voice has "
+            "no allowance to run out")
+    if r["provider"] != "elevenlabs":
+        # OpenAI publishes no per-key balance: the usage endpoints it once
+        # had are gone, and the billing figures live behind the dashboard's
+        # own session rather than an API key. Saying so is better than
+        # inventing a number or showing an empty line.
+        raise VoiceUnavailable(
+            f"{r['provider']} does not publish a remaining allowance — its "
+            "balance is only visible on the provider's own dashboard")
+    data = _subscription(r["api_key"], "reading the speaking allowance")
+    used = int(data.get("character_count") or 0)
+    limit = int(data.get("character_limit") or 0)
+    left = max(0, limit - used)
+    return {
+        "provider": "elevenlabs",
+        "tier": data.get("tier") or None,
+        "status": data.get("status") or None,
+        "used": used,
+        "limit": limit,
+        "left": left,
+        # The question the screen is actually asking. An account with a
+        # limit of zero has no allowance at all rather than a spent one,
+        # and both of those mean the device voice answers from here.
+        "exhausted": left <= 0,
+        "resets_at": _reset_time(data.get("next_character_count_reset_unix")),
+    }
+
+
+def _reset_time(unix: object) -> str | None:
+    """The allowance refills on a date, and a bare epoch integer on a screen
+    is a number nobody can read. Returns UTC ISO-8601, or None when the
+    provider did not say."""
+    import datetime as _dt
+
+    try:
+        seconds = int(unix)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    if seconds <= 0:
+        return None
+    return (_dt.datetime.fromtimestamp(seconds, _dt.timezone.utc)
+            .strftime("%Y-%m-%dT%H:%M:%SZ"))
 
 
 def speak(text: str, voice_id: str | None = None) -> tuple[bytes, str]:

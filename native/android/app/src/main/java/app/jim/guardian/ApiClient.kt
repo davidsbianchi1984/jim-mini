@@ -2380,6 +2380,32 @@ object ApiClient {
     suspend fun clearVoiceSettings(): VoiceSettingsOut =
         voiceSettingsOf(request("/settings/voice", "DELETE"))
 
+    /**
+     * Is the saved key a working key? Saving only ever reported that the
+     * string was written down, and the first anybody knew otherwise was a
+     * raw provider error at the moment they asked to be spoken to.
+     */
+    suspend fun checkVoiceKey(): VoiceKeyCheckOut {
+        val o = request("/settings/voice/check", "POST", JSONObject())
+        return VoiceKeyCheckOut(
+            o.optString("provider", ""), o.optBoolean("ok", false),
+            o.optBoolean("checked", false), o.optString("verdict", ""),
+            o.optString("detail", ""))
+    }
+
+    /**
+     * How much speaking is left. Throws on a deployment using the device's
+     * own voice, or a provider that publishes no balance — the card treats
+     * that as "no line to show" rather than an error worth a red row.
+     */
+    suspend fun voiceQuota(): VoiceQuotaOut {
+        val o = request("/voice/quota")
+        return VoiceQuotaOut(
+            o.optString("provider", ""), o.optString("tier", null),
+            o.optInt("used"), o.optInt("limit"), o.optInt("left"),
+            o.optBoolean("exhausted", false), o.optString("resets_at", null))
+    }
+
     private fun mailSettingsOf(o: JSONObject) = MailSettingsOut(
         o.optString("transport", ""), o.optString("source", ""),
         o.optString("host", null), o.optInt("port"),
@@ -3471,6 +3497,27 @@ data class VoiceSettingsOut(val provider: String, val voiceId: String?,
                             val speakReplies: Boolean, val keySet: Boolean,
                             val keySource: String, val voices: List<VoiceRow>,
                             val deviceFallback: Boolean)
+/**
+ * What is left of the speaking allowance.
+ *
+ * `used` is what has been *spent* — the provider's own field is named
+ * `character_count`, which reads like a balance and is not one. The backend
+ * does the subtraction and floors it at zero, because a spent account
+ * reports a count above its limit.
+ */
+/**
+ * The verdict on a saved speaking key.
+ *
+ * `verdict` is the key, not the sentence — it travels on the wire so each
+ * client renders it from its own table. `detail` is the English behind it,
+ * for a verdict this shell has no row for yet.
+ */
+data class VoiceKeyCheckOut(val provider: String, val ok: Boolean,
+                            val checked: Boolean, val verdict: String,
+                            val detail: String)
+data class VoiceQuotaOut(val provider: String, val tier: String?,
+                         val used: Int, val limit: Int, val left: Int,
+                         val exhausted: Boolean, val resetsAt: String?)
 /** The mail configuration — never the password, only whether one is set. */
 data class MailSettingsOut(val transport: String, val source: String,
                            val host: String?, val port: Int,

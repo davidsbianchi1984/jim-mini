@@ -8,6 +8,45 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A host key that paid for the voice was read and thrown away.**
+  `ELEVENLABS_API_KEY` is the house key — the way a deployment buys the
+  voice on behalf of everybody who opens the app. It did nothing.
+  `_resolved` defaulted the provider to `device` and *then* asked
+  `_env_key("device")`, which is empty by construction, so the branch that
+  falls back to the device's own voice fired every time and the key was
+  never consulted.
+
+      asked     is the environment key read
+      mattered  does setting it turn the voice on
+
+  `_house_provider` now infers ElevenLabs from the key's presence. Only
+  ElevenLabs: `OPENAI_API_KEY` is the *language* key in `jim/llm.py`, and a
+  deployment that sets it is buying reasoning, not speech — inferring
+  speech from it would spend somebody's tokens on audio they never asked
+  for.
+
+- **"Saved." was answering the wrong question about an API key.** Saving
+  wrote the string and the screen confirmed it, which was true and silent
+  about whether what was saved could speak. ElevenLabs' dashboard shows
+  each key's **ID** permanently, beside its name, and shows the key itself
+  exactly once — at creation — so the string in front of you whenever you
+  go looking is the wrong one. Pasting it produced a deployment that was
+  configured, reported itself configured, and failed at the moment somebody
+  asked to be spoken to, several screens from the field they typed into,
+  with a raw `api_key_id_used_as_api_key` from the provider.
+
+      asked     was the key saved
+      mattered  is the saved key a key
+
+  `POST /settings/voice/check` asks the provider — one account read, no
+  audio, no spend — and all four clients show its verdict at the moment of
+  saving. The verdict travels as a key rather than a sentence, so each
+  client renders it from its own ten-language table; the key-ID case is
+  told apart from every other refusal because it is the one that names an
+  action to take. Checking the key's *shape* instead would have encoded
+  today's format as a rule and refused tomorrow's, and the service is the
+  only authority on its own keys.
+
 - **One of the seven voices in the picker did not exist.**
   `VR6AewLTigWG4xSJukFG` ("Arnold") has been in `ELEVEN_VOICES` since the
   voice round, offered on the console and all three phones, and ElevenLabs
@@ -28,6 +67,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   there is none rather than mocking a service into agreeing.
 
 ### Added
+
+- **The speaking allowance is visible before it runs out.** Nothing here
+  read a quota, so a spent one was invisible: the send is refused, `speak`
+  raises, the route answers 502, and every client — console, iOS, Android,
+  Windows — falls back to the device's own voice on any non-ok status. That
+  fallback is right, and it is silent. The Guardian went on talking in a
+  flatter voice and the person paying for the account found out by noticing.
+
+      asked     does a spent allowance still speak
+      mattered  does anybody find out it was spent
+
+  `GET /voice/quota` reads ElevenLabs' account row and publishes what is
+  **left** — the provider's own field is `character_count`, which is what
+  has been *spent*, and reading that name as a balance shows a fresh
+  account as nearly out and a spent one as full. The subtraction is done
+  once, in the backend, floored at zero because a spent account reports a
+  count above its limit. The Held screen carries the line beside the other
+  disclosures about where your words go; the phones carry it on the voice
+  card, in amber when it is gone, saying what happens next rather than only
+  that a number reached zero.
 
 - **The price list says whether the gate is running.** `GET /plans` reports
   `enforcing`, and a sentence with it while the beta stands enforcement down.

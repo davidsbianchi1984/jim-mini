@@ -2004,6 +2004,20 @@ public sealed class ApiClient
         Send<VoiceSettingsOut>(new HttpRequestMessage(HttpMethod.Delete,
             "/settings/voice"));
 
+    /// Is the saved key a working key? Saving only ever reported that the
+    /// string was written down, and the first anybody knew otherwise was a
+    /// raw provider error at the moment they asked to be spoken to.
+    public Task<VoiceKeyCheckOut> CheckVoiceKey() =>
+        Send<VoiceKeyCheckOut>(Post("/settings/voice/check",
+            new Dictionary<string, object>()));
+
+    /// How much speaking is left. Throws on a deployment using the device's
+    /// own voice, or a provider that publishes no balance — the page treats
+    /// that as "no line to show" rather than an error worth a red row.
+    public Task<VoiceQuotaOut> VoiceQuota() =>
+        Send<VoiceQuotaOut>(new HttpRequestMessage(HttpMethod.Get,
+            "/voice/quota"));
+
     public Task<MailSettingsOut> MailSettings() =>
         Send<MailSettingsOut>(new HttpRequestMessage(HttpMethod.Get,
             "/settings/mail"));
@@ -2957,6 +2971,33 @@ public record VoiceSettingsOut(
     [property: JsonPropertyName("key_source")] string KeySource,
     [property: JsonPropertyName("voices")] VoiceRow[] Voices,
     [property: JsonPropertyName("device_fallback")] bool DeviceFallback);
+
+/// The verdict on a saved speaking key.
+///
+/// `Verdict` is the key, not the sentence — it travels on the wire so each
+/// client renders it from its own table. `Detail` is the English behind it,
+/// for a verdict this shell has no row for yet.
+public record VoiceKeyCheckOut(
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("ok")] bool Ok,
+    [property: JsonPropertyName("checked")] bool Checked,
+    [property: JsonPropertyName("verdict")] string Verdict,
+    [property: JsonPropertyName("detail")] string Detail);
+
+/// What is left of the speaking allowance.
+///
+/// `Used` is what has been *spent* — the provider's own field is named
+/// `character_count`, which reads like a balance and is not one. The
+/// backend does the subtraction and floors it at zero, because a spent
+/// account reports a count above its limit.
+public record VoiceQuotaOut(
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("tier")] string? Tier,
+    [property: JsonPropertyName("used")] int Used,
+    [property: JsonPropertyName("limit")] int Limit,
+    [property: JsonPropertyName("left")] int Left,
+    [property: JsonPropertyName("exhausted")] bool Exhausted,
+    [property: JsonPropertyName("resets_at")] string? ResetsAt);
 
 /// The mail configuration — never the password, only whether one is set.
 public record MailSettingsOut(

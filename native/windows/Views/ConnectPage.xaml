@@ -100,6 +100,15 @@
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <TextBlock x:Name="VsStatus" FontSize="11" TextWrapping="Wrap"
                                        Foreground="{StaticResource JimT2Brush}" />
+                            <!-- The allowance. A spent one used to be
+                                 invisible: the send is refused, this shell
+                                 falls back to the device's own voice on any
+                                 non-ok status, and the Guardian went on
+                                 talking in a flatter voice with nobody told
+                                 why. Collapsed when there is none to show. -->
+                            <TextBlock x:Name="VsQuota" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}"
+                                       Visibility="Collapsed" />
                             <StackPanel x:Name="VsProviders" Orientation="Horizontal" Spacing="6" />
                             <StackPanel x:Name="VsVoices" Spacing="4" />
                             <PasswordBox x:Name="VsKey" />

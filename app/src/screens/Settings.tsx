@@ -785,7 +785,28 @@ function VoicePanel() {
         voice_id: next?.voice_id ?? voiceId,
         speak_replies: next?.speak_replies,
       });
-      setApiKey(""); setNote("Saved."); load();
+      setApiKey(""); load();
+      // "Saved." was the wrong sentence. It reported that a string had been
+      // written down — always true — and said nothing about whether the
+      // string was a key. Somebody who pastes the key's *ID*, which the
+      // ElevenLabs dashboard shows permanently beside every key while
+      // showing the key itself once, got "Saved." here and then a raw
+      // provider error several screens away, at the moment they asked to be
+      // spoken to. So the provider is asked now and its answer is the line.
+      setNote(tr("set.voice.saved", lang));
+      try {
+        const check = await api.checkVoiceKey();
+        const said = tr(`set.voice.${check.verdict}`, lang);
+        // A key the service refused belongs in the red box, not in the grey
+        // line under it. The grey line is where "Saved." lived, and the
+        // whole finding here is that a quiet confirmation was covering a
+        // deployment that could not speak.
+        if (check.ok) setNote(said);
+        else { setNote(null); setError(said); }
+      } catch {
+        // 503: nothing to check — the device voice, or a provider this
+        // check does not cover. "Saved." stands, and is the whole truth.
+      }
     } catch (e) { setError((e as Error).message); }
     finally { setBusy(false); }
   }
