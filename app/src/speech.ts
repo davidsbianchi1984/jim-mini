@@ -98,9 +98,7 @@ function deviceListener(
     onError(e.error === "not-allowed"
       ? "no microphone available — check the app's microphone permission"
       : e.error === "service-not-allowed"
-      ? "the operating system refused the device's recogniser — on iPhone "
-        + "and iPad that is Dictation being switched off: Settings › "
-        + "General › Keyboard › Enable Dictation"
+      ? platformRefusal()
       : `the device's recogniser could not hear that (${e.error || "unknown"})`);
   };
   rec.onend = () => {
@@ -110,6 +108,89 @@ function deviceListener(
   };
   rec.start();
   return { stop: () => rec.stop() };
+}
+
+/** What to say when the platform refuses the recogniser outright.
+ *
+ * The previous wording named one cause and named it as fact: *on iPhone and
+ * iPad that is Dictation being switched off*. Reported from the field with a
+ * screenshot of Settings showing Dictation **on**. So the sentence sent
+ * somebody to a switch that was already thrown, and when it changed nothing
+ * the honest conclusion available to them was that the app is broken.
+ *
+ *     asked     does the refusal name a remedy
+ *     mattered  is the remedy the reason
+ *
+ * That is a worse failure than the raw error code it replaced. A code is
+ * unhelpful and admits it; a confident wrong diagnosis spends the person's
+ * trust and their time, and it was written by somebody — me — who had no way
+ * to tell which of several causes had fired.
+ *
+ * `service-not-allowed` is WebKit's answer for *the speech service will not
+ * serve this page*, and Dictation is only one of the ways to get there.
+ * Screen Time can withhold Siri & Dictation entirely; an embedded web view
+ * inside another app does not get the recogniser at all however the phone is
+ * configured; and the service is a network service, so it can simply be
+ * unreachable.
+ *
+ * Nothing here can read any of that: none of it is exposed to a page. So the
+ * sentence now states only what is certain — the platform refused, and
+ * tapping again will not help — and lists where to look without claiming to
+ * know which one it is. The one thing it *can* detect is the web view, and
+ * it says so when it sees it, because that is the case no setting can fix.
+ */
+export function platformRefusal(): string {
+  // The cause the person can actually act on, said first.
+  //
+  // A second field report, same session: Dictation on, Screen Time
+  // restrictions off entirely, still refused. The reporter had already told
+  // me the thing that mattered and I had not connected it — *no key is
+  // configured for this app*. `listen()` reads that as `knownHasService ===
+  // false` and goes straight to the device recogniser, which on iOS answers
+  // `service-not-allowed`. So the sentence lectured about iOS settings while
+  // the fixable cause sat one branch away.
+  //
+  //     asked     why did the recogniser refuse
+  //     mattered  which of the reasons can this person do something about
+  //
+  // The honest sentence for that state names the key first and the platform
+  // second, because one of the two has a door and the other does not.
+  //
+  // `no transcription service is set up — add a key` already existed in this
+  // file, and was reachable only when `deviceRecogniser()` returned null.
+  // On iOS Safari the constructor exists and always fails, so the branch
+  // that would have said the useful thing was the branch iOS never takes.
+  // The constructor being present is not the service being available —
+  // a binding is not a door, in a file that had already learned that once.
+  if (knownHasService === false) {
+    return "no transcription service is set up for this app — add an OpenAI "
+      + "or ElevenLabs key in Settings, and the microphone will work. The "
+      + "device's own recogniser was tried instead and this platform "
+      + "refused it, which no setting on the phone will change. You can "
+      + "type in the meantime — nothing else is blocked.";
+  }
+  const embedded = typeof navigator !== "undefined"
+    // `navigator.standalone` is defined in iOS Safari — `false` in a tab,
+    // `true` for a home-screen app — and absent inside another app's web
+    // view. It is non-standard and a few in-app browsers do expose it, so
+    // this is a hint rather than a proof; it only ever *adds* a sentence
+    // that names a real dead end, and never withholds the settings.
+    && /iPhone|iPad|iPod/.test(navigator.userAgent)
+    && (navigator as unknown as { standalone?: boolean }).standalone
+       === undefined;
+  return embedded
+    ? "this page is running inside another app's browser, which does not get "
+      + "the device's recogniser at all. Open jim-mini.com in Safari itself "
+      + "and the microphone will work — no setting will fix it here."
+    : "the platform refused the recogniser, so tapping again will not help. "
+      + "Three things withhold it and this page cannot see which: Dictation "
+      + "off (Settings › General › Keyboard › Enable Dictation); Siri & "
+      + "Dictation restricted (Settings › Screen Time › Content & Privacy "
+      + "Restrictions › Allowed Apps & Features, or Intelligence & Siri on "
+      + "newer iOS — not the Speech Recognition row under Privacy, which is "
+      + "a different permission and can read Allow while dictation is still "
+      + "withheld); or the speech service being unreachable just now. You "
+      + "can type instead — nothing else is blocked.";
 }
 
 // Set when the configured service refuses, so the next tap goes straight to

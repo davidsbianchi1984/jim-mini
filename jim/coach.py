@@ -60,6 +60,28 @@ def _context(user_id: str) -> str:
     # answering them offline is carrying what they said to the online one.
     from . import engaged
     lines.extend(engaged.watch_lines(user_id))
+    # What this product can do, told to the coach rather than left to the
+    # model's priors. Asked "are you capable of going online yet", the coach
+    # answered that it cannot browse, look anything up, or check anything
+    # live. True of *this* turn — and a description of the product as it
+    # stood before engaged sessions existed. The button that opens one was
+    # in the same navigation bar as the answer.
+    #
+    #     asked     is the coach honest about what a coach turn can do
+    #     mattered  is it honest about what the product can do
+    #
+    # There was nothing hardcoded to correct: `_SYSTEM` never told the coach
+    # what the product was, so the model filled the gap from what assistants
+    # generally cannot do. The count is read from the registry the agent
+    # actually runs from, so this line cannot drift from the reach it
+    # describes.
+    lines.append(
+        f"this turn cannot browse or look anything up, but the product can "
+        f"do more than this turn: an engaged session ({len(engaged.TOOLS)} "
+        f"actions — journalling, goals, habits, medications, bookings, how "
+        f"you are spoken to) runs on the online model and acts through this "
+        f"app's own doors, every act reversible. asked what you are capable "
+        f"of, say so — do not answer as though only this turn existed")
     # What the connected apps collected (jim/app_connectors.py) — the
     # sentence under /apps/connector/{cid}/collect says it "now informs
     # guidance", and this line is where that stops being a claim. Unvaulted

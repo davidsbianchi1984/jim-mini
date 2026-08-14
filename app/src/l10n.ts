@@ -3530,29 +3530,32 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
 
   // -- engaged sessions (jim/engaged.py) ---------------------------------
+  // The incantation, not the instruction. "Activate JIM" named the
+  // mechanism; this names the moment. The 🜂 beside it stays — the triangle
+  // is how the tab is found before the word is read.
+  //
+  // A borrowed word rather than a translated one: abracadabra is already
+  // the same word in every language that has it, so the Latin scripts carry
+  // it verbatim and the other four transliterate. Capitals throughout,
+  // where the script has them to give.
   "nav.engaged": {
-    en: "Activate JIM",
-    es: "Activar JIM",
-    fr: "Activer JIM",
-    de: "JIM aktivieren",
-    pt: "Ativar o JIM",
-    it: "Attiva JIM",
-    ja: "JIMを起動",
-    zh: "启动 JIM",
-    hi: "JIM चालू करें",
-    ar: "تفعيل JIM",
+    en: "ABRACADABRA",
+    es: "ABRACADABRA",
+    fr: "ABRACADABRA",
+    de: "ABRACADABRA",
+    pt: "ABRACADABRA",
+    it: "ABRACADABRA",
+    ja: "アブラカダブラ",
+    zh: "阿布拉卡达布拉",
+    hi: "अब्राकाडाब्रा",
+    ar: "أبراكادابرا",
   },
+  // The tab is the incantation; the screen it opens is just him. A name,
+  // so it is the same in every language — the same way the other rows keep
+  // "JIM" in Latin script inside an otherwise translated sentence.
   "engaged.title": {
-    en: "Activate JIM",
-    es: "Activar JIM",
-    fr: "Activer JIM",
-    de: "JIM aktivieren",
-    pt: "Ativar o JIM",
-    it: "Attiva JIM",
-    ja: "JIMを起動",
-    zh: "启动 JIM",
-    hi: "JIM चालू करें",
-    ar: "تفعيل JIM",
+    en: "JIM", es: "JIM", fr: "JIM", de: "JIM", pt: "JIM",
+    it: "JIM", ja: "JIM", zh: "JIM", hi: "JIM", ar: "JIM",
   },
   "engaged.blurb": {
     en: "The coach answers one turn at a time. This stays open until you sign off, can do things for you while it is open, and lists everything it did so you can take it back.",
