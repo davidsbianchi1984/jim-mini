@@ -1,0 +1,69 @@
+# status: manifest — 2 treatments × 4 clients
+#
+# Where three clients do a thing and the fourth does not.
+#
+# ## Why this file exists
+#
+# Every product here has four clients — a console, and iOS, Android and
+# Windows shells — and they are written at different times by different
+# hands. A treatment applied in three of them and missed in the fourth is
+# the hardest defect this codebase produces, because every review of the
+# three that agree looks correct, and the odd one out is only reached by
+# somebody holding that particular device.
+#
+# It has happened twice in one week:
+#
+#   - A pasted key arrives with a trailing newline. iOS, Android and
+#     Windows trimmed their input. The console did not — and the console
+#     is the client a deployment is configured from, so the only untrimmed
+#     path was the one that got used. `POST /settings/voice/check`
+#     answered 500 on the screen built to explain what is wrong with a key.
+#
+#   - Then, fixing that, iOS turned out to trim `.whitespaces` rather than
+#     `.whitespacesAndNewlines` — spaces and tabs but not the newline that
+#     caused the fault. Three clients strip it, one does not, and the
+#     three-way agreement is what made the fourth invisible.
+#
+# ## What a row is
+#
+#   treatment | client | path | pattern
+#
+# `treatment` is the behaviour, in words, and groups the rows.
+# `client` is one of: console, ios, android, windows.
+# `path` is a file or glob, relative to the repo root.
+# `pattern` is a Python regex; the treatment is present if it matches.
+#
+# Every treatment must carry a row for all four clients. A treatment
+# written for three is precisely the bug this file is about, so the guard
+# refuses the manifest rather than the tree in that case.
+#
+# ## What this proves and what it does not
+#
+# Presence, not correctness. A pattern matching does not mean the client
+# handles the input well; it means the client does the same *kind* of
+# thing its siblings do. That is the whole claim, and it is worth making
+# because asymmetry is the signal — a treatment that three clients
+# thought was necessary is a treatment the fourth needs a reason to skip.
+#
+#     asked     does this client handle the input
+#     mattered  does it handle it the way the other three do
+#
+# A deliberate divergence is not a failure to suppress silently: change
+# the pattern for that client to what it actually does, so the row still
+# describes the tree and the next reader sees the difference on purpose.
+#
+# ## Adding a treatment
+#
+# Write four rows and update the count in the header. Prefer a pattern
+# that is specific to the treatment rather than to the surrounding code —
+# `\.trim\(\)` on the right identifier survives a refactor that moves the
+# call; a whole line does not.
+#
+a credential typed by a person is stripped of surrounding whitespace, newlines included, before it is sent | console | app/src/screens/Settings.tsx | apiKey\.trim\(\)
+a credential typed by a person is stripped of surrounding whitespace, newlines included, before it is sent | ios | native/ios/Sources/Views/VoiceSettingsCard.swift | apiKey\.trimmingCharacters\(in: \.whitespacesAndNewlines\)
+a credential typed by a person is stripped of surrounding whitespace, newlines included, before it is sent | android | native/android/app/src/main/java/app/jim/guardian/ui/Screens.kt | apiKey\.trim\(\)
+a credential typed by a person is stripped of surrounding whitespace, newlines included, before it is sent | windows | native/windows/Views/ConnectPage.xaml.cs | VsKey\.Password\.Trim\(\)
+the backend address a person types is stripped of every trailing slash before it is stored | console | app/src/api.ts | url\.replace\(/\\/\+\$/
+the backend address a person types is stripped of every trailing slash before it is stored | ios | native/ios/Sources/ApiClient.swift | drop\(while: \{ \$0 == \"/\" \}\)
+the backend address a person types is stripped of every trailing slash before it is stored | android | native/android/app/src/main/java/app/jim/guardian/ApiClient.kt | value\.trimEnd\('/'\)
+the backend address a person types is stripped of every trailing slash before it is stored | windows | native/windows/ApiClient.cs | url\.TrimEnd\('/'\)

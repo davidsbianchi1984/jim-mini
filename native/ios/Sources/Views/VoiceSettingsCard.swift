@@ -133,7 +133,13 @@ struct VoiceSettingsCard: View {
             do {
                 settings = try await ApiClient.shared.saveVoiceSettings(
                     provider: provider,
-                    apiKey: apiKey.trimmingCharacters(in: .whitespaces),
+                    // `.whitespaces` and not `.whitespacesAndNewlines` was
+                    // the whole difference: a key copied from a dashboard
+                    // arrives with a trailing newline, which this stripped
+                    // spaces around and sent anyway. The other three clients
+                    // strip it, and their agreement is what kept this one
+                    // out of sight. `AppState` already used the wider set.
+                    apiKey: apiKey.trimmingCharacters(in: .whitespacesAndNewlines),
                     voiceId: voiceId, speakReplies: speakReplies)
                 apiKey = ""
                 // The provider may have just changed, and with it whether

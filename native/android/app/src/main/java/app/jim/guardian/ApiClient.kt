@@ -266,6 +266,14 @@ object ApiClient {
     @Volatile var signupKey: String = ""
 
     @Volatile var base: String = "http://10.0.2.2:8000"
+        // Normalised on the way in, the way the console and the Windows
+        // shell already do it: a pasted address with a trailing slash
+        // otherwise reached every path as a double one. PDI's shell has
+        // carried this setter since it was written; these two did not.
+        set(value) {
+            val trimmed = value.trimEnd('/')
+            if (trimmed.isNotBlank()) field = trimmed
+        }
 
     private fun parseGuidance(o: JSONObject?): Guidance? {
         if (o == null) return null
