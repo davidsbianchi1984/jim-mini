@@ -4,6 +4,14 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.71.1] - 2026-08-14
+
+**There are no functional changes to JIM-mini in this release**: cut with
+the siblings. In QRME, `widgets.py` imported a POSIX-only module at the top
+of the file, which took the whole API down on Windows — the frozen desktop
+backend would not start, and two releases published with no installers
+attached at all.
+
 ## [0.71.0] - 2026-08-14
 
 ### Added
@@ -7980,7 +7988,9 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.70.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.71.1...HEAD
+[0.71.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.71.1
+[0.71.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.71.0
 [0.70.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.70.1
 [0.70.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.70.0
 [0.61.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.61.1
