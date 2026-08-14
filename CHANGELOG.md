@@ -4,6 +4,48 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **One of the seven voices in the picker did not exist.**
+  `VR6AewLTigWG4xSJukFG` ("Arnold") has been in `ELEVEN_VOICES` since the
+  voice round, offered on the console and all three phones, and ElevenLabs
+  answers 404 `voice_not_found` for it. Choosing it failed at the one moment
+  the feature exists for — somebody asking to be spoken to.
+
+      asked     is the voice list well-formed
+      mattered  does every voice in it answer
+
+  Nothing in this repo could have caught it. The list is hand-copied opaque
+  identifiers on somebody else's service: the shape is fine and the id is a
+  string whether or not it resolves, and the suite has no key. All seven were
+  checked against a real account by synthesising a line in each; six answered
+  and one did not. It is replaced with a voice that speaks, and
+  `test_the_voices_we_offer_are_voices_that_exist` re-runs the same check
+  whenever `ELEVENLABS_API_KEY` is present — synthesising rather than looking
+  up, because that is the call the product actually makes — and skips when
+  there is none rather than mocking a service into agreeing.
+
+### Added
+
+- **The price list says whether the gate is running.** `GET /plans` reports
+  `enforcing`, and a sentence with it while the beta stands enforcement down.
+  `locked` answers what a plan will cost, which is what a price list is for;
+  it cannot answer whether anybody is being refused today, and for one
+  release nothing could — the stand-down was a module constant no response
+  mentioned.
+
+      asked     does the price list say what a plan costs
+      mattered  does it say whether the gate is running
+
+  QRME's cross-product smoke is what found it. That run drives a Basic
+  account into `synthetic_agents`, asserts the 402, and had nowhere to ask
+  whether the gate was standing; it broke seven steps in while every tier
+  test in this repo kept passing, because they all force the flag on. The
+  Held screen shows the sentence, so a tester reading the prices is not
+  quoted a paywall that is not there.
+
 ## [0.71.1] - 2026-08-14
 
 **There are no functional changes to JIM-mini in this release**: cut with

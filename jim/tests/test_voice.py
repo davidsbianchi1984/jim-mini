@@ -8,6 +8,8 @@ ever written down.
 
 from __future__ import annotations
 
+import pytest
+
 from jim import voice
 
 
@@ -128,3 +130,58 @@ def test_a_provider_whose_key_vanished_falls_back_to_the_device(client):
     conn.execute("UPDATE voice_settings SET api_key='' WHERE id=1")
     conn.commit()
     assert client.get("/settings/voice").json()["provider"] == "device"
+
+
+def test_the_voices_we_offer_are_voices_that_exist():
+    """Speak one line in every voice in the picker, when a key is here.
+
+    `ELEVEN_VOICES` is a hand-copied set of opaque identifiers belonging to
+    somebody else's service. Nothing that reads the list can tell whether an
+    entry resolves — the shape is fine, the name is fine, and the id is a
+    string either way — so every other test in this file passes over a voice
+    that has been withdrawn from the library.
+
+    That is not hypothetical: `VR6AewLTigWG4xSJukFG` ("Arnold") shipped in
+    this list, was offered in the picker on the console and all three phones,
+    and answers 404 `voice_not_found`. Choosing it failed at the one moment
+    the feature exists for — somebody asking to be spoken to.
+
+        asked     is the voice list well-formed
+        mattered  does every voice in it answer
+
+    Skipped without a key rather than mocked. A mock of ElevenLabs would
+    answer 200 for Arnold too, which is exactly the reassurance that let this
+    through; the only thing that settles it is the service saying so.
+    """
+    import os
+    import urllib.error
+    import urllib.request
+
+    key = os.environ.get("ELEVENLABS_API_KEY", "")
+    if not key:
+        pytest.skip("no ELEVENLABS_API_KEY — this one needs the real service")
+
+    # Synthesised rather than looked up. A voice can be absent from the
+    # workspace library and still speak, or present and still refuse, so the
+    # only question worth asking the service is the one the product asks it:
+    # say a word in this voice. Two syllables each, seven calls.
+    import json
+    missing = []
+    for row in voice.ELEVEN_VOICES:
+        req = urllib.request.Request(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{row['id']}",
+            data=json.dumps({"text": "ok", "model_id": os.environ.get(
+                "JIM_ELEVEN_MODEL", "eleven_turbo_v2_5")}).encode(),
+            headers={"xi-api-key": key, "content-type": "application/json",
+                     "accept": "audio/mpeg"}, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=60) as answer:
+                if not answer.read(1):
+                    missing.append(f"{row['name']} ({row['id']}): no audio")
+        except urllib.error.HTTPError as exc:
+            missing.append(f"{row['name']} ({row['id']}): {exc.code}")
+    assert not missing, (
+        "voices offered in the picker that the service does not have:\n    "
+        + "\n    ".join(missing)
+        + "\n  Somebody choosing one of these is refused at the moment they "
+          "ask to be spoken to. Replace the row with a voice that answers.")

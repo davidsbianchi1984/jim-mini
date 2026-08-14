@@ -43,6 +43,23 @@ _TIMEOUT = int(os.environ.get("JIM_VOICE_TIMEOUT", "60"))
 # ElevenLabs' public voice library. Male voices first because that is what
 # this product is most often asked for; every one is selectable, and a
 # custom voice id typed in by hand is honoured too.
+#
+# **Every id here has been spoken.** This list is a hand-copied set of
+# opaque identifiers on somebody else's service: no amount of reading it
+# proves an entry resolves, and the suite has no key, so nothing in this
+# repo could ever have told us. Checked against a real account on
+# 2026-08-14 by synthesising one line per voice — six answered and one did
+# not. `VR6AewLTigWG4xSJukFG` ("Arnold") is gone from the library and
+# answers 404 `voice_not_found`; it was offered in the picker on the
+# console and all three phones, and choosing it produced a failure at the
+# moment somebody asked to be spoken to.
+#
+#     asked     is the voice list well-formed
+#     mattered  does every voice in it answer
+#
+# `test_the_voices_we_offer_are_voices_that_exist` re-runs that check when
+# a key is present and skips when there is none, so this is verifiable
+# again rather than verified once. Re-run it before adding a row.
 ELEVEN_VOICES = [
     {"id": "onwK4e9ZLuTAKqWW03F9", "name": "Daniel", "gender": "male",
      "note": "warm, measured British — the default here"},
@@ -50,8 +67,8 @@ ELEVEN_VOICES = [
      "note": "deep, steady American"},
     {"id": "TxGEqnHWrfWFTfGW9XjX", "name": "Josh", "gender": "male",
      "note": "younger, conversational American"},
-    {"id": "VR6AewLTigWG4xSJukFG", "name": "Arnold", "gender": "male",
-     "note": "firm, direct"},
+    {"id": "pqHfZKP75CvOlQylNhV4", "name": "Bill", "gender": "male",
+     "note": "steady, plain-spoken American"},
     {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male",
      "note": "older, calm, unhurried"},
     {"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "gender": "female",
