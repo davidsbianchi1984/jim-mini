@@ -6,6 +6,48 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.72.2] - 2026-08-14
+
+### Fixed
+
+- **The device recogniser never once ran in a browser.** Safari permits
+  `SpeechRecognition.start()` only inside the user gesture that asked for
+  it, and an `async` function holds that gesture exactly until its first
+  suspension point. `listen` read the voice settings first, which spent the
+  gesture on a fetch and left the recogniser to be refused with
+  `service-not-allowed` — no prompt, no permission to grant, nothing the
+  person could do. So the fallback this module's header has promised since
+  it was written worked on every platform except the one most people are
+  holding.
+
+      asked     is there a device recogniser to fall back to
+      mattered  is it started while the browser still permits it
+
+  `preferDevice` made it worse rather than better. That flag exists so the
+  tap after a service refusal goes straight to the recogniser instead of
+  failing the same way twice — and it was consulted *after* the await, so
+  the retry the error message explicitly invites died in the same place as
+  the attempt before it. Everything decidable without the network is now
+  decided before the first `await`, and the settings answer is cached by
+  `primeVoice()` on mount rather than re-fetched at tap time.
+
+- **A platform refusal printed its error code and stopped there.**
+  `not-allowed` means a microphone prompt was shown and declined, which
+  tapping again can fix. `service-not-allowed` means no prompt will ever
+  appear. Both arrived as the same sentence with the raw code in brackets.
+  The second now says the operating system refused and names the remedy —
+  Dictation, and where it lives in Settings.
+
+      asked     did the recogniser fail
+      mattered  is there anything its owner can do about it
+
+  Third instance of that shape in two releases, so it is guarded now and
+  not merely fixed: four checks cover the ordering, the flag, any future
+  microphone screen that forgets to prime, and the refusal naming a remedy.
+  Structural, because the defect is invisible to a behavioural test — node
+  ships no `SpeechRecognition`, jsdom has no user gesture, and the code is
+  correct on every engine that does not enforce the rule.
+
 ## [0.72.1] - 2026-08-14
 
 ### Fixed
@@ -8129,7 +8171,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.72.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.72.2...HEAD
+[0.72.2]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.2
 [0.72.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.1
 [0.72.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.0
 [0.71.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.71.1

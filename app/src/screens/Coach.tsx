@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, type CoachCurriculum, type CoachStore, type Guidance,
          type SpecialistAnswer } from "../api";
 import { t as tr, visitorLang } from "../l10n";
-import { hush, listen, say, type Listener } from "../speech";
+import { hush, listen, primeVoice, say, type Listener } from "../speech";
 import { useSession } from "../store";
 
 const AREAS = ["mental_health", "health_fitness", "career", "relationships"];
@@ -35,6 +35,10 @@ export function Coach() {
     } catch { /* the ask card stands on its own */ }
   }
   useEffect(() => { loadKnows(); }, [session.userId]);
+  // Learn which path the microphone should take before anybody taps it.
+  // Asking at tap time is what used to spend the user gesture Safari
+  // requires for the device recogniser. See `listen` in ../speech.
+  useEffect(() => { void primeVoice(); }, []);
 
   async function study(topic?: string, sArea?: string) {
     if (!session.userId || !session.userToken) return;

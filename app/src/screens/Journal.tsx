@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type JournalRow, type LetterRow, type MealRow } from "../api";
-import { listen, type Listener } from "../speech";
+import { listen, primeVoice, type Listener } from "../speech";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
@@ -72,6 +72,9 @@ export function Journal() {
     reader.readAsDataURL(file);
   }
   useEffect(load, [session.userId]);
+  // Same reason as Coach: the microphone's path is settled on mount, so
+  // the tap itself never awaits. See `listen` in ../speech.
+  useEffect(() => { void primeVoice(); }, []);
 
   async function add(spoken?: string) {
     const entry = (spoken ?? text).trim();

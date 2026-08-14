@@ -89,8 +89,18 @@ function deviceListener(
   };
   rec.onerror = (e) => {
     failed = true;
+    // `not-allowed` is the person refusing the microphone: the browser asked
+    // and was told no. `service-not-allowed` is the *platform* refusing —
+    // nobody was asked, and no prompt will appear however many times the mic
+    // is tapped. Printing the raw code named the failure and left its owner
+    // with nothing to do about it, which is the same defect as a verdict
+    // reading "bad key" for an account with an unpaid invoice.
     onError(e.error === "not-allowed"
       ? "no microphone available — check the app's microphone permission"
+      : e.error === "service-not-allowed"
+      ? "the operating system refused the device's recogniser — on iPhone "
+        + "and iPad that is Dictation being switched off: Settings › "
+        + "General › Keyboard › Enable Dictation"
       : `the device's recogniser could not hear that (${e.error || "unknown"})`);
   };
   rec.onend = () => {
@@ -108,6 +118,25 @@ function deviceListener(
 // itself saying no.
 let preferDevice = false;
 
+// What the settings read said last time. `null` is "never asked" — not
+// "no service", which is why this is a tri-state and not a boolean. It
+// exists so that a tap does not have to spend a network round trip finding
+// out something the screen could have learned while it was being read.
+let knownHasService: boolean | null = null;
+
+/** Read the voice settings and remember the answer.
+ *
+ *  Screens with a microphone call this on mount, so the first tap already
+ *  knows which path to take and never has to await inside the gesture. It
+ *  never throws and never blocks anything: an unreachable settings read
+ *  leaves the previous answer standing. */
+export async function primeVoice(): Promise<void> {
+  try {
+    const s = await api.getVoiceSettings();
+    knownHasService = s.provider !== "device" && s.key_set;
+  } catch { /* an unreachable settings read never changes what we knew */ }
+}
+
 /** Listen to the microphone and hand back what was said.
  *
  *  Which path listens is decided by what is configured, not by hope: a
@@ -116,22 +145,40 @@ let preferDevice = false;
  *  uses the recogniser the device already ships — the fallback this
  *  module's header always promised and, until a field report caught it,
  *  this function never actually had.
+ *
+ *  Ordering here is load-bearing. Safari permits
+ *  `SpeechRecognition.start()` only inside the user gesture that asked for
+ *  it, and an async function holds that gesture exactly until its first
+ *  suspension point. The settings read used to come first, which spent the
+ *  gesture on a fetch and left the recogniser to be refused with
+ *  `service-not-allowed` — so the fallback ran on every platform except
+ *  the one most people were holding. Worse, `preferDevice` was consulted
+ *  *after* that await, which is the flag whose entire job is to make the
+ *  second tap avoid the first tap's failure.
+ *
+ *      asked     is there a device recogniser to fall back to
+ *      mattered  is it started while the browser still permits it
+ *
+ *  So everything decidable without the network is decided before the first
+ *  `await`, and the network answer is cached rather than re-fetched.
  */
 export async function listen(
   onText: (text: string) => void,
   onError: (message: string) => void,
 ): Promise<Listener> {
-  let hasService = false;
-  try {
-    const s = await api.getVoiceSettings();
-    hasService = s.provider !== "device" && s.key_set;
-  } catch { /* an unreachable settings read never blocks listening */ }
-
-  if (!hasService || preferDevice) {
+  if (preferDevice || knownHasService === false) {
     const dev = deviceListener(onText, onError);
     if (dev) return dev;
-    // No recogniser either: record anyway, so the server's own honest
-    // refusal is what the person reads rather than a guess made here.
+  }
+
+  if (knownHasService === null) {
+    await primeVoice();
+    if (!knownHasService || preferDevice) {
+      const dev = deviceListener(onText, onError);
+      if (dev) return dev;
+      // No recogniser either: record anyway, so the server's own honest
+      // refusal is what the person reads rather than a guess made here.
+    }
   }
 
   let stream: MediaStream;

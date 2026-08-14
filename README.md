@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.72.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.72.2** ([changelog](CHANGELOG.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -376,6 +376,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.72.2** | **The fallback that was never reachable** — Safari allows `SpeechRecognition.start()` only inside the tap that asked for it, and `listen` read the voice settings first; the await ended the gesture, so the device recogniser was refused with `service-not-allowed` and the fallback promised in that module's header had never worked in a browser. `preferDevice` — the flag whose whole job is to make the retry skip the failure — was read after the same await, so the retry died identically. And the refusal printed a browser error code where it could name Dictation |
 | **0.72.1** | **Two answers the key check could not give** — a credential copied from a dashboard carries a trailing newline, which `http.client` refuses as a header value before any request leaves the machine; that `ValueError` is not a `URLError`, so it escaped both handlers and the new check answered 500. Three of the four clients trimmed their input and the console — the one deployments are configured from — did not. And ElevenLabs answers **401** to an account with a failed invoice, the same status it answers to a key it does not know, so a working key was called refused and its owner sent hunting a credential that was never the problem |
 | **0.72.0** | **The voice says what it is doing** — a house `ELEVENLABS_API_KEY` was read and thrown away, so a deployment paying for everyone's voice got the device's; "Saved." reported that a *string* had been written and never that it was a key, which let the dashboard's permanently-visible key **ID** be pasted and fail several screens later; and nothing read the remaining allowance, so a spent one degraded to the device voice in silence. `POST /settings/voice/check` and `GET /voice/quota` answer both questions now, on all four clients |
 | **0.71.1** | **No functional changes to JIM-mini** — cut with the siblings. In QRME, `widgets.py` imported a POSIX-only module at the top of the file, which took the whole API down on Windows: the frozen desktop backend would not start, and two releases published with no installers attached at all |
