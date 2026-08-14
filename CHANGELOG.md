@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.72.0] - 2026-08-14
+
 ### Fixed
 
 - **A host key that paid for the voice was read and thrown away.**
@@ -8089,7 +8091,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.71.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.72.0...HEAD
+[0.72.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.0
 [0.71.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.71.1
 [0.71.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.71.0
 [0.70.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.70.1

@@ -66,11 +66,35 @@ anything.
    `[Unreleased]` link quietly diffing against a tag three releases old.
    0.1.9, 0.2.0 and 0.2.1 were all cut without it.
 
-2. Bump the version string in **all five places**: `pyproject.toml`, the
-   `FastAPI(...)` call in `jim/api.py`, `app/package.json`, and the **two root
-   entries** in `app/package-lock.json` — the top-level `"version"` and the one
-   under `packages` → `""`. Leave every other version in the lockfile alone;
+2. Bump the version string in **all twelve places**. Five are the backend
+   and the console: `pyproject.toml`, the `FastAPI(...)` call in `jim/api.py`,
+   `app/package.json`, and the **two root entries** in
+   `app/package-lock.json` — the top-level `"version"` and the one under
+   `packages` → `""`. Leave every other version in the lockfile alone;
    dependency pins look identical and are not yours.
+
+   Seven more are the shells and the front page, and they are the ones that
+   get missed, because nothing you run day to day reads them:
+
+   | file | fields |
+   |---|---|
+   | `native/ios/project.yml` | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` |
+   | `native/android/app/build.gradle.kts` | `versionName`, `versionCode` |
+   | `native/windows/JimGuardian.csproj` | `Version`, `AssemblyVersion`, `FileVersion` |
+   | `README.md` | the **Current release** banner, and a row in the release history |
+
+   The two integer fields are not the version: `CURRENT_PROJECT_VERSION` and
+   `versionCode` are `major*1000 + minor*100 + patch` — 0.72.0 is `72000`,
+   0.71.1 is `71001`. A store will refuse an upload whose code did not
+   increase, which is a failure that arrives days after the tag.
+
+   **This list said "five places" for sixty releases and was wrong the whole
+   time.** `test_the_files_the_release_never_touched.py` is what found the
+   other seven, on the release that first ran it — a checklist wrong in the
+   direction of *fewer* steps is worse than none, because it gets trusted.
+
+       asked     does the checklist name the places
+       mattered  does it name all of them
 3. Tag and push:
 
    ```bash

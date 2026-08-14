@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.71.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.72.0** ([changelog](CHANGELOG.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -376,6 +376,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.72.0** | **The voice says what it is doing** — a house `ELEVENLABS_API_KEY` was read and thrown away, so a deployment paying for everyone's voice got the device's; "Saved." reported that a *string* had been written and never that it was a key, which let the dashboard's permanently-visible key **ID** be pasted and fail several screens later; and nothing read the remaining allowance, so a spent one degraded to the device voice in silence. `POST /settings/voice/check` and `GET /voice/quota` answer both questions now, on all four clients |
 | **0.71.1** | **No functional changes to JIM-mini** — cut with the siblings. In QRME, `widgets.py` imported a POSIX-only module at the top of the file, which took the whole API down on Windows: the frozen desktop backend would not start, and two releases published with no installers attached at all |
 | **0.71.0** | **The session you leave running** — the coach answers a turn; an engaged session stays open until you sign off, does things across your own records through a written allowlist rather than the token's full authority, and lands every change on a trail with the request that would take it back beside it. Signing off is a handover: what the session was about goes to the offline coach, and anything you name becomes a standing watch it raises unprompted. Nothing on the list raises an alarm, moves money or ends anything — those doors are not on it. On all four clients at once, because a client that could speak into a session but not show the trail would take the permission and drop the condition it was granted under |
 | **0.70.1** | **No functional changes to JIM-mini** — cut with the siblings. In QRME, the widget runner asked whether *an* interpreter existed and never whether it was new enough, so a host carrying Node 18 reported ready and then failed every run |

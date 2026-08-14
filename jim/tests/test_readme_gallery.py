@@ -162,7 +162,10 @@ def test_the_desktop_app_version_matches_the_api():
         root = root.parent
     api_src = (root / "jim/api.py").read_text()
     lock = json.loads((root / "app" / "package-lock.json").read_text())
-    # The releasing checklist names five places a cut must move; each has
+    # Five of the twelve places the releasing checklist names — the backend
+    # and the console. The other seven are the shells and the README, and
+    # they have their own guard in
+    # test_the_files_the_release_never_touched.py. Each of these five has
     # drifted at least once (pyproject sat at 0.4.0 through the 0.4.1 cut,
     # the lockfile roots at 0.3.3 through two). Check all five against each
     # other, not one pair.
