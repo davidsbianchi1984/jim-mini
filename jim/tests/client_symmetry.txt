@@ -1,4 +1,4 @@
-# status: manifest — 2 treatments × 4 clients
+# status: manifest — 5 treatments × 4 clients
 #
 # Where three clients do a thing and the fourth does not.
 #
@@ -52,6 +52,19 @@
 # the pattern for that client to what it actually does, so the row still
 # describes the tree and the next reader sees the difference on purpose.
 #
+#
+# A wrong pattern reads exactly like a real finding. The first extension of
+# this file reported the console as the odd one out on redaction, and the
+# console was fine — it names the function `redactPath` where the three
+# shells name it `redact`, so the pattern matched three clients and missed
+# a fourth that was doing the work all along. Nothing here can tell that
+# apart from a genuine gap, so a failure is read before it is believed:
+# open the file the row points at, and only then decide whether the tree is
+# wrong or the row is.
+#
+#     asked     does the pattern match
+#     mattered  does the client do the thing
+#
 # ## Adding a treatment
 #
 # Write four rows and update the count in the header. Prefer a pattern
@@ -67,3 +80,15 @@ the backend address a person types is stripped of every trailing slash before it
 the backend address a person types is stripped of every trailing slash before it is stored | ios | native/ios/Sources/ApiClient.swift | drop\(while: \{ \$0 == \"/\" \}\)
 the backend address a person types is stripped of every trailing slash before it is stored | android | native/android/app/src/main/java/app/jim/guardian/ApiClient.kt | value\.trimEnd\('/'\)
 the backend address a person types is stripped of every trailing slash before it is stored | windows | native/windows/ApiClient.cs | url\.TrimEnd\('/'\)
+a request that fails is recorded where it fails, not only where it is shown | console | app/src/api.ts | recordProblem\(
+a request that fails is recorded where it fails, not only where it is shown | ios | native/ios/Sources/ApiClient.swift | Problems\.record\(
+a request that fails is recorded where it fails, not only where it is shown | android | native/android/app/src/main/java/app/jim/guardian/ApiClient.kt | Problems\.record\(
+a request that fails is recorded where it fails, not only where it is shown | windows | native/windows/ApiClient.cs | Problems\.Record\(
+the path in a problem report is redacted before it is stored, so no identifier leaves the device | console | app/src/errors.ts | redactPath\(
+the path in a problem report is redacted before it is stored, so no identifier leaves the device | ios | native/ios/Sources/Problems.swift | redact\(
+the path in a problem report is redacted before it is stored, so no identifier leaves the device | android | native/android/app/src/main/java/app/jim/guardian/Problems.kt | redact\(
+the path in a problem report is redacted before it is stored, so no identifier leaves the device | windows | native/windows/Problems.cs | Redact\(
+nothing is sent anywhere until the person has turned sending on | console | app/src/errors.ts | if \(!sendingEnabled\(\)\) return
+nothing is sent anywhere until the person has turned sending on | ios | native/ios/Sources/Problems.swift | guard sendingEnabled\(\) else
+nothing is sent anywhere until the person has turned sending on | android | native/android/app/src/main/java/app/jim/guardian/Problems.kt | if \(!sendingEnabled\(\)\) return
+nothing is sent anywhere until the person has turned sending on | windows | native/windows/Problems.cs | if \(!SendingEnabled\(\)\) return
