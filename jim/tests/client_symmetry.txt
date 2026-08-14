@@ -1,4 +1,4 @@
-# status: manifest — 5 treatments × 4 clients
+# status: manifest — 6 treatments × 4 clients
 #
 # Where three clients do a thing and the fourth does not.
 #
@@ -92,3 +92,7 @@ nothing is sent anywhere until the person has turned sending on | console | app/
 nothing is sent anywhere until the person has turned sending on | ios | native/ios/Sources/Problems.swift | guard sendingEnabled\(\) else
 nothing is sent anywhere until the person has turned sending on | android | native/android/app/src/main/java/app/jim/guardian/Problems.kt | if \(!sendingEnabled\(\)\) return
 nothing is sent anywhere until the person has turned sending on | windows | native/windows/Problems.cs | if \(!SendingEnabled\(\)\) return
+the backend's version is compared with this build's, and a mismatch is said out loud rather than left to surface as a missing screen | console | app/src/VersionGuard.tsx | backend === CONSOLE_VERSION
+the backend's version is compared with this build's, and a mismatch is said out loud rather than left to surface as a missing screen | ios | native/ios/Sources/Views/VersionGuardBar.swift | backend != Problems\.appVersion
+the backend's version is compared with this build's, and a mismatch is said out loud rather than left to surface as a missing screen | android | native/android/app/src/main/java/app/jim/guardian/ui/Screens.kt | seen == mine
+the backend's version is compared with this build's, and a mismatch is said out loud rather than left to surface as a missing screen | windows | native/windows/MainWindow.xaml.cs | if \(backend == mine\) return;

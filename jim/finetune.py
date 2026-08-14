@@ -262,7 +262,12 @@ def train(user_id: str, pdi=None, backend: str | None = None) -> dict:
 
     helped = sum(r["helped"] for r in rows)
     artifact = {
-        "version": VERSION,
+        # `build` and not `version`: `/health` answers a `version` too, and
+        # that one is a semantic version string while this counts how many
+        # times this person's own model has been rebuilt. One wire name
+        # carrying two types is the defect
+        # `test_no_wire_name_carries_two_types` was written for.
+        "build": VERSION,
         "user_id": user_id,
         "examples": len(rows),
         "helped": helped,

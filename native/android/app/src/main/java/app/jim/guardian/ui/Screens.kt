@@ -6811,3 +6811,70 @@ private fun TalkPanel(vm: GuardianViewModel) {
         error?.let { Text(it, color = Jim.Red, fontSize = 12.sp) }
     }
 }
+
+/**
+ * The version handshake, made visible on the phone.
+ *
+ * A stale backend from an older install answers `/health` perfectly well
+ * and then serves an older API, so the app looks alive while every newer
+ * screen answers "Not Found" with no explanation. The console has said so
+ * since the mismatch first cost somebody an evening; this shell could be
+ * pointed at the same stale address — `ApiClient.base` has a setter for
+ * exactly that — and said nothing at all.
+ *
+ *     asked     is the backend reachable
+ *     mattered  is it the backend this build was written against
+ *
+ * Reachability was the only question any shell asked. `/health` has carried
+ * the answer to the second one the whole time, and `health()` above reads
+ * the same response and keeps only the status.
+ *
+ * Dismissible, because somebody who knows and is working anyway should not
+ * read it on every screen; and per-launch rather than remembered, because
+ * the condition is true until the address or the backend changes, and a
+ * permanently silenced warning about a broken deployment is worse than
+ * none.
+ */
+@Composable
+fun VersionGuardBar(language: String) {
+    var backend by remember { mutableStateOf<String?>(null) }
+    var dismissed by remember { mutableStateOf(false) }
+    val mine = app.jim.guardian.BuildConfig.VERSION_NAME
+
+    LaunchedEffect(Unit) {
+        // An unreachable backend is the connection panel's story, not this
+        // one: a version guard that also complained about being offline
+        // would cry wolf every time a phone changed network.
+        backend = try {
+            // A backend too old to carry the field is the loudest case
+            // there is, so it gets a name rather than reading as agreement.
+            ApiClient.backendVersion().ifBlank { L10n.t("vg.ancient", language) }
+        } catch (_: Exception) { null }
+    }
+
+    val seen = backend
+    if (dismissed || seen == null || seen == mine) return
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Jim.Card),
+        modifier = Modifier.fillMaxWidth().padding(12.dp),
+    ) {
+        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
+            Text("⚠", color = Jim.Amber, fontSize = 18.sp)
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(L10n.t("vg.title", language), color = Jim.Txt,
+                     fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Spacer(Modifier.height(4.dp))
+                Text(String.format(L10n.t("vg.body", language),
+                                   mine, ApiClient.base, seen),
+                     color = Jim.T2, fontSize = 12.sp)
+                Spacer(Modifier.height(4.dp))
+                Text(L10n.t("vg.fix", language), color = Jim.T3, fontSize = 11.sp)
+            }
+            TextButton(onClick = { dismissed = true }) {
+                Text(L10n.t("vg.dismiss", language), color = Jim.T2, fontSize = 12.sp)
+            }
+        }
+    }
+}

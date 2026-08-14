@@ -342,7 +342,14 @@ struct BaselineMetric: Decodable {
     let samples: Int?
 }
 
-struct Health: Decodable { let status: String; let tandem: Bool }
+/// `version` is optional twice over: a backend old enough to predate the
+/// field answers without it, and that case is exactly the one the version
+/// guard exists to catch — so decoding must survive its absence rather than
+/// throw and leave the shell with no answer at all. It was decoded away
+/// entirely until the guard needed it; a binding that discards the answer is
+/// worse than none, because the next person to want it finds a health call
+/// that looks complete.
+struct Health: Decodable { let status: String; let tandem: Bool; let version: String? }
 
 struct Goal: Decodable {
     let id: String
@@ -659,7 +666,9 @@ struct AdaptationProfile: Decodable {
 /// What anonymity costs and does not cost, said out loud, so the tradeoff is a
 /// choice rather than a surprise.
 struct Finetune: Decodable {
-    let version: Int
+    /// A rebuild count, not a semantic version — `/health` uses `version`
+    /// for the latter and the two cannot share a wire name.
+    let build: Int
     let backend: String
     let examples: Int
     let helped: Int

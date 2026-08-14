@@ -457,7 +457,7 @@ export interface ContinuityState {
 }
 
 export interface Finetune {
-  version: number;
+  build: number;
   backend: string;
   examples: number;
   helped: number;

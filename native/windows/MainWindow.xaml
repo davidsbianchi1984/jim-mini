@@ -5,5 +5,28 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid Background="{StaticResource JimScrBotBrush}">
         <Frame x:Name="RootFrame" />
+        <!-- Over the shell and over the welcome flow both: a stale backend
+             breaks the screens a signed-out person meets first, so saying so
+             only after they get in would be saying it after the part that
+             fails. Collapsed until the check has an answer to give. -->
+        <Border x:Name="VersionGuard" Visibility="Collapsed"
+                VerticalAlignment="Top" Margin="12"
+                Padding="12" CornerRadius="8"
+                Background="{StaticResource JimCardBrush}">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="&#x26A0;" FontSize="18"
+                           Foreground="{StaticResource JimAmberBrush}" />
+                <StackPanel Spacing="4" MaxWidth="520">
+                    <TextBlock x:Name="VgTitle" FontWeight="Bold" FontSize="14"
+                               TextWrapping="Wrap"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="VgBody" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="VgFix" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                </StackPanel>
+                <Button x:Name="VgDismiss" Click="VgDismiss_Click" />
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

@@ -545,7 +545,9 @@ public record AdaptationDetail(
 /// Claim 11's user-specific model, derived locally from this user's own stored
 /// history — nothing was sent to a model vendor to build it.
 public record Finetune(
-    [property: JsonPropertyName("version")] int Version,
+    /// A rebuild count, not a semantic version — `/health` uses `version`
+    /// for the latter and the two cannot share a wire name.
+    [property: JsonPropertyName("build")] int Build,
     [property: JsonPropertyName("backend")] string Backend,
     [property: JsonPropertyName("examples")] int Examples,
     [property: JsonPropertyName("helped")] int Helped,
@@ -3602,4 +3604,5 @@ public record Transcribed([property: JsonPropertyName("text")] string Text);
 
 public record HealthOut(
     [property: JsonPropertyName("status")] string Status,
-    [property: JsonPropertyName("tandem")] bool Tandem);
+    [property: JsonPropertyName("tandem")] bool Tandem,
+    [property: JsonPropertyName("version")] string? Version);

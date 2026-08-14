@@ -24,7 +24,7 @@ struct RootView: View {
     @EnvironmentObject var state: AppState
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             Theme.bg.ignoresSafeArea()
             if state.isEnrolled {
                 TabView {
@@ -38,6 +38,11 @@ struct RootView: View {
             } else {
                 WelcomeView()
             }
+            // Above the tab bar and above the welcome flow both: a stale
+            // backend breaks the screens a signed-out person meets first,
+            // and telling them only after they get in would be telling
+            // them after the part that fails.
+            VersionGuardBar()
         }
     }
 }

@@ -1,4 +1,4 @@
-# status: floor — 2 rows
+# status: floor — 1 row
 #
 # Native bindings — a function in ApiClient.swift/.kt/.cs — that nothing in
 # that shell calls. Checked by test_a_native_binding_is_not_a_door_either.py,
@@ -16,5 +16,4 @@
 # the release before this one, and it is how a hole keeps a paragraph in front
 # of it that nobody can see.
 #
-ios.health — a liveness ping against the backend. Plumbing, not a capability with no door: nothing is withheld from a reader by its absence from a screen.
 ios.setBase — sets the backend URL. Kept because the next shell that grows a settings field for it will want the binding already there, and because writing it again is how two shells end up disagreeing about what a base URL is.

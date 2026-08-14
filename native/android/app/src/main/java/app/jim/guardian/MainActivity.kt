@@ -35,6 +35,7 @@ import app.jim.guardian.ui.LifeScreen
 import app.jim.guardian.ui.OverviewScreen
 import app.jim.guardian.ui.SafetyScreen
 import app.jim.guardian.ui.WelcomeScreen
+import app.jim.guardian.ui.VersionGuardBar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,10 +55,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             JimTheme {
                 val vm: GuardianViewModel = viewModel()
-                if (!vm.isEnrolled) {
-                    WelcomeScreen(vm)
-                } else {
-                    HomeShell(vm)
+                // Over the tab bar and over the welcome flow both: a stale
+                // backend breaks the screens a signed-out person meets
+                // first, and saying so only after they get in would be
+                // saying it after the part that fails.
+                Box {
+                    if (!vm.isEnrolled) {
+                        WelcomeScreen(vm)
+                    } else {
+                        HomeShell(vm)
+                    }
+                    VersionGuardBar(vm.language)
                 }
             }
         }

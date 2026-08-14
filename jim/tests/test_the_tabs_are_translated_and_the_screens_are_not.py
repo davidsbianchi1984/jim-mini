@@ -110,9 +110,20 @@ _HAS_LETTER = re.compile(r"[A-Za-z]")
 #: a button whose whole label is `"↻"` is a **refresh arrow**, and the
 #: four hex digits of its escape are not words a reader reads.
 #:
+#: **XML character references, for the same reason as `\uXXXX`.**
+#:
+#: XAML spells a glyph the only way an attribute value can — `&#x26A0;` for
+#: ⚠ — and that fragment carries the letters `x` and `A`, so a warning icon
+#: read as an untranslated English string and pushed the Windows ratchet
+#: above its floor. Nobody reads `&#x26A0;`; the person sees a triangle. The
+#: named forms (`&amp;`, `&quot;`) are stripped alongside it, being the same
+#: thing spelled with letters instead of digits.
+#:
+#:     asked     does this literal contain letters
+#:     mattered  does a reader ever see them
 _HOLE = re.compile(
     r"\\\([^)]*\)|\$\{[^}]*\}|\$[A-Za-z_]\w*|\{[A-Za-z]\w*[^}]*\}"
-    r"|\\u[0-9a-fA-F]{4}")
+    r"|\\u[0-9a-fA-F]{4}|&#[Xx]?[0-9A-Fa-f]+;|&[A-Za-z]{2,8};")
 
 #: What puts a string in front of a person, per shell. Deliberately a list of
 #: named constructs rather than "every literal": an icon name, a JSON key and

@@ -169,7 +169,7 @@ data class FollowupAnswered(val answered: Boolean, val reason: String?,
 data class HelpTally(val helped: Int, val answered: Int)
 /** Claim 11's user-specific model, derived locally from this user's own
  *  stored history — nothing was sent to a model vendor to build it. */
-data class Finetune(val version: Int, val backend: String, val examples: Int,
+data class Finetune(val build: Int, val backend: String, val examples: Int,
                     val helped: Int, val didNotHelp: Int, val method: String,
                     val digest: String, val trainedAt: String,
                     val active: Boolean)
@@ -1670,7 +1670,7 @@ object ApiClient {
     // that conditions a prompt, this one trains weights.
 
     private fun finetuneOf(o: JSONObject) = Finetune(
-        o.optInt("version"), o.optString("backend"), o.optInt("examples"),
+        o.optInt("build"), o.optString("backend"), o.optInt("examples"),
         o.optInt("helped"), o.optInt("did_not_help"),
         o.optString("method"), o.optString("digest"),
         o.optString("trained_at"), o.optBoolean("active"))
@@ -3197,6 +3197,18 @@ object ApiClient {
     }
 
     /** The backend's own pulse, and whether a QRME tandem stands behind it. */
+    /**
+     * The backend's own version, for the guard that compares it with this
+     * build's. Empty when the field is absent, which is a real answer and
+     * not an error: a backend old enough to predate the field is exactly
+     * the deployment the guard exists to name. `health` above reads the
+     * same response and throws this away, which is why nothing on this
+     * shell could tell a stale backend from a current one.
+     */
+    suspend fun backendVersion(): String {
+        return JSONObject(request("/health")).optString("version", "")
+    }
+
     suspend fun health(): HealthK {
         val o = request("/health")
         return HealthK(o.optString("status", ""), o.optBoolean("tandem"))
