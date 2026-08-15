@@ -250,7 +250,8 @@ LINES: dict[str, str] = {
         "That {area} goal has not moved in {days} days. Do you want to make "
         "it smaller, or let it go?",
     "presence.nudge.followup":
-        "I asked you something and never heard back. Did it help?",
+        "I gave you something for {condition} and never heard back. "
+        "Did it help?",
     "presence.nudge.watching":
         "You asked me to keep an eye on {topic} while you were away. I have "
         "been. How is it?",
@@ -433,7 +434,7 @@ def beat(user_id: str, slot: str = "morning", record: bool = True) -> dict:
     # program, that outranks a compliment and outranks curiosity, and the
     # beat points away from here rather than deeper into it.
     chosen = (_drift_beat(user_id, base)
-              or _followup_beat(user_id)
+              or _followup_beat(user_id, slot)
               or _watch_beat(user_id)
               or _alone_beat(user_id, carried)
               or _mood_beat(base)
@@ -530,10 +531,36 @@ def _drift_beat(user_id: str, base: dict) -> dict | None:
     return None
 
 
-def _followup_beat(user_id: str) -> dict | None:
+def _followup_beat(user_id: str, slot: str = "morning") -> dict | None:
     """The question somebody was asked and never answered. It outranks
     everything except the body, because an unanswered follow-up is the one
-    signal that says *the last thing we did may not have worked*."""
+    signal that says *the last thing we did may not have worked*.
+
+    Two things a field report found by reading the card rather than the code.
+
+        asked     which question is this about
+        mattered  "I asked you something" is the shape of the question, not
+                  the question
+
+    **It names what it gave you something for.** The line used to be *I asked
+    you something and never heard back* — true, and useless to a person who
+    has been asked about three different things this month. `SPOKEN_CARRIES`
+    already declared this line carries a `condition`; it just never passed
+    one, so the slot table said more than the sentence did. It does now.
+
+    What it does *not* name is the guidance itself, and that is not a gap to
+    close later: `guidance_followups` stores the condition, the severity and
+    the times, never the advice text. So the sentence can honestly say what it
+    gave you something *for* and must not claim to remember what it said.
+
+    **And a different open one per slot.** This beat outranks nearly
+    everything, so on a day with three unanswered follow-ups it won all three
+    slots and printed the same card three times — which reads as a stuck app
+    rather than as three questions. Morning takes the newest (`open_for` is
+    newest-first), midday the next, evening the one after, wrapping when fewer
+    than three are open. Someone with one open follow-up still gets the same
+    card three times, and should: there is only one question to ask.
+    """
     try:
         from . import followup
         open_ones = followup.open_for(user_id)
@@ -541,8 +568,12 @@ def _followup_beat(user_id: str) -> dict | None:
         return None
     if not open_ones:
         return None
+    which = open_ones[(SLOTS.index(slot) if slot in SLOTS else 0)
+                      % len(open_ones)]
     return {"register": "nudging", "area": "mental_health",
-            "line_key": "presence.nudge.followup", "slots": {},
+            "line_key": "presence.nudge.followup",
+            "slots": {"condition":
+                      str(which["condition"]).replace("_", " ")},
             "because": [f"{len(open_ones)} follow-up(s) still open"]}
 
 
