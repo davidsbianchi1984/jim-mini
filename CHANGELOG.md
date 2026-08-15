@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The tandem contract said the thing that stopped being true.**
+  `docs/tandem.md` — byte-identical in all three repositories — described the
+  self-link as *the user pastes their own QRME owner token*. That was the
+  mechanism until this round replaced it, and a contract describing a
+  mechanism the product no longer has is worse than one that says nothing.
+  It now carries the three rules that hold the sign-in path open: the password
+  crosses once and is never stored, the account token is used and dropped
+  because it is broader than the owner token it mints, and an account with
+  more than one `self` profile is asked rather than guessed at. Pasting still
+  works and is no longer the only way in.
+
 - **Menu icons go back to menu size.** They were 84px because the full
   jim-mini lockup — wordmark, eleven rows of ABRACADABRA, OS plate — only
   reads cleanly at 84, which forced every other icon to match. `JimMiniOS`

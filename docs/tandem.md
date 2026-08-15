@@ -219,14 +219,50 @@ the two products was one-directional and asymmetric by role.
 
 #### What a self-link is
 
-One user, one QRME `self` profile, established the way the care-team link
-already is: the user pastes their own QRME **owner** token. Not an interactor
-token — the whole point is that this profile is not a stranger to them — and
-the token is stored on the JIM side only, deleted when the link is dropped.
+One user, one QRME `self` profile. The credential JIM holds is that profile's
+QRME **owner** token — not an interactor token, because the whole point is
+that this profile is not a stranger to them — stored on the JIM side only and
+deleted when the link is dropped.
 
 JIM refuses the link unless QRME reports the profile's `kind` as `self`. A
 `fictional` profile briefed with somebody's medication schedule is a different
 product with the same code.
+
+#### How the owner token gets there
+
+This paragraph used to read *the user pastes their own QRME owner token*, the
+way the care-team link does. That was the mechanism and it was unusable, for a
+reason that took a field report to see: an owner token is minted **once**, in
+QRME's create response, and handed to whichever client did the creating. There
+is no second place to read it. Somebody who made the profile on their phone
+and opened the Guardian on a laptop could not fill the form in at all.
+
+    asked     how do I get a token
+    mattered  there was no answer, and the screen asked anyway
+
+So QRME grew the two doors that make the question answerable —
+`GET /accounts/{account_id}/profiles` for the roster reached through the
+account token, and `POST /accounts/{account_id}/profiles/{profile_id}/owner-token`
+for the grant — and JIM asks for a QRME email and password instead
+(`POST /self-profile/{user_id}/sign-in`). JIM signs in, keeps only the
+profiles QRME calls `self`, and mints the owner token itself.
+
+**Three rules hold this open, and they are the contract:**
+
+* **The password crosses once and is never stored.** It rides one request to
+  QRME's `/signin` and lives no longer than that call, on either side.
+* **The account token is used and dropped.** It is *broader* than the owner
+  token it mints — it reaches every profile on the account and the billing —
+  so it never enters `self_links`, never returns to the console, and never
+  reaches a native shell's persisted state. What lands in JIM is the owner
+  token, exactly what the paste-it form was asking the person to supply.
+* **A choice is a question, not a guess.** An account holding more than one
+  `self` profile answers `linked: false` with a `choose` list and stores
+  nothing; the caller re-sends with `profile_id`. No ticket, no half-session,
+  nothing held between the two calls.
+
+Pasting an id and a token still works, for somebody who holds both. It is no
+longer the only way in.
 
 #### What may cross, and in which direction
 
