@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSession } from "./store";
 import { t as tr, visitorLang } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
@@ -42,10 +42,17 @@ type Tab = "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "car
 // whatever anybody chose.
 //
 // `icon` is a node rather than a string because one of these is a drawn mark
-// and not a glyph: ABRACADABRA carries the whole jim-mini OS lockup —
-// wordmark, amulet triangle, OS plate (`JimMiniOS.tsx`) — which no character
-// in any font can say. Everything else stays a character; widening the type
-// costs nothing and does not oblige the other twenty-three to become art.
+// and not a glyph: ABRACADABRA carries the jim-mini amulet (`JimMiniOS.tsx`),
+// which no character in any font can say. Everything else stays a character;
+// widening the type costs nothing and does not oblige the other twenty-three
+// to become art.
+//
+// It carries the *amulet*, not the whole lockup, and the tiles are back to
+// menu size because of it. A field report: *menu icons are too large remove
+// the word abracadabra if it helps make it smaller*. The lockup needs 72px
+// to read, so a menu around it was a menu around its largest tile; the
+// triangle survives at 34 and the word lives on the label underneath, where
+// it is a word rather than eleven rows of 3px type.
 const NAV: { id: Tab; icon: ReactNode }[] = [
   { id: "home", icon: "◎" },
   { id: "monitor", icon: "❤" },
@@ -76,6 +83,17 @@ const NAV: { id: Tab; icon: ReactNode }[] = [
 export function App() {
   const { session, signOut } = useSession();
   const [tab, setTab] = useState<Tab>("home");
+  // Every screen opened where the last one was scrolled to. A field report:
+  // *I just went to this menu and it still doesn't pin to the top it jumps
+  // into the middle of the material*. `.content` is the scrolling element in
+  // both layouts — the desktop column and the phone's single pane — so the
+  // pane is scrolled rather than the window, which on a phone is not the
+  // thing that moved. `instant` because this is a new screen, not a journey
+  // through the old one, and an animated fly-up reads as content moving.
+  const content = useRef<HTMLElement>(null);
+  useEffect(() => {
+    content.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [tab]);
   // The accessibility statement and its report door open before sign-in —
   // the person that screen exists for may be the person the enrollment
   // shut out. `#access` in the URL lands there directly, so a line in an
@@ -129,7 +147,7 @@ export function App() {
         <div className="guard-chip"><span className="dot-online">●</span> Guardian on · watching</div>
         <button className="signout" onClick={signOut}>Sign out</button>
       </aside>
-      <main className="content">
+      <main className="content" ref={content}>
         <ProblemNotice />
         {tab === "home" && <Home go={setTab} />}
         {tab === "meds" && <Meds />}

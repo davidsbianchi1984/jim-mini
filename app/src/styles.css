@@ -66,15 +66,23 @@ nav { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1;
    twenty-four icons instead of behind twenty-three of them. */
 .nav-item.active { color: #fff; background: rgba(255,255,255,0.10);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22); }
-/* 84px, not 18. Rendered at 60, 72, 84 and 96 and looked at: the lockup's
-   wordmark is cramped at 60, fine at 72, and all three of its parts read
-   cleanly at 84. The character icons match the box so no button is the odd
-   one out — which is the whole reason the menu grew. */
-.nav-icon { width: 84px; height: 84px; display: flex; align-items: center;
+/* 34px. It was 84, sized so the full lockup's wordmark and its eleven rows
+   of letters could be read on the tile — which made every other icon 84 too,
+   because a mark that dwarfs its neighbours is not a menu. A field report
+   called the result what it was: *menu icons are too large*.
+
+       asked     can the mark be made smaller
+       mattered  what is still the mark once it is
+
+   The amulet triangle is, and nothing else was — so `JimMiniOS` has a small
+   form that drops the wordmark, the letters and the OS plate, and the word
+   itself stays on the label underneath where it can be read. That freed the
+   whole menu to go back to menu size. */
+.nav-icon { width: 34px; height: 34px; display: flex; align-items: center;
   justify-content: center; line-height: 1;
-  /* 62px of glyph in an 84px box puts the character icons at roughly the ink
-     height of the drawn lockup beside them. */
-  font-size: 62px; }
+  /* 26px of glyph in a 34px box: the character icons sit at about the ink
+     height of the drawn amulet beside them. */
+  font-size: 26px; }
 .nav-icon svg { display: block; }
 .guard-chip { font-size: 11px; color: var(--txt); padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.04); margin-bottom: 8px; }
 .signout { background: rgba(255,255,255,0.05); color: var(--t2); border: 1px solid var(--line); border-radius: 10px; padding: 9px; font-size: 12px; }
@@ -179,7 +187,7 @@ button.danger { background: rgba(255,77,94,0.14) !important; color: var(--red) !
   nav { display: flex; flex-direction: row; gap: 2px; width: 100%;
     overflow-x: auto; scroll-snap-type: x proximity; }
   .nav-item {
-    flex: 0 0 auto; width: 92px;
+    flex: 0 0 auto; width: 76px;
     flex-direction: column; gap: 3px; justify-content: center;
     text-align: center; padding: 8px 2px; font-size: 10px; font-weight: 700;
     min-height: 52px;                 /* comfortable tap target */
@@ -190,9 +198,9 @@ button.danger { background: rgba(255,77,94,0.14) !important; color: var(--red) !
     overflow-wrap: normal;
   }
   .nav-item.active { box-shadow: none; }
-  /* 72 rather than the desktop's 84: the lockup still reads at 72 and the
-     bar is a bar, not a page. Below that the wordmark goes to mush. */
-  .nav-icon { width: 72px; height: 72px; font-size: 52px; }
+  /* 30 rather than the desktop's 34: the bar is a bar, and on a phone it is
+     also the thing standing between the reader and the bottom of the page. */
+  .nav-icon { width: 30px; height: 30px; font-size: 23px; }
 
   .content {
     grid-row: 1; padding: 18px 16px 22px;

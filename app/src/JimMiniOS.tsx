@@ -62,7 +62,47 @@ function rows(): { y: number; glyphs: { x: number; ch: string }[] }[] {
   });
 }
 
-export function JimMiniOS({ size = 84 }: { size?: number }) {
+/**
+ * `full` draws the lockup; the default draws the amulet alone.
+ *
+ * A field report, in its own words: *menu icons are too large remove the word
+ * abracadabra if it helps make it smaller*. Both halves of that are one
+ * observation. The lockup needs 72px to read — the wordmark is a script face
+ * and ABRACADABRA is eleven rows of 3px type — so a menu built around it is a
+ * menu built around its largest tile, and twenty-four of those is a wall.
+ *
+ *     asked     can the mark be made smaller
+ *     mattered  what is still the mark once it is
+ *
+ * The amulet triangle survives the shrink; nothing else does. So the small
+ * form keeps the gold-edged triangle on black and drops the wordmark, the
+ * eleven rows of letters, and the OS plate — none of which are legible at
+ * 34px, and an illegible part is not a smaller mark, it is grit. The word
+ * stays where it can be read: on the tile's own label, and on the full
+ * lockup wherever a screen has room for it.
+ */
+export function JimMiniOS({ size = 34, full = false }: {
+  size?: number; full?: boolean;
+}) {
+  if (!full) {
+    return (
+      <svg viewBox="0 0 100 100" width={size} height={size}
+        role="img" aria-label="jim-mini OS">
+        <defs>
+          <linearGradient id="jm-edge-s" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#dfe94b" />
+            <stop offset=".5" stopColor="#f2c230" />
+            <stop offset="1" stopColor="#b8861f" />
+          </linearGradient>
+        </defs>
+        {/* The amulet fills the box here rather than sitting in the lockup's
+            upper third: at this size the black field around it would be most
+            of the icon. */}
+        <path d="M8 18 H92 L50 88 Z" fill="#15120a"
+          stroke="url(#jm-edge-s)" strokeWidth="7" strokeLinejoin="round" />
+      </svg>
+    );
+  }
   return (
     <svg viewBox="0 0 100 100" width={size} height={size}
       role="img" aria-label="jim-mini OS">
