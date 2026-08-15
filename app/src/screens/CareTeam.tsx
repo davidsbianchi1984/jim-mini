@@ -184,7 +184,7 @@ export function CareTeam() {
           <h3>{tr("ct.spec", lang)}</h3>
           <p className="muted small">{tr("ct.spec.pitch", lang)}</p>
           {catalog.conditions.map((c) => (
-            <div key={c.condition} className="spec-row">
+            <div key={c.condition} className="spec-row spec-block">
               <b className="spec-cond">{c.condition.replace("_", " ")}</b>
               <span className="muted small spec-now">
                 {c.attached

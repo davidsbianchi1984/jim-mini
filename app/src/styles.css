@@ -400,6 +400,33 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .spec-row select, .spec-row button { margin-top: 0; }
 @media (max-width: 760px) { .spec-row { grid-template-columns: 1fr 1fr; } }
 
+/* Care Team's rows are the one place a `.spec-row` carries four cells rather
+   than two — condition, who stands behind it now, the picker, the button —
+   and on a phone the two-column rule above wraps them onto two lines with
+   nothing but a hairline between one row and the next. A field report read
+   the result exactly as it renders: *the names look like they're a part of
+   the one below it*. They were, visually: a condition sat directly under the
+   previous condition's controls, closer to them than to its own.
+
+       asked     why do these run together
+       mattered  a hairline separates two rows; it does not group four cells
+
+   So the phone gets a block instead of a line — its own ground and its own
+   border, the condition and its current answer spanning the full width above
+   the controls that change them. Scoped to this one variant on purpose: the
+   other four `.spec-row` call sites are two-cell and the shared rule is
+   right for them. */
+@media (max-width: 760px) {
+  .spec-row.spec-block {
+    grid-template-columns: 1fr auto; gap: 8px;
+    padding: 10px; margin-bottom: 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(38,49,78,0.9); border-radius: 12px;
+  }
+  .spec-block .spec-cond, .spec-block .spec-now { grid-column: 1 / -1; }
+  .spec-block .spec-cond { font-size: 14px; }
+}
+
 /* Spec [0039]: "did that help?" and, when it didn't, the humans reachable
    now. Lives inside the guidance card — the question belongs beside the
    advice it is asking about. */
