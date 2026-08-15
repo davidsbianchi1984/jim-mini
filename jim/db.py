@@ -1305,6 +1305,21 @@ CREATE TABLE IF NOT EXISTS audit (
     prev_hash TEXT NOT NULL,
     hash      TEXT NOT NULL
 );
+
+-- Widgets: small programs a person writes for themselves. The source is
+-- theirs and is never run anywhere but the box in `jim/widgets.py` — no
+-- network, one directory, no child processes, capped CPU and memory.
+-- Scoped by user_id at every read and write and not only at the door,
+-- because this deployment's disk holds other people's clinical captures.
+CREATE TABLE IF NOT EXISTS widgets (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    name        TEXT NOT NULL,
+    source      TEXT NOT NULL,
+    version     INTEGER NOT NULL DEFAULT 1,
+    created_at  INTEGER NOT NULL,
+    updated_at  INTEGER NOT NULL
+);
 """
 
 _local = threading.local()
