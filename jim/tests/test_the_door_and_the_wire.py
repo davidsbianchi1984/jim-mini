@@ -243,8 +243,16 @@ def test_each_new_screen_calls_its_family():
                      "api.logActivity("),
         "Wards.tsx": ("api.children(", "api.child(", "api.addChild(",
                       "api.removeChild(", "api.setChildControls(",
-                      "api.guardianWatch(", "api.waivers(", "api.signWaiver(",
-                      "api.withdrawWaiver("),
+                      "api.guardianWatch("),
+        # The three waiver bindings were on the Wards row until a field report
+        # said the card did not belong there: *get this out of there, it
+        # shouldn't belong in who you watch.* The waiver is signed by the
+        # account holder about their own body, so it moved to Safety, under
+        # the automatic path it modifies. Kept as its own row rather than
+        # folded into a longer one, because this guard is the thing that would
+        # catch the card being moved again and the bindings being left behind.
+        "Safety.tsx": ("api.waivers(", "api.signWaiver(",
+                       "api.withdrawWaiver("),
         "Held.tsx": ("api.accessLog(", "api.membership(", "api.setMembership(",
                      "api.cancelMembership(", "api.plans(", "api.sources(",
                      "api.setSources(", "api.custody(",

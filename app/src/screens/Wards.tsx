@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
-import { api, type ChildDetail, type GuardianWatch,
-         type WaiverOffer } from "../api";
+import { api, type ChildDetail, type GuardianWatch } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 /**
- * The people you are answerable for — a child's account, what an adult may
- * see of it, and the one waiver that lets a machine act without asking.
+ * The people you are answerable for — a child's account and what an adult
+ * may see of it.
+ *
+ * The autonomous-resuscitation waiver used to be here too, and a field report
+ * said what that reads as: *get this out of there, it shouldn't belong in who
+ * you watch.* It doesn't — the signer is the subject, and every other card on
+ * this screen is about somebody else. It now sits on Safety, under the
+ * automatic path it modifies. What stays true here is the rule that put it
+ * near the children in the first place: a minor can never have one signed for
+ * them, which the server enforces and this screen does not need to host.
  *
  * Nine routes, all of them phone-only until now. Two things the server told
  * us when this was driven, both of which would have been wrong if the
@@ -31,7 +38,6 @@ export function Wards() {
   const lang = visitorLang();
   const [watch, setWatch] = useState<GuardianWatch | null>(null);
   const [open, setOpen] = useState<ChildDetail | null>(null);
-  const [waiver, setWaiver] = useState<WaiverOffer | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,7 +46,6 @@ export function Wards() {
   const [birthdate, setBirthdate] = useState("");
   const [relationship, setRelationship] =
     useState<"parent" | "legal_guardian">("parent");
-  const [signature, setSignature] = useState("");
 
   const uid = session.userId;
   const token = session.userToken;
@@ -49,7 +54,6 @@ export function Wards() {
     if (!uid || !token) return;
     api.guardianWatch(uid, token).then(setWatch).catch(fail);
     api.children(uid, token).catch(fail);
-    api.waivers(uid, token).then(setWaiver).catch(fail);
   }
   function fail(e: unknown) { setError((e as Error).message); }
   useEffect(load, [uid]);
@@ -180,35 +184,6 @@ export function Wards() {
         </div>
       )}
 
-      <div className="card">
-        <h3>{waiver?.kind === "autonomous_resuscitation"
-              ? tr("wrd.resus", lang) : tr("wrd.waiver", lang)}</h3>
-        <p className="muted small">{tr("wrd.waiver.pitch", lang)}</p>
-        {(waiver?.terms ?? []).map((t, i) => (
-          <div key={i} style={{ padding: "6px 0" }}>· {t}</div>
-        ))}
-        {waiver?.signed ? (
-          <div className="row">
-            <span className="muted small">
-              {tr("wrd.waiver.signed", lang)
-                .replace("{signature}", String(waiver.signature))}
-            </span>
-            <button disabled={busy}
-                    onClick={() => run(() =>
-                      api.withdrawWaiver(uid!, token!))}>{tr("wrd.waiver.withdraw", lang)}</button>
-          </div>
-        ) : (
-          <div className="row">
-            <input value={signature} placeholder={tr("wrd.waiver.sig.ph", lang)}
-                   onChange={(e) => setSignature(e.target.value)} />
-            <button className="primary" disabled={busy || !signature.trim()}
-                    onClick={() => run(() => api.signWaiver(uid!, {
-                      signature: signature.trim(), accept: true }, token!))}>
-              {tr("wrd.waiver.sign", lang)}
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

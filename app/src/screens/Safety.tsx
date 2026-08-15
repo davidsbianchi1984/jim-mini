@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   api, type AlarmRow, type BeaconRow, type CrashWatchStatus,
-  type IncidentRow, type PageRow,
+  type IncidentRow, type PageRow, type WaiverOffer,
 } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
@@ -45,6 +45,8 @@ export function Safety() {
   const [situation, setSituation] = useState("");
   const [sent, setSent] = useState<Record<string, unknown> | null>(null);
   const [watch, setWatch] = useState<CrashWatchStatus | null>(null);
+  const [waiver, setWaiver] = useState<WaiverOffer | null>(null);
+  const [signature, setSignature] = useState("");
 
   const uid = session.userId;
   const token = session.userToken;
@@ -58,6 +60,7 @@ export function Safety() {
     api.pages(uid, token).then(setPages).catch(() => setPages([]));
     api.beacons(uid, token).then(setBeacons).catch(() => setBeacons([]));
     api.crashWatch(uid, token).then(setWatch).catch(() => setWatch(null));
+    api.waivers(uid, token).then(setWaiver).catch(() => setWaiver(null));
   }, [uid, token]);
   useEffect(load, [load]);
 
@@ -148,6 +151,56 @@ export function Safety() {
       ) : (
         <p className="muted">{tr("sfy.auto.off", lang)}</p>
       )}
+
+      {/* The waiver that lets a machine act without asking — here, directly
+          under the automatic path it modifies.
+
+          It used to sit on Wards, among a child's account and what an adult
+          may see of it, and a field report said what that reads as: *get this
+          out of there, it shouldn't belong in who you watch.* It doesn't. The
+          waiver is signed by the account holder about their own body; every
+          other card on that screen is about somebody else's. It landed there
+          for a reason that was never the reader's — a minor can never have
+          one signed for them, so the rule lives near the children — but a rule
+          about who may not sign is not a reason to file the signing beside
+          them.
+
+              asked     why is resuscitation on the screen about my wards
+              mattered  the signer is the subject, and that is this screen
+
+          Reuses this screen's `run()` and `busy`, and the existing `wrd.*`
+          keys: the sentences were already right, only the room was wrong. */}
+      <div className="card">
+        <h3>{waiver?.kind === "autonomous_resuscitation"
+              ? tr("wrd.resus", lang) : tr("wrd.waiver", lang)}</h3>
+        <p className="muted small">{tr("wrd.waiver.pitch", lang)}</p>
+        {(waiver?.terms ?? []).map((t, i) => (
+          <div key={i} style={{ padding: "6px 0" }}>· {t}</div>
+        ))}
+        {waiver?.signed ? (
+          <div className="row">
+            <span className="muted small">
+              {tr("wrd.waiver.signed", lang)
+                .replace("{signature}", String(waiver.signature))}
+            </span>
+            <button disabled={busy}
+                    onClick={() => run(() =>
+                      api.withdrawWaiver(uid!, token!))}>
+              {tr("wrd.waiver.withdraw", lang)}
+            </button>
+          </div>
+        ) : (
+          <div className="row">
+            <input value={signature} placeholder={tr("wrd.waiver.sig.ph", lang)}
+                   onChange={(e) => setSignature(e.target.value)} />
+            <button className="primary" disabled={busy || !signature.trim()}
+                    onClick={() => run(() => api.signWaiver(uid!, {
+                      signature: signature.trim(), accept: true }, token!))}>
+              {tr("wrd.waiver.sign", lang)}
+            </button>
+          </div>
+        )}
+      </div>
 
       <h3>{tr("sfy.needs", lang)} {open.length > 0 && <span className="pill">{open.length}</span>}</h3>
       {open.length === 0 && <p className="muted">{tr("sfy.needs.none", lang)}</p>}
