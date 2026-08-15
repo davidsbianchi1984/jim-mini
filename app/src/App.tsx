@@ -7,6 +7,7 @@ import { VersionGuard } from "./VersionGuard";
 import { GuardianLights } from "./GuardianLights";
 import { Help } from "./Help";
 import { JimMiniOS } from "./JimMiniOS";
+import { Talk } from "./screens/Talk";
 import { Onboarding } from "./screens/Onboarding";
 import { Home } from "./screens/Home";
 import { Monitor } from "./screens/Monitor";
@@ -33,7 +34,7 @@ import { Bearing } from "./screens/Bearing";
 import { Held } from "./screens/Held";
 import { Access } from "./screens/Access";
 
-type Tab = "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "access" | "settings";
+type Tab = "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "access" | "settings";
 // Labels live in `l10n.ts` and are looked up by id — see `nav.*` there.
 //
 // They used to sit here as English literals, which made the console's own
@@ -156,7 +157,8 @@ export function App() {
         {tab === "monitor" && <Monitor />}
         {tab === "baseline" && <Baseline />}
         {tab === "coach" && <Coach />}
-        {tab === "engaged" && <Engaged />}
+        {tab === "engaged" && <Talk go={(id) => setTab(id as Tab)} />}
+        {tab === "permits" && <Engaged />}
         {tab === "wellness" && <Wellness />}
         {tab === "checkin" && <Checkin />}
         {tab === "journal" && <Journal />}

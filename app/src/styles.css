@@ -327,8 +327,8 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   background: #0d1729; padding: 10px; border-radius: 8px; }
 .pn-yes { font-weight: 700; }
 
-/* The voice orb — the conversation made visible, ChatGPT-style: one
-   breathing sphere while JIM listens, a second colour while it speaks.
+/* The voice orb — the conversation made visible: one breathing sphere
+   while JIM listens, a second colour while it speaks.
    A veil rather than a corner widget, because a voice conversation IS the
    screen while it lasts; tap anywhere to end it. */
 .voice-orb-veil { position: fixed; inset: 0; z-index: 60; display: flex;
@@ -489,3 +489,58 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
     transition: none !important;
   }
 }
+
+/* The talk surface: a composer at the bottom, a horizontal scrolling rail of
+   features above it, and nothing else.
+
+   The rail is the part that earns its place. This console has twenty-four
+   screens and had no launcher, so reaching one meant knowing which tile it
+   was behind — and `overflow-x: auto` with `flex-wrap: nowrap` is what keeps
+   ten destinations one gesture away instead of four rows tall on a phone.
+
+   The empty screen stays empty. A watermark behind the conversation is
+   decoration, and decoration is the one thing a screen this small cannot
+   spare room for. */
+.talk { display: flex; flex-direction: column; height: 100%; min-height: 0;
+  gap: 10px; }
+.talk-body { flex: 1; min-height: 0; overflow-y: auto; display: flex;
+  flex-direction: column; justify-content: flex-end; }
+.talk-reply { margin: 0; }
+
+.talk-rail { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto;
+  padding-bottom: 4px; scroll-snap-type: x proximity;
+  /* No scrollbar track on a phone; the chips themselves say it scrolls by
+     being cut off at the edge. */
+  scrollbar-width: none; }
+.talk-rail::-webkit-scrollbar { display: none; }
+.talk-chip { flex: 0 0 auto; scroll-snap-align: start;
+  background: rgba(255,255,255,0.06); color: var(--txt);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 9px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.talk-chip:hover { background: rgba(255,255,255,0.10); }
+
+.talk-bar { position: relative; }
+.talk-pill { display: flex; align-items: center; gap: 8px;
+  background: #0c1424; border: 1px solid var(--line); border-radius: 26px;
+  padding: 6px 6px 6px 10px; }
+.talk-pill input { margin: 0; border: 0; background: transparent;
+  padding: 8px 4px; font-size: 15px; }
+.talk-pill input:focus { outline: none; }
+.talk-plusbtn, .talk-mic { flex: 0 0 auto; background: rgba(255,255,255,0.06);
+  color: var(--txt); border: 1px solid var(--line); border-radius: 50%;
+  width: 34px; height: 34px; font-size: 16px; line-height: 1; }
+.talk-speak { flex: 0 0 auto; background: var(--txt); color: #0a1120;
+  border: 0; border-radius: 999px; padding: 9px 18px; font-weight: 700;
+  font-size: 14px; }
+.talk-speak:disabled { opacity: 0.4; }
+
+/* The `+` menu opens upward, anchored to the pill — a popover above the
+   composer rather than a sheet, because the composer is already at the
+   bottom of the screen and a sheet would cover the thing being typed. */
+.talk-plus { position: absolute; bottom: calc(100% + 8px); left: 0;
+  min-width: 200px; background: var(--card2); border: 1px solid var(--line);
+  border-radius: 16px; padding: 6px; display: flex; flex-direction: column;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45); }
+.talk-plus button { background: transparent; color: var(--txt); border: 0;
+  border-radius: 10px; padding: 11px 12px; text-align: left; font-size: 14px; }
+.talk-plus button:hover { background: rgba(255,255,255,0.07); }
