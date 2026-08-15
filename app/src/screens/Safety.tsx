@@ -158,6 +158,14 @@ export function Safety() {
             <span className="muted">{a.state}</span>
             {a.created_at && <span className="muted">{a.created_at.slice(0, 16).replace("T", " ")}</span>}
           </div>
+          {/* Above the accept row, because it is the thing to do while
+              deciding whether to press anything here at all. True on every
+              row: a beacon alarm is ceilinged below emergency services, and a
+              crash watch at the top rung issued a dispatch request, not a
+              call. The stranger's page has said this since it shipped. */}
+          {a.call_emergency_services_yourself && (
+            <p className="error"><strong>{tr("sfy.cannotdial", lang)}</strong></p>
+          )}
           {a.accepted_by
             ? <p>{tr("sfy.onway", lang).replace("{who}", String(a.accepted_by))}</p>
             : (

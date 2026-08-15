@@ -172,7 +172,8 @@ public sealed partial class SafetyPage : Page
 
     private string? _openAlarmId;
 
-    private sealed record AlarmCard(string Raised, string Said, string Attending);
+    private sealed record AlarmCard(string Raised, string Said, string CannotDial,
+                                    string Attending);
 
     private async System.Threading.Tasks.Task LoadAlarms()
     {
@@ -188,6 +189,11 @@ public sealed partial class SafetyPage : Page
             AlarmsList.ItemsSource = open.Select(a => new AlarmCard(
                 L10n.T("alarm.raised"),
                 string.Join("  ", a.Messages ?? System.Array.Empty<string>()),
+                // True on every row this queue holds: the beacon path is
+                // ceilinged below emergency services, and a crash watch at the
+                // top rung sent a dispatch request rather than placing a call.
+                a.CallEmergencyServicesYourself == true
+                    ? L10n.T("alarm.not_emergency") : "",
                 // Accepted is not cleared — the alarm stays open and the card
                 // has to say which of the two happened.
                 a.AcceptedBy is null

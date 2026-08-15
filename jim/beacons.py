@@ -393,6 +393,15 @@ def alarm(beacon_id: str, message: str | None = None,
 
 
 def alarms_for(user_id: str, open_only: bool = False) -> list[dict]:
+    """Every alarm this beacon owner has had, for the answering queue.
+
+    The rows carry ``call_emergency_services_yourself`` for the same reason
+    :func:`alarm` hands it to the stranger: a beacon alarm is ceilinged at
+    :data:`ALARM_TIER` and this product cannot place a call at any tier. The
+    finder's page has said so since it shipped; the queue the *carer* reads
+    showed a tier and never mentioned the ceiling that produced it. One alarm,
+    two readers, and only one of them was told.
+    """
     sql = "SELECT * FROM beacon_alarms WHERE user_id=?"
     if open_only:
         sql += " AND state='open'"
@@ -403,6 +412,9 @@ def alarms_for(user_id: str, open_only: bool = False) -> list[dict]:
         "messages": json.loads(r["messages"]),
         "state": r["state"],
         "tier": r["tier"],
+        # Structural rather than a judgement about this particular alarm.
+        "call_emergency_services_yourself": True,
+        "clipped_by_ceiling": r["tier"] == ALARM_TIER,
         "accepted_by": r["accepted_by"],
         "created_at": r["created_at"],
         "cleared_at": r["cleared_at"],

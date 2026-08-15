@@ -673,6 +673,14 @@ export type AlarmRow = {
   /** Plain strings — a finder's words, or the crash watch's sentence. The
    *  shells decode [String]; one queue, one shape. */
   messages?: string[];
+  /** True on every row this queue holds, because JIM cannot place a call at
+   *  any tier — a beacon alarm is ceilinged below emergency services, and a
+   *  crash watch that reached the top rung issued a dispatch *request*. The
+   *  stranger's page has carried this sentence since it shipped; the carer's
+   *  queue showed a tier and never said what the tier could not do. */
+  call_emergency_services_yourself?: boolean;
+  /** Whether a safety floor was cut to reach this tier. */
+  clipped_by_ceiling?: boolean;
 };
 
 /** What accept / escalate / clear answer with. The three differ, so the

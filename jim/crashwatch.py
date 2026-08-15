@@ -34,6 +34,39 @@ Design commitments, argued in the same order the vigil's were:
   never opens a crash concern; only the clinical detector's critical
   findings do. A drift notice that could summon an ambulance would
   just be a jumpier alarm with a softer name (jim/bands.py said so first).
+
+## The collapse path, framed
+
+The trip used to decide its own tier — ``"emergency_services" if the box was
+ticked else "notify_contact"`` — while every other way this product summons
+help went through :func:`jim.escalation.decide` and came back with a ``path``
+that can be replayed and defended. The one path where the person cannot
+speak for themselves was the one with no reasoning on the record.
+
+    asked     what tier did the trip reach
+    mattered  why, in words somebody can argue with afterwards
+
+It goes through the ladder now, and the ladder gives the same answer it
+always did — deliberately, because this is not new behaviour, it is the
+existing behaviour with its argument attached. Two choices are worth stating:
+
+* **Sensitivity is pinned at balanced.** The dial governs how eagerly JIM
+  escalates a *reading*. This is not a reading; it is a standing instruction
+  the person wrote down while they were fine, and a preference about jumpiness
+  must not quietly raise or lower what they asked for.
+* **The arming is a ceiling, not a floor.** A person who did not tick
+  emergency services gets ``notify_contact`` — as a *clipped* decision, so
+  the result says out loud that a floor was cut and hands the need to the
+  human standing there, exactly as an anonymous beacon alarm does.
+
+And the sentence. The bystander's path has told a stranger to dial the number
+themselves since it shipped; the collapse path — the acute one, the one this
+module exists for — told the trusted contact to "treat it as real" and stopped
+there. :data:`DIAL_YOURSELF` now ends every page the trip sends, on both
+settings of the box, because the box changes whether a dispatch *request* goes
+out to connected systems and changes nothing about whether a call was placed.
+The tick is the moment the product most looks like it called for help, so it
+is the moment the sentence matters most.
 """
 
 from __future__ import annotations
@@ -50,6 +83,34 @@ CONCERNING = {"critical"}
 MAX_ATTEMPTS_CAP = 10
 MIN_WINDOW_MINUTES = 1.0
 MAX_WINDOW_MINUTES = 60.0
+
+#: The one sentence that helps, in the wording jim/beacons.py uses on the
+#: stranger's page, aimed at the surface this one lands on. It ends every page
+#: the trip sends — the trusted contact reading it at 3am is the only person
+#: in this story who can actually reach a dispatcher.
+DIAL_YOURSELF = ("If you believe this is an emergency, call your local "
+                 "emergency number yourself; this app cannot call anyone.")
+
+#: Why the sentence is there, in each of the two ways the watch can be armed.
+#: The ticked box is the one that most needs it: a dispatch *request* relayed
+#: to connected systems is the thing that most looks like a call being placed.
+#:
+#: Written without "you", because this text has two readers — the trusted
+#: contact opening a page at 3am, and whoever is looking at the alarm queue.
+#: The two are rarely the same person and the sentence has to be true for both.
+WHY_DIAL = {
+    True: ("A dispatch request went out to every connected system. No call "
+           "was placed from here."),
+    False: ("This watch was armed to reach a trusted contact, not emergency "
+            "services."),
+}
+
+#: The tier a trip may not exceed when the person did not pre-authorize the
+#: emergency-services step. Their arming is a ceiling on their own behalf —
+#: the same mechanic jim/beacons.py uses for a stranger, for a different
+#: reason: there, the caller has no standing; here, the caller left standing
+#: instructions and this is what they said.
+UNTICKED_CEILING = "notify_contact"
 
 
 class CrashWatchError(Exception):
@@ -244,10 +305,28 @@ def sweep(user_id: str, now: datetime | None = None) -> dict:
         conn.commit()
 
 
+def _decide(row) -> dict:
+    """The trip's tier, from the ladder rather than from an ``if``.
+
+    Called by both :func:`_trip` and :func:`as_alarm` so the queue and the
+    record cannot drift apart — there is no ``tier`` column, and a second
+    place computing one is how they would.
+
+    ``sensitivity`` is deliberately not read off the user. See the module
+    docstring: the dial is about readings, this is a standing instruction.
+    """
+    from . import escalation
+    return escalation.decide(
+        "critical", "balanced",
+        contactable=bool(row["trusted_channel"]),
+        ceiling=None if row["contact_ems"] else UNTICKED_CEILING)
+
+
 def _trip(user_id: str, row, t: datetime) -> dict:
     from . import guardian, mailer
     user = guardian.get_user(user_id) or {}
     name = user.get("display_name", "someone you care about")
+    decision = _decide(row)
     body = (f"This is {name}'s JIM Guardian. An alarming reading came in "
             f"({row['concern']}), JIM asked \"are you okay?\" "
             f"{row['attempts']} time(s) over "
@@ -255,7 +334,8 @@ def _trip(user_id: str, row, t: datetime) -> dict:
             "nothing answered — no button, no message, no normal reading. "
             "They armed this watch themselves and asked that you be "
             "contacted when exactly this happens. Please treat it as real "
-            "until they tell you otherwise.")
+            "until they tell you otherwise.\n\n"
+            f"{WHY_DIAL[bool(row['contact_ems'])]} {DIAL_YOURSELF}")
     delivery = "console"
     if mailer.configured_transport() == "smtp" and "@" in row["trusted_channel"]:
         try:
@@ -279,6 +359,15 @@ def _trip(user_id: str, row, t: datetime) -> dict:
         "unanswered_attempts": row["attempts"],
         "dispatched_alerts": dispatched,
         "message": body,
+        # The ladder's own reasoning, kept so this decision can be replayed
+        # and argued with — every other escalation in this product records
+        # one, and the path where the person cannot speak recorded none.
+        "tier": decision["tier"],
+        "clipped_by_ceiling": decision["clipped_by_ceiling"],
+        "escalation_path": decision["path"],
+        # True on both settings of the box: what the tick changes is whether
+        # a dispatch request is relayed, not whether a call was placed.
+        "call_emergency_services_yourself": True,
         # Recorded as a *request*, in words that stay honest about what a
         # local app can and cannot do — see the module docstring.
         "emergency_services": (
@@ -323,6 +412,7 @@ def as_alarm(user_id: str) -> dict | None:
     row = _row(user_id)
     if row is None or not row["tripped_at"] or row["resolved_at"]:
         return None
+    decision = _decide(row)
     return {
         "id": ALARM_ID,
         "beacon_id": None,
@@ -336,10 +426,18 @@ def as_alarm(user_id: str) -> dict | None:
             (f"an alarming reading ({row['concern']}) went unanswered "
              f"through {row['attempts']} check-in(s); "
              f"{row['trusted_name']} was contacted"),
+            # The dial sentence rides in `messages` and not only in a new
+            # field, so it reaches a client that has never heard of the field
+            # — every shell already renders these strings. The field below is
+            # for the ones that want to render it like what it is.
+            f"{WHY_DIAL[bool(row['contact_ems'])]} {DIAL_YOURSELF}",
         ],
         "state": "open",
-        "tier": ("emergency_services" if row["contact_ems"]
-                 else "notify_contact"),
+        # From the ladder, not from an `if` on the tick. It answers the same
+        # tier the `if` did; what is new is that it can say why.
+        "tier": decision["tier"],
+        "clipped_by_ceiling": decision["clipped_by_ceiling"],
+        "call_emergency_services_yourself": True,
         "accepted_by": row["accepted_by"],
         "created_at": row["tripped_at"],
         "cleared_at": None,
@@ -403,7 +501,7 @@ def escalate_alarm(user_id: str) -> dict | None:
                 f"This is {name}'s JIM Guardian, paging again: the crash "
                 f"watch tripped ({row['concern']}) and nobody has confirmed "
                 "they are going. Please treat it as real until they tell "
-                "you otherwise.")
+                f"you otherwise.\n\n{DIAL_YOURSELF}")
             delivery = "email"
         except Exception:  # noqa: BLE001 — the escalation still stands
             delivery = "email_failed"

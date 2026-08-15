@@ -33,7 +33,9 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "device — and says plainly that JIM cannot dial 911 itself. The "
         "crash watch is the automatic path when you cannot press anything: "
         "arm it on Your Baseline with a trusted person, and its status "
-        "shows on Safety.",
+        "shows on Safety. If it trips, the message your trusted person gets "
+        "ends by telling them to call the emergency number themselves — "
+        "whichever way you armed it, because JIM cannot place a call.",
     ("med", "pill", "dose", "cabinet", "prescription"):
         "Medications is the cabinet: what you take in your own words, the "
         "day's dose board, and adherence — a missed dose is a check-in, "

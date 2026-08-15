@@ -27,6 +27,16 @@
                                                    Foreground="{StaticResource JimRedBrush}" />
                                         <TextBlock Text="{Binding Said}" TextWrapping="Wrap"
                                                    Foreground="{StaticResource JimTxtBrush}" />
+                                        <!-- The page has carried this sentence since it
+                                             shipped, at the very bottom in caption grey.
+                                             On an open alarm it is the thing to do first,
+                                             so it sits on the card. Empty string when the
+                                             row does not claim it, which is never today
+                                             and is the row's call to make, not this
+                                             template's. -->
+                                        <TextBlock Text="{Binding CannotDial}" FontSize="13"
+                                                   FontWeight="SemiBold" TextWrapping="Wrap"
+                                                   Foreground="{StaticResource JimRedBrush}" />
                                         <!-- Accepted is not cleared: the server says
                                              so and this shell repeats it rather than
                                              greying the card out. -->

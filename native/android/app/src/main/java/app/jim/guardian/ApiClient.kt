@@ -146,6 +146,12 @@ data class AlarmRow(
     val id: String, val beaconId: String, val messages: List<String>,
     val state: String, val tier: String, val acceptedBy: String?,
     val createdAt: String,
+    /** True on every row this queue holds, because JIM cannot place a call at
+     *  any tier: a beacon alarm is ceilinged below emergency services, and a
+     *  crash watch that reached the top rung issued a dispatch *request*. */
+    val callEmergencyServicesYourself: Boolean = false,
+    /** Whether a safety floor was cut to reach this tier. */
+    val clippedByCeiling: Boolean = false,
 )
 
 data class AlarmAck(val alarm: String, val acceptedBy: String?,
@@ -1124,6 +1130,8 @@ object ApiClient {
                 o.optString("state", "open"), o.optString("tier", ""),
                 if (o.isNull("accepted_by")) null else o.optString("accepted_by"),
                 o.optString("created_at", ""),
+                o.optBoolean("call_emergency_services_yourself", false),
+                o.optBoolean("clipped_by_ceiling", false),
             )
         }
     }

@@ -378,7 +378,15 @@ public record AlarmRow(
     [property: JsonPropertyName("state")] string State,
     [property: JsonPropertyName("tier")] string? Tier,
     [property: JsonPropertyName("accepted_by")] string? AcceptedBy,
-    [property: JsonPropertyName("created_at")] string? CreatedAt);
+    [property: JsonPropertyName("created_at")] string? CreatedAt,
+    // True on every row this queue holds, because JIM cannot place a call at
+    // any tier: a beacon alarm is ceilinged below emergency services, and a
+    // crash watch that reached the top rung issued a dispatch *request*.
+    [property: JsonPropertyName("call_emergency_services_yourself")]
+    bool? CallEmergencyServicesYourself = null,
+    // Whether a safety floor was cut to reach this tier.
+    [property: JsonPropertyName("clipped_by_ceiling")]
+    bool? ClippedByCeiling = null);
 
 public record AlarmAck(
     [property: JsonPropertyName("alarm")] string? Alarm,

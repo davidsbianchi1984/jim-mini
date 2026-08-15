@@ -495,6 +495,14 @@ struct AlarmRow: Decodable, Identifiable {
     let accepted_by: String?
     let created_at: String?
     let cleared_at: String?
+    /// True on every row this queue holds, because JIM cannot place a call at
+    /// any tier: a beacon alarm is ceilinged below emergency services, and a
+    /// crash watch that reached the top rung issued a dispatch *request*. The
+    /// stranger's page has carried the sentence since it shipped; the carer's
+    /// queue showed a tier and never said what the tier could not do.
+    let call_emergency_services_yourself: Bool?
+    /// Whether a safety floor was cut to reach this tier.
+    let clipped_by_ceiling: Bool?
 }
 
 struct AlarmAck: Decodable {

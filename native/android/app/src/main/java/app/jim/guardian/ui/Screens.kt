@@ -2632,6 +2632,17 @@ private fun AlarmsPanel(vm: GuardianViewModel) {
                 a.messages.forEach { m ->
                     Text("\u201c$m\u201d", color = Jim.Txt, fontSize = 14.sp)
                 }
+                // The screen has carried this sentence since it shipped \u2014 at
+                // the very bottom, in caption grey, under everything else. On
+                // an open alarm it is the thing to do *first*, so it sits on
+                // the card. True on every row: the beacon path is ceilinged
+                // below emergency services, and a crash watch at the top rung
+                // sent a dispatch request rather than placing a call.
+                if (a.callEmergencyServicesYourself) {
+                    Text(L10n.t("alarm.not_emergency", vm.language),
+                        color = Jim.Red, fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold)
+                }
                 if (a.acceptedBy != null) {
                     // Accepted is not cleared. The server says so in its own
                     // response and this shell repeats it rather than greying

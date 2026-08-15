@@ -90,6 +90,23 @@ to `emergency_services`; a `critical` detection never falls below
 `GET /escalation-policy/{user_id}` shows the user exactly how their dial maps
 each severity to a tier — *before* anything happens.
 
+**The one ceiling, and its two callers.** Every other rule here is a floor.
+`ceiling` is the exception, and when it clips a floor the decision says so out
+loud — `clipped_by_ceiling` and `call_emergency_services_yourself` — rather
+than quietly returning a lower tier. The intent behind the floor is not
+discarded; it is handed to the person standing there, who can dial faster than
+any escalation could anyway. Two callers pass one, for nearly opposite reasons:
+
+| caller | ceiling | why |
+| --- | --- | --- |
+| an anonymous beacon scan | `notify_contact` | the caller has no standing — a passer-by's tap must never dispatch an ambulance on somebody else's behalf |
+| a crash watch armed without the emergency-services step | `notify_contact` | the caller left standing instructions, and this is what they said |
+
+The crash watch enters the ladder at `critical` with sensitivity pinned to
+`balanced`: the dial governs how eagerly JIM escalates a *reading*, and a
+standing instruction written down while the person was fine must not be raised
+or lowered by a preference about jumpiness.
+
 ## The Emergency button (watch & mobile)
 
 A deliberate SOS press skips the ladder's deliberation — the user has declared

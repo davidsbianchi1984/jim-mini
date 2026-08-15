@@ -6,6 +6,55 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The collapse path now reasons out loud, and tells the one person who can
+  dial.** The field report that reframed the safety screen — *"say if you
+  collapse on the floor and needed help and assistance how are you gonna put a
+  sticker on a door"* — was answered on the pressing end: "Get help now" leads
+  the screen and beacons moved below it, saying they are the bystander's path.
+  The other end of the same report went unanswered. When somebody actually
+  collapses they press nothing, and what runs then is the crash watch.
+
+  Two things were wrong with it, and both are the same shape.
+
+  **It decided its own tier.** `_trip` computed `"emergency_services" if the
+  box was ticked else "notify_contact"`, while every other way this product
+  summons help goes through `escalation.decide` and comes back with a `path`
+  that can be replayed and argued with. The one path where the person cannot
+  speak for themselves was the one with no reasoning on the record.
+
+      asked     what tier did the trip reach
+      mattered  why, in words somebody can argue with afterwards
+
+  It goes through the ladder now and answers the same tier it always did —
+  deliberately, because this is not new behaviour, it is the existing
+  behaviour with its argument attached. Sensitivity is pinned at balanced: the
+  dial governs how eagerly JIM escalates a *reading*, and a standing
+  instruction written down while the person was fine must not be raised or
+  lowered by a preference about jumpiness. The arming is a ceiling rather than
+  a floor, so a watch armed without the emergency-services step now reports a
+  *clipped* decision — the need is handed to the human standing there, exactly
+  as an anonymous beacon alarm does.
+
+  **The page said everything except what to do.** The trusted contact was
+  emailed at 3am to "treat it as real" and nothing more. The bystander's page
+  has told a stranger to dial the number themselves since it shipped, in ten
+  languages; the acute path never did, on either setting of the box. The
+  ticked box is the one that most needs it — a dispatch *request* relayed to
+  connected systems is the thing that most looks like a call having been
+  placed. Every page the trip sends now ends with it, the re-page included,
+  and the sentence rides in the alarm's `messages` as well as in a field of
+  its own, so a shell built before this round still shows it.
+
+  The queue itself was uneven for the same reason. A beacon alarm's live
+  response carries the sentence to the stranger; the alarm *list* the carer
+  reads showed a tier and never mentioned the ceiling that produced it. One
+  alarm, two readers, and only one of them was told. Both rows carry it now,
+  and all four clients render it on the open alarm card rather than as a grey
+  footnote at the bottom of the screen — the console had no such footnote at
+  all, which is the odd-client-out shape this estate keeps finding.
+
 ### Added
 
 - **You can now tell it to switch something on.** Reported from the field, in

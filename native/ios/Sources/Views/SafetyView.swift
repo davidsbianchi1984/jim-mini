@@ -104,6 +104,20 @@ private struct AlarmsSection: View {
                         Text("“\(m)”").font(.subheadline)
                     }
 
+                    // The screen has carried this sentence since it shipped —
+                    // at the very bottom, in caption grey, under the guidance
+                    // and the errors. On an open alarm it is the thing to do
+                    // *first*, so it sits on the card, in the colour this app
+                    // reserves for what cannot be taken back. True on every
+                    // row: the beacon path is ceilinged below emergency
+                    // services, and a crash watch at the top rung sent a
+                    // dispatch request rather than placing a call.
+                    if a.call_emergency_services_yourself == true {
+                        Text(L10n.t("alarm.not_emergency", state.language))
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Theme.red)
+                    }
+
                     if let who = a.accepted_by {
                         // Accepted is not cleared. The server says so in its
                         // own response and this shell repeats it rather than
