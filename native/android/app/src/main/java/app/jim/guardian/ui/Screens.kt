@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.jim.guardian.AccessReportRow
@@ -3695,6 +3696,12 @@ private fun medRow(k: String, v: String) {
 
 // ---- Care: Monitor, Check-in, Coach behind one tab ----
 
+/** One glyph per Care tab, in the strip's own order. Index 3 is ABRACADABRA
+ *  and is never read — that tab draws `JimMiniOSMark` instead — but it holds
+ *  a place so the list stays index-aligned with `tabs` below, which is the
+ *  only thing keeping the two in step. */
+private val CARE_TAB_GLYPHS = listOf("❤", "🌿", "🧠", "△", "◍", "👥")
+
 @Composable
 fun CareScreen(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
@@ -3707,13 +3714,29 @@ fun CareScreen(vm: GuardianViewModel) {
         L10n.t("tab.family", vm.language),
     )
     Column(Modifier.fillMaxSize()) {
-        TabRow(
+        // ScrollableTabRow rather than TabRow, and each tab carries an icon.
+        // ABRACADABRA is a drawing now (`JimMiniOSMark`) rather than a word,
+        // and six tabs at an icon size the mark can be seen at do not fit
+        // across a phone — a TabRow divides the width evenly and would squeeze
+        // them, which is what made the old glyph a glyph. The console's phone
+        // bar scrolls sideways for exactly this reason.
+        ScrollableTabRow(
             selectedTabIndex = tab, containerColor = Jim.Card, contentColor = Jim.BrandA,
-            modifier = Modifier.padding(horizontal = 20.dp).padding(top = 12.dp),
+            edgePadding = 20.dp,
+            modifier = Modifier.padding(top = 12.dp),
         ) {
             tabs.forEachIndexed { i, t ->
-                Tab(selected = tab == i, onClick = { tab = i },
-                    text = { Text(t, fontSize = 13.sp) })
+                Tab(
+                    selected = tab == i, onClick = { tab = i },
+                    // The mark on its own tab; a matching-size symbol on the
+                    // rest, so no button is the odd one out.
+                    icon = {
+                        if (i == 3) JimMiniOSMark(56.dp)
+                        else Text(CARE_TAB_GLYPHS[i], fontSize = 30.sp)
+                    },
+                    text = { Text(t, fontSize = 11.sp, maxLines = 2,
+                                  textAlign = TextAlign.Center) },
+                )
             }
         }
         when (tab) {

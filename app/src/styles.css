@@ -23,8 +23,14 @@ code, .mono { font-family: ui-monospace, Menlo, monospace; }
 
 /* 100dvh where the browser has it: on a phone, 100% tracks the layout
    viewport, which is taller than what is actually visible while the URL bar
-   is up — the bottom row sat under it. Browsers without dvh keep 100%. */
-.app { display: grid; grid-template-columns: 232px 1fr; height: 100%; height: 100dvh; }
+   is up — the bottom row sat under it. Browsers without dvh keep 100%.
+
+   300px, up from 232. The menu buttons carry an 84px mark now — see
+   `JimMiniOS.tsx` for why 84 and not 18 — and at that icon size a single
+   column of twenty-four rows is a very long scroll. Two columns of tiles
+   halve it, and the size then reads as deliberate rather than as one
+   button that outgrew its neighbours. */
+.app { display: grid; grid-template-columns: 300px 1fr; height: 100%; height: 100dvh; }
 .sidebar { background: linear-gradient(180deg, #141d31, #0b1120); border-right: 1px solid var(--line);
   /* The bottom padding is the Guardian-lights widget's footprint: it is
      fixed at `left: 22px; bottom: 22px` and 176px tall, so it sits *on*
@@ -37,12 +43,39 @@ code, .mono { font-family: ui-monospace, Menlo, monospace; }
 .brand { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; padding: 0 6px; }
 .brand-name { font-weight: 800; letter-spacing: 0.5px; }
 .brand-sub { font-size: 10px; color: var(--t3); }
-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.nav-item { display: flex; align-items: center; gap: 10px; text-align: left; background: transparent;
-  color: var(--t2); border: 0; border-radius: 10px; padding: 11px 12px; font-size: 13px; font-weight: 600; }
+/* Tiles, two across, icon over label — the shape the phone bar already used
+   at the bottom of this file, brought up to the desktop column so both
+   layouts agree. The list of rows it replaces put an 18px glyph beside each
+   word; that is a fine size for an emoji and far too small for a mark with
+   a word inside it. */
+nav { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1;
+  /* Both, and neither is redundant: `align-content` packs the whole set of
+     rows at the top of the flex-grown column, `grid-auto-rows` stops each
+     row from stretching to swallow the slack. Without the second the tiles
+     came out a quarter of the viewport tall apiece. */
+  align-content: start; grid-auto-rows: max-content; }
+.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 8px; text-align: center; background: transparent; hyphens: auto;
+  color: var(--t2); border: 0; border-radius: 12px; padding: 12px 6px; font-size: 11px;
+  font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
 .nav-item:hover { color: var(--txt); background: rgba(255,255,255,0.04); }
-.nav-item.active { color: #fff; background: rgba(67,224,138,0.16); box-shadow: inset 3px 0 0 var(--brand); }
-.nav-icon { width: 18px; text-align: center; }
+/* Selected reads as a lift, not as a colour. The green wash and green
+   hairline this replaces were the brand accent, and they fought the mark:
+   ABRACADABRA is black, gold and white, and a green box around it is the
+   one thing on the tile that belongs to neither. Neutral works behind all
+   twenty-four icons instead of behind twenty-three of them. */
+.nav-item.active { color: #fff; background: rgba(255,255,255,0.10);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22); }
+/* 84px, not 18. Rendered at 60, 72, 84 and 96 and looked at: the lockup's
+   wordmark is cramped at 60, fine at 72, and all three of its parts read
+   cleanly at 84. The character icons match the box so no button is the odd
+   one out — which is the whole reason the menu grew. */
+.nav-icon { width: 84px; height: 84px; display: flex; align-items: center;
+  justify-content: center; line-height: 1;
+  /* 62px of glyph in an 84px box puts the character icons at roughly the ink
+     height of the drawn lockup beside them. */
+  font-size: 62px; }
+.nav-icon svg { display: block; }
 .guard-chip { font-size: 11px; color: var(--txt); padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.04); margin-bottom: 8px; }
 .signout { background: rgba(255,255,255,0.05); color: var(--t2); border: 1px solid var(--line); border-radius: 10px; padding: 9px; font-size: 12px; }
 .dot-online { color: var(--green); font-size: 12px; }
@@ -140,15 +173,26 @@ button.danger { background: rgba(255,77,94,0.14) !important; color: var(--red) !
   }
   .brand, .guard-chip, .signout { display: none; }
 
-  nav { flex-direction: row; gap: 2px; width: 100%; }
+  /* The phone bar keeps its row and scrolls sideways: twenty-four tiles at
+     a readable icon size do not fit across a phone, and squeezing them to
+     fit is how the mark became unreadable in the first place. */
+  nav { display: flex; flex-direction: row; gap: 2px; width: 100%;
+    overflow-x: auto; scroll-snap-type: x proximity; }
   .nav-item {
-    flex: 1; flex-direction: column; gap: 3px; justify-content: center;
+    flex: 0 0 auto; width: 92px;
+    flex-direction: column; gap: 3px; justify-content: center;
     text-align: center; padding: 8px 2px; font-size: 10px; font-weight: 700;
     min-height: 52px;                 /* comfortable tap target */
-    border-radius: 12px;
+    border-radius: 12px; scroll-snap-align: center;
+    /* Break at spaces only. The desktop tile is wide enough for
+       `overflow-wrap: anywhere` to never fire; on the phone it did, and
+       "Medications" came out as "Medication / s". */
+    overflow-wrap: normal;
   }
   .nav-item.active { box-shadow: none; }
-  .nav-icon { width: auto; font-size: 17px; }
+  /* 72 rather than the desktop's 84: the lockup still reads at 72 and the
+     bar is a bar, not a page. Below that the wordmark goes to mush. */
+  .nav-icon { width: 72px; height: 72px; font-size: 52px; }
 
   .content {
     grid-row: 1; padding: 18px 16px 22px;

@@ -30,12 +30,24 @@ public sealed partial class ShellPage : Page
                 // reason: its label is `eng.tab`, shared byte-for-byte with
                 // the other two shells, and a `tab.engaged` row would be the
                 // same English under two keys again.
-                nvi.Content = tag switch
+            {
+                var label = tag switch
                 {
                     "presence" => L10n.T("presence.tab"),
                     "engaged" => L10n.T("eng.tab"),
                     _ => L10n.T($"tab.{tag}"),
                 };
+                // The label used to be the item's whole `Content`. The icons
+                // moved into `Content` to be resized (see ShellPage.xaml), so
+                // it is now a `TextBlock` beside one. Assigning a string to
+                // `Content` here would silently throw the icon away — which
+                // would look like the drawing failing rather than like this
+                // line being wrong, so it is worth the extra four lines.
+                if (nvi.Content is StackPanel panel)
+                    foreach (var child in panel.Children)
+                        if (child is TextBlock text)
+                            text.Text = label;
+            }
         // Not a menu item: this one sits in the pane footer, which the loop
         // above does not walk. It said "Sign out" in every language until this
         // round — and the sibling product found and fixed exactly this two

@@ -58,6 +58,11 @@ NOT_A_SURFACE = {
     "GuardianLights", # the same widget, this product's own — same reasoning
     "Footsteps",   # the corner counter; fixed chrome over every screen, like the version guard
     "VersionGuard", # a failure banner, deliberately not part of the tour
+    # A mark, not a screen: the jim-mini OS lockup drawn on its own menu
+    # button. Chrome the way `Help` is chrome — always on screen, never a
+    # place anybody navigates to — so it has no screen number and never will.
+    # What the button opens is Engaged, which is drawn and numbered.
+    "JimMiniOS",
 }
 
 

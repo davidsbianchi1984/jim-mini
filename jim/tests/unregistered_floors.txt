@@ -56,8 +56,8 @@ test_a_native_binding_is_not_a_door_either.py:177: n > 20
 test_a_refusal_whose_english_is_not_a_constant.py:151: len(calls) >= 6
 test_a_screen_nothing_opens.py:156: len(found) >= 5
 test_a_shell_asks_for_a_key_it_has.py:313: len(wanted) >= 20
-test_a_shell_does_not_print_what_it_translated.py:355: len(_shown(spec)) > 100
-test_a_shell_does_not_print_what_it_translated.py:359: len(_fragments(spec)) >= 22
+test_a_shell_does_not_print_what_it_translated.py:370: len(_shown(spec)) > 100
+test_a_shell_does_not_print_what_it_translated.py:374: len(_fragments(spec)) >= 22
 test_emergency.py:40: med['age'] >= 40
 test_error_report_carries_nothing_private.py:398: len(segments) > 30
 test_help.py:19: len(client.get('/help/topics').json()['topics']) >= 10
@@ -106,8 +106,8 @@ test_the_shells_still_parse.py:406: len(XAML) >= 13
 test_the_shells_still_parse.py:409: named >= 340
 test_the_shells_still_parse.py:411: checked >= 80
 test_the_shells_still_parse.py:413: driven >= 300
-test_the_tabs_are_translated_and_the_screens_are_not.py:539: english + calls >= 50
-test_the_tabs_are_translated_and_the_screens_are_not.py:760: len(rows) >= 10
+test_the_tabs_are_translated_and_the_screens_are_not.py:553: english + calls >= 50
+test_the_tabs_are_translated_and_the_screens_are_not.py:774: len(rows) >= 10
 test_the_watch_you_actually_wear.py:118: metrics['resting_heart_rate']['value'] > 60
 test_vigil.py:75: st['silent_hours'] >= 48
 test_watch.py:145: metrics['heart_rate']['samples'] >= 6

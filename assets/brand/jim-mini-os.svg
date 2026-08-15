@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
+     role="img" aria-label="jim-mini OS">
+  <defs>
+    <linearGradient id="jm-edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#dfe94b"/>
+      <stop offset=".5" stop-color="#f2c230"/>
+      <stop offset="1" stop-color="#b8861f"/>
+    </linearGradient>
+    <filter id="jm-neon" x="-40%" y="-60%" width="180%" height="260%">
+      <feGaussianBlur stdDeviation="1.6" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/><feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="100" height="100" fill="#000"/>
+  <!-- The neon wordmark, drawn as a stroked outline rather than filled type:
+       a neon tube is a thin line of even width, and the stroke reads that way
+       whichever face the renderer substitutes underneath. -->
+  <text x="50" y="21" font-family="'Brush Script MT','Segoe Script','Bradley Hand','Apple Chancery','Lucida Handwriting',cursive" font-size="15" font-style="italic"
+        text-anchor="middle" fill="none" stroke="#e9f04e" stroke-width="0.55"
+        stroke-linejoin="round" filter="url(#jm-neon)">jim-mini</text>
+  <path d="M29.5 25.0 H71.5 L50.5 62.0 Z"
+        fill="#15120a" stroke="url(#jm-edge)" stroke-width="2.1"
+        stroke-linejoin="round"/>
+  <g font-family="Georgia,'Times New Roman',serif" font-size="3.0" fill="#f4efdc" text-anchor="middle">
+    <text x="34.00" y="28.51">A</text><text x="37.30" y="28.51">B</text><text x="40.60" y="28.51">R</text><text x="43.90" y="28.51">A</text><text x="47.20" y="28.51">C</text><text x="50.50" y="28.51">A</text><text x="53.80" y="28.51">D</text><text x="57.10" y="28.51">A</text><text x="60.40" y="28.51">B</text><text x="63.70" y="28.51">R</text><text x="67.00" y="28.51">A</text>
+    <text x="35.65" y="31.08">A</text><text x="38.95" y="31.08">B</text><text x="42.25" y="31.08">R</text><text x="45.55" y="31.08">A</text><text x="48.85" y="31.08">C</text><text x="52.15" y="31.08">A</text><text x="55.45" y="31.08">D</text><text x="58.75" y="31.08">A</text><text x="62.05" y="31.08">B</text><text x="65.35" y="31.08">R</text>
+    <text x="37.30" y="33.65">A</text><text x="40.60" y="33.65">B</text><text x="43.90" y="33.65">R</text><text x="47.20" y="33.65">A</text><text x="50.50" y="33.65">C</text><text x="53.80" y="33.65">A</text><text x="57.10" y="33.65">D</text><text x="60.40" y="33.65">A</text><text x="63.70" y="33.65">B</text>
+    <text x="38.95" y="36.22">A</text><text x="42.25" y="36.22">B</text><text x="45.55" y="36.22">R</text><text x="48.85" y="36.22">A</text><text x="52.15" y="36.22">C</text><text x="55.45" y="36.22">A</text><text x="58.75" y="36.22">D</text><text x="62.05" y="36.22">A</text>
+    <text x="40.60" y="38.80">A</text><text x="43.90" y="38.80">B</text><text x="47.20" y="38.80">R</text><text x="50.50" y="38.80">A</text><text x="53.80" y="38.80">C</text><text x="57.10" y="38.80">A</text><text x="60.40" y="38.80">D</text>
+    <text x="42.25" y="41.37">A</text><text x="45.55" y="41.37">B</text><text x="48.85" y="41.37">R</text><text x="52.15" y="41.37">A</text><text x="55.45" y="41.37">C</text><text x="58.75" y="41.37">A</text>
+    <text x="43.90" y="43.94">A</text><text x="47.20" y="43.94">B</text><text x="50.50" y="43.94">R</text><text x="53.80" y="43.94">A</text><text x="57.10" y="43.94">C</text>
+    <text x="45.55" y="46.52">A</text><text x="48.85" y="46.52">B</text><text x="52.15" y="46.52">R</text><text x="55.45" y="46.52">A</text>
+    <text x="47.20" y="49.09">A</text><text x="50.50" y="49.09">B</text><text x="53.80" y="49.09">R</text>
+    <text x="48.85" y="51.66">A</text><text x="52.15" y="51.66">B</text>
+    <text x="50.50" y="54.23">A</text>
+  </g>
+  <rect x="9.4" y="63.0" width="81.8" height="21.3" fill="#fff"/>
+  <text x="50" y="79.6" font-family="'Arial Black','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="19"
+        font-weight="900" text-anchor="middle" fill="#000"
+        letter-spacing="-0.5">OS</text>
+</svg>

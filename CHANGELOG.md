@@ -8,6 +8,71 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The ABRACADABRA button is the whole jim-mini OS lockup.** The tab has
+  carried `🜂` since the incantation replaced "Activate JIM" — the alchemical
+  fire glyph, picked because "the triangle is how the tab is found before the
+  word is read". It is the mark itself now: the neon wordmark, the amulet
+  triangle with ABRACADABRA descending eleven rows, and the OS plate.
+
+      asked     is the mark on the button
+      mattered  is the whole mark on the button, big enough to read as itself
+
+  The second question set every other decision in this round, and it was
+  answered by rendering the thing and looking at it rather than by reasoning
+  about ems. At 60px the wordmark is cramped; at 72 it is fine; at 84 all
+  three parts read cleanly. So the menu icon is 84px, and the other
+  twenty-three icons grew to match — a mark that dwarfs its neighbours is not
+  a menu, it is one button that got away. The desktop column went from a list
+  of rows to two columns of tiles, icon over label, which is the shape the
+  phone bar was already using at the bottom of the same stylesheet; it widened
+  232 → 300px. The phone bar keeps its row and scrolls sideways, because
+  twenty-four tiles at a readable size do not fit across a phone and squeezing
+  them to fit is what made the old glyph a glyph.
+
+  Two details that only a render would have caught. `align-content: start`
+  alone let each grid row swallow the column's slack, and the tiles came out a
+  quarter of the viewport tall until `grid-auto-rows: max-content` joined it.
+  And the character icons were first set at 30px beside a 60px drawing, which
+  is precisely the mismatch the resize existed to remove.
+
+  The neon wordmark is stroked rather than filled: a neon tube is a thin line
+  of even width, and an outline reads that way whichever face the renderer
+  substitutes underneath — a script font cannot be assumed, so the stack asks
+  for one and degrades to a glowing italic word instead of to something that
+  looks broken. Every glyph inside the triangle is placed at a computed x for
+  the same family of reason: `textLength` is honoured inconsistently across
+  rasterizers, and a mark that is one width in Chrome and another in cairo is
+  not one mark. `assets/brand/jim-mini-os.svg` is the same drawing as a file.
+
+  The surface manifest caught the new component in the round that introduced
+  it, which is what it is for. It is chrome rather than a screen — the way
+  `Help` is chrome — so it joins `NOT_A_SURFACE` with its reason; what the
+  button opens is Engaged, which is drawn and numbered.
+
+  **And on all three phones.** Each shell draws the same lockup from the same
+  fractions — `JimMiniOSMark` in Swift, Kotlin and XAML — built from stack
+  views and one triangle rather than from a canvas with text drawn into it.
+  Text on a canvas means measuring glyphs by hand on three platforms that
+  measure them differently; a `Text` in a stack is the same drawing with each
+  layout engine doing its own arithmetic, and it needs no packaged image, so
+  nothing can go missing from a build.
+
+  Two tab strips had to change shape to hold it. iOS was a segmented picker
+  and Android a `TabRow`; a segmented control is about thirty points tall, and
+  a `TabRow` divides the width evenly — neither has a size at which a mark can
+  be seen. Both are now scrolling strips of icon-over-label buttons, which is
+  the move the console made, for the reason the console made it. On Windows
+  the icons moved out of `NavigationViewItem.Icon` and into `Content`: the
+  `Icon` slot takes an `IconElement`, which cannot be a drawing and cannot be
+  resized, so the eleven symbols are `Viewbox`-wrapped there beside the mark.
+
+  The shell-literals guard caught the letters immediately and was right to:
+  `ABRACADABRA` is a row its own tables translate. It is recorded rather than
+  keyed, in a third category the record did not have — not a wire value and
+  not a label, but a picture that happens to be made of letters. The tab
+  *beside* the mark stays translated, transliterating into Japanese, Chinese,
+  Hindi and Arabic, which is right for a name and wrong for a talisman.
+
 - **The collapse path now reasons out loud, and tells the one person who can
   dial.** The field report that reframed the safety screen — *"say if you
   collapse on the floor and needed help and assistance how are you gonna put a

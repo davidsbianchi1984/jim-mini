@@ -3,47 +3,106 @@
     x:Class="JimGuardian.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:JimGuardian.Views"
     Background="{StaticResource JimScrBotBrush}">
 
+    <!-- Every item carries its icon inside `Content` rather than in the
+         `Icon` slot. `NavigationViewItem.Icon` takes an `IconElement`, which
+         cannot be a drawing and cannot be resized; the ABRACADABRA item is a
+         drawing, and once one item is 56px the rest have to be too or the
+         menu has one button that got away. A `Viewbox` does for the eleven
+         symbols what the mark does for itself.
+
+         The trade this makes: with the icons in `Content`, a collapsed pane
+         would have nothing to show. `PaneDisplayMode="Left"` keeps the pane
+         expanded, which is what this shell already asked for. -->
     <NavigationView x:Name="Nav" IsBackButtonVisible="Collapsed" IsSettingsVisible="False"
                     PaneDisplayMode="Left" SelectionChanged="OnSelectionChanged"
                     Background="{StaticResource JimScrBotBrush}">
         <NavigationView.MenuItems>
-            <NavigationViewItem Tag="overview" IsSelected="True">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Home" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="overview" Height="72" IsSelected="True">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="Home" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="monitor">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Important" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="monitor" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="Important" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="checkin">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Emoji2" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="checkin" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="Emoji2" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="coach">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Message" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="coach" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="Message" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="engaged">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Link" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="engaged" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <local:JimMiniOSMark Width="56" Height="56" />
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="presence">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Contact" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="presence" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="Contact" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="life">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Flag" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="life" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="Flag" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="safety">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="ReportHacked" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="safety" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="ReportHacked" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="connect">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Link" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="connect" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="Link" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="custody">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Permissions" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="custody" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="Permissions" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="family">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="People" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="family" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="People" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
-            <NavigationViewItem Tag="self">
-                <NavigationViewItem.Icon><SymbolIcon Symbol="Contact" /></NavigationViewItem.Icon>
+            <NavigationViewItem Tag="self" Height="72">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Viewbox Width="56" Height="56"><SymbolIcon Symbol="Contact" /></Viewbox>
+                    <TextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
             </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>

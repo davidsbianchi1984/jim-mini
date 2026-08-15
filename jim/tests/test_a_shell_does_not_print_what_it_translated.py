@@ -147,9 +147,24 @@ SHELLS = {
 #:     changes what a restored selection means; it changes nothing a reader
 #:     sees.
 #:
-#: Every row here is a **value**. Translating one turns a working screen into
-#: a dead branch or a 422.
+#:   * **the letters of the amulet** — `ABRACADABRA`, in each shell's
+#:     `JimMiniOSMark`. This one is neither a value nor a label; it is the
+#:     drawing. The mark is the word arranged in a descending triangle, and
+#:     the triangle is the shape the word makes — transliterate the letters
+#:     and there is nothing left to look at. The *tab* beside it is
+#:     translated and always was: `eng.tab` carries ABRACADABRA verbatim in
+#:     the Latin scripts and transliterates into Japanese, Chinese, Hindi and
+#:     Arabic, which is the right treatment for a name and the wrong one for
+#:     a talisman.
+#:
+#: The first two kinds are **values** — translating one turns a working screen
+#: into a dead branch or a 422. The third is a picture that happens to be made
+#: of letters, which is why it needed a paragraph of its own rather than a
+#: place in the list above.
 RECORDED = {
+    ('android', 'ABRACADABRA'),
+    ('ios', 'ABRACADABRA'),
+    ('windows', 'ABRACADABRA'),
     ('android', 'assertive'),
     ('android', 'balanced'),
     ('android', 'cautious'),

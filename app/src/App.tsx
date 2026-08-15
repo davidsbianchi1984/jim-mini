@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useSession } from "./store";
 import { t as tr, visitorLang } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
@@ -6,6 +6,7 @@ import { Footsteps } from "./Footsteps";
 import { VersionGuard } from "./VersionGuard";
 import { GuardianLights } from "./GuardianLights";
 import { Help } from "./Help";
+import { JimMiniOS } from "./JimMiniOS";
 import { Onboarding } from "./screens/Onboarding";
 import { Home } from "./screens/Home";
 import { Monitor } from "./screens/Monitor";
@@ -39,7 +40,13 @@ type Tab = "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "car
 // navigation the one surface no language could reach: the phones carry ten,
 // the server answers in the reader's, and the frame around both was English
 // whatever anybody chose.
-const NAV: { id: Tab; icon: string }[] = [
+//
+// `icon` is a node rather than a string because one of these is a drawn mark
+// and not a glyph: ABRACADABRA carries the whole jim-mini OS lockup —
+// wordmark, amulet triangle, OS plate (`JimMiniOS.tsx`) — which no character
+// in any font can say. Everything else stays a character; widening the type
+// costs nothing and does not oblige the other twenty-three to become art.
+const NAV: { id: Tab; icon: ReactNode }[] = [
   { id: "home", icon: "◎" },
   { id: "monitor", icon: "❤" },
   { id: "safety", icon: "🆘" },
@@ -48,7 +55,7 @@ const NAV: { id: Tab; icon: string }[] = [
   { id: "careteam", icon: "👥" },
   { id: "selfprofile", icon: "🪞" },
   { id: "coach", icon: "🧠" },
-  { id: "engaged", icon: "🜂" },
+  { id: "engaged", icon: <JimMiniOS /> },
   { id: "wellness", icon: "🧘" },
   { id: "checkin", icon: "🌿" },
   { id: "journal", icon: "📖" },

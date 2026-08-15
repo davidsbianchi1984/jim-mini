@@ -90,6 +90,19 @@ def _repo_root() -> Path:
 REPO = _repo_root()
 RECORD = Path(__file__).resolve().parent / "native_screens_untranslated.txt"
 
+#: Files whose literals are not screen text. Named individually rather than
+#: pattern-matched, so adding one is a decision somebody makes here rather
+#: than a filename that quietly slips past a wildcard.
+#:
+#: `JimMiniOSMark` draws the brand lockup — "jim-mini", "OS", and the letters
+#: of the amulet. This ratchet counts how much of a shell a non-English reader
+#: cannot read, and none of those three is something a reader reads: they are
+#: the drawing. Counting them would put two points of localization debt on
+#: every shell that nobody could ever pay down, because translating a logo is
+#: not a thing anybody wants done. The tab *beside* the mark is translated and
+#: stays measured, which is where the promise actually lives.
+NOT_SCREEN_TEXT = ("JimMiniOSMark",)
+
 _BLOCK = re.compile(r"/\*.*?\*/", re.S)
 _LINE = re.compile(r"//[^\n]*")
 _HAS_LETTER = re.compile(r"[A-Za-z]")
@@ -464,7 +477,8 @@ def _measure(shell: str) -> tuple[int, int]:
     positions = _label_positions(base, derive) if derive else {}
     english = calls = 0
     for path in sorted(base.rglob("*")):
-        if path.suffix not in suffixes or "L10n" in path.name:
+        if (path.suffix not in suffixes or "L10n" in path.name
+                or path.name.startswith(NOT_SCREEN_TEXT)):
             continue
         text = _code(path)
         # Swift is scanned rather than matched — see `_swift_strings`. A
