@@ -77,12 +77,16 @@ nav { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1;
    The amulet triangle is, and nothing else was — so `JimMiniOS` has a small
    form that drops the wordmark, the letters and the OS plate, and the word
    itself stays on the label underneath where it can be read. That freed the
-   whole menu to go back to menu size. */
-.nav-icon { width: 34px; height: 34px; display: flex; align-items: center;
+   whole menu to go back to menu size.
+
+   34 was still not it — a second field report, with a picture: *these icons
+   still take up half the page*. 28 on desktop and 24 on a phone is ordinary
+   tab-bar scale, which is what a menu is for. */
+.nav-icon { width: 28px; height: 28px; display: flex; align-items: center;
   justify-content: center; line-height: 1;
-  /* 26px of glyph in a 34px box: the character icons sit at about the ink
+  /* 21px of glyph in a 28px box: the character icons sit at about the ink
      height of the drawn amulet beside them. */
-  font-size: 26px; }
+  font-size: 21px; }
 .nav-icon svg { display: block; }
 .guard-chip { font-size: 11px; color: var(--txt); padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.04); margin-bottom: 8px; }
 .signout { background: rgba(255,255,255,0.05); color: var(--t2); border: 1px solid var(--line); border-radius: 10px; padding: 9px; font-size: 12px; }
@@ -198,9 +202,9 @@ button.danger { background: rgba(255,77,94,0.14) !important; color: var(--red) !
     overflow-wrap: normal;
   }
   .nav-item.active { box-shadow: none; }
-  /* 30 rather than the desktop's 34: the bar is a bar, and on a phone it is
+  /* 24 rather than the desktop's 28: the bar is a bar, and on a phone it is
      also the thing standing between the reader and the bottom of the page. */
-  .nav-icon { width: 30px; height: 30px; font-size: 23px; }
+  .nav-icon { width: 24px; height: 24px; font-size: 18px; }
 
   .content {
     grid-row: 1; padding: 18px 16px 22px;
