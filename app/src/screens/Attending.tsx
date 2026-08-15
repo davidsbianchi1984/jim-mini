@@ -231,8 +231,9 @@ export function Attending() {
         {channel && (
           <p className="muted small">
             {tr("att.relay.channel", lang)}{" "}
-            {channel.configured ? "configured" : "not configured"}
-            {channel.signed ? ", signed" : ""} · {channel.envelope}
+            {channel.configured ? tr("att.ch.configured", lang)
+                                : tr("att.ch.unconfigured", lang)}
+            {channel.signed ? tr("att.ch.signed", lang) : ""} · {channel.envelope}
             {channel.note ? ` — ${channel.note}` : ""}
           </p>
         )}
@@ -248,7 +249,7 @@ export function Attending() {
           <p className="muted small">
             {rota.anybody_on_shift
               ? `On now: ${rota.on_now.join(", ")}`
-              : "Nobody is on shift"} · {rota.timezone}
+              : tr("att.rota.nobody", lang)} · {rota.timezone}
             {rota.note ? ` — ${rota.note}` : ""}
           </p>
         )}

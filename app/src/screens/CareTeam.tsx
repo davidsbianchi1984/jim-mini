@@ -157,7 +157,7 @@ export function CareTeam() {
                        onChange={(e) => setGoal(e.target.value)} />
               </label>
               <button className="primary" disabled={busy || !goal.trim()} onClick={coordinate}>
-                {busy ? "Coordinating…" : "Coordinate"}
+                {busy ? tr("ct.coordinating", lang) : tr("ct.coordinate", lang)}
               </button>
               <button disabled={busy} onClick={unlink}>{tr("ct.linked.unlink", lang)}</button>
             </div>
@@ -171,7 +171,7 @@ export function CareTeam() {
               <h3>{p.goal.length > 70 ? p.goal.slice(0, 70) + "…" : p.goal}</h3>
               <p style={{ whiteSpace: "pre-wrap" }}>{p.plan}</p>
               <p className="muted small">
-                {p.sealed_in_qrme_vault ? "sealed in the vault · " : ""}
+                {p.sealed_in_qrme_vault ? tr("ct.sealed", lang) : ""}
                 {new Date(p.created_at).toLocaleString()}
               </p>
             </div>
@@ -189,7 +189,7 @@ export function CareTeam() {
               <span className="muted small spec-now">
                 {c.attached
                   ? `${c.attached.label || "attached"} (${c.attached.mode})`
-                  : "nobody yet"}
+                  : tr("ct.nobody", lang)}
               </span>
               <select value={picks[c.condition] || ""}
                       onChange={(e) => setPicks((cur) => ({ ...cur, [c.condition]: e.target.value }))}>

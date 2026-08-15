@@ -117,7 +117,8 @@ export function Bearing() {
                   onChange={(e) => setLanguage(e.target.value)}>
             {languages.map((l) => (
               <option key={l.code} value={l.code}>
-                {l.label}{l.safety_content_translated ? "" : " (safety text in English)"}
+                {l.label}{l.safety_content_translated ? ""
+                  : tr("brg.safety.english", lang)}
               </option>
             ))}
           </select>
@@ -324,7 +325,8 @@ export function Bearing() {
                   onClick={() => run(() => api.setDock(uid!,
                     { state: dock?.state === "open" ? "handle" : "open" },
                     token!))}>
-            {dock?.state === "open" ? "Tuck it away" : "Open it"}
+            {dock?.state === "open" ? tr("brg.dock.tuck", lang)
+                                    : tr("brg.dock.open", lang)}
           </button>
         </div>
         {catalog && where != null && (

@@ -248,7 +248,8 @@ export function Safety() {
         <div key={String(p.id ?? i)} className="card">
           <div className="row">
             <span>{String(p.to ?? "—")}</span>
-            <span className="muted">{p.delivered ? "delivered" : "not delivered"}</span>
+            <span className="muted">{p.delivered ? tr("sfy.delivered", lang)
+                             : tr("sfy.undelivered", lang)}</span>
             {p.sent_at && <span className="muted">{String(p.sent_at).slice(0, 16).replace("T", " ")}</span>}
           </div>
         </div>

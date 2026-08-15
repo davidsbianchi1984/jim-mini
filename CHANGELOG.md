@@ -6,6 +6,47 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.75.0] - 2026-08-15
+
+### Changed
+
+- **The console-untranslated ceiling goes from 93 to 2.** It was 0, then 93
+  when the reader was widened to see a sentence chosen at render time, and
+  the file promised the next rounds would take it back down. This is those
+  rounds.
+
+      asked     is this screen translated
+      mattered  is every sentence on it translated, including the ones a
+                condition picks between at render time
+
+  Ninety-one strings across Attending, Baseline, Bearing, CareTeam, Channel,
+  Checkin, Community, Held, Journal, Meds, Monitor, Reach, Safety, Wards,
+  Coach, Onboarding and Settings now have keys and ten translations each.
+
+  Three of the ninety-one were not translation work, and they are the ones
+  worth reading the diff for. Onboarding's password toggle carried its
+  `aria-label` in English beside a visible label that was also English — the
+  screen reader and the eye untranslated in the same breath, and a row this
+  backlog could never have listed, because an `aria-label` is not text
+  between tags. The Settings posture card built one sentence out of two
+  adjacent string literals, which is a sentence no translator can reorder.
+  And `OfflinePosture` had no language binding at all, because until this
+  round it had nothing to say.
+
+  Seven of the new keys collided with keys that already existed. Three were
+  the same English and were dropped — the screens name the rows that were
+  already there. Four were a different sentence under the same name:
+  `set.voice.device` is a paragraph about the device voice, `med.add` is a
+  heading, `med.critical` is a sentence, `hld.src.allow` takes a `{source}`
+  hole. Those got a distinct name for the new use and only the new call site
+  moved. Two meanings under one key is this console's version of the defect
+  `test_one_name_one_type_on_the_wire.py` catches on the wire.
+
+  Two rows stay: `ElevenLabs` and `OpenAI`. They are the names of two
+  companies, printed because that is what the provider is called in every
+  language, and a translated vendor name would be a name nobody could match
+  against the account they hold there.
+
 ### Added
 
 - **The audit chain, ported from PDI.** JIM records what happens to a person
@@ -8442,7 +8483,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.74.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.75.0...HEAD
+[0.75.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.75.0
 [0.74.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.74.0
 [0.73.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.73.0
 [0.72.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.72.1

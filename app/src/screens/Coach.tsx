@@ -93,7 +93,8 @@ export function Coach() {
              onClick={() => { if (listening) toggleMic(); else { hush(); setSpeaking(false); } }}>
           <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
           <div className="voice-orb-label">
-            {listening ? "listening — tap to stop" : "speaking — tap to hush"}
+            {listening ? tr("cch.listening.stop", lang)
+                       : tr("cch.speaking.hush", lang)}
           </div>
         </div>
       )}
@@ -112,16 +113,16 @@ export function Coach() {
         </label>
         <div className="voice-row">
           <button className="primary" onClick={() => ask()} disabled={busy || listening}>
-            {busy ? "Thinking…" : "Ask the coach"}
+            {busy ? tr("cch.thinking", lang) : tr("cch.ask", lang)}
           </button>
           <button className={listening ? "mic listening" : "mic"} onClick={toggleMic}
                   disabled={busy}>
-            {listening ? "◉ Listening — tap to send" : "🎙 Talk to it"}
+            {listening ? tr("cch.listening", lang) : tr("cch.talk", lang)}
           </button>
           {reply?.content && (
             <button onClick={() => { if (speaking) { hush(); setSpeaking(false); }
                                      else { setSpeaking(true); say(reply.content).finally(() => setSpeaking(false)); } }}>
-              {speaking ? "■ Stop" : "🔊 Read it aloud"}
+              {speaking ? tr("cch.stop", lang) : tr("cch.readaloud", lang)}
             </button>
           )}
         </div>
@@ -140,8 +141,11 @@ export function Coach() {
           {reply.provenance?.degraded ? (
             <div className="degraded">
               {tr("cch.fallback", lang)}{" "}
-              {reply.provenance.generated_by === "stub" ? "an online model" : reply.provenance.generated_by} —{" "}
-              {reply.provenance.degraded_reason || "the model could not be reached"}.
+              {reply.provenance.generated_by === "stub"
+                ? tr("cch.prov.online", lang)
+                : reply.provenance.generated_by} —{" "}
+              {reply.provenance.degraded_reason
+                || tr("cch.prov.unreached", lang)}.
             </div>
           ) : reply.provenance?.generated_by && reply.provenance.generated_by !== "stub" && (
             <div className="muted small">{tr("cch.answered", lang)

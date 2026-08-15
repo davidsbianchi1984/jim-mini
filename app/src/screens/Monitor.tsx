@@ -47,7 +47,7 @@ export function Monitor() {
           <label>{tr("mon.resp", lang)}<input type="number" value={resp} onChange={(e) => setResp(+e.target.value)} /></label>
         </div>
         <label>{tr("mon.stress", lang)}<input type="number" step="0.1" min="0" max="1" value={stress} onChange={(e) => setStress(+e.target.value)} /></label>
-        <button className="primary" onClick={submit} disabled={busy}>{busy ? "Analyzing…" : "Send to Guardian"}</button>
+        <button className="primary" onClick={submit} disabled={busy}>{busy ? tr("mon.analyzing", lang) : tr("mon.send", lang)}</button>
         {error && <div className="error">⚠ {error}</div>}
       </div>
 
@@ -84,7 +84,7 @@ export function Monitor() {
               <p>{result.guidance.content}</p>
               {result.guidance.first_aid && (
                 <div className="first-aid">
-                  <b>{result.guidance.first_aid.title || "First aid, step by step"}</b>
+                  <b>{result.guidance.first_aid.title || tr("mon.firstaid", lang)}</b>
                   <ol className="refs">
                     {result.guidance.first_aid.steps.map((s, i) => <li key={i}>{s}</li>)}
                   </ol>

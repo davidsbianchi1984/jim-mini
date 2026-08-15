@@ -35,7 +35,7 @@ export function Checkin() {
         <label>{tr("chk.stress", lang)} <b className="red">{stress}</b> / 5
           <input type="range" min="1" max="5" value={stress} onChange={(e) => setStress(+e.target.value)} /></label>
         <label>{tr("chk.note", lang)}<textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} /></label>
-        <button className="primary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save check-in"}</button>
+        <button className="primary" onClick={save} disabled={busy}>{busy ? tr("set.saving", lang) : tr("chk.save", lang)}</button>
         {error && <div className="error">⚠ {error}</div>}
       </div>
       {/* role=status + aria-live: the check-in's verdict is announced to a

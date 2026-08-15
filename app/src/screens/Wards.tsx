@@ -112,7 +112,7 @@ export function Wards() {
                 {c.age != null ? `${c.age} · ` : ""}
                 {tr("wrd.board.oversight", lang)
                   .replace("{oversight}", String(c.oversight))}
-                {c.paused ? " · paused" : ""}
+                {c.paused ? tr("wrd.paused.mark", lang) : ""}
                 {c.quiet_hours ? ` · quiet ${c.quiet_hours}` : ""}
               </span>
             </div>
@@ -132,7 +132,7 @@ export function Wards() {
                           uid!, c.child_id, { paused: !c.paused }, token!);
                         setNote(r.note);
                       })}>
-                {c.paused ? "Resume guidance" : "Pause guidance"}
+                {c.paused ? tr("wrd.resume", lang) : tr("wrd.pause", lang)}
               </button>
               <button disabled={busy}
                       onClick={() => run(async () => {
@@ -182,7 +182,7 @@ export function Wards() {
 
       <div className="card">
         <h3>{waiver?.kind === "autonomous_resuscitation"
-              ? "Automatic resuscitation" : "Waiver"}</h3>
+              ? tr("wrd.resus", lang) : tr("wrd.waiver", lang)}</h3>
         <p className="muted small">{tr("wrd.waiver.pitch", lang)}</p>
         {(waiver?.terms ?? []).map((t, i) => (
           <div key={i} style={{ padding: "6px 0" }}>· {t}</div>

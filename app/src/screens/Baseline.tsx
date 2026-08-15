@@ -102,7 +102,7 @@ export function Baseline() {
         <span className="muted small">
           {established
             ? `${established} of ${bands.length} learned`
-            : "learning — wear the watch and sleep in it"}
+            : tr("bas.learning", lang)}
         </span>
       </header>
 
@@ -168,7 +168,8 @@ export function Baseline() {
         <div className="voice-row">
           <button className="primary" disabled={busy === "crashwatch"}
                   onClick={armCrashWatch}>
-            {cw?.armed ? "Update the crash watch" : "Arm the crash watch"}
+            {cw?.armed ? tr("bas.watch.update", lang)
+                       : tr("bas.watch.arm", lang)}
           </button>
           {cw?.armed && (
             <button disabled={busy === "crashwatch"} onClick={disarmCrashWatch}>
@@ -207,7 +208,7 @@ export function Baseline() {
                 </div>
               </div>
               <div className="muted small">
-                ±{b.margin}{b.unit}{b.source === "user" ? " (yours)" : ""}
+                ±{b.margin}{b.unit}{b.source === "user" ? tr("bas.band.yours", lang) : ""}
               </div>
             </div>
 

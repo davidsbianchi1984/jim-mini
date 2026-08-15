@@ -97,7 +97,7 @@ export function Community() {
                      onChange={(e) => setPlace(e.target.value)} /></label>
           </div>
           <button onClick={() => load(place.trim() || undefined)} disabled={busy}>
-            {busy ? "Looking…" : "Show places"}
+            {busy ? tr("cmy.looking", lang) : tr("cmy.show", lang)}
           </button>
           <ul className="refs">
             {view.places.map((p) => (

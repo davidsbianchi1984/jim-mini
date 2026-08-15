@@ -1,4 +1,4 @@
-# status: backlog — 93 rows
+# status: backlog — 2 rows
 #
 # ## 0.69.1: the reader learned to see a sentence chosen at render time
 #
@@ -49,102 +49,46 @@
 #
 # The same mistake the shells' version of this guard made with
 # `"\(dim): \(n)%"`, one file over and one release later.
-# ceiling: 93
+# ceiling: 2
 #
-# The ceiling was 0 and is 93: the reader widened, not the console.
-# Every row it gained was already on the glass. Raising a ceiling is the
-# one move this estate treats as a claim rather than a chore, so it is
-# written here beside the reason, and the next rounds take it back down.
-Attending: , signed
-Attending: Nobody is on shift
-Attending: configured
-Attending: not configured
-Baseline: (yours)
-Baseline: Arm the crash watch
-Baseline: Update the crash watch
-Baseline: learning — wear the watch and sleep in it
-Bearing: (safety text in English)
-Bearing: Open it
-Bearing: Tuck it away
-CareTeam: Coordinate
-CareTeam: Coordinating…
-CareTeam: nobody yet
-CareTeam: sealed in the vault ·
-Channel: (intimate)
-Channel: Look at it
-Channel: Sealed in the vault; a private plan is required.
-Channel: Shown
-Channel: · reaches others
-Checkin: Save check-in
-Checkin: Saving…
-Coach: Ask the coach
-Coach: Thinking…
-Coach: an online model
-Coach: listening — tap to stop
-Coach: speaking — tap to hush
-Coach: the model could not be reached
-Coach: ■ Stop
-Coach: ◉ Listening — tap to send
-Coach: 🎙 Talk to it
-Coach: 🔊 Read it aloud
-Community: Looking…
-Community: Show places
-Held: Allow
-Held: Withdraw
-Held: no
-Held: yes
-Journal: Add to the journal
-Journal: Saving…
-Journal: · sealed in the vault
-Journal: ◼ listening…
-Journal: 🎙 speak
-Meds: Add to the cabinet
-Meds: Saving…
-Meds: · critical
-Monitor: Analyzing…
-Monitor: First aid, step by step
-Monitor: Send to Guardian
-Onboarding: Checking…
-Onboarding: Create account
-Onboarding: Creating…
-Onboarding: Hide
-Onboarding: Resetting…
-Onboarding: Set new password
-Onboarding: Show
-Onboarding: Sign in
-Onboarding: Signing in…
-Onboarding: Verify & get started
-Reach: left this host
-Reach: stayed here
-Safety: delivered
-Safety: not delivered
-Settings: Arm the vigil
-Settings: Clear key
-Settings: Copied ✓
-Settings: Copy address
-Settings: Device voice
+# The ceiling was 0 and went to 93: the reader widened, not the console.
+# Every row it gained was already on the glass. Raising a ceiling is the one
+# move this estate treats as a claim rather than a chore, so it was written
+# here beside the reason, with a promise that the next rounds would take it
+# back down.
+#
+# **0.75.0.** They did. Ninety-one of the ninety-three now have keys and ten
+# translations each, across Attending, Baseline, Bearing, CareTeam, Channel,
+# Checkin, Community, Held, Journal, Meds, Monitor, Reach, Safety, Wards,
+# Coach, Onboarding and Settings.
+#
+# Three of the ninety-one were not translation work, and they are the ones
+# worth reading the diff for. Onboarding's password toggle carried its
+# `aria-label` in English beside a visible label that was also English, so
+# the screen reader and the eye were untranslated in the same breath — a row
+# this file could never have listed, because an aria-label is not text
+# between tags. The Settings posture card built one sentence out of two
+# adjacent string literals, which is a sentence no translator can reorder;
+# it is one key now. And `OfflinePosture` is its own component with no
+# language binding at all, because until this round it had nothing to say.
+#
+# Seven of the new keys collided with keys already in the table. Three were
+# the same English and were dropped — the screens name the rows that were
+# already there. Four were a *different* sentence under the same name:
+# `set.voice.device` is a paragraph about the device voice, `med.add` is a
+# heading, `med.critical` is a sentence, `hld.src.allow` takes a `{source}`
+# hole. Those got a distinct name for the new use, and only the new call
+# site moved. Two meanings under one key is this console's version of the
+# defect `test_one_name_one_type_on_the_wire.py` catches on the wire.
+#
+# ## Why two rows stay
+#
+# `ElevenLabs` and `OpenAI` are the names of two companies. They are printed
+# because that is what the provider is called, in every language, and a
+# translated vendor name would be a name nobody could match against the
+# account they hold there. They are quoted the way `TheMark: AI ·` is quoted
+# one repo over: English on purpose, and recorded as such rather than left
+# to look like an oversight. A floor of zero would have been a nicer number
+# and a less honest one.
 Settings: ElevenLabs
-Settings: Every path out of this host refuses any address that is not
-Settings: Not contributing. Nothing from this account has gone to the shared model.
-Settings: Nothing built yet.
-Settings: Nothing has arrived yet — run the automation once by hand to test it.
-Settings: Offline — nothing leaves this host
-Settings: Online
 Settings: OpenAI
-Settings: Save
-Settings: Save key
-Settings: Save mail settings
-Settings: Save voice settings
-Settings: Saved ✓
-Settings: Saving…
-Settings: Send test email
-Settings: Sending…
-Settings: This deployment can reach other machines.
-Settings: Update the vigil
-Settings: this machine or its own network.
-Settings: · sealed in the vault
-Wards: Automatic resuscitation
-Wards: Pause guidance
-Wards: Resume guidance
-Wards: Waiver
-Wards: · paused

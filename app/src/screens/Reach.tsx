@@ -285,7 +285,7 @@ export function Reach() {
             <div className="row">
               <span style={{ flex: 1 }}>{String(x.topic ?? "")}</span>
               <span className="muted small">
-                {x.left_host ? "left this host" : "stayed here"}
+                {x.left_host ? tr("rch.left", lang) : tr("rch.stayed", lang)}
                 {x.redactions != null
                   ? ` · ${String(x.redactions)} redactions`
                   : ""}

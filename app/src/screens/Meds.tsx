@@ -72,7 +72,7 @@ export function Meds() {
         {board?.medications.map((m) => (
           <div key={m.id} className="med-row">
             <div className="med-head">
-              <b>{m.name}</b> <span className="muted small">{m.dose}{m.purpose ? ` · ${m.purpose}` : ""}{m.critical ? " · critical" : ""}</span>
+              <b>{m.name}</b> <span className="muted small">{m.dose}{m.purpose ? ` · ${m.purpose}` : ""}{m.critical ? tr("med.critical.mark", lang) : ""}</span>
               <button className="med-archive" disabled={busy}
                       onClick={() => { if (confirm(`Stop tracking ${m.name}? The history is kept.`)) run(() => api.medsArchive(uid, m.id, token)); }}>
                 {tr("med.stop", lang)}
@@ -163,7 +163,7 @@ export function Meds() {
           <input type="checkbox" checked={critical} onChange={(e) => setCritical(e.target.checked)} /> {tr("med.critical", lang)}
         </label>
         <button className="primary" disabled={busy || !name.trim() || !dose.trim()} onClick={add}>
-          {busy ? "Saving…" : "Add to the cabinet"}
+          {busy ? tr("set.saving", lang) : tr("med.add.button", lang)}
         </button>
       </div>
 

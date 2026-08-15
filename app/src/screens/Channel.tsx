@@ -203,7 +203,7 @@ export function Channel() {
                   onClick={() => run(() => api.setMicGain(uid, lvl.gain, token),
                     `Gain: ${lvl.describes}`)}>
                   {lvl.gain.replace("_", " ")}
-                  {lvl.reaches_others ? " ·  reaches others" : ""}
+                  {lvl.reaches_others ? tr("ch.reaches", visitorLang()) : ""}
                 </button>
               ))}
             </div>
@@ -284,7 +284,7 @@ export function Channel() {
       {vocab && (
         <p className="muted">
           {vocab.agent_sees?.join(", ")}{vocab.vault_required
-            ? " Sealed in the vault; a private plan is required."
+            ? tr("ch.sealed.plan", visitorLang())
             : ""}
         </p>
       )}
@@ -320,7 +320,8 @@ export function Channel() {
                 const img = await api.captureImage(uid, c.id, token);
                 setShown((m) => ({ ...m, [c.id]: img.content }));
               }, "")}>
-              {shown[c.id] ? "Shown" : "Look at it"}
+              {shown[c.id] ? tr("ch.shown", visitorLang())
+                : tr("ch.look", visitorLang())}
             </button>
             <button disabled={busy}
               onClick={() => {
@@ -355,7 +356,7 @@ export function Channel() {
           <select value={site} onChange={(e) => { setSite(e.target.value); setConsent(false); }}>
             <option value="">{tr("ch.cam.where", visitorLang())}</option>
             {Object.entries(vocab?.sites ?? {}).map(([k, label]) => (
-              <option key={k} value={k}>{label}{intimate.has(k) ? " (intimate)" : ""}</option>
+              <option key={k} value={k}>{label}{intimate.has(k) ? tr("ch.intimate", visitorLang()) : ""}</option>
             ))}
           </select>
           <select value={kind} onChange={(e) => setKind(e.target.value)}>

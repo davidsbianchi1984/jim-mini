@@ -108,11 +108,13 @@ export function Held() {
         <h3>{tr("hld.log", lang)}</h3>
         <div className="row">
           <span className="muted small">
-            {tr("hld.log.vaulted", lang)} <strong>{log?.vaulted ? "yes" : "no"}</strong>
+            {tr("hld.log.vaulted", lang)} <strong>{log?.vaulted ? tr("hld.yes", lang)
+                                  : tr("hld.no", lang)}</strong>
           </span>
           <span className="muted small">
             {tr("hld.log.kept", lang)}{" "}
-            <strong>{log?.access_record_kept ? "yes" : "no"}</strong>
+            <strong>{log?.access_record_kept ? tr("hld.yes", lang)
+                                             : tr("hld.no", lang)}</strong>
           </span>
         </div>
         {log?.note && <p className="muted small">{log.note}</p>}
@@ -250,7 +252,8 @@ export function Held() {
                     onClick={() => run(() => api.setSources(uid!, {
                       source: String(s.source),
                       consented: !s.consented }, token!))}>
-              {s.consented ? "Withdraw" : "Allow"}
+              {s.consented ? tr("hld.src.withdraw", lang)
+                : tr("hld.src.allow.button", lang)}
             </button>
           </div>
         ))}

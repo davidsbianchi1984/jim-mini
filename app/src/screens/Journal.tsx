@@ -122,11 +122,11 @@ export function Journal() {
           <button className={listening ? "mic listening" : "mic"}
                   onClick={toggleMic}
                   title={listening ? "Stop listening" : "Speak your entry"}>
-            {listening ? "◼ listening…" : "🎙 speak"}
+            {listening ? tr("jrn.listening", lang) : tr("jrn.speak", lang)}
           </button>
           <button className="primary" disabled={busy || !text.trim()}
                   onClick={() => add()}>
-            {busy ? "Saving…" : "Add to the journal"}
+            {busy ? tr("set.saving", lang) : tr("jrn.add", lang)}
           </button>
         </div>
         <p className="muted small">{tr("jrn.sealed", lang)}</p>
@@ -194,7 +194,7 @@ export function Journal() {
                style={{ padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
             <div className="muted small">
               {new Date(e.created_at).toLocaleString()}
-              {e.vaulted ? " · sealed in the vault" : ""}
+              {e.vaulted ? tr("jrn.vaulted", lang) : ""}
             </div>
             <div>{e.text}</div>
             {/* Somebody writing their own diary should always have had this,

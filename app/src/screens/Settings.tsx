@@ -51,7 +51,7 @@ export function Settings() {
       <div className="card">
         <h3>{tr("set.api", lang)}</h3>
         <label>{tr("set.api.base", lang)}<input value={base} onChange={(e) => setBaseInput(e.target.value)} /></label>
-        <button className="primary" onClick={save}>{saved ? "Saved ✓" : "Save"}</button>
+        <button className="primary" onClick={save}>{saved ? tr("set.saved", lang) : tr("set.save", lang)}</button>
         <div className="muted small" style={{ marginTop: 10 }}>{tr("set.api.backend", lang)} {health}</div>
       </div>
       <OfflinePosture />
@@ -67,7 +67,9 @@ export function Settings() {
         </label>
         <button className="primary" onClick={() => {
           setLlmKey(llmKey); setKeySaved(true); setTimeout(() => setKeySaved(false), 1500);
-        }}>{keySaved ? "Saved ✓" : llmKey.trim() ? "Save key" : "Clear key"}</button>
+        }}>{keySaved ? tr("set.saved", lang)
+            : llmKey.trim() ? tr("set.key.save", lang)
+            : tr("set.key.clear", lang)}</button>
       </div>
 
       <VoicePanel />
@@ -109,7 +111,7 @@ export function Settings() {
                 <div className="muted small">
                   {tr("set.adapt.from", lang)
                     .replace("{n}", String(adapt.evidence_items))}
-                  {adapt.vaulted ? " · sealed in the vault" : ""}
+                  {adapt.vaulted ? tr("set.adapt.vaulted", lang) : ""}
                 </div>
               </div>
               <button disabled={adaptBusy} onClick={async () => {
@@ -139,7 +141,7 @@ export function Settings() {
           </>
         ) : (
           <>
-            <p className="muted small">{adapt?.note || "Nothing built yet."}</p>
+            <p className="muted small">{adapt?.note || tr("set.adapt.none", lang)}</p>
             <button disabled={adaptBusy} onClick={async () => {
               if (!session.userId || !session.userToken) return;
               setAdaptBusy(true);
@@ -537,7 +539,7 @@ function CloudContributionCard() {
       <p className="muted small">
         {state.opted_in
           ? `Contributing. ${state.contributed.length} item${state.contributed.length === 1 ? "" : "s"} have gone to the shared model.`
-          : "Not contributing. Nothing from this account has gone to the shared model."}
+          : tr("set.cloud.not", lang)}
       </p>
       {state.policy && <p className="muted small">{state.policy}</p>}
       {state.preview_note && <p className="muted small">{state.preview_note}</p>}
@@ -680,7 +682,7 @@ function MailPanel() {
                   onClick={() => run(() => api.saveMailSettings({
                     host, port, username, password: password || undefined,
                     sender, public_url: publicUrl }), "Saved.")}>
-            {busy ? "Saving…" : "Save mail settings"}
+            {busy ? tr("set.saving", lang) : tr("set.mail.save", lang)}
           </button>
           {cfg?.transport === "smtp" && (
             <button disabled={busy} onClick={() => run(() => api.clearMailSettings(), "Cleared.")}>
@@ -694,7 +696,8 @@ function MailPanel() {
         <button disabled={busy || !testTo.trim()}
                 onClick={() => run(() => api.testMailSettings(testTo.trim()),
                   `Sent to ${testTo.trim()} — check the inbox.`)}>
-          {busy ? "Sending…" : "Send test email"}
+          {busy ? tr("set.mail.sending", lang)
+            : tr("set.mail.test.send", lang)}
         </button>
       </>)}
       {note && <div className="muted small">{note}</div>}
@@ -833,7 +836,8 @@ function VoicePanel() {
           <button key={p} className={provider === p ? "primary" : ""}
                   disabled={busy}
                   onClick={() => { setProvider(p); if (p === "device") save({ provider: p }); }}>
-            {p === "device" ? "Device voice" : p === "elevenlabs" ? "ElevenLabs" : "OpenAI"}
+            {p === "device" ? tr("set.voice.device.label", lang)
+              : p === "elevenlabs" ? "ElevenLabs" : "OpenAI"}
           </button>
         ))}
       </div>
@@ -855,7 +859,7 @@ function VoicePanel() {
         )}
         <div className="actions">
           <button className="primary" disabled={busy} onClick={() => save()}>
-            {busy ? "Saving…" : "Save voice settings"}
+            {busy ? tr("set.saving", lang) : tr("set.voice.save", lang)}
           </button>
           <button disabled={busy}
                   onClick={() => say("Hello — this is the voice your Guardian will speak in.")}>
@@ -973,7 +977,8 @@ function WatchPanel() {
           <button className="primary" onClick={() => {
             navigator.clipboard?.writeText(ch.drip_url);
             setCopied(true); setTimeout(() => setCopied(false), 1500);
-          }}>{copied ? "Copied ✓" : "Copy address"}</button>
+          }}>{copied ? tr("set.copied", lang)
+            : tr("set.copy", lang)}</button>
           <button disabled={busy} onClick={rotate}>{tr("set.watch.newaddr", lang)}</button>
         </div>
         <div className="muted small" style={{ marginTop: 8 }}>
@@ -983,7 +988,7 @@ function WatchPanel() {
                 .replace("{s}", ch.drips === 1 ? "" : "s")
                 .replace("{when}", ch.last_drip_at
                   ? new Date(ch.last_drip_at).toLocaleString() : "—")
-            : "Nothing has arrived yet — run the automation once by hand to test it."}
+            : tr("set.hook.none", lang)}
         </div>
         <details style={{ marginTop: 10 }}>
           <summary className="muted small">{tr("watch.setup", visitorLang())}</summary>
@@ -1086,7 +1091,8 @@ function VigilPanel() {
         <button className="primary" disabled={busy || !name.trim() || !channel.trim()}
                 onClick={() => run(() => api.armVigil(session.userId!, session.userToken!,
                   { steward_name: name, steward_channel: channel, quiet_days: days, note: note || undefined }))}>
-          {st?.armed ? "Update the vigil" : "Arm the vigil"}
+          {st?.armed ? tr("set.vigil.update", lang)
+                     : tr("set.vigil.arm", lang)}
         </button>
         {st?.armed && (
           <button disabled={busy}
@@ -1133,6 +1139,7 @@ function VigilPanel() {
  *  signed into the app can decide whether the host talks to the internet.
  */
 function OfflinePosture() {
+  const lang = visitorLang();
   const [posture, setPosture] = useState<Awaited<
     ReturnType<typeof api.offlineStatus>> | null>(null);
   const [failed, setFailed] = useState(false);
@@ -1146,13 +1153,12 @@ function OfflinePosture() {
 
   return (
     <div className="card">
-      <h3>{posture.offline ? "Offline — nothing leaves this host"
-                           : "Online"}</h3>
+      <h3>{posture.offline ? tr("set.posture.offline", lang)
+                           : tr("set.posture.online", lang)}</h3>
       <p className="small">
         {posture.external_transmission_possible
-          ? "This deployment can reach other machines."
-          : "Every path out of this host refuses any address that is not "
-            + "this machine or its own network."}
+          ? tr("set.posture.reach", lang)
+          : tr("set.posture.refuse", lang)}
       </p>
       <ul className="small muted">
         {posture.guarantees.map((g) => <li key={g}>{g}</li>)}

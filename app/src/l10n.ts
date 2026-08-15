@@ -321,6 +321,69 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   // The eight the general check found behind the tab: a whole Settings card
   // rendering its own key names, in every language, since it shipped.
+  "set.saving": {
+    en: "Saving…", es: "Guardando…", fr: "Enregistrement…", de: "Wird gespeichert…", pt: "A guardar…", it: "Salvataggio…", ja: "保存中…", zh: "保存中…", hi: "सहेजा जा रहा है…", ar: "جارٍ الحفظ…",
+  },
+  "set.saved": {
+    en: "Saved ✓", es: "Guardado ✓", fr: "Enregistré ✓", de: "Gespeichert ✓", pt: "Guardado ✓", it: "Salvato ✓", ja: "保存しました ✓", zh: "已保存 ✓", hi: "सहेजा गया ✓", ar: "تم الحفظ ✓",
+  },
+  "set.key.save": {
+    en: "Save key", es: "Guardar clave", fr: "Enregistrer la clé", de: "Schlüssel speichern", pt: "Guardar chave", it: "Salva chiave", ja: "キーを保存", zh: "保存密钥", hi: "कुंजी सहेजें", ar: "احفظ المفتاح",
+  },
+  "set.key.clear": {
+    en: "Clear key", es: "Borrar clave", fr: "Effacer la clé", de: "Schlüssel löschen", pt: "Limpar chave", it: "Cancella chiave", ja: "キーを消去", zh: "清除密钥", hi: "कुंजी हटाएँ", ar: "امسح المفتاح",
+  },
+  "set.adapt.vaulted": {
+    en: " · sealed in the vault", es: " · sellado en la bóveda", fr: " · scellé dans le coffre", de: " · im Tresor versiegelt", pt: " · selado no cofre", it: " · sigillato nel caveau", ja: " · 保管庫に封印済み", zh: " · 已封入保险库", hi: " · तिजोरी में सील", ar: " · مختوم في الخزنة",
+  },
+  "set.adapt.none": {
+    en: "Nothing built yet.", es: "Todavía no se ha construido nada.", fr: "Rien de construit pour l'instant.", de: "Noch nichts aufgebaut.", pt: "Ainda nada construído.", it: "Ancora nulla di costruito.", ja: "まだ何も作られていません。", zh: "尚未构建任何内容。", hi: "अभी कुछ भी नहीं बना है।", ar: "لم يُبنَ شيء بعد.",
+  },
+  "set.cloud.not": {
+    en: "Not contributing. Nothing from this account has gone to the shared model.", es: "Sin contribuir. Nada de esta cuenta ha ido al modelo compartido.", fr: "Aucune contribution. Rien de ce compte n'est allé au modèle partagé.", de: "Kein Beitrag. Von diesem Konto ist nichts an das gemeinsame Modell gegangen.", pt: "Sem contribuir. Nada desta conta foi para o modelo partilhado.", it: "Nessun contributo. Nulla di questo account è finito nel modello condiviso.", ja: "提供していません。このアカウントからは共有モデルへ何も送られていません。", zh: "未参与贡献。此账户的任何内容都未进入共享模型。", hi: "योगदान नहीं। इस खाते से कुछ भी साझा मॉडल में नहीं गया।", ar: "لا مساهمة. لم يذهب شيء من هذا الحساب إلى النموذج المشترك.",
+  },
+  "set.mail.save": {
+    en: "Save mail settings", es: "Guardar ajustes de correo", fr: "Enregistrer les réglages e-mail", de: "Mail-Einstellungen speichern", pt: "Guardar definições de correio", it: "Salva impostazioni e-mail", ja: "メール設定を保存", zh: "保存邮件设置", hi: "मेल सेटिंग सहेजें", ar: "احفظ إعدادات البريد",
+  },
+  "set.mail.test.send": {
+    en: "Send test email", es: "Enviar correo de prueba", fr: "Envoyer un e-mail de test", de: "Test-E-Mail senden", pt: "Enviar e-mail de teste", it: "Invia e-mail di prova", ja: "テストメールを送信", zh: "发送测试邮件", hi: "परीक्षण ईमेल भेजें", ar: "أرسل بريد اختبار",
+  },
+  "set.mail.sending": {
+    en: "Sending…", es: "Enviando…", fr: "Envoi…", de: "Wird gesendet…", pt: "A enviar…", it: "Invio…", ja: "送信中…", zh: "发送中…", hi: "भेजा जा रहा है…", ar: "جارٍ الإرسال…",
+  },
+  "set.voice.device.label": {
+    en: "Device voice", es: "Voz del dispositivo", fr: "Voix de l'appareil", de: "Gerätestimme", pt: "Voz do dispositivo", it: "Voce del dispositivo", ja: "端末の音声", zh: "设备语音", hi: "डिवाइस की आवाज़", ar: "صوت الجهاز",
+  },
+  "set.voice.save": {
+    en: "Save voice settings", es: "Guardar ajustes de voz", fr: "Enregistrer les réglages vocaux", de: "Sprach-Einstellungen speichern", pt: "Guardar definições de voz", it: "Salva impostazioni vocali", ja: "音声設定を保存", zh: "保存语音设置", hi: "आवाज़ सेटिंग सहेजें", ar: "احفظ إعدادات الصوت",
+  },
+  "set.copy": {
+    en: "Copy address", es: "Copiar dirección", fr: "Copier l'adresse", de: "Adresse kopieren", pt: "Copiar endereço", it: "Copia indirizzo", ja: "アドレスをコピー", zh: "复制地址", hi: "पता कॉपी करें", ar: "انسخ العنوان",
+  },
+  "set.copied": {
+    en: "Copied ✓", es: "Copiado ✓", fr: "Copié ✓", de: "Kopiert ✓", pt: "Copiado ✓", it: "Copiato ✓", ja: "コピーしました ✓", zh: "已复制 ✓", hi: "कॉपी हो गया ✓", ar: "تم النسخ ✓",
+  },
+  "set.hook.none": {
+    en: "Nothing has arrived yet — run the automation once by hand to test it.", es: "Todavía no ha llegado nada — ejecuta la automatización una vez a mano para probarla.", fr: "Rien n'est encore arrivé — lancez l'automatisation une fois à la main pour la tester.", de: "Noch ist nichts angekommen — führen Sie die Automatisierung einmal von Hand aus, um sie zu testen.", pt: "Ainda não chegou nada — corra a automação uma vez à mão para a testar.", it: "Non è ancora arrivato nulla — esegui l'automazione una volta a mano per provarla.", ja: "まだ何も届いていません — 動作確認のため自動化を一度手動で実行してください。", zh: "尚未收到任何内容 — 手动运行一次自动化以进行测试。", hi: "अभी कुछ नहीं आया — जाँचने के लिए ऑटोमेशन एक बार हाथ से चलाएँ।", ar: "لم يصل شيء بعد — شغّل الأتمتة مرة يدويًا لاختبارها.",
+  },
+  "set.vigil.arm": {
+    en: "Arm the vigil", es: "Activar la vigilia", fr: "Armer la veille", de: "Die Wache scharf stellen", pt: "Armar a vigília", it: "Attiva la veglia", ja: "見守りを有効にする", zh: "开启守夜", hi: "पहरा सक्रिय करें", ar: "تفعيل السهر",
+  },
+  "set.vigil.update": {
+    en: "Update the vigil", es: "Actualizar la vigilia", fr: "Mettre à jour la veille", de: "Die Wache aktualisieren", pt: "Atualizar a vigília", it: "Aggiorna la veglia", ja: "見守りを更新する", zh: "更新守夜", hi: "पहरा अद्यतन करें", ar: "تحديث السهر",
+  },
+  "set.posture.offline": {
+    en: "Offline — nothing leaves this host", es: "Sin conexión — nada sale de este host", fr: "Hors ligne — rien ne quitte cet hôte", de: "Offline — nichts verlässt diesen Host", pt: "Offline — nada sai deste host", it: "Offline — nulla lascia questo host", ja: "オフライン — このホストから何も出ません", zh: "离线 — 没有任何内容离开这台主机", hi: "ऑफ़लाइन — इस होस्ट से कुछ भी बाहर नहीं जाता", ar: "غير متصل — لا شيء يغادر هذا المضيف",
+  },
+  "set.posture.online": {
+    en: "Online", es: "En línea", fr: "En ligne", de: "Online", pt: "Online", it: "Online", ja: "オンライン", zh: "在线", hi: "ऑनलाइन", ar: "متصل",
+  },
+  "set.posture.reach": {
+    en: "This deployment can reach other machines.", es: "Este despliegue puede alcanzar otras máquinas.", fr: "Ce déploiement peut atteindre d'autres machines.", de: "Diese Installation kann andere Maschinen erreichen.", pt: "Esta instalação consegue alcançar outras máquinas.", it: "Questa installazione può raggiungere altre macchine.", ja: "この配備は他のマシンに到達できます。", zh: "此部署可以访问其他机器。", hi: "यह परिनियोजन अन्य मशीनों तक पहुँच सकता है।", ar: "يستطيع هذا النشر الوصول إلى أجهزة أخرى.",
+  },
+  "set.posture.refuse": {
+    en: "Every path out of this host refuses any address that is not this machine or its own network.", es: "Toda salida de este host rechaza cualquier dirección que no sea esta máquina o su propia red.", fr: "Chaque sortie de cet hôte refuse toute adresse autre que cette machine ou son propre réseau.", de: "Jeder Weg aus diesem Host heraus weist jede Adresse ab, die nicht diese Maschine oder ihr eigenes Netz ist.", pt: "Todos os caminhos de saída deste host recusam qualquer endereço que não seja esta máquina ou a sua própria rede.", it: "Ogni via d'uscita da questo host rifiuta qualsiasi indirizzo che non sia questa macchina o la sua stessa rete.", ja: "このホストから出るすべての経路は、この端末またはその自身のネットワーク以外のアドレスを拒否します。", zh: "离开这台主机的每条路径都会拒绝除本机或其自身网络之外的任何地址。", hi: "इस होस्ट से बाहर जाने वाला हर रास्ता उस हर पते को अस्वीकार करता है जो यह मशीन या इसका अपना नेटवर्क नहीं है।", ar: "كل مسار خارج من هذا المضيف يرفض أي عنوان ليس هذا الجهاز أو شبكته الخاصة.",
+  },
   "set.ft.title": {
     en: "A model shaped by you", es: "Un modelo moldeado por ti", fr: "Un modèle façonné par vous", de: "Ein von dir geformtes Modell", pt: "Um modelo moldado por ti", it: "Un modello plasmato da te", ja: "あなたが形づくるモデル", zh: "由你塑造的模型", hi: "आपके द्वारा ढाला गया मॉडल", ar: "نموذج شكّلته أنت",
   },
@@ -348,6 +411,30 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   // And the signup error, which a person meets at the worst moment to be
   // shown an identifier: mid-form, having mistyped, being told `onb.password
   // .mismatch`.
+  "onb.show": {
+    en: "Show", es: "Mostrar", fr: "Afficher", de: "Anzeigen", pt: "Mostrar", it: "Mostra", ja: "表示", zh: "显示", hi: "दिखाएँ", ar: "أظهر",
+  },
+  "onb.hide": {
+    en: "Hide", es: "Ocultar", fr: "Masquer", de: "Ausblenden", pt: "Ocultar", it: "Nascondi", ja: "非表示", zh: "隐藏", hi: "छिपाएँ", ar: "أخفِ",
+  },
+  "onb.creating": {
+    en: "Creating…", es: "Creando…", fr: "Création…", de: "Wird erstellt…", pt: "A criar…", it: "Creazione…", ja: "作成中…", zh: "创建中…", hi: "बनाया जा रहा है…", ar: "جارٍ الإنشاء…",
+  },
+  "onb.verify": {
+    en: "Verify & get started", es: "Verificar y empezar", fr: "Vérifier et commencer", de: "Bestätigen und loslegen", pt: "Verificar e começar", it: "Verifica e inizia", ja: "確認して始める", zh: "验证并开始", hi: "सत्यापित करें और शुरू करें", ar: "تحقّق وابدأ",
+  },
+  "onb.checking": {
+    en: "Checking…", es: "Comprobando…", fr: "Vérification…", de: "Wird geprüft…", pt: "A verificar…", it: "Verifica…", ja: "確認中…", zh: "检查中…", hi: "जाँचा जा रहा है…", ar: "جارٍ التحقق…",
+  },
+  "onb.signing": {
+    en: "Signing in…", es: "Iniciando sesión…", fr: "Connexion…", de: "Wird angemeldet…", pt: "A iniciar sessão…", it: "Accesso…", ja: "サインイン中…", zh: "登录中…", hi: "साइन इन हो रहा है…", ar: "جارٍ تسجيل الدخول…",
+  },
+  "onb.setpass": {
+    en: "Set new password", es: "Establecer nueva contraseña", fr: "Définir un nouveau mot de passe", de: "Neues Passwort festlegen", pt: "Definir nova palavra-passe", it: "Imposta nuova password", ja: "新しいパスワードを設定", zh: "设置新密码", hi: "नया पासवर्ड सेट करें", ar: "عيّن كلمة مرور جديدة",
+  },
+  "onb.resetting": {
+    en: "Resetting…", es: "Restableciendo…", fr: "Réinitialisation…", de: "Wird zurückgesetzt…", pt: "A repor…", it: "Reimpostazione…", ja: "リセット中…", zh: "重置中…", hi: "रीसेट हो रहा है…", ar: "جارٍ إعادة التعيين…",
+  },
   "onb.password.mismatch": {
     en: "Those two do not match.", es: "Esas dos no coinciden.", fr: "Ces deux-là ne correspondent pas.", de: "Die beiden stimmen nicht überein.", pt: "Essas duas não coincidem.", it: "Le due non coincidono.", ja: "この二つが一致していません。", zh: "这两个不一致。", hi: "ये दोनों मेल नहीं खाते।", ar: "هاتان غير متطابقتين.",
   },
@@ -1888,6 +1975,21 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "बैकएंड URL",
     ar: "عنوان الخادم",
   },
+  "ch.intimate": {
+    en: " (intimate)", es: " (íntimo)", fr: " (intime)", de: " (intim)", pt: " (íntimo)", it: " (intimo)", ja: "（親密）", zh: "（亲密）", hi: " (अंतरंग)", ar: " (حميم)",
+  },
+  "ch.reaches": {
+    en: " ·  reaches others", es: " ·  llega a otras personas", fr: " ·  atteint d'autres personnes", de: " ·  erreicht andere", pt: " ·  chega a outras pessoas", it: " ·  raggiunge altri", ja: " ·  他の人に届きます", zh: " ·  会触及他人", hi: " ·  दूसरों तक पहुँचता है", ar: " ·  يصل إلى آخرين",
+  },
+  "ch.sealed.plan": {
+    en: " Sealed in the vault; a private plan is required.", es: " Sellado en la bóveda; se requiere un plan privado.", fr: " Scellé dans le coffre ; un forfait privé est requis.", de: " Im Tresor versiegelt; ein privater Tarif ist erforderlich.", pt: " Selado no cofre; é necessário um plano privado.", it: " Sigillato nel caveau; serve un piano privato.", ja: "保管庫に封印されます。プライベートプランが必要です。", zh: "已封入保险库；需要私有方案。", hi: " तिजोरी में सील; निजी योजना आवश्यक है।", ar: " مختوم في الخزنة؛ يلزم اشتراك خاص.",
+  },
+  "ch.shown": {
+    en: "Shown", es: "Mostrado", fr: "Affiché", de: "Angezeigt", pt: "Mostrado", it: "Mostrato", ja: "表示中", zh: "已显示", hi: "दिखाया गया", ar: "معروض",
+  },
+  "ch.look": {
+    en: "Look at it", es: "Míralo", fr: "Regarder", de: "Ansehen", pt: "Ver", it: "Guardalo", ja: "見る", zh: "查看", hi: "इसे देखें", ar: "انظر إليه",
+  },
   "ch.title": {
     en: "Channel & camera", es: "Canal y cámara", fr: "Canal et caméra", de: "Kanal & Kamera", pt: "Canal e câmara", it: "Canale e fotocamera", ja: "チャンネルとカメラ", zh: "通道与相机", hi: "चैनल और कैमरा", ar: "القناة والكاميرا",
   },
@@ -1974,6 +2076,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "ch.cam.tick": {
     en: "Tick the box before choosing a file.", es: "Marca la casilla antes de elegir un archivo.", fr: "Cochez la case avant de choisir un fichier.", de: "Setzen Sie das Häkchen, bevor Sie eine Datei wählen.", pt: "Marque a caixa antes de escolher um ficheiro.", it: "Spunta la casella prima di scegliere un file.", ja: "ファイルを選ぶ前にチェックを入れてください。", zh: "选择文件前请先勾选。", hi: "फ़ाइल चुनने से पहले बॉक्स चिह्नित करें।", ar: "ضع علامة في المربع قبل اختيار ملف.",
+  },
+  "att.ch.configured": {
+    en: "configured", es: "configurado", fr: "configuré", de: "eingerichtet", pt: "configurado", it: "configurato", ja: "設定済み", zh: "已配置", hi: "कॉन्फ़िगर किया गया", ar: "مُهيّأ",
+  },
+  "att.ch.unconfigured": {
+    en: "not configured", es: "sin configurar", fr: "non configuré", de: "nicht eingerichtet", pt: "por configurar", it: "non configurato", ja: "未設定", zh: "未配置", hi: "कॉन्फ़िगर नहीं", ar: "غير مُهيّأ",
+  },
+  "att.ch.signed": {
+    en: ", signed", es: ", firmado", fr: ", signé", de: ", signiert", pt: ", assinado", it: ", firmato", ja: "、署名済み", zh: "，已签名", hi: ", हस्ताक्षरित", ar: "، موقَّع",
+  },
+  "att.rota.nobody": {
+    en: "Nobody is on shift", es: "Nadie está de turno", fr: "Personne n'est de service", de: "Niemand hat Dienst", pt: "Ninguém está de turno", it: "Nessuno è di turno", ja: "当番は誰もいません", zh: "无人当班", hi: "कोई शिफ़्ट पर नहीं", ar: "لا أحد في النوبة",
   },
   "att.title": {
     en: "Who else is looking", es: "Quién más está mirando", fr: "Qui d'autre regarde", de: "Wer sonst noch hinschaut", pt: "Quem mais está a olhar", it: "Chi altro sta guardando", ja: "他に見ている人", zh: "还有谁在看", hi: "और कौन देख रहा है", ar: "من غيرك يراقب",
@@ -2092,6 +2206,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "att.med.at": {
     en: "{view} · the printable code is at {qr}", es: "{view} · el código imprimible está en {qr}", fr: "{view} · le code imprimable est à {qr}", de: "{view} · der druckbare Code liegt unter {qr}", pt: "{view} · o código imprimível está em {qr}", it: "{view} · il codice stampabile è su {qr}", ja: "{view} · 印刷用コードは{qr}にあります", zh: "{view} · 可打印代码位于{qr}", hi: "{view} · प्रिंट योग्य कोड {qr} पर है", ar: "{view} · الرمز القابل للطباعة في {qr}",
   },
+  "bas.band.yours": {
+    en: " (yours)", es: " (tuyo)", fr: " (le vôtre)", de: " (Ihres)", pt: " (seu)", it: " (tuo)", ja: "（あなたのもの）", zh: "（你的）", hi: " (आपका)", ar: " (خاصتك)",
+  },
+  "bas.learning": {
+    en: "learning — wear the watch and sleep in it", es: "aprendiendo — lleva el reloj y duerme con él", fr: "en apprentissage — portez la montre et dormez avec", de: "lernt — tragen Sie die Uhr und schlafen Sie damit", pt: "a aprender — use o relógio e durma com ele", it: "sta imparando — indossa l'orologio e dormici", ja: "学習中 — 時計を着けたまま眠ってください", zh: "学习中 — 请佩戴手表并戴着睡觉", hi: "सीख रहा है — घड़ी पहनें और उसी में सोएँ", ar: "قيد التعلّم — ارتدِ الساعة ونم بها",
+  },
+  "bas.watch.arm": {
+    en: "Arm the crash watch", es: "Activar la vigilancia de caídas", fr: "Armer la veille d'accident", de: "Sturzwache scharfschalten", pt: "Armar a vigilância de queda", it: "Attiva la sorveglianza incidenti", ja: "クラッシュウォッチを作動させる", zh: "启用跌倒守护", hi: "क्रैश वॉच सक्रिय करें", ar: "فعّل مراقبة الحوادث",
+  },
+  "bas.watch.update": {
+    en: "Update the crash watch", es: "Actualizar la vigilancia de caídas", fr: "Mettre à jour la veille de chute", de: "Sturzwache aktualisieren", pt: "Atualizar a vigilância de queda", it: "Aggiorna la vigilanza di caduta", ja: "クラッシュ監視を更新する", zh: "更新倒地守望", hi: "क्रैश वॉच अपडेट करें", ar: "حدّث مراقبة الانهيار",
+  },
   "bas.title": {
     en: "Your baseline", es: "Tu línea base", fr: "Votre ligne de base", de: "Ihre Basislinie", pt: "A sua linha de base", it: "La tua linea di base", ja: "あなたのベースライン", zh: "你的基线", hi: "आपकी आधार रेखा", ar: "خطك الأساسي",
   },
@@ -2169,6 +2295,12 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "bas.metrics.reset": {
     en: "Reset", es: "Restablecer", fr: "Réinitialiser", de: "Zurücksetzen", pt: "Repor", it: "Reimposta", ja: "リセット", zh: "重置", hi: "रीसेट", ar: "إعادة ضبط",
+  },
+  "rch.left": {
+    en: "left this host", es: "salió de este host", fr: "a quitté cet hôte", de: "hat diesen Host verlassen", pt: "saiu deste host", it: "ha lasciato questo host", ja: "このホストを出ました", zh: "离开了这台主机", hi: "इस होस्ट से बाहर गया", ar: "غادر هذا المضيف",
+  },
+  "rch.stayed": {
+    en: "stayed here", es: "se quedó aquí", fr: "est resté ici", de: "ist hiergeblieben", pt: "ficou aqui", it: "è rimasto qui", ja: "ここに留まりました", zh: "留在了这里", hi: "यहीं रहा", ar: "بقي هنا",
   },
   "rch.title": {
     en: "What reaches out", es: "Lo que sale al mundo", fr: "Ce qui tend la main", de: "Was hinausreicht", pt: "O que alcança lá fora", it: "Ciò che si spinge fuori", ja: "外へ届くもの", zh: "向外伸出的东西", hi: "जो बाहर पहुँचता है", ar: "ما يمتد إلى الخارج",
@@ -2307,6 +2439,15 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "rch.wrist.pitch": {
     en: "The watch posts against a drip token rather than an account credential, because a watch cannot hold one.", es: "El reloj publica con un token de goteo en vez de una credencial de cuenta, porque un reloj no puede guardarla.", fr: "La montre publie avec un jeton de goutte-à-goutte plutôt qu'un identifiant de compte, parce qu'une montre ne peut pas en détenir un.", de: "Die Uhr sendet gegen ein Drip-Token statt einer Kontoberechtigung, weil eine Uhr keine halten kann.", pt: "O relógio publica com um token de gotejamento em vez de uma credencial de conta, porque um relógio não pode guardá-la.", it: "L'orologio pubblica con un token drip anziché una credenziale di account, perché un orologio non può custodirla.", ja: "ウォッチはアカウント資格情報ではなくドリップトークンで送信します。ウォッチは資格情報を保持できないからです。", zh: "手表凭滴流令牌上报，而非账户凭证，因为手表无法保管凭证。", hi: "घड़ी खाता क्रेडेंशियल के बजाय ड्रिप टोकन से भेजती है, क्योंकि घड़ी क्रेडेंशियल नहीं रख सकती।", ar: "تنشر الساعة برمز تقطير لا ببيانات اعتماد حساب، لأن الساعة لا تستطيع حفظها.",
+  },
+  "brg.safety.english": {
+    en: " (safety text in English)", es: " (texto de seguridad en inglés)", fr: " (texte de sécurité en anglais)", de: " (Sicherheitstext auf Englisch)", pt: " (texto de segurança em inglês)", it: " (testo di sicurezza in inglese)", ja: "（安全に関する文は英語）", zh: "（安全文本为英文）", hi: " (सुरक्षा पाठ अंग्रेज़ी में)", ar: " (نص السلامة بالإنجليزية)",
+  },
+  "brg.dock.open": {
+    en: "Open it", es: "Ábrelo", fr: "Ouvrir", de: "Öffnen", pt: "Abrir", it: "Aprilo", ja: "開く", zh: "打开", hi: "इसे खोलें", ar: "افتحه",
+  },
+  "brg.dock.tuck": {
+    en: "Tuck it away", es: "Guárdalo", fr: "Ranger", de: "Wegräumen", pt: "Guardar", it: "Riponilo", ja: "しまう", zh: "收起", hi: "इसे समेट दें", ar: "أخفِه",
   },
   "brg.title": {
     en: "Bearing", es: "Porte", fr: "Allure", de: "Haltung", pt: "Porte", it: "Portamento", ja: "たたずまい", zh: "姿态", hi: "आचरण", ar: "الهيئة",
@@ -2689,6 +2830,12 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "set.vigil.armed": {
     en: "Armed · last heard from you {when} · steward: {name}", es: "Activada · última señal tuya {when} · persona de guardia: {name}", fr: "Armée · dernières nouvelles de vous {when} · personne de confiance : {name}", de: "Scharf · zuletzt von Ihnen gehört {when} · Verwalter: {name}", pt: "Ativada · última notícia sua {when} · guardião: {name}", it: "Attiva · ultime tue notizie {when} · custode: {name}", ja: "作動中 · 最後の便り {when} · 見守り役: {name}", zh: "已启用 · 最近一次得知你的消息 {when} · 受托人: {name}", hi: "सक्रिय · आपकी अंतिम ख़बर {when} · संरक्षक: {name}", ar: "مفعّل · آخر خبر عنك {when} · القيّم: {name}",
   },
+  "med.add.button": {
+    en: "Add to the cabinet", es: "Añadir al botiquín", fr: "Ajouter à l'armoire", de: "Zum Schrank hinzufügen", pt: "Adicionar ao armário", it: "Aggiungi all'armadietto", ja: "薬箱に追加", zh: "加入药柜", hi: "कैबिनेट में जोड़ें", ar: "أضف إلى الخزانة",
+  },
+  "med.critical.mark": {
+    en: " · critical", es: " · crítico", fr: " · critique", de: " · kritisch", pt: " · crítico", it: " · critico", ja: " · 重要", zh: " · 关键", hi: " · अत्यावश्यक", ar: " · حرج",
+  },
   "med.title": {
     en: "Medications", es: "Medicamentos", fr: "Médicaments", de: "Medikamente", pt: "Medicamentos", it: "Farmaci", ja: "薬", zh: "药物", hi: "दवाइयाँ", ar: "الأدوية",
   },
@@ -2848,6 +2995,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "wel.meals.day": {
     en: "Day {n}", es: "Día {n}", fr: "Jour {n}", de: "Tag {n}", pt: "Dia {n}", it: "Giorno {n}", ja: "{n}日目", zh: "第{n}天", hi: "दिन {n}", ar: "اليوم {n}",
   },
+  "hld.yes": {
+    en: "yes", es: "sí", fr: "oui", de: "ja", pt: "sim", it: "sì", ja: "はい", zh: "是", hi: "हाँ", ar: "نعم",
+  },
+  "hld.no": {
+    en: "no", es: "no", fr: "non", de: "nein", pt: "não", it: "no", ja: "いいえ", zh: "否", hi: "नहीं", ar: "لا",
+  },
+  "hld.src.allow.button": {
+    en: "Allow", es: "Permitir", fr: "Autoriser", de: "Erlauben", pt: "Permitir", it: "Consenti", ja: "許可する", zh: "允许", hi: "अनुमति दें", ar: "اسمح",
+  },
+  "hld.src.withdraw": {
+    en: "Withdraw", es: "Retirar", fr: "Retirer", de: "Zurückziehen", pt: "Retirar", it: "Ritira", ja: "取り消す", zh: "撤回", hi: "वापस लें", ar: "اسحب",
+  },
   "hld.title": {
     en: "What's held about you", es: "Lo que se guarda sobre ti", fr: "Ce qui est détenu sur vous", de: "Was über Sie gehalten wird", pt: "O que é guardado sobre si", it: "Ciò che è custodito su di te", ja: "あなたについて保持されているもの", zh: "关于你所保存的一切", hi: "आपके बारे में जो रखा गया है", ar: "ما هو محفوظ عنك",
   },
@@ -2993,6 +3152,21 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "hld.end.go": {
     en: "Erase everything", es: "Borrarlo todo", fr: "Tout effacer", de: "Alles löschen", pt: "Apagar tudo", it: "Cancella tutto", ja: "すべて消去", zh: "抹除一切", hi: "सब कुछ मिटाएँ", ar: "امحُ كل شيء",
   },
+  "wrd.paused.mark": {
+    en: " · paused", es: " · en pausa", fr: " · en pause", de: " · pausiert", pt: " · em pausa", it: " · in pausa", ja: " · 一時停止中", zh: " · 已暂停", hi: " · रुका हुआ", ar: " · موقوف مؤقتًا",
+  },
+  "wrd.pause": {
+    en: "Pause guidance", es: "Pausar las indicaciones", fr: "Suspendre les conseils", de: "Hinweise pausieren", pt: "Pausar as orientações", it: "Metti in pausa le indicazioni", ja: "案内を一時停止", zh: "暂停指导", hi: "मार्गदर्शन रोकें", ar: "أوقِف الإرشاد مؤقتًا",
+  },
+  "wrd.resume": {
+    en: "Resume guidance", es: "Reanudar la orientación", fr: "Reprendre les conseils", de: "Hinweise fortsetzen", pt: "Retomar a orientação", it: "Riprendi la guida", ja: "ガイダンスを再開", zh: "恢复引导", hi: "मार्गदर्शन जारी रखें", ar: "استأنف الإرشاد",
+  },
+  "wrd.resus": {
+    en: "Automatic resuscitation", es: "Reanimación automática", fr: "Réanimation automatique", de: "Automatische Wiederbelebung", pt: "Reanimação automática", it: "Rianimazione automatica", ja: "自動蘇生", zh: "自动复苏", hi: "स्वचालित पुनर्जीवन", ar: "إنعاش تلقائي",
+  },
+  "wrd.waiver": {
+    en: "Waiver", es: "Renuncia", fr: "Renonciation", de: "Verzicht", pt: "Renúncia", it: "Rinuncia", ja: "免除", zh: "弃权", hi: "छूट", ar: "تنازل",
+  },
   "wrd.title": {
     en: "Who you watch", es: "A quién vigilas", fr: "Qui vous veillez", de: "Über wen Sie wachen", pt: "Quem você vigia", it: "Chi vegli", ja: "見守っている相手", zh: "你在看顾谁", hi: "आप किसका ध्यान रखते हैं", ar: "من ترعاه",
   },
@@ -3055,6 +3229,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "wrd.waiver.sign": {
     en: "Sign", es: "Firmar", fr: "Signer", de: "Unterschreiben", pt: "Assinar", it: "Firma", ja: "署名する", zh: "签署", hi: "हस्ताक्षर करें", ar: "وقّع",
+  },
+  "ct.coordinate": {
+    en: "Coordinate", es: "Coordinar", fr: "Coordonner", de: "Koordinieren", pt: "Coordenar", it: "Coordina", ja: "調整する", zh: "协调", hi: "समन्वय करें", ar: "نسّق",
+  },
+  "ct.coordinating": {
+    en: "Coordinating…", es: "Coordinando…", fr: "Coordination…", de: "Wird koordiniert …", pt: "A coordenar…", it: "Coordinamento…", ja: "調整しています…", zh: "正在协调…", hi: "समन्वय हो रहा है…", ar: "جارٍ التنسيق…",
+  },
+  "ct.sealed": {
+    en: "sealed in the vault · ", es: "sellado en la bóveda · ", fr: "scellé dans le coffre · ", de: "im Tresor versiegelt · ", pt: "selado no cofre · ", it: "sigillato nel caveau · ", ja: "保管庫に封印済み · ", zh: "已封入保险库 · ", hi: "तिजोरी में सील · ", ar: "مختوم في الخزنة · ",
+  },
+  "ct.nobody": {
+    en: "nobody yet", es: "todavía nadie", fr: "personne pour l'instant", de: "noch niemand", pt: "ainda ninguém", it: "ancora nessuno", ja: "まだ誰もいません", zh: "暂时无人", hi: "अभी कोई नहीं", ar: "لا أحد بعد",
   },
   "ct.title": {
     en: "Care Team", es: "Equipo de cuidados", fr: "Équipe de soins", de: "Betreuungsteam", pt: "Equipa de cuidados", it: "Squadra di cura", ja: "ケアチーム", zh: "照护团队", hi: "देखभाल टीम", ar: "فريق الرعاية",
@@ -3151,6 +3337,12 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "ct.spec.stand.unreachable": {
     en: "QRME unreachable — standing unknown", es: "QRME inaccesible: situación desconocida", fr: "QRME injoignable — état inconnu", de: "QRME nicht erreichbar — Stand unbekannt", pt: "QRME inacessível — situação desconhecida", it: "QRME irraggiungibile: posizione ignota", ja: "QRME に接続できません — 状態は不明です", zh: "无法连接 QRME——状态未知", hi: "QRME तक पहुँच नहीं — स्थिति अज्ञात", ar: "تعذّر الوصول إلى QRME — الحالة غير معروفة",
+  },
+  "sfy.delivered": {
+    en: "delivered", es: "entregado", fr: "remis", de: "zugestellt", pt: "entregue", it: "consegnato", ja: "配信済み", zh: "已送达", hi: "पहुँचा दिया गया", ar: "تم التسليم",
+  },
+  "sfy.undelivered": {
+    en: "not delivered", es: "no entregado", fr: "non remis", de: "nicht zugestellt", pt: "não entregue", it: "non consegnato", ja: "未配信", zh: "未送达", hi: "नहीं पहुँचा", ar: "لم يُسلَّم",
   },
   "sfy.title": {
     en: "Safety", es: "Seguridad", fr: "Sécurité", de: "Sicherheit", pt: "Segurança", it: "Sicurezza", ja: "安全", zh: "安全", hi: "सुरक्षा", ar: "السلامة",
@@ -3332,6 +3524,12 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "aim.activity.pitch": {
     en: "An ordinary activity is context, not a reading. It tells the Guardian why a heart rate moved before it has to guess.", es: "Una actividad corriente es contexto, no una lectura. Le dice al Guardián por qué se movió una frecuencia cardíaca antes de que tenga que adivinarlo.", fr: "Une activité ordinaire est du contexte, pas une mesure. Elle dit au Gardien pourquoi un rythme cardiaque a bougé, avant qu'il ait à le deviner.", de: "Eine gewöhnliche Aktivität ist Kontext, keine Messung. Sie sagt dem Guardian, warum sich ein Puls bewegt hat, bevor er raten muss.", pt: "Uma atividade comum é contexto, não uma leitura. Diz ao Guardião porque é que uma frequência cardíaca se mexeu, antes de ele ter de adivinhar.", it: "Un'attività ordinaria è contesto, non una lettura. Dice al Guardian perché una frequenza cardiaca si è mossa, prima che debba indovinarlo.", ja: "ふつうの活動は測定値ではなく文脈です。心拍が動いた理由を、ガーディアンが推測する前に伝えてくれます。", zh: "日常活动是上下文，不是读数。它在守护者需要猜测之前，就告诉它心率为何变动。", hi: "सामान्य गतिविधि संदर्भ है, रीडिंग नहीं। यह गार्जियन को बताती है कि हृदय गति क्यों बदली — इससे पहले कि उसे अनुमान लगाना पड़े।", ar: "النشاط العادي سياق لا قراءة. يخبر الحارس لماذا تحرك معدل ضربات القلب قبل أن يضطر إلى التخمين.",
   },
+  "cmy.show": {
+    en: "Show places", es: "Mostrar lugares", fr: "Afficher les lieux", de: "Orte anzeigen", pt: "Mostrar lugares", it: "Mostra i luoghi", ja: "場所を表示", zh: "显示地点", hi: "जगहें दिखाएँ", ar: "أظهر الأماكن",
+  },
+  "cmy.looking": {
+    en: "Looking…", es: "Buscando…", fr: "Recherche…", de: "Wird gesucht…", pt: "A procurar…", it: "Ricerca…", ja: "検索中…", zh: "查找中…", hi: "खोजा जा रहा है…", ar: "جارٍ البحث…",
+  },
   "cmy.title": {
     en: "Community", es: "Comunidad", fr: "Communauté", de: "Gemeinschaft", pt: "Comunidade", it: "Comunità", ja: "コミュニティ", zh: "社区", hi: "समुदाय", ar: "المجتمع",
   },
@@ -3382,6 +3580,15 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "cmy.events.none": {
     en: "Nothing claimed for that place yet.", es: "Nada reclamado para ese lugar todavía.", fr: "Rien de signalé pour ce lieu pour l'instant.", de: "Für diesen Ort ist noch nichts eingetragen.", pt: "Nada reclamado para esse lugar ainda.", it: "Ancora nulla per quel luogo.", ja: "その場所についてはまだ何もありません。", zh: "该地点尚无任何登记。", hi: "उस स्थान के लिए अभी कुछ नहीं।", ar: "لا شيء مُدرج لذلك المكان بعد.",
+  },
+  "mon.send": {
+    en: "Send to Guardian", es: "Enviar al Guardián", fr: "Envoyer au Gardien", de: "An den Guardian senden", pt: "Enviar ao Guardião", it: "Invia al Guardian", ja: "ガーディアンに送る", zh: "发送给守护者", hi: "गार्जियन को भेजें", ar: "أرسل إلى الحارس",
+  },
+  "mon.analyzing": {
+    en: "Analyzing…", es: "Analizando…", fr: "Analyse…", de: "Wird analysiert…", pt: "A analisar…", it: "Analisi…", ja: "解析中…", zh: "分析中…", hi: "विश्लेषण हो रहा है…", ar: "جارٍ التحليل…",
+  },
+  "mon.firstaid": {
+    en: "First aid, step by step", es: "Primeros auxilios, paso a paso", fr: "Premiers secours, étape par étape", de: "Erste Hilfe, Schritt für Schritt", pt: "Primeiros socorros, passo a passo", it: "Primo soccorso, passo per passo", ja: "応急手当、手順ごとに", zh: "急救，一步一步来", hi: "प्राथमिक उपचार, कदम दर कदम", ar: "الإسعافات الأولية، خطوة بخطوة",
   },
   "mon.title": {
     en: "Live Monitoring", es: "Vigilancia en directo", fr: "Surveillance en direct", de: "Live-Überwachung", pt: "Vigilância em direto", it: "Monitoraggio dal vivo", ja: "ライブ・モニタリング", zh: "实时监测", hi: "लाइव निगरानी", ar: "المراقبة الحيّة",
@@ -3479,6 +3686,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "hom.go.careteam": {
     en: "👥 Care Team", es: "👥 Equipo de cuidados", fr: "👥 Équipe de soins", de: "👥 Betreuungsteam", pt: "👥 Equipa de cuidados", it: "👥 Squadra di cura", ja: "👥 ケアチーム", zh: "👥 照护团队", hi: "👥 देखभाल टीम", ar: "👥 فريق الرعاية",
   },
+  "chk.save": {
+    en: "Save check-in", es: "Guardar el registro", fr: "Enregistrer le point", de: "Check-in speichern", pt: "Guardar o registo", it: "Salva il check-in", ja: "チェックインを保存", zh: "保存签到", hi: "चेक-इन सहेजें", ar: "احفظ التسجيل",
+  },
   "chk.title": {
     en: "Check-in", es: "Registro", fr: "Bilan", de: "Check-in", pt: "Check-in", it: "Check-in", ja: "チェックイン", zh: "签到", hi: "चेक-इन", ar: "تسجيل الحالة",
   },
@@ -3563,6 +3773,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "let.none": {
     en: "No letters yet.", es: "Aún no hay cartas.", fr: "Pas encore de lettre.", de: "Noch keine Briefe.", pt: "Ainda não há cartas.", it: "Nessuna lettera finora.", ja: "まだ手紙はありません。", zh: "还没有信。", hi: "अभी कोई पत्र नहीं।", ar: "لا رسائل بعد.",
   },
+  "jrn.add": {
+    en: "Add to the journal", es: "Añadir al diario", fr: "Ajouter au journal", de: "Zum Journal hinzufügen", pt: "Adicionar ao diário", it: "Aggiungi al diario", ja: "日誌に追加", zh: "写入日志", hi: "जर्नल में जोड़ें", ar: "أضف إلى اليوميات",
+  },
+  "jrn.vaulted": {
+    en: " · sealed in the vault", es: " · sellado en la bóveda", fr: " · scellé dans le coffre", de: " · im Tresor versiegelt", pt: " · selado no cofre", it: " · sigillato nel caveau", ja: " · 保管庫に封印済み", zh: " · 已封入保险库", hi: " · तिजोरी में सील", ar: " · مختوم في الخزنة",
+  },
+  "jrn.speak": {
+    en: "🎙 speak", es: "🎙 hablar", fr: "🎙 parler", de: "🎙 sprechen", pt: "🎙 falar", it: "🎙 parla", ja: "🎙 話す", zh: "🎙 说话", hi: "🎙 बोलें", ar: "🎙 تحدّث",
+  },
+  "jrn.listening": {
+    en: "◼ listening…", es: "◼ escuchando…", fr: "◼ écoute…", de: "◼ hört zu…", pt: "◼ a ouvir…", it: "◼ in ascolto…", ja: "◼ 聞いています…", zh: "◼ 正在聆听…", hi: "◼ सुन रहा है…", ar: "◼ يستمع…",
+  },
   "jrn.title": {
     en: "Journal", es: "Diario", fr: "Journal", de: "Tagebuch", pt: "Diário", it: "Diario", ja: "日記", zh: "日志", hi: "डायरी", ar: "اليوميات",
   },
@@ -3583,6 +3805,36 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "jrn.none": {
     en: "Nothing yet — the first entry can be one sentence.", es: "Nada todavía — la primera entrada puede ser una frase.", fr: "Rien pour l'instant — la première entrée peut tenir en une phrase.", de: "Noch nichts — der erste Eintrag darf ein Satz sein.", pt: "Nada ainda — a primeira entrada pode ser uma frase.", it: "Ancora niente — la prima voce può essere una frase.", ja: "まだ何もありません — 最初の記録は一文で構いません。", zh: "尚无内容 — 第一条可以只写一句话。", hi: "अभी कुछ नहीं — पहली प्रविष्टि एक वाक्य भी हो सकती है।", ar: "لا شيء بعد — يكفي أن يكون المدخل الأول جملة واحدة.",
+  },
+  "cch.ask": {
+    en: "Ask the coach", es: "Preguntar al coach", fr: "Demander au coach", de: "Den Coach fragen", pt: "Perguntar ao coach", it: "Chiedi al coach", ja: "コーチに尋ねる", zh: "询问教练", hi: "कोच से पूछें", ar: "اسأل المدرّب",
+  },
+  "cch.thinking": {
+    en: "Thinking…", es: "Pensando…", fr: "Réflexion…", de: "Denkt nach…", pt: "A pensar…", it: "Sto pensando…", ja: "考えています…", zh: "思考中…", hi: "सोच रहा है…", ar: "يفكّر…",
+  },
+  "cch.talk": {
+    en: "🎙 Talk to it", es: "🎙 Háblale", fr: "🎙 Parlez-lui", de: "🎙 Sprechen Sie mit ihm", pt: "🎙 Fale com ele", it: "🎙 Parlagli", ja: "🎙 話しかける", zh: "🎙 对它说话", hi: "🎙 इससे बात करें", ar: "🎙 تحدّث إليه",
+  },
+  "cch.listening": {
+    en: "◉ Listening — tap to send", es: "◉ Escuchando — toca para enviar", fr: "◉ Écoute — touchez pour envoyer", de: "◉ Hört zu — zum Senden tippen", pt: "◉ A ouvir — toque para enviar", it: "◉ In ascolto — tocca per inviare", ja: "◉ 聞いています — タップで送信", zh: "◉ 正在聆听 — 点按发送", hi: "◉ सुन रहा है — भेजने के लिए टैप करें", ar: "◉ يستمع — انقر للإرسال",
+  },
+  "cch.readaloud": {
+    en: "🔊 Read it aloud", es: "🔊 Léelo en voz alta", fr: "🔊 Lire à voix haute", de: "🔊 Vorlesen", pt: "🔊 Ler em voz alta", it: "🔊 Leggilo ad alta voce", ja: "🔊 読み上げる", zh: "🔊 朗读", hi: "🔊 ज़ोर से पढ़ें", ar: "🔊 اقرأه بصوت عالٍ",
+  },
+  "cch.stop": {
+    en: "■ Stop", es: "■ Detener", fr: "■ Arrêter", de: "■ Stopp", pt: "■ Parar", it: "■ Ferma", ja: "■ 停止", zh: "■ 停止", hi: "■ रोकें", ar: "■ أوقف",
+  },
+  "cch.listening.stop": {
+    en: "listening — tap to stop", es: "escuchando — toca para detener", fr: "écoute — touchez pour arrêter", de: "hört zu — zum Stoppen tippen", pt: "a ouvir — toque para parar", it: "in ascolto — tocca per fermare", ja: "聞いています — タップで停止", zh: "正在聆听 — 点按停止", hi: "सुन रहा है — रोकने के लिए टैप करें", ar: "يستمع — انقر للإيقاف",
+  },
+  "cch.speaking.hush": {
+    en: "speaking — tap to hush", es: "hablando — toca para callar", fr: "parle — touchez pour faire taire", de: "spricht — zum Verstummen tippen", pt: "a falar — toque para silenciar", it: "sta parlando — tocca per zittire", ja: "話しています — タップで黙らせる", zh: "正在说话 — 点按静音", hi: "बोल रहा है — चुप कराने के लिए टैप करें", ar: "يتحدث — انقر لإسكاته",
+  },
+  "cch.prov.online": {
+    en: "an online model", es: "un modelo en línea", fr: "un modèle en ligne", de: "ein Online-Modell", pt: "um modelo online", it: "un modello online", ja: "オンラインのモデル", zh: "一个在线模型", hi: "एक ऑनलाइन मॉडल", ar: "نموذج عبر الإنترنت",
+  },
+  "cch.prov.unreached": {
+    en: "the model could not be reached", es: "no se pudo contactar con el modelo", fr: "le modèle n'a pas pu être joint", de: "das Modell war nicht erreichbar", pt: "não foi possível contactar o modelo", it: "non è stato possibile raggiungere il modello", ja: "モデルに到達できませんでした", zh: "无法连接到该模型", hi: "मॉडल तक नहीं पहुँचा जा सका", ar: "تعذّر الوصول إلى النموذج",
   },
   "cch.title": {
     en: "Coach", es: "Coach", fr: "Coach", de: "Coach", pt: "Coach", it: "Coach", ja: "コーチ", zh: "教练", hi: "कोच", ar: "مدرب",

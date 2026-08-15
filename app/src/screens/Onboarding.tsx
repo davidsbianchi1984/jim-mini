@@ -32,9 +32,11 @@ function PasswordField(props: {
                placeholder={props.placeholder}
                onChange={(e) => props.onChange(e.target.value)} />
         <button type="button" className="pw-toggle" tabIndex={-1}
-                aria-label={shown ? "Hide password" : "Show password"}
+                aria-label={shown ? tr("onb.hide", visitorLang())
+                                  : tr("onb.show", visitorLang())}
                 onClick={() => setShown(!shown)}>
-          {shown ? "Hide" : "Show"}
+          {shown ? tr("onb.hide", visitorLang())
+                 : tr("onb.show", visitorLang())}
         </button>
       </span>
     </label>
@@ -355,7 +357,8 @@ export function Onboarding({ onAccess }: { onAccess?: () => void } = {}) {
                   disabled={busy || !consent || !name.trim() || !birthdate || !email.trim()
                             || !password || !passwordsMatch || backendUp === false}
                   onClick={signup}>
-            {busy ? "Creating…" : "Create account"}
+            {busy ? tr("onb.creating", visitorLang())
+                   : tr("onb.create", visitorLang())}
           </button>
           {/* Starting without an email address.
 
@@ -389,7 +392,8 @@ export function Onboarding({ onAccess }: { onAccess?: () => void } = {}) {
         </>)}
         {mode === "code" && (<>
           <button className="primary" disabled={busy || code.trim().length !== 6} onClick={verify}>
-            {busy ? "Checking…" : "Verify & get started"}
+            {busy ? tr("onb.checking", visitorLang())
+                   : tr("onb.verify", visitorLang())}
           </button>
           <button className="linkish" disabled={busy} onClick={resend}>{tr("onb.code.resend", visitorLang())}</button>
         </>)}
@@ -397,7 +401,8 @@ export function Onboarding({ onAccess }: { onAccess?: () => void } = {}) {
           <button className="primary"
                   disabled={busy || !email.trim() || !password || backendUp === false}
                   onClick={signin}>
-            {busy ? "Signing in…" : "Sign in"}
+            {busy ? tr("onb.signing", visitorLang())
+                   : tr("onb.signin", visitorLang())}
           </button>
           <button className="linkish" onClick={() => switchMode("reset")}>{tr("onb.forgot", visitorLang())}</button>
         </>)}
@@ -406,7 +411,8 @@ export function Onboarding({ onAccess }: { onAccess?: () => void } = {}) {
                   disabled={busy || !email.trim() || code.trim().length !== 6
                             || !password || !passwordsMatch}
                   onClick={finishReset}>
-            {busy ? "Resetting…" : "Set new password"}
+            {busy ? tr("onb.resetting", visitorLang())
+                   : tr("onb.setpass", visitorLang())}
           </button>
           <button className="linkish" onClick={() => switchMode("signin")}>{tr("onb.back", visitorLang())}</button>
         </>)}

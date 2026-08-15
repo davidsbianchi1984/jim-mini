@@ -160,7 +160,14 @@ def test_the_backlog_only_shrinks():
 #: precedent `native_screens_untranslated.txt` set when its own reader
 #: improved: record the true number and say why, rather than keep a clean
 #: one that was only clean because nobody could see past it.
-CEILING = 93
+#:
+#: **0.75.0 — two.** Ninety-one of the ninety-three were given keys and ten
+#: translations. What is left is `ElevenLabs` and `OpenAI`: the names of two
+#: companies, printed because that is what the provider is called in every
+#: language. A translated vendor name would be a name nobody could match
+#: against the account they hold there. Two is a floor rather than a debt,
+#: and the file below says so in its own words.
+CEILING = 2
 
 
 def test_no_screen_of_this_console_speaks_only_english():
