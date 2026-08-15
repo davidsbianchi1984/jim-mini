@@ -1,6 +1,6 @@
-# status: floor — 0 rows
+# status: backlog — 7 rows
 #
-# Every route this shell can reach. Held at zero.
+# Every route this shell cannot reach.
 #
 # ## 0.71.0: engaged sessions landed on all four clients at once
 #
@@ -20,3 +20,34 @@
 # journal entry, a check-in, a goal or a habit. Those are worth having on a
 # phone on their own account, and they landed with the screen that made them
 # necessary.
+
+# ## 0.72.0: the Studio is console-first, and this is the debt that says so
+#
+# `jim/widgets.py` gives somebody a box to run their own code in — no network,
+# one directory, no other programs, finite time — and the seven routes below
+# are its doors. They landed on the console this round and not here, which is
+# a decision rather than an oversight, and the decision is recorded rather
+# than left implicit because "held at zero" was a real posture and this file
+# is no longer at zero.
+#
+# The reason is the shape of the thing. A widget is written, not tapped: it is
+# a name, a body of JavaScript, and a JSON input, edited over several passes.
+# A phone keyboard is the wrong instrument for the first draft of a program,
+# and shipping a cramped editor on three shells to make a number stay at zero
+# would have been building for the record rather than for the person.
+#
+#     asked     can every client reach every route
+#     mattered  is each client the right place for this one
+#
+# What that argument does *not* excuse is the reading half. Somebody who wrote
+# a widget at a desk should be able to open it, run it and read the answer
+# from the phone in their pocket, and today they cannot. That is the next
+# round's work, and these rows are what will still be here saying so.
+
+DELETE /users/{user_id}/widgets/{widget_id}
+GET /studio/limits
+GET /users/{user_id}/widgets
+GET /users/{user_id}/widgets/{widget_id}
+POST /users/{user_id}/widgets
+POST /users/{user_id}/widgets/{widget_id}/run
+PUT /users/{user_id}/widgets/{widget_id}

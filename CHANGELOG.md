@@ -6,6 +6,56 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.76.0] - 2026-08-15
+
+### Added
+
+- **The console gets a front door.** Twenty-four tiles and no way in: every
+  capability sat behind one of them, which meant knowing which one before you
+  could ask for anything — and the tile carrying the mark opened a permissions
+  panel rather than JIM.
+
+      asked     pull up JIM when I press the mark
+      mattered  the mark opened permissions, and the conversation was behind
+                a different tile
+
+  `Talk` is a **composer** at the bottom — the pill, the mic, Speak — and a
+  **horizontal scrolling rail** of features above it. The rail is a launcher,
+  not a second implementation: every chip calls `go` with a tab id and the
+  screen that opens is the one the tile opened, same code and same guards. Its
+  label is derived from the destination (`talk.rail.<tab id>`) rather than
+  listed beside it, which is how a chip ends up labelled for one screen and
+  opening another. The permissions screen keeps its code and moves to its own
+  tab, reached from the rail. The `+` carries three entries, not four —
+  Camera, Photos and Voice have screens behind them today; Files and Link need
+  an ingest route that does not exist, and a control that does nothing is
+  worse than a menu that is short.
+
+- **The Studio: tools you write, for yourself only.** A widget is a function
+  somebody wrote, stored against their account, run on demand. It runs in a
+  box with four walls, and each is a mechanism rather than a promise: the
+  network is cut with `unshare -rn`, the filesystem is one directory under
+  node's permission model, `child_process` is refused outright, and CPU,
+  memory and wall-clock are capped before it starts. If any wall cannot be
+  built, **nothing runs at all** — a sandbox that quietly degrades is worse
+  than no sandbox, because the feature still appears to work.
+
+      asked     can a person run their own code here
+      mattered  can a person run their own code without reaching anybody
+                else's — this disk holds other people's clinical captures
+
+  Seven routes, all scoped to that person at the door *and* at the query, so a
+  widget id belonging to somebody else is not found rather than refused.
+  Thirteen refusals in ten languages. The limits are fetched from
+  `/studio/limits` rather than written into the console, and when the box
+  cannot be built the banner names the missing wall while the editor stays —
+  only the run button goes.
+
+  Console this release. The three shells are recorded in their own backlogs
+  with the reason, which is that a widget is written rather than tapped and a
+  phone keyboard is the wrong instrument for the first draft of a program.
+  What that does not excuse is the reading half, and the rows say so.
+
 ### Changed
 
 - **The tandem contract said the thing that stopped being true.**
@@ -8530,7 +8580,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.75.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.76.0...HEAD
+[0.76.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.76.0
 [0.75.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.75.0
 [0.74.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.74.0
 [0.73.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.73.0
