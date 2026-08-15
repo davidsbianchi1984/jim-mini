@@ -1281,6 +1281,30 @@ CREATE TABLE IF NOT EXISTS standing_watches (
     created_at    TEXT NOT NULL,
     cleared_at    TEXT
 );
+
+-- The hash-chained audit log (jim/audit.py), ported from PDI.
+--
+-- Deliberately *not* the `events` table above. That one is the person's own
+-- timeline — readings, detections, guidance, escalations — written for them
+-- to read and shaped by what a screen needs. This is the other thing: a short
+-- append-only record of the consequential acts, where each row's hash covers
+-- the row before it, so a retroactive edit or a removed row breaks the chain
+-- and `verify()` says at which sequence number.
+--
+-- No `REFERENCES users(id)`, and that is the point rather than an omission. A
+-- chain whose rows can be taken out by a cascade when an account closes is
+-- tamper-evident right up until somebody closes an account. What an erasure
+-- removes is the person's data; `life.delete_user_data` writes that removal
+-- here instead of erasing the record of it.
+CREATE TABLE IF NOT EXISTS audit (
+    seq       INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id   TEXT,             -- NULL for deployment-wide events
+    action    TEXT NOT NULL,    -- one of jim.audit.ACTIONS
+    ref       TEXT,             -- resource reference, or a small detail
+    at        TEXT NOT NULL,
+    prev_hash TEXT NOT NULL,
+    hash      TEXT NOT NULL
+);
 """
 
 _local = threading.local()

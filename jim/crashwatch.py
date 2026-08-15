@@ -74,7 +74,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 
-from . import db
+from . import audit, db
 
 # The one severity that opens a concern: the clinical detector's
 # "critical" — the severity that already escalates. Never "guidance"
@@ -159,6 +159,12 @@ def arm(user_id: str, trusted_name: str, trusted_channel: str,
          float(window_minutes), int(bool(contact_emergency_services)),
          db.utcnow(), db.utcnow()))
     conn.commit()
+    # The consent moment goes on the chain, not just the trip. Somebody asking
+    # later whether this person agreed to be helped is asking about *this*,
+    # and an arming that can be edited afterwards answers nothing.
+    audit.record("watch.arm", user_id=user_id,
+                 ref=f"{trusted_name}, {attempts}x{window_minutes:g}min"
+                     + (", ems" if contact_emergency_services else ""))
     return status(user_id)
 
 
@@ -169,6 +175,7 @@ def disarm(user_id: str) -> dict:
         " attempt=0, deadline_at=NULL, updated_at=? WHERE user_id=?",
         (db.utcnow(), user_id))
     conn.commit()
+    audit.record("watch.disarm", user_id=user_id)
     return status(user_id)
 
 
@@ -388,6 +395,12 @@ def _trip(user_id: str, row, t: datetime) -> dict:
         (db.new_id("evt"), user_id, "crash_watch", row["concern"], "alert",
          json.dumps(detail), now_iso))
     conn.commit()
+    # The act itself: help was summoned. `ref` carries the tier and whether a
+    # floor was clipped, because those are the two things a reader asks about
+    # a summons after the fact.
+    audit.record("watch.trip", user_id=user_id,
+                 ref=f"{row['concern']} -> {decision['tier']}"
+                     + (" (clipped)" if decision["clipped_by_ceiling"] else ""))
     return status(user_id)
 
 
@@ -463,6 +476,8 @@ def accept_alarm(user_id: str, responder: str) -> dict | None:
     guardian._event(user_id, "crash_watch",
                     detail={"alarm": ALARM_ID,
                             "accepted_by": responder.strip()})
+    audit.record("alarm.accept", user_id=user_id,
+                 ref=f"{ALARM_ID}: {responder.strip()}")
     return {"alarm": ALARM_ID, "accepted_by": responder.strip(),
             "state": "open"}
 
@@ -479,6 +494,7 @@ def clear_alarm(user_id: str) -> dict | None:
         "UPDATE crash_watches SET resolved_at=?, updated_at=? WHERE user_id=?",
         (now, now, user_id))
     conn.commit()
+    audit.record("alarm.clear", user_id=user_id, ref=ALARM_ID)
     return {"id": ALARM_ID, "state": "cleared"}
 
 
@@ -506,6 +522,8 @@ def escalate_alarm(user_id: str) -> dict | None:
         except Exception:  # noqa: BLE001 — the escalation still stands
             delivery = "email_failed"
     _record_page(user_id, row["trusted_name"], delivery)
+    audit.record("alarm.escalate", user_id=user_id,
+                 ref=f"{ALARM_ID}: {row['trusted_name']} ({delivery})")
     return {"alarm": ALARM_ID, "re_paged": row["trusted_name"],
             "delivery": delivery}
 

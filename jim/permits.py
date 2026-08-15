@@ -54,7 +54,7 @@ engagement and still reversible.
 
 from __future__ import annotations
 
-from . import db
+from . import audit, db
 
 #: Every acting tool, in the group a person would look for it in — and whether
 #: that group is covered by opening a session or needs its own yes.
@@ -160,6 +160,8 @@ def set_grant(user_id: str, area: str, on: bool) -> dict:
         " granted=excluded.granted, created_at=excluded.created_at",
         (user_id, area, 1 if on else 0, db.utcnow()))
     conn.commit()
+    audit.record("grant.open" if on else "grant.close",
+                 user_id=user_id, ref=area)
     return one(user_id, area)
 
 

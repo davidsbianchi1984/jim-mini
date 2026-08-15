@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, type AccessLog, type CloudStatus, type Row,
+import { api, type AccessLog, type AuditLog, type CloudStatus, type Row,
          type VoiceQuota } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
@@ -30,6 +30,7 @@ export function Held() {
   const { session } = useSession();
   const lang = visitorLang();
   const [log, setLog] = useState<AccessLog | null>(null);
+  const [audit, setAudit] = useState<AuditLog | null>(null);
   const [membership, setMembership] = useState<Row | null>(null);
   const [plans, setPlans] = useState<Row | null>(null);
   const [sources, setSources] = useState<Row[]>([]);
@@ -53,6 +54,7 @@ export function Held() {
   function load() {
     if (!uid || !token) return;
     api.accessLog(uid, token).then(setLog).catch(fail);
+    api.auditLog(uid, token).then(setAudit).catch(fail);
     api.membership(uid, token).then(setMembership).catch(fail);
     api.plans().then(setPlans).catch(fail);
     api.sources(uid, token).then(setSources).catch(fail);
@@ -72,6 +74,16 @@ export function Held() {
       .catch((e) => setQuotaError((e as Error).message));
   }
   function fail(e: unknown) { setError((e as Error).message); }
+
+  // The row's sentence comes from the catalogue the same response carried,
+  // not from a second copy kept here: two lists of the same actions is one
+  // list and one place for them to disagree. An action with no entry in the
+  // catalogue falls back to its own name rather than to a blank, so a row
+  // written by something newer than this build is still legible.
+  function describe(action: string): string {
+    return audit?.catalogue.find((a) => a.action === action)?.description
+      ?? action;
+  }
   useEffect(load, [uid]);
 
   async function run(work: () => Promise<unknown>) {
@@ -112,6 +124,50 @@ export function Held() {
             {JSON.stringify(e)}
           </div>
         ))}
+      </div>
+
+      {/* The other half of the same question, and the reason the chain can
+          honestly sit outside the export bundle and survive an erase: the
+          person can always read what was said about them here.
+
+          The chain's state is stated before the entries, for the reason the
+          card above states its three fields first — a list you cannot check
+          is a list, and "intact" is what turns these rows into a record. */}
+      <div className="card">
+        <h3>{tr("hld.audit", lang)}</h3>
+        {audit && (
+          <p className="muted small">
+            {audit.integrity.intact
+              ? tr("hld.audit.intact", lang)
+              : tr("hld.audit.broken", lang).replace(
+                  "{seq}", String(audit.integrity.broken_at_seq ?? "?"))}
+          </p>
+        )}
+        {audit?.retention && (
+          <p className="muted small">{audit.retention}</p>
+        )}
+        {audit && audit.count === 0 && (
+          <p className="muted small">{tr("hld.audit.none", lang)}</p>
+        )}
+        {(audit?.trail ?? []).map((e) => (
+          <div key={e.seq} className="row"
+               style={{ padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
+            <span style={{ flex: 1 }}>
+              {describe(e.action)}
+              {e.ref ? ` — ${e.ref}` : ""}
+            </span>
+            <span className="muted small">{e.category}</span>
+            <span className="muted small">{e.at}</span>
+          </div>
+        ))}
+        {audit && audit.count === 0 && (
+          <>
+            <p className="muted small"><strong>{tr("hld.audit.watched", lang)}</strong></p>
+            {audit.catalogue.map((a) => (
+              <p key={a.action} className="muted small">{a.description}</p>
+            ))}
+          </>
+        )}
       </div>
 
       <div className="card">

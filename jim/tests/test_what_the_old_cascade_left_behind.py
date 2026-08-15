@@ -57,10 +57,28 @@ def _strand(conn, subject: str) -> list[str]:
     the same residue with a bigger tail.
     """
     planted = [t for t in _scoped_from_the_schema(conn)
-               if t != "users" and _plant(conn, t, subject)]
+               if t != "users" and t not in life.ERASE_KEEPS
+               and _plant(conn, t, subject)]
     conn.execute("DELETE FROM users WHERE id=?", (subject,))
     conn.commit()
     return planted
+
+
+#: Why `life.ERASE_KEEPS` is subtracted above rather than asserted over.
+#:
+#: The planting reads the schema here rather than through
+#: `life.user_scoped_tables` — the docstring says why, and that stands. But
+#: the sweep is not "delete every row a gone account left"; it is "finish the
+#: erase that was asked for", and a table the erase deliberately keeps was
+#: never part of that ask. `audit` is the first such table: a hash-chained
+#: record whose rows survive the account on purpose, because erasing
+#: somebody's data and erasing the record that it was erased are different
+#: acts and only the first one was requested.
+#:
+#: Subtracting the set is not the same as trusting the code under test. The
+#: set is a hand-written frozenset with a sentence beside each member, and
+#: `test_an_erase_is_measured_against_the_schema.py` is what holds it honest —
+#: a table added to it without that sentence fails there, not here.
 
 
 def test_the_survey_finds_the_rows_a_gone_subject_left(client):

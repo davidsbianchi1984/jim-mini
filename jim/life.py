@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from datetime import date, timedelta
 
-from . import db, storage, tiers
+from . import audit, db, storage, tiers
 
 # Streak lengths worth celebrating.
 _MILESTONES = {7, 30, 100}
@@ -851,11 +851,22 @@ def access_log(user_id: str, pdi=None) -> dict:
 
 #: Tables a user erase must **not** clear, and why.
 #:
-#: Empty, and that is the honest answer for this product: nothing here is a
-#: hash-chained record of the erasure itself the way PDI's audit log is. A row
-#: added to this set is a promise broken on purpose, so it needs a sentence
-#: beside it saying whose promise and why.
-ERASE_KEEPS: frozenset[str] = frozenset()
+#: This was empty, with a note saying so was the honest answer *because*
+#: nothing here was a hash-chained record of the erasure the way PDI's audit
+#: log is. `jim/audit.py` is now exactly that, so the note has come due.
+#:
+#: `audit` is kept, and the promise being broken is named: an erase removes
+#: the person's data, and the chain holds no data — it holds the fact that
+#: acts occurred, including the erase itself, each row's hash covering the one
+#: before it. Deleting those rows would not return anything to the person; it
+#: would remove the only evidence that what they asked for was carried out,
+#: and break the chain for everybody else on the deployment at the same time.
+#:
+#: What keeps this honest rather than convenient is the reading door: the
+#: chain is excluded from the export bundle for the symmetry the guard next
+#: door demands, and `GET /audit/{user_id}` hands the person their own rows
+#: and lets them verify the chain — the same posture PDI takes with tenants.
+ERASE_KEEPS: frozenset[str] = frozenset({"audit"})
 
 #: Tables whose rows belong to a *child* of the user rather than to the user,
 #: and the column that reaches them. A habit log names its habit, not its
@@ -933,6 +944,13 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
     deleted["users"] = conn.execute(
         "DELETE FROM users WHERE id=?", (user_id,)).rowcount
     conn.commit()
+    # After the cascade, and deliberately surviving it: the audit table has no
+    # foreign key to users, so this row and every earlier one about this
+    # person stay. Erasing somebody's data and erasing the record that it was
+    # erased are different acts, and only the first one was asked for.
+    audit.record("account.erase", user_id=user_id,
+                 ref=f"{sum(deleted.values())} rows across "
+                     f"{len(deleted)} tables")
     return {"deleted": deleted}
 
 #: What an export must never hand back, matched as **marks inside a column
@@ -974,6 +992,12 @@ def export_user_data(user_id: str) -> dict:
     conn = db.connect()
     tables: dict[str, list[dict]] = {}
     for table in user_scoped_tables():
+        # The same set the erase keeps, for the same reason and to keep the
+        # two symmetrical: a table shown here and not cleared there is a
+        # person who can see something they cannot delete, and the guard next
+        # door compares the two directly. The audit chain has its own door.
+        if table in ERASE_KEEPS:
+            continue
         rows = conn.execute(f"SELECT * FROM {table} WHERE user_id=?",
                             (user_id,)).fetchall()
         if rows:
@@ -989,6 +1013,8 @@ def export_user_data(user_id: str) -> dict:
             if rows:
                 tables[table] = [_public(r) for r in rows]
     who = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+    audit.record("account.export", user_id=user_id,
+                 ref=f"{len(tables)} tables")
     return {
         "user": _public(who) if who else None,
         "tables": tables,

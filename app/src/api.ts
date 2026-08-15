@@ -105,6 +105,30 @@ export type AccessLog = {
   vaulted: boolean; access_record_kept: boolean; entries: Row[]; note: string;
 };
 
+/** `GET /audit/{uid}` — the hash-chained record of what was *done*, beside
+ *  the access log's record of what was *read*.
+ *
+ *  `integrity` is not decoration. A list of acts nobody can check is a list,
+ *  and it is the half of this answer that makes the other half mean anything,
+ *  so it is typed and shown rather than dropped. `catalogue` is what would be
+ *  recorded: without it an empty `trail` reads as "nothing is watched" when
+ *  what it means is "nothing happened".
+ *
+ *  Not `entries` and not `chain` — both names are already spoken for in this
+ *  API by other types, and the wire-name guard is what said so. */
+export type AuditEntry = {
+  seq: number; user_id: string | null; action: string; category: string;
+  ref: string | null; at: string; prev_hash: string; hash: string;
+};
+export type AuditAction = {
+  action: string; category: string; description: string;
+};
+export type AuditLog = {
+  trail: AuditEntry[]; count: number;
+  integrity: { intact: boolean; hashed: number; broken_at_seq: number | null };
+  catalogue: AuditAction[]; retention: string;
+};
+
 export type EscalationPolicy = {
   sensitivity: string; ladder: string[];
   by_severity: Record<string, string>;
@@ -1962,6 +1986,11 @@ export const api = {
     req<Row>(`/data/${uid}`, { method: "DELETE", token }),
   accessLog: (uid: string, token: string) =>
     req<AccessLog>(`/access-log/${uid}`, { token }),
+  // The other half of the same question. The access log says who *read*
+  // your record; this says what was *done* — and whether the saying of it
+  // has been edited since.
+  auditLog: (uid: string, token: string) =>
+    req<AuditLog>(`/audit/${uid}`, { token }),
 
   // -- how it speaks, and how it is tuned ---------------------------------
   languages: () => req<{ languages: LanguageOption[] }>("/languages"),

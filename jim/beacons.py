@@ -39,7 +39,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 
-from . import db, escalation, family, guardian
+from . import audit, db, escalation, family, guardian
 
 KINDS = ("personal", "site")
 
@@ -366,6 +366,12 @@ def alarm(beacon_id: str, message: str | None = None,
                           row["label"], "guardian" if minor
                           else "emergency contact")
 
+    if not joined:
+        # Only a new alarm, not a second finder coalesced into an open one:
+        # the cooldown exists so one incident is one summons, and the chain
+        # should agree with that rather than counting presses.
+        audit.record("beacon.alarm", user_id=row["user_id"],
+                     ref=f"{beacon_id} -> {tier}")
     sent = _ever_sent(alarm_id)
     out = {
         "alarm": alarm_id,

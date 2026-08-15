@@ -51,7 +51,7 @@ from __future__ import annotations
 
 import json
 
-from . import db, i18n
+from . import audit, db, i18n
 
 #: Balance below this fraction of the monthly budget (or below the absolute
 #: floor) is "running low". Deliberately generous — a warning that fires on
@@ -326,6 +326,13 @@ def set_mandate(user_id: str, enabled: bool, cap_per_order: float,
          json.dumps(list(asset_classes)), (scope or "").strip(),
          db.utcnow()))
     conn.commit()
+    # No transaction can happen — this module has no network path at all —
+    # so the audited act is the *grant*, which is the thing a person would
+    # later say they did or did not give.
+    audit.record("mandate.set" if enabled else "mandate.clear",
+                 user_id=user_id,
+                 ref=(f"cap {cap_per_order:g}/order, {monthly_cap:g}/month, "
+                      + ",".join(asset_classes)) if enabled else None)
     return mandate(user_id)
 
 

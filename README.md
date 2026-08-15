@@ -1280,6 +1280,18 @@ means — this promise is what $20 buys.
 - **You can see every access**: `GET /access-log/{user_id}` lists each time
   your sealed records were stored, read, or erased — your namespace only,
   verifiable against the audit chain.
+- **And you can see every act**: `GET /audit/{user_id}` is the other half of
+  the same question. The access log says who *read* your record; this says
+  what was *done* — help summoned, a human answering it, a mandate over
+  money, a permission opened or closed, your consent, your export, your
+  erasure — on JIM's own append-only hash chain, with whether that chain
+  still hashes to itself returned beside the rows. It comes with the
+  catalogue of what is recorded, so an empty list reads as *nothing
+  happened* rather than *nothing is watched*.
+- The chain is the one thing an erase keeps, and it says so: the erasure is
+  recorded on it rather than removing what it already said, because a chain
+  with a hole in it is not evidence of anything. You can always read it. You
+  cannot rewrite it, and neither can the deployment.
 - Prediction runs on bare local numbers (a metric name and a value); the
   payloads stay in the vault. Cloud contribution is opt-in and carries only
   anonymized guidance outcomes — condition, severity, rating. Never ids or
@@ -1657,6 +1669,7 @@ this machine's address and restart.
 <tr><td valign="top"><sub><code>POST</code>/<code>GET /improve</code></sub></td><td valign="top"><sub><b>Help us improve</b>: product feedback on the app itself (idea/improvement/bug/praise + optional 1–5 rating), open to anyone; a submitter sees only their own words plus the public per-category tally</sub></td></tr>
 <tr><td valign="top"><sub><code>GET /report/{user_id}</code></sub></td><td valign="top"><sub>Progress report & insights: mood/energy averages, goals, streaks, detection counts, feedback tallies</sub></td></tr>
 <tr><td valign="top"><sub><code>GET /access-log/{user_id}</code></sub></td><td valign="top"><sub><b>See who accessed my data</b>: every access to the user's sealed vault records (stored/read/erased + scope + time), filtered to their own <code>jim/{user}/…</code> namespace and verifiable against PDI's tamper-evident audit chain; says so plainly when no vault is configured (data local-only)</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /audit/{user_id}</code></sub></td><td valign="top"><sub><b>What was done, and whether the record was edited</b>: this person's rows on JIM's own hash-chained audit log, the catalogue of what is recorded (so an empty list reads as <i>nothing happened</i> rather than <i>nothing is watched</i>), and whether the chain still hashes to itself. The chain survives an erase and sits outside the export bundle; this door is what makes that honest</sub></td></tr>
 <tr><td valign="top"><sub><code>GET /provider/{user_id}</code></sub></td><td valign="top"><sub>Consent-gated provider portal: condition-level summary only (declared conditions, detection history, escalations) — never notes or raw biometrics</sub></td></tr>
 <tr><td valign="top"><sub><code>DELETE /data/{user_id}</code></sub></td><td valign="top"><sub>Delete anything, anytime — erases every trace of the user</sub></td></tr>
 </table>

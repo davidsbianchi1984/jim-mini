@@ -8,6 +8,7 @@ import SwiftUI
 struct VeilCard: View {
     @EnvironmentObject var state: AppState
     @State private var log: AccessLog?
+    @State private var audit: AuditLog?
     @State private var cloud: CloudStatus?
     @State private var contribution: ContributionView?
     @State private var revoked: ContributionRevoked?
@@ -44,6 +45,49 @@ struct VeilCard: View {
                         .font(.caption2).foregroundStyle(Theme.t3)
                 }
                 Text(log.note).font(.caption2).foregroundStyle(Theme.t3)
+            }
+
+            // The other half of the same question. The card above says who
+            // *read* the record; this says what was *done*, and whether the
+            // saying of it has been edited since. The chain's state comes
+            // first for the same reason the three fields above do: a list
+            // nobody can check is a list, not a record.
+            Divider().background(Theme.line)
+            Text(L10n.t("hld.audit", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            if let audit {
+                if audit.integrity.intact {
+                    Text(L10n.t("hld.audit.intact", state.language))
+                        .font(.caption2).foregroundStyle(Theme.green)
+                } else {
+                    Text(L10n.t("hld.audit.broken", state.language)
+                            .replacingOccurrences(
+                                of: "{seq}",
+                                with: audit.integrity.broken_at_seq.map(String.init)
+                                    ?? "?"))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                }
+                if audit.count == 0 {
+                    Text(L10n.t("hld.audit.none", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t3)
+                    Text(L10n.t("hld.audit.watched", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    ForEach(audit.catalogue, id: \.action) { row in
+                        Text(row.description)
+                            .font(.caption2).foregroundStyle(Theme.t3)
+                    }
+                } else {
+                    ForEach(audit.trail.suffix(8), id: \.seq) { row in
+                        // The sentence comes from the catalogue this same
+                        // answer carried, never from a second copy kept here.
+                        let said = audit.catalogue
+                            .first { $0.action == row.action }?.description
+                            ?? row.action
+                        Text("\(said) · \(row.at)")
+                            .font(.caption2).foregroundStyle(Theme.t3)
+                    }
+                }
+                Text(audit.retention).font(.caption2).foregroundStyle(Theme.t3)
             }
 
             Divider().background(Theme.line)
@@ -168,6 +212,7 @@ struct VeilCard: View {
         planRows = (try? await ApiClient.shared.plans())?.plans ?? []
         guard let uid = state.uid, let token = state.token else { return }
         log = try? await ApiClient.shared.accessLog(uid: uid, token: token)
+        audit = try? await ApiClient.shared.auditLog(uid: uid, token: token)
         contribution = try? await ApiClient.shared.cloudContribution(
             uid: uid, token: token)
         incidentRows = (try? await ApiClient.shared.incidents(

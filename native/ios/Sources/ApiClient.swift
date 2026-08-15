@@ -3771,6 +3771,45 @@ struct AccessLogEntry: Decodable {
     let at: String?
 }
 
+/// `GET /audit/{uid}` — what was *done*, beside the access log's record of
+/// what was *read*.
+///
+/// `integrity` is decoded rather than dropped because it is the half that
+/// makes the other half mean something: a list of acts nobody can check is a
+/// list. `catalogue` is what would be recorded, so an empty `acts` reads as
+/// "nothing happened" and not as "nothing is watched".
+///
+/// The wire says `trail`, `integrity` and `catalogue` rather than the obvious
+/// `entries`, `chain` and `actions`, because all three of those names already
+/// carry other types in this API.
+struct AuditIntegrity: Decodable {
+    let intact: Bool
+    let hashed: Int
+    let broken_at_seq: Int?
+}
+
+struct AuditEntry: Decodable {
+    let seq: Int
+    let action: String
+    let category: String
+    let ref: String?
+    let at: String
+}
+
+struct AuditAction: Decodable {
+    let action: String
+    let category: String
+    let description: String
+}
+
+struct AuditLog: Decodable {
+    let trail: [AuditEntry]
+    let count: Int
+    let integrity: AuditIntegrity
+    let catalogue: [AuditAction]
+    let retention: String
+}
+
 struct CloudStatus: Decodable {
     let cloud: Bool
     let model: String?
@@ -3820,6 +3859,10 @@ extension ApiClient {
 
     func accessLog(uid: String, token: String) async throws -> AccessLog {
         try await request("/access-log/\(uid)", token: token)
+    }
+
+    func auditLog(uid: String, token: String) async throws -> AuditLog {
+        try await request("/audit/\(uid)", token: token)
     }
 
     func cloudStatus() async throws -> CloudStatus {

@@ -6,6 +6,64 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The audit chain, ported from PDI.** JIM records what happens to a person
+  in `events` — readings, detections, guidance, the escalation ladder's
+  decisions. That table is a timeline: it is written to be read on a screen,
+  its shape follows what the screen needs, and it gets pruned, reshaped and
+  paginated. Every one of those is indistinguishable from tampering once the
+  same rows are load-bearing for evidence.
+
+      asked     is there a record of what this Guardian did
+      mattered  can somebody tell whether that record was edited afterwards
+
+  So `jim/audit.py` is PDI's hash-chained log, brought over rather than
+  reinvented: each entry's SHA-256 covers the previous entry's hash, so a
+  retroactive edit or a deleted row breaks the chain and `verify()` says at
+  which sequence number. `events` is untouched — nothing moved, nothing
+  deprecated, and the consequential acts appear in both: the timeline for the
+  person, the chain for the question about the timeline.
+
+  Seventeen acts are catalogued and every one of them is wired: the safety
+  path end to end (watch armed, disarmed, tripped; an alarm accepted, cleared,
+  escalated; a beacon alarm from a passer-by; *Get help now*), a written
+  mandate over money granted or withdrawn, a permission area opened or closed,
+  an engaged session acting or taking it back, and the two ends of a life —
+  consent given at enrolment, data taken out, data erased. Not everything, on
+  purpose: a chain of every read is a chain nobody verifies and a table that
+  grows without a reader. These are the acts that reach outside the person's
+  own screen.
+
+  Three pieces of the port are deliberate rather than incidental. The stored
+  and hashed fields are fixed and `category` is derived at read time, so the
+  catalogue can be enriched forever without altering — or breaking — a single
+  existing hash; that is PDI's design and the reason its chain survived a
+  dozen releases of new actions. The table carries **no** `REFERENCES
+  users(id)`, because a chain a cascade can empty is not tamper-evident. And
+  an erase records itself on the chain rather than removing what the chain
+  already said: a chain with a hole in it is not evidence of anything.
+
+  That last one is a promise being broken in the open, so it is answered in
+  the open. `GET /audit/{user_id}` hands a person their own rows, the
+  catalogue of what would have been recorded, and — the half that makes the
+  other half mean anything — whether the chain still hashes to itself. The
+  reading door is what makes excluding the chain from the export bundle
+  honest: the person can always read what was said about them, they just
+  cannot rewrite it.
+
+  On all four clients. Two guards shaped the wire and neither was consulted
+  politely. The Swift-shape guard caught `broken_at_seq` appearing only when
+  the chain was broken — a key that comes and goes is two shapes on one wire —
+  so it is always present now, null when the chain is whole, where PDI omits
+  it. Then the wire-name guard rejected the obvious field names one after
+  another: `entries` already carries the access log's rows, `chain` already
+  carries custody's provenance object, `actions` and then `acts` are already
+  taken (the second is a boolean on every engaged tool, saying whether that
+  tool changes anything), and `checked` is a boolean in `jim/voice.py`. What
+  survived is `trail`, `integrity`, `catalogue` and `hashed` — names that cost
+  four rounds of renaming and are each true. One wire name, one type.
+
 ## [0.74.0] - 2026-08-15
 
 ### Changed

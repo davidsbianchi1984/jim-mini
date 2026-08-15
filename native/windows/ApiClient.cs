@@ -2439,6 +2439,10 @@ public sealed class ApiClient
         Send<AccessLog>(new HttpRequestMessage(HttpMethod.Get,
             $"/access-log/{uid}"), token);
 
+    public Task<AuditLog> AuditLog(string uid, string token) =>
+        Send<AuditLog>(new HttpRequestMessage(HttpMethod.Get,
+            $"/audit/{uid}"), token);
+
     public Task<CloudStatus> CloudStatus() =>
         Send<CloudStatus>(new HttpRequestMessage(HttpMethod.Get,
             "/cloud/status"));
@@ -3476,6 +3480,38 @@ public record AccessLog(
     [property: JsonPropertyName("access_record_kept")] bool RecordKept,
     [property: JsonPropertyName("entries")] AccessLogEntry[] Entries,
     [property: JsonPropertyName("note")] string Note);
+
+/// `GET /audit/{uid}` — what was *done*, beside the access log's record of
+/// what was *read*.
+///
+/// `Integrity` is decoded rather than dropped: a list of acts nobody can check
+/// is a list, and the chain's state is the half that makes the other half a
+/// record. `Catalogue` is what would be recorded, so an empty `Trail` reads as
+/// "nothing happened" and not as "nothing is watched". The wire avoids
+/// `entries`, `chain` and `actions` — all three already carry other types.
+public record AuditIntegrity(
+    [property: JsonPropertyName("intact")] bool Intact,
+    [property: JsonPropertyName("hashed")] int Hashed,
+    [property: JsonPropertyName("broken_at_seq")] int? BrokenAtSeq);
+
+public record AuditEntry(
+    [property: JsonPropertyName("seq")] int Seq,
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("category")] string Category,
+    [property: JsonPropertyName("ref")] string? Ref,
+    [property: JsonPropertyName("at")] string At);
+
+public record AuditAction(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("category")] string Category,
+    [property: JsonPropertyName("description")] string Description);
+
+public record AuditLog(
+    [property: JsonPropertyName("trail")] AuditEntry[] Trail,
+    [property: JsonPropertyName("count")] int Count,
+    [property: JsonPropertyName("integrity")] AuditIntegrity Integrity,
+    [property: JsonPropertyName("catalogue")] AuditAction[] Catalogue,
+    [property: JsonPropertyName("retention")] string Retention);
 
 public record CloudStatus(
     [property: JsonPropertyName("cloud")] bool Cloud,

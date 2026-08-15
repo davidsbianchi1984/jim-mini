@@ -103,7 +103,7 @@ from urllib.parse import quote
 
 import httpx
 
-from . import db, permits
+from . import audit, db, permits
 
 # --------------------------------------------------------------------------- #
 # The reach
@@ -829,6 +829,7 @@ def _record_act(engagement_id: str, user_id: str, result: dict) -> None:
          json.dumps(result["undo"]) if result["undo"] else None,
          result.get("irreversible"), db.utcnow()))
     db.connect().commit()
+    audit.record("engaged.act", user_id=user_id, ref=result["tool"])
 
 
 def act_count(engagement_id: str) -> int:
@@ -867,6 +868,7 @@ def undo(user_id: str, act_id: str, *, app,
     conn.execute("UPDATE engagement_acts SET undone_at=? WHERE id=?",
                  (db.utcnow(), act_id))
     conn.commit()
+    audit.record("engaged.undo", user_id=user_id, ref=row["tool"])
     return {"act_id": act_id, "undone": True, "answered": status,
             "tool": row["tool"], "says": row["says"]}
 

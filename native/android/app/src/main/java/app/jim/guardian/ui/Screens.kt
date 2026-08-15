@@ -146,6 +146,7 @@ import app.jim.guardian.SpecialistTaskRowK
 import app.jim.guardian.SpecialistTaskViewK
 import app.jim.guardian.TaskStartedK
 import app.jim.guardian.AccessLogK
+import app.jim.guardian.AuditLogK
 import app.jim.guardian.CloudStatusK
 import app.jim.guardian.ContributionK
 import app.jim.guardian.PageRowK
@@ -1139,6 +1140,7 @@ private fun SpecialistsPanel(vm: GuardianViewModel) {
 @Composable
 private fun VeilPanel(vm: GuardianViewModel) {
     var log by remember { mutableStateOf<AccessLogK?>(null) }
+    var audit by remember { mutableStateOf<AuditLogK?>(null) }
     var cloud by remember { mutableStateOf<CloudStatusK?>(null) }
     var contribution by remember { mutableStateOf<ContributionK?>(null) }
     var revokedNote by remember { mutableStateOf<String?>(null) }
@@ -1158,6 +1160,9 @@ private fun VeilPanel(vm: GuardianViewModel) {
         runCatching { ApiClient.plans() }.onSuccess { planRows = it }
         vm.call({ ApiClient.accessLog(vm.uid!!, vm.token!!) }) { r ->
             r.onSuccess { log = it }
+        }
+        vm.call({ ApiClient.auditLog(vm.uid!!, vm.token!!) }) { r ->
+            r.onSuccess { audit = it }
         }
         vm.call({ ApiClient.cloudContribution(vm.uid!!, vm.token!!) }) { r ->
             r.onSuccess { contribution = it }
@@ -1185,6 +1190,36 @@ private fun VeilPanel(vm: GuardianViewModel) {
                 Text(L10n.t("hld.log.empty", vm.language), color = Jim.T3, fontSize = 11.sp)
             }
             Text(l.note, color = Jim.T3, fontSize = 10.sp)
+        }
+
+        // The other half of the same question. The block above says who
+        // *read* the record; this says what was *done*, and whether the
+        // saying of it has been edited since. The chain's state comes first
+        // for the reason the block above states its two flags first: a list
+        // nobody can check is a list, not a record.
+        Text(L10n.t("hld.audit", vm.language), color = Jim.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        audit?.let { a ->
+            if (a.intact) {
+                Text(L10n.t("hld.audit.intact", vm.language), color = Jim.Green,
+                    fontSize = 11.sp)
+            } else {
+                Text(L10n.t("hld.audit.broken", vm.language)
+                    .replace("{seq}", a.brokenAtSeq?.toString() ?: "?"),
+                    color = Jim.T2, fontSize = 11.sp)
+            }
+            if (a.count == 0) {
+                Text(L10n.t("hld.audit.none", vm.language), color = Jim.T3,
+                    fontSize = 11.sp)
+                Text(L10n.t("hld.audit.watched", vm.language), color = Jim.T2,
+                    fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                a.watched.forEach { Text(it, color = Jim.T3, fontSize = 10.sp) }
+            } else {
+                a.entries.takeLast(8).forEach {
+                    Text(it, color = Jim.T3, fontSize = 11.sp)
+                }
+            }
+            Text(a.retention, color = Jim.T3, fontSize = 10.sp)
         }
 
         Text(L10n.t("hld.where", vm.language), color = Jim.Txt, fontSize = 16.sp,

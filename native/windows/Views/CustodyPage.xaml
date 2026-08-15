@@ -126,6 +126,21 @@
                     <TextBlock x:Name="VeilLogNote" FontSize="10" TextWrapping="Wrap"
                                Foreground="{StaticResource JimT3Brush}" />
 
+                    <!-- The other half of the same question: what was done,
+                         and whether the saying of it has been edited since.
+                         The chain's state sits above the rows because a list
+                         nobody can check is a list, not a record. -->
+                    <TextBlock x:Name="VeilAuditHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="VeilAuditChain" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimGreenBrush}" />
+                    <TextBlock x:Name="VeilAuditState" FontSize="11" TextWrapping="Wrap"
+                               Visibility="Collapsed"
+                               Foreground="{StaticResource JimT3Brush}" />
+                    <StackPanel x:Name="VeilAuditEntries" Spacing="2" />
+                    <TextBlock x:Name="VeilAuditRetention" FontSize="10" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT3Brush}" />
+
                     <TextBlock x:Name="VeilWhereHead" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource JimTxtBrush}" />
                     <TextBlock x:Name="VeilCloudLine" FontSize="11" TextWrapping="Wrap"

@@ -73,7 +73,15 @@ def test_the_export_reaches_every_table_the_schema_scopes(client):
         "and the check below would pass on almost nothing")
 
     bundle = life.export_user_data(subject)
-    missing = sorted(t for t in planted if t not in bundle["tables"])
+    # `ERASE_KEEPS` is subtracted here for the same reason the erase guard
+    # subtracts it: those tables are deliberately not the person's data. The
+    # only member is the hash-chained audit log, which holds the fact that
+    # acts occurred rather than anything the person put in — and which has its
+    # own reading door, so excluding it from the bundle hides nothing from
+    # them. The sibling guard next door checks that every member of the set
+    # carries its reason.
+    missing = sorted(t for t in planted
+                     if t not in bundle["tables"] and t not in life.ERASE_KEEPS)
     assert not missing, (
         f"{len(missing)} table(s) hold rows for this person and are not in "
         "their export:\n    " + "\n    ".join(missing)

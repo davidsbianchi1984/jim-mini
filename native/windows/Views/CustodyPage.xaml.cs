@@ -23,6 +23,7 @@ public sealed partial class CustodyPage : Page
         ProblemsYes.Content = L10n.T("ns.pr.send");
         ProblemsNo.Content = L10n.T("ns.pr.dont");
         VeilLogHead.Text = L10n.T("hld.log");
+        VeilAuditHead.Text = L10n.T("hld.audit");
         VeilVaulted.Text = L10n.T("hld.log.vaulted");
         VeilWhereHead.Text = L10n.T("hld.where");
         VeilCloudHead.Text = L10n.T("set.cloud");
@@ -330,6 +331,45 @@ public sealed partial class CustodyPage : Page
             }
             else VeilLogState.Text = L10n.T("hld.log.empty");
             VeilLogNote.Text = log.Note;
+        }
+        catch { /* leave as-is */ }
+        try
+        {
+            // The other half of the same question. The chain's state is set
+            // before the rows for the reason the block above sets its state
+            // line first: a list nobody can check is a list, not a record.
+            var audit = await ApiClient.Shared.AuditLog(s.Uid, s.Token);
+            VeilAuditChain.Text = audit.Integrity.Intact
+                ? L10n.T("hld.audit.intact")
+                : L10n.T("hld.audit.broken").Replace("{seq}",
+                    audit.Integrity.BrokenAtSeq?.ToString() ?? "?");
+            VeilAuditEntries.Children.Clear();
+            if (audit.Count == 0)
+            {
+                VeilAuditState.Visibility = Visibility.Visible;
+                VeilAuditState.Text = L10n.T("hld.audit.none");
+                VeilAuditEntries.Children.Add(VeilLine(
+                    L10n.T("hld.audit.watched"), "JimT2Brush"));
+                foreach (var row in audit.Catalogue)
+                    VeilAuditEntries.Children.Add(
+                        VeilLine(row.Description, "JimT3Brush"));
+            }
+            else
+            {
+                VeilAuditState.Visibility = Visibility.Collapsed;
+                // The sentence comes from the catalogue this same answer
+                // carried, never from a second copy kept in the shell.
+                foreach (var row in audit.Trail.TakeLast(8))
+                {
+                    var said = audit.Catalogue
+                        .FirstOrDefault(a => a.Action == row.Action)?.Description
+                        ?? row.Action;
+                    var tail = string.IsNullOrEmpty(row.Ref) ? "" : $" — {row.Ref}";
+                    VeilAuditEntries.Children.Add(VeilLine(
+                        $"{said}{tail} · {row.At}", "JimT3Brush"));
+                }
+            }
+            VeilAuditRetention.Text = audit.Retention;
         }
         catch { /* leave as-is */ }
         try

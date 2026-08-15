@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from . import pagehead
-from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
+from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons,
                finetune as finetune_mod,
                careteam, community,
                catalog,
@@ -3604,6 +3604,40 @@ def create_app(qrme_client: QRMEClient | None = None,
         tamper-evident audit chain."""
         _user_or_404(user_id, request)
         return life.access_log(user_id, pdi=app.state.pdi)
+
+    @app.get("/audit/{user_id}")
+    def audit_log(user_id: str, request: Request) -> dict:
+        """The person's own rows on JIM's hash-chained audit log.
+
+        The reading door for :mod:`jim.audit`. Two things arrive together on
+        purpose. `trail` is what was recorded about this person — every act
+        that reached outside their own screen. `integrity` is whether the log
+        as a whole still hashes to itself, because a list of entries nobody
+        can check is a list, not a record.
+
+        None of these fields carries its obvious name, and that is the
+        wire-name guard's doing rather than taste. `entries` already carries
+        the access log's rows; `chain` already carries custody's much smaller
+        provenance object; `acts` is already a boolean on every engaged tool,
+        saying whether that tool changes anything. One wire name, one type.
+
+        `integrity` covers the whole chain rather than this person's slice: the
+        links run through every row in sequence, so verifying a subset would
+        be checking a structure the subset does not describe. That means a
+        break anywhere shows up here — which is the point. `catalogue` is what
+        would have been recorded, so an empty list can be read as *nothing
+        happened* rather than *nothing is watched*.
+
+        This door is why the chain is honestly excluded from the export
+        bundle and survives an erase (see `life.ERASE_KEEPS`): the person can
+        always read what was said about them, they just cannot rewrite it.
+        """
+        _user_or_404(user_id, request)
+        rows = audit.entries(user_id)
+        return {"trail": rows, "count": len(rows),
+                "integrity": audit.verify(),
+                "catalogue": audit.schema()["actions"],
+                "retention": audit.schema()["retention"]}
 
     @app.get("/custody/{user_id}")
     def custody(user_id: str, request: Request) -> dict:

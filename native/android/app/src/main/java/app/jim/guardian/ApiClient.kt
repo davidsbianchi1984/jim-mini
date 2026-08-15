@@ -3354,6 +3354,45 @@ object ApiClient {
             o.optString("note", ""))
     }
 
+    /** The other half of the same question: what was *done*, and whether the
+     *  saying of it has been edited since.
+     *
+     *  Each row's sentence is taken from the catalogue this same answer
+     *  carried, never from a second copy kept in the shell — two lists of the
+     *  same actions is one list and one place for them to disagree. An action
+     *  the catalogue does not name falls back to its own name, so a row
+     *  written by something newer than this build is still legible. */
+    suspend fun auditLog(uid: String, token: String): AuditLogK {
+        val o = request("/audit/$uid", token = token)
+        val says = mutableMapOf<String, String>()
+        val watched = mutableListOf<String>()
+        o.optJSONArray("catalogue")?.let { a ->
+            for (i in 0 until a.length()) {
+                val e = a.optJSONObject(i) ?: continue
+                val said = e.optString("description", "")
+                says[e.optString("action", "")] = said
+                watched.add(said)
+            }
+        }
+        val entries = mutableListOf<String>()
+        o.optJSONArray("trail")?.let { a ->
+            for (i in 0 until a.length()) {
+                val e = a.optJSONObject(i) ?: continue
+                val action = e.optString("action", "")
+                val ref = e.optString("ref", "")
+                val said = says[action] ?: action
+                val tail = if (ref.isEmpty()) "" else " — $ref"
+                entries.add("$said$tail · ${e.optString("at", "")}")
+            }
+        }
+        val chain = o.optJSONObject("integrity")
+        return AuditLogK(entries, o.optInt("count", 0),
+            chain?.optBoolean("intact", false) ?: false,
+            if (chain != null && chain.has("broken_at_seq"))
+                chain.optInt("broken_at_seq") else null,
+            watched, o.optString("retention", ""))
+    }
+
     suspend fun cloudStatus(): CloudStatusK {
         val o = request("/cloud/status")
         return CloudStatusK(o.optBoolean("cloud", false),
@@ -3704,6 +3743,17 @@ data class ProviderSummaryK(val displayName: String, val conditions: List<String
 
 data class AccessLogK(val vaulted: Boolean, val recordKept: Boolean,
                       val entries: List<String>, val note: String)
+
+/** `GET /audit/{uid}` — what was *done*, beside the access log's record of
+ *  what was *read*.
+ *
+ *  `intact` and `brokenAtSeq` are carried rather than dropped: a list of
+ *  entries nobody can check is a list, and the chain's state is the half that
+ *  makes the other half a record. `watched` is the catalogue, so an empty
+ *  `entries` reads as "nothing happened" and not as "nothing is watched". */
+data class AuditLogK(val entries: List<String>, val count: Int,
+                     val intact: Boolean, val brokenAtSeq: Int?,
+                     val watched: List<String>, val retention: String)
 data class CloudStatusK(val cloud: Boolean, val model: String?,
                         val fallback: String, val contribution: String)
 data class ContributionK(val optedIn: Boolean, val policy: String)

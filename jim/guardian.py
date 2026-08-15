@@ -13,7 +13,7 @@ import json
 import secrets
 from datetime import date
 
-from . import (bands, conditions, db, earlywarning, escalation, tiers,
+from . import (audit, bands, conditions, db, earlywarning, escalation, tiers,
                guidance as local_guidance, i18n, life, llm, robotics, signal,
                terms)
 
@@ -78,6 +78,11 @@ def enroll(body: dict) -> dict:
     # samples will fold in from here (and it stays provisional until enough do).
     if body.get("resting_heart_rate"):
         _seed_baseline(user_id, "heart_rate", float(body["resting_heart_rate"]))
+    # The consent moment, on the chain: the ref is the terms version they
+    # actually agreed to, because "they accepted the terms" is not an
+    # answerable claim once the terms have been edited since.
+    audit.record("account.enroll", user_id=user_id,
+                 ref=terms.TERMS_VERSION if body["terms_consent"] else None)
     return get_user(user_id)
 
 
@@ -1090,6 +1095,8 @@ def emergency(user_id: str, situation: str | None = None,
         condition=(detection.condition if detection else None),
         known=known, contactable=contact is not None, crisis=True)
 
+    audit.record("emergency.raise", user_id=user_id,
+                 ref=(situation or "no situation given")[:120])
     result = {
         "emergency": True,
         "call_emergency_services": {

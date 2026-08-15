@@ -199,8 +199,9 @@ def test_the_scoped_reader_sees_the_whole_schema(client):
 
 def test_what_is_kept_is_named_and_reasoned():
     """`ERASE_KEEPS` is the only way a table survives, so it is the only place
-    a promise is broken. Empty today; a row in it is a deliberate edit that a
-    reader can see and argue with."""
+    a promise is broken. A row in it is a deliberate edit that a reader can
+    see and argue with — `audit` is the first, and its reason is written
+    beside it in `life.py`."""
     assert isinstance(life.ERASE_KEEPS, frozenset)
     for table in life.ERASE_KEEPS:
         assert table in life.user_scoped_tables(), (

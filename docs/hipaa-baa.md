@@ -14,10 +14,10 @@ the **Business Associate Agreement (BAA)**.
 | --- | --- |
 | Access control (§164.312(a)) | Per-user bearer tokens gate every `/{user_id}` surface; tokens stored only as SHA-256 hashes; erasure revokes the token with the data. |
 | Encryption at rest (§164.312(a)(2)(iv)) | PHI sealed in PDI with AES-256-GCM, AAD-bound per tenant + key. |
-| Audit controls (§164.312(b)) | PDI's append-only, hash-chained audit log records every access; `GET /audit/verify` proves integrity. |
+| Audit controls (§164.312(b)) | JIM keeps its own append-only, hash-chained audit log of the consequential acts — the safety path, money mandates, permission grants, enrolment, export and erasure. `GET /audit/{user}` returns the person's rows and whether the chain still hashes to itself. On a PDI-backed deployment, PDI's chain records every vault access as well; `GET /audit/verify` proves that one's integrity. The JIM chain runs on every deployment, vault or not. |
 | Transmission security (§164.312(e)) | Service-to-service calls over HTTP(S); deploy behind TLS termination. |
 | Individual access & amendment (§164.524) | `GET /report/{user}` and the suite export; `GET /access-log/{user}` shows the user every access to their own records. |
-| Right to erasure | `DELETE /data/{user}` erases every local table and purges the user's vault records. |
+| Right to erasure | `DELETE /data/{user}` erases every local table and purges the user's vault records. The audit chain is the one exception, by design: the erasure is itself recorded there rather than removing what the chain already said, because a chain with a hole in it is not evidence of anything. The person reads it at `GET /audit/{user}`; nobody can rewrite it. |
 | Disclosure accounting | Provider handoff is consent-gated, logged, and revocable. |
 
 ## The step that is not code: the BAA
