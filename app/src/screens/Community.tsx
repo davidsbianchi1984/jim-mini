@@ -276,6 +276,24 @@ function CircleCard() {
     setLooking(await api.circleHomepage(session.userId!, lookId.trim(),
       session.userToken!)));
 
+  /** Open a neighbour's page from their row, rather than by typing their id.
+   *
+   *  The box below still works and is still the only way to reach somebody
+   *  whose row is not on this screen. But a contact you already have listed,
+   *  by name, should not have to be re-identified by hand to be looked at —
+   *  and the id is a UUID, so "type it in" meant "copy it from somewhere".
+   *
+   *      asked     the friends picture should open their profile homepage
+   *      mattered  the only way in was a text box asking for their id
+   *
+   *  It sets `lookId` as well as fetching, so the box reflects whose page is
+   *  on screen instead of contradicting it. */
+  const visit = (otherId: string) => act(async () => {
+    setLookId(otherId);
+    setLooking(await api.circleHomepage(session.userId!, otherId,
+      session.userToken!));
+  })();
+
   const leave = (other: string) => act(() => api.circleLeave(
     session.userId!, other, session.userToken!))();
 
@@ -287,7 +305,10 @@ function CircleCard() {
       {view.circle.contacts.map((p) => (
         <div key={p.user_id} className="row"
              style={{ justifyContent: "space-between" }}>
-          <span>{p.display_name || p.user_id}</span>
+          <button className="linkish neighbour-name"
+                  onClick={() => visit(p.user_id)}>
+            {p.display_name || p.user_id}
+          </button>
           <span>
             <button onClick={() => open(p.user_id)}>{L.open}</button>{" "}
             <button onClick={() => leave(p.user_id)}>{L.leave}</button>

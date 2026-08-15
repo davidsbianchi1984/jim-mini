@@ -120,6 +120,12 @@ nav { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1;
 .tabs .tab.active { background: rgba(255,255,255,0.10); color: var(--txt); border-color: var(--brand); }
 button.linkish { background: none; border: 0; color: var(--brand); font-weight: 600;
   margin-top: 10px; text-decoration: underline; cursor: pointer; }
+/* A neighbour's name in the circle list opens their page. It sits where a
+   plain `<span>` did, so it must not inherit `button.linkish`'s top margin —
+   that would drop it half a line below the controls beside it. */
+.neighbour-name { margin-top: 0; text-decoration: none; color: var(--txt);
+  font-weight: 600; padding: 0; }
+.neighbour-name:hover { text-decoration: underline; }
 .pw-wrap { position: relative; display: block; }
 .pw-wrap input { width: 100%; padding-right: 56px; box-sizing: border-box; }
 .pw-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
