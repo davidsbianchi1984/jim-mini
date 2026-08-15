@@ -406,6 +406,28 @@ struct SelfProfileStatus: Decodable {
     }
 }
 
+/// What a QRME sign-in answers with: either the link, or the question.
+///
+/// `linked` false with a `choose` list means nothing has happened yet — the
+/// account holds more than one profile of the person, and one has to be
+/// picked before anything is stored.
+///
+/// Deliberately does not decode `consented`. The link answer carries it and
+/// the choice answer does not, and the caller re-reads `selfProfile` either
+/// way — so declaring it here would have been a second, sometimes-absent
+/// meaning for a name that already means *is this source allowed* on
+/// `/sources/{uid}`. JIM's one-name-one-type guard is what said so.
+struct SelfProfileSignedIn: Decodable {
+    struct Candidate: Decodable {
+        let profile_id: String
+        let shown_as: String?
+        let kind: String?
+    }
+    var linked: Bool
+    var profile_id: String?
+    var choose: [Candidate]?
+}
+
 struct SelfProfilePreview: Decodable {
     var linked: Bool
     var consented: [String]?
@@ -1313,6 +1335,27 @@ actor ApiClient {
         try await request("/self-profile/\(uid)", method: "POST",
                           body: ["profile_id": profileId,
                                  "owner_token": ownerToken], token: token)
+    }
+
+    /// The same link, asked for the way a person can answer it.
+    ///
+    /// `linkSelfProfile` above wants a `prf_…` id and an owner token. The
+    /// token is minted once, in QRME's create response, and there is no
+    /// second place to read it — so somebody who made the profile elsewhere
+    /// could not fill that form in at all.
+    ///
+    /// Neither field here is stored on either side. `choose` comes back when
+    /// the QRME account holds more than one profile of the person; the caller
+    /// sends the same body again with `profileId`, which costs no retyping
+    /// because the form still holds the password.
+    func signInSelfProfile(uid: String, token: String, email: String,
+                           password: String,
+                           profileId: String? = nil)
+        async throws -> SelfProfileSignedIn {
+        var body: [String: Any] = ["email": email, "password": password]
+        if let profileId { body["profile_id"] = profileId }
+        return try await request("/self-profile/\(uid)/sign-in",
+                                 method: "POST", body: body, token: token)
     }
 
     func unlinkSelfProfile(uid: String, token: String) async throws {

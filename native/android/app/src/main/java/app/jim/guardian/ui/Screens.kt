@@ -5424,6 +5424,15 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) 
     var preview by remember { mutableStateOf<JSONObject?>(null) }
     var profileId by remember { mutableStateOf("") }
     var ownerToken by remember { mutableStateOf("") }
+    // The QRME sign-in. Neither field leaves this composition except as the
+    // body of one request, and neither is stored on either side of it.
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var choices by remember {
+        mutableStateOf<List<Pair<String, String>>>(emptyList()) }
+    // The paste-it form, for somebody who does hold an id and a token. Still
+    // the right door for them; no longer the only one.
+    var pasting by remember { mutableStateOf(false) }
     var note by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     val categories = listOf("language", "wellbeing", "conditions",
@@ -5454,7 +5463,78 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) 
         ContinuityCard(uid, token, lang)
         Text(L10n.t("self.lead", lang), style = MaterialTheme.typography.bodySmall)
 
+        // Signing in comes first; the paste-it form is behind a toggle.
+        //
+        //     asked     how do I get a token
+        //     mattered  it is minted once, in QRME's create response, and
+        //               this screen was asking for it anyway
+        //
+        // The Guardian signs in to QRME, finds the person's own profile and
+        // mints the owner token itself — keeping only that.
         if (status?.optBoolean("linked") != true) {
+            Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(L10n.t("self.signin.title", lang),
+                        style = MaterialTheme.typography.titleSmall)
+                    Text(L10n.t("self.signin.pitch", lang),
+                        style = MaterialTheme.typography.bodySmall)
+                    OutlinedTextField(email, { email = it },
+                        label = { Text(L10n.t("self.signin.email", lang)) })
+                    OutlinedTextField(password, { password = it },
+                        label = { Text(L10n.t("self.signin.password", lang)) })
+
+                    // One `self` profile links straight away; several come
+                    // back as a choice, and the second press re-sends the
+                    // same password with it — no retyping, nothing stored
+                    // between the two calls.
+                    fun signIn(chosen: String?) {
+                        busy = true
+                        scope.launch(Dispatchers.IO) {
+                            note = runCatching {
+                                val r = api.signInSelfProfile(
+                                    uid, token, email.trim(), password, chosen)
+                                if (r.optBoolean("linked")) {
+                                    choices = emptyList()
+                                    password = ""
+                                    L10n.t("self.linked_note", lang)
+                                } else {
+                                    val arr = r.optJSONArray("choose")
+                                    choices = (0 until (arr?.length() ?: 0)).map {
+                                        val o = arr!!.getJSONObject(it)
+                                        o.optString("profile_id") to
+                                            o.optString("shown_as",
+                                                        o.optString("profile_id"))
+                                    }
+                                    null
+                                }
+                            }.getOrElse { it.message }
+                            refresh(); busy = false
+                        }
+                    }
+
+                    OutlinedButton(
+                        enabled = !busy && email.isNotBlank()
+                                  && password.isNotBlank(),
+                        onClick = { signIn(null) }) {
+                        Text(L10n.t("self.signin.button", lang))
+                    }
+                    if (choices.isNotEmpty()) {
+                        Text(L10n.t("self.signin.choose", lang),
+                            style = MaterialTheme.typography.bodySmall)
+                        choices.forEach { (pid, shown) ->
+                            OutlinedButton(enabled = !busy,
+                                onClick = { signIn(pid) }) { Text(shown) }
+                        }
+                    }
+                    OutlinedButton(enabled = !busy,
+                        onClick = { pasting = !pasting }) {
+                        Text(L10n.t("self.signin.paste_instead", lang))
+                    }
+                }
+            }
+        }
+
+        if (status?.optBoolean("linked") != true && pasting) {
             Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(L10n.t("self.link", lang), style = MaterialTheme.typography.titleSmall)
@@ -5471,7 +5551,9 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) 
                         }) { Text(L10n.t("self.link_button", lang)) }
                 }
             }
-        } else {
+        }
+
+        if (status?.optBoolean("linked") == true) {
             Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(L10n.t("self.may_know", lang), style = MaterialTheme.typography.titleSmall)

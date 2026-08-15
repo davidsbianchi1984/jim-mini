@@ -38,7 +38,27 @@
                 </StackPanel>
             </Border>
 
-            <StackPanel x:Name="LinkPanel" Spacing="8">
+            <!-- Signing in comes first; the paste-it form is behind a toggle.
+                 The token that form asks for is minted once, in QRME's create
+                 response, so somebody who made the profile elsewhere could
+                 not fill it in at all. -->
+            <StackPanel x:Name="SignInPanel" Spacing="8">
+                <TextBlock x:Name="SignInHeading" FontSize="15" FontWeight="Bold"
+                           Foreground="{StaticResource JimTxtBrush}" />
+                <TextBlock x:Name="SignInPitch" Foreground="{StaticResource JimT2Brush}"
+                           FontSize="13" TextWrapping="Wrap" />
+                <TextBox x:Name="QrmeEmailBox" />
+                <PasswordBox x:Name="QrmePasswordBox" />
+                <Button x:Name="SignInButton" Click="OnSignIn" />
+                <TextBlock x:Name="ChooseText" Foreground="{StaticResource JimT2Brush}"
+                           FontSize="12" TextWrapping="Wrap" Visibility="Collapsed" />
+                <ComboBox x:Name="ChooseBox" Visibility="Collapsed" />
+                <Button x:Name="ChooseButton" Click="OnChooseProfile"
+                        Visibility="Collapsed" />
+                <Button x:Name="PasteInsteadButton" Click="OnTogglePaste" />
+            </StackPanel>
+
+            <StackPanel x:Name="LinkPanel" Spacing="8" Visibility="Collapsed">
                 <TextBlock x:Name="LinkHeading" FontSize="15" FontWeight="Bold"
                            Foreground="{StaticResource JimTxtBrush}" />
                 <TextBlock x:Name="PasteText" Foreground="{StaticResource JimT2Brush}"

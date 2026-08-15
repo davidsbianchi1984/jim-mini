@@ -57,7 +57,7 @@ from .models import (
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
     FinetuneSwitch, PresenceBearing, PresenceSurface,
     RobotBind, RelayAccept, RelayQuestion,
-    SelfProfileConsent, SelfProfileLink,
+    SelfProfileConsent, SelfProfileLink, SelfProfileSignIn,
     BandSet,
     LanguageChoice, LocalitySet, MailSettings, MailTest,
     MedCreate, MedLog, MedUpdate,
@@ -235,6 +235,31 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return synthetic_self.link(user_id, body.profile_id,
                                    body.owner_token, app.state.qrme)
+
+    @app.post("/self-profile/{user_id}/sign-in", status_code=201)
+    def link_self_profile_by_sign_in(user_id: str, body: SelfProfileSignIn,
+                                     request: Request) -> dict:
+        """Link by signing in to QRME, instead of pasting two secrets.
+
+        The route above asks for a `prf_…` id and an owner token, and a field
+        report said the honest thing about that form: *how do I get a token?*
+        There was no answer — it is minted once, in QRME's create response,
+        and handed to whichever client did the creating.
+
+        So this asks for the QRME email and password. JIM signs in, reads what
+        the account holds, and mints the owner token itself. Neither the
+        password nor the account token is stored; what lands in `self_links`
+        is the owner token, the same field the other route takes.
+
+        When the account holds one profile of the person, it links. When it
+        holds several, the answer is `linked: false` and a `choose` list, and
+        the caller sends the password back with `profile_id` — which costs the
+        person nothing, because the form still holds what they typed.
+        """
+        _user_or_404(user_id, request)
+        return synthetic_self.link_with_qrme_account(
+            user_id, body.email, body.password, body.profile_id,
+            app.state.qrme)
 
     @app.delete("/self-profile/{user_id}")
     def unlink_self_profile(user_id: str, request: Request) -> dict:

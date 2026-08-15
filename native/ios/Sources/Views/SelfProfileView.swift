@@ -17,6 +17,14 @@ struct SelfProfileSection: View {
     @State private var preview: SelfProfilePreview?
     @State private var profileId = ""
     @State private var ownerToken = ""
+    /// The QRME sign-in. Neither field leaves this view except as the body of
+    /// one request, and neither is stored on either side of it.
+    @State private var email = ""
+    @State private var password = ""
+    @State private var choices: [SelfProfileSignedIn.Candidate] = []
+    /// The paste-it form, for somebody who does hold an id and a token.
+    /// Still the right door for them; no longer the only one.
+    @State private var pasting = false
     @State private var note: String?
     @State private var busy = false
 
@@ -34,7 +42,48 @@ struct SelfProfileSection: View {
                     .font(.caption).foregroundStyle(Theme.t2)
             }.card()
 
+            // Signing in comes first; the paste-it form is behind a toggle.
+            //
+            //     asked     how do I get a token
+            //     mattered  it is minted once, in QRME's create response, and
+            //               this screen was asking for it anyway
+            //
+            // The Guardian signs in to QRME, finds the person's own profile
+            // and mints the owner token itself — keeping only that.
             if status?.linked != true {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L10n.t("self.signin.title", state.language))
+                        .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                    Text(L10n.t("self.signin.pitch", state.language))
+                        .font(.caption).foregroundStyle(Theme.t2)
+                    TextField(L10n.t("self.signin.email", state.language),
+                              text: $email)
+                        .textFieldStyle(.roundedBorder)
+                        .textInputAutocapitalization(.never)
+                    SecureField(L10n.t("self.signin.password", state.language),
+                                text: $password)
+                        .textFieldStyle(.roundedBorder)
+                    Button(L10n.t("self.signin.button", state.language)) {
+                        signIn(nil)
+                    }.disabled(busy || email.isEmpty || password.isEmpty)
+
+                    if !choices.isEmpty {
+                        Text(L10n.t("self.signin.choose", state.language))
+                            .font(.caption).foregroundStyle(Theme.t2)
+                        ForEach(choices, id: \.profile_id) { c in
+                            Button(c.shown_as ?? c.profile_id) {
+                                signIn(c.profile_id)
+                            }.font(.caption).disabled(busy)
+                        }
+                    }
+
+                    Button(L10n.t("self.signin.paste_instead", state.language)) {
+                        pasting.toggle()
+                    }.font(.caption2).foregroundStyle(Theme.t3).disabled(busy)
+                }.card()
+            }
+
+            if status?.linked != true && pasting {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(L10n.t("self.link", state.language)).font(.subheadline.bold())
                         .foregroundStyle(Theme.txt)
@@ -118,6 +167,32 @@ struct SelfProfileSection: View {
                 uid: uid, token: token, profileId: profileId,
                 ownerToken: ownerToken) },
             L10n.t("self.linked_note", state.language))
+    }
+
+    /// Sign in to QRME and link, or come back with the choice to make.
+    ///
+    /// One `self` profile links straight away. Several returns `choose` and
+    /// nothing has happened yet — the password is still in the form, so the
+    /// second call costs no retyping and needs no ticket held between them.
+    private func signIn(_ chosen: String?) {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true
+        Task {
+            do {
+                let r = try await ApiClient.shared.signInSelfProfile(
+                    uid: uid, token: token, email: email, password: password,
+                    profileId: chosen)
+                if r.linked {
+                    choices = []
+                    password = ""
+                    note = L10n.t("self.linked_note", state.language)
+                } else {
+                    choices = r.choose ?? []
+                }
+            } catch { note = error.localizedDescription }
+            await refresh()
+            busy = false
+        }
     }
 
     private func setConsent(_ key: String, _ on: Bool) {

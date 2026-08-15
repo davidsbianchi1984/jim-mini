@@ -25,6 +25,14 @@ public sealed partial class SelfProfilePage : Page
         InitializeComponent();
         TitleText.Text = L10n.T("self.title");
         LeadText.Text = L10n.T("self.lead");
+        SignInHeading.Text = L10n.T("self.signin.title");
+        SignInPitch.Text = L10n.T("self.signin.pitch");
+        QrmeEmailBox.PlaceholderText = L10n.T("self.signin.email");
+        QrmePasswordBox.PlaceholderText = L10n.T("self.signin.password");
+        SignInButton.Content = L10n.T("self.signin.button");
+        ChooseText.Text = L10n.T("self.signin.choose");
+        ChooseButton.Content = L10n.T("self.signin.button");
+        PasteInsteadButton.Content = L10n.T("self.signin.paste_instead");
         LinkHeading.Text = L10n.T("self.link");
         PasteText.Text = L10n.T("self.paste");
         ProfileIdBox.PlaceholderText = L10n.T("self.profile_id");
@@ -98,7 +106,12 @@ public sealed partial class SelfProfilePage : Page
         catch (Exception e) { Say(e.Message); return; }
 
         var linked = _status?.Linked == true;
-        LinkPanel.Visibility = linked ? Visibility.Collapsed : Visibility.Visible;
+        SignInPanel.Visibility = linked ? Visibility.Collapsed
+                                        : Visibility.Visible;
+        // Collapsed once linked, and collapsed by default before that — the
+        // paste-it form is behind `Or paste an id and token`, not the first
+        // thing this screen offers.
+        if (linked) LinkPanel.Visibility = Visibility.Collapsed;
         ConsentPanel.Visibility = linked ? Visibility.Visible : Visibility.Collapsed;
         if (!linked) return;
 
@@ -125,6 +138,66 @@ public sealed partial class SelfProfilePage : Page
         NoteText.Text = message;
         NoteText.Visibility = Visibility.Visible;
     }
+
+    /// <summary>The candidates from the last sign-in, when the QRME account
+    /// holds more than one profile of the person.</summary>
+    private SelfProfileCandidate[] _choices = Array.Empty<SelfProfileCandidate>();
+
+    /// <summary>Sign in to QRME and link, or come back with the choice.
+    /// </summary>
+    /// <remarks>One <c>self</c> profile links straight away. Several returns
+    /// <c>choose</c> and nothing has happened yet — the password is still in
+    /// the box, so the second call costs no retyping and needs nothing held
+    /// between the two.</remarks>
+    private async void OnSignIn(object sender, RoutedEventArgs e) =>
+        await SignIn(null);
+
+    private async void OnChooseProfile(object sender, RoutedEventArgs e)
+    {
+        var i = ChooseBox.SelectedIndex;
+        if (i < 0 || i >= _choices.Length) return;
+        await SignIn(_choices[i].ProfileId);
+    }
+
+    private async System.Threading.Tasks.Task SignIn(string? chosen)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var r = await ApiClient.Shared.SignInSelfProfile(
+                s.Uid, s.Token, QrmeEmailBox.Text.Trim(),
+                QrmePasswordBox.Password, chosen);
+            if (r.Linked)
+            {
+                _choices = Array.Empty<SelfProfileCandidate>();
+                QrmePasswordBox.Password = "";
+                ChooseText.Visibility = Visibility.Collapsed;
+                ChooseBox.Visibility = Visibility.Collapsed;
+                ChooseButton.Visibility = Visibility.Collapsed;
+                Say(L10n.T("self.linked_note"));
+            }
+            else
+            {
+                _choices = r.Choose ?? Array.Empty<SelfProfileCandidate>();
+                ChooseBox.Items.Clear();
+                foreach (var c in _choices)
+                    ChooseBox.Items.Add(c.ShownAs ?? c.ProfileId);
+                if (_choices.Length > 0) ChooseBox.SelectedIndex = 0;
+                ChooseText.Visibility = Visibility.Visible;
+                ChooseBox.Visibility = Visibility.Visible;
+                ChooseButton.Visibility = Visibility.Visible;
+            }
+        }
+        catch (Exception ex) { Say(ex.Message); }
+        await Refresh();
+    }
+
+    /// <summary>The paste-it form, for somebody who does hold an id and a
+    /// token. Still the right door for them; no longer the only one.</summary>
+    private void OnTogglePaste(object sender, RoutedEventArgs e) =>
+        LinkPanel.Visibility = LinkPanel.Visibility == Visibility.Visible
+            ? Visibility.Collapsed : Visibility.Visible;
 
     private async void OnLink(object sender, RoutedEventArgs e)
     {

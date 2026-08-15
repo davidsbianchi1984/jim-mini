@@ -846,6 +846,27 @@ class SelfProfileLink(BaseModel):
     owner_token: str
 
 
+class SelfProfileSignIn(BaseModel):
+    """The same link, asked for the way a person can actually answer it.
+
+    `SelfProfileLink` above wants a profile id and an owner token. The token
+    is minted once, in QRME's create response, and there is no second place to
+    read it — so somebody who did not create the profile on this device could
+    not fill that form in at all.
+
+    Neither field here is stored. The password rides one call to QRME's
+    `/signin`; the account token that comes back is used to mint an owner
+    token and then dropped. Only the owner token lands in `self_links`, which
+    is exactly what the other form was asking the person to supply.
+    """
+
+    email: str
+    password: str
+    #: Which profile, when the account holds more than one of the person
+    #: themselves. Absent on the first call — that call is the question.
+    profile_id: str | None = None
+
+
 class SelfProfileConsent(BaseModel):
     """Which categories the Guardian may tell that profile about.
 

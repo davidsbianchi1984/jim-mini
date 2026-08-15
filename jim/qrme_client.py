@@ -18,6 +18,21 @@ import urllib.parse
 import urllib.request
 
 
+class QRMESignInError(Exception):
+    """QRME refused a sign-in, a listing, or a mint.
+
+    Carries QRME's own status so the route above can pass it through rather
+    than flattening every failure into one. A wrong password (403) and a
+    deployment with no QRME configured (502) are different problems and the
+    person can act on exactly one of them.
+    """
+
+    def __init__(self, status: int, message: str) -> None:
+        super().__init__(message)
+        self.status = status
+        self.message = message
+
+
 class _Response:
     def __init__(self, status_code: int, body: bytes):
         self.status_code = status_code
@@ -239,6 +254,52 @@ class QRMEClient:
         if r.status_code >= 300:
             return None
         return r.json()
+
+    # -- signing in to QRME on the person's behalf ---------------------------
+    #
+    # These three are the only calls in this client that carry somebody's
+    # password, and they exist so the Guardian never has to ask for a `prf_…`
+    # id and an owner token. They raise rather than returning None: every
+    # other method here is a shelf that can be quietly empty, and this is a
+    # sign-in — somebody who typed their password wrong has to be told so.
+
+    def account_signin(self, email: str, password: str) -> dict:
+        """Trade a QRME email and password for that account's session token.
+
+        The password is held for the length of this call and nothing else. It
+        is never written to JIM's database, never logged, and never returned.
+        """
+        r = self._client.post("/signin",
+                              json={"email": email, "password": password})
+        if r.status_code >= 300:
+            raise QRMESignInError(
+                r.status_code,
+                "QRME did not accept that email and password")
+        return r.json()
+
+    def account_profiles(self, account_id: str, account_token: str) -> list:
+        """The profiles that account holds. Carries no owner tokens."""
+        r = self._client.get(
+            f"/accounts/{account_id}/profiles",
+            headers={"authorization": f"Bearer {account_token}"})
+        if r.status_code >= 300:
+            raise QRMESignInError(
+                r.status_code,
+                "QRME would not list that account's profiles")
+        return r.json().get("profiles") or []
+
+    def mint_owner_token(self, account_id: str, profile_id: str,
+                         account_token: str) -> str:
+        """A fresh owner capability for one of them, shown once by QRME."""
+        r = self._client.post(
+            f"/accounts/{account_id}/profiles/{profile_id}/owner-token",
+            json={},
+            headers={"authorization": f"Bearer {account_token}"})
+        if r.status_code >= 300:
+            raise QRMESignInError(
+                r.status_code,
+                "QRME would not issue an owner token for that profile")
+        return r.json()["owner_token"]
 
     def brief_self(self, profile_id: str, owner_token: str,
                    brief: dict) -> dict | None:

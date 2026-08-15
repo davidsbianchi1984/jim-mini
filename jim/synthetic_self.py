@@ -106,6 +106,90 @@ def link(user_id: str, profile_id: str, owner_token: str, qrme) -> dict:
     return status(user_id)
 
 
+def link_with_qrme_account(user_id: str, email: str, password: str,
+                           profile_id: str | None, qrme) -> dict:
+    """Link by signing in to QRME, rather than by pasting two secrets.
+
+        asked     how do I get a token
+        mattered  there was no answer, and the screen asked anyway
+
+    `link` above wants a `prf_…` id and an owner token. Both are real, and
+    neither is findable: the owner token is minted once, in QRME's create
+    response, and handed to whichever client did the creating. A field report
+    put it exactly — *I could try to go look for a PRF. How do I get a token?
+    Shouldn't it be just like a password instead.* It should.
+
+    So this asks for the credential a person actually has. JIM signs in to
+    QRME with the email and password, lists what that account holds, and mints
+    the owner token for the profile that is *them*.
+
+    **The password is not stored and neither is the account token.** The
+    password lives for the length of one HTTP call. The account token is
+    broader than the owner token it mints — it reaches every profile on that
+    account and the billing — so it is used here and dropped; what lands in
+    `self_links` is the same owner token the paste-it flow stored, and nothing
+    besides.
+
+    **`profile_id` is how a second call answers the question the first asked.**
+    One `self` profile is the ordinary case and links immediately. Several
+    means the person has to choose, and the caller re-sends the password with
+    the choice — no ticket, no half-session, nothing stored between the two
+    calls. Re-sending costs the person nothing: the form still holds what they
+    typed.
+    """
+    if qrme is None:
+        raise SelfLinkError(
+            502, "this deployment has no QRME endpoint configured, so there "
+                 "is nothing to sign in to")
+    from .qrme_client import QRMESignInError
+
+    try:
+        session = qrme.account_signin(email, password)
+        account_id = session.get("account_id")
+        account_token = session.get("account_token")
+        if not account_id or not account_token:
+            raise SelfLinkError(
+                502, "QRME accepted the sign-in and did not return an "
+                     "account token")
+        held = qrme.account_profiles(account_id, account_token)
+    except QRMESignInError as exc:
+        raise SelfLinkError(exc.status, exc.message) from None
+
+    # Only a `self` profile may be briefed, and `link` refuses anything else
+    # anyway. Filtering here rather than relying on that means the person is
+    # never offered a choice that would be rejected after they made it.
+    mine = [p for p in held if p.get("kind") == "self"]
+    if not mine:
+        raise SelfLinkError(
+            409, "that QRME account has no profile of the person themselves. "
+                 "Make one in QRME first — only a profile QRME reports as "
+                 "kind 'self' may be briefed by the Guardian.")
+
+    if profile_id is None and len(mine) > 1:
+        # Not a refusal: the caller asked what there was, and this is the
+        # answer. `linked` says plainly that nothing has happened yet.
+        return {"linked": False,
+                "choose": [{"profile_id": p.get("profile_id"),
+                            "shown_as": p.get("shown_as"),
+                            "kind": p.get("kind")} for p in mine]}
+
+    chosen = profile_id or mine[0].get("profile_id")
+    if chosen not in {p.get("profile_id") for p in mine}:
+        # Same answer whether the id belongs to another account or was
+        # invented — this must not become a way to ask which ids are real.
+        raise SelfLinkError(404, "that profile is not on this QRME account")
+
+    try:
+        owner_token = qrme.mint_owner_token(account_id, chosen, account_token)
+    except QRMESignInError as exc:
+        raise SelfLinkError(exc.status, exc.message) from None
+
+    # Through `link` rather than around it: the kind check, the refusal when
+    # QRME cannot be read, and the consent reset all live there, and a second
+    # path into `self_links` is how those three drift apart.
+    return link(user_id, chosen, owner_token, qrme)
+
+
 def unlink(user_id: str) -> dict:
     """Drop the link, the credential and the consent in one statement.
 

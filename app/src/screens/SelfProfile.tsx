@@ -28,6 +28,15 @@ export function SelfProfile() {
   const [ownerToken, setOwnerToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  // Signing in to QRME. Neither of these leaves this component except as the
+  // body of one request, and neither is stored on either side of it.
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [choices, setChoices] = useState<
+    { profile_id: string; shown_as?: string; kind?: string }[]>([]);
+  //: The paste-it form, for somebody who does hold an id and a token. Still
+  //  the right door for them; no longer the only one.
+  const [pasting, setPasting] = useState(false);
 
   async function refresh() {
     if (!userId || !token) return;
@@ -46,6 +55,33 @@ export function SelfProfile() {
     finally { setBusy(false); }
   }
 
+  /// Sign in to QRME and link, or come back with the choice to make.
+  ///
+  /// One `self` profile links straight away. Several returns `choose` and
+  /// nothing has happened yet — the password is still in the form, so the
+  /// second call costs the person no retyping and needs no ticket held
+  /// anywhere between the two.
+  async function signIn(chosen?: string) {
+    if (!userId || !token) return;
+    setBusy(true); setNote(null);
+    try {
+      const r = await api.selfProfileSignIn(userId, token, {
+        email: email.trim(), password,
+        ...(chosen ? { profile_id: chosen } : {}) });
+      if (r.linked) {
+        setChoices([]); setPassword("");
+        setNote(tr("self.linked_note", lang));
+        await refresh();
+      } else {
+        setChoices(r.choose ?? []);
+      }
+    } catch (e) {
+      setNote(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const consented = status?.consented ?? [];
   const brief = preview?.brief ?? {};
 
@@ -56,7 +92,54 @@ export function SelfProfile() {
         {tr("self.lead", lang)}
       </p>
 
+      {/* Signing in comes first; the paste-it form is behind a link now.
+          The screen used to lead with a `prf_…` id and an owner token, and a
+          field report said the honest thing about that: *how do I get a
+          token?* There was no answer — it is minted once, in QRME's create
+          response, and handed to whichever client did the creating.
+
+              asked     how do I get a token
+              mattered  the screen was asking for something unfindable
+
+          Neither field below is stored. JIM signs in to QRME, mints the
+          owner token itself, and keeps only that — the same value the form
+          underneath was asking the person to go and find. */}
       {!status?.linked && (
+        <section className="card">
+          <h3>{tr("self.signin.title", lang)}</h3>
+          <p>{tr("self.signin.pitch", lang)}</p>
+          <input value={email} placeholder={tr("self.signin.email", lang)}
+                 type="email" autoComplete="username"
+                 onChange={(e) => setEmail(e.target.value)} />
+          <input value={password}
+                 placeholder={tr("self.signin.password", lang)}
+                 type="password" autoComplete="current-password"
+                 onChange={(e) => setPassword(e.target.value)} />
+          <button disabled={busy || !email.trim() || !password}
+                  onClick={() => signIn()}>
+            {tr("self.signin.button", lang)}
+          </button>
+
+          {choices.length > 0 && (
+            <>
+              <p className="small">{tr("self.signin.choose", lang)}</p>
+              {choices.map((c) => (
+                <button key={c.profile_id} disabled={busy}
+                        onClick={() => signIn(c.profile_id)}>
+                  {c.shown_as || c.profile_id}
+                </button>
+              ))}
+            </>
+          )}
+
+          <button className="linkish" disabled={busy}
+                  onClick={() => setPasting(!pasting)}>
+            {tr("self.signin.paste_instead", lang)}
+          </button>
+        </section>
+      )}
+
+      {!status?.linked && pasting && (
         <section className="card">
           <h3>{tr("self.link", lang)}</h3>
           <p>

@@ -1246,6 +1246,23 @@ export const api = {
                     body: { profile_id: string; owner_token: string }) =>
     req<SelfProfileStatus>(`/self-profile/${uid}`,
       { method: "POST", body, token }),
+  // The same link, asked for the way a person can answer it.
+  //
+  // `selfProfileLink` above wants a `prf_…` id and an owner token. The token
+  // is minted once, in QRME's create response, and there is no second place
+  // to read it — so somebody who made the profile elsewhere could not fill
+  // that form in at all. This sends the QRME email and password instead;
+  // JIM signs in, mints the owner token and stores only that.
+  //
+  // `choose` comes back when the account holds more than one profile of the
+  // person. The caller re-sends the same body with `profile_id` — the form
+  // still holds the password, so it costs no extra typing.
+  selfProfileSignIn: (uid: string, token: string,
+                      body: { email: string; password: string;
+                              profile_id?: string }) =>
+    req<SelfProfileStatus & {
+      choose?: { profile_id: string; shown_as?: string; kind?: string }[] }>(
+      `/self-profile/${uid}/sign-in`, { method: "POST", body, token }),
   selfProfileUnlink: (uid: string, token: string) =>
     req<{ linked: boolean; was_linked: boolean }>(`/self-profile/${uid}`,
       { method: "DELETE", token }),

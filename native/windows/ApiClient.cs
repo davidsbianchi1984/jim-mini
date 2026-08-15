@@ -312,6 +312,21 @@ public record SelfProfileStatus(
     string? ProfileId,
     string[] Consented);
 
+/// <summary>What a QRME sign-in answers with: either the link, or the
+/// question.</summary>
+/// <remarks><c>Linked</c> false with a <c>Choose</c> list means nothing has
+/// happened yet — the account holds more than one profile of the person and
+/// one has to be picked.</remarks>
+public record SelfProfileCandidate(
+    [property: JsonPropertyName("profile_id")] string ProfileId,
+    [property: JsonPropertyName("shown_as")] string? ShownAs,
+    [property: JsonPropertyName("kind")] string? Kind);
+
+public record SelfProfileSignedIn(
+    [property: JsonPropertyName("linked")] bool Linked,
+    [property: JsonPropertyName("profile_id")] string? ProfileId,
+    [property: JsonPropertyName("choose")] SelfProfileCandidate[]? Choose);
+
 public record SelfProfilePreview(
     bool Linked,
     string[]? Consented,
@@ -1153,6 +1168,26 @@ public sealed class ApiClient
                                                    string profileId, string ownerToken) =>
         Send<SelfProfileStatus>(Post($"/self-profile/{uid}",
             new { profile_id = profileId, owner_token = ownerToken }, token));
+
+    /// <summary>The same link, asked for the way a person can answer it.
+    /// </summary>
+    /// <remarks>
+    /// <c>LinkSelfProfile</c> wants a <c>prf_…</c> id and an owner token. The
+    /// token is minted once, in QRME's create response, and there is no second
+    /// place to read it — so somebody who made the profile elsewhere could not
+    /// fill that form in at all. Neither field here is stored on either side.
+    /// <para><c>choose</c> comes back when the QRME account holds more than one
+    /// profile of the person; send the same body again with
+    /// <paramref name="profileId"/>.</para>
+    /// </remarks>
+    public Task<SelfProfileSignedIn> SignInSelfProfile(string uid,
+        string token, string email, string password,
+        string? profileId = null) =>
+        Send<SelfProfileSignedIn>(Post($"/self-profile/{uid}/sign-in",
+            profileId is null ? new { email, password }
+                              : (object)new { email, password,
+                                              profile_id = profileId },
+            token));
 
     public async Task UnlinkSelfProfile(string uid, string token)
     {
