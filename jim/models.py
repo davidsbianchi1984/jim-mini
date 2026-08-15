@@ -912,3 +912,18 @@ class WatchFor(BaseModel):
 
     topic: str
     area: LifeArea | None = None
+
+
+class WidgetWrite(BaseModel):
+    """A small program somebody writes for themselves — see `jim.widgets`."""
+
+    name: str = Field(..., max_length=80,
+                      description="What this widget is called, to its author.")
+    source: str = Field(..., description=(
+        "JavaScript. Export a function, or an object with run(): it is called "
+        "with the inputs you send and whatever it returns is the answer."))
+
+
+class WidgetRun(BaseModel):
+    inputs: dict | None = Field(
+        None, description="Handed to the widget as its argument.")

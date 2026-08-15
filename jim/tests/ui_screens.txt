@@ -1,4 +1,4 @@
-# status: floor — 30 rows
+# status: floor — 31 rows
 #
 # Which console surface each screen drawing depicts.
 #
@@ -72,3 +72,4 @@ Access          108
 
 Engaged         109
 Talk            110
+Studio          111

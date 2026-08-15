@@ -294,6 +294,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="docs/screens/109-engaged.svg" width="160" alt="109 Engaged"><br><sub>109 · Engaged</sub></td>
 <td align="center" width="25%"><img src="docs/screens/110-talk.svg" width="160" alt="110 Talk"><br><sub>110 · Talk</sub></td>
+<td align="center" width="25%"><img src="docs/screens/111-widgets.svg" width="160" alt="111 Widgets"><br><sub>111 · Widgets</sub></td>
 </tr>
 </table>
 

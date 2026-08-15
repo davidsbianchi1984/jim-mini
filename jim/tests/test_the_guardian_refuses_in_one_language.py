@@ -121,9 +121,21 @@ def _tabled() -> set[str]:
     must find exactly the shapes it documents there — and rather than putting
     `EngagedError` in `DOMAIN_ERRORS`, which would have demanded translations
     for the keys.
+
+    **Every** keyed table, not the first one that needed this. `jim/widgets.py`
+    arrived with a `REFUSALS` of the same shape, and a function that named
+    `engaged` alone would have reported the same comfortable zero over
+    thirteen more English sentences — the defect this docstring already
+    describes, repeating because the fix was written for one module instead
+    of for the pattern.
+
+        asked     is engaged.REFUSALS translated
+        mattered  is every table of this shape translated
     """
-    from jim import engaged
-    return {sentence for _status, sentence in engaged.REFUSALS.values()}
+    from jim import engaged, widgets
+    return {sentence
+            for table in (engaged.REFUSALS, widgets.REFUSALS)
+            for _status, sentence in table.values()}
 
 
 def _translated() -> set[str]:

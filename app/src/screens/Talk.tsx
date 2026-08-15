@@ -71,6 +71,7 @@ export function Talk({ go }: {
     { id: "permits", icon: "🛡" },
     { id: "journal", icon: "📖" },
     { id: "held", icon: "🗄" },
+    { id: "studio", icon: "🛠" },
   ];
 
   async function ask() {

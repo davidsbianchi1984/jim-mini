@@ -2127,6 +2127,66 @@ export const api = {
       "/access/reports", { method: "POST", body }),
   accessReports: (reviewerToken: string) =>
     req<AccessReports>("/access/reports", { token: reviewerToken }),
+
+  // The Studio. `studioLimits` takes no token on purpose — it says what this
+  // installation can offer, and somebody deciding whether the Studio is worth
+  // an account should not need one to find out.
+  studioLimits: () => req<StudioLimits>("/studio/limits"),
+  widgets: (uid: string, token: string) =>
+    req<{ widgets: Widget[] }>(`/users/${uid}/widgets`, { token }),
+  writeWidget: (uid: string, body: { name: string; source: string },
+                token: string) =>
+    req<Widget>(`/users/${uid}/widgets`, { method: "POST", body, token }),
+  readWidget: (uid: string, widgetId: string, token: string) =>
+    req<Widget>(`/users/${uid}/widgets/${widgetId}`, { token }),
+  reviseWidget: (uid: string, widgetId: string,
+                 body: { name: string; source: string }, token: string) =>
+    req<Widget>(`/users/${uid}/widgets/${widgetId}`,
+                { method: "PUT", body, token }),
+  removeWidget: (uid: string, widgetId: string, token: string) =>
+    req<Row>(`/users/${uid}/widgets/${widgetId}`,
+             { method: "DELETE", token }),
+  runWidget: (uid: string, widgetId: string, inputs: unknown, token: string) =>
+    req<WidgetRun>(`/users/${uid}/widgets/${widgetId}/run`,
+                   { method: "POST", body: { inputs }, token }),
+};
+
+/** What the box can do on this deployment, and the honest reason when it
+ *  cannot. `unavailable_because` is a refusal *key*, not a sentence — the
+ *  screen renders it from `l10n.ts` in the reader's language, like every
+ *  other refusal in this product. */
+export type StudioLimits = {
+  available: boolean;
+  unavailable_because: string | null;
+  allowances: Record<string, number>;
+};
+
+/** A small program somebody wrote for themselves.
+ *
+ *  `revision` and not `version`: `/health` already answers a `version` and
+ *  that one is a semantic version string, while this is a save count. One
+ *  wire name, one type. */
+export type Widget = {
+  id: string;
+  name: string;
+  source: string;
+  revision: number;
+  created_at: number;
+  updated_at: number;
+};
+
+/** What a run answers. A widget that threw is `status: "error"` on a 200 —
+ *  the call worked and the code did not, and the person needs the message
+ *  beside their editor rather than a status code standing in for it. */
+export type WidgetRun = {
+  status: "ok" | "error" | "timeout" | "killed" | "refused";
+  ms: number;
+  widget_id?: string;
+  revision?: number;
+  value?: unknown;
+  truncated?: boolean;
+  message?: string;
+  detail?: string;
 };
 
 /** Accessibility reports, for the deployment's reviewer. Three answers in

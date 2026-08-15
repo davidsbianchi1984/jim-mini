@@ -134,8 +134,64 @@ LIMITS: dict[str, int] = {
 #: and `RLIMIT_AS` stays as a backstop far above the reservation.
 
 
-class WidgetError(ValueError):
-    """A widget that cannot be stored, or a box that cannot be built."""
+#: Every way this can refuse, as a key, with the status and the sentence.
+#:
+#: Keyed rather than raised as prose for the reason `engaged.REFUSALS` is: two
+#: readers, one refusal. `run_source` hands the *key* back inside its answer
+#: so a console can branch on it, and a person is handed the sentence through
+#: `i18n.refuse` in their own language. A sentence built at the raise site
+#: would reach one of those two and not the other.
+#:
+#: The five `no_*` rows are one condition — this host cannot build the box —
+#: told apart because "nothing will run here" is useless to whoever has to
+#: fix it. They answer 503: the request was fine and the deployment is not.
+REFUSALS: dict[str, tuple[int, str]] = {
+    "widgets.unnamed": (422, "give this widget a name"),
+    # Not-found rather than not-allowed, and that is the whole scoping rule:
+    # a widget id belonging to somebody else is not a row this query ever
+    # selected, so there is nothing to refuse access to.
+    "widgets.no_such": (404, "no such widget"),
+    "widgets.too_long": (
+        422, "this widget is longer than the editor will store"),
+    "widgets.too_many": (
+        409, "you are holding as many widgets as one person may"),
+    "widgets.threw": (422, "your widget stopped on an error"),
+    "widgets.timeout": (422, "your widget ran longer than it is allowed to"),
+    "widgets.killed": (
+        422, "your widget was stopped for using more than it is allowed"),
+    "widgets.no_answer": (
+        422, "your widget finished without returning anything"),
+    "widgets.no_unshare": (
+        503, "this deployment cannot build the box a widget runs in, so "
+             "nothing will run here"),
+    "widgets.no_netns": (
+        503, "this deployment cannot cut the network for a widget, so "
+             "nothing will run here"),
+    "widgets.no_node": (
+        503, "this deployment has no interpreter for widgets, so nothing "
+             "will run here"),
+    "widgets.node_too_old": (
+        503, "this deployment's interpreter is too old to hold a widget in, "
+             "so nothing will run here"),
+    "widgets.no_rlimits": (
+        503, "this deployment cannot cap what a widget may use, so nothing "
+             "will run here"),
+}
+
+
+class WidgetError(Exception):
+    """A widget that cannot be stored, or a box that cannot be built.
+
+    ``str(exc)`` is the key. ``status`` and ``message`` are what the route
+    answers with, translated on the way out like every other refusal in this
+    product — see the handler in `jim/api.py`.
+    """
+
+    def __init__(self, key: str):
+        self.key = key
+        self.status, self.message = REFUSALS.get(
+            key, (422, "that widget could not be stored"))
+        super().__init__(key)
 
 
 # -- the box -------------------------------------------------------------------

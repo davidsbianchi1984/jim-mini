@@ -535,6 +535,24 @@ LESSONS: tuple[dict, ...] = (
          screens=(110,),
          try_it="Type a question into the box at the bottom, then swipe the "
                 "row above it to see everything it reaches."),
+    dict(key="studio", chapter="Finding your way",
+         title="Writing your own tool",
+         what="Widgets are small programs you write for yourself. You give "
+              "one a name and some code, hand it whatever it needs, and read "
+              "what it answers — and nothing you write can reach anybody "
+              "else. That is not a promise, it is how the thing is built: a "
+              "widget runs with the network cut off, with nothing on the "
+              "disk it can see except its own folder, with no way to start "
+              "another program, and with a few seconds and a little memory "
+              "before it is stopped. If the machine this app is installed on "
+              "cannot build all four of those walls, nothing runs at all — "
+              "the screen says which wall is missing, the run button is not "
+              "there, and you can still write and keep your widgets. The "
+              "limits shown at the bottom are read from the thing that "
+              "enforces them, so what you see is what you get.",
+         screens=(111,),
+         try_it="Open Widgets, press New, and run the example that greets "
+                "you by name."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

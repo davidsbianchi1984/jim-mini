@@ -1937,6 +1937,22 @@ SCREENS = [
         dict(icon="plus", color="green", k="Camera, photos, voice",
              s="a short menu — files arrive when the route does"),
     ], button=("Speak", "brand")),
+    # 111 — the Studio (app/src/screens/Studio.tsx). The cards lead with the
+    # wall that matters most and the reason it is a mechanism rather than a
+    # promise, because "your code runs here" is the sentence somebody has to
+    # be able to trust before the editor below it is worth anything.
+    dict(num=111, title="Widgets",
+         sub="tools you write, for yourself only",
+         accent="cyan", cards=[
+        dict(icon="lock", color="cyan", k="No network, ever",
+             s="a widget has nowhere to send what it reads"),
+        dict(icon="shield", color="brand", k="One directory, no other programs",
+             s="it cannot reach a file or a process that is not its own"),
+        dict(icon="bolt", color="amber", k="Seconds, not minutes",
+             s="time and memory are capped before it starts"),
+        dict(icon="warn", color="violet", k="No box, no run",
+             s="a host that cannot build all four walls runs nothing"),
+    ], button=("Run", "brand")),
 ]
 
 

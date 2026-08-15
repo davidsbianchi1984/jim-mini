@@ -32,7 +32,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                research,
                robotics,
                rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
-               vigil, voice, watch)
+               vigil, voice, watch, widgets)
 from . import continuity
 from . import crashwatch
 from . import help as help_mod
@@ -70,6 +70,7 @@ from .models import (
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
     CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark, MealLog,
+    WidgetRun, WidgetWrite,
     DrillStart, DrillAnswer, StatementDrop, BankLink,
 )
 from .cloud import CloudModelClient
@@ -183,6 +184,15 @@ def create_app(qrme_client: QRMEClient | None = None,
     # like every other refusal in this product.
     @app.exception_handler(engaged.EngagedError)
     def _engaged_refusal(request: Request, exc: engaged.EngagedError):
+        return i18n.refuse(request, exc.status,
+                           {"detail": exc.message, "refusal": exc.key})
+
+    # A widget refuses with a key too (jim/widgets.py REFUSALS), and for the
+    # same two readers: the console branches on the key — a `no_netns` needs
+    # a banner where a `threw` needs the error beside the editor — and the
+    # person is handed the sentence in their language.
+    @app.exception_handler(widgets.WidgetError)
+    def _widget_refusal(request: Request, exc: widgets.WidgetError):
         return i18n.refuse(request, exc.status,
                            {"detail": exc.message, "refusal": exc.key})
 
@@ -3263,6 +3273,79 @@ def create_app(qrme_client: QRMEClient | None = None,
         if not life.remove_journal(user_id, entry_id):
             raise HTTPException(404, "journal entry not found")
         return {"entry_id": entry_id, "removed": True}
+
+    # ---- the Studio: tools a person writes for themselves ------------------
+    #
+    # Every route here is that person's own. `_user_or_404` requires their
+    # token at the door, and `jim.widgets` scopes every query by `user_id`
+    # underneath — a widget id belonging to somebody else is *not found*
+    # rather than acted upon. Two checks for one question, deliberately: the
+    # door is what a client meets and the query is what actually decides, and
+    # a feature whose isolation lives only at the door is one refactor away
+    # from not having any. On this deployment that matters more than usual;
+    # the disk under it holds other people's clinical captures.
+
+    @app.get("/studio/limits")
+    def studio_limits(request: Request) -> dict:
+        """What the box can do here, and the honest reason when it cannot.
+
+        Deployment-wide rather than per-user, and readable without a token
+        for the same reason `/plans` is: it says what this *installation* can
+        offer, and a person deciding whether the Studio is worth signing in
+        for should not have to sign in to find out.
+
+        The numbers are fetched rather than written into the console. A
+        screen that states a limit the runner does not hold is a promise the
+        product did not make, and there are seven of them to get wrong.
+        """
+        ready, why = widgets.sandbox_available()
+        return {"available": ready,
+                # The key, not the sentence — the console renders it from its
+                # own table, in the reader's language, like every refusal.
+                "unavailable_because": why or None,
+                "allowances": dict(widgets.LIMITS)}
+
+    @app.get("/users/{user_id}/widgets")
+    def list_widgets(user_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return {"widgets": widgets.listing(user_id)}
+
+    @app.post("/users/{user_id}/widgets", status_code=201)
+    def write_widget(user_id: str, body: WidgetWrite,
+                     request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return widgets.save(user_id, body.name, body.source)
+
+    @app.get("/users/{user_id}/widgets/{widget_id}")
+    def read_widget(user_id: str, widget_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return widgets.read(user_id, widget_id)
+
+    @app.put("/users/{user_id}/widgets/{widget_id}")
+    def revise_widget(user_id: str, widget_id: str, body: WidgetWrite,
+                      request: Request) -> dict:
+        """A revision, not an overwrite: `save` bumps the revision count so
+        somebody can see that the thing they are looking at moved."""
+        _user_or_404(user_id, request)
+        return widgets.save(user_id, body.name, body.source, widget_id)
+
+    @app.delete("/users/{user_id}/widgets/{widget_id}")
+    def remove_widget(user_id: str, widget_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        return widgets.remove(user_id, widget_id)
+
+    @app.post("/users/{user_id}/widgets/{widget_id}/run")
+    def run_widget(user_id: str, widget_id: str, body: WidgetRun,
+                   request: Request) -> dict:
+        """Run somebody's own code, inside all four walls.
+
+        A failed *widget* is a 200 carrying `status: error` and not a refused
+        request — the call worked, the code did not, and the person needs the
+        message beside their editor rather than a status code. What raises
+        here is the box being unbuildable or the id being nobody's.
+        """
+        _user_or_404(user_id, request)
+        return widgets.run(user_id, widget_id, body.inputs)
 
     @app.post("/feedback/{user_id}", status_code=201)
     def add_feedback(user_id: str, body: GuidanceFeedback,
