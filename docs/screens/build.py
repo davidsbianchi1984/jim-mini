@@ -1920,6 +1920,23 @@ SCREENS = [
         dict(icon="leaf", color="cyan", k="Signing off is a handover",
              s="the offline coach keeps watching what you named"),
     ], button=("Engage", "brand")),
+    # 110 — the front door (app/src/screens/Talk.tsx). The console had
+    # twenty-four tiles and no way in, so the cards lead with the two things
+    # that replaced the menu — a composer always in reach and a rail you
+    # swipe — and only then say what the rail is *not*, which is a second
+    # implementation of the screens it opens.
+    dict(num=110, title="Talk",
+         sub="Say it here",
+         accent="brand", cards=[
+        dict(icon="chat", color="brand", k="One box, always in reach",
+             s="the composer sits at the bottom of every visit"),
+        dict(icon="bolt", color="violet", k="Everything one swipe away",
+             s="the rail scrolls sideways instead of stacking four rows"),
+        dict(icon="link", color="cyan", k="The rail opens the real screen",
+             s="the same code and the same guards the tile had"),
+        dict(icon="plus", color="green", k="Camera, photos, voice",
+             s="a short menu — files arrive when the route does"),
+    ], button=("Speak", "brand")),
 ]
 
 

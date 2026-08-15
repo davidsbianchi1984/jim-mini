@@ -1,4 +1,4 @@
-# status: floor — 29 rows
+# status: floor — 30 rows
 #
 # Which console surface each screen drawing depicts.
 #
@@ -71,3 +71,4 @@ SelfProfile     101
 Access          108
 
 Engaged         109
+Talk            110

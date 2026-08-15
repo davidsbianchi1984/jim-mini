@@ -517,6 +517,24 @@ LESSONS: tuple[dict, ...] = (
          screens=(109,),
          try_it="Open Engaged and read the list of what it can touch before "
                 "you press Engage."),
+    dict(key="talk", chapter="Finding your way",
+         title="Saying it instead of finding it",
+         what="This app has two dozen screens, and for a long time the only "
+              "way to reach one was to know which tile it was behind. The "
+              "front door replaces that: a box at the bottom you can type "
+              "into from anywhere, and above it a row of features that "
+              "scrolls sideways — get help now, speak, camera, check in, "
+              "medicines, monitor, care team, permissions, journal, what is "
+              "held. Pressing one opens the same screen the tile opened; the "
+              "row is a way in, not a second copy of anything, so what you "
+              "find there behaves exactly as it did before. The plus beside "
+              "the box carries the three things that have somewhere to go "
+              "today — camera, photos and voice — and stays short on "
+              "purpose, because a button that does nothing is worse than a "
+              "short menu.",
+         screens=(110,),
+         try_it="Type a question into the box at the bottom, then swipe the "
+                "row above it to see everything it reaches."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))
