@@ -6,6 +6,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Menu icons go back to menu size.** They were 84px because the full
+  jim-mini lockup — wordmark, eleven rows of ABRACADABRA, OS plate — only
+  reads cleanly at 84, which forced every other icon to match. `JimMiniOS`
+  now has a small form that draws the amulet triangle alone; nothing else
+  survives the shrink, and an illegible part is not a smaller mark. The word
+  stays on the label underneath, where it was always more readable.
+
+- **A screen opens at its top.** Switching tabs left the scroll position
+  where the previous screen had been read to, so a long screen opened halfway
+  into its own body. The `.content` pane is now scrolled to the top on every
+  tab change.
+
+- **Care Team's condition rows are blocks on a phone.** Four cells wrapping
+  onto two lines with only a hairline between rows put each condition's name
+  under the *previous* row's controls. Each condition now gets its own
+  bordered block. Scoped to that one variant — the other four `.spec-row`
+  call sites carry two cells and the shared rule is right for them.
+
+- **The autonomous-resuscitation waiver moves from Wards to Safety.** It is
+  the one card on that screen the account holder signs about their own body,
+  and it now sits under the automatic path it modifies. No new strings: it
+  reuses the existing `wrd.*` keys.
+
+- **The follow-up nudge names the condition, and asks about a different one
+  each slot.** *"I asked you something and never heard back"* is the shape of
+  a question rather than a question; the line now reads *"I gave you
+  something for {condition} and never heard back. Did it help?"* in ten
+  languages. It does not name the guidance itself, because
+  `guidance_followups` stores the condition, the severity and the times and
+  never the advice text. Underneath that, a defect: the beat outranks nearly
+  everything, so three open follow-ups produced the identical card three
+  times. Morning now takes the newest, midday the next, evening the one
+  after.
+
 ## [0.75.0] - 2026-08-15
 
 ### Changed
