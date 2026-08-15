@@ -458,7 +458,13 @@ def test_the_table_is_complete_in_every_language():
     tables = {name: getattr(i18n, name) for name in dir(i18n)
               if name.startswith("_") and name[1:].isupper()
               and isinstance(getattr(i18n, name), dict)}
-    assert len(tables) >= 8, (
+    # The floor lives in `ratchets.py` beside the way to measure the same
+    # quantity, rather than as a literal here that nothing will ever compare
+    # against what it counts. That is the whole convention, and this floor
+    # earned it on its first run.
+    from .ratchets import floor
+
+    assert len(tables) >= floor("i18n.language_tables"), (
         f"only {len(tables)} language table(s) found — the reader that finds "
         "them has stopped matching, and this guard is passing on almost "
         "nothing")

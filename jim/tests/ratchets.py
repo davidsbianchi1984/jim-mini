@@ -176,7 +176,26 @@ def _surfaces() -> int:
 #: The registry. Every entry replaced a bare literal inside an assertion; the
 #: assertion now reads its number from here, which is what takes it out of the
 #: unregistered backlog.
+def _language_tables() -> int:
+    """How many of `jim/i18n.py`'s translation tables the reader finds.
+
+    The quantity the floor in `test_the_table_is_complete_in_every_language`
+    guards. That guard walks every `_UPPER_CASE` dict on the module and checks
+    each row for a missing language; a reader that stopped matching would walk
+    nothing and report a clean sweep over zero sentences — which is precisely
+    what the first draft did, because `"_FIELD_LABELS".isupper()` is True and
+    the clause meant to exclude constants excluded every table.
+    """
+    from jim import i18n
+
+    return len([n for n in dir(i18n)
+                if n.startswith("_") and n[1:].isupper()
+                and isinstance(getattr(i18n, n), dict)])
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("i18n.language_tables", 8, _language_tables,
+            "translation tables the completeness sweep reads"),
     Ratchet("l10n.asked.ios", 380, _l10n("ios", "asked"),
             "screens on the iPhone that call the localizer"),
     Ratchet("l10n.asked.android", 390, _l10n("android", "asked"),
