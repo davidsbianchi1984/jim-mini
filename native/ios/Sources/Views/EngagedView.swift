@@ -25,6 +25,7 @@ struct EngagedView: View {
     @EnvironmentObject var state: AppState
 
     @State private var reach: EngagedReach?
+    @State private var permits: EngagedPermits?
     @State private var session: EngagedSession?
     @State private var acts: [EngagedAct] = []
     @State private var watching: [StandingWatch] = []
@@ -52,6 +53,7 @@ struct EngagedView: View {
                 }
 
                 reachCard
+                permitsCard
                 sessionCard
                 trailCard
                 if open { signOffCard }
@@ -88,6 +90,45 @@ struct EngagedView: View {
                         }
                     }
                 }
+            }.card()
+        }
+    }
+
+    // MARK: the switches, beside the reach
+
+    /// What this person has let it change, and the toggles that change that.
+    ///
+    /// It sits directly under the reach card on purpose: "what it can do" and
+    /// "what I have let it do" are one question with two answers, and putting
+    /// them on separate screens would be the menu problem this feature exists
+    /// to answer.
+    @ViewBuilder private var permitsCard: some View {
+        if let permits {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(L10n.t("eng.permits", state.language))
+                    .font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("eng.permits.note", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+                ForEach(permits.groups) { area in
+                    HStack(alignment: .top, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(L10n.t("eng.permit.\(area.area)", state.language))
+                                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                            Text(area.says)
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                        }
+                        Spacer(minLength: 8)
+                        // The toggle carries the state, never the effect. A
+                        // control labelled with what pressing it would do and
+                        // one labelled with what is true now look identical
+                        // and mean opposite things.
+                        Toggle("", isOn: Binding(
+                            get: { area.granted },
+                            set: { on in Task { await flip(area.area, on) } }))
+                            .labelsHidden().disabled(busy)
+                    }
+                }
+                Text(permits.note).font(.caption2).foregroundStyle(Theme.t2)
             }.card()
         }
     }
@@ -281,6 +322,21 @@ struct EngagedView: View {
             // engaged — that is what makes a watch *standing* — and taking it
             // from the session would go stale the moment one closed.
             watching = try await ApiClient.shared.engagedWatches(uid: uid, token: token)
+            permits = try await ApiClient.shared.engagedPermits(uid: uid, token: token)
+        } catch { self.error = error.localizedDescription }
+    }
+
+    /// Switch a group on or off, then re-read rather than patch in place — a
+    /// grant is the sort of thing somebody double-checks, and a screen showing
+    /// its own guess would be showing them their tap, not the record.
+    private func flip(_ area: String, _ granted: Bool) async {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        defer { busy = false }
+        do {
+            try await ApiClient.shared.engagedSetPermit(
+                uid: uid, token: token, area: area, granted: granted)
+            permits = try await ApiClient.shared.engagedPermits(uid: uid, token: token)
         } catch { self.error = error.localizedDescription }
     }
 

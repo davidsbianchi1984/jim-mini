@@ -38,6 +38,18 @@ data class EngagedTool(val name: String, val says: String, val acts: Boolean,
 data class EngagedReach(val can: List<EngagedTool>, val toolsPerTurn: Int,
                         val actsPerSession: Int, val watchCeiling: Int)
 
+// One group of switches an engaged session may throw (jim/permits.py).
+//
+// `says` arrives as a sentence rather than a label, because a toggle beside
+// the words "what it may read" tells nobody what they are agreeing to.
+// `decidedAt` being null means never decided — a third state beside on and
+// off, and the one that makes "I never agreed to that" answerable.
+data class EngagedPermitArea(val area: String, val says: String,
+                             val standing: String, val granted: Boolean,
+                             val decidedAt: String?, val tools: List<String>)
+
+data class EngagedPermits(val groups: List<EngagedPermitArea>, val note: String)
+
 data class EngagedStep(val tool: String?, val answered: Int?, val says: String?,
                        val acts: Boolean, val reversible: Boolean,
                        val irreversibleBecause: String?, val refused: String?)
@@ -755,6 +767,38 @@ object ApiClient {
     suspend fun engagedUndo(uid: String, token: String, actId: String): Boolean =
         request("/engaged/$uid/acts/$actId/undo", "POST", token = token)
             .optBoolean("undone", false)
+
+    /**
+     * The groups of switches this session may touch, and which are on.
+     *
+     * The connectors screen turned around to face this account's own
+     * settings. Somebody who wants a thing switched on or off should be able
+     * to say so out loud; this is where they say the Guardian may.
+     */
+    suspend fun engagedPermits(uid: String, token: String): EngagedPermits {
+        val o = request("/engaged/$uid/permits", token = token)
+        val arr = o.optJSONArray("groups") ?: JSONArray()
+        return EngagedPermits(
+            (0 until arr.length()).map { i ->
+                val a = arr.getJSONObject(i)
+                val tools = a.optJSONArray("tools") ?: JSONArray()
+                EngagedPermitArea(
+                    a.getString("area"), a.optString("says", ""),
+                    a.optString("standing", "opened"),
+                    a.optBoolean("granted", false),
+                    if (a.isNull("decided_at")) null else a.optString("decided_at"),
+                    (0 until tools.length()).map { tools.getString(it) })
+            },
+            o.optString("note", ""))
+    }
+
+    /** Switch one group on or off. Both directions, because a grant that
+     *  cannot be taken back is not a grant. */
+    suspend fun engagedSetPermit(uid: String, token: String, area: String,
+                                 granted: Boolean): Boolean =
+        request("/engaged/$uid/permits/$area", "PUT",
+            JSONObject().put("granted", granted), token)
+            .optBoolean("granted", false)
 
     suspend fun engagedWatches(uid: String, token: String): List<StandingWatch> {
         val arr = getArray("/engaged/$uid/watches", token)

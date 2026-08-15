@@ -77,6 +77,12 @@ struct EngagedTool: Decodable, Identifiable {
     let acts: Bool
     let reversible: Bool
     let irreversible_because: String?
+    /// The group this tool belongs to, null for a read — reads are governed
+    /// by no permit, on purpose. `permitted` appears only on the signed-in
+    /// read: the accountless catalogue is what the product can do, not what
+    /// it may do for somebody who does not have an account yet.
+    let area: String?
+    let permitted: Bool?
     var id: String { name }
 }
 
@@ -85,6 +91,30 @@ struct EngagedReach: Decodable {
     let tools_per_turn: Int
     let acts_per_session: Int
     let watch_ceiling: Int
+}
+
+/// One group of switches an engaged session may throw (jim/permits.py).
+///
+/// `says` arrives as a sentence rather than a label because a toggle beside
+/// the words "what it may read" tells nobody what they are agreeing to.
+/// `decided_at` is nullable and means never decided — which is a third state
+/// beside on and off, and the one that makes "I never agreed to that"
+/// answerable.
+struct EngagedPermitArea: Decodable, Identifiable {
+    let area: String
+    let says: String
+    let standing: String        // opened | asked
+    let granted: Bool
+    let decided_at: String?
+    let tools: [String]
+    var id: String { area }
+}
+
+struct EngagedPermits: Decodable {
+    let user_id: String
+    let groups: [EngagedPermitArea]
+    let note: String
+    let can: [EngagedTool]
 }
 
 struct EngagedStep: Decodable, Identifiable {
@@ -1131,6 +1161,24 @@ actor ApiClient {
                      actId: String) async throws -> EngagedUndone {
         try await request("/engaged/\(uid)/acts/\(actId)/undo",
                           method: "POST", token: token)
+    }
+
+    /// The groups of switches this session may touch, and which are on.
+    ///
+    /// The connectors screen turned around to face this account's own
+    /// settings. Somebody who wants a thing switched on or off should be able
+    /// to say so out loud; this is where they say the Guardian may.
+    func engagedPermits(uid: String, token: String) async throws -> EngagedPermits {
+        try await request("/engaged/\(uid)/permits", token: token)
+    }
+
+    /// Switch one group on or off. Both directions, because a grant that
+    /// cannot be taken back is not a grant.
+    @discardableResult
+    func engagedSetPermit(uid: String, token: String, area: String,
+                          granted: Bool) async throws -> EngagedPermitArea {
+        try await request("/engaged/\(uid)/permits/\(area)", method: "PUT",
+                          body: ["granted": granted], token: token)
     }
 
     func engagedWatches(uid: String, token: String) async throws -> [StandingWatch] {

@@ -379,10 +379,25 @@ export interface CoachStudied { studied: string; area: string | null;
 export interface EngagedTool {
   name: string; says: string; acts: boolean; reversible: boolean;
   irreversible_because: string | null;
+  // The group this tool belongs to (jim/permits.py), null for a read — reads
+  // are governed by nothing there, on purpose. `permitted` appears only on
+  // the signed-in read: the accountless catalogue is what the product can do,
+  // not what it may do for somebody who does not have an account yet.
+  area: string | null; permitted?: boolean;
 }
 export interface EngagedReach {
   can: EngagedTool[]; tools_per_turn: number; acts_per_session: number;
   watch_ceiling: number;
+}
+export interface EngagedPermitArea {
+  area: string; says: string; standing: "opened" | "asked";
+  granted: boolean; decided_at: string | null; tools: string[];
+}
+export interface EngagedPermits {
+  // `groups`, not `areas` — the presence already sends an `areas` and it is
+  // a map of life areas, not a list of permit groups.
+  user_id: string; groups: EngagedPermitArea[]; note: string;
+  can: EngagedTool[];
 }
 export interface EngagedStep {
   tool: string | null; answered?: number | null; says?: string;
@@ -1477,6 +1492,15 @@ export const api = {
   engagedUndo: (uid: string, actId: string, token: string) =>
     req<Row>(`/engaged/${uid}/acts/${actId}/undo`,
       { method: "POST", token }),
+  // The connectors screen, turned around to face this account's own settings.
+  // Two calls rather than one shape: the list is a read anybody signed in can
+  // make, and a grant is a decision somebody takes one row at a time.
+  engagedPermits: (uid: string, token: string) =>
+    req<EngagedPermits>(`/engaged/${uid}/permits`, { token }),
+  engagedSetPermit: (uid: string, area: string, body: { granted: boolean },
+                     token: string) =>
+    req<EngagedPermitArea>(`/engaged/${uid}/permits/${area}`,
+      { method: "PUT", body, token }),
   engagedWatches: (uid: string, token: string) =>
     req<StandingWatch[]>(`/engaged/${uid}/watches`, { token }),
   engagedWatch: (uid: string, body: { topic: string; area?: string },

@@ -1681,6 +1681,23 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': "जर्नल प्रविष्टि नहीं मिली",
         'ar': "لم يُعثر على مدخل اليوميات",
     },
+    # Not "you may not" — "you have not said yes yet", which is a different
+    # sentence and the only honest one. Every translation keeps the pointer to
+    # where the switch is: a refusal that names no door is the menu problem
+    # this whole feature answers, reproduced inside the conversation.
+    ("that group of switches has not been turned on for this session — it is "
+     "in the list of what it may touch, and switching it on there is all it "
+     "needs"): {
+        'es': "ese grupo de opciones no está activado para esta sesión: está en la lista de lo que puede tocar, y basta con activarlo ahí",
+        'fr': "ce groupe de réglages n'est pas activé pour cette session : il figure dans la liste de ce qu'elle peut toucher, et il suffit de l'activer là",
+        'de': "diese Gruppe von Schaltern ist für diese Sitzung nicht eingeschaltet — sie steht in der Liste dessen, was sie anfassen darf, und dort einzuschalten genügt",
+        'pt': "esse grupo de opções não está ligado para esta sessão — está na lista do que ela pode tocar, e ligá-lo aí é tudo o que falta",
+        'it': "quel gruppo di interruttori non è attivo per questa sessione: è nell'elenco di ciò che può toccare, e attivarlo lì è tutto ciò che serve",
+        'ja': "その設定グループはこのセッションでオンになっていません。触れてよいものの一覧にありますので、そこでオンにするだけです",
+        'zh': "这一组开关在本次会话中没有打开 —— 它就在“它可以碰到什么”的清单里，在那里打开即可",
+        'hi': "स्विचों का वह समूह इस सत्र के लिए चालू नहीं है — यह उसकी पहुँच की सूची में है, और वहीं चालू कर देना काफ़ी है",
+        'ar': "مجموعة المفاتيح تلك ليست مُفعَّلة لهذه الجلسة — إنها ضمن قائمة ما يجوز له لمسه، ويكفي تشغيلها من هناك",
+    },
     "that is not something an engaged session can do": {
         'es': "eso no es algo que una sesión activa pueda hacer",
         'fr': "ce n'est pas quelque chose qu'une session engagée peut faire",
@@ -3039,6 +3056,7 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'lang': {'en': 'Language', 'es': 'Idioma', 'fr': 'Langue', 'de': 'Sprache', 'pt': 'Idioma', 'it': 'Lingua', 'ja': '言語', 'zh': '语言', 'hi': 'भाषा', 'ar': 'اللغة'},
     'stress_level': {'en': 'Stress level', 'es': 'Nivel de estrés', 'fr': "Niveau de stress", 'de': 'Stressniveau', 'pt': 'Nível de stress', 'it': 'Livello di stress', 'ja': 'ストレスの度合い', 'zh': '压力水平', 'hi': 'तनाव का स्तर', 'ar': 'مستوى التوتر'},
     'active': {'en': 'Use the trained model', 'es': 'Usar el modelo entrenado', 'fr': 'Utiliser le modèle entraîné', 'de': 'Trainiertes Modell verwenden', 'pt': 'Usar o modelo treinado', 'it': 'Usa il modello addestrato', 'ja': '学習済みモデルを使う', 'zh': '使用已训练的模型', 'hi': 'प्रशिक्षित मॉडल का उपयोग करें', 'ar': 'استخدام النموذج المدرَّب'},
+    'granted': {'en': 'Let it change these', 'es': 'Dejarle cambiar esto', 'fr': 'Le laisser modifier ceci', 'de': 'Das ändern lassen', 'pt': 'Permitir que altere isto', 'it': 'Lasciagli cambiare questo', 'ja': 'これの変更を許す', 'zh': '允许它改动这些', 'hi': 'इसे ये बदलने दें', 'ar': 'السماح له بتغيير هذه'},
     'bearing': {'en': 'How it carries itself', 'es': 'Cómo se comporta', 'fr': 'Comment il se tient', 'de': 'Wie es sich gibt', 'pt': 'Como se porta', 'it': 'Come si pone', 'ja': 'どう構えるか', 'zh': '以什么姿态', 'hi': 'कैसा रुख़ रखे', 'ar': 'كيف يتصرّف'},
     'speaks_on': {'en': 'Where it speaks', 'es': 'Dónde habla', 'fr': 'Où il parle', 'de': 'Wo es spricht', 'pt': 'Onde fala', 'it': 'Dove parla', 'ja': 'どこで話すか', 'zh': '在哪儿说话', 'hi': 'कहाँ बोले', 'ar': 'أين يتحدّث'},
     'email_reminder': {'en': 'Email me a reminder', 'es': 'Enviarme un recordatorio por correo', 'fr': "M'envoyer un rappel par e-mail", 'de': 'Erinnerung per E-Mail', 'pt': 'Enviar-me um lembrete por e-mail', 'it': 'Promemoria via e-mail', 'ja': 'メールでリマインド', 'zh': '邮件提醒', 'hi': 'ईमेल अनुस्मारक', 'ar': 'تذكير بالبريد'},

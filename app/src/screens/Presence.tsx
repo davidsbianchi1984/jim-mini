@@ -5,7 +5,7 @@ import {
   type PresenceReach, type PresenceSpoken, type PresenceSurfaces,
   type PresenceWho,
 } from "../api";
-import { fill, t as tr, visitorLang } from "../l10n";
+import { fill, phrase, t as tr, visitorLang, word } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -276,8 +276,10 @@ export function Presence() {
           </p>
           {Object.values(base.areas).map((a) => (
             <div key={a.area} className="row">
-              <span style={{ flex: 1 }}>{a.area.replace(/_/g, " ")}</span>
-              <span className="muted small">{a.standing}</span>
+              <span style={{ flex: 1 }}>{word("area", a.area, lang)}</span>
+              <span className="muted small">
+                {word("standing", a.standing, lang)}
+              </span>
             </div>
           ))}
         </div>
@@ -291,9 +293,15 @@ export function Presence() {
             <div key={s.surface} className="row">
               <button className={s.chosen ? "primary" : ""}
                       onClick={() => choose(s.surface)}>
-                {s.surface}
+                {word("surface", s.surface, lang)}
               </button>
-              <span className="muted small" style={{ flex: 1 }}>{s.note}</span>
+              {/* The note prefers this console's row and falls back to the
+                  server's English, so a translated console shows a translated
+                  note and an unknown surface still shows the server's own
+                  sentence rather than nothing. */}
+              <span className="muted small" style={{ flex: 1 }}>
+                {phrase(`surface.${s.surface}.note`, lang, s.note)}
+              </span>
               <span className="muted small">
                 {s.reads_health_aloud
                   ? tr("presence.aloud", lang)

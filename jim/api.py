@@ -28,7 +28,7 @@ from . import (accounts, adaptation, app_connectors, auth, bands, beacons,
                landing, life, llm,
                meds, mic, mobile, notify, oauth, offline, presence,
                problems as problems_mod,
-               referral, relay,
+               permits, referral, relay,
                research,
                robotics,
                rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
@@ -63,7 +63,7 @@ from .models import (
     MedCreate, MedLog, MedUpdate,
     MicAttach, MicGain, MicHandover,
     ReferralPrepare, ResendCode, ResetPassword, ResetRequest, RobotCommand,
-    SignIn, SignOff, Signup, WatchFor,
+    PermitSet, SignIn, SignOff, Signup, WatchFor,
     TranslateRequest, VerifyEmail,
     VigilArm,
     VoiceSettings, VoiceSpeak, VoiceTranscribe, WaiverSign,
@@ -3020,6 +3020,30 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "tools_per_turn": engaged.STEPS,
                 "acts_per_session": engaged.ACTS_PER_ENGAGEMENT,
                 "watch_ceiling": engaged.WATCH_CEILING}
+
+    @app.get("/engaged/{user_id}/permits")
+    def engaged_permits(user_id: str, request: Request) -> dict:
+        """The groups of switches this session may touch, and which are on.
+
+        The connectors screen, turned around to face this account's own
+        settings. Answers with `permitted` on every tool as well as with the
+        group list, because "what it can do" and "what it may do *for me*"
+        are two different questions, and a screen showing only the first is
+        the catalogue again.
+        """
+        _user_or_404(user_id, request)
+        return {**permits.permits(user_id),
+                "can": engaged.what_it_can_touch(user_id)}
+
+    @app.put("/engaged/{user_id}/permits/{area}")
+    def engaged_set_permit(user_id: str, area: str, body: PermitSet,
+                           request: Request) -> dict:
+        """Switch a group on or off — both directions, and dated."""
+        _user_or_404(user_id, request)
+        try:
+            return permits.set_grant(user_id, area, body.granted)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
 
     @app.post("/engaged/{user_id}", status_code=201)
     def engage(user_id: str, body: EngageOpen, request: Request) -> dict:

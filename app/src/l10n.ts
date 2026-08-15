@@ -306,6 +306,51 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Feed", es: "Muro", fr: "Fil", de: "Feed", pt: "Fluxo",
     it: "Flusso", ja: "フィード", zh: "动态", hi: "फ़ीड", ar: "التدفّق",
   },
+  // The one tab of twenty-four with no row, found on a phone rather than by
+  // anything here: the strip read `nav.presence` in Latin letters between
+  // Community and Feed, in every language, since the screen shipped.
+  //
+  // Named for what it does rather than transliterated — `Presence.tsx` calls
+  // itself "the coach that speaks first", and a tab called Presence tells a
+  // person nothing about why they would press it.
+  "nav.presence": {
+    en: "Speaks first", es: "Habla primero", fr: "Parle en premier",
+    de: "Spricht zuerst", pt: "Fala primeiro", it: "Parla per primo",
+    ja: "先に話す", zh: "先开口", hi: "पहले बोलता है",
+    ar: "يبدأ الحديث",
+  },
+  // The eight the general check found behind the tab: a whole Settings card
+  // rendering its own key names, in every language, since it shipped.
+  "set.ft.title": {
+    en: "A model shaped by you", es: "Un modelo moldeado por ti", fr: "Un modèle façonné par vous", de: "Ein von dir geformtes Modell", pt: "Um modelo moldado por ti", it: "Un modello plasmato da te", ja: "あなたが形づくるモデル", zh: "由你塑造的模型", hi: "आपके द्वारा ढाला गया मॉडल", ar: "نموذج شكّلته أنت",
+  },
+  "set.ft.sub": {
+    en: "Trained on this device from your own turns. Weights, not a prompt — the difference is that this one keeps what it learned when the conversation ends.", es: "Entrenado en este dispositivo a partir de tus propios turnos. Pesos, no un prompt: la diferencia es que este conserva lo aprendido cuando termina la conversación.", fr: "Entraîné sur cet appareil à partir de vos propres échanges. Des poids, pas une consigne — la différence, c'est qu'il garde ce qu'il a appris quand la conversation se termine.", de: "Auf diesem Gerät aus deinen eigenen Beiträgen trainiert. Gewichte, kein Prompt — der Unterschied: dieses behält, was es gelernt hat, wenn das Gespräch endet.", pt: "Treinado neste dispositivo a partir dos teus próprios turnos. Pesos, não um prompt — a diferença é que este guarda o que aprendeu quando a conversa acaba.", it: "Addestrato su questo dispositivo dai tuoi turni. Pesi, non un prompt — la differenza è che questo conserva ciò che ha imparato quando la conversazione finisce.", ja: "この端末で、あなたの発言から学習します。プロンプトではなく重み——会話が終わっても学んだことが残るのが違いです。", zh: "在这台设备上，用你自己的对话训练。是权重而不是提示词——区别在于对话结束后它仍留着学到的东西。", hi: "इसी डिवाइस पर, आपकी अपनी बातचीत से प्रशिक्षित। यह वेट्स हैं, प्रॉम्प्ट नहीं — फ़र्क़ यह कि बातचीत ख़त्म होने पर भी सीखा हुआ बचा रहता है।", ar: "مُدرَّب على هذا الجهاز من مداخلاتك أنت. أوزان لا موجّه — والفرق أنّ هذا يحتفظ بما تعلّمه بعد انتهاء المحادثة.",
+  },
+  "set.ft.trained": {
+    en: "Trained on {n} of your turns · {backend}", es: "Entrenado con {n} de tus turnos · {backend}", fr: "Entraîné sur {n} de vos échanges · {backend}", de: "Trainiert an {n} deiner Beiträge · {backend}", pt: "Treinado com {n} dos teus turnos · {backend}", it: "Addestrato su {n} dei tuoi turni · {backend}", ja: "あなたの発言 {n} 件で学習済み · {backend}", zh: "已用你的 {n} 轮对话训练 · {backend}", hi: "आपकी {n} बारियों पर प्रशिक्षित · {backend}", ar: "مُدرَّب على {n} من مداخلاتك · {backend}",
+  },
+  "set.ft.retrain": {
+    en: "Train again", es: "Entrenar otra vez", fr: "Réentraîner", de: "Erneut trainieren", pt: "Treinar de novo", it: "Riaddestra", ja: "再学習", zh: "重新训练", hi: "फिर से प्रशिक्षित करें", ar: "درِّب مجددًا",
+  },
+  "set.ft.use": {
+    en: "Answer me with it", es: "Respóndeme con él", fr: "Réponds-moi avec", de: "Damit antworten", pt: "Responde-me com ele", it: "Rispondimi con questo", ja: "これで答える", zh: "用它来回答我", hi: "इसी से मुझे उत्तर दें", ar: "أجبني به",
+  },
+  "set.ft.offswitch": {
+    en: "Switch it off and the ordinary model answers instead. What it learned is kept, not discarded.", es: "Desactívalo y responderá el modelo normal. Lo aprendido se conserva, no se descarta.", fr: "Désactivez-le et le modèle ordinaire répond à la place. Ce qu'il a appris est conservé, pas jeté.", de: "Schalte es aus, und das gewöhnliche Modell antwortet. Das Gelernte bleibt erhalten, es wird nicht verworfen.", pt: "Desliga-o e responde o modelo normal. O que aprendeu fica guardado, não é deitado fora.", it: "Spegnilo e risponde il modello ordinario. Ciò che ha imparato resta, non viene buttato.", ja: "切ると通常のモデルが答えます。学んだ内容は破棄されず保持されます。", zh: "关掉它，就由普通模型来回答。它学到的会保留，不会丢弃。", hi: "इसे बंद कर दें तो सामान्य मॉडल उत्तर देगा। सीखा हुआ रखा जाता है, मिटाया नहीं जाता।", ar: "أطفئه فيجيبك النموذج العادي. ما تعلّمه يُحفَظ ولا يُمحى.",
+  },
+  "set.ft.none": {
+    en: "Nothing trained yet. It needs a stretch of conversation to learn from first.", es: "Todavía no hay nada entrenado. Primero necesita un tramo de conversación del que aprender.", fr: "Rien d'entraîné pour l'instant. Il lui faut d'abord un peu de conversation dont apprendre.", de: "Noch nichts trainiert. Es braucht zuerst ein Stück Gespräch, aus dem es lernen kann.", pt: "Ainda nada treinado. Precisa primeiro de um bocado de conversa de onde aprender.", it: "Ancora niente di addestrato. Serve prima un po' di conversazione da cui imparare.", ja: "まだ学習していません。まず学ぶだけの会話が必要です。", zh: "还没有训练过。它需要先有一段可供学习的对话。", hi: "अभी कुछ प्रशिक्षित नहीं। पहले सीखने लायक़ बातचीत चाहिए।", ar: "لا شيء مُدرَّب بعد. يحتاج أولًا إلى قدر من الحديث ليتعلّم منه.",
+  },
+  "set.ft.train": {
+    en: "Train it on me", es: "Entrénalo conmigo", fr: "L'entraîner sur moi", de: "Auf mich trainieren", pt: "Treiná-lo em mim", it: "Addestralo su di me", ja: "私で学習させる", zh: "用我来训练它", hi: "इसे मुझ पर प्रशिक्षित करें", ar: "درِّبه عليّ",
+  },
+  // And the signup error, which a person meets at the worst moment to be
+  // shown an identifier: mid-form, having mistyped, being told `onb.password
+  // .mismatch`.
+  "onb.password.mismatch": {
+    en: "Those two do not match.", es: "Esas dos no coinciden.", fr: "Ces deux-là ne correspondent pas.", de: "Die beiden stimmen nicht überein.", pt: "Essas duas não coincidem.", it: "Le due non coincidono.", ja: "この二つが一致していません。", zh: "这两个不一致。", hi: "ये दोनों मेल नहीं खाते।", ar: "هاتان غير متطابقتين.",
+  },
   "presence.notice.drift": {
     en: "Your {metric} has been sitting outside your usual for {days} days. Not an alarm — I just noticed.", es: "Tu {metric} lleva {days} días fuera de lo habitual en ti. No es una alarma — simplemente lo noté.", fr: "Ton {metric} sort de ton habituel depuis {days} jours. Ce n'est pas une alerte — je l'ai juste remarqué.", de: "Dein {metric} liegt seit {days} Tagen außerhalb deines Üblichen. Kein Alarm — mir ist es nur aufgefallen.", pt: "O teu {metric} está fora do teu habitual há {days} dias. Não é um alarme — só reparei.", it: "Il tuo {metric} è fuori dal tuo solito da {days} giorni. Non è un allarme — l'ho solo notato.", ja: "{metric}がいつもの範囲を{days}日外れています。警報ではなく、気づいただけです。", zh: "你的{metric}已经连续{days}天不在你平常的范围里。这不是警报，只是我注意到了。", hi: "आपका {metric} पिछले {days} दिनों से आपके सामान्य से बाहर है। यह अलार्म नहीं — मैंने बस ध्यान दिया।", ar: "ظلّ {metric} خارج معدّلك المعتاد {days} أيام. ليس إنذارًا — لاحظت ذلك فقط.",
   },
@@ -365,6 +410,110 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "presence.surfaces": {
     en: "Where I speak", es: "Dónde hablo", fr: "Où je parle", de: "Wo ich spreche", pt: "Onde falo", it: "Dove parlo", ja: "どこで話すか", zh: "我在哪儿说话", hi: "मैं कहाँ बोलूँ", ar: "أين أتحدّث",
+  },
+
+  // The nine surfaces, as words rather than as the names the wire uses. The
+  // picker rendered `s.surface` straight onto its buttons, so the choice
+  // between "phone_screen" and "desktop_screen" was a choice between two
+  // identifiers — in every language, English included. The note under each
+  // is here for the same reason: it arrives from the server in English and
+  // could only ever be English.
+  //
+  // Keyed off `SURFACES` in `jim/presence.py`, which is the list the buttons
+  // are built from, and guarded against it.
+  "surface.earbuds": {
+    en: "Earbuds", es: "Auriculares intraaurales", fr: "Écouteurs intra-auriculaires", de: "Ohrhörer", pt: "Auriculares intra-auriculares", it: "Auricolari", ja: "イヤホン", zh: "入耳式耳机", hi: "ईयरबड्स", ar: "سمّاعات الأذن",
+  },
+  "surface.earbuds.note": {
+    en: "in your ear, nobody else's", es: "en tu oído, en el de nadie más", fr: "dans votre oreille, dans celle de personne d'autre", de: "in Ihrem Ohr, in keinem anderen", pt: "no seu ouvido, no de mais ninguém", it: "nel tuo orecchio, in quello di nessun altro", ja: "あなたの耳だけに、ほかの誰にも聞こえません", zh: "只在你耳朵里，别人听不到", hi: "आपके कान में, किसी और के नहीं", ar: "في أذنك وحدك، لا في أذن أحد سواك",
+  },
+  "surface.headphones": {
+    en: "Headphones", es: "Auriculares", fr: "Casque audio", de: "Kopfhörer", pt: "Auscultadores", it: "Cuffie", ja: "ヘッドホン", zh: "头戴式耳机", hi: "हेडफ़ोन", ar: "سمّاعات الرأس",
+  },
+  "surface.headphones.note": {
+    en: "in your ear, nobody else's", es: "en tu oído, en el de nadie más", fr: "dans votre oreille, dans celle de personne d'autre", de: "in Ihrem Ohr, in keinem anderen", pt: "no seu ouvido, no de mais ninguém", it: "nel tuo orecchio, in quello di nessun altro", ja: "あなたの耳だけに、ほかの誰にも聞こえません", zh: "只在你耳朵里，别人听不到", hi: "आपके कान में, किसी और के नहीं", ar: "في أذنك وحدك، لا في أذن أحد سواك",
+  },
+  "surface.phone_screen": {
+    en: "Phone screen", es: "Pantalla del teléfono", fr: "Écran du téléphone", de: "Handybildschirm", pt: "Ecrã do telemóvel", it: "Schermo del telefono", ja: "スマホの画面", zh: "手机屏幕", hi: "फ़ोन की स्क्रीन", ar: "شاشة الهاتف",
+  },
+  "surface.phone_screen.note": {
+    en: "text you read, at your own speed", es: "texto que lees a tu propio ritmo", fr: "du texte que vous lisez à votre rythme", de: "Text, den Sie in Ihrem Tempo lesen", pt: "texto que lê ao seu ritmo", it: "testo che leggi al tuo ritmo", ja: "自分のペースで読める文字", zh: "你按自己的节奏读的文字", hi: "पाठ, जिसे आप अपनी गति से पढ़ें", ar: "نصّ تقرأه على مهلك",
+  },
+  "surface.watch": {
+    en: "Watch", es: "Reloj", fr: "Montre", de: "Uhr", pt: "Relógio", it: "Orologio", ja: "腕時計", zh: "手表", hi: "घड़ी", ar: "الساعة",
+  },
+  "surface.watch.note": {
+    en: "a glance and a tap, nothing long", es: "un vistazo y un toque, nada largo", fr: "un coup d'œil et une tape, rien de long", de: "ein Blick und ein Tippen, nichts Langes", pt: "um relance e um toque, nada longo", it: "un'occhiata e un tocco, niente di lungo", ja: "ちらっと見て、ひと触れ。長い話はしません", zh: "一瞥、一点，不说长话", hi: "एक नज़र और एक टैप, कुछ लंबा नहीं", ar: "نظرة ولمسة، لا شيء طويل",
+  },
+  "surface.desktop_screen": {
+    en: "Desktop screen", es: "Pantalla del ordenador", fr: "Écran d'ordinateur", de: "Computerbildschirm", pt: "Ecrã do computador", it: "Schermo del computer", ja: "パソコンの画面", zh: "电脑屏幕", hi: "कंप्यूटर की स्क्रीन", ar: "شاشة الحاسوب",
+  },
+  "surface.desktop_screen.note": {
+    en: "a screen other people walk past", es: "una pantalla por delante de la que pasa otra gente", fr: "un écran devant lequel d'autres passent", de: "ein Bildschirm, an dem andere vorbeigehen", pt: "um ecrã por onde outras pessoas passam", it: "uno schermo davanti a cui passano altri", ja: "ほかの人が通りかかる画面", zh: "别人会从旁边走过的屏幕", hi: "एक स्क्रीन जिसके पास से दूसरे गुज़रते हैं", ar: "شاشة يمرّ بها آخرون",
+  },
+  "surface.speaker": {
+    en: "Speaker", es: "Altavoz", fr: "Enceinte", de: "Lautsprecher", pt: "Coluna", it: "Altoparlante", ja: "スピーカー", zh: "音箱", hi: "स्पीकर", ar: "مكبّر الصوت",
+  },
+  "surface.speaker.note": {
+    en: "out loud, into a room", es: "en voz alta, en una habitación", fr: "à voix haute, dans une pièce", de: "laut, in einen Raum hinein", pt: "em voz alta, para a sala", it: "ad alta voce, in una stanza", ja: "部屋に向かって声に出します", zh: "出声说给整个房间", hi: "ज़ोर से, पूरे कमरे में", ar: "بصوت مسموع في الغرفة",
+  },
+  "surface.glasses": {
+    en: "Glasses", es: "Gafas", fr: "Lunettes", de: "Brille", pt: "Óculos", it: "Occhiali", ja: "スマートグラス", zh: "智能眼镜", hi: "चश्मा", ar: "النظّارات",
+  },
+  "surface.glasses.note": {
+    en: "audio in your ear, text in your view — and a camera other people did not agree to", es: "audio en tu oído, texto en tu vista, y una cámara que los demás no consintieron", fr: "du son dans votre oreille, du texte dans votre champ de vision — et une caméra que les autres n'ont pas acceptée", de: "Ton in Ihrem Ohr, Text in Ihrem Blickfeld — und eine Kamera, der andere nicht zugestimmt haben", pt: "áudio no seu ouvido, texto no seu campo de visão — e uma câmara que os outros não aceitaram", it: "audio nel tuo orecchio, testo nel tuo campo visivo — e una telecamera a cui gli altri non hanno acconsentito", ja: "耳に音、視界に文字 — そして、ほかの人が同意していないカメラ", zh: "声音在你耳边，文字在你视野里 — 还有一台别人没同意过的摄像头", hi: "आवाज़ आपके कान में, पाठ आपकी दृष्टि में — और एक कैमरा जिस पर दूसरों ने सहमति नहीं दी", ar: "صوت في أذنك ونصّ في مجال نظرك — وكاميرا لم يوافق عليها الآخرون",
+  },
+  "surface.ar": {
+    en: "AR", es: "RA", fr: "RA", de: "AR", pt: "RA", it: "RA", ja: "AR（拡張現実）", zh: "增强现实", hi: "एआर", ar: "الواقع المعزَّز",
+  },
+  "surface.ar.note": {
+    en: "over the room you are actually in", es: "sobre la habitación en la que estás de verdad", fr: "par-dessus la pièce où vous êtes réellement", de: "über den Raum gelegt, in dem Sie wirklich sind", pt: "sobre a sala onde está realmente", it: "sopra la stanza in cui sei davvero", ja: "いま実際にいる部屋の上に重ねて", zh: "叠在你真正身处的房间上", hi: "उसी कमरे के ऊपर जिसमें आप सचमुच हैं", ar: "فوق الغرفة التي أنت فيها فعلًا",
+  },
+  "surface.vr": {
+    en: "VR", es: "RV", fr: "RV", de: "VR", pt: "RV", it: "RV", ja: "VR（仮想現実）", zh: "虚拟现实", hi: "वीआर", ar: "الواقع الافتراضي",
+  },
+  "surface.vr.note": {
+    en: "a room that is only yours while you are in it", es: "una habitación que es solo tuya mientras estás en ella", fr: "une pièce qui n'est qu'à vous tant que vous y êtes", de: "ein Raum, der Ihnen allein gehört, solange Sie darin sind", pt: "uma sala que é só sua enquanto lá estiver", it: "una stanza che è solo tua finché ci sei dentro", ja: "入っているあいだ、あなただけの部屋", zh: "你在里面时，只属于你的房间", hi: "एक कमरा जो तब तक सिर्फ़ आपका है जब तक आप उसमें हैं", ar: "غرفة لك وحدك ما دمت فيها",
+  },
+
+  // The six areas the baseline is drawn across, and the four words it uses
+  // for standing. Both rendered raw beside the surfaces — `mental_health`
+  // with its underscore swapped for a space, which is English wearing a
+  // small disguise.
+  "area.mental_health": {
+    en: "Mental health", es: "Salud mental", fr: "Santé mentale", de: "Psychische Gesundheit", pt: "Saúde mental", it: "Salute mentale", ja: "こころの健康", zh: "心理健康", hi: "मानसिक स्वास्थ्य", ar: "الصحة النفسية",
+  },
+  "area.health_fitness": {
+    en: "Health and fitness", es: "Salud y forma física", fr: "Santé et forme", de: "Gesundheit und Fitness", pt: "Saúde e forma física", it: "Salute e forma fisica", ja: "からだと運動", zh: "健康与体能", hi: "स्वास्थ्य और फ़िटनेस", ar: "الصحة واللياقة",
+  },
+  "area.career": {
+    en: "Work", es: "Trabajo", fr: "Travail", de: "Beruf", pt: "Trabalho", it: "Lavoro", ja: "仕事", zh: "工作", hi: "काम", ar: "العمل",
+  },
+  // `zh` here is the shells' 财务 rather than 金钱, which this row was first
+  // written with. Both are correct Chinese for money; only one of them is
+  // what an iPhone already says under `life.money`, and a console and a phone
+  // disagreeing about a word in one language out of ten is the kind of split
+  // nobody finds by reading.
+  "area.finance": {
+    en: "Money", es: "Dinero", fr: "Argent", de: "Geld", pt: "Dinheiro", it: "Denaro", ja: "お金", zh: "财务", hi: "पैसा", ar: "المال",
+  },
+  "area.relationships": {
+    en: "Relationships", es: "Relaciones", fr: "Relations", de: "Beziehungen", pt: "Relações", it: "Relazioni", ja: "人との関係", zh: "人际关系", hi: "रिश्ते", ar: "العلاقات",
+  },
+  "area.personal_growth": {
+    en: "Personal growth", es: "Crecimiento personal", fr: "Développement personnel", de: "Persönliche Entwicklung", pt: "Crescimento pessoal", it: "Crescita personale", ja: "自分の成長", zh: "个人成长", hi: "व्यक्तिगत विकास", ar: "النموّ الشخصي",
+  },
+  "standing.steady": {
+    en: "Steady", es: "Estable", fr: "Stable", de: "Stabil", pt: "Estável", it: "Stabile", ja: "安定", zh: "平稳", hi: "स्थिर", ar: "مستقرّ",
+  },
+  "standing.drifting": {
+    en: "Drifting", es: "A la deriva", fr: "À la dérive", de: "Driftet", pt: "À deriva", it: "Alla deriva", ja: "ぶれている", zh: "有偏移", hi: "भटक रहा", ar: "ينحرف",
+  },
+  "standing.thin": {
+    en: "Thin", es: "Con pocos datos", fr: "Peu de données", de: "Dünn", pt: "Com poucos dados", it: "Con pochi dati", ja: "手がかりが少ない", zh: "线索不足", hi: "जानकारी कम", ar: "قليل الدلائل",
+  },
+  "standing.unknown": {
+    en: "Unknown", es: "Sin datos", fr: "Inconnu", de: "Unbekannt", pt: "Sem dados", it: "Sconosciuto", ja: "まだ分かりません", zh: "尚不清楚", hi: "अभी पता नहीं", ar: "غير معروف",
   },
   "presence.aloud.held": {
     en: "Held back — this surface is one other people can hear", es: "Retenido: en esta superficie pueden oírlo otras personas", fr: "Retenu — sur cette surface, d'autres peuvent entendre", de: "Zurückgehalten — auf dieser Fläche können andere mithören", pt: "Retido — nesta superfície outras pessoas podem ouvir", it: "Trattenuto — su questa superficie altri possono sentire", ja: "保留しました — ここは他の人にも聞こえます", zh: "已保留 — 这个设备旁边可能有别人", hi: "रोका गया — इस सतह पर दूसरे सुन सकते हैं", ar: "مُحتجَز — هذا السطح يسمعه آخرون",
@@ -3629,6 +3778,54 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "वापस नहीं लिया जा सकता",
     ar: "لا يمكن التراجع عنه",
   },
+  // The permits card (jim/permits.py). The `says` sentence under each row
+  // comes from the server and is not translated here — it is one sentence per
+  // area rather than one per language, and translating the group *names* is
+  // what makes the list readable at a glance. The full sentences are the next
+  // round's work, and are recorded as such rather than pretended away.
+  "permits.title": {
+    en: "What you have let it change", es: "Lo que le has dejado cambiar", fr: "Ce que vous l'avez laissé changer", de: "Was Sie es ändern lassen", pt: "O que lhe permitiu alterar", it: "Cosa gli hai lasciato cambiare", ja: "変更を許していること", zh: "你允许它改动的部分", hi: "आपने इसे क्या बदलने दिया है", ar: "ما سمحتَ له بتغييره",
+  },
+  "permits.blurb": {
+    en: "Tell it out loud what you want on or off and it will do it — for the groups you have switched on here. Each one goes off again the same way.", es: "Dile en voz alta qué quieres activar o desactivar y lo hará, en los grupos que hayas activado aquí. Cada uno se desactiva igual.", fr: "Dites-lui à voix haute ce que vous voulez activer ou désactiver et il le fera — pour les groupes que vous avez activés ici. Chacun se désactive de la même façon.", de: "Sagen Sie laut, was an oder aus sein soll, und es erledigt das — für die Gruppen, die Sie hier eingeschaltet haben. Jede lässt sich genauso wieder ausschalten.", pt: "Diga em voz alta o que quer ligado ou desligado e ele fá-lo — nos grupos que tiver ligado aqui. Cada um desliga-se da mesma forma.", it: "Digli ad alta voce cosa vuoi attivo o disattivo e lo farà, per i gruppi che hai attivato qui. Ognuno si disattiva allo stesso modo.", ja: "何をオンにしたいか、オフにしたいかを声で伝えれば、ここでオンにしたグループについては実行します。同じ手順でいつでもオフにできます。", zh: "把想开或想关的事情说出来，它就会去做 —— 限于你在这里打开的组。每一组都能用同样的方式关掉。", hi: "आप जो चालू या बंद करवाना चाहते हैं, बोलकर बता दें और यह कर देगा — उन समूहों के लिए जिन्हें आपने यहाँ चालू किया है। हर एक इसी तरह बंद भी होता है।", ar: "قل بصوتك ما تريد تشغيله أو إيقافه وسيفعله — في المجموعات التي شغّلتها هنا. وكل واحدة تُطفأ بالطريقة نفسها.",
+  },
+  "permits.on": {
+    en: "On", es: "Activado", fr: "Activé", de: "An", pt: "Ligado", it: "Attivo", ja: "オン", zh: "已开启", hi: "चालू", ar: "مُفعَّل",
+  },
+  "permits.off": {
+    en: "Off", es: "Desactivado", fr: "Désactivé", de: "Aus", pt: "Desligado", it: "Disattivo", ja: "オフ", zh: "已关闭", hi: "बंद", ar: "مُعطَّل",
+  },
+  "permits.switch.on": {
+    en: "Switch on", es: "Activar", fr: "Activer", de: "Einschalten", pt: "Ligar", it: "Attiva", ja: "オンにする", zh: "开启", hi: "चालू करें", ar: "تشغيل",
+  },
+  "permits.switch.off": {
+    en: "Switch off", es: "Desactivar", fr: "Désactiver", de: "Ausschalten", pt: "Desligar", it: "Disattiva", ja: "オフにする", zh: "关闭", hi: "बंद करें", ar: "إيقاف",
+  },
+  "permits.on.since": {
+    en: "You switched this on {when}", es: "Lo activaste el {when}", fr: "Vous l'avez activé le {when}", de: "Sie haben das am {when} eingeschaltet", pt: "Ligou isto em {when}", it: "L'hai attivato il {when}", ja: "{when} にオンにしました", zh: "你在 {when} 开启了它", hi: "आपने इसे {when} को चालू किया", ar: "شغّلتَ هذا في {when}",
+  },
+  "permits.off.since": {
+    en: "You switched this off {when}", es: "Lo desactivaste el {when}", fr: "Vous l'avez désactivé le {when}", de: "Sie haben das am {when} ausgeschaltet", pt: "Desligou isto em {when}", it: "L'hai disattivato il {when}", ja: "{when} にオフにしました", zh: "你在 {when} 关闭了它", hi: "आपने इसे {when} को बंद किया", ar: "أوقفتَ هذا في {when}",
+  },
+  "permits.area.your_records": {
+    en: "Your own records", es: "Tus propios registros", fr: "Vos propres données", de: "Ihre eigenen Aufzeichnungen", pt: "Os seus próprios registos", it: "I tuoi registri", ja: "あなた自身の記録", zh: "你自己的记录", hi: "आपके अपने रिकॉर्ड", ar: "سجلّاتك أنت",
+  },
+  "permits.area.how_it_speaks": {
+    en: "How it speaks to you", es: "Cómo te habla", fr: "Comment il vous parle", de: "Wie es mit Ihnen spricht", pt: "Como fala consigo", it: "Come ti parla", ja: "話しかけ方", zh: "它怎么跟你说话", hi: "यह आपसे कैसे बात करता है", ar: "كيف يخاطبك",
+  },
+  "permits.area.your_own_normal": {
+    en: "Your own normal", es: "Tu propia normalidad", fr: "Votre normale à vous", de: "Ihr eigener Normalzustand", pt: "O seu normal", it: "Il tuo normale", ja: "あなたにとっての平常", zh: "你自己的常态", hi: "आपका अपना सामान्य", ar: "ما هو طبيعيّ لك",
+  },
+  "permits.area.what_it_may_read": {
+    en: "What it may read", es: "Lo que puede leer", fr: "Ce qu'il peut lire", de: "Was es lesen darf", pt: "O que pode ler", it: "Cosa può leggere", ja: "読んでよいもの", zh: "它可以读取什么", hi: "यह क्या पढ़ सकता है", ar: "ما يجوز له قراءته",
+  },
+  "permits.area.what_is_switched_on": {
+    en: "What is switched on", es: "Qué está activado", fr: "Ce qui est activé", de: "Was eingeschaltet ist", pt: "O que está ligado", it: "Cosa è attivo", ja: "オンになっている機能", zh: "哪些功能开着", hi: "क्या-क्या चालू है", ar: "ما هو مُفعَّل",
+  },
+  "permits.area.outside_this_app": {
+    en: "Outside this app", es: "Fuera de esta app", fr: "Hors de cette app", de: "Außerhalb dieser App", pt: "Fora desta app", it: "Fuori da questa app", ja: "このアプリの外", zh: "这个应用之外", hi: "इस ऐप के बाहर", ar: "خارج هذا التطبيق",
+  },
+
   "engaged.reach.ceilings": {
     en: "It may reach for {steps} things before it has to answer you, and change at most {acts} things in one session.",
     es: "Puede recurrir a {steps} cosas antes de tener que responderte, y cambiar como mucho {acts} cosas en una sesión.",
@@ -4010,4 +4207,32 @@ export function t(key: string, lang: Lang): string {
   const row = TABLE[key];
   if (!row) return key;
   return row[lang] ?? row.en ?? key;
+}
+
+/** A word for an identifier the server chose — not for a key a screen wrote.
+ *
+ *  `t()` falls back to the key, which is right for chrome: a missing row is
+ *  a bug and should look like one. It is wrong for a value that arrives over
+ *  the wire. If a backend grows a tenth surface this build has never heard
+ *  of, rendering `surface.holodeck` is worse than rendering `holodeck` —
+ *  the second is at least the thing itself.
+ *
+ *  So this falls back to the identifier with its underscores opened out, and
+ *  the guard over `SURFACES` is what keeps the nine we do know from ever
+ *  reaching that path. That is the division of labour: the fallback is for
+ *  a server ahead of this build, the guard is for a build that forgot. */
+export function word(prefix: string, id: string, lang: Lang): string {
+  const key = `${prefix}.${id}`;
+  return key in TABLE ? t(key, lang) : String(id ?? "").replace(/_/g, " ");
+}
+
+/** A sentence this console can say, falling back to the one the server sent.
+ *
+ *  For server prose rather than server identifiers. The API has been sending
+ *  English notes and rules alongside its enums for several releases, and a
+ *  translated label beside an untranslated sentence is half a job. Where a
+ *  row exists it wins; where it does not, the English the server sent is
+ *  still better than an empty span. */
+export function phrase(key: string, lang: Lang, fallback: string): string {
+  return key in TABLE ? t(key, lang) : fallback;
 }

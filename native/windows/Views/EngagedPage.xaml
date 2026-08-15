@@ -31,6 +31,22 @@
                 </StackPanel>
             </Border>
 
+            <!-- The switches, beside the reach. "What it can do" and "what
+                 I have let it do" are one question with two answers, and
+                 putting them on separate pages would be the menu problem this
+                 feature exists to answer. -->
+            <Border Background="{StaticResource JimCardBrush}"
+                    BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="PermitsHead" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="PermitsNote" Foreground="{StaticResource JimT2Brush}"
+                               FontSize="12" TextWrapping="Wrap" />
+                    <StackPanel x:Name="PermitsList" Spacing="8" />
+                </StackPanel>
+            </Border>
+
             <!-- The session itself. -->
             <Border Background="{StaticResource JimCardBrush}"
                     BorderBrush="{StaticResource JimLineBrush}" BorderThickness="1"

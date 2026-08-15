@@ -163,6 +163,16 @@ def _pack_thinnest_area() -> int:
     return min(len(t) for t in knowledge.catalog()["areas"].values())
 
 
+def _nav_tabs() -> int:
+    from .test_a_key_with_no_row_reads_as_itself import _tab_ids
+    return len(_tab_ids())
+
+
+def _surfaces() -> int:
+    from .test_a_key_with_no_row_reads_as_itself import _python_enum
+    return len(_python_enum("SURFACES"))
+
+
 #: The registry. Every entry replaced a bare literal inside an assertion; the
 #: assertion now reads its number from here, which is what takes it out of the
 #: unregistered backlog.
@@ -212,6 +222,12 @@ RATCHETS: tuple[Ratchet, ...] = (
     Ratchet("knowledge.thinnest_area", 5, _pack_thinnest_area,
             "entries in the offline pack's thinnest area — the target was "
             "'jampacked', held per area rather than in total"),
+    Ratchet("console.nav_tabs", 20, _nav_tabs,
+            "tabs the console's navigation declares — the floor under the "
+            "check that every one of them has a label"),
+    Ratchet("presence.surfaces", 8, _surfaces,
+            "surfaces the presence can speak through — the floor under the "
+            "check that every one of them has a word and a note"),
 )
 
 _BY_NAME = {r.name: r for r in RATCHETS}

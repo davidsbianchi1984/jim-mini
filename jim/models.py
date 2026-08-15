@@ -429,6 +429,17 @@ class FollowupAnswer(BaseModel):
     note: str | None = None                 # the user's own words, optional
 
 
+class PermitSet(BaseModel):
+    """Yes or no to one group of switches an engaged session may throw.
+
+    A bare boolean rather than an enum of grant/revoke: the screen is a row of
+    toggles and the wire should say what the toggle says. The area is in the
+    path because it is the thing being addressed, not a value being set.
+    """
+
+    granted: bool
+
+
 class SensitivitySet(BaseModel):
     level: str                              # cautious | balanced | assertive
 

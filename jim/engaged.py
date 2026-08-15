@@ -103,7 +103,7 @@ from urllib.parse import quote
 
 import httpx
 
-from . import db
+from . import db, permits
 
 # --------------------------------------------------------------------------- #
 # The reach
@@ -282,6 +282,42 @@ TOOLS: tuple[dict, ...] = (
               "route": ("DELETE", "/engaged/{user_id}/watches/{watch_id}"),
               "path_from": {"watch_id": "id"}}},
 
+    # ---- the switches, said out loud --------------------------------------
+    #
+    # These three exist because the menus that hold them were reported as
+    # "awful user unfriendly if you don't know what you're doing". Every one
+    # of them was already a screen; none of them was a sentence. "Speak
+    # through my earbuds, not the speaker" is a thing somebody can say and
+    # could not, until now, be *told to*.
+    #
+    # The two that widen what the Guardian sees or switch parts of the product
+    # on and off need their own yes first (`permits.AREAS`); the surface does
+    # not, because it belongs to the same "how it speaks to you" group a
+    # person already approved by opening the session.
+    {"name": "set_surface", "acts": True,
+     "route": ("PUT", "/presence/{user_id}/surface"),
+     "says": "change which device it speaks through — earbuds, a watch, a "
+             "speaker in the room",
+     "undo": {"kind": "replace",
+              "before": ("GET", "/presence/{user_id}/surfaces"),
+              "fields": ("chosen",),
+              "as": {"chosen": "speaks_on"}}},
+    {"name": "set_source", "acts": True,
+     "route": ("PUT", "/sources/{user_id}"),
+     "says": "switch one of your sources on or off — changing what the "
+             "Guardian is allowed to see",
+     "undo": {"kind": "replace",
+              "before": ("GET", "/sources/{user_id}"),
+              "select": "source",
+              "fields": ("source", "consented")}},
+    {"name": "set_feature", "acts": True,
+     "route": ("PUT", "/circle/{user_id}/features"),
+     "says": "switch a part of the product on or off for your account",
+     "undo": {"kind": "replace",
+              "before": ("GET", "/circle/{user_id}"),
+              "in": ("features", "feature"),
+              "fields": ("feature", "enabled")}},
+
     # ---- the one that leaves ---------------------------------------------
     {"name": "ask_specialist", "acts": True,
      "route": ("POST", "/coach/{user_id}/specialist"),
@@ -316,6 +352,20 @@ do not hide a step inside a sentence. If a request is ambiguous in a way
 that matters — which of two goals, whether to overwrite something they
 wrote — ask rather than guess.
 
+Some of what you can change is settings, and that is deliberate: the menus
+are hard to find your way around and saying it out loud should work. "Speak
+through my earbuds instead of the speaker", "answer me in Spanish", "stop
+reading my calendar", "turn messaging off" are all things you can simply do.
+Do them, say what you did, and do not send somebody to a screen for something
+you were given a tool for.
+
+Some groups of switches need that person's permission before you may touch
+them, and you will be told `engaged.not_permitted` if you reach for one they
+have not turned on. That is not a failure and not a refusal of them — it is
+them not having said yes yet. Say which group it is and that they can switch
+it on in the list of what you may touch, then carry on with the rest of what
+they asked. Never work around it, and never imply you did it anyway.
+
 One thing you do cannot be taken back: putting their question to a
 specialist sends their own words outside this app. Ask them first, in that
 turn, and only do it if they say yes.
@@ -342,20 +392,29 @@ def tool_names() -> tuple[str, ...]:
     return tuple(tool["name"] for tool in TOOLS)
 
 
-def what_it_can_touch() -> list[dict]:
+def what_it_can_touch(user_id: str | None = None) -> list[dict]:
     """The list a person reads before they let this thing near anything.
 
     Each row carries whether it changes something and whether it can be taken
     back, because "read your journal" and "send your words to a stranger"
     rendered as two identical bullets is how a list stops being informed
     consent.
+
+    Given a `user_id`, each row also carries the group it belongs to and
+    whether that group is switched on for them. Without one the list is the
+    catalogue — what the product can do — which is what an accountless screen
+    needs and is all this returned before permits existed.
     """
     rows = []
     for tool in TOOLS:
-        rows.append({"name": tool["name"], "says": tool["says"],
-                     "acts": tool["acts"],
-                     "reversible": tool["acts"] and "undo" in tool,
-                     "irreversible_because": tool.get("irreversible")})
+        row = {"name": tool["name"], "says": tool["says"],
+               "acts": tool["acts"],
+               "reversible": tool["acts"] and "undo" in tool,
+               "irreversible_because": tool.get("irreversible"),
+               "area": permits.area_of(tool["name"])}
+        if user_id is not None:
+            row["permitted"] = permits.may(user_id, tool["name"])
+        rows.append(row)
     return rows
 
 
@@ -387,6 +446,10 @@ def is_a_tool(name: str) -> bool:
 REFUSALS: dict[str, tuple[int, str]] = {
     "engaged.unknown_tool": (
         422, "that is not something an engaged session can do"),
+    "engaged.not_permitted": (
+        403, "that group of switches has not been turned on for this session "
+             "— it is in the list of what it may touch, and switching it on "
+             "there is all it needs"),
     "engaged.unreadable_call": (
         422, "the model asked for a tool in a shape this could not read"),
     "engaged.missing_argument": (
@@ -574,14 +637,42 @@ def _inverse(row: dict, *, user_id: str, path_args: dict, body: dict,
                 "body": None}
 
     # replace: the prior state, replayed to the same door
+    #
+    # Three shapes of "the prior state", because three shapes of read exist in
+    # this API and an undo that only handles one of them is an undo that
+    # quietly stops existing for the other two:
+    #
+    #   whole      the read *is* the setting — `{"bearing": "companion"}`
+    #   select     a list of rows, one of which is the setting
+    #   in         a map, one key of which is the setting
+    #
+    # `select` reads its key from the path *or the body*. `/sources/{user_id}`
+    # names the source in the body and has no second path slot, so a lookup
+    # that only searched the path found nothing and the act came back
+    # irreversible — which is worse than failing, because the act still
+    # happened and the list said it could not be taken back.
     method, template = row["route"]
     prior = before
     if spec.get("select"):
-        prior = _select(before, spec["select"], path_args.get(spec["select"]))
+        key = spec["select"]
+        prior = _select(before, key, path_args.get(key, body.get(key)))
+    elif spec.get("in"):
+        where, names = spec["in"]
+        name = body.get(names)
+        table = before.get(where) if isinstance(before, dict) else None
+        if not isinstance(table, dict) or name not in table:
+            return None
+        prior = {names: name, spec["fields"][1]: table[name]}
     if not isinstance(prior, dict):
         return None
     payload = {field: prior[field] for field in spec["fields"]
                if field in prior}
+    # A read and a write can name the same setting differently. `surfaces`
+    # answers with `chosen` and the door takes `speaks_on` — deliberately, so
+    # that "surface" does not mean two things across the three products — and
+    # replaying `chosen` at a door expecting `speaks_on` is a 422 at undo
+    # time, discovered by somebody trying to take something back.
+    payload = {spec.get("as", {}).get(k, k): v for k, v in payload.items()}
     if not payload:
         return None
     return {"method": method, "path": _fill(template, user_id, dict(path_args)),
@@ -601,9 +692,19 @@ def call(name: str, arguments: dict, *, app, user_id: str,
     The caller's own credential is forwarded rather than a token minted here,
     so the reach is exactly the reach of whoever is driving it: no more, and
     — the part that matters when a session has expired — no longer.
+
+    The permit check sits *above* the request rather than inside the door,
+    because it is not the door's question. The door asks whether this token
+    may write to this account; this asks whether this person has told their
+    own agent it may throw this particular switch on their behalf. Somebody
+    with every credential in the world still has not said yes to that, and
+    somebody who says no is not losing an ability — they are declining to
+    delegate one.
     """
     if not is_a_tool(name):
         raise EngagedError("engaged.unknown_tool")
+    if not permits.may(user_id, name):
+        raise EngagedError("engaged.not_permitted")
     row = tool(name)
     method, template = row["route"]
 

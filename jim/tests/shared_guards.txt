@@ -1,4 +1,4 @@
-# status: manifest — 497 guards carried by all three products
+# status: manifest — 500 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -206,6 +206,7 @@ test_every_shell_tells_the_server_what_language_its_reader_speaks
 test_every_slot_survives_every_translation
 test_every_spelling_of_a_slot_is_recognised
 test_every_surface_is_accounted_for
+test_every_tab_has_a_label
 test_every_template_is_translated_into_every_language
 test_every_test_count_the_readme_claims_is_true
 test_every_translated_refusal_has_every_language
@@ -248,6 +249,7 @@ test_no_kotlin_pin_reads_nothing
 test_no_label_is_built_from_anything_but_a_constant
 test_no_label_names_a_field_this_product_does_not_have
 test_no_lesson_points_at_a_screen_that_is_not_there
+test_no_literal_lookup_is_missing_its_row
 test_no_native_write_sends_a_body_the_route_cannot_accept
 test_no_new_screen_prints_english_it_already_holds_translated
 test_no_page_interpolates_something_new_without_escaping_it
@@ -494,6 +496,7 @@ test_the_swift_reader_sees_every_decodable_struct
 test_the_swift_scan_reads_past_a_literal_inside_an_interpolation
 test_the_swift_table_has_no_unbraced_unicode_escape
 test_the_symmetry_manifest_says_how_many_it_carries
+test_the_tab_scan_is_finding_tabs
 test_the_tables_still_parse
 test_the_tables_still_parse_and_still_overlap
 test_the_ternary_scan_can_find_one

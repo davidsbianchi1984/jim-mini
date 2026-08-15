@@ -1252,6 +1252,23 @@ CREATE TABLE IF NOT EXISTS engagement_acts (
     undone_at     TEXT
 );
 
+-- Which groups of switches an engaged session may touch (jim/permits.py).
+-- One row per decision, not per area: an area with no row has never been
+-- decided and falls back to its declared standing, so this table records what
+-- somebody *did* rather than a copy of the defaults.
+--
+-- `granted` holds both answers. A row saying no is as real as a row saying
+-- yes — it is how somebody switches off an area that opening a session would
+-- otherwise have covered — and a schema that stored only the yeses would make
+-- "I turned that off" and "I never looked" the same state.
+CREATE TABLE IF NOT EXISTS engaged_permits (
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    area       TEXT NOT NULL,
+    granted    INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, area)
+);
+
 -- What the offline Guardian keeps holding after somebody signs off. The
 -- handover made concrete: a sentence said to the online model while engaged
 -- becomes a sentence the offline one is carrying once they have gone.

@@ -78,6 +78,39 @@ public sealed partial class EngagedPage : Page
                 ReachList.Children.Add(row);
             }
 
+            // The switches this person has thrown, beside the list of what
+            // there is to throw. Re-read after every flip rather than patched
+            // in place: a grant is the sort of thing somebody double-checks,
+            // and a page showing its own guess at the new state would be
+            // showing them their click, not the record.
+            PermitsHead.Text = L10n.T("eng.permits");
+            PermitsNote.Text = L10n.T("eng.permits.note");
+            PermitsList.Children.Clear();
+            var permits = await ApiClient.Shared.EngagedPermits(s.Uid, s.Token);
+            foreach (var area in permits.Groups)
+            {
+                var row = new StackPanel
+                { Orientation = Orientation.Horizontal, Spacing = 10 };
+                var words = new StackPanel { Spacing = 2, Width = 340 };
+                words.Children.Add(new TextBlock
+                {
+                    Text = L10n.T($"eng.permit.{area.Area}"),
+                    FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                    FontSize = 13,
+                });
+                words.Children.Add(new TextBlock
+                { Text = area.Says, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+                row.Children.Add(words);
+                // The toggle carries the state, never the effect. A control
+                // labelled with what pressing it would do and one labelled
+                // with what is true now look identical and mean opposite
+                // things.
+                var toggle = new ToggleSwitch { IsOn = area.Granted, Tag = area.Area };
+                toggle.Toggled += OnPermitToggled;
+                row.Children.Add(toggle);
+                PermitsList.Children.Add(row);
+            }
+
             _session = await ApiClient.Shared.Engaged(s.Uid, s.Token);
             var open = _session.Engaged;
             SessionHead.Text = open ? L10n.T("eng.title") : L10n.T("eng.none");
@@ -199,6 +232,20 @@ public sealed partial class EngagedPage : Page
         }
         catch (Exception ex) { Fail(ex); }
         finally { _busy = false; }
+    }
+
+    /// <summary>Switch a group on or off, then re-read the list.</summary>
+    private async void OnPermitToggled(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        if (sender is not ToggleSwitch toggle || toggle.Tag is not string area) return;
+        try
+        {
+            await ApiClient.Shared.EngagedSetPermit(s.Uid, s.Token, area, toggle.IsOn);
+            await Load();
+        }
+        catch (Exception ex) { Fail(ex); }
     }
 
     private async void OnUndo(object sender, RoutedEventArgs e)

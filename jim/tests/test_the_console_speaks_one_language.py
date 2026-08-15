@@ -326,7 +326,8 @@ def test_no_key_is_translated_into_ten_languages_and_used_nowhere():
         #
         #     asked     is this key passed to `t`
         #     mattered  is this key read
-        used |= set(re.findall(r'\b(?:t|tr|L|fill)\(\s*"([\w.]+)"', text))
+        used |= set(re.findall(r'\b(?:t|tr|L|fill|phrase)\(\s*"([\w.]+)"',
+                               text))
         # A key can also be built: `t(`nav.${n.id}`, lang)`. The literal head
         # of such a template covers every key under it.
         #
@@ -338,7 +339,16 @@ def test_no_key_is_translated_into_ten_languages_and_used_nowhere():
         #     asked     is this key looked up by a literal string
         #     mattered  is this key reachable
         prefixes |= {p for p in re.findall(
-            r'\b(?:t|tr|L|fill)\(\s*`([\w.]+)\$\{', text)}
+            r'\b(?:t|tr|L|fill|phrase)\(\s*`([\w.]+)\$\{', text)}
+        # And it can be built from a prefix the screen names outright:
+        # `word("surface", s.surface, lang)`, whose whole point is that the
+        # tail is a value the server chose and this file has never seen. The
+        # prefix is the literal, so everything under it is reachable.
+        #
+        #     asked     is the key spelled out in this file
+        #     mattered  can this screen arrive at the key
+        prefixes |= {f"{p}." for p in re.findall(
+            r'\bword\(\s*"([\w.]+)"', text)}
     dead = sorted(k for k in table - used
                   if not any(k.startswith(p) for p in prefixes))
     assert not dead, (

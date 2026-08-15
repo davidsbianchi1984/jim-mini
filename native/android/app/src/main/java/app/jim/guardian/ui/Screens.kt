@@ -3743,6 +3743,7 @@ fun CareScreen(vm: GuardianViewModel) {
 @Composable
 fun EngagedScreen(vm: GuardianViewModel) {
     var reach by remember { mutableStateOf<EngagedReach?>(null) }
+    var permits by remember { mutableStateOf<EngagedPermits?>(null) }
     var session by remember { mutableStateOf<EngagedSession?>(null) }
     var acts by remember { mutableStateOf<List<EngagedAct>>(emptyList()) }
     var watching by remember { mutableStateOf<List<StandingWatch>>(emptyList()) }
@@ -3766,6 +3767,7 @@ fun EngagedScreen(vm: GuardianViewModel) {
         // that is what makes a watch *standing* — and taking it from the
         // session would go stale the moment one closed.
         watching = runCatching { ApiClient.engagedWatches(uid, token) }.getOrElse { emptyList() }
+        permits = runCatching { ApiClient.engagedPermits(uid, token) }.getOrNull()
     }
 
     val open = session?.engaged == true
@@ -3797,6 +3799,42 @@ fun EngagedScreen(vm: GuardianViewModel) {
                         }
                     }
                 }
+            }
+        }
+
+        // The switches, beside the reach. "What it can do" and "what I have
+        // let it do" are one question with two answers, and putting them on
+        // separate screens would be the menu problem this feature answers.
+        permits?.let { p ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(L10n.t("eng.permits", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("eng.permits.note", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+                p.groups.forEach { area ->
+                    Row(verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column(Modifier.weight(1f)) {
+                            Text(L10n.t("eng.permit.${area.area}", vm.language),
+                                color = Jim.Txt, fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold)
+                            Text(area.says, color = Jim.T2, fontSize = 11.sp)
+                        }
+                        // The switch carries the state, never the effect. A
+                        // control labelled with what pressing it would do and
+                        // one labelled with what is true now look identical
+                        // and mean opposite things.
+                        Switch(checked = area.granted, enabled = !busy,
+                            onCheckedChange = { on ->
+                                busy = true
+                                vm.call({
+                                    ApiClient.engagedSetPermit(
+                                        vm.uid!!, vm.token!!, area.area, on)
+                                }) { busy = false; reloads++ }
+                            })
+                    }
+                }
+                Text(p.note, color = Jim.T2, fontSize = 11.sp)
             }
         }
 

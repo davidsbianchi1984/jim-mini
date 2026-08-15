@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { api, type EngagedAct, type EngagedReach, type EngagedSession,
-         type EngagedStep, type StandingWatch } from "../api";
+import { api, type EngagedAct, type EngagedPermits, type EngagedReach,
+         type EngagedSession, type EngagedStep,
+         type StandingWatch } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
@@ -27,6 +28,12 @@ import { useSession } from "../store";
  * **Making sign-off a handover rather than a close.** The topics field is on
  * the sign-off card, filled in before the button, because the whole promise
  * is that leaving does not mean being unwatched.
+ *
+ * **Putting the switches next to the reach.** The permits card is the same
+ * list as the reach card with toggles on it, and it sits in the same place —
+ * because "what it may do" and "what I have let it do" are one question with
+ * two answers, and a product that showed them on two screens would be the
+ * menu problem this feature exists to answer.
  */
 export function Engaged() {
   const { session } = useSession();
@@ -35,6 +42,7 @@ export function Engaged() {
   const token = session.userToken;
 
   const [reach, setReach] = useState<EngagedReach | null>(null);
+  const [permits, setPermits] = useState<EngagedPermits | null>(null);
   const [live, setLive] = useState<EngagedSession | null>(null);
   const [acts, setActs] = useState<EngagedAct[]>([]);
   const [watching, setWatching] = useState<StandingWatch[]>([]);
@@ -64,7 +72,21 @@ export function Engaged() {
       // engaged — that is the whole point of a *standing* watch — and taking
       // it from the session would have left it stale the moment one closed.
       setWatching(await api.engagedWatches(uid, token));
+      setPermits(await api.engagedPermits(uid, token));
     } catch (e) { setError((e as Error).message); }
+  }
+
+  async function flip(area: string, granted: boolean) {
+    if (!uid || !token) return;
+    setBusy(true); setError(null);
+    try {
+      await api.engagedSetPermit(uid, area, { granted }, token);
+      // Re-read rather than patching the row in place: a grant is the sort of
+      // thing a person double-checks, and a screen that showed its own guess
+      // at the new state would be showing them their click, not the record.
+      setPermits(await api.engagedPermits(uid, token));
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
   }
   useEffect(() => { refresh(); }, [uid]);
 
@@ -178,6 +200,44 @@ export function Engaged() {
                .replace("{steps}", String(reach.tools_per_turn))
                .replace("{acts}", String(reach.acts_per_session))}
           </p>
+        </div>
+      )}
+
+      {/* The switches, beside the reach. Signed-in only, because a grant
+          needs somebody to give it — the card above is the catalogue and
+          this one is the answer to "and what have I let it do?". */}
+      {permits && (
+        <div className="card">
+          <h3>{tr("permits.title", lang)}</h3>
+          <p className="muted small">{tr("permits.blurb", lang)}</p>
+          {permits.groups.map((a) => (
+            <div key={a.area} className="row">
+              <div style={{ flex: 1 }}>
+                <strong>{tr(`permits.area.${a.area}`, lang)}</strong>
+                <div className="muted small">{a.says}</div>
+                {a.decided_at && (
+                  <div className="muted small">
+                    {(a.granted ? tr("permits.on.since", lang)
+                                : tr("permits.off.since", lang))
+                      .replace("{when}", a.decided_at.slice(0, 10))}
+                  </div>
+                )}
+              </div>
+              {/* The word beside the switch is what it is *now*, never what
+                  pressing it would do. A button labelled with its own effect
+                  and a button labelled with the current state look identical
+                  and mean opposite things. */}
+              <span className={a.granted ? "chip" : "chip warn"}>
+                {a.granted ? tr("permits.on", lang) : tr("permits.off", lang)}
+              </span>
+              <button disabled={busy}
+                      onClick={() => flip(a.area, !a.granted)}>
+                {a.granted ? tr("permits.switch.off", lang)
+                           : tr("permits.switch.on", lang)}
+              </button>
+            </div>
+          ))}
+          <p className="muted small">{permits.note}</p>
         </div>
       )}
 

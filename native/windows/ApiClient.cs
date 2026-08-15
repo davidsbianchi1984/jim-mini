@@ -136,6 +136,25 @@ public record EngagedReach(
     [property: JsonPropertyName("acts_per_session")] int ActsPerSession,
     [property: JsonPropertyName("watch_ceiling")] int WatchCeiling);
 
+// One group of switches an engaged session may throw (jim/permits.py).
+//
+// Says arrives as a sentence rather than a label, because a toggle beside the
+// words "what it may read" tells nobody what they are agreeing to. DecidedAt
+// being null means never decided — a third state beside on and off, and the
+// one that makes "I never agreed to that" answerable.
+public record EngagedPermitArea(
+    [property: JsonPropertyName("area")] string Area,
+    [property: JsonPropertyName("says")] string Says,
+    [property: JsonPropertyName("standing")] string Standing,
+    [property: JsonPropertyName("granted")] bool Granted,
+    [property: JsonPropertyName("decided_at")] string? DecidedAt,
+    [property: JsonPropertyName("tools")] string[] Tools);
+
+public record EngagedPermits(
+    [property: JsonPropertyName("groups")] EngagedPermitArea[] Groups,
+    [property: JsonPropertyName("note")] string Note,
+    [property: JsonPropertyName("can")] EngagedTool[] Can);
+
 public record EngagedStep(
     [property: JsonPropertyName("tool")] string? Tool,
     [property: JsonPropertyName("answered")] int? Answered,
@@ -942,6 +961,23 @@ public sealed class ApiClient
                                            string actId) =>
         Send<EngagedUndone>(new HttpRequestMessage(HttpMethod.Post,
             $"/engaged/{uid}/acts/{actId}/undo"), token);
+
+    /// <summary>
+    /// The groups of switches this session may touch, and which are on.
+    ///
+    /// The connectors screen turned around to face this account's own
+    /// settings. Somebody who wants a thing switched on or off should be able
+    /// to say so out loud; this is where they say the Guardian may.
+    /// </summary>
+    public Task<EngagedPermits> EngagedPermits(string uid, string token) =>
+        Send<EngagedPermits>(Get($"/engaged/{uid}/permits", token));
+
+    /// <summary>Switch one group on or off. Both directions, because a grant
+    /// that cannot be taken back is not a grant.</summary>
+    public Task<EngagedPermitArea> EngagedSetPermit(string uid, string token,
+                                                    string area, bool granted) =>
+        Send<EngagedPermitArea>(Put($"/engaged/{uid}/permits/{area}",
+            new { granted }, token));
 
     public Task<StandingWatch[]> EngagedWatches(string uid, string token) =>
         Send<StandingWatch[]>(Get($"/engaged/{uid}/watches", token));

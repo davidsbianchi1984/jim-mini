@@ -6,6 +6,81 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **You can now tell it to switch something on.** Reported from the field, in
+  those words: *these menus and settings are awful user unfriendly if you
+  don't know what you're doing … I want users to be able to verbally
+  communicate with JIM what they would like to have on or off and JIM to be
+  able to make edits and changes to their accounts.* An engaged session had
+  twenty-six tools and three of them touched a setting. Where it speaks
+  through, what it is allowed to read, and which parts of the product are
+  switched on were screens and only screens — reachable by somebody who
+  already knew where they were, which is exactly the population that did not
+  need them.
+
+      asked     can the Guardian act
+      mattered  can it act on the thing the person is stuck on
+
+  Three tools, and every one of them is a sentence somebody would actually
+  say: *talk to me through my earbuds*, *stop reading my calendar*, *turn
+  messaging off*. It does them, says what it did, and each lands on the undo
+  trail like everything else.
+
+- **A grant, in a list, that switches off again.** The second half of the same
+  report named the shape: *kinda like I gave you permission and connections to
+  my ElevenLabs account … after they opened the connectors and approved
+  permissions per app.* So `jim/permits.py` — the connectors screen turned
+  around to face this account's own settings. Six groups, each explaining
+  itself in a sentence before the toggle beside it means anything, each
+  revocable, each dated so that "I never agreed to that" is answerable with
+  something.
+
+  The two groups that reach where nothing reached before — what the Guardian
+  may read, and which features are switched on — start refused. The four
+  already covered by opening a session are not re-asked for, because a release
+  that puts a permission screen in front of something somebody already
+  approved has made the product more annoying rather than safer. **Consent
+  already given for one thing is not consent for a new thing, and the reverse
+  holds just as firmly.** A refusal names the group and where the switch is;
+  it never works around one and never implies it acted anyway.
+
+### Fixed
+
+- **Nine buttons labelled with the names the database uses.** "Where I speak"
+  drew its picker straight off the wire — `phone_screen`, `desktop_screen`,
+  `ar` — so the choice between two of them was a choice between two
+  identifiers, in every language including English. The baseline card beside
+  it did the same with its six areas and four standing words, with the
+  underscore swapped for a space, which is English in a thin disguise.
+
+      asked     is every key a screen writes down present
+      mattered  is every value a screen renders a word
+
+  The guard added last release could not see this one. `t("nav.presence")`
+  spells its key out and can be read from the file; `word("surface",
+  s.surface)` cannot, because the tail arrives at runtime from a table that
+  lives in Python — so the authority is now that table, read directly. Both
+  halves of one failure, and only one half was spellable, which is why the
+  first guard shipped and the picker stayed raw.
+
+- **An undo that would have failed at the moment somebody used it.** Two of
+  the three new switches recorded no way back, for two different reasons: the
+  source setting names its subject in the body and the inverse-builder only
+  searched the path, and the feature switch answers as a map where the
+  row-selector hunts for a list and would have found the message threads. A
+  third would have replayed `chosen` at a door that takes `speaks_on` — a 422
+  discovered by somebody trying to take something back, which is the worst
+  possible moment for an undo to be wrong. All three are driven end to end
+  now rather than asserted.
+
+- **A guard that would have had six good rows deleted.** The missing-row check
+  ported to PDI reported `pos.cap.`, `pos.tone.` and four siblings as keys
+  with nothing behind them. They are not keys: that console builds some
+  lookups by concatenation, and a pattern that stopped at the closing quote
+  read the prefix as a key of its own. A guard against identifiers on screen
+  that would have put six more into the table.
+
 ## [0.73.0] - 2026-08-14
 
 ### Added
