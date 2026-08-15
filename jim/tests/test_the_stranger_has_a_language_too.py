@@ -433,3 +433,44 @@ def test_the_medical_id_is_never_translated(client):
             "a clinical condition was translated — that is inventing a fact "
             "on the one card a responder acts from")
         assert "Alex Ruiz" in flat, "the contact's name was altered"
+
+
+def test_the_table_is_complete_in_every_language():
+    """Ten or none, across every table this product translates through.
+
+    Carried by QRME and PDI and not by this one — a row `guard_divergences.txt`
+    held against JIM, paid here. The sibling asks it of a single `_PUBLIC`
+    table; this product has no such table and a dozen others instead, so the
+    question travels rather than the code: *is any sentence we translate
+    missing a language*.
+
+    A half-translated answer reads as broken software rather than as software
+    in another language, and in this product the sentence in question may be
+    the one telling somebody what to do about a reading.
+    """
+    from jim import i18n
+
+    others = sorted(set(i18n.SUPPORTED) - {"en"})
+    # `"_FIELD_LABELS".isupper()` is True — underscores are uncased, so a
+    # clause excluding upper-case names excluded every table and this guard
+    # measured nothing. The floor below is what said so; it is the whole
+    # reason a reader gets one.
+    tables = {name: getattr(i18n, name) for name in dir(i18n)
+              if name.startswith("_") and name[1:].isupper()
+              and isinstance(getattr(i18n, name), dict)}
+    assert len(tables) >= 8, (
+        f"only {len(tables)} language table(s) found — the reader that finds "
+        "them has stopped matching, and this guard is passing on almost "
+        "nothing")
+
+    ragged = []
+    for name, table in sorted(tables.items()):
+        for text, row in table.items():
+            if not isinstance(row, dict):
+                continue
+            missing = sorted(set(others) - set(row))
+            if missing:
+                ragged.append(f"{name}[{str(text)[:40]!r}]: {missing}")
+    assert not ragged, (
+        f"{len(ragged)} translated sentence(s) are missing languages:\n    "
+        + "\n    ".join(ragged[:30]))

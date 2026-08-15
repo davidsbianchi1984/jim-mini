@@ -1,4 +1,4 @@
-# status: manifest — 500 guards carried by all three products
+# status: manifest — 502 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -471,6 +471,7 @@ test_the_sentence_arrives_in_the_readers_language
 test_the_sentence_is_wholly_in_one_language
 test_the_sentence_names_the_label_not_the_identifier
 test_the_sentence_says_no_more_than_the_rows
+test_the_shared_vocabulary_matches_the_sibling_products
 test_the_shell_actually_calls_it
 test_the_shell_can_send_what_it_records
 test_the_shell_declares_the_buttons_this_rule_reads
@@ -497,6 +498,7 @@ test_the_swift_scan_reads_past_a_literal_inside_an_interpolation
 test_the_swift_table_has_no_unbraced_unicode_escape
 test_the_symmetry_manifest_says_how_many_it_carries
 test_the_tab_scan_is_finding_tabs
+test_the_table_is_complete_in_every_language
 test_the_tables_still_parse
 test_the_tables_still_parse_and_still_overlap
 test_the_ternary_scan_can_find_one

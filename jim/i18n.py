@@ -3193,6 +3193,12 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    # The Studio's run form (jim/models.py WidgetRun). Worded exactly as
+    # QRME words it: `test_the_shared_vocabulary_matches_the_sibling_products`
+    # holds the three products to one sentence per field, and it is right
+    # to — a field named the same in two products that reads differently in
+    # each is two products disagreeing about what it is.
+    'inputs': {'en': 'Inputs', 'es': 'Entradas', 'fr': 'Entrées', 'de': 'Eingaben', 'pt': 'Entradas', 'it': 'Ingressi', 'ja': '入力', 'zh': '输入', 'hi': 'इनपुट', 'ar': 'المدخلات'},
     # The sign-off form's one field (jim/engaged.py): what the offline
     # Guardian should keep an eye on while somebody is away.
     'topics': {'en': 'What to watch for while you are away', 'es': 'Qué vigilar mientras no estás', 'fr': 'Ce qu’il faut surveiller en votre absence', 'de': 'Worauf geachtet werden soll, während Sie weg sind', 'pt': 'O que vigiar enquanto está fora', 'it': 'Che cosa tenere d’occhio mentre non ci sei', 'ja': '留守のあいだ見守ってほしいこと', 'zh': '你不在时要留意什么', 'hi': 'आपकी अनुपस्थिति में किस पर नज़र रखनी है', 'ar': 'ما الذي يُتابَع في غيابك'},
@@ -3609,7 +3615,7 @@ _SCHEDULE_TEXT: dict[str, dict[str, str]] = {
 _SCHEDULE_LABELS: dict[str, dict[str, str]] = {
     'title': {'en': 'Schedule', 'es': 'Agenda', 'fr': 'Agenda', 'de': 'Kalender', 'pt': 'Agenda', 'it': 'Agenda', 'ja': '予定', 'zh': '日程', 'hi': 'कार्यक्रम', 'ar': 'الجدول'},
     'book': {'en': 'Book it', 'es': 'Reservar', 'fr': 'Réserver', 'de': 'Buchen', 'pt': 'Marcar', 'it': 'Prenota', 'ja': '予約する', 'zh': '预订', 'hi': 'बुक करें', 'ar': 'احجز'},
-    'what': {'en': 'What', 'es': 'Qué', 'fr': 'Quoi', 'de': 'Was', 'pt': 'O quê', 'it': 'Cosa', 'ja': '内容', 'zh': '事项', 'hi': 'क्या', 'ar': 'ماذا'},
+    'what': {'en': 'What', 'es': 'Qué', 'fr': 'Quoi', 'de': 'Was', 'pt': 'O quê', 'it': 'Cosa', 'ja': '内容', 'zh': '内容', 'hi': 'क्या', 'ar': 'ماذا'},
     'when': {'en': 'When', 'es': 'Cuándo', 'fr': 'Quand', 'de': 'Wann', 'pt': 'Quando', 'it': 'Quando', 'ja': '日時', 'zh': '时间', 'hi': 'कब', 'ar': 'متى'},
     'where': {'en': 'Where', 'es': 'Dónde', 'fr': 'Où', 'de': 'Wo', 'pt': 'Onde', 'it': 'Dove', 'ja': '場所', 'zh': '地点', 'hi': 'कहाँ', 'ar': 'أين'},
     'email_me': {'en': 'Email me a reminder', 'es': 'Envíame un recordatorio por correo', 'fr': "M'envoyer un rappel par e-mail", 'de': 'Erinnerung per E-Mail senden', 'pt': 'Enviar-me um lembrete por e-mail', 'it': 'Inviami un promemoria via e-mail', 'ja': 'メールでリマインドする', 'zh': '给我发邮件提醒', 'hi': 'मुझे ईमेल अनुस्मारक भेजें', 'ar': 'أرسل لي تذكيرًا بالبريد'},
