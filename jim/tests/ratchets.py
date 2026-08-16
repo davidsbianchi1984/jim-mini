@@ -193,7 +193,22 @@ def _language_tables() -> int:
                 and isinstance(getattr(i18n, n), dict)])
 
 
+
+def _literal_refusals() -> int:
+    """Refusal sentences written as a plain string, as the classifier counts
+    them now. The floor is here rather than inside the assertion because a
+    number in an assertion is a number nothing compares against what it
+    measures — and this one guards the walk that every other refusal check
+    is built on."""
+    from pathlib import Path
+
+    from .test_the_guardian_refuses_in_one_language import REPO, _refusals
+    return len(_refusals(REPO / "jim")["literal"])
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("refusals.literal", 60, _literal_refusals,
+            "refusals written as a plain string — the walk every other\n            refusal check stands on"),
     Ratchet("i18n.language_tables", 8, _language_tables,
             "translation tables the completeness sweep reads"),
     Ratchet("l10n.asked.ios", 380, _l10n("ios", "asked"),

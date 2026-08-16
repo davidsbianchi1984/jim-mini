@@ -1,0 +1,99 @@
+# status: backlog — 78 rows
+# ceiling: 78
+#
+# English refusals built by interpolation — the sentences the Guardian says when it
+# says no, assembled from a template and a value at the moment of refusing.
+# Checked by test_the_guardian_refuses_in_one_language.py, both directions, and ratcheted.
+#
+# A template cannot be a key in `_REFUSALS` as written. `i18n.fill` and
+# `i18n.Templated` are the mechanism this product already has for a refusal
+# with a value in it, and it carries the slots alongside the finished English
+# so `localize_detail` can refill the frame in the reader's language.
+#
+# Not every row here can become one. `Templated` marks a slot holding prose
+# as untranslatable and keeps the whole refusal English on purpose: a
+# translated frame around an English slot reads as a bug, in front of
+# somebody who is already being told no. The paydown is per site, with the
+# reason recorded, rather than a bulk conversion.
+#
+# `{}` marks where a value is interpolated. The skeleton is what a person
+# reads, which is the thing being counted.
+#
+'op' contains a segment that looks like an identifier ({}) — the client's redaction has stopped working, and accepting this would hide that
+'op' must look like 'VERB /template/path' — got {}
+'source' must be one of {}
+'{}' is not permitted for {}; allowed: {}
+JIM_SITE_ROTA is not valid JSON: {}
+a {} microphone is pointed at a room, not at you. Everyone it picks up would be lending their voice without being asked, so it cannot be channel 2. A worn or clipped-on microphone can: {}
+at most {} problems per report
+could not fetch — {}: {}
+could not reach elevenlabs: {}
+could not reach the transcription service: {}
+could not reach {}: {}
+elevenlabs refused it: HTTP {} {}
+gain must be one of {}
+kind must be one of {}
+llm_provider must be one of {}
+metric must be one of {}
+missing keys {}
+mode must be one of {}
+no bearing called {} — it is companion or professional
+no device called {} on this account
+no permit area called {}
+no such face {}; one of {}
+no such step {}
+no surface called {}
+not while the call is on {}. On speaker the watch hears whoever you are talking to, and they are not a user here — they were never asked and could not revoke it. Switch to an earpiece or a headset and it can listen to you alone
+problem missing keys {}
+provider must be one of {}
+reason must be one of {} — what is occupying your microphone is what justifies lending another one
+rota entry {} needs a name
+sensitivity must be one of {}
+signature must match the enrolled name ({})
+source '{}' is not consented for this user
+that is {}MB; the limit is {}MB
+the mail server refused it: {}
+the pane sits in a bottom corner — {}
+the {} client is not wired into this build; the consent stands, and nothing was invented in its name
+the {} face is about a particular one — tell it which
+this deployment holds no {} credentials — the consent stands and will sync when the aggregator is configured; until then, drop a statement or observe a balance by hand
+this {} connector was not granted '{}'
+top friends is at most {} — that is what makes it a ranking
+transcription refused it: HTTP {} {}
+unknown account kind {}; expected one of {}
+unknown aggregator {}; this module holds consents for {}
+unknown asset class(es): {}; expected among {}
+unknown capability {}
+unknown connector: {}/{}
+unknown day range {}
+unknown day {}
+unknown feature {}; the switches are {}
+unknown kind {}; one of {}
+unknown language {}
+unknown metric {}
+unknown microphone type {} — one of {}
+unknown mode {} — one of {}
+unknown plan {}; one of {}
+unknown problem keys {}
+unknown provenance {}; one of {}
+unknown provider {}
+unknown robot model '{}'
+unknown site {}; one of {}
+unknown state {}; one of {}
+unknown top-level keys {} — this intake accepts exactly {}. A new key is refused rather than ignored: silently dropping it would let a client start sending content and never learn that nobody wanted it.
+unreadable time {} — use HH:MM
+up to {} links; a homepage is a page, not a directory
+your {} is already carrying the call — one microphone cannot be both channels. Attach a different one as channel 2, or take the call on something else
+{} answered with nothing readable
+{} cannot be removed from the pane — it is the face that appears when something is wrong, and a pane somebody configured out of the way months ago is not a decision they made about the day it fires
+{} cannot run an onboard LLM
+{} does not offer: {}
+{} does not publish a remaining allowance — its balance is only visible on the provider's own dashboard
+{} does not support collecting context
+{} is not one of the faces this dock carries
+{} is registered as a stationary device. Something bolted to a room hears the room, whatever kind of microphone is in it
+{} keys are not checked here — this check is the ElevenLabs account read
+{} must be a short plain string (≤{} chars, no newlines or punctuation beyond ._-()/;:+) — got {}
+{} needs an API key
+{} needs an explicit confirmation before it is stored. It will be kept out of anything automatic — no synthetic agent ever receives it, and it is never folded into an assembled summary; a clinician opens it deliberately or not at all.
+{} refused it: HTTP {} {}

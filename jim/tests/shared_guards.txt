@@ -1,4 +1,4 @@
-# status: manifest — 502 guards carried by all three products
+# status: manifest — 505 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -32,7 +32,6 @@
 #
 # This file may grow. A name leaving it is a guard deleted from all three, or
 # one that drifted out of a single product, and both should be deliberate.
-
 test_a_body_is_read_from_its_own_call_and_not_the_next_one
 test_a_body_that_cannot_be_read_is_not_judged
 test_a_body_that_is_not_an_object_still_says_something
@@ -167,6 +166,7 @@ test_every_handler_a_screen_names_exists_behind_it
 test_every_handler_returns_through_the_one_place
 test_every_header_a_route_requires_its_callers_can_send
 test_every_header_read_off_the_request_is_sendable_or_recorded
+test_every_interpolated_refusal_is_recorded
 test_every_ios_capability_used_is_declared
 test_every_key_a_shell_asks_for_is_in_its_own_table
 test_every_key_a_shell_reads_is_one_the_server_can_send
@@ -258,6 +258,7 @@ test_no_real_route_segment_is_mistaken_for_an_id
 test_no_recorded_field_is_also_labelled
 test_no_recorded_name_has_been_fixed_without_striking_it
 test_no_refusal_is_translated_into_english
+test_no_refusal_shape_goes_unclassified
 test_no_registered_floor_is_decoration
 test_no_row_is_translated_into_ten_languages_and_asked_for_by_nobody
 test_no_row_names_a_release_that_was_never_cut
@@ -501,6 +502,7 @@ test_the_tab_scan_is_finding_tabs
 test_the_table_is_complete_in_every_language
 test_the_tables_still_parse
 test_the_tables_still_parse_and_still_overlap
+test_the_template_backlog_only_shrinks
 test_the_ternary_scan_can_find_one
 test_the_theme_check_can_fail
 test_the_three_shells_do_not_disagree

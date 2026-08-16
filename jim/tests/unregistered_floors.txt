@@ -1,4 +1,5 @@
 # status: backlog — 62 rows
+# ceiling: 62
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -48,7 +49,6 @@
 # The ceiling does not move up. A new bare floor is a new number nothing will
 # ever audit.
 #
-# ceiling: 62
 test_a_binding_is_not_a_door.py:134: len(found) > 20
 test_a_form_that_asks_for_it_has_a_label_for_it.py:119: controls > 6000
 test_a_form_that_asks_for_it_has_a_label_for_it.py:122: len(_asked_for()) >= 10
@@ -72,17 +72,17 @@ test_the_console_speaks_one_language.py:278: len(keys) >= 15
 test_the_desktop_and_the_phone_say_different_things.py:324: len(shared) > 40
 test_the_files_the_release_never_touched.py:273: len(sorted(REPO.glob('native/ios/Sources/**/*.swift'))) >= 24
 test_the_files_the_release_never_touched.py:274: len(sorted(REPO.glob('native/android/**/*.kt'))) >= 6
-test_the_guardian_refuses_in_one_language.py:214: len(handlers) >= 9
-test_the_guardian_refuses_in_one_language.py:315: len(i18n._REFUSALS) >= 21
-test_the_guardian_refuses_in_one_language.py:394: refused.status_code >= 400
-test_the_guardian_refuses_in_one_language.py:420: refused.status_code >= 400
+test_the_guardian_refuses_in_one_language.py:577: len(handlers) >= 9
+test_the_guardian_refuses_in_one_language.py:678: len(i18n._REFUSALS) >= 21
+test_the_guardian_refuses_in_one_language.py:757: refused.status_code >= 400
+test_the_guardian_refuses_in_one_language.py:783: refused.status_code >= 400
 test_the_key_the_server_never_sends.py:228: len(vocabulary) >= 500
 test_the_keys_the_android_client_reads.py:358: len(reads) >= 40
 test_the_keys_the_android_client_reads.py:359: sum((len(k) for _, k in reads)) >= 155
 test_the_keys_the_android_client_reads.py:382: len(driven) >= 30
+test_the_member_that_isnt_there.py:277: len(_declared(lang, REPO / decl)) >= 5
 test_the_member_that_isnt_there.py:286: len(keys) >= 12
 test_the_member_that_isnt_there.py:287: len(used) >= 10
-test_the_member_that_isnt_there.py:277: len(_declared(lang, REPO / decl)) >= 5
 test_the_readme_says_what_shipped.py:127: len(_rows()) >= 40
 test_the_readme_says_what_shipped.py:130: len(_released()) >= 40
 test_the_refusal_names_the_field_on_the_form.py:106: len(found) >= 150
