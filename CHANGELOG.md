@@ -6,6 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.77.0] - 2026-08-16
+
+### Fixed
+
+- **A neighbour you already have listed should not be re-identified by hand.**
+  The circle list shows your neighbours by name. To look at one of their
+  homepages you typed their id into a box at the bottom of the screen and
+  pressed Open — and the id is a UUID, so *type it in* really meant *copy it
+  from somewhere else first*.
+
+      asked     the friends picture should open their profile homepage
+      mattered  the only way in was a text box asking for their id
+
+  The name in the list is the link now. The box stays for an id somebody was
+  handed from outside the app, which is the case it was always right for.
+
 ## [0.76.0] - 2026-08-15
 
 ### Added
@@ -8580,7 +8596,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.76.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.77.0...HEAD
+[0.77.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.77.0
 [0.76.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.76.0
 [0.75.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.75.0
 [0.74.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.74.0

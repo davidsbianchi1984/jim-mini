@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.76.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.77.0** ([changelog](CHANGELOG.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -378,6 +378,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.77.0** | **The name in the list is the link** — the circle shows your neighbours by name, and opening one of their homepages meant typing their id into a box: a UUID, so *type it in* really meant *copy it from somewhere else first*. The name is the way in now, and the box stays for an id handed to you from outside the app, which is the case it was always right for |
 | **0.76.0** | **The console gets a front door, and a Studio behind it** — twenty-four tiles and no way in meant knowing which tile before you could ask for anything, and the one carrying the mark opened a permissions panel rather than JIM. `Talk` is a composer at the bottom and a horizontal scrolling rail above it; the rail launches the screens that already exist rather than reimplementing them, and its labels are derived from the destination so a chip cannot end up labelled for one screen and opening another. Beside it, the Studio: small programs you write for yourself, run with the network cut, one directory, no other programs and finite time — and nothing runs at all on a host that cannot build all four walls |
 | **0.75.0** | **A record of what was done, and whether the record was edited** — JIM keeps the person's timeline in `events`, which is pruned, reshaped and paginated, and every one of those is indistinguishable from tampering once the same rows are load-bearing for evidence. So PDI's hash-chained audit log is ported here: each entry's SHA-256 covers the one before it, seventeen consequential acts are catalogued and all seventeen wired, the table has no foreign key to `users` because a chain a cascade can empty is not tamper-evident, and an erase records itself rather than removing what the chain already said. `GET /audit/{user_id}` is the door that makes the last one honest. Also: the console-untranslated ceiling from 93 to 2, including an `aria-label` left in English beside a label that was too |
 | **0.74.0** | **The whole mark on the button, and the path where nobody can speak** — ABRACADABRA carried an alchemical glyph; it carries the jim-mini OS lockup now, at a size the mark can be read at, with every other menu icon raised to match on all four clients. The crash watch — the one way this product summons help when the person cannot press anything — decided its own tier with a boolean and told the trusted contact at 3am to "treat it as real" and nothing more; it goes through the escalation ladder now, and every page it sends ends by telling the one person who can dial that JIM cannot. Also: settings you can change by saying so, a grant list that switches off again, and three undos that would have failed at the moment somebody used them |
