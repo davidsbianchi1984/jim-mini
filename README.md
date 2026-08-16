@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.79.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.80.0** ([changelog](CHANGELOG.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -378,6 +378,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.80.0** | **The version, and nothing else** — no code changes in this product. QRME took this release on its own (the agent asking people rather than pages, and the ledger of which far hosts keep watching it leave); the cut keeps the three reporting one number to the tandem's version guard |
 | **0.79.0** | **The version, and nothing else** — no code changed in JIM this release. QRME took 0.78.0 alone for a plug-in storefront this product has no counterpart for yet, and 0.79.0 brings the three back to one number, so the console's version guard and the tandem have a single answer rather than a table of which pairs go together |
 | **0.77.0** | **The name in the list is the link** — the circle shows your neighbours by name, and opening one of their homepages meant typing their id into a box: a UUID, so *type it in* really meant *copy it from somewhere else first*. The name is the way in now, and the box stays for an id handed to you from outside the app, which is the case it was always right for |
 | **0.76.0** | **The console gets a front door, and a Studio behind it** — twenty-four tiles and no way in meant knowing which tile before you could ask for anything, and the one carrying the mark opened a permissions panel rather than JIM. `Talk` is a composer at the bottom and a horizontal scrolling rail above it; the rail launches the screens that already exist rather than reimplementing them, and its labels are derived from the destination so a chip cannot end up labelled for one screen and opening another. Beside it, the Studio: small programs you write for yourself, run with the network cut, one directory, no other programs and finite time — and nothing runs at all on a host that cannot build all four walls |
