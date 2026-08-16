@@ -6,6 +6,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.79.0] - 2026-08-16
+
+### Changed
+
+- **The version, and nothing else.** This product carries no code changes in
+  0.79.0. QRME took 0.78.0 on its own — a plug-in storefront that JIM has no
+  counterpart for yet — and this release brings the three back into one
+  number so the tandem's version guard has a single answer to give.
+
+      asked     what changed in JIM this release
+      mattered  that the three products report the same version to a caller
+
+  The console's version guard compares itself against the backend answering
+  the port, and `docs/beta-deploy.md` §7 says to rebuild all three on every
+  release for exactly this reason: a box carrying two versions reports the
+  mismatch to whoever is using it rather than to whoever deployed it. A
+  release that says *nothing changed here* is the honest way to keep that
+  true, and cheaper than a version scheme where the three drift apart and
+  somebody has to remember which pairs are compatible.
+
 ## [0.77.0] - 2026-08-16
 
 ### Fixed
@@ -8596,7 +8616,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.77.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.79.0...HEAD
+[0.79.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.79.0
 [0.77.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.77.0
 [0.76.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.76.0
 [0.75.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.75.0
