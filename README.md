@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.81.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.82.0** ([changelog](CHANGELOG.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -378,6 +378,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.82.0** | **The coach runs the day, and JIM is what it calls** — five rounds that finish one story. What the offline coach could not answer becomes an **errand**: JIM goes and studies it on a budget counted from the ledger, folds the findings where the coach reads them, and closes the question so nobody pays to study it twice — the local half being the part that works in a tunnel, holds the private side where no outside model sees it, and grows with somebody for as long as they use it. **Beside you while you write**: paste a page for a customer and get at most three remarks, each carrying where it came from, read on the device and dropped — the module imports no database and calls nothing that writes. **An aid on the call**: on a speaker, in a car, on a conference, the far side hears the support-line notice first, in a language their dialling code suggests and in each one where the mix is known, and nothing listens until it has gone out. **Somewhere to plug the monitoring in**: every camera, speaker, screen, band, ring, patch and doorway sensor saying what it takes in, who else it reaches and what stays behind — nothing that catches other people is ever on by default. And **two guardians working together**, over the network and never on the line, only between people already each other's contacts, each person able to read their own guardian's half, the link living exactly as long as the task it took on |
 | **0.81.0** | **The sentence that forgot how it was built** — `str()` on a `Templated` returns a plain `str`, which drops the template, so a refusal built by `i18n.fill` and passed on as `HTTPException(403, str(exc))` reaches the reader as bare English in every language, looking exactly like a sentence nobody has translated yet. QRME shipped it on the sentence somebody reads while something is going wrong. Nothing here launders a template that way today, and this release is what keeps that true rather than assumed: `i18n.raised` hands a refusal on in the shape it was raised, and a guard carried by all three products fails any route that reaches for `str()` instead |
 | **0.80.0** | **The version, and nothing else** — no code changes in this product. QRME took this release on its own (the agent asking people rather than pages, and the ledger of which far hosts keep watching it leave); the cut keeps the three reporting one number to the tandem's version guard |
 | **0.79.0** | **The version, and nothing else** — no code changed in JIM this release. QRME took 0.78.0 alone for a plug-in storefront this product has no counterpart for yet, and 0.79.0 brings the three back to one number, so the console's version guard and the tandem have a single answer rather than a table of which pairs go together |
