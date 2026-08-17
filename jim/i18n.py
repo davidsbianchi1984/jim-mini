@@ -1715,6 +1715,39 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': "इस अभिभावक को यह अनुमति नहीं मिली है कि जो वह नोटिस करे उसे अपने आप सँभाले — इसे \"यह आपके लिए क्या कर सकता है\" में चालू करें, जहाँ लिखा है कि यह क्या देखता है और उसके बारे में क्या करता है",
         'ar': "لم يُسمح لهذا الحارس بمعالجة ما يلاحظه من تلقاء نفسه — فعّله في ما يمكنه فعله لك، حيث يُذكر ما الذي يراقبه وما الذي يفعله حياله",
     },
+    "that stretch belongs to somebody else": {
+        'es': "ese tramo pertenece a otra persona",
+        'fr': "cette plage appartient à quelqu'un d'autre",
+        'de': "dieser Abschnitt gehört jemand anderem",
+        'pt': "esse período pertence a outra pessoa",
+        'it': "quell'intervallo appartiene a un'altra persona",
+        'ja': "その時間帯は別の人のものです",
+        'zh': "该时段属于其他人",
+        'hi': "वह अवधि किसी और की है",
+        'ar': "تلك الفترة تخص شخصًا آخر",
+    },
+    "no such stretch": {
+        'es': "no existe ese tramo",
+        'fr': "cette plage n'existe pas",
+        'de': "diesen Abschnitt gibt es nicht",
+        'pt': "não existe esse período",
+        'it': "quell'intervallo non esiste",
+        'ja': "その時間帯はありません",
+        'zh': "没有这个时段",
+        'hi': "ऐसी कोई अवधि नहीं है",
+        'ar': "لا توجد فترة كهذه",
+    },
+    "no such moment": {
+        'es': "no existe ese momento",
+        'fr': "cet instant n'existe pas",
+        'de': "diesen Moment gibt es nicht",
+        'pt': "não existe esse momento",
+        'it': "quel momento non esiste",
+        'ja': "その記録はありません",
+        'zh': "没有这个时刻",
+        'hi': "ऐसा कोई क्षण नहीं है",
+        'ar': "لا توجد لحظة كهذه",
+    },
     "there is no task on this link yet — one side names the work first, and the other agrees to it": {
         'es': "todavía no hay ninguna tarea en este enlace: una parte nombra el trabajo primero y la otra lo acepta",
         'fr': "il n'y a encore aucune tâche sur ce lien : un côté nomme le travail d'abord, et l'autre l'accepte",
@@ -3434,6 +3467,12 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     # `keeping` is the second decision, separate from sensing at all.
     'others_told': {'en': 'The people in that space have been told', 'es': 'Se ha informado a las personas de ese espacio', 'fr': "Les personnes présentes ont été prévenues", 'de': 'Die Menschen in diesem Raum wurden informiert', 'pt': 'As pessoas nesse espaço foram avisadas', 'it': 'Le persone in quello spazio sono state avvisate', 'ja': 'その場にいる人には伝えてあります', 'zh': '该空间中的人已被告知', 'hi': 'उस जगह के लोगों को बता दिया गया है', 'ar': 'أُبلغ من في ذلك المكان'},
     'keeping': {'en': 'Keep what it senses', 'es': 'Guardar lo que detecta', 'fr': "Conserver ce qu'il capte", 'de': 'Behalten, was es erfasst', 'pt': 'Guardar o que deteta', 'it': 'Conservare ciò che rileva', 'ja': '感知した内容を保持する', 'zh': '保留它感知到的内容', 'hi': 'जो यह महसूस करे उसे रखें', 'ar': 'الاحتفاظ بما يستشعره'},
+    # Beginning a meeting or working stretch (jim/daybook.py). `monitor` is
+    # which of the roster's rows the stretch runs on, and `stretch_id` is the
+    # meeting a moment fell inside — named as the form asks them rather than
+    # as the column stores them.
+    'monitor': {'en': 'Which one is sensing', 'es': 'Cuál está detectando', 'fr': "Lequel capte", 'de': 'Welches erfasst gerade', 'pt': 'Qual está a detetar', 'it': 'Quale sta rilevando', 'ja': 'どれが感知しているか', 'zh': '哪一项在感知', 'hi': 'कौन-सा महसूस कर रहा है', 'ar': 'أيّها يستشعر'},
+    'stretch_id': {'en': 'The meeting this belongs to', 'es': 'La reunión a la que pertenece', 'fr': "La réunion à laquelle ceci appartient", 'de': 'Die Besprechung, zu der dies gehört', 'pt': 'A reunião a que isto pertence', 'it': 'La riunione a cui appartiene', 'ja': 'これが属する会議', 'zh': '这属于哪场会议', 'hi': 'यह किस बैठक का हिस्सा है', 'ar': 'الاجتماع الذي ينتمي إليه هذا'},
     # The assisted-call form. `number` is not asked for so it can be kept —
     # it is read for which language the notice is spoken in and dropped — so
     # the label says what it is for rather than what it is.

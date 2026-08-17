@@ -178,7 +178,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "day.meet": { en: "Meetings and stretches", es: "Reuniones y tramos", fr: "Réunions et plages", de: "Besprechungen und Abschnitte", pt: "Reuniões e períodos", it: "Riunioni e intervalli", ja: "会議と時間帯", zh: "会议与时段", hi: "बैठकें और अवधियाँ", ar: "الاجتماعات والفترات" },
   "day.meet.open": { en: "Start one here", es: "Iniciar uno aquí", fr: "En démarrer une ici", de: "Hier eine starten", pt: "Iniciar um aqui", it: "Avviane una qui", ja: "ここで開始", zh: "在此开始", hi: "यहाँ शुरू करें", ar: "ابدأ واحدة هنا" },
   "day.meet.told": { en: "the people in the room were told", es: "se informó a las personas en la sala", fr: "les personnes présentes ont été informées", de: "die Anwesenden wurden informiert", pt: "as pessoas na sala foram informadas", it: "le persone presenti sono state informate", ja: "その場の人たちに伝えました", zh: "房间里的人已被告知", hi: "कमरे में मौजूद लोगों को बताया गया", ar: "أُبلغ من في الغرفة" },
-  "day.meet.end": { en: "End it", es: "Terminarlo", fr: "La terminer", de: "Beenden", pt: "Terminar", it: "Terminala", ja: "終了する", zh: "结束", hi: "समाप्त करें", ar: "أنهِها" },
+  "day.meet.end": { en: "End the meeting", es: "Terminar la reunión", fr: "Terminer la réunion", de: "Die Besprechung beenden", pt: "Terminar a reunião", it: "Termina la riunione", ja: "会議を終了する", zh: "结束这场会议", hi: "बैठक समाप्त करें", ar: "أنهِ الاجتماع" },
   "lights.title": {
     en: "Guardian", es: "Guardián", fr: "Gardien", de: "Wächter",
     pt: "Guardião", it: "Guardiano", ja: "ガーディアン", zh: "守护者",

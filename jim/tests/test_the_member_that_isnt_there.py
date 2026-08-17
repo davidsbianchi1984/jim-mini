@@ -173,7 +173,17 @@ def _expand_aliases(text: str) -> str:
             bindings = re.findall(
                 rf"\b(?:var|[\w.<>?\[\]]+)\s+{local}\s*=\s*([^;]+);", text)
             lambdas = re.search(rf"[(,]\s*{local}\s*(?:,[^)]*)?\)?\s*=>", text)
-            if lambdas or any(b.strip() != singleton for b in bindings):
+            # `foreach (var st in rows)` binds the name too, and binds it with
+            # `in` rather than `=` — so the two patterns above cannot see it.
+            # A page that aliased `st = AppState.Current` in one handler and
+            # looped `foreach (var st in day.Stretches)` in another had every
+            # member of the loop variable reported as a missing member of
+            # `AppState`. Six of them, all real, which is precisely the
+            # false-positive failure this file's own docstring is about.
+            loops = re.search(rf"\bforeach\s*\(\s*(?:var|[\w.<>?\[\]]+)\s+"
+                              rf"{local}\s+in\b", text)
+            if lambdas or loops or any(b.strip() != singleton
+                                       for b in bindings):
                 continue
             text = re.sub(rf"\b{local}\.", f"{singleton}.", text)
     return text

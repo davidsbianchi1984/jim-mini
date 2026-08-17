@@ -193,12 +193,22 @@ def test_the_refusal_names_what_it_would_have_done(client):
 
 def test_one_function_is_the_only_door():
     """The argument `oncall.may_listen` makes for a call and `offline.allow`
-    makes for a socket."""
-    from jim import api
-    source = inspect.getsource(api)
-    assert "monitors.may_sense(" in source
-    assert "switched_on" not in source, (
-        "a route is reading the switch itself instead of asking `may_sense`")
+    makes for a socket.
+
+    The door moved one layer in when `jim/daybook.py` arrived: the sensing
+    route used to ask `may_sense` itself and now hands the moment to the
+    daybook, which asks. So both are read — the rule is unchanged and only
+    its address moved, and a guard that kept looking at the old address
+    would have gone quietly green while the door was somewhere else.
+    """
+    from jim import api, daybook
+    asks = [m for m in (api, daybook)
+            if "monitors.may_sense(" in inspect.getsource(m)]
+    assert asks, "nothing on the sensing path asks `may_sense`"
+    for module in (api, daybook):
+        assert "switched_on" not in inspect.getsource(module), (
+            f"{module.__name__} is reading the switch itself instead of "
+            "asking `may_sense`")
 
 
 def test_no_argument_opens_a_monitor_that_is_off():

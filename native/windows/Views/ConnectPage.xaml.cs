@@ -1000,15 +1000,15 @@ public sealed partial class ConnectPage : Page
                 FontWeight = Microsoft.UI.Text.FontWeights.Bold,
                 TextWrapping = TextWrapping.Wrap, Foreground = txt,
             });
-            foreach (var st in day.Stretches)
+            foreach (var run in day.Stretches)
             {
                 DayPanel.Children.Add(new TextBlock
                 {
-                    Text = st.About.Length > 0 ? st.About : st.Monitor,
+                    Text = run.About.Length > 0 ? run.About : run.Monitor,
                     FontSize = 12, TextWrapping = TextWrapping.Wrap,
                     Foreground = txt,
                 });
-                if (st.CatchesOthers && st.OthersTold)
+                if (run.CatchesOthers && run.OthersTold)
                 {
                     DayPanel.Children.Add(new TextBlock
                     {
@@ -1016,9 +1016,9 @@ public sealed partial class ConnectPage : Page
                         TextWrapping = TextWrapping.Wrap, Foreground = t2,
                     });
                 }
-                if (st.Running)
+                if (run.Running)
                 {
-                    var stretchId = st.Id;
+                    var stretchId = run.Id;
                     var end = new Button { Content = L10n.T("day.meet.end") };
                     end.Click += async (_, _) =>
                     {
