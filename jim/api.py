@@ -32,6 +32,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                permits, referral, relay,
                research,
                robotics,
+               cues,
                daybook,
                rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
                underway,
@@ -3405,6 +3406,23 @@ def create_app(qrme_client: QRMEClient | None = None,
         except monitors.NoSuchMonitor as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
         return {"sensing": True, "monitor": name, **moment}
+
+    # ---- what a room saw and heard, read as cues --------------------------
+
+    @app.get("/cues/{user_id}")
+    def read_cues(user_id: str, request: Request) -> dict:
+        """What the monitors noticed, and what each one could ever notice.
+
+        `can_read` is the honest thing to show beside a switch: *this one can
+        notice you fell; it cannot hear you call out.* It comes from the
+        roster's own `senses` rather than from a second list — see
+        `jim/cues.py`, which also says why a cue is read on the way through
+        rather than out of anything kept.
+        """
+        _user_or_404(user_id, request)
+        return {"lately": cues.lately(user_id),
+                "can_read": {name: cues.for_monitor(name)
+                             for name in sorted(monitors.MONITORS)}}
 
     # ---- the day as it was taken in, and what survived of it --------------
 

@@ -309,6 +309,26 @@ struct UnderwayWindow: Decodable {
     let spend: Spend
 }
 
+/// A cue read off a camera or a speaker. Read on the way through, never out
+/// of anything kept — so a monitor that stores nothing yields these just the
+/// same. The words it was read from are never carried.
+struct Cue: Decodable {
+    let cue: String
+    let severity: String
+    let says: String
+    let monitor: String
+    let reference: String
+    let tier: String
+    let at: String
+}
+
+/// What was noticed, and what each monitor could ever notice from its own
+/// senses — the honest sentence beside a switch.
+struct CuesSeen: Decodable {
+    let lately: [Cue]
+    let can_read: [String: [String]]
+}
+
 /// One moment a monitor took something in. `kept` is false for most of what
 /// is sensed and `dropped_because` says which promise stopped it.
 struct Moment: Decodable {
@@ -1632,6 +1652,11 @@ actor ApiClient {
     /// inside, and the short list that was actually kept.
     func theDay(uid: String, token: String) async throws -> TheDay {
         try await request("/day/\(uid)", token: token)
+    }
+
+    /// What the monitors noticed, and what each could ever notice.
+    func cues(uid: String, token: String) async throws -> CuesSeen {
+        try await request("/cues/\(uid)", token: token)
     }
 
     /// Begin a meeting, a call, or a working stretch. Where the monitor

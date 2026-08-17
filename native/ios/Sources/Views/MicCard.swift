@@ -26,6 +26,9 @@ struct MicCard: View {
     @State private var mons: [MonitorRow] = []
     // The day as it was taken in, and what survived of it.
     @State private var today: TheDay?
+    // What the rooms noticed, read on the way through rather than out of
+    // anything kept.
+    @State private var noticedCues: CuesSeen?
     // Two guardians working together, never on the line.
     @State private var links: [LiaisonRow] = []
     @State private var otherId = ""
@@ -108,6 +111,32 @@ struct MicCard: View {
                 }
             }
 
+            // What the rooms noticed. Read as the content passes, before the
+            // roster is asked whether any may survive — so this list is just
+            // as full on a monitor that keeps nothing.
+            if let seen = noticedCues {
+                Text(L10n.t("cue.head", state.language))
+                    .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("cue.lead", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+                if seen.lately.isEmpty {
+                    Text(L10n.t("cue.none", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                }
+                ForEach(Array(seen.lately.enumerated()), id: \.offset) { _, c in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(c.says).font(.caption)
+                            .foregroundStyle(Theme.txt)
+                        Text("\(c.monitor) · \(c.severity)")
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                        // Where the grading came from: what it flags it can
+                        // explain.
+                        Text(c.reference).font(.caption2)
+                            .foregroundStyle(Theme.t2)
+                    }
+                }
+            }
+
             // What those monitors actually took in, and what survived. The
             // drops are here too, each with the promise that dropped it: a
             // record listing only what it kept would be one with its own
@@ -181,6 +210,14 @@ struct MicCard: View {
                         .font(.caption2).foregroundStyle(Theme.t2)
                     Text(m.on ? L10n.t("mon.on", state.language)
                               : L10n.t("mon.off", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    // The honest sentence beside the switch: this one can
+                    // notice you fell; it cannot hear you call out.
+                    Text(L10n.t("cue.canread", state.language) + ": "
+                         + ((noticedCues?.can_read[m.name] ?? []).isEmpty
+                            ? L10n.t("cue.canread.none", state.language)
+                            : (noticedCues?.can_read[m.name] ?? [])
+                                .joined(separator: " · ")))
                         .font(.caption2).foregroundStyle(Theme.t2)
                     if m.on {
                         Button(L10n.t("mon.sense", state.language)) {
@@ -347,6 +384,7 @@ struct MicCard: View {
         mons = (try? await ApiClient.shared.monitors(uid: uid,
                                                      token: token)) ?? []
         today = try? await ApiClient.shared.theDay(uid: uid, token: token)
+        noticedCues = try? await ApiClient.shared.cues(uid: uid, token: token)
         links = (try? await ApiClient.shared.liaisons(uid: uid,
                                                       token: token)) ?? []
     }

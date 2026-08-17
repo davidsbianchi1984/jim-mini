@@ -1120,6 +1120,11 @@ public sealed class ApiClient
         return Send<LiaisonRow>(req);
     }
 
+    /// <summary>What the monitors noticed, and what each could ever
+    /// notice.</summary>
+    public Task<CuesSeen> Cues(string uid, string token) =>
+        Send<CuesSeen>(Get($"/cues/{uid}", token));
+
     /// <summary>What was sensed today and what survived of it.</summary>
     public Task<TheDay> Day(string uid, string token) =>
         Send<TheDay>(Get($"/day/{uid}", token));
@@ -3142,6 +3147,25 @@ public record UnderwayWindow(
     // Finished, not running — which is why it is a list of its own.
     [property: JsonPropertyName("today")] Errand[] Today,
     [property: JsonPropertyName("spend")] UnderwaySpend Spend);
+
+/// <summary>A cue read off a camera or a speaker. Read on the way through,
+/// never out of anything kept, and the words it was read from are never
+/// carried.</summary>
+public record Cue(
+    [property: JsonPropertyName("cue")] string Which,
+    [property: JsonPropertyName("severity")] string Severity,
+    [property: JsonPropertyName("says")] string Says,
+    [property: JsonPropertyName("monitor")] string Monitor,
+    [property: JsonPropertyName("reference")] string Reference,
+    [property: JsonPropertyName("tier")] string Tier,
+    [property: JsonPropertyName("at")] string At);
+
+/// <summary>What was noticed, and what each monitor could ever notice from
+/// its own senses.</summary>
+public record CuesSeen(
+    [property: JsonPropertyName("lately")] Cue[] Lately,
+    [property: JsonPropertyName("can_read")]
+        Dictionary<string, string[]> CanRead);
 
 /// <summary>One moment a monitor took something in. <c>Kept</c> is false for
 /// most of what is sensed, and the day's rows say which promise stopped it.

@@ -3,7 +3,7 @@ import {
   api, type AssistedCall, type CallRow, type CaptureRow,
   type LiaisonHalf, type LiaisonRow, type MonitorRow,
   type CaptureVocabulary, type DeviceRow, type MicEvent, type MicGains,
-  type MicState, type MicTypes, type TheDay,
+  type MicState, type MicTypes, type TheDay, type CuesSeen,
 } from "../api";
 import { useSession } from "../store";
 import { t as tr, visitorLang } from "../l10n";
@@ -64,6 +64,9 @@ export function Channel() {
   const [mons, setMons] = useState<MonitorRow[]>([]);
   // The day as it was taken in, and what survived of it.
   const [today, setToday] = useState<TheDay | null>(null);
+  // What the rooms noticed, read on the way through rather than out of
+  // anything kept — and what each monitor could ever notice.
+  const [noticedCues, setNoticedCues] = useState<CuesSeen | null>(null);
   const [meetAbout, setMeetAbout] = useState("");
   // Two guardians working together. The list answers which are still going
   // and why, and each row's half is what mine said.
@@ -80,6 +83,7 @@ export function Channel() {
     api.calls(uid, token).then(setCalls).catch(() => setCalls([]));
     api.monitors(uid, token).then(setMons).catch(() => setMons([]));
     api.theDay(uid, token).then(setToday).catch(() => setToday(null));
+    api.cues(uid, token).then(setNoticedCues).catch(() => setNoticedCues(null));
     api.liaisons(uid, token).then(setLinks).catch(() => setLinks([]));
   }, [uid, token]);
 
@@ -202,6 +206,28 @@ export function Channel() {
         </div>
       ))}
 
+      {/* What the rooms noticed. Read as the content passes, before the
+          roster is asked whether any of it may survive — so this list is
+          just as full on a monitor that keeps nothing. */}
+      <h3>{tr("cue.head", visitorLang())}</h3>
+      <p className="muted">{tr("cue.lead", visitorLang())}</p>
+      {noticedCues && (
+        <div className="card">
+          {noticedCues.lately.length === 0
+            ? <p className="muted small">{tr("cue.none", visitorLang())}</p>
+            : noticedCues.lately.map((c, i) => (
+              <div key={`${c.cue}-${c.at}-${i}`} className="row">
+                <strong>{c.says}</strong>
+                <span className="muted small">{c.monitor}</span>
+                <span className="pill">{c.severity}</span>
+                {/* Where the grading came from. The same standard the
+                    hazard table holds: what it flags it can explain. */}
+                <span className="muted small">{c.reference}</span>
+              </div>
+            ))}
+        </div>
+      )}
+
       {/* What the monitors above actually took in, and what survived it.
           The drops are in here too, each with the promise that dropped it:
           a record listing only what it kept would be one with its own
@@ -319,6 +345,15 @@ export function Channel() {
           <p className="muted small">
             {m.on ? tr("mon.on", visitorLang()) : tr("mon.off", visitorLang())}
             {m.on && m.keeping && ` · ${tr("mon.keeping", visitorLang())}`}
+          </p>
+          {/* The honest sentence beside the switch: this one can notice you
+              fell; it cannot hear you call out. From the roster's own
+              senses, so it cannot claim a cue the monitor could not read. */}
+          <p className="muted small">
+            {tr("cue.canread", visitorLang())}:{" "}
+            {(noticedCues?.can_read?.[m.name] ?? []).length > 0
+              ? noticedCues!.can_read[m.name].join(" · ")
+              : tr("cue.canread.none", visitorLang())}
           </p>
           {/* Hand it something the monitor perceived. Refused with a 403
               until this row is switched on — the one door. */}

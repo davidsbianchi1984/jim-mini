@@ -71,6 +71,13 @@
                             <!-- What those monitors took in, and what
                                  survived. The drops are here too, each with
                                  the promise that dropped it. -->
+                            <!-- What the rooms noticed, read as the content
+                                 passes rather than out of anything kept. -->
+                            <TextBlock x:Name="CuesHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="CuesLead" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <StackPanel x:Name="CuesPanel" Spacing="6" />
                             <TextBlock x:Name="DayHead" FontWeight="Bold" FontSize="16"
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <StackPanel x:Name="DayPanel" Spacing="6" />

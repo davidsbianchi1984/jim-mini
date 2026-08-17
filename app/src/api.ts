@@ -459,6 +459,26 @@ export interface UnderwayWindow {
   spend: { spent_today: number; daily: number; permitted: boolean };
 }
 
+// -- what a room saw and heard, as cues (jim/cues.py) --------------------
+//
+// A cue is read on the way through, before the roster is asked whether any
+// of the content may survive — so a camera with keeping switched off notices
+// a fall exactly as well as one keeping everything. `says` is what it means
+// and `reference` is where that came from; the words it was read from are
+// never carried, here or anywhere.
+export interface Cue {
+  cue: string; severity: string; says: string; monitor: string;
+  reference: string; tier: string; at: string;
+}
+
+export interface CuesSeen {
+  lately: Cue[];
+  // What each monitor could ever notice, from its own senses. The honest
+  // sentence beside a switch: this one can notice you fell; it cannot hear
+  // you call out.
+  can_read: Record<string, string[]>;
+}
+
 // -- the day as it was taken in (jim/daybook.py) -------------------------
 //
 // `kept` is false for most of what a monitor senses, and `dropped_because`
@@ -1834,6 +1854,9 @@ export const api = {
   // inside, and the short list that was actually kept.
   theDay: (uid: string, token: string) =>
     req<TheDay>(`/day/${uid}`, { token }),
+  // What the monitors noticed, and what each one could ever notice.
+  cues: (uid: string, token: string) =>
+    req<CuesSeen>(`/cues/${uid}`, { token }),
   openStretch: (uid: string, body: { monitor: string; about?: string;
                                      others_told?: boolean }, token: string) =>
     req<Stretch>(`/day/${uid}/stretches`, { method: "POST", body, token }),

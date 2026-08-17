@@ -72,7 +72,7 @@ checkbox is not.
 
 from __future__ import annotations
 
-from . import db, monitors
+from . import cues, db, monitors
 
 #: Why a moment's content did not survive. Words rather than a flag, because
 #: *this monitor never keeps anything* and *you have not switched keeping on*
@@ -135,6 +135,13 @@ def sensed(user_id: str, monitor: str, content: str = "",
     # and a record anybody can add to is not one its owner can rely on.
     if stretch_id:
         _mine(stretch_id, user_id)
+    # Cues are read **here**, before anything is asked about keeping. That
+    # ordering is the arrangement, not an implementation detail: a room camera
+    # with keeping switched off notices you fell exactly as well as one
+    # keeping everything, and stores exactly as little as it promised. See
+    # `jim/cues.py` — noticing is free of retention, which is the only way a
+    # person can switch retention off without switching off their guardian.
+    read = cues.seen(user_id, monitor, content or "")
     keep, because = _may_keep(user_id, monitor)
     body = (content or "").strip()
     if keep and not body:
@@ -152,6 +159,9 @@ def sensed(user_id: str, monitor: str, content: str = "",
     conn.commit()
     return {"id": moment_id, "monitor": monitor, "kept": keep,
             "dropped_because": because, "stretch_id": stretch_id,
+            # What it noticed, whatever it kept. On most of this roster these
+            # two are the interesting pair: cues found, nothing retained.
+            "cues": read,
             # What the person was promised, handed back at the moment the
             # promise was applied. A screen that says "kept: false" is
             # information; one that also says why is an answer.

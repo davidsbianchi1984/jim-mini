@@ -8,6 +8,67 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **What a room sees and hears, read as cues rather than kept as footage.**
+  The field ask, in its own words: *monitor you from devices in your home such
+  as cameras, speakers, looking for visual cues and verbal cues.*
+
+      asked     can it read a cue off a camera or a speaker
+      mattered  can it do that without keeping what it read the cue from
+
+  `jim/monitors.py` said what may sense and who else it catches.
+  `jim/daybook.py` recorded what was taken in and dropped most of it, because
+  most of the roster promises to hold nothing. Neither ever read a **cue**: the
+  camera could be switched on and the room described to it, and nothing looked
+  at the description.
+
+  **The point is where the reading happens.** `monitors.py` opens by saying
+  *"it notices you fell" and "it keeps the video of you falling" are different
+  agreements, and only one of them is what the code does* — a sentence that
+  until now was honest only because the code did neither. `daybook.sensed`
+  reads cues **before** it asks whether any of the content may survive. A room
+  camera with keeping switched off notices a fall exactly as well as one
+  keeping everything, and stores exactly as little as it promised. Noticing is
+  free of retention, which is the only arrangement under which a person can
+  switch retention off without switching off their guardian.
+
+  **The words are never what is kept.** A cue row holds the cue, the monitor
+  and the reference behind its grading. The sentence it was read from is a
+  local, and a test checks what is actually written rather than the shape of
+  the function — the detail column is free-form JSON and would have taken the
+  words without complaining. Otherwise this module is the back door round the
+  roster: read the cue *and* stash the description, on a monitor that promised
+  nothing.
+
+  **A monitor only yields cues its own senses can produce.** A doorway senses
+  a presence, so it reports nothing however the text is worded; a camera does
+  not hear somebody call out and a speaker does not see them on the floor.
+  Checked against the roster's `senses` rather than trusted, because the cheap
+  version — scan every text for every cue — would have a presence sensor
+  reporting slurred speech.
+
+  **One ladder, not two.** Every cue is graded in `jim/escalation.py`'s own
+  vocabulary and resolved through `escalation.decide`, so its urgency is
+  decided once rather than translated on the way in. A `critical` cue reaches
+  a person; `jim/noticed.py` excludes `critical` from the pass that puts
+  things to a model, so the two compose the right way round without either
+  knowing about the other, and an ordinary `guidance` cue is exactly what the
+  free half of that ladder is for.
+
+  The table is plain phrase matching, for the reasons `jim/hazards.py` gives:
+  it works with the network cut, costs nothing, and is auditable line by line.
+  Every row carries what it means and the reference behind it. It does not
+  see — something else describes what it saw, and this reads the description.
+
+  It cannot tell **whose** cue it is. A room camera catches whoever is in the
+  room, and a cue read off one of them lands on the account holder's record
+  because that is the only record there is. The roster already refuses to
+  switch such a monitor on until somebody says the people in that space were
+  told; this cannot improve on that claim and does not pretend to. Every cue
+  names its monitor, so a reader can at least see it came from a room rather
+  than from a wrist.
+
+  On the console, on iOS, on Android and on Windows.
+
 - **The day as it was taken in, and what survived of it.** The field ask, in
   its own words: *watches computer or phone screen all the time, watch every
   meeting you're in, record every call, stream, etc., have perfect accounting

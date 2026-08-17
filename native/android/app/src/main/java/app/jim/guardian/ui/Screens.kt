@@ -5890,6 +5890,8 @@ private fun MicPanel(vm: GuardianViewModel) {
     var mons by remember { mutableStateOf<List<MonitorRow>>(emptyList()) }
     // The day as it was taken in, and what survived of it.
     var today by remember { mutableStateOf<TheDay?>(null) }
+    // What the rooms noticed, read on the way through.
+    var noticedCues by remember { mutableStateOf<CuesSeen?>(null) }
     // Two guardians working together, never on the line.
     var links by remember { mutableStateOf<List<LiaisonRow>>(emptyList()) }
     var otherId by remember { mutableStateOf("") }
@@ -5914,6 +5916,8 @@ private fun MicPanel(vm: GuardianViewModel) {
             mons = r.getOrDefault(emptyList()) }
         vm.call({ ApiClient.theDay(vm.uid!!, vm.token!!) }) { r ->
             today = r.getOrNull() }
+        vm.call({ ApiClient.cues(vm.uid!!, vm.token!!) }) { r ->
+            noticedCues = r.getOrNull() }
         vm.call({ ApiClient.liaisons(vm.uid!!, vm.token!!) }) { r ->
             links = r.getOrDefault(emptyList()) }
     }
@@ -6005,6 +6009,24 @@ private fun MicPanel(vm: GuardianViewModel) {
             }
         }
 
+        // What the rooms noticed. Read as the content passes, before the
+        // roster is asked whether any of it may survive.
+        noticedCues?.let { seen ->
+            Text(L10n.t("cue.head", vm.language), color = Jim.Txt,
+                fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("cue.lead", vm.language), color = Jim.T2,
+                fontSize = 11.sp)
+            if (seen.lately.isEmpty())
+                Text(L10n.t("cue.none", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+            seen.lately.forEach { c ->
+                Text(c.says, color = Jim.Txt, fontSize = 13.sp)
+                Text("${c.monitor} · ${c.severity}", color = Jim.T2,
+                    fontSize = 11.sp)
+                Text(c.reference, color = Jim.T2, fontSize = 11.sp)
+            }
+        }
+
         // What those monitors actually took in, and what survived. The drops
         // are here too, each with the promise that dropped it: a record
         // listing only what it kept would be one with its own omissions
@@ -6068,6 +6090,12 @@ private fun MicPanel(vm: GuardianViewModel) {
                 color = Jim.T2, fontSize = 11.sp)
             Text(if (m.on) L10n.t("mon.on", vm.language)
                  else L10n.t("mon.off", vm.language),
+                color = Jim.T2, fontSize = 11.sp)
+            // The honest sentence beside the switch.
+            val canRead = noticedCues?.canRead?.get(m.name).orEmpty()
+            Text(L10n.t("cue.canread", vm.language) + ": " +
+                (if (canRead.isEmpty()) L10n.t("cue.canread.none", vm.language)
+                 else canRead.joinToString(" · ")),
                 color = Jim.T2, fontSize = 11.sp)
             if (m.on) {
                 // Refused with a 403 until the row is on — the one door.

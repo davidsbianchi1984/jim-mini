@@ -14,6 +14,10 @@ public sealed partial class ConnectPage : Page
     /// <summary>The assisted call being set up, if any. Held rather than
     /// re-fetched: the notice to play belongs to this one call.</summary>
     private AssistedCall? _call;
+    // What each monitor could ever notice, from its own senses. Fetched once
+    // with the cues and read again when the roster is drawn, so the sentence
+    // beside a switch comes from the same answer as the list above it.
+    private Dictionary<string, string[]> _canRead = new();
 
     public sealed class SourceVm
     {
@@ -766,6 +770,7 @@ public sealed partial class ConnectPage : Page
             var mic = await ApiClient.Shared.MicState(s.Uid, s.Token);
             Render(mic);
             await LoadCalls();
+            await LoadCues();
             await LoadMonitors();
             await LoadDay();
             await LoadLiaisons();
@@ -928,6 +933,53 @@ public sealed partial class ConnectPage : Page
     /// <summary>Everything that can be plugged in, off rows included. A
     /// roster showing only what is already on is a roster nobody can add
     /// to.</summary>
+    /// <summary>What the rooms noticed, and what each monitor could ever
+    /// notice.
+    ///
+    /// A cue is read as the content passes, before the roster is asked
+    /// whether any of it may survive — so this list is just as full on a
+    /// monitor that keeps nothing.</summary>
+    private async System.Threading.Tasks.Task LoadCues()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var txt = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimTxtBrush"];
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimT2Brush"];
+        CuesHead.Text = L10n.T("cue.head");
+        CuesLead.Text = L10n.T("cue.lead");
+        CuesPanel.Children.Clear();
+        try
+        {
+            var seen = await ApiClient.Shared.Cues(s.Uid, s.Token);
+            _canRead = seen.CanRead;
+            if (seen.Lately.Length == 0)
+            {
+                CuesPanel.Children.Add(new TextBlock
+                {
+                    Text = L10n.T("cue.none"), FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                });
+            }
+            foreach (var cue in seen.Lately)
+            {
+                CuesPanel.Children.Add(new TextBlock
+                {
+                    Text = cue.Says, FontSize = 13,
+                    TextWrapping = TextWrapping.Wrap, Foreground = txt,
+                });
+                CuesPanel.Children.Add(new TextBlock
+                {
+                    Text = $"{cue.Monitor} · {cue.Severity} · {cue.Reference}",
+                    FontSize = 11, TextWrapping = TextWrapping.Wrap,
+                    Foreground = t2,
+                });
+            }
+        }
+        catch { /* the roster below stands on its own */ }
+    }
+
     /// <summary>What the monitors actually took in today, and what survived.
     ///
     /// The drops are in here too, each with the promise that dropped it: a
@@ -1075,6 +1127,15 @@ public sealed partial class ConnectPage : Page
                 {
                     Text = m.On ? L10n.T("mon.on") : L10n.T("mon.off"),
                     FontSize = 11, Foreground = t2,
+                });
+                // The honest sentence beside the switch: this one can notice
+                // you fell; it cannot hear you call out.
+                var reads = _canRead.TryGetValue(m.Name, out var list) && list.Length > 0
+                    ? string.Join(" · ", list) : L10n.T("cue.canread.none");
+                box.Children.Add(new TextBlock
+                {
+                    Text = L10n.T("cue.canread") + ": " + reads, FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap, Foreground = t2,
                 });
                 var name = m.Name;
                 if (m.On)

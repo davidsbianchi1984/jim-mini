@@ -135,6 +135,14 @@ data class UnderwayWindow(val underway: List<UnderwayRow>,
                           val quiet: Boolean, val today: List<Errand>,
                           val spentToday: Int, val daily: Int,
                           val permitted: Boolean)
+/** A cue read off a camera or a speaker. Read on the way through, never out
+ *  of anything kept, and the words it was read from are never carried. */
+data class Cue(val cue: String, val severity: String, val says: String,
+               val monitor: String, val reference: String, val tier: String,
+               val at: String)
+/** What was noticed, and what each monitor could ever notice. */
+data class CuesSeen(val lately: List<Cue>,
+                    val canRead: Map<String, List<String>>)
 /** One moment a monitor took something in. `kept` is false for most of what
  *  is sensed, and `droppedBecause` says which promise stopped it. */
 data class Moment(val id: String, val monitor: String, val content: String,
@@ -1063,6 +1071,25 @@ object ApiClient {
         o.optBoolean("running"), o.optString("opened_at", ""),
         if (o.isNull("ended_at")) null else o.optString("ended_at"),
         o.optInt("moments"), o.optInt("kept"))
+
+    /** What the monitors noticed, and what each could ever notice. */
+    suspend fun cues(uid: String, token: String): CuesSeen {
+        val o = request("/cues/$uid", token = token)
+        val rows = o.optJSONArray("lately") ?: JSONArray()
+        val can = o.optJSONObject("can_read") ?: JSONObject()
+        return CuesSeen(
+            (0 until rows.length()).map {
+                val c = rows.getJSONObject(it)
+                Cue(c.optString("cue", ""), c.optString("severity", ""),
+                    c.optString("says", ""), c.optString("monitor", ""),
+                    c.optString("reference", ""), c.optString("tier", ""),
+                    c.optString("at", ""))
+            },
+            can.keys().asSequence().associateWith { name ->
+                val arr = can.optJSONArray(name) ?: JSONArray()
+                (0 until arr.length()).map { i -> arr.getString(i) }
+            })
+    }
 
     /** What was sensed today and what survived of it. */
     suspend fun theDay(uid: String, token: String): TheDay {
