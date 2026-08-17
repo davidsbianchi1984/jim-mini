@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The beta deploy page has a pointer here now.** This repository documents
+  running the product on its own; the live beta is four containers on one box
+  and is documented once, in QRME, beside the compose file it describes. An
+  operator standing in this repository at the end of a release had no way to
+  find it. `docs/hosting.md` says where it is, and why there is one copy
+  rather than three — copies of a page about one machine disagree the first
+  time somebody fixes only the one they had open.
+
 ## [0.81.0] - 2026-08-17
 
 ### Added
