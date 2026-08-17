@@ -1055,6 +1055,13 @@ public sealed class ApiClient
         Send<CoachStudied>(Post($"/coach/{uid}/study",
             new { topic, area }, token));
 
+    /// <summary>A draft, read on the device and dropped. Nothing is stored
+    /// and nothing is edited — applying a remark is the person's own
+    /// act.</summary>
+    public Task<Alongside> Alongside(string uid, string token, string draft,
+                                     string? area = null) =>
+        Send<Alongside>(Post($"/alongside/{uid}", new { draft, area }, token));
+
     /// <summary>What it went and learned unasked, and what is left to spend
     /// today.</summary>
     public Task<ErrandLedger> Errands(string uid, string token) =>
@@ -2889,6 +2896,22 @@ public record CoachCurriculum(
 public record CoachStudied(
     [property: JsonPropertyName("studied")] string Studied,
     [property: JsonPropertyName("folded")] bool Folded);
+
+/// <summary>One remark on a draft. <c>Because</c> is the evidence it came
+/// from; <c>Door</c> is set only on an offer, and only ever names a screen
+/// this product has.</summary>
+public record Remark(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("says")] string Says,
+    [property: JsonPropertyName("because")] string[] Because,
+    [property: JsonPropertyName("door")] string? Door);
+
+/// <summary><c>QuietBecause</c> carries the reason there is nothing to say —
+/// an empty list on its own cannot tell somebody <i>nothing to add</i> from
+/// <i>it did not run</i>.</summary>
+public record Alongside(
+    [property: JsonPropertyName("remarks")] Remark[] Remarks,
+    [property: JsonPropertyName("quiet_because")] string? QuietBecause);
 
 /// <summary>One errand: a topic the offline coach could not answer, gone and
 /// studied. <c>Why</c> names the monitor that asked for it.</summary>

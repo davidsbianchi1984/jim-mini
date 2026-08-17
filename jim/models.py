@@ -716,6 +716,16 @@ class CoachMessage(BaseModel):
     message: str
 
 
+class Alongside(BaseModel):
+    """A draft somebody is writing, handed over for remarks.
+
+    The draft is read and dropped — nothing here is stored, which is the
+    difference between a thing sitting beside you and a thing recording you.
+    """
+    draft: str
+    area: LifeArea | None = None
+
+
 class CoachStudy(BaseModel):
     """One press of study (jim/pipeline.py curriculum): JIM runs an
     excursion on ``topic`` — or, when omitted, on the curriculum's top

@@ -105,6 +105,13 @@ data class CoachStore(val pack: Int, val excursions: List<CoachStoreEntry>,
 data class CoachSuggestion(val area: String, val topic: String, val why: String)
 data class CoachCurriculum(val suggested: List<CoachSuggestion>, val note: String)
 data class CoachStudied(val studied: String, val folded: Boolean)
+/** One remark on a draft. `because` is the evidence it came from; `door` is
+ *  set only on an offer, and only ever names a screen this product has. */
+data class Remark(val kind: String, val says: String,
+                  val because: List<String>, val door: String?)
+/** `quietBecause` carries the reason there is nothing to say — an empty list
+ *  on its own cannot tell somebody *nothing to add* from *it did not run*. */
+data class Alongside(val remarks: List<Remark>, val quietBecause: String?)
 /** One errand: a topic the offline coach could not answer, gone and studied.
  *  `why` names the monitor that asked for it. */
 data class Errand(val id: String, val topic: String, val area: String,
@@ -899,6 +906,24 @@ object ApiClient {
         if (area != null) body.put("area", area)
         val o = request("/coach/$uid/study", "POST", body, token)
         return CoachStudied(o.getString("studied"), o.getBoolean("folded"))
+    }
+
+    /** A draft, read on the device and dropped. Nothing is stored and
+     *  nothing is edited — applying a remark is the person's own act. */
+    suspend fun alongside(uid: String, token: String, draft: String,
+                          area: String? = null): Alongside {
+        val body = JSONObject().put("draft", draft)
+        if (area != null) body.put("area", area)
+        val o = request("/alongside/$uid", "POST", body, token)
+        val arr = o.optJSONArray("remarks") ?: JSONArray()
+        return Alongside((0 until arr.length()).map { i ->
+            val r = arr.getJSONObject(i)
+            val why = r.optJSONArray("because") ?: JSONArray()
+            Remark(r.getString("kind"), r.optString("says", ""),
+                (0 until why.length()).map { why.getString(it) },
+                if (r.isNull("door")) null else r.optString("door"))
+        }, if (o.isNull("quiet_because")) null
+           else o.optString("quiet_because"))
     }
 
     private fun errandOf(o: JSONObject) = Errand(

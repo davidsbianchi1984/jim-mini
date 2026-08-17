@@ -151,6 +151,18 @@ private struct GoalsSection: View {
         drillLog = (try? await ApiClient.shared.drills(uid: uid, token: token)) ?? []
     }
 
+    /// Read the draft on this device and say what is worth saying. Nothing
+    /// is stored and nothing is edited — applying a remark is the writer's.
+    private func readAlong() {
+        guard let uid = state.uid, let token = state.token else { return }
+        reading = true
+        Task {
+            remarks = try? await ApiClient.shared.alongside(
+                uid: uid, token: token, draft: draft, area: nil)
+            reading = false
+        }
+    }
+
     private func add() {
         guard let uid = state.uid, let token = state.token else { return }
         busy = true
@@ -289,9 +301,47 @@ private struct JournalSection: View {
     @State private var letters: [Letter] = []
     @State private var text = ""
     @State private var busy = false
+    // Beside you while you write. A separate box from the entry below on
+    // purpose: that one saves, this one does not, and a draft for a customer
+    // pasted into the saving box is exactly the mistake this refuses to make.
+    @State private var draft = ""
+    @State private var remarks: Alongside?
+    @State private var reading = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(L10n.t("bes.head", state.language)).font(.headline)
+                    .foregroundStyle(Theme.txt)
+                Text(L10n.t("bes.pitch", state.language)).font(.caption)
+                    .foregroundStyle(Theme.t2)
+                TextField(L10n.t("bes.ph", state.language), text: $draft,
+                          axis: .vertical)
+                    .lineLimit(3...8).foregroundStyle(Theme.txt)
+                    .padding(10).background(Theme.scrBot)
+                    .clipShape(RoundedRectangle(cornerRadius: 11))
+                    .overlay(RoundedRectangle(cornerRadius: 11)
+                        .stroke(Theme.line, lineWidth: 1))
+                Button(L10n.t("bes.go", state.language)) { readAlong() }
+                    .disabled(draft.isEmpty || reading)
+                    .font(.subheadline).tint(Theme.brandA)
+                if let r = remarks {
+                    if r.remarks.isEmpty, let why = r.quiet_because {
+                        Text(why).font(.caption2).foregroundStyle(Theme.t2)
+                    }
+                    ForEach(Array(r.remarks.enumerated()), id: \.offset) { _, m in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(L10n.t("bes.kind.\(m.kind)", state.language)
+                                 + " " + m.says)
+                                .font(.caption).foregroundStyle(Theme.txt)
+                            // The evidence travels with the remark.
+                            Text(m.because.joined(separator: " · "))
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                        }
+                    }
+                }
+            }.card()
+
             VStack(alignment: .leading, spacing: 10) {
                 Text(L10n.t("jrn.new", state.language)).font(.headline).foregroundStyle(Theme.txt)
                 TextField(L10n.t("jrn.entry.ph", state.language), text: $text,

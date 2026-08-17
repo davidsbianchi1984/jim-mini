@@ -251,6 +251,22 @@ struct CoachStudied: Decodable {
     let left_host: Bool
 }
 
+/// One remark on a draft. `because` is the evidence it came from, and `door`
+/// is set only on an offer — and only ever names a screen this product has.
+struct Remark: Decodable {
+    let kind: String
+    let says: String
+    let because: [String]
+    let door: String?
+}
+
+/// `quiet_because` carries the reason there is nothing to say: an empty list
+/// on its own cannot tell somebody *nothing to add* from *it did not run*.
+struct Alongside: Decodable {
+    let remarks: [Remark]
+    let quiet_because: String?
+}
+
 /// One errand: a topic the offline coach could not answer, gone and studied.
 /// `why` names the monitor that asked — *it studied sleep* is a fact about the
 /// guardian, *it studied sleep because your sleep band has a learned baseline*
@@ -1331,6 +1347,16 @@ actor ApiClient {
         if let topic { body["topic"] = topic }
         if let area { body["area"] = area }
         return try await request("/coach/\(uid)/study", method: "POST",
+                                 body: body, token: token)
+    }
+
+    /// A draft, read on the device and dropped. Nothing is stored and
+    /// nothing is edited — applying a remark is the person's own act.
+    func alongside(uid: String, token: String, draft: String,
+                   area: String?) async throws -> Alongside {
+        var body: [String: Any] = ["draft": draft]
+        if let area { body["area"] = area }
+        return try await request("/alongside/\(uid)", method: "POST",
                                  body: body, token: token)
     }
 

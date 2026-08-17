@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { api, type JournalRow, type LetterRow, type MealRow } from "../api";
+import { api, type Alongside, type JournalRow, type LetterRow,
+         type MealRow } from "../api";
 import { listen, primeVoice, type Listener } from "../speech";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
@@ -27,6 +28,13 @@ export function Journal() {
   const [mealNote, setMealNote] = useState("");
   const [mealPhoto, setMealPhoto] = useState<string | null>(null);
   const [letters, setLetters] = useState<LetterRow[]>([]);
+  // Beside you while you write. A separate box from the entry above on
+  // purpose: that one saves, this one does not, and a sales draft pasted
+  // into the saving box would be exactly the mistake jim/alongside.py
+  // refuses to make.
+  const [draft, setDraft] = useState("");
+  const [remarks, setRemarks] = useState<Alongside | null>(null);
+  const [reading, setReading] = useState(false);
 
   function load() {
     if (!session.userId || !session.userToken) return;
@@ -106,12 +114,49 @@ export function Journal() {
     );
   }
 
+  /** Read the draft on this device and say what is worth saying. Nothing is
+   *  stored and nothing is edited: applying a remark is the writer's act. */
+  async function readAlong() {
+    if (!session.userId || !session.userToken || !draft.trim()) return;
+    setReading(true); setError(null);
+    try {
+      setRemarks(await api.alongside(session.userId, { draft },
+                                     session.userToken));
+    } catch (e) { setError((e as Error).message); }
+    finally { setReading(false); }
+  }
+
   return (
     <div className="screen">
       <header className="screen-head">
         <h2>{tr("jrn.title", lang)}</h2>
         <span className="muted small">{tr("jrn.sub", lang)}</span>
       </header>
+
+      <div className="card">
+        <h3>{tr("bes.head", lang)}</h3>
+        <p className="muted small">{tr("bes.pitch", lang)}</p>
+        <textarea rows={5} value={draft}
+                  placeholder={tr("bes.ph", lang)}
+                  onChange={(e) => setDraft(e.target.value)} />
+        <button disabled={reading || !draft.trim()} onClick={readAlong}>
+          {tr("bes.go", lang)}
+        </button>
+        {remarks && remarks.remarks.length === 0 && (
+          <p className="muted small">{remarks.quiet_because}</p>
+        )}
+        {remarks?.remarks.map((r, i) => (
+          <div key={i} className="spec-row">
+            <div>
+              <b>{tr(`bes.kind.${r.kind}`, lang)}</b> {r.says}
+              {/* The evidence travels with the remark: "you forgot about
+                  this" with nothing under it is a guess wearing a
+                  suggestion's clothes. */}
+              <div className="muted small">{r.because.join(" · ")}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <div className="card">
         <h3>{tr("jrn.new", lang)}</h3>

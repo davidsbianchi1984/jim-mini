@@ -21,7 +21,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                careteam, community,
                catalog,
                coach,
-               engaged, errands,
+               alongside, engaged, errands,
                mailer,
                circle, contribution, db, money, schedule, shopping,
                escalation, family, followup, guardian, handoff, i18n, identity,
@@ -42,7 +42,7 @@ from . import nutrition as nutrition_mod
 from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
-    ActivityObserve, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
+    ActivityObserve, Alongside, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
     BeaconPlace, BiometricSample, CheckIn,
     ChildEnroll,
     CareTeamGoal, CareTeamLink,
@@ -3216,6 +3216,18 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "left_host": left_host, "excursion_id": cid,
                 "note": "findings folded into the coach's store; the offline "
                         "pipeline reads them on the next question"}
+
+    @app.post("/alongside/{user_id}")
+    def alongside_read(user_id: str, body: Alongside, request: Request) -> dict:
+        """Remarks on a draft: what they forgot, another angle, what JIM can
+        do for the part they are on — or nothing, with the reason.
+
+        Nothing is written. The draft arrives, is read on this device by the
+        offline stack, and is dropped; applying a remark is the person's own
+        act. Deliberately not 201: this creates nothing.
+        """
+        _user_or_404(user_id, request)
+        return alongside.read(user_id, body.draft, body.area)
 
     # ---- the unattended pass: what the coach missed, gone and learned ----
 

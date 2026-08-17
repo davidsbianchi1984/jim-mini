@@ -58,6 +58,10 @@ public sealed partial class LifePage : Page
         HabitName.Header = L10n.T("habit.name");
         HabitName.PlaceholderText = L10n.T("habit.name.ph");
         AddHabitButton.Content = L10n.T("habit.add");
+        BesideHead.Text = L10n.T("bes.head");
+        BesidePitch.Text = L10n.T("bes.pitch");
+        BesideDraft.PlaceholderText = L10n.T("bes.ph");
+        BesideGo.Content = L10n.T("bes.go");
         JournalNewHead.Text = L10n.T("jrn.new");
         JournalText.Header = L10n.T("jrn.entry");
         JournalText.PlaceholderText = L10n.T("jrn.entry.ph");
@@ -294,6 +298,50 @@ public sealed partial class LifePage : Page
                 .Select(j => new JournalRow(j.Id, j.Text ?? "—", j.CreatedAt ?? "")).ToList();
         }
         catch { /* leave as-is */ }
+    }
+
+    /// <summary>Read the draft on this device and say what is worth saying.
+    /// Nothing is stored and nothing is edited — applying a remark is the
+    /// writer's own act.</summary>
+    private async void OnReadAlongside(object sender, RoutedEventArgs e)
+    {
+        var st = AppState.Current;
+        var draft = BesideDraft.Text.Trim();
+        if (st.Uid is null || st.Token is null || draft.Length == 0) return;
+        var txt = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimTxtBrush"];
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimT2Brush"];
+        BesideGo.IsEnabled = false;
+        try
+        {
+            var read = await ApiClient.Shared.Alongside(st.Uid!, st.Token!,
+                                                        draft);
+            BesidePanel.Children.Clear();
+            BesideQuiet.Text = read.QuietBecause ?? "";
+            BesideQuiet.Visibility = read.Remarks.Length == 0
+                && read.QuietBecause is not null
+                ? Visibility.Visible : Visibility.Collapsed;
+            foreach (var m in read.Remarks)
+            {
+                var row = new StackPanel { Spacing = 2 };
+                row.Children.Add(new TextBlock
+                {
+                    Text = L10n.T($"bes.kind.{m.Kind}") + " " + m.Says,
+                    FontSize = 13, TextWrapping = TextWrapping.Wrap,
+                    Foreground = txt,
+                });
+                // The evidence travels with the remark.
+                row.Children.Add(new TextBlock
+                {
+                    Text = string.Join(" · ", m.Because), FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                });
+                BesidePanel.Children.Add(row);
+            }
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+        finally { BesideGo.IsEnabled = true; }
     }
 
     private async void OnAddJournal(object sender, RoutedEventArgs e)

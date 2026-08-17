@@ -229,7 +229,7 @@ RATCHETS: tuple[Ratchet, ...] = (
             "call sites the route audit reads out of the iPhone shell"),
     Ratchet("route.calls.android", 151, _calls("android"),
             "call sites the route audit reads out of the Android shell"),
-    Ratchet("route.calls.windows", 150, _calls("windows"),
+    Ratchet("route.calls.windows", 240, _calls("windows"),
             "call sites the route audit reads out of the desktop shell"),
     Ratchet("route.table", 220, _route_table,
             "routes reachable by walking the included routers"),

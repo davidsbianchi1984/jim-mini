@@ -3253,6 +3253,9 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    # The box on "beside you while you write". A refusal naming `draft` reads
+    # as an error about a schema; this is what the box itself asks for.
+    'draft': {'en': 'What you are writing', 'es': 'Lo que estás escribiendo', 'fr': "Ce que vous écrivez", 'de': 'Woran du schreibst', 'pt': 'O que está a escrever', 'it': 'Ciò che stai scrivendo', 'ja': '書いている内容', 'zh': '你正在写的内容', 'hi': 'आप क्या लिख रहे हैं', 'ar': 'ما تكتبه'},
     # The Studio's run form (jim/models.py WidgetRun). Worded exactly as
     # QRME words it: `test_the_shared_vocabulary_matches_the_sibling_products`
     # holds the three products to one sentence per field, and it is right

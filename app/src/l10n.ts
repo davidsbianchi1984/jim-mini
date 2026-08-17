@@ -4625,6 +4625,27 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cch.knows.counts": {
     en: "{pack} curated entries · {learned} learned by JIM · {deposits} deposited from model turns — answered offline, on this device", es: "{pack} entradas seleccionadas · {learned} aprendidas por JIM · {deposits} depositadas de turnos del modelo — respondido sin conexión, en este dispositivo", fr: "{pack} entrées sélectionnées · {learned} apprises par JIM · {deposits} déposées depuis des tours du modèle — répondu hors ligne, sur cet appareil", de: "{pack} kuratierte Einträge · {learned} von JIM gelernt · {deposits} aus Modell-Antworten hinterlegt — offline beantwortet, auf diesem Gerät", pt: "{pack} entradas selecionadas · {learned} aprendidas pelo JIM · {deposits} depositadas de respostas do modelo — respondido offline, neste dispositivo", it: "{pack} voci curate · {learned} apprese da JIM · {deposits} depositate dai turni del modello — risposto offline, su questo dispositivo", ja: "厳選エントリ {pack} 件 · JIM が学んだもの {learned} 件 · モデル回答からの蓄積 {deposits} 件 — この端末上でオフライン回答", zh: "{pack} 条精选条目 · JIM 学到 {learned} 条 · 模型回答沉淀 {deposits} 条——在本设备离线作答", hi: "{pack} चुनी हुई प्रविष्टियाँ · JIM ने {learned} सीखीं · मॉडल उत्तरों से {deposits} जमा — इसी डिवाइस पर ऑफ़लाइन उत्तर", ar: "{pack} مدخلات منسّقة · تعلّم JIM ‏{learned} · ‏{deposits} مودَعة من ردود النموذج — يُجاب دون اتصال، على هذا الجهاز",
   },
+  "bes.head": {
+    en: "Beside you while you write", es: "A tu lado mientras escribes", fr: "À vos côtés pendant que vous écrivez", de: "Neben dir, während du schreibst", pt: "Ao seu lado enquanto escreve", it: "Accanto a te mentre scrivi", ja: "書いているあいだ、そばで", zh: "你写作时在你身边", hi: "जब आप लिखते हैं, आपके साथ", ar: "بجانبك وأنت تكتب",
+  },
+  "bes.pitch": {
+    en: "Paste what you are working on — a page for a customer, a strategy note. It is read here on this device, remarked on, and dropped: nothing is saved and nothing is edited.", es: "Pega lo que estés escribiendo — una página para un cliente, una nota de estrategia. Se lee aquí, en este dispositivo, se comenta y se descarta: no se guarda nada ni se edita nada.", fr: "Collez ce sur quoi vous travaillez — une page pour un client, une note de stratégie. C'est lu ici, sur cet appareil, commenté, puis abandonné : rien n'est enregistré et rien n'est modifié.", de: "Füge ein, woran du arbeitest — eine Seite für einen Kunden, eine Strategienotiz. Es wird hier auf diesem Gerät gelesen, kommentiert und verworfen: nichts wird gespeichert und nichts verändert.", pt: "Cole aquilo em que está a trabalhar — uma página para um cliente, uma nota de estratégia. É lido aqui, neste dispositivo, comentado e descartado: nada é guardado e nada é alterado.", it: "Incolla ciò a cui stai lavorando — una pagina per un cliente, una nota di strategia. Viene letto qui, su questo dispositivo, commentato e scartato: non si salva nulla e non si modifica nulla.", ja: "いま書いているものを貼ってください — 顧客向けのページでも、戦略メモでも。この端末の中だけで読み、気づいた点を返し、そのまま破棄します。保存も編集もしません。", zh: "把你正在写的内容贴进来——给客户的页面、策略备忘。它只在本设备上被阅读、给出意见，然后丢弃：不保存，也不改动。", hi: "आप जिस पर काम कर रहे हैं उसे यहाँ चिपकाइए — ग्राहक के लिए पन्ना, रणनीति नोट। यह इसी डिवाइस पर पढ़ा जाता है, टिप्पणी दी जाती है, और छोड़ दिया जाता है: कुछ भी सहेजा या बदला नहीं जाता।", ar: "الصق ما تعمل عليه — صفحة لعميل، مذكرة استراتيجية. يُقرأ هنا على هذا الجهاز، ويُعلَّق عليه، ثم يُطرح: لا يُحفظ شيء ولا يُعدَّل شيء.",
+  },
+  "bes.ph": {
+    en: "What you are writing", es: "Lo que estás escribiendo", fr: "Ce que vous écrivez", de: "Woran du schreibst", pt: "O que está a escrever", it: "Ciò che stai scrivendo", ja: "書いている内容", zh: "你正在写的内容", hi: "आप क्या लिख रहे हैं", ar: "ما تكتبه",
+  },
+  "bes.go": {
+    en: "Have a look", es: "Échale un vistazo", fr: "Jetez-y un œil", de: "Sieh es dir an", pt: "Dê uma olhada", it: "Dacci un'occhiata", ja: "見てもらう", zh: "看一看", hi: "एक नज़र डालो", ar: "ألقِ نظرة",
+  },
+  "bes.kind.forgot": {
+    en: "You have not mentioned", es: "No has mencionado", fr: "Vous n'avez pas mentionné", de: "Du hast nicht erwähnt", pt: "Não mencionou", it: "Non hai menzionato", ja: "触れていない点：", zh: "你还没有提到", hi: "आपने ज़िक्र नहीं किया", ar: "لم تذكر",
+  },
+  "bes.kind.angle": {
+    en: "Another angle", es: "Otro enfoque", fr: "Un autre angle", de: "Ein anderer Blickwinkel", pt: "Outro ângulo", it: "Un altro punto di vista", ja: "別の切り口：", zh: "另一个角度", hi: "एक और पहलू", ar: "زاوية أخرى",
+  },
+  "bes.kind.offer": {
+    en: "I can do this part", es: "Puedo encargarme de esto", fr: "Je peux faire cette partie", de: "Diesen Teil kann ich übernehmen", pt: "Posso tratar desta parte", it: "Questa parte posso farla io", ja: "この部分は私がやれます：", zh: "这部分我可以做", hi: "यह हिस्सा मैं कर सकता हूँ", ar: "يمكنني تولّي هذا الجزء",
+  },
   "err.head": {
     en: "What it studied on its own", es: "Lo que estudió por su cuenta", fr: "Ce qu'il a étudié de lui-même", de: "Was er von sich aus studiert hat", pt: "O que estudou por conta própria", it: "Cosa ha studiato da solo", ja: "自分で学んだこと", zh: "它自己学到的内容", hi: "इसने स्वयं क्या पढ़ा", ar: "ما درسه من تلقاء نفسه",
   },

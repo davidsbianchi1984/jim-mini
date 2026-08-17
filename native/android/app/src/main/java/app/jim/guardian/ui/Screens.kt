@@ -2121,6 +2121,12 @@ private fun JournalPanel(vm: GuardianViewModel) {
     var meals by remember { mutableStateOf<List<String>>(emptyList()) }
     var mealNote by remember { mutableStateOf("") }
     var letters by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
+    // Beside you while you write. A separate box from the entry below on
+    // purpose: that one saves, this one does not, and a draft for a customer
+    // pasted into the saving box is exactly the mistake this refuses to make.
+    var draft by remember { mutableStateOf("") }
+    var remarks by remember { mutableStateOf<Alongside?>(null) }
+    var reading by remember { mutableStateOf(false) }
     fun reload() {
         vm.call({ ApiClient.journal(vm.uid!!, vm.token!!) }) { r -> entries = r.getOrDefault(emptyList()) }
         vm.call({ ApiClient.meals(vm.uid!!, vm.token!!) }) { r -> meals = r.getOrDefault(emptyList()) }
@@ -2129,6 +2135,36 @@ private fun JournalPanel(vm: GuardianViewModel) {
     LaunchedEffect(Unit) { reload() }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(L10n.t("bes.head", vm.language), color = Jim.Txt,
+                fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("bes.pitch", vm.language), color = Jim.T2,
+                fontSize = 12.sp)
+            labeledField(L10n.t("bes.head", vm.language), draft,
+                L10n.t("bes.ph", vm.language)) { draft = it }
+            BrandButton(L10n.t("bes.go", vm.language),
+                enabled = draft.isNotBlank(), busy = reading) {
+                reading = true
+                vm.call({ ApiClient.alongside(vm.uid!!, vm.token!!, draft) }) { r ->
+                    reading = false
+                    remarks = r.getOrNull()
+                }
+            }
+            remarks?.let { a ->
+                if (a.remarks.isEmpty()) {
+                    a.quietBecause?.let {
+                        Text(it, color = Jim.T2, fontSize = 12.sp)
+                    }
+                }
+                a.remarks.forEach { m ->
+                    Text(L10n.t("bes.kind.${m.kind}", vm.language) + " " + m.says,
+                        color = Jim.Txt, fontSize = 13.sp)
+                    // The evidence travels with the remark.
+                    Text(m.because.joinToString(" · "), color = Jim.T2,
+                        fontSize = 11.sp)
+                }
+            }
+        }
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(L10n.t("jrn.new", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             labeledField(L10n.t("jrn.entry", vm.language), text, L10n.t("jrn.entry.ph", vm.language)) { text = it }

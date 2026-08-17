@@ -128,6 +128,16 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "What reaches out: a bound robot and its first-aid rating, a placed "
         "code a stranger can scan, accounts on platforms JIM does not run, "
         "and excursions — which report what was redacted on the way out.",
+    ("read this over", "look at what i wrote", "what am i missing",
+     "another angle", "give me an idea", "help me write this",
+     "does it read my documents", "is my draft saved", "sales page",
+     "strategy doc"):
+        "Journal → beside you while you write: paste what you are working "
+        "on and it says what you have not mentioned that is already in your "
+        "own goals, another angle out of what the coach knows, and the "
+        "parts it can do for you. It is read on this device and dropped — "
+        "nothing is saved, nothing is edited, and it says nothing rather "
+        "than filling the margin.",
     ("what does it know", "how does it learn", "did it look that up",
      "does it go online", "what does it send", "study on its own",
      "why did it study that", "does it cost anything", "no internet",

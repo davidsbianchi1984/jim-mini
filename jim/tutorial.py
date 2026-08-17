@@ -135,6 +135,29 @@ LESSONS: tuple[dict, ...] = (
               "rather than inventing one.",
          screens=(87,),
          try_it="Open Journal and write one sentence about today."),
+    dict(key="alongside", chapter="Being watched over",
+         title="Beside you while you write",
+         what="Paste what you are working on — a page for a customer, a "
+              "strategy note — and it says three kinds of thing and no "
+              "more: something already in your own goals that the draft "
+              "never mentions, another angle out of what the coach knows, "
+              "and the parts this product can actually do for you. Each "
+              "remark carries what it came from, because *you forgot about "
+              "this* with nothing under it is a guess wearing a "
+              "suggestion's clothes — and a store entry says whether it was "
+              "the hand-written pack, something JIM went and studied, or "
+              "something a paid model left behind, which are three "
+              "different claims. Three remarks at most: a margin full of "
+              "them is a margin nobody reads. It says nothing rather than "
+              "filling the space, and tells you that is what happened. It "
+              "is read on this device by the offline stack and dropped — "
+              "not stored, not logged, not turned into anything — and it "
+              "changes nothing: applying a remark is your own act. And it "
+              "is not watching your screen. It reads what you hand it, in a "
+              "request you made.",
+         screens=(88,),
+         try_it="Paste something you are working on, and check that a "
+                "remark names where it came from."),
     dict(key="errands", chapter="Being watched over",
          title="What it studied on its own",
          what="The coach on your device answers all day: no signal, no key, "

@@ -154,6 +154,26 @@
         <PivotItem x:Name="JournalPivot">
             <ScrollViewer>
                 <StackPanel Spacing="12" Padding="4">
+                    <!-- Beside you while you write. A separate box from the
+                         entry below on purpose: that one saves, this one does
+                         not, and a draft for a customer pasted into the saving
+                         box is exactly the mistake this refuses to make. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="10">
+                            <TextBlock x:Name="BesideHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="BesidePitch" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="BesideDraft"
+                                     AcceptsReturn="True" TextWrapping="Wrap" Height="110" />
+                            <Button x:Name="BesideGo" Click="OnReadAlongside" />
+                            <TextBlock x:Name="BesideQuiet" FontSize="12" TextWrapping="Wrap"
+                                       Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <StackPanel x:Name="BesidePanel" Spacing="4" />
+                        </StackPanel>
+                    </Border>
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">

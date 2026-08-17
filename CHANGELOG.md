@@ -8,6 +8,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Beside somebody while they write.** The field ask, verbatim: *as you're
+  typing out a sales page to a customer, or writing a strategy doc, to just
+  jump in and say hey you forgot about this, or here's maybe another idea, or
+  you should consider this, I can do this thing to help.*
+
+      asked     can it answer about a draft
+      mattered  does it notice the thing they would have wanted noticing
+
+  Three remarks, and they are the three in that sentence: something already in
+  this person's own records that the draft does not mention, something the
+  coach knows about the subject that the draft is not using, and a thing this
+  product can actually do for the part they are on. Three at most — a margin
+  full of remarks is a margin nobody reads — and silence, with its reason,
+  rather than filler.
+
+  **Every remark carries its evidence.** *You forgot about this* with nothing
+  under it is a guess wearing a suggestion's clothes, so each one names the
+  goal it came from, or the store entry and where that entry came from: the
+  hand-written pack, an excursion, or a paid model turn are three different
+  claims and the person deciding whether to use it is entitled to which.
+
+  **The draft is read and dropped.** Not in a table, not in a log, not as an
+  embedding — and it holds by construction rather than by promise: the module
+  imports no database and calls nothing that writes. It never leaves the
+  device either; a guard reads its imports the way `jim/pipeline.py`'s does.
+  What somebody is drafting for a customer is the most commercially sensitive
+  text they own, and the honest way to be trusted with it is to have nowhere
+  to put it and no way to send it.
+
+  **And it decides nothing.** Remarks come back; applying one is the writer's
+  own act. It is also not watching a screen — it reads a draft handed to it,
+  in a request somebody made. That other thing is a different round with a
+  different consent, and nothing here opens the door to it.
+
+  On the console, on iOS, on Android and on Windows.
+
 - **What the coach could not answer becomes what JIM goes and learns.** Every
   piece of this loop already existed. The coach on the device answers all day —
   no network, no key, nothing per turn. When it cannot answer it writes the miss

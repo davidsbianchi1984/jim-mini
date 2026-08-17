@@ -393,6 +393,27 @@ export interface CoachCurriculum { suggested: CoachSuggestion[]; note: string }
 export interface CoachStudied { studied: string; area: string | null;
   folded: boolean; left_host: boolean; excursion_id: string; note: string }
 
+// -- beside somebody while they write (jim/alongside.py) -----------------
+//
+// One remark on a draft. `because` is the evidence — a goal of theirs, an
+// entry in the coach's store and where that entry came from — because "you
+// forgot about this" with nothing under it is a guess wearing a suggestion's
+// clothes. `door` is set only on an offer, and only ever names a screen this
+// product has.
+export interface Remark {
+  kind: "forgot" | "angle" | "offer";
+  says: string;
+  because: string[];
+  door?: string;
+}
+
+// `quiet_because` carries the reason there is nothing: an empty list on its
+// own leaves a person unable to tell "nothing to add" from "it did not run".
+export interface Alongside {
+  remarks: Remark[];
+  quiet_because: string | null;
+}
+
 // -- the unattended study pass (jim/errands.py) --------------------------
 //
 // One errand: a topic the offline coach could not answer, gone and studied,
@@ -1545,6 +1566,11 @@ export const api = {
   // without the permit, and refused again once the day's budget is spent —
   // two different refusals, because "not allowed" and "not today" are two
   // different things to be told.
+  // A draft, read on the device and dropped. Nothing is stored and nothing
+  // is edited: remarks come back, and applying one is the person's own act.
+  alongside: (uid: string, body: { draft: string; area?: string },
+              token: string) =>
+    req<Alongside>(`/alongside/${uid}`, { method: "POST", body, token }),
   errands: (uid: string, token: string) =>
     req<ErrandLedger>(`/errands/${uid}`, { token }),
   runErrands: (uid: string, token: string) =>
