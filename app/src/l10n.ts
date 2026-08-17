@@ -4953,6 +4953,30 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "err.redacted": {
     en: "taken out of it", es: "suprimido de ahí", fr: "retiré du texte", de: "daraus entfernt", pt: "retirado dali", it: "rimossi dal testo", ja: "を伏せ字にしました", zh: "处已被去除", hi: "बातें हटाई गईं", ar: "حُذفت منه",
   },
+  // The situational half of the ladder (jim/noticed.py). `ntc.free` is the
+  // number the whole thing exists to move: of what it handled unattended,
+  // how much the free coach carried.
+  "ntc.head": {
+    en: "What it noticed and handled", es: "Lo que detectó y resolvió", fr: "Ce qu'il a remarqué et traité", de: "Was ihm auffiel und was es geregelt hat", pt: "O que reparou e resolveu", it: "Ciò che ha notato e gestito", ja: "気づいて対応したこと", zh: "它注意到并处理的事", hi: "जो इसने देखा और सँभाला", ar: "ما لاحظه وعالجه",
+  },
+  "ntc.notallowed": {
+    en: "Not allowed to handle what it notices yet. Turn it on in what it may do for you — it says there what it looks at and what it does about it.", es: "Todavía no tiene permiso para ocuparse de lo que detecta. Actívalo en lo que puede hacer por ti: allí dice qué observa y qué hace al respecto.", fr: "Pas encore autorisé à traiter ce qu'il remarque. Activez-le dans ce qu'il peut faire pour vous — il y est dit ce qu'il observe et ce qu'il en fait.", de: "Darf sich noch nicht um das kümmern, was ihm auffällt. Schalte es dort frei, wo steht, worauf es achtet und was es damit tut.", pt: "Ainda não tem permissão para tratar do que repara. Ative-o no que ele pode fazer por si — diz lá o que observa e o que faz a respeito.", it: "Non ha ancora il permesso di occuparsi di ciò che nota. Attivalo in ciò che può fare per te: lì dice cosa osserva e cosa ne fa.", ja: "気づいたことに対処する許可がまだありません。「あなたのためにできること」で有効にしてください。何を見て、どう対応するかが書かれています。", zh: "尚未获准处理它注意到的情况。请在「它可以为你做什么」中开启 — 那里写明了它会关注什么、又会如何应对。", hi: "जो यह नोटिस करता है उसे सँभालने की अनुमति अभी नहीं है। इसे \"यह आपके लिए क्या कर सकता है\" में चालू करें — वहाँ लिखा है कि यह क्या देखता है और क्या करता है।", ar: "لم يُسمح له بعد بمعالجة ما يلاحظه. فعّله في ما يمكنه فعله لك — هناك يُذكر ما يراقبه وما يفعله حياله.",
+  },
+  "ntc.go": {
+    en: "Deal with what you noticed", es: "Ocúpate de lo que detectaste", fr: "Traite ce que tu as remarqué", de: "Kümmere dich um das, was dir aufgefallen ist", pt: "Trata do que reparaste", it: "Occupati di ciò che hai notato", ja: "気づいたことに対応して", zh: "处理你注意到的事", hi: "जो आपने देखा उसे सँभालें", ar: "عالِج ما لاحظته",
+  },
+  "ntc.free": {
+    en: "{n} of {total} handled for nothing by the offline coach", es: "{n} de {total} resueltos sin coste por el coach sin conexión", fr: "{n} sur {total} traités gratuitement par le coach hors ligne", de: "{n} von {total} kostenlos vom Offline-Coach erledigt", pt: "{n} de {total} resolvidos sem custo pelo coach offline", it: "{n} su {total} gestiti gratuitamente dal coach offline", ja: "{total}件中{n}件はオフラインのコーチが無償で対応", zh: "{total} 件中有 {n} 件由离线教练免费处理", hi: "{total} में से {n} ऑफ़लाइन कोच ने बिना किसी लागत के सँभाले", ar: "{n} من {total} عالجها المدرّب دون اتصال بلا تكلفة",
+  },
+  "ntc.by.coach": {
+    en: "the offline coach settled this — no turn spent", es: "lo resolvió el coach sin conexión: no se gastó ningún turno", fr: "réglé par le coach hors ligne — aucun tour dépensé", de: "vom Offline-Coach geklärt — kein Durchgang verbraucht", pt: "resolvido pelo coach offline — nenhum turno gasto", it: "risolto dal coach offline — nessun turno speso", ja: "オフラインのコーチが解決 — 消費なし", zh: "由离线教练解决 — 未消耗任何回合", hi: "ऑफ़लाइन कोच ने सुलझाया — कोई टर्न ख़र्च नहीं", ar: "حلّه المدرّب دون اتصال — دون إنفاق أي جولة",
+  },
+  "ntc.by.jim": {
+    en: "the coach could not, so JIM did — one turn", es: "el coach no pudo, así que lo hizo JIM: un turno", fr: "le coach n'a pas pu, JIM s'en est chargé — un tour", de: "der Coach konnte nicht, also übernahm JIM — ein Durchgang", pt: "o coach não conseguiu, por isso foi o JIM — um turno", it: "il coach non ci è riuscito, l'ha fatto JIM — un turno", ja: "コーチでは対応できずJIMが対応 — 1回分", zh: "教练无法处理，由 JIM 接手 — 一个回合", hi: "कोच नहीं कर सका, इसलिए JIM ने किया — एक टर्न", ar: "لم يستطع المدرّب فتولّاها JIM — جولة واحدة",
+  },
+  "ntc.waiting": {
+    en: "waiting for tomorrow — today's turns are spent", es: "esperando a mañana: los turnos de hoy están agotados", fr: "en attente de demain — les tours du jour sont épuisés", de: "wartet auf morgen — die heutigen Durchgänge sind aufgebraucht", pt: "à espera de amanhã — os turnos de hoje estão gastos", it: "in attesa di domani: i turni di oggi sono esauriti", ja: "明日待ち — 本日分は使い切りました", zh: "等到明天 — 今天的回合已用完", hi: "कल का इंतज़ार — आज के टर्न ख़त्म", ar: "بانتظار الغد — نفدت جولات اليوم",
+  },
   "cch.study.head": {
     en: "What JIM should study next", es: "Lo próximo que JIM debería estudiar", fr: "Ce que JIM devrait étudier ensuite", de: "Was JIM als Nächstes studieren sollte", pt: "O que o JIM deve estudar a seguir", it: "Cosa dovrebbe studiare JIM adesso", ja: "JIM が次に学ぶべきこと", zh: "JIM 接下来该学什么", hi: "JIM को आगे क्या पढ़ना चाहिए", ar: "ما الذي ينبغي أن يدرسه JIM تاليًا",
   },

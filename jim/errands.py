@@ -28,7 +28,10 @@ So:
   in :mod:`jim.permits`), which is `asked` rather than assumed by opening a
   session;
 * it runs at most :data:`DAILY` errands in a day, counted from the ledger
-  rather than from a variable, so a restart does not reset the budget;
+  rather than from a variable, so a restart does not reset the budget — and
+  since 0.84.0 that ceiling is **shared** with :mod:`jim.noticed`, the other
+  unattended pass, because two budgets would mean the real ceiling is their
+  sum;
 * the ceiling takes no argument. Every reason to raise one for a single call
   is reasonable at the time, and the sum of them is why this kind of limit
   stops meaning anything.
@@ -102,16 +105,25 @@ class Spent(RuntimeError):
 
 
 def spent_today(user_id: str) -> int:
-    """Errands opened for this user since midnight UTC, from the ledger.
+    """Unattended turns spent for this user since midnight UTC, from the
+    ledgers — errands **and** the situations :mod:`jim.noticed` had to pay to
+    handle.
 
     The ledger and not a counter, because the question a person asks is *what
     did it spend today* and a counter cannot answer it — it can only agree
     with itself.
+
+    Both kinds, against one ceiling, because there are now two passes that can
+    spend unattended and giving each its own budget would make the real
+    ceiling their sum — which is the failure :data:`DAILY` is written to avoid,
+    arriving by a different road. Study and handling compete for the same day.
     """
-    return db.connect().execute(
+    from . import noticed
+    mine = db.connect().execute(
         "SELECT COUNT(*) AS n FROM errands WHERE user_id=?"
         " AND substr(opened_at, 1, 10) = substr(?, 1, 10)",
         (user_id, db.utcnow())).fetchone()["n"]
+    return mine + noticed.spent_today(user_id)
 
 
 def _may_spend(user_id: str) -> None:

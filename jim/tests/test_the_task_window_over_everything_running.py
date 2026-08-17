@@ -227,8 +227,42 @@ def test_the_window_carries_what_is_left_to_spend(client):
     head = {"authorization": client.headers["authorization"]}
     win = _window(client, uid, head)
     assert win["spend"] == {"spent_today": 0, "daily": errands.DAILY,
-                            "permitted": False}
+                            "permitted": False, "handling_permitted": False}
     assert win["today"] == []
+
+
+def test_both_switches_that_can_spend_the_day_are_named(client):
+    """One ceiling, two passes that draw on it. A window naming only the
+    study permit would be answering about one of the two switches that can
+    empty the number beside it."""
+    from jim import noticed
+    uid = enroll(client)
+    head = {"authorization": client.headers["authorization"]}
+    client.put(f"/engaged/{uid}/permits/{noticed.PERMIT}",
+               json={"granted": True}, headers=head)
+
+    spend = _window(client, uid, head)["spend"]
+    assert spend["handling_permitted"] is True
+    assert spend["permitted"] is False, "the other switch is its own"
+
+
+def test_what_it_handled_today_says_which_half_settled_it(client):
+    """Where the ladder stops being a claim in a docstring and becomes a
+    number on a screen."""
+    from jim import guardian, noticed, pipeline
+    uid = enroll(client)
+    head = {"authorization": client.headers["authorization"]}
+    client.put(f"/engaged/{uid}/permits/{noticed.PERMIT}",
+               json={"granted": True}, headers=head)
+    guardian._event(uid, "detection", condition="restless nights",
+                    severity="guidance", detail={})
+    pipeline.deposit(uid, "", "restless nights", "wind down earlier",
+                     "test", "test")
+    client.post(f"/noticed/{uid}", headers=head)
+
+    handled = _window(client, uid, head)["handled"]
+    assert [h["settled_by"] for h in handled] == ["coach"]
+    assert handled[0]["condition"] == "restless nights"
 
 
 # --------------------------------------------------------------------------

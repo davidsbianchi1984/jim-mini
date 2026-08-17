@@ -213,7 +213,14 @@ RATCHETS: tuple[Ratchet, ...] = (
             "translation tables the completeness sweep reads"),
     Ratchet("l10n.asked.ios", 612, _l10n("ios", "asked"),
             "screens on the iPhone that call the localizer"),
-    Ratchet("l10n.asked.android", 390, _l10n("android", "asked"),
+    # Raised from 390 in 0.84.0. It was the one l10n floor still sitting at
+    # half its surface while its five siblings had all been carried up to
+    # roughly four-fifths — 390 against 785, ratio 0.50, on the exact edge of
+    # the guard that asks whether a floor is still near what it measures. A
+    # handful of new call sites tipped it under and the guard said so, which
+    # is the whole reason that guard exists: the drift had been there a while
+    # and nothing had been failing.
+    Ratchet("l10n.asked.android", 628, _l10n("android", "asked"),
             "screens on Android that call the localizer"),
     Ratchet("l10n.asked.windows", 578, _l10n("windows", "asked"),
             "screens on the desktop that call the localizer"),

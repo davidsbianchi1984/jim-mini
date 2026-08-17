@@ -555,6 +555,50 @@ export interface ErrandsRun {
   errands: Errand[]; remaining_today: number; nothing_to_study: boolean;
 }
 
+// -- what the coach noticed, and what it cost to handle (jim/noticed.py) --
+//
+// The other half of the token ladder. `errands` is what the coach could not
+// *answer*; this is what it could not *settle* — a situation rather than a
+// question. `settled_by` is the column worth reading: `coach` cost nothing,
+// `jim` cost one of the day's shared turns.
+export interface Notice {
+  id: string; event_id: string; condition: string; severity: string;
+  settled_by: "coach" | "jim"; said: string; noticed_at: string;
+}
+
+export interface NoticeDue {
+  event_id: string; condition: string; severity: string; noticed_at: string;
+}
+
+// Of everything handled unattended, how much the free half carried.
+// `free_share` is null rather than 0 when nothing has been handled — a bare
+// 0% would say *the coach settled none of them* about an account where
+// nothing has happened yet.
+// `settled_free` / `settled_paid`, not `by_coach` / `by_jim`: those are the
+// names the *lists* carry on a pass below, and one wire name carries one
+// type. Counts and rows are not the same thing.
+export interface NoticeSettlement {
+  settled_free: number; settled_paid: number; free_share: number | null;
+  permitted: boolean; spent_today: number; daily: number;
+}
+
+// None of these three are named the obvious thing, each for the same reason:
+// `noticed` is already a bool on the wire, `due` is the errand ledger's list
+// of study suggestions, and `standing` is a permit's opened/asked.
+export interface NoticeLedger {
+  handled: Notice[]; waiting: NoticeDue[]; settlement: NoticeSettlement;
+}
+
+// A spent budget is reported here, never refused: the free half is still
+// worth running, so `over_budget` names what waits for tomorrow rather than
+// the whole pass answering 429 and withholding the work that costs nothing.
+export interface NoticedRun {
+  by_coach: Notice[]; by_jim: Notice[];
+  unreachable: { event_id: string; condition: string; because: string | null }[];
+  over_budget: { event_id: string; condition: string }[];
+  remaining_today: number; nothing_noticed: boolean;
+}
+
 // -- engaged sessions (jim/engaged.py) -----------------------------------
 //
 // `reversible` and `irreversible_because` are carried separately rather than
@@ -1764,6 +1808,14 @@ export const api = {
     req<ErrandLedger>(`/errands/${uid}`, { token }),
   runErrands: (uid: string, token: string) =>
     req<ErrandsRun>(`/errands/${uid}`, { method: "POST", token }),
+  // The situational half of the same ladder. The offline coach is put to
+  // each thing it noticed first and settles what it can for nothing; only
+  // what it cannot becomes a paid turn, from the same day's ceiling the
+  // errands above spend.
+  noticed: (uid: string, token: string) =>
+    req<NoticeLedger>(`/noticed/${uid}`, { token }),
+  runNoticed: (uid: string, token: string) =>
+    req<NoticedRun>(`/noticed/${uid}`, { method: "POST", token }),
 
   // -- engaged: the online Guardian you leave running ---------------------
   //

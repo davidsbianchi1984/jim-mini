@@ -1856,6 +1856,10 @@ fun CoachScreen(vm: GuardianViewModel) {
     // The unattended pass: what it went and learned without being asked.
     var ledger by remember { mutableStateOf<ErrandLedger?>(null) }
     var running by remember { mutableStateOf(false) }
+    // The situational half of the same ladder: what the coach noticed during
+    // the day, and which half of it settled each one.
+    var noticed by remember { mutableStateOf<NoticeLedger?>(null) }
+    var handling by remember { mutableStateOf(false) }
     var reloads by remember { mutableStateOf(0) }
     LaunchedEffect(reloads) {
         val uid = vm.uid ?: return@LaunchedEffect
@@ -1863,6 +1867,7 @@ fun CoachScreen(vm: GuardianViewModel) {
         knows = runCatching { ApiClient.coachStore(uid, token) }.getOrNull()
         syllabus = runCatching { ApiClient.coachCurriculum(uid, token) }.getOrNull()
         ledger = runCatching { ApiClient.errands(uid, token) }.getOrNull()
+        noticed = runCatching { ApiClient.noticed(uid, token) }.getOrNull()
     }
 
     screenScroll {
@@ -1982,6 +1987,44 @@ fun CoachScreen(vm: GuardianViewModel) {
                         Text(e.why, color = Jim.T2, fontSize = 11.sp)
                         Text(if (e.leftHost) L10n.t("err.left", vm.language)
                              else L10n.t("err.stayed", vm.language),
+                            color = Jim.T2, fontSize = 11.sp)
+                    }
+                }
+                // The other half of the same ladder: what the coach could not
+                // *settle*, rather than what it could not answer. Each row
+                // says which half dealt with it, because that difference is
+                // the product claim and it is invisible unless written down.
+                noticed?.let { n ->
+                    Text(L10n.t("ntc.head", vm.language), color = Jim.Txt,
+                        fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    if (n.settlement.permitted) {
+                        if (n.settlement.freeShare != null) {
+                            Text(L10n.fill("ntc.free", vm.language, mapOf(
+                                "n" to n.settlement.settledFree.toString(),
+                                "total" to (n.settlement.settledFree
+                                            + n.settlement.settledPaid).toString())),
+                                color = Jim.T2, fontSize = 11.sp)
+                        }
+                        // No budget guard on this one, unlike the errands
+                        // button above: a spent day still runs the free half.
+                        TextButton(enabled = !handling, onClick = {
+                            handling = true
+                            vm.call({ ApiClient.runNoticed(
+                                vm.uid!!, vm.token!!) }) {
+                                handling = false
+                                reloads += 1
+                            }
+                        }) { Text(L10n.t("ntc.go", vm.language),
+                                  color = Jim.BrandA, fontSize = 12.sp) }
+                    } else {
+                        Text(L10n.t("ntc.notallowed", vm.language),
+                            color = Jim.T2, fontSize = 11.sp)
+                    }
+                    n.handled.forEach { row ->
+                        Text(row.condition, color = Jim.Txt, fontSize = 13.sp)
+                        Text(if (row.settledBy == "coach")
+                                 L10n.t("ntc.by.coach", vm.language)
+                             else L10n.t("ntc.by.jim", vm.language),
                             color = Jim.T2, fontSize = 11.sp)
                     }
                 }

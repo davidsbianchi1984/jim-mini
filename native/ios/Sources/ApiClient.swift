@@ -400,6 +400,60 @@ struct ErrandLedger: Decodable {
     let permitted: Bool
 }
 
+/// What the coach noticed, and which half of the ladder settled it.
+/// `settled_by` is the column worth reading: `coach` cost nothing, `jim`
+/// cost one of the day's shared turns.
+struct Notice: Decodable {
+    let id: String
+    let event_id: String
+    let condition: String
+    let severity: String
+    let settled_by: String
+    let said: String
+    let noticed_at: String
+}
+
+struct NoticeDue: Decodable {
+    let event_id: String
+    let condition: String
+    let severity: String
+    let noticed_at: String
+}
+
+/// Of everything handled unattended, how much the free half carried.
+/// `free_share` is nil rather than 0 when nothing has been handled — a bare
+/// 0% would say *the coach settled none of them* about an account where
+/// nothing has happened yet.
+struct NoticeSettlement: Decodable {
+    let settled_free: Int
+    let settled_paid: Int
+    let free_share: Double?
+    let permitted: Bool
+    let spent_today: Int
+    let daily: Int
+}
+
+struct NoticeLedger: Decodable {
+    let handled: [Notice]
+    let waiting: [NoticeDue]
+    let settlement: NoticeSettlement
+}
+
+/// A spent budget is reported here, never refused: the free half is still
+/// worth running, so `over_budget` names what waits for tomorrow rather than
+/// the pass answering 429 and withholding the work that costs nothing.
+struct NoticedRun: Decodable {
+    struct Blocked: Decodable {
+        let event_id: String
+        let condition: String
+    }
+    let by_coach: [Notice]
+    let by_jim: [Notice]
+    let over_budget: [Blocked]
+    let remaining_today: Int
+    let nothing_noticed: Bool
+}
+
 struct ErrandsRun: Decodable {
     let errands: [Errand]
     let remaining_today: Int
@@ -1612,6 +1666,22 @@ actor ApiClient {
     @discardableResult
     func runErrands(uid: String, token: String) async throws -> ErrandsRun {
         try await request("/errands/\(uid)", method: "POST", token: token)
+    }
+
+    /// What the coach noticed during the day, and what settled each one.
+    func noticed(uid: String, token: String) async throws -> NoticeLedger {
+        try await request("/noticed/\(uid)", token: token)
+    }
+
+    /// The situational half of the ladder. The offline coach is put to each
+    /// thing first and settles what it can for nothing; only what it cannot
+    /// becomes a paid turn, from the same day's ceiling the errands spend.
+    ///
+    /// No budget refusal, unlike `runErrands`: a spent day still runs the
+    /// free half, and what could not be paid for comes back in `over_budget`.
+    @discardableResult
+    func runNoticed(uid: String, token: String) async throws -> NoticedRun {
+        try await request("/noticed/\(uid)", method: "POST", token: token)
     }
 
     func baseline(uid: String, token: String) async throws -> [BaselineMetric] {

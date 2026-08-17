@@ -8,6 +8,62 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **What the coach noticed becomes JIM's problem — and only when it has to.**
+  The field ask, in its own words: *for autonomous stuff throughout your day to
+  save tokens I want coach to be running most of those, and when something is
+  identified by coach, it could then start using tokens as Jim to better handle
+  the situation.*
+
+      asked     does the free half run the day and the paid half only what it cannot
+      mattered  is the decision to spend made by something, and can it be read back
+
+  Half of that ladder shipped in 0.82.0. `jim/errands.py` turns what the coach
+  could not **answer** into a bounded study pass. The other half had no path at
+  all: the guardian records detections all day, and nothing ever decided that
+  one of them warranted a paid turn. A gap became study; a situation became a
+  row in a table.
+
+  `jim/noticed.py` is that decision. Each thing the coach noticed goes to the
+  offline stack **first** — the same `pipeline.run` that answers all day for
+  nothing — and what it settles costs nothing at all. Only what it cannot
+  becomes a paid turn. That ordering is the feature rather than an
+  optimisation in front of it: *the coach runs most of these* is only true if
+  the coach is actually asked first, and asking the model first would produce
+  the same answers at a price.
+
+  **It pays down its own bill.** A bought turn is deposited into the store the
+  offline stack predicts from, so the same situation is settled free the next
+  time it happens — and, as a test found by failing, so are the situations
+  near it. Spending is front-loaded and decays.
+
+  **One ceiling, not two.** There are now two unattended passes that can spend,
+  so `errands.spent_today` counts both against the one `DAILY`. Two budgets
+  would mean the real ceiling is their sum, which is the failure that number
+  was written to avoid arriving by a different road. The permits stay separate,
+  because sending a general topic out and putting this person's own situation
+  to a model are opposite shapes and deserve separate yeses.
+
+  **A spent day is reported, never refused.** Unlike the errands pass, running
+  out of budget does not raise here: the free half is still worth running, and
+  a version that refused would have withheld the work costing nothing because
+  it could not do the work that costs. What could not be paid for comes back in
+  `over_budget` and waits for tomorrow.
+
+  **It advises; it does not act.** Every acting tool sits behind a session a
+  person opened, with the reach shown at the door and an undo trail on each
+  act. An unattended pass that could act would be that apparatus with the
+  person taken out of it. Acting unattended is a real thing somebody may want,
+  it is a separate decision, and nobody has made it.
+
+  **Emergencies are not its business.** `critical` detections are excluded by
+  the query rather than by a later filter. `jim/escalation.py` already takes
+  those to a person, and putting a model turn in front of that path would add
+  latency to the one case where latency is the harm.
+
+  The task window carries what it handled today with `settled_by` on each row —
+  which is where the ladder stops being a claim in a docstring and becomes a
+  number on a screen. On the console, on iOS, on Android and on Windows.
+
 - **Everything running, in one place.** The field ask, said twice: *users will
   always have that task window — which agent is running, which tasks are still
   running.*

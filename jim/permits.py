@@ -107,6 +107,20 @@ AREAS: dict[str, dict] = {
                 "kept where the offline coach can read it",
         "tools": ("study_unattended",),
     },
+    "handle_what_you_notice": {
+        "standing": "asked",
+        # It says what *leaves*, because that is the one thing a person needs
+        # before saying yes and it is where this differs from the study
+        # permit above. That one sends a general topic and keeps the person
+        # out of it; this one puts their own situation, with the context the
+        # coach would use, to a model.
+        "says": "handle what it notices during the day, unattended — the "
+                "offline coach tries first for nothing, and only what it "
+                "cannot settle goes to a model, with your situation and the "
+                "same context a coach turn uses; it advises, never acts, and "
+                "never touches an emergency",
+        "tools": ("handle_unattended",),
+    },
     "outside_this_app": {
         "standing": "opened",
         "says": "put your question to a specialist outside JIM — the one "

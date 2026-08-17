@@ -1704,6 +1704,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': "ये दोनों एक-दूसरे के संपर्क नहीं हैं — एक गार्जियन दूसरे तक तभी पहुँचता है जब दोनों ने पहले से एक-दूसरे को रखा हो; अकेला एक पक्ष कहीं नहीं पहुँचता",
         'ar': "هذان ليسا جهتَي اتصال لبعضهما — لا يصل حارس إلى آخر إلا إذا كان كلاهما يحتفظ بالآخر أصلًا، والطرف الواحد وحده لا يصل إلى شيء",
     },
+    "this guardian has not been allowed to handle what it notices on its own — turn it on in what it may do for you, where it says what it looks at and what it does about it": {
+        'es': "este guardián no tiene permiso para ocuparse por su cuenta de lo que detecta: actívalo en lo que puede hacer por ti, donde dice qué observa y qué hace al respecto",
+        'fr': "ce gardien n'a pas le droit de traiter seul ce qu'il remarque — activez-le dans ce qu'il peut faire pour vous, où il est dit ce qu'il observe et ce qu'il en fait",
+        'de': "dieser Wächter darf sich nicht selbstständig um das kümmern, was ihm auffällt — schalte es dort frei, wo steht, worauf er achtet und was er damit tut",
+        'pt': "este guardião não tem permissão para tratar sozinho do que repara — ative-o no que ele pode fazer por si, onde diz o que observa e o que faz a respeito",
+        'it': "questo guardiano non ha il permesso di occuparsi da solo di ciò che nota: attivalo in ciò che può fare per te, dove dice cosa osserva e cosa ne fa",
+        'ja': "このガーディアンは、気づいたことに自分だけで対処する許可を得ていません。「あなたのためにできること」で有効にしてください。そこに、何を見ていて、それに対して何をするかが書かれています",
+        'zh': "这位守护者尚未获准自行处理它注意到的情况 — 请在「它可以为你做什么」中开启，那里写明了它会关注什么、又会如何应对",
+        'hi': "इस अभिभावक को यह अनुमति नहीं मिली है कि जो वह नोटिस करे उसे अपने आप सँभाले — इसे \"यह आपके लिए क्या कर सकता है\" में चालू करें, जहाँ लिखा है कि यह क्या देखता है और उसके बारे में क्या करता है",
+        'ar': "لم يُسمح لهذا الحارس بمعالجة ما يلاحظه من تلقاء نفسه — فعّله في ما يمكنه فعله لك، حيث يُذكر ما الذي يراقبه وما الذي يفعله حياله",
+    },
     "there is no task on this link yet — one side names the work first, and the other agrees to it": {
         'es': "todavía no hay ninguna tarea en este enlace: una parte nombra el trabajo primero y la otra lo acepta",
         'fr': "il n'y a encore aucune tâche sur ce lien : un côté nomme le travail d'abord, et l'autre l'accepte",

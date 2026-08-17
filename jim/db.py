@@ -1310,6 +1310,28 @@ CREATE TABLE IF NOT EXISTS liaison_task_agreed (
     PRIMARY KEY (link_id, user_id)
 );
 
+-- What the coach noticed during the day, and what settled it (jim/noticed.py).
+--
+-- One row per detection this pass has looked at, which is also how it knows
+-- not to look again: `due` is the detections with no row here.
+--
+-- `settled_by` is the column the whole ladder is about. `coach` means the
+-- offline stack answered from what it already knew and the turn cost nothing;
+-- `jim` means it could not, and a paid turn was spent. A pass that reached no
+-- model writes no row at all — nothing was bought, so nothing is recorded and
+-- the situation is still there tomorrow.
+CREATE TABLE IF NOT EXISTS notices (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    event_id   TEXT NOT NULL REFERENCES events(id),
+    condition  TEXT NOT NULL DEFAULT '',
+    severity   TEXT NOT NULL DEFAULT '',   -- never 'critical': see jim/noticed.py
+    settled_by TEXT NOT NULL,              -- coach | jim
+    said       TEXT NOT NULL DEFAULT '',
+    noticed_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_notices_event ON notices (event_id);
+
 CREATE TABLE IF NOT EXISTS gaps (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

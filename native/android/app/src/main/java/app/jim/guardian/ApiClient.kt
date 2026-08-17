@@ -173,6 +173,27 @@ data class ErrandLedger(val errands: List<Errand>,
                         val due: List<CoachSuggestion>,
                         val spentToday: Int, val daily: Int,
                         val permitted: Boolean)
+/** What the coach noticed, and which half of the ladder settled it.
+ *  `settledBy` is the column worth reading: `coach` cost nothing, `jim` cost
+ *  one of the day's shared turns. */
+data class Notice(val id: String, val eventId: String,
+                  val condition: String, val severity: String,
+                  val settledBy: String, val said: String,
+                  val noticedAt: String)
+/** Of everything handled unattended, how much the free half carried.
+ *  `freeShare` is null rather than 0 when nothing has been handled — a bare
+ *  0% would say the coach settled none of them. */
+data class NoticeSettlement(val settledFree: Int, val settledPaid: Int,
+                        val freeShare: Double?, val permitted: Boolean,
+                        val spentToday: Int, val daily: Int)
+data class NoticeLedger(val handled: List<Notice>,
+                        val waiting: List<String>,
+                        val settlement: NoticeSettlement)
+/** A spent budget is reported, never refused: the free half is still worth
+ *  running, so `overBudget` names what waits for tomorrow. */
+data class NoticedRun(val byCoach: List<Notice>, val byJim: List<Notice>,
+                      val overBudget: List<String>,
+                      val remainingToday: Int, val nothingNoticed: Boolean)
 data class ErrandsRun(val errands: List<Errand>, val remainingToday: Int,
                       val nothingToStudy: Boolean)
 data class LanguageInfo(val code: String, val label: String, val safetyTranslated: Boolean)
@@ -1168,6 +1189,44 @@ object ApiClient {
             errandsOf(o.optJSONArray("today") ?: JSONArray()),
             spend.optInt("spent_today"), spend.optInt("daily"),
             spend.optBoolean("permitted"))
+    }
+
+    private fun noticeOf(o: JSONObject) = Notice(
+        o.getString("id"), o.optString("event_id", ""),
+        o.optString("condition", ""), o.optString("severity", ""),
+        o.optString("settled_by", ""), o.optString("said", ""),
+        o.optString("noticed_at", ""))
+
+    private fun noticesOf(arr: JSONArray) =
+        (0 until arr.length()).map { noticeOf(arr.getJSONObject(it)) }
+
+    private fun blockedOf(arr: JSONArray) = (0 until arr.length()).map {
+        arr.getJSONObject(it).optString("condition", "")
+    }
+
+    /** What the coach noticed during the day, and what settled each one. */
+    suspend fun noticed(uid: String, token: String): NoticeLedger {
+        val o = request("/noticed/$uid", token = token)
+        val st = o.optJSONObject("settlement") ?: JSONObject()
+        return NoticeLedger(
+            noticesOf(o.optJSONArray("handled") ?: JSONArray()),
+            blockedOf(o.optJSONArray("waiting") ?: JSONArray()),
+            NoticeSettlement(st.optInt("settled_free"), st.optInt("settled_paid"),
+                if (st.isNull("free_share")) null else st.optDouble("free_share"),
+                st.optBoolean("permitted"), st.optInt("spent_today"),
+                st.optInt("daily")))
+    }
+
+    /** The situational half of the ladder: the offline coach settles what it
+     *  can for nothing, and only what it cannot becomes a paid turn. No
+     *  budget refusal — a spent day still runs the free half. */
+    suspend fun runNoticed(uid: String, token: String): NoticedRun {
+        val o = request("/noticed/$uid", "POST", token = token)
+        return NoticedRun(
+            noticesOf(o.optJSONArray("by_coach") ?: JSONArray()),
+            noticesOf(o.optJSONArray("by_jim") ?: JSONArray()),
+            blockedOf(o.optJSONArray("over_budget") ?: JSONArray()),
+            o.optInt("remaining_today"), o.optBoolean("nothing_noticed"))
     }
 
     /** Refused without the permit, and again once the day is spent — two

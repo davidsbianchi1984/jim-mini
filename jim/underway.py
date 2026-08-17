@@ -67,7 +67,12 @@ would quietly become the widest door in the product.
 
 from __future__ import annotations
 
-from . import db, engaged, errands, liaison, mic, monitors, permits
+from . import db, engaged, errands, liaison, mic, monitors, noticed, permits
+
+#: How many of today's handled notices the window carries. A glance, not the
+#: ledger — and a plain number rather than a budget borrowed from somewhere
+#: else, because most of these cost nothing and no ceiling bounds them.
+NOTICED_SHOWN = 5
 
 #: The sorts of thing that can be running. A closed set: a client branches on
 #: these to say them in the reader's language, and a new one cannot arrive
@@ -171,6 +176,20 @@ def _errands_today(user_id: str) -> list[dict]:
             if row["opened_at"][:10] == today]
 
 
+def _noticed_today(user_id: str) -> list[dict]:
+    """What the coach noticed and something settled, since midnight UTC.
+
+    Unbounded by a budget, unlike the errands beside it: most of these cost
+    nothing, which is the entire point of the pass, so there is no ceiling to
+    borrow as a slice size. :data:`NOTICED_SHOWN` is a glance's worth, and
+    :func:`jim.noticed.ledger` remains the place that answers *everything it
+    has ever handled*.
+    """
+    today = db.utcnow()[:10]
+    return [row for row in noticed.ledger(user_id, limit=NOTICED_SHOWN)
+            if row["noticed_at"][:10] == today]
+
+
 def window(user_id: str) -> dict:
     """Everything running for this person, what it did today, and what is
     left to spend.
@@ -194,11 +213,22 @@ def window(user_id: str) -> dict:
         # nothing worth studying* from *it has spent everything it may spend
         # today*.
         "today": _errands_today(user_id),
+        # What it noticed and settled today, and which half settled it. The
+        # errand list above says what it went and learned; this says what it
+        # dealt with — and `settled_by` on each row is where the ladder stops
+        # being a claim in a docstring and becomes a number on a screen.
+        "handled": _noticed_today(user_id),
         # `spent_today` rather than `errands`, which the ledger already
         # carries as a list of them. Same name as the ledger's own count,
         # because it is the same number and one name should mean one thing in
         # both directions.
+        #
+        # It counts both unattended passes, because they share one ceiling —
+        # so `permitted` here would be answering about only one of the two
+        # switches that can spend it. Both are named.
         "spend": {"spent_today": errands.spent_today(user_id),
                   "daily": errands.DAILY,
-                  "permitted": permits.granted(user_id, errands.PERMIT)},
+                  "permitted": permits.granted(user_id, errands.PERMIT),
+                  "handling_permitted": permits.granted(user_id,
+                                                        noticed.PERMIT)},
     }

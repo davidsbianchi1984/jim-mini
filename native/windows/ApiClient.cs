@@ -1216,6 +1216,17 @@ public sealed class ApiClient
     public Task<ErrandsRun> RunErrands(string uid, string token) =>
         Send<ErrandsRun>(Post($"/errands/{uid}", new { }, token));
 
+    /// <summary>What the coach noticed during the day, and what settled
+    /// each one.</summary>
+    public Task<NoticeLedger> Noticed(string uid, string token) =>
+        Send<NoticeLedger>(Get($"/noticed/{uid}", token));
+
+    /// <summary>The situational half of the ladder: the offline coach settles
+    /// what it can for nothing, and only what it cannot becomes a paid turn.
+    /// No budget refusal — a spent day still runs the free half.</summary>
+    public Task<NoticedRun> RunNoticed(string uid, string token) =>
+        Send<NoticedRun>(Post($"/noticed/{uid}", new { }, token));
+
     public async Task<BaselineMetric[]> Baseline(string uid, string token)
     {
         var req = new HttpRequestMessage(HttpMethod.Get, $"/baseline/{uid}");
@@ -3185,6 +3196,54 @@ public record ErrandsRun(
     [property: JsonPropertyName("errands")] Errand[] Errands,
     [property: JsonPropertyName("remaining_today")] int RemainingToday,
     [property: JsonPropertyName("nothing_to_study")] bool NothingToStudy);
+
+/// <summary>What the coach noticed, and which half of the ladder settled it.
+/// <c>SettledBy</c> is the column worth reading: <c>coach</c> cost nothing,
+/// <c>jim</c> cost one of the day's shared turns.</summary>
+public record Notice(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("event_id")] string EventId,
+    [property: JsonPropertyName("condition")] string Condition,
+    [property: JsonPropertyName("severity")] string Severity,
+    [property: JsonPropertyName("settled_by")] string SettledBy,
+    [property: JsonPropertyName("said")] string Said,
+    [property: JsonPropertyName("noticed_at")] string NoticedAt);
+
+public record NoticeDue(
+    [property: JsonPropertyName("event_id")] string EventId,
+    [property: JsonPropertyName("condition")] string Condition,
+    [property: JsonPropertyName("severity")] string Severity,
+    [property: JsonPropertyName("noticed_at")] string NoticedAt);
+
+/// <summary>Of everything handled unattended, how much the free half
+/// carried. <c>FreeShare</c> is null rather than 0 when nothing has been
+/// handled — a bare 0% would say the coach settled none of them.</summary>
+public record NoticeSettlement(
+    [property: JsonPropertyName("settled_free")] int SettledFree,
+    [property: JsonPropertyName("settled_paid")] int SettledPaid,
+    [property: JsonPropertyName("free_share")] double? FreeShare,
+    [property: JsonPropertyName("permitted")] bool Permitted,
+    [property: JsonPropertyName("spent_today")] int SpentToday,
+    [property: JsonPropertyName("daily")] int Daily);
+
+public record NoticeLedger(
+    [property: JsonPropertyName("handled")] Notice[] Handled,
+    [property: JsonPropertyName("waiting")] NoticeDue[] Waiting,
+    [property: JsonPropertyName("settlement")] NoticeSettlement Settlement);
+
+public record NoticeBlocked(
+    [property: JsonPropertyName("event_id")] string EventId,
+    [property: JsonPropertyName("condition")] string Condition);
+
+/// <summary>A spent budget is reported, never refused: the free half is
+/// still worth running, so <c>OverBudget</c> names what waits for tomorrow
+/// rather than the pass answering 429.</summary>
+public record NoticedRun(
+    [property: JsonPropertyName("by_coach")] Notice[] ByCoach,
+    [property: JsonPropertyName("by_jim")] Notice[] ByJim,
+    [property: JsonPropertyName("over_budget")] NoticeBlocked[] OverBudget,
+    [property: JsonPropertyName("remaining_today")] int RemainingToday,
+    [property: JsonPropertyName("nothing_noticed")] bool NothingNoticed);
 
 public record SpecialistAnswer(
     [property: JsonPropertyName("delivered")] bool Delivered,

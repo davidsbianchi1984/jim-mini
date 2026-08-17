@@ -27,7 +27,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                circle, contribution, db, money, schedule, shopping,
                escalation, family, followup, guardian, handoff, i18n, identity,
                landing, life, llm,
-               meds, mic, mobile, notify, oauth, offline, presence,
+               meds, mic, mobile, noticed, notify, oauth, offline, presence,
                problems as problems_mod,
                permits, referral, relay,
                research,
@@ -3496,6 +3496,47 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "spent_today": errands.spent_today(user_id),
                 "daily": errands.DAILY,
                 "permitted": permits.granted(user_id, errands.PERMIT)}
+
+    # ---- what the coach noticed, and what it cost to handle ---------------
+
+    @app.post("/noticed/{user_id}", status_code=201)
+    def run_noticed(user_id: str, request: Request) -> dict:
+        """The other half of the ladder: a situation, not a question.
+
+        The offline coach is put to each one first and settles what it can
+        for nothing; only what it cannot becomes a paid turn, against the
+        same day's ceiling the errands pass spends from. Refused outright
+        without the permit — see `jim/noticed.py`, which also says why
+        `critical` never reaches here.
+
+        There is no budget refusal, unlike the errands pass. A spent day does
+        not stop this one: the free half is still worth running, and what
+        could not be paid for comes back in `over_budget` rather than as a
+        429 that would have withheld the work costing nothing.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return noticed.run(user_id, app.state.cloud)
+        except noticed.NotPermitted as exc:
+            raise HTTPException(403, str(exc)) from None
+
+    @app.get("/noticed/{user_id}")
+    def noticed_ledger(user_id: str, request: Request) -> dict:
+        """What it noticed, what settled each one, and how the ladder is
+        doing.
+
+        `standing` is the half worth reading: of everything handled
+        unattended, how much the free coach settled. A ladder whose paid half
+        does most of the work is not saving anybody anything.
+        """
+        _user_or_404(user_id, request)
+        # None of these three are named the obvious thing, and each for the
+        # same reason: `noticed` is already a bool on the wire, `due` is the
+        # errand ledger's list of study suggestions, and `standing` is a
+        # permit's opened/asked, and `ladder` is the escalation tiers. One wire name carries one type.
+        return {"handled": noticed.ledger(user_id),
+                "waiting": noticed.due(user_id),
+                "settlement": noticed.standing(user_id)}
 
     @app.get("/insights/{user_id}")
     def get_insights(user_id: str, request: Request) -> list[dict]:

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -155,6 +156,7 @@ public sealed partial class CoachPage : Page
             StudyHead.Visibility = syllabus.Suggested.Length > 0
                 ? Visibility.Visible : Visibility.Collapsed;
             await LoadErrands();
+            await LoadNoticed();
             KnowsCard.Visibility = Visibility.Visible;
         }
         catch { /* the ask card stands on its own */ }
@@ -206,6 +208,74 @@ public sealed partial class CoachPage : Page
             }
         }
         catch { /* the store card stands on its own */ }
+    }
+
+    /// <summary>What the coach noticed during the day, and which half of the
+    /// ladder settled each one.</summary>
+    private async System.Threading.Tasks.Task LoadNoticed()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var txt = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimTxtBrush"];
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimT2Brush"];
+        try
+        {
+            var led = await ApiClient.Shared.Noticed(s.Uid!, s.Token!);
+            NoticedHead.Text = L10n.T("ntc.head");
+            // `FreeShare` is null until something has been handled: a bare 0%
+            // would say the coach settled none of them about an account where
+            // nothing has happened yet.
+            NoticedState.Text = !led.Settlement.Permitted
+                ? L10n.T("ntc.notallowed")
+                : led.Settlement.FreeShare is null ? ""
+                : L10n.T("ntc.free")
+                    .Replace("{n}", led.Settlement.SettledFree.ToString(
+                        CultureInfo.InvariantCulture))
+                    .Replace("{total}", (led.Settlement.SettledFree
+                        + led.Settlement.SettledPaid).ToString(
+                            CultureInfo.InvariantCulture));
+            NoticedGo.Content = L10n.T("ntc.go");
+            NoticedGo.Visibility = led.Settlement.Permitted
+                ? Visibility.Visible : Visibility.Collapsed;
+            NoticedPanel.Children.Clear();
+            foreach (var n in led.Handled)
+            {
+                var row = new StackPanel { Spacing = 2 };
+                row.Children.Add(new TextBlock
+                {
+                    Text = n.Condition, FontSize = 13,
+                    TextWrapping = TextWrapping.Wrap, Foreground = txt,
+                });
+                row.Children.Add(new TextBlock
+                {
+                    Text = n.SettledBy == "coach" ? L10n.T("ntc.by.coach")
+                                                  : L10n.T("ntc.by.jim"),
+                    FontSize = 11, TextWrapping = TextWrapping.Wrap,
+                    Foreground = t2,
+                });
+                NoticedPanel.Children.Add(row);
+            }
+        }
+        catch { /* the store card stands on its own */ }
+    }
+
+    /// <summary>No budget guard, unlike the errands pass: a spent day still
+    /// runs the free half, and what could not be paid for is reported rather
+    /// than refused.</summary>
+    private async void OnRunNoticed(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        NoticedGo.IsEnabled = false;
+        try
+        {
+            await ApiClient.Shared.RunNoticed(s.Uid!, s.Token!);
+            await LoadKnows();
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+        finally { NoticedGo.IsEnabled = true; }
     }
 
     /// <summary>Refused without the permit, and again once the day is spent —

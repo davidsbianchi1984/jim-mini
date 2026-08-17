@@ -18,6 +18,10 @@ struct CoachView: View {
     // The unattended pass: what it went and learned without being asked.
     @State private var ledger: ErrandLedger?
     @State private var running = false
+    // The situational half of the same ladder: what the coach noticed during
+    // the day, and which half of it settled each one.
+    @State private var noticed: NoticeLedger?
+    @State private var handling = false
 
     private let areas = ["mental_health", "health_fitness", "career",
                          "finance", "relationships", "personal_growth"]
@@ -144,6 +148,45 @@ struct CoachView: View {
                                 }
                             }
                         }
+
+                        // The other half of the same ladder: what the coach
+                        // could not *settle*, rather than what it could not
+                        // answer. Each row says which half dealt with it,
+                        // because that difference is the product claim and it
+                        // is invisible unless it is written down.
+                        if let n = noticed {
+                            Text(L10n.t("ntc.head", state.language))
+                                .font(.subheadline.bold())
+                                .foregroundStyle(Theme.txt)
+                            if n.settlement.permitted {
+                                if let share = n.settlement.free_share, share >= 0 {
+                                    Text(L10n.fill("ntc.free", state.language, [
+                                        "n": String(n.settlement.settled_free),
+                                        "total": String(n.settlement.settled_free
+                                                        + n.settlement.settled_paid)]))
+                                        .font(.caption2)
+                                        .foregroundStyle(Theme.t2)
+                                }
+                                Button(L10n.t("ntc.go", state.language)) {
+                                    runNoticed()
+                                }.font(.caption).tint(Theme.brandA)
+                                    .disabled(handling)
+                            } else {
+                                Text(L10n.t("ntc.notallowed", state.language))
+                                    .font(.caption2).foregroundStyle(Theme.t2)
+                            }
+                            ForEach(n.handled, id: \.id) { row in
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(row.condition).font(.caption)
+                                        .foregroundStyle(Theme.txt)
+                                    Text(row.settled_by == "coach"
+                                         ? L10n.t("ntc.by.coach", state.language)
+                                         : L10n.t("ntc.by.jim", state.language))
+                                        .font(.caption2)
+                                        .foregroundStyle(Theme.t2)
+                                }
+                            }
+                        }
                     }.card()
                 }
 
@@ -186,6 +229,20 @@ struct CoachView: View {
             syllabus = try? await ApiClient.shared.coachCurriculum(uid: uid,
                                                                    token: token)
             ledger = try? await ApiClient.shared.errands(uid: uid, token: token)
+            noticed = try? await ApiClient.shared.noticed(uid: uid, token: token)
+        }
+    }
+
+    /// Deal with what the coach noticed during the day. No budget guard on
+    /// the button, unlike the errands one: this pass is worth running on a
+    /// spent day, because the offline coach settles what it can for nothing.
+    private func runNoticed() {
+        guard let uid = state.uid, let token = state.token else { return }
+        handling = true
+        Task {
+            _ = try? await ApiClient.shared.runNoticed(uid: uid, token: token)
+            handling = false
+            loadKnows()
         }
     }
 

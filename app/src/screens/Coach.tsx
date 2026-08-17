@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type CoachCurriculum, type CoachStore, type ErrandLedger,
-         type Guidance, type SpecialistAnswer } from "../api";
+         type Guidance, type NoticeLedger, type SpecialistAnswer } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { hush, listen, primeVoice, say, type Listener } from "../speech";
 import { useSession } from "../store";
@@ -30,6 +30,10 @@ export function Coach() {
   // what is left to spend today.
   const [ledger, setLedger] = useState<ErrandLedger | null>(null);
   const [running, setRunning] = useState(false);
+  // The situational half of the same ladder: what the coach noticed during
+  // the day, and which half of it settled each one.
+  const [noticed, setNoticed] = useState<NoticeLedger | null>(null);
+  const [handling, setHandling] = useState(false);
 
   async function loadKnows() {
     if (!session.userId || !session.userToken) return;
@@ -37,6 +41,7 @@ export function Coach() {
       setKnows(await api.coachStore(session.userId, session.userToken));
       setSyllabus(await api.coachCurriculum(session.userId, session.userToken));
       setLedger(await api.errands(session.userId, session.userToken));
+      setNoticed(await api.noticed(session.userId, session.userToken));
     } catch { /* the ask card stands on its own */ }
   }
   useEffect(() => { loadKnows(); }, [session.userId]);
@@ -68,6 +73,23 @@ export function Coach() {
       await loadKnows();
     } catch (e) { setError((e as Error).message); }
     finally { setRunning(false); }
+  }
+
+  /** Deal with what the coach noticed during the day.
+   *
+   * No budget guard on the button, unlike the errands one beside it: this
+   * pass is worth running on a spent day, because the offline coach settles
+   * what it can for nothing and the backend reports what waits for tomorrow
+   * rather than refusing the lot.
+   */
+  async function runNoticed() {
+    if (!session.userId || !session.userToken) return;
+    setHandling(true); setError(null);
+    try {
+      await api.runNoticed(session.userId, session.userToken);
+      await loadKnows();
+    } catch (e) { setError((e as Error).message); }
+    finally { setHandling(false); }
   }
 
   async function ask(text?: string) {
@@ -253,6 +275,58 @@ export function Coach() {
                     <div className="muted small">
                       {e.left_host ? tr("err.left", lang) : tr("err.stayed", lang)}
                       {e.redactions > 0 && ` · ${e.redactions} ${tr("err.redacted", lang)}`}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* The other half of the same ladder. That one is what the coach
+              could not *answer*; this is what it could not *settle* — a
+              situation rather than a question. Each row says which half
+              dealt with it, because that difference is the whole product
+              claim and it is invisible unless it is written down. */}
+          {noticed && (
+            <div style={{ marginTop: 10 }}>
+              <div className="muted small">
+                <b>{tr("ntc.head", lang)}</b>
+              </div>
+              {!noticed.settlement.permitted && (
+                <div className="muted small">{tr("ntc.notallowed", lang)}</div>
+              )}
+              {noticed.settlement.permitted && (
+                <>
+                  {/* The number this whole ladder exists to move. Only once
+                      something has actually been handled — `free_share` is
+                      null before that, and a bare 0% would say the coach
+                      settled none of them. */}
+                  {noticed.settlement.free_share !== null && (
+                    <div className="muted small">
+                      {tr("ntc.free", lang)
+                        .replace("{n}", String(noticed.settlement.settled_free))
+                        .replace("{total}", String(
+                          noticed.settlement.settled_free + noticed.settlement.settled_paid))}
+                    </div>
+                  )}
+                  <button disabled={handling} onClick={runNoticed}>
+                    {tr("ntc.go", lang)}
+                  </button>
+                  {/* Still there, and why: the day's turns are gone and the
+                      coach could not settle these on its own. */}
+                  {noticed.waiting.length > 0
+                    && noticed.settlement.spent_today >= noticed.settlement.daily && (
+                    <div className="muted small">{tr("ntc.waiting", lang)}</div>
+                  )}
+                </>
+              )}
+              {noticed.handled.map((n) => (
+                <div key={n.id} className="spec-row">
+                  <div>
+                    {n.condition}
+                    <div className="muted small">
+                      {n.settled_by === "coach" ? tr("ntc.by.coach", lang)
+                                                : tr("ntc.by.jim", lang)}
                     </div>
                   </div>
                 </div>
