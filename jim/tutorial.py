@@ -135,6 +135,33 @@ LESSONS: tuple[dict, ...] = (
               "rather than inventing one.",
          screens=(87,),
          try_it="Open Journal and write one sentence about today."),
+    dict(key="monitors", chapter="Being watched over",
+         title="What may sense you, and who else it catches",
+         what="Somewhere to plug all of it in: the band and the ring and "
+              "the patch, the earpiece, the glasses, the screen you work "
+              "at, the hall camera, the kitchen speaker, the doorway "
+              "sensor, the strip under the mattress. Every one says three "
+              "things — what it takes in, whether it senses people who "
+              "never chose it, and what stays behind afterwards, because "
+              "*it notices you fell* and *it keeps the video of you "
+              "falling* are different agreements and only one of them is "
+              "what the code does. The middle one decides the rest: "
+              "nothing that catches other people is ever on by default, a "
+              "guard reads the table rather than trusting anybody to have "
+              "read it, and a thing bolted to a room cannot be filed as "
+              "catching nobody however it is described. Switching one of "
+              "those on is refused until you say the people in that space "
+              "have been told — that is your word with a time on it rather "
+              "than consent this product collected, and what it prevents "
+              "is a hall camera going on with nobody having thought about "
+              "the hall. Sensing and keeping are two switches. Always-on "
+              "is a good product and never a reason for a switch to arrive "
+              "already flipped: a person who turns a camera on has "
+              "decided, and a person who finds one on has been decided "
+              "about.",
+         screens=(88,),
+         try_it="Try switching the hall camera on without saying the room "
+                "knows, then read what comes back."),
     dict(key="oncall", chapter="Being watched over",
          title="An aid on the call, and the notice that goes first",
          what="On an earpiece the guardian hears you and not your call — "

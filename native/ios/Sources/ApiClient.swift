@@ -251,6 +251,23 @@ struct CoachStudied: Decodable {
     let left_host: Bool
 }
 
+/// One thing that can be plugged in and sense somebody. `catches_others` is
+/// the field that decides everything else: nothing carrying it is ever on by
+/// default, and switching one on is refused until the people in that space
+/// have been told.
+struct MonitorRow: Decodable {
+    let name: String
+    let senses: [String]
+    let placing: String
+    let says: String
+    let holds: String
+    let catches_others: Bool
+    let on: Bool
+    let device: String?
+    let others_told: Bool
+    let keeping: Bool
+}
+
 /// One part of the notice: the support-line script in a language the far side
 /// might actually speak. More than one where the mix is known.
 struct CallNotice: Decodable {
@@ -1379,6 +1396,39 @@ actor ApiClient {
         if let area { body["area"] = area }
         return try await request("/coach/\(uid)/study", method: "POST",
                                  body: body, token: token)
+    }
+
+    /// Everything that can be plugged in, off rows included.
+    func monitors(uid: String, token: String) async throws -> [MonitorRow] {
+        try await request("/monitors/\(uid)", token: token)
+    }
+
+    /// Switch one on. Anything that senses other people is refused until
+    /// `othersTold` says they know; keeping is its own decision.
+    @discardableResult
+    func plugMonitor(uid: String, token: String, name: String,
+                     deviceName: String = "", othersTold: Bool = false,
+                     keeping: Bool = false) async throws -> [MonitorRow] {
+        try await request("/monitors/\(uid)/\(name)", method: "PUT",
+                          body: ["device_name": deviceName,
+                                 "others_told": othersTold,
+                                 "keeping": keeping], token: token)
+    }
+
+    @discardableResult
+    func unplugMonitor(uid: String, token: String,
+                       name: String) async throws -> [MonitorRow] {
+        try await request("/monitors/\(uid)/\(name)", method: "DELETE",
+                          token: token)
+    }
+
+    /// Anything a monitor perceives comes in through here, and through the
+    /// switch check first.
+    @discardableResult
+    func monitorSensed(uid: String, token: String,
+                       name: String) async throws -> Ok {
+        try await request("/monitors/\(uid)/\(name)/sensed", method: "POST",
+                          token: token)
     }
 
     /// Set up an assisted call. It is not listening: what comes back is the

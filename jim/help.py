@@ -128,6 +128,17 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "What reaches out: a bound robot and its first-aid rating, a placed "
         "code a stranger can scan, accounts on platforms JIM does not run, "
         "and excursions — which report what was redacted on the way out.",
+    ("plug in a camera", "home camera", "smart speaker", "watch my screen",
+     "connect a sensor", "always on", "what can watch me",
+     "does it see the whole room", "who else does it hear",
+     "turn the camera off"):
+        "Channel → what may sense you: every camera, speaker, screen, band, "
+        "ring, patch or mattress sensor that can be plugged in, each saying "
+        "what it takes in, who else it reaches and what stays behind. "
+        "Nothing that senses other people is ever on until you switch it "
+        "on, and switching one of those on asks you to say the people in "
+        "that space have been told. Sensing and keeping are two separate "
+        "decisions.",
     ("on a call", "speakerphone", "does it record calls",
      "does the other person know", "what does it tell them",
      "monitored or recorded", "call disclosure", "conference call",

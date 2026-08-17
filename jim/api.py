@@ -21,7 +21,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                careteam, community,
                catalog,
                coach,
-               alongside, engaged, errands,
+               alongside, engaged, errands, monitors,
                oncall,
                mailer,
                circle, contribution, db, money, schedule, shopping,
@@ -48,7 +48,7 @@ from .models import (
     ChildEnroll,
     CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
-    CallOpen, CoachStudy, EngageOpen, EngagedSaid, Enroll, ExcursionStart,
+    CallOpen, CoachStudy, EngageOpen, MonitorPlug, EngagedSaid, Enroll, ExcursionStart,
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
@@ -3217,6 +3217,53 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "left_host": left_host, "excursion_id": cid,
                 "note": "findings folded into the coach's store; the offline "
                         "pipeline reads them on the next question"}
+
+    # ---- what may sense you, through what ---------------------------------
+
+    @app.get("/monitors/{user_id}")
+    def monitor_roster(user_id: str, request: Request) -> list[dict]:
+        """Everything that can be plugged in, what it senses, who else it
+        reaches, and whether it is on. Off rows included: a roster showing
+        only what is already on is a roster nobody can add to."""
+        _user_or_404(user_id, request)
+        return monitors.roster(user_id)
+
+    @app.put("/monitors/{user_id}/{name}")
+    def plug_monitor(user_id: str, name: str, body: MonitorPlug,
+                     request: Request) -> list[dict]:
+        """Switch one on. Anything that senses other people is refused until
+        somebody says the people in that space have been told."""
+        _user_or_404(user_id, request)
+        try:
+            return monitors.plug_in(user_id, name, body.device_name,
+                                    body.others_told, body.keeping)
+        except monitors.NobodyTold as exc:
+            raise HTTPException(409, str(exc)) from None
+        except monitors.NoSuchMonitor as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.delete("/monitors/{user_id}/{name}")
+    def unplug_monitor(user_id: str, name: str, request: Request) -> list[dict]:
+        """Switch one off. The row stays, carrying the decision and its
+        time."""
+        _user_or_404(user_id, request)
+        try:
+            return monitors.unplug(user_id, name)
+        except monitors.NoSuchMonitor as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.post("/monitors/{user_id}/{name}/sensed")
+    def monitor_sensed(user_id: str, name: str, request: Request) -> dict:
+        """Anything a monitor perceives comes in through here, and through
+        `monitors.may_sense` first — the one door."""
+        _user_or_404(user_id, request)
+        try:
+            monitors.may_sense(user_id, name)
+        except monitors.NotPluggedIn as exc:
+            raise HTTPException(403, i18n.raised(exc)) from None
+        except monitors.NoSuchMonitor as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+        return {"sensing": True, "monitor": name}
 
     # ---- an aid on the call, and the notice that goes first --------------
 

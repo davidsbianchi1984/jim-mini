@@ -39,6 +39,21 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Everywhere the monitoring plugs in. The rows that
+                         sense other people carry that on their face, and
+                         switching one on says the people in that space have
+                         been told. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="MonitorsHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="MonitorsLead" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <StackPanel x:Name="MonitorsPanel" Spacing="6" />
+                        </StackPanel>
+                    </Border>
+
                     <!-- An aid on a call other people can hear. The notice
                          goes first: this hands back the words, and nothing
                          listens until they have been played. The number is

@@ -217,7 +217,7 @@ RATCHETS: tuple[Ratchet, ...] = (
             "screens on Android that call the localizer"),
     Ratchet("l10n.asked.windows", 578, _l10n("windows", "asked"),
             "screens on the desktop that call the localizer"),
-    Ratchet("l10n.held.ios", 388, _l10n("ios", "held"),
+    Ratchet("l10n.held.ios", 625, _l10n("ios", "held"),
             "rows in the iPhone's own L10n table"),
     Ratchet("l10n.held.android", 396, _l10n("android", "held"),
             "rows in Android's own L10n table"),

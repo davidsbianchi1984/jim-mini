@@ -1213,10 +1213,27 @@ ERRANDS_SPENT = ("the day's {count} errands are used up; the coach keeps "
                  "answering from what it already knows, and this begins "
                  "again tomorrow")
 
+#: A monitor nobody switched on. The slot is what the thing does, in the
+#: person's own words, from the closed set in `jim/monitors.py` — so it goes
+#: through `Term` and arrives translated rather than as English in a frame.
+MONITOR_NOT_ON = ("nothing is sensing that: you have not switched on the one "
+                  "that would {doing}")
+
 #: Derived from the table below rather than repeated.
-TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE, ERRANDS_SPENT)
+TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE, ERRANDS_SPENT, MONITOR_NOT_ON)
 
 _TEMPLATES: dict[str, dict[str, str]] = {
+    MONITOR_NOT_ON: {
+        'es': "no hay nada detectando eso: no has activado lo que serviría para {doing}",
+        'fr': "rien ne capte cela : vous n'avez pas activé ce qui permettrait de {doing}",
+        'de': "nichts erfasst das: du hast nicht eingeschaltet, was {doing} würde",
+        'pt': "nada está a detetar isso: não ativou aquilo que serviria para {doing}",
+        'it': "nulla sta rilevando questo: non hai attivato ciò che servirebbe a {doing}",
+        'ja': "それを感知しているものはありません。{doing}ためのものが有効になっていません",
+        'zh': "没有任何设备在感知这一点：你还没有开启用来{doing}的那一项",
+        'hi': "उसे कुछ भी महसूस नहीं कर रहा: जो {doing} के लिए है उसे आपने चालू नहीं किया",
+        'ar': "لا شيء يستشعر ذلك: لم تفعّل ما من شأنه {doing}",
+    },
     ERRANDS_SPENT: {
         'es': "los {count} recados del día están agotados; el coach sigue respondiendo con lo que ya sabe, y esto vuelve a empezar mañana",
         'fr': "les {count} sorties du jour sont épuisées ; le coach continue de répondre avec ce qu'il sait déjà, et cela reprend demain",
@@ -1674,6 +1691,18 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'zh': "没有这通通话",
         'hi': "ऐसी कोई कॉल नहीं है",
         'ar': "لا توجد مكالمة كهذه",
+    },
+    # -- what may sense you (jim/monitors.py) --------------------------------
+    "this one senses people who did not choose it — say that the people in that space have been told before switching it on": {
+        'es': "esta detecta a personas que no la eligieron: indica que se ha informado a quienes están en ese espacio antes de activarla",
+        'fr': "celui-ci capte des personnes qui ne l'ont pas choisi — indiquez que les personnes présentes ont été prévenues avant de l'activer",
+        'de': "dieser erfasst Menschen, die ihn nicht gewählt haben — bestätige, dass die Anwesenden informiert wurden, bevor du ihn einschaltest",
+        'pt': "este deteta pessoas que não o escolheram — indique que as pessoas nesse espaço foram avisadas antes de o ativar",
+        'it': "questo rileva persone che non l'hanno scelto: dichiara che chi si trova in quello spazio è stato avvisato prima di attivarlo",
+        'ja': "これは選んでいない人まで感知します。その場にいる人に伝えたことを示してから有効にしてください",
+        'zh': "这一项会感知到并未选择它的人——请先确认该空间中的人已被告知，再开启它",
+        'hi': "यह उन लोगों को भी महसूस करती है जिन्होंने इसे नहीं चुना — चालू करने से पहले बताइए कि उस जगह के लोगों को सूचित कर दिया गया है",
+        'ar': "هذا يستشعر أشخاصًا لم يختاروه — أقرّ بأن من في ذلك المكان قد أُبلغوا قبل تفعيله",
     },
     # -- an aid on the call (jim/oncall.py) ----------------------------------
     #
@@ -3303,6 +3332,11 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    # Switching on something that senses a room. `others_told` is the claim
+    # somebody makes, so the label is the claim rather than the column name;
+    # `keeping` is the second decision, separate from sensing at all.
+    'others_told': {'en': 'The people in that space have been told', 'es': 'Se ha informado a las personas de ese espacio', 'fr': "Les personnes présentes ont été prévenues", 'de': 'Die Menschen in diesem Raum wurden informiert', 'pt': 'As pessoas nesse espaço foram avisadas', 'it': 'Le persone in quello spazio sono state avvisate', 'ja': 'その場にいる人には伝えてあります', 'zh': '该空间中的人已被告知', 'hi': 'उस जगह के लोगों को बता दिया गया है', 'ar': 'أُبلغ من في ذلك المكان'},
+    'keeping': {'en': 'Keep what it senses', 'es': 'Guardar lo que detecta', 'fr': "Conserver ce qu'il capte", 'de': 'Behalten, was es erfasst', 'pt': 'Guardar o que deteta', 'it': 'Conservare ciò che rileva', 'ja': '感知した内容を保持する', 'zh': '保留它感知到的内容', 'hi': 'जो यह महसूस करे उसे रखें', 'ar': 'الاحتفاظ بما يستشعره'},
     # The assisted-call form. `number` is not asked for so it can be kept —
     # it is read for which language the notice is spoken in and dropped — so
     # the label says what it is for rather than what it is.

@@ -5773,6 +5773,8 @@ private fun MicPanel(vm: GuardianViewModel) {
     var callNumber by remember { mutableStateOf("") }
     var call by remember { mutableStateOf<AssistedCall?>(null) }
     var calls by remember { mutableStateOf<List<CallRow>>(emptyList()) }
+    // What may sense this person, and through what. Off rows included.
+    var mons by remember { mutableStateOf<List<MonitorRow>>(emptyList()) }
 
     fun run(work: suspend () -> MicState) {
         vm.call({ work() }) { r ->
@@ -5789,9 +5791,49 @@ private fun MicPanel(vm: GuardianViewModel) {
         vm.call({ ApiClient.micGains() }) { r -> gains = r.getOrNull() }
         vm.call({ ApiClient.calls(vm.uid!!, vm.token!!) }) { r ->
             calls = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.monitors(vm.uid!!, vm.token!!) }) { r ->
+            mons = r.getOrDefault(emptyList()) }
     }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Everywhere the monitoring plugs in. The rows that sense other
+        // people carry that on their face.
+        Text(L10n.t("mon.head", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("mon.lead", vm.language), color = Jim.T2, fontSize = 11.sp)
+        mons.forEach { m ->
+            Text(m.says, color = Jim.Txt, fontSize = 13.sp)
+            Text(m.senses.joinToString(" · ") +
+                (if (m.catchesOthers) " · " + L10n.t("mon.others", vm.language)
+                 else ""), color = Jim.T2, fontSize = 11.sp)
+            Text(L10n.t("mon.keeps", vm.language) + " " + m.holds,
+                color = Jim.T2, fontSize = 11.sp)
+            Text(if (m.on) L10n.t("mon.on", vm.language)
+                 else L10n.t("mon.off", vm.language),
+                color = Jim.T2, fontSize = 11.sp)
+            if (m.on) {
+                // Refused with a 403 until the row is on — the one door.
+                BrandButton(L10n.t("mon.sense", vm.language)) {
+                    vm.call({ ApiClient.monitorSensed(vm.uid!!, vm.token!!,
+                        m.name) }) { r -> error = r.exceptionOrNull()?.message }
+                }
+                BrandButton(L10n.t("mon.unplug", vm.language)) {
+                    vm.call({ ApiClient.unplugMonitor(vm.uid!!, vm.token!!,
+                        m.name) }) { r -> mons = r.getOrDefault(mons) }
+                }
+            } else {
+                BrandButton(if (m.catchesOthers)
+                                L10n.t("mon.plug.told", vm.language)
+                            else L10n.t("mon.plug", vm.language)) {
+                    vm.call({ ApiClient.plugMonitor(vm.uid!!, vm.token!!,
+                        m.name, "", m.catchesOthers) }) { r ->
+                        error = r.exceptionOrNull()?.message
+                        mons = r.getOrDefault(mons)
+                    }
+                }
+            }
+        }
+
         Text(L10n.t("cal.head", vm.language), color = Jim.Txt,
             fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Text(L10n.t("cal.lead", vm.language), color = Jim.T2, fontSize = 11.sp)

@@ -85,7 +85,7 @@ test_the_member_that_isnt_there.py:286: len(keys) >= 12
 test_the_member_that_isnt_there.py:287: len(used) >= 10
 test_the_readme_says_what_shipped.py:127: len(_rows()) >= 40
 test_the_readme_says_what_shipped.py:130: len(_released()) >= 40
-test_the_refusal_names_the_field_on_the_form.py:106: len(found) >= 150
+test_the_refusal_names_the_field_on_the_form.py:137: len(found) >= 150
 test_the_refusal_that_handed_the_body_back.py:154: len(found) > 80
 test_the_refusal_that_handed_the_body_back.py:158: reached > 50
 test_the_refusal_that_handed_the_body_back.py:273: len(i18n._VALIDATION) >= 10

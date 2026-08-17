@@ -766,8 +766,105 @@ public sealed partial class ConnectPage : Page
             var mic = await ApiClient.Shared.MicState(s.Uid, s.Token);
             Render(mic);
             await LoadCalls();
+            await LoadMonitors();
         }
         catch (Exception e) { MicFailed(e); }
+    }
+
+    /// <summary>Everything that can be plugged in, off rows included. A
+    /// roster showing only what is already on is a roster nobody can add
+    /// to.</summary>
+    private async System.Threading.Tasks.Task LoadMonitors()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var txt = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimTxtBrush"];
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimT2Brush"];
+        MonitorsHead.Text = L10n.T("mon.head");
+        MonitorsLead.Text = L10n.T("mon.lead");
+        try
+        {
+            var rows = await ApiClient.Shared.Monitors(s.Uid, s.Token);
+            MonitorsPanel.Children.Clear();
+            foreach (var m in rows)
+            {
+                var box = new StackPanel { Spacing = 2 };
+                box.Children.Add(new TextBlock
+                {
+                    Text = m.Says, FontSize = 13,
+                    TextWrapping = TextWrapping.Wrap, Foreground = txt,
+                });
+                box.Children.Add(new TextBlock
+                {
+                    Text = string.Join(" · ", m.Senses)
+                           + (m.CatchesOthers ? " · " + L10n.T("mon.others") : ""),
+                    FontSize = 11, TextWrapping = TextWrapping.Wrap,
+                    Foreground = t2,
+                });
+                box.Children.Add(new TextBlock
+                {
+                    Text = L10n.T("mon.keeps") + " " + m.Holds, FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                });
+                box.Children.Add(new TextBlock
+                {
+                    Text = m.On ? L10n.T("mon.on") : L10n.T("mon.off"),
+                    FontSize = 11, Foreground = t2,
+                });
+                var name = m.Name;
+                if (m.On)
+                {
+                    // Refused with a 403 until the row is on — the one door.
+                    var take = new Button { Content = L10n.T("mon.sense") };
+                    take.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.MonitorSensed(
+                                s.Uid, s.Token, name);
+                        }
+                        catch (Exception ex) { MicFailed(ex); }
+                    };
+                    box.Children.Add(take);
+                    var off = new Button { Content = L10n.T("mon.unplug") };
+                    off.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.UnplugMonitor(
+                                s.Uid, s.Token, name);
+                            await LoadMonitors();
+                        }
+                        catch (Exception ex) { MicFailed(ex); }
+                    };
+                    box.Children.Add(off);
+                }
+                else
+                {
+                    var told = m.CatchesOthers;
+                    var on = new Button
+                    {
+                        Content = told ? L10n.T("mon.plug.told")
+                                       : L10n.T("mon.plug"),
+                    };
+                    on.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.PlugMonitor(
+                                s.Uid, s.Token, name, "", told);
+                            await LoadMonitors();
+                        }
+                        catch (Exception ex) { MicFailed(ex); }
+                    };
+                    box.Children.Add(on);
+                }
+                MonitorsPanel.Children.Add(box);
+            }
+        }
+        catch (Exception ex) { MicFailed(ex); }
     }
 
     /// <summary>Set up the call. It is not listening: what comes back is the

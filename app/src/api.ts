@@ -393,6 +393,26 @@ export interface CoachCurriculum { suggested: CoachSuggestion[]; note: string }
 export interface CoachStudied { studied: string; area: string | null;
   folded: boolean; left_host: boolean; excursion_id: string; note: string }
 
+// -- what may sense you, through what (jim/monitors.py) ------------------
+//
+// `catches_others` is the field that decides everything else: nothing
+// carrying it is ever on by default, and switching one on is refused until
+// `others_told` says the people in that space know. `holds` is what stays
+// behind — "it notices you fell" and "it keeps the video of you falling" are
+// different agreements.
+export interface MonitorRow {
+  name: string;
+  senses: string[];
+  placing: string;
+  says: string;
+  holds: string;
+  catches_others: boolean;
+  on: boolean;
+  device: string | null;
+  others_told: boolean;
+  keeping: boolean;
+}
+
 // -- an aid on the call, and the notice that goes first (jim/oncall.py) --
 //
 // `say` is a script, not a message: each part is the support-line notice in a
@@ -1594,6 +1614,24 @@ export const api = {
   // without the permit, and refused again once the day's budget is spent —
   // two different refusals, because "not allowed" and "not today" are two
   // different things to be told.
+  // Everything that can be plugged in, off rows included.
+  monitors: (uid: string, token: string) =>
+    req<MonitorRow[]>(`/monitors/${uid}`, { token }),
+  // Switch one on. Anything that senses other people is refused until
+  // `others_told` says they know — and keeping is its own decision.
+  plugMonitor: (uid: string, name: string,
+                body: { device_name?: string; others_told?: boolean;
+                        keeping?: boolean }, token: string) =>
+    req<MonitorRow[]>(`/monitors/${uid}/${name}`,
+      { method: "PUT", body, token }),
+  unplugMonitor: (uid: string, name: string, token: string) =>
+    req<MonitorRow[]>(`/monitors/${uid}/${name}`,
+      { method: "DELETE", token }),
+  // Anything a monitor perceives comes in through here, and through the
+  // switch check first.
+  monitorSensed: (uid: string, name: string, token: string) =>
+    req<{ sensing: boolean; monitor: string }>(
+      `/monitors/${uid}/${name}/sensed`, { method: "POST", token }),
   // Set up an assisted call. It is not listening: what comes back is the
   // notice to play, and `callAnnounced` is the only way out of that state.
   // `number` is read for the language and dropped — it is never stored.

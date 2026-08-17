@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   api, type AssistedCall, type CallRow, type CaptureRow,
+  type MonitorRow,
   type CaptureVocabulary, type DeviceRow, type MicEvent, type MicGains,
   type MicState, type MicTypes,
 } from "../api";
@@ -59,6 +60,8 @@ export function Channel() {
   const [callNumber, setCallNumber] = useState("");
   const [call, setCall] = useState<AssistedCall | null>(null);
   const [calls, setCalls] = useState<CallRow[]>([]);
+  // What may sense this person, and through what. Off rows are here too.
+  const [mons, setMons] = useState<MonitorRow[]>([]);
 
   const load = useCallback(() => {
     if (!uid || !token) return;
@@ -67,6 +70,7 @@ export function Channel() {
     api.micHistory(uid, token).then(setHistory).catch(() => setHistory([]));
     api.captures(uid, token).then(setCaptures).catch(() => setCaptures([]));
     api.calls(uid, token).then(setCalls).catch(() => setCalls([]));
+    api.monitors(uid, token).then(setMons).catch(() => setMons([]));
   }, [uid, token]);
 
   useEffect(() => {
@@ -93,6 +97,56 @@ export function Channel() {
       <h2>{tr("ch.title", visitorLang())}</h2>
       {error && <p className="error">{error}</p>}
       {said && <p className="muted">{said}</p>}
+
+      {/* Everywhere the monitoring plugs in. The rows that sense other
+          people carry that on their face, and switching one on asks whether
+          the people in that space have been told — because a hall camera
+          going on with nobody having thought about the hall is the failure
+          this screen exists to prevent. */}
+      <h3>{tr("mon.head", visitorLang())}</h3>
+      <p className="muted">{tr("mon.lead", visitorLang())}</p>
+      {mons.map((m) => (
+        <div key={m.name} className="card">
+          <div className="row">
+            <strong>{m.says}</strong>
+            <span className="muted">{m.senses.join(" · ")}</span>
+            {m.catches_others && (
+              <span className="pill">{tr("mon.others", visitorLang())}</span>
+            )}
+          </div>
+          <p className="muted small">
+            {tr("mon.keeps", visitorLang())} {m.holds}
+          </p>
+          <p className="muted small">
+            {m.on ? tr("mon.on", visitorLang()) : tr("mon.off", visitorLang())}
+            {m.on && m.keeping && ` · ${tr("mon.keeping", visitorLang())}`}
+          </p>
+          {/* Hand it something the monitor perceived. Refused with a 403
+              until this row is switched on — the one door. */}
+          {m.on && (
+            <button disabled={busy} onClick={() => run(
+              () => api.monitorSensed(uid!, m.name, token!),
+              tr("mon.sensing", visitorLang()))}>
+              {tr("mon.sense", visitorLang())}
+            </button>
+          )}
+          {m.on ? (
+            <button disabled={busy} onClick={() => run(
+              async () => setMons(await api.unplugMonitor(uid!, m.name, token!)),
+              tr("mon.unplugged", visitorLang()))}>
+              {tr("mon.unplug", visitorLang())}
+            </button>
+          ) : (
+            <button disabled={busy} onClick={() => run(
+              async () => setMons(await api.plugMonitor(uid!, m.name,
+                { others_told: m.catches_others }, token!)),
+              tr("mon.plugged", visitorLang()))}>
+              {m.catches_others ? tr("mon.plug.told", visitorLang())
+                                : tr("mon.plug", visitorLang())}
+            </button>
+          )}
+        </div>
+      ))}
 
       {/* An aid on a call other people can hear. The notice goes first: this
           card hands back the words and nothing listens until they have been

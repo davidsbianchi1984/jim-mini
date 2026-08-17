@@ -105,6 +105,15 @@ data class CoachStore(val pack: Int, val excursions: List<CoachStoreEntry>,
 data class CoachSuggestion(val area: String, val topic: String, val why: String)
 data class CoachCurriculum(val suggested: List<CoachSuggestion>, val note: String)
 data class CoachStudied(val studied: String, val folded: Boolean)
+/** One thing that can be plugged in and sense somebody. `catchesOthers` is
+ *  the field that decides everything else: nothing carrying it is ever on by
+ *  default, and switching one on is refused until the people in that space
+ *  have been told. */
+data class MonitorRow(val name: String, val senses: List<String>,
+                      val placing: String, val says: String,
+                      val holds: String, val catchesOthers: Boolean,
+                      val on: Boolean, val device: String?,
+                      val othersTold: Boolean, val keeping: Boolean)
 /** One part of the notice: the support-line script in a language the far side
  *  might actually speak. More than one where the mix is known. */
 data class CallNotice(val language: String, val words: String)
@@ -916,6 +925,45 @@ object ApiClient {
         if (area != null) body.put("area", area)
         val o = request("/coach/$uid/study", "POST", body, token)
         return CoachStudied(o.getString("studied"), o.getBoolean("folded"))
+    }
+
+    private fun monitorsOf(arr: JSONArray) = (0 until arr.length()).map {
+        val o = arr.getJSONObject(it)
+        val senses = o.optJSONArray("senses") ?: JSONArray()
+        MonitorRow(o.getString("name"),
+            (0 until senses.length()).map { i -> senses.getString(i) },
+            o.optString("placing", ""), o.optString("says", ""),
+            o.optString("holds", ""), o.optBoolean("catches_others"),
+            o.optBoolean("on"),
+            if (o.isNull("device")) null else o.optString("device"),
+            o.optBoolean("others_told"), o.optBoolean("keeping"))
+    }
+
+    /** Everything that can be plugged in, off rows included. */
+    suspend fun monitors(uid: String, token: String): List<MonitorRow> =
+        monitorsOf(JSONArray(request("/monitors/$uid", token = token).toString()))
+
+    /** Switch one on. Anything that senses other people is refused until
+     *  `othersTold` says they know; keeping is its own decision. */
+    suspend fun plugMonitor(uid: String, token: String, name: String,
+                            deviceName: String = "",
+                            othersTold: Boolean = false,
+                            keeping: Boolean = false): List<MonitorRow> {
+        val body = JSONObject().put("device_name", deviceName)
+            .put("others_told", othersTold).put("keeping", keeping)
+        return monitorsOf(JSONArray(
+            request("/monitors/$uid/$name", "PUT", body, token).toString()))
+    }
+
+    suspend fun unplugMonitor(uid: String, token: String,
+                              name: String): List<MonitorRow> =
+        monitorsOf(JSONArray(
+            request("/monitors/$uid/$name", "DELETE", token = token).toString()))
+
+    /** Anything a monitor perceives comes in through here, and through the
+     *  switch check first. */
+    suspend fun monitorSensed(uid: String, token: String, name: String) {
+        request("/monitors/$uid/$name/sensed", "POST", token = token)
     }
 
     private fun noticesOf(arr: JSONArray) = (0 until arr.length()).map {

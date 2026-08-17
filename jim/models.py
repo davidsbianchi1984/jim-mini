@@ -716,6 +716,18 @@ class CoachMessage(BaseModel):
     message: str
 
 
+class MonitorPlug(BaseModel):
+    """Switch a monitor on.
+
+    `others_told` is required by anything that senses people who did not
+    choose it — see jim/monitors.py. It is stored as what it is: somebody's
+    assertion with a time on it, not consent this product collected.
+    """
+    device_name: str = ""
+    others_told: bool = False
+    keeping: bool = False
+
+
 class CallOpen(BaseModel):
     """Set up an assisted call.
 

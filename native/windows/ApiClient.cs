@@ -1055,6 +1055,49 @@ public sealed class ApiClient
         Send<CoachStudied>(Post($"/coach/{uid}/study",
             new { topic, area }, token));
 
+    /// <summary>Everything that can be plugged in, off rows included.
+    /// </summary>
+    public Task<MonitorRow[]> Monitors(string uid, string token) =>
+        Send<MonitorRow[]>(Get($"/monitors/{uid}", token));
+
+    /// <summary>Switch one on. Anything that senses other people is refused
+    /// until <c>othersTold</c> says they know; keeping is its own
+    /// decision.</summary>
+    public Task<MonitorRow[]> PlugMonitor(string uid, string token,
+                                          string name,
+                                          string deviceName = "",
+                                          bool othersTold = false,
+                                          bool keeping = false)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Put,
+                                         $"/monitors/{uid}/{name}")
+        {
+            Content = JsonContent.Create(new
+            {
+                device_name = deviceName, others_told = othersTold, keeping,
+            }),
+        };
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<MonitorRow[]>(req);
+    }
+
+    public Task<MonitorRow[]> UnplugMonitor(string uid, string token,
+                                            string name)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+                                         $"/monitors/{uid}/{name}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<MonitorRow[]>(req);
+    }
+
+    /// <summary>Anything a monitor perceives comes in through here, and
+    /// through the switch check first.</summary>
+    public async Task MonitorSensed(string uid, string token, string name)
+    {
+        var req = Post($"/monitors/{uid}/{name}/sensed", new { }, token);
+        (await Dispatch(req)).EnsureSuccessStatusCode();
+    }
+
     /// <summary>Set up an assisted call. It is not listening: what comes back
     /// is the notice to play. <c>number</c> is read for the language and
     /// dropped.</summary>
@@ -2931,6 +2974,22 @@ public record CoachCurriculum(
 public record CoachStudied(
     [property: JsonPropertyName("studied")] string Studied,
     [property: JsonPropertyName("folded")] bool Folded);
+
+/// <summary>One thing that can be plugged in and sense somebody.
+/// <c>CatchesOthers</c> is the field that decides everything else: nothing
+/// carrying it is ever on by default, and switching one on is refused until
+/// the people in that space have been told.</summary>
+public record MonitorRow(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("senses")] string[] Senses,
+    [property: JsonPropertyName("placing")] string Placing,
+    [property: JsonPropertyName("says")] string Says,
+    [property: JsonPropertyName("holds")] string Holds,
+    [property: JsonPropertyName("catches_others")] bool CatchesOthers,
+    [property: JsonPropertyName("on")] bool On,
+    [property: JsonPropertyName("device")] string? Device,
+    [property: JsonPropertyName("others_told")] bool OthersTold,
+    [property: JsonPropertyName("keeping")] bool Keeping);
 
 /// <summary>One part of the notice: the support-line script in a language the
 /// far side might actually speak. More than one where the mix is

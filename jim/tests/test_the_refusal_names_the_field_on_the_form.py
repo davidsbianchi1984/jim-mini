@@ -78,18 +78,49 @@ def _declared() -> set[str]:
 
         asked     is every field in the models file mapped or recorded
         mattered  is every field a person can be shown
+
+    ## What counts as a field
+
+    Request models only, and that is a correction rather than a narrowing.
+    The first version took every annotated class attribute in the package,
+    which is a different set: a frozen dataclass in a domain module — the
+    privilege roster's rows, the monitor roster's rows — declares `holds`,
+    `placing`, `catches_others` the same way, and none of those is a field
+    anybody types into. Labelling them would fill the table with words no
+    form ever shows, which is the opposite of what this guard is for.
+
+    A request model is a `BaseModel`, directly or through another one of
+    this product's models, and that is what is followed here.
     """
-    out: set[str] = set()
     base = REPO / "jim"
-    files = sorted(base.glob("*.py"))
-    files += sorted((base / "routers").glob("*.py"))
-    for f in files:
-        for node in ast.walk(ast.parse(f.read_text(encoding="utf-8"))):
-            if not isinstance(node, ast.ClassDef):
+    files = sorted(base.glob("*.py")) + sorted((base / "routers").glob("*.py"))
+    trees = [ast.parse(f.read_text(encoding="utf-8")) for f in files]
+
+    # Which classes are request models, following inheritance through the
+    # product's own models — `EnrollChild(Enroll)` is a form too.
+    models: set[str] = set()
+    classes: list[ast.ClassDef] = [node for tree in trees
+                                   for node in ast.walk(tree)
+                                   if isinstance(node, ast.ClassDef)]
+    changed = True
+    while changed:
+        changed = False
+        for node in classes:
+            if node.name in models:
                 continue
-            for st in node.body:
-                if isinstance(st, ast.AnnAssign) and isinstance(st.target, ast.Name):
-                    out.add(st.target.id)
+            bases = {b.id for b in node.bases if isinstance(b, ast.Name)}
+            bases |= {b.attr for b in node.bases if isinstance(b, ast.Attribute)}
+            if "BaseModel" in bases or bases & models:
+                models.add(node.name)
+                changed = True
+
+    out: set[str] = set()
+    for node in classes:
+        if node.name not in models:
+            continue
+        for st in node.body:
+            if isinstance(st, ast.AnnAssign) and isinstance(st.target, ast.Name):
+                out.add(st.target.id)
     return out
 
 

@@ -4637,6 +4637,48 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cal.ended": {
     en: "The call is over.", es: "La llamada ha terminado.", fr: "L'appel est terminé.", de: "Das Gespräch ist beendet.", pt: "A chamada terminou.", it: "La chiamata è finita.", ja: "通話は終了しました。", zh: "通话已结束。", hi: "कॉल समाप्त हो गई।", ar: "انتهت المكالمة.",
   },
+  "mon.sense": {
+    en: "Take a reading now", es: "Tomar una lectura ahora", fr: "Prendre une mesure maintenant", de: "Jetzt eine Messung nehmen", pt: "Fazer uma leitura agora", it: "Fai una rilevazione ora", ja: "いま計測する", zh: "立即读取一次", hi: "अभी एक रीडिंग लें", ar: "خُذ قراءة الآن",
+  },
+  "mon.sensing": {
+    en: "It is sensing.", es: "Está detectando.", fr: "Il capte.", de: "Es erfasst.", pt: "Está a detetar.", it: "Sta rilevando.", ja: "感知しています。", zh: "正在感知。", hi: "यह महसूस कर रहा है।", ar: "إنه يستشعر.",
+  },
+  "mon.head": {
+    en: "What may sense you", es: "Lo que puede detectarte", fr: "Ce qui peut vous capter", de: "Was dich erfassen darf", pt: "O que o pode detetar", it: "Cosa può rilevarti", ja: "あなたを感知してよいもの", zh: "什么可以感知你", hi: "आपको क्या महसूस कर सकता है", ar: "ما يُسمح له باستشعارك",
+  },
+  "mon.lead": {
+    en: "Everything that can be plugged in, and what each one costs: what it takes in, who else it reaches, and what stays behind afterwards. Nothing that senses other people is ever on until you turn it on.", es: "Todo lo que se puede conectar y lo que cuesta cada cosa: qué capta, a quién más alcanza y qué queda después. Nada que detecte a otras personas está activo hasta que tú lo actives.", fr: "Tout ce qui peut être branché, et ce que cela coûte : ce qu'il capte, qui d'autre il atteint, et ce qui reste ensuite. Rien de ce qui capte autrui n'est actif tant que vous ne l'activez pas.", de: "Alles, was sich anschließen lässt, und was es kostet: was es aufnimmt, wen es sonst erreicht, und was danach bleibt. Nichts, was andere Menschen erfasst, ist an, bevor du es einschaltest.", pt: "Tudo o que pode ser ligado e o que cada coisa custa: o que capta, quem mais alcança, e o que fica depois. Nada que detete outras pessoas está ativo até o ativar.", it: "Tutto ciò che si può collegare e cosa costa: cosa capta, chi altro raggiunge e cosa resta dopo. Nulla che rilevi altre persone è attivo finché non lo attivi tu.", ja: "接続できるものすべてと、それぞれの代償：何を取り込み、ほかに誰まで届き、あとに何が残るか。他人を感知するものは、あなたが有効にするまで作動しません。", zh: "所有可以接入的东西，以及各自的代价：它接收什么、还会触及谁、事后留下什么。凡是会感知到他人的，在你开启之前都不会运行。", hi: "जो कुछ जोड़ा जा सकता है और हर एक की क़ीमत: वह क्या ग्रहण करता है, और किन तक पहुँचता है, और बाद में क्या बचा रहता है। जो दूसरों को महसूस करता है, वह तब तक चालू नहीं होता जब तक आप न करें।", ar: "كل ما يمكن توصيله وما تكلفته: ماذا يلتقط، ومن غيرك يطاله، وماذا يبقى بعده. لا شيء يستشعر أشخاصًا آخرين يعمل قبل أن تشغّله أنت.",
+  },
+  "mon.others": {
+    en: "senses other people", es: "detecta a otras personas", fr: "capte d'autres personnes", de: "erfasst andere Menschen", pt: "deteta outras pessoas", it: "rileva altre persone", ja: "他人も感知します", zh: "会感知到他人", hi: "दूसरों को भी महसूस करता है", ar: "يستشعر أشخاصًا آخرين",
+  },
+  "mon.keeps": {
+    en: "What stays behind:", es: "Qué queda después:", fr: "Ce qui reste :", de: "Was bleibt:", pt: "O que fica:", it: "Cosa resta:", ja: "あとに残るもの：", zh: "事后留下：", hi: "बाद में क्या बचता है:", ar: "ما يبقى:",
+  },
+  "mon.on": {
+    en: "On.", es: "Activado.", fr: "Activé.", de: "An.", pt: "Ativo.", it: "Attivo.", ja: "有効です。", zh: "已开启。", hi: "चालू है।", ar: "مفعّل.",
+  },
+  "mon.off": {
+    en: "Off. Nobody has switched this on.", es: "Desactivado. Nadie lo ha activado.", fr: "Désactivé. Personne ne l'a activé.", de: "Aus. Niemand hat das eingeschaltet.", pt: "Desativado. Ninguém o ativou.", it: "Disattivato. Nessuno l'ha attivato.", ja: "無効です。誰も有効にしていません。", zh: "未开启。没有人开启过它。", hi: "बंद है। किसी ने इसे चालू नहीं किया।", ar: "مغلق. لم يفعّله أحد.",
+  },
+  "mon.keeping": {
+    en: "and keeping what it senses", es: "y guarda lo que detecta", fr: "et conserve ce qu'il capte", de: "und behält, was er erfasst", pt: "e guarda o que deteta", it: "e conserva ciò che rileva", ja: "感知した内容を保持します", zh: "并保留其感知到的内容", hi: "और जो महसूस करता है उसे रखता है", ar: "ويحتفظ بما يستشعره",
+  },
+  "mon.plug": {
+    en: "Switch it on", es: "Activarlo", fr: "L'activer", de: "Einschalten", pt: "Ativar", it: "Attivalo", ja: "有効にする", zh: "开启", hi: "चालू करें", ar: "شغّله",
+  },
+  "mon.plug.told": {
+    en: "They have been told — switch it on", es: "Ya se les ha informado: activarlo", fr: "Ils ont été prévenus — l'activer", de: "Sie wurden informiert — einschalten", pt: "Já foram avisados — ativar", it: "Sono stati avvisati — attivalo", ja: "伝えました — 有効にする", zh: "已经告知他们——开启", hi: "उन्हें बता दिया गया — चालू करें", ar: "أُبلغوا — شغّله",
+  },
+  "mon.plugged": {
+    en: "Switched on.", es: "Activado.", fr: "Activé.", de: "Eingeschaltet.", pt: "Ativado.", it: "Attivato.", ja: "有効にしました。", zh: "已开启。", hi: "चालू कर दिया गया।", ar: "تم تشغيله.",
+  },
+  "mon.unplug": {
+    en: "Switch it off", es: "Desactivarlo", fr: "Le désactiver", de: "Ausschalten", pt: "Desativar", it: "Disattivalo", ja: "無効にする", zh: "关闭", hi: "बंद करें", ar: "أوقفه",
+  },
+  "mon.unplugged": {
+    en: "Switched off.", es: "Desactivado.", fr: "Désactivé.", de: "Ausgeschaltet.", pt: "Desativado.", it: "Disattivato.", ja: "無効にしました。", zh: "已关闭。", hi: "बंद कर दिया गया।", ar: "تم إيقافه.",
+  },
   "cal.head": {
     en: "An aid on the call", es: "Una ayuda en la llamada", fr: "Une aide pendant l'appel", de: "Eine Hilfe im Gespräch", pt: "Uma ajuda na chamada", it: "Un aiuto durante la chiamata", ja: "通話に付き添う支援", zh: "通话中的协助", hi: "कॉल में सहायक", ar: "مساعدة أثناء المكالمة",
   },

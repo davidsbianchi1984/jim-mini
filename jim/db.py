@@ -1211,6 +1211,22 @@ CREATE TABLE IF NOT EXISTS assisted_calls (
     ended_because TEXT
 );
 
+-- What may sense this person, through what device, and whether the people in
+-- that space were told. `others_told` is somebody's assertion with a time on
+-- it, not consent this product collected, and it is stored as what it is —
+-- see jim/monitors.py. A switched-off row is kept rather than deleted: the
+-- decision and when it was made are the point.
+CREATE TABLE IF NOT EXISTS monitors (
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    monitor     TEXT NOT NULL,
+    device_name TEXT NOT NULL DEFAULT '',
+    switched_on INTEGER NOT NULL DEFAULT 0,
+    others_told INTEGER NOT NULL DEFAULT 0,
+    keeping     INTEGER NOT NULL DEFAULT 0,
+    decided_at  TEXT NOT NULL,
+    PRIMARY KEY (user_id, monitor)
+);
+
 CREATE TABLE IF NOT EXISTS gaps (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

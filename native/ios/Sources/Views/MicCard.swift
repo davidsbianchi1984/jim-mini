@@ -22,9 +22,48 @@ struct MicCard: View {
     @State private var callNumber = ""
     @State private var call: AssistedCall?
     @State private var calls: [CallRow] = []
+    // What may sense this person, and through what. Off rows included.
+    @State private var mons: [MonitorRow] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            // Everywhere the monitoring plugs in. The rows that sense other
+            // people carry that on their face, and switching one on says the
+            // people in that space have been told.
+            Text(L10n.t("mon.head", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            Text(L10n.t("mon.lead", state.language))
+                .font(.caption2).foregroundStyle(Theme.t2)
+            ForEach(mons, id: \.name) { m in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(m.says).font(.caption).foregroundStyle(Theme.txt)
+                    Text(m.senses.joined(separator: " · ")
+                         + (m.catches_others
+                            ? " · " + L10n.t("mon.others", state.language)
+                            : ""))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    Text(L10n.t("mon.keeps", state.language) + " " + m.holds)
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    Text(m.on ? L10n.t("mon.on", state.language)
+                              : L10n.t("mon.off", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    if m.on {
+                        Button(L10n.t("mon.sense", state.language)) {
+                            sense(m)
+                        }.font(.caption).tint(Theme.brandA)
+                        Button(L10n.t("mon.unplug", state.language)) {
+                            unplug(m)
+                        }.font(.caption).tint(Theme.t2)
+                    } else {
+                        Button(m.catches_others
+                               ? L10n.t("mon.plug.told", state.language)
+                               : L10n.t("mon.plug", state.language)) {
+                            plug(m)
+                        }.font(.caption).tint(Theme.brandA)
+                    }
+                }
+            }
+
             Text(L10n.t("cal.head", state.language))
                 .font(.subheadline.bold()).foregroundStyle(Theme.txt)
             Text(L10n.t("cal.lead", state.language))
@@ -164,6 +203,39 @@ struct MicCard: View {
         mic = try? await ApiClient.shared.micState(uid: uid, token: token)
         calls = (try? await ApiClient.shared.calls(uid: uid,
                                                    token: token)) ?? []
+        mons = (try? await ApiClient.shared.monitors(uid: uid,
+                                                     token: token)) ?? []
+    }
+
+    /// Switch a monitor on. Anything that senses other people carries the
+    /// claim that they were told.
+    private func plug(_ m: MonitorRow) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            mons = (try? await ApiClient.shared.plugMonitor(
+                uid: uid, token: token, name: m.name,
+                othersTold: m.catches_others)) ?? mons
+        }
+    }
+
+    private func unplug(_ m: MonitorRow) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            mons = (try? await ApiClient.shared.unplugMonitor(
+                uid: uid, token: token, name: m.name)) ?? mons
+        }
+    }
+
+    /// Refused with a 403 until the row is switched on — the one door.
+    private func sense(_ m: MonitorRow) {
+        guard let uid = state.uid, let token = state.token else { return }
+        error = nil
+        Task {
+            do {
+                try await ApiClient.shared.monitorSensed(
+                    uid: uid, token: token, name: m.name)
+            } catch { self.error = error.localizedDescription }
+        }
     }
 
     /// Set up the call. It is not listening: what comes back is the notice.

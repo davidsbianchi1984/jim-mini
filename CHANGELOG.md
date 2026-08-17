@@ -8,6 +8,41 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Somewhere to plug the monitoring in, and what each one costs.** Cameras,
+  speakers, screens, bands, rings, patches, doorway sensors, the strip under a
+  mattress. Three tables already existed and none of them answered the
+  question a person actually has before switching one on: `devices` says what
+  is registered, `sources` says which categories of data may be read, and
+  `mic.MIC_TYPES` says whether a microphone is worn or pointed at a room.
+
+      asked     can this device sense me
+      mattered  who else does it sense, and what does it keep
+
+  **Every row says what it takes in, who else it reaches, and what stays
+  behind.** That last one is the half these lists omit: *it notices you fell*
+  and *it keeps the video of you falling* are different agreements. Sensing
+  and keeping are two switches.
+
+  **Who else it reaches decides the rest.** Nothing that senses people who did
+  not choose it is ever on by default, and a guard reads the table rather than
+  trusting anybody to have read it. A second guard holds that a stationary
+  monitor cannot be filed as catching nobody — a thing bolted to a room senses
+  the room, which `jim/mic.py` settled for microphones and holds for cameras,
+  speakers and mattress strips too. Worn does not mean harmless either:
+  glasses are worn and still pointed outward at whoever is in front of you.
+
+  **Switching one of those on is refused until somebody says the room knows.**
+  Stored as what it is — an assertion with a time on it, not consent this
+  product collected — because the alternative is a hall camera going on with
+  nobody having thought about the hall. `monitors.may_sense` is the only door
+  to reading any of them, the argument `oncall.may_listen` makes for a call.
+
+  Always-on is a property, not a default. A person who turns a hall camera on
+  has decided; a person who finds one already on has been decided about, and
+  no amount of usefulness afterwards converts the second into the first.
+
+  On the console, on iOS, on Android and on Windows.
+
 - **An aid on the call, and the notice that goes first.** `jim/mic.py` lends
   the guardian a second microphone while a call occupies the first, and it
   refuses the speaker case in as many words — *they were never asked and could
