@@ -227,7 +227,7 @@ _FRUSTRATION_CUES = [
 
 
 def detect_ambient(signals: dict, text: str | None = None) -> Detection | None:
-    """Ambient struggle detection (the "Jiminy Cricket" jump-in): from the
+    """Ambient struggle detection (the jump-in): from the
     signals of an *activity* — repeated attempts, a long stall, frustration in
     what the person says — decide whether help should be offered *before it is
     asked for*. Transparent and additive, like the biometric rules.

@@ -716,6 +716,20 @@ class CoachMessage(BaseModel):
     message: str
 
 
+class CallOpen(BaseModel):
+    """Set up an assisted call.
+
+    `recording` decides which notice is composed — it is not a label, it is
+    what the far side will be told. `number` is read for one thing, which
+    language to say it in, and dropped: the person who has to understand the
+    notice is the one on the other end, and their dialling code is the only
+    clue a call gives before anybody speaks.
+    """
+    route: str
+    recording: bool = False
+    number: str | None = None
+
+
 class Alongside(BaseModel):
     """A draft somebody is writing, handed over for remarks.
 

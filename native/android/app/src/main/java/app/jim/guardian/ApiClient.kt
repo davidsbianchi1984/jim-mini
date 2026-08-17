@@ -105,6 +105,16 @@ data class CoachStore(val pack: Int, val excursions: List<CoachStoreEntry>,
 data class CoachSuggestion(val area: String, val topic: String, val why: String)
 data class CoachCurriculum(val suggested: List<CoachSuggestion>, val note: String)
 data class CoachStudied(val studied: String, val folded: Boolean)
+/** One part of the notice: the support-line script in a language the far side
+ *  might actually speak. More than one where the mix is known. */
+data class CallNotice(val language: String, val words: String)
+data class AssistedCall(val id: String, val listening: Boolean,
+                        val route: String, val recording: Boolean,
+                        val notices: List<CallNotice>, val said: String,
+                        val spokenIn: List<String>, val languageFrom: String)
+data class CallRow(val id: String, val route: String, val said: String,
+                   val spokenIn: List<String>, val announcedAt: String?,
+                   val listened: Boolean, val openedAt: String)
 /** One remark on a draft. `because` is the evidence it came from; `door` is
  *  set only on an offer, and only ever names a screen this product has. */
 data class Remark(val kind: String, val says: String,
@@ -906,6 +916,55 @@ object ApiClient {
         if (area != null) body.put("area", area)
         val o = request("/coach/$uid/study", "POST", body, token)
         return CoachStudied(o.getString("studied"), o.getBoolean("folded"))
+    }
+
+    private fun noticesOf(arr: JSONArray) = (0 until arr.length()).map {
+        val o = arr.getJSONObject(it)
+        CallNotice(o.optString("language", ""), o.optString("words", ""))
+    }
+
+    private fun stringsOf(arr: JSONArray?) =
+        (0 until (arr?.length() ?: 0)).map { arr!!.getString(it) }
+
+    /** Set up an assisted call. It is not listening: what comes back is the
+     *  notice to play. `number` is read for the language and dropped. */
+    suspend fun openCall(uid: String, token: String, route: String,
+                         recording: Boolean = false,
+                         number: String? = null): AssistedCall {
+        val body = JSONObject().put("route", route).put("recording", recording)
+        if (number != null) body.put("number", number)
+        val o = request("/calls/$uid", "POST", body, token)
+        return AssistedCall(o.getString("id"), o.optBoolean("listening"),
+            o.optString("route", ""), o.optBoolean("recording"),
+            noticesOf(o.optJSONArray("notices") ?: JSONArray()),
+            o.optString("said", ""), stringsOf(o.optJSONArray("spoken_in")),
+            o.optString("language_from", ""))
+    }
+
+    /** The notice went out. Confirmed by whatever played it. */
+    suspend fun callAnnounced(uid: String, callId: String, token: String) {
+        request("/calls/$uid/$callId/announced", "POST", token = token)
+    }
+
+    suspend fun calls(uid: String, token: String): List<CallRow> {
+        val arr = JSONArray(request("/calls/$uid", token = token).toString())
+        return (0 until arr.length()).map {
+            val o = arr.getJSONObject(it)
+            CallRow(o.getString("id"), o.optString("route", ""),
+                o.optString("said", ""), stringsOf(o.optJSONArray("spoken_in")),
+                if (o.isNull("announced_at")) null else o.optString("announced_at"),
+                o.optBoolean("listened"), o.optString("opened_at", ""))
+        }
+    }
+
+    suspend fun endCall(uid: String, callId: String, token: String) {
+        request("/calls/$uid/$callId", "DELETE", token = token)
+    }
+
+    /** Anything the call hands the agent goes through here, and through the
+     *  announcement check first. */
+    suspend fun callHeard(uid: String, callId: String, token: String) {
+        request("/calls/$uid/$callId/heard", "POST", token = token)
     }
 
     /** A draft, read on the device and dropped. Nothing is stored and

@@ -22,6 +22,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                catalog,
                coach,
                alongside, engaged, errands,
+               oncall,
                mailer,
                circle, contribution, db, money, schedule, shopping,
                escalation, family, followup, guardian, handoff, i18n, identity,
@@ -47,7 +48,7 @@ from .models import (
     ChildEnroll,
     CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
-    CoachStudy, EngageOpen, EngagedSaid, Enroll, ExcursionStart,
+    CallOpen, CoachStudy, EngageOpen, EngagedSaid, Enroll, ExcursionStart,
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
@@ -3216,6 +3217,65 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "left_host": left_host, "excursion_id": cid,
                 "note": "findings folded into the coach's store; the offline "
                         "pipeline reads them on the next question"}
+
+    # ---- an aid on the call, and the notice that goes first --------------
+
+    @app.post("/calls/{user_id}", status_code=201)
+    def open_call(user_id: str, body: CallOpen, request: Request) -> dict:
+        """Set up an assisted call and hand back the words to play.
+
+        It is not listening. `jim/oncall.py` starts every call in the one
+        state where it cannot, and the only way out is saying the notice
+        actually went out on the line.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return oncall.open(user_id, body.route, body.recording,
+                               body.number)
+        except oncall.NotAShared as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.post("/calls/{user_id}/{call_id}/announced")
+    def call_announced(user_id: str, call_id: str, request: Request) -> dict:
+        """The notice went out. Confirmed by whatever played it, because the
+        server knows what should have been said and only the thing holding
+        the audio knows whether it was."""
+        _user_or_404(user_id, request)
+        try:
+            return oncall.announced(call_id)
+        except oncall.NoSuchCall as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.get("/calls/{user_id}")
+    def call_history(user_id: str, request: Request) -> list[dict]:
+        """Assisted calls, newest first, each saying whether it announced
+        itself and in what words."""
+        _user_or_404(user_id, request)
+        return oncall.history(user_id)
+
+    @app.delete("/calls/{user_id}/{call_id}")
+    def end_call(user_id: str, call_id: str, request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return oncall.close(call_id)
+        except oncall.NoSuchCall as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.post("/calls/{user_id}/{call_id}/heard")
+    def call_heard(user_id: str, call_id: str, request: Request) -> dict:
+        """Anything the call wants to hand the agent goes through here, and
+        through `oncall.may_listen` first — the one door to listening."""
+        _user_or_404(user_id, request)
+        try:
+            oncall.may_listen(call_id)
+        except oncall.NotAnnounced as exc:
+            # The structure, not `str(exc)`: the words to play are a script
+            # for the far side and belong beside the sentence rather than
+            # inside it.
+            raise HTTPException(409, i18n.raised(exc)) from None
+        except oncall.NoSuchCall as exc:
+            raise HTTPException(404, str(exc)) from None
+        return {"listening": True, "id": call_id}
 
     @app.post("/alongside/{user_id}")
     def alongside_read(user_id: str, body: Alongside, request: Request) -> dict:

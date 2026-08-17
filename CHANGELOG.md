@@ -8,6 +8,51 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **An aid on the call, and the notice that goes first.** `jim/mic.py` lends
+  the guardian a second microphone while a call occupies the first, and it
+  refuses the speaker case in as many words — *they were never asked and could
+  not revoke it*. That refusal is right about the person it names, and it is
+  not weakened here. This is the other case: the far side **is** told.
+
+      asked     may the agent be on this call
+      mattered  does the other person know it is
+
+  **The notice is the one everybody has already heard.** *This call may be
+  monitored or recorded to better assist you* — deliberately the support-line
+  script rather than a careful new sentence. Somebody hearing it does not have
+  to work out what it means or what they can do about it, and a better
+  sentence nobody recognises is a worse notice.
+
+  **Said in a language they might actually speak.** Picked from the dialling
+  code, which is the only clue a call gives before anybody says hello — and in
+  every language where the mix is known rather than one guess: Switzerland
+  hears German, French and Italian; Québec hears French then English; Morocco
+  hears Arabic then French; an unknown number hears English and Spanish, which
+  is what a support line in the United States does. The number is read for
+  that and dropped: never returned, never logged, never stored, because the
+  person on the other end has no account here and never will.
+
+  **Notice, not permission.** Nothing waits for the far side to answer,
+  nothing records their agreement, and there is no state for *they objected* —
+  the notice plays and hanging up is theirs, exactly as it is on every support
+  line. What is enforced instead is **ordering**: `oncall.may_listen` is the
+  only door to hearing anything and refuses until the notice has actually gone
+  out, confirmed by whatever played it rather than assumed by the server that
+  composed it. A call that never announced never listened, and stays in the
+  history as the evidence that the ordering held.
+
+  On the console, on iOS, on Android and on Windows.
+
+- **A built sentence lost its template inside the wrapper that carries it.**
+  Every handler wraps a refusal as `{"detail": exc.detail}`, and the branch
+  that localized it asked whether the wrapped detail was a `str`. A
+  `Templated` **is** a `str`, so every built sentence was caught there and
+  looked up by its finished English — a key in no table. `MUST_BE_ONE_OF` went
+  out in English from seven raise sites, in every language, and nothing said
+  so: an untranslated sentence and a sentence nobody has translated yet look
+  identical from outside. The branch recurses now, and a guard holds both
+  shapes.
+
 - **Beside somebody while they write.** The field ask, verbatim: *as you're
   typing out a sales page to a customer, or writing a strategy doc, to just
   jump in and say hey you forgot about this, or here's maybe another idea, or

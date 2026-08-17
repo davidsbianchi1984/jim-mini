@@ -4625,6 +4625,48 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cch.knows.counts": {
     en: "{pack} curated entries · {learned} learned by JIM · {deposits} deposited from model turns — answered offline, on this device", es: "{pack} entradas seleccionadas · {learned} aprendidas por JIM · {deposits} depositadas de turnos del modelo — respondido sin conexión, en este dispositivo", fr: "{pack} entrées sélectionnées · {learned} apprises par JIM · {deposits} déposées depuis des tours du modèle — répondu hors ligne, sur cet appareil", de: "{pack} kuratierte Einträge · {learned} von JIM gelernt · {deposits} aus Modell-Antworten hinterlegt — offline beantwortet, auf diesem Gerät", pt: "{pack} entradas selecionadas · {learned} aprendidas pelo JIM · {deposits} depositadas de respostas do modelo — respondido offline, neste dispositivo", it: "{pack} voci curate · {learned} apprese da JIM · {deposits} depositate dai turni del modello — risposto offline, su questo dispositivo", ja: "厳選エントリ {pack} 件 · JIM が学んだもの {learned} 件 · モデル回答からの蓄積 {deposits} 件 — この端末上でオフライン回答", zh: "{pack} 条精选条目 · JIM 学到 {learned} 条 · 模型回答沉淀 {deposits} 条——在本设备离线作答", hi: "{pack} चुनी हुई प्रविष्टियाँ · JIM ने {learned} सीखीं · मॉडल उत्तरों से {deposits} जमा — इसी डिवाइस पर ऑफ़लाइन उत्तर", ar: "{pack} مدخلات منسّقة · تعلّم JIM ‏{learned} · ‏{deposits} مودَعة من ردود النموذج — يُجاب دون اتصال، على هذا الجهاز",
   },
+  "cal.listen": {
+    en: "Start listening", es: "Empezar a escuchar", fr: "Commencer à écouter", de: "Zuhören beginnen", pt: "Começar a escutar", it: "Inizia ad ascoltare", ja: "聞き取りを開始", zh: "开始收听", hi: "सुनना शुरू करें", ar: "ابدأ الاستماع",
+  },
+  "cal.listening": {
+    en: "It is listening now.", es: "Ahora está escuchando.", fr: "Il écoute maintenant.", de: "Es hört jetzt zu.", pt: "Está a escutar agora.", it: "Ora sta ascoltando.", ja: "現在、聞き取っています。", zh: "现在正在收听。", hi: "अब यह सुन रहा है।", ar: "إنه يستمع الآن.",
+  },
+  "cal.end": {
+    en: "End the call", es: "Terminar la llamada", fr: "Terminer l'appel", de: "Gespräch beenden", pt: "Terminar a chamada", it: "Termina la chiamata", ja: "通話を終える", zh: "结束通话", hi: "कॉल समाप्त करें", ar: "أنهِ المكالمة",
+  },
+  "cal.ended": {
+    en: "The call is over.", es: "La llamada ha terminado.", fr: "L'appel est terminé.", de: "Das Gespräch ist beendet.", pt: "A chamada terminou.", it: "La chiamata è finita.", ja: "通話は終了しました。", zh: "通话已结束。", hi: "कॉल समाप्त हो गई।", ar: "انتهت المكالمة.",
+  },
+  "cal.head": {
+    en: "An aid on the call", es: "Una ayuda en la llamada", fr: "Une aide pendant l'appel", de: "Eine Hilfe im Gespräch", pt: "Uma ajuda na chamada", it: "Un aiuto durante la chiamata", ja: "通話に付き添う支援", zh: "通话中的协助", hi: "कॉल में सहायक", ar: "مساعدة أثناء المكالمة",
+  },
+  "cal.lead": {
+    en: "On a call other people can hear, the other side is told first — the notice everybody has heard on a support line, in a language their number suggests they speak. Nothing listens until it has gone out.", es: "En una llamada que otros pueden oír, se avisa primero a la otra parte — el aviso que todos hemos oído en atención al cliente, en el idioma que sugiere su número. Nada escucha hasta que se haya reproducido.", fr: "Sur un appel que d'autres peuvent entendre, l'autre partie est prévenue d'abord — l'avis que tout le monde a entendu sur une ligne d'assistance, dans la langue que son numéro suggère. Rien n'écoute avant qu'il soit passé.", de: "Bei einem Gespräch, das andere mithören können, wird die Gegenseite zuerst informiert — der Hinweis, den alle von der Hotline kennen, in der Sprache, die ihre Nummer nahelegt. Nichts hört zu, bevor er gelaufen ist.", pt: "Numa chamada que outros podem ouvir, a outra parte é avisada primeiro — o aviso que todos já ouviram numa linha de apoio, no idioma que o número sugere. Nada escuta até ter sido reproduzido.", it: "In una chiamata che altri possono sentire, l'altra parte viene avvisata per prima — l'avviso che tutti hanno sentito su una linea di assistenza, nella lingua che il numero suggerisce. Nulla ascolta finché non è stato riprodotto.", ja: "他の人にも聞こえる通話では、まず相手に伝えます — サポートセンターで誰もが聞いたことのあるあの案内を、相手の番号から推測される言語で。流れるまでは何も聞き取りません。", zh: "在他人也能听到的通话中，先告知对方——就是大家在客服热线上都听过的那句话，用其号码所提示的语言播放。在播放之前，不会开始收听。", hi: "जिस कॉल को दूसरे भी सुन सकते हैं, वहाँ पहले दूसरे पक्ष को बताया जाता है — वही सूचना जो सब ने ग्राहक सेवा पर सुनी है, उनके नंबर से अनुमानित भाषा में। जब तक वह न चल जाए, कुछ भी नहीं सुना जाता।", ar: "في مكالمة يمكن لآخرين سماعها، يُبلَّغ الطرف الآخر أولًا — التنبيه الذي سمعه الجميع على خط الدعم، بلغة يرجّحها رقمه. ولا يستمع شيء قبل أن يُذاع.",
+  },
+  "cal.number.ph": {
+    en: "Their number, for the language", es: "Su número, para el idioma", fr: "Leur numéro, pour la langue", de: "Ihre Nummer, für die Sprache", pt: "O número deles, para o idioma", it: "Il loro numero, per la lingua", ja: "相手の番号（言語の判断用）", zh: "对方号码（用于判断语言）", hi: "उनका नंबर, भाषा के लिए", ar: "رقمهم، لتحديد اللغة",
+  },
+  "cal.open": {
+    en: "Set up the call", es: "Preparar la llamada", fr: "Préparer l'appel", de: "Gespräch vorbereiten", pt: "Preparar a chamada", it: "Prepara la chiamata", ja: "通話を準備する", zh: "准备通话", hi: "कॉल तैयार करें", ar: "جهّز المكالمة",
+  },
+  "cal.play": {
+    en: "Play this on the line:", es: "Reproduce esto en la línea:", fr: "Diffusez ceci sur la ligne :", de: "Spiele das auf der Leitung ab:", pt: "Reproduza isto na linha:", it: "Riproduci questo sulla linea:", ja: "回線でこれを流してください：", zh: "请在通话中播放这段：", hi: "इसे लाइन पर चलाइए:", ar: "شغّل هذا على الخط:",
+  },
+  "cal.from": {
+    en: "Language picked from", es: "Idioma elegido a partir de", fr: "Langue choisie d'après", de: "Sprache gewählt anhand von", pt: "Idioma escolhido a partir de", it: "Lingua scelta da", ja: "言語の判断根拠：", zh: "语言依据", hi: "भाषा इससे चुनी गई", ar: "اللغة اختيرت من",
+  },
+  "cal.played": {
+    en: "It has been played", es: "Ya se ha reproducido", fr: "Il a été diffusé", de: "Er wurde abgespielt", pt: "Já foi reproduzido", it: "È stato riprodotto", ja: "流し終えました", zh: "已经播放", hi: "इसे चला दिया गया", ar: "تم تشغيله",
+  },
+  "cal.done": {
+    en: "The other side has been told. It can listen now.", es: "Se ha informado a la otra parte. Ya puede escuchar.", fr: "L'autre partie a été prévenue. L'écoute peut commencer.", de: "Die Gegenseite wurde informiert. Jetzt darf zugehört werden.", pt: "A outra parte foi avisada. Já pode escutar.", it: "L'altra parte è stata avvisata. Ora può ascoltare.", ja: "相手に伝わりました。これから聞き取れます。", zh: "已告知对方，现在可以开始收听。", hi: "दूसरे पक्ष को बता दिया गया। अब यह सुन सकता है।", ar: "أُبلغ الطرف الآخر. يمكنه الاستماع الآن.",
+  },
+  "cal.told": {
+    en: "told", es: "avisado", fr: "prévenu", de: "informiert", pt: "avisado", it: "avvisato", ja: "伝達済み", zh: "已告知", hi: "बताया गया", ar: "أُبلغ",
+  },
+  "cal.nevertold": {
+    en: "never told, never listened", es: "nunca avisado, nunca escuchó", fr: "jamais prévenu, jamais écouté", de: "nie informiert, nie zugehört", pt: "nunca avisado, nunca escutou", it: "mai avvisato, mai ascoltato", ja: "未伝達・未聴取", zh: "未告知，也未收听", hi: "न बताया गया, न सुना गया", ar: "لم يُبلَّغ ولم يستمع",
+  },
   "bes.head": {
     en: "Beside you while you write", es: "A tu lado mientras escribes", fr: "À vos côtés pendant que vous écrivez", de: "Neben dir, während du schreibst", pt: "Ao seu lado enquanto escreve", it: "Accanto a te mentre scrivi", ja: "書いているあいだ、そばで", zh: "你写作时在你身边", hi: "जब आप लिखते हैं, आपके साथ", ar: "بجانبك وأنت تكتب",
   },

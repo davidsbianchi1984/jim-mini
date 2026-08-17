@@ -1192,6 +1192,25 @@ CREATE TABLE IF NOT EXISTS errands (
 CREATE INDEX IF NOT EXISTS idx_errands_day
     ON errands (user_id, opened_at);
 
+-- An assisted call: the agent on a shared-route call, with the far side told
+-- out loud before anything listens. Nothing about the other party is stored —
+-- no number, no name, no transcript — because they have no account here and
+-- never will. What is kept is that a notice was given, when, and in what
+-- words, which is the one fact they would ever want established.
+CREATE TABLE IF NOT EXISTS assisted_calls (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    route         TEXT NOT NULL,      -- speaker | speakerphone | car | conference
+    recording     INTEGER NOT NULL DEFAULT 0,
+    notice        TEXT NOT NULL,      -- the exact words, as they were spoken
+    language      TEXT NOT NULL,      -- which language they were said in
+    language_clue TEXT NOT NULL,      -- what that was inferred from (+34, …)
+    announced_at  TEXT,               -- NULL until it actually went out
+    opened_at     TEXT NOT NULL,
+    ended_at      TEXT,
+    ended_because TEXT
+);
+
 CREATE TABLE IF NOT EXISTS gaps (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

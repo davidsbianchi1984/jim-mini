@@ -365,3 +365,30 @@ def test_a_built_sentence_is_not_laundered_through_str():
         + "\n    ".join(offenders)
         + "\n  Use `i18n.raised(exc)` — it hands on the sentence in the shape "
           "it was raised.")
+
+
+def test_a_built_sentence_survives_the_wrapper_that_carries_it():
+    """`{"detail": exc.detail}` is what every handler wraps a refusal in.
+
+    A `Templated` **is** a `str`, so the branch that asked whether the wrapped
+    detail was a string caught every built sentence and looked it up by its
+    finished English — a key in no table. `MUST_BE_ONE_OF` went out in English
+    from seven raise sites, in every language, and nothing said so: an
+    untranslated sentence and a sentence nobody has translated yet look
+    identical from outside.
+
+        asked     is the refusal translated
+        mattered  is it translated where the wrapper actually puts it
+
+    Driven through `localize_detail` in both shapes, because the defect was
+    the shape and not the sentence.
+    """
+    built = i18n.fill(i18n.MUST_BE_ONE_OF, field="language",
+                      choices=",".join(i18n.SUPPORTED))
+    bare = i18n.localize_detail(built, "pt")
+    assert bare != str(built), "the template stopped resolving at all"
+
+    wrapped = i18n.localize_detail({"detail": built}, "pt")
+    assert wrapped["detail"] == bare, (
+        "a built sentence lost its template on the way through the wrapper "
+        "every handler puts it in")

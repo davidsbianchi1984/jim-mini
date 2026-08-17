@@ -393,6 +393,34 @@ export interface CoachCurriculum { suggested: CoachSuggestion[]; note: string }
 export interface CoachStudied { studied: string; area: string | null;
   folded: boolean; left_host: boolean; excursion_id: string; note: string }
 
+// -- an aid on the call, and the notice that goes first (jim/oncall.py) --
+//
+// `say` is a script, not a message: each part is the support-line notice in a
+// language the far side might actually speak, picked from the dialling code
+// and given more than once where the mix is known. `language_from` is the
+// clue it was picked on, because a guess presented as knowledge is worse
+// than a guess.
+export interface CallNotice { language: string; words: string }
+
+export interface AssistedCall {
+  id: string;
+  listening: boolean;
+  route: string;
+  recording: boolean;
+  notices: CallNotice[];
+  said: string;
+  spoken_in: string[];
+  language_from: string;
+  note: string;
+}
+
+export interface CallRow {
+  id: string; route: string; recording: boolean; said: string;
+  spoken_in: string[]; language_from: string;
+  announced_at: string | null; listened: boolean;
+  opened_at: string; ended_at: string | null; ended_because: string | null;
+}
+
 // -- beside somebody while they write (jim/alongside.py) -----------------
 //
 // One remark on a draft. `because` is the evidence — a goal of theirs, an
@@ -1566,6 +1594,28 @@ export const api = {
   // without the permit, and refused again once the day's budget is spent —
   // two different refusals, because "not allowed" and "not today" are two
   // different things to be told.
+  // Set up an assisted call. It is not listening: what comes back is the
+  // notice to play, and `callAnnounced` is the only way out of that state.
+  // `number` is read for the language and dropped — it is never stored.
+  openCall: (uid: string, body: { route: string; recording?: boolean;
+                                  number?: string }, token: string) =>
+    req<AssistedCall>(`/calls/${uid}`, { method: "POST", body, token }),
+  // Confirmed by whatever played it: the server knows what should have been
+  // said, and only the thing holding the audio knows whether it was.
+  callAnnounced: (uid: string, callId: string, token: string) =>
+    req<{ id: string; listening: boolean; announced_at: string;
+          said: string }>(
+      `/calls/${uid}/${callId}/announced`, { method: "POST", token }),
+  calls: (uid: string, token: string) =>
+    req<CallRow[]>(`/calls/${uid}`, { token }),
+  endCall: (uid: string, callId: string, token: string) =>
+    req<{ id: string; listening: boolean; ended_because: string }>(
+      `/calls/${uid}/${callId}`, { method: "DELETE", token }),
+  // Every path that hands the agent something heard goes through here, and
+  // through `oncall.may_listen` first.
+  callHeard: (uid: string, callId: string, token: string) =>
+    req<{ listening: boolean; id: string }>(
+      `/calls/${uid}/${callId}/heard`, { method: "POST", token }),
   // A draft, read on the device and dropped. Nothing is stored and nothing
   // is edited: remarks come back, and applying one is the person's own act.
   alongside: (uid: string, body: { draft: string; area?: string },

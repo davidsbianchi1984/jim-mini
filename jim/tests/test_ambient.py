@@ -1,4 +1,4 @@
-"""Ambient background observation — the "Jiminy Cricket" jump-in: JIM watches
+"""Ambient background observation — the jump-in: JIM watches
 an activity and offers help proactively when a struggle builds, before asked."""
 
 from jim import conditions

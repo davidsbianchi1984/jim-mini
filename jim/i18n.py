@@ -1377,21 +1377,24 @@ def localize_detail(detail, language: str):
             return str(detail)
     if isinstance(detail, str):
         return tr_refusal(detail, language)
-    if isinstance(detail, dict) and isinstance(detail.get("detail"), str):
-        return {**detail, "detail": tr_refusal(detail["detail"], language)}
+    if isinstance(detail, dict) and "detail" in detail:
+        # Recursion rather than `tr_refusal`, and this is the whole fix.
+        #
+        # A `Templated` **is** a `str`, so the version of this branch that
+        # asked `isinstance(detail["detail"], str)` caught every built
+        # sentence the wrapper had put here and looked it up by its finished
+        # English — which is a key in no table. `MUST_BE_ONE_OF` went out in
+        # English from seven raise sites, in every language, silently, and
+        # indistinguishably from a sentence nobody had translated yet.
+        #
+        #     asked     is the refusal translated
+        #     mattered  is it translated where the wrapper actually puts it
+        #
+        # Recursing sends it back through the `Templated` branch at the top,
+        # which is the one that knows how it was built.
+        return {**detail, "detail": localize_detail(detail["detail"], language)}
     if isinstance(detail, dict) and isinstance(detail.get("message"), str):
         return {**detail, "message": tr_refusal(detail["message"], language)}
-    # One level further in. `api.py` wraps every `HTTPException` as
-    # `{"detail": exc.detail}` before this runs, so a structured refusal — the
-    # plan gate — arrives as a dict inside a dict, and the branches above see
-    # an outer dict whose `detail` is neither a string nor carrying a
-    # `message`. Its sentence went out untranslated in every language.
-    #
-    #     asked     is a structured refusal localized
-    #     mattered  is it localized where the wrapper actually puts it
-    if isinstance(detail, dict) and isinstance(detail.get("detail"), dict):
-        return {**detail,
-                "detail": localize_detail(detail["detail"], language)}
     return detail
 
 
@@ -1424,6 +1427,22 @@ def refusal_language(request) -> str:
 #: a description edited there and not here keeps the refusal English rather
 #: than mixing, but silently, which is the state this table exists to leave.
 _VOCABULARY: dict[str, dict[str, str]] = {
+    # The notice an assisted call plays, in the words a support line has
+    # always used. Translated because the person hearing it is on the other
+    # end of somebody else's phone call and did not choose this product's
+    # language — see jim/oncall.py, which picks the language from the
+    # dialling code.
+    'This call may be monitored or recorded to better assist you.': {
+        'es': "Esta llamada puede ser supervisada o grabada para poder atenderle mejor.",
+        'fr': "Cet appel est susceptible d'être écouté ou enregistré afin de mieux vous servir.",
+        'de': "Dieses Gespräch kann mitgehört oder aufgezeichnet werden, um Sie besser betreuen zu können.",
+        'pt': "Esta chamada pode ser acompanhada ou gravada para melhor o atendermos.",
+        'it': "Questa chiamata può essere ascoltata o registrata per servirla meglio.",
+        'ja': "このお電話は、より良い対応のため、モニタリングまたは録音させていただく場合がございます。",
+        'zh': "为了更好地为您服务，本次通话可能会被监听或录音。",
+        'hi': "आपकी बेहतर सहायता के लिए इस कॉल की निगरानी या रिकॉर्डिंग की जा सकती है।",
+        'ar': "قد تتم مراقبة هذه المكالمة أو تسجيلها لخدمتك على نحو أفضل.",
+    },
     'month': {'es': 'mes', 'fr': 'mois', 'de': 'Monat', 'pt': 'mês',
               'it': 'mese', 'ja': '月', 'zh': '月', 'hi': 'माह', 'ar': 'شهر'},
     'the Guardian — conditions, guidance, journal, habits and goals': {
@@ -1645,6 +1664,37 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    "no such call": {
+        'es': "no existe esa llamada",
+        'fr': "aucun appel de ce type",
+        'de': "dieses Gespräch gibt es nicht",
+        'pt': "não existe essa chamada",
+        'it': "questa chiamata non esiste",
+        'ja': "そのような通話はありません",
+        'zh': "没有这通通话",
+        'hi': "ऐसी कोई कॉल नहीं है",
+        'ar': "لا توجد مكالمة كهذه",
+    },
+    # -- an aid on the call (jim/oncall.py) ----------------------------------
+    #
+    # The notice itself is *not* interpolated into this sentence. It is a
+    # script to be spoken to somebody else, in that person's language, and
+    # putting it inside a sentence the account holder reads would produce
+    # exactly the mixed refusal `Term` exists to prevent — while also
+    # translating a script out of the language it has to be read aloud in.
+    # It rides beside the sentence as structure, the way the plan gate's
+    # price does.
+    "nothing is listening yet: the other person has not been told. Play the notice on the line first": {
+        'es': "todavía no se está escuchando nada: la otra persona no ha sido informada. Reproduce primero el aviso en la línea",
+        'fr': "rien n'écoute encore : l'autre personne n'a pas été prévenue. Diffusez d'abord l'avis sur la ligne",
+        'de': "es hört noch nichts zu: die andere Person wurde nicht informiert. Spiele zuerst den Hinweis auf der Leitung ab",
+        'pt': "ainda não está a ouvir nada: a outra pessoa não foi informada. Reproduza primeiro o aviso na linha",
+        'it': "non sta ancora ascoltando nulla: l'altra persona non è stata informata. Riproduci prima l'avviso sulla linea",
+        'ja': "まだ何も聞いていません。相手にまだ伝えていないからです。まず回線でお知らせを流してください",
+        'zh': "目前还没有开始收听：对方尚未被告知。请先在通话中播放这段告知",
+        'hi': "अभी कुछ भी सुना नहीं जा रहा: दूसरे व्यक्ति को बताया नहीं गया है। पहले लाइन पर सूचना चलाइए",
+        'ar': "لا شيء يستمع بعد: لم يُبلَّغ الطرف الآخر. شغّل التنبيه على الخط أولًا",
+    },
     # -- the unattended study pass (jim/errands.py) ---------------------------
     #
     # Refused because nobody said it could. The sentence names where to say so
@@ -3253,6 +3303,11 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    # The assisted-call form. `number` is not asked for so it can be kept —
+    # it is read for which language the notice is spoken in and dropped — so
+    # the label says what it is for rather than what it is.
+    'number': {'en': "Their number, for the language", 'es': 'Su número, para el idioma', 'fr': "Leur numéro, pour la langue", 'de': 'Ihre Nummer, für die Sprache', 'pt': 'O número deles, para o idioma', 'it': 'Il loro numero, per la lingua', 'ja': '相手の番号（言語の判断用）', 'zh': '对方号码（用于判断语言）', 'hi': 'उनका नंबर, भाषा के लिए', 'ar': 'رقمهم، لتحديد اللغة'},
+    'recording': {'en': 'Whether this call is being recorded', 'es': 'Si esta llamada se está grabando', 'fr': "Si cet appel est enregistré", 'de': 'Ob dieses Gespräch aufgezeichnet wird', 'pt': 'Se esta chamada está a ser gravada', 'it': 'Se questa chiamata viene registrata', 'ja': 'この通話を録音するかどうか', 'zh': '本次通话是否录音', 'hi': 'क्या यह कॉल रिकॉर्ड हो रही है', 'ar': 'ما إذا كانت هذه المكالمة تُسجَّل'},
     # The box on "beside you while you write". A refusal naming `draft` reads
     # as an error about a schema; this is what the box itself asks for.
     'draft': {'en': 'What you are writing', 'es': 'Lo que estás escribiendo', 'fr': "Ce que vous écrivez", 'de': 'Woran du schreibst', 'pt': 'O que está a escrever', 'it': 'Ciò che stai scrivendo', 'ja': '書いている内容', 'zh': '你正在写的内容', 'hi': 'आप क्या लिख रहे हैं', 'ar': 'ما تكتبه'},

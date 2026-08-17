@@ -39,6 +39,33 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- An aid on a call other people can hear. The notice
+                         goes first: this hands back the words, and nothing
+                         listens until they have been played. The number is
+                         read for the language and is not kept. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="CallHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="CallLead" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="CallNumber" />
+                            <Button x:Name="CallOpenButton" Click="OnOpenCall" />
+                            <StackPanel x:Name="CallNotice" Spacing="4" Visibility="Collapsed">
+                                <TextBlock x:Name="CallPlayHead" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{StaticResource JimT2Brush}" />
+                                <StackPanel x:Name="CallSay" Spacing="2" />
+                                <TextBlock x:Name="CallFrom" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{StaticResource JimT2Brush}" />
+                                <Button x:Name="CallPlayedButton" Click="OnCallAnnounced" />
+                                <Button x:Name="CallListenButton" Click="OnCallHeard" />
+                                <Button x:Name="CallEndButton" Click="OnEndCall" />
+                            </StackPanel>
+                            <StackPanel x:Name="CallHistory" Spacing="2" />
+                        </StackPanel>
+                    </Border>
+
                     <!-- Channel 2 sits with the sources: the lent microphone
                          is a way in for the world's sound, consented the same. -->
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"

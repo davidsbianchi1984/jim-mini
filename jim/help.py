@@ -128,6 +128,16 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "What reaches out: a bound robot and its first-aid rating, a placed "
         "code a stranger can scan, accounts on platforms JIM does not run, "
         "and excursions — which report what was redacted on the way out.",
+    ("on a call", "speakerphone", "does it record calls",
+     "does the other person know", "what does it tell them",
+     "monitored or recorded", "call disclosure", "conference call",
+     "in the car"):
+        "Channel → an aid on the call: on speaker, in the car, on a "
+        "conference, the other side is told first — the notice everybody "
+        "has heard on a support line, in a language their number suggests "
+        "they speak, and in each of them where a country plainly has more "
+        "than one. Nothing listens until it has gone out. Their number is "
+        "read for the language and is not kept.",
     ("read this over", "look at what i wrote", "what am i missing",
      "another angle", "give me an idea", "help me write this",
      "does it read my documents", "is my draft saved", "sales page",

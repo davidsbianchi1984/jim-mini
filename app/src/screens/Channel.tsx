@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  api, type CaptureRow, type CaptureVocabulary, type DeviceRow,
-  type MicEvent, type MicGains, type MicState, type MicTypes,
+  api, type AssistedCall, type CallRow, type CaptureRow,
+  type CaptureVocabulary, type DeviceRow, type MicEvent, type MicGains,
+  type MicState, type MicTypes,
 } from "../api";
 import { useSession } from "../store";
 import { t as tr, visitorLang } from "../l10n";
@@ -52,6 +53,12 @@ export function Channel() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [said, setSaid] = useState<string | null>(null);
+  // An aid on a call somebody else can hear. It is not listening until the
+  // notice has gone out on the line — see jim/oncall.py.
+  const [callRoute, setCallRoute] = useState("speaker");
+  const [callNumber, setCallNumber] = useState("");
+  const [call, setCall] = useState<AssistedCall | null>(null);
+  const [calls, setCalls] = useState<CallRow[]>([]);
 
   const load = useCallback(() => {
     if (!uid || !token) return;
@@ -59,6 +66,7 @@ export function Channel() {
     api.micState(uid, token).then(setMic).catch(() => setMic(null));
     api.micHistory(uid, token).then(setHistory).catch(() => setHistory([]));
     api.captures(uid, token).then(setCaptures).catch(() => setCaptures([]));
+    api.calls(uid, token).then(setCalls).catch(() => setCalls([]));
   }, [uid, token]);
 
   useEffect(() => {
@@ -85,6 +93,73 @@ export function Channel() {
       <h2>{tr("ch.title", visitorLang())}</h2>
       {error && <p className="error">{error}</p>}
       {said && <p className="muted">{said}</p>}
+
+      {/* An aid on a call other people can hear. The notice goes first: this
+          card hands back the words and nothing listens until they have been
+          played. The number is used to pick the language and is not kept. */}
+      <h3>{tr("cal.head", visitorLang())}</h3>
+      <p className="muted">{tr("cal.lead", visitorLang())}</p>
+      <div className="card">
+        <select value={callRoute} onChange={(e) => setCallRoute(e.target.value)}>
+          {["speaker", "speakerphone", "car", "conference"].map((r) => (
+            <option key={r} value={r}>{r}</option>
+          ))}
+        </select>
+        <input value={callNumber} placeholder={tr("cal.number.ph", visitorLang())}
+               onChange={(e) => setCallNumber(e.target.value)} />
+        <button disabled={busy} onClick={() => run(async () => {
+          setCall(await api.openCall(uid!, {
+            route: callRoute, number: callNumber || undefined }, token!));
+        })}>{tr("cal.open", visitorLang())}</button>
+
+        {call && (
+          <div>
+            <p className="muted small">{tr("cal.play", visitorLang())}</p>
+            {call.notices.map((part) => (
+              <p key={part.language} className="small">
+                <strong>{part.language}</strong> — {part.words}
+              </p>
+            ))}
+            <p className="muted small">
+              {tr("cal.from", visitorLang())} {call.language_from}
+            </p>
+            <button disabled={busy} onClick={() => run(async () => {
+              await api.callAnnounced(uid!, call.id, token!);
+              setCall({ ...call, listening: true });
+            }, tr("cal.done", visitorLang()))}>
+              {tr("cal.played", visitorLang())}
+            </button>
+            {/* Hand the agent what the call is hearing. Refused with a 409
+                until the notice has actually gone out — the one door. */}
+            <button disabled={busy} onClick={() => run(
+              () => api.callHeard(uid!, call.id, token!),
+              tr("cal.listening", visitorLang()))}>
+              {tr("cal.listen", visitorLang())}
+            </button>
+            <button disabled={busy} onClick={() => run(async () => {
+              await api.endCall(uid!, call.id, token!);
+              setCall(null);
+            }, tr("cal.ended", visitorLang()))}>
+              {tr("cal.end", visitorLang())}
+            </button>
+          </div>
+        )}
+      </div>
+      {calls.map((c) => (
+        <div key={c.id} className="card">
+          <div className="row">
+            <strong>{c.route}</strong>
+            <span className="muted">{c.spoken_in.join(" · ")}</span>
+            {/* A call that never announced never listened, and stays here:
+                it is the evidence that the ordering held. */}
+            <span className="pill">
+              {c.listened ? tr("cal.told", visitorLang())
+                          : tr("cal.nevertold", visitorLang())}
+            </span>
+          </div>
+          <p className="muted small">{c.said}</p>
+        </div>
+      ))}
 
       <h3>{tr("ch.devices", visitorLang())}</h3>
       <p className="muted">{tr("ch.devices.lead", visitorLang())}</p>

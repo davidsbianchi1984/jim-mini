@@ -5768,6 +5768,11 @@ private fun MicPanel(vm: GuardianViewModel) {
     var micType by remember { mutableStateOf("") }
     var handoverReason by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
+    // An aid on a call other people can hear. Not listening until the notice
+    // has gone out on the line — see jim/oncall.py.
+    var callNumber by remember { mutableStateOf("") }
+    var call by remember { mutableStateOf<AssistedCall?>(null) }
+    var calls by remember { mutableStateOf<List<CallRow>>(emptyList()) }
 
     fun run(work: suspend () -> MicState) {
         vm.call({ work() }) { r ->
@@ -5782,9 +5787,58 @@ private fun MicPanel(vm: GuardianViewModel) {
             if (micType.isBlank()) micType = types?.personal?.firstOrNull() ?: ""
         }
         vm.call({ ApiClient.micGains() }) { r -> gains = r.getOrNull() }
+        vm.call({ ApiClient.calls(vm.uid!!, vm.token!!) }) { r ->
+            calls = r.getOrDefault(emptyList()) }
     }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("cal.head", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("cal.lead", vm.language), color = Jim.T2, fontSize = 11.sp)
+        labeledField(L10n.t("cal.head", vm.language), callNumber,
+            L10n.t("cal.number.ph", vm.language)) { callNumber = it }
+        BrandButton(L10n.t("cal.open", vm.language)) {
+            vm.call({ ApiClient.openCall(vm.uid!!, vm.token!!, "speaker",
+                false, callNumber.ifBlank { null }) }) { r ->
+                error = r.exceptionOrNull()?.message
+                call = r.getOrNull()
+            }
+        }
+        call?.let { c ->
+            Text(L10n.t("cal.play", vm.language), color = Jim.T2, fontSize = 11.sp)
+            c.notices.forEach { part ->
+                Text(part.language + " — " + part.words, color = Jim.Txt,
+                    fontSize = 12.sp)
+            }
+            Text(L10n.t("cal.from", vm.language) + " " + c.languageFrom,
+                color = Jim.T2, fontSize = 11.sp)
+            BrandButton(L10n.t("cal.played", vm.language)) {
+                vm.call({ ApiClient.callAnnounced(vm.uid!!, c.id, vm.token!!) }) {
+                    vm.call({ ApiClient.calls(vm.uid!!, vm.token!!) }) { r ->
+                        calls = r.getOrDefault(emptyList()) }
+                }
+            }
+            // Refused with a 409 until the notice has gone out. One door.
+            BrandButton(L10n.t("cal.listen", vm.language)) {
+                vm.call({ ApiClient.callHeard(vm.uid!!, c.id, vm.token!!) }) { r ->
+                    error = r.exceptionOrNull()?.message
+                }
+            }
+            BrandButton(L10n.t("cal.end", vm.language)) {
+                vm.call({ ApiClient.endCall(vm.uid!!, c.id, vm.token!!) }) {
+                    call = null
+                    vm.call({ ApiClient.calls(vm.uid!!, vm.token!!) }) { r ->
+                        calls = r.getOrDefault(emptyList()) }
+                }
+            }
+        }
+        calls.forEach { row ->
+            // A call that never announced never listened, and stays here.
+            Text(row.route + " · " + row.spokenIn.joinToString(" · ") + " · " +
+                L10n.t(if (row.listened) "cal.told" else "cal.nevertold",
+                    vm.language), color = Jim.T2, fontSize = 11.sp)
+        }
+
         Text(L10n.t("ns.ch.mic", vm.language), color = Jim.Txt,
             fontSize = 16.sp, fontWeight = FontWeight.Bold)
         val m = mic

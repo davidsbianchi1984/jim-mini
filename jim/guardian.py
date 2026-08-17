@@ -1142,7 +1142,7 @@ def emergency(user_id: str, situation: str | None = None,
 
 def observe_activity(user_id: str, activity: str | None, signals: dict,
                      note: str | None, qrme=None, pdi=None) -> dict:
-    """Ambient background observation (the "Jiminy Cricket" jump-in): watch what
+    """Ambient background observation (the jump-in): watch what
     someone is *doing* — editing a video, fixing a car, wrestling with a form —
     and offer help before they ask when a struggle is building.
 

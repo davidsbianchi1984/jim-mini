@@ -16,9 +16,55 @@ struct MicCard: View {
     @State private var showHistory = false
     @State private var busy = false
     @State private var error: String?
+    // An aid on a call other people can hear. Not listening until the notice
+    // has gone out on the line — see jim/oncall.py.
+    @State private var callRoute = "speaker"
+    @State private var callNumber = ""
+    @State private var call: AssistedCall?
+    @State private var calls: [CallRow] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("cal.head", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            Text(L10n.t("cal.lead", state.language))
+                .font(.caption2).foregroundStyle(Theme.t2)
+            TextField(L10n.t("cal.number.ph", state.language),
+                      text: $callNumber)
+                .textFieldStyle(.roundedBorder)
+            Button(L10n.t("cal.open", state.language)) { openCall() }
+                .font(.caption).tint(Theme.brandA).disabled(busy)
+            if let c = call {
+                Text(L10n.t("cal.play", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+                ForEach(c.notices, id: \.language) { part in
+                    Text(part.language + " — " + part.words)
+                        .font(.caption2).foregroundStyle(Theme.txt)
+                }
+                Text(L10n.t("cal.from", state.language) + " "
+                     + c.language_from)
+                    .font(.caption2).foregroundStyle(Theme.t2)
+                Button(L10n.t("cal.played", state.language)) {
+                    announce(c)
+                }.font(.caption).tint(Theme.brandA).disabled(busy)
+                // Refused with a 409 until the notice has gone out. One door.
+                Button(L10n.t("cal.listen", state.language)) {
+                    listen(c)
+                }.font(.caption).tint(Theme.brandA).disabled(busy)
+                Button(L10n.t("cal.end", state.language)) {
+                    endCall(c)
+                }.font(.caption).tint(Theme.t2).disabled(busy)
+            }
+            ForEach(calls, id: \.id) { row in
+                // A call that never announced never listened, and stays here:
+                // it is the evidence that the ordering held.
+                Text(row.route + " · " + row.spoken_in.joined(separator: " · ")
+                     + " · " + L10n.t(row.listened ? "cal.told"
+                                                   : "cal.nevertold",
+                                      state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+
             Text(L10n.t("ns.ch.mic", state.language))
                 .font(.subheadline.bold()).foregroundStyle(Theme.txt)
 
@@ -116,6 +162,57 @@ struct MicCard: View {
     private func load() async {
         guard let uid = state.uid, let token = state.token else { return }
         mic = try? await ApiClient.shared.micState(uid: uid, token: token)
+        calls = (try? await ApiClient.shared.calls(uid: uid,
+                                                   token: token)) ?? []
+    }
+
+    /// Set up the call. It is not listening: what comes back is the notice.
+    private func openCall() {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                call = try await ApiClient.shared.openCall(
+                    uid: uid, token: token, route: callRoute,
+                    number: callNumber.isEmpty ? nil : callNumber)
+            } catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    private func announce(_ c: AssistedCall) {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true
+        Task {
+            try? await ApiClient.shared.callAnnounced(uid: uid, callId: c.id,
+                                                      token: token)
+            busy = false
+            await load()
+        }
+    }
+
+    private func listen(_ c: AssistedCall) {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true; error = nil
+        Task {
+            do {
+                try await ApiClient.shared.callHeard(uid: uid, callId: c.id,
+                                                     token: token)
+            } catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    private func endCall(_ c: AssistedCall) {
+        guard let uid = state.uid, let token = state.token else { return }
+        busy = true
+        Task {
+            try? await ApiClient.shared.endCall(uid: uid, callId: c.id,
+                                                token: token)
+            call = nil
+            busy = false
+            await load()
+        }
     }
 
     private func loadHistory() {

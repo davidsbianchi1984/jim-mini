@@ -135,6 +135,33 @@ LESSONS: tuple[dict, ...] = (
               "rather than inventing one.",
          screens=(87,),
          try_it="Open Journal and write one sentence about today."),
+    dict(key="oncall", chapter="Being watched over",
+         title="An aid on the call, and the notice that goes first",
+         what="On an earpiece the guardian hears you and not your call — "
+              "that is channel 2, and it is refused on speaker for a "
+              "reason: on speaker it would hear whoever you are talking "
+              "to, and they are not a user here. This is the other case. "
+              "On a shared route the other side is told, out loud, on the "
+              "line, before anything listens — the notice everybody has "
+              "already heard from a support line, because a sentence "
+              "people recognise needs no explaining and they already know "
+              "the remedy is to hang up. It is said in a language their "
+              "number suggests they speak, and in each of them where a "
+              "country plainly has more than one: Switzerland hears "
+              "German, French and Italian; Québec hears French then "
+              "English; an unknown number hears English and Spanish, "
+              "which is what a support line does. The number is read for "
+              "that and dropped — it is never stored, because the person "
+              "on the other end has no account here and never will. What "
+              "is kept is that a notice was given, when, and in what "
+              "words. There is no consent flow: nothing waits for them to "
+              "agree and nothing records that they did. What is enforced "
+              "is the order — a call that started hearing before it spoke "
+              "is the failure this exists to prevent, and one function is "
+              "the only door.",
+         screens=(88,),
+         try_it="Set one up, try to listen before playing the notice, and "
+                "read the refusal — then look at the row it left behind."),
     dict(key="alongside", chapter="Being watched over",
          title="Beside you while you write",
          what="Paste what you are working on — a page for a customer, a "

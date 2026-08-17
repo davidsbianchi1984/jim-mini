@@ -11,6 +11,10 @@ namespace JimGuardian.Views;
 
 public sealed partial class ConnectPage : Page
 {
+    /// <summary>The assisted call being set up, if any. Held rather than
+    /// re-fetched: the notice to play belongs to this one call.</summary>
+    private AssistedCall? _call;
+
     public sealed class SourceVm
     {
         public string Source { get; init; } = "";
@@ -761,8 +765,111 @@ public sealed partial class ConnectPage : Page
             }
             var mic = await ApiClient.Shared.MicState(s.Uid, s.Token);
             Render(mic);
+            await LoadCalls();
         }
         catch (Exception e) { MicFailed(e); }
+    }
+
+    /// <summary>Set up the call. It is not listening: what comes back is the
+    /// notice to play, in the languages the number suggests.</summary>
+    private async void OnOpenCall(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimT2Brush"];
+        try
+        {
+            var number = CallNumber.Text.Trim();
+            _call = await ApiClient.Shared.OpenCall(
+                s.Uid, s.Token, "speaker", false,
+                number.Length == 0 ? null : number);
+            CallPlayHead.Text = L10n.T("cal.play");
+            CallSay.Children.Clear();
+            foreach (var part in _call.Notices)
+            {
+                CallSay.Children.Add(new TextBlock
+                {
+                    Text = part.Language + " — " + part.Words, FontSize = 12,
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                        Application.Current.Resources["JimTxtBrush"],
+                });
+            }
+            CallFrom.Text = L10n.T("cal.from") + " " + _call.LanguageFrom;
+            CallNotice.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    private async void OnCallAnnounced(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null || _call is null) return;
+        try
+        {
+            await ApiClient.Shared.CallAnnounced(s.Uid, _call.Id, s.Token);
+            await LoadCalls();
+        }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    /// <summary>Refused with a 409 until the notice has gone out. One
+    /// door.</summary>
+    private async void OnCallHeard(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null || _call is null) return;
+        try { await ApiClient.Shared.CallHeard(s.Uid, _call.Id, s.Token); }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    private async void OnEndCall(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null || _call is null) return;
+        try
+        {
+            await ApiClient.Shared.EndCall(s.Uid, _call.Id, s.Token);
+            _call = null;
+            CallNotice.Visibility = Visibility.Collapsed;
+            await LoadCalls();
+        }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    /// <summary>Assisted calls, each saying whether it announced itself. A
+    /// call that never announced never listened and stays here: it is the
+    /// evidence that the ordering held.</summary>
+    private async System.Threading.Tasks.Task LoadCalls()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        CallHead.Text = L10n.T("cal.head");
+        CallLead.Text = L10n.T("cal.lead");
+        CallNumber.PlaceholderText = L10n.T("cal.number.ph");
+        CallOpenButton.Content = L10n.T("cal.open");
+        CallPlayedButton.Content = L10n.T("cal.played");
+        CallListenButton.Content = L10n.T("cal.listen");
+        CallEndButton.Content = L10n.T("cal.end");
+        try
+        {
+            var rows = await ApiClient.Shared.Calls(s.Uid, s.Token);
+            CallHistory.Children.Clear();
+            foreach (var row in rows)
+            {
+                CallHistory.Children.Add(new TextBlock
+                {
+                    Text = row.Route + " · " + string.Join(" · ", row.SpokenIn)
+                           + " · " + L10n.T(row.Listened ? "cal.told"
+                                                         : "cal.nevertold"),
+                    FontSize = 11, TextWrapping = TextWrapping.Wrap,
+                    Foreground = (Microsoft.UI.Xaml.Media.Brush)
+                        Application.Current.Resources["JimT2Brush"],
+                });
+            }
+        }
+        catch (Exception ex) { MicFailed(ex); }
     }
 
     private async void Render(MicState mic)

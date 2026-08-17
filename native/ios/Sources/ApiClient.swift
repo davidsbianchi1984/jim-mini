@@ -251,6 +251,37 @@ struct CoachStudied: Decodable {
     let left_host: Bool
 }
 
+/// One part of the notice: the support-line script in a language the far side
+/// might actually speak. More than one where the mix is known.
+struct CallNotice: Decodable {
+    let language: String
+    let words: String
+}
+
+struct AssistedCall: Decodable {
+    let id: String
+    let listening: Bool
+    let route: String
+    let recording: Bool
+    let notices: [CallNotice]
+    let said: String
+    let spoken_in: [String]
+    let language_from: String
+}
+
+struct CallRow: Decodable {
+    let id: String
+    let route: String
+    let recording: Bool
+    let said: String
+    let spoken_in: [String]
+    let language_from: String
+    let announced_at: String?
+    let listened: Bool
+    let opened_at: String
+    let ended_at: String?
+}
+
 /// One remark on a draft. `because` is the evidence it came from, and `door`
 /// is set only on an offer — and only ever names a screen this product has.
 struct Remark: Decodable {
@@ -1348,6 +1379,45 @@ actor ApiClient {
         if let area { body["area"] = area }
         return try await request("/coach/\(uid)/study", method: "POST",
                                  body: body, token: token)
+    }
+
+    /// Set up an assisted call. It is not listening: what comes back is the
+    /// notice to play. `number` is read for the language and dropped.
+    func openCall(uid: String, token: String, route: String,
+                  recording: Bool = false,
+                  number: String? = nil) async throws -> AssistedCall {
+        var body: [String: Any] = ["route": route, "recording": recording]
+        if let number { body["number"] = number }
+        return try await request("/calls/\(uid)", method: "POST", body: body,
+                                 token: token)
+    }
+
+    /// The notice went out. Confirmed by whatever played it.
+    @discardableResult
+    func callAnnounced(uid: String, callId: String,
+                       token: String) async throws -> Ok {
+        try await request("/calls/\(uid)/\(callId)/announced",
+                          method: "POST", token: token)
+    }
+
+    func calls(uid: String, token: String) async throws -> [CallRow] {
+        try await request("/calls/\(uid)", token: token)
+    }
+
+    @discardableResult
+    func endCall(uid: String, callId: String,
+                 token: String) async throws -> Ok {
+        try await request("/calls/\(uid)/\(callId)", method: "DELETE",
+                          token: token)
+    }
+
+    /// Anything the call hands the agent goes through here, and through the
+    /// announcement check first.
+    @discardableResult
+    func callHeard(uid: String, callId: String,
+                   token: String) async throws -> Ok {
+        try await request("/calls/\(uid)/\(callId)/heard", method: "POST",
+                          token: token)
     }
 
     /// A draft, read on the device and dropped. Nothing is stored and

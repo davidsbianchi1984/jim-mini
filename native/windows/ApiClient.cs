@@ -1055,6 +1055,41 @@ public sealed class ApiClient
         Send<CoachStudied>(Post($"/coach/{uid}/study",
             new { topic, area }, token));
 
+    /// <summary>Set up an assisted call. It is not listening: what comes back
+    /// is the notice to play. <c>number</c> is read for the language and
+    /// dropped.</summary>
+    public Task<AssistedCall> OpenCall(string uid, string token, string route,
+                                       bool recording = false,
+                                       string? number = null) =>
+        Send<AssistedCall>(Post($"/calls/{uid}",
+            new { route, recording, number }, token));
+
+    /// <summary>The notice went out. Confirmed by whatever played it.</summary>
+    public async Task CallAnnounced(string uid, string callId, string token)
+    {
+        var req = Post($"/calls/{uid}/{callId}/announced", new { }, token);
+        (await Dispatch(req)).EnsureSuccessStatusCode();
+    }
+
+    public Task<CallRow[]> Calls(string uid, string token) =>
+        Send<CallRow[]>(Get($"/calls/{uid}", token));
+
+    public async Task EndCall(string uid, string callId, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+                                         $"/calls/{uid}/{callId}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        (await Dispatch(req)).EnsureSuccessStatusCode();
+    }
+
+    /// <summary>Anything the call hands the agent goes through here, and
+    /// through the announcement check first.</summary>
+    public async Task CallHeard(string uid, string callId, string token)
+    {
+        var req = Post($"/calls/{uid}/{callId}/heard", new { }, token);
+        (await Dispatch(req)).EnsureSuccessStatusCode();
+    }
+
     /// <summary>A draft, read on the device and dropped. Nothing is stored
     /// and nothing is edited — applying a remark is the person's own
     /// act.</summary>
@@ -2896,6 +2931,32 @@ public record CoachCurriculum(
 public record CoachStudied(
     [property: JsonPropertyName("studied")] string Studied,
     [property: JsonPropertyName("folded")] bool Folded);
+
+/// <summary>One part of the notice: the support-line script in a language the
+/// far side might actually speak. More than one where the mix is
+/// known.</summary>
+public record CallNotice(
+    [property: JsonPropertyName("language")] string Language,
+    [property: JsonPropertyName("words")] string Words);
+
+public record AssistedCall(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("listening")] bool Listening,
+    [property: JsonPropertyName("route")] string Route,
+    [property: JsonPropertyName("recording")] bool Recording,
+    [property: JsonPropertyName("notices")] CallNotice[] Notices,
+    [property: JsonPropertyName("said")] string Said,
+    [property: JsonPropertyName("spoken_in")] string[] SpokenIn,
+    [property: JsonPropertyName("language_from")] string LanguageFrom);
+
+public record CallRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("route")] string Route,
+    [property: JsonPropertyName("said")] string Said,
+    [property: JsonPropertyName("spoken_in")] string[] SpokenIn,
+    [property: JsonPropertyName("announced_at")] string? AnnouncedAt,
+    [property: JsonPropertyName("listened")] bool Listened,
+    [property: JsonPropertyName("opened_at")] string OpenedAt);
 
 /// <summary>One remark on a draft. <c>Because</c> is the evidence it came
 /// from; <c>Door</c> is set only on an offer, and only ever names a screen
