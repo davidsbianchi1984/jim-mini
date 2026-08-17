@@ -251,6 +251,39 @@ struct CoachStudied: Decodable {
     let left_host: Bool
 }
 
+/// One errand: a topic the offline coach could not answer, gone and studied.
+/// `why` names the monitor that asked — *it studied sleep* is a fact about the
+/// guardian, *it studied sleep because your sleep band has a learned baseline*
+/// is a fact about the person.
+struct Errand: Decodable {
+    let id: String
+    let topic: String
+    let area: String
+    let why: String
+    let excursion_id: String
+    let redactions: Int
+    let left_host: Bool
+    let opened_at: String
+}
+
+/// An empty ledger has three causes — nothing worth studying, nothing left to
+/// spend today, nobody ever allowed it — so all three are on the wire.
+struct ErrandLedger: Decodable {
+    /// `errands`, not `studied`: the study route's `studied` is the name of
+    /// one topic, and one wire name carries one type.
+    let errands: [Errand]
+    let due: [CoachSuggestion]
+    let spent_today: Int
+    let daily: Int
+    let permitted: Bool
+}
+
+struct ErrandsRun: Decodable {
+    let errands: [Errand]
+    let remaining_today: Int
+    let nothing_to_study: Bool
+}
+
 struct LanguageInfo: Decodable {
     let code: String
     let label: String
@@ -1299,6 +1332,20 @@ actor ApiClient {
         if let area { body["area"] = area }
         return try await request("/coach/\(uid)/study", method: "POST",
                                  body: body, token: token)
+    }
+
+    /// What the guardian went and learned without being asked, and what is
+    /// left to spend today.
+    func errands(uid: String, token: String) async throws -> ErrandLedger {
+        try await request("/errands/\(uid)", token: token)
+    }
+
+    /// Refused without the permit, and refused again once the day is spent —
+    /// two different sentences, because they are two different things to be
+    /// told.
+    @discardableResult
+    func runErrands(uid: String, token: String) async throws -> ErrandsRun {
+        try await request("/errands/\(uid)", method: "POST", token: token)
     }
 
     func baseline(uid: String, token: String) async throws -> [BaselineMetric] {

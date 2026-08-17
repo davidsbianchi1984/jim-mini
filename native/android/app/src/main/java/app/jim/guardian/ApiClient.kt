@@ -105,6 +105,20 @@ data class CoachStore(val pack: Int, val excursions: List<CoachStoreEntry>,
 data class CoachSuggestion(val area: String, val topic: String, val why: String)
 data class CoachCurriculum(val suggested: List<CoachSuggestion>, val note: String)
 data class CoachStudied(val studied: String, val folded: Boolean)
+/** One errand: a topic the offline coach could not answer, gone and studied.
+ *  `why` names the monitor that asked for it. */
+data class Errand(val id: String, val topic: String, val area: String,
+                  val why: String, val excursionId: String,
+                  val redactions: Int, val leftHost: Boolean,
+                  val openedAt: String)
+/** An empty ledger has three causes, so all three ride on the wire: nothing
+ *  worth studying, nothing left to spend, or nobody ever allowed it. */
+data class ErrandLedger(val errands: List<Errand>,
+                        val due: List<CoachSuggestion>,
+                        val spentToday: Int, val daily: Int,
+                        val permitted: Boolean)
+data class ErrandsRun(val errands: List<Errand>, val remainingToday: Int,
+                      val nothingToStudy: Boolean)
 data class LanguageInfo(val code: String, val label: String, val safetyTranslated: Boolean)
 data class TranslateResult(val translation: String, val engine: String, val note: String?)
 data class ChildCreated(val id: String, val childToken: String,
@@ -885,6 +899,38 @@ object ApiClient {
         if (area != null) body.put("area", area)
         val o = request("/coach/$uid/study", "POST", body, token)
         return CoachStudied(o.getString("studied"), o.getBoolean("folded"))
+    }
+
+    private fun errandOf(o: JSONObject) = Errand(
+        o.getString("id"), o.optString("topic", ""), o.optString("area", ""),
+        o.optString("why", ""), o.optString("excursion_id", ""),
+        o.optInt("redactions"), o.optBoolean("left_host"),
+        o.optString("opened_at", ""))
+
+    private fun errandsOf(arr: JSONArray) =
+        (0 until arr.length()).map { errandOf(arr.getJSONObject(it)) }
+
+    /** What it went and learned unasked, and what is left to spend today. */
+    suspend fun errands(uid: String, token: String): ErrandLedger {
+        val o = request("/errands/$uid", token = token)
+        val due = o.optJSONArray("due") ?: JSONArray()
+        return ErrandLedger(
+            errandsOf(o.optJSONArray("errands") ?: JSONArray()),
+            (0 until due.length()).map {
+                val s = due.getJSONObject(it)
+                CoachSuggestion(s.getString("area"), s.getString("topic"),
+                    s.getString("why"))
+            },
+            o.optInt("spent_today"), o.optInt("daily"),
+            o.optBoolean("permitted"))
+    }
+
+    /** Refused without the permit, and again once the day is spent — two
+     *  different sentences, because they are two different things. */
+    suspend fun runErrands(uid: String, token: String): ErrandsRun {
+        val o = request("/errands/$uid", "POST", token = token)
+        return ErrandsRun(errandsOf(o.optJSONArray("errands") ?: JSONArray()),
+            o.optInt("remaining_today"), o.optBoolean("nothing_to_study"))
     }
 
     /** Send this question to the QRME specialist covering the area. */

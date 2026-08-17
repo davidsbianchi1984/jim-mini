@@ -21,7 +21,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                careteam, community,
                catalog,
                coach,
-               engaged,
+               engaged, errands,
                mailer,
                circle, contribution, db, money, schedule, shopping,
                escalation, family, followup, guardian, handoff, i18n, identity,
@@ -2575,18 +2575,8 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.post("/excursions/{user_id}", status_code=201)
     def start_excursion(user_id: str, body: ExcursionStart, request: Request) -> dict:
         _user_or_404(user_id, request)
-        cloud = app.state.cloud
-        brief, redactions = research.sanitize(
-            user_id, f"{body.topic}\n{body.question}", body.private)
-        left_host = research.would_leave(cloud)
-        findings = research.gather(brief, cloud)
-        cid = db.new_id("exc")
-        db.connect().execute(
-            "INSERT INTO excursions (id, user_id, topic, brief, redactions,"
-            " left_host, findings, learned, created_at) VALUES (?,?,?,?,?,?,?,0,?)",
-            (cid, user_id, body.topic, brief, redactions, int(left_host),
-             findings, db.utcnow()))
-        db.connect().commit()
+        cid = research.excursion(user_id, body.topic, body.question,
+                                 body.private, app.state.cloud)
         return _excursion_out(_excursion_row(cid))
 
     @app.get("/excursions/{user_id}")
@@ -3215,27 +3205,54 @@ def create_app(qrme_client: QRMEClient | None = None,
                 raise HTTPException(409, "nothing to study — the curriculum "
                                          "is empty and no topic was named")
             topic, area = head[0]["topic"], head[0]["area"]
-        cloud = app.state.cloud
-        brief, redactions = research.sanitize(user_id, topic, [])
-        left_host = research.would_leave(cloud)
-        findings = research.gather(brief, cloud)
-        cid = db.new_id("exc")
-        conn = db.connect()
-        conn.execute(
-            "INSERT INTO excursions (id, user_id, topic, brief, redactions,"
-            " left_host, findings, learned, created_at) VALUES (?,?,?,?,?,?,?,1,?)",
-            (cid, user_id, topic, brief, redactions, int(left_host),
-             findings, db.utcnow()))
-        conn.execute(
-            "UPDATE gaps SET filled=1 WHERE user_id=? AND lower(question)=lower(?)",
-            (user_id, topic))
-        conn.commit()
+        cid = research.excursion(user_id, topic, cloud=app.state.cloud,
+                                 learn=True)
+        left_host = bool(db.connect().execute(
+            "SELECT left_host FROM excursions WHERE id=?",
+            (cid,)).fetchone()["left_host"])
         # `folded`, not `learned`: the store route's `learned` is a list of
         # entries, and one wire name carries one type.
         return {"studied": topic, "area": area, "folded": True,
                 "left_host": left_host, "excursion_id": cid,
                 "note": "findings folded into the coach's store; the offline "
                         "pipeline reads them on the next question"}
+
+    # ---- the unattended pass: what the coach missed, gone and learned ----
+
+    @app.post("/errands/{user_id}", status_code=201)
+    def run_errands(user_id: str, request: Request) -> dict:
+        """The pass nobody has to press twice.
+
+        The coach runs the day for nothing; this is what it calls when it
+        could not settle something, and calling costs. Bounded by the day's
+        budget and refused outright without the permit — see
+        `jim/errands.py`, which decides both.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return errands.run(user_id, app.state.cloud)
+        except errands.NotPermitted as exc:
+            raise HTTPException(403, str(exc)) from None
+        except errands.Spent as exc:
+            # `i18n.raised`, not `str(exc)`: this sentence is built from a
+            # template and `str()` on a str subclass forgets that, which would
+            # send it out in English to every reader.
+            raise HTTPException(429, i18n.raised(exc)) from None
+
+    @app.get("/errands/{user_id}")
+    def errand_ledger(user_id: str, request: Request) -> dict:
+        """What it went and learned, why, and what is left to spend today.
+
+        `due` is here beside `studied` deliberately: a person looking at an
+        empty ledger should be able to tell *nothing was worth studying* from
+        *nothing has been allowed to*.
+        """
+        _user_or_404(user_id, request)
+        return {"errands": errands.ledger(user_id),
+                "due": errands.due(user_id),
+                "spent_today": errands.spent_today(user_id),
+                "daily": errands.DAILY,
+                "permitted": permits.granted(user_id, errands.PERMIT)}
 
     @app.get("/insights/{user_id}")
     def get_insights(user_id: str, request: Request) -> list[dict]:

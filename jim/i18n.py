@@ -1201,10 +1201,33 @@ PLAN_GATE = ("{capability} needs {needs} (${price}/{period}). "
              "subscribing records a row and moves no real funds. "
              "Emergency paths are never affected.")
 
+#: The day's errands are used up. The slot is a **count**, not prose, so
+#: translating the frame around it is safe — the rule that keeps a template
+#: honest is about slots holding sentences, and `3` is `3` in every language.
+#:
+#: The second half is the part worth translating carefully: nothing has
+#: stopped. The coach goes on answering from what it already knows, offline
+#: and for nothing, which is the ordinary state of this product rather than a
+#: degraded one.
+ERRANDS_SPENT = ("the day's {count} errands are used up; the coach keeps "
+                 "answering from what it already knows, and this begins "
+                 "again tomorrow")
+
 #: Derived from the table below rather than repeated.
-TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE)
+TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE, ERRANDS_SPENT)
 
 _TEMPLATES: dict[str, dict[str, str]] = {
+    ERRANDS_SPENT: {
+        'es': "los {count} recados del día están agotados; el coach sigue respondiendo con lo que ya sabe, y esto vuelve a empezar mañana",
+        'fr': "les {count} sorties du jour sont épuisées ; le coach continue de répondre avec ce qu'il sait déjà, et cela reprend demain",
+        'de': "die {count} Erkundungen des Tages sind aufgebraucht; der Coach antwortet weiter aus dem, was er schon weiß, und morgen beginnt das von vorn",
+        'pt': "as {count} diligências do dia estão esgotadas; o coach continua a responder com o que já sabe, e isto recomeça amanhã",
+        'it': "le {count} commissioni della giornata sono esaurite; il coach continua a rispondere con ciò che già sa, e domani si ricomincia",
+        'ja': "本日の{count}件の調べものは使い切りました。コーチはすでに知っていることから答え続けます。明日またはじまります",
+        'zh': "今天的 {count} 次外出学习已用完；教练仍会用它已经知道的内容回答，明天重新开始",
+        'hi': "आज की {count} खोज-यात्राएँ पूरी हो चुकीं; कोच जो पहले से जानता है उसी से उत्तर देता रहेगा, और यह कल फिर शुरू होगा",
+        'ar': "استُنفدت مهام اليوم الـ{count}؛ يواصل المدرّب الإجابة مما يعرفه أصلًا، ويبدأ هذا من جديد غدًا",
+    },
     PLAN_GATE: {
         'es': '{capability} requiere {needs} (${price}/{period}). Esta cuenta '
               'está en {have}. La facturación aquí es simulada: suscribirse '
@@ -1622,6 +1645,22 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    # -- the unattended study pass (jim/errands.py) ---------------------------
+    #
+    # Refused because nobody said it could. The sentence names where to say so
+    # and what saying so covers, because "not allowed" with no door in it is a
+    # dead end rather than a refusal.
+    "this guardian has not been allowed to go and study on its own — turn it on in what it may do for you, where it says what it sends and what it keeps": {
+        'es': "no se ha permitido a este guardián ir a estudiar por su cuenta: actívalo en lo que puede hacer por ti, donde dice qué envía y qué guarda",
+        'fr': "ce gardien n'a pas été autorisé à aller étudier de lui-même — activez-le dans ce qu'il peut faire pour vous, où il est dit ce qu'il envoie et ce qu'il conserve",
+        'de': "dieser Wächter darf nicht von sich aus nachforschen — schalte es dort frei, wo steht, was er für dich tun darf, was er sendet und was er behält",
+        'pt': "este guardião não foi autorizado a ir estudar por conta própria — ative-o no que ele pode fazer por si, onde diz o que envia e o que guarda",
+        'it': "questo guardiano non è stato autorizzato ad andare a studiare da solo: attivalo in ciò che può fare per te, dove dice cosa invia e cosa conserva",
+        'ja': "このガーディアンは自分で調べに行く許可を得ていません。「あなたのためにできること」で有効にしてください。何を送り、何を保持するかもそこに書かれています",
+        'zh': "这位守护者尚未获准自行外出学习——请在“它能为你做什么”中开启，那里写明了它会发送什么、保留什么",
+        'hi': "इस गार्जियन को स्वयं जाकर अध्ययन करने की अनुमति नहीं दी गई है — इसे «यह आपके लिए क्या कर सकता है» में चालू कीजिए, जहाँ लिखा है कि यह क्या भेजता है और क्या रखता है",
+        'ar': "لم يُسمح لهذا الحارس بأن يذهب ليدرس من تلقاء نفسه — فعّله في «ما يمكنه فعله من أجلك»، حيث يُذكر ما يرسله وما يحتفظ به",
+    },
     # -- the Studio (jim/widgets.py REFUSALS) ---------------------------------
     #
     # Somebody writing their own tool is doing the least clinical thing this

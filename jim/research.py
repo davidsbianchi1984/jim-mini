@@ -69,3 +69,45 @@ def would_leave(cloud) -> bool:
 def gather(brief: str, cloud=None) -> str:
     provider = llm.get_provider(None if _offline() else cloud)
     return provider.generate(_RESEARCH_SYSTEM, brief)
+
+
+def excursion(user_id: str, topic: str, question: str = "",
+              private: list[str] | None = None, cloud=None,
+              learn: bool = False) -> str:
+    """Go and study one topic, and write down exactly what could have left.
+
+    The whole outbound path, in one function. It was written twice inline in
+    `api.py` — once for a person asking a question and once for the coach's
+    own study — and the two copies had already drifted: one folded the
+    findings into the store and closed the matching recorded miss, the other
+    did neither, and nothing said which behaviour was the intended one.
+
+        asked     is the brief sanitized before it leaves
+        mattered  is there one path it can leave by
+
+    ``learn`` is that difference, named. It folds the findings into the
+    offline coach's store and closes any gap the topic answers — which is the
+    loop this product is for: what the coach could not answer becomes what
+    JIM went and learned, and the coach knows it next time.
+
+    Returns the excursion id. The row is the audit trail: ``brief`` is
+    precisely what could have gone out, ``redactions`` counts what was taken
+    out of it, and ``left_host`` says whether anything actually went.
+    """
+    brief, redactions = sanitize(user_id, f"{topic}\n{question}".strip(),
+                                 private)
+    left_host = would_leave(cloud)
+    findings = gather(brief, cloud)
+    cid = db.new_id("exc")
+    conn = db.connect()
+    conn.execute(
+        "INSERT INTO excursions (id, user_id, topic, brief, redactions,"
+        " left_host, findings, learned, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+        (cid, user_id, topic, brief, redactions, int(left_host), findings,
+         1 if learn else 0, db.utcnow()))
+    if learn:
+        conn.execute(
+            "UPDATE gaps SET filled=1 WHERE user_id=?"
+            " AND lower(question)=lower(?)", (user_id, topic))
+    conn.commit()
+    return cid

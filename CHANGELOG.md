@@ -6,6 +6,53 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **What the coach could not answer becomes what JIM goes and learns.** Every
+  piece of this loop already existed. The coach on the device answers all day —
+  no network, no key, nothing per turn. When it cannot answer it writes the miss
+  down, and the curriculum turns those misses, plus the metrics and goals
+  somebody actually put the guardian near, into a study list. Then it stopped:
+  the last step was a person finding a screen and pressing **study**, one topic
+  at a time, which is a loop that closes only for somebody who already knows it
+  is there.
+
+      asked     does the coach know what it does not know
+      mattered  does anything go and find out
+
+  **The pass is that step.** It studies what the coach missed, folds the
+  findings where the offline stack reads them, and closes the question so
+  nobody pays to study it twice. Every row carries the monitor that asked —
+  *it studied sleep* is a fact about the guardian, *it studied sleep because
+  your sleep band has a learned baseline* is a fact about the person.
+
+  **It is refused until somebody allows it.** `study_on_your_own` is `asked`
+  rather than covered by opening a session, and it says in the person's own
+  words what leaves and what is kept. **And it is bounded**: a few errands a
+  day, counted from the ledger rather than from a variable so a restart is not
+  a fresh day's spending, with a ceiling that takes no argument.
+
+  **What the budget is really protecting.** Tokens today; not tokens
+  afterwards. The coach on the device is the part that works in a tunnel,
+  holds the private half where no third-party model ever sees it, carries the
+  provenance of every entry so a vendor model's claim can be set beside what
+  is actually known, and accumulates for as long as somebody uses it — what it
+  learned about them at thirty is still there at sixty. When a model turn
+  costs nothing the right change is that this pass runs more often, not that
+  the coach stops being the thing that answers.
+
+- **One way out, and it sanitises.** The excursion path was written inline in
+  `api.py` twice and the copies had already drifted — one folded its findings
+  and closed the matching miss, the other did neither, with nothing to say
+  which was intended. Both go through `research.excursion` now, and a guard
+  holds them there.
+
+- **A templated refusal reached the reader as English.** The guard carried
+  into this product last release found its first real one the day it arrived:
+  the day's-budget sentence is built from a template, and the route passed it
+  on with `str(exc)`, which drops the template. `i18n.raised` is what a route
+  hands on now.
+
 ### Changed
 
 - **The beta deploy page has a pointer here now.** This repository documents

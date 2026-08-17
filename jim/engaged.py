@@ -318,7 +318,14 @@ TOOLS: tuple[dict, ...] = (
               "in": ("features", "feature"),
               "fields": ("feature", "enabled")}},
 
-    # ---- the one that leaves ---------------------------------------------
+    # ---- the two that leave ----------------------------------------------
+    # Both reach outside this host, and they reach differently: one carries
+    # this person's own words to another person, the other carries a general
+    # topic to a model and brings back something the offline coach keeps.
+    {"name": "study_unattended", "acts": True,
+     "route": ("POST", "/errands/{user_id}"),
+     "says": "go and study what the coach could not answer, on its own",
+     "irreversible": "engaged.cannot_unsay"},
     {"name": "ask_specialist", "acts": True,
      "route": ("POST", "/coach/{user_id}/specialist"),
      "says": "put your question to a specialist outside JIM",

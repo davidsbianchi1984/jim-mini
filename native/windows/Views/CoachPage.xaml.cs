@@ -154,9 +154,74 @@ public sealed partial class CoachPage : Page
             }
             StudyHead.Visibility = syllabus.Suggested.Length > 0
                 ? Visibility.Visible : Visibility.Collapsed;
+            await LoadErrands();
             KnowsCard.Visibility = Visibility.Visible;
         }
         catch { /* the ask card stands on its own */ }
+    }
+
+    /// <summary>What the guardian went and learned without being asked, and
+    /// what is left to spend today. Every row says which monitor asked for
+    /// it.</summary>
+    private async System.Threading.Tasks.Task LoadErrands()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var txt = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimTxtBrush"];
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimT2Brush"];
+        try
+        {
+            var ledger = await ApiClient.Shared.Errands(s.Uid!, s.Token!);
+            ErrandsHead.Text = L10n.T("err.head");
+            ErrandsState.Text = ledger.Permitted
+                ? $"{ledger.SpentToday}/{ledger.Daily} · " + L10n.T("err.today")
+                : L10n.T("err.notallowed");
+            ErrandsGo.Content = L10n.T("err.go");
+            ErrandsGo.Visibility = ledger.Permitted
+                ? Visibility.Visible : Visibility.Collapsed;
+            ErrandsGo.IsEnabled = ledger.SpentToday < ledger.Daily;
+            ErrandsPanel.Children.Clear();
+            foreach (var e in ledger.Errands)
+            {
+                var row = new StackPanel { Spacing = 2 };
+                row.Children.Add(new TextBlock
+                {
+                    Text = e.Topic, FontSize = 13,
+                    TextWrapping = TextWrapping.Wrap, Foreground = txt,
+                });
+                row.Children.Add(new TextBlock
+                {
+                    Text = e.Why, FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                });
+                row.Children.Add(new TextBlock
+                {
+                    Text = e.LeftHost ? L10n.T("err.left") : L10n.T("err.stayed"),
+                    FontSize = 11, TextWrapping = TextWrapping.Wrap,
+                    Foreground = t2,
+                });
+                ErrandsPanel.Children.Add(row);
+            }
+        }
+        catch { /* the store card stands on its own */ }
+    }
+
+    /// <summary>Refused without the permit, and again once the day is spent —
+    /// two different sentences, shown as they arrive.</summary>
+    private async void OnRunErrands(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        ErrandsGo.IsEnabled = false;
+        try
+        {
+            await ApiClient.Shared.RunErrands(s.Uid!, s.Token!);
+            await LoadKnows();
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+        finally { ErrandsGo.IsEnabled = true; }
     }
 
     private async void OnSetTone(object sender, RoutedEventArgs e)

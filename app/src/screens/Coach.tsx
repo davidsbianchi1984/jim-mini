@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { api, type CoachCurriculum, type CoachStore, type Guidance,
-         type SpecialistAnswer } from "../api";
+import { api, type CoachCurriculum, type CoachStore, type ErrandLedger,
+         type Guidance, type SpecialistAnswer } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { hush, listen, primeVoice, say, type Listener } from "../speech";
 import { useSession } from "../store";
@@ -26,12 +26,17 @@ export function Coach() {
   const [syllabus, setSyllabus] = useState<CoachCurriculum | null>(null);
   const [studied, setStudied] = useState<string | null>(null);
   const [studying, setStudying] = useState(false);
+  // The unattended pass — what it went and learned without being asked, and
+  // what is left to spend today.
+  const [ledger, setLedger] = useState<ErrandLedger | null>(null);
+  const [running, setRunning] = useState(false);
 
   async function loadKnows() {
     if (!session.userId || !session.userToken) return;
     try {
       setKnows(await api.coachStore(session.userId, session.userToken));
       setSyllabus(await api.coachCurriculum(session.userId, session.userToken));
+      setLedger(await api.errands(session.userId, session.userToken));
     } catch { /* the ask card stands on its own */ }
   }
   useEffect(() => { loadKnows(); }, [session.userId]);
@@ -50,6 +55,19 @@ export function Coach() {
       await loadKnows();
     } catch (e) { setError((e as Error).message); }
     finally { setStudying(false); }
+  }
+
+  /** Let it go and study, unattended, whatever the coach could not answer.
+   *  Refused without the permit and again once the day is spent — two
+   *  different sentences, shown as they arrive rather than flattened. */
+  async function runErrands() {
+    if (!session.userId || !session.userToken) return;
+    setRunning(true); setError(null);
+    try {
+      await api.runErrands(session.userId, session.userToken);
+      await loadKnows();
+    } catch (e) { setError((e as Error).message); }
+    finally { setRunning(false); }
   }
 
   async function ask(text?: string) {
@@ -205,6 +223,41 @@ export function Coach() {
           )}
           {studied && (
             <div className="muted small">✓ {studied} — {tr("cch.study.done", lang)}</div>
+          )}
+
+          {/* The pass that runs without being pressed once it is allowed.
+              The coach answers all day for nothing; this is what it calls
+              when it could not, and calling costs — so the budget is shown
+              beside the button rather than discovered in a refusal. */}
+          {ledger && (
+            <div style={{ marginTop: 10 }}>
+              <div className="muted small">
+                <b>{tr("err.head", lang)}</b>
+              </div>
+              <div className="muted small">
+                {ledger.permitted
+                  ? `${ledger.spent_today}/${ledger.daily} · ${tr("err.today", lang)}`
+                  : tr("err.notallowed", lang)}
+              </div>
+              {ledger.permitted && (
+                <button disabled={running || ledger.spent_today >= ledger.daily}
+                        onClick={runErrands}>
+                  {tr("err.go", lang)}
+                </button>
+              )}
+              {ledger.errands.map((e) => (
+                <div key={e.id} className="spec-row">
+                  <div>
+                    {e.topic}
+                    <div className="muted small">{e.why}</div>
+                    <div className="muted small">
+                      {e.left_host ? tr("err.left", lang) : tr("err.stayed", lang)}
+                      {e.redactions > 0 && ` · ${e.redactions} ${tr("err.redacted", lang)}`}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

@@ -92,6 +92,13 @@ AREAS: dict[str, dict] = {
         "says": "switch parts of the product on or off for your account",
         "tools": ("set_feature",),
     },
+    "study_on_your_own": {
+        "standing": "asked",
+        "says": "go and study, unattended, what the coach could not answer — "
+                "a general topic leaves, never you, and what comes back is "
+                "kept where the offline coach can read it",
+        "tools": ("study_unattended",),
+    },
     "outside_this_app": {
         "standing": "opened",
         "says": "put your question to a specialist outside JIM — the one "

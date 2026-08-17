@@ -1055,6 +1055,17 @@ public sealed class ApiClient
         Send<CoachStudied>(Post($"/coach/{uid}/study",
             new { topic, area }, token));
 
+    /// <summary>What it went and learned unasked, and what is left to spend
+    /// today.</summary>
+    public Task<ErrandLedger> Errands(string uid, string token) =>
+        Send<ErrandLedger>(Get($"/errands/{uid}", token));
+
+    /// <summary>Refused without the permit, and again once the day is spent —
+    /// two different sentences, because they are two different things to be
+    /// told.</summary>
+    public Task<ErrandsRun> RunErrands(string uid, string token) =>
+        Send<ErrandsRun>(Post($"/errands/{uid}", new { }, token));
+
     public async Task<BaselineMetric[]> Baseline(string uid, string token)
     {
         var req = new HttpRequestMessage(HttpMethod.Get, $"/baseline/{uid}");
@@ -2878,6 +2889,35 @@ public record CoachCurriculum(
 public record CoachStudied(
     [property: JsonPropertyName("studied")] string Studied,
     [property: JsonPropertyName("folded")] bool Folded);
+
+/// <summary>One errand: a topic the offline coach could not answer, gone and
+/// studied. <c>Why</c> names the monitor that asked for it.</summary>
+public record Errand(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("topic")] string Topic,
+    [property: JsonPropertyName("area")] string Area,
+    [property: JsonPropertyName("why")] string Why,
+    [property: JsonPropertyName("excursion_id")] string ExcursionId,
+    [property: JsonPropertyName("redactions")] int Redactions,
+    [property: JsonPropertyName("left_host")] bool LeftHost,
+    [property: JsonPropertyName("opened_at")] string OpenedAt);
+
+/// <summary>An empty ledger has three causes — nothing worth studying,
+/// nothing left to spend today, nobody ever allowed it — so all three are on
+/// the wire.</summary>
+public record ErrandLedger(
+    // `errands`, not `studied`: the study route's `studied` is the name of one
+    // topic, and one wire name carries one type.
+    [property: JsonPropertyName("errands")] Errand[] Errands,
+    [property: JsonPropertyName("due")] CoachSuggestion[] Due,
+    [property: JsonPropertyName("spent_today")] int SpentToday,
+    [property: JsonPropertyName("daily")] int Daily,
+    [property: JsonPropertyName("permitted")] bool Permitted);
+
+public record ErrandsRun(
+    [property: JsonPropertyName("errands")] Errand[] Errands,
+    [property: JsonPropertyName("remaining_today")] int RemainingToday,
+    [property: JsonPropertyName("nothing_to_study")] bool NothingToStudy);
 
 public record SpecialistAnswer(
     [property: JsonPropertyName("delivered")] bool Delivered,

@@ -76,6 +76,16 @@
                     <TextBlock x:Name="StudiedNote" FontSize="11" TextWrapping="Wrap"
                                Foreground="{StaticResource JimT2Brush}"
                                Visibility="Collapsed" />
+                    <!-- The pass that runs without being pressed once it is
+                         allowed. What is left to spend today sits beside the
+                         button rather than being discovered in a refusal. -->
+                    <TextBlock x:Name="ErrandsHead" FontWeight="Bold" FontSize="14"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="ErrandsState" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <Button x:Name="ErrandsGo" Click="OnRunErrands"
+                            Visibility="Collapsed" />
+                    <StackPanel x:Name="ErrandsPanel" Spacing="4" />
                 </StackPanel>
             </Border>
 

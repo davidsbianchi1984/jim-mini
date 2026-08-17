@@ -4625,6 +4625,27 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cch.knows.counts": {
     en: "{pack} curated entries · {learned} learned by JIM · {deposits} deposited from model turns — answered offline, on this device", es: "{pack} entradas seleccionadas · {learned} aprendidas por JIM · {deposits} depositadas de turnos del modelo — respondido sin conexión, en este dispositivo", fr: "{pack} entrées sélectionnées · {learned} apprises par JIM · {deposits} déposées depuis des tours du modèle — répondu hors ligne, sur cet appareil", de: "{pack} kuratierte Einträge · {learned} von JIM gelernt · {deposits} aus Modell-Antworten hinterlegt — offline beantwortet, auf diesem Gerät", pt: "{pack} entradas selecionadas · {learned} aprendidas pelo JIM · {deposits} depositadas de respostas do modelo — respondido offline, neste dispositivo", it: "{pack} voci curate · {learned} apprese da JIM · {deposits} depositate dai turni del modello — risposto offline, su questo dispositivo", ja: "厳選エントリ {pack} 件 · JIM が学んだもの {learned} 件 · モデル回答からの蓄積 {deposits} 件 — この端末上でオフライン回答", zh: "{pack} 条精选条目 · JIM 学到 {learned} 条 · 模型回答沉淀 {deposits} 条——在本设备离线作答", hi: "{pack} चुनी हुई प्रविष्टियाँ · JIM ने {learned} सीखीं · मॉडल उत्तरों से {deposits} जमा — इसी डिवाइस पर ऑफ़लाइन उत्तर", ar: "{pack} مدخلات منسّقة · تعلّم JIM ‏{learned} · ‏{deposits} مودَعة من ردود النموذج — يُجاب دون اتصال، على هذا الجهاز",
   },
+  "err.head": {
+    en: "What it studied on its own", es: "Lo que estudió por su cuenta", fr: "Ce qu'il a étudié de lui-même", de: "Was er von sich aus studiert hat", pt: "O que estudou por conta própria", it: "Cosa ha studiato da solo", ja: "自分で学んだこと", zh: "它自己学到的内容", hi: "इसने स्वयं क्या पढ़ा", ar: "ما درسه من تلقاء نفسه",
+  },
+  "err.today": {
+    en: "studied today", es: "estudiado hoy", fr: "étudié aujourd'hui", de: "heute studiert", pt: "estudado hoje", it: "studiato oggi", ja: "本日の学習", zh: "今天已学习", hi: "आज पढ़ा गया", ar: "دُرس اليوم",
+  },
+  "err.notallowed": {
+    en: "Not allowed to study on its own yet. Turn it on in what it may do for you — it says there what it sends and what it keeps.", es: "Aún no puede estudiar por su cuenta. Actívalo en lo que puede hacer por ti: allí dice qué envía y qué guarda.", fr: "Il n'a pas encore le droit d'étudier de lui-même. Activez-le dans ce qu'il peut faire pour vous — il y est dit ce qu'il envoie et ce qu'il conserve.", de: "Darf noch nicht von sich aus nachforschen. Schalte es dort frei, wo steht, was er für dich tun darf — und was er sendet und behält.", pt: "Ainda não pode estudar por conta própria. Ative-o no que ele pode fazer por si — aí diz o que envia e o que guarda.", it: "Non può ancora studiare da solo. Attivalo in ciò che può fare per te: lì dice cosa invia e cosa conserva.", ja: "まだ自分で調べることは許可されていません。「あなたのためにできること」で有効にしてください。何を送り何を保持するかもそこに書かれています。", zh: "尚未获准自行学习。请在“它能为你做什么”中开启——那里写明了它会发送什么、保留什么。", hi: "अभी स्वयं पढ़ने की अनुमति नहीं है। «यह आपके लिए क्या कर सकता है» में इसे चालू कीजिए — वहाँ लिखा है कि यह क्या भेजता है और क्या रखता है।", ar: "لا يُسمح له بعد بالدراسة من تلقاء نفسه. فعّله في «ما يمكنه فعله من أجلك» — هناك يُذكر ما يرسله وما يحتفظ به.",
+  },
+  "err.go": {
+    en: "Go and study what I missed", es: "Ve y estudia lo que no supe", fr: "Va étudier ce que j'ai manqué", de: "Geh und studiere, was mir fehlte", pt: "Vai estudar o que me faltou", it: "Vai a studiare ciò che mi è mancato", ja: "答えられなかったことを調べてくる", zh: "去把我答不上来的学回来", hi: "जो मैं चूका उसे पढ़कर आओ", ar: "اذهب وادرس ما فاتني",
+  },
+  "err.left": {
+    en: "a general topic left this device", es: "un tema general salió de este dispositivo", fr: "un sujet général a quitté cet appareil", de: "ein allgemeines Thema hat dieses Gerät verlassen", pt: "um tema geral saiu deste dispositivo", it: "un argomento generale ha lasciato questo dispositivo", ja: "一般的な話題がこの端末から出ました", zh: "一个一般性主题离开了本设备", hi: "एक सामान्य विषय इस डिवाइस से बाहर गया", ar: "غادر موضوع عام هذا الجهاز",
+  },
+  "err.stayed": {
+    en: "nothing left this device", es: "nada salió de este dispositivo", fr: "rien n'a quitté cet appareil", de: "nichts hat dieses Gerät verlassen", pt: "nada saiu deste dispositivo", it: "niente ha lasciato questo dispositivo", ja: "この端末からは何も出ていません", zh: "没有任何内容离开本设备", hi: "इस डिवाइस से कुछ बाहर नहीं गया", ar: "لم يغادر شيء هذا الجهاز",
+  },
+  "err.redacted": {
+    en: "taken out of it", es: "suprimido de ahí", fr: "retiré du texte", de: "daraus entfernt", pt: "retirado dali", it: "rimossi dal testo", ja: "を伏せ字にしました", zh: "处已被去除", hi: "बातें हटाई गईं", ar: "حُذفت منه",
+  },
   "cch.study.head": {
     en: "What JIM should study next", es: "Lo próximo que JIM debería estudiar", fr: "Ce que JIM devrait étudier ensuite", de: "Was JIM als Nächstes studieren sollte", pt: "O que o JIM deve estudar a seguir", it: "Cosa dovrebbe studiare JIM adesso", ja: "JIM が次に学ぶべきこと", zh: "JIM 接下来该学什么", hi: "JIM को आगे क्या पढ़ना चाहिए", ar: "ما الذي ينبغي أن يدرسه JIM تاليًا",
   },

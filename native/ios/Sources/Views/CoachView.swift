@@ -15,6 +15,9 @@ struct CoachView: View {
     @State private var syllabus: CoachCurriculum?
     @State private var studied: String?
     @State private var studying = false
+    // The unattended pass: what it went and learned without being asked.
+    @State private var ledger: ErrandLedger?
+    @State private var running = false
 
     private let areas = ["mental_health", "health_fitness", "career",
                          "finance", "relationships", "personal_growth"]
@@ -104,6 +107,43 @@ struct CoachView: View {
                             Text("✓ \(studied) — \(done)")
                                 .font(.caption2).foregroundStyle(Theme.t2)
                         }
+
+                        // The pass that runs without being pressed once it is
+                        // allowed. The coach answers all day for nothing; this
+                        // is what it calls when it could not, and calling
+                        // costs — so what is left to spend is shown beside the
+                        // button rather than discovered in a refusal.
+                        if let l = ledger {
+                            Text(L10n.t("err.head", state.language))
+                                .font(.subheadline.bold())
+                                .foregroundStyle(Theme.txt)
+                            if l.permitted {
+                                Text("\(l.spent_today)/\(l.daily) · "
+                                     + L10n.t("err.today", state.language))
+                                    .font(.caption2).foregroundStyle(Theme.t2)
+                                Button(L10n.t("err.go", state.language)) {
+                                    runErrands()
+                                }.font(.caption).tint(Theme.brandA)
+                                    .disabled(running
+                                              || l.spent_today >= l.daily)
+                            } else {
+                                Text(L10n.t("err.notallowed", state.language))
+                                    .font(.caption2).foregroundStyle(Theme.t2)
+                            }
+                            ForEach(l.errands, id: \.id) { e in
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(e.topic).font(.caption)
+                                        .foregroundStyle(Theme.txt)
+                                    Text(e.why).font(.caption2)
+                                        .foregroundStyle(Theme.t2)
+                                    Text(e.left_host
+                                         ? L10n.t("err.left", state.language)
+                                         : L10n.t("err.stayed", state.language))
+                                        .font(.caption2)
+                                        .foregroundStyle(Theme.t2)
+                                }
+                            }
+                        }
                     }.card()
                 }
 
@@ -145,6 +185,18 @@ struct CoachView: View {
             knows = try? await ApiClient.shared.coachStore(uid: uid, token: token)
             syllabus = try? await ApiClient.shared.coachCurriculum(uid: uid,
                                                                    token: token)
+            ledger = try? await ApiClient.shared.errands(uid: uid, token: token)
+        }
+    }
+
+    /// Let it go and study, unattended, whatever the coach could not answer.
+    private func runErrands() {
+        guard let uid = state.uid, let token = state.token else { return }
+        running = true
+        Task {
+            _ = try? await ApiClient.shared.runErrands(uid: uid, token: token)
+            running = false
+            loadKnows()
         }
     }
 

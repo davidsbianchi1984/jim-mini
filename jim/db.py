@@ -1174,6 +1174,24 @@ CREATE TABLE IF NOT EXISTS letters (
     created_at   TEXT NOT NULL
 );
 
+-- What the guardian went and studied on its own, and which monitor asked for
+-- it. The excursion row holds what could have left; this holds why anybody
+-- went. It is also the budget: errands opened today are counted from here, so
+-- a restart is not a fresh day's spending.
+CREATE TABLE IF NOT EXISTS errands (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id),
+    topic        TEXT NOT NULL,
+    area         TEXT NOT NULL,
+    why          TEXT NOT NULL,      -- the monitor that asked, in words
+    excursion_id TEXT NOT NULL REFERENCES excursions(id),
+    redactions   INTEGER NOT NULL DEFAULT 0,
+    left_host    INTEGER NOT NULL DEFAULT 0,
+    opened_at    TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_errands_day
+    ON errands (user_id, opened_at);
+
 CREATE TABLE IF NOT EXISTS gaps (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

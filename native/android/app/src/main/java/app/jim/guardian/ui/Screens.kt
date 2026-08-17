@@ -1783,12 +1783,16 @@ fun CoachScreen(vm: GuardianViewModel) {
     var syllabus by remember { mutableStateOf<CoachCurriculum?>(null) }
     var studied by remember { mutableStateOf<String?>(null) }
     var studying by remember { mutableStateOf(false) }
+    // The unattended pass: what it went and learned without being asked.
+    var ledger by remember { mutableStateOf<ErrandLedger?>(null) }
+    var running by remember { mutableStateOf(false) }
     var reloads by remember { mutableStateOf(0) }
     LaunchedEffect(reloads) {
         val uid = vm.uid ?: return@LaunchedEffect
         val token = vm.token ?: return@LaunchedEffect
         knows = runCatching { ApiClient.coachStore(uid, token) }.getOrNull()
         syllabus = runCatching { ApiClient.coachCurriculum(uid, token) }.getOrNull()
+        ledger = runCatching { ApiClient.errands(uid, token) }.getOrNull()
     }
 
     screenScroll {
@@ -1878,6 +1882,38 @@ fun CoachScreen(vm: GuardianViewModel) {
                 studied?.let {
                     val done = L10n.t("cch.study.done", vm.language)
                     Text("✓ $it — $done", color = Jim.T2, fontSize = 11.sp)
+                }
+                // The pass that runs without being pressed once it is
+                // allowed. What is left to spend is shown beside the button
+                // rather than discovered in a refusal.
+                ledger?.let { l ->
+                    Text(L10n.t("err.head", vm.language), color = Jim.Txt,
+                        fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    if (l.permitted) {
+                        Text("${l.spentToday}/${l.daily} · " +
+                            L10n.t("err.today", vm.language),
+                            color = Jim.T2, fontSize = 11.sp)
+                        TextButton(enabled = !running && l.spentToday < l.daily,
+                            onClick = {
+                                running = true
+                                vm.call({ ApiClient.runErrands(
+                                    vm.uid!!, vm.token!!) }) {
+                                    running = false
+                                    reloads += 1
+                                }
+                            }) { Text(L10n.t("err.go", vm.language),
+                                      color = Jim.BrandA, fontSize = 12.sp) }
+                    } else {
+                        Text(L10n.t("err.notallowed", vm.language),
+                            color = Jim.T2, fontSize = 11.sp)
+                    }
+                    l.errands.forEach { e ->
+                        Text(e.topic, color = Jim.Txt, fontSize = 13.sp)
+                        Text(e.why, color = Jim.T2, fontSize = 11.sp)
+                        Text(if (e.leftHost) L10n.t("err.left", vm.language)
+                             else L10n.t("err.stayed", vm.language),
+                            color = Jim.T2, fontSize = 11.sp)
+                    }
                 }
             }
         }

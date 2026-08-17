@@ -135,6 +135,34 @@ LESSONS: tuple[dict, ...] = (
               "rather than inventing one.",
          screens=(87,),
          try_it="Open Journal and write one sentence about today."),
+    dict(key="errands", chapter="Being watched over",
+         title="What it studied on its own",
+         what="The coach on your device answers all day: no signal, no key, "
+              "nothing per turn. When it cannot answer, it writes the miss "
+              "down — and until now that is where it stopped, with a screen "
+              "somebody had to find and a button they had to press once per "
+              "topic. Now JIM goes and studies what the coach missed. A "
+              "general subject leaves; you do not. The sanitiser is the only "
+              "door out and the brief it produced is kept beside the count "
+              "of what was taken out of it, so *nothing private left* is "
+              "something you can check rather than something this page "
+              "claims. What comes back is folded where the offline coach "
+              "reads it, and the question it answers is closed so nobody "
+              "pays to study it twice. It runs only if you allow it, at most "
+              "a few times a day, counted from the record rather than from a "
+              "number in memory — and every row says which monitor asked, "
+              "because *it studied sleep* is a fact about the guardian and "
+              "*it studied sleep because your sleep band has a learned "
+              "baseline* is a fact about you. The budget is about money "
+              "today and about something steadier afterwards: the coach on "
+              "your device is the part that works in a tunnel, keeps your "
+              "private half where no outside model ever holds it, carries "
+              "the provenance of everything it knows so a model's claim can "
+              "be set beside it, and grows with you for as long as you use "
+              "it.",
+         screens=(88,),
+         try_it="Allow it, then open Coach and look at what it studied — "
+                "each row says why, and whether anything left the device."),
     dict(key="crashwatch", chapter="Being watched over",
          title="The crash watch",
          what="Armed by you, in advance, off by default: name a trusted "

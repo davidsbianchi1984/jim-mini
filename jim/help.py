@@ -128,6 +128,16 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "What reaches out: a bound robot and its first-aid rating, a placed "
         "code a stranger can scan, accounts on platforms JIM does not run, "
         "and excursions — which report what was redacted on the way out.",
+    ("what does it know", "how does it learn", "did it look that up",
+     "does it go online", "what does it send", "study on its own",
+     "why did it study that", "does it cost anything", "no internet",
+     "offline coach"):
+        "Coach → what it studied on its own: the coach answers all day from "
+        "what is on your device, for nothing and with no signal. When it "
+        "cannot answer it writes the miss down, and JIM goes and studies "
+        "that — a general topic leaves, never you, and what comes back is "
+        "kept where the offline coach reads it. Every row says which "
+        "monitor asked for it, and how much was taken out of what left.",
     ("tone", "how it talks", "sensitivity", "language", "translate",
      "what it made of me", "insights", "my report", "the dock", "corner"):
         "Bearing: what you set (language, tone, sensitivity), what you told "

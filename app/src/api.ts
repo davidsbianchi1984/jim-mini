@@ -393,6 +393,33 @@ export interface CoachCurriculum { suggested: CoachSuggestion[]; note: string }
 export interface CoachStudied { studied: string; area: string | null;
   folded: boolean; left_host: boolean; excursion_id: string; note: string }
 
+// -- the unattended study pass (jim/errands.py) --------------------------
+//
+// One errand: a topic the offline coach could not answer, gone and studied,
+// with the monitor that asked for it written on the row. `why` is the half
+// worth reading — *it studied sleep* is a fact about the guardian, *it
+// studied sleep because your sleep band has a learned baseline* is a fact
+// about the person.
+export interface Errand {
+  id: string; topic: string; area: string; why: string;
+  excursion_id: string; redactions: number; left_host: boolean;
+  opened_at: string;
+}
+
+// `due` sits beside `studied` deliberately: an empty ledger has three
+// different causes — nothing worth studying, nothing left to spend today, or
+// nobody ever allowed it — and a person is entitled to tell them apart.
+// `errands`, not `studied`: the study route's `studied` is the name of one
+// topic, and one wire name carries one type.
+export interface ErrandLedger {
+  errands: Errand[]; due: CoachSuggestion[]; spent_today: number;
+  daily: number; permitted: boolean;
+}
+
+export interface ErrandsRun {
+  errands: Errand[]; remaining_today: number; nothing_to_study: boolean;
+}
+
 // -- engaged sessions (jim/engaged.py) -----------------------------------
 //
 // `reversible` and `irreversible_because` are carried separately rather than
@@ -1514,6 +1541,14 @@ export const api = {
     req<CoachStudied>(`/coach/${uid}/study`, { method: "POST", body, token }),
   baseline: (uid: string, token: string) =>
     req<BaselineMetric[]>(`/baseline/${uid}`, { token }),
+  // The unattended pass: what the coach missed, gone and learned. Refused
+  // without the permit, and refused again once the day's budget is spent —
+  // two different refusals, because "not allowed" and "not today" are two
+  // different things to be told.
+  errands: (uid: string, token: string) =>
+    req<ErrandLedger>(`/errands/${uid}`, { token }),
+  runErrands: (uid: string, token: string) =>
+    req<ErrandsRun>(`/errands/${uid}`, { method: "POST", token }),
 
   // -- engaged: the online Guardian you leave running ---------------------
   //
