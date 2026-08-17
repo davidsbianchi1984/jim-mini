@@ -309,6 +309,21 @@ struct UnderwayWindow: Decodable {
     let spend: Spend
 }
 
+/// Two people on one call, each with their own channel 2. A disclosure and
+/// nothing else — their device, gain and what they hear were never this
+/// person's to read and are not here.
+struct MicPaired: Decodable {
+    let paired: Bool
+    let id: String?
+    let with: String?
+    let about: String
+    let yours_listening: Bool
+    let theirs_listening: Bool
+    let theirs_since: String?
+    let both: Bool
+    let opened_at: String?
+}
+
 /// A cue read off a camera or a speaker. Read on the way through, never out
 /// of anything kept — so a monitor that stores nothing yields these just the
 /// same. The words it was read from are never carried.
@@ -1657,6 +1672,26 @@ actor ApiClient {
     /// What the monitors noticed, and what each could ever notice.
     func cues(uid: String, token: String) async throws -> CuesSeen {
         try await request("/cues/\(uid)", token: token)
+    }
+
+    /// Say who else is on this call with their own channel 2. Refused unless
+    /// this person already has one — pairing is a label on a handover.
+    @discardableResult
+    func pairMic(uid: String, token: String, otherId: String,
+                 about: String = "") async throws -> MicPaired {
+        try await request("/users/\(uid)/mic/pair", method: "POST",
+                          body: ["other_id": otherId, "about": about],
+                          token: token)
+    }
+
+    func micPaired(uid: String, token: String) async throws -> MicPaired {
+        try await request("/users/\(uid)/mic/pair", token: token)
+    }
+
+    @discardableResult
+    func unpairMic(uid: String, token: String) async throws -> MicPaired {
+        try await request("/users/\(uid)/mic/pair", method: "DELETE",
+                          token: token)
     }
 
     /// Begin a meeting, a call, or a working stretch. Where the monitor

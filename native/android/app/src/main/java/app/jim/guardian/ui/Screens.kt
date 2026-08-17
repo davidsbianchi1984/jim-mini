@@ -5892,6 +5892,9 @@ private fun MicPanel(vm: GuardianViewModel) {
     var today by remember { mutableStateOf<TheDay?>(null) }
     // What the rooms noticed, read on the way through.
     var noticedCues by remember { mutableStateOf<CuesSeen?>(null) }
+    // Two people on one call, each with their own channel 2.
+    var pairing by remember { mutableStateOf<MicPaired?>(null) }
+    var pairWith by remember { mutableStateOf("") }
     // Two guardians working together, never on the line.
     var links by remember { mutableStateOf<List<LiaisonRow>>(emptyList()) }
     var otherId by remember { mutableStateOf("") }
@@ -5918,6 +5921,8 @@ private fun MicPanel(vm: GuardianViewModel) {
             today = r.getOrNull() }
         vm.call({ ApiClient.cues(vm.uid!!, vm.token!!) }) { r ->
             noticedCues = r.getOrNull() }
+        vm.call({ ApiClient.micPaired(vm.uid!!, vm.token!!) }) { r ->
+            pairing = r.getOrNull() }
         vm.call({ ApiClient.liaisons(vm.uid!!, vm.token!!) }) { r ->
             links = r.getOrDefault(emptyList()) }
     }
@@ -6005,6 +6010,37 @@ private fun MicPanel(vm: GuardianViewModel) {
                         fontSize = 11.sp)
                     h.saidToMine.forEach {
                         Text(it, color = Jim.T2, fontSize = 11.sp) }
+                }
+            }
+        }
+
+        // Two people on one call, each with their own channel 2. Shown only
+        // where this person actually has one — pairing is a label on a
+        // handover, never a way to get one.
+        if (mic?.listening == true) {
+            Text(L10n.t("pair.head", vm.language), color = Jim.Txt,
+                fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("pair.lead", vm.language), color = Jim.T2,
+                fontSize = 11.sp)
+            if (pairing?.paired == true) {
+                Text(if (pairing?.theirsListening == true)
+                         L10n.t("pair.both", vm.language)
+                     else L10n.t("pair.waiting", vm.language),
+                    color = Jim.T2, fontSize = 11.sp)
+                BrandButton(L10n.t("pair.end", vm.language)) {
+                    vm.call({ ApiClient.unpairMic(vm.uid!!, vm.token!!) }) { r ->
+                        pairing = r.getOrNull() }
+                }
+            } else {
+                labeledField(L10n.t("pair.head", vm.language), pairWith,
+                    L10n.t("lia.who.ph", vm.language)) { pairWith = it }
+                BrandButton(L10n.t("pair.go", vm.language)) {
+                    vm.call({ ApiClient.pairMic(vm.uid!!, vm.token!!,
+                        pairWith) }) { r ->
+                        error = r.exceptionOrNull()?.message
+                        pairing = r.getOrNull()
+                        pairWith = ""
+                    }
                 }
             }
         }

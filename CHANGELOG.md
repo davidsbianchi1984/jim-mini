@@ -8,6 +8,47 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Two people on one call, each with their own channel 2.** The field ask, in
+  its own words: *both parties could use it while on the same call — both have
+  profiles and both could be using them simultaneously.*
+
+      asked     can two people each have channel 2 on one call
+      mattered  does each of them know the other's guardian is listening
+
+  Two people could already do the first half, and this is worth saying plainly
+  because it changes what the round is. `mic.handover` is per person and always
+  was: on a private route channel 2 hears its wearer and not the call, so two
+  of them on one call never needed permission from each other and never
+  conflicted. What was missing is that **nothing knew they were the same
+  call** — so somebody on a call where both guardians were listening had no way
+  to find that out.
+
+  So a pair is a **disclosure**, and that is the whole of it. It carries no
+  audio, no content, and nothing either guardian heard. Each channel stays
+  exactly as private as it was; what changes is that each person can see there
+  are two.
+
+  **Pairing never grants listening.** A side may only join with a channel it
+  already has, so every refusal in `handover` — a private route, a busy
+  primary, not the microphone already carrying the call, nobody else in
+  earshot — was answered before the pair could name the session. The
+  load-bearing one is the speakerphone refusal, and a test holds that pairing
+  cannot be done first and the route relaxed after.
+
+  **The two halves never meet.** Neither side is handed the other's session,
+  device, gain, or what it hears. What crosses is that somebody is listening
+  and since when. A side stops counting the moment their own channel closes,
+  because a row that outlived the session it names would report somebody as
+  listening after they hung up.
+
+  It forms only between people already each other's contacts — `circle._mutual`,
+  the same gate `jim/liaison.py` opens on — and the disclosure surfaces in
+  `mic.state`, the one function whose job is *what can it hear right now, in
+  words a person can check*. On a call where both guardians are listening,
+  *yours hears you* is a true sentence and an incomplete one.
+
+  On the console, on iOS, on Android and on Windows.
+
 - **What a room sees and hears, read as cues rather than kept as footage.**
   The field ask, in its own words: *monitor you from devices in your home such
   as cameras, speakers, looking for visual cues and verbal cues.*

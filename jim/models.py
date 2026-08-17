@@ -759,6 +759,18 @@ class MonitorPlug(BaseModel):
     keeping: bool = False
 
 
+class MicPair(BaseModel):
+    """Say who else is on this call with their own channel 2.
+
+    There is no route, gain or device here, and that is the point: the
+    channel was opened by the handover and this only names it. A field that
+    could set any of them would make pairing a second door onto the thing
+    `jim/mic.py` spends four screens refusing.
+    """
+    other_id: str
+    about: str = ""
+
+
 class Sensed(BaseModel):
     """One moment a monitor took something in.
 

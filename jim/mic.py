@@ -397,6 +397,11 @@ def state(user_id: str) -> dict:
         "hears": ("you, on your "
                   f"{live['device_name'].replace('_', ' ')}") if live else
                  "nothing — your main microphone is the only one in use",
+        # The disclosure belongs here, on the one function whose whole job is
+        # *what can it hear right now, in words a person can check*. On a call
+        # where both guardians are listening, "yours hears you" is a true
+        # sentence and an incomplete one.
+        **paired(user_id),
     }
 
 
@@ -418,3 +423,186 @@ def history(user_id: str, limit: int = 20) -> list[dict]:
              "ended_because": r["ended_because"],
              "live": r["ended_at"] is None}
             for r in rows]
+
+
+# --------------------------------------------------------------------------- #
+# both parties on channel 2, at once
+# --------------------------------------------------------------------------- #
+#
+# The field ask, in its own words: *both parties could use it while on the
+# same call — both have profiles and both could be using them simultaneously.*
+#
+#     asked     can two people each have channel 2 on one call
+#     mattered  does each of them know the other's guardian is listening
+#
+# Two people could already do the first half and neither could learn the
+# second. `handover` is per person and always was: on a private route it hears
+# its wearer and not the call, so two of them on one call never needed
+# permission from each other and never conflicted. What was missing is that
+# **nothing knew they were the same call** — so a person on a call where both
+# guardians were listening had no way to find that out.
+#
+# That is the whole of what a pair is: a disclosure. It carries no audio, no
+# content, and nothing either guardian heard. Each channel stays exactly as
+# private as it was; what changes is that each person can see there are two.
+#
+# ## Pairing never grants listening
+#
+# A side may only join with a channel 2 it already has. Every refusal in
+# `handover` — a private route, a busy primary, not the microphone carrying
+# the call, nobody else in earshot — was passed before this row could name the
+# session, so none of them can be reached around by pairing first. That
+# ordering is deliberate and a test holds it: the cheap version of this
+# function would open the channel itself, and would be a second door onto the
+# thing that module spends four screens refusing.
+#
+# ## It forms only where both already knew each other
+#
+# `circle._mutual`, the same gate `jim/liaison.py` opens on, and for the same
+# reason: a stranger who has your number should not be able to attach their
+# guardian's session to yours, even as a label.
+#
+# ## The two halves never meet
+#
+# A pair names two session ids and neither side is ever handed the other's.
+# What crosses is that somebody is listening and since when. Two guardians
+# that need to say something to each other have a channel for it already, and
+# it is not this one — `jim/liaison.py` is spoken over the network, recorded,
+# split by side and readable afterwards by the person it works for. Audio
+# never crosses either.
+
+#: Why a pair ended. Words rather than a flag, because *they hung up* and
+#: *somebody stopped it* read differently months later.
+PAIR_ENDINGS = ("both_done", "left", "channel_closed", "stopped")
+
+
+class NotMutual(RuntimeError):
+    """Refused: these two are not each other's contacts."""
+
+
+#: Its own sentence, because it is the rule the pairing is built on.
+NOT_MUTUAL = ("these two are not each other's contacts — a channel pairs "
+              "only where both people already had the other, and one side "
+              "alone pairs with nothing")
+
+#: Refused because there is no channel 2 to name yet. Pairing is a label on a
+#: handover, never a way to get one.
+NOTHING_TO_PAIR = ("your agent is not listening on a second microphone yet — "
+                   "hand one over first, and then say who else is on the call")
+
+
+def _pair_row(user_id: str) -> dict | None:
+    """This person's open pair, if any."""
+    row = db.connect().execute(
+        "SELECT p.* FROM mic_pairs p JOIN mic_pair_sides s ON s.pair_id = p.id"
+        " WHERE s.user_id=? AND p.ended_at IS NULL"
+        " ORDER BY p.opened_at DESC, p.rowid DESC LIMIT 1",
+        (user_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def _sides(pair_id: str) -> dict[str, dict]:
+    return {r["user_id"]: dict(r) for r in db.connect().execute(
+        "SELECT * FROM mic_pair_sides WHERE pair_id=?", (pair_id,)).fetchall()}
+
+
+def pair(user_id: str, other_id: str, about: str = "") -> dict:
+    """Say that this person's channel 2 is one of two on the same call.
+
+    Refused unless they already have one. The channel is opened by
+    :func:`handover` and every refusal there has already been answered by the
+    time this runs; naming it here adds a disclosure and adds nothing else.
+    """
+    from . import circle
+
+    live = _live(user_id)
+    if live is None:
+        raise MicError(NOTHING_TO_PAIR)
+    if not circle._mutual(user_id, other_id):
+        raise NotMutual(NOT_MUTUAL)
+
+    low, high = min(user_id, other_id), max(user_id, other_id)
+    conn = db.connect()
+    row = conn.execute(
+        "SELECT * FROM mic_pairs WHERE low_id=? AND high_id=?"
+        " AND ended_at IS NULL ORDER BY opened_at DESC, rowid DESC LIMIT 1",
+        (low, high)).fetchone()
+    if row is None:
+        pair_id = db.new_id("pai")
+        conn.execute(
+            "INSERT INTO mic_pairs (id, low_id, high_id, about, opened_at)"
+            " VALUES (?,?,?,?,?)",
+            (pair_id, low, high, about.strip(), db.utcnow()))
+    else:
+        pair_id = row["id"]
+    # `INSERT OR REPLACE`: joining twice is joining once, and a person whose
+    # channel dropped and came back is naming a new session on the same call
+    # rather than opening a second pair.
+    conn.execute(
+        "INSERT OR REPLACE INTO mic_pair_sides (pair_id, user_id, session_id,"
+        " joined_at) VALUES (?,?,?,?)",
+        (pair_id, user_id, live["id"], db.utcnow()))
+    conn.commit()
+    return paired(user_id)
+
+
+def paired(user_id: str) -> dict:
+    """Whether the other person's guardian is listening too — and nothing
+    else about it.
+
+    Deliberately thin. It answers *is there another channel on this call and
+    since when*, which is the disclosure the pair exists for. It does not
+    answer what they are hearing, on what, at what gain, or what their
+    guardian did with it: none of that was ever this person's to read, and a
+    pair that leaked it would be a worse arrangement than no pair at all.
+    """
+    row = _pair_row(user_id)
+    if row is None:
+        # Every key, on the empty answer too. A shape that grew fields only
+        # when something was there would have four shells reading `undefined`
+        # on the ordinary case, which is the one they meet most.
+        return {"paired": False, "id": None, "with": None, "about": "",
+                "yours_listening": _live(user_id) is not None,
+                "theirs_listening": False, "theirs_since": None,
+                "both": False, "opened_at": None}
+    other = row["high_id"] if row["low_id"] == user_id else row["low_id"]
+    sides = _sides(row["id"])
+    theirs = sides.get(other)
+    # Their side counts only while their own channel is actually open. A row
+    # that outlived the session it names would report somebody as listening
+    # after they hung up, which is the one thing this must never say.
+    live_there = bool(theirs) and _live(other) is not None
+    return {
+        "paired": True,
+        "id": row["id"],
+        "with": other,
+        "about": row["about"],
+        "yours_listening": _live(user_id) is not None,
+        "theirs_listening": live_there,
+        "theirs_since": theirs["joined_at"] if theirs and live_there else None,
+        # Both, or only mine so far. The honest middle state: this person has
+        # said who else is on the call and the other side has not joined yet.
+        "both": bool(live_there and _live(user_id) is not None),
+        "opened_at": row["opened_at"],
+    }
+
+
+def unpair(user_id: str, why: str = "left") -> dict:
+    """Leave the pair. It ends for both, because it was never more than the
+    fact that there were two.
+
+    The other person's channel 2 is untouched — it is theirs, they opened it,
+    and one person leaving a call is not a reason for somebody else's agent to
+    stop listening to them. What ends is the disclosure, and it ends on both
+    sides at once because a pair one side still believed in would be exactly
+    the wrong half to leave standing.
+    """
+    row = _pair_row(user_id)
+    if row is None:
+        return paired(user_id)
+    conn = db.connect()
+    conn.execute(
+        "UPDATE mic_pairs SET ended_at=?, ended_because=? WHERE id=?",
+        (db.utcnow(), why if why in PAIR_ENDINGS else "stopped", row["id"]))
+    conn.commit()
+    return paired(user_id)

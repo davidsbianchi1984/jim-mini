@@ -770,6 +770,7 @@ public sealed partial class ConnectPage : Page
             var mic = await ApiClient.Shared.MicState(s.Uid, s.Token);
             Render(mic);
             await LoadCalls();
+            await LoadPair();
             await LoadCues();
             await LoadMonitors();
             await LoadDay();
@@ -933,6 +934,65 @@ public sealed partial class ConnectPage : Page
     /// <summary>Everything that can be plugged in, off rows included. A
     /// roster showing only what is already on is a roster nobody can add
     /// to.</summary>
+    /// <summary>Two people on one call, each with their own channel 2.
+    ///
+    /// A disclosure and nothing else: what crosses is that somebody is
+    /// listening, never what theirs hears or on what.</summary>
+    private async System.Threading.Tasks.Task LoadPair()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        PairHead.Text = L10n.T("pair.head");
+        PairLead.Text = L10n.T("pair.lead");
+        PairGo.Content = L10n.T("pair.go");
+        PairEnd.Content = L10n.T("pair.end");
+        PairWith.PlaceholderText = L10n.T("lia.who.ph");
+        try
+        {
+            var pair = await ApiClient.Shared.MicPaired(s.Uid, s.Token);
+            PairState.Text = !pair.Paired ? ""
+                : pair.TheirsListening ? L10n.T("pair.both")
+                : L10n.T("pair.waiting");
+            PairEnd.Visibility = pair.Paired
+                ? Visibility.Visible : Visibility.Collapsed;
+            // Pairing is a label on a handover, so the control that makes one
+            // is offered only where there is a handover to label.
+            var canPair = pair.YoursListening && !pair.Paired;
+            PairGo.Visibility = canPair
+                ? Visibility.Visible : Visibility.Collapsed;
+            PairWith.Visibility = canPair
+                ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch { /* the roster below stands on its own */ }
+    }
+
+    private async void OnPairMic(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        PairGo.IsEnabled = false;
+        try
+        {
+            await ApiClient.Shared.PairMic(s.Uid, s.Token, PairWith.Text.Trim());
+            PairWith.Text = "";
+            await LoadPair();
+        }
+        catch (Exception ex) { MicFailed(ex); }
+        finally { PairGo.IsEnabled = true; }
+    }
+
+    private async void OnUnpairMic(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            await ApiClient.Shared.UnpairMic(s.Uid, s.Token);
+            await LoadPair();
+        }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
     /// <summary>What the rooms noticed, and what each monitor could ever
     /// notice.
     ///

@@ -459,6 +459,27 @@ export interface UnderwayWindow {
   spend: { spent_today: number; daily: number; permitted: boolean };
 }
 
+// -- both parties on channel 2, at once (jim/mic.py) ---------------------
+//
+// A disclosure and nothing else: it carries no audio, no content, and nothing
+// either guardian heard. `theirs_listening` is the whole point — on a call
+// where both guardians are listening, each person is entitled to know the
+// other's is. Their device, gain and what they hear were never this person's
+// to read and are not here.
+export interface MicPaired {
+  paired: boolean;
+  id: string | null;
+  with: string | null;
+  about: string;
+  yours_listening: boolean;
+  theirs_listening: boolean;
+  theirs_since: string | null;
+  // Both, or only mine so far — the honest middle state where this person has
+  // said who else is on the call and the other side has not joined yet.
+  both: boolean;
+  opened_at: string | null;
+}
+
 // -- what a room saw and heard, as cues (jim/cues.py) --------------------
 //
 // A cue is read on the way through, before the roster is asked whether any
@@ -1857,6 +1878,17 @@ export const api = {
   // What the monitors noticed, and what each one could ever notice.
   cues: (uid: string, token: string) =>
     req<CuesSeen>(`/cues/${uid}`, { token }),
+  // Say who else is on this call with their own channel 2. Refused unless
+  // this person already has one: pairing is a label on a handover, never a
+  // way to get one.
+  pairMic: (uid: string, body: { other_id: string; about?: string },
+            token: string) =>
+    req<MicPaired>(`/users/${uid}/mic/pair`,
+                   { method: "POST", body, token }),
+  micPaired: (uid: string, token: string) =>
+    req<MicPaired>(`/users/${uid}/mic/pair`, { token }),
+  unpairMic: (uid: string, token: string) =>
+    req<MicPaired>(`/users/${uid}/mic/pair`, { method: "DELETE", token }),
   openStretch: (uid: string, body: { monitor: string; about?: string;
                                      others_told?: boolean }, token: string) =>
     req<Stretch>(`/day/${uid}/stretches`, { method: "POST", body, token }),

@@ -52,7 +52,7 @@ from .models import (
     CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     CallOpen, CoachStudy, EngageOpen, LiaisonOpen, LiaisonSaid,
-    LiaisonTask, MonitorPlug, Sensed, StretchOpen, EngagedSaid, Enroll,
+    LiaisonTask, MicPair, MonitorPlug, Sensed, StretchOpen, EngagedSaid, Enroll,
     ExcursionStart,
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
@@ -3406,6 +3406,39 @@ def create_app(qrme_client: QRMEClient | None = None,
         except monitors.NoSuchMonitor as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
         return {"sensing": True, "monitor": name, **moment}
+
+    # ---- both parties on channel 2, at once -------------------------------
+
+    @app.post("/users/{user_id}/mic/pair", status_code=201)
+    def pair_mic(user_id: str, body: MicPair, request: Request) -> dict:
+        """Say that this person's channel 2 is one of two on the same call.
+
+        Refused unless they already have one: pairing is a label on a
+        handover, never a way to get one, so every refusal in
+        `mic.handover` has already been answered by the time this runs.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return mic.pair(user_id, body.other_id, body.about)
+        except mic.NotMutual as exc:
+            raise HTTPException(409, str(exc)) from None
+        except mic.MicError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/users/{user_id}/mic/pair")
+    def mic_pair(user_id: str, request: Request) -> dict:
+        """Whether the other person's guardian is listening too, and nothing
+        else about it — not what they hear, on what, or at what gain."""
+        _user_or_404(user_id, request)
+        return mic.paired(user_id)
+
+    @app.delete("/users/{user_id}/mic/pair")
+    def unpair_mic(user_id: str, request: Request,
+                   why: str = "left") -> dict:
+        """Leave. The other person's channel 2 is untouched — it is theirs.
+        What ends is the disclosure, on both sides at once."""
+        _user_or_404(user_id, request)
+        return mic.unpair(user_id, why)
 
     # ---- what a room saw and heard, read as cues --------------------------
 

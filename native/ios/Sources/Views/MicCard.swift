@@ -29,6 +29,9 @@ struct MicCard: View {
     // What the rooms noticed, read on the way through rather than out of
     // anything kept.
     @State private var noticedCues: CuesSeen?
+    // Two people on one call, each with their own channel 2.
+    @State private var pairing: MicPaired?
+    @State private var pairWith = ""
     // Two guardians working together, never on the line.
     @State private var links: [LiaisonRow] = []
     @State private var otherId = ""
@@ -108,6 +111,33 @@ struct MicCard: View {
                                 .foregroundStyle(Theme.t2)
                         }
                     }
+                }
+            }
+
+            // Two people on one call, each with their own channel 2. Shown
+            // only where this person actually has one: pairing is a label on
+            // a handover, so a control here on an idle channel would only
+            // ever produce a refusal.
+            if mic?.listening == true {
+                Text(L10n.t("pair.head", state.language))
+                    .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("pair.lead", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+                if pairing?.paired == true {
+                    Text(pairing?.theirs_listening == true
+                         ? L10n.t("pair.both", state.language)
+                         : L10n.t("pair.waiting", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    Button(L10n.t("pair.end", state.language)) {
+                        unpair()
+                    }.font(.caption).tint(Theme.t2)
+                } else {
+                    TextField(L10n.t("lia.who.ph", state.language),
+                              text: $pairWith)
+                        .textFieldStyle(.roundedBorder)
+                    Button(L10n.t("pair.go", state.language)) { pairMic() }
+                        .font(.caption).tint(Theme.brandA)
+                        .disabled(pairWith.isEmpty)
                 }
             }
 
@@ -385,6 +415,7 @@ struct MicCard: View {
                                                      token: token)) ?? []
         today = try? await ApiClient.shared.theDay(uid: uid, token: token)
         noticedCues = try? await ApiClient.shared.cues(uid: uid, token: token)
+        pairing = try? await ApiClient.shared.micPaired(uid: uid, token: token)
         links = (try? await ApiClient.shared.liaisons(uid: uid,
                                                       token: token)) ?? []
     }
@@ -446,6 +477,28 @@ struct MicCard: View {
         Task {
             _ = try? await ApiClient.shared.closeLiaison(
                 uid: uid, token: token, linkId: l.id, why: "stopped")
+            await load()
+        }
+    }
+
+    /// Say who else is on this call with their own channel 2.
+    private func pairMic() {
+        guard let uid = state.uid, let token = state.token else { return }
+        error = nil
+        Task {
+            do {
+                _ = try await ApiClient.shared.pairMic(
+                    uid: uid, token: token, otherId: pairWith)
+                pairWith = ""
+            } catch { self.error = error.localizedDescription }
+            await load()
+        }
+    }
+
+    private func unpair() {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            _ = try? await ApiClient.shared.unpairMic(uid: uid, token: token)
             await load()
         }
     }

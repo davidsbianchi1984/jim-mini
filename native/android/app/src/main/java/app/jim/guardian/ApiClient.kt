@@ -135,6 +135,11 @@ data class UnderwayWindow(val underway: List<UnderwayRow>,
                           val quiet: Boolean, val today: List<Errand>,
                           val spentToday: Int, val daily: Int,
                           val permitted: Boolean)
+/** Two people on one call, each with their own channel 2. A disclosure and
+ *  nothing else — their device, gain and what they hear are not here. */
+data class MicPaired(val paired: Boolean, val with: String?,
+                     val yoursListening: Boolean,
+                     val theirsListening: Boolean, val both: Boolean)
 /** A cue read off a camera or a speaker. Read on the way through, never out
  *  of anything kept, and the words it was read from are never carried. */
 data class Cue(val cue: String, val severity: String, val says: String,
@@ -1071,6 +1076,24 @@ object ApiClient {
         o.optBoolean("running"), o.optString("opened_at", ""),
         if (o.isNull("ended_at")) null else o.optString("ended_at"),
         o.optInt("moments"), o.optInt("kept"))
+
+    private fun pairedOf(o: JSONObject) = MicPaired(
+        o.optBoolean("paired"),
+        if (o.isNull("with")) null else o.optString("with"),
+        o.optBoolean("yours_listening"), o.optBoolean("theirs_listening"),
+        o.optBoolean("both"))
+
+    /** Say who else is on this call with their own channel 2. */
+    suspend fun pairMic(uid: String, token: String, otherId: String,
+                        about: String = ""): MicPaired =
+        pairedOf(request("/users/$uid/mic/pair", "POST",
+            JSONObject().put("other_id", otherId).put("about", about), token))
+
+    suspend fun micPaired(uid: String, token: String): MicPaired =
+        pairedOf(request("/users/$uid/mic/pair", token = token))
+
+    suspend fun unpairMic(uid: String, token: String): MicPaired =
+        pairedOf(request("/users/$uid/mic/pair", "DELETE", token = token))
 
     /** What the monitors noticed, and what each could ever notice. */
     suspend fun cues(uid: String, token: String): CuesSeen {

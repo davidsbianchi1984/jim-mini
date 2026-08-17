@@ -1310,6 +1310,40 @@ CREATE TABLE IF NOT EXISTS liaison_task_agreed (
     PRIMARY KEY (link_id, user_id)
 );
 
+-- Two people on one call, each with their own channel 2 (jim/mic.py).
+--
+-- It carries no audio, no content and nothing either guardian heard. What it
+-- is for is the disclosure: on a call where both guardians are listening,
+-- each person is entitled to know the other's is. Two private channels that
+-- did not know about each other could each be honest and the pair of them
+-- still be a surprise.
+--
+-- The pair never grants listening. Each side's channel 2 was opened by
+-- `mic.handover` and passed every refusal there — a private route, a busy
+-- primary, nobody else in earshot — before this row could name it. Joining a
+-- pair is naming a channel that already exists, so no rule in that function
+-- can be reached around by pairing first.
+CREATE TABLE IF NOT EXISTS mic_pairs (
+    id            TEXT PRIMARY KEY,
+    low_id        TEXT NOT NULL REFERENCES users(id),
+    high_id       TEXT NOT NULL,
+    about         TEXT NOT NULL DEFAULT '',
+    opened_at     TEXT NOT NULL,
+    ended_at      TEXT,
+    ended_because TEXT
+);
+
+-- One side of such a pair, and the channel-2 session it names. One row per
+-- person: a pair is live only when both are here and neither has hung up.
+CREATE TABLE IF NOT EXISTS mic_pair_sides (
+    pair_id    TEXT NOT NULL REFERENCES mic_pairs(id),
+    user_id    TEXT NOT NULL,
+    session_id TEXT NOT NULL,   -- their own mic_sessions row, never read by
+                                -- the other side
+    joined_at  TEXT NOT NULL,
+    PRIMARY KEY (pair_id, user_id)
+);
+
 -- The day as it was taken in, and what survived of it (jim/daybook.py).
 --
 -- One row per moment a monitor sensed something, **whether or not** its

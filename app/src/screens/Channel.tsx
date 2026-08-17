@@ -4,6 +4,7 @@ import {
   type LiaisonHalf, type LiaisonRow, type MonitorRow,
   type CaptureVocabulary, type DeviceRow, type MicEvent, type MicGains,
   type MicState, type MicTypes, type TheDay, type CuesSeen,
+  type MicPaired,
 } from "../api";
 import { useSession } from "../store";
 import { t as tr, visitorLang } from "../l10n";
@@ -67,6 +68,10 @@ export function Channel() {
   // What the rooms noticed, read on the way through rather than out of
   // anything kept — and what each monitor could ever notice.
   const [noticedCues, setNoticedCues] = useState<CuesSeen | null>(null);
+  // Two people on one call, each with their own channel 2. A disclosure and
+  // nothing else — theirs is listening, and that is all that crosses.
+  const [pairing, setPairing] = useState<MicPaired | null>(null);
+  const [pairWith, setPairWith] = useState("");
   const [meetAbout, setMeetAbout] = useState("");
   // Two guardians working together. The list answers which are still going
   // and why, and each row's half is what mine said.
@@ -84,6 +89,7 @@ export function Channel() {
     api.monitors(uid, token).then(setMons).catch(() => setMons([]));
     api.theDay(uid, token).then(setToday).catch(() => setToday(null));
     api.cues(uid, token).then(setNoticedCues).catch(() => setNoticedCues(null));
+    api.micPaired(uid, token).then(setPairing).catch(() => setPairing(null));
     api.liaisons(uid, token).then(setLinks).catch(() => setLinks([]));
   }, [uid, token]);
 
@@ -640,6 +646,45 @@ export function Channel() {
                 {h.ended_because ? ` (${h.ended_because})` : ""}</span>
             </div>
           ))}
+        </>
+      )}
+
+      {/* Two people on one call, each with their own channel 2. Offered
+          only where this person actually has one: pairing is a label on a
+          handover, never a way to get one, so a button here on an idle
+          channel would be a button that only ever produces a refusal. */}
+      {mic?.listening && (
+        <>
+          <h3>{tr("pair.head", visitorLang())}</h3>
+          <p className="muted">{tr("pair.lead", visitorLang())}</p>
+          <div className="card">
+            {pairing?.paired ? (
+              <>
+                <p className="muted small">
+                  {pairing.theirs_listening
+                    ? tr("pair.both", visitorLang())
+                    : tr("pair.waiting", visitorLang())}
+                </p>
+                <button disabled={busy} onClick={() => run(async () => {
+                  await api.unpairMic(uid!, token!);
+                  setPairing(await api.micPaired(uid!, token!));
+                })}>{tr("pair.end", visitorLang())}</button>
+              </>
+            ) : (
+              <>
+                <input value={pairWith}
+                       placeholder={tr("lia.who.ph", visitorLang())}
+                       onChange={(e) => setPairWith(e.target.value)} />
+                <button disabled={busy || !pairWith.trim()}
+                        onClick={() => run(async () => {
+                          await api.pairMic(uid!,
+                            { other_id: pairWith.trim() }, token!);
+                          setPairing(await api.micPaired(uid!, token!));
+                          setPairWith("");
+                        })}>{tr("pair.go", visitorLang())}</button>
+              </>
+            )}
+          </div>
         </>
       )}
 

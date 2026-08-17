@@ -1120,6 +1120,24 @@ public sealed class ApiClient
         return Send<LiaisonRow>(req);
     }
 
+    /// <summary>Say who else is on this call with their own channel 2.
+    /// Refused unless this person already has one.</summary>
+    public Task<MicPaired> PairMic(string uid, string token, string otherId,
+                                   string about = "") =>
+        Send<MicPaired>(Post($"/users/{uid}/mic/pair",
+            new { other_id = otherId, about }, token));
+
+    public Task<MicPaired> MicPaired(string uid, string token) =>
+        Send<MicPaired>(Get($"/users/{uid}/mic/pair", token));
+
+    public Task<MicPaired> UnpairMic(string uid, string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+                                         $"/users/{uid}/mic/pair");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<MicPaired>(req);
+    }
+
     /// <summary>What the monitors noticed, and what each could ever
     /// notice.</summary>
     public Task<CuesSeen> Cues(string uid, string token) =>
@@ -3147,6 +3165,16 @@ public record UnderwayWindow(
     // Finished, not running — which is why it is a list of its own.
     [property: JsonPropertyName("today")] Errand[] Today,
     [property: JsonPropertyName("spend")] UnderwaySpend Spend);
+
+/// <summary>Two people on one call, each with their own channel 2. A
+/// disclosure and nothing else — their device, gain and what they hear were
+/// never this person's to read and are not here.</summary>
+public record MicPaired(
+    [property: JsonPropertyName("paired")] bool Paired,
+    [property: JsonPropertyName("with")] string? With,
+    [property: JsonPropertyName("yours_listening")] bool YoursListening,
+    [property: JsonPropertyName("theirs_listening")] bool TheirsListening,
+    [property: JsonPropertyName("both")] bool Both);
 
 /// <summary>A cue read off a camera or a speaker. Read on the way through,
 /// never out of anything kept, and the words it was read from are never
