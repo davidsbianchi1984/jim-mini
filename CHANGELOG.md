@@ -6,6 +6,69 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.83.0] - 2026-08-17
+
+### Added
+
+- **The people in your phone, and the call that knows who it is with.** The
+  field ask, in its own words: *the person they may be talking to may already
+  be in their friends list, and an agent monitoring you making a phone call
+  outbound will know who you're calling the moment you're calling, so all of
+  that can be set up as it's happening.*
+
+      asked     who is on the other end of this call
+      mattered  did we learn it from something this person already had
+
+  **It arrives by a grant, not by typing.** Nobody retypes their address book
+  into a second app. `contacts` joins the sources a person already grants,
+  and the device's book is the truth: `sync` replaces rather than merges,
+  because a merge quietly keeps people somebody deleted from their phone
+  months ago.
+
+  **This is the grant that is mostly about other people.** Every other source
+  is about the person granting it — their pulse, their calendar, their
+  spending. An address book is almost entirely somebody else: a few hundred
+  people who never chose this product, cannot see that it holds their number,
+  and were not asked. That is `touches_others` at its maximum and the same
+  argument `jim/monitors.py` makes about a camera bolted to a hall. So it is
+  off until somebody turns it on, one function is the only door to reading
+  it, and withdrawing the grant **drops the book** rather than merely stopping
+  the sync — one switch, not two, held by a guard. A copy kept after somebody
+  said stop is the entire objection, made real.
+
+  **The far side's number is still not stored.** `oncall.open` reads it for
+  the notice's language and drops it, and that stays exactly true.
+  Recognition only ever reads: a call from a number nobody granted leaves
+  precisely as little behind as it did before this existed, and what the call
+  row gained is the id of one of this person's own contacts.
+
+  **The guardians find each other at dial time.** Where the book says the far
+  side holds an account here, and the two are already mutual contacts, and
+  the permit is on, the link opens with the call instead of waiting for
+  somebody to press something mid-conversation. All three conditions were
+  already checked by `liaison.open`, so dial time catches its refusals rather
+  than re-testing them — two copies of one rule is how the two drift apart. A
+  link that cannot open is not an error on a phone call.
+
+  **What the call leaves behind is the appointment, not the call.** Mom's
+  case, and most of the book's: nothing on the other end to link to, and that
+  is not a failure. What survives is the thing to be done at a time, filed
+  under the person it came from, landing in the calendar everything else
+  reads. There is nowhere in the schema for a transcript, a summary or the
+  audio, which is the point rather than an omission.
+
+  Free on every plan. A wall at Basic was built and reverted: it broke the
+  guard holding that free and Basic reach identical capabilities, and the
+  feature is two-sided — it only fires when both parties have one — so a wall
+  would suppress the density it needs.
+
+### Fixed
+
+- **A source name nothing reads is a switch that does nothing.** `phone` went
+  into `models.Source` beside `contacts`, declared for a call history no code
+  asks about, so a person could turn it on and nothing anywhere would behave
+  differently. It comes back when something reads it.
+
 ## [0.82.0] - 2026-08-17
 
 ### Added
@@ -8873,7 +8936,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.82.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.83.0...HEAD
+[0.83.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.82.0...app-v0.83.0
 [0.82.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.82.0
 [0.81.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.81.0
 [0.80.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.80.0
