@@ -330,7 +330,7 @@ def test_the_reach_says_which_of_it_cannot_be_taken_back(client):
     # carries this person's own words to another person, the other carries a
     # general topic to a model. Everything else acts on their own records and
     # can be put back.
-    assert sorted(row["name"] for row in forever) == ["ask_specialist",
-                                                      "study_unattended"]
+    assert sorted(row["name"] for row in forever) == [
+        "ask_specialist", "speak_to_their_guardian", "study_unattended"]
     assert all(row["reversible"] for row in can
                if row["acts"] and not row["irreversible_because"])

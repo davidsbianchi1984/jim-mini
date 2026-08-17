@@ -128,6 +128,15 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
         "What reaches out: a bound robot and its first-aid rating, a placed "
         "code a stranger can scan, accounts on platforms JIM does not run, "
         "and excursions — which report what was redacted on the way out.",
+    ("their agent", "both have agents", "two agents", "agents talking",
+     "what did mine say", "did it tell them", "collaborate",
+     "who is it talking to", "stop it talking to them"):
+        "Channel → two guardians working together: yours and theirs talk "
+        "over the network, never on the line and never out loud, and only "
+        "between people who are already each other's contacts. Afterwards "
+        "you can read what yours said and what it was told — your half, "
+        "not theirs. A link closes when the call does unless a named task "
+        "is holding it open, and you can stop it whenever you like.",
     ("plug in a camera", "home camera", "smart speaker", "watch my screen",
      "connect a sensor", "always on", "what can watch me",
      "does it see the whole room", "who else does it hear",

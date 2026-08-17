@@ -1055,6 +1055,50 @@ public sealed class ApiClient
         Send<CoachStudied>(Post($"/coach/{uid}/study",
             new { topic, area }, token));
 
+    /// <summary>Open a link to another person's guardian. Refused unless the
+    /// two are already each other's contacts.</summary>
+    public Task<LiaisonRow> OpenLiaison(string uid, string token,
+                                        string otherId, string about = "") =>
+        Send<LiaisonRow>(Post($"/liaisons/{uid}",
+            new { other_id = otherId, about }, token));
+
+    public Task<LiaisonRow[]> Liaisons(string uid, string token) =>
+        Send<LiaisonRow[]>(Get($"/liaisons/{uid}", token));
+
+    /// <summary>Their own guardian's half, and only theirs.</summary>
+    public Task<LiaisonHalf> LiaisonHalf(string uid, string token,
+                                         string linkId) =>
+        Send<LiaisonHalf>(Get($"/liaisons/{uid}/{linkId}", token));
+
+    public async Task LiaisonSaid(string uid, string token, string linkId,
+                                  string body)
+    {
+        var req = Post($"/liaisons/{uid}/{linkId}/said", new { body }, token);
+        (await Dispatch(req)).EnsureSuccessStatusCode();
+    }
+
+    /// <summary>The work that outlives the call.</summary>
+    public Task<LiaisonRow> LiaisonTask(string uid, string token,
+                                        string linkId, string task)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Put,
+                                         $"/liaisons/{uid}/{linkId}/task")
+        {
+            Content = JsonContent.Create(new { task }),
+        };
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<LiaisonRow>(req);
+    }
+
+    public Task<LiaisonRow> CloseLiaison(string uid, string token,
+                                         string linkId, string why)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+                                         $"/liaisons/{uid}/{linkId}?why={why}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<LiaisonRow>(req);
+    }
+
     /// <summary>Everything that can be plugged in, off rows included.
     /// </summary>
     public Task<MonitorRow[]> Monitors(string uid, string token) =>
@@ -2974,6 +3018,26 @@ public record CoachCurriculum(
 public record CoachStudied(
     [property: JsonPropertyName("studied")] string Studied,
     [property: JsonPropertyName("folded")] bool Folded);
+
+/// <summary>A link between two guardians. <c>Task</c> is what keeps it open
+/// past the call.</summary>
+public record LiaisonRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("about")] string About,
+    [property: JsonPropertyName("task")] string Task,
+    [property: JsonPropertyName("running")] bool Running,
+    [property: JsonPropertyName("ended_because")] string? EndedBecause,
+    [property: JsonPropertyName("opened_at")] string OpenedAt);
+
+/// <summary>A person's own half: what theirs said, and what it was told. The
+/// other person's half was never theirs to read.</summary>
+public record LiaisonHalf(
+    [property: JsonPropertyName("link_id")] string LinkId,
+    [property: JsonPropertyName("about")] string About,
+    [property: JsonPropertyName("task")] string Task,
+    [property: JsonPropertyName("running")] bool Running,
+    [property: JsonPropertyName("said_by_mine")] string[] SaidByMine,
+    [property: JsonPropertyName("said_to_mine")] string[] SaidToMine);
 
 /// <summary>One thing that can be plugged in and sense somebody.
 /// <c>CatchesOthers</c> is the field that decides everything else: nothing

@@ -92,6 +92,14 @@ AREAS: dict[str, dict] = {
         "says": "switch parts of the product on or off for your account",
         "tools": ("set_feature",),
     },
+    "speak_for_you": {
+        "standing": "asked",
+        "says": "say things about you to somebody else's guardian — only "
+                "where you are already each other's contacts, never out "
+                "loud on a call, and you can read afterwards exactly what "
+                "yours said",
+        "tools": ("speak_to_their_guardian",),
+    },
     "study_on_your_own": {
         "standing": "asked",
         "says": "go and study, unattended, what the coach could not answer — "

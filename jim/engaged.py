@@ -322,6 +322,10 @@ TOOLS: tuple[dict, ...] = (
     # Both reach outside this host, and they reach differently: one carries
     # this person's own words to another person, the other carries a general
     # topic to a model and brings back something the offline coach keeps.
+    {"name": "speak_to_their_guardian", "acts": True,
+     "route": ("POST", "/liaisons/{user_id}/{link_id}/said"),
+     "says": "say something about you to somebody else's guardian",
+     "irreversible": "engaged.cannot_unsay"},
     {"name": "study_unattended", "acts": True,
      "route": ("POST", "/errands/{user_id}"),
      "says": "go and study what the coach could not answer, on its own",

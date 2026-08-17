@@ -8,6 +8,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Two guardians working together, quietly.** When both people on a
+  conversation have one, the two can collaborate — and never on the line. The
+  call carries voices; the guardians talk over the network, which also means
+  none of this needs a phone: the same link serves two people in a room, on a
+  video call, or in a thread.
+
+      asked     can two guardians work together
+      mattered  is each one still working for its own person
+
+  **It forms only where both sides already knew each other.** `circle._mutual`
+  is the gate and it was already exactly right: an invitation is one
+  direction, two make contacts, either side deleting theirs closes the door
+  for both. Each guardian recognises the other from a record its own person
+  already holds — nobody publishes a directory, and one-sided contact reaches
+  nothing, which is what stops a stranger's guardian calling yours.
+
+  **Silent, and readable afterwards by the person it works for.** Two agents
+  negotiating on a channel neither human can inspect are two principals with
+  counsel who never report back, so the link keeps both halves split by side.
+  A person reads what *their* guardian said and what it was told; the other
+  person's half was never theirs to read. Nothing crosses without the
+  `speak_for_you` permit, which is `asked`.
+
+  **It lives as long as the work does.** The link opens with the call and
+  closes with it. What extends it is not an agreement to stay connected but a
+  **task** — something that came out of the conversation and has to be
+  finished. A link carrying one survives the call ending; a person stopping it
+  always closes it, and the call ending cannot close what the task is holding
+  open. Closed links stay in the list, because what two guardians did on
+  somebody's behalf is not something to tidy away.
+
+  On the console, on iOS, on Android and on Windows.
+
 - **Somewhere to plug the monitoring in, and what each one costs.** Cameras,
   speakers, screens, bands, rings, patches, doorway sensors, the strip under a
   mattress. Three tables already existed and none of them answered the

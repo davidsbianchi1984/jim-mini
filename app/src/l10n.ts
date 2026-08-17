@@ -4643,6 +4643,60 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "mon.sensing": {
     en: "It is sensing.", es: "Está detectando.", fr: "Il capte.", de: "Es erfasst.", pt: "Está a detetar.", it: "Sta rilevando.", ja: "感知しています。", zh: "正在感知。", hi: "यह महसूस कर रहा है।", ar: "إنه يستشعر.",
   },
+  "lia.head": {
+    en: "Two guardians working together", es: "Dos guardianes trabajando juntos", fr: "Deux gardiens qui travaillent ensemble", de: "Zwei Wächter, die zusammenarbeiten", pt: "Dois guardiões a trabalhar juntos", it: "Due guardiani che lavorano insieme", ja: "二つのガーディアンの連携", zh: "两位守护者协同工作", hi: "दो गार्जियन साथ काम करते हुए", ar: "حارسان يعملان معًا",
+  },
+  "lia.lead": {
+    en: "Never on the line and never out loud: yours and theirs talk over the network, and only between people who are already each other's contacts. You can read what yours said afterwards — their half was never yours to read.", es: "Nunca en la línea ni en voz alta: el tuyo y el suyo hablan por la red, y solo entre personas que ya son contactos. Después puedes leer lo que dijo el tuyo; la parte del otro nunca fue tuya para leerla.", fr: "Jamais sur la ligne ni à voix haute : le vôtre et le leur se parlent par le réseau, et seulement entre personnes déjà en contact. Vous pourrez lire ce que le vôtre a dit — leur moitié ne vous a jamais appartenu.", de: "Nie auf der Leitung und nie laut: deiner und ihrer sprechen über das Netz, und nur zwischen Menschen, die schon Kontakte sind. Du kannst danach lesen, was deiner gesagt hat — ihre Hälfte war nie deine.", pt: "Nunca na linha nem em voz alta: o seu e o dele falam pela rede, e só entre pessoas que já são contactos. Depois pode ler o que o seu disse — a metade do outro nunca foi sua para ler.", it: "Mai sulla linea e mai ad alta voce: il tuo e il loro parlano in rete, e solo tra persone già in contatto. Dopo puoi leggere cosa ha detto il tuo — la metà dell'altro non è mai stata tua.", ja: "回線上でも声でもなく、ネットワーク越しに、すでに連絡先どうしの相手とだけ。自分のガーディアンが何を言ったかは後で読めます。相手の側はもともとあなたが読むものではありません。", zh: "不在通话中、也不出声：你的和对方的通过网络交谈，且仅限彼此已是联系人的双方。事后你可以读到自己这一半说了什么——对方那一半从来不属于你。", hi: "न लाइन पर, न आवाज़ में: आपका और उनका नेटवर्क पर बात करते हैं, और केवल उन लोगों के बीच जो पहले से एक-दूसरे के संपर्क हैं। बाद में आप पढ़ सकते हैं कि आपके वाले ने क्या कहा — उनका हिस्सा कभी आपका पढ़ने को नहीं था।", ar: "لا على الخط ولا بصوت مسموع: حارسك وحارسهم يتحدثان عبر الشبكة، وفقط بين من هم أصلًا جهات اتصال لبعضهم. يمكنك لاحقًا قراءة ما قاله حارسك — أما نصفهم فلم يكن لك يومًا.",
+  },
+  "lia.who.ph": {
+    en: "Their id", es: "Su identificador", fr: "Leur identifiant", de: "Ihre Kennung", pt: "O id deles", it: "Il loro id", ja: "相手のID", zh: "对方的 ID", hi: "उनकी आईडी", ar: "معرّفهم",
+  },
+  "lia.open": {
+    en: "Open a link", es: "Abrir un enlace", fr: "Ouvrir un lien", de: "Verbindung öffnen", pt: "Abrir uma ligação", it: "Apri un collegamento", ja: "リンクを開く", zh: "建立连接", hi: "लिंक खोलें", ar: "افتح صلة",
+  },
+  "lia.opened": {
+    en: "Open.", es: "Abierto.", fr: "Ouvert.", de: "Offen.", pt: "Aberto.", it: "Aperto.", ja: "開きました。", zh: "已建立。", hi: "खुल गया।", ar: "مفتوح.",
+  },
+  "lia.running": {
+    en: "still going", es: "sigue en marcha", fr: "toujours en cours", de: "läuft noch", pt: "ainda a decorrer", it: "ancora in corso", ja: "進行中", zh: "仍在进行", hi: "अब भी चल रहा है", ar: "ما زال جاريًا",
+  },
+  "lia.closed": {
+    en: "closed", es: "cerrado", fr: "fermé", de: "geschlossen", pt: "fechado", it: "chiuso", ja: "終了", zh: "已结束", hi: "बंद", ar: "مغلق",
+  },
+  "lia.mine": {
+    en: "What mine said", es: "Lo que dijo el mío", fr: "Ce que le mien a dit", de: "Was meiner gesagt hat", pt: "O que o meu disse", it: "Cosa ha detto il mio", ja: "自分のが言ったこと", zh: "我这边说了什么", hi: "मेरे वाले ने क्या कहा", ar: "ما قاله حارسي",
+  },
+  "lia.bymine": {
+    en: "Mine said:", es: "El mío dijo:", fr: "Le mien a dit :", de: "Meiner sagte:", pt: "O meu disse:", it: "Il mio ha detto:", ja: "自分のガーディアン：", zh: "我这边说：", hi: "मेरे वाले ने कहा:", ar: "قال حارسي:",
+  },
+  "lia.tomine": {
+    en: "Theirs said:", es: "El suyo dijo:", fr: "Le leur a dit :", de: "Ihrer sagte:", pt: "O deles disse:", it: "Il loro ha detto:", ja: "相手のガーディアン：", zh: "对方说：", hi: "उनके वाले ने कहा:", ar: "قال حارسهم:",
+  },
+  "lia.say": {
+    en: "Say something across it", es: "Decir algo por él", fr: "Y dire quelque chose", de: "Etwas darüber sagen", pt: "Dizer algo por ela", it: "Di' qualcosa attraverso", ja: "これを通じて伝える", zh: "通过它说一句", hi: "इसके ज़रिए कुछ कहें", ar: "قل شيئًا عبرها",
+  },
+  "lia.saidit": {
+    en: "Said, and on your half.", es: "Dicho, y en tu parte.", fr: "Dit, et dans votre moitié.", de: "Gesagt, und auf deiner Hälfte.", pt: "Dito, e na sua metade.", it: "Detto, e sulla tua metà.", ja: "伝えました。あなたの側に記録されています。", zh: "已说出，并记在你这一半。", hi: "कह दिया गया, और आपके हिस्से में।", ar: "قيل، وسُجّل في نصفك.",
+  },
+  "lia.said.example": {
+    en: "the rate has not moved in three years", es: "la tarifa no ha cambiado en tres años", fr: "le tarif n'a pas bougé depuis trois ans", de: "der Satz hat sich seit drei Jahren nicht bewegt", pt: "a taxa não mudou em três anos", it: "la tariffa non cambia da tre anni", ja: "この三年、単価が変わっていません", zh: "这个费率三年没变过", hi: "दर तीन साल से नहीं बदली", ar: "لم يتغير السعر منذ ثلاث سنوات",
+  },
+  "lia.task": {
+    en: "Name the work", es: "Nombrar el trabajo", fr: "Nommer le travail", de: "Die Arbeit benennen", pt: "Nomear o trabalho", it: "Dai un nome al lavoro", ja: "作業に名前をつける", zh: "为这项工作命名", hi: "काम को नाम दें", ar: "سمِّ العمل",
+  },
+  "lia.task.example": {
+    en: "send the revised figures", es: "enviar las cifras revisadas", fr: "envoyer les chiffres révisés", de: "die überarbeiteten Zahlen senden", pt: "enviar os números revistos", it: "inviare i numeri rivisti", ja: "修正した数字を送る", zh: "发送修订后的数字", hi: "संशोधित आँकड़े भेजें", ar: "إرسال الأرقام المنقّحة",
+  },
+  "lia.tasked": {
+    en: "Named. It outlives the call now.", es: "Nombrado. Ahora sobrevive a la llamada.", fr: "Nommé. Il survit désormais à l'appel.", de: "Benannt. Es überdauert jetzt das Gespräch.", pt: "Nomeado. Agora sobrevive à chamada.", it: "Nominato. Ora sopravvive alla chiamata.", ja: "名前をつけました。通話が終わっても続きます。", zh: "已命名。它现在会延续到通话之后。", hi: "नाम दे दिया गया। अब यह कॉल के बाद भी रहेगा।", ar: "سُمّي. صار يمتد بعد المكالمة.",
+  },
+  "lia.stop": {
+    en: "Stop it", es: "Detenerlo", fr: "L'arrêter", de: "Beenden", pt: "Parar", it: "Fermalo", ja: "停止する", zh: "停止", hi: "रोकें", ar: "أوقفها",
+  },
+  "lia.stopped": {
+    en: "Stopped.", es: "Detenido.", fr: "Arrêté.", de: "Beendet.", pt: "Parado.", it: "Fermato.", ja: "停止しました。", zh: "已停止。", hi: "रोक दिया गया।", ar: "أُوقفت.",
+  },
   "mon.head": {
     en: "What may sense you", es: "Lo que puede detectarte", fr: "Ce qui peut vous capter", de: "Was dich erfassen darf", pt: "O que o pode detetar", it: "Cosa può rilevarti", ja: "あなたを感知してよいもの", zh: "什么可以感知你", hi: "आपको क्या महसूस कर सकता है", ar: "ما يُسمح له باستشعارك",
   },

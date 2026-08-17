@@ -21,7 +21,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                careteam, community,
                catalog,
                coach,
-               alongside, engaged, errands, monitors,
+               alongside, engaged, errands, liaison, monitors,
                oncall,
                mailer,
                circle, contribution, db, money, schedule, shopping,
@@ -48,7 +48,8 @@ from .models import (
     ChildEnroll,
     CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
-    CallOpen, CoachStudy, EngageOpen, MonitorPlug, EngagedSaid, Enroll, ExcursionStart,
+    CallOpen, CoachStudy, EngageOpen, LiaisonOpen, LiaisonSaid,
+    LiaisonTask, MonitorPlug, EngagedSaid, Enroll, ExcursionStart,
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
@@ -3217,6 +3218,85 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "left_host": left_host, "excursion_id": cid,
                 "note": "findings folded into the coach's store; the offline "
                         "pipeline reads them on the next question"}
+
+    # ---- two guardians, working together, quietly -------------------------
+
+    @app.post("/liaisons/{user_id}", status_code=201)
+    def open_liaison(user_id: str, body: LiaisonOpen,
+                     request: Request) -> dict:
+        """Open a link to another person's guardian.
+
+        Refused unless the two are already each other's contacts: one-sided
+        contact reaches nothing, which is what stops a stranger's guardian
+        calling yours.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return liaison.open(user_id, body.other_id, body.about)
+        except liaison.NotMutual as exc:
+            raise HTTPException(409, str(exc)) from None
+        except liaison.NotAllowed as exc:
+            raise HTTPException(403, str(exc)) from None
+
+    @app.get("/liaisons/{user_id}")
+    def liaisons_running(user_id: str, request: Request) -> list[dict]:
+        """Which links are still going, and why — the question the task
+        window asks about everything else this product runs."""
+        _user_or_404(user_id, request)
+        return liaison.running(user_id)
+
+    @app.post("/liaisons/{user_id}/{link_id}/said")
+    def liaison_said(user_id: str, link_id: str, body: LiaisonSaid,
+                     request: Request) -> dict:
+        """One guardian tells the other something, recorded against the side
+        that said it."""
+        _user_or_404(user_id, request)
+        try:
+            return liaison.say(link_id, user_id, body.body)
+        except liaison.NotAllowed as exc:
+            raise HTTPException(403, str(exc)) from None
+        except liaison.NotYours as exc:
+            raise HTTPException(403, str(exc)) from None
+        except liaison.NoSuchLink as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.get("/liaisons/{user_id}/{link_id}")
+    def liaison_half(user_id: str, link_id: str, request: Request) -> dict:
+        """What this person's own guardian said, and what it was told. Their
+        half — the other person's was never theirs to read."""
+        _user_or_404(user_id, request)
+        try:
+            return liaison.half(link_id, user_id)
+        except liaison.NotYours as exc:
+            raise HTTPException(403, str(exc)) from None
+        except liaison.NoSuchLink as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.put("/liaisons/{user_id}/{link_id}/task")
+    def liaison_task(user_id: str, link_id: str, body: LiaisonTask,
+                     request: Request) -> dict:
+        """Name the work that came out of the conversation. This is what
+        outlives the call."""
+        _user_or_404(user_id, request)
+        try:
+            return liaison.take_on(link_id, user_id, body.task)
+        except liaison.NotYours as exc:
+            raise HTTPException(403, str(exc)) from None
+        except liaison.NoSuchLink as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.delete("/liaisons/{user_id}/{link_id}")
+    def close_liaison(user_id: str, link_id: str, request: Request,
+                      why: str = "stopped") -> dict:
+        """End it. A link holding an unfinished task survives the call
+        ending; a person stopping it always closes it."""
+        _user_or_404(user_id, request)
+        try:
+            return liaison.close(link_id, user_id, why)
+        except liaison.NotYours as exc:
+            raise HTTPException(403, str(exc)) from None
+        except liaison.NoSuchLink as exc:
+            raise HTTPException(404, str(exc)) from None
 
     # ---- what may sense you, through what ---------------------------------
 

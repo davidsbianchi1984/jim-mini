@@ -135,6 +135,31 @@ LESSONS: tuple[dict, ...] = (
               "rather than inventing one.",
          screens=(87,),
          try_it="Open Journal and write one sentence about today."),
+    dict(key="liaison", chapter="Being watched over",
+         title="Two guardians working together",
+         what="When both people on a conversation have one, the two can "
+              "work together — and never on the line. The call carries "
+              "voices; the guardians talk over the network, which also "
+              "means none of this needs a phone. It opens only where both "
+              "people already had the other stored, because one-sided "
+              "contact reaching somebody's guardian is a stranger's agent "
+              "calling yours. It is silent, and that is where a guardian "
+              "could quietly stop being yours — two agents negotiating "
+              "where neither person can look are two principals with "
+              "counsel who never report back. So the link keeps both "
+              "halves split by side: you can read exactly what yours "
+              "disclosed and what it was told, and the other person's half "
+              "was never yours to read. It closes when the call does. What "
+              "extends it is not an agreement to stay connected but a "
+              "**task** — something that came out of the conversation and "
+              "has to be finished, sitting in the same place you see "
+              "everything else running, and endable by you at any point. "
+              "Two guardians that had a job to finish is a different thing "
+              "from two that met once and stayed in touch, and only one of "
+              "them is what anybody would assume.",
+         screens=(88,),
+         try_it="Open one with a contact, say something across it, then "
+                "read your own half."),
     dict(key="monitors", chapter="Being watched over",
          title="What may sense you, and who else it catches",
          what="Somewhere to plug all of it in: the band and the ring and "

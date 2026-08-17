@@ -39,6 +39,23 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Two guardians, working together and never on the
+                         line. It opens only between people who are already
+                         each other's contacts, and the half shown is what
+                         *this* guardian said. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="LiaisonHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="LiaisonLead" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="LiaisonOther" />
+                            <Button x:Name="LiaisonOpenButton" Click="OnOpenLiaison" />
+                            <StackPanel x:Name="LiaisonPanel" Spacing="6" />
+                        </StackPanel>
+                    </Border>
+
                     <!-- Everywhere the monitoring plugs in. The rows that
                          sense other people carry that on their face, and
                          switching one on says the people in that space have

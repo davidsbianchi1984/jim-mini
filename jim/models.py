@@ -716,6 +716,24 @@ class CoachMessage(BaseModel):
     message: str
 
 
+class LiaisonOpen(BaseModel):
+    """Open a link to another person's guardian. Refused unless the two are
+    already each other's contacts — see jim/liaison.py."""
+    other_id: str
+    about: str = ""
+
+
+class LiaisonSaid(BaseModel):
+    """One thing a guardian says across a link, on its person's behalf."""
+    body: str
+
+
+class LiaisonTask(BaseModel):
+    """The work that came out of the conversation, which is what keeps the
+    link open after the call ends."""
+    task: str
+
+
 class MonitorPlug(BaseModel):
     """Switch a monitor on.
 

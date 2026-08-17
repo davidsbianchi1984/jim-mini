@@ -5775,6 +5775,10 @@ private fun MicPanel(vm: GuardianViewModel) {
     var calls by remember { mutableStateOf<List<CallRow>>(emptyList()) }
     // What may sense this person, and through what. Off rows included.
     var mons by remember { mutableStateOf<List<MonitorRow>>(emptyList()) }
+    // Two guardians working together, never on the line.
+    var links by remember { mutableStateOf<List<LiaisonRow>>(emptyList()) }
+    var otherId by remember { mutableStateOf("") }
+    var half by remember { mutableStateOf<LiaisonHalf?>(null) }
 
     fun run(work: suspend () -> MicState) {
         vm.call({ work() }) { r ->
@@ -5793,11 +5797,75 @@ private fun MicPanel(vm: GuardianViewModel) {
             calls = r.getOrDefault(emptyList()) }
         vm.call({ ApiClient.monitors(vm.uid!!, vm.token!!) }) { r ->
             mons = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.liaisons(vm.uid!!, vm.token!!) }) { r ->
+            links = r.getOrDefault(emptyList()) }
     }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         // Everywhere the monitoring plugs in. The rows that sense other
         // people carry that on their face.
+        Text(L10n.t("lia.head", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("lia.lead", vm.language), color = Jim.T2, fontSize = 11.sp)
+        labeledField(L10n.t("lia.head", vm.language), otherId,
+            L10n.t("lia.who.ph", vm.language)) { otherId = it }
+        BrandButton(L10n.t("lia.open", vm.language),
+            enabled = otherId.isNotBlank()) {
+            vm.call({ ApiClient.openLiaison(vm.uid!!, vm.token!!, otherId) }) { r ->
+                error = r.exceptionOrNull()?.message
+                vm.call({ ApiClient.liaisons(vm.uid!!, vm.token!!) }) { rr ->
+                    links = rr.getOrDefault(links) }
+            }
+        }
+        links.forEach { l ->
+            Text(l.about.ifBlank { l.id }, color = Jim.Txt, fontSize = 13.sp)
+            // The task is why it is still open.
+            if (l.task.isNotBlank())
+                Text(l.task, color = Jim.T2, fontSize = 11.sp)
+            Text(if (l.running) L10n.t("lia.running", vm.language)
+                 else L10n.t("lia.closed", vm.language),
+                color = Jim.T2, fontSize = 11.sp)
+            BrandButton(L10n.t("lia.mine", vm.language)) {
+                vm.call({ ApiClient.liaisonHalf(vm.uid!!, vm.token!!, l.id) }) { r ->
+                    half = r.getOrNull() }
+            }
+            if (l.running) {
+                BrandButton(L10n.t("lia.say", vm.language)) {
+                    vm.call({ ApiClient.liaisonSaid(vm.uid!!, vm.token!!, l.id,
+                        L10n.t("lia.said.example", vm.language)) }) {
+                        vm.call({ ApiClient.liaisonHalf(vm.uid!!, vm.token!!,
+                            l.id) }) { r -> half = r.getOrNull() }
+                    }
+                }
+                BrandButton(L10n.t("lia.task", vm.language)) {
+                    vm.call({ ApiClient.liaisonTask(vm.uid!!, vm.token!!, l.id,
+                        L10n.t("lia.task.example", vm.language)) }) {
+                        vm.call({ ApiClient.liaisons(vm.uid!!, vm.token!!) }) { r ->
+                            links = r.getOrDefault(links) }
+                    }
+                }
+                BrandButton(L10n.t("lia.stop", vm.language)) {
+                    vm.call({ ApiClient.closeLiaison(vm.uid!!, vm.token!!, l.id,
+                        "stopped") }) {
+                        vm.call({ ApiClient.liaisons(vm.uid!!, vm.token!!) }) { r ->
+                            links = r.getOrDefault(links) }
+                    }
+                }
+            }
+            half?.let { h ->
+                if (h.linkId == l.id) {
+                    Text(L10n.t("lia.bymine", vm.language), color = Jim.Txt,
+                        fontSize = 11.sp)
+                    h.saidByMine.forEach {
+                        Text(it, color = Jim.T2, fontSize = 11.sp) }
+                    Text(L10n.t("lia.tomine", vm.language), color = Jim.Txt,
+                        fontSize = 11.sp)
+                    h.saidToMine.forEach {
+                        Text(it, color = Jim.T2, fontSize = 11.sp) }
+                }
+            }
+        }
+
         Text(L10n.t("mon.head", vm.language), color = Jim.Txt,
             fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Text(L10n.t("mon.lead", vm.language), color = Jim.T2, fontSize = 11.sp)

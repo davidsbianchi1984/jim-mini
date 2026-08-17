@@ -767,8 +767,131 @@ public sealed partial class ConnectPage : Page
             Render(mic);
             await LoadCalls();
             await LoadMonitors();
+            await LoadLiaisons();
         }
         catch (Exception e) { MicFailed(e); }
+    }
+
+    /// <summary>Which links are still going, and why. Each row's half is what
+    /// this person's own guardian said — the other person's was never theirs
+    /// to read.</summary>
+    private async System.Threading.Tasks.Task LoadLiaisons()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var txt = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimTxtBrush"];
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimT2Brush"];
+        LiaisonHead.Text = L10n.T("lia.head");
+        LiaisonLead.Text = L10n.T("lia.lead");
+        LiaisonOther.PlaceholderText = L10n.T("lia.who.ph");
+        LiaisonOpenButton.Content = L10n.T("lia.open");
+        try
+        {
+            var rows = await ApiClient.Shared.Liaisons(s.Uid, s.Token);
+            LiaisonPanel.Children.Clear();
+            foreach (var l in rows)
+            {
+                var box = new StackPanel { Spacing = 2 };
+                box.Children.Add(new TextBlock
+                {
+                    Text = l.About.Length > 0 ? l.About : l.Id, FontSize = 13,
+                    TextWrapping = TextWrapping.Wrap, Foreground = txt,
+                });
+                if (l.Task.Length > 0)
+                {
+                    // The task is why it is still open.
+                    box.Children.Add(new TextBlock
+                    {
+                        Text = l.Task, FontSize = 11,
+                        TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                    });
+                }
+                box.Children.Add(new TextBlock
+                {
+                    Text = l.Running ? L10n.T("lia.running") : L10n.T("lia.closed"),
+                    FontSize = 11, Foreground = t2,
+                });
+                var id = l.Id;
+                var mine = new Button { Content = L10n.T("lia.mine") };
+                var shown = new TextBlock
+                {
+                    FontSize = 11, TextWrapping = TextWrapping.Wrap,
+                    Foreground = t2,
+                };
+                mine.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        var h = await ApiClient.Shared.LiaisonHalf(
+                            s.Uid, s.Token, id);
+                        shown.Text = L10n.T("lia.bymine") + " "
+                            + string.Join(" · ", h.SaidByMine) + "\n"
+                            + L10n.T("lia.tomine") + " "
+                            + string.Join(" · ", h.SaidToMine);
+                    }
+                    catch (Exception ex) { MicFailed(ex); }
+                };
+                box.Children.Add(mine);
+                box.Children.Add(shown);
+                if (l.Running)
+                {
+                    var say = new Button { Content = L10n.T("lia.say") };
+                    say.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.LiaisonSaid(
+                                s.Uid, s.Token, id, L10n.T("lia.said.example"));
+                        }
+                        catch (Exception ex) { MicFailed(ex); }
+                    };
+                    box.Children.Add(say);
+                    var work = new Button { Content = L10n.T("lia.task") };
+                    work.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.LiaisonTask(
+                                s.Uid, s.Token, id, L10n.T("lia.task.example"));
+                            await LoadLiaisons();
+                        }
+                        catch (Exception ex) { MicFailed(ex); }
+                    };
+                    box.Children.Add(work);
+                    var stop = new Button { Content = L10n.T("lia.stop") };
+                    stop.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.CloseLiaison(
+                                s.Uid, s.Token, id, "stopped");
+                            await LoadLiaisons();
+                        }
+                        catch (Exception ex) { MicFailed(ex); }
+                    };
+                    box.Children.Add(stop);
+                }
+                LiaisonPanel.Children.Add(box);
+            }
+        }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    /// <summary>Open a link to another person's guardian. Refused unless the
+    /// two are already each other's contacts.</summary>
+    private async void OnOpenLiaison(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var other = LiaisonOther.Text.Trim();
+        if (s.Uid is null || s.Token is null || other.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.OpenLiaison(s.Uid, s.Token, other);
+            await LoadLiaisons();
+        }
+        catch (Exception ex) { MicFailed(ex); }
     }
 
     /// <summary>Everything that can be plugged in, off rows included. A

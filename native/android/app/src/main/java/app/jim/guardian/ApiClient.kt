@@ -105,6 +105,15 @@ data class CoachStore(val pack: Int, val excursions: List<CoachStoreEntry>,
 data class CoachSuggestion(val area: String, val topic: String, val why: String)
 data class CoachCurriculum(val suggested: List<CoachSuggestion>, val note: String)
 data class CoachStudied(val studied: String, val folded: Boolean)
+/** A link between two guardians. `task` is what keeps it open past the call. */
+data class LiaisonRow(val id: String, val about: String, val task: String,
+                      val running: Boolean, val endedBecause: String?,
+                      val openedAt: String)
+/** A person's own half: what theirs said, and what it was told. */
+data class LiaisonHalf(val linkId: String, val about: String,
+                       val task: String, val running: Boolean,
+                       val saidByMine: List<String>,
+                       val saidToMine: List<String>)
 /** One thing that can be plugged in and sense somebody. `catchesOthers` is
  *  the field that decides everything else: nothing carrying it is ever on by
  *  default, and switching one on is refused until the people in that space
@@ -926,6 +935,54 @@ object ApiClient {
         val o = request("/coach/$uid/study", "POST", body, token)
         return CoachStudied(o.getString("studied"), o.getBoolean("folded"))
     }
+
+    private fun liaisonOf(o: JSONObject) = LiaisonRow(
+        o.getString("id"), o.optString("about", ""), o.optString("task", ""),
+        o.optBoolean("running"),
+        if (o.isNull("ended_because")) null else o.optString("ended_because"),
+        o.optString("opened_at", ""))
+
+    /** Open a link to another guardian. Refused unless both already had the
+     *  other stored. */
+    suspend fun openLiaison(uid: String, token: String, otherId: String,
+                            about: String = ""): LiaisonRow =
+        liaisonOf(request("/liaisons/$uid", "POST",
+            JSONObject().put("other_id", otherId).put("about", about), token))
+
+    suspend fun liaisons(uid: String, token: String): List<LiaisonRow> {
+        val arr = JSONArray(request("/liaisons/$uid", token = token).toString())
+        return (0 until arr.length()).map { liaisonOf(arr.getJSONObject(it)) }
+    }
+
+    /** Their own guardian's half, and only theirs. */
+    suspend fun liaisonHalf(uid: String, token: String,
+                            linkId: String): LiaisonHalf {
+        val o = request("/liaisons/$uid/$linkId", token = token)
+        fun lines(key: String): List<String> {
+            val arr = o.optJSONArray(key) ?: JSONArray()
+            return (0 until arr.length()).map { arr.getString(it) }
+        }
+        return LiaisonHalf(o.getString("link_id"), o.optString("about", ""),
+            o.optString("task", ""), o.optBoolean("running"),
+            lines("said_by_mine"), lines("said_to_mine"))
+    }
+
+    suspend fun liaisonSaid(uid: String, token: String, linkId: String,
+                            body: String) {
+        request("/liaisons/$uid/$linkId/said", "POST",
+            JSONObject().put("body", body), token)
+    }
+
+    /** The work that outlives the call. */
+    suspend fun liaisonTask(uid: String, token: String, linkId: String,
+                            task: String): LiaisonRow =
+        liaisonOf(request("/liaisons/$uid/$linkId/task", "PUT",
+            JSONObject().put("task", task), token))
+
+    suspend fun closeLiaison(uid: String, token: String, linkId: String,
+                             why: String): LiaisonRow =
+        liaisonOf(request("/liaisons/$uid/$linkId?why=$why", "DELETE",
+            token = token))
 
     private fun monitorsOf(arr: JSONArray) = (0 until arr.length()).map {
         val o = arr.getJSONObject(it)

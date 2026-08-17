@@ -24,12 +24,70 @@ struct MicCard: View {
     @State private var calls: [CallRow] = []
     // What may sense this person, and through what. Off rows included.
     @State private var mons: [MonitorRow] = []
+    // Two guardians working together, never on the line.
+    @State private var links: [LiaisonRow] = []
+    @State private var otherId = ""
+    @State private var half: LiaisonHalf?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Everywhere the monitoring plugs in. The rows that sense other
             // people carry that on their face, and switching one on says the
             // people in that space have been told.
+            Text(L10n.t("lia.head", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            Text(L10n.t("lia.lead", state.language))
+                .font(.caption2).foregroundStyle(Theme.t2)
+            TextField(L10n.t("lia.who.ph", state.language), text: $otherId)
+                .textFieldStyle(.roundedBorder)
+            Button(L10n.t("lia.open", state.language)) { openLink() }
+                .font(.caption).tint(Theme.brandA)
+                .disabled(otherId.isEmpty)
+            ForEach(links, id: \.id) { l in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(l.about.isEmpty ? l.id : l.about)
+                        .font(.caption).foregroundStyle(Theme.txt)
+                    // The task is why it is still open.
+                    if !l.task.isEmpty {
+                        Text(l.task).font(.caption2)
+                            .foregroundStyle(Theme.t2)
+                    }
+                    Text(l.running ? L10n.t("lia.running", state.language)
+                                : L10n.t("lia.closed", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    Button(L10n.t("lia.mine", state.language)) {
+                        readHalf(l)
+                    }.font(.caption).tint(Theme.brandA)
+                    if l.running {
+                        Button(L10n.t("lia.say", state.language)) {
+                            sayAcross(l)
+                        }.font(.caption).tint(Theme.brandA)
+                        Button(L10n.t("lia.task", state.language)) {
+                            nameWork(l)
+                        }.font(.caption).tint(Theme.brandA)
+                        Button(L10n.t("lia.stop", state.language)) {
+                            stopLink(l)
+                        }.font(.caption).tint(Theme.t2)
+                    }
+                    if half?.link_id == l.id, let h = half {
+                        Text(L10n.t("lia.bymine", state.language))
+                            .font(.caption2).foregroundStyle(Theme.txt)
+                        ForEach(Array(h.said_by_mine.enumerated()),
+                                id: \.offset) { _, line in
+                            Text(line).font(.caption2)
+                                .foregroundStyle(Theme.t2)
+                        }
+                        Text(L10n.t("lia.tomine", state.language))
+                            .font(.caption2).foregroundStyle(Theme.txt)
+                        ForEach(Array(h.said_to_mine.enumerated()),
+                                id: \.offset) { _, line in
+                            Text(line).font(.caption2)
+                                .foregroundStyle(Theme.t2)
+                        }
+                    }
+                }
+            }
+
             Text(L10n.t("mon.head", state.language))
                 .font(.subheadline.bold()).foregroundStyle(Theme.txt)
             Text(L10n.t("mon.lead", state.language))
@@ -205,6 +263,59 @@ struct MicCard: View {
                                                    token: token)) ?? []
         mons = (try? await ApiClient.shared.monitors(uid: uid,
                                                      token: token)) ?? []
+        links = (try? await ApiClient.shared.liaisons(uid: uid,
+                                                      token: token)) ?? []
+    }
+
+    private func openLink() {
+        guard let uid = state.uid, let token = state.token else { return }
+        error = nil
+        Task {
+            do {
+                _ = try await ApiClient.shared.openLiaison(
+                    uid: uid, token: token, otherId: otherId)
+            } catch { self.error = error.localizedDescription }
+            await load()
+        }
+    }
+
+    /// Their own guardian's half, and only theirs.
+    private func readHalf(_ l: LiaisonRow) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            half = try? await ApiClient.shared.liaisonHalf(
+                uid: uid, token: token, linkId: l.id)
+        }
+    }
+
+    private func sayAcross(_ l: LiaisonRow) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            try? await ApiClient.shared.liaisonSaid(
+                uid: uid, token: token, linkId: l.id,
+                body: L10n.t("lia.said.example", state.language))
+            readHalf(l)
+        }
+    }
+
+    /// The work that outlives the call.
+    private func nameWork(_ l: LiaisonRow) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            _ = try? await ApiClient.shared.liaisonTask(
+                uid: uid, token: token, linkId: l.id,
+                task: L10n.t("lia.task.example", state.language))
+            await load()
+        }
+    }
+
+    private func stopLink(_ l: LiaisonRow) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            _ = try? await ApiClient.shared.closeLiaison(
+                uid: uid, token: token, linkId: l.id, why: "stopped")
+            await load()
+        }
     }
 
     /// Switch a monitor on. Anything that senses other people carries the

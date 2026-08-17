@@ -251,6 +251,27 @@ struct CoachStudied: Decodable {
     let left_host: Bool
 }
 
+/// A link between two guardians. `task` is what keeps it open past the call.
+struct LiaisonRow: Decodable {
+    let id: String
+    let about: String
+    let task: String
+    let running: Bool
+    let ended_because: String?
+    let opened_at: String
+}
+
+/// A person's own half: what theirs said, and what it was told. The other
+/// person's half was never theirs to read.
+struct LiaisonHalf: Decodable {
+    let link_id: String
+    let about: String
+    let task: String
+    let running: Bool
+    let said_by_mine: [String]
+    let said_to_mine: [String]
+}
+
 /// One thing that can be plugged in and sense somebody. `catches_others` is
 /// the field that decides everything else: nothing carrying it is ever on by
 /// default, and switching one on is refused until the people in that space
@@ -1396,6 +1417,48 @@ actor ApiClient {
         if let area { body["area"] = area }
         return try await request("/coach/\(uid)/study", method: "POST",
                                  body: body, token: token)
+    }
+
+    /// Open a link to another person's guardian. Refused unless the two are
+    /// already each other's contacts.
+    @discardableResult
+    func openLiaison(uid: String, token: String, otherId: String,
+                     about: String = "") async throws -> LiaisonRow {
+        try await request("/liaisons/\(uid)", method: "POST",
+                          body: ["other_id": otherId, "about": about],
+                          token: token)
+    }
+
+    func liaisons(uid: String, token: String) async throws -> [LiaisonRow] {
+        try await request("/liaisons/\(uid)", token: token)
+    }
+
+    /// Their own guardian's half, and only theirs.
+    func liaisonHalf(uid: String, token: String,
+                     linkId: String) async throws -> LiaisonHalf {
+        try await request("/liaisons/\(uid)/\(linkId)", token: token)
+    }
+
+    @discardableResult
+    func liaisonSaid(uid: String, token: String, linkId: String,
+                     body: String) async throws -> Ok {
+        try await request("/liaisons/\(uid)/\(linkId)/said", method: "POST",
+                          body: ["body": body], token: token)
+    }
+
+    /// The work that came out of the conversation, which is what outlives it.
+    @discardableResult
+    func liaisonTask(uid: String, token: String, linkId: String,
+                     task: String) async throws -> LiaisonRow {
+        try await request("/liaisons/\(uid)/\(linkId)/task", method: "PUT",
+                          body: ["task": task], token: token)
+    }
+
+    @discardableResult
+    func closeLiaison(uid: String, token: String, linkId: String,
+                      why: String) async throws -> LiaisonRow {
+        try await request("/liaisons/\(uid)/\(linkId)?why=\(why)",
+                          method: "DELETE", token: token)
     }
 
     /// Everything that can be plugged in, off rows included.

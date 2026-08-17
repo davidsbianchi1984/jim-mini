@@ -1227,6 +1227,33 @@ CREATE TABLE IF NOT EXISTS monitors (
     PRIMARY KEY (user_id, monitor)
 );
 
+-- Two guardians working together on behalf of two people who are already
+-- each other's contacts. The link is never spoken on a call: it carries what
+-- one guardian told the other, split by side, so each person can read their
+-- own guardian's half afterwards. `task` is what outlives the call — a link
+-- carrying one survives the call ending, and closing the task closes it.
+CREATE TABLE IF NOT EXISTS liaisons (
+    id            TEXT PRIMARY KEY,
+    low_id        TEXT NOT NULL REFERENCES users(id),
+    high_id       TEXT NOT NULL,
+    about         TEXT NOT NULL DEFAULT '',
+    task          TEXT NOT NULL DEFAULT '',
+    opened_at     TEXT NOT NULL,
+    ended_at      TEXT,
+    ended_because TEXT
+);
+
+-- One thing a guardian said across a link. `said_by` is the person it speaks
+-- for, which is what makes "what did mine disclose" answerable.
+CREATE TABLE IF NOT EXISTS liaison_lines (
+    id      TEXT PRIMARY KEY,
+    link_id TEXT NOT NULL REFERENCES liaisons(id),
+    said_by TEXT NOT NULL,
+    body    TEXT NOT NULL,
+    said_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_liaison_lines ON liaison_lines (link_id);
+
 CREATE TABLE IF NOT EXISTS gaps (
     id         TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

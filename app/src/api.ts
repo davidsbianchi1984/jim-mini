@@ -393,6 +393,33 @@ export interface CoachCurriculum { suggested: CoachSuggestion[]; note: string }
 export interface CoachStudied { studied: string; area: string | null;
   folded: boolean; left_host: boolean; excursion_id: string; note: string }
 
+// -- two guardians working together, quietly (jim/liaison.py) ------------
+//
+// `said_by_mine` and `said_to_mine` are the point: a person reads what their
+// own guardian disclosed, not the other person's half. `task` is what keeps
+// the link open past the call — a link without one closes when the call does.
+export interface LiaisonRow {
+  id: string;
+  with: string;
+  about: string;
+  task: string;
+  // `running`, not `open`: this API already carries `open` as a list of
+  // unanswered follow-ups, and one wire name carries one type.
+  running: boolean;
+  ended_because: string | null;
+  opened_at: string;
+}
+
+export interface LiaisonHalf {
+  link_id: string;
+  about: string;
+  task: string;
+  running: boolean;
+  ended_because: string | null;
+  said_by_mine: string[];
+  said_to_mine: string[];
+}
+
 // -- what may sense you, through what (jim/monitors.py) ------------------
 //
 // `catches_others` is the field that decides everything else: nothing
@@ -1614,6 +1641,27 @@ export const api = {
   // without the permit, and refused again once the day's budget is spent —
   // two different refusals, because "not allowed" and "not today" are two
   // different things to be told.
+  // Open a link to another person's guardian. Refused unless the two are
+  // already each other's contacts — one-sided contact reaches nothing.
+  openLiaison: (uid: string, body: { other_id: string; about?: string },
+                token: string) =>
+    req<LiaisonRow>(`/liaisons/${uid}`, { method: "POST", body, token }),
+  liaisons: (uid: string, token: string) =>
+    req<LiaisonRow[]>(`/liaisons/${uid}`, { token }),
+  // Their own guardian's half, and only theirs.
+  liaisonHalf: (uid: string, linkId: string, token: string) =>
+    req<LiaisonHalf>(`/liaisons/${uid}/${linkId}`, { token }),
+  liaisonSaid: (uid: string, linkId: string, body: string, token: string) =>
+    req<{ link_id: string; said: string }>(
+      `/liaisons/${uid}/${linkId}/said`, { method: "POST", body: { body },
+                                           token }),
+  // The work that came out of the conversation, which is what outlives it.
+  liaisonTask: (uid: string, linkId: string, task: string, token: string) =>
+    req<LiaisonRow>(`/liaisons/${uid}/${linkId}/task`,
+      { method: "PUT", body: { task }, token }),
+  closeLiaison: (uid: string, linkId: string, why: string, token: string) =>
+    req<LiaisonRow>(`/liaisons/${uid}/${linkId}?why=${why}`,
+      { method: "DELETE", token }),
   // Everything that can be plugged in, off rows included.
   monitors: (uid: string, token: string) =>
     req<MonitorRow[]>(`/monitors/${uid}`, { token }),

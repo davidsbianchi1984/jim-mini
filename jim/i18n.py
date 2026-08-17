@@ -1692,6 +1692,65 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': "ऐसी कोई कॉल नहीं है",
         'ar': "لا توجد مكالمة كهذه",
     },
+    # -- two guardians working together (jim/liaison.py) ---------------------
+    "these two are not each other's contacts — a guardian only reaches another when both people already had the other, and one side alone reaches nothing": {
+        'es': "estas dos personas no son contactos entre sí: un guardián solo alcanza a otro cuando cada una ya tenía a la otra, y un solo lado no alcanza nada",
+        'fr': "ces deux personnes ne sont pas en contact : un gardien n'en atteint un autre que si chacune avait déjà l'autre, et un seul côté n'atteint rien",
+        'de': "diese beiden sind keine Kontakte: ein Wächter erreicht einen anderen nur, wenn beide den anderen schon hatten — eine Seite allein erreicht nichts",
+        'pt': "estas duas pessoas não são contactos uma da outra: um guardião só alcança outro quando ambas já tinham a outra, e um só lado não alcança nada",
+        'it': "queste due persone non sono contatti: un guardiano ne raggiunge un altro solo se entrambe avevano già l'altra, e un lato solo non raggiunge nulla",
+        'ja': "このお二人は互いの連絡先ではありません。ガーディアンが別のガーディアンに届くのは双方がすでに相手を登録している場合だけで、片側だけでは何にも届きません",
+        'zh': "这两人并非彼此的联系人：只有双方原本都存有对方，一位守护者才能触及另一位；单方面则触及不到任何东西",
+        'hi': "ये दोनों एक-दूसरे के संपर्क नहीं हैं — एक गार्जियन दूसरे तक तभी पहुँचता है जब दोनों ने पहले से एक-दूसरे को रखा हो; अकेला एक पक्ष कहीं नहीं पहुँचता",
+        'ar': "هذان ليسا جهتَي اتصال لبعضهما — لا يصل حارس إلى آخر إلا إذا كان كلاهما يحتفظ بالآخر أصلًا، والطرف الواحد وحده لا يصل إلى شيء",
+    },
+    "your guardian has not been allowed to speak for you to somebody else's — turn it on in what it may do for you, where it says what it may say": {
+        'es': "tu guardián no tiene permiso para hablar por ti con el de otra persona: actívalo en lo que puede hacer por ti, donde dice qué puede decir",
+        'fr': "votre gardien n'a pas le droit de parler en votre nom à celui de quelqu'un d'autre — activez-le dans ce qu'il peut faire pour vous, où il est dit ce qu'il peut dire",
+        'de': "dein Wächter darf nicht in deinem Namen mit dem eines anderen sprechen — schalte es dort frei, wo steht, was er für dich tun und sagen darf",
+        'pt': "o seu guardião não foi autorizado a falar por si com o de outra pessoa — ative-o no que ele pode fazer por si, onde diz o que pode dizer",
+        'it': "il tuo guardiano non è autorizzato a parlare per te con quello di un altro: attivalo in ciò che può fare per te, dove dice cosa può dire",
+        'ja': "あなたのガーディアンは、他の人のガーディアンにあなたの代わりに話す許可を得ていません。「あなたのためにできること」で有効にしてください。何を言えるかもそこに書かれています",
+        'zh': "你的守护者尚未获准代表你与他人的守护者交谈——请在“它能为你做什么”中开启，那里写明了它可以说什么",
+        'hi': "आपके गार्जियन को किसी और के गार्जियन से आपकी ओर से बात करने की अनुमति नहीं है — «यह आपके लिए क्या कर सकता है» में इसे चालू कीजिए, जहाँ लिखा है कि यह क्या कह सकता है",
+        'ar': "لم يُسمح لحارسك بأن يتحدث نيابة عنك إلى حارس شخص آخر — فعّله في «ما يمكنه فعله من أجلك»، حيث يُذكر ما يمكنه قوله",
+    },
+    "no such link": {
+        'es': "no existe ese enlace", 'fr': "aucune liaison de ce type",
+        'de': "diese Verbindung gibt es nicht", 'pt': "não existe essa ligação",
+        'it': "questo collegamento non esiste", 'ja': "そのようなリンクはありません",
+        'zh': "没有这条连接", 'hi': "ऐसा कोई लिंक नहीं है",
+        'ar': "لا توجد صلة كهذه",
+    },
+    "that link has closed": {
+        'es': "ese enlace ya se ha cerrado", 'fr': "cette liaison est fermée",
+        'de': "diese Verbindung ist geschlossen", 'pt': "essa ligação já fechou",
+        'it': "quel collegamento è chiuso", 'ja': "そのリンクは終了しています",
+        'zh': "该连接已经结束", 'hi': "वह लिंक बंद हो चुका है",
+        'ar': "أُغلقت تلك الصلة",
+    },
+    "that link is between two other people": {
+        'es': "ese enlace es entre otras dos personas",
+        'fr': "cette liaison est entre deux autres personnes",
+        'de': "diese Verbindung besteht zwischen zwei anderen Menschen",
+        'pt': "essa ligação é entre duas outras pessoas",
+        'it': "quel collegamento è tra due altre persone",
+        'ja': "そのリンクは別の二人のあいだのものです",
+        'zh': "那条连接属于另外两个人",
+        'hi': "वह लिंक दो अन्य लोगों के बीच है",
+        'ar': "تلك الصلة بين شخصين آخرين",
+    },
+    "say what the task is, in one line": {
+        'es': "di cuál es el trabajo, en una línea",
+        'fr': "dites en une ligne quel est le travail",
+        'de': "sag in einer Zeile, worum es bei der Arbeit geht",
+        'pt': "diga qual é o trabalho, numa linha",
+        'it': "di' qual è il lavoro, in una riga",
+        'ja': "その作業が何かを一行で書いてください",
+        'zh': "用一句话说明这项工作是什么",
+        'hi': "एक पंक्ति में बताइए कि काम क्या है",
+        'ar': "قل ما هو العمل، في سطر واحد",
+    },
     # -- what may sense you (jim/monitors.py) --------------------------------
     "this one senses people who did not choose it — say that the people in that space have been told before switching it on": {
         'es': "esta detecta a personas que no la eligieron: indica que se ha informado a quienes están en ese espacio antes de activarla",
@@ -3332,6 +3391,9 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    # The work two guardians took on. Worded as the box asks it: this is what
+    # keeps the link open after the call, so the label says so.
+    'task': {'en': 'What has to be finished', 'es': 'Qué hay que terminar', 'fr': "Ce qu'il reste à faire", 'de': 'Was noch zu erledigen ist', 'pt': 'O que tem de ser terminado', 'it': 'Cosa resta da finire', 'ja': '終わらせるべきこと', 'zh': '需要完成的事', 'hi': 'क्या पूरा करना है', 'ar': 'ما يجب إنجازه'},
     # Switching on something that senses a room. `others_told` is the claim
     # somebody makes, so the label is the claim rather than the column name;
     # `keeping` is the second decision, separate from sensing at all.

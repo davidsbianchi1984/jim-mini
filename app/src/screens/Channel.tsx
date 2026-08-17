@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   api, type AssistedCall, type CallRow, type CaptureRow,
-  type MonitorRow,
+  type LiaisonHalf, type LiaisonRow, type MonitorRow,
   type CaptureVocabulary, type DeviceRow, type MicEvent, type MicGains,
   type MicState, type MicTypes,
 } from "../api";
@@ -62,6 +62,11 @@ export function Channel() {
   const [calls, setCalls] = useState<CallRow[]>([]);
   // What may sense this person, and through what. Off rows are here too.
   const [mons, setMons] = useState<MonitorRow[]>([]);
+  // Two guardians working together. The list answers which are still going
+  // and why, and each row's half is what mine said.
+  const [links, setLinks] = useState<LiaisonRow[]>([]);
+  const [other, setOther] = useState("");
+  const [half, setHalf] = useState<LiaisonHalf | null>(null);
 
   const load = useCallback(() => {
     if (!uid || !token) return;
@@ -71,6 +76,7 @@ export function Channel() {
     api.captures(uid, token).then(setCaptures).catch(() => setCaptures([]));
     api.calls(uid, token).then(setCalls).catch(() => setCalls([]));
     api.monitors(uid, token).then(setMons).catch(() => setMons([]));
+    api.liaisons(uid, token).then(setLinks).catch(() => setLinks([]));
   }, [uid, token]);
 
   useEffect(() => {
@@ -97,6 +103,76 @@ export function Channel() {
       <h2>{tr("ch.title", visitorLang())}</h2>
       {error && <p className="error">{error}</p>}
       {said && <p className="muted">{said}</p>}
+
+      {/* Two guardians, working together and never on the line. It opens
+          only between people who are already each other's contacts, and the
+          half shown here is what *this* guardian said — the other person's
+          half was never theirs to read. */}
+      <h3>{tr("lia.head", visitorLang())}</h3>
+      <p className="muted">{tr("lia.lead", visitorLang())}</p>
+      <div className="card">
+        <input value={other} placeholder={tr("lia.who.ph", visitorLang())}
+               onChange={(e) => setOther(e.target.value)} />
+        <button disabled={busy || !other.trim()} onClick={() => run(async () => {
+          await api.openLiaison(uid!, { other_id: other.trim() }, token!);
+          setLinks(await api.liaisons(uid!, token!));
+        }, tr("lia.opened", visitorLang()))}>
+          {tr("lia.open", visitorLang())}
+        </button>
+      </div>
+      {links.map((l) => (
+        <div key={l.id} className="card">
+          <div className="row">
+            <strong>{l.about || l.with}</strong>
+            <span className="pill">
+              {l.running ? tr("lia.running", visitorLang())
+                      : tr("lia.closed", visitorLang())}
+            </span>
+          </div>
+          {/* The task is why it is still open, and ending it ends the link. */}
+          {l.task && <p className="muted small">{l.task}</p>}
+          <button disabled={busy} onClick={() => run(
+            async () => setHalf(await api.liaisonHalf(uid!, l.id, token!)))}>
+            {tr("lia.mine", visitorLang())}
+          </button>
+          {l.running && (
+            <>
+              <button disabled={busy} onClick={() => run(async () => {
+                await api.liaisonSaid(uid!, l.id,
+                  tr("lia.said.example", visitorLang()), token!);
+                setHalf(await api.liaisonHalf(uid!, l.id, token!));
+              }, tr("lia.saidit", visitorLang()))}>
+                {tr("lia.say", visitorLang())}
+              </button>
+              <button disabled={busy} onClick={() => run(async () => {
+                await api.liaisonTask(uid!, l.id,
+                  tr("lia.task.example", visitorLang()), token!);
+                setLinks(await api.liaisons(uid!, token!));
+              }, tr("lia.tasked", visitorLang()))}>
+                {tr("lia.task", visitorLang())}
+              </button>
+              <button disabled={busy} onClick={() => run(async () => {
+                await api.closeLiaison(uid!, l.id, "stopped", token!);
+                setLinks(await api.liaisons(uid!, token!));
+              }, tr("lia.stopped", visitorLang()))}>
+                {tr("lia.stop", visitorLang())}
+              </button>
+            </>
+          )}
+          {half?.link_id === l.id && (
+            <div>
+              <p className="small"><strong>{tr("lia.bymine", visitorLang())}</strong></p>
+              {half.said_by_mine.map((line, i) => (
+                <p key={i} className="muted small">{line}</p>
+              ))}
+              <p className="small"><strong>{tr("lia.tomine", visitorLang())}</strong></p>
+              {half.said_to_mine.map((line, i) => (
+                <p key={i} className="muted small">{line}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
 
       {/* Everywhere the monitoring plugs in. The rows that sense other
           people carry that on their face, and switching one on asks whether
