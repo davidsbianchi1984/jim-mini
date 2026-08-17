@@ -39,6 +39,15 @@ def set_source(user_id: str, source: str, consented: bool) -> dict:
         (user_id, source, int(consented), db.utcnow()),
     )
     conn.commit()
+    if source == "contacts" and not consented:
+        # Withdrawing this one does not merely stop the syncing — it drops
+        # what was synced. A copy of somebody's address book kept after they
+        # said stop is the entire objection to holding it, and nobody should
+        # have to find a second control to make the first one mean what it
+        # says. Imported here rather than at module scope: `jim.contacts`
+        # reads `sources` through this module.
+        from . import contacts
+        contacts.withdrawn(user_id)
     return {"source": source, "consented": consented}
 
 

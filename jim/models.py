@@ -17,8 +17,15 @@ LifeArea = Literal[
     "relationships", "personal_growth",
 ]
 
+#: What the agent may see. The last two are the ones that are mostly about
+#: **other people** rather than the person granting them: an address book and
+#: a call history are a few hundred names who never chose this product and
+#: cannot see that it holds their number. They sit here beside the rest
+#: because *what the agent may see* has to be one list somebody can read to
+#: the end — and `jim/contacts.py` treats them as the heavier grant they are.
 Source = Literal[
-    "wearable", "health", "calendar", "spending", "bank", "messages", "location"
+    "wearable", "health", "calendar", "spending", "bank", "messages",
+    "location", "contacts", "phone",
 ]
 
 

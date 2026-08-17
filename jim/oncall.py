@@ -85,7 +85,7 @@ from __future__ import annotations
 
 import re
 
-from . import db, i18n
+from . import contacts, db, i18n, liaison, schedule
 
 #: What a person reads when something tried to listen too early. The words to
 #: play are **not** in this sentence: they are a script for somebody else, in
@@ -249,10 +249,20 @@ def open(user_id: str, route: str, recording: bool = False,
     anything: the session starts in the one state where it cannot, and the
     only way out of it is :func:`announced`.
 
-    ``number`` is read for one thing — which language the notice should be
-    spoken in — and then dropped. It is not returned, not logged and not
-    stored; what the row keeps is the language chosen and the clue it came
-    from, so the guess is visible and can be argued with.
+    ``number`` is read for two things and then dropped. It is still not
+    returned, not logged and not stored.
+
+    The first is which language the notice should be spoken in; what the row
+    keeps is the language chosen and the clue it came from, so the guess is
+    visible and can be argued with.
+
+    The second is **who this is**, asked of :mod:`jim.contacts` — this
+    person's own address book, and nothing else. What the row keeps is the id
+    of one of their own contacts, never the number, and a call matching
+    nobody keeps nothing, exactly as before this existed. Where that contact
+    also holds an account here and the two are already mutual contacts, the
+    guardians open a link between themselves at dial time rather than waiting
+    for somebody to press something.
     """
     if route not in SHARED_ROUTES:
         # Through the template every other closed-set refusal uses. The
@@ -261,6 +271,9 @@ def open(user_id: str, route: str, recording: bool = False,
         raise NotAShared(i18n.fill(i18n.MUST_BE_ONE_OF, field="route",
                                    choices=",".join(SHARED_ROUTES)))
     languages, clue = language_for(number, i18n.get_language(user_id))
+    # Who this is, from this person's own book. `known` is a row or None, and
+    # None is the ordinary case — most numbers anybody rings are not in it.
+    known = contacts.whose(user_id, number)
     # What actually goes out on the line, in order. Joined for the record
     # because the record's job is *what was said*, and what was said is all
     # of it.
@@ -271,16 +284,51 @@ def open(user_id: str, route: str, recording: bool = False,
     conn = db.connect()
     conn.execute(
         "INSERT INTO assisted_calls (id, user_id, route, recording, notice,"
-        " language, language_clue, announced_at, opened_at)"
-        " VALUES (?,?,?,?,?,?,?,NULL,?)",
+        " language, language_clue, contact_id, announced_at, opened_at)"
+        " VALUES (?,?,?,?,?,?,?,?,NULL,?)",
         (call_id, user_id, route, int(recording), said, ",".join(languages),
-         clue, db.utcnow()))
+         clue, known["id"] if known else None, db.utcnow()))
     conn.commit()
     return {"id": call_id, "listening": False, "route": route,
             "recording": recording, "notices": spoken, "said": said,
             "spoken_in": list(languages), "language_from": clue,
+            "with_name": known["name"] if known else None,
+            "liaison": _link_at_dial_time(user_id, known),
             "note": "play this on the line, then say it went out. Nothing "
                     "listens until it has"}
+
+
+def _link_at_dial_time(user_id: str, known: dict | None) -> str | None:
+    """Open the guardians' own link, where everything already says it may.
+
+    Three conditions, none of them new and none of them asked at dial time:
+    this person's book says the far side holds an account here, the two are
+    already each other's contacts, and the permit to speak for somebody is
+    on. :mod:`jim.liaison` checks the last two itself and refuses otherwise —
+    which is why they are caught here rather than re-tested. A link that
+    cannot open is not an error on a phone call: it is the ordinary case,
+    and the call carries on without one.
+
+    What this adds is only *when*. The link was always openable by hand
+    afterwards; doing it here is what makes it true that the guardians were
+    working from the moment the call started rather than from the moment
+    somebody remembered to say so.
+    """
+    if not known or not known["jim_user_id"]:
+        return None
+    try:
+        link = liaison.open(user_id, known["jim_user_id"],
+                            about=WITH_A_CONTACT)
+    except (liaison.NotMutual, liaison.NotAllowed):
+        return None
+    return link["id"]
+
+
+#: What a link opened at dial time says it is about, until somebody says
+#: otherwise. Not the contact's name: the far side reads their own half of
+#: this link, and what one person calls their mother is not a label to hand
+#: to somebody else's guardian.
+WITH_A_CONTACT = "a call between us"
 
 
 def get(call_id: str) -> dict:
@@ -340,6 +388,70 @@ def close(call_id: str, why: str = "ended") -> dict:
             "said": row["notice"]}
 
 
+def _named(user_id: str, contact_id: str | None) -> str | None:
+    """The name on a call, where the call had one and the book still does.
+
+    Read at the last moment rather than copied onto the call row, so a
+    contact somebody removed stops naming their old calls. The alternative —
+    a name frozen into `assisted_calls` — would mean deleting a contact left
+    their name behind in a table the person was not looking at.
+    """
+    if not contact_id:
+        return None
+    try:
+        return contacts.one(user_id, contact_id)["name"]
+    except contacts.NoSuchContact:
+        return None
+
+
+def remember(call_id: str, title: str, when: str,
+             where: str | None = None) -> dict:
+    """Book the thing the call was about, under the person it came from.
+
+    The field ask, in its own words: *your user is on the phone with their
+    mom, who doesn't have their own agent, and the mother gives them a date
+    and time to be somewhere — so the user doesn't forget, it was being
+    monitored and saved and stored under mom in the calendar.*
+
+    That case is the ordinary one and it is why this exists. The far side has
+    no account here and never will; what makes the appointment filed *under
+    mom* possible is not their guardian but this person's own contact row.
+
+    What survives is the appointment. Not a transcript, not a summary of the
+    conversation, not the audio — there is nowhere in this product to put any
+    of those, which is the point rather than an omission. A call that
+    produced something to do leaves the thing to do.
+
+    Listening rules still hold: this goes through :func:`may_listen`, so a
+    call that never announced itself cannot have heard a date to book.
+    """
+    may_listen(call_id)
+    row = get(call_id)
+    booked = schedule.book(row["user_id"], {}, title, when, where=where)
+    conn = db.connect()
+    conn.execute("UPDATE appointments SET from_call_id=? WHERE id=?",
+                 (call_id, booked["id"]))
+    conn.commit()
+    return {"id": booked["id"], "title": booked["title"],
+            "when": booked["whenat"], "where": booked["whereat"],
+            "from_call": call_id,
+            "from_name": _named(row["user_id"], row["contact_id"])}
+
+
+def left_behind(user_id: str, call_id: str) -> list[dict]:
+    """What a call left: the appointments it produced, and nothing else.
+
+    A deliberately short list. If this ever returns something that is not a
+    thing to be done at a time, the rule this module is built on has been
+    quietly dropped.
+    """
+    return [{"id": r["id"], "title": r["title"], "when": r["whenat"],
+             "where": r["whereat"], "status": r["status"]}
+            for r in db.connect().execute(
+                "SELECT * FROM appointments WHERE user_id=? AND from_call_id=?"
+                " ORDER BY whenat", (user_id, call_id)).fetchall()]
+
+
 def history(user_id: str, limit: int = 20) -> list[dict]:
     """Assisted calls, newest first — and whether each one announced itself.
 
@@ -350,6 +462,7 @@ def history(user_id: str, limit: int = 20) -> list[dict]:
              "recording": bool(r["recording"]), "said": r["notice"],
              "spoken_in": r["language"].split(","),
              "language_from": r["language_clue"],
+             "with_name": _named(user_id, r["contact_id"]),
              "announced_at": r["announced_at"],
              "listened": r["announced_at"] is not None,
              "opened_at": r["opened_at"], "ended_at": r["ended_at"],

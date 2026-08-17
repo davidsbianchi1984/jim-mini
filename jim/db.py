@@ -1197,6 +1197,11 @@ CREATE INDEX IF NOT EXISTS idx_errands_day
 -- no number, no name, no transcript — because they have no account here and
 -- never will. What is kept is that a notice was given, when, and in what
 -- words, which is the one fact they would ever want established.
+--
+-- `contact_id` looks like an exception and is not one: it points at a row in
+-- *this person's own* `contacts`, which they put there themselves before the
+-- call. The number still is not stored — what is stored is which of their own
+-- contacts it matched, and a call matching none of them leaves nothing.
 CREATE TABLE IF NOT EXISTS assisted_calls (
     id            TEXT PRIMARY KEY,
     user_id       TEXT NOT NULL REFERENCES users(id),
@@ -1205,6 +1210,7 @@ CREATE TABLE IF NOT EXISTS assisted_calls (
     notice        TEXT NOT NULL,      -- the exact words, as they were spoken
     language      TEXT NOT NULL,      -- which language they were said in
     language_clue TEXT NOT NULL,      -- what that was inferred from (+34, …)
+    contact_id    TEXT,               -- one of this person's own, or NULL
     announced_at  TEXT,               -- NULL until it actually went out
     opened_at     TEXT NOT NULL,
     ended_at      TEXT,
@@ -1226,6 +1232,34 @@ CREATE TABLE IF NOT EXISTS monitors (
     decided_at  TEXT NOT NULL,
     PRIMARY KEY (user_id, monitor)
 );
+
+-- This person's own address book: who they know, and enough of each number to
+-- recognise a call from them. Put here by the person, one at a time — nothing
+-- harvested from a call ever lands in this table, which is the whole
+-- asymmetry. A number somebody typed for their mother is their own record; a
+-- number that merely rang them is read for the notice's language and dropped,
+-- exactly as `assisted_calls` above says.
+--
+-- `digits` is the number reduced to digits and cut to its last nine, which is
+-- what makes +1-555-0142 and (555) 0142 the same person. It is stored plainly
+-- rather than hashed: a phone number is a ten-digit space and a laptop walks
+-- it in minutes, so a hash here would be theatre. What protects it is that it
+-- never leaves the deployment, and that it is the person's own book.
+--
+-- `jim_user_id` is set only where that contact also holds an account here. It
+-- is what lets two guardians find each other at dial time, and it is NULL for
+-- most rows — the majority of anybody's address book has no guardian in it,
+-- and that is the case this table exists to serve properly.
+CREATE TABLE IF NOT EXISTS contacts (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    name        TEXT NOT NULL,
+    digits      TEXT NOT NULL,
+    jim_user_id TEXT,
+    added_at    TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_digits
+    ON contacts (user_id, digits);
 
 -- Two guardians working together on behalf of two people who are already
 -- each other's contacts. The link is never spoken on a call: it carries what
@@ -1435,6 +1469,16 @@ _NEW_COLUMNS = [
     # alarm — the same reason its alarm id can be a constant.
     ("crash_watches", "accepted_by", "TEXT"),
     ("crash_watches", "accepted_at", "TEXT"),
+    # Which of this person's own contacts the call matched (jim/contacts.py).
+    # A column on the call rather than a table of its own, because a call has
+    # at most one far side — and NULL is the ordinary case, not a gap: most
+    # numbers anybody rings are not in their address book.
+    ("assisted_calls", "contact_id", "TEXT"),
+    # The call an appointment came out of. What survives a conversation is the
+    # thing that has to be done, not the conversation — so this is a pointer
+    # back to a call, and there is deliberately no column anywhere holding
+    # what was said on it.
+    ("appointments", "from_call_id", "TEXT"),
 ]
 
 

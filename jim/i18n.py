@@ -1751,6 +1751,19 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': "एक पंक्ति में बताइए कि काम क्या है",
         'ar': "قل ما هو العمل، في سطر واحد",
     },
+    # -- this person's own address book (jim/contacts.py) --------------------
+    # -- the people in your phone (jim/contacts.py) --------------------------
+    "nothing here can see the people in your phone: turn on contacts in what the agent may see. It is off until you do, because most of what is in there is somebody else": {
+        'es': "aquí nada puede ver a las personas de tu teléfono: activa los contactos en lo que el agente puede ver. Está desactivado hasta que lo hagas, porque casi todo lo que hay ahí es otra gente",
+        'fr': "rien ici ne peut voir les personnes de votre téléphone : activez les contacts dans ce que l'agent peut voir. C'est désactivé jusque-là, car l'essentiel de ce qui s'y trouve concerne d'autres gens",
+        'de': "hier kann nichts die Menschen in deinem Telefon sehen: schalte Kontakte in dem ein, was der Agent sehen darf. Bis dahin ist es aus, denn das meiste darin sind andere Leute",
+        'pt': "aqui nada consegue ver as pessoas do seu telefone: ative os contactos naquilo que o agente pode ver. Está desligado até o fazer, porque quase tudo o que está lá é outra gente",
+        'it': "qui nulla può vedere le persone nel tuo telefono: attiva i contatti in ciò che l'agente può vedere. Resta spento finché non lo fai, perché quasi tutto ciò che c'è dentro riguarda altri",
+        'ja': "ここからは電話帳の人たちを見ることはできません。エージェントが見てよいものの中で連絡先を有効にしてください。有効にするまでは切ったままです。そこにあるものの大半は他人のものだからです",
+        'zh': "这里无法看到你手机里的人：请在「代理可以看到的内容」中开启通讯录。在你开启之前它一直是关闭的，因为里面绝大部分是别人的信息",
+        'hi': "यहाँ से आपके फ़ोन के लोग नहीं दिखते: एजेंट जो देख सकता है, उसमें संपर्क चालू कीजिए। तब तक यह बंद रहता है, क्योंकि उसमें अधिकांश जानकारी किसी और की है",
+        'ar': "لا شيء هنا يمكنه رؤية الأشخاص في هاتفك: فعّل جهات الاتصال ضمن ما يجوز للوكيل رؤيته. يظل معطّلًا حتى تفعل ذلك، لأن معظم ما فيه يخص أشخاصًا آخرين",
+    },
     # -- what may sense you (jim/monitors.py) --------------------------------
     "this one senses people who did not choose it — say that the people in that space have been told before switching it on": {
         'es': "esta detecta a personas que no la eligieron: indica que se ha informado a quienes están en ese espacio antes de activarla",
