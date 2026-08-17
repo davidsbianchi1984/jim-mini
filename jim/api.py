@@ -33,6 +33,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                research,
                robotics,
                rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
+               underway,
                vigil, voice, watch, widgets)
 from . import continuity
 from . import crashwatch
@@ -3275,21 +3276,50 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.put("/liaisons/{user_id}/{link_id}/task")
     def liaison_task(user_id: str, link_id: str, body: LiaisonTask,
                      request: Request) -> dict:
-        """Name the work that came out of the conversation. This is what
-        outlives the call."""
+        """Name the work that came out of the conversation, and say yes to it.
+
+        Proposing is this side's own agreement. It is not the other's: the
+        link outlives the call only once they have agreed too, through the
+        route below.
+        """
         _user_or_404(user_id, request)
         try:
             return liaison.take_on(link_id, user_id, body.task)
         except liaison.NotYours as exc:
             raise HTTPException(403, str(exc)) from None
+        # Before `NoSuchLink`, which it subclasses. A closed link answers 404
+        # on every route that can meet one; 422 here is for *you did not say
+        # what the task is*, and a reader has only the status to tell them
+        # apart.
+        except liaison.Closed as exc:
+            raise HTTPException(404, str(exc)) from None
+        except liaison.NoSuchLink as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.put("/liaisons/{user_id}/{link_id}/agreed")
+    def liaison_agreed(user_id: str, link_id: str, request: Request) -> dict:
+        """The other side agrees to the task as it stands.
+
+        No body, deliberately: a second party passing their own wording would
+        be proposing rather than agreeing, and the link could then be held
+        open by two sentences that only looked like one agreement.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return liaison.agree(link_id, user_id)
+        except liaison.NotYours as exc:
+            raise HTTPException(403, str(exc)) from None
+        except liaison.Closed as exc:
+            raise HTTPException(404, str(exc)) from None
+        # 422 is left with one meaning here: there is no task to agree to.
         except liaison.NoSuchLink as exc:
             raise HTTPException(422, str(exc)) from None
 
     @app.delete("/liaisons/{user_id}/{link_id}")
     def close_liaison(user_id: str, link_id: str, request: Request,
                       why: str = "stopped") -> dict:
-        """End it. A link holding an unfinished task survives the call
-        ending; a person stopping it always closes it."""
+        """End it. A link holding a task both sides agreed to survives the
+        call ending; a person stopping it always closes it, alone."""
         _user_or_404(user_id, request)
         try:
             return liaison.close(link_id, user_id, why)
@@ -3297,6 +3327,20 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(403, str(exc)) from None
         except liaison.NoSuchLink as exc:
             raise HTTPException(404, str(exc)) from None
+
+    # ---- the task window: everything running, in one place ----------------
+
+    @app.get("/underway/{user_id}")
+    def underway_window(user_id: str, request: Request) -> dict:
+        """Which agent is running, and which tasks are still running.
+
+        One read across the five things that can be going at once, so a
+        person does not have to know which screen owns which. It starts and
+        stops nothing — see `jim/underway.py`, which says why a window over
+        everything is deliberately not a door onto everything.
+        """
+        _user_or_404(user_id, request)
+        return underway.window(user_id)
 
     # ---- what may sense you, through what ---------------------------------
 

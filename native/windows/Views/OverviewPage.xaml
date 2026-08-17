@@ -19,6 +19,19 @@
                     Background="Transparent" FontSize="12"
                     Foreground="{StaticResource JimBrandABrush}" />
 
+            <!-- The task window: which agent is running, which tasks are
+                 still running. Above what the Guardian has measured, because
+                 *what is running* is the question somebody opens this page
+                 with when they do not know which other page to open. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="UnderwayTitle" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <StackPanel x:Name="UnderwayPanel" Spacing="6" />
+                </StackPanel>
+            </Border>
+
             <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">

@@ -108,12 +108,33 @@ data class CoachStudied(val studied: String, val folded: Boolean)
 /** A link between two guardians. `task` is what keeps it open past the call. */
 data class LiaisonRow(val id: String, val about: String, val task: String,
                       val running: Boolean, val endedBecause: String?,
-                      val openedAt: String)
+                      val openedAt: String,
+                      // Naming a task is the namer's own yes and nothing
+                      // more: the link outlives the call only once both
+                      // sides have agreed. Three fields rather than one
+                      // flag, because "you have not agreed", "they have
+                      // not" and "nobody named anything" are three
+                      // different things for a screen to say.
+                      val youAgreed: Boolean, val theyAgreed: Boolean,
+                      val holdsItOpen: Boolean)
 /** A person's own half: what theirs said, and what it was told. */
 data class LiaisonHalf(val linkId: String, val about: String,
                        val task: String, val running: Boolean,
                        val saidByMine: List<String>,
                        val saidToMine: List<String>)
+/** One thing this guardian has running. `kind` and `why` are closed-set
+ *  words said in the reader's language by L10n; `term` is one of the
+ *  product's own vocabulary words and `words` is what the person wrote. */
+data class UnderwayRow(val kind: String, val id: String?, val term: String?,
+                       val words: String?, val since: String?,
+                       val why: String)
+/** Everything running, what it learned today, and what is left to spend.
+ *  `quiet` is the server's own answer rather than one derived here, so the
+ *  four shells cannot disagree about what "nothing running" looks like. */
+data class UnderwayWindow(val underway: List<UnderwayRow>,
+                          val quiet: Boolean, val today: List<Errand>,
+                          val spentToday: Int, val daily: Int,
+                          val permitted: Boolean)
 /** One thing that can be plugged in and sense somebody. `catchesOthers` is
  *  the field that decides everything else: nothing carrying it is ever on by
  *  default, and switching one on is refused until the people in that space
@@ -940,7 +961,9 @@ object ApiClient {
         o.getString("id"), o.optString("about", ""), o.optString("task", ""),
         o.optBoolean("running"),
         if (o.isNull("ended_because")) null else o.optString("ended_because"),
-        o.optString("opened_at", ""))
+        o.optString("opened_at", ""),
+        o.optBoolean("you_agreed"), o.optBoolean("they_agreed"),
+        o.optBoolean("holds_it_open"))
 
     /** Open a link to another guardian. Refused unless both already had the
      *  other stored. */
@@ -973,11 +996,21 @@ object ApiClient {
             JSONObject().put("body", body), token)
     }
 
-    /** The work that outlives the call. */
+    /** The work that outlives the call, once both sides have agreed to it.
+     *  Naming it counts as the namer's own yes and nothing more. */
     suspend fun liaisonTask(uid: String, token: String, linkId: String,
                             task: String): LiaisonRow =
         liaisonOf(request("/liaisons/$uid/$linkId/task", "PUT",
             JSONObject().put("task", task), token))
+
+    /** The other side's yes, to the task as it stands. No wording of its
+     *  own: a second party passing their own text would be proposing rather
+     *  than agreeing, and the link could then be held open by two sentences
+     *  that only looked like one agreement. */
+    suspend fun liaisonAgreed(uid: String, token: String,
+                              linkId: String): LiaisonRow =
+        liaisonOf(request("/liaisons/$uid/$linkId/agreed", "PUT",
+            token = token))
 
     suspend fun closeLiaison(uid: String, token: String, linkId: String,
                              why: String): LiaisonRow =
@@ -1112,6 +1145,29 @@ object ApiClient {
             },
             o.optInt("spent_today"), o.optInt("daily"),
             o.optBoolean("permitted"))
+    }
+
+    /** Which agent is running, and which tasks are still running — one read
+     *  across the five things that can be going at once, so somebody does
+     *  not have to know which screen owns which. It reads and never acts. */
+    suspend fun underway(uid: String, token: String): UnderwayWindow {
+        val o = request("/underway/$uid", token = token)
+        val rows = o.optJSONArray("underway") ?: JSONArray()
+        val spend = o.optJSONObject("spend") ?: JSONObject()
+        return UnderwayWindow(
+            (0 until rows.length()).map {
+                val r = rows.getJSONObject(it)
+                UnderwayRow(r.getString("kind"),
+                    if (r.isNull("id")) null else r.optString("id"),
+                    if (r.isNull("term")) null else r.optString("term"),
+                    if (r.isNull("words")) null else r.optString("words"),
+                    if (r.isNull("since")) null else r.optString("since"),
+                    r.getString("why"))
+            },
+            o.optBoolean("quiet"),
+            errandsOf(o.optJSONArray("today") ?: JSONArray()),
+            spend.optInt("spent_today"), spend.optInt("daily"),
+            spend.optBoolean("permitted"))
     }
 
     /** Refused without the permit, and again once the day is spent — two

@@ -47,10 +47,19 @@ struct MicCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(l.about.isEmpty ? l.id : l.about)
                         .font(.caption).foregroundStyle(Theme.txt)
-                    // The task is why it is still open.
+                    // The task is why it is still open — once both sides have
+                    // said so. Naming it is the namer's own yes and nothing
+                    // more, so the row says which of the three states this
+                    // link is in rather than leaving it ambiguous.
                     if !l.task.isEmpty {
                         Text(l.task).font(.caption2)
                             .foregroundStyle(Theme.t2)
+                        Text(l.holds_it_open
+                                ? L10n.t("lia.holds", state.language)
+                                : l.you_agreed
+                                ? L10n.t("lia.waiting", state.language)
+                                : L10n.t("lia.yours", state.language))
+                            .font(.caption2).foregroundStyle(Theme.t2)
                     }
                     Text(l.running ? L10n.t("lia.running", state.language)
                                 : L10n.t("lia.closed", state.language))
@@ -65,6 +74,15 @@ struct MicCard: View {
                         Button(L10n.t("lia.task", state.language)) {
                             nameWork(l)
                         }.font(.caption).tint(Theme.brandA)
+                        // The other side's yes. Offered only where there is a
+                        // task this person has not already agreed to —
+                        // agreeing with yourself is not something the backend
+                        // counts, so a button offering it would do nothing.
+                        if !l.task.isEmpty && !l.you_agreed {
+                            Button(L10n.t("lia.agree", state.language)) {
+                                agreeWork(l)
+                            }.font(.caption).tint(Theme.brandA)
+                        }
                         Button(L10n.t("lia.stop", state.language)) {
                             stopLink(l)
                         }.font(.caption).tint(Theme.t2)
@@ -305,6 +323,16 @@ struct MicCard: View {
             _ = try? await ApiClient.shared.liaisonTask(
                 uid: uid, token: token, linkId: l.id,
                 task: L10n.t("lia.task.example", state.language))
+            await load()
+        }
+    }
+
+    /// The other side's yes, to the task as it stands.
+    private func agreeWork(_ l: LiaisonRow) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            _ = try? await ApiClient.shared.liaisonAgreed(
+                uid: uid, token: token, linkId: l.id)
             await load()
         }
     }

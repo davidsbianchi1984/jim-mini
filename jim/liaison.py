@@ -36,18 +36,37 @@ what *their* guardian said and what it was told — not the other person's
 private half, which was never theirs to read. A person on a wage call can see
 afterwards precisely what their own agent disclosed.
 
-## It lives as long as the work does
+## It lives as long as the work does, and only if both said so
 
 The link opens with the call and closes with it. What extends it is not an
 agreement to stay connected — it is a **task**: something that came out of the
 conversation and has to be finished. The task is the reason the link is still
 open, both people can see it in the same place they see everything else
-running, and closing it closes the link.
+running (:mod:`jim.underway`), and closing it closes the link.
 
 That is a better rule than a standing connection because it has an end in it.
 Two guardians that met during one conversation and stayed in touch afterwards
 is a different product from two that had a job to finish, and only one of them
 is what anybody would assume from *they collaborated on the call*.
+
+**Both sides name it, or the call ends it.** The first version of this stored
+the task in one column and let either person write it, which meant one person
+could keep a channel to somebody else's guardian open past the conversation
+that justified it, on their own say-so. That is the same shape as the
+one-sided contact this module refuses at :func:`open` — and refusing a
+stranger at the door while letting one party extend the stay unilaterally is
+the door mattering less than it looks.
+
+So agreement is recorded per side, against the **wording**:
+:func:`take_on` proposes a task and counts as the proposer's own yes;
+:func:`agree` is the other side's. Only when both are present does the link
+outlive the call. Re-wording it drops the other side's agreement, because
+agreeing to *book the venue* is not agreeing to *run the wedding*.
+
+A task nobody has agreed to is not lost — it stays on the link and can be
+agreed to later. It simply does not hold anything open in the meantime, which
+is the honest state: one person has proposed some work and the other has not
+yet said yes.
 
 ## What it may say is bounded by what its person allowed
 
@@ -89,6 +108,21 @@ class NoSuchLink(ValueError):
     """No link by that id."""
 
 
+class Closed(NoSuchLink):
+    """Refused: that link has ended.
+
+    Its own type so every route answers a closed link the same way. It began
+    as one: `say` raised `NoSuchLink` for it and answered 404, and when
+    `take_on` and `agree` gained the same check they inherited their route's
+    422 — the status for *you did not say what the task is*, which is a
+    different thing entirely. A reader cannot tell those apart from the
+    status, and the status is what they have.
+
+    A subclass rather than a new exception, so `except NoSuchLink` on any
+    route that has not been taught the difference still catches it.
+    """
+
+
 class NotYours(RuntimeError):
     """Refused: that link does not belong to this person."""
 
@@ -98,6 +132,12 @@ class NotYours(RuntimeError):
 NOT_MUTUAL = ("these two are not each other's contacts — a guardian only "
               "reaches another when both people already had the other, and "
               "one side alone reaches nothing")
+
+#: Asked to agree to a task on a link that has none. Its own sentence rather
+#: than a bare 404, because *there is nothing here to agree to* and *that
+#: link is gone* are different things to be told.
+NOTHING_TO_AGREE = ("there is no task on this link yet — one side names the "
+                    "work first, and the other agrees to it")
 
 
 def open(user_id: str, other_id: str, about: str = "") -> dict:
@@ -144,7 +184,7 @@ def say(link_id: str, user_id: str, what: str) -> dict:
     """
     row = _mine(link_id, user_id)
     if row["ended_at"]:
-        raise NoSuchLink("that link has closed")
+        raise Closed("that link has closed")
     if not permits.granted(user_id, PERMIT):
         raise NotAllowed(NOT_ALLOWED)
     conn = db.connect()
@@ -169,43 +209,104 @@ def half(link_id: str, user_id: str) -> dict:
         "SELECT * FROM liaison_lines WHERE link_id=? ORDER BY said_at, rowid",
         (link_id,)).fetchall()
     return {
-        "link_id": link_id, "about": row["about"], "task": row["task"],
+        "link_id": link_id, "about": row["about"],
         "running": row["ended_at"] is None,
         "ended_because": row["ended_because"],
         "said_by_mine": [r["body"] for r in lines if r["said_by"] == user_id],
         "said_to_mine": [r["body"] for r in lines if r["said_by"] != user_id],
+        **_standing(row, user_id),
     }
 
 
-def take_on(link_id: str, user_id: str, task: str) -> dict:
-    """Name the work that came out of the conversation.
+def _agreed_to(link_id: str, task: str) -> set[str]:
+    """Who has said yes to this exact wording.
 
-    This is what outlives the call. A link with a task on it survives the
-    call ending; a link without one does not, and that is the difference
-    between two guardians that had a job to finish and two that stayed in
-    touch.
+    Matched on the wording rather than on the link alone, so re-wording the
+    task drops the other side's agreement without anybody having to remember
+    to clear it.
     """
-    _mine(link_id, user_id)
+    if not task:
+        return set()
+    return {r["user_id"] for r in db.connect().execute(
+        "SELECT user_id FROM liaison_task_agreed WHERE link_id=? AND task=?",
+        (link_id, task)).fetchall()}
+
+
+def _both_agreed(row: dict) -> bool:
+    """Whether the task on this row is holding the link open.
+
+    Both sides, against the current wording. One person cannot reach this on
+    their own, which is the whole point of the table it reads.
+    """
+    agreed = _agreed_to(row["id"], row["task"])
+    return bool(row["task"]) and {row["low_id"], row["high_id"]} <= agreed
+
+
+def _record_agreement(link_id: str, user_id: str, task: str) -> None:
+    """This side says yes to this wording. Idempotent — saying yes twice is
+    saying yes."""
+    conn = db.connect()
+    conn.execute(
+        "INSERT OR REPLACE INTO liaison_task_agreed (link_id, user_id, task,"
+        " agreed_at) VALUES (?,?,?,?)",
+        (link_id, user_id, task, db.utcnow()))
+    conn.commit()
+
+
+def take_on(link_id: str, user_id: str, task: str) -> dict:
+    """Name the work that came out of the conversation, and say yes to it.
+
+    Proposing is this side's own agreement — nobody has to name a task and
+    then separately approve their own wording. What it is *not* is the other
+    side's: until :func:`agree` records theirs, the task sits on the link
+    holding nothing open, and the call ending still closes it.
+
+    Re-wording replaces the task and drops the other side's agreement, since
+    what they said yes to is no longer what the link says.
+    """
+    row = _mine(link_id, user_id)
+    if row["ended_at"]:
+        raise Closed("that link has closed")
     if not task.strip():
         raise NoSuchLink("say what the task is, in one line")
     conn = db.connect()
     conn.execute("UPDATE liaisons SET task=? WHERE id=? AND ended_at IS NULL",
                  (task.strip(), link_id))
     conn.commit()
+    _record_agreement(link_id, user_id, task.strip())
+    return summary(link_id, user_id)
+
+
+def agree(link_id: str, user_id: str) -> dict:
+    """The other side says yes to the task as it currently stands.
+
+    Deliberately takes no wording. A second party who could pass their own
+    text would be proposing rather than agreeing, and the two sides could
+    hold a link open on the strength of two different sentences that only
+    looked like one agreement.
+    """
+    row = _mine(link_id, user_id)
+    if row["ended_at"]:
+        raise Closed("that link has closed")
+    if not row["task"]:
+        raise NoSuchLink(NOTHING_TO_AGREE)
+    _record_agreement(link_id, user_id, row["task"])
     return summary(link_id, user_id)
 
 
 def close(link_id: str, user_id: str, why: str = "call_ended") -> dict:
-    """End it. A link with an unfinished task survives the call ending.
+    """End it. A link with an agreed, unfinished task survives the call.
 
     The one exception is a person stopping it, which is why ``why`` is
     checked rather than trusted: *the call ended* must not be able to close
-    something the task is holding open, and *somebody stopped it* always can.
+    something the task is holding open, and *somebody stopped it* always can
+    — either side, alone. Ending a link needs one person; extending one needs
+    both, and that asymmetry is deliberate in both directions.
     """
     row = _mine(link_id, user_id)
     if row["ended_at"]:
         return summary(link_id, user_id)
-    if why == "call_ended" and row["task"]:
+    if why == "call_ended" and row["task"] and _both_agreed(row):
         return summary(link_id, user_id)
     conn = db.connect()
     conn.execute(
@@ -215,22 +316,46 @@ def close(link_id: str, user_id: str, why: str = "call_ended") -> dict:
     return summary(link_id, user_id)
 
 
+def _standing(row: dict, user_id: str) -> dict:
+    """Where the task has got to, from this person's side.
+
+    Three separate answers rather than one flag, because *you have not
+    agreed*, *they have not* and *nobody named anything* are three different
+    things for a screen to say, and a single boolean would make a client
+    guess which one it was looking at.
+    """
+    agreed = _agreed_to(row["id"], row["task"])
+    other = row["high_id"] if row["low_id"] == user_id else row["low_id"]
+    mine, theirs = user_id in agreed, other in agreed
+    return {"task": row["task"],
+            "you_agreed": mine,
+            "they_agreed": theirs,
+            # What the person actually wants to know: is this task the reason
+            # the link will still be here after the call. Read off the set
+            # already fetched rather than through `_both_agreed`, which would
+            # ask the same question of the database a second time — and
+            # `running()` builds one of these per link, on every poll of the
+            # task window.
+            "holds_it_open": bool(row["task"]) and mine and theirs}
+
+
 def summary(link_id: str, user_id: str) -> dict:
     row = _mine(link_id, user_id)
     other = row["high_id"] if row["low_id"] == user_id else row["low_id"]
     return {"id": row["id"], "with": other, "about": row["about"],
-            "task": row["task"], "running": row["ended_at"] is None,
+            "running": row["ended_at"] is None,
             "ended_because": row["ended_because"],
-            "opened_at": row["opened_at"]}
+            "opened_at": row["opened_at"], **_standing(row, user_id)}
 
 
 def running(user_id: str) -> list[dict]:
     """Every link of this person's, open ones first.
 
     The answer to *which of these is still going, and why* — which is the
-    question the task window asks about everything else this product runs.
-    A closed link stays: what two guardians did on somebody's behalf is not
-    something to tidy away.
+    question :mod:`jim.underway` asks about everything else this product runs,
+    and takes the links half of its answer from here. A closed link stays:
+    what two guardians did on somebody's behalf is not something to tidy
+    away.
 
     `running`, not `open`: this API already carries `open` as a list of
     unanswered follow-ups, and one wire name carries one type.

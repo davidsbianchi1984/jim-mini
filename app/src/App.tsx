@@ -5,6 +5,7 @@ import { ProblemNotice } from "./ProblemNotice";
 import { Footsteps } from "./Footsteps";
 import { VersionGuard } from "./VersionGuard";
 import { GuardianLights } from "./GuardianLights";
+import { Underway } from "./Underway";
 import { Help } from "./Help";
 import { JimMiniOS } from "./JimMiniOS";
 import { Studio } from "./screens/Studio";
@@ -185,6 +186,13 @@ export function App() {
       {/* Like Help: part of the shell, on every screen — the Guardian's
           lights, minimizable, and never silently absent. */}
       <GuardianLights />
+      {/* The task window, and shell furniture for the same reason: *which
+          agent is running, which tasks are still running* is a question you
+          ask when you do not know which screen to open, so it cannot live
+          on one of them. Beside the lights rather than inside them — that
+          panel answers whether anything is wrong, this one what is being
+          done, and folding the two together would blur both. */}
+      <Underway />
     </div>
   );
 }

@@ -56,6 +56,12 @@ NOT_A_SURFACE = {
     "Help",         # the assistant dock, drawn inside the screens it floats over
     "WatchLights",  # the always-on widget; its own gallery lives in the watch faces
     "GuardianLights", # the same widget, this product's own — same reasoning
+    # The task window: pinned beside the lights, minimizable to a dot, over
+    # every screen and never somewhere anybody navigates to. Chrome by the
+    # same reasoning as its sibling above — and for the same reason it is not
+    # `undrawn`, which is a status for a surface that ought to have a drawing
+    # and has not got one yet.
+    "Underway",
     "Footsteps",   # the corner counter; fixed chrome over every screen, like the version guard
     "VersionGuard", # a failure banner, deliberately not part of the tour
     # A mark, not a screen: the jim-mini OS lockup drawn on its own menu

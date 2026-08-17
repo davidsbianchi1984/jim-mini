@@ -129,8 +129,20 @@ export function Channel() {
                       : tr("lia.closed", visitorLang())}
             </span>
           </div>
-          {/* The task is why it is still open, and ending it ends the link. */}
-          {l.task && <p className="muted small">{l.task}</p>}
+          {/* The task is why it is still open — once both sides have said
+              so. Naming it is the namer's own yes and nothing more, so the
+              card says which of the three states this link is in rather
+              than showing the words and leaving it ambiguous. */}
+          {l.task && (
+            <>
+              <p className="muted small">{l.task}</p>
+              <p className="muted small">
+                {l.holds_it_open ? tr("lia.holds", visitorLang())
+                  : l.you_agreed ? tr("lia.waiting", visitorLang())
+                  : tr("lia.yours", visitorLang())}
+              </p>
+            </>
+          )}
           <button disabled={busy} onClick={() => run(
             async () => setHalf(await api.liaisonHalf(uid!, l.id, token!)))}>
             {tr("lia.mine", visitorLang())}
@@ -151,6 +163,18 @@ export function Channel() {
               }, tr("lia.tasked", visitorLang()))}>
                 {tr("lia.task", visitorLang())}
               </button>
+              {/* The other side's yes. Offered only where there is a task
+                  this person has not already agreed to — agreeing with
+                  yourself is not a thing the backend counts, so a button
+                  offering it would be a button that does nothing. */}
+              {l.task && !l.you_agreed && (
+                <button disabled={busy} onClick={() => run(async () => {
+                  await api.liaisonAgreed(uid!, l.id, token!);
+                  setLinks(await api.liaisons(uid!, token!));
+                }, tr("lia.agreed", visitorLang()))}>
+                  {tr("lia.agree", visitorLang())}
+                </button>
+              )}
               <button disabled={busy} onClick={() => run(async () => {
                 await api.closeLiaison(uid!, l.id, "stopped", token!);
                 setLinks(await api.liaisons(uid!, token!));

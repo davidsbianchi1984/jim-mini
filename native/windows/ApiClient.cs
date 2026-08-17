@@ -1077,7 +1077,8 @@ public sealed class ApiClient
         (await Dispatch(req)).EnsureSuccessStatusCode();
     }
 
-    /// <summary>The work that outlives the call.</summary>
+    /// <summary>The work that outlives the call, once both sides have agreed
+    /// to it. Naming it is the namer's own yes and nothing more.</summary>
     public Task<LiaisonRow> LiaisonTask(string uid, string token,
                                         string linkId, string task)
     {
@@ -1089,6 +1090,26 @@ public sealed class ApiClient
         req.Headers.Add("authorization", $"Bearer {token}");
         return Send<LiaisonRow>(req);
     }
+
+    /// <summary>The other side's yes, to the task as it stands. No wording of
+    /// its own: a second party passing their own text would be proposing
+    /// rather than agreeing, and the link could then be held open by two
+    /// sentences that only looked like one agreement.</summary>
+    public Task<LiaisonRow> LiaisonAgreed(string uid, string token,
+                                          string linkId)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Put,
+                                         $"/liaisons/{uid}/{linkId}/agreed");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<LiaisonRow>(req);
+    }
+
+    /// <summary>Which agent is running, and which tasks are still running —
+    /// one read across the five things that can be going at once, so somebody
+    /// does not have to know which screen owns which. Reads, never acts.
+    /// </summary>
+    public Task<UnderwayWindow> Underway(string uid, string token) =>
+        Send<UnderwayWindow>(Get($"/underway/{uid}", token));
 
     public Task<LiaisonRow> CloseLiaison(string uid, string token,
                                          string linkId, string why)
@@ -3020,14 +3041,20 @@ public record CoachStudied(
     [property: JsonPropertyName("folded")] bool Folded);
 
 /// <summary>A link between two guardians. <c>Task</c> is what keeps it open
-/// past the call.</summary>
+/// past the call — and only once <b>both</b> sides have agreed to it. Three
+/// fields rather than one flag, because "you have not agreed", "they have
+/// not" and "nobody named anything" are three different things to say.
+/// </summary>
 public record LiaisonRow(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("about")] string About,
     [property: JsonPropertyName("task")] string Task,
     [property: JsonPropertyName("running")] bool Running,
     [property: JsonPropertyName("ended_because")] string? EndedBecause,
-    [property: JsonPropertyName("opened_at")] string OpenedAt);
+    [property: JsonPropertyName("opened_at")] string OpenedAt,
+    [property: JsonPropertyName("you_agreed")] bool YouAgreed,
+    [property: JsonPropertyName("they_agreed")] bool TheyAgreed,
+    [property: JsonPropertyName("holds_it_open")] bool HoldsItOpen);
 
 /// <summary>A person's own half: what theirs said, and what it was told. The
 /// other person's half was never theirs to read.</summary>
@@ -3037,7 +3064,40 @@ public record LiaisonHalf(
     [property: JsonPropertyName("task")] string Task,
     [property: JsonPropertyName("running")] bool Running,
     [property: JsonPropertyName("said_by_mine")] string[] SaidByMine,
-    [property: JsonPropertyName("said_to_mine")] string[] SaidToMine);
+    [property: JsonPropertyName("said_to_mine")] string[] SaidToMine,
+    [property: JsonPropertyName("you_agreed")] bool YouAgreed,
+    [property: JsonPropertyName("they_agreed")] bool TheyAgreed,
+    [property: JsonPropertyName("holds_it_open")] bool HoldsItOpen);
+
+/// <summary>One thing this guardian has running. <c>Kind</c> and <c>Why</c>
+/// are closed-set words said in the reader's language by <c>L10n</c>;
+/// <c>Term</c> is one of the product's own vocabulary words and <c>Words</c>
+/// is what the person wrote.</summary>
+public record UnderwayRow(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("id")] string? Id,
+    [property: JsonPropertyName("term")] string? Term,
+    [property: JsonPropertyName("words")] string? Words,
+    [property: JsonPropertyName("since")] string? Since,
+    [property: JsonPropertyName("why")] string Why);
+
+/// <summary>What the day's unattended study has spent, against its
+/// ceiling.</summary>
+public record UnderwaySpend(
+    [property: JsonPropertyName("spent_today")] int SpentToday,
+    [property: JsonPropertyName("daily")] int Daily,
+    [property: JsonPropertyName("permitted")] bool Permitted);
+
+/// <summary>Everything running, what it learned today, and what is left to
+/// spend. <c>Quiet</c> is the server's own answer rather than one derived
+/// here, so the four shells cannot disagree about what "nothing running"
+/// looks like.</summary>
+public record UnderwayWindow(
+    [property: JsonPropertyName("underway")] UnderwayRow[] Underway,
+    [property: JsonPropertyName("quiet")] bool Quiet,
+    // Finished, not running — which is why it is a list of its own.
+    [property: JsonPropertyName("today")] Errand[] Today,
+    [property: JsonPropertyName("spend")] UnderwaySpend Spend);
 
 /// <summary>One thing that can be plugged in and sense somebody.
 /// <c>CatchesOthers</c> is the field that decides everything else: nothing

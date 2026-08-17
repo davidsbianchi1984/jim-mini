@@ -30,6 +30,11 @@ struct OverviewView: View {
                 Text(L10n.t("ov.watching.sub", state.language))
                     .font(.subheadline).foregroundStyle(Theme.t2)
 
+                // What the Guardian is doing, before what it has measured:
+                // *what is running* is the question somebody opens this
+                // screen with when they do not know which other to open.
+                UnderwayCard().card()
+
                 VStack(alignment: .leading, spacing: 10) {
                     Text(L10n.t("ov.baseline", state.language)).font(.headline).foregroundStyle(Theme.txt)
                     if loading {

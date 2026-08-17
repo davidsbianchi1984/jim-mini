@@ -251,7 +251,10 @@ struct CoachStudied: Decodable {
     let left_host: Bool
 }
 
-/// A link between two guardians. `task` is what keeps it open past the call.
+/// A link between two guardians. `task` is what keeps it open past the call —
+/// and only once **both** sides have agreed to it. Three fields rather than
+/// one flag, because "you have not agreed", "they have not" and "nobody named
+/// anything" are three different things for a screen to say.
 struct LiaisonRow: Decodable {
     let id: String
     let about: String
@@ -259,6 +262,9 @@ struct LiaisonRow: Decodable {
     let running: Bool
     let ended_because: String?
     let opened_at: String
+    let you_agreed: Bool
+    let they_agreed: Bool
+    let holds_it_open: Bool
 }
 
 /// A person's own half: what theirs said, and what it was told. The other
@@ -270,6 +276,37 @@ struct LiaisonHalf: Decodable {
     let running: Bool
     let said_by_mine: [String]
     let said_to_mine: [String]
+    let you_agreed: Bool
+    let they_agreed: Bool
+    let holds_it_open: Bool
+}
+
+/// One thing this guardian has running. `kind` and `why` are closed-set words
+/// said in the reader's language by `L10n`; `term` is one of the product's
+/// own vocabulary words and `words` is what the person wrote.
+struct UnderwayRow: Decodable {
+    let kind: String
+    let id: String?
+    let term: String?
+    let words: String?
+    let since: String?
+    let why: String
+}
+
+/// Everything running, what it learned today, and what is left to spend.
+/// `quiet` is the server's own answer rather than one derived here, so the
+/// four shells cannot disagree about what "nothing running" looks like.
+struct UnderwayWindow: Decodable {
+    struct Spend: Decodable {
+        let spent_today: Int
+        let daily: Int
+        let permitted: Bool
+    }
+    let underway: [UnderwayRow]
+    let quiet: Bool
+    /// Finished, not running — which is why it is a list of its own.
+    let today: [Errand]
+    let spend: Spend
 }
 
 /// One thing that can be plugged in and sense somebody. `catches_others` is
@@ -1446,7 +1483,9 @@ actor ApiClient {
                           body: ["body": body], token: token)
     }
 
-    /// The work that came out of the conversation, which is what outlives it.
+    /// The work that came out of the conversation, which is what outlives it
+    /// once both sides have agreed. Naming it is the namer's own yes and
+    /// nothing more.
     @discardableResult
     func liaisonTask(uid: String, token: String, linkId: String,
                      task: String) async throws -> LiaisonRow {
@@ -1454,11 +1493,29 @@ actor ApiClient {
                           body: ["task": task], token: token)
     }
 
+    /// The other side's yes, to the task as it stands. No wording of its own:
+    /// a second party passing their own text would be proposing rather than
+    /// agreeing, and the link could then be held open by two sentences that
+    /// only looked like one agreement.
+    @discardableResult
+    func liaisonAgreed(uid: String, token: String,
+                       linkId: String) async throws -> LiaisonRow {
+        try await request("/liaisons/\(uid)/\(linkId)/agreed", method: "PUT",
+                          token: token)
+    }
+
     @discardableResult
     func closeLiaison(uid: String, token: String, linkId: String,
                       why: String) async throws -> LiaisonRow {
         try await request("/liaisons/\(uid)/\(linkId)?why=\(why)",
                           method: "DELETE", token: token)
+    }
+
+    /// Which agent is running, and which tasks are still running — one read
+    /// across the five things that can be going at once, so somebody does not
+    /// have to know which screen owns which. It reads and never acts.
+    func underway(uid: String, token: String) async throws -> UnderwayWindow {
+        try await request("/underway/\(uid)", token: token)
     }
 
     /// Everything that can be plugged in, off rows included.

@@ -1509,6 +1509,71 @@ private fun BeaconsPanel(vm: GuardianViewModel) {
     }
 }
 
+/**
+ * The task window — *which agent is running, which tasks are still running*,
+ * answerable until now only by visiting five different screens and knowing
+ * which five.
+ *
+ * The gathering is not done here: one route hands back the whole window,
+ * because four shells each deciding what counts as still running is four
+ * chances to disagree invisibly (see jim/underway.py). What this composable
+ * does is say the closed-set `kind` and `why` words in the reader's own
+ * language, which is the half that cannot be done on the server.
+ *
+ * It opens nothing. Every row names the thing it came from, and the screen
+ * that already owns that capability is where you act on it.
+ */
+@Composable
+fun UnderwayCard(vm: GuardianViewModel) {
+    var win by remember { mutableStateOf<UnderwayWindow?>(null) }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.underway(vm.uid!!, vm.token!!) }) { r ->
+            win = r.getOrNull() }
+    }
+    val w = win ?: return
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("und.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        // Stated by the server rather than inferred from an empty list, so
+        // this shell cannot disagree with the other three about it.
+        if (w.quiet)
+            Text(L10n.t("und.quiet", vm.language), color = Jim.T2,
+                fontSize = 12.sp)
+        w.underway.forEach { r ->
+            Text(L10n.t("und.kind.${r.kind}", vm.language), color = Jim.Txt,
+                fontSize = 13.sp)
+            // One of the product's own vocabulary words — a monitor's name,
+            // a call's route — beside what the *person* wrote, which is
+            // printed as they wrote it.
+            listOfNotNull(r.term, r.words).forEach {
+                Text(it, color = Jim.T2, fontSize = 11.sp) }
+            // Only said where it adds something: `open` and `on` restate the
+            // kind, and the other four are news.
+            if (r.why != "open" && r.why != "on")
+                Text(L10n.t("und.why.${r.why}", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+        }
+        // Finished, not running — a list of its own rather than more rows
+        // above. These two strings arrive already composed in English from
+        // `pipeline.curriculum`, as they do on the Coach screen; that is the
+        // existing shape of the ledger and not something this window adds.
+        if (w.today.isNotEmpty()) {
+            Text(L10n.t("und.today", vm.language), color = Jim.Txt,
+                fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            w.today.forEach {
+                Text(it.topic, color = Jim.T2, fontSize = 11.sp) }
+        }
+        // Shown only where the unattended pass is allowed at all: a budget
+        // line on an account that never permitted it answers a question
+        // nobody asked.
+        if (w.permitted)
+            Text(L10n.fill("und.spend", vm.language,
+                mapOf("n" to w.spentToday.toString(),
+                      "daily" to w.daily.toString())),
+                color = Jim.T2, fontSize = 11.sp)
+    }
+}
+
 // ---- Overview ----
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1532,6 +1597,11 @@ fun OverviewScreen(vm: GuardianViewModel) {
         Text(L10n.t("ov.hi", vm.language).replace("{name}", vm.displayName),
             color = Jim.Txt, fontSize = 28.sp, fontWeight = FontWeight.Bold)
         Text(L10n.t("ov.watching.sub", vm.language), color = Jim.T2, fontSize = 14.sp)
+
+        // What the Guardian is doing, before what it has measured: *what is
+        // running* is the question somebody opens this screen with when they
+        // do not know which other screen to open.
+        UnderwayCard(vm)
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(L10n.t("ov.baseline", vm.language), color = Jim.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -5819,9 +5889,18 @@ private fun MicPanel(vm: GuardianViewModel) {
         }
         links.forEach { l ->
             Text(l.about.ifBlank { l.id }, color = Jim.Txt, fontSize = 13.sp)
-            // The task is why it is still open.
-            if (l.task.isNotBlank())
+            // The task is why it is still open — once both sides have said
+            // so. Naming it is the namer's own yes and nothing more, so the
+            // row says which of the three states this link is in rather
+            // than showing the words and leaving it ambiguous.
+            if (l.task.isNotBlank()) {
                 Text(l.task, color = Jim.T2, fontSize = 11.sp)
+                Text(when {
+                        l.holdsItOpen -> L10n.t("lia.holds", vm.language)
+                        l.youAgreed -> L10n.t("lia.waiting", vm.language)
+                        else -> L10n.t("lia.yours", vm.language)
+                     }, color = Jim.T2, fontSize = 11.sp)
+            }
             Text(if (l.running) L10n.t("lia.running", vm.language)
                  else L10n.t("lia.closed", vm.language),
                 color = Jim.T2, fontSize = 11.sp)
@@ -5842,6 +5921,19 @@ private fun MicPanel(vm: GuardianViewModel) {
                         L10n.t("lia.task.example", vm.language)) }) {
                         vm.call({ ApiClient.liaisons(vm.uid!!, vm.token!!) }) { r ->
                             links = r.getOrDefault(links) }
+                    }
+                }
+                // The other side's yes. Offered only where there is a task
+                // this person has not already agreed to — agreeing with
+                // yourself is not something the backend counts, so a button
+                // offering it would be a button that does nothing.
+                if (l.task.isNotBlank() && !l.youAgreed) {
+                    BrandButton(L10n.t("lia.agree", vm.language)) {
+                        vm.call({ ApiClient.liaisonAgreed(vm.uid!!, vm.token!!,
+                            l.id) }) {
+                            vm.call({ ApiClient.liaisons(vm.uid!!, vm.token!!) }) { r ->
+                                links = r.getOrDefault(links) }
+                        }
                     }
                 }
                 BrandButton(L10n.t("lia.stop", vm.language)) {

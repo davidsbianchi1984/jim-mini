@@ -261,12 +261,127 @@ public sealed partial class OverviewPage : Page
         catch (Exception) { AnonymityKnownAs.Text = ""; }
     }
 
+    /// <summary>The task window — which agent is running, which tasks are
+    /// still running.
+    ///
+    /// The gathering is not done here: one route hands back the whole window,
+    /// because four shells each deciding what counts as still running is four
+    /// chances to disagree invisibly (see jim/underway.py). What this does is
+    /// say the closed-set <c>Kind</c> and <c>Why</c> words in the reader's own
+    /// language, which is the half that cannot be done on the server.
+    ///
+    /// It opens nothing. Every row names the thing it came from, and the page
+    /// that already owns that capability is where you act on it.</summary>
+    private async System.Threading.Tasks.Task LoadUnderway()
+    {
+        var s = AppState.Current;
+        UnderwayTitle.Text = L10n.T("und.title");
+        UnderwayPanel.Children.Clear();
+        var txt = (Microsoft.UI.Xaml.Media.Brush)Application.Current
+            .Resources["JimTxtBrush"];
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)Application.Current
+            .Resources["JimT2Brush"];
+        try
+        {
+            var w = await ApiClient.Shared.Underway(s.Uid!, s.Token!);
+            // Stated by the server rather than inferred from an empty list,
+            // so this shell cannot disagree with the other three about it.
+            if (w.Quiet)
+            {
+                UnderwayPanel.Children.Add(new TextBlock
+                {
+                    Text = L10n.T("und.quiet"), FontSize = 12,
+                    TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                });
+            }
+            foreach (var r in w.Underway)
+            {
+                UnderwayPanel.Children.Add(new TextBlock
+                {
+                    Text = L10n.T($"und.kind.{r.Kind}"), FontSize = 13,
+                    TextWrapping = TextWrapping.Wrap, Foreground = txt,
+                });
+                // One of the product's own vocabulary words — a monitor's
+                // name, a call's route — beside what the *person* wrote,
+                // which is shown as they wrote it.
+                foreach (var line in new[] { r.Term, r.Words })
+                {
+                    if (string.IsNullOrEmpty(line)) continue;
+                    UnderwayPanel.Children.Add(new TextBlock
+                    {
+                        Text = line, FontSize = 11,
+                        TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                    });
+                }
+                // Only said where it adds something: `open` and `on` restate
+                // the kind, and the other four are news.
+                if (r.Why != "open" && r.Why != "on")
+                {
+                    UnderwayPanel.Children.Add(new TextBlock
+                    {
+                        Text = L10n.T($"und.why.{r.Why}"), FontSize = 11,
+                        TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                    });
+                }
+            }
+            // Finished, not running — listed apart from the rows above. These
+            // strings arrive already composed in English from
+            // `pipeline.curriculum`, as they do on the Coach page; that is the
+            // existing shape of the ledger, not something this window adds.
+            if (w.Today.Length > 0)
+            {
+                UnderwayPanel.Children.Add(new TextBlock
+                {
+                    Text = L10n.T("und.today"), FontSize = 13,
+                    FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                    TextWrapping = TextWrapping.Wrap, Foreground = txt,
+                });
+                foreach (var e in w.Today)
+                {
+                    UnderwayPanel.Children.Add(new TextBlock
+                    {
+                        Text = e.Topic, FontSize = 11,
+                        TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                    });
+                }
+            }
+            // Shown only where the unattended pass is allowed at all: a
+            // budget line on an account that never permitted it answers a
+            // question nobody asked.
+            if (w.Spend.Permitted)
+            {
+                UnderwayPanel.Children.Add(new TextBlock
+                {
+                    Text = L10n.T("und.spend")
+                        .Replace("{n}", w.Spend.SpentToday.ToString(
+                            CultureInfo.InvariantCulture))
+                        .Replace("{daily}", w.Spend.Daily.ToString(
+                            CultureInfo.InvariantCulture)),
+                    FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                });
+            }
+        }
+        catch
+        {
+            // Unreachable is a state this panel shows rather than one it
+            // hides in — an empty card with a title and nothing under it
+            // reads as "nothing running", which is a different claim.
+            UnderwayPanel.Children.Add(new TextBlock
+            {
+                Text = L10n.T("ov.error"), FontSize = 11,
+                TextWrapping = TextWrapping.Wrap, Foreground = t2,
+            });
+        }
+    }
+
     private async System.Threading.Tasks.Task Load()
     {
         var s = AppState.Current;
         Greeting.Text = L10n.T("ov.hi").Replace("{name}", s.DisplayName);
         await LoadAdaptation();
         await LoadAnonymity();
+        await LoadUnderway();
         try
         {
             var metrics = await ApiClient.Shared.Baseline(s.Uid!, s.Token!);

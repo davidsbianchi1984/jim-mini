@@ -1265,7 +1265,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_digits
 -- each other's contacts. The link is never spoken on a call: it carries what
 -- one guardian told the other, split by side, so each person can read their
 -- own guardian's half afterwards. `task` is what outlives the call — a link
--- carrying one survives the call ending, and closing the task closes it.
+-- carrying one survives the call ending once both sides have agreed to it
+-- (`liaison_task_agreed`), and closing the task closes it.
 CREATE TABLE IF NOT EXISTS liaisons (
     id            TEXT PRIMARY KEY,
     low_id        TEXT NOT NULL REFERENCES users(id),
@@ -1287,6 +1288,27 @@ CREATE TABLE IF NOT EXISTS liaison_lines (
     said_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_liaison_lines ON liaison_lines (link_id);
+
+-- Who has agreed to the task holding a link open. One row per side, and the
+-- link outlives the call only when both are present.
+--
+-- A table rather than two columns on `liaisons`, because this schema has no
+-- migrations — every statement here is CREATE TABLE IF NOT EXISTS, so an
+-- added column never reaches a database that already exists. A new table
+-- does.
+--
+-- It stores the **wording** beside the person, not just the fact that they
+-- agreed. Agreeing to *book the venue* is not agreeing to *run the wedding*,
+-- so re-wording the task leaves the other side's row behind and the link
+-- needs agreeing again — the reset falls out of the key rather than being
+-- remembered by some later edit to the update path.
+CREATE TABLE IF NOT EXISTS liaison_task_agreed (
+    link_id   TEXT NOT NULL REFERENCES liaisons(id),
+    user_id   TEXT NOT NULL,
+    task      TEXT NOT NULL,   -- the wording this side said yes to
+    agreed_at TEXT NOT NULL,
+    PRIMARY KEY (link_id, user_id)
+);
 
 CREATE TABLE IF NOT EXISTS gaps (
     id         TEXT PRIMARY KEY,

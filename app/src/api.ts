@@ -397,12 +397,21 @@ export interface CoachStudied { studied: string; area: string | null;
 //
 // `said_by_mine` and `said_to_mine` are the point: a person reads what their
 // own guardian disclosed, not the other person's half. `task` is what keeps
-// the link open past the call — a link without one closes when the call does.
-export interface LiaisonRow {
+// the link open past the call — and only once **both** sides have agreed to
+// it, which is what `you_agreed` / `they_agreed` / `holds_it_open` report.
+// Three fields rather than one flag because "you have not agreed", "they have
+// not" and "nobody named anything" are three different things to show.
+interface LiaisonTaskStanding {
+  task: string;
+  you_agreed: boolean;
+  they_agreed: boolean;
+  holds_it_open: boolean;
+}
+
+export interface LiaisonRow extends LiaisonTaskStanding {
   id: string;
   with: string;
   about: string;
-  task: string;
   // `running`, not `open`: this API already carries `open` as a list of
   // unanswered follow-ups, and one wire name carries one type.
   running: boolean;
@@ -410,14 +419,44 @@ export interface LiaisonRow {
   opened_at: string;
 }
 
-export interface LiaisonHalf {
+export interface LiaisonHalf extends LiaisonTaskStanding {
   link_id: string;
   about: string;
-  task: string;
   running: boolean;
   ended_because: string | null;
   said_by_mine: string[];
   said_to_mine: string[];
+}
+
+// -- the task window: everything running, in one place (jim/underway.py) --
+//
+// `kind` and `why` are closed sets, said here in the reader's own language
+// through `und.*` keys. `term` is one of the product's own vocabulary words
+// (a monitor's name, a call's route); `words` is what the *person* wrote and
+// is printed as they wrote it. The server composes no prose, which is what
+// keeps this window from arriving in English on a translated screen.
+export interface UnderwayRow {
+  kind: "engaged" | "liaison" | "call" | "listening" | "monitor";
+  id: string | null;
+  term: string | null;
+  words: string | null;
+  since: string | null;
+  why: "open" | "agreed" | "proposed" | "announced" | "not_announced" | "on";
+}
+
+export interface UnderwayWindow {
+  // `underway`, not `running`: this API already carries `running` as a
+  // boolean on a link, and one wire name carries one type.
+  underway: UnderwayRow[];
+  // Stated by the server rather than derived from an empty list, so four
+  // shells cannot disagree about what "nothing is running" looks like.
+  quiet: boolean;
+  // What it went and learned today — finished, not running, which is why it
+  // is a list of its own rather than more rows above.
+  today: Errand[];
+  // `spent_today`, the same name and number the errand ledger carries, rather
+  // than `errands`, which is already a list of them.
+  spend: { spent_today: number; daily: number; permitted: boolean };
 }
 
 // -- what may sense you, through what (jim/monitors.py) ------------------
@@ -1655,13 +1694,27 @@ export const api = {
     req<{ link_id: string; said: string }>(
       `/liaisons/${uid}/${linkId}/said`, { method: "POST", body: { body },
                                            token }),
-  // The work that came out of the conversation, which is what outlives it.
+  // The work that came out of the conversation, which is what outlives it —
+  // once both sides have said so. Proposing counts as the proposer's own yes
+  // and as nothing more than that.
   liaisonTask: (uid: string, linkId: string, task: string, token: string) =>
     req<LiaisonRow>(`/liaisons/${uid}/${linkId}/task`,
       { method: "PUT", body: { task }, token }),
+  // The other side's yes, to the task as it stands. No wording of its own:
+  // a second party passing their own text would be proposing rather than
+  // agreeing, and the link could then be held open by two sentences that
+  // only looked like one agreement.
+  liaisonAgreed: (uid: string, linkId: string, token: string) =>
+    req<LiaisonRow>(`/liaisons/${uid}/${linkId}/agreed`,
+      { method: "PUT", token }),
   closeLiaison: (uid: string, linkId: string, why: string, token: string) =>
     req<LiaisonRow>(`/liaisons/${uid}/${linkId}?why=${why}`,
       { method: "DELETE", token }),
+  // Which agent is running, and which tasks are still running — one read
+  // across the five things that can be going at once, so a person does not
+  // have to know which screen owns which. It reads and never acts.
+  underway: (uid: string, token: string) =>
+    req<UnderwayWindow>(`/underway/${uid}`, { token }),
   // Everything that can be plugged in, off rows included.
   monitors: (uid: string, token: string) =>
     req<MonitorRow[]>(`/monitors/${uid}`, { token }),

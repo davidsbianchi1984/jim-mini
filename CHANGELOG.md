@@ -6,6 +6,100 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Everything running, in one place.** The field ask, said twice: *users will
+  always have that task window — which agent is running, which tasks are still
+  running.*
+
+      asked     which agent is running, and which tasks are still going
+      mattered  can somebody see all of it without knowing where to look
+
+  Every piece of this was already answerable and none of it was answerable
+  together. Links had a list. The monitor roster had its own. The mic knew
+  whether channel 2 was open, the call table knew whether a call was live, and
+  the engagement table knew whether an agent was mid-session. Five readers,
+  five screens, and no answer to *what is my guardian doing right now* — which
+  is the question you ask precisely when you do not already know where to
+  look.
+
+  `jim/underway.py` gathers the five, and the gathering is deliberately on the
+  server. Four shells each deciding what counts as still running is four
+  chances to disagree about it invisibly, since every shell would look right
+  on its own. It is the opposite call from the Guardian's lights, which
+  compose their glance client-side from routes already open — and rightly, as
+  *is there an alarm* needs no judgement. This does.
+
+  **It composes no prose.** `kind` and `why` are closed sets a client branches
+  on and says in the reader's own language; `term` is one of the product's own
+  vocabulary words and `words` is what the person themselves wrote, passed
+  through untouched. A summary endpoint is the easiest place in a product to
+  reintroduce an English sentence on a translated screen, because writing it
+  server-side feels helpful.
+
+  **What is running, and what merely happened, are kept apart.** An errand
+  opens, studies and finishes before the call returns, so listing one as
+  running would be a lie told by the one window whose whole job is to be
+  believed about that. Today's errands sit in `today` instead, beside the
+  budget that bounds them, sliced against the same day boundary
+  `spent_today` uses so the list and the count cannot disagree. Asking the
+  ledger for `DAILY` rows is exactly enough and not by luck: no more than
+  `DAILY` errands can open in a day.
+
+  **It is a reader.** One route, and it is a `GET`. A window over everything
+  that could also act on everything would quietly be the widest door in the
+  product, so every row names the thing it came from and the screen that
+  already owns that capability is where you act on it.
+
+  On the console it is shell furniture beside the lights — always on screen,
+  minimizable, and unreachable is a state it shows rather than one it hides
+  in. On iOS, Android and Windows it opens the overview, above what the
+  Guardian has measured.
+
+### Fixed
+
+- **A link past the call now needs both people, not one.** The rule was
+  specified mutual — *end it with the call unless both agree* — and shipped
+  one-sided. `task` was a single column, written by either party through a
+  door that checked only membership, and the call ending checked only that it
+  was set. So one person could hold a channel open to somebody else's guardian
+  past the conversation that justified it, on their own say-so.
+
+      asked     does the work outlive the call
+      mattered  did both people say it should
+
+  That is the same shape as the one-sided contact `liaison.open` refuses at
+  the door, and refusing a stranger there while letting one party extend the
+  stay unilaterally is the door mattering less than it looks.
+
+  Agreement is now recorded per side and **against the wording**:
+  `take_on` proposes and counts as the proposer's own yes, `agree` is the
+  other side's, and only both together outlive the call. Re-wording drops the
+  other side's agreement, because agreeing to *book the venue* is not agreeing
+  to *run the wedding* — and that reset falls out of the key rather than
+  depending on somebody remembering to clear a flag later.
+
+  A proposed task is not lost. It stays on the link and can be agreed to
+  afterwards; it simply holds nothing open in the meantime, which is the
+  honest state. Ending a link still takes one person, alone, and that
+  asymmetry is deliberate in both directions.
+
+  A new table rather than two columns, because this schema has no migrations:
+  every statement is `CREATE TABLE IF NOT EXISTS`, so an added column never
+  reaches a database that already exists.
+
+  The console's own wording had inherited the error — naming a task said *It
+  outlives the call now*, which the backend now refuses. All four shells show
+  which of the three states a link is in rather than showing the words and
+  leaving it ambiguous.
+
+- **Naming a task on a closed link is refused rather than ignored.** The
+  update carried `AND ended_at IS NULL`, so it quietly changed nothing and
+  handed back a summary that looked like success. It answers 404 now — the
+  same status `say` has always given for a closed link, through a refusal
+  with its own type so one condition cannot keep collecting one status per
+  route.
+
 ## [0.83.0] - 2026-08-17
 
 ### Added

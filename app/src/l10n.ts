@@ -36,6 +36,133 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cont.not_yet": { en: "not shaping anything yet \u2014 too little to mean much", es: "todav\u00eda no influye en nada: hay muy poco para significar algo", fr: "n'influence encore rien \u2014 trop peu pour vouloir dire grand-chose", de: "beeinflusst noch nichts \u2014 zu wenig, um etwas zu bedeuten", pt: "ainda n\u00e3o influencia nada \u2014 muito pouco para significar algo", it: "non influenza ancora nulla: troppo poco per significare qualcosa", ja: "\u307e\u3060\u4f55\u306b\u3082\u53cd\u6620\u3055\u308c\u3066\u3044\u307e\u305b\u3093 \u2014 \u5224\u65ad\u3059\u308b\u306b\u306f\u5c11\u306a\u3059\u304e\u307e\u3059", zh: "\u5c1a\u672a\u5f71\u54cd\u4efb\u4f55\u5185\u5bb9 \u2014 \u6570\u636e\u592a\u5c11\uff0c\u8bf4\u660e\u4e0d\u4e86\u4ec0\u4e48", hi: "\u0905\u092d\u0940 \u0915\u0941\u091b \u092d\u0940 \u0906\u0915\u093e\u0930 \u0928\u0939\u0940\u0902 \u0926\u0947 \u0930\u0939\u093e \u2014 \u0907\u0924\u0928\u093e \u0915\u092e \u0915\u093f \u0915\u094b\u0908 \u092e\u0924\u0932\u092c \u0928 \u0928\u093f\u0915\u0932\u0947", ar: "\u0644\u0627 \u064a\u0624\u062b\u0631 \u0641\u064a \u0634\u064a\u0621 \u0628\u0639\u062f \u2014 \u0623\u0642\u0644 \u0645\u0646 \u0623\u0646 \u064a\u0639\u0646\u064a \u0634\u064a\u0626\u064b\u0627" },
   "cont.forget": { en: "Forget it", es: "Olvidarlo", fr: "Tout oublier", de: "Verwerfen", pt: "Esquecer", it: "Dimenticalo", ja: "\u7834\u68c4\u3059\u308b", zh: "\u6e05\u9664\u5b83", hi: "\u0907\u0938\u0947 \u092d\u0942\u0932 \u091c\u093e\u090f\u0901", ar: "\u0627\u062d\u0630\u0641\u0647" },
   "cont.nothing": { en: "Nothing yet.", es: "Todav\u00eda nada.", fr: "Rien pour l'instant.", de: "Noch nichts.", pt: "Ainda nada.", it: "Ancora niente.", ja: "\u307e\u3060\u4f55\u3082\u3042\u308a\u307e\u305b\u3093\u3002", zh: "\u6682\u65f6\u8fd8\u6ca1\u6709\u3002", hi: "\u0905\u092d\u0940 \u0915\u0941\u091b \u0928\u0939\u0940\u0902\u0964", ar: "\u0644\u0627 \u0634\u064a\u0621 \u0628\u0639\u062f." },
+  // The task window (jim/underway.py), pinned like the lights beside it.
+  // `kind` and `why` arrive as closed-set words and are said here, so the
+  // server never composes a sentence somebody reads in the wrong language.
+  "und.title": {
+    en: "Underway", es: "En curso", fr: "En cours", de: "Läuft gerade",
+    pt: "Em curso", it: "In corso", ja: "進行中", zh: "进行中",
+    hi: "चल रहा है", ar: "قيد التشغيل",
+  },
+  "und.quiet": {
+    en: "nothing running", es: "nada en marcha", fr: "rien en cours",
+    de: "nichts läuft", pt: "nada em curso", it: "niente in corso",
+    ja: "動いているものはありません", zh: "没有正在运行的内容",
+    hi: "कुछ भी नहीं चल रहा", ar: "لا شيء قيد التشغيل",
+  },
+  "und.hide": {
+    en: "Hide what is running", es: "Ocultar lo que está en marcha",
+    fr: "Masquer ce qui est en cours", de: "Ausblenden, was läuft",
+    pt: "Ocultar o que está em curso", it: "Nascondi cosa è in corso",
+    ja: "進行中のものを隠す", zh: "隐藏正在运行的内容",
+    hi: "जो चल रहा है उसे छिपाएँ", ar: "إخفاء ما يعمل الآن",
+  },
+  "und.show": {
+    en: "Show what is running", es: "Mostrar lo que está en marcha",
+    fr: "Afficher ce qui est en cours", de: "Anzeigen, was läuft",
+    pt: "Mostrar o que está em curso", it: "Mostra cosa è in corso",
+    ja: "進行中のものを表示", zh: "显示正在运行的内容",
+    hi: "जो चल रहा है वह दिखाएँ", ar: "إظهار ما يعمل الآن",
+  },
+  "und.unreachable": {
+    en: "Cannot reach the Guardian — press to try again",
+    es: "No se puede contactar con el Guardián: pulsa para reintentar",
+    fr: "Le Gardien est injoignable — appuyez pour réessayer",
+    de: "Der Wächter ist nicht erreichbar — zum Wiederholen drücken",
+    pt: "Não é possível contactar o Guardião — prima para tentar de novo",
+    it: "Il Guardiano non è raggiungibile — premi per riprovare",
+    ja: "ガーディアンに接続できません — 押すと再試行します",
+    zh: "无法连接守护者 — 按此重试",
+    hi: "अभिभावक तक नहीं पहुँच सके — दोबारा कोशिश करने के लिए दबाएँ",
+    ar: "تعذّر الوصول إلى الحارس — اضغط للمحاولة مرة أخرى",
+  },
+  "und.kind.engaged": {
+    en: "agent session", es: "sesión del agente", fr: "session de l'agent",
+    de: "Agentensitzung", pt: "sessão do agente", it: "sessione dell'agente",
+    ja: "エージェントのセッション", zh: "代理会话", hi: "एजेंट सत्र",
+    ar: "جلسة الوكيل",
+  },
+  "und.kind.liaison": {
+    en: "with another guardian", es: "con otro guardián",
+    fr: "avec un autre gardien", de: "mit einem anderen Wächter",
+    pt: "com outro guardião", it: "con un altro guardiano",
+    ja: "別のガーディアンと", zh: "与另一位守护者",
+    hi: "दूसरे अभिभावक के साथ", ar: "مع حارس آخر",
+  },
+  "und.kind.call": {
+    en: "call", es: "llamada", fr: "appel", de: "Anruf", pt: "chamada",
+    it: "chiamata", ja: "通話", zh: "通话", hi: "कॉल", ar: "مكالمة",
+  },
+  "und.kind.listening": {
+    en: "second microphone", es: "segundo micrófono",
+    fr: "second microphone", de: "zweites Mikrofon",
+    pt: "segundo microfone", it: "secondo microfono", ja: "第2マイク",
+    zh: "第二麦克风", hi: "दूसरा माइक्रोफ़ोन", ar: "الميكروفون الثاني",
+  },
+  "und.kind.monitor": {
+    en: "sensing", es: "detectando", fr: "capte", de: "erfasst",
+    pt: "a detetar", it: "sta rilevando", ja: "感知中", zh: "正在感知",
+    hi: "महसूस कर रहा है", ar: "يستشعر",
+  },
+  // Why a row is still open. `proposed` and `agreed` are the two states of a
+  // link's task, and only the second survives the call — so they are said
+  // differently rather than both reading "task".
+  "und.why.proposed": {
+    en: "task proposed — not agreed yet",
+    es: "tarea propuesta: aún sin acordar",
+    fr: "tâche proposée — pas encore acceptée",
+    de: "Aufgabe vorgeschlagen — noch nicht vereinbart",
+    pt: "tarefa proposta — ainda não acordada",
+    it: "compito proposto — non ancora concordato",
+    ja: "タスクを提案中 — まだ合意されていません",
+    zh: "已提议任务 — 尚未达成一致",
+    hi: "कार्य प्रस्तावित — अभी सहमति नहीं",
+    ar: "مهمة مقترحة — لم يُتفق عليها بعد",
+  },
+  "und.why.agreed": {
+    en: "task agreed by both", es: "tarea acordada por ambos",
+    fr: "tâche acceptée des deux côtés", de: "von beiden vereinbarte Aufgabe",
+    pt: "tarefa acordada por ambos", it: "compito concordato da entrambi",
+    ja: "双方が合意したタスク", zh: "双方已同意的任务",
+    hi: "दोनों की सहमति वाला कार्य", ar: "مهمة اتفق عليها الطرفان",
+  },
+  "und.why.announced": {
+    en: "the notice went out", es: "el aviso ya se dio",
+    fr: "l'avertissement a été diffusé", de: "der Hinweis ging hinaus",
+    pt: "o aviso já foi dado", it: "l'avviso è stato dato",
+    ja: "告知は伝えられました", zh: "提示音已播出",
+    hi: "सूचना दी जा चुकी है", ar: "أُذيع التنبيه",
+  },
+  "und.why.not_announced": {
+    en: "nothing is listening until the notice goes out",
+    es: "nada escucha hasta que se dé el aviso",
+    fr: "rien n'écoute tant que l'avertissement n'a pas été diffusé",
+    de: "nichts hört zu, bis der Hinweis hinausgeht",
+    pt: "nada escuta até o aviso ser dado",
+    it: "nulla ascolta finché non viene dato l'avviso",
+    ja: "告知が伝えられるまで、何も聞いていません",
+    zh: "在提示音播出前，没有任何东西在收听",
+    hi: "जब तक सूचना नहीं दी जाती, कुछ भी नहीं सुन रहा",
+    ar: "لا شيء يستمع حتى يُذاع التنبيه",
+  },
+  "und.today": {
+    en: "Learned today", es: "Aprendido hoy", fr: "Appris aujourd'hui",
+    de: "Heute gelernt", pt: "Aprendido hoje", it: "Imparato oggi",
+    ja: "今日学んだこと", zh: "今天学到的", hi: "आज सीखा गया",
+    ar: "ما تعلّمه اليوم",
+  },
+  "und.spend": {
+    en: "{n} of {daily} errands today",
+    es: "{n} de {daily} recados hoy",
+    fr: "{n} sorties sur {daily} aujourd'hui",
+    de: "{n} von {daily} Erkundungen heute",
+    pt: "{n} de {daily} diligências hoje",
+    it: "{n} di {daily} commissioni oggi",
+    ja: "本日 {daily} 件中 {n} 件の調べもの",
+    zh: "今天 {daily} 次外出学习中的 {n} 次",
+    hi: "आज {daily} में से {n} खोज-यात्राएँ",
+    ar: "{n} من {daily} مهام اليوم",
+  },
   "lights.title": {
     en: "Guardian", es: "Guardián", fr: "Gardien", de: "Wächter",
     pt: "Guardião", it: "Guardiano", ja: "ガーディアン", zh: "守护者",
@@ -4688,8 +4815,29 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "lia.task.example": {
     en: "send the revised figures", es: "enviar las cifras revisadas", fr: "envoyer les chiffres révisés", de: "die überarbeiteten Zahlen senden", pt: "enviar os números revistos", it: "inviare i numeri rivisti", ja: "修正した数字を送る", zh: "发送修订后的数字", hi: "संशोधित आँकड़े भेजें", ar: "إرسال الأرقام المنقّحة",
   },
+  // Naming it is this side's own yes and nothing more. The old wording here
+  // said "It outlives the call now", which was true of the one-sided rule
+  // this round replaced and would now be a promise the backend refuses.
   "lia.tasked": {
-    en: "Named. It outlives the call now.", es: "Nombrado. Ahora sobrevive a la llamada.", fr: "Nommé. Il survit désormais à l'appel.", de: "Benannt. Es überdauert jetzt das Gespräch.", pt: "Nomeado. Agora sobrevive à chamada.", it: "Nominato. Ora sopravvive alla chiamata.", ja: "名前をつけました。通話が終わっても続きます。", zh: "已命名。它现在会延续到通话之后。", hi: "नाम दे दिया गया। अब यह कॉल के बाद भी रहेगा।", ar: "سُمّي. صار يمتد بعد المكالمة.",
+    en: "Named. It outlives the call once they agree too.", es: "Nombrado. Sobrevivirá a la llamada cuando la otra parte también acepte.", fr: "Nommé. Il survivra à l'appel quand l'autre l'aura accepté aussi.", de: "Benannt. Es überdauert das Gespräch, sobald die andere Seite ebenfalls zustimmt.", pt: "Nomeado. Sobreviverá à chamada quando a outra parte também concordar.", it: "Nominato. Sopravvivrà alla chiamata quando anche l'altra parte sarà d'accordo.", ja: "名前をつけました。相手も同意すれば、通話が終わっても続きます。", zh: "已命名。等对方也同意后，它会延续到通话之后。", hi: "नाम दे दिया गया। जब वे भी सहमत होंगे, तब यह कॉल के बाद भी रहेगा।", ar: "سُمّي. سيمتد بعد المكالمة متى وافق الطرف الآخر أيضًا.",
+  },
+  "lia.agree": {
+    en: "Agree to it", es: "Aceptarlo", fr: "L'accepter", de: "Zustimmen", pt: "Concordar", it: "Accettalo", ja: "同意する", zh: "同意", hi: "सहमत हों", ar: "وافق عليها",
+  },
+  "lia.agreed": {
+    en: "Agreed. It outlives the call now.", es: "Aceptado. Ahora sobrevive a la llamada.", fr: "Accepté. Il survit désormais à l'appel.", de: "Zugestimmt. Es überdauert jetzt das Gespräch.", pt: "Concordado. Agora sobrevive à chamada.", it: "Accettato. Ora sopravvive alla chiamata.", ja: "同意しました。通話が終わっても続きます。", zh: "已同意。它现在会延续到通话之后。", hi: "सहमति दे दी गई। अब यह कॉल के बाद भी रहेगा।", ar: "تمت الموافقة. صار يمتد بعد المكالمة.",
+  },
+  // Where the task has got to, from this person's side. Three states, and
+  // the middle one is the whole point of the round: work you proposed that
+  // nobody has agreed to holds nothing open.
+  "lia.waiting": {
+    en: "waiting for them to agree", es: "esperando a que acepten", fr: "en attente de leur accord", de: "wartet auf ihre Zustimmung", pt: "à espera que concordem", it: "in attesa del loro accordo", ja: "相手の同意を待っています", zh: "等待对方同意", hi: "उनकी सहमति की प्रतीक्षा", ar: "في انتظار موافقتهم",
+  },
+  "lia.yours": {
+    en: "they proposed it — your turn to agree", es: "lo propusieron: te toca aceptar", fr: "ils l'ont proposé — à vous de l'accepter", de: "sie haben es vorgeschlagen — Sie sind mit der Zustimmung dran", pt: "propuseram-no — falta a sua concordância", it: "l'hanno proposto: tocca a te accettare", ja: "相手が提案しました — 次はあなたの同意です", zh: "对方已提议 — 轮到你同意了", hi: "उन्होंने प्रस्ताव रखा — अब आपकी सहमति की बारी", ar: "اقترحوها — دورك للموافقة",
+  },
+  "lia.holds": {
+    en: "both agreed — this is what keeps the link open", es: "ambos aceptaron: esto es lo que mantiene abierto el enlace", fr: "les deux ont accepté — c'est ce qui maintient le lien ouvert", de: "beide zugestimmt — das hält die Verbindung offen", pt: "ambos concordaram — é isto que mantém a ligação aberta", it: "entrambi d'accordo: è questo che tiene aperto il collegamento", ja: "双方が合意しました — これがリンクを開いたままにしています", zh: "双方已同意 — 这就是让链接保持开启的原因", hi: "दोनों सहमत — यही कड़ी को खुला रखता है", ar: "وافق الطرفان — هذا ما يُبقي الصلة مفتوحة",
   },
   "lia.stop": {
     en: "Stop it", es: "Detenerlo", fr: "L'arrêter", de: "Beenden", pt: "Parar", it: "Fermalo", ja: "停止する", zh: "停止", hi: "रोकें", ar: "أوقفها",

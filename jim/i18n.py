@@ -1704,6 +1704,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': "ये दोनों एक-दूसरे के संपर्क नहीं हैं — एक गार्जियन दूसरे तक तभी पहुँचता है जब दोनों ने पहले से एक-दूसरे को रखा हो; अकेला एक पक्ष कहीं नहीं पहुँचता",
         'ar': "هذان ليسا جهتَي اتصال لبعضهما — لا يصل حارس إلى آخر إلا إذا كان كلاهما يحتفظ بالآخر أصلًا، والطرف الواحد وحده لا يصل إلى شيء",
     },
+    "there is no task on this link yet — one side names the work first, and the other agrees to it": {
+        'es': "todavía no hay ninguna tarea en este enlace: una parte nombra el trabajo primero y la otra lo acepta",
+        'fr': "il n'y a encore aucune tâche sur ce lien : un côté nomme le travail d'abord, et l'autre l'accepte",
+        'de': "auf dieser Verbindung gibt es noch keine Aufgabe — eine Seite benennt die Arbeit zuerst, die andere stimmt ihr zu",
+        'pt': "ainda não há nenhuma tarefa nesta ligação: um lado nomeia o trabalho primeiro e o outro concorda com ele",
+        'it': "su questo collegamento non c'è ancora alcun compito: un lato nomina il lavoro per primo e l'altro lo accetta",
+        'ja': "このリンクにはまだタスクがありません。まず一方が作業に名前をつけ、もう一方がそれに同意します",
+        'zh': "这条链接上还没有任务：先由一方为这项工作命名，另一方再表示同意",
+        'hi': "इस कड़ी पर अभी कोई कार्य नहीं है — पहले एक पक्ष काम को नाम देता है, और दूसरा उससे सहमत होता है",
+        'ar': "لا توجد بعد أي مهمة على هذه الصلة — يسمّي أحد الطرفين العمل أولًا، ثم يوافق عليه الطرف الآخر",
+    },
     "your guardian has not been allowed to speak for you to somebody else's — turn it on in what it may do for you, where it says what it may say": {
         'es': "tu guardián no tiene permiso para hablar por ti con el de otra persona: actívalo en lo que puede hacer por ti, donde dice qué puede decir",
         'fr': "votre gardien n'a pas le droit de parler en votre nom à celui de quelqu'un d'autre — activez-le dans ce qu'il peut faire pour vous, où il est dit ce qu'il peut dire",

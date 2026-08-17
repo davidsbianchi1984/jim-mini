@@ -801,10 +801,21 @@ public sealed partial class ConnectPage : Page
                 });
                 if (l.Task.Length > 0)
                 {
-                    // The task is why it is still open.
+                    // The task is why it is still open — once both sides have
+                    // said so. Naming it is the namer's own yes and nothing
+                    // more, so the row says which of the three states this
+                    // link is in rather than leaving it ambiguous.
                     box.Children.Add(new TextBlock
                     {
                         Text = l.Task, FontSize = 11,
+                        TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                    });
+                    box.Children.Add(new TextBlock
+                    {
+                        Text = l.HoldsItOpen ? L10n.T("lia.holds")
+                             : l.YouAgreed ? L10n.T("lia.waiting")
+                             : L10n.T("lia.yours"),
+                        FontSize = 11,
                         TextWrapping = TextWrapping.Wrap, Foreground = t2,
                     });
                 }
@@ -860,6 +871,25 @@ public sealed partial class ConnectPage : Page
                         catch (Exception ex) { MicFailed(ex); }
                     };
                     box.Children.Add(work);
+                    // The other side's yes. Offered only where there is a
+                    // task this person has not already agreed to — agreeing
+                    // with yourself is not something the backend counts, so a
+                    // button offering it would be a button that does nothing.
+                    if (l.Task.Length > 0 && !l.YouAgreed)
+                    {
+                        var agree = new Button { Content = L10n.T("lia.agree") };
+                        agree.Click += async (_, _) =>
+                        {
+                            try
+                            {
+                                await ApiClient.Shared.LiaisonAgreed(
+                                    s.Uid, s.Token, id);
+                                await LoadLiaisons();
+                            }
+                            catch (Exception ex) { MicFailed(ex); }
+                        };
+                        box.Children.Add(agree);
+                    }
                     var stop = new Button { Content = L10n.T("lia.stop") };
                     stop.Click += async (_, _) =>
                     {

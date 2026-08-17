@@ -20,8 +20,9 @@ phone, via online.*
   theirs. Two agents negotiating on a channel neither human can inspect are
   two principals with counsel who never report back;
 * nothing is said across it without the permit, which is `asked`;
-* the link closes when the call does, unless a task is holding it open — and a
-  person stopping it always closes it;
+* the link closes when the call does, unless a task **both sides agreed to**
+  is holding it open — one person cannot extend a channel to somebody else's
+  guardian on their own say-so, though either can end it alone;
 * and a closed link stays in the list, because what two guardians did on
   somebody's behalf is not something to tidy away.
 """
@@ -170,19 +171,141 @@ def test_a_link_with_no_task_closes_with_the_call(client):
     assert out["ended_because"] == "call_ended"
 
 
-def test_a_task_keeps_it_open_past_the_call(client):
+def test_a_task_both_agreed_keeps_it_open_past_the_call(client):
     """What extends the link is not an agreement to stay connected. It is a
-    piece of work with an end in it."""
-    a, a_head, b, _ = _two(client)
+    piece of work with an end in it — that both sides said yes to."""
+    a, a_head, b, b_head = _two(client)
     link = _open(client, a, a_head, b)
     client.put(f"/liaisons/{a}/{link['id']}/task",
                json={"task": "send the revised figures by Friday"},
                headers=a_head)
+    agreed = client.put(f"/liaisons/{b}/{link['id']}/agreed",
+                        headers=b_head).json()
+    assert agreed["holds_it_open"] is True
 
     out = client.delete(f"/liaisons/{a}/{link['id']}?why=call_ended",
                         headers=a_head).json()
     assert out["running"] is True
     assert out["task"] == "send the revised figures by Friday"
+
+
+def test_one_side_alone_cannot_keep_the_link_open(client):
+    """The rule the first version of this got wrong.
+
+    A task was one column, written by either party, and the call ending
+    checked only that it was set — so one person could hold a channel to
+    somebody else's guardian open past the conversation that justified it, on
+    their own say-so. That is the same shape as the one-sided contact this
+    module refuses at the door, and refusing a stranger there while allowing
+    this is the door mattering less than it looks.
+    """
+    a, a_head, b, _ = _two(client)
+    link = _open(client, a, a_head, b)
+    named = client.put(f"/liaisons/{a}/{link['id']}/task",
+                       json={"task": "send the revised figures by Friday"},
+                       headers=a_head).json()
+    # Proposing is this side's own yes, and only that.
+    assert named["you_agreed"] is True
+    assert named["they_agreed"] is False
+    assert named["holds_it_open"] is False
+
+    out = client.delete(f"/liaisons/{a}/{link['id']}?why=call_ended",
+                        headers=a_head).json()
+    assert out["running"] is False, "one person extended it alone"
+    assert out["ended_because"] == "call_ended"
+
+
+def test_the_proposed_task_is_not_lost_when_the_call_ends_it(client):
+    """A task nobody agreed to is still real work somebody proposed. It stays
+    on the link to be read; it just was not holding anything open."""
+    a, a_head, b, _ = _two(client)
+    link = _open(client, a, a_head, b)
+    client.put(f"/liaisons/{a}/{link['id']}/task",
+               json={"task": "send the revised figures"}, headers=a_head)
+    out = client.delete(f"/liaisons/{a}/{link['id']}?why=call_ended",
+                        headers=a_head).json()
+    assert out["task"] == "send the revised figures"
+
+
+def test_re_wording_the_task_drops_the_other_sides_agreement(client):
+    """Agreeing to *book the venue* is not agreeing to *run the wedding*.
+
+    The agreement is recorded against the wording, so this falls out of the
+    key rather than depending on somebody remembering to clear a flag.
+    """
+    a, a_head, b, b_head = _two(client)
+    link = _open(client, a, a_head, b)
+    client.put(f"/liaisons/{a}/{link['id']}/task",
+               json={"task": "book the venue"}, headers=a_head)
+    client.put(f"/liaisons/{b}/{link['id']}/agreed", headers=b_head)
+
+    widened = client.put(f"/liaisons/{a}/{link['id']}/task",
+                         json={"task": "run the whole wedding"},
+                         headers=a_head).json()
+    assert widened["they_agreed"] is False
+    assert widened["holds_it_open"] is False
+
+    out = client.delete(f"/liaisons/{a}/{link['id']}?why=call_ended",
+                        headers=a_head).json()
+    assert out["running"] is False
+
+
+def test_there_is_nothing_to_agree_to_before_a_task_is_named(client):
+    """*Nothing here to agree to* and *that link is gone* are different
+    things to be told."""
+    a, a_head, b, b_head = _two(client)
+    link = _open(client, a, a_head, b)
+    r = client.put(f"/liaisons/{b}/{link['id']}/agreed", headers=b_head)
+    assert r.status_code == 422, r.text
+    assert "names the work first" in r.text
+
+
+@pytest.mark.parametrize("call", ("task", "agreed"))
+def test_a_closed_link_answers_the_same_way_everywhere(client, call):
+    """One status for one condition.
+
+    `say` answered 404 for a closed link from the day it was written. When
+    naming a task and agreeing to one gained the same check they inherited
+    their route's 422 — which is the status for *you did not say what the
+    task is*, a different thing entirely, and the status is all a reader has
+    to tell them apart.
+
+    Naming a task on a closed link used to do something worse than answer the
+    wrong number: the update said `AND ended_at IS NULL`, so it quietly
+    changed nothing and handed back a summary that looked like success.
+    """
+    a, a_head, b, _ = _two(client)
+    link = _open(client, a, a_head, b)
+    client.delete(f"/liaisons/{a}/{link['id']}?why=stopped", headers=a_head)
+
+    r = client.put(f"/liaisons/{a}/{link['id']}/{call}",
+                   json={"task": "send the figures"}, headers=a_head)
+    assert r.status_code == 404, r.text
+    assert "closed" in r.text
+
+
+def test_the_closed_refusal_is_its_own_type():
+    """A subclass rather than a new exception, so a route that has not been
+    taught the difference still catches it as `NoSuchLink`."""
+    assert issubclass(liaison.Closed, liaison.NoSuchLink)
+
+
+def test_agreeing_takes_no_wording_of_its_own():
+    """A second party passing their own text would be proposing, not
+    agreeing — and the link could then be held open by two sentences that
+    only looked like one agreement."""
+    assert "task" not in inspect.signature(liaison.agree).parameters
+
+
+def test_a_stranger_cannot_agree_to_somebody_elses_task(client):
+    a, a_head, b, _ = _two(client)
+    link = _open(client, a, a_head, b)
+    client.put(f"/liaisons/{a}/{link['id']}/task",
+               json={"task": "send the figures"}, headers=a_head)
+    outsider = enroll(client)
+    head = {"authorization": client.headers["authorization"]}
+    r = client.put(f"/liaisons/{outsider}/{link['id']}/agreed", headers=head)
+    assert r.status_code == 403, r.text
 
 
 def test_a_person_can_always_stop_it(client):
@@ -202,10 +325,33 @@ def test_a_person_can_always_stop_it(client):
 
 def test_the_call_ending_cannot_close_what_the_task_holds():
     """Checked rather than trusted: the whole point of the task is that the
-    call ending is not the end of it."""
+    call ending is not the end of it — and the whole point of the agreement
+    is that one person's task is not enough to reach that."""
     source = inspect.getsource(liaison.close)
     assert 'why == "call_ended"' in source
     assert 'row["task"]' in source
+    assert "_both_agreed(row)" in source
+
+
+def test_neither_side_can_write_the_others_agreement(client):
+    """The guard under the rule. Agreement is a row per side, so the only
+    way to reach both is for both to have said so — there is no path that
+    writes somebody else's."""
+    a, a_head, b, b_head = _two(client)
+    link = _open(client, a, a_head, b)
+    client.put(f"/liaisons/{a}/{link['id']}/task",
+               json={"task": "send the figures"}, headers=a_head)
+    # a proposes, a agrees again, a agrees once more: still one side.
+    client.put(f"/liaisons/{a}/{link['id']}/agreed", headers=a_head)
+    out = client.put(f"/liaisons/{a}/{link['id']}/agreed",
+                     headers=a_head).json()
+    assert out["holds_it_open"] is False
+
+    from jim import db
+    rows = db.connect().execute(
+        "SELECT user_id FROM liaison_task_agreed WHERE link_id=?",
+        (link["id"],)).fetchall()
+    assert [r["user_id"] for r in rows] == [a]
 
 
 def test_nothing_is_said_across_a_closed_link(client):
