@@ -12,7 +12,7 @@ programmed in advance. The goal is to give seniors and their families
 greater safety, independence, and peace of mind — 24/7, even during
 sleep.
 
-**Current release: v0.80.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.81.0** ([changelog](CHANGELOG.md) ·
 [showcase — a share-ready page for social media](docs/showcase.html)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [pdi](https://github.com/davidsbianchi1984/pdi)) versioned and cut together, so
@@ -378,6 +378,7 @@ Full detail in [CHANGELOG.md](CHANGELOG.md).
 
 | Release | What landed |
 |---|---|
+| **0.81.0** | **The sentence that forgot how it was built** — `str()` on a `Templated` returns a plain `str`, which drops the template, so a refusal built by `i18n.fill` and passed on as `HTTPException(403, str(exc))` reaches the reader as bare English in every language, looking exactly like a sentence nobody has translated yet. QRME shipped it on the sentence somebody reads while something is going wrong. Nothing here launders a template that way today, and this release is what keeps that true rather than assumed: `i18n.raised` hands a refusal on in the shape it was raised, and a guard carried by all three products fails any route that reaches for `str()` instead |
 | **0.80.0** | **The version, and nothing else** — no code changes in this product. QRME took this release on its own (the agent asking people rather than pages, and the ledger of which far hosts keep watching it leave); the cut keeps the three reporting one number to the tandem's version guard |
 | **0.79.0** | **The version, and nothing else** — no code changed in JIM this release. QRME took 0.78.0 alone for a plug-in storefront this product has no counterpart for yet, and 0.79.0 brings the three back to one number, so the console's version guard and the tandem have a single answer rather than a table of which pairs go together |
 | **0.77.0** | **The name in the list is the link** — the circle shows your neighbours by name, and opening one of their homepages meant typing their id into a box: a UUID, so *type it in* really meant *copy it from somewhere else first*. The name is the way in now, and the box stays for an id handed to you from outside the app, which is the case it was always right for |

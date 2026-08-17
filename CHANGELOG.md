@@ -6,6 +6,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.81.0] - 2026-08-17
+
+### Added
+
+- **A guard on the sentence that forgets how it was built.** `str(exc)` on a
+  `Templated` returns a plain `str`, which drops the template — so a refusal
+  built by `i18n.fill`, carried on one of this product's own exceptions and
+  passed on as `HTTPException(403, str(exc))`, reaches the handler as bare
+  English. In every language, silently, and looking exactly like a sentence
+  nobody has translated yet.
+
+      asked     is the refusal translated
+      mattered  did it still know how it was built when it got there
+
+  QRME shipped that on its sealed-dialer sentence — the one somebody reads
+  while something is going wrong — translated into nine languages and reaching
+  none of them, because the route between the raise and the handler called
+  `str()`. Nothing here launders a template that way today. That is worth
+  keeping rather than assuming: the first exception in this product to carry a
+  built sentence would otherwise ship the same defect, and nothing would say a
+  word.
+
+  `i18n.raised` hands a refusal on in the shape it was raised, and
+  `test_a_built_sentence_is_not_laundered_through_str` fails any route that
+  reaches for `str()` instead. Carried by all three products, which is where
+  this class of defect has always lived.
+
 ## [0.80.0] - 2026-08-16
 
 ### Changed
@@ -8638,7 +8665,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.80.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.81.0...HEAD
+[0.81.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.81.0
 [0.80.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.80.0
 [0.79.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.79.0
 [0.77.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.77.0

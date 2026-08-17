@@ -1,4 +1,4 @@
-# status: manifest — 505 guards carried by all three products
+# status: manifest — 506 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -37,6 +37,7 @@ test_a_body_that_cannot_be_read_is_not_judged
 test_a_body_that_is_not_an_object_still_says_something
 test_a_brush_named_in_a_ternary_is_a_use
 test_a_build_that_forgot_to_name_itself_cannot_impersonate_a_product
+test_a_built_sentence_is_not_laundered_through_str
 test_a_callers_key_is_echoed_when_it_looks_like_a_field_name
 test_a_comma_inside_an_argument_does_not_shift_the_positions
 test_a_computed_property_is_not_a_key

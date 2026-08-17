@@ -1504,6 +1504,27 @@ _VOCABULARY: dict[str, dict[str, str]] = {
 }
 
 
+def raised(exc: Exception):
+    """The sentence an exception was raised with, in the shape it was raised.
+
+    `str(exc)` looks equivalent and is not. `str()` on a `str` subclass returns
+    a plain `str`, so a `Templated` carried by a domain exception and passed on
+    as `HTTPException(403, str(exc))` reaches the handler having forgotten its
+    template — English, silently, and indistinguishable from a sentence nobody
+    has translated yet.
+
+        asked     is the refusal translated
+        mattered  did it still know how it was built when it got there
+
+    QRME shipped that defect on its sealed-dialer sentence — the one somebody
+    reads while something is going wrong — translated into nine languages and
+    reaching none of them. Nothing here launders a template that way today, and
+    `test_a_built_sentence_is_not_laundered_through_str` is what keeps it so.
+    A route that refuses with a template uses this instead.
+    """
+    return exc.args[0] if exc.args else ""
+
+
 def sentence_of(detail) -> str | None:
     """The part of a refusal a person is meant to read, whatever shape it has.
 

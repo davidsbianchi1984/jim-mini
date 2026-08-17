@@ -290,3 +290,78 @@ def test_a_term_is_exempt_from_the_whitespace_rule_and_a_stranger_is_not():
     assert i18n.localize_detail(unmapped, "pt") == str(unmapped), (
         "an unmapped Term reached a translated frame — the exemption has to be "
         "paid for by the vocabulary check, or it is just a hole")
+
+
+# --- the built sentence, and the call that forgets how it was built ---------
+
+def _sentence_carriers() -> set[str]:
+    """Exception classes this package raises with a built sentence inside.
+
+    Not `HTTPException`: that one goes straight to the handler, which knows
+    what to do with a `Templated`. These are the product's own exceptions,
+    raised deep and translated by whatever route happens to catch them — and
+    that hand-off is where the template gets lost.
+    """
+    carriers = set()
+    for path in sorted(PACKAGE.rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if not isinstance(node, ast.Raise) or not isinstance(node.exc, ast.Call):
+                continue
+            name = getattr(node.exc.func, "id", None) or getattr(
+                node.exc.func, "attr", "")
+            if name == "HTTPException":
+                continue
+            built = any(getattr(a.func, "attr", "") == "fill"
+                        for a in node.exc.args if isinstance(a, ast.Call))
+            if built:
+                carriers.add(name)
+    return carriers
+
+
+def test_a_built_sentence_is_not_laundered_through_str():
+    """`str(exc)` on a `Templated` returns a plain `str`.
+
+    Which forgets the template. A refusal built by `i18n.fill`, carried on one
+    of this product's own exceptions and passed on as
+    `HTTPException(403, str(exc))`, therefore arrives at the handler as bare
+    English — in every language, silently, and looking exactly like a sentence
+    nobody has translated yet.
+
+        asked     is the refusal translated
+        mattered  did it still know how it was built when it got there
+
+    QRME shipped it on the sealed-dialer sentence: templated, translated into
+    nine languages, and reaching none of them because the route between the
+    raise and the handler called `str()`. `i18n.raised` is the fix and this is
+    what makes it stick.
+
+    Passing vacuously is the honest state for a product with no such exception
+    yet — the guard exists to fire on the first one, which is the moment the
+    defect would otherwise ship unnoticed.
+    """
+    carriers = _sentence_carriers()
+    offenders = []
+    for path in sorted(PACKAGE.rglob("*.py")):
+        source = path.read_text(encoding="utf-8")
+        for node in ast.walk(ast.parse(source)):
+            if not isinstance(node, ast.ExceptHandler) or not node.name:
+                continue
+            caught = node.type
+            names = ([getattr(e, "attr", "") or getattr(e, "id", "")
+                      for e in caught.elts] if isinstance(caught, ast.Tuple)
+                     else [getattr(caught, "attr", "")
+                           or getattr(caught, "id", "")])
+            if not carriers.intersection(names):
+                continue
+            body = "\n".join(ast.unparse(stmt) for stmt in node.body)
+            if re.search(rf"\bstr\(\s*{re.escape(node.name)}\s*\)", body):
+                offenders.append(
+                    f"{path.relative_to(REPO)}:{node.lineno} catches "
+                    f"{'/'.join(n for n in names if n)} and passes on "
+                    f"str({node.name})")
+    assert not offenders, (
+        "a built sentence is passed on through `str()`, which drops its "
+        "template and leaves the refusal English in every language:\n    "
+        + "\n    ".join(offenders)
+        + "\n  Use `i18n.raised(exc)` — it hands on the sentence in the shape "
+          "it was raised.")
