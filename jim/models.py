@@ -17,15 +17,21 @@ LifeArea = Literal[
     "relationships", "personal_growth",
 ]
 
-#: What the agent may see. The last two are the ones that are mostly about
-#: **other people** rather than the person granting them: an address book and
-#: a call history are a few hundred names who never chose this product and
-#: cannot see that it holds their number. They sit here beside the rest
-#: because *what the agent may see* has to be one list somebody can read to
-#: the end — and `jim/contacts.py` treats them as the heavier grant they are.
+#: What the agent may see. `contacts` is the one that is mostly about **other
+#: people** rather than the person granting it: an address book is a few
+#: hundred names who never chose this product and cannot see that it holds
+#: their number. It sits here beside the rest because *what the agent may
+#: see* has to be one list somebody can read to the end — and
+#: `jim/contacts.py` treats it as the heavier grant it is.
+#:
+#: A `phone` entry was here for one commit, declared for a call history
+#: nothing reads yet. A source name no code asks about is a switch a person
+#: can turn on that does nothing — the same defect
+#: `test_a_binding_is_not_a_door.py` catches one layer out — so it comes back
+#: when something reads it.
 Source = Literal[
     "wearable", "health", "calendar", "spending", "bank", "messages",
-    "location", "contacts", "phone",
+    "location", "contacts",
 ]
 
 
