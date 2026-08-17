@@ -64,6 +64,24 @@ SENSES = ("sound", "sight", "vitals", "screen", "presence", "signal")
 PLACINGS = ("worn", "held", "stationary", "on_body", "on_screen")
 
 
+#: What may survive of what a monitor took in, as a rule the code can follow.
+#:
+#: ``holds`` is the same promise in the person's own words, and until 0.84.0
+#: it was the only form of it — which meant the promise was readable and not
+#: checkable. :mod:`jim.daybook` needed to obey it, and obeying an English
+#: sentence means parsing one; the first draft of that did
+#: ``holds.startswith("nothing")`` and would have quietly started keeping
+#: screen content the day somebody rewrote the sentence to begin *"Nothing"*.
+#:
+#: So the promise is a field, the sentence stays, and
+#: :func:`_keeping_is_honest` holds the two together.
+KEEPS = (
+    "nothing",   # never the content, whatever anybody switches on
+    "if_kept",   # only where this person has switched keeping on
+    "always",    # it is their own history — readings they asked to have
+)
+
+
 @dataclass(frozen=True)
 class Monitor:
     """One thing that can be plugged in and sense somebody."""
@@ -73,6 +91,7 @@ class Monitor:
     placing: str
     says: str                       # what it does, in the person's words
     holds: str = ""                 # what stays behind; empty means nothing
+    keeps: str = "nothing"          # the same promise, as a rule (see KEEPS)
     catches_others: bool = False    # does it sense people who never chose it
     default: bool = False
 
@@ -85,44 +104,48 @@ MONITORS: dict[str, Monitor] = {m.name: m for m in (
     Monitor("wrist", ("vitals",), "worn",
             says="read your pulse, your sleep and your movement from a watch "
                  "or band",
-            holds="the readings, as your own history"),
+            holds="the readings, as your own history", keeps="always"),
     Monitor("ring", ("vitals",), "worn",
             says="read your pulse and your sleep from a ring",
-            holds="the readings, as your own history"),
+            holds="the readings, as your own history", keeps="always"),
     Monitor("patch", ("vitals", "signal"), "on_body",
             says="read what a stuck-on or implanted sensor reports",
-            holds="the readings, as your own history"),
+            holds="the readings, as your own history", keeps="always"),
     Monitor("earpiece", ("sound",), "worn",
             says="hear you, and answer where only you can hear it",
-            holds="nothing — it is a channel, not a recording"),
+            holds="nothing — it is a channel, not a recording",
+            keeps="nothing"),
     Monitor("glasses", ("sound", "sight"), "worn",
             says="see and hear what you are looking at",
-            holds="nothing unless you keep something",
+            holds="nothing unless you keep something", keeps="if_kept",
             # Worn, and still pointed outward at whoever is in front of you.
             catches_others=True),
 
     # -- a screen somebody is working at -----------------------------------
     Monitor("screen", ("screen",), "on_screen",
             says="see what is on your screen while you work",
-            holds="nothing — what it notices is offered and dropped"),
+            holds="nothing — what it notices is offered and dropped",
+            keeps="nothing"),
 
     # -- stationary, and pointed at a room ---------------------------------
     Monitor("room_camera", ("sight", "presence"), "stationary",
             says="see the room — that you are up, that you fell, that you did "
                  "not come back",
-            holds="nothing unless you switch keeping on",
+            holds="nothing unless you switch keeping on", keeps="if_kept",
             catches_others=True),
     Monitor("room_speaker", ("sound", "presence"), "stationary",
             says="hear the room, and speak into it",
-            holds="nothing unless you switch keeping on",
+            holds="nothing unless you switch keeping on", keeps="if_kept",
             catches_others=True),
     Monitor("doorway", ("presence",), "stationary",
             says="notice somebody passing, without seeing or hearing them",
-            holds="the times, and nothing else",
+            # The times are the moment rows themselves. Nothing of what it
+            # perceived is content, so it keeps none.
+            holds="the times, and nothing else", keeps="nothing",
             catches_others=True),
     Monitor("bed", ("vitals", "presence"), "stationary",
             says="read breathing and movement from under a mattress",
-            holds="the readings, as your own history",
+            holds="the readings, as your own history", keeps="always",
             # A second person in the bed is read by the same strip.
             catches_others=True),
 )}
@@ -151,6 +174,32 @@ def _defaults_are_honest() -> list[str]:
                   if m.default and m.catches_others)
 
 
+def _keeping_is_honest() -> list[str]:
+    """Rows where the promise in words and the rule in code disagree.
+
+    ``holds`` is what a person reads before switching a monitor on; ``keeps``
+    is what :mod:`jim.daybook` actually obeys. Two spellings of one promise is
+    two places for it to drift, and the drift would be silent in the direction
+    that matters — a sentence saying *nothing* over code that kept everything.
+
+    Two checks, both exact rather than clever:
+
+    * a row whose sentence opens with *nothing* must not keep content
+      unconditionally;
+    * a row that keeps only when somebody switches keeping on must say so with
+      an *unless*, and a row that says *unless* must be that kind of row.
+    """
+    wrong = []
+    for m in MONITORS.values():
+        opens_with_nothing = m.holds.lower().startswith("nothing")
+        conditional = "unless" in m.holds.lower()
+        if opens_with_nothing and m.keeps == "always":
+            wrong.append(m.name)
+        elif conditional != (m.keeps == "if_kept"):
+            wrong.append(m.name)
+    return sorted(wrong)
+
+
 def _placings_are_honest() -> list[str]:
     """Rows filed somewhere their reach does not fit.
 
@@ -177,7 +226,10 @@ def roster(user_id: str) -> list[dict]:
         row = rows.get(m.name)
         out.append({
             "name": m.name, "senses": list(m.senses), "placing": m.placing,
-            "says": m.says, "holds": m.holds,
+            # `holds` is the promise in words; `keeps` is the same promise as
+            # the rule `jim/daybook.py` obeys. Both travel, so a screen can
+            # show the sentence and branch on the rule.
+            "says": m.says, "holds": m.holds, "keeps": m.keeps,
             "catches_others": m.catches_others,
             "on": bool(row["switched_on"]) if row else m.default,
             "device": row["device_name"] if row else None,

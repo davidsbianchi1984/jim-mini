@@ -1310,6 +1310,45 @@ CREATE TABLE IF NOT EXISTS liaison_task_agreed (
     PRIMARY KEY (link_id, user_id)
 );
 
+-- The day as it was taken in, and what survived of it (jim/daybook.py).
+--
+-- One row per moment a monitor sensed something, **whether or not** its
+-- content was kept. That is the whole point of the table: an accounting that
+-- listed only what survived would be a record with its own omissions edited
+-- out. `dropped_because` says which promise stopped it — the monitor's own
+-- `holds`, a keeping switch left off, or the person going back and forgetting
+-- one afterwards.
+--
+-- `content` is empty for everything the roster does not let this monitor
+-- keep, and that decision is never the caller's. See `jim/monitors.py`,
+-- whose `keeps` field is the same promise its `holds` sentence makes to the
+-- person reading it before they switch anything on.
+CREATE TABLE IF NOT EXISTS day_moments (
+    id              TEXT PRIMARY KEY,
+    user_id         TEXT NOT NULL REFERENCES users(id),
+    monitor         TEXT NOT NULL,
+    stretch_id      TEXT,            -- the meeting it fell inside, or NULL
+    kept            INTEGER NOT NULL DEFAULT 0,
+    content         TEXT NOT NULL DEFAULT '',   -- '' unless kept
+    dropped_because TEXT NOT NULL DEFAULT '',   -- '' when it was kept
+    sensed_at       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_day_moments ON day_moments (user_id, sensed_at);
+
+-- A meeting, a call, or a working stretch: a run of the day with one monitor
+-- on it. `others_told` is the same claim `monitors.plug_in` demands, asked
+-- again here — switching a room speaker on for a quiet house is not the same
+-- decision as bringing four people into that room for an hour.
+CREATE TABLE IF NOT EXISTS day_stretches (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    monitor     TEXT NOT NULL,
+    about       TEXT NOT NULL DEFAULT '',
+    others_told INTEGER NOT NULL DEFAULT 0,
+    opened_at   TEXT NOT NULL,
+    ended_at    TEXT
+);
+
 -- What the coach noticed during the day, and what settled it (jim/noticed.py).
 --
 -- One row per detection this pass has looked at, which is also how it knows

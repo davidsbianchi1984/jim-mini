@@ -135,6 +135,25 @@ data class UnderwayWindow(val underway: List<UnderwayRow>,
                           val quiet: Boolean, val today: List<Errand>,
                           val spentToday: Int, val daily: Int,
                           val permitted: Boolean)
+/** One moment a monitor took something in. `kept` is false for most of what
+ *  is sensed, and `droppedBecause` says which promise stopped it. */
+data class Moment(val id: String, val monitor: String, val content: String,
+                  val stretchId: String?, val sensedAt: String)
+/** One monitor's day. `because` is a list — keeping switched off in the
+ *  morning and on by the afternoon is an ordinary thing to do. */
+data class MonitorDay(val monitor: String, val sensed: Int, val kept: Int,
+                      val dropped: Int, val because: List<String>,
+                      val holds: String)
+data class DayAccount(val date: String, val monitors: List<MonitorDay>,
+                      val sensed: Int, val kept: Int, val quiet: Boolean)
+/** A meeting, a call, or a working stretch. `othersTold` is the same claim
+ *  switching the monitor on demands, asked again. */
+data class Stretch(val id: String, val monitor: String, val about: String,
+                   val othersTold: Boolean, val catchesOthers: Boolean,
+                   val running: Boolean, val openedAt: String,
+                   val endedAt: String?, val moments: Int, val kept: Int)
+data class TheDay(val account: DayAccount, val survived: List<Moment>,
+                  val stretches: List<Stretch>)
 /** One thing that can be plugged in and sense somebody. `catchesOthers` is
  *  the field that decides everything else: nothing carrying it is ever on by
  *  default, and switching one on is refused until the people in that space
@@ -1037,6 +1056,60 @@ object ApiClient {
                              why: String): LiaisonRow =
         liaisonOf(request("/liaisons/$uid/$linkId?why=$why", "DELETE",
             token = token))
+
+    private fun stretchOf(o: JSONObject) = Stretch(
+        o.getString("id"), o.optString("monitor", ""), o.optString("about", ""),
+        o.optBoolean("others_told"), o.optBoolean("catches_others"),
+        o.optBoolean("running"), o.optString("opened_at", ""),
+        if (o.isNull("ended_at")) null else o.optString("ended_at"),
+        o.optInt("moments"), o.optInt("kept"))
+
+    /** What was sensed today and what survived of it. */
+    suspend fun theDay(uid: String, token: String): TheDay {
+        val o = request("/day/$uid", token = token)
+        val d = o.optJSONObject("account") ?: JSONObject()
+        val mons = d.optJSONArray("monitors") ?: JSONArray()
+        val kept = o.optJSONArray("survived") ?: JSONArray()
+        val strs = o.optJSONArray("stretches") ?: JSONArray()
+        return TheDay(
+            DayAccount(d.optString("date", ""),
+                (0 until mons.length()).map {
+                    val m = mons.getJSONObject(it)
+                    val why = m.optJSONArray("because") ?: JSONArray()
+                    MonitorDay(m.getString("monitor"), m.optInt("sensed"),
+                        m.optInt("kept"), m.optInt("dropped"),
+                        (0 until why.length()).map { i -> why.getString(i) },
+                        m.optString("holds", ""))
+                },
+                d.optInt("sensed"), d.optInt("kept"), d.optBoolean("quiet")),
+            (0 until kept.length()).map {
+                val k = kept.getJSONObject(it)
+                Moment(k.getString("id"), k.optString("monitor", ""),
+                    k.optString("content", ""),
+                    if (k.isNull("stretch_id")) null else k.optString("stretch_id"),
+                    k.optString("sensed_at", ""))
+            },
+            (0 until strs.length()).map { stretchOf(strs.getJSONObject(it)) })
+    }
+
+    /** Begin a meeting or working stretch. Where the monitor catches other
+     *  people, somebody has to say they were told — asked again here. */
+    suspend fun openStretch(uid: String, token: String, monitor: String,
+                            about: String = "",
+                            othersTold: Boolean = false): Stretch =
+        stretchOf(request("/day/$uid/stretches", "POST",
+            JSONObject().put("monitor", monitor).put("about", about)
+                .put("others_told", othersTold), token))
+
+    suspend fun closeStretch(uid: String, token: String,
+                             stretchId: String): Stretch =
+        stretchOf(request("/day/$uid/stretches/$stretchId", "DELETE",
+            token = token))
+
+    /** Drop what was kept of one moment; the fact that it happened stays. */
+    suspend fun forgetMoment(uid: String, token: String, momentId: String) {
+        request("/day/$uid/moments/$momentId", "DELETE", token = token)
+    }
 
     private fun monitorsOf(arr: JSONArray) = (0 until arr.length()).map {
         val o = arr.getJSONObject(it)

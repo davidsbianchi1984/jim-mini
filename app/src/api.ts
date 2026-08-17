@@ -459,6 +459,52 @@ export interface UnderwayWindow {
   spend: { spent_today: number; daily: number; permitted: boolean };
 }
 
+// -- the day as it was taken in (jim/daybook.py) -------------------------
+//
+// `kept` is false for most of what a monitor senses, and `dropped_because`
+// says which promise stopped it: the monitor's own `holds`, a keeping switch
+// left off, or the person going back and forgetting one. An accounting that
+// listed only what survived would be a record with its own omissions edited
+// out, so the drops are in it too.
+export interface Moment {
+  id: string; monitor: string; content: string;
+  stretch_id: string | null; sensed_at: string;
+}
+
+export interface MonitorDay {
+  monitor: string; sensed: number; kept: number; dropped: number;
+  // Every reason that dropped something on this monitor today — a list,
+  // because keeping switched off in the morning and on by the afternoon is
+  // an ordinary thing to do.
+  because: string[];
+  // The promise in the person's own words, beside the count.
+  holds: string;
+}
+
+export interface DayAccount {
+  // `date`, not `on`: a monitor row already carries `on` as a boolean.
+  date: string; monitors: MonitorDay[]; sensed: number; kept: number;
+  // Stated by the server rather than derived from an empty list.
+  quiet: boolean;
+}
+
+// A meeting, a call, or a working stretch. `others_told` is the same claim
+// switching the monitor on demands, asked again — consent to a room speaker
+// in a quiet house is not consent to it through an hour with four people in
+// the room.
+export interface Stretch {
+  id: string; monitor: string; about: string; others_told: boolean;
+  catches_others: boolean; running: boolean;
+  opened_at: string; ended_at: string | null;
+  moments: number; kept: number;
+}
+
+// `account` and `survived` rather than `day` and `kept`: `day` is already
+// a string on the wire, and `kept` is already a count on the rows below.
+export interface TheDay {
+  account: DayAccount; survived: Moment[]; stretches: Stretch[];
+}
+
 // -- what may sense you, through what (jim/monitors.py) ------------------
 //
 // `catches_others` is the field that decides everything else: nothing
@@ -1774,9 +1820,30 @@ export const api = {
       { method: "DELETE", token }),
   // Anything a monitor perceives comes in through here, and through the
   // switch check first.
-  monitorSensed: (uid: string, name: string, token: string) =>
-    req<{ sensing: boolean; monitor: string }>(
-      `/monitors/${uid}/${name}/sensed`, { method: "POST", token }),
+  // Hand it something the monitor perceived. Whether any of it survives is
+  // the roster's decision, never this call's — there is deliberately no way
+  // here to ask for it to be kept.
+  monitorSensed: (uid: string, name: string, token: string,
+                  content = "", stretchId?: string) =>
+    req<{ sensing: boolean; monitor: string; kept: boolean;
+          dropped_because: string; holds: string }>(
+      `/monitors/${uid}/${name}/sensed`,
+      { method: "POST", body: { content, stretch_id: stretchId ?? null },
+        token }),
+  // What was sensed today and what survived of it, the meetings it fell
+  // inside, and the short list that was actually kept.
+  theDay: (uid: string, token: string) =>
+    req<TheDay>(`/day/${uid}`, { token }),
+  openStretch: (uid: string, body: { monitor: string; about?: string;
+                                     others_told?: boolean }, token: string) =>
+    req<Stretch>(`/day/${uid}/stretches`, { method: "POST", body, token }),
+  closeStretch: (uid: string, stretchId: string, token: string) =>
+    req<Stretch>(`/day/${uid}/stretches/${stretchId}`,
+                 { method: "DELETE", token }),
+  // Drop what was kept of one moment and leave the fact that it happened.
+  forgetMoment: (uid: string, momentId: string, token: string) =>
+    req<{ id: string; kept: boolean; dropped_because: string }>(
+      `/day/${uid}/moments/${momentId}`, { method: "DELETE", token }),
   // Set up an assisted call. It is not listening: what comes back is the
   // notice to play, and `callAnnounced` is the only way out of that state.
   // `number` is read for the language and dropped — it is never stored.

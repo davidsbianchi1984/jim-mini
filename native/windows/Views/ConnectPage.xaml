@@ -68,6 +68,12 @@
                             <TextBlock x:Name="MonitorsLead" FontSize="11" TextWrapping="Wrap"
                                        Foreground="{StaticResource JimT2Brush}" />
                             <StackPanel x:Name="MonitorsPanel" Spacing="6" />
+                            <!-- What those monitors took in, and what
+                                 survived. The drops are here too, each with
+                                 the promise that dropped it. -->
+                            <TextBlock x:Name="DayHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <StackPanel x:Name="DayPanel" Spacing="6" />
                         </StackPanel>
                     </Border>
 

@@ -5888,6 +5888,8 @@ private fun MicPanel(vm: GuardianViewModel) {
     var calls by remember { mutableStateOf<List<CallRow>>(emptyList()) }
     // What may sense this person, and through what. Off rows included.
     var mons by remember { mutableStateOf<List<MonitorRow>>(emptyList()) }
+    // The day as it was taken in, and what survived of it.
+    var today by remember { mutableStateOf<TheDay?>(null) }
     // Two guardians working together, never on the line.
     var links by remember { mutableStateOf<List<LiaisonRow>>(emptyList()) }
     var otherId by remember { mutableStateOf("") }
@@ -5910,6 +5912,8 @@ private fun MicPanel(vm: GuardianViewModel) {
             calls = r.getOrDefault(emptyList()) }
         vm.call({ ApiClient.monitors(vm.uid!!, vm.token!!) }) { r ->
             mons = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.theDay(vm.uid!!, vm.token!!) }) { r ->
+            today = r.getOrNull() }
         vm.call({ ApiClient.liaisons(vm.uid!!, vm.token!!) }) { r ->
             links = r.getOrDefault(emptyList()) }
     }
@@ -6001,6 +6005,57 @@ private fun MicPanel(vm: GuardianViewModel) {
             }
         }
 
+        // What those monitors actually took in, and what survived. The drops
+        // are here too, each with the promise that dropped it: a record
+        // listing only what it kept would be one with its own omissions
+        // edited out.
+        today?.let { t ->
+            Text(L10n.t("day.head", vm.language), color = Jim.Txt,
+                fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            if (t.account.quiet)
+                Text(L10n.t("day.quiet", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+            t.account.monitors.forEach { m ->
+                Text("${m.monitor} — ${m.sensed} " +
+                    L10n.t("day.sensed", vm.language) + " · ${m.kept} " +
+                    L10n.t("day.kept", vm.language),
+                    color = Jim.Txt, fontSize = 13.sp)
+                m.because.forEach { why ->
+                    Text(L10n.t("day.why.$why", vm.language),
+                        color = Jim.T2, fontSize = 11.sp)
+                }
+            }
+            // The short list, by construction.
+            t.survived.forEach { k ->
+                Text(k.content, color = Jim.T2, fontSize = 11.sp)
+                BrandButton(L10n.t("day.forget", vm.language)) {
+                    vm.call({ ApiClient.forgetMoment(vm.uid!!, vm.token!!,
+                        k.id) }) {
+                        vm.call({ ApiClient.theDay(vm.uid!!, vm.token!!) }) { r ->
+                            today = r.getOrNull() }
+                    }
+                }
+            }
+            Text(L10n.t("day.meet", vm.language), color = Jim.Txt,
+                fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            t.stretches.forEach { st ->
+                Text(st.about.ifBlank { st.monitor }, color = Jim.Txt,
+                    fontSize = 12.sp)
+                if (st.catchesOthers && st.othersTold)
+                    Text(L10n.t("day.meet.told", vm.language),
+                        color = Jim.T2, fontSize = 11.sp)
+                if (st.running) {
+                    BrandButton(L10n.t("day.meet.end", vm.language)) {
+                        vm.call({ ApiClient.closeStretch(vm.uid!!, vm.token!!,
+                            st.id) }) {
+                            vm.call({ ApiClient.theDay(vm.uid!!, vm.token!!) }) { r ->
+                                today = r.getOrNull() }
+                        }
+                    }
+                }
+            }
+        }
+
         Text(L10n.t("mon.head", vm.language), color = Jim.Txt,
             fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Text(L10n.t("mon.lead", vm.language), color = Jim.T2, fontSize = 11.sp)
@@ -6019,6 +6074,17 @@ private fun MicPanel(vm: GuardianViewModel) {
                 BrandButton(L10n.t("mon.sense", vm.language)) {
                     vm.call({ ApiClient.monitorSensed(vm.uid!!, vm.token!!,
                         m.name) }) { r -> error = r.exceptionOrNull()?.message }
+                }
+                // Begin a meeting on this one. Where it catches other people
+                // the claim that they were told is made here rather than
+                // inherited from the switch above.
+                BrandButton(L10n.t("day.meet.open", vm.language)) {
+                    vm.call({ ApiClient.openStretch(vm.uid!!, vm.token!!,
+                        m.name, "", m.catchesOthers) }) { r ->
+                        error = r.exceptionOrNull()?.message
+                        vm.call({ ApiClient.theDay(vm.uid!!, vm.token!!) }) { d ->
+                            today = d.getOrNull() }
+                    }
                 }
                 BrandButton(L10n.t("mon.unplug", vm.language)) {
                     vm.call({ ApiClient.unplugMonitor(vm.uid!!, vm.token!!,

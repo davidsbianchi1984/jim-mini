@@ -759,6 +759,32 @@ class MonitorPlug(BaseModel):
     keeping: bool = False
 
 
+class Sensed(BaseModel):
+    """One moment a monitor took something in.
+
+    Note what is absent: any way to ask for the content to be kept. The
+    monitor's own row decides that (`jim/monitors.py`, `keeps`), and a field
+    here that overrode it would turn every promise in that table into a
+    default. `content` is offered; whether any of it survives is not this
+    body's call.
+    """
+    content: str = ""
+    stretch_id: str | None = None
+
+
+class StretchOpen(BaseModel):
+    """Begin a meeting, a call, or a working stretch on one monitor.
+
+    `others_told` carries the same weight it carries on `MonitorPlug`, and is
+    asked again rather than inherited: switching a room speaker on for a quiet
+    house is not the same decision as bringing four other people into that
+    room for an hour.
+    """
+    monitor: str
+    about: str = ""
+    others_told: bool = False
+
+
 class CallOpen(BaseModel):
     """Set up an assisted call.
 

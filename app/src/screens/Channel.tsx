@@ -3,7 +3,7 @@ import {
   api, type AssistedCall, type CallRow, type CaptureRow,
   type LiaisonHalf, type LiaisonRow, type MonitorRow,
   type CaptureVocabulary, type DeviceRow, type MicEvent, type MicGains,
-  type MicState, type MicTypes,
+  type MicState, type MicTypes, type TheDay,
 } from "../api";
 import { useSession } from "../store";
 import { t as tr, visitorLang } from "../l10n";
@@ -62,6 +62,9 @@ export function Channel() {
   const [calls, setCalls] = useState<CallRow[]>([]);
   // What may sense this person, and through what. Off rows are here too.
   const [mons, setMons] = useState<MonitorRow[]>([]);
+  // The day as it was taken in, and what survived of it.
+  const [today, setToday] = useState<TheDay | null>(null);
+  const [meetAbout, setMeetAbout] = useState("");
   // Two guardians working together. The list answers which are still going
   // and why, and each row's half is what mine said.
   const [links, setLinks] = useState<LiaisonRow[]>([]);
@@ -76,6 +79,7 @@ export function Channel() {
     api.captures(uid, token).then(setCaptures).catch(() => setCaptures([]));
     api.calls(uid, token).then(setCalls).catch(() => setCalls([]));
     api.monitors(uid, token).then(setMons).catch(() => setMons([]));
+    api.theDay(uid, token).then(setToday).catch(() => setToday(null));
     api.liaisons(uid, token).then(setLinks).catch(() => setLinks([]));
   }, [uid, token]);
 
@@ -194,6 +198,101 @@ export function Channel() {
                 <p key={i} className="muted small">{line}</p>
               ))}
             </div>
+          )}
+        </div>
+      ))}
+
+      {/* What the monitors above actually took in, and what survived it.
+          The drops are in here too, each with the promise that dropped it:
+          a record listing only what it kept would be one with its own
+          omissions edited out. */}
+      <h3>{tr("day.head", visitorLang())}</h3>
+      <p className="muted">{tr("day.lead", visitorLang())}</p>
+      {today && (
+        <div className="card">
+          {today.account.quiet
+            ? <p className="muted small">{tr("day.quiet", visitorLang())}</p>
+            : (
+              <p className="muted small">
+                {today.account.sensed} {tr("day.sensed", visitorLang())} ·{" "}
+                {today.account.kept} {tr("day.kept", visitorLang())}
+              </p>
+            )}
+          {today.account.monitors.map((m) => (
+            <div key={m.monitor} className="row">
+              <strong>{m.monitor}</strong>
+              <span className="muted small">
+                {m.sensed} {tr("day.sensed", visitorLang())} · {m.kept}{" "}
+                {tr("day.kept", visitorLang())}
+              </span>
+              {/* Which promise dropped what did not survive. Closed-set
+                  reasons, said here in the reader's own language. */}
+              {m.because.map((why) => (
+                <span key={why} className="muted small">
+                  {tr(`day.why.${why}`, visitorLang())}
+                </span>
+              ))}
+            </div>
+          ))}
+          {/* The short list, by construction: on an ordinary day most of
+              what was sensed is not in it. */}
+          {today.survived.map((k) => (
+            <div key={k.id} className="row">
+              <span className="muted small">{k.monitor}</span>
+              <span>{k.content}</span>
+              <button disabled={busy} onClick={() => run(async () => {
+                await api.forgetMoment(uid!, k.id, token!);
+                setToday(await api.theDay(uid!, token!));
+              })}>{tr("day.forget", visitorLang())}</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* A meeting, a call, a working stretch. Opening one over a monitor
+          that catches other people asks again whether they were told —
+          consent to a room speaker in a quiet house is not consent to it
+          through an hour with four people in the room. */}
+      <h4>{tr("day.meet", visitorLang())}</h4>
+      <div className="card">
+        <input value={meetAbout} placeholder={tr("day.meet", visitorLang())}
+               onChange={(e) => setMeetAbout(e.target.value)} />
+        {mons.filter((m) => m.on).map((m) => (
+          <button key={m.name} disabled={busy} onClick={() => run(async () => {
+            await api.openStretch(uid!, {
+              monitor: m.name, about: meetAbout.trim(),
+              // The claim, made here rather than inherited from the switch.
+              others_told: m.catches_others }, token!);
+            setToday(await api.theDay(uid!, token!));
+            setMeetAbout("");
+          }, m.catches_others ? tr("day.meet.told", visitorLang()) : "")}>
+            {tr("day.meet.open", visitorLang())} · {m.name}
+          </button>
+        ))}
+      </div>
+      {(today?.stretches ?? []).map((st) => (
+        <div key={st.id} className="card">
+          <div className="row">
+            <strong>{st.about || st.monitor}</strong>
+            <span className="pill">
+              {st.running ? tr("lia.running", visitorLang())
+                          : tr("lia.closed", visitorLang())}
+            </span>
+            {st.catches_others && st.others_told && (
+              <span className="muted small">
+                {tr("day.meet.told", visitorLang())}
+              </span>
+            )}
+          </div>
+          <p className="muted small">
+            {st.moments} {tr("day.sensed", visitorLang())} · {st.kept}{" "}
+            {tr("day.kept", visitorLang())}
+          </p>
+          {st.running && (
+            <button disabled={busy} onClick={() => run(async () => {
+              await api.closeStretch(uid!, st.id, token!);
+              setToday(await api.theDay(uid!, token!));
+            })}>{tr("day.meet.end", visitorLang())}</button>
           )}
         </div>
       ))}

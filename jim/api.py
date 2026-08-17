@@ -32,6 +32,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                permits, referral, relay,
                research,
                robotics,
+               daybook,
                rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
                underway,
                vigil, voice, watch, widgets)
@@ -50,7 +51,8 @@ from .models import (
     CareTeamGoal, CareTeamLink,
     CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     CallOpen, CoachStudy, EngageOpen, LiaisonOpen, LiaisonSaid,
-    LiaisonTask, MonitorPlug, EngagedSaid, Enroll, ExcursionStart,
+    LiaisonTask, MonitorPlug, Sensed, StretchOpen, EngagedSaid, Enroll,
+    ExcursionStart,
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
@@ -3377,17 +3379,97 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.post("/monitors/{user_id}/{name}/sensed")
-    def monitor_sensed(user_id: str, name: str, request: Request) -> dict:
+    def monitor_sensed(user_id: str, name: str, request: Request,
+                       body: Sensed | None = None) -> dict:
         """Anything a monitor perceives comes in through here, and through
-        `monitors.may_sense` first — the one door."""
+        `monitors.may_sense` first — the one door.
+
+        It used to end there, answering `{"sensing": true}` and recording
+        nothing: the permission to capture the day had shipped and the
+        capture had not. It writes the moment now, and whether the content
+        survived is decided by the roster's own promise rather than by
+        anything in this body — see `jim/daybook.py`.
+        """
         _user_or_404(user_id, request)
         try:
-            monitors.may_sense(user_id, name)
+            moment = daybook.sensed(user_id, name,
+                                    content=(body.content if body else ""),
+                                    stretch_id=(body.stretch_id if body
+                                                else None))
         except monitors.NotPluggedIn as exc:
             raise HTTPException(403, i18n.raised(exc)) from None
+        except daybook.NotYours as exc:
+            raise HTTPException(403, str(exc)) from None
+        except daybook.NoSuchStretch as exc:
+            raise HTTPException(404, str(exc)) from None
         except monitors.NoSuchMonitor as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
-        return {"sensing": True, "monitor": name}
+        return {"sensing": True, "monitor": name, **moment}
+
+    # ---- the day as it was taken in, and what survived of it --------------
+
+    @app.get("/day/{user_id}")
+    def the_day(user_id: str, request: Request, on: str | None = None) -> dict:
+        """What was sensed today, and what survived of it.
+
+        Per monitor rather than one long list: *the screen noticed four
+        hundred things and kept none of them* is an ordinary working day, and
+        four hundred rows is not a thing anybody reads.
+        """
+        _user_or_404(user_id, request)
+        # `account` and `survived`, not `day` and `kept`: `day` is already a
+        # string elsewhere on the wire and `kept` is already a count, on the
+        # per-monitor rows just below. One wire name carries one type.
+        return {"account": daybook.day(user_id, on),
+                "survived": daybook.kept(user_id),
+                "stretches": daybook.stretches(user_id)}
+
+    @app.post("/day/{user_id}/stretches", status_code=201)
+    def open_stretch(user_id: str, body: StretchOpen,
+                     request: Request) -> dict:
+        """Begin a meeting, a call, or a working stretch on one monitor.
+
+        Where the monitor catches other people, somebody has to say they were
+        told — asked again here rather than inherited from the switch.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return daybook.open_stretch(user_id, body.monitor, body.about,
+                                        body.others_told)
+        except monitors.NotPluggedIn as exc:
+            raise HTTPException(403, i18n.raised(exc)) from None
+        except monitors.NobodyTold as exc:
+            raise HTTPException(409, i18n.raised(exc)) from None
+        except monitors.NoSuchMonitor as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.delete("/day/{user_id}/stretches/{stretch_id}")
+    def close_stretch(user_id: str, stretch_id: str,
+                      request: Request) -> dict:
+        """End it. Closing twice is closing once."""
+        _user_or_404(user_id, request)
+        try:
+            return daybook.close_stretch(user_id, stretch_id)
+        except daybook.NotYours as exc:
+            raise HTTPException(403, str(exc)) from None
+        except daybook.NoSuchStretch as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.delete("/day/{user_id}/moments/{moment_id}")
+    def forget_moment(user_id: str, moment_id: str,
+                      request: Request) -> dict:
+        """Drop what was kept of one moment, keeping that it happened.
+
+        The row stays and the content goes. Deleting it outright would leave
+        a day that reads as though the monitor never sensed at all, and a
+        record that quietly loses its own entries is the thing the daybook
+        exists not to be.
+        """
+        _user_or_404(user_id, request)
+        try:
+            return daybook.forget(user_id, moment_id)
+        except daybook.NoSuchMoment as exc:
+            raise HTTPException(404, str(exc)) from None
 
     # ---- an aid on the call, and the notice that goes first --------------
 

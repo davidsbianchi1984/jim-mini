@@ -767,6 +767,7 @@ public sealed partial class ConnectPage : Page
             Render(mic);
             await LoadCalls();
             await LoadMonitors();
+            await LoadDay();
             await LoadLiaisons();
         }
         catch (Exception e) { MicFailed(e); }
@@ -927,6 +928,115 @@ public sealed partial class ConnectPage : Page
     /// <summary>Everything that can be plugged in, off rows included. A
     /// roster showing only what is already on is a roster nobody can add
     /// to.</summary>
+    /// <summary>What the monitors actually took in today, and what survived.
+    ///
+    /// The drops are in here too, each with the promise that dropped it: a
+    /// record listing only what it kept would be one with its own omissions
+    /// edited out.</summary>
+    private async System.Threading.Tasks.Task LoadDay()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var txt = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimTxtBrush"];
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimT2Brush"];
+        DayHead.Text = L10n.T("day.head");
+        DayPanel.Children.Clear();
+        try
+        {
+            var day = await ApiClient.Shared.Day(s.Uid, s.Token);
+            if (day.Account.Quiet)
+            {
+                DayPanel.Children.Add(new TextBlock
+                {
+                    Text = L10n.T("day.quiet"), FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                });
+            }
+            foreach (var m in day.Account.Monitors)
+            {
+                DayPanel.Children.Add(new TextBlock
+                {
+                    Text = $"{m.Monitor} — {m.Sensed} " + L10n.T("day.sensed")
+                           + $" · {m.Kept} " + L10n.T("day.kept"),
+                    FontSize = 13, TextWrapping = TextWrapping.Wrap,
+                    Foreground = txt,
+                });
+                foreach (var why in m.Because)
+                {
+                    DayPanel.Children.Add(new TextBlock
+                    {
+                        Text = L10n.T($"day.why.{why}"), FontSize = 11,
+                        TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                    });
+                }
+            }
+            // The short list, by construction.
+            foreach (var k in day.Survived)
+            {
+                DayPanel.Children.Add(new TextBlock
+                {
+                    Text = k.Content, FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                });
+                var momentId = k.Id;
+                var drop = new Button { Content = L10n.T("day.forget") };
+                drop.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.ForgetMoment(
+                            s.Uid, s.Token, momentId);
+                        await LoadDay();
+                    }
+                    catch (Exception ex) { MicFailed(ex); }
+                };
+                DayPanel.Children.Add(drop);
+            }
+            DayPanel.Children.Add(new TextBlock
+            {
+                Text = L10n.T("day.meet"), FontSize = 13,
+                FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                TextWrapping = TextWrapping.Wrap, Foreground = txt,
+            });
+            foreach (var st in day.Stretches)
+            {
+                DayPanel.Children.Add(new TextBlock
+                {
+                    Text = st.About.Length > 0 ? st.About : st.Monitor,
+                    FontSize = 12, TextWrapping = TextWrapping.Wrap,
+                    Foreground = txt,
+                });
+                if (st.CatchesOthers && st.OthersTold)
+                {
+                    DayPanel.Children.Add(new TextBlock
+                    {
+                        Text = L10n.T("day.meet.told"), FontSize = 11,
+                        TextWrapping = TextWrapping.Wrap, Foreground = t2,
+                    });
+                }
+                if (st.Running)
+                {
+                    var stretchId = st.Id;
+                    var end = new Button { Content = L10n.T("day.meet.end") };
+                    end.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.CloseStretch(
+                                s.Uid, s.Token, stretchId);
+                            await LoadDay();
+                        }
+                        catch (Exception ex) { MicFailed(ex); }
+                    };
+                    DayPanel.Children.Add(end);
+                }
+            }
+        }
+        catch { /* the roster above stands on its own */ }
+    }
+
     private async System.Threading.Tasks.Task LoadMonitors()
     {
         var s = AppState.Current;
@@ -981,6 +1091,22 @@ public sealed partial class ConnectPage : Page
                         catch (Exception ex) { MicFailed(ex); }
                     };
                     box.Children.Add(take);
+                    // Begin a meeting on this one. Where it catches other
+                    // people the claim that they were told is made here
+                    // rather than inherited from the switch.
+                    var catches = m.CatchesOthers;
+                    var meet = new Button { Content = L10n.T("day.meet.open") };
+                    meet.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.OpenStretch(
+                                s.Uid, s.Token, name, "", catches);
+                            await LoadDay();
+                        }
+                        catch (Exception ex) { MicFailed(ex); }
+                    };
+                    box.Children.Add(meet);
                     var off = new Button { Content = L10n.T("mon.unplug") };
                     off.Click += async (_, _) =>
                     {
@@ -989,6 +1115,7 @@ public sealed partial class ConnectPage : Page
                             await ApiClient.Shared.UnplugMonitor(
                                 s.Uid, s.Token, name);
                             await LoadMonitors();
+                            await LoadDay();
                         }
                         catch (Exception ex) { MicFailed(ex); }
                     };
@@ -1009,6 +1136,7 @@ public sealed partial class ConnectPage : Page
                             await ApiClient.Shared.PlugMonitor(
                                 s.Uid, s.Token, name, "", told);
                             await LoadMonitors();
+                            await LoadDay();
                         }
                         catch (Exception ex) { MicFailed(ex); }
                     };

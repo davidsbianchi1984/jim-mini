@@ -24,6 +24,8 @@ struct MicCard: View {
     @State private var calls: [CallRow] = []
     // What may sense this person, and through what. Off rows included.
     @State private var mons: [MonitorRow] = []
+    // The day as it was taken in, and what survived of it.
+    @State private var today: TheDay?
     // Two guardians working together, never on the line.
     @State private var links: [LiaisonRow] = []
     @State private var otherId = ""
@@ -106,6 +108,63 @@ struct MicCard: View {
                 }
             }
 
+            // What those monitors actually took in, and what survived. The
+            // drops are here too, each with the promise that dropped it: a
+            // record listing only what it kept would be one with its own
+            // omissions edited out.
+            if let t = today {
+                Text(L10n.t("day.head", state.language))
+                    .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                if t.account.quiet {
+                    Text(L10n.t("day.quiet", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                }
+                ForEach(t.account.monitors, id: \.monitor) { m in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(m.monitor) — \(m.sensed) "
+                             + L10n.t("day.sensed", state.language)
+                             + " · \(m.kept) "
+                             + L10n.t("day.kept", state.language))
+                            .font(.caption).foregroundStyle(Theme.txt)
+                        // Which promise dropped what did not survive.
+                        ForEach(m.because, id: \.self) { why in
+                            Text(L10n.t("day.why.\(why)", state.language))
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                        }
+                    }
+                }
+                // The short list, by construction.
+                ForEach(t.survived, id: \.id) { k in
+                    HStack {
+                        Text(k.content).font(.caption2)
+                            .foregroundStyle(Theme.t2)
+                        Spacer()
+                        Button(L10n.t("day.forget", state.language)) {
+                            forget(k)
+                        }.font(.caption).tint(Theme.brandA)
+                    }
+                }
+                // A meeting, a call, a working stretch.
+                Text(L10n.t("day.meet", state.language))
+                    .font(.caption.bold()).foregroundStyle(Theme.txt)
+                ForEach(t.stretches, id: \.id) { st in
+                    HStack {
+                        Text(st.about.isEmpty ? st.monitor : st.about)
+                            .font(.caption2).foregroundStyle(Theme.txt)
+                        if st.catches_others && st.others_told {
+                            Text(L10n.t("day.meet.told", state.language))
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                        }
+                        Spacer()
+                        if st.running {
+                            Button(L10n.t("day.meet.end", state.language)) {
+                                endStretch(st)
+                            }.font(.caption).tint(Theme.t2)
+                        }
+                    }
+                }
+            }
+
             Text(L10n.t("mon.head", state.language))
                 .font(.subheadline.bold()).foregroundStyle(Theme.txt)
             Text(L10n.t("mon.lead", state.language))
@@ -126,6 +185,12 @@ struct MicCard: View {
                     if m.on {
                         Button(L10n.t("mon.sense", state.language)) {
                             sense(m)
+                        }.font(.caption).tint(Theme.brandA)
+                        // Begin a meeting on this one. Where it catches other
+                        // people the claim that they were told is made here
+                        // rather than inherited from the switch above.
+                        Button(L10n.t("day.meet.open", state.language)) {
+                            startStretch(m)
                         }.font(.caption).tint(Theme.brandA)
                         Button(L10n.t("mon.unplug", state.language)) {
                             unplug(m)
@@ -281,6 +346,7 @@ struct MicCard: View {
                                                    token: token)) ?? []
         mons = (try? await ApiClient.shared.monitors(uid: uid,
                                                      token: token)) ?? []
+        today = try? await ApiClient.shared.theDay(uid: uid, token: token)
         links = (try? await ApiClient.shared.liaisons(uid: uid,
                                                       token: token)) ?? []
     }
@@ -342,6 +408,37 @@ struct MicCard: View {
         Task {
             _ = try? await ApiClient.shared.closeLiaison(
                 uid: uid, token: token, linkId: l.id, why: "stopped")
+            await load()
+        }
+    }
+
+    /// Begin a meeting on this monitor. Where it catches other people the
+    /// claim that they were told is made here, not inherited from the switch.
+    private func startStretch(_ m: MonitorRow) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            _ = try? await ApiClient.shared.openStretch(
+                uid: uid, token: token, monitor: m.name,
+                othersTold: m.catches_others)
+            await load()
+        }
+    }
+
+    private func endStretch(_ st: Stretch) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            _ = try? await ApiClient.shared.closeStretch(
+                uid: uid, token: token, stretchId: st.id)
+            await load()
+        }
+    }
+
+    /// Drop what was kept of one moment; the fact that it happened stays.
+    private func forget(_ k: Moment) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            _ = try? await ApiClient.shared.forgetMoment(
+                uid: uid, token: token, momentId: k.id)
             await load()
         }
     }

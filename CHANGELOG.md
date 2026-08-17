@@ -8,6 +8,60 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The day as it was taken in, and what survived of it.** The field ask, in
+  its own words: *watches computer or phone screen all the time, watch every
+  meeting you're in, record every call, stream, etc., have perfect accounting
+  and context of your life.*
+
+      asked     is the day captured
+      mattered  does what survives match what was promised before it was switched on
+
+  `jim/monitors.py` built the consent for this and stopped at the door. The
+  roster said what may sense, who else it catches and — in `holds` — what
+  stays behind; `POST /monitors/{name}/sensed` even existed, ran the
+  permission check, and returned `{"sensing": true}` without recording a
+  thing. The permission to capture the day had shipped. The capture had not,
+  and neither had the accounting.
+
+  **The roster decides what is kept, and the caller never does.** Each monitor
+  already carried a promise written to be read by somebody deciding whether to
+  switch it on — *nothing, it is a channel, not a recording*; *nothing unless
+  you switch keeping on*; *the readings, as your own history*. `daybook.sensed`
+  takes content and then asks the roster whether any of it may survive. A
+  screen monitor drops it every time, whatever is passed and whatever anybody
+  has switched on. There is no argument that overrides this and a test holds
+  the absence of one: the moment a caller can say *keep this anyway*, every
+  promise in that table becomes a default.
+
+  That promise is now a field as well as a sentence. `holds` is what a person
+  reads; `keeps` is what the code obeys; and a guard holds the two together,
+  because obeying an English sentence means parsing one — the first draft did
+  `holds.startswith("nothing")` and would have started keeping screen content
+  the day somebody rewrote the sentence to begin *"Nothing"*.
+
+  **Perfect accounting, read the honest way.** Every moment leaves a row
+  whether or not its content was kept, and a row that kept nothing says which
+  promise dropped it. A person can read back not only what their guardian
+  retained but what it declined to retain and why. An accounting listing only
+  what survived would be a record with its own omissions edited out. Forgetting
+  a moment drops the content and keeps the fact, for the same reason.
+
+  **Meetings ask again.** A stretch is a run of the day on one monitor — a
+  meeting, a call, a working session. Opening one over a monitor that catches
+  other people demands the same claim switching it on demands, checked here
+  rather than inherited: consenting to a room speaker in a quiet house is not
+  consenting to it through an hour with four other people in the room.
+
+  **What this is not.** It is not a recorder. Nothing here captures audio,
+  video or pixels, and a guard holds those columns out of the table. Literal
+  always-on recording of screens, calls and meetings would need the roster's
+  promises rewritten, somewhere to put the bytes that is not this database —
+  `jim/capture.py` already refuses to degrade to a local file for one
+  photograph — and an answer to two-party consent law that a checkbox is not.
+  None of those is a thing this round could decide on its own.
+
+  On the console, on iOS, on Android and on Windows.
+
 - **What the coach noticed becomes JIM's problem — and only when it has to.**
   The field ask, in its own words: *for autonomous stuff throughout your day to
   save tokens I want coach to be running most of those, and when something is

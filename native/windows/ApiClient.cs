@@ -1120,6 +1120,39 @@ public sealed class ApiClient
         return Send<LiaisonRow>(req);
     }
 
+    /// <summary>What was sensed today and what survived of it.</summary>
+    public Task<TheDay> Day(string uid, string token) =>
+        Send<TheDay>(Get($"/day/{uid}", token));
+
+    /// <summary>Begin a meeting or working stretch. Where the monitor catches
+    /// other people, somebody has to say they were told — asked again here
+    /// rather than inherited from the switch.</summary>
+    public Task<Stretch> OpenStretch(string uid, string token, string monitor,
+                                     string about = "",
+                                     bool othersTold = false) =>
+        Send<Stretch>(Post($"/day/{uid}/stretches",
+            new { monitor, about, others_told = othersTold }, token));
+
+    public Task<Stretch> CloseStretch(string uid, string token,
+                                      string stretchId)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+                                         $"/day/{uid}/stretches/{stretchId}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<Stretch>(req);
+    }
+
+    /// <summary>Drop what was kept of one moment; the fact that it happened
+    /// stays, because a record that loses its own entries is the thing the
+    /// daybook exists not to be.</summary>
+    public async Task ForgetMoment(string uid, string token, string momentId)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+                                         $"/day/{uid}/moments/{momentId}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        (await Dispatch(req)).EnsureSuccessStatusCode();
+    }
+
     /// <summary>Everything that can be plugged in, off rows included.
     /// </summary>
     public Task<MonitorRow[]> Monitors(string uid, string token) =>
@@ -3109,6 +3142,52 @@ public record UnderwayWindow(
     // Finished, not running — which is why it is a list of its own.
     [property: JsonPropertyName("today")] Errand[] Today,
     [property: JsonPropertyName("spend")] UnderwaySpend Spend);
+
+/// <summary>One moment a monitor took something in. <c>Kept</c> is false for
+/// most of what is sensed, and the day's rows say which promise stopped it.
+/// </summary>
+public record Moment(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("monitor")] string Monitor,
+    [property: JsonPropertyName("content")] string Content,
+    [property: JsonPropertyName("stretch_id")] string? StretchId,
+    [property: JsonPropertyName("sensed_at")] string SensedAt);
+
+/// <summary>One monitor's day. <c>Because</c> is a list — keeping switched
+/// off in the morning and on by the afternoon is ordinary.</summary>
+public record MonitorDay(
+    [property: JsonPropertyName("monitor")] string Monitor,
+    [property: JsonPropertyName("sensed")] int Sensed,
+    [property: JsonPropertyName("kept")] int Kept,
+    [property: JsonPropertyName("dropped")] int Dropped,
+    [property: JsonPropertyName("because")] string[] Because,
+    [property: JsonPropertyName("holds")] string Holds);
+
+public record DayAccount(
+    [property: JsonPropertyName("date")] string Date,
+    [property: JsonPropertyName("monitors")] MonitorDay[] Monitors,
+    [property: JsonPropertyName("sensed")] int Sensed,
+    [property: JsonPropertyName("kept")] int Kept,
+    [property: JsonPropertyName("quiet")] bool Quiet);
+
+/// <summary>A meeting, a call, or a working stretch. <c>OthersTold</c> is
+/// the same claim switching the monitor on demands, asked again.</summary>
+public record Stretch(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("monitor")] string Monitor,
+    [property: JsonPropertyName("about")] string About,
+    [property: JsonPropertyName("others_told")] bool OthersTold,
+    [property: JsonPropertyName("catches_others")] bool CatchesOthers,
+    [property: JsonPropertyName("running")] bool Running,
+    [property: JsonPropertyName("opened_at")] string OpenedAt,
+    [property: JsonPropertyName("ended_at")] string? EndedAt,
+    [property: JsonPropertyName("moments")] int Moments,
+    [property: JsonPropertyName("kept")] int Kept);
+
+public record TheDay(
+    [property: JsonPropertyName("account")] DayAccount Account,
+    [property: JsonPropertyName("survived")] Moment[] Survived,
+    [property: JsonPropertyName("stretches")] Stretch[] Stretches);
 
 /// <summary>One thing that can be plugged in and sense somebody.
 /// <c>CatchesOthers</c> is the field that decides everything else: nothing

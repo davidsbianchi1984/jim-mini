@@ -309,6 +309,57 @@ struct UnderwayWindow: Decodable {
     let spend: Spend
 }
 
+/// One moment a monitor took something in. `kept` is false for most of what
+/// is sensed and `dropped_because` says which promise stopped it.
+struct Moment: Decodable {
+    let id: String
+    let monitor: String
+    let content: String
+    let stretch_id: String?
+    let sensed_at: String
+}
+
+/// One monitor's day: what it sensed, what survived, and the reasons the
+/// rest did not. `because` is a list — keeping switched off in the morning
+/// and on by the afternoon is an ordinary thing to do.
+struct MonitorDay: Decodable {
+    let monitor: String
+    let sensed: Int
+    let kept: Int
+    let dropped: Int
+    let because: [String]
+    let holds: String
+}
+
+struct DayAccount: Decodable {
+    let date: String
+    let monitors: [MonitorDay]
+    let sensed: Int
+    let kept: Int
+    let quiet: Bool
+}
+
+/// A meeting, a call, or a working stretch. `others_told` is the same claim
+/// switching the monitor on demands, asked again.
+struct Stretch: Decodable {
+    let id: String
+    let monitor: String
+    let about: String
+    let others_told: Bool
+    let catches_others: Bool
+    let running: Bool
+    let opened_at: String
+    let ended_at: String?
+    let moments: Int
+    let kept: Int
+}
+
+struct TheDay: Decodable {
+    let account: DayAccount
+    let survived: [Moment]
+    let stretches: [Stretch]
+}
+
 /// One thing that can be plugged in and sense somebody. `catches_others` is
 /// the field that decides everything else: nothing carrying it is ever on by
 /// default, and switching one on is refused until the people in that space
@@ -1575,6 +1626,39 @@ actor ApiClient {
     /// Everything that can be plugged in, off rows included.
     func monitors(uid: String, token: String) async throws -> [MonitorRow] {
         try await request("/monitors/\(uid)", token: token)
+    }
+
+    /// What was sensed today and what survived of it, the meetings it fell
+    /// inside, and the short list that was actually kept.
+    func theDay(uid: String, token: String) async throws -> TheDay {
+        try await request("/day/\(uid)", token: token)
+    }
+
+    /// Begin a meeting, a call, or a working stretch. Where the monitor
+    /// catches other people, somebody has to say they were told — asked
+    /// again here rather than inherited from the switch.
+    @discardableResult
+    func openStretch(uid: String, token: String, monitor: String,
+                     about: String = "",
+                     othersTold: Bool = false) async throws -> Stretch {
+        try await request("/day/\(uid)/stretches", method: "POST",
+                          body: ["monitor": monitor, "about": about,
+                                 "others_told": othersTold], token: token)
+    }
+
+    @discardableResult
+    func closeStretch(uid: String, token: String,
+                      stretchId: String) async throws -> Stretch {
+        try await request("/day/\(uid)/stretches/\(stretchId)",
+                          method: "DELETE", token: token)
+    }
+
+    /// Drop what was kept of one moment and leave the fact that it happened.
+    @discardableResult
+    func forgetMoment(uid: String, token: String,
+                      momentId: String) async throws -> Ok {
+        try await request("/day/\(uid)/moments/\(momentId)",
+                          method: "DELETE", token: token)
     }
 
     /// Switch one on. Anything that senses other people is refused until
