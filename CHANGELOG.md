@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The front page reads like a product, and the mockups moved next door.**
+  A field report from the owner's own phone called the README what it had
+  become: thousands of lines, walls of mockups, and the thing a visitor
+  should learn in a minute buried under both. The README is now a
+  professional overview — what it does, the surfaces, quick start,
+  configuration, and the release table folded but present. The watch-face set stays on the front page as asked, one face per capability, above the drip channel that feeds every one of them.
+  The remaining screen sets live in `docs/gallery.md`, and every guard that
+  held the old page — screens shown somewhere, galleries shaped for a
+  phone, no stale counts, the banner naming the shipped version — now
+  holds the same promises across the pages they moved to.
+
 - **Where the address book lives, and never two of it.** The contacts round
   shipped the book and left custody for later: every row went into the local
   table whatever the account was paying for. `jim/storage.py` had already

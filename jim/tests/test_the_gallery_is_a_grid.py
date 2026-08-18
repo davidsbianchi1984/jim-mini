@@ -36,12 +36,15 @@ import re
 import pytest
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
-README = REPO / "README.md"
+#: The two pages that carry galleries: the README keeps the watch set and
+#: docs/gallery.md carries the desktop and phone sets — same grids, same
+#: phone reading them, so the same shape rule on both.
+PAGES = (REPO / "README.md", REPO / "docs" / "gallery.md")
 
 TABLE = re.compile(r"<table>(.*?)</table>", re.S)
 ROW = re.compile(r"<tr>(.*?)</tr>", re.S)
 CELL = re.compile(r"<td\b.*?</td>", re.S)
-PICTURE = re.compile(r'<img src="docs/([\w/]+)/')
+PICTURE = re.compile(r'<img src="(?:docs/)?(screens|watch|desktop)/')
 
 # Screens and watch faces are small enough to sit four across on a phone.
 # Desktop frames are not, and go two.
@@ -50,7 +53,7 @@ ACROSS = {"screens": 4, "watch": 4, "desktop": 2}
 
 def _galleries():
     """(folder, [row lengths]) for every table that is a list of pictures."""
-    src = README.read_text(encoding="utf-8")
+    src = "".join(p.read_text(encoding="utf-8") for p in PAGES)
     for table in TABLE.findall(src):
         rows = [CELL.findall(r) for r in ROW.findall(table)]
         cells = [c for row in rows for c in row]
