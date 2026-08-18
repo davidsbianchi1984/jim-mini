@@ -80,6 +80,7 @@ from .models import (
     DrillStart, DrillAnswer, StatementDrop, BankLink,
 )
 from .cloud import CloudModelClient
+from . import recall as recall_mod
 from .pdi_client import PDIClient
 from .qrme_client import QRMEClient
 
@@ -2350,6 +2351,25 @@ def create_app(qrme_client: QRMEClient | None = None,
         return finetune_mod.activate(user_id, body.active)
 
     # ---- the state that survives between sessions -------------------------
+
+    @app.get("/memory/{user_id}")
+    def memory_shelf(user_id: str, request: Request) -> dict:
+        """What the coach remembers about this person, read back from the
+        vault — the transparency half of jim/recall.py. Every derived thing
+        in this product has to be visible to the person it was derived
+        from, and droppable by them."""
+        _user_or_404(user_id, request)
+        return recall_mod.shelf(_vault(user_id), user_id)
+
+    @app.delete("/memory/{user_id}/{kind}/{ref}")
+    def forget_memory(user_id: str, kind: str, ref: str,
+                      request: Request) -> dict:
+        """Unmake one remembered moment: the vector, the seal, and the
+        ledger row. The answer says what happened — `forgotten: false`
+        with the reason when the tandem could not be reached — because a
+        forget button that fails silently is worse than none."""
+        _user_or_404(user_id, request)
+        return recall_mod.forget(_vault(user_id), user_id, kind, ref)
 
     @app.get("/continuity/{user_id}")
     def read_continuity(user_id: str, request: Request) -> dict:

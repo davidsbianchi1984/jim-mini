@@ -38,6 +38,19 @@
                 </StackPanel>
             </Border>
 
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="MemTitle" FontWeight="Bold" FontSize="15"
+                               Foreground="{StaticResource JimTxtBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="MemLead" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="MemNote" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <ItemsControl x:Name="MemList" />
+                </StackPanel>
+            </Border>
+
             <!-- Signing in comes first; the paste-it form is behind a toggle.
                  The token that form asks for is minted once, in QRME's create
                  response, so somebody who made the profile elsewhere could

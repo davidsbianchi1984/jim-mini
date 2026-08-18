@@ -123,6 +123,39 @@ def coach_lines(pdi, user_id: str, message: str) -> list[str]:
             for m in found if m["line"]]
 
 
+def shelf(pdi, user_id: str) -> dict:
+    """Every moment the coach remembers about this person, read back.
+
+    The keys come from the local `vault_keys` ledger — the same rows
+    erasure walks — and the lines from the vault, so the answer is exactly
+    what recall can actually surface, not a claim about it. A tandem that
+    cannot be reached answers `readable: false` with whatever keys exist,
+    because "I hold twelve memories I cannot show you right now" and "I
+    hold nothing" are different answers.
+    """
+    prefix = f"jim/{user_id}/memory/"
+    rows = db.connect().execute(
+        "SELECT key FROM vault_keys WHERE user_id=?"
+        " ORDER BY rowid", (user_id,)).fetchall()
+    keys = [r["key"] for r in rows if r["key"].startswith(prefix)]
+    moments, readable = [], pdi is not None
+    for key in keys:
+        tail = key[len(prefix):]
+        kind, _, ref = tail.partition("/")
+        entry = {}
+        if pdi is not None:
+            try:
+                raw = pdi.get(key)
+                entry = json.loads(raw) if raw else {}
+            except Exception:  # noqa: BLE001
+                readable = False
+        moments.append({"kind": kind, "ref": ref,
+                        "line": entry.get("line"),
+                        "at": entry.get("at")})
+    return {"memories": moments, "readable": readable,
+            "held": len(moments)}
+
+
 def forget(pdi, user_id: str, kind: str, ref: str) -> dict:
     """Unmake one memory: the vector, the seal, and the ledger row — so a
     deleted entry stops being findable, not merely stops being readable.

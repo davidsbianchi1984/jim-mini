@@ -5603,6 +5603,49 @@ fun ContinuityCard(uid: String, token: String, lang: String) {
 }
 
 @Composable
+fun MemoryCard(uid: String, token: String, lang: String) {
+    // Remembered moments (jim/recall.py): the transparency half of the
+    // coach's long-term memory. The continuity card above holds "every
+    // derived thing is droppable by its subject" for the attention vector;
+    // this card holds it for the content.
+    var shelf by remember { mutableStateOf<MemoryShelf?>(null) }
+    val scope = rememberCoroutineScope()
+    fun load() {
+        scope.launch(Dispatchers.IO) {
+            shelf = runCatching { ApiClient.memoryShelf(uid, token) }.getOrNull()
+        }
+    }
+    LaunchedEffect(Unit) { load() }
+
+    Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(L10n.t("mem.title", lang), style = MaterialTheme.typography.titleSmall)
+            Text(L10n.t("mem.lead", lang), color = Jim.T2, fontSize = 11.sp)
+            val s = shelf
+            if (s != null && !s.readable) {
+                Text(L10n.t("mem.unreadable", lang), color = Jim.Amber, fontSize = 11.sp)
+            }
+            if (s != null && s.moments.isEmpty()) {
+                Text(L10n.t("cont.nothing", lang), color = Jim.T2, fontSize = 11.sp)
+            }
+            s?.moments?.forEach { m ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(m.kind, color = Jim.T2, fontSize = 10.sp)
+                    Text(m.line ?: "·", Modifier.weight(1f).padding(horizontal = 6.dp),
+                        color = Jim.Txt, fontSize = 11.sp)
+                    TextButton(onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            runCatching { ApiClient.forgetMemory(uid, m.kind, m.ref, token) }
+                            load()
+                        }
+                    }) { Text(L10n.t("day.forget", lang), color = Jim.Red, fontSize = 11.sp) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) {
     val scope = rememberCoroutineScope()
     var status by remember { mutableStateOf<JSONObject?>(null) }
@@ -5646,6 +5689,7 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) 
         Text(L10n.t("self.title", lang), style = MaterialTheme.typography.titleMedium)
         ProblemReportingCard(lang)
         ContinuityCard(uid, token, lang)
+        MemoryCard(uid, token, lang)
         Text(L10n.t("self.lead", lang), style = MaterialTheme.typography.bodySmall)
 
         // Signing in comes first; the paste-it form is behind a toggle.

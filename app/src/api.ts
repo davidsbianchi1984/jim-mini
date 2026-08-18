@@ -775,6 +775,13 @@ export interface CommunityView {
              health_data_shared: boolean };
 }
 // Claim 11's user-specific model, derived from this user's own history.
+export type MemoryShelf = {
+  memories: { kind: string; ref: string; line: string | null;
+              at: string | null }[];
+  readable: boolean;
+  held: number;
+};
+
 export interface ContinuityState {
   built: boolean;
   note?: string;
@@ -1784,6 +1791,11 @@ export const api = {
   // vector is derived from tallies and carries nothing anybody wrote.
   continuity: (uid: string, token: string) =>
     req<ContinuityState>(`/continuity/${uid}`, { token }),
+  memoryShelf: (uid: string, token: string) =>
+    req<MemoryShelf>(`/memory/${uid}`, { token }),
+  forgetMemory: (uid: string, kind: string, ref: string, token: string) =>
+    req<{ forgotten: boolean; why?: string; vectors_removed?: number }>(
+      `/memory/${uid}/${kind}/${ref}`, { method: "DELETE", token }),
   forgetContinuity: (uid: string, token: string) =>
     req<{ forgotten: boolean }>(`/continuity/${uid}`, { method: "DELETE", token }),
   anonymity: (uid: string, token: string) =>

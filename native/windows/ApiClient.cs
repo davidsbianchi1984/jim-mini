@@ -817,6 +817,17 @@ public sealed class ApiClient
     /// What the Guardian carries across sessions about this person. Counts
     /// and timings only — the vector is derived from tallies and holds
     /// nothing anybody wrote.
+    // The transparency half of the coach's long-term memory: what it can
+    // find again, read back from the vault, droppable one moment at a time.
+    public Task<MemoryShelf> MemoryShelfFor(string uid, string token) =>
+        Send<MemoryShelf>(new HttpRequestMessage(HttpMethod.Get,
+            $"/memory/{uid}"), token);
+
+    public Task<MemoryForgotten> ForgetMemory(string uid, string kind,
+                                              string reference, string token) =>
+        Send<MemoryForgotten>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/memory/{uid}/{kind}/{reference}"), token);
+
     public async Task<ContinuityState> Continuity(string uid, string token) =>
         await Send<ContinuityState>(new HttpRequestMessage(HttpMethod.Get,
             $"/continuity/{uid}"), token);
@@ -3052,6 +3063,19 @@ public record OfflinePosture(
     [property: JsonPropertyName("external_transmission_possible")] bool ExternalTransmissionPossible,
     [property: JsonPropertyName("local_destinations_allowed")] string LocalDestinationsAllowed,
     [property: JsonPropertyName("guarantees")] string[] Guarantees);
+
+public record MemoryMoment(
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("ref")] string Ref,
+    [property: JsonPropertyName("line")] string? Line,
+    [property: JsonPropertyName("at")] string? At);
+public record MemoryShelf(
+    [property: JsonPropertyName("memories")] MemoryMoment[] Moments,
+    [property: JsonPropertyName("readable")] bool Readable,
+    [property: JsonPropertyName("held")] int Held);
+public record MemoryForgotten(
+    [property: JsonPropertyName("forgotten")] bool Forgotten,
+    [property: JsonPropertyName("why")] string? Why);
 
 public record ContinuityState(
     [property: JsonPropertyName("built")] bool Built,

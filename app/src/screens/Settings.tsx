@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { t as tr, visitorLang } from "../l10n";
-import { api, type BankLinkRow, type StatementRow, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState, type MoneyView,
+import { api, type BankLinkRow, type StatementRow, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState, type MemoryShelf, type MoneyView,
          type AnonymityPosture, type CloudContribution, type PairInfo,
          type SeedReport, type VigilStatus,
          type WatchChannel, type Finetune } from "../api";
@@ -20,6 +20,7 @@ export function Settings() {
   const [ftBusy, setFtBusy] = useState(false);
   const [ftError, setFtError] = useState<string | null>(null);
   const [cont, setCont] = useState<ContinuityState | null>(null);
+  const [shelfState, setShelfState] = useState<MemoryShelf | null>(null);
   const lang = visitorLang();
   const [health, setHealth] = useState<string>("…");
   const [saved, setSaved] = useState(false);
@@ -36,6 +37,8 @@ export function Settings() {
       api.finetune(session.userId, session.userToken).then(setFt).catch(() => {});
       api.anonymity(session.userId, session.userToken).then(setAnon).catch(() => {});
       api.continuity(session.userId, session.userToken).then(setCont).catch(() => {});
+      api.memoryShelf(session.userId, session.userToken)
+        .then(setShelfState).catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.userId]);
@@ -242,6 +245,33 @@ export function Settings() {
           <p className="muted small">{cont?.note || tr("cont.nothing", lang)}</p>
         )}
         <p className="muted small">{cont?.carries}</p>
+      </div>
+
+      <div className="card">
+        <h3>{tr("mem.title", lang)}</h3>
+        <p className="muted small">{tr("mem.lead", lang)}</p>
+        {shelfState && !shelfState.readable && (
+          <p className="muted small">{tr("mem.unreadable", lang)}</p>
+        )}
+        {shelfState && shelfState.memories.length === 0 && (
+          <p className="muted small">{tr("cont.nothing", lang)}</p>
+        )}
+        <ul className="refs">
+          {(shelfState?.memories ?? []).map((m) => (
+            <li key={`${m.kind}/${m.ref}`}>
+              <code className="muted small">{m.kind}</code>{" "}
+              {m.line ?? "·"}{m.at ? ` — ${m.at.slice(0, 10)}` : ""}
+              {" "}
+              <button onClick={async () => {
+                if (!session.userId || !session.userToken) return;
+                await api.forgetMemory(session.userId, m.kind, m.ref,
+                                       session.userToken);
+                setShelfState(await api.memoryShelf(session.userId,
+                                                    session.userToken));
+              }}>{tr("day.forget", lang)}</button>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="card">

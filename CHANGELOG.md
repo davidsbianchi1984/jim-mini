@@ -4,7 +4,23 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+### Added
+
+- **The memory shelf, shown and curatable.** The coach's long-term memory
+  could remember, recall and forget — and the person it was about could
+  see none of it. `GET /memory/{user_id}` reads every remembered moment
+  back from the vault (kind, the line itself, when), and
+  `DELETE /memory/{user_id}/{kind}/{ref}` unmakes one — vector, seal and
+  ledger row — with an answer that says what happened, because a forget
+  button that fails silently is worse than none. Every derived thing in
+  this product has to be visible to the person it was derived from and
+  droppable by them: the continuity card has held that rule for the
+  attention vector since it shipped, and the shelf now holds it for the
+  content, rendered beside it on the console's Settings screen and the
+  three shells' self-profile screens, in ten languages. A tandem that
+  cannot be reached answers honestly — the moments are listed, their
+  words are not — because "I hold twelve memories I cannot show you right
+  now" and "I hold nothing" are different answers.
 
 ### Fixed
 

@@ -489,6 +489,30 @@ object ApiClient {
                 .optBoolean("forgotten")
         }
 
+    /** The transparency half of the coach's long-term memory: what it can
+     * find again, read back from the vault, droppable one moment at a time. */
+    suspend fun memoryShelf(uid: String, token: String): MemoryShelf =
+        withContext(Dispatchers.IO) {
+            val o = request("/memory/$uid", "GET", null, token)
+            val arr = o.optJSONArray("memories")
+            MemoryShelf(
+                (0 until (arr?.length() ?: 0)).map { i ->
+                    val m = arr!!.getJSONObject(i)
+                    MemoryMoment(
+                        m.getString("kind"), m.getString("ref"),
+                        if (m.isNull("line")) null else m.optString("line"),
+                        if (m.isNull("at")) null else m.optString("at"))
+                },
+                o.optBoolean("readable"), o.optInt("held"))
+        }
+
+    suspend fun forgetMemory(uid: String, kind: String, ref: String,
+                             token: String): Boolean =
+        withContext(Dispatchers.IO) {
+            request("/memory/$uid/$kind/$ref", "DELETE", null, token)
+                .optBoolean("forgotten")
+        }
+
     suspend fun offlineStatus(): OfflinePosture = withContext(Dispatchers.IO) {
         val o = request("/offline/status", "GET", null, null)
         val gs = o.optJSONArray("guarantees")
@@ -4026,6 +4050,11 @@ data class OfflinePosture(val offline: Boolean,
                           val externalTransmissionPossible: Boolean,
                           val localDestinationsAllowed: String,
                           val guarantees: List<String>)
+
+data class MemoryMoment(val kind: String, val ref: String,
+                        val line: String?, val at: String?)
+data class MemoryShelf(val moments: List<MemoryMoment>,
+                       val readable: Boolean, val held: Int)
 
 data class ContinuityState(val built: Boolean,
                            val carries: String,

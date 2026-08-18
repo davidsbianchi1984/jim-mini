@@ -282,3 +282,67 @@ def test_a_journal_delete_does_not_depend_on_the_tandem(client):
     vault = FakeResidentVault()
     out = life.add_journal(uid, "a line to keep then drop", pdi=vault)
     assert life.remove_journal(uid, out["id"], pdi=BrokenVault())
+
+
+# -- the shelf: shown and curatable ------------------------------------------
+
+def test_the_shelf_shows_what_the_coach_remembers(client):
+    uid = enroll(client)
+    vault = FakeResidentVault()
+    client.app.state.pdi = vault
+    r1 = client.post(f"/checkin/{uid}", json={
+        "mood": 3, "energy": 2, "note": "shoulder aches after the fall"})
+    assert r1.status_code == 201, r1.text
+    shelf = client.get(f"/memory/{uid}").json()
+    assert shelf["held"] == 1
+    assert shelf["readable"] is True
+    moment = shelf["memories"][0]
+    assert moment["kind"] == "checkin"
+    assert moment["line"] == "shoulder aches after the fall"
+    assert moment["at"]
+
+
+def test_the_forget_button_unmakes_the_moment(client):
+    uid = enroll(client)
+    vault = FakeResidentVault()
+    client.app.state.pdi = vault
+    client.post(f"/checkin/{uid}", json={
+        "mood": 3, "energy": 2, "note": "a moment to drop"})
+    moment = client.get(f"/memory/{uid}").json()["memories"][0]
+    gone = client.delete(f"/memory/{uid}/{moment['kind']}/{moment['ref']}")
+    assert gone.status_code == 200, gone.text
+    assert gone.json()["forgotten"] is True
+    assert client.get(f"/memory/{uid}").json()["held"] == 0
+    assert vault.embedded == {}
+    # The memory seal is gone; the check-in's own medical record is not —
+    # that seal belongs to the check-in, and dies with it, not with the
+    # memory derived from it.
+    assert not [k for k in vault.records if "/memory/" in k]
+    assert [k for k in vault.records if "/medical/checkin/" in k]
+
+
+def test_the_shelf_is_the_persons_own(client):
+    uid = enroll(client)
+    vault = FakeResidentVault()
+    client.app.state.pdi = vault
+    client.post(f"/checkin/{uid}", json={
+        "mood": 2, "energy": 2, "note": "private words"})
+    intruder = enroll(client)  # holds the newest token now
+    r = client.get(f"/memory/{uid}")
+    assert r.status_code in (403, 404), r.status_code
+    assert "private words" not in r.text
+
+
+def test_an_unreached_vault_lists_the_moments_without_their_words(client):
+    """"I hold one memory I cannot show you right now" and "I hold
+    nothing" are different answers."""
+    uid = enroll(client)
+    vault = FakeResidentVault()
+    client.app.state.pdi = vault
+    client.post(f"/checkin/{uid}", json={
+        "mood": 3, "energy": 2, "note": "words behind a down tandem"})
+    client.app.state.pdi = BrokenVault()
+    shelf = client.get(f"/memory/{uid}").json()
+    assert shelf["held"] == 1
+    assert shelf["readable"] is False
+    assert shelf["memories"][0]["line"] is None

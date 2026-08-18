@@ -48,7 +48,10 @@ public sealed partial class SelfProfilePage : Page
         UnlinkButton.Content = L10n.T("self.unlink");
         ContTitle.Text = L10n.T("cont.title");
         ContForget.Content = L10n.T("cont.forget");
-        Loaded += async (_, _) => { await LoadContinuity(); await Refresh(); };
+        MemTitle.Text = L10n.T("mem.title");
+        MemLead.Text = L10n.T("mem.lead");
+        Loaded += async (_, _) =>
+        { await LoadContinuity(); await LoadMemory(); await Refresh(); };
     }
 
     /// What the Guardian carries between sessions.
@@ -56,6 +59,55 @@ public sealed partial class SelfProfilePage : Page
     /// Its own try/catch and its own load: the vector answers a different
     /// question from the tandem link above it, and a QRME profile that cannot
     /// be reached must not blank this card.
+    /// Remembered moments (jim/recall.py): the transparency half of the
+    /// coach's long-term memory. The continuity card holds "every derived
+    /// thing is droppable by its subject" for the attention vector; this
+    /// block holds it for the content.
+    private async System.Threading.Tasks.Task LoadMemory()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var shelf = await ApiClient.Shared.MemoryShelfFor(s.Uid, s.Token);
+            MemNote.Text = !shelf.Readable ? L10n.T("mem.unreadable")
+                : shelf.Moments.Length == 0 ? L10n.T("cont.nothing") : "";
+            MemList.Items.Clear();
+            foreach (var m in shelf.Moments)
+            {
+                var row = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal, Spacing = 8,
+                };
+                row.Children.Add(new TextBlock
+                {
+                    Text = $"{m.Kind} · {m.Line ?? "·"}",
+                    FontSize = 12,
+                    TextWrapping = TextWrapping.Wrap,
+                });
+                var forget = new Button
+                {
+                    Content = L10n.T("day.forget"), Background = null,
+                    FontSize = 11,
+                };
+                var kind = m.Kind; var reference = m.Ref;
+                forget.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.ForgetMemory(
+                            s.Uid!, kind, reference, s.Token!);
+                        await LoadMemory();
+                    }
+                    catch (Exception) { }
+                };
+                row.Children.Add(forget);
+                MemList.Items.Add(row);
+            }
+        }
+        catch (Exception) { MemNote.Text = L10n.T("mem.unreadable"); }
+    }
+
     private async System.Threading.Tasks.Task LoadContinuity()
     {
         var s = AppState.Current;

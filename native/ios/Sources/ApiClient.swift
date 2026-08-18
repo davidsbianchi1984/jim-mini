@@ -1299,6 +1299,20 @@ actor ApiClient {
         try await request("/continuity/\(uid)", method: "DELETE", token: token)
     }
 
+    /// The transparency half of the coach's long-term memory: what it can
+    /// find again, read back from the vault. Droppable one moment at a
+    /// time, like every derived thing here.
+    func memoryShelf(uid: String, token: String) async throws -> MemoryShelf {
+        try await request("/memory/\(uid)", token: token)
+    }
+
+    @discardableResult
+    func forgetMemory(uid: String, kind: String, ref: String,
+                      token: String) async throws -> MemoryForgotten {
+        try await request("/memory/\(uid)/\(kind)/\(ref)",
+                          method: "DELETE", token: token)
+    }
+
     func offlineStatus() async throws -> OfflinePosture {
         try await request("/offline/status")
     }
@@ -4799,4 +4813,20 @@ struct CommunityFeedView: Decodable {
     let cursor: String?
     let note: String
     let open_in_qrme: String?
+}
+
+struct MemoryMoment: Decodable {
+    let kind: String
+    let ref: String
+    let line: String?
+    let at: String?
+}
+struct MemoryShelf: Decodable {
+    let memories: [MemoryMoment]
+    let readable: Bool
+    let held: Int
+}
+struct MemoryForgotten: Decodable {
+    let forgotten: Bool
+    let why: String?
 }
