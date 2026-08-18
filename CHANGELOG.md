@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.86.0] - 2026-08-18
+
 ### Added
 
 - **The watch on the wrist becomes real.** The thirty-six faces in
@@ -9345,6 +9347,7 @@ the three-product suite (with
   release workflow.
 
 [Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.85.0...HEAD
+[0.86.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.85.0...app-v0.86.0
 [0.85.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.84.0...app-v0.85.0
 [0.84.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.83.0...app-v0.84.0
 [0.83.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.82.0...app-v0.83.0
