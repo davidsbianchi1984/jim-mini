@@ -6,6 +6,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The coach remembers, through the vault.** PDI 0.86.0 gave the vault an
+  embedding index that stores a hash of the text and never the text; this
+  is JIM's side of that bargain (`jim/recall.py`). The moments worth
+  remembering — what somebody told the coach, wrote in the journal, put in
+  a check-in note — are sealed AES-256-GCM into the tandem under a memory
+  key and indexed under the same key, so a coach turn recalls by meaning:
+  the person who mentioned a shoulder injury in March and asks about
+  training in August gets a coach who remembers the shoulder, folded into
+  the prompt as context the model may use and never an instruction — the
+  same posture as `continuity.attention_lines`. Three rules, each tested:
+  **memory never breaks the doing** (a check-in that lands and is not
+  remembered beats a check-in refused because the tandem was down — every
+  path returns what happened rather than raising); **no vault means no
+  memory and no pretending** (unconfigured or offline, the coach works
+  exactly as before, and an older PDI without the resident is reported as
+  "the vault has no memory index" while the words stay safely sealed); and
+  **one person's memories never surface for another** — recall drops any
+  match outside `memory/{user}/` before it fetches a word, a second wall
+  behind PDI's tenant fence.
+
+  And the errand ledger writes itself into the vault's own tables: the
+  unattended study pass now hands its results to the PDI resident as rows
+  in a `jim_errands` dataset — through the resident's own plan door, so the
+  tandem speaks the same audited shape a facility tenant does — queryable
+  in the PDI console beside the data they are about. Non-fatal and said
+  rather than hidden: the run's answer carries `vaulted: false` when the
+  tandem is absent, offline, or too old to carry a table.
+
 ## [0.86.0] - 2026-08-18
 
 ### Added

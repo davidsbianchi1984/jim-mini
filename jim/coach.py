@@ -144,7 +144,7 @@ _BEARING_PROMPT: dict[str, str] = {
 }
 
 
-def reply(user_id: str, area: str, message: str) -> dict:
+def reply(user_id: str, area: str, message: str, pdi=None) -> dict:
     from . import i18n
 
     # Autonomous refinement happens *before* the prompt is built, so the very
@@ -188,6 +188,14 @@ def reply(user_id: str, area: str, message: str) -> dict:
     attention = continuity.attention_lines(user_id)
     if attention:
         system += "\n" + "\n".join(attention)
+    # Long-term memory through the vault (jim/recall.py): the moments
+    # nearest this question, sealed in PDI and found by meaning. Context the
+    # model may use, never an instruction — and nothing at all when no vault
+    # is configured, which is the same honest zero `attention` starts from.
+    from . import recall as recall_mod
+    remembered_lines = recall_mod.coach_lines(pdi, user_id, message)
+    if remembered_lines:
+        system += "\n" + "\n".join(remembered_lines)
     language = i18n.effective_language(user_id)
     system += i18n.directive(language)
     gen = llm.generate_for_user(user_id, system, message)
@@ -219,10 +227,11 @@ def reply(user_id: str, area: str, message: str) -> dict:
     safe = not _DENY.search(text)
     conn = db.connect()
     now = db.utcnow()
+    user_msg_id = db.new_id("msg")
     conn.execute(
         "INSERT INTO coach_messages (id, user_id, area, role, content, created_at)"
         " VALUES (?,?,?,?,?,?)",
-        (db.new_id("msg"), user_id, area, "user", message, now),
+        (user_msg_id, user_id, area, "user", message, now),
     )
     if safe:
         conn.execute(
@@ -237,6 +246,12 @@ def reply(user_id: str, area: str, message: str) -> dict:
     # already gave us by writing. Length only: how much somebody chose to say
     # is about the relationship and carries none of what they said.
     continuity.observe(user_id, "coach_turn", length=len(message))
+    # And the words themselves become a memory — after the reply is composed
+    # and stored, for the same reason as the observation above: a vault
+    # hiccup must not cost the turn. What is remembered is what the person
+    # said; the reply is derivative and is not indexed.
+    recall_mod.remember(pdi, user_id, "coach", user_msg_id,
+                        f"({area}) {message}")
 
     if not safe:
         return {"delivered": False, "area": area,

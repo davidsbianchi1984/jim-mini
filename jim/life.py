@@ -431,6 +431,10 @@ def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
                           f"jim/{user_id}/medical/checkin/{checkin_id}",
                           {"note": note})
         stored_note = f"pdi:{key}"
+        # And a memory (jim/recall.py): a note somebody wrote about how they
+        # are is exactly what the coach should be able to find again.
+        from . import recall as recall_mod
+        recall_mod.remember(pdi, user_id, "checkin", checkin_id, note)
     conn.execute(
         "INSERT INTO checkins (id, user_id, mood, energy, stress, note,"
         " created_at) VALUES (?,?,?,?,?,?,?)",
@@ -675,6 +679,9 @@ def add_journal(user_id: str, text: str, pdi=None) -> dict:
                           f"jim/{user_id}/medical/journal/{entry_id}",
                           {"text": text})
         stored = f"pdi:{key}"
+        # A journal entry is a memory by definition (jim/recall.py).
+        from . import recall as recall_mod
+        recall_mod.remember(pdi, user_id, "journal", entry_id, text)
     conn.execute(
         "INSERT INTO journal (id, user_id, text, created_at) VALUES (?,?,?,?)",
         (entry_id, user_id, stored, db.utcnow()),

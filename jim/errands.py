@@ -149,7 +149,7 @@ def due(user_id: str, limit: int = DAILY) -> list[dict]:
     return pipeline.curriculum(user_id)["suggested"][:limit]
 
 
-def run(user_id: str, cloud=None, limit: int = DAILY) -> dict:
+def run(user_id: str, cloud=None, limit: int = DAILY, pdi=None) -> dict:
     """The unattended pass. Study what the coach missed, fold it back.
 
     Returns what it did and what it did not: a pass that studied nothing
@@ -177,10 +177,22 @@ def run(user_id: str, cloud=None, limit: int = DAILY) -> dict:
                     "why": item["why"], "excursion_id": cid,
                     "left_host": bool(row["left_host"]),
                     "redactions": row["redactions"]})
+    # The ledger writes itself into the vault's own tables (jim/recall.py →
+    # PDI resident): rows the PDI console can query beside the data they are
+    # about. Non-fatal, and said rather than hidden — `vaulted` is False
+    # when the tandem is absent, offline, or too old to carry a table.
+    from . import recall as recall_mod
+    vaulted = recall_mod.tabulate(
+        pdi, "jim_errands",
+        [{"errand": e["id"], "topic": e["topic"], "area": e["area"],
+          "why": e["why"], "left_host": 1 if e["left_host"] else 0,
+          "redactions": e["redactions"]} for e in ran],
+        source_ref=user_id) if ran else False
     # `errands`, not `studied`: the study route's `studied` is the name of
     # one topic, and one wire name carries one type.
     return {"errands": ran, "remaining_today": DAILY - spent_today(user_id),
-            "nothing_to_study": not ran and not due(user_id, 1)}
+            "nothing_to_study": not ran and not due(user_id, 1),
+            "vaulted": vaulted}
 
 
 def ledger(user_id: str, limit: int = 20) -> list[dict]:

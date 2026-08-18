@@ -78,6 +78,57 @@ class PDIClient:
             raise RuntimeError(f"PDI get failed: {r.status_code}")
         return r.json()["value"]
 
+    # -- the resident intelligence (PDI 0.86.0, pdi/resident.py) ------------
+    # The vault made smart: an embedding index, a vector search, and plans
+    # whose steps write structured rows into queryable datasets. These three
+    # answer False / [] against an older PDI rather than raising — the
+    # caller (jim/recall.py) treats "the vault has no memory index" as a
+    # state to report, not a failure to crash on.
+
+    def resident_embed(self, key: str, text: str) -> bool:
+        """Index one sealed record's text for vector search. PDI stores the
+        vector and a hash of the text — never the text, which stays sealed
+        under `put`."""
+        r = self._do("POST", "/resident/embeddings",
+                     {"key": key, "text": text})
+        if r.status_code == 404:
+            return False
+        if r.status_code >= 300:
+            raise RuntimeError(f"PDI embed failed: {r.status_code}")
+        return True
+
+    def resident_search(self, query: str, top_k: int = 5) -> list[dict]:
+        """This tenant's nearest vectors: [{key, score}], best first."""
+        r = self._do("POST", "/resident/search",
+                     {"query": query, "top_k": top_k})
+        if r.status_code == 404:
+            return []
+        if r.status_code >= 300:
+            raise RuntimeError(f"PDI search failed: {r.status_code}")
+        return r.json().get("matches", [])
+
+    def resident_tabulate(self, dataset: str, rows: list,
+                          source_ref: str | None = None) -> bool:
+        """Rows into a queryable dataset, through the resident's own doors:
+        one plan carrying one `table.append` step, run in the same breath.
+        There is deliberately no bare rows route — the plan is the audited
+        unit — so the tandem speaks the same shape a facility tenant does."""
+        step = {"tool": "table.append",
+                "args": {"dataset": dataset, "rows": rows,
+                         **({"source_ref": source_ref} if source_ref else {})}}
+        r = self._do("POST", "/resident/tasks",
+                     {"goal": f"jim-mini rows into {dataset}",
+                      "steps": [step]})
+        if r.status_code == 404:
+            return False
+        if r.status_code >= 300:
+            raise RuntimeError(f"PDI tabulate plan failed: {r.status_code}")
+        tid = r.json()["id"]
+        ran = self._do("POST", f"/resident/tasks/{tid}/run")
+        if ran.status_code >= 300:
+            raise RuntimeError(f"PDI tabulate run failed: {ran.status_code}")
+        return ran.json().get("status") == "done"
+
     def delete(self, key: str) -> bool:
         r = self._do("DELETE", f"/records/{key}")
         return r.status_code == 204
