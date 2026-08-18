@@ -242,7 +242,7 @@ def notice_for(language: str = i18n.DEFAULT) -> str:
 
 
 def open(user_id: str, route: str, recording: bool = False,
-         number: str | None = None) -> dict:
+         number: str | None = None, pdi=None) -> dict:
     """Set up an assisted call. It is **not** listening yet.
 
     Returns the exact words to play on the line. Nothing here begins hearing
@@ -273,7 +273,7 @@ def open(user_id: str, route: str, recording: bool = False,
     languages, clue = language_for(number, i18n.get_language(user_id))
     # Who this is, from this person's own book. `known` is a row or None, and
     # None is the ordinary case — most numbers anybody rings are not in it.
-    known = contacts.whose(user_id, number)
+    known = contacts.whose(user_id, number, pdi)
     # What actually goes out on the line, in order. Joined for the record
     # because the record's job is *what was said*, and what was said is all
     # of it.
@@ -388,7 +388,7 @@ def close(call_id: str, why: str = "ended") -> dict:
             "said": row["notice"]}
 
 
-def _named(user_id: str, contact_id: str | None) -> str | None:
+def _named(user_id: str, contact_id: str | None, pdi=None) -> str | None:
     """The name on a call, where the call had one and the book still does.
 
     Read at the last moment rather than copied onto the call row, so a
@@ -399,13 +399,13 @@ def _named(user_id: str, contact_id: str | None) -> str | None:
     if not contact_id:
         return None
     try:
-        return contacts.one(user_id, contact_id)["name"]
+        return contacts.one(user_id, contact_id, pdi)["name"]
     except contacts.NoSuchContact:
         return None
 
 
 def remember(call_id: str, title: str, when: str,
-             where: str | None = None) -> dict:
+             where: str | None = None, pdi=None) -> dict:
     """Book the thing the call was about, under the person it came from.
 
     The field ask, in its own words: *your user is on the phone with their
@@ -435,7 +435,7 @@ def remember(call_id: str, title: str, when: str,
     return {"id": booked["id"], "title": booked["title"],
             "when": booked["whenat"], "where": booked["whereat"],
             "from_call": call_id,
-            "from_name": _named(row["user_id"], row["contact_id"])}
+            "from_name": _named(row["user_id"], row["contact_id"], pdi)}
 
 
 def left_behind(user_id: str, call_id: str) -> list[dict]:
@@ -452,7 +452,7 @@ def left_behind(user_id: str, call_id: str) -> list[dict]:
                 " ORDER BY whenat", (user_id, call_id)).fetchall()]
 
 
-def history(user_id: str, limit: int = 20) -> list[dict]:
+def history(user_id: str, limit: int = 20, pdi=None) -> list[dict]:
     """Assisted calls, newest first — and whether each one announced itself.
 
     A call that never announced and never listened is a real row and stays
@@ -462,7 +462,7 @@ def history(user_id: str, limit: int = 20) -> list[dict]:
              "recording": bool(r["recording"]), "said": r["notice"],
              "spoken_in": r["language"].split(","),
              "language_from": r["language_clue"],
-             "with_name": _named(user_id, r["contact_id"]),
+             "with_name": _named(user_id, r["contact_id"], pdi),
              "announced_at": r["announced_at"],
              "listened": r["announced_at"] is not None,
              "opened_at": r["opened_at"], "ended_at": r["ended_at"],

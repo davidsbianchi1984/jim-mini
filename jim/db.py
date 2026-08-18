@@ -1261,6 +1261,17 @@ CREATE TABLE IF NOT EXISTS contacts (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_digits
     ON contacts (user_id, digits);
 
+-- Where a person's book actually lives. A row here means it is sealed into
+-- PDI under `vault_key` and the `contacts` table holds nothing for them; no
+-- row means platform custody and the rows are local. Never both — see
+-- `jim/contacts.py`, and the guard that holds it.
+CREATE TABLE IF NOT EXISTS contact_books (
+    user_id   TEXT PRIMARY KEY REFERENCES users(id),
+    vault_key TEXT NOT NULL,
+    held      INTEGER NOT NULL DEFAULT 0,   -- how many, so a count needs no unseal
+    sealed_at TEXT NOT NULL
+);
+
 -- Two guardians working together on behalf of two people who are already
 -- each other's contacts. The link is never spoken on a call: it carries what
 -- one guardian told the other, split by side, so each person can read their

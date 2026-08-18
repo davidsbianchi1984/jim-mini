@@ -30,7 +30,7 @@ _SPEND_ALERT = 200.0
 # sources & consent
 # --------------------------------------------------------------------------- #
 
-def set_source(user_id: str, source: str, consented: bool) -> dict:
+def set_source(user_id: str, source: str, consented: bool, pdi=None) -> dict:
     conn = db.connect()
     conn.execute(
         "INSERT INTO sources (user_id, source, consented, created_at)"
@@ -47,7 +47,11 @@ def set_source(user_id: str, source: str, consented: bool) -> dict:
         # says. Imported here rather than at module scope: `jim.contacts`
         # reads `sources` through this module.
         from . import contacts
-        contacts.withdrawn(user_id)
+        # The **real** vault, not a plan-gated one. What has to go is what is
+        # there, and a book sealed while somebody was on Basic is still there
+        # after they move to Free — see `jim/storage.py:vault_for`, which
+        # gates writes and deliberately does not gate deletions.
+        contacts.withdrawn(user_id, pdi)
     return {"source": source, "consented": consented}
 
 

@@ -312,16 +312,28 @@ def test_half_a_row_is_skipped_and_the_rest_still_lands(client):
         {"name": "No number"},
         {"number": "+1 555 010 4444"},
     ])
-    assert out == {"held": 1, "skipped": 2}
+    assert out == {"held": 1, "skipped": 2, "sealed": False}
 
 
 def test_one_function_is_the_only_door_to_the_book():
     """The argument `monitors.may_sense` makes for a camera and
-    `oncall.may_listen` makes for a call."""
+    `oncall.may_listen` makes for a call.
+
+    Asked as *before it touches anything*, rather than *within the first 900
+    characters*. The window version passed for two releases and then failed on
+    a round that only made `sync`'s docstring longer — it was measuring prose,
+    and a guard that a paragraph can break is a guard that a paragraph can
+    also satisfy.
+    """
     source = inspect.getsource(contacts)
-    assert source.count("FROM contacts") == source.count(
-        "FROM contacts"), "sanity"
+    touches = ("_rows(", "db.connect()", "_clear(")
     for reader in ("def book", "def sync"):
         body = source[source.index(reader):]
-        assert "allowed(user_id)" in body[:900], (
+        body = body[:body.index("\ndef ", 1)] if "\ndef " in body[1:] else body
+        assert "allowed(user_id)" in body, (
             f"`{reader}` reads the book without asking `allowed`")
+        door = body.index("allowed(user_id)")
+        first = min((body.index(t) for t in touches if t in body),
+                    default=len(body))
+        assert door < first, (
+            f"`{reader}` touches the book before asking `allowed`")

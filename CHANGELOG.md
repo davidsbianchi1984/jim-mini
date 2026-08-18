@@ -6,6 +6,57 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Where the address book lives, and never two of it.** The contacts round
+  shipped the book and left custody for later: every row went into the local
+  table whatever the account was paying for. `jim/storage.py` had already
+  settled how this product answers that question, and it answers it about the
+  **plan** rather than about whether the deployment happens to have a vault
+  configured.
+
+      asked     where does the book live
+      mattered  is there ever more than one of it
+
+  Sealed into PDI where the account is on a plan that has a vault, platform
+  custody otherwise — one book either way, one withdrawal either way, and the
+  same rows out of `book()` from both. One record per person rather than one
+  per contact: a book is a few hundred names read all at once, and a record
+  each would turn a single unseal into three hundred on the one path that runs
+  while a phone is ringing.
+
+  **Writes are plan-gated; reads and deletions are not**, which is
+  `vault_for`'s own asymmetry and the address book is the payload that makes
+  the cost of getting it wrong plainest. Somebody on Basic for a year has a
+  sealed book. If they move to Free and withdraw the grant, a withdrawal that
+  only cleared the side their *current* plan points at would leave a few
+  hundred other people's names and numbers in a vault after the one person who
+  could say stop did — the copy-kept-after-stop objection wearing a billing
+  change as a disguise. So `withdrawn` and `_clear` take the real vault and
+  never ask the plan, and a guard reads the source to hold that.
+
+  **Never both.** A plan change between two syncs is the ordinary way to end
+  up with two books disagreeing about who somebody knows, so `sync` clears
+  both custodies before writing to either.
+
+  **A sealed book with no vault raises rather than answering *nobody*.** *You
+  know nobody* and *I could not open your book* are different sentences and
+  only one is true; answering the first puts no name — or the wrong name — on
+  a phone call, and reports somebody's data loss as a fact about their life. A
+  row saying sealed over a vault that has nothing is that case, and it is not
+  the same as an empty book, which is a row saying `held = 0`. The count stays
+  on the local row so a screen saying *312 people* is never a reason to unseal
+  three hundred names.
+
+### Fixed
+
+- **A guard that was measuring prose.** `test_one_function_is_the_only_door_
+  to_the_book` asked whether `allowed(user_id)` appeared in the first 900
+  characters of each reader. It passed for two releases and then failed on a
+  round that only made `sync`'s docstring longer. It asks the property now —
+  `allowed` before anything touches the book — and a guard a paragraph can
+  break is a guard a paragraph can also satisfy.
+
 ## [0.84.0] - 2026-08-17
 
 ### Added

@@ -2420,7 +2420,8 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.put("/sources/{user_id}")
     def set_source(user_id: str, body: SourceConsent, request: Request) -> dict:
         _user_or_404(user_id, request)
-        return life.set_source(user_id, body.source, body.consented)
+        return life.set_source(user_id, body.source, body.consented,
+                               app.state.pdi)
 
     @app.post("/context/{user_id}", status_code=201)
     def add_context(user_id: str, body: ContextEvent, request: Request) -> dict:
@@ -3534,8 +3535,11 @@ def create_app(qrme_client: QRMEClient | None = None,
         """
         _user_or_404(user_id, request)
         try:
+            # The real vault, because this reads the book to put a name on
+            # the call. Reads are not plan-gated: a book sealed on Basic is
+            # still the book after a move to Free.
             return oncall.open(user_id, body.route, body.recording,
-                               body.number)
+                               body.number, app.state.pdi)
         except oncall.NotAShared as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
 
@@ -3555,7 +3559,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         """Assisted calls, newest first, each saying whether it announced
         itself and in what words."""
         _user_or_404(user_id, request)
-        return oncall.history(user_id)
+        return oncall.history(user_id, pdi=app.state.pdi)
 
     @app.delete("/calls/{user_id}/{call_id}")
     def end_call(user_id: str, call_id: str, request: Request) -> dict:

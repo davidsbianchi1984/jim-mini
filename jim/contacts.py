@@ -63,6 +63,35 @@ opening a liaison needs the contact to carry an account *and* be a mutual
 contact *and* hold the permit. A name is worth getting right, so
 :func:`whose` is exact within that book and nothing here guesses further.
 
+## Where the book lives, and why the caller has to say
+
+A book is sealed into PDI where the account is on a plan that has a vault,
+and held in platform custody otherwise — one book either way, and one
+withdrawal either way. The question is asked once, by
+:func:`jim.storage.vault_for`, in the shape it is asked everywhere else in
+this codebase: about the **plan**, not about whether the deployment happens to
+have a vault configured. A free account on a PDI-backed deployment does not
+get its address book sealed into a vault it is not paying for and cannot hold
+a key to.
+
+**Writes are plan-gated; reads and deletions are not.** Somebody on Basic for
+a year has a sealed book. If they move to Free, the next sync writes locally —
+and the sealed one has to be reachable to be cleared, or the copy nobody can
+see becomes exactly the copy this module refuses to keep. So every function
+here takes the *real* vault and asks the plan question itself where it needs
+to, rather than receiving an answer somebody else computed.
+
+**Never both.** :func:`sync` clears both custodies before it writes to either,
+so a plan change cannot leave two books with two different ideas of who
+somebody knows. A guard holds it, because "there is only one" is the kind of
+claim that is true until the day it quietly is not.
+
+The vault holds one record per person rather than one per contact. A book is a
+few hundred names read all at once — by :func:`book` to list them and by
+:func:`whose` to put a name on a call — and a record per contact would turn a
+single unseal into three hundred, on the one path that runs while a phone is
+ringing.
+
 ## Most of the book has no guardian in it
 
 ``jim_user_id`` is set only where a contact also holds an account here, and
@@ -76,13 +105,22 @@ from __future__ import annotations
 
 import re
 
-from . import db, i18n, life
+import json
+
+from . import db, i18n, life, storage
 
 #: The consent this whole module lives behind. One of `models.Source`, granted
 #: and withdrawn where every other source is, so a person reads *what the
 #: agent may see* in one list rather than hunting for the address book in a
 #: screen of its own.
 SOURCE = "contacts"
+
+#: Where a sealed book lives, one record per person. Derived rather than
+#: stored, because there is exactly one per user and a stored key would be a
+#: second thing that can disagree with the row it belongs to.
+def _key(user_id: str) -> str:
+    return f"jim/{user_id}/contacts/book"
+
 
 #: How much of a number is kept. Enough to be specific across the ways people
 #: write numbers down, and short enough that a country code or a trunk zero
@@ -133,7 +171,68 @@ def allowed(user_id: str) -> None:
     raise NotGranted(NOT_GRANTED)
 
 
-def sync(user_id: str, entries: list[dict]) -> dict:
+class VaultUnreachable(RuntimeError):
+    """The book is sealed and the vault it is sealed into was not supplied.
+
+    Raised rather than answered with an empty book, which is the failure this
+    module cannot have: *you know nobody* and *I could not open your book* are
+    different sentences, and only one of them is true.
+    """
+
+
+def _sealed(user_id: str) -> dict | None:
+    row = db.connect().execute(
+        "SELECT * FROM contact_books WHERE user_id=?", (user_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def _rows(user_id: str, pdi) -> list[dict]:
+    """This person's book, from wherever it is.
+
+    The one reader. Both custodies come back as the same list of dicts, so
+    nothing above this line branches on where somebody's book happens to live.
+    """
+    book = _sealed(user_id)
+    if book is None:
+        return [dict(r) for r in db.connect().execute(
+            "SELECT * FROM contacts WHERE user_id=? ORDER BY name COLLATE"
+            " NOCASE", (user_id,)).fetchall()]
+    if pdi is None:
+        raise VaultUnreachable(
+            "this book is sealed into the vault and no vault was supplied")
+    raw = pdi.get(book["vault_key"])
+    if raw is None:
+        # The row says sealed and the vault says nothing. Not an empty book:
+        # an empty book is a row that says `held = 0`.
+        raise VaultUnreachable("the sealed book is not in the vault")
+    rows = json.loads(raw)
+    return sorted(rows, key=lambda r: (r.get("name") or "").casefold())
+
+
+def _clear(user_id: str, pdi) -> None:
+    """Drop the book from **both** custodies.
+
+    Both, always, whatever the plan says today. A person who was on Basic and
+    is on Free now has a sealed book, and clearing only the side their current
+    plan points at leaves the other one behind — which is the copy-kept-after-
+    stop problem wearing a billing change as a disguise.
+    """
+    book = _sealed(user_id)
+    conn = db.connect()
+    conn.execute("DELETE FROM contacts WHERE user_id=?", (user_id,))
+    conn.execute("DELETE FROM contact_books WHERE user_id=?", (user_id,))
+    conn.commit()
+    if book is not None and pdi is not None:
+        try:
+            pdi.delete(book["vault_key"])
+        except Exception:
+            # The row is already gone, so nothing here will read it again. A
+            # vault that refused the delete is worth knowing about and is not
+            # worth leaving the local index pointing at it.
+            pass
+
+
+def sync(user_id: str, entries: list[dict], pdi=None, plan: str = "") -> dict:
     """Replace the book with what the device has.
 
     The only way rows get in. A replace rather than a merge, because the
@@ -145,6 +244,11 @@ def sync(user_id: str, entries: list[dict]) -> dict:
     that carry too little number to recognise anybody are skipped rather than
     refused: a real address book has half-rows in it, and rejecting the whole
     sync over one of them would leave the person with no book at all.
+
+    ``pdi`` is the deployment's real vault and ``plan`` is what decides
+    whether this person's writes go into it. Both, rather than a vault
+    somebody else already plan-gated, because the old book has to be cleared
+    from the side the *previous* plan used.
     """
     allowed(user_id)
     seen: dict[str, dict] = {}
@@ -158,19 +262,36 @@ def sync(user_id: str, entries: list[dict]) -> dict:
         # Last one wins, and the dict is what makes a device's duplicate rows
         # one person here rather than a conflict.
         seen[tail] = {"name": name, "jim_user_id": entry.get("jim_user_id")}
-    conn = db.connect()
-    conn.execute("DELETE FROM contacts WHERE user_id=?", (user_id,))
+
     now = db.utcnow()
-    conn.executemany(
-        "INSERT INTO contacts (id, user_id, name, digits, jim_user_id,"
-        " added_at) VALUES (?,?,?,?,?,?)",
-        [(db.new_id("con"), user_id, row["name"], tail, row["jim_user_id"],
-          now) for tail, row in seen.items()])
+    rows = [{"id": db.new_id("con"), "user_id": user_id, "name": row["name"],
+             "digits": tail, "jim_user_id": row["jim_user_id"],
+             "added_at": now}
+            for tail, row in seen.items()]
+
+    # Both sides first, then one side. Never both at once.
+    _clear(user_id, pdi)
+
+    vault = storage.vault_for(plan, pdi) if plan else None
+    conn = db.connect()
+    if vault is None:
+        conn.executemany(
+            "INSERT INTO contacts (id, user_id, name, digits, jim_user_id,"
+            " added_at) VALUES (?,?,?,?,?,?)",
+            [(r["id"], user_id, r["name"], r["digits"], r["jim_user_id"],
+              r["added_at"]) for r in rows])
+    else:
+        key = _key(user_id)
+        vault.put(key, json.dumps(rows))
+        conn.execute(
+            "INSERT INTO contact_books (user_id, vault_key, held, sealed_at)"
+            " VALUES (?,?,?,?)", (user_id, key, len(rows), now))
     conn.commit()
-    return {"held": len(seen), "skipped": skipped}
+    return {"held": len(seen), "skipped": skipped,
+            "sealed": vault is not None}
 
 
-def withdrawn(user_id: str) -> dict:
+def withdrawn(user_id: str, pdi=None) -> dict:
     """The grant came off. Drop the book.
 
     Not "stop syncing" — drop it. A copy kept after somebody said stop is the
@@ -178,10 +299,12 @@ def withdrawn(user_id: str) -> dict:
     place, and it is the one part of this that has to be true rather than
     intended. Called from wherever the source is set, so a person turning the
     switch off does not also have to find a second control.
+
+    The real vault, never a plan-gated one: what has to go is what is there,
+    and what is there was decided by whatever plan they were on when it was
+    written.
     """
-    conn = db.connect()
-    conn.execute("DELETE FROM contacts WHERE user_id=?", (user_id,))
-    conn.commit()
+    _clear(user_id, pdi)
     return {"held": 0}
 
 
@@ -199,31 +322,46 @@ def _seen(row) -> dict:
             "added_at": row["added_at"]}
 
 
-def one(user_id: str, contact_id: str) -> dict:
-    row = db.connect().execute(
-        "SELECT * FROM contacts WHERE id=? AND user_id=?",
-        (contact_id, user_id)).fetchone()
+def one(user_id: str, contact_id: str, pdi=None) -> dict:
+    row = next((r for r in _rows(user_id, pdi) if r["id"] == contact_id), None)
     if row is None:
         raise NoSuchContact("no such contact")
     return _seen(row)
 
 
-def book(user_id: str) -> list[dict]:
+def book(user_id: str, pdi=None) -> list[dict]:
     """Everybody in the synced book, by name."""
     allowed(user_id)
-    rows = db.connect().execute(
-        "SELECT * FROM contacts WHERE user_id=? ORDER BY name COLLATE NOCASE",
-        (user_id,)).fetchall()
-    return [_seen(r) for r in rows]
+    return [_seen(r) for r in _rows(user_id, pdi)]
 
 
-def whose(user_id: str, number: str | None) -> dict | None:
+def held(user_id: str) -> int:
+    """How many, without opening anything.
+
+    A sealed book's count is on the local row on purpose. A screen that wants
+    to say *312 people* should not be a reason to unseal three hundred names,
+    and a count is not one of the things this module is protecting.
+    """
+    book = _sealed(user_id)
+    if book is not None:
+        return book["held"]
+    return db.connect().execute(
+        "SELECT COUNT(*) AS n FROM contacts WHERE user_id=?",
+        (user_id,)).fetchone()["n"]
+
+
+def whose(user_id: str, number: str | None, pdi=None) -> dict | None:
     """Which of this person's own contacts a number belongs to, if any.
 
     The recognition door, and the only one. It takes a number and returns a
     row of this person's book or nothing at all — it never writes, so a
     number that matches nobody leaves exactly as little behind as it did
     before this module existed.
+
+    A sealed book with no vault to hand raises rather than answering *nobody*.
+    This runs while a phone is ringing and the cost of the wrong answer is a
+    call with the wrong name on it, or with a name it should have had; both
+    are worse than a caller finding out it could not look.
     """
     if not number:
         return None
@@ -236,18 +374,15 @@ def whose(user_id: str, number: str | None) -> dict | None:
     tail = digits(number)
     if len(tail) < 7:
         return None
-    row = db.connect().execute(
-        "SELECT * FROM contacts WHERE user_id=? AND digits=?",
-        (user_id, tail)).fetchone()
-    return dict(row) if row else None
+    return next((r for r in _rows(user_id, pdi) if r["digits"] == tail), None)
 
 
-def guardian_of(user_id: str, number: str | None) -> str | None:
+def guardian_of(user_id: str, number: str | None, pdi=None) -> str | None:
     """The account behind a number, where this person's book names one.
 
     What :mod:`jim.oncall` asks at dial time before trying to open a link.
     Two conditions, both from records already held: the number is in **this**
     person's book, and the row they wrote says who it is here.
     """
-    row = whose(user_id, number)
+    row = whose(user_id, number, pdi)
     return row["jim_user_id"] if row else None
