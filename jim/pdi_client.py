@@ -97,6 +97,21 @@ class PDIClient:
             raise RuntimeError(f"PDI embed failed: {r.status_code}")
         return True
 
+    def resident_forget(self, key: str, prefix: bool = False) -> int:
+        """Remove embedding vector(s) — one key, or everything under a
+        prefix. The other half of `resident_embed`, and the half erasure
+        stands on: a deleted memory must stop being findable. Answers 0
+        against an older PDI rather than raising."""
+        path = f"/resident/embeddings/{key}"
+        if prefix:
+            path += "?prefix=true"
+        r = self._do("DELETE", path)
+        if r.status_code == 404:
+            return 0
+        if r.status_code >= 300:
+            raise RuntimeError(f"PDI forget failed: {r.status_code}")
+        return r.json().get("vectors_removed", 0)
+
     def resident_search(self, query: str, top_k: int = 5) -> list[dict]:
         """This tenant's nearest vectors: [{key, score}], best first."""
         r = self._do("POST", "/resident/search",

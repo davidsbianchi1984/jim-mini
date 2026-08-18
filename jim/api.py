@@ -3710,7 +3710,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         """Delete a journal entry — the way back from `engaged.write_journal`,
         and a door somebody writing their own diary should always have had."""
         _user_or_404(user_id, request)
-        if not life.remove_journal(user_id, entry_id):
+        if not life.remove_journal(user_id, entry_id,
+                                   pdi=_vault(user_id)):
             raise HTTPException(404, "journal entry not found")
         return {"entry_id": entry_id, "removed": True}
 

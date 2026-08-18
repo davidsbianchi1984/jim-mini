@@ -41,6 +41,16 @@ class FakeResidentVault:
         self.embedded[key] = text
         return True
 
+    def delete(self, key):
+        return self.records.pop(key, None) is not None
+
+    def resident_forget(self, key, prefix=False):
+        doomed = ([k for k in self.embedded if k.startswith(key)]
+                  if prefix else [k for k in self.embedded if k == key])
+        for k in doomed:
+            del self.embedded[k]
+        return len(doomed)
+
     def resident_search(self, query, top_k=5):
         want = set(query.lower().split())
         scored = []
@@ -227,3 +237,48 @@ def test_a_down_tandem_keeps_the_errand_and_says_not_vaulted(client,
     out = errands.run(uid, pdi=BrokenVault())
     assert len(out["errands"]) == 1
     assert out["vaulted"] is False
+
+
+# -- forgetting reaches the vectors ------------------------------------------
+
+def test_deleting_a_journal_entry_unmakes_its_memory(client):
+    """The seal, the ledger row, and the vector — all three, so the coach
+    stops reciting an entry the person deleted."""
+    uid = enroll(client)
+    vault = FakeResidentVault()
+    out = life.add_journal(uid, "I have been drinking too much", pdi=vault)
+    key = f"jim/{uid}/memory/journal/{out['id']}"
+    assert key in vault.embedded and key in vault.records
+    assert life.remove_journal(uid, out["id"], pdi=vault)
+    assert key not in vault.embedded, "the vector survived the delete"
+    assert key not in vault.records, "the seal survived the delete"
+    from jim import db
+    row = db.connect().execute(
+        "SELECT COUNT(*) AS n FROM vault_keys WHERE user_id=? AND key=?",
+        (uid, key)).fetchone()
+    assert row["n"] == 0, "the ledger row survived the delete"
+    assert recall.coach_lines(vault, uid, "drinking too much") == []
+
+
+def test_user_erasure_takes_every_memory_vector_in_one_call(client):
+    uid = enroll(client)
+    vault = FakeResidentVault()
+    life.check_in(uid, 2, 2, "note one about the move", pdi=vault)
+    life.add_journal(uid, "note two about the move", pdi=vault)
+    assert len(vault.embedded) == 2
+    deleted = life.delete_user_data(uid, pdi=vault)["deleted"]
+    assert deleted["memory_vectors"] == 2
+    assert vault.embedded == {}
+
+
+def test_an_unreached_tandem_says_so_in_the_erasure_answer(client):
+    uid = enroll(client)
+    deleted = life.delete_user_data(uid, pdi=BrokenVault())["deleted"]
+    assert deleted["memory_vectors"] is None
+
+
+def test_a_journal_delete_does_not_depend_on_the_tandem(client):
+    uid = enroll(client)
+    vault = FakeResidentVault()
+    out = life.add_journal(uid, "a line to keep then drop", pdi=vault)
+    assert life.remove_journal(uid, out["id"], pdi=BrokenVault())

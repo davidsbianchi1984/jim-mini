@@ -123,6 +123,38 @@ def coach_lines(pdi, user_id: str, message: str) -> list[str]:
             for m in found if m["line"]]
 
 
+def forget(pdi, user_id: str, kind: str, ref: str) -> dict:
+    """Unmake one memory: the vector, the seal, and the ledger row — so a
+    deleted entry stops being findable, not merely stops being readable.
+    Non-fatal like everything here; the caller reports what happened."""
+    if pdi is None:
+        return {"forgotten": False, "why": "no vault configured"}
+    key = _key(user_id, kind, ref)
+    try:
+        removed = pdi.resident_forget(key)
+        pdi.delete(key)
+        conn = db.connect()
+        conn.execute("DELETE FROM vault_keys WHERE user_id=? AND key=?",
+                     (user_id, key))
+        conn.commit()
+    except Exception as exc:  # noqa: BLE001
+        return {"forgotten": False,
+                "why": f"{type(exc).__name__}: {exc}"[:200]}
+    return {"forgotten": True, "vectors_removed": removed}
+
+
+def forget_all(pdi, user_id: str) -> int | None:
+    """Erasure's call: every vector under this person's memory prefix, in
+    one trip. None when the tandem could not be reached — the erasure
+    answer says so rather than counting what it cannot see."""
+    if pdi is None:
+        return None
+    try:
+        return pdi.resident_forget(f"jim/{user_id}/memory/", prefix=True)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def tabulate(pdi, dataset: str, rows: list[dict],
              source_ref: str | None = None) -> bool:
     """Structured results into a vault table the PDI console can query.

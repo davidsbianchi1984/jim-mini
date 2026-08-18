@@ -704,7 +704,7 @@ def journal_entries(user_id: str, pdi=None) -> list[dict]:
     return out
 
 
-def remove_journal(user_id: str, entry_id: str) -> bool:
+def remove_journal(user_id: str, entry_id: str, pdi=None) -> bool:
     """Delete a journal entry.
 
     A sealed entry's *text* lives in the PDI vault and only its key lives
@@ -714,6 +714,13 @@ def remove_journal(user_id: str, entry_id: str) -> bool:
     reach across the tandem to do — and pretending otherwise would be the
     worse lie: a "deleted" that quietly depends on a second product being up.
     """
+    # The entry's *memory* is more than a nameless ciphertext: its vector
+    # ranks and its seal is read back by recall. Deleting the entry unmakes
+    # all three (jim/recall.py) — best-effort, because this delete must not
+    # depend on a second product being up; what could not be unmade stays
+    # covered by the user-level erasure door.
+    from . import recall as recall_mod
+    recall_mod.forget(pdi, user_id, "journal", entry_id)
     conn = db.connect()
     cursor = conn.execute("DELETE FROM journal WHERE id=? AND user_id=?",
                           (entry_id, user_id))
@@ -934,6 +941,11 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
     if vaulted:
         deleted["pdi_records"] = sum(
             1 for key in vaulted if pdi is not None and pdi.delete(key))
+    # And the vectors (jim/recall.py): a memory's embedding ranks even after
+    # its seal is gone, so erasure takes the whole shelf in one call. None
+    # means the tandem was unreached, and the answer says so.
+    from . import recall as recall_mod
+    deleted["memory_vectors"] = recall_mod.forget_all(pdi, user_id)
     for table, (parent, column) in sorted(ERASE_THROUGH.items()):
         ids = [r["id"] for r in conn.execute(
             f"SELECT id FROM {parent} WHERE user_id=?", (user_id,)).fetchall()]
@@ -969,7 +981,7 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
     # person stay. Erasing somebody's data and erasing the record that it was
     # erased are different acts, and only the first one was asked for.
     audit.record("account.erase", user_id=user_id,
-                 ref=f"{sum(deleted.values())} rows across "
+                 ref=f"{sum(v for v in deleted.values() if isinstance(v, int))} rows across "
                      f"{len(deleted)} tables")
     return {"deleted": deleted}
 

@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Deleting a journal entry now unmakes its memory.** The memory round
+  left three things standing after a journal delete: the sealed line, the
+  `vault_keys` ledger row, and the embedding vector — so the coach could
+  keep reciting an entry the person deleted. `remove_journal` now unmakes
+  all three through the tandem, best-effort so the delete never depends
+  on a second product being up; whatever could not be unmade stays
+  covered by the user-level erasure door. And that door finishes the job
+  it already claimed: `delete_user_data` takes every memory vector under
+  the person's prefix in one resident call, reports the count in its
+  answer — `memory_vectors: null` when the tandem was unreached, said
+  rather than guessed — and the audit line counts only what it actually
+  counted.
+
 ### Added
 
 - **The coach remembers, through the vault.** PDI 0.86.0 gave the vault an
