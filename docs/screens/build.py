@@ -1953,6 +1953,18 @@ SCREENS = [
         dict(icon="warn", color="violet", k="No box, no run",
              s="a host that cannot build all four walls runs nothing"),
     ], button=("Run", "brand")),
+    dict(num=112, title="The watch on the wrist",
+         sub="all 36 faces, live at jim-mini.com/#watch",
+         accent="brand", cards=[
+        dict(icon="watch", color="brand", k="Every face is a screen",
+             s="each drawing opens as a working surface at #watch/<slug>"),
+        dict(icon="cpr", color="red", k="CPR keeps its own time",
+             s="110/min on the audio clock, 30:2, no network needed"),
+        dict(icon="emergency", color="amber", k="The device dials, honestly",
+             s="the red button hands 911 to the thing that can call it"),
+        dict(icon="heart", color="cyan", k="The same doors as the phone",
+             s="a check-in here is the check-in tab's own POST"),
+    ], button=("Open the watch", "brand")),
 ]
 
 

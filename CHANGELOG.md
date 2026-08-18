@@ -6,6 +6,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The watch on the wrist becomes real.** The thirty-six faces in
+  `docs/watch/` shipped as drawings — a design set the README showed and
+  nothing served. The instruction that closed the gap was the owner's, from
+  the page on his own phone: *be sure to keep all watch screens and make
+  sure they're implemented and work from each screen*. `screens/Watch.tsx`
+  is the answer: a watch surface in the console at `#watch`, sized for a
+  wrist and served by the doors the phone screens already use — a check-in
+  logged on face 09 is the Check-in tab's own `POST /checkin`, the
+  sensitivity chips on face 16 are `POST /settings/sensitivity`, and the
+  agents face reads the same task window `Underway` renders. `#watch/<slug>`
+  deep-links one face (`05-heart`, `heart` and `5` all land on Heart), the
+  hash tracks the face so a reload stays where the wrist was, and the
+  README's gallery now links every drawing to its living counterpart.
+
+  Three faces deserve their own sentences. **CPR** carries its own
+  algorithm because it must work with the network gone: a metronome at 110
+  compressions per minute scheduled on the audio clock — a `setInterval`
+  drifts under load, and a drifting beat is a wrong compression rate —
+  sounding thirty high tones and two low ones for the 30:2 rhythm, with
+  vibration where the device has it, no account and no network required.
+  **Emergency** hands the number to the device with a telephone link,
+  because the device is the thing that can place a call — the same honesty
+  the alarm queue has carried since it shipped. And **Breathe** runs a
+  4-4-6 pattern whose session lands in the calm history rather than being
+  a guess.
+
+  The frame around the faces: 147 new console strings in all ten
+  languages, with every wording the phones already carry copied from their
+  tables byte-for-byte so the wrist and the pocket say one thing; a face
+  that reads an account says to sign in on the phone when there is none;
+  and the surface opens before sign-in, because the README links land
+  visitors on it and the CPR face works for whoever is holding the wrist.
+  Screen 112 records the surface in the console gallery.
+
 ## [0.85.0] - 2026-08-18
 
 ### Added

@@ -683,6 +683,20 @@ LESSONS: tuple[dict, ...] = (
          screens=(111,),
          try_it="Open Widgets, press New, and run the example that greets "
                 "you by name."),
+    dict(key="watchfaces", chapter="Every day", title="The watch on the wrist",
+         what="Any watch, phone or frame that can open jim-mini.com/#watch "
+              "is the wrist: all thirty-six faces are working screens on the "
+              "same doors the phone uses, so a check-in logged on the wrist "
+              "is the Check-in tab's own record. Swipe between faces, or open "
+              "one directly with #watch and its name. The CPR face keeps its "
+              "own time — 110 compressions a minute on the device's audio "
+              "clock, in the 30:2 rhythm — and needs no account and no "
+              "network. The emergency face hands the number to the device, "
+              "which is the thing that can place a call; JIM never claims a "
+              "call it did not make.",
+         screens=(112,),
+         try_it="Open jim-mini.com/#watch/heart and swipe to the faces on "
+                "either side."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(le["chapter"] for le in LESSONS))

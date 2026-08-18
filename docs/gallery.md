@@ -194,6 +194,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="screens/109-engaged.svg" width="160" alt="109 Engaged"><br><sub>109 · Engaged</sub></td>
 <td align="center" width="25%"><img src="screens/110-talk.svg" width="160" alt="110 Talk"><br><sub>110 · Talk</sub></td>
 <td align="center" width="25%"><img src="screens/111-widgets.svg" width="160" alt="111 Widgets"><br><sub>111 · Widgets</sub></td>
+<td align="center" width="25%"><img src="screens/112-the-watch-on-the-wrist.svg" width="160" alt="112 The Watch on the Wrist"><br><sub>112 · The Watch on the Wrist</sub></td>
 </tr>
 </table>
 

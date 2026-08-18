@@ -35,8 +35,9 @@ import { Reach } from "./screens/Reach";
 import { Bearing } from "./screens/Bearing";
 import { Held } from "./screens/Held";
 import { Access } from "./screens/Access";
+import { Watch } from "./screens/Watch";
 
-type Tab = "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "access" | "settings";
+type Tab = "watch" | "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "access" | "settings";
 // Labels live in `l10n.ts` and are looked up by id — see `nav.*` there.
 //
 // They used to sit here as English literals, which made the console's own
@@ -58,6 +59,7 @@ type Tab = "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "ba
 // it is a word rather than eleven rows of 3px type.
 const NAV: { id: Tab; icon: ReactNode }[] = [
   { id: "home", icon: "◎" },
+  { id: "watch", icon: "⌚" },
   { id: "monitor", icon: "❤" },
   { id: "safety", icon: "🆘" },
   { id: "baseline", icon: "📈" },
@@ -103,10 +105,32 @@ export function App() {
   // email can point at the form rather than at a sign-up page.
   const [publicAccess, setPublicAccess] = useState(
     window.location.hash === "#access");
+  // The watch surface answers to the URL the same way, and — like the
+  // accessibility door — before sign-in: the README links every face
+  // drawing to `#watch/<slug>`, and a link that demanded an account first
+  // would land thirty-six drawings on a sign-up page. Signed out, each
+  // face says what it needs; the CPR metronome needs nothing at all.
+  const [watchOpen, setWatchOpen] = useState(
+    window.location.hash.startsWith("#watch"));
+  useEffect(() => {
+    const onHash = () => {
+      if (window.location.hash.startsWith("#watch")) setWatchOpen(true);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
   // The document's own language attribute, so a screen reader pronounces
   // the page in the language it is actually written in — index.html ships
   // lang="en" and the app renders ten languages under it.
   useEffect(() => { document.documentElement.lang = visitorLang(); }, []);
+  if (watchOpen) {
+    return (
+      <>
+        <VersionGuard />
+        <Watch lang={visitorLang()} onClose={() => setWatchOpen(false)} />
+      </>
+    );
+  }
   // The guard wraps onboarding too: a mismatched backend at sign-up is
   // the same trap, one screen earlier.
   if (!session.userId) {
@@ -142,7 +166,13 @@ export function App() {
         </div>
         <nav>
           {NAV.map((n) => (
-            <button key={n.id} className={"nav-item" + (tab === n.id ? " active" : "")} onClick={() => setTab(n.id)}>
+            <button key={n.id} className={"nav-item" + (tab === n.id ? " active" : "")} onClick={() => {
+              // The watch is a place rather than a pane — it takes the
+              // whole viewport and the URL, so the README's face links
+              // and the menu entry arrive through the same door.
+              if (n.id === "watch") { window.location.hash = "#watch"; setWatchOpen(true); }
+              else setTab(n.id);
+            }}>
               <span className="nav-icon">{n.icon}</span>{tr(`nav.${n.id}`, visitorLang())}
             </button>
           ))}

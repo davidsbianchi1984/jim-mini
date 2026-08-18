@@ -550,3 +550,130 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .talk-plus button { background: transparent; color: var(--txt); border: 0;
   border-radius: 10px; padding: 11px 12px; text-align: left; font-size: 14px; }
 .talk-plus button:hover { background: rgba(255,255,255,0.07); }
+
+/* The watch surface. One round-rect frame in the middle of a dark stage —
+   any screen that can open the URL is the wrist, so the frame is sized for
+   a wrist and centered for everything larger. */
+.watch-stage { position: fixed; inset: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(80% 60% at 50% 30%, #0d1830 0%, #070b16 70%); }
+.watch-leave { position: absolute; top: 14px; right: 16px;
+  background: rgba(255,255,255,0.07); color: var(--txt);
+  border: 1px solid var(--line); border-radius: 50%;
+  width: 38px; height: 38px; font-size: 15px; }
+.watch-frame { width: 232px; height: 282px; border-radius: 56px;
+  background: #05070d; border: 6px solid #1a2338;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.6), inset 0 0 0 1px #000;
+  display: flex; flex-direction: column; overflow: hidden;
+  padding: 12px 14px; touch-action: pan-y; }
+.w-head { display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11px; color: var(--t2); flex: 0 0 auto; padding: 2px 4px 6px; }
+.w-head-title { font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.w-head-time { font-variant-numeric: tabular-nums; color: var(--t3); }
+.w-foot { display: flex; justify-content: space-between; align-items: center;
+  flex: 0 0 auto; padding-top: 6px; }
+.w-nav { background: transparent; color: var(--t2); border: 0;
+  font-size: 22px; padding: 2px 10px; }
+.w-index { background: rgba(255,255,255,0.06); color: var(--t2);
+  border: 1px solid var(--line); border-radius: 999px;
+  font-size: 11px; padding: 4px 10px; font-variant-numeric: tabular-nums; }
+
+/* Face bodies: either centered around one big thing, or a short stack of
+   rows. Both scroll rather than clip — a fault line must stay readable. */
+.w-center { flex: 1 1 auto; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+  text-align: center; overflow-y: auto; min-height: 0; }
+.w-face-body { flex: 1 1 auto; display: flex; flex-direction: column;
+  gap: 7px; justify-content: center; overflow-y: auto; min-height: 0; }
+.w-note { font-size: 11px; color: var(--t2); margin: 0; }
+.w-fault { color: var(--red); }
+.w-line { font-size: 12px; color: var(--txt); margin: 0; }
+.w-alert { color: var(--amber); }
+.w-reply { font-size: 12px; color: var(--txt); margin: 0;
+  background: rgba(255,255,255,0.05); border-radius: 12px; padding: 8px 10px; }
+.w-big { font-size: 44px; margin: 0; font-weight: 800; line-height: 1; }
+.w-big-name { font-size: 20px; margin: 0; font-weight: 700; }
+
+.w-btn { display: inline-block; background: rgba(255,255,255,0.08);
+  color: var(--txt); border: 1px solid var(--line); border-radius: 999px;
+  padding: 8px 16px; font-size: 12px; font-weight: 700;
+  text-decoration: none; }
+.w-btn.primary { background: var(--brand); border-color: var(--brand);
+  color: #06240f; }
+.w-btn:disabled { opacity: 0.4; }
+.w-danger { background: var(--red); border-color: var(--red); color: #fff; }
+.w-row { display: flex; gap: 8px; justify-content: center; }
+.w-wrap { flex-wrap: wrap; }
+.w-input { margin: 0; font-size: 13px; border-radius: 12px; }
+.w-chip { background: rgba(255,255,255,0.06); color: var(--t2);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 4px 10px; font-size: 11px; }
+.w-chip.on { color: var(--txt); border-color: var(--brand); }
+.w-scale { background: rgba(255,255,255,0.06); color: var(--t2);
+  border: 1px solid var(--line); border-radius: 50%;
+  width: 26px; height: 26px; font-size: 11px; padding: 0; }
+.w-scale.on { background: var(--brand); border-color: var(--brand);
+  color: #06240f; }
+.w-toggle { width: 34px; height: 20px; border-radius: 999px; padding: 0;
+  border: 1px solid var(--line); background: rgba(255,255,255,0.08);
+  position: relative; }
+.w-toggle::after { content: ""; position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%; background: var(--t2);
+  transition: left 0.15s ease; }
+.w-toggle.on { background: var(--brand); border-color: var(--brand); }
+.w-toggle.on::after { left: 16px; background: #06240f; }
+.w-meter-row { display: flex; align-items: center; gap: 6px; }
+.w-meter-label { flex: 1 1 auto; font-size: 11px; color: var(--t2);
+  text-align: left; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.w-meter-val { font-size: 13px; font-weight: 700;
+  font-variant-numeric: tabular-nums; }
+.w-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+.w-dot.c0 { background: var(--amber); }
+.w-dot.c1 { background: var(--brand); }
+.w-dot.c2 { background: var(--blue); }
+.w-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.w-tile { background: rgba(255,255,255,0.05); border-radius: 14px;
+  padding: 8px; display: flex; flex-direction: column; align-items: center; }
+.w-tile b { font-size: 20px; }
+.w-tile span { font-size: 9px; color: var(--t2); text-transform: capitalize; }
+
+.w-orb { width: 58px; height: 58px; border-radius: 50%; flex: 0 0 auto;
+  background: radial-gradient(circle at 32% 28%, #79f2b1, var(--brand2) 55%, #0f7c46);
+  box-shadow: 0 0 26px rgba(67,224,138,0.5); }
+.w-orb.live { animation: w-throb 1.2s ease-in-out infinite; }
+.w-pulse { font-size: 34px; color: var(--red);
+  animation: w-throb 1s ease-in-out infinite; }
+.w-pulse-text { animation: w-throb 0.54s ease-in-out infinite; }
+.w-moon { font-size: 30px; color: var(--violet); }
+.w-shield { width: 44px; height: 48px; flex: 0 0 auto;
+  background: rgba(255,255,255,0.10);
+  clip-path: polygon(50% 0, 100% 18%, 100% 60%, 50% 100%, 0 60%, 0 18%); }
+.w-shield.on { background: var(--brand); }
+.w-ring { width: 84px; height: 84px; border-radius: 50%;
+  border: 5px solid var(--brand); display: flex; align-items: center;
+  justify-content: center; flex: 0 0 auto; }
+.w-ring b { font-size: 26px; }
+.w-qr { width: 120px; height: 120px; border-radius: 12px; background: #fff;
+  padding: 6px; }
+@keyframes w-throb { 0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.14); } }
+/* The breathing orb moves with the phase the label names: growing on the
+   in-breath, holding, easing back out on the 4-4-6 count the timer keeps. */
+.w-breathe-in { animation: w-grow 4s ease-in-out forwards; }
+.w-breathe-hold { transform: scale(1.35); }
+.w-breathe-out { animation: w-shrink 6s ease-in-out forwards; }
+@keyframes w-grow { from { transform: scale(1); }
+  to { transform: scale(1.35); } }
+@keyframes w-shrink { from { transform: scale(1.35); }
+  to { transform: scale(1); } }
+
+.w-grid { flex: 1 1 auto; display: grid; overflow-y: auto; min-height: 0;
+  grid-template-columns: repeat(6, 1fr); gap: 4px; align-content: center; }
+.w-grid-cell { background: rgba(255,255,255,0.06); color: var(--t2);
+  border: 1px solid var(--line); border-radius: 8px; font-size: 10px;
+  padding: 5px 0; font-variant-numeric: tabular-nums; }
+.w-grid-cell.on { background: var(--brand); border-color: var(--brand);
+  color: #06240f; }

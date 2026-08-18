@@ -2,8 +2,8 @@
 
 **A personal health guardian for people managing known conditions.**
 
-JIM-mini continuously watches the vital signs of a person managing known
-health conditions and responds when they cannot: a check-in first, and when
+JIM-mini watches the vital signs of a person living with known health
+conditions and responds when they cannot: a check-in first, and when
 readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
@@ -23,7 +23,7 @@ version number names one tested combination of all three.
 | **Early-warning escalation** | A programmed ladder: check in with the person first, then contacts, then the emergency path they configured in advance. See [docs/early-warning-escalation.md](docs/early-warning-escalation.md). |
 | **Baselines and foresight** | The system learns each person's normal from history they already have, and projects short-term trends so a decline is raised before it is a crisis. |
 | **Check-ins, journal, and coaching** | Daily mood and energy check-ins, a private journal, and a life coach that escalates to the guardian when a conversation reveals something the monitors cannot see. |
-| **Emergency tools** | CPR guidance, a scannable Medical ID, and an emergency screen that shares location. The dialer never claims a call it did not place. |
+| **Emergency tools** | A CPR metronome that keeps clinical time with no network, a scannable Medical ID, and an emergency screen that shares location. The dialer never claims a call it did not place. |
 | **Care circle** | Family and care-team visibility with per-person consent, quiet hours, and a full audit trail of who saw what. |
 | **Privacy and offline mode** | With `JIM_OFFLINE=1`, nothing leaves the host — enforced at every socket in the codebase and verified by tests, not policy. Optional on-prem storage through the PDI vault. |
 | **Clinical handoff** | A sealed, revocable summary a person can hand to a clinician. See [docs/hipaa-baa.md](docs/hipaa-baa.md). |
@@ -34,6 +34,7 @@ version number names one tested combination of all three.
 |---|---|---|
 | API server | `jim/` | FastAPI + SQLite. `python -m jim serve` or `uvicorn jim.api:app`. |
 | Web console | `app/` | React + TypeScript (Vite). |
+| Watch surface | `app/` at `#watch` | The 36 faces below as working screens, in any browser, at wrist size. |
 | iOS shell | `native/ios/` | SwiftUI. |
 | Android shell | `native/android/` | Kotlin. |
 | Windows shell | `native/windows/` | C# / WinUI. |
@@ -41,65 +42,87 @@ version number names one tested combination of all three.
 
 ## On the wrist
 
-The watch experience, one face per capability. These faces are the design
-set for the wrist surface (regenerate with `python3 docs/watch/build.py`);
-the data behind every one of them is served by the same API the phones use,
-delivered today through the drip channel above.
+Every face below is a working screen. Select any drawing to open that face
+live at [jim-mini.com/#watch](https://jim-mini.com/#watch) — the watch
+surface runs in any browser, sized for a wrist, and stands on the same API
+as the phones: a check-in logged on face 09 is the Check-in tab's own
+`POST /checkin`, the sources toggled on face 28 are the same consents the
+Settings screen holds, and face 36 reads the same task window the console
+pins beside every screen.
+
+How the surface is built:
+
+- **Deep links.** `#watch/<face>` opens one face directly — `#watch/05-heart`,
+  `#watch/heart` and `#watch/5` all land on Heart. Swipe or use the arrows to
+  move between neighbours; the counter in the footer opens a grid of all 36.
+- **CPR keeps its own time.** Face 14 is a metronome at 110 compressions per
+  minute scheduled on the audio clock — a drifting timer is a wrong
+  compression rate — sounding the 30:2 rhythm in tone and vibration. It needs
+  no account and no network.
+- **The device dials, honestly.** The emergency face hands the number to the
+  device, which is the thing that can place a call. JIM never claims a call
+  it did not make — the same promise the alarm queue has carried since it
+  shipped.
+- **Signed out is said plainly.** Faces that read your account say to sign in
+  on the phone first; CPR and Breathe work for whoever is holding the wrist.
+
+The drawings are the design set (`python3 docs/watch/build.py` regenerates
+them); the links under them are the product.
 
 <table>
 <tr>
-<td align="center" width="25%"><img src="docs/watch/01-home.svg" width="120" alt="01 Home"><br><sub>01 · Home</sub></td>
-<td align="center" width="25%"><img src="docs/watch/02-talk.svg" width="120" alt="02 Talk"><br><sub>02 · Talk</sub></td>
-<td align="center" width="25%"><img src="docs/watch/03-voice.svg" width="120" alt="03 Voice"><br><sub>03 · Voice</sub></td>
-<td align="center" width="25%"><img src="docs/watch/04-health.svg" width="120" alt="04 Health"><br><sub>04 · Health</sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/01-home"><img src="docs/watch/01-home.svg" width="120" alt="01 Home"></a><br><sub><a href="https://jim-mini.com/#watch/01-home">01 · Home</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/02-talk"><img src="docs/watch/02-talk.svg" width="120" alt="02 Talk"></a><br><sub><a href="https://jim-mini.com/#watch/02-talk">02 · Talk</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/03-voice"><img src="docs/watch/03-voice.svg" width="120" alt="03 Voice"></a><br><sub><a href="https://jim-mini.com/#watch/03-voice">03 · Voice</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/04-health"><img src="docs/watch/04-health.svg" width="120" alt="04 Health"></a><br><sub><a href="https://jim-mini.com/#watch/04-health">04 · Health</a></sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><img src="docs/watch/05-heart.svg" width="120" alt="05 Heart"><br><sub>05 · Heart</sub></td>
-<td align="center" width="25%"><img src="docs/watch/06-rings.svg" width="120" alt="06 Rings"><br><sub>06 · Rings</sub></td>
-<td align="center" width="25%"><img src="docs/watch/07-briefing.svg" width="120" alt="07 Briefing"><br><sub>07 · Briefing</sub></td>
-<td align="center" width="25%"><img src="docs/watch/08-streak.svg" width="120" alt="08 Streak"><br><sub>08 · Streak</sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/05-heart"><img src="docs/watch/05-heart.svg" width="120" alt="05 Heart"></a><br><sub><a href="https://jim-mini.com/#watch/05-heart">05 · Heart</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/06-rings"><img src="docs/watch/06-rings.svg" width="120" alt="06 Rings"></a><br><sub><a href="https://jim-mini.com/#watch/06-rings">06 · Rings</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/07-briefing"><img src="docs/watch/07-briefing.svg" width="120" alt="07 Briefing"></a><br><sub><a href="https://jim-mini.com/#watch/07-briefing">07 · Briefing</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/08-streak"><img src="docs/watch/08-streak.svg" width="120" alt="08 Streak"></a><br><sub><a href="https://jim-mini.com/#watch/08-streak">08 · Streak</a></sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><img src="docs/watch/09-check-in.svg" width="120" alt="09 Check-in"><br><sub>09 · Check-in</sub></td>
-<td align="center" width="25%"><img src="docs/watch/10-insight.svg" width="120" alt="10 Insight"><br><sub>10 · Insight</sub></td>
-<td align="center" width="25%"><img src="docs/watch/11-monitoring.svg" width="120" alt="11 Monitoring"><br><sub>11 · Monitoring</sub></td>
-<td align="center" width="25%"><img src="docs/watch/12-foresight.svg" width="120" alt="12 Foresight"><br><sub>12 · Foresight</sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/09-check-in"><img src="docs/watch/09-check-in.svg" width="120" alt="09 Check-in"></a><br><sub><a href="https://jim-mini.com/#watch/09-check-in">09 · Check-in</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/10-insight"><img src="docs/watch/10-insight.svg" width="120" alt="10 Insight"></a><br><sub><a href="https://jim-mini.com/#watch/10-insight">10 · Insight</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/11-monitoring"><img src="docs/watch/11-monitoring.svg" width="120" alt="11 Monitoring"></a><br><sub><a href="https://jim-mini.com/#watch/11-monitoring">11 · Monitoring</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/12-foresight"><img src="docs/watch/12-foresight.svg" width="120" alt="12 Foresight"></a><br><sub><a href="https://jim-mini.com/#watch/12-foresight">12 · Foresight</a></sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><img src="docs/watch/13-emergency.svg" width="120" alt="13 Emergency"><br><sub>13 · Emergency</sub></td>
-<td align="center" width="25%"><img src="docs/watch/14-cpr.svg" width="120" alt="14 CPR"><br><sub>14 · CPR</sub></td>
-<td align="center" width="25%"><img src="docs/watch/15-medical-id.svg" width="120" alt="15 Medical ID"><br><sub>15 · Medical ID</sub></td>
-<td align="center" width="25%"><img src="docs/watch/16-sensitivity.svg" width="120" alt="16 Sensitivity"><br><sub>16 · Sensitivity</sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/13-emergency"><img src="docs/watch/13-emergency.svg" width="120" alt="13 Emergency"></a><br><sub><a href="https://jim-mini.com/#watch/13-emergency">13 · Emergency</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/14-cpr"><img src="docs/watch/14-cpr.svg" width="120" alt="14 CPR"></a><br><sub><a href="https://jim-mini.com/#watch/14-cpr">14 · CPR</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/15-medical-id"><img src="docs/watch/15-medical-id.svg" width="120" alt="15 Medical ID"></a><br><sub><a href="https://jim-mini.com/#watch/15-medical-id">15 · Medical ID</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/16-sensitivity"><img src="docs/watch/16-sensitivity.svg" width="120" alt="16 Sensitivity"></a><br><sub><a href="https://jim-mini.com/#watch/16-sensitivity">16 · Sensitivity</a></sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><img src="docs/watch/17-ambient.svg" width="120" alt="17 Ambient"><br><sub>17 · Ambient</sub></td>
-<td align="center" width="25%"><img src="docs/watch/18-companion.svg" width="120" alt="18 Companion"><br><sub>18 · Companion</sub></td>
-<td align="center" width="25%"><img src="docs/watch/19-notifications.svg" width="120" alt="19 Notifications"><br><sub>19 · Notifications</sub></td>
-<td align="center" width="25%"><img src="docs/watch/20-devices.svg" width="120" alt="20 Devices"><br><sub>20 · Devices</sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/17-ambient"><img src="docs/watch/17-ambient.svg" width="120" alt="17 Ambient"></a><br><sub><a href="https://jim-mini.com/#watch/17-ambient">17 · Ambient</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/18-companion"><img src="docs/watch/18-companion.svg" width="120" alt="18 Companion"></a><br><sub><a href="https://jim-mini.com/#watch/18-companion">18 · Companion</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/19-notifications"><img src="docs/watch/19-notifications.svg" width="120" alt="19 Notifications"></a><br><sub><a href="https://jim-mini.com/#watch/19-notifications">19 · Notifications</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/20-devices"><img src="docs/watch/20-devices.svg" width="120" alt="20 Devices"></a><br><sub><a href="https://jim-mini.com/#watch/20-devices">20 · Devices</a></sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><img src="docs/watch/21-guardian.svg" width="120" alt="21 Guardian"><br><sub>21 · Guardian</sub></td>
-<td align="center" width="25%"><img src="docs/watch/22-settings.svg" width="120" alt="22 Settings"><br><sub>22 · Settings</sub></td>
-<td align="center" width="25%"><img src="docs/watch/23-breathe.svg" width="120" alt="23 Breathe"><br><sub>23 · Breathe</sub></td>
-<td align="center" width="25%"><img src="docs/watch/24-feedback.svg" width="120" alt="24 Feedback"><br><sub>24 · Feedback</sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/21-guardian"><img src="docs/watch/21-guardian.svg" width="120" alt="21 Guardian"></a><br><sub><a href="https://jim-mini.com/#watch/21-guardian">21 · Guardian</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/22-settings"><img src="docs/watch/22-settings.svg" width="120" alt="22 Settings"></a><br><sub><a href="https://jim-mini.com/#watch/22-settings">22 · Settings</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/23-breathe"><img src="docs/watch/23-breathe.svg" width="120" alt="23 Breathe"></a><br><sub><a href="https://jim-mini.com/#watch/23-breathe">23 · Breathe</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/24-feedback"><img src="docs/watch/24-feedback.svg" width="120" alt="24 Feedback"></a><br><sub><a href="https://jim-mini.com/#watch/24-feedback">24 · Feedback</a></sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><img src="docs/watch/25-journal.svg" width="120" alt="25 Journal"><br><sub>25 · Journal</sub></td>
-<td align="center" width="25%"><img src="docs/watch/26-coach.svg" width="120" alt="26 Coach"><br><sub>26 · Coach</sub></td>
-<td align="center" width="25%"><img src="docs/watch/27-baseline.svg" width="120" alt="27 Baseline"><br><sub>27 · Baseline</sub></td>
-<td align="center" width="25%"><img src="docs/watch/28-sources.svg" width="120" alt="28 Sources"><br><sub>28 · Sources</sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/25-journal"><img src="docs/watch/25-journal.svg" width="120" alt="25 Journal"></a><br><sub><a href="https://jim-mini.com/#watch/25-journal">25 · Journal</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/26-coach"><img src="docs/watch/26-coach.svg" width="120" alt="26 Coach"></a><br><sub><a href="https://jim-mini.com/#watch/26-coach">26 · Coach</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/27-baseline"><img src="docs/watch/27-baseline.svg" width="120" alt="27 Baseline"></a><br><sub><a href="https://jim-mini.com/#watch/27-baseline">27 · Baseline</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/28-sources"><img src="docs/watch/28-sources.svg" width="120" alt="28 Sources"></a><br><sub><a href="https://jim-mini.com/#watch/28-sources">28 · Sources</a></sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><img src="docs/watch/29-privacy.svg" width="120" alt="29 Privacy"><br><sub>29 · Privacy</sub></td>
-<td align="center" width="25%"><img src="docs/watch/30-handoff.svg" width="120" alt="30 Handoff"><br><sub>30 · Handoff</sub></td>
-<td align="center" width="25%"><img src="docs/watch/31-offline.svg" width="120" alt="31 Offline"><br><sub>31 · Offline</sub></td>
-<td align="center" width="25%"><img src="docs/watch/32-conditions.svg" width="120" alt="32 Conditions"><br><sub>32 · Conditions</sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/29-privacy"><img src="docs/watch/29-privacy.svg" width="120" alt="29 Privacy"></a><br><sub><a href="https://jim-mini.com/#watch/29-privacy">29 · Privacy</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/30-handoff"><img src="docs/watch/30-handoff.svg" width="120" alt="30 Handoff"></a><br><sub><a href="https://jim-mini.com/#watch/30-handoff">30 · Handoff</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/31-offline"><img src="docs/watch/31-offline.svg" width="120" alt="31 Offline"></a><br><sub><a href="https://jim-mini.com/#watch/31-offline">31 · Offline</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/32-conditions"><img src="docs/watch/32-conditions.svg" width="120" alt="32 Conditions"></a><br><sub><a href="https://jim-mini.com/#watch/32-conditions">32 · Conditions</a></sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><img src="docs/watch/33-style.svg" width="120" alt="33 Style"><br><sub>33 · Style</sub></td>
-<td align="center" width="25%"><img src="docs/watch/34-history.svg" width="120" alt="34 History"><br><sub>34 · History</sub></td>
-<td align="center" width="25%"><img src="docs/watch/35-family.svg" width="120" alt="35 Family"><br><sub>35 · Family</sub></td>
-<td align="center" width="25%"><img src="docs/watch/36-agents.svg" width="120" alt="36 Agents"><br><sub>36 · Agents</sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/33-style"><img src="docs/watch/33-style.svg" width="120" alt="33 Style"></a><br><sub><a href="https://jim-mini.com/#watch/33-style">33 · Style</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/34-history"><img src="docs/watch/34-history.svg" width="120" alt="34 History"></a><br><sub><a href="https://jim-mini.com/#watch/34-history">34 · History</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/35-family"><img src="docs/watch/35-family.svg" width="120" alt="35 Family"></a><br><sub><a href="https://jim-mini.com/#watch/35-family">35 · Family</a></sub></td>
+<td align="center" width="25%"><a href="https://jim-mini.com/#watch/36-agents"><img src="docs/watch/36-agents.svg" width="120" alt="36 Agents"></a><br><sub><a href="https://jim-mini.com/#watch/36-agents">36 · Agents</a></sub></td>
 </tr>
 </table>
 
