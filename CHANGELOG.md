@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.85.0] - 2026-08-18
+
 ### Added
 
 - **The front page reads like a product, and the mockups moved next door.**
@@ -9306,7 +9308,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.84.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.85.0...HEAD
+[0.85.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.84.0...app-v0.85.0
 [0.84.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.83.0...app-v0.84.0
 [0.83.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.82.0...app-v0.83.0
 [0.82.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.82.0
