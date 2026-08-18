@@ -2357,9 +2357,14 @@ def create_app(qrme_client: QRMEClient | None = None,
         """What the coach remembers about this person, read back from the
         vault — the transparency half of jim/recall.py. Every derived thing
         in this product has to be visible to the person it was derived
-        from, and droppable by them."""
+        from, and droppable by them.
+
+        `app.state.pdi`, not `_vault(...)`: the plan gate covers writes
+        only (jim/storage.py), and somebody who moved to an open plan
+        still has a history of sealed moments they must be able to read
+        back."""
         _user_or_404(user_id, request)
-        return recall_mod.shelf(_vault(user_id), user_id)
+        return recall_mod.shelf(app.state.pdi, user_id)
 
     @app.delete("/memory/{user_id}/{kind}/{ref}")
     def forget_memory(user_id: str, kind: str, ref: str,
@@ -2367,9 +2372,12 @@ def create_app(qrme_client: QRMEClient | None = None,
         """Unmake one remembered moment: the vector, the seal, and the
         ledger row. The answer says what happened — `forgotten: false`
         with the reason when the tandem could not be reached — because a
-        forget button that fails silently is worse than none."""
+        forget button that fails silently is worse than none. The real
+        vault, not the plan-gated one: a delete refused over a billing
+        change would leave records nobody can reach and call that
+        forgetting."""
         _user_or_404(user_id, request)
-        return recall_mod.forget(_vault(user_id), user_id, kind, ref)
+        return recall_mod.forget(app.state.pdi, user_id, kind, ref)
 
     @app.get("/continuity/{user_id}")
     def read_continuity(user_id: str, request: Request) -> dict:
@@ -2955,7 +2963,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         that also feeds the crisis pipeline.
         """
         _user_or_404(user_id, request)
-        if not life.remove_checkin(user_id, checkin_id):
+        if not life.remove_checkin(user_id, checkin_id,
+                                   pdi=app.state.pdi):
             raise HTTPException(404, "check-in not found")
         return {"checkin_id": checkin_id, "removed": True}
 
@@ -3731,7 +3740,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         and a door somebody writing their own diary should always have had."""
         _user_or_404(user_id, request)
         if not life.remove_journal(user_id, entry_id,
-                                   pdi=_vault(user_id)):
+                                   pdi=app.state.pdi):
             raise HTTPException(404, "journal entry not found")
         return {"entry_id": entry_id, "removed": True}
 

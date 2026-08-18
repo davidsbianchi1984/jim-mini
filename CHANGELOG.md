@@ -4,6 +4,32 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Deleting a check-in reaches the vault.** `remove_journal` already
+  unmade its entry's memory; its twin did not: a person who unrecorded
+  how they felt kept a sealed, findable moment the coach could recall
+  into a later reply. `DELETE /checkin/{user_id}/{checkin_id}` now takes
+  the vector, the seal and the ledger row with the check-in — best-effort
+  like the journal's, because a local delete must not depend on a second
+  product being up, and what could not be unmade stays covered by the
+  user-level erasure door.
+
+      asked     did the check-in leave the record
+      mattered  did the moment stop being findable
+
+- **The memory doors use the real vault, not the plan-gated one.** The
+  shelf read, the per-moment forget and the journal/check-in deletes went
+  through `_vault(user_id)`, which gates on the *plan* — right for every
+  seal point, wrong here: somebody who moved to an open plan still has a
+  history of sealed moments they must be able to read back and let go of,
+  and a delete refused over a billing change would leave records nobody
+  can reach and call that forgetting. Writes stay plan-gated; reads and
+  deletes now take `app.state.pdi`, the same split QRME's memory doors
+  hold.
+
 ### Added
 
 - **The memory shelf, shown and curatable.** The coach's long-term memory

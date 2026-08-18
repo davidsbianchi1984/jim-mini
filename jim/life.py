@@ -470,7 +470,7 @@ def check_in(user_id: str, mood: int, energy: int | None, note: str | None,
             "stress": stress, "insights": generated}
 
 
-def remove_checkin(user_id: str, checkin_id: str) -> bool:
+def remove_checkin(user_id: str, checkin_id: str, pdi=None) -> bool:
     """Take a check-in back.
 
     Written for `jim/engaged.py`'s undo trail and missing long before it: a
@@ -480,6 +480,13 @@ def remove_checkin(user_id: str, checkin_id: str) -> bool:
     record of the moment, and a history that could be edited backwards is a
     baseline nobody should be judged against.
     """
+    # The note's *memory* goes with it — the vector, the seal and the
+    # ledger row (jim/recall.py) — so the coach stops finding a moment the
+    # person unrecorded. Best-effort like `remove_journal`, its twin: this
+    # delete must not depend on a second product being up, and what could
+    # not be unmade stays covered by the user-level erasure door.
+    from . import recall as recall_mod
+    recall_mod.forget(pdi, user_id, "checkin", checkin_id)
     conn = db.connect()
     cursor = conn.execute("DELETE FROM checkins WHERE id=? AND user_id=?",
                           (checkin_id, user_id))

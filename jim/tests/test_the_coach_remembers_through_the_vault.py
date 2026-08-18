@@ -260,6 +260,33 @@ def test_deleting_a_journal_entry_unmakes_its_memory(client):
     assert recall.coach_lines(vault, uid, "drinking too much") == []
 
 
+def test_deleting_a_checkin_unmakes_its_memory(client):
+    """`remove_journal`'s twin, and the last local delete that used to
+    leave its moment findable: a person who unrecords how they felt must
+    not have the coach recall it — the seal, the ledger row and the
+    vector go with the check-in, while the check-in's own medical seal
+    keeps its separate erasure story."""
+    uid = enroll(client)
+    vault = FakeResidentVault()
+    client.app.state.pdi = vault
+    r = client.post(f"/checkin/{uid}", json={
+        "mood": 2, "energy": 2, "note": "panic attack at the pharmacy"})
+    assert r.status_code == 201, r.text
+    cid = r.json()["id"]
+    key = f"jim/{uid}/memory/checkin/{cid}"
+    assert key in vault.embedded and key in vault.records
+    gone = client.delete(f"/checkin/{uid}/{cid}")
+    assert gone.status_code == 200, gone.text
+    assert key not in vault.embedded, "the vector survived the delete"
+    assert key not in vault.records, "the seal survived the delete"
+    from jim import db
+    row = db.connect().execute(
+        "SELECT COUNT(*) AS n FROM vault_keys WHERE user_id=? AND key=?",
+        (uid, key)).fetchone()
+    assert row["n"] == 0, "the ledger row survived the delete"
+    assert recall.coach_lines(vault, uid, "panic attack") == []
+
+
 def test_user_erasure_takes_every_memory_vector_in_one_call(client):
     uid = enroll(client)
     vault = FakeResidentVault()
