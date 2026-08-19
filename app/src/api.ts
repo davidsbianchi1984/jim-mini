@@ -651,7 +651,7 @@ export interface ErrandsRun {
 export interface Lookout {
   id: string; url: string; every_hours: number;
   status: string | null; next_run_at: string | null;
-  changed_at: string | null; created_at: string;
+  changed_at: string | null; trouble: string | null; created_at: string;
 }
 export interface LookoutList { lookouts: Lookout[]; readable: boolean }
 export interface LookoutPage {

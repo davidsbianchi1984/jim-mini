@@ -228,7 +228,7 @@ data class NoticedRun(val byCoach: List<Notice>, val byJim: List<Notice>,
                       val remainingToday: Int, val nothingNoticed: Boolean)
 data class Lookout(val id: String, val url: String, val everyHours: Double,
                    val status: String?, val nextRunAt: String?,
-                   val changedAt: String?)
+                   val changedAt: String?, val trouble: String?)
 data class LookoutList(val lookouts: List<Lookout>, val readable: Boolean)
 data class ErrandsRun(val errands: List<Errand>, val remainingToday: Int,
                       val nothingToStudy: Boolean)
@@ -511,7 +511,9 @@ object ApiClient {
                         if (w.isNull("next_run_at")) null
                         else w.optString("next_run_at"),
                         if (w.isNull("changed_at")) null
-                        else w.optString("changed_at"))
+                        else w.optString("changed_at"),
+                        if (w.isNull("trouble")) null
+                        else w.optString("trouble"))
                 },
                 o.optBoolean("readable"))
         }

@@ -336,6 +336,9 @@ export function Coach() {
                       {w.changed_at &&
                         ` · ${fill("lkt.changed", lang,
                                    { when: w.changed_at.slice(0, 10) })}`}
+                      {w.trouble && (
+                        <span className="error"> · {w.trouble}</span>
+                      )}
                     </div>
                   </div>
                   <button onClick={async () => {

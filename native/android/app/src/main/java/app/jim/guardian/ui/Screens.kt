@@ -2025,6 +2025,9 @@ fun CoachScreen(vm: GuardianViewModel) {
                                 "lkt.changed", vm.language,
                                 mapOf("when" to it.take(10))) } ?: ""),
                             color = Jim.T2, fontSize = 11.sp)
+                        w.trouble?.let {
+                            Text(it, color = Jim.Red, fontSize = 10.sp)
+                        }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = {
                                 vm.call({ ApiClient.lookoutPage(vm.uid!!, w.id,

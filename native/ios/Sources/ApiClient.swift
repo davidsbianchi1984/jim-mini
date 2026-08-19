@@ -1825,6 +1825,7 @@ actor ApiClient {
         let status: String?
         let next_run_at: String?
         let changed_at: String?
+        let trouble: String?
     }
 
     struct LookoutList: Decodable {

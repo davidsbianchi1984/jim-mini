@@ -136,8 +136,29 @@ def watches(user_id: str, pdi=None) -> dict:
                     "status": task.get("status"),
                     "next_run_at": task.get("next_run_at"),
                     "changed_at": (sealed or {}).get("changed_at"),
+                    "trouble": _trouble(pdi, r["task_id"]),
                     "created_at": r["created_at"]})
     return {"lookouts": out, "readable": readable}
+
+
+def _trouble(pdi, task_id: str) -> str | None:
+    """Why the watching last failed, from the vault's runs ledger
+    (PDI 0.89) — the latest round's note when that round failed, else
+    None. None also for an older PDI or an unreached one: absence stays
+    absence, and a lookout in trouble should not make the list fail."""
+    runs_door = getattr(pdi, "resident_runs", None)
+    if runs_door is None:
+        return None
+    try:
+        rounds = runs_door(task_id)
+    except Exception:  # noqa: BLE001
+        return None
+    if not rounds:
+        return None
+    latest = rounds[0]
+    if latest.get("status") != "failed":
+        return None
+    return latest.get("note")
 
 
 def _row(user_id: str, lookout_id: str):

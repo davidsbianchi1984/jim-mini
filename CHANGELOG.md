@@ -35,6 +35,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       asked     when did the page change
       mattered  a fetch date answers when we looked, not when it moved
 
+- **The lookout says why it fails.** A row could already say `failed`;
+  the why lived buried in the vault's runs ledger (PDI's `resident_runs`).
+  The list now reads the latest round and wears its note in red when
+  that round failed — "ResidentError: the wire is down" on the row, on
+  all four clients — and only the latest round speaks: a lookout that
+  failed yesterday and ran clean this morning is not in trouble. An
+  older vault without the ledger, or an unreached one, says nothing
+  rather than guessing.
+
+      asked     why did the watching stop working
+      mattered  a failed status without a why is a shrug
+
 ## [0.89.0] - 2026-08-19
 
 ### Added

@@ -256,6 +256,16 @@ public sealed partial class CoachPage : Page
                                 w.ChangedAt[..Math.Min(10, w.ChangedAt.Length)])),
                     FontSize = 11, Foreground = t2,
                 });
+                if (w.Trouble is not null)
+                {
+                    row.Children.Add(new TextBlock
+                    {
+                        Text = w.Trouble, FontSize = 11,
+                        TextWrapping = TextWrapping.Wrap,
+                        Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                            Microsoft.UI.Colors.Red),
+                    });
+                }
                 var buttons = new StackPanel
                 {
                     Orientation = Orientation.Horizontal, Spacing = 8,
