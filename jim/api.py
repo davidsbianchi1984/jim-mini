@@ -1121,7 +1121,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         user = _user_or_404(user_id, request)
         from . import letter as letter_mod
         try:
-            return letter_mod.compose(user, cloud=app.state.cloud)
+            return letter_mod.compose(user, cloud=app.state.cloud,
+                                      pdi=app.state.pdi)
         except letter_mod.LetterError as exc:
             raise HTTPException(422, str(exc)) from None
 

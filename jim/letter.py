@@ -92,12 +92,36 @@ def _digest(user_id: str, since: str) -> list[str]:
     return lines
 
 
-def compose(user: dict, cloud=None) -> dict:
+def _watching_lines(user_id: str, since: str, pdi) -> list[str]:
+    """What the lookouts noticed this week — a changed page is a real
+    event the person asked to be told about, and a failing watch is a
+    fact they should not have to open a task window to learn. Both read
+    from the vault (the capture's own change date, the runs ledger's
+    latest round); no vault, or an unreached one, contributes nothing —
+    the letter never fails for its least essential paragraph."""
+    if pdi is None:
+        return []
+    from . import lookout as lookout_mod
+    rows = db.connect().execute(
+        "SELECT * FROM lookouts WHERE user_id=? ORDER BY created_at, rowid",
+        (user_id,)).fetchall()
+    lines: list[str] = []
+    for r in rows:
+        sealed = lookout_mod._capture(pdi, r["task_id"])
+        changed = (sealed or {}).get("changed_at")
+        if changed and changed >= since:
+            lines.append(f"watched page {r['url']} changed on {changed[:10]}")
+        if lookout_mod._trouble(pdi, r["task_id"]):
+            lines.append(f"the watch on {r['url']} has been failing")
+    return lines
+
+
+def compose(user: dict, cloud=None, pdi=None) -> dict:
     """Write this week's letter from what the week actually held."""
     user_id = user["id"]
     now = db.utcnow()
     since, week_start = _week_window(now)
-    lines = _digest(user_id, since)
+    lines = _digest(user_id, since) + _watching_lines(user_id, since, pdi)
     if not lines:
         raise LetterError("nothing was logged this week — a letter about "
                           "an empty week would have to invent its contents")

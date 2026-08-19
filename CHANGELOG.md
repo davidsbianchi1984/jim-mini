@@ -47,6 +47,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       asked     why did the watching stop working
       mattered  a failed status without a why is a shrug
 
+- **The letter mentions what the watching noticed.** The weekly
+  letter's digest gains the lookouts' facts: "watched page {url}
+  changed on {date}" when a capture's own change date falls inside the
+  week, and "the watch on {url} has been failing" when the runs
+  ledger's latest round failed. A changed page alone earns the letter —
+  it is a real event the person asked to be told about — while an old
+  change stays out, and a vault that cannot be reached costs the
+  letter nothing. Still only facts: the prose model adds warmth, never
+  events.
+
+      asked     did the week hold anything the watching saw
+      mattered  a watcher that reports only when asked is a drawer
+
 ## [0.89.0] - 2026-08-19
 
 ### Added
