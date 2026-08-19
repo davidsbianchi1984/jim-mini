@@ -257,3 +257,63 @@ def test_erasure_cancels_every_appointment_and_unseals_every_capture(client):
     assert db.connect().execute(
         "SELECT COUNT(*) AS n FROM lookouts WHERE user_id=?",
         (uid,)).fetchone()["n"] == 0
+
+
+# -- the payoff: the coach speaks from the capture ---------------------------
+
+def _seal_capture(vault, task_id, text,
+                  fetched="2026-08-19T09:00:00+00:00",
+                  url="https://example.com/page"):
+    vault.records[lookout.capture_key(task_id)] = json.dumps(
+        {"url": url, "text": text, "fetched_at": fetched})
+
+
+def test_the_coach_answers_from_the_current_capture(client, monkeypatch):
+    uid = enroll(client)
+    vault = StandingVault()
+    client.app.state.pdi = vault
+    _allow_study(client, uid)
+    planted = _plant(client, uid)
+    _seal_capture(vault, planted["task_id"],
+                  "Pollen count is very high today")
+    seen = {}
+    orig = lookout.prompt_block
+
+    def spy(user_id, pdi=None):
+        out = orig(user_id, pdi)
+        seen["block"] = out
+        return out
+
+    monkeypatch.setattr(lookout, "prompt_block", spy)
+    r = client.post(f"/coach/{uid}", json={
+        "area": "health_fitness", "message": "should I run outside today"})
+    assert r.status_code == 200, r.text
+    assert r.json()["content"]
+    assert "Pollen count is very high" in seen["block"]
+    assert "captured 2026-08-19" in seen["block"], (
+        "a capture must ride the prompt wearing its date")
+
+
+def test_an_unreadable_tandem_contributes_nothing_not_a_failure(client):
+    uid = enroll(client)
+    client.app.state.pdi = StandingVault()
+    _allow_study(client, uid)
+    _plant(client, uid)
+    client.app.state.pdi = BrokenVault()
+    r = client.post(f"/coach/{uid}", json={
+        "area": "health_fitness", "message": "hello there"})
+    assert r.status_code == 200, r.text
+    assert r.json()["content"]
+    assert lookout.prompt_block(uid, BrokenVault()) is None
+
+
+def test_a_capture_rides_as_a_digest_not_an_archive(client):
+    uid = enroll(client)
+    vault = StandingVault()
+    client.app.state.pdi = vault
+    _allow_study(client, uid)
+    planted = _plant(client, uid)
+    _seal_capture(vault, planted["task_id"], "x" * (lookout.PROMPT_CAP * 5))
+    block = lookout.prompt_block(uid, vault)
+    assert block is not None
+    assert len(block) < lookout.PROMPT_CAP * 2

@@ -58,6 +58,12 @@ MIN_HOURS, MAX_HOURS = 0.25, 744
 #: a JIM screen needs the reading, not the archive.
 PAGE_CAP = 20000
 
+#: How the captures ride the coach's prompt: the latest few pages, each
+#: at a digest's length. A prompt full of pages is a coach that stops
+#: noticing the person in front of it.
+PROMPT_PAGES = 3
+PROMPT_CAP = 700
+
 
 def capture_key(task_id: str) -> str:
     return _CAPTURE.format(task_id=task_id)
@@ -145,20 +151,56 @@ def page(user_id: str, lookout_id: str, pdi=None) -> dict | None:
            "fetched_at": None, "chars": 0, "text": None}
     if pdi is None:
         return out
-    try:
-        raw = pdi.get(capture_key(row["task_id"]))
-    except Exception:  # noqa: BLE001
-        return out
-    if not raw:
-        return out
-    try:
-        sealed = json.loads(raw)
-    except ValueError:
+    sealed = _capture(pdi, row["task_id"])
+    if sealed is None:
         return out
     text = sealed.get("text") or ""
     out.update({"readable": True, "fetched_at": sealed.get("fetched_at"),
                 "chars": len(text), "text": text[:PAGE_CAP]})
     return out
+
+
+def _capture(pdi, task_id: str) -> dict | None:
+    try:
+        raw = pdi.get(capture_key(task_id))
+    except Exception:  # noqa: BLE001
+        return None
+    if not raw:
+        return None
+    try:
+        return json.loads(raw)
+    except ValueError:
+        return None
+
+
+def prompt_block(user_id: str, pdi=None) -> str | None:
+    """The watched pages as their current captures, worded for the
+    coach's prompt — context the model may draw on, never an
+    instruction, and honest about its age. Contributes nothing rather
+    than failing: a turn that lands without the pages beats a turn
+    refused for them."""
+    if pdi is None:
+        return None
+    rows = db.connect().execute(
+        "SELECT * FROM lookouts WHERE user_id=?"
+        " ORDER BY created_at DESC, rowid DESC LIMIT ?",
+        (user_id, PROMPT_PAGES)).fetchall()
+    parts = []
+    for r in rows:
+        sealed = _capture(pdi, r["task_id"])
+        if sealed is None:
+            continue
+        text = (sealed.get("text") or "").strip()
+        if not text:
+            continue
+        parts.append(f"{r['url']} (captured {sealed.get('fetched_at')}):\n"
+                     + text[:PROMPT_CAP])
+    if not parts:
+        return None
+    return ("Pages you keep an eye on for this person, as their current "
+            "captures — draw on them when they are relevant, say when a "
+            "page did not carry an answer, and never present a capture as "
+            "older or newer than its date:\n\n" + "\n\n".join(parts))
 
 
 def drop(user_id: str, lookout_id: str, pdi=None) -> dict | None:

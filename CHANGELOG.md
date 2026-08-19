@@ -4,6 +4,24 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The coach speaks from the watched pages.** The lookout's other
+  half, brought home from the QRME twin: the freshest capture of each
+  watched page rides the coach's prompt, wearing its URL and
+  `fetched_at` date and capped at a digest's length, so a coach asked
+  about the pollen count speaks today's page and not its training
+  data. The block rides whatever the provider is — the vault grounds
+  on memory seals, and a capture is not one of those — is read through
+  the real vault like recall, and contributes nothing rather than
+  failing when the tandem cannot be reached: a turn that lands without
+  the pages beats a turn refused for them.
+
+      asked     does the watching reach the advice
+      mattered  a page kept fresh that nobody speaks from is a scrapbook
+
 ## [0.89.0] - 2026-08-19
 
 ### Added

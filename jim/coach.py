@@ -211,6 +211,18 @@ def reply(user_id: str, area: str, message: str, pdi=None,
         recall_pdi if recall_pdi is not None else pdi, user_id, message)
     if remembered_lines:
         system += "\n" + "\n".join(remembered_lines)
+    # The watched pages (jim/lookout.py): the freshest capture of each,
+    # dated and capped, so a coach asked about the pollen count speaks
+    # today's page and not its training data. This rides whatever the
+    # provider is — the vault grounds on memory seals, and a capture is
+    # not one of those, so stepping aside here would lose the pages
+    # exactly when the answering moved inside the facility. Read through
+    # the real vault, the same split recall holds.
+    from . import lookout as lookout_mod
+    watched = lookout_mod.prompt_block(
+        user_id, recall_pdi if recall_pdi is not None else pdi)
+    if watched:
+        system += "\n\n" + watched
     language = i18n.effective_language(user_id)
     system += i18n.directive(language)
     gen = llm.generate_for_user(user_id, system, message)
