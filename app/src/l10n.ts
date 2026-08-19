@@ -29,6 +29,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "spec.held": { en: "Their reply is waiting for its owner to approve it \u2014 held, not refused.", es: "Su respuesta espera la aprobaci\u00f3n de su propietario: retenida, no rechazada.", fr: "Leur r\u00e9ponse attend l'approbation de son propri\u00e9taire : retenue, pas refus\u00e9e.", de: "Ihre Antwort wartet auf die Freigabe ihres Eigent\u00fcmers \u2014 zur\u00fcckgehalten, nicht abgelehnt.", pt: "A resposta aguarda a aprova\u00e7\u00e3o do seu propriet\u00e1rio \u2014 retida, n\u00e3o recusada.", it: "La loro risposta attende l'approvazione del proprietario: trattenuta, non rifiutata.", ja: "\u8fd4\u4fe1\u306f\u30aa\u30fc\u30ca\u30fc\u306e\u627f\u8a8d\u5f85\u3061\u3067\u3059 \u2014 \u62d2\u5426\u3067\u306f\u306a\u304f\u4fdd\u7559\u3055\u308c\u3066\u3044\u307e\u3059\u3002", zh: "\u4ed6\u4eec\u7684\u56de\u590d\u6b63\u5728\u7b49\u5f85\u5176\u6240\u6709\u8005\u6279\u51c6 \u2014 \u662f\u88ab\u6682\u5b58\uff0c\u800c\u4e0d\u662f\u88ab\u62d2\u7edd\u3002", hi: "\u0909\u0928\u0915\u093e \u0909\u0924\u094d\u0924\u0930 \u0909\u0938\u0915\u0947 \u0938\u094d\u0935\u093e\u092e\u0940 \u0915\u0940 \u092e\u0902\u091c\u093c\u0942\u0930\u0940 \u0915\u0940 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u092e\u0947\u0902 \u0939\u0948 \u2014 \u0930\u094b\u0915\u093e \u0917\u092f\u093e \u0939\u0948, \u0905\u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0928\u0939\u0940\u0902\u0964", ar: "\u0631\u062f\u0651\u0647\u0645 \u0628\u0627\u0646\u062a\u0638\u0627\u0631 \u0645\u0648\u0627\u0641\u0642\u0629 \u0645\u0627\u0644\u0643\u0647 \u2014 \u0645\u062d\u062c\u0648\u0632\u060c \u0644\u0627 \u0645\u0631\u0641\u0648\u0636." },
   "spec.shared": { en: "Shared", es: "Se comparti\u00f3", fr: "Partag\u00e9", de: "Geteilt", pt: "Partilhado", it: "Condiviso", ja: "\u5171\u6709\u3057\u305f\u5185\u5bb9", zh: "\u5df2\u5171\u4eab", hi: "\u0938\u093e\u091d\u093e \u0915\u093f\u092f\u093e \u0917\u092f\u093e", ar: "\u0645\u0627 \u062a\u0645\u062a \u0645\u0634\u0627\u0631\u0643\u062a\u0647" },
   "spec.via": { en: "through the tandem", es: "a trav\u00e9s del t\u00e1ndem", fr: "via le tandem", de: "\u00fcber das Tandem", pt: "atrav\u00e9s do tandem", it: "tramite il tandem", ja: "\u30bf\u30f3\u30c7\u30e0\u7d4c\u7531", zh: "\u901a\u8fc7\u53cc\u8054", hi: "\u091f\u0948\u0902\u0921\u092e \u0915\u0947 \u092e\u093e\u0927\u094d\u092f\u092e \u0938\u0947", ar: "\u0639\u0628\u0631 \u0627\u0644\u0627\u0642\u062a\u0631\u0627\u0646" },
+  "lkt.changed": {
+    en: "Changed {when}",
+    es: "Cambió el {when}",
+    fr: "A changé le {when}",
+    de: "Geändert am {when}",
+    pt: "Mudou em {when}",
+    it: "È cambiata il {when}",
+    ja: "{when} に変化",
+    zh: "{when} 有变化",
+    hi: "{when} को बदला",
+    ar: "تغيّرت في {when}",
+  },
   "lkt.title": {
     en: "Watched pages",
     es: "Páginas vigiladas",

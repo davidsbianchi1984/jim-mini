@@ -1824,6 +1824,7 @@ actor ApiClient {
         let every_hours: Double
         let status: String?
         let next_run_at: String?
+        let changed_at: String?
     }
 
     struct LookoutList: Decodable {
@@ -1835,6 +1836,7 @@ actor ApiClient {
         let url: String
         let readable: Bool
         let fetched_at: String?
+        let changed_at: String?
         let chars: Int
         let text: String?
     }

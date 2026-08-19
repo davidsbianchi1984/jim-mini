@@ -182,8 +182,8 @@ def test_before_the_first_fetch_the_page_says_so(client):
     planted = _plant(client, uid)
     out = client.get(f"/lookout/{uid}/{planted['id']}/page").json()
     assert out == {"id": planted["id"], "url": "https://example.com/page",
-                   "readable": False, "fetched_at": None, "chars": 0,
-                   "text": None}
+                   "readable": False, "fetched_at": None, "changed_at": None,
+                   "chars": 0, "text": None}
     missing = client.get(f"/lookout/{uid}/lkt_nothere/page")
     assert missing.status_code == 404
 
@@ -317,3 +317,39 @@ def test_a_capture_rides_as_a_digest_not_an_archive(client):
     block = lookout.prompt_block(uid, vault)
     assert block is not None
     assert len(block) < lookout.PROMPT_CAP * 2
+
+
+# -- the change date rides everywhere the capture shows ----------------------
+
+def test_the_list_and_the_page_say_when_the_page_changed(client):
+    uid = enroll(client)
+    vault = StandingVault()
+    client.app.state.pdi = vault
+    _allow_study(client, uid)
+    planted = _plant(client, uid)
+    vault.records[lookout.capture_key(planted["task_id"])] = json.dumps(
+        {"url": "https://example.com/page", "text": "words",
+         "fetched_at": "2026-08-19T09:00:00+00:00",
+         "changed_at": "2026-08-18T07:00:00+00:00"})
+    row = client.get(f"/lookout/{uid}").json()["lookouts"][0]
+    assert row["changed_at"] == "2026-08-18T07:00:00+00:00"
+    got = client.get(f"/lookout/{uid}/{planted['id']}/page").json()
+    assert got["changed_at"] == "2026-08-18T07:00:00+00:00"
+    block = lookout.prompt_block(uid, vault)
+    assert "last changed 2026-08-18" in block
+
+
+def test_a_capture_before_fingerprints_says_nothing_not_now(client):
+    """A seal from before PDI carried change history has no changed_at;
+    the list answers None rather than inventing a date."""
+    uid = enroll(client)
+    vault = StandingVault()
+    client.app.state.pdi = vault
+    _allow_study(client, uid)
+    planted = _plant(client, uid)
+    _seal_capture(vault, planted["task_id"], "words")
+    row = client.get(f"/lookout/{uid}").json()["lookouts"][0]
+    assert row["changed_at"] is None
+    got = client.get(f"/lookout/{uid}/{planted['id']}/page").json()
+    assert got["readable"] is True and got["changed_at"] is None
+    assert "last changed" not in lookout.prompt_block(uid, vault)

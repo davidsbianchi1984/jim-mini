@@ -22,6 +22,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       asked     does the watching reach the advice
       mattered  a page kept fresh that nobody speaks from is a scrapbook
 
+- **The lookout says when the page changed.** PDI 0.89's fetch
+  fingerprints its captures; now that knowledge reaches the person.
+  The lookout list and the capture read-back carry `changed_at` — when
+  the watched page last actually changed, not merely when it was last
+  read — shown translated on all four clients, and the coach's prompt
+  block wears it too ("captured ..., last changed ..."), so the model
+  can say how fresh the thing it is drawing on really is. A capture
+  from before fingerprints answers nothing rather than inventing a
+  date.
+
+      asked     when did the page change
+      mattered  a fetch date answers when we looked, not when it moved
+
 ## [0.89.0] - 2026-08-19
 
 ### Added

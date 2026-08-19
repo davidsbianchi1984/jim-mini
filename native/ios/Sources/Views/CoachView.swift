@@ -188,7 +188,12 @@ struct CoachView: View {
                                     Text(String(watch.every_hours) + "h"
                                          + (watch.status.map { " · " + $0 } ?? "")
                                          + (watch.next_run_at.map {
-                                             " · " + String($0.prefix(16)) } ?? ""))
+                                             " · " + String($0.prefix(16)) } ?? "")
+                                         + (watch.changed_at.map {
+                                             " · " + L10n.fill(
+                                                 "lkt.changed", state.language,
+                                                 ["when": String($0.prefix(10))])
+                                         } ?? ""))
                                         .font(.caption2)
                                         .foregroundStyle(Theme.t2)
                                     HStack {
@@ -206,6 +211,12 @@ struct CoachView: View {
                                                         (page.fetched_at ?? "—")
                                                         + " · "
                                                         + String(page.chars)
+                                                        + (page.changed_at.map {
+                                                            " · " + L10n.fill(
+                                                                "lkt.changed",
+                                                                state.language,
+                                                                ["when": String($0.prefix(10))])
+                                                        } ?? "")
                                                 }
                                             }
                                         }.font(.caption2)

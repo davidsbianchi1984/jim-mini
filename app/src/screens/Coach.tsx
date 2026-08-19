@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, type CoachCurriculum, type CoachStore, type ErrandLedger,
          type Guidance, type LookoutList, type LookoutPage,
          type NoticeLedger, type SpecialistAnswer } from "../api";
-import { t as tr, visitorLang } from "../l10n";
+import { fill, t as tr, visitorLang } from "../l10n";
 import { hush, listen, primeVoice, say, type Listener } from "../speech";
 import { useSession } from "../store";
 
@@ -333,6 +333,9 @@ export function Coach() {
                       {w.every_hours}
                       {w.status && ` · ${w.status}`}
                       {w.next_run_at && ` · ${w.next_run_at.slice(0, 16)}`}
+                      {w.changed_at &&
+                        ` · ${fill("lkt.changed", lang,
+                                   { when: w.changed_at.slice(0, 10) })}`}
                     </div>
                   </div>
                   <button onClick={async () => {
@@ -363,6 +366,9 @@ export function Coach() {
                   {capture.readable
                     ? ` · ${capture.fetched_at?.slice(0, 16)} · ${capture.chars}`
                     : ` · ${tr("lkt.nocapture", lang)}`}
+                  {capture.changed_at &&
+                    ` · ${fill("lkt.changed", lang,
+                               { when: capture.changed_at.slice(0, 10) })}`}
                   {capture.text && (
                     <div style={{ whiteSpace: "pre-wrap", maxHeight: 160,
                                   overflow: "auto" }}>

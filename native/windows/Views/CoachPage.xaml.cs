@@ -249,7 +249,11 @@ public sealed partial class CoachPage : Page
                     Text = w.EveryHours + "h"
                          + (w.Status is null ? "" : " · " + w.Status)
                          + (w.NextRunAt is null ? ""
-                            : " · " + w.NextRunAt[..Math.Min(16, w.NextRunAt.Length)]),
+                            : " · " + w.NextRunAt[..Math.Min(16, w.NextRunAt.Length)])
+                         + (w.ChangedAt is null ? ""
+                            : " · " + L10n.T("lkt.changed").Replace(
+                                "{when}",
+                                w.ChangedAt[..Math.Min(10, w.ChangedAt.Length)])),
                     FontSize = 11, Foreground = t2,
                 });
                 var buttons = new StackPanel
@@ -268,7 +272,11 @@ public sealed partial class CoachPage : Page
                         var page = await ApiClient.Shared.ReadLookout(
                             s.Uid!, lid, s.Token!);
                         LookoutCapture.Text = (page.FetchedAt ?? "—")
-                            + " · " + page.Chars;
+                            + " · " + page.Chars
+                            + (page.ChangedAt is null ? ""
+                               : " · " + L10n.T("lkt.changed").Replace(
+                                   "{when}",
+                                   page.ChangedAt[..Math.Min(10, page.ChangedAt.Length)]));
                     }
                     catch { /* the list stands */ }
                 };

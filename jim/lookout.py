@@ -126,10 +126,16 @@ def watches(user_id: str, pdi=None) -> dict:
     out = []
     for r in rows:
         task = statuses.get(r["task_id"], {})
+        # When the page last actually changed, from the capture's own
+        # fingerprint history (PDI 0.89's fetch) — None when the tandem
+        # cannot be read, nothing was fetched yet, or the capture
+        # predates fingerprints. Absence stays absence, never a guess.
+        sealed = _capture(pdi, r["task_id"]) if pdi is not None else None
         out.append({"id": r["id"], "url": r["url"],
                     "every_hours": r["every_hours"],
                     "status": task.get("status"),
                     "next_run_at": task.get("next_run_at"),
+                    "changed_at": (sealed or {}).get("changed_at"),
                     "created_at": r["created_at"]})
     return {"lookouts": out, "readable": readable}
 
@@ -148,7 +154,7 @@ def page(user_id: str, lookout_id: str, pdi=None) -> dict | None:
     if row is None:
         return None
     out = {"id": row["id"], "url": row["url"], "readable": False,
-           "fetched_at": None, "chars": 0, "text": None}
+           "fetched_at": None, "changed_at": None, "chars": 0, "text": None}
     if pdi is None:
         return out
     sealed = _capture(pdi, row["task_id"])
@@ -156,6 +162,7 @@ def page(user_id: str, lookout_id: str, pdi=None) -> dict | None:
         return out
     text = sealed.get("text") or ""
     out.update({"readable": True, "fetched_at": sealed.get("fetched_at"),
+                "changed_at": sealed.get("changed_at"),
                 "chars": len(text), "text": text[:PAGE_CAP]})
     return out
 
@@ -193,8 +200,10 @@ def prompt_block(user_id: str, pdi=None) -> str | None:
         text = (sealed.get("text") or "").strip()
         if not text:
             continue
-        parts.append(f"{r['url']} (captured {sealed.get('fetched_at')}):\n"
-                     + text[:PROMPT_CAP])
+        when = f"captured {sealed.get('fetched_at')}"
+        if sealed.get("changed_at"):
+            when += f", last changed {sealed['changed_at']}"
+        parts.append(f"{r['url']} ({when}):\n" + text[:PROMPT_CAP])
     if not parts:
         return None
     return ("Pages you keep an eye on for this person, as their current "

@@ -650,12 +650,14 @@ export interface ErrandsRun {
 // tandem could not be asked, not that the appointment is gone.
 export interface Lookout {
   id: string; url: string; every_hours: number;
-  status: string | null; next_run_at: string | null; created_at: string;
+  status: string | null; next_run_at: string | null;
+  changed_at: string | null; created_at: string;
 }
 export interface LookoutList { lookouts: Lookout[]; readable: boolean }
 export interface LookoutPage {
   id: string; url: string; readable: boolean;
-  fetched_at: string | null; chars: number; text: string | null;
+  fetched_at: string | null; changed_at: string | null;
+  chars: number; text: string | null;
 }
 
 // -- what the coach noticed, and what it cost to handle (jim/noticed.py) --
