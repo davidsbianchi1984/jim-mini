@@ -199,7 +199,15 @@ def reply(user_id: str, area: str, message: str, pdi=None,
     # sealed moments the coach must go on recalling — the same split the
     # shelf and forget doors hold. Absent (direct callers, tests), the
     # write vault serves both roles as before.
-    remembered_lines = recall_mod.coach_lines(
+    #
+    # And when this person's provider is the vault itself, recall steps
+    # aside: the resident ranks their seals against the question and
+    # answers from them *inside* the facility (llm.VaultProvider), so
+    # fetching the lines here would read the same seals twice and say
+    # them twice. Whether the grounding actually happened is disclosed in
+    # the provenance, not assumed.
+    vault_grounds = llm.resolve_choice(llm.get_choice(user_id)) == "vault"
+    remembered_lines = [] if vault_grounds else recall_mod.coach_lines(
         recall_pdi if recall_pdi is not None else pdi, user_id, message)
     if remembered_lines:
         system += "\n" + "\n".join(remembered_lines)
@@ -312,6 +320,10 @@ def reply(user_id: str, area: str, message: str, pdi=None,
                 "generated_by": gen["provider"],
                 "degraded": gen["degraded"],
                 "degraded_reason": gen["reason"],
+                # True only when the vault actually ranked this person's
+                # seals and answered from them — a coach told to ground
+                # that could not says so here rather than pretending.
+                "grounded_in_vault": gen.get("grounded", False),
                 "evidence": (knowledge_entry or {}).get("references", []),
                 # The stack itself, layer by layer, when it ran — each add
                 # and each norm with what it contributed. A pipeline nobody

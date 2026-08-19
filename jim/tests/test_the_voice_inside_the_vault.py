@@ -111,3 +111,69 @@ def test_no_tandem_means_the_choice_is_not_configured(client):
     client.app.state.pdi = None
     assert llm.is_configured("vault") is False
     assert llm.resolve_choice("vault") == llm.default_name()
+
+
+class GroundedVault(VoiceVault):
+    """A PDI with the ask door: retrieval and generation both inside."""
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.asked: list[dict] = []
+
+    def resident_ask(self, question, prefix=None, system=None):
+        self.asked.append({"question": question, "prefix": prefix,
+                           "system": system})
+        return {"model": self.model, "text": self.text,
+                "leaves_host": False,
+                "drew_on": [f"{prefix}checkin/x1"] if prefix else []}
+
+
+def test_the_coach_answers_grounded_in_the_vault(client):
+    """Retrieval and generation both inside the facility: the vault ranks
+    this person's own seals against the question and answers from them —
+    the prefix is the per-person wall inside the shared tenant, and the
+    provenance says the grounding actually happened."""
+    uid = enroll(client)
+    vault = GroundedVault()
+    client.app.state.pdi = vault
+    _choose_vault(client, uid)
+    r = client.post(f"/coach/{uid}", json={
+        "area": "health_fitness", "message": "can I train my shoulder"})
+    assert r.status_code == 200, r.text
+    out = r.json()
+    assert out["content"] == vault.text
+    assert out["provenance"]["grounded_in_vault"] is True
+    ask = vault.asked[-1]
+    assert ask["question"] == "can I train my shoulder"
+    assert ask["prefix"] == f"jim/{uid}/memory/"
+    assert ask["system"], "the persona was dropped on the way to the vault"
+
+
+def test_recall_steps_aside_when_the_vault_grounds(client):
+    """The resident reads the same seals the client-side recall would —
+    fetching the lines here too would say them twice."""
+    uid = enroll(client)
+    vault = GroundedVault()
+    client.app.state.pdi = vault
+    client.post(f"/checkin/{uid}", json={
+        "mood": 3, "energy": 2, "note": "shoulder aches after the fall"})
+    _choose_vault(client, uid)
+    client.post(f"/coach/{uid}", json={
+        "area": "health_fitness", "message": "can I train my shoulder"})
+    assert "remembered from an earlier" not in vault.asked[-1]["system"], (
+        "the lines were recalled client-side AND grounded vault-side")
+
+
+def test_an_older_pdi_speaks_ungrounded_and_says_so(client):
+    """A PDI with the voice door but not the ask door still speaks —
+    ungrounded, and the provenance says so rather than pretending."""
+    uid = enroll(client)
+    vault = VoiceVault()          # has resident_infer, no resident_ask
+    client.app.state.pdi = vault
+    _choose_vault(client, uid)
+    r = client.post(f"/coach/{uid}", json={
+        "area": "health_fitness", "message": "hello there"})
+    assert r.status_code == 200, r.text
+    out = r.json()
+    assert out["content"] == vault.text
+    assert out["provenance"]["grounded_in_vault"] is False

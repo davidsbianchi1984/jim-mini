@@ -194,6 +194,14 @@ class StubProvider:
         return text
 
 
+#: The memory prefix the vault provider may ground on, set around a
+#: generation by whoever knows whose turn this is (`generate_for_user`).
+#: A contextvar rather than a constructor argument because providers are
+#: built per call, below the layer that knows the person.
+_GROUND_PREFIX: ContextVar[str | None] = ContextVar("jim_ground_prefix",
+                                                    default=None)
+
+
 class VaultProvider:
     """The vault's own local model, through PDI's resident voice door.
 
@@ -207,13 +215,37 @@ class VaultProvider:
     product's own stub, and the reason is in the log.
     """
 
+    #: Whether the last answer was grounded in the vault's own seals —
+    #: read by `generate_for_user` for the disclosure, because a person
+    #: told "the coach remembers" is owed knowing when it could not.
+    grounded = False
+    drew_on: list = []
+
     def generate(self, system: str, user: str) -> str:
         from . import pdi_client
         client = pdi_client.active()
         if client is None:
             raise RuntimeError("no PDI tandem is configured")
-        out = client.resident_infer(
-            system + "\n\nPerson: " + user + "\nYou: ")
+        self.grounded, self.drew_on = False, []
+        prefix = _GROUND_PREFIX.get()
+        out = None
+        if prefix:
+            # Grounded: the vault ranks this person's own seals against
+            # the question and answers from them — retrieval and
+            # generation both inside the facility, with the prefix as the
+            # per-person wall inside the shared tenant. An older PDI
+            # without the ask door answers None and the voice door below
+            # still speaks, ungrounded and said so.
+            ask = getattr(client, "resident_ask", None)
+            out = ask(user, prefix=prefix,
+                      system=system + "\nSpeak as yourself, to the "
+                      "person, in one reply.") if ask else None
+            if out is not None:
+                self.grounded = True
+                self.drew_on = list(out.get("drew_on") or [])
+        if out is None:
+            out = client.resident_infer(
+                system + "\n\nPerson: " + user + "\nYou: ")
         if out is None:
             raise RuntimeError("this PDI has no voice door (older tandem)")
         if out.get("model") == "stub":
@@ -502,7 +534,13 @@ def generate_for_user(user_id: str, system: str, user: str, cloud=None) -> dict:
     choice = get_choice(user_id)
     intended = resolve_choice(choice)
     provider = get_provider(cloud=cloud, choice=choice)
-    text = provider.generate(system, user)
+    # The vault provider may ground on this person's own seals — and only
+    # theirs: the prefix is the per-person wall inside the shared tenant.
+    ground = _GROUND_PREFIX.set(f"jim/{user_id}/memory/")
+    try:
+        text = provider.generate(system, user)
+    finally:
+        _GROUND_PREFIX.reset(ground)
 
     actual, reason = intended, None
     # Duck-typed on the two attributes rather than isinstance-checked against
@@ -529,8 +567,15 @@ def generate_for_user(user_id: str, system: str, user: str, cloud=None) -> dict:
                       "an API key in Settings → Model")
         else:
             reason = f"{intended} could not start on this machine"
+    # Whether the vault grounded this answer in the person's own seals —
+    # walked off the provider duck-typed, through a fallback wrapper if
+    # one is standing in front of it.
+    inner = getattr(provider, "_primary", provider)
+    grounded = bool(getattr(inner, "grounded", False)) and actual != "stub"
     return {"text": text, "provider": actual, "degraded": degraded,
-            "reason": reason}
+            "reason": reason, "grounded": grounded,
+            "drew_on": list(getattr(inner, "drew_on", []) or [])
+                       if grounded else []}
 
 
 def _extract(text: str, marker: str) -> str | None:

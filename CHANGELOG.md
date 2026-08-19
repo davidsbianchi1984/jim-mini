@@ -4,6 +4,25 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The coach answers grounded in the vault.** With the `vault` provider
+  chosen, the coach no longer recalls lines into the prompt and then
+  ships the prompt out for generation — the resident ranks this person's
+  own seals against the question and answers *from* them, retrieval and
+  generation both inside the facility, with the memory prefix as the
+  per-person wall inside the shared tenant. Client-side recall steps
+  aside when the vault grounds (the same seals said twice is not more
+  memory), and `grounded_in_vault` in the provenance says whether the
+  grounding actually happened: an older PDI without the ask door still
+  speaks through the voice door, ungrounded and disclosed, and a stub
+  answer is never reported as grounded.
+
+      asked     does the coach remember
+      mattered  where the remembering happens, and who is told
+
 ## [0.88.0] - 2026-08-19
 
 ### Added
