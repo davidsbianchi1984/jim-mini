@@ -89,6 +89,18 @@ def _digest(user_id: str, since: str) -> list[str]:
         else:
             lines.append(f"goal moved: {g['title']}"
                          f" ({round(g['progress'] * 100)}%)")
+
+    # What JIM went and learned on this person's behalf — a typed
+    # question, the coach's study, an unattended errand: all excursions,
+    # and all part of their week whether or not they watched it happen.
+    studies = conn.execute(
+        "SELECT topic FROM excursions WHERE user_id=? AND created_at>=?"
+        " ORDER BY created_at DESC", (user_id, since)).fetchall()
+    if studies:
+        sample = "; ".join(s["topic"] for s in studies[:3])
+        lines.append(f"{len(studies)}"
+                     f" stud{'ies' if len(studies) != 1 else 'y'} taken,"
+                     f" most recently: {sample}")
     return lines
 
 

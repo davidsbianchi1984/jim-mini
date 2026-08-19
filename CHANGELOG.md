@@ -23,6 +23,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       asked     does the study speak with the chosen voice
       mattered  a choice honored in one room and not the next is decor
 
+- **The letter accounts for the studying.** The weekly letter counted
+  check-ins, meals, habits, journal entries, goals and the watching —
+  and said nothing about what JIM went and learned on the person's
+  behalf. The digest now carries the week's studies (a typed question,
+  the coach's own study, an unattended errand — all excursions), with
+  their latest topics: part of their week whether or not they watched
+  it happen.
+
+      asked     what did JIM learn for you this week
+      mattered  work done on your behalf belongs in your account of it
+
 ## [0.90.0] - 2026-08-19
 
 ### Added

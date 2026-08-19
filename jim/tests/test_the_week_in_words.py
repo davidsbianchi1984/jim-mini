@@ -107,3 +107,16 @@ def test_an_unreached_vault_never_costs_the_letter(client):
     r = client.post(f"/users/{user}/letters")
     assert r.status_code == 201, r.text
     assert not any("watched page" in line for line in r.json()["digest"])
+
+
+def test_the_letter_accounts_for_the_studying(client):
+    user = enroll(client)
+    r = client.post(f"/excursions/{user}", json={
+        "topic": "hydration for older adults",
+        "question": "how much water daily"})
+    assert r.status_code == 201, r.text
+    r = client.post(f"/users/{user}/letters")
+    assert r.status_code == 201, r.text
+    assert any(
+        "1 study taken, most recently: hydration for older adults" == line
+        for line in r.json()["digest"]), r.json()["digest"]
