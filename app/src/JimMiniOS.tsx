@@ -1,9 +1,18 @@
 /**
- * The jim-mini OS lockup — the whole thing, as the ABRACADABRA menu button.
+ * The jim-mini OS lockup — the whole thing, as the JIM-mini menu button.
  *
  * Three stacked parts, in the proportions of the artwork it reproduces: the
  * neon wordmark, the amulet triangle with ABRACADABRA descending eleven rows,
  * and the OS plate.
+ *
+ * The triangle is not a placeholder. It reproduces the abracadabra amulet —
+ * the word written in a diminishing triangle and worn against fever and
+ * plague, the illness meant to waste away row by row as the word does, and
+ * eleven rows is the full charm. A protective charm against sickness, on the
+ * front door of a product that watches over somebody's health: the owner
+ * confirmed the reading and the placement, so it is sourced here and stays.
+ * (The menu *label* beside it says JIM-mini — the name; the amulet keeps the
+ * incantation.)
  *
  *     asked     is the mark on the button
  *     mattered  is the whole mark on the button, big enough to read as itself
