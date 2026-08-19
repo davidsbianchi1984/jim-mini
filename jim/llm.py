@@ -194,6 +194,36 @@ class StubProvider:
         return text
 
 
+class VaultProvider:
+    """The vault's own local model, through PDI's resident voice door.
+
+    The prompt travels the same authenticated channel every seal uses and
+    goes no further: `/resident/infer` runs it on the facility's own
+    inference server, and the audit line there carries the prompt's
+    length, never its words — a coach that speaks from inside the
+    building the data never leaves. A vault with *no* local model raises
+    rather than speaking the resident's operational stub sentence in the
+    coach's voice; `FallbackProvider` then hands the turn to this
+    product's own stub, and the reason is in the log.
+    """
+
+    def generate(self, system: str, user: str) -> str:
+        from . import pdi_client
+        client = pdi_client.active()
+        if client is None:
+            raise RuntimeError("no PDI tandem is configured")
+        out = client.resident_infer(
+            system + "\n\nPerson: " + user + "\nYou: ")
+        if out is None:
+            raise RuntimeError("this PDI has no voice door (older tandem)")
+        if out.get("model") == "stub":
+            raise RuntimeError("the vault has no local model installed")
+        text = (out.get("text") or "").strip()
+        if not text:
+            raise RuntimeError("the vault's model answered nothing")
+        return text
+
+
 class FallbackProvider:
     """Degrade any network provider to a local fallback (the stub) on failure,
     logging the degrade. A health app must never go dark on a model outage.
@@ -268,6 +298,9 @@ _REGISTRY: dict[str, dict] = {
     # request leaves the machine, which also means offline mode allows it.
     "ollama": {"label": "Local (Ollama)", "kind": "openai", "network": False,
                "env": [], "base": _OLLAMA_BASE, "model": _OLLAMA_MODEL},
+    "vault": {"label": "The vault's local model (PDI resident)",
+              "kind": "vault", "network": True, "env": [],
+              "model": "resident-local"},
 }
 
 CHOICES = ("auto", *_REGISTRY.keys())
@@ -314,6 +347,12 @@ def is_configured(name: str) -> bool:
         return True
     if name == "ollama":
         return _ollama_alive()
+    if name == "vault":
+        # Configured when a PDI tandem is attached: the model itself lives
+        # on the vault's host, and a facility without one answers honestly
+        # at generation time.
+        from . import pdi_client
+        return pdi_client.active() is not None
     if name not in _REGISTRY:
         return False
     # A provider whose whole point is a user-supplied endpoint (the
@@ -375,6 +414,8 @@ def _build(name: str) -> Provider:
                 name, spec["base"], key or "", spec["model"])
         elif spec["kind"] == "gemini":
             primary = GeminiProvider(key or "", spec["model"])
+        elif spec["kind"] == "vault":
+            primary = VaultProvider()
         else:
             return stub
     except Exception as exc:  # noqa: BLE001 — e.g. missing SDK

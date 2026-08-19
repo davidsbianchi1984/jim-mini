@@ -4,6 +4,30 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The voice inside the vault.** A `vault` provider joins the model
+  registry: a person picks "The vault's local model (PDI resident)" on
+  the existing model screen and the coach's words are generated through
+  PDI's new `/resident/infer` door, on the facility's own inference
+  server — the prompt travels the one authenticated channel every seal
+  uses and goes no further, and PDI's audit line carries its length,
+  never its words.
+
+      asked     can the coach speak from inside the building
+      mattered  does the prompt ever leave it
+
+  Honest at every edge, and disclosed: a vault with no local model
+  raises rather than speaking the resident's operational stub sentence
+  in the coach's voice — the turn falls to this product's own stub and
+  `generated_by`/`degraded` say who actually answered; an older tandem
+  without the door does the same; with no tandem the choice is not
+  configured, so a stored preference can never wedge a reply. The
+  provider reads the *live* client the app holds, not a startup
+  snapshot.
+
 ## [0.87.0] - 2026-08-19
 
 ### Fixed
