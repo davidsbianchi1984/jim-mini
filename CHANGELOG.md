@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Recall keeps the real vault.** The last read still behind the plan
+  gate: `coach.reply` used one `pdi` for remembering (a write, rightly
+  gated) and for recalling (a read, wrongly gated), so a person who
+  moved to an open plan had a shelf that showed their sealed moments and
+  a coach that had stopped finding them. The route now hands recall
+  `app.state.pdi` while the seal keeps `_vault(user_id)` — the same
+  writes-gated split every other memory door already holds — and a
+  downgraded account's new turns are honestly not sealed at all.
+
 ### Added
 
 - **The voice inside the vault.** A `vault` provider joins the model

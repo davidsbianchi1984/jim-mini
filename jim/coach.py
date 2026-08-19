@@ -144,7 +144,8 @@ _BEARING_PROMPT: dict[str, str] = {
 }
 
 
-def reply(user_id: str, area: str, message: str, pdi=None) -> dict:
+def reply(user_id: str, area: str, message: str, pdi=None,
+          recall_pdi=None) -> dict:
     from . import i18n
 
     # Autonomous refinement happens *before* the prompt is built, so the very
@@ -193,7 +194,13 @@ def reply(user_id: str, area: str, message: str, pdi=None) -> dict:
     # model may use, never an instruction — and nothing at all when no vault
     # is configured, which is the same honest zero `attention` starts from.
     from . import recall as recall_mod
-    remembered_lines = recall_mod.coach_lines(pdi, user_id, message)
+    # `recall_pdi`, not `pdi`: the plan gate covers writes only
+    # (jim/storage.py), and somebody who moved to an open plan still has
+    # sealed moments the coach must go on recalling — the same split the
+    # shelf and forget doors hold. Absent (direct callers, tests), the
+    # write vault serves both roles as before.
+    remembered_lines = recall_mod.coach_lines(
+        recall_pdi if recall_pdi is not None else pdi, user_id, message)
     if remembered_lines:
         system += "\n" + "\n".join(remembered_lines)
     language = i18n.effective_language(user_id)

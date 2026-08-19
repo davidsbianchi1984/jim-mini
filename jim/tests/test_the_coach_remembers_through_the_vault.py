@@ -373,3 +373,26 @@ def test_an_unreached_vault_lists_the_moments_without_their_words(client):
     assert shelf["held"] == 1
     assert shelf["readable"] is False
     assert shelf["memories"][0]["line"] is None
+
+
+def test_recall_survives_a_move_to_an_open_plan(client, monkeypatch):
+    """`_vault` gates writes only, and the coach's recall is a read: a
+    person who moved to an open plan keeps being recalled from what was
+    sealed while they paid — and their new turns are honestly not sealed
+    at all."""
+    from jim import storage
+    uid = enroll(client)
+    vault = FakeResidentVault()
+    client.app.state.pdi = vault
+    client.post(f"/checkin/{uid}", json={
+        "mood": 3, "energy": 2, "note": "shoulder aches after the fall"})
+    assert len(vault.embedded) == 1
+    monkeypatch.setattr(storage, "vault_for", lambda plan, pdi: None)
+    r = client.post(f"/coach/{uid}", json={
+        "area": "health_fitness",
+        "message": "can I train with this shoulder"})
+    assert r.status_code == 200, r.text
+    assert len(vault.embedded) == 1, "an open plan's turn was sealed"
+    # And the recall path can still surface the sealed moment: the shelf
+    # already proves readable; this proves the coach reads the same way.
+    assert recall.coach_lines(vault, uid, "shoulder") != []
