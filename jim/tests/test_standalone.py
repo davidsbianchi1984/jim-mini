@@ -86,3 +86,55 @@ def test_event_timeline(client):
     client.post(f"/monitor/{user}", json={"heart_rate": 150, "respiratory_rate": 26})
     types = [e["type"] for e in client.get(f"/events/{user}").json()]
     assert types == ["biometric", "detection", "guidance", "escalation"]
+
+
+# -- the rate alone can be the emergency (found live: 199 bpm, "all calm") ---
+
+def test_extreme_rate_with_slow_breathing_is_cardiac_not_calm():
+    """The exact sample from the live find: 199 bpm at rest, respiration
+    10, stress 0.8 — it walked past the anxiety rule (which wants fast
+    breathing) and landed in the calm drift layer. Slow breathing must
+    sharpen an extreme rate, never excuse it."""
+    d = conditions.detect({"heart_rate": 199, "resting_heart_rate": 66,
+                           "respiratory_rate": 10, "stress": 0.8})
+    assert d is not None, "199 bpm at rest must never be 'all calm'"
+    assert d.condition == conditions.CARDIAC
+    assert d.severity == "critical"
+    assert d.signals["pattern"] == "tachycardia"
+
+
+def test_a_high_but_not_extreme_rate_with_slow_breathing_gets_guidance():
+    d = conditions.detect({"heart_rate": 155, "resting_heart_rate": 60,
+                           "respiratory_rate": 12})
+    assert d is not None and d.condition == conditions.CARDIAC
+    assert d.severity == "guidance"
+
+
+def test_fast_breathing_keeps_the_anxiety_reading():
+    """Exercise and panic live with the anxiety rule — the cardiac rule
+    only speaks when the breathing that would explain the rate is
+    absent."""
+    d = conditions.detect({"heart_rate": 155, "resting_heart_rate": 60,
+                           "respiratory_rate": 28})
+    assert d is not None and d.condition == conditions.ANXIETY
+
+
+def test_bradycardia_counts_without_a_collapse():
+    """The mirror hole: a pulse in the 30s only counted beside a fall."""
+    d = conditions.detect({"heart_rate": 27})
+    assert d is not None and d.condition == conditions.CARDIAC
+    assert d.severity == "critical"
+    slow = conditions.detect({"heart_rate": 38})
+    assert slow is not None and slow.condition == conditions.CARDIAC
+    assert slow.severity == "guidance"
+
+
+def test_a_mild_fever_does_not_mask_a_critical_rate():
+    """Cardiac outranks distress: the rate rules sit with the other
+    cardiac rules, so a 38.6° reading cannot answer first with guidance
+    while 199 bpm stands in the same sample."""
+    d = conditions.detect({"heart_rate": 199, "resting_heart_rate": 66,
+                           "respiratory_rate": 10,
+                           "body_temperature": 38.6})
+    assert d is not None and d.condition == conditions.CARDIAC
+    assert d.severity == "critical"

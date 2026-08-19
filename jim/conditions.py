@@ -125,6 +125,46 @@ def detect(sample: dict, text: str | None = None,
                          "prolonged immobility detected",
                          {"movement": movement})
 
+    # The rate alone can be the emergency. The anxiety pattern below asks
+    # for fast breathing before it will speak, and for months that guard
+    # quietly excused the opposite finding: a resting heart rate three
+    # times baseline with *slow* breathing looks less like panic and more
+    # like SVT — the respiration that declined to call it anxiety should
+    # have sharpened it. Found live: 199 bpm at rest, respiration 10, and
+    # every rule declined, so the calm drift layer said "all calm" beside
+    # a number that belonged on the escalation path. Extreme rates with
+    # fast breathing stay with the anxiety rule (exercise and panic live
+    # there); extreme rates without it are cardiac until proven otherwise.
+    # The mirror hole closes too: a pulse in the 30s only counted next to
+    # a collapse, and a bradycardia nobody fell over from counted nowhere.
+    hr = sample.get("heart_rate")
+    resting = sample.get("resting_heart_rate", 70)
+    rr = sample.get("respiratory_rate")
+    slow_breath = rr is not None and rr < 20
+    if hr is not None and slow_breath and hr >= max(180 + delta,
+                                                    resting + 100 + delta):
+        return Detection(CARDIAC, "critical",
+                         f"heart rate {hr} bpm at rest with slow breathing"
+                         f" ({rr}/min) — possible cardiac arrhythmia",
+                         {"heart_rate": hr, "resting_heart_rate": resting,
+                          "respiratory_rate": rr, "pattern": "tachycardia"})
+    if hr is not None and slow_breath and hr >= max(150 + delta,
+                                                    resting + 70 + delta):
+        return Detection(CARDIAC, "guidance",
+                         f"heart rate {hr} bpm at rest with slow breathing"
+                         f" ({rr}/min) — worth checking now",
+                         {"heart_rate": hr, "resting_heart_rate": resting,
+                          "respiratory_rate": rr, "pattern": "tachycardia"})
+    if hr is not None and hr < 30 + delta:
+        return Detection(CARDIAC, "critical",
+                         f"heart rate {hr} bpm — severe bradycardia",
+                         {"heart_rate": hr, "pattern": "bradycardia"})
+    if hr is not None and hr <= 40 + delta:
+        return Detection(CARDIAC, "guidance",
+                         f"heart rate {hr} bpm — unusually slow pulse",
+                         {"heart_rate": hr, "pattern": "bradycardia"})
+
+
     speech = (sample.get("speech") or "").lower()
     if speech in ("slurred", "incoherent"):
         return Detection(PHYSICAL_DISTRESS, "critical",
