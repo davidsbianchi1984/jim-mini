@@ -4,6 +4,20 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **The menu says what the product is called.** The assistant's menu
+  entry read ABRACADABRA in all ten languages — the amulet's
+  incantation standing where a name belongs, shipped from a placeholder
+  nobody could interpret as a destination. The label now reads
+  "JIM-mini", the same in every script the way names are; the amulet
+  beside it keeps its incantation.
+
+      asked     can a person find the assistant in the menu
+      mattered  a label only insiders understand is a locked door
+
 ## [0.91.0] - 2026-08-19
 
 ### Added

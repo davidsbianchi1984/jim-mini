@@ -5277,17 +5277,21 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   // the same word in every language that has it, so the Latin scripts carry
   // it verbatim and the other four transliterate. Capitals throughout,
   // where the script has them to give.
+  // A name, so it is the same in every language — the same way
+  // `engaged.title` keeps "JIM" in Latin script below. The amulet drawn
+  // beside it (JimMiniOS.tsx) keeps its incantation; the menu says what
+  // the product is called.
   "nav.engaged": {
-    en: "ABRACADABRA",
-    es: "ABRACADABRA",
-    fr: "ABRACADABRA",
-    de: "ABRACADABRA",
-    pt: "ABRACADABRA",
-    it: "ABRACADABRA",
-    ja: "アブラカダブラ",
-    zh: "阿布拉卡达布拉",
-    hi: "अब्राकाडाब्रा",
-    ar: "أبراكادابرا",
+    en: "JIM-mini",
+    es: "JIM-mini",
+    fr: "JIM-mini",
+    de: "JIM-mini",
+    pt: "JIM-mini",
+    it: "JIM-mini",
+    ja: "JIM-mini",
+    zh: "JIM-mini",
+    hi: "JIM-mini",
+    ar: "JIM-mini",
   },
   // The tab is the incantation; the screen it opens is just him. A name,
   // so it is the same in every language — the same way the other rows keep
