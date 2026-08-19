@@ -162,7 +162,7 @@ def run(user_id: str, cloud=None, limit: int = DAILY, pdi=None) -> dict:
     ran, conn = [], db.connect()
     for item in due(user_id, room):
         cid = research.excursion(user_id, item["topic"], cloud=cloud,
-                                 learn=True)
+                                 learn=True, pdi=pdi)
         row = conn.execute(
             "SELECT redactions, left_host FROM excursions WHERE id=?",
             (cid,)).fetchone()

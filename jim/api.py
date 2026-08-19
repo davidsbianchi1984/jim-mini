@@ -2615,7 +2615,8 @@ def create_app(qrme_client: QRMEClient | None = None,
     def start_excursion(user_id: str, body: ExcursionStart, request: Request) -> dict:
         _user_or_404(user_id, request)
         cid = research.excursion(user_id, body.topic, body.question,
-                                 body.private, app.state.cloud)
+                                 body.private, app.state.cloud,
+                                 pdi=app.state.pdi)
         return _excursion_out(_excursion_row(cid))
 
     @app.get("/excursions/{user_id}")
@@ -3248,7 +3249,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                                          "is empty and no topic was named")
             topic, area = head[0]["topic"], head[0]["area"]
         cid = research.excursion(user_id, topic, cloud=app.state.cloud,
-                                 learn=True)
+                                 learn=True, pdi=app.state.pdi)
         left_host = bool(db.connect().execute(
             "SELECT left_host FROM excursions WHERE id=?",
             (cid,)).fetchone()["left_host"])

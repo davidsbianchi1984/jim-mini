@@ -177,3 +177,64 @@ def test_an_older_pdi_speaks_ungrounded_and_says_so(client):
     out = r.json()
     assert out["content"] == vault.text
     assert out["provenance"]["grounded_in_vault"] is False
+
+
+# -- the study speaks with the same voice ------------------------------------
+
+def _study(client, uid):
+    r = client.post(f"/excursions/{uid}", json={
+        "topic": "hydration",
+        "question": "how much water does an older adult need daily",
+    })
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def test_the_excursion_studies_inside_when_the_person_chose_the_vault(
+        client):
+    """The choice made for the coach is a choice about where this
+    person's words are made — the study path gets no different answer.
+    The brief goes to the resident, the cloud sees nothing, and
+    left_host says so."""
+    uid = enroll(client)
+    vault = VoiceVault(text="About two litres a day, spread out.")
+    client.app.state.pdi = vault
+    _choose_vault(client, uid)
+
+    calls = {"n": 0}
+
+    class Cloud:
+        def generate(self, system, prompt):
+            calls["n"] += 1
+            return "cloudy findings"
+    client.app.state.cloud = Cloud()
+
+    exc = _study(client, uid)
+    assert exc["findings"] == "About two litres a day, spread out."
+    assert exc["left_host"] is False, (
+        "a brief answered inside the facility did not leave the host")
+    assert calls["n"] == 0, "the cloud must see nothing"
+    assert any("hydration" in p for p in vault.prompts)
+
+
+def test_an_older_vault_studies_at_home_never_by_shipping_anyway(client):
+    """The honest fallback for "never send it out" is a worse answer
+    made at home — the deterministic local provider — not a better one
+    made by quietly using the cloud after all."""
+    uid = enroll(client)
+    client.app.state.pdi = DoorlessVault()
+    _choose_vault(client, uid)
+
+    calls = {"n": 0}
+
+    class Cloud:
+        def generate(self, system, prompt):
+            calls["n"] += 1
+            return "cloudy findings"
+    client.app.state.cloud = Cloud()
+
+    exc = _study(client, uid)
+    assert exc["findings"]
+    assert exc["findings"] != "cloudy findings"
+    assert exc["left_host"] is False
+    assert calls["n"] == 0, "the cloud must see nothing"

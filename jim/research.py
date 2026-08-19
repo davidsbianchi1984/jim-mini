@@ -71,9 +71,27 @@ def gather(brief: str, cloud=None) -> str:
     return provider.generate(_RESEARCH_SYSTEM, brief)
 
 
+def gather_inside(brief: str, pdi=None) -> str:
+    """The person chose the vault's voice: the brief goes to the resident
+    and the findings are made on the facility's own hardware — even the
+    sanitized brief never reaches an external model. An older tandem
+    without the voice door falls to the local deterministic provider,
+    because the honest fallback for "never send it out" is a worse
+    answer made at home, not a better one made by shipping it anyway."""
+    infer = getattr(pdi, "resident_infer", None) if pdi is not None else None
+    if infer is not None:
+        try:
+            out = infer(f"{_RESEARCH_SYSTEM}\n\n{brief}")
+        except Exception:  # noqa: BLE001
+            out = None
+        if out and (out.get("text") or "").strip():
+            return out["text"].strip()
+    return llm.get_provider(None).generate(_RESEARCH_SYSTEM, brief)
+
+
 def excursion(user_id: str, topic: str, question: str = "",
               private: list[str] | None = None, cloud=None,
-              learn: bool = False) -> str:
+              learn: bool = False, pdi=None) -> str:
     """Go and study one topic, and write down exactly what could have left.
 
     The whole outbound path, in one function. It was written twice inline in
@@ -96,8 +114,18 @@ def excursion(user_id: str, topic: str, question: str = "",
     """
     brief, redactions = sanitize(user_id, f"{topic}\n{question}".strip(),
                                  private)
-    left_host = would_leave(cloud)
-    findings = gather(brief, cloud)
+    # The study speaks with the voice the person chose. A user whose
+    # provider is the vault studies *inside*: the brief goes to the
+    # resident, nothing reaches an external model, and left_host says so
+    # — the choice they made for the coach was a choice about where
+    # their words are made, and the study path is not entitled to a
+    # different answer.
+    if llm.resolve_choice(llm.get_choice(user_id)) == "vault":
+        left_host = False
+        findings = gather_inside(brief, pdi)
+    else:
+        left_host = would_leave(cloud)
+        findings = gather(brief, cloud)
     cid = db.new_id("exc")
     conn = db.connect()
     conn.execute(

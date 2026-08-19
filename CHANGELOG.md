@@ -4,6 +4,25 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The excursion honors the voice choice.** A person who picked "The
+  vault's local model" had made a choice about where their words are
+  made — and the study path was not honoring it: the sanitized brief
+  still went to the app's cloud gateway, from a typed question, from
+  the coach's own study, and from the unattended errands alike. A user
+  whose provider is the vault now studies *inside*: the brief goes to
+  the resident, nothing reaches an external model, and `left_host`
+  says so. An older tandem without the voice door falls to the local
+  deterministic provider — the honest fallback for "never send it out"
+  is a worse answer made at home, not a better one made by shipping it
+  anyway. Other providers study exactly as before.
+
+      asked     does the study speak with the chosen voice
+      mattered  a choice honored in one room and not the next is decor
+
 ## [0.90.0] - 2026-08-19
 
 ### Added
