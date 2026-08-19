@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The lookout: a page the vault keeps fresh.** PDI's standing tasks
+  put to work: "keep an eye on this page" becomes one standing plan
+  whose single fetch step re-seals the current capture every cycle —
+  the resident does the watching from inside the facility, JIM never
+  does, and what leaves JIM is the URL once, at planting. The capture
+  reads back through the same authenticated channel every seal uses,
+  as a reading (capped) beside the honest size of the seal.
+
+      asked     can JIM watch a page for somebody
+      mattered  who does the watching, and where the page lives
+
+  The rules ride along: planting needs the same standing study permit
+  the errands do, because the resident leaves its host on this person's
+  behalf; writes are plan-gated while the list, the read-back and the
+  drop keep the real vault; a drop cancels the appointment first, then
+  unseals the capture, then lets the ledger row go — and a tandem that
+  cannot be reached leaves the row on the list rather than orphaning a
+  standing appointment. Erasure cancels every appointment and unseals
+  every capture, counted honestly (`lookouts_cancelled: null` when the
+  tandem was unreached). A watched-pages card beside the errands on the
+  console and all three shells, in ten languages.
+
 ### Fixed
 
 - **Recall keeps the real vault.** The last read still behind the plan

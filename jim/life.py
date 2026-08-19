@@ -953,6 +953,12 @@ def delete_user_data(user_id: str, pdi=None) -> dict:
     # means the tandem was unreached, and the answer says so.
     from . import recall as recall_mod
     deleted["memory_vectors"] = recall_mod.forget_all(pdi, user_id)
+    # The lookouts (jim/lookout.py): each is a standing appointment in the
+    # vault and a sealed capture under the task's key — both outside the
+    # `vault_keys` ledger, so the sweep names them itself. None means the
+    # tandem was unreached; the local rows die with the tables either way.
+    from . import lookout as lookout_mod
+    deleted["lookouts_cancelled"] = lookout_mod.drop_all(user_id, pdi=pdi)
     for table, (parent, column) in sorted(ERASE_THROUGH.items()):
         ids = [r["id"] for r in conn.execute(
             f"SELECT id FROM {parent} WHERE user_id=?", (user_id,)).fetchall()]

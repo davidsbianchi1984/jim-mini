@@ -1277,6 +1277,55 @@ public sealed class ApiClient
     public Task<ErrandLedger> Errands(string uid, string token) =>
         Send<ErrandLedger>(Get($"/errands/{uid}", token));
 
+    public record LookoutRow(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("url")] string Url,
+        [property: JsonPropertyName("every_hours")] double EveryHours,
+        [property: JsonPropertyName("status")] string? Status,
+        [property: JsonPropertyName("next_run_at")] string? NextRunAt);
+
+    public record LookoutList(
+        [property: JsonPropertyName("lookouts")] LookoutRow[] Lookouts,
+        [property: JsonPropertyName("readable")] bool Readable);
+
+    public record LookoutPage(
+        [property: JsonPropertyName("url")] string Url,
+        [property: JsonPropertyName("readable")] bool Readable,
+        [property: JsonPropertyName("fetched_at")] string? FetchedAt,
+        [property: JsonPropertyName("chars")] int Chars,
+        [property: JsonPropertyName("text")] string? Text);
+
+    public record LookoutPlanted(
+        [property: JsonPropertyName("planted")] bool Planted,
+        [property: JsonPropertyName("id")] string Id);
+
+    public record LookoutRemoved(
+        [property: JsonPropertyName("removed")] bool Removed,
+        [property: JsonPropertyName("why")] string? Why);
+
+    // The lookout: a page the vault re-reads on its schedule — JIM never
+    // does the watching, and the capture stays sealed in the tandem.
+    public Task<LookoutList> Lookouts(string uid, string token) =>
+        Send<LookoutList>(Get($"/lookout/{uid}", token));
+
+    public Task<LookoutPlanted> PlantLookout(string uid, string url,
+        double everyHours, string token) =>
+        Send<LookoutPlanted>(Post($"/lookout/{uid}",
+            new { url, every_hours = everyHours }, token));
+
+    public Task<LookoutPage> ReadLookout(string uid, string lid,
+        string token) =>
+        Send<LookoutPage>(Get($"/lookout/{uid}/{lid}/page", token));
+
+    public Task<LookoutRemoved> DropLookout(string uid, string lid,
+        string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Delete,
+            $"/lookout/{uid}/{lid}");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        return Send<LookoutRemoved>(req);
+    }
+
     /// <summary>Refused without the permit, and again once the day is spent —
     /// two different sentences, because they are two different things to be
     /// told.</summary>

@@ -122,6 +122,44 @@ class PDIClient:
             raise RuntimeError(f"PDI search failed: {r.status_code}")
         return r.json().get("matches", [])
 
+    def resident_stand(self, goal: str, steps: list,
+                       every_hours: float) -> dict | None:
+        """Plant a standing task: the vault re-runs the plan on the
+        interval itself. None on an older PDI without standing tasks."""
+        r = self._do("POST", "/resident/tasks",
+                     {"goal": goal, "steps": steps,
+                      "every_hours": every_hours})
+        if r.status_code == 404:
+            return None
+        if r.status_code >= 300:
+            raise RuntimeError(f"PDI standing plan failed: {r.status_code}")
+        out = r.json()
+        # An older PDI accepts the plan and drops the schedule on the
+        # floor — said, not planted: a lookout that never looks is worse
+        # than a refusal.
+        if out.get("next_run_at") is None:
+            return None
+        return out
+
+    def resident_cancel(self, task_id: str) -> bool:
+        """The off switch: end a standing task's future. False when the
+        task (or the door) is not there."""
+        r = self._do("DELETE", f"/resident/tasks/{task_id}")
+        if r.status_code == 404:
+            return False
+        if r.status_code >= 300:
+            raise RuntimeError(f"PDI cancel failed: {r.status_code}")
+        return bool(r.json().get("cancelled"))
+
+    def resident_tasks(self) -> list[dict]:
+        """This tenant's resident tasks, newest first ([] on older PDI)."""
+        r = self._do("GET", "/resident/tasks")
+        if r.status_code == 404:
+            return []
+        if r.status_code >= 300:
+            raise RuntimeError(f"PDI tasks failed: {r.status_code}")
+        return r.json()
+
     def resident_infer(self, prompt: str) -> dict | None:
         """One local turn from the vault's own model ({model, text,
         leaves_host}), or None on an older PDI without the voice door."""

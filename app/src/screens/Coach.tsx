@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type CoachCurriculum, type CoachStore, type ErrandLedger,
-         type Guidance, type NoticeLedger, type SpecialistAnswer } from "../api";
+         type Guidance, type LookoutList, type LookoutPage,
+         type NoticeLedger, type SpecialistAnswer } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { hush, listen, primeVoice, say, type Listener } from "../speech";
 import { useSession } from "../store";
@@ -34,6 +35,11 @@ export function Coach() {
   // the day, and which half of it settled each one.
   const [noticed, setNoticed] = useState<NoticeLedger | null>(null);
   const [handling, setHandling] = useState(false);
+  // The lookout: pages the vault re-reads on their own schedule.
+  const [watches, setWatches] = useState<LookoutList | null>(null);
+  const [watchUrl, setWatchUrl] = useState("");
+  const [watchHours, setWatchHours] = useState("24");
+  const [capture, setCapture] = useState<LookoutPage | null>(null);
 
   async function loadKnows() {
     if (!session.userId || !session.userToken) return;
@@ -42,6 +48,7 @@ export function Coach() {
       setSyllabus(await api.coachCurriculum(session.userId, session.userToken));
       setLedger(await api.errands(session.userId, session.userToken));
       setNoticed(await api.noticed(session.userId, session.userToken));
+      setWatches(await api.lookouts(session.userId, session.userToken));
     } catch { /* the ask card stands on its own */ }
   }
   useEffect(() => { loadKnows(); }, [session.userId]);
@@ -279,6 +286,91 @@ export function Coach() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* The lookout: a page the vault re-reads on its schedule and
+              re-seals in place — JIM never does the watching, and the
+              capture stays in the tandem. Behind the same study permit
+              as the errands above it. */}
+          {watches && ledger?.permitted && (
+            <div style={{ marginTop: 10 }}>
+              <div className="muted small">
+                <b>{tr("lkt.title", lang)}</b>
+              </div>
+              <div className="muted small">{tr("lkt.lead", lang)}</div>
+              {!watches.readable && (
+                <div className="muted small">{tr("lkt.unreadable", lang)}</div>
+              )}
+              <div className="row">
+                <input value={watchUrl} placeholder={tr("lkt.url", lang)}
+                       onChange={(e) => setWatchUrl(e.target.value)}
+                       style={{ flex: 1 }} />
+                <input value={watchHours} type="number" min={0.25} max={744}
+                       aria-label={tr("lkt.hours", lang)}
+                       onChange={(e) => setWatchHours(e.target.value)}
+                       style={{ width: 72 }} />
+                <button disabled={!watchUrl.trim() || !watchHours}
+                        onClick={async () => {
+                          if (!session.userId || !session.userToken) return;
+                          try {
+                            await api.plantLookout(session.userId,
+                              watchUrl.trim(), Number(watchHours),
+                              session.userToken);
+                            setWatchUrl("");
+                            setWatches(await api.lookouts(
+                              session.userId, session.userToken));
+                          } catch (e) { setError(String(e)); }
+                        }}>
+                  {tr("lkt.plant", lang)}
+                </button>
+              </div>
+              {watches.lookouts.map((w) => (
+                <div key={w.id} className="spec-row">
+                  <div style={{ flex: 1 }}>
+                    {w.url}
+                    <div className="muted small">
+                      {w.every_hours}
+                      {w.status && ` · ${w.status}`}
+                      {w.next_run_at && ` · ${w.next_run_at.slice(0, 16)}`}
+                    </div>
+                  </div>
+                  <button onClick={async () => {
+                    if (!session.userId || !session.userToken) return;
+                    try {
+                      setCapture(await api.lookoutPage(
+                        session.userId, w.id, session.userToken));
+                    } catch (e) { setError(String(e)); }
+                  }}>
+                    {tr("lkt.read", lang)}
+                  </button>
+                  <button className="danger" onClick={async () => {
+                    if (!session.userId || !session.userToken) return;
+                    try {
+                      await api.dropLookout(session.userId, w.id,
+                                            session.userToken);
+                      setWatches(await api.lookouts(
+                        session.userId, session.userToken));
+                    } catch (e) { setError(String(e)); }
+                  }}>
+                    {tr("lkt.drop", lang)}
+                  </button>
+                </div>
+              ))}
+              {capture && (
+                <div className="muted small">
+                  <b>{capture.url}</b>
+                  {capture.readable
+                    ? ` · ${capture.fetched_at?.slice(0, 16)} · ${capture.chars}`
+                    : ` · ${tr("lkt.nocapture", lang)}`}
+                  {capture.text && (
+                    <div style={{ whiteSpace: "pre-wrap", maxHeight: 160,
+                                  overflow: "auto" }}>
+                      {capture.text.slice(0, 2000)}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

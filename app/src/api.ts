@@ -642,6 +642,22 @@ export interface ErrandsRun {
   errands: Errand[]; remaining_today: number; nothing_to_study: boolean;
 }
 
+// -- the lookout: a page the vault keeps fresh (jim/lookout.py) -----------
+//
+// The resident re-fetches on the interval and re-seals the current capture
+// under one key — JIM never does the watching. `status`/`next_run_at` are
+// what the vault said just now; null with `readable: false` means the
+// tandem could not be asked, not that the appointment is gone.
+export interface Lookout {
+  id: string; url: string; every_hours: number;
+  status: string | null; next_run_at: string | null; created_at: string;
+}
+export interface LookoutList { lookouts: Lookout[]; readable: boolean }
+export interface LookoutPage {
+  id: string; url: string; readable: boolean;
+  fetched_at: string | null; chars: number; text: string | null;
+}
+
 // -- what the coach noticed, and what it cost to handle (jim/noticed.py) --
 //
 // The other half of the token ladder. `errands` is what the coach could not
@@ -1942,6 +1958,20 @@ export const api = {
     req<ErrandLedger>(`/errands/${uid}`, { token }),
   runErrands: (uid: string, token: string) =>
     req<ErrandsRun>(`/errands/${uid}`, { method: "POST", token }),
+  // The lookout: plant, list, read the capture back, stop watching.
+  plantLookout: (uid: string, url: string, everyHours: number,
+                 token: string) =>
+    req<{ planted: boolean; id: string; url: string; every_hours: number;
+          task_id: string; next_run_at: string | null }>(
+      `/lookout/${uid}`,
+      { method: "POST", body: { url, every_hours: everyHours }, token }),
+  lookouts: (uid: string, token: string) =>
+    req<LookoutList>(`/lookout/${uid}`, { token }),
+  lookoutPage: (uid: string, lid: string, token: string) =>
+    req<LookoutPage>(`/lookout/${uid}/${lid}/page`, { token }),
+  dropLookout: (uid: string, lid: string, token: string) =>
+    req<{ removed: boolean; id?: string; why?: string }>(
+      `/lookout/${uid}/${lid}`, { method: "DELETE", token }),
   // The situational half of the same ladder. The offline coach is put to
   // each thing it noticed first and settles what it can for nothing; only
   // what it cannot becomes a paid turn, from the same day's ceiling the

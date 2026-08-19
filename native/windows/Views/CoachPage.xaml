@@ -86,6 +86,19 @@
                     <Button x:Name="ErrandsGo" Click="OnRunErrands"
                             Visibility="Collapsed" />
                     <StackPanel x:Name="ErrandsPanel" Spacing="4" />
+                    <!-- The lookout: a page the vault re-reads on its
+                         schedule and re-seals in place; JIM never does
+                         the watching. Behind the same study permit. -->
+                    <TextBlock x:Name="LookoutHead" FontWeight="Bold" FontSize="14"
+                               Foreground="{StaticResource JimTxtBrush}"
+                               Visibility="Collapsed" />
+                    <TextBox x:Name="LookoutUrlBox" Visibility="Collapsed" />
+                    <TextBox x:Name="LookoutHoursBox" Visibility="Collapsed" />
+                    <Button x:Name="LookoutPlantButton" Click="OnPlantLookout"
+                            Visibility="Collapsed" />
+                    <StackPanel x:Name="LookoutPanel" Spacing="4" />
+                    <TextBlock x:Name="LookoutCapture" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
                     <!-- The other half of the same ladder: what the coach
                          could not settle, rather than what it could not
                          answer. No budget guard on this button — a spent day

@@ -18,6 +18,10 @@ struct CoachView: View {
     // The unattended pass: what it went and learned without being asked.
     @State private var ledger: ErrandLedger?
     @State private var running = false
+    @State private var watches: ApiClient.LookoutList?
+    @State private var watchUrl = ""
+    @State private var watchHours = "24"
+    @State private var captureLine: String?
     // The situational half of the same ladder: what the coach noticed during
     // the day, and which half of it settled each one.
     @State private var noticed: NoticeLedger?
@@ -149,6 +153,86 @@ struct CoachView: View {
                             }
                         }
 
+                        // The lookout: a page the vault re-reads on its
+                        // schedule and re-seals in place — JIM never does
+                        // the watching. Behind the same study permit as
+                        // the errands above.
+                        if let w = watches, ledger?.permitted == true {
+                            Text(L10n.t("lkt.title", state.language))
+                                .font(.subheadline.bold())
+                                .foregroundStyle(Theme.txt)
+                            TextField(L10n.t("lkt.url", state.language),
+                                      text: $watchUrl)
+                                .textFieldStyle(.roundedBorder)
+                            TextField(L10n.t("lkt.hours", state.language),
+                                      text: $watchHours)
+                                .textFieldStyle(.roundedBorder)
+                            Button(L10n.t("lkt.plant", state.language)) {
+                                Task {
+                                    guard let uid = state.uid,
+                                          let token = state.token else { return }
+                                    _ = try? await ApiClient.shared.plantLookout(
+                                        uid: uid, url: watchUrl,
+                                        everyHours: Double(watchHours) ?? 24,
+                                        token: token)
+                                    watchUrl = ""
+                                    watches = try? await ApiClient.shared
+                                        .lookouts(uid: uid, token: token)
+                                }
+                            }.font(.caption).tint(Theme.brandA)
+                                .disabled(watchUrl.isEmpty)
+                            ForEach(w.lookouts, id: \.id) { watch in
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(watch.url).font(.caption)
+                                        .foregroundStyle(Theme.txt)
+                                    Text(String(watch.every_hours) + "h"
+                                         + (watch.status.map { " · " + $0 } ?? "")
+                                         + (watch.next_run_at.map {
+                                             " · " + String($0.prefix(16)) } ?? ""))
+                                        .font(.caption2)
+                                        .foregroundStyle(Theme.t2)
+                                    HStack {
+                                        Button(L10n.t("lkt.read",
+                                                      state.language)) {
+                                            Task {
+                                                guard let uid = state.uid,
+                                                      let token = state.token
+                                                else { return }
+                                                if let page = try? await
+                                                    ApiClient.shared.lookoutPage(
+                                                        uid: uid, lid: watch.id,
+                                                        token: token) {
+                                                    captureLine =
+                                                        (page.fetched_at ?? "—")
+                                                        + " · "
+                                                        + String(page.chars)
+                                                }
+                                            }
+                                        }.font(.caption2)
+                                        Button(L10n.t("lkt.drop",
+                                                      state.language)) {
+                                            Task {
+                                                guard let uid = state.uid,
+                                                      let token = state.token
+                                                else { return }
+                                                _ = try? await ApiClient.shared
+                                                    .dropLookout(uid: uid,
+                                                                 lid: watch.id,
+                                                                 token: token)
+                                                watches = try? await ApiClient
+                                                    .shared.lookouts(uid: uid,
+                                                                     token: token)
+                                            }
+                                        }.font(.caption2)
+                                    }
+                                }
+                            }
+                            if let captureLine {
+                                Text(captureLine).font(.caption2)
+                                    .foregroundStyle(Theme.t2)
+                            }
+                        }
+
                         // The other half of the same ladder: what the coach
                         // could not *settle*, rather than what it could not
                         // answer. Each row says which half dealt with it,
@@ -229,6 +313,8 @@ struct CoachView: View {
             syllabus = try? await ApiClient.shared.coachCurriculum(uid: uid,
                                                                    token: token)
             ledger = try? await ApiClient.shared.errands(uid: uid, token: token)
+            watches = try? await ApiClient.shared.lookouts(uid: uid,
+                                                           token: token)
             noticed = try? await ApiClient.shared.noticed(uid: uid, token: token)
         }
     }

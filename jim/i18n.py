@@ -1681,6 +1681,28 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    'no such lookout': {
+        'es': 'no existe esa vigilancia',
+        'fr': 'aucune surveillance de ce nom',
+        'de': 'keine solche Beobachtung',
+        'pt': 'não existe essa vigilância',
+        'it': 'nessuna sorveglianza di questo tipo',
+        'ja': 'そのような見守りはありません',
+        'zh': '没有该关注项',
+        'hi': 'ऐसी कोई निगरानी नहीं',
+        'ar': 'لا توجد مراقبة بهذا الوصف',
+    },
+    'the lookout needs the standing study permit — grant it under Permissions': {
+        'es': 'la vigilancia necesita el permiso de estudio permanente — concédelo en Permisos',
+        'fr': "la surveillance nécessite le permis d'étude permanent — accordez-le sous Permissions",
+        'de': 'die Beobachtung braucht die stehende Studien-Erlaubnis — erteile sie unter Berechtigungen',
+        'pt': 'a vigilância precisa da permissão de estudo permanente — conceda-a em Permissões',
+        'it': 'la sorveglianza richiede il permesso di studio permanente — concedilo in Permessi',
+        'ja': '見守りには常設の学習許可が必要です — 「許可」から付与してください',
+        'zh': '关注功能需要常设学习许可——请在“权限”中授予',
+        'hi': 'निगरानी के लिए स्थायी अध्ययन अनुमति चाहिए — इसे अनुमतियों में दें',
+        'ar': 'تحتاج المراقبة إلى إذن الدراسة الدائم — امنحه من قسم الأذونات',
+    },
     "no such call": {
         'es': "no existe esa llamada",
         'fr': "aucun appel de ce type",
@@ -3481,6 +3503,8 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    'url': {'en': 'Page address', 'es': 'Dirección de la página', 'fr': 'Adresse de la page', 'de': 'Adresse der Seite', 'pt': 'Endereço da página', 'it': 'Indirizzo della pagina', 'ja': 'ページのアドレス', 'zh': '页面地址', 'hi': 'पेज का पता', 'ar': 'عنوان الصفحة'},
+    'every_hours': {'en': 'Repeats every (hours)', 'es': 'Se repite cada (horas)', 'fr': 'Se répète toutes les (heures)', 'de': 'Wiederholt sich alle (Stunden)', 'pt': 'Repete-se a cada (horas)', 'it': 'Si ripete ogni (ore)', 'ja': '繰り返し間隔（時間）', 'zh': '重复间隔（小时）', 'hi': 'हर (घंटे) में दोहराए', 'ar': 'يتكرر كل (ساعات)'},
     # The work two guardians took on. Worded as the box asks it: this is what
     # keeps the link open after the call, so the label says so.
     'task': {'en': 'What has to be finished', 'es': 'Qué hay que terminar', 'fr': "Ce qu'il reste à faire", 'de': 'Was noch zu erledigen ist', 'pt': 'O que tem de ser terminado', 'it': 'Cosa resta da finire', 'ja': '終わらせるべきこと', 'zh': '需要完成的事', 'hi': 'क्या पूरा करना है', 'ar': 'ما يجب إنجازه'},

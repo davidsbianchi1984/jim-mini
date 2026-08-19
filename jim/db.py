@@ -484,6 +484,15 @@ CREATE TABLE IF NOT EXISTS sources (
 -- condition or topic, it gathers general knowledge from a SANITIZED brief (the
 -- user's name and emergency contact redacted). ``brief`` is exactly what could
 -- leave; ``left_host`` records whether anything did (offline: never).
+CREATE TABLE IF NOT EXISTS lookouts (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id),
+    url          TEXT NOT NULL,
+    every_hours  REAL NOT NULL,
+    task_id      TEXT NOT NULL,   -- the standing task in the vault
+    created_at   TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS excursions (
     id           TEXT PRIMARY KEY,
     user_id      TEXT NOT NULL REFERENCES users(id),

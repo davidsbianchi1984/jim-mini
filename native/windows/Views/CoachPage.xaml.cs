@@ -208,6 +208,107 @@ public sealed partial class CoachPage : Page
             }
         }
         catch { /* the store card stands on its own */ }
+        await LoadLookouts();
+    }
+
+    // The lookout: a page the vault re-reads on its schedule and re-seals
+    // in place — JIM never does the watching. Behind the same study
+    // permit as the errands above.
+    private async System.Threading.Tasks.Task LoadLookouts()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var txt = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimTxtBrush"];
+        var t2 = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources["JimT2Brush"];
+        try
+        {
+            var ledger = await ApiClient.Shared.Errands(s.Uid!, s.Token!);
+            if (!ledger.Permitted) return;
+            var watches = await ApiClient.Shared.Lookouts(s.Uid!, s.Token!);
+            LookoutHead.Text = L10n.T("lkt.title");
+            LookoutHead.Visibility = Visibility.Visible;
+            LookoutUrlBox.PlaceholderText = L10n.T("lkt.url");
+            LookoutUrlBox.Visibility = Visibility.Visible;
+            LookoutHoursBox.PlaceholderText = L10n.T("lkt.hours");
+            LookoutHoursBox.Visibility = Visibility.Visible;
+            LookoutPlantButton.Content = L10n.T("lkt.plant");
+            LookoutPlantButton.Visibility = Visibility.Visible;
+            LookoutPanel.Children.Clear();
+            foreach (var w in watches.Lookouts)
+            {
+                var row = new StackPanel { Spacing = 2 };
+                row.Children.Add(new TextBlock
+                {
+                    Text = w.Url, FontSize = 12,
+                    TextWrapping = TextWrapping.Wrap, Foreground = txt,
+                });
+                row.Children.Add(new TextBlock
+                {
+                    Text = w.EveryHours + "h"
+                         + (w.Status is null ? "" : " · " + w.Status)
+                         + (w.NextRunAt is null ? ""
+                            : " · " + w.NextRunAt[..Math.Min(16, w.NextRunAt.Length)]),
+                    FontSize = 11, Foreground = t2,
+                });
+                var buttons = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal, Spacing = 8,
+                };
+                var read = new Button
+                {
+                    Content = L10n.T("lkt.read"), Background = null,
+                };
+                var lid = w.Id;
+                read.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        var page = await ApiClient.Shared.ReadLookout(
+                            s.Uid!, lid, s.Token!);
+                        LookoutCapture.Text = (page.FetchedAt ?? "—")
+                            + " · " + page.Chars;
+                    }
+                    catch { /* the list stands */ }
+                };
+                var drop = new Button
+                {
+                    Content = L10n.T("lkt.drop"), Background = null,
+                };
+                drop.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.DropLookout(s.Uid!, lid, s.Token!);
+                        await LoadLookouts();
+                    }
+                    catch { /* the list stands */ }
+                };
+                buttons.Children.Add(read);
+                buttons.Children.Add(drop);
+                row.Children.Add(buttons);
+                LookoutPanel.Children.Add(row);
+            }
+        }
+        catch { /* the errands card stands on its own */ }
+    }
+
+    private async void OnPlantLookout(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null
+            || string.IsNullOrWhiteSpace(LookoutUrlBox.Text)) return;
+        try
+        {
+            double every = double.TryParse(LookoutHoursBox.Text.Trim(),
+                out var hours) ? hours : 24;
+            await ApiClient.Shared.PlantLookout(
+                s.Uid!, LookoutUrlBox.Text.Trim(), every, s.Token!);
+            LookoutUrlBox.Text = "";
+            await LoadLookouts();
+        }
+        catch { /* refusals surface on the next load */ }
     }
 
     /// <summary>What the coach noticed during the day, and which half of the

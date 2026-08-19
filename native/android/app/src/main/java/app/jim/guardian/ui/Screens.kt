@@ -1855,6 +1855,10 @@ fun CoachScreen(vm: GuardianViewModel) {
     var studying by remember { mutableStateOf(false) }
     // The unattended pass: what it went and learned without being asked.
     var ledger by remember { mutableStateOf<ErrandLedger?>(null) }
+    var watches by remember { mutableStateOf<LookoutList?>(null) }
+    var watchUrl by remember { mutableStateOf("") }
+    var watchHours by remember { mutableStateOf("24") }
+    var captureLine by remember { mutableStateOf<String?>(null) }
     var running by remember { mutableStateOf(false) }
     // The situational half of the same ladder: what the coach noticed during
     // the day, and which half of it settled each one.
@@ -1867,6 +1871,7 @@ fun CoachScreen(vm: GuardianViewModel) {
         knows = runCatching { ApiClient.coachStore(uid, token) }.getOrNull()
         syllabus = runCatching { ApiClient.coachCurriculum(uid, token) }.getOrNull()
         ledger = runCatching { ApiClient.errands(uid, token) }.getOrNull()
+        watches = runCatching { ApiClient.lookouts(uid, token) }.getOrNull()
         noticed = runCatching { ApiClient.noticed(uid, token) }.getOrNull()
     }
 
@@ -1988,6 +1993,56 @@ fun CoachScreen(vm: GuardianViewModel) {
                         Text(if (e.leftHost) L10n.t("err.left", vm.language)
                              else L10n.t("err.stayed", vm.language),
                             color = Jim.T2, fontSize = 11.sp)
+                    }
+                }
+                // The lookout: a page the vault re-reads on its schedule
+                // and re-seals in place — JIM never does the watching.
+                // Behind the same study permit as the errands above.
+                if (watches != null && ledger?.permitted == true) {
+                    Text(L10n.t("lkt.title", vm.language), color = Jim.Txt,
+                        fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    labeledField(L10n.t("lkt.url", vm.language), watchUrl,
+                        L10n.t("lkt.url", vm.language)) { watchUrl = it }
+                    labeledField(L10n.t("lkt.hours", vm.language), watchHours,
+                        L10n.t("lkt.hours", vm.language)) { watchHours = it }
+                    TextButton(enabled = watchUrl.isNotBlank(), onClick = {
+                        vm.call({
+                            ApiClient.plantLookout(vm.uid!!, watchUrl,
+                                watchHours.toDoubleOrNull() ?: 24.0, vm.token!!)
+                            ApiClient.lookouts(vm.uid!!, vm.token!!)
+                        }) { r ->
+                            watchUrl = ""
+                            r.onSuccess { watches = it }
+                        }
+                    }) { Text(L10n.t("lkt.plant", vm.language),
+                              color = Jim.BrandA, fontSize = 12.sp) }
+                    watches!!.lookouts.forEach { w ->
+                        Text(w.url, color = Jim.Txt, fontSize = 12.sp)
+                        Text("" + w.everyHours + "h" +
+                            (w.status?.let { " \u00b7 " + it } ?: "") +
+                            (w.nextRunAt?.let { " \u00b7 " + it.take(16) } ?: ""),
+                            color = Jim.T2, fontSize = 11.sp)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = {
+                                vm.call({ ApiClient.lookoutPage(vm.uid!!, w.id,
+                                    vm.token!!) }) { r ->
+                                    captureLine = r.getOrNull()
+                                        ?: r.exceptionOrNull()?.message
+                                }
+                            }) { Text(L10n.t("lkt.read", vm.language),
+                                      color = Jim.BrandA, fontSize = 11.sp) }
+                            TextButton(onClick = {
+                                vm.call({
+                                    ApiClient.dropLookout(vm.uid!!, w.id,
+                                        vm.token!!)
+                                    ApiClient.lookouts(vm.uid!!, vm.token!!)
+                                }) { r -> r.onSuccess { watches = it } }
+                            }) { Text(L10n.t("lkt.drop", vm.language),
+                                      color = Jim.Red, fontSize = 11.sp) }
+                        }
+                    }
+                    captureLine?.let {
+                        Text(it, color = Jim.T2, fontSize = 11.sp)
                     }
                 }
                 // The other half of the same ladder: what the coach could not

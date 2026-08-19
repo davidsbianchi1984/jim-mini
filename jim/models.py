@@ -729,6 +729,11 @@ class CoachMessage(BaseModel):
     message: str
 
 
+class LookoutCreate(BaseModel):
+    url: str
+    every_hours: float
+
+
 class LiaisonOpen(BaseModel):
     """Open a link to another person's guardian. Refused unless the two are
     already each other's contacts — see jim/liaison.py."""

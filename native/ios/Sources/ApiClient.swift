@@ -1818,6 +1818,62 @@ actor ApiClient {
         try await request("/errands/\(uid)", token: token)
     }
 
+    struct Lookout: Decodable {
+        let id: String
+        let url: String
+        let every_hours: Double
+        let status: String?
+        let next_run_at: String?
+    }
+
+    struct LookoutList: Decodable {
+        let lookouts: [Lookout]
+        let readable: Bool
+    }
+
+    struct LookoutPage: Decodable {
+        let url: String
+        let readable: Bool
+        let fetched_at: String?
+        let chars: Int
+        let text: String?
+    }
+
+    struct LookoutPlanted: Decodable {
+        let planted: Bool
+        let id: String
+        let next_run_at: String?
+    }
+
+    struct LookoutRemoved: Decodable {
+        let removed: Bool
+        let why: String?
+    }
+
+    /// The lookout: a page the vault re-reads on its schedule — JIM never
+    /// does the watching, and the capture stays sealed in the tandem.
+    func lookouts(uid: String, token: String) async throws -> LookoutList {
+        try await request("/lookout/\(uid)", token: token)
+    }
+
+    func plantLookout(uid: String, url: String, everyHours: Double,
+                      token: String) async throws -> LookoutPlanted {
+        try await request("/lookout/\(uid)", method: "POST",
+                          body: ["url": url, "every_hours": everyHours],
+                          token: token)
+    }
+
+    func lookoutPage(uid: String, lid: String,
+                     token: String) async throws -> LookoutPage {
+        try await request("/lookout/\(uid)/\(lid)/page", token: token)
+    }
+
+    func dropLookout(uid: String, lid: String,
+                     token: String) async throws -> LookoutRemoved {
+        try await request("/lookout/\(uid)/\(lid)", method: "DELETE",
+                          token: token)
+    }
+
     /// Refused without the permit, and refused again once the day is spent —
     /// two different sentences, because they are two different things to be
     /// told.

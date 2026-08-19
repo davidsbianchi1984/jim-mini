@@ -226,6 +226,9 @@ data class NoticeLedger(val handled: List<Notice>,
 data class NoticedRun(val byCoach: List<Notice>, val byJim: List<Notice>,
                       val overBudget: List<String>,
                       val remainingToday: Int, val nothingNoticed: Boolean)
+data class Lookout(val id: String, val url: String, val everyHours: Double,
+                   val status: String?, val nextRunAt: String?)
+data class LookoutList(val lookouts: List<Lookout>, val readable: Boolean)
 data class ErrandsRun(val errands: List<Errand>, val remainingToday: Int,
                       val nothingToStudy: Boolean)
 data class LanguageInfo(val code: String, val label: String, val safetyTranslated: Boolean)
@@ -491,6 +494,48 @@ object ApiClient {
 
     /** The transparency half of the coach's long-term memory: what it can
      * find again, read back from the vault, droppable one moment at a time. */
+    // The lookout: a page the vault re-reads on its schedule — JIM never
+    // does the watching, and the capture stays sealed in the tandem.
+    suspend fun lookouts(uid: String, token: String): LookoutList =
+        withContext(Dispatchers.IO) {
+            val o = request("/lookout/$uid", "GET", null, token)
+            val arr = o.optJSONArray("lookouts")
+            LookoutList(
+                (0 until (arr?.length() ?: 0)).map { i ->
+                    val w = arr!!.getJSONObject(i)
+                    Lookout(
+                        w.getString("id"), w.getString("url"),
+                        w.getDouble("every_hours"),
+                        if (w.isNull("status")) null else w.optString("status"),
+                        if (w.isNull("next_run_at")) null
+                        else w.optString("next_run_at"))
+                },
+                o.optBoolean("readable"))
+        }
+
+    suspend fun plantLookout(uid: String, url: String, everyHours: Double,
+                             token: String): Boolean =
+        withContext(Dispatchers.IO) {
+            val body = JSONObject().put("url", url)
+                .put("every_hours", everyHours)
+            request("/lookout/$uid", "POST", body, token)
+                .optBoolean("planted")
+        }
+
+    suspend fun lookoutPage(uid: String, lid: String, token: String): String =
+        withContext(Dispatchers.IO) {
+            val o = request("/lookout/$uid/$lid/page", "GET", null, token)
+            (if (o.isNull("fetched_at")) "\u2014"
+             else o.optString("fetched_at")) +
+                " \u00b7 " + o.optInt("chars")
+        }
+
+    suspend fun dropLookout(uid: String, lid: String, token: String): Boolean =
+        withContext(Dispatchers.IO) {
+            request("/lookout/$uid/$lid", "DELETE", null, token)
+                .optBoolean("removed")
+        }
+
     suspend fun memoryShelf(uid: String, token: String): MemoryShelf =
         withContext(Dispatchers.IO) {
             val o = request("/memory/$uid", "GET", null, token)

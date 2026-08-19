@@ -21,7 +21,8 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                careteam, community,
                catalog,
                coach,
-               alongside, engaged, errands, liaison, monitors,
+               alongside, engaged, errands, liaison, lookout,
+               monitors,
                oncall,
                mailer,
                circle, contribution, db, money, schedule, shopping,
@@ -50,7 +51,7 @@ from .models import (
     BeaconPlace, BiometricSample, CheckIn,
     ChildEnroll,
     CareTeamGoal, CareTeamLink,
-    CoachMessage, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
+    CoachMessage, LookoutCreate, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
     CallOpen, CoachStudy, EngageOpen, LiaisonOpen, LiaisonSaid,
     LiaisonTask, MicPair, MonitorPlug, Sensed, StretchOpen, EngagedSaid, Enroll,
     ExcursionStart,
@@ -3667,6 +3668,57 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "spent_today": errands.spent_today(user_id),
                 "daily": errands.DAILY,
                 "permitted": permits.granted(user_id, errands.PERMIT)}
+
+    # ---- the lookout: a page the vault keeps fresh ------------------------
+
+    @app.post("/lookout/{user_id}", status_code=201)
+    def plant_lookout(user_id: str, body: LookoutCreate,
+                      request: Request) -> dict:
+        """Keep an eye on a page: one standing appointment in the vault
+        (jim/lookout.py), whose resident re-fetches and re-seals the
+        current capture on the interval — JIM never does the watching.
+        Behind the same standing permit the study errands need, because
+        the resident leaves its host on this person's behalf."""
+        _user_or_404(user_id, request)
+        if not permits.granted(user_id, errands.PERMIT):
+            raise HTTPException(
+                403, "the lookout needs the standing study permit — "
+                     "grant it under Permissions")
+        out = lookout.plant(user_id, body.url, body.every_hours,
+                            pdi=_vault(user_id))
+        if not out["planted"]:
+            raise HTTPException(422, out["why"])
+        return out
+
+    @app.get("/lookout/{user_id}")
+    def list_lookouts(user_id: str, request: Request) -> dict:
+        """This person's lookouts, with what the vault says about each —
+        `readable: false` when the tandem could not be asked, because a
+        list that invents statuses is worse than one that says so."""
+        _user_or_404(user_id, request)
+        return lookout.watches(user_id, pdi=app.state.pdi)
+
+    @app.get("/lookout/{user_id}/{lookout_id}/page")
+    def read_lookout(user_id: str, lookout_id: str,
+                     request: Request) -> dict:
+        """The current capture, read back from the seal — the real vault,
+        not the plan-gated one: reads keep `app.state.pdi`."""
+        _user_or_404(user_id, request)
+        out = lookout.page(user_id, lookout_id, pdi=app.state.pdi)
+        if out is None:
+            raise HTTPException(404, "no such lookout")
+        return out
+
+    @app.delete("/lookout/{user_id}/{lookout_id}")
+    def drop_lookout(user_id: str, lookout_id: str,
+                     request: Request) -> dict:
+        """Stop the watching the whole way: the appointment, the seal,
+        the row — in that order. The real vault, like every delete."""
+        _user_or_404(user_id, request)
+        out = lookout.drop(user_id, lookout_id, pdi=app.state.pdi)
+        if out is None:
+            raise HTTPException(404, "no such lookout")
+        return out
 
     # ---- what the coach noticed, and what it cost to handle ---------------
 
