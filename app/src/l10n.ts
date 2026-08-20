@@ -3408,6 +3408,12 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "rch.stayed": {
     en: "stayed here", es: "se quedó aquí", fr: "est resté ici", de: "ist hiergeblieben", pt: "ficou aqui", it: "è rimasto qui", ja: "ここに留まりました", zh: "留在了这里", hi: "यहीं रहा", ar: "بقي هنا",
   },
+  // Who actually wrote the findings (jim/research.py's answered_by): the
+  // model's registry name, "vault" for the resident, "stub" for a degrade —
+  // the row's provenance, worn on the screen rather than left in the wire.
+  "rch.by": {
+    en: "answered by {who}", es: "respondió {who}", fr: "répondu par {who}", de: "beantwortet von {who}", pt: "respondido por {who}", it: "risposta di {who}", ja: "{who} が回答", zh: "由 {who} 回答", hi: "{who} ने उत्तर दिया", ar: "أجاب {who}",
+  },
   "rch.title": {
     en: "What reaches out", es: "Lo que sale al mundo", fr: "Ce qui tend la main", de: "Was hinausreicht", pt: "O que alcança lá fora", it: "Ciò che si spinge fuori", ja: "外へ届くもの", zh: "向外伸出的东西", hi: "जो बाहर पहुँचता है", ar: "ما يمتد إلى الخارج",
   },

@@ -289,6 +289,12 @@ export function Reach() {
                 {x.redactions != null
                   ? ` · ${String(x.redactions)} redactions`
                   : ""}
+                {/* Who actually wrote the findings — the wire's answered_by
+                    (0.94), absent on rows that predate the record. */}
+                {x.answered_by
+                  ? ` · ${tr("rch.by", lang)
+                      .replace("{who}", String(x.answered_by))}`
+                  : ""}
               </span>
               <button disabled={busy}
                       onClick={() => run(async () => {
