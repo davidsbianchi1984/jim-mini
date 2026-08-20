@@ -30,6 +30,30 @@ _SYSTEM = (
     "{context}"
 )
 
+#: The product's own doors, and where each lives in the app — a map for the
+#: coach, not the person (the person sees the screens; the coach otherwise
+#: sees only its priors). Kept short and deterministic so the routing
+#: sentence can be exact: "that's the Watched pages card, below this chat."
+#:
+#:     asked     can the coach do this
+#:     mattered  can the product, and where
+_FEATURE_MAP = (
+    "the product's own doors, and where each lives in this app — when a "
+    "request belongs to one, point at it by name instead of declining:\n"
+    "- watching a page on a schedule (a lookout — 'watch this url for "
+    "me'): the Watched pages card below this chat on the Coach screen; a "
+    "lookout repeats between a quarter-hour and a month\n"
+    "- daily check-ins (mood, energy, stress): the Check-in screen\n"
+    "- the weekly letter about what the week actually held: the Journal "
+    "screen\n"
+    "- what the assistant may change on its own (the permit switches): "
+    "the What-you-have-let-it-change screen, also on the assistant's "
+    "chip rail\n"
+    "- emergencies, the escalation ladder and who gets alerted: the "
+    "Safety screen — urge immediate help first, the screen second\n"
+    "answer questions about this product from these lines rather than "
+    "from what assistants generally can or cannot do")
+
 
 def _context(user_id: str) -> str:
     lines = []
@@ -82,6 +106,12 @@ def _context(user_id: str) -> str:
         f"you are spoken to) runs on the online model and acts through this "
         f"app's own doors, every act reversible. asked what you are capable "
         f"of, say so — do not answer as though only this turn existed")
+    # The doors themselves, named. The line above fixed "what can you do";
+    # this fixes "then do it": asked to plant a quarter-hour lookout, the
+    # coach shrugged gracefully — the model knew what assistants generally
+    # cannot do and nothing about the card two scrolls below the chat. A
+    # request that belongs to a door gets walked to that door by name.
+    lines.append(_FEATURE_MAP)
     # What the connected apps collected (jim/app_connectors.py) — the
     # sentence under /apps/connector/{cid}/collect says it "now informs
     # guidance", and this line is where that stops being a claim. Unvaulted
