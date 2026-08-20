@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type Guidance } from "../api";
 import { t as tr, visitorLang, word } from "../l10n";
-import { hush, heardNothing, listen, primeVoice, say,
-         type Listener } from "../speech";
+import { CONVERSATION_IDLE_MS, hush, heardNothing, listen, primeVoice,
+         say, type Listener } from "../speech";
 import { useSession } from "../store";
 
 /**
@@ -66,6 +66,9 @@ export function Talk({ go }: {
   // orphans a transcription still in flight.
   const talking = useRef(false);
   const round = useRef(0);
+  // When something was last actually heard — see Coach.tsx: a conversation
+  // nobody has spoken into for two minutes ends on its own, quietly.
+  const lastHeard = useRef(0);
   useEffect(() => { void primeVoice(); }, []);
 
   const uid = session.userId;
@@ -112,11 +115,13 @@ export function Talk({ go }: {
         setSpeaking(true);
         say(r.content).finally(() => {
           setSpeaking(false);
-          if (talking.current) void hear();
+          // The idle clock starts when the microphone re-opens, so a long
+          // spoken answer never eats into the person's two minutes.
+          if (talking.current) { lastHeard.current = Date.now(); void hear(); }
         });
       } else {
         setSpeaking(false);
-        if (talking.current) void hear();
+        if (talking.current) { lastHeard.current = Date.now(); void hear(); }
       }
     } catch (e) {
       talking.current = false;
@@ -135,12 +140,20 @@ export function Talk({ go }: {
     recorder.current = await listen(
       (text) => {
         if (g !== round.current) return; // the person already left
+        lastHeard.current = Date.now();
         setListening(false); setSpeaking(true);
         setSaid(text); ask(text);
       },
       (msg) => {
         if (g !== round.current) return;
-        if (talking.current && heardNothing(msg)) { void hear(); return; }
+        if (talking.current && heardNothing(msg)) {
+          if (Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
+            exitTalk();
+            return;
+          }
+          void hear();
+          return;
+        }
         talking.current = false;
         setListening(false); setError(msg);
       },
@@ -162,6 +175,7 @@ export function Talk({ go }: {
     if (listening) { exitTalk(); return; }
     setError(null);
     talking.current = true;
+    lastHeard.current = Date.now();
     await hear();
   }
 

@@ -72,6 +72,14 @@ export async function say(text: string): Promise<"service" | "device"> {
 
 export interface Listener { stop: () => void }
 
+/** How long a standing conversation keeps re-opening the microphone with
+ *  nothing heard before it bows out on its own. The reviewer's number:
+ *  "at least two minutes would be enough" — long enough to think, or to
+ *  step away and come back, short enough that a conversation nobody is in
+ *  does not hold the microphone open all afternoon. Shared by Coach and
+ *  Talk so the two rooms cannot drift apart. */
+export const CONVERSATION_IDLE_MS = 120_000;
+
 /** True when a listen ended only because nothing was said — quiet, not a
  *  refusal. A standing conversation reads this and opens the microphone
  *  again; every other message is a real failure and ends it. */

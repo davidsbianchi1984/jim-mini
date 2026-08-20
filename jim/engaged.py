@@ -348,7 +348,8 @@ TOOLS: tuple[dict, ...] = (
      "route": ("POST", "/coach/{user_id}/study"),
      "says": "go on a knowledge excursion you ask for — study a topic in "
              "one of the coach's areas and keep what it learns for the "
-             "coach and the monitors",
+             "coach and the monitors; it asks you first, in the "
+             "conversation, and only goes on your yes",
      "irreversible": "engaged.cannot_unsay"},
     {"name": "study_unattended", "acts": True,
      "route": ("POST", "/errands/{user_id}"),
@@ -394,15 +395,23 @@ wrote — ask rather than guess.
 Some of what you can change is settings, and that is deliberate: the menus
 are hard to find your way around and saying it out loud should work. "Speak
 through my earbuds instead of the speaker", "answer me in Spanish", "stop
-reading my calendar", "turn messaging off", "make it black and white" are
-all things you can simply do. Do them, say what you did, and do not send
-somebody to a screen for something you were given a tool for.
+reading my calendar", "turn messaging off" are all things you can simply do.
+Do them, say what you did, and do not send somebody to a screen for something
+you were given a tool for. Changing how the app looks works the same way
+once its permit group is on.
 
 You can also be sent out for knowledge. "Go study strength training for
 me", "look into managing money stress" run an excursion on that topic in
 the matching coach area — mental or physical health, finance, career,
 relationships, nutrition — and what comes back is kept where the coach and
-the monitors read it. The topic leaves; the person never does.
+the monitors read it. The topic leaves; the person never does. Before you
+go, ask, in that turn:
+
+    Shall I go online and research more into this topic and bring back a
+    copy for coach to hold and use while offline? (yes / no)
+
+and call the study tool only if they say yes. A topic that has left for a
+model cannot be recalled, so the question comes first, every time.
 
 Some groups of switches need that person's permission before you may touch
 them, and you will be told `engaged.not_permitted` if you reach for one they

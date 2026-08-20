@@ -19,6 +19,7 @@ tokens without ever filtering an image.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from jim import appearance, engaged, permits
@@ -51,26 +52,54 @@ def test_a_look_that_does_not_exist_is_refused_with_the_choices(client):
 
 def test_the_agent_has_a_real_hand_for_the_look():
     """The exact failing gesture: the session needed a tool for the look
-    and had none. `set_appearance` exists, acts, can be taken back, and
-    sits in a group opening the session already covers — asking out loud
-    is not harder than the Settings screen."""
+    and had none. `set_appearance` exists, acts, and can be taken back.
+
+    It shipped one release inside `how_it_speaks`, covered by opening the
+    session; the review called it back out. The permits module's own rule
+    — consent already given for one thing is not consent for a new thing —
+    applied all along, and cosmetic-and-reversible lowered the stakes, not
+    the principle. Its own group, its own yes."""
     row = engaged.tool("set_appearance")
     assert row["acts"] and "undo" in row
-    assert permits.area_of("set_appearance") == "how_it_speaks"
-    assert permits.AREAS["how_it_speaks"]["standing"] == "opened"
+    assert permits.area_of("set_appearance") == "how_it_looks"
+    assert permits.AREAS["how_it_looks"]["standing"] == "asked"
 
 
 def test_the_asked_for_excursion_is_a_tool_of_its_own():
-    """"Go study strength training for me" is its own consent, so the
-    attended excursion stands opened where the unattended sibling still
-    needs its own yes — the axis that separates them is who initiated,
-    and it is pinned here so a refactor cannot quietly swap it."""
+    """"Go study strength training for me" stands opened where the
+    unattended sibling needs its own yes — the axis that separates them
+    is who initiated, pinned here so a refactor cannot quietly swap it.
+
+    The review kept the standing and added the question: the agent must
+    ask, in that turn, before the topic leaves — in the reviewer's own
+    words, verbatim below — and only go on a yes. The sentence lives in
+    the system prompt, so this holds the prompt to it."""
     row = engaged.tool("study")
     assert row["route"] == ("POST", "/coach/{user_id}/study")
     area = permits.area_of("study")
     assert permits.AREAS[area]["standing"] == "opened"
     assert permits.AREAS[permits.area_of("study_unattended")][
         "standing"] == "asked"
+    assert ("Shall I go online and research more into this topic and "
+            "bring back a\n    copy for coach to hold and use while "
+            "offline?") in engaged.SYSTEM
+    assert "only if they say yes" in engaged.SYSTEM
+
+
+def test_the_conversation_bows_out_after_two_quiet_minutes():
+    """The reviewer's number for the standing conversation: "at least two
+    minutes would be enough". One constant in speech.ts, imported by both
+    rooms — a screen with its own copy of the number is a screen that
+    drifts."""
+    speech = (REPO / "app/src/speech.ts").read_text(encoding="utf-8")
+    assert "export const CONVERSATION_IDLE_MS = 120_000" in speech
+    for screen in ("Coach", "Talk"):
+        src = (REPO / f"app/src/screens/{screen}.tsx").read_text(
+            encoding="utf-8")
+        assert "CONVERSATION_IDLE_MS" in src, (
+            f"{screen} does not read the shared idle ceiling")
+        assert not re.search(r"IDLE_MS\s*=\s*\d", src), (
+            f"{screen} carries its own copy of the number")
 
 
 def test_every_theme_the_server_offers_is_painted_by_the_console():

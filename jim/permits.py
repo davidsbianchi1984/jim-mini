@@ -73,10 +73,19 @@ AREAS: dict[str, dict] = {
     "how_it_speaks": {
         "standing": "opened",
         "says": "change how it talks to you, what language it answers in, "
-                "which model answers, which device it speaks through, and "
-                "how the app looks",
-        "tools": ("set_bearing", "set_language", "set_model", "set_surface",
-                  "set_appearance"),
+                "which model answers, and which device it speaks through",
+        "tools": ("set_bearing", "set_language", "set_model", "set_surface"),
+    },
+    # The look shipped one release riding in on `how_it_speaks`, and the
+    # review called it back out: this module's own rule is that consent
+    # already given for one thing is not consent for a new thing, and the
+    # look was a new thing. Cosmetic and reversible lowered the stakes, not
+    # the principle.
+    "how_it_looks": {
+        "standing": "asked",
+        "says": "change how the app looks — colors only, never photos, "
+                "tiles, or what any screen shows",
+        "tools": ("set_appearance",),
     },
     "your_own_normal": {
         "standing": "opened",
@@ -110,9 +119,10 @@ AREAS: dict[str, dict] = {
     "excursions_you_ask_for": {
         "standing": "opened",
         "says": "go on a knowledge excursion you ask for — study a topic "
-                "for the coach in any of its areas; a general topic leaves, "
-                "never you, and what comes back is kept where the coach and "
-                "the monitors read it",
+                "for the coach in any of its areas; it asks first, in the "
+                "conversation, and only goes on your yes; a general topic "
+                "leaves, never you, and what comes back is kept where the "
+                "coach and the monitors read it",
         "tools": ("study",),
     },
     "study_on_your_own": {

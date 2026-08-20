@@ -5516,6 +5516,24 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "permits.area.outside_this_app": {
     en: "Outside this app", es: "Fuera de esta app", fr: "Hors de cette app", de: "Außerhalb dieser App", pt: "Fora desta app", it: "Fuori da questa app", ja: "このアプリの外", zh: "这个应用之外", hi: "इस ऐप के बाहर", ar: "خارج هذا التطبيق",
   },
+  // Four groups rendered as their raw keys until a review of the same
+  // screen caught it — the rows below are the headings the card always
+  // meant to show.
+  "permits.area.how_it_looks": {
+    en: "How the app looks", es: "Cómo se ve la app", fr: "L'apparence de l'app", de: "Wie die App aussieht", pt: "Como a app fica", it: "L'aspetto dell'app", ja: "アプリの見た目", zh: "应用的外观", hi: "ऐप कैसा दिखता है", ar: "مظهر التطبيق",
+  },
+  "permits.area.speak_for_you": {
+    en: "Speak for you", es: "Hablar por ti", fr: "Parler pour vous", de: "Für Sie sprechen", pt: "Falar por si", it: "Parlare per te", ja: "あなたの代わりに話す", zh: "替你发言", hi: "आपकी ओर से बोलना", ar: "التحدث نيابةً عنك",
+  },
+  "permits.area.excursions_you_ask_for": {
+    en: "Excursions you ask for", es: "Excursiones que pides", fr: "Excursions que vous demandez", de: "Ausflüge auf Ihre Bitte", pt: "Excursões que pede", it: "Escursioni che chiedi", ja: "あなたが頼む知識の外出", zh: "你请求的知识外出", hi: "आपके कहने पर ज्ञान-यात्राएँ", ar: "رحلات معرفية تطلبها أنت",
+  },
+  "permits.area.study_on_your_own": {
+    en: "Study on its own", es: "Estudiar por su cuenta", fr: "Étudier de lui-même", de: "Eigenständig studieren", pt: "Estudar por conta própria", it: "Studiare da solo", ja: "自分で学びに行く", zh: "自行研究", hi: "अपने आप अध्ययन", ar: "الدراسة من تلقاء نفسه",
+  },
+  "permits.area.handle_what_you_notice": {
+    en: "Handle what it notices", es: "Atender lo que nota", fr: "Traiter ce qu'il remarque", de: "Bearbeiten, was ihm auffällt", pt: "Tratar do que nota", it: "Gestire ciò che nota", ja: "気づいたことに対処する", zh: "处理它注意到的事", hi: "जो यह नोटिस करे उसे संभालना", ar: "معالجة ما يلاحظه",
+  },
 
   "engaged.reach.ceilings": {
     en: "It may reach for {steps} things before it has to answer you, and change at most {acts} things in one session.",

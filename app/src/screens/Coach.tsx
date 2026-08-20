@@ -3,8 +3,8 @@ import { api, type CoachCurriculum, type CoachStore, type ErrandLedger,
          type Guidance, type LookoutList, type LookoutPage,
          type NoticeLedger, type SpecialistAnswer } from "../api";
 import { fill, t as tr, visitorLang } from "../l10n";
-import { hush, heardNothing, listen, primeVoice, say,
-         type Listener } from "../speech";
+import { CONVERSATION_IDLE_MS, hush, heardNothing, listen, primeVoice,
+         say, type Listener } from "../speech";
 import { useSession } from "../store";
 
 const AREAS: import("../api").GoalArea[] =
@@ -32,6 +32,10 @@ export function Coach() {
   // listen so an exit tap orphans any transcription still in flight.
   const talking = useRef(false);
   const round = useRef(0);
+  // When something was last actually heard. Quiet re-opens the microphone,
+  // but a conversation nobody has spoken into for two minutes ends on its
+  // own — quietly, because leaving a room empty is not an error.
+  const lastHeard = useRef(0);
 
   // The store the offline stack predicts from, and JIM's syllabus for it.
   const [knows, setKnows] = useState<CoachStore | null>(null);
@@ -127,11 +131,13 @@ export function Coach() {
         setSpeaking(true);
         say(r.content).finally(() => {
           setSpeaking(false);
-          if (talking.current) void hear();
+          // The idle clock starts when the microphone re-opens, so a long
+          // spoken answer never eats into the person's two minutes.
+          if (talking.current) { lastHeard.current = Date.now(); void hear(); }
         });
       } else {
         setSpeaking(false);
-        if (talking.current) void hear();
+        if (talking.current) { lastHeard.current = Date.now(); void hear(); }
       }
     }
     catch (e) {
@@ -152,12 +158,20 @@ export function Coach() {
     recorder.current = await listen(
       (text) => {
         if (g !== round.current) return; // the person already left
+        lastHeard.current = Date.now();
         setListening(false); setSpeaking(true);
         setMessage(text); ask(text);
       },
       (msg) => {
         if (g !== round.current) return;
-        if (talking.current && heardNothing(msg)) { void hear(); return; }
+        if (talking.current && heardNothing(msg)) {
+          if (Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
+            exitTalk();
+            return;
+          }
+          void hear();
+          return;
+        }
         talking.current = false;
         setListening(false); setError(msg);
       },
@@ -179,6 +193,7 @@ export function Coach() {
     if (listening) { exitTalk(); return; }
     setError(null);
     talking.current = true;
+    lastHeard.current = Date.now();
     await hear();
   }
 

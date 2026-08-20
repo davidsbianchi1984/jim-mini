@@ -4,6 +4,30 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **The reviewer's three calls on 0.96.0.** The release briefing raised
+  three judgment calls and the review answered all three. The look has
+  **its own permit** now (`how_it_looks`, off until switched on): it
+  shipped riding in on `how_it_speaks`, and the permits module's own
+  rule — consent given for one thing is not consent for a new thing —
+  applied all along. The asked-for excursion **asks first, in-turn**,
+  in the reviewer's own words: *"Shall I go online and research more
+  into this topic and bring back a copy for coach to hold and use
+  while offline?"* — yes or no, and the topic only leaves on a yes.
+  And the standing conversation **bows out after two quiet minutes**:
+  quiet still re-opens the microphone, but a room nobody has spoken
+  into for two minutes closes on its own, quietly — the clock starting
+  when the mic re-opens, so a long spoken answer never eats into it.
+  Alongside: four permit groups that rendered as their raw keys on the
+  card ("Speak for you", "Study on its own", "Handle what it notices",
+  and the new excursions row) got their ten-language headings.
+
+      asked     who decides what the agent's new reach costs
+      mattered  a briefing is only worth writing if the answers land
+
 ## [0.96.0] - 2026-08-20
 
 ### Added
@@ -9864,6 +9888,7 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.96.0...HEAD
 [0.96.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.95.0...app-v0.96.0
 [0.95.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.94.0...app-v0.95.0
 [0.94.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.93.0...app-v0.94.0
