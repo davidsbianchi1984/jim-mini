@@ -4,9 +4,31 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.94.0] - 2026-08-20
 
 ### Added
+
+- **The lookout grows ears.** The vault's `fetch.listen` seals the
+  words said in a recording; planting a lookout on a URL that *is* a
+  recording — the media file itself (.mp3, .mp4 and kin, read from the
+  path, never the query), not a page containing a player — now stands
+  a listening appointment instead of a rendering one. Same capture
+  key, same change-memory: the read-back, the changed_at, the coach's
+  prompt block and the letter all read a transcript exactly the way
+  they read a page, and the letter's line says "watched recording"
+  because new words said are not a page edited. A deployment without
+  ears fails the cycle in words and the lookout's `trouble` line
+  carries the reason — there is no silent stand-in for hearing.
+
+      asked     can JIM keep an ear on a recording for somebody
+      mattered  the same lookout, hearing where hearing is what the URL is
+
+- **The study's author on screen.** The excursion rows on the Reach
+  screen now wear `answered_by` beside `left_host` and the redaction
+  count — the model's registry name, `vault`, or `stub`, in ten
+  languages; absent on rows that predate the record. The wire carried
+  the honesty since the last round; a provenance only the API can see
+  is disclosure to nobody.
 
 - **The coach knows its own product.** Asked to "plant a quarter-hour
   lookout", the coach gave a graceful shrug: the earlier honesty line
@@ -9741,7 +9763,7 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.93.0...HEAD
+[0.94.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.93.0...app-v0.94.0
 [0.93.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.92.0...app-v0.93.0
 [0.92.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.91.0...app-v0.92.0
 [0.91.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.90.0...app-v0.91.0
