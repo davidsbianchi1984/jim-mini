@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, type Guidance } from "../api";
 import { t as tr, visitorLang, word } from "../l10n";
+import { hush, listen, primeVoice, say, type Listener } from "../speech";
 import { useSession } from "../store";
 
 /**
@@ -49,6 +50,16 @@ export function Talk({ go }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [plus, setPlus] = useState(false);
+  // The microphone, for real — a field report pressed the mic on this
+  // composer and was navigated to the channel screen: a mic that opens a
+  // different room is a label, not a microphone. This one listens (five
+  // seconds of silence sends, same as the coach's), and the orb stays up
+  // from the end of the question through the whole spoken reply.
+  const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [level, setLevel] = useState(0);
+  const recorder = useRef<Listener | null>(null);
+  useEffect(() => { void primeVoice(); }, []);
 
   const uid = session.userId;
   const token = session.userToken;
@@ -74,28 +85,76 @@ export function Talk({ go }: {
     { id: "studio", icon: "🛠" },
   ];
 
-  async function ask() {
-    if (!uid || !token || !said.trim()) return;
+  async function ask(text?: string) {
+    const q = (text ?? said).trim();
+    if (!uid || !token || !q) return;
     setBusy(true); setError(null);
     try {
       // `general` rather than a picked area: this is the front door, and
       // making somebody choose a category before they can type is the
       // menu problem this screen exists to answer. Coach's own screen
       // still offers the picker for somebody who wants it.
-      setReply(await api.coach(uid, { area: "general", message: said.trim() },
-                               token));
+      const r = await api.coach(uid, { area: "general", message: q }, token);
+      setReply(r);
       setSaid("");
+      // A spoken question is answered out loud, and the purple orb holds
+      // for the whole reply — `say` resolves when the speaking ends.
+      if (r?.content && (text !== undefined || speaking)) {
+        setSpeaking(true);
+        say(r.content).finally(() => setSpeaking(false));
+      } else {
+        setSpeaking(false);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
+      setSpeaking(false);
     } finally {
       setBusy(false);
     }
+  }
+
+  async function toggleMic() {
+    if (listening) {
+      recorder.current?.stop();
+      recorder.current = null;
+      setListening(false);
+      return;
+    }
+    setError(null);
+    setListening(true);
+    recorder.current = await listen(
+      (text) => {
+        setListening(false); setSpeaking(true);
+        setSaid(text); ask(text);
+      },
+      (msg) => { setListening(false); setError(msg); },
+      setLevel,
+    );
   }
 
   if (!uid || !token) return <p>{tr("self.signin", lang)}</p>;
 
   return (
     <div className="talk">
+      {(listening || speaking) && (
+        <div className="voice-orb-veil" role="status"
+             aria-label={listening ? "Listening" : "Speaking"}
+             onClick={() => {
+               if (listening) toggleMic();
+               else { hush(); setSpeaking(false); }
+             }}>
+          <div className={"voice-orb-holder" + (speaking ? " speaking" : "")}>
+            <div className="voice-orb-ring"
+                 style={{ transform: `scale(${1 + level * 0.45})`,
+                          opacity: 0.3 + level * 0.7 }} />
+            <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+          </div>
+          <div className="voice-orb-label">
+            {listening ? tr("cch.listening.stop", lang)
+                       : tr("cch.speaking.hush", lang)}
+          </div>
+        </div>
+      )}
       <div className="talk-body">
         {/* No empty state. Before the first answer this is blank space above
             the composer, which is what the composer is for. */}
@@ -140,10 +199,14 @@ export function Talk({ go }: {
           <input value={said} placeholder={tr("talk.ph", lang)}
                  onChange={(e) => setSaid(e.target.value)}
                  onKeyDown={(e) => { if (e.key === "Enter") ask(); }} />
-          <button className="talk-mic" aria-label={tr("talk.rail.channel", lang)}
-                  onClick={() => go("channel")}>🎙</button>
+          {/* A microphone, not a door: this used to navigate to the channel
+              screen, which is a label wearing a mic's icon. The channel
+              stays one tap away in the + menu and on the rail. */}
+          <button className={"talk-mic" + (listening ? " listening" : "")}
+                  aria-label={tr("cch.talk", lang)}
+                  onClick={toggleMic}>🎤</button>
           <button className="talk-speak" disabled={busy || !said.trim()}
-                  onClick={ask}>{tr("talk.send", lang)}</button>
+                  onClick={() => ask()}>{tr("talk.send", lang)}</button>
         </div>
       </div>
     </div>

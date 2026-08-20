@@ -272,6 +272,10 @@ export async function primeVoice(): Promise<void> {
 export async function listen(
   onText: (text: string) => void,
   onError: (message: string) => void,
+  // The voice's own level, 0..1, a few times a second — the orb's wave.
+  // Only the record path has an analyser to read it from; the device
+  // recogniser keeps a still orb, which is honest about what it exposes.
+  onLevel?: (level: number) => void,
 ): Promise<Listener> {
   if (preferDevice || knownHasService === false) {
     const dev = deviceListener(onText, onError);
@@ -311,6 +315,7 @@ export async function listen(
   const stopWatching = () => {
     if (watcher) { window.clearInterval(watcher); watcher = 0; }
     if (audioCtx) { void audioCtx.close().catch(() => {}); audioCtx = null; }
+    onLevel?.(0);
   };
   try {
     const AC = (window as unknown as {
@@ -332,6 +337,7 @@ export async function listen(
           const dev = Math.abs(wave[i] - 128);
           if (dev > peak) peak = dev;
         }
+        onLevel?.(Math.min(1, peak / 40));
         // ~5% of full scale: above the hiss of a quiet room, below any
         // spoken word near the microphone.
         if (peak > 6) lastVoice = Date.now();

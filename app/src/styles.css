@@ -351,6 +351,16 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   box-shadow: 0 0 60px rgba(123,92,255,0.55);
   animation-duration: 1.1s; }
 .voice-orb-label { color: var(--muted); font-size: 13px; }
+/* The audio-wave ring: scaled by the microphone's own level while the
+   orb listens, so the sphere visibly hears. Green around the listening
+   orb, purple around the speaking one. */
+.voice-orb-holder { position: relative; display: grid; place-items: center; }
+.voice-orb-ring { position: absolute; width: 140px; height: 140px;
+  border-radius: 50%; border: 3px solid rgba(126,240,178,0.75);
+  pointer-events: none;
+  transition: transform 140ms linear, opacity 140ms linear; }
+.voice-orb-holder.speaking .voice-orb-ring {
+  border-color: rgba(179,155,255,0.75); }
 @keyframes orb-breathe {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.12); }

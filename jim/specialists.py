@@ -66,6 +66,10 @@ from . import conditions, db
 #: clinical domain that corresponds to the area, so the coach answers it alone
 #: and should not imply otherwise.
 AREA_CONDITIONS: dict[str, tuple[str, ...]] = {
+    # The front door's area (the Talk screen sends everything as
+    # "general"): no clinical domain corresponds to a person who has not
+    # yet said what is on their mind, so the Guardian answers it alone.
+    "general": (),
     "mental_health": (conditions.ANXIETY, conditions.DEPRESSION,
                       conditions.STRESS, conditions.PHOBIA),
     "health_fitness": (conditions.PHYSICAL_DISTRESS, conditions.ERGONOMIC),

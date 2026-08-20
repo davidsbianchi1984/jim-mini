@@ -122,7 +122,7 @@ function FaceTalk({ uid, token, lang }: FaceProps) {
     if (!said.trim()) return;
     setBusy(true); setFault(null);
     try {
-      setReply(await api.coach(uid, { area: "mind", message: said.trim() }, token));
+      setReply(await api.coach(uid, { area: "general", message: said.trim() }, token));
       setSaid("");
     } catch (e) { setFault(e instanceof Error ? e.message : String(e)); }
     finally { setBusy(false); }
@@ -157,7 +157,7 @@ function FaceVoice({ uid, token, lang }: FaceProps) {
       ear.current?.stop(); ear.current = null; setHearing(false);
       setHeard(text);
       try {
-        const g = await api.coach(uid, { area: "mind", message: text }, token);
+        const g = await api.coach(uid, { area: "general", message: text }, token);
         setReply(g.content);
         void say(g.content);
       } catch (e) { setFault(e instanceof Error ? e.message : String(e)); }
@@ -809,8 +809,18 @@ function FaceJournal({ uid, token, lang }: FaceProps) {
   );
 }
 
+// The wrist's short names for the coach's areas: labels stay short (a
+// watch chip has room for one word) and the wire gets the server's own
+// vocabulary. These used to be sent raw — "mind", "money", "bonds" — and
+// every chip but career was refused at the door; the tightened area type
+// on `api.coach` is what finally surfaced it.
+const W_AREAS = {
+  mind: "mental_health", fitness: "health_fitness", career: "career",
+  money: "finance", bonds: "relationships", growth: "personal_growth",
+} as const;
+
 function FaceCoach({ uid, token, lang }: FaceProps) {
-  const [area, setArea] = useState("mind");
+  const [area, setArea] = useState<keyof typeof W_AREAS>("mind");
   const [said, setSaid] = useState("");
   const [reply, setReply] = useState("");
   const [fault, setFault] = useState<string | null>(null);
@@ -818,7 +828,7 @@ function FaceCoach({ uid, token, lang }: FaceProps) {
   return (
     <div className="w-face-body">
       <div className="w-row w-wrap">
-        {["mind", "fitness", "career", "money", "bonds", "growth"].map((a) => (
+        {(Object.keys(W_AREAS) as (keyof typeof W_AREAS)[]).map((a) => (
           <button key={a} className={"w-chip" + (a === area ? " on" : "")}
                   onClick={() => setArea(a)}>
             {tr(`w.co.${a}`, lang)}
@@ -832,8 +842,9 @@ function FaceCoach({ uid, token, lang }: FaceProps) {
               onClick={async () => {
                 setFault(null);
                 try {
-                  const g = await api.coach(uid, { area, message: said.trim() },
-                                            token);
+                  const g = await api.coach(
+                    uid, { area: W_AREAS[area], message: said.trim() },
+                    token);
                   setReply(g.content); setSaid("");
                 } catch (e) {
                   setFault(e instanceof Error ? e.message : String(e));

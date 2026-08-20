@@ -17,6 +17,15 @@ LifeArea = Literal[
     "relationships", "personal_growth",
 ]
 
+#: The coach hears one more area than a goal can belong to: "general" is the
+#: Talk screen's — the front door, where making somebody pick a category
+#: before they can type is the menu problem that screen exists to answer. A
+#: goal stays a LifeArea: "general" as a goal is a goal nobody can measure.
+CoachArea = Literal[
+    "general", "mental_health", "health_fitness", "nutrition", "career",
+    "finance", "relationships", "personal_growth",
+]
+
 #: What the agent may see. `contacts` is the one that is mostly about **other
 #: people** rather than the person granting it: an address book is a few
 #: hundred names who never chose this product and cannot see that it holds
@@ -739,7 +748,7 @@ class HabitLog(BaseModel):
 
 
 class CoachMessage(BaseModel):
-    area: LifeArea
+    area: CoachArea
     message: str
 
 

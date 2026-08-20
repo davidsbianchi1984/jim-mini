@@ -1820,7 +1820,12 @@ export const api = {
     req<AnonymityPosture>(`/anonymity/${uid}`, { token }),
   checkin: (uid: string, body: { mood: number; energy: number; stress?: number; note?: string }, token: string) =>
     req<CheckinResult>(`/checkin/${uid}`, { method: "POST", body, token }),
-  coach: (uid: string, body: { area: string; message: string }, token: string) =>
+  // `GoalArea | "general"`, not `string`: the Talk screen's "general" was
+  // typed loosely enough to compile while the server refused it — a wrong
+  // literal should fail the build, the way this file's header promises.
+  coach: (uid: string,
+          body: { area: GoalArea | "general"; message: string },
+          token: string) =>
     req<Guidance>(`/coach/${uid}`, { method: "POST", body, token }),
   // The person's own question to the QRME specialist covering this area.
   // `coach` only *offers*; this is the door they choose, because what crosses

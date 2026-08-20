@@ -12,6 +12,14 @@ from . import continuity, db, guardian, life, llm
 from .guidance import _DENY, personalize
 
 AREAS = {
+    # The front door's area. The Talk screen sends every typed message as
+    # "general" — making somebody pick a category before they can type is
+    # the menu problem that screen exists to answer — and for a while the
+    # server refused the front door's own word: a field report's "hey" was
+    # answered with the area list in red. A person saying hello is not
+    # choosing a category.
+    "general": "general — whatever is on their mind; meet the message where "
+               "it goes, and name a specific door when one fits",
     "mental_health": "mental health — support, coping strategies, resources",
     "health_fitness": "health & fitness — workouts, sleep, recovery",
     "nutrition": "nutrition — meal planning, eating patterns, hydration; "

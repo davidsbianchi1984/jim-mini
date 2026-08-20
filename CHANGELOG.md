@@ -8,6 +8,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The front door answers, and the mic listens there.** Typing
+  "hey" on the Talk screen came back as a red banner reciting the area
+  list: the front door sends everything as `general`, and the server
+  refused the front door's own word since the screen was built. It is
+  a real coach area now — in the model's closed set, the coach's map,
+  and the specialist map as a declared empty tuple. The composer's mic
+  is a microphone instead of a door to the channel screen: it listens
+  (five-second silence send, same as the coach's), the reply is spoken
+  back, and the orb rides the whole exchange — now wearing an
+  audio-wave ring that moves with the person's own voice level, on
+  Talk and Coach both. Typing the coach's area as the server's closed
+  set surfaced two more wire refusals nobody had reported: the watch's
+  coach face sent its short chip names ("mind", "money", "bonds") raw
+  — every chip but career refused — and its free-typing faces sent
+  "mind" too. The chips now map to the server's vocabulary and the
+  free-typing faces speak through the front door's area, with a
+  standing test holding every area literal a screen sends to the map
+  the server answers.
+
+      asked     can a person say hello
+      mattered  the front door refusing "hey" is the product refusing people
+
 - **The talk turn keeps its shape.** Three field reports from one
   spoken conversation with the coach. The listening orb waited for a
   tap however long the question had been over: it now stops on its own

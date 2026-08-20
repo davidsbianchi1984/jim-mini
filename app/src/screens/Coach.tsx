@@ -6,11 +6,12 @@ import { fill, t as tr, visitorLang } from "../l10n";
 import { hush, listen, primeVoice, say, type Listener } from "../speech";
 import { useSession } from "../store";
 
-const AREAS = ["mental_health", "health_fitness", "career", "relationships"];
+const AREAS: import("../api").GoalArea[] =
+  ["mental_health", "health_fitness", "career", "relationships"];
 
 export function Coach() {
   const { session } = useSession();
-  const [area, setArea] = useState("mental_health");
+  const [area, setArea] = useState<import("../api").GoalArea>("mental_health");
   const [message, setMessage] = useState("I've been feeling stressed about work.");
   const [reply, setReply] = useState<Guidance | null>(null);
   const [busy, setBusy] = useState(false);
@@ -20,6 +21,7 @@ export function Coach() {
 
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [level, setLevel] = useState(0);
   const recorder = useRef<Listener | null>(null);
 
   // The store the offline stack predicts from, and JIM's syllabus for it.
@@ -140,6 +142,7 @@ export function Coach() {
         setMessage(text); ask(text);
       },
       (msg) => { setListening(false); setError(msg); },
+      setLevel,
     );
   }
 
@@ -149,7 +152,15 @@ export function Coach() {
         <div className="voice-orb-veil" role="status"
              aria-label={listening ? "Listening" : "Speaking"}
              onClick={() => { if (listening) toggleMic(); else { hush(); setSpeaking(false); } }}>
-          <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+          <div className={"voice-orb-holder" + (speaking ? " speaking" : "")}>
+            {/* The audio-wave ring: the person's own voice level, drawn
+                around the sphere while it listens — a still ring is a mic
+                hearing silence, which is also worth seeing. */}
+            <div className="voice-orb-ring"
+                 style={{ transform: `scale(${1 + level * 0.45})`,
+                          opacity: 0.3 + level * 0.7 }} />
+            <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+          </div>
           <div className="voice-orb-label">
             {listening ? tr("cch.listening.stop", lang)
                        : tr("cch.speaking.hush", lang)}
@@ -162,7 +173,7 @@ export function Coach() {
       </header>
       <div className="card">
         <label>{tr("cch.area", lang)}
-          <select value={area} onChange={(e) => setArea(e.target.value)}>
+          <select value={area} onChange={(e) => setArea(e.target.value as import("../api").GoalArea)}>
             {AREAS.map((a) => <option key={a}>{a}</option>)}
           </select>
         </label>
