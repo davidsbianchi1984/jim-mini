@@ -4,6 +4,26 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **The talk turn keeps its shape.** Three field reports from one
+  spoken conversation with the coach. The listening orb waited for a
+  tap however long the question had been over: it now stops on its own
+  after five seconds of silence — long enough for a thinking pause
+  mid-question, short enough that the answer starts when the asking
+  stops — and the tap still works, on every path (a platform without
+  an audio analyser keeps the old manual stop). The purple orb
+  vanished the moment the reply began, because `say` resolved when the
+  speaking *started*: it resolves when the speaking ends now, and the
+  orb goes green to purple in one motion and stays for the whole
+  answer. And the label tells the truth about the new behavior, in ten
+  languages.
+
+      asked     does the conversation feel like one
+      mattered  the orb and the listening doing what a person mid-talk expects
+
 ## [0.95.0] - 2026-08-20
 
 - Version alignment: the trio releases together, and this release's
@@ -9769,6 +9789,7 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.95.0...HEAD
 [0.95.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.94.0...app-v0.95.0
 [0.94.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.93.0...app-v0.94.0
 [0.93.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.92.0...app-v0.93.0

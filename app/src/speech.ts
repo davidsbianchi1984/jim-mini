@@ -15,7 +15,11 @@ export function hush() {
 }
 
 /** Say `text` aloud — the configured voice when there is one, the device's
- *  own otherwise. Resolves when the speaking starts, not when it ends. */
+ *  own otherwise. Resolves when the speaking ENDS (hush() counts as an
+ *  end), not when it starts: the purple orb is bound to this promise, and
+ *  a field report caught it vanishing the moment the reply began — the
+ *  orb was supposed to stay for the whole answer, and "when did the
+ *  speaking finish" is a fact only this module can see. */
 export async function say(text: string): Promise<"service" | "device"> {
   hush();
   try {
@@ -26,8 +30,17 @@ export async function say(text: string): Promise<"service" | "device"> {
     });
     if (res.ok) {
       const blob = await res.blob();
-      current = new Audio(URL.createObjectURL(blob));
-      await current.play();
+      const audio = new Audio(URL.createObjectURL(blob));
+      current = audio;
+      await audio.play();
+      await new Promise<void>((resolve) => {
+        // `pause` fires for hush(); `ended` for a played-out reply;
+        // `error` for a decode that dies mid-utterance. Any of them is
+        // the speaking being over.
+        audio.addEventListener("ended", () => resolve(), { once: true });
+        audio.addEventListener("pause", () => resolve(), { once: true });
+        audio.addEventListener("error", () => resolve(), { once: true });
+      });
       return "service";
     }
   } catch { /* fall through to the device's own voice */ }
@@ -39,7 +52,20 @@ export async function say(text: string): Promise<"service" | "device"> {
     const preferred = speechSynthesis.getVoices().find((v) =>
       /david|daniel|alex|fred|george|male/i.test(v.name));
     if (preferred) utter.voice = preferred;
-    speechSynthesis.speak(utter);
+    await new Promise<void>((resolve) => {
+      utter.onend = () => resolve();
+      utter.onerror = () => resolve();
+      speechSynthesis.speak(utter);
+      // `hush()` cancels the queue, and a cancelled utterance fires
+      // onend/onerror per spec — but not on every engine. The watcher is
+      // the belt for those braces: once nothing is speaking, it is over.
+      const watch = window.setInterval(() => {
+        if (!speechSynthesis.speaking) {
+          window.clearInterval(watch);
+          resolve();
+        }
+      }, 250);
+    });
   }
   return "device";
 }
@@ -272,7 +298,52 @@ export async function listen(
   const chunks: BlobPart[] = [];
   const rec = new MediaRecorder(stream);
   rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+  // Stop by silence, not only by tap. A field report from a coach
+  // conversation: the green orb waits for a press however long the
+  // question has been over. Five seconds without a voice ends the
+  // listening on its own — long enough for a thinking pause mid-question,
+  // short enough that the answer starts when the asking stops. The tap
+  // still works, and a platform with no AudioContext simply keeps the
+  // old manual behavior.
+  const SILENCE_STOP_MS = 5000;
+  let watcher = 0;
+  let audioCtx: AudioContext | null = null;
+  const stopWatching = () => {
+    if (watcher) { window.clearInterval(watcher); watcher = 0; }
+    if (audioCtx) { void audioCtx.close().catch(() => {}); audioCtx = null; }
+  };
+  try {
+    const AC = (window as unknown as {
+      AudioContext?: typeof AudioContext;
+      webkitAudioContext?: typeof AudioContext;
+    });
+    const Ctx = AC.AudioContext ?? AC.webkitAudioContext;
+    if (Ctx) {
+      audioCtx = new Ctx();
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 1024;
+      audioCtx.createMediaStreamSource(stream).connect(analyser);
+      const wave = new Uint8Array(analyser.fftSize);
+      let lastVoice = Date.now();
+      watcher = window.setInterval(() => {
+        analyser.getByteTimeDomainData(wave);
+        let peak = 0;
+        for (let i = 0; i < wave.length; i++) {
+          const dev = Math.abs(wave[i] - 128);
+          if (dev > peak) peak = dev;
+        }
+        // ~5% of full scale: above the hiss of a quiet room, below any
+        // spoken word near the microphone.
+        if (peak > 6) lastVoice = Date.now();
+        else if (Date.now() - lastVoice >= SILENCE_STOP_MS) {
+          stopWatching();
+          if (rec.state !== "inactive") rec.stop();
+        }
+      }, 200);
+    }
+  } catch { /* no analyser — the tap keeps working as before */ }
   rec.onstop = async () => {
+    stopWatching();
     stream.getTracks().forEach((t) => t.stop());
     const blob = new Blob(chunks, { type: "audio/webm" });
     if (!blob.size) { onError("nothing was recorded"); return; }

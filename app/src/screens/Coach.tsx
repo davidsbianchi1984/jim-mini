@@ -108,13 +108,18 @@ export function Coach() {
                                 session.userToken);
       setReply(r); setFromSpecialist(null);
       // Talking to it should mean being answered out loud — a spoken
-      // question answered only in text is half a conversation.
+      // question answered only in text is half a conversation. `say`
+      // resolves when the speaking ends, so the purple orb stays for the
+      // whole answer rather than the first syllable of it.
       if (r?.content && (text !== undefined || speaking)) {
         setSpeaking(true);
         say(r.content).finally(() => setSpeaking(false));
+      } else {
+        setSpeaking(false);
       }
     }
-    catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+    catch (e) { setError((e as Error).message); setSpeaking(false); }
+    finally { setBusy(false); }
   }
 
   async function toggleMic() {
@@ -127,7 +132,13 @@ export function Coach() {
     setError(null);
     setListening(true);
     recorder.current = await listen(
-      (text) => { setListening(false); setMessage(text); ask(text); },
+      // The orb goes green→purple in one motion and stays up through the
+      // thinking and the whole spoken answer — a veil that blinks away
+      // between hearing and answering reads as the conversation dropping.
+      (text) => {
+        setListening(false); setSpeaking(true);
+        setMessage(text); ask(text);
+      },
       (msg) => { setListening(false); setError(msg); },
     );
   }

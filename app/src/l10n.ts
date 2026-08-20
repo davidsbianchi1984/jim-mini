@@ -4961,7 +4961,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "■ Stop", es: "■ Detener", fr: "■ Arrêter", de: "■ Stopp", pt: "■ Parar", it: "■ Ferma", ja: "■ 停止", zh: "■ 停止", hi: "■ रोकें", ar: "■ أوقف",
   },
   "cch.listening.stop": {
-    en: "listening — tap to stop", es: "escuchando — toca para detener", fr: "écoute — touchez pour arrêter", de: "hört zu — zum Stoppen tippen", pt: "a ouvir — toque para parar", it: "in ascolto — tocca per fermare", ja: "聞いています — タップで停止", zh: "正在聆听 — 点按停止", hi: "सुन रहा है — रोकने के लिए टैप करें", ar: "يستمع — انقر للإيقاف",
+    en: "listening — pause and it will answer, or tap to stop", es: "escuchando — haz una pausa y responderá, o toca para detener", fr: "écoute — marquez une pause et il répondra, ou touchez pour arrêter", de: "hört zu — eine Pause, und es antwortet; oder zum Stoppen tippen", pt: "a ouvir — faça uma pausa e ele responde, ou toque para parar", it: "in ascolto — fai una pausa e risponderà, o tocca per fermare", ja: "聞いています — 話し終えると自動で応答します。タップで停止", zh: "正在聆听 — 停顿片刻即会回答，或点按停止", hi: "सुन रहा है — रुकिए तो यह उत्तर देगा, या रोकने के लिए टैप करें", ar: "يستمع — توقّف قليلاً وسيجيب، أو انقر للإيقاف",
   },
   "cch.speaking.hush": {
     en: "speaking — tap to hush", es: "hablando — toca para callar", fr: "parle — touchez pour faire taire", de: "spricht — zum Verstummen tippen", pt: "a falar — toque para silenciar", it: "sta parlando — tocca per zittire", ja: "話しています — タップで黙らせる", zh: "正在说话 — 点按静音", hi: "बोल रहा है — चुप कराने के लिए टैप करें", ar: "يتحدث — انقر لإسكاته",
