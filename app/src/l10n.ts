@@ -4087,6 +4087,30 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "wel.meals.day": {
     en: "Day {n}", es: "Día {n}", fr: "Jour {n}", de: "Tag {n}", pt: "Dia {n}", it: "Giorno {n}", ja: "{n}日目", zh: "第{n}天", hi: "दिन {n}", ar: "اليوم {n}",
   },
+  "hld.farend": {
+    en: "The far end", es: "El otro extremo", fr: "L'autre bout", de: "Das andere Ende", pt: "O outro lado", it: "L'altro capo", ja: "見守りの相手", zh: "线的另一端", hi: "दूसरा छोर", ar: "الطرف الآخر",
+  },
+  "hld.farend.set": {
+    en: "Alerts go to {address} — a person, by email.", es: "Las alertas van a {address} — una persona, por correo.", fr: "Les alertes vont à {address} — une personne, par e-mail.", de: "Warnungen gehen an {address} — einen Menschen, per E-Mail.", pt: "Os alertas vão para {address} — uma pessoa, por e-mail.", it: "Gli avvisi vanno a {address} — una persona, via email.", ja: "アラートは {address} に届きます — 人に、メールで。", zh: "警报会发送到 {address} — 一个人，通过邮件。", hi: "अलर्ट {address} पर जाते हैं — एक व्यक्ति को, ईमेल से।", ar: "تذهب التنبيهات إلى {address} — إلى إنسان، عبر البريد.",
+  },
+  "hld.farend.email.ph": {
+    en: "Emergency contact's email", es: "Correo del contacto de emergencia", fr: "E-mail du contact d'urgence", de: "E-Mail des Notfallkontakts", pt: "E-mail do contacto de emergência", it: "Email del contatto di emergenza", ja: "緊急連絡先のメールアドレス", zh: "紧急联系人的邮箱", hi: "आपातकालीन संपर्क का ईमेल", ar: "البريد الإلكتروني لجهة اتصال الطوارئ",
+  },
+  "hld.farend.save": {
+    en: "They agreed — save", es: "Aceptó — guardar", fr: "Ils ont accepté — enregistrer", de: "Sie haben zugestimmt — speichern", pt: "Aceitou — guardar", it: "Hanno accettato — salva", ja: "同意済み — 保存", zh: "已同意 — 保存", hi: "सहमति दी — सहेजें", ar: "وافقوا — حفظ",
+  },
+  "hld.farend.clear": {
+    en: "Clear", es: "Quitar", fr: "Effacer", de: "Entfernen", pt: "Limpar", it: "Rimuovi", ja: "クリア", zh: "清除", hi: "हटाएँ", ar: "مسح",
+  },
+  "hld.farend.pitch": {
+    en: "When JIM decides to notify your contact, a letter really leaves — with a link that records that a person saw it. Once a month a short note proves the mailbox on a calm day.", es: "Cuando JIM decide avisar a tu contacto, una carta sale de verdad — con un enlace que registra que una persona la vio. Una vez al mes, una nota breve comprueba el buzón en un día tranquilo.", fr: "Quand JIM décide de prévenir votre contact, une lettre part vraiment — avec un lien qui enregistre qu'une personne l'a vue. Une fois par mois, une courte note vérifie la boîte un jour calme.", de: "Wenn JIM deinen Kontakt benachrichtigt, geht wirklich ein Brief hinaus — mit einem Link, der festhält, dass ein Mensch ihn gesehen hat. Einmal im Monat prüft eine kurze Notiz das Postfach an einem ruhigen Tag.", pt: "Quando o JIM decide avisar o seu contacto, uma carta sai mesmo — com uma ligação que regista que uma pessoa a viu. Uma vez por mês, uma nota breve prova a caixa num dia calmo.", it: "Quando JIM decide di avvisare il tuo contatto, una lettera parte davvero — con un link che registra che una persona l'ha vista. Una volta al mese una breve nota mette alla prova la casella in un giorno tranquillo.", ja: "JIM が連絡先への通知を決めると、本当に手紙が送られます — 人が見たことを記録するリンク付きで。月に一度、短いお知らせが平穏な日にメールボックスを確かめます。", zh: "当 JIM 决定通知你的联系人时，信真的会发出 — 附带一个记录“有人看到了”的链接。每月一次的简短便条会在平静的日子里验证邮箱。", hi: "जब JIM आपके संपर्क को सूचित करने का निर्णय लेता है, तो सच में एक पत्र जाता है — एक लिंक के साथ जो दर्ज करता है कि किसी व्यक्ति ने उसे देखा। महीने में एक बार एक छोटा नोट शांत दिन में मेलबॉक्स की जाँच करता है।", ar: "عندما يقرر JIM إخطار جهة اتصالك، تخرج رسالة حقًا — مع رابط يسجل أن إنسانًا رآها. ومرة في الشهر تتحقق رسالة قصيرة من صندوق البريد في يوم هادئ.",
+  },
+  "hld.farend.acked": {
+    en: "{condition} · {when} — seen by a person", es: "{condition} · {when} — visto por una persona", fr: "{condition} · {when} — vu par une personne", de: "{condition} · {when} — von einem Menschen gesehen", pt: "{condition} · {when} — visto por uma pessoa", it: "{condition} · {when} — visto da una persona", ja: "{condition} · {when} — 人が確認済み", zh: "{condition} · {when} — 已有人看到", hi: "{condition} · {when} — एक व्यक्ति ने देखा", ar: "{condition} · {when} — رآه إنسان",
+  },
+  "hld.farend.unacked": {
+    en: "{condition} · {when} — not yet seen", es: "{condition} · {when} — aún sin ver", fr: "{condition} · {when} — pas encore vu", de: "{condition} · {when} — noch nicht gesehen", pt: "{condition} · {when} — ainda não visto", it: "{condition} · {when} — non ancora visto", ja: "{condition} · {when} — まだ未確認", zh: "{condition} · {when} — 尚未有人看到", hi: "{condition} · {when} — अभी तक नहीं देखा गया", ar: "{condition} · {when} — لم يُرَ بعد",
+  },
   "hld.yes": {
     en: "yes", es: "sí", fr: "oui", de: "ja", pt: "sim", it: "sì", ja: "はい", zh: "是", hi: "हाँ", ar: "نعم",
   },

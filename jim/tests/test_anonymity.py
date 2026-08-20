@@ -46,7 +46,7 @@ def test_every_emergency_path_still_works_anonymously(client):
     """The point of the tradeoff: anonymity costs a name in a briefing and
     nothing else. Detection, guidance and escalation are untouched."""
     user = enroll(client, display_name="Jordan", anonymous=True,
-                  emergency_name="Ana", emergency_phone="+1 555 0100",
+                  emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True)
     body = client.post(f"/monitor/{user}", json={"blood_oxygen": 85}).json()
     assert body["severity"] == "critical"

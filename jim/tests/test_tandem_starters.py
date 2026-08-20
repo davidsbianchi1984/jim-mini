@@ -91,7 +91,7 @@ def test_crisis_escalation_is_not_bypassed_by_tandem(make_tandem):
     jim = make_tandem()
     jim.post("/specialists/seed")
     jim.post("/specialists/seed/tandem")
-    user = enroll(jim, emergency_name="Pat", emergency_phone="+1-555-0199",
+    user = enroll(jim, emergency_name="Pat", emergency_phone="+1-555-0199", emergency_email="pat@example.com",
                   contact_consent=True)
     body = jim.post(f"/monitor/{user}",
                     json={"note": "I don't want to live anymore"}).json()

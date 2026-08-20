@@ -1681,6 +1681,17 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    'that does not look like an email address': {
+        'es': 'eso no parece una dirección de correo',
+        'fr': "cela ne ressemble pas à une adresse e-mail",
+        'de': 'das sieht nicht wie eine E-Mail-Adresse aus',
+        'pt': 'isso não parece um endereço de e-mail',
+        'it': 'questo non sembra un indirizzo email',
+        'ja': 'メールアドレスの形式ではないようです',
+        'zh': '这看起来不像一个邮箱地址',
+        'hi': 'यह ईमेल पते जैसा नहीं लगता',
+        'ar': 'هذا لا يبدو كعنوان بريد إلكتروني',
+    },
     'no such lookout': {
         'es': 'no existe esa vigilancia',
         'fr': 'aucune surveillance de ce nom',
@@ -3504,6 +3515,9 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
     'url': {'en': 'Page address', 'es': 'Dirección de la página', 'fr': 'Adresse de la page', 'de': 'Adresse der Seite', 'pt': 'Endereço da página', 'it': 'Indirizzo della pagina', 'ja': 'ページのアドレス', 'zh': '页面地址', 'hi': 'पेज का पता', 'ar': 'عنوان الصفحة'},
+    # The far end (jim/farend.py): worded as the Held screen's box asks it.
+    'emergency_email': {'en': "Emergency contact's email", 'es': 'Correo del contacto de emergencia', 'fr': "E-mail du contact d'urgence", 'de': 'E-Mail des Notfallkontakts', 'pt': 'E-mail do contacto de emergência', 'it': "Email del contatto di emergenza", 'ja': '緊急連絡先のメールアドレス', 'zh': '紧急联系人的邮箱', 'hi': 'आपातकालीन संपर्क का ईमेल', 'ar': 'البريد الإلكتروني لجهة اتصال الطوارئ'},
+    'consent': {'en': 'They agreed to be contacted', 'es': 'Aceptó que se le contacte', 'fr': "Ils ont accepté d'être contactés", 'de': 'Sie haben zugestimmt, kontaktiert zu werden', 'pt': 'Aceitou ser contactado', 'it': 'Hanno accettato di essere contattati', 'ja': '連絡を受けることに同意しています', 'zh': '他们同意被联系', 'hi': 'उन्होंने संपर्क किए जाने की सहमति दी', 'ar': 'وافقوا على أن يتم التواصل معهم'},
     'every_hours': {'en': 'Repeats every (hours)', 'es': 'Se repite cada (horas)', 'fr': 'Se répète toutes les (heures)', 'de': 'Wiederholt sich alle (Stunden)', 'pt': 'Repete-se a cada (horas)', 'it': 'Si ripete ogni (ore)', 'ja': '繰り返し間隔（時間）', 'zh': '重复间隔（小时）', 'hi': 'हर (घंटे) में दोहराए', 'ar': 'يتكرر كل (ساعات)'},
     # The work two guardians took on. Worded as the box asks it: this is what
     # keeps the link open after the call, so the label says so.
@@ -3968,6 +3982,46 @@ def schedule_text(key: str, language: str) -> str:
 def schedule_labels(language: str) -> dict[str, str]:
     return {k: (row.get(language) or row['en'])
             for k, row in _SCHEDULE_LABELS.items()}
+
+
+_FAREND_TEXT: dict[str, dict[str, str]] = {
+    'alert_subject': {'en': 'JIM-mini: {name} may need help', 'es': 'JIM-mini: {name} puede necesitar ayuda', 'fr': "JIM-mini : {name} a peut-être besoin d'aide", 'de': 'JIM-mini: {name} braucht möglicherweise Hilfe', 'pt': 'JIM-mini: {name} pode precisar de ajuda', 'it': 'JIM-mini: {name} potrebbe avere bisogno di aiuto', 'ja': 'JIM-mini：{name} さんに助けが必要かもしれません', 'zh': 'JIM-mini：{name} 可能需要帮助', 'hi': 'JIM-mini: {name} को मदद की ज़रूरत हो सकती है', 'ar': 'JIM-mini: قد يحتاج {name} إلى مساعدة'},
+    'alert_body': {
+        'en': 'JIM-mini detected {condition} — {reason}\n\nYou are {name}\'s emergency contact, and the escalation decision was: {tier}. Please check on them now.\n\nWhen you have seen this, press the link below so JIM knows a person is aware:\n{link}',
+        'es': 'JIM-mini detectó {condition} — {reason}\n\nEres el contacto de emergencia de {name}, y la decisión de escalada fue: {tier}. Por favor, ve a ver cómo está ahora.\n\nCuando hayas visto esto, pulsa el enlace para que JIM sepa que una persona está al tanto:\n{link}',
+        'fr': 'JIM-mini a détecté {condition} — {reason}\n\nVous êtes le contact d\'urgence de {name}, et la décision d\'escalade était : {tier}. Merci d\'aller voir comment il ou elle va, maintenant.\n\nQuand vous aurez vu ceci, appuyez sur le lien ci-dessous pour que JIM sache qu\'une personne est au courant :\n{link}',
+        'de': 'JIM-mini hat {condition} erkannt — {reason}\n\nDu bist der Notfallkontakt von {name}, und die Eskalationsentscheidung war: {tier}. Bitte sieh jetzt nach.\n\nWenn du das gesehen hast, drücke den Link, damit JIM weiß, dass ein Mensch Bescheid weiß:\n{link}',
+        'pt': 'O JIM-mini detetou {condition} — {reason}\n\nÉ o contacto de emergência de {name}, e a decisão de escalada foi: {tier}. Por favor, vá ver como está agora.\n\nQuando tiver visto isto, prima a ligação abaixo para que o JIM saiba que uma pessoa está a par:\n{link}',
+        'it': 'JIM-mini ha rilevato {condition} — {reason}\n\nSei il contatto di emergenza di {name}, e la decisione di escalation è stata: {tier}. Per favore, vai a controllare adesso.\n\nQuando avrai visto questo, premi il link qui sotto così JIM sa che una persona ne è al corrente:\n{link}',
+        'ja': 'JIM-mini が {condition} を検知しました — {reason}\n\nあなたは {name} さんの緊急連絡先です。エスカレーションの判断は「{tier}」でした。いますぐ様子を確認してください。\n\n確認したら、下のリンクを押してください。人が把握したことを JIM が記録します：\n{link}',
+        'zh': 'JIM-mini 检测到 {condition} — {reason}\n\n你是 {name} 的紧急联系人，升级决定为：{tier}。请立即去看看他们的情况。\n\n看到此消息后，请点击下面的链接，让 JIM 知道已有人知晓：\n{link}',
+        'hi': 'JIM-mini ने {condition} का पता लगाया — {reason}\n\nआप {name} के आपातकालीन संपर्क हैं, और एस्केलेशन निर्णय था: {tier}। कृपया अभी जाकर उनका हाल देखें।\n\nइसे देख लेने पर नीचे दिया लिंक दबाएँ ताकि JIM जान सके कि कोई व्यक्ति अवगत है:\n{link}',
+        'ar': 'اكتشف JIM-mini {condition} — {reason}\n\nأنت جهة اتصال الطوارئ لـ {name}، وكان قرار التصعيد: {tier}. يرجى الاطمئنان عليه الآن.\n\nعندما ترى هذا، اضغط الرابط أدناه ليعلم JIM أن إنسانًا على دراية:\n{link}'},
+    'refusal': {'en': 'There is no one on the far end of this today — no consented email address is set, so no person was notified.', 'es': 'Hoy no hay nadie al otro extremo — no hay una dirección de correo consentida, así que no se avisó a ninguna persona.', 'fr': "Il n'y a personne à l'autre bout aujourd'hui — aucune adresse e-mail consentie n'est définie, donc aucune personne n'a été prévenue.", 'de': 'Am anderen Ende steht heute niemand — keine eingewilligte E-Mail-Adresse ist hinterlegt, also wurde kein Mensch benachrichtigt.', 'pt': 'Hoje não há ninguém do outro lado — não há um endereço de e-mail consentido, por isso nenhuma pessoa foi avisada.', 'it': "Oggi non c'è nessuno all'altro capo — nessun indirizzo email consentito è impostato, quindi nessuna persona è stata avvisata.", 'ja': '今日はこの先に誰もいません — 同意済みのメールアドレスが設定されていないため、誰にも通知されませんでした。', 'zh': '今天这条线的另一端没有人 — 未设置经同意的邮箱地址，因此没有通知到任何人。', 'hi': 'आज इसके दूसरे छोर पर कोई नहीं है — कोई सहमति-प्राप्त ईमेल पता सेट नहीं है, इसलिए किसी व्यक्ति को सूचित नहीं किया गया।', 'ar': 'لا يوجد أحد على الطرف الآخر اليوم — لا يوجد بريد إلكتروني موافق عليه، لذا لم يُخطر أي شخص.'},
+    'ack_title': {'en': 'Seen, and recorded', 'es': 'Visto y registrado', 'fr': 'Vu, et enregistré', 'de': 'Gesehen und festgehalten', 'pt': 'Visto e registado', 'it': 'Visto e registrato', 'ja': '確認を記録しました', 'zh': '已看到，已记录', 'hi': 'देखा गया, और दर्ज किया गया', 'ar': 'تمت الرؤية والتسجيل'},
+    'ack_body': {'en': 'JIM has recorded that a person has seen this alert. Thank you for standing on the far end.', 'es': 'JIM ha registrado que una persona ha visto esta alerta. Gracias por estar al otro extremo.', 'fr': "JIM a enregistré qu'une personne a vu cette alerte. Merci d'être à l'autre bout.", 'de': 'JIM hat festgehalten, dass ein Mensch diese Warnung gesehen hat. Danke, dass du am anderen Ende stehst.', 'pt': 'O JIM registou que uma pessoa viu este alerta. Obrigado por estar do outro lado.', 'it': 'JIM ha registrato che una persona ha visto questo avviso. Grazie per essere all\'altro capo.', 'ja': '人がこのアラートを確認したことを JIM が記録しました。見守ってくださってありがとうございます。', 'zh': 'JIM 已记录有人看到了此警报。谢谢你守在线的另一端。', 'hi': 'JIM ने दर्ज किया है कि एक व्यक्ति ने यह अलर्ट देख लिया है। दूसरे छोर पर खड़े रहने के लिए धन्यवाद।', 'ar': 'سجل JIM أن إنسانًا رأى هذا التنبيه. شكرًا لوقوفك على الطرف الآخر.'},
+    'ack_already_title': {'en': 'Already recorded', 'es': 'Ya registrado', 'fr': 'Déjà enregistré', 'de': 'Bereits festgehalten', 'pt': 'Já registado', 'it': 'Già registrato', 'ja': '記録済みです', 'zh': '已记录过', 'hi': 'पहले से दर्ज', 'ar': 'مسجل مسبقًا'},
+    'ack_already_body': {'en': 'This alert was acknowledged earlier — nothing more is needed.', 'es': 'Esta alerta ya fue confirmada antes — no hace falta nada más.', 'fr': 'Cette alerte a déjà été confirmée — rien de plus n\'est nécessaire.', 'de': 'Diese Warnung wurde schon früher bestätigt — mehr ist nicht nötig.', 'pt': 'Este alerta já foi confirmado antes — não é preciso mais nada.', 'it': 'Questo avviso era già stato confermato — non serve altro.', 'ja': 'このアラートは先ほど確認済みです — これ以上の操作は不要です。', 'zh': '此警报早前已被确认 — 无需再做任何事。', 'hi': 'यह अलर्ट पहले ही स्वीकृत किया जा चुका है — और कुछ करने की ज़रूरत नहीं।', 'ar': 'تم تأكيد هذا التنبيه سابقًا — لا حاجة إلى المزيد.'},
+    'ack_bad_title': {'en': "That link didn't work", 'es': 'Ese enlace no funcionó', 'fr': "Ce lien n'a pas fonctionné", 'de': 'Dieser Link hat nicht funktioniert', 'pt': 'Essa ligação não funcionou', 'it': 'Quel link non ha funzionato', 'ja': 'このリンクは無効です', 'zh': '该链接无效', 'hi': 'वह लिंक काम नहीं किया', 'ar': 'هذا الرابط لم يعمل'},
+    'ack_bad_body': {'en': 'This acknowledgment link is unknown. If it came from a real JIM alert, ask the person who set JIM up.', 'es': 'Este enlace de confirmación es desconocido. Si vino de una alerta real de JIM, pregunta a quien configuró JIM.', 'fr': "Ce lien de confirmation est inconnu. S'il vient d'une vraie alerte JIM, demandez à la personne qui a configuré JIM.", 'de': 'Dieser Bestätigungslink ist unbekannt. Wenn er aus einer echten JIM-Warnung stammt, frage die Person, die JIM eingerichtet hat.', 'pt': 'Esta ligação de confirmação é desconhecida. Se veio de um alerta real do JIM, pergunte a quem configurou o JIM.', 'it': 'Questo link di conferma è sconosciuto. Se proviene da un vero avviso di JIM, chiedi a chi ha configurato JIM.', 'ja': 'この確認リンクは不明です。本物の JIM アラートからのものであれば、JIM を設定した人に確認してください。', 'zh': '此确认链接无法识别。如果它来自真实的 JIM 警报，请询问设置 JIM 的人。', 'hi': 'यह पुष्टि लिंक अज्ञात है। अगर यह किसी असली JIM अलर्ट से आया है, तो JIM सेट करने वाले व्यक्ति से पूछें।', 'ar': 'رابط التأكيد هذا غير معروف. إن كان من تنبيه JIM حقيقي، فاسأل من قام بإعداد JIM.'},
+    'ping_subject': {'en': "JIM-mini: a monthly note for {name}'s far end", 'es': 'JIM-mini: nota mensual para el otro extremo de {name}', 'fr': "JIM-mini : note mensuelle pour l'autre bout de {name}", 'de': 'JIM-mini: monatliche Notiz an das andere Ende von {name}', 'pt': 'JIM-mini: nota mensal para o outro lado de {name}', 'it': "JIM-mini: nota mensile per l'altro capo di {name}", 'ja': 'JIM-mini：{name} さんの見守り先への月次のお知らせ', 'zh': 'JIM-mini：给 {name} 的守护端的每月便条', 'hi': 'JIM-mini: {name} के दूसरे छोर के लिए मासिक नोट', 'ar': 'JIM-mini: رسالة شهرية إلى الطرف الآخر لـ {name}'},
+    'ping_body': {
+        'en': 'You are the address JIM-mini writes to if {name} needs help. Nothing is wrong and nothing is asked of you: in the last {days} days JIM stood watch and recorded {events} events. This note exists so a dead mailbox is discovered on a calm day, not during an emergency.',
+        'es': 'Tú eres la dirección a la que JIM-mini escribe si {name} necesita ayuda. No pasa nada y no se te pide nada: en los últimos {days} días JIM montó guardia y registró {events} eventos. Esta nota existe para que un buzón muerto se descubra en un día tranquilo, no durante una emergencia.',
+        'fr': "Vous êtes l'adresse à laquelle JIM-mini écrit si {name} a besoin d'aide. Tout va bien et rien ne vous est demandé : ces {days} derniers jours, JIM a monté la garde et enregistré {events} événements. Cette note existe pour qu'une boîte morte soit découverte un jour calme, pas pendant une urgence.",
+        'de': 'Du bist die Adresse, an die JIM-mini schreibt, wenn {name} Hilfe braucht. Nichts ist passiert und nichts wird von dir verlangt: In den letzten {days} Tagen hielt JIM Wache und verzeichnete {events} Ereignisse. Diese Notiz gibt es, damit ein totes Postfach an einem ruhigen Tag entdeckt wird — nicht im Notfall.',
+        'pt': 'É para este endereço que o JIM-mini escreve se {name} precisar de ajuda. Está tudo bem e nada lhe é pedido: nos últimos {days} dias o JIM montou guarda e registou {events} eventos. Esta nota existe para que uma caixa morta seja descoberta num dia calmo, não durante uma emergência.',
+        'it': "Sei l'indirizzo a cui JIM-mini scrive se {name} ha bisogno di aiuto. Va tutto bene e non ti si chiede nulla: negli ultimi {days} giorni JIM ha fatto la guardia e registrato {events} eventi. Questa nota esiste perché una casella morta si scopra in un giorno tranquillo, non durante un'emergenza.",
+        'ja': 'あなたは {name} さんに助けが必要なとき JIM-mini が手紙を送る宛先です。何も起きておらず、お願いもありません。この {days} 日間、JIM は見守りを続け、{events} 件の出来事を記録しました。このお知らせは、使われなくなったメールボックスを緊急時ではなく平穏な日に発見するためのものです。',
+        'zh': '如果 {name} 需要帮助，JIM-mini 会写信到这个地址。现在一切正常，也不需要你做任何事：过去 {days} 天里，JIM 一直在守护，记录了 {events} 个事件。这张便条的意义在于：让失效的邮箱在平静的日子被发现，而不是在紧急关头。',
+        'hi': 'अगर {name} को मदद चाहिए तो JIM-mini इसी पते पर लिखता है। सब ठीक है और आपसे कुछ नहीं माँगा जा रहा: पिछले {days} दिनों में JIM पहरे पर रहा और {events} घटनाएँ दर्ज कीं। यह नोट इसलिए है ताकि एक बंद पड़ा मेलबॉक्स किसी शांत दिन पकड़ में आ जाए, आपातकाल में नहीं।',
+        'ar': 'أنت العنوان الذي يكتب إليه JIM-mini إذا احتاج {name} إلى مساعدة. كل شيء على ما يرام ولا يُطلب منك شيء: خلال آخر {days} يومًا ظل JIM يراقب وسجل {events} حدثًا. هذه الرسالة موجودة كي يُكتشف صندوق بريد ميت في يوم هادئ، لا أثناء طارئ.'},
+}
+
+
+def farend_text(key: str, language: str) -> str:
+    row = _FAREND_TEXT[key]
+    return row.get(language) or row['en']
 
 
 _SHOP_TEXT: dict[str, dict[str, str]] = {

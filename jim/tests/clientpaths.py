@@ -614,6 +614,12 @@ NOT_A_CLIENT_CALL = (
     "/",
     "/terms",
     "/verify-email/click",
+    # The far end's acknowledgment (jim/farend.py). The link lives in the
+    # alert email and opens in whatever browser the emergency contact holds
+    # — a person who has no account here and installs nothing. No client of
+    # this product ever constructs the address; the API mints it into the
+    # letter, the same shape as the verification click above.
+    "/farend/ack/{token}",
     "/medical-id/{token}/qr.svg",
     # Where Google and Apple send the browser back. The console starts the
     # flow at `/auth/oauth/{provider}/start` and claims the session at

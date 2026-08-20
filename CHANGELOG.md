@@ -6,6 +6,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The ladder ends at a person.** `notify_contact` used to be words:
+  the escalation result recorded `notified_emergency_contact: true`
+  whenever a phone number was on file, and nothing ever left the
+  machine — JIM cannot dial a phone. The rung is real now, three ways.
+  A critical detection mails the consented `emergency_email` with the
+  condition, the decision tier, and an acknowledgment link — pressing
+  it is the far end saying *a person has seen this*, and JIM records
+  who was told, when, and when they answered. With no consented
+  address the result says, in the user's own language, that there is
+  no one on the far end of this today — an honest empty room can be
+  fixed; a pretend notification cannot. And once a month the far end
+  gets a short liveness note, so a dead mailbox is discovered on a
+  calm day instead of during an emergency. A crisis that keeps
+  re-detecting rides the standing alert rather than flooding the
+  mailbox, and the address can be added after enrollment through its
+  own door — the rung built first, who stands on it decided second.
+  The console's Held screen carries the card: the address alerts
+  really go to (or the refusal), the last alert with whether a person
+  saw it, and the save button that carries consent in its own label.
+
+      asked     does notify_contact notify a contact
+      mattered  the ladder's whole promise is that it ends at a person
+
 ### Changed
 
 - **The menu says what the product is called.** The assistant's menu

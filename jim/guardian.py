@@ -53,9 +53,10 @@ def enroll(body: dict) -> dict:
         " birthdate, terms_consent,"
         " terms_version, terms_accepted_at,"
         " provider_consent, cloud_contribution, guardian_consent,"
-        " emergency_name, emergency_phone, contact_consent, device_paired,"
+        " emergency_name, emergency_phone, emergency_email,"
+        " contact_consent, device_paired,"
         " resting_heart_rate, goals, known_conditions, devices, created_at)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (
             user_id, display_name, int(anonymous), legal_name,
             body.get("birthdate").isoformat() if body.get("birthdate") else None,
@@ -66,6 +67,7 @@ def enroll(body: dict) -> dict:
             int(body.get("cloud_contribution", False)),
             int(body.get("guardian_consent", False)),
             body.get("emergency_name"), body.get("emergency_phone"),
+            body.get("emergency_email"),
             int(body.get("contact_consent", False)),
             int(body.get("device_paired", False)),
             body.get("resting_heart_rate"), body.get("goals"),
@@ -112,6 +114,26 @@ def set_sensitivity(user_id: str, level: str) -> dict:
     conn.execute("UPDATE users SET sensitivity=? WHERE id=?", (level, user_id))
     conn.commit()
     return {"user_id": user_id, "sensitivity": level}
+
+
+def set_far_end(user_id: str, email: str | None,
+                consent: bool | None = None) -> dict:
+    """Who the ladder writes to (jim/farend.py). Blank clears the address —
+    the escalation result goes back to its honest refusal, not to silence."""
+    email = (email or "").strip() or None
+    if email and ("@" not in email or " " in email):
+        raise ValueError("that does not look like an email address")
+    conn = db.connect()
+    conn.execute("UPDATE users SET emergency_email=? WHERE id=?",
+                 (email, user_id))
+    if consent is not None:
+        conn.execute("UPDATE users SET contact_consent=? WHERE id=?",
+                     (int(consent), user_id))
+    conn.commit()
+    from . import farend
+    row = conn.execute("SELECT * FROM users WHERE id=?",
+                       (user_id,)).fetchone()
+    return farend.status(user_id, dict(row) if row else None)
 
 
 # -- rolling per-metric baselines (EMA) -------------------------------------
@@ -1568,10 +1590,21 @@ def _escalate(user_id, user, detection, decision=None) -> dict:
             known=(user or {}).get("known_conditions") or [],
             contactable=contact is not None,
             crisis="crisis language" in detection.reason)
+    # The far end (jim/farend.py): the rung that actually leaves the machine.
+    # `notified_emergency_contact` used to mean "a contact row exists" — and
+    # nothing was ever sent to anyone, because JIM cannot dial a phone. It is
+    # honest now: True only when a letter left for a person by email (or one
+    # is already standing for this condition), and when no consented address
+    # exists the result says so in the user's language instead of pretending.
+    from . import farend
+    far = farend.notify(user_id, user, detection.condition, detection.reason,
+                        detection.severity,
+                        decision["tier"] if decision else "notify_contact")
     result = {
         "escalated": True, "condition": detection.condition,
         "reason": detection.reason,
-        "notified_emergency_contact": contact is not None,
+        "notified_emergency_contact": far["delivered"],
+        "far_end": far,
         "emergency_contact": contact, "live_support": True,
         "dispatched_alerts": dispatched,
         # Bound robots respond by role: mobile bodies converge on the user,

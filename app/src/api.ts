@@ -2489,6 +2489,10 @@ export const api = {
     req<Row>(`/personality/${uid}`, { method: "PUT", body, token }),
   setSensitivity: (uid: string, body: Body, token: string) =>
     req<Row>(`/sensitivity/${uid}`, { method: "PUT", body, token }),
+  farEnd: (uid: string, token: string) =>
+    req<Row>(`/farend/${uid}`, { token }),
+  setFarEnd: (uid: string, body: Body, token: string) =>
+    req<Row>(`/farend/${uid}`, { method: "PUT", body, token }),
   providerFor: (uid: string, token: string) =>
     req<Row>(`/provider/${uid}`, { token }),
   clearVoice: (token: string) =>

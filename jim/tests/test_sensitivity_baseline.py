@@ -28,7 +28,7 @@ def test_set_sensitivity_endpoint(client):
 
 def test_cautious_mode_reaches_out_early_for_declared_condition(client):
     uid = enroll(client, resting_heart_rate=60, contact_consent=True,
-                 emergency_name="Sam", emergency_phone="+1000",
+                 emergency_name="Sam", emergency_phone="+1000", emergency_email="sam@example.com",
                  known_conditions=["anxiety"])
     client.put(f"/sensitivity/{uid}", json={"level": "cautious"})
     # A guidance-level (not critical) anxiety reading: cautious mode escalates

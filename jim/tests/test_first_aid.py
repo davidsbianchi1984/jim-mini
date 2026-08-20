@@ -8,7 +8,7 @@ from jim.tests.conftest import enroll
 
 def test_collapse_with_absent_pulse_gets_cpr_with_pace_cues(client):
     uid = enroll(client, contact_consent=True, emergency_name="Sam",
-                 emergency_phone="+1000")
+                 emergency_phone="+1000", emergency_email="sam@example.com")
     client.post(f"/devices/{uid}", json={"name": "kitchen_console",
                                          "kind": "stationary"})
     client.post(f"/devices/{uid}", json={"name": "helper_bot",

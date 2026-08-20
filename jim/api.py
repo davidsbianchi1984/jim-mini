@@ -26,7 +26,8 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                oncall,
                mailer,
                circle, contribution, db, money, schedule, shopping,
-               escalation, family, followup, guardian, handoff, i18n, identity,
+               escalation, family, farend, followup, guardian, handoff, i18n,
+               identity,
                landing, life, llm,
                meds, mic, mobile, noticed, notify, oauth, offline, presence,
                problems as problems_mod,
@@ -74,6 +75,7 @@ from .models import (
     TranslateRequest, VerifyEmail,
     VigilArm,
     VoiceSettings, VoiceSpeak, VoiceTranscribe, WaiverSign,
+    FarEndSet,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
     CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark, MealLog,
@@ -778,6 +780,27 @@ def create_app(qrme_client: QRMEClient | None = None,
             title="✓ Verified",
             body="Your account is active. Go back to JIM Guardian — "
                  "it will continue on its own."))
+
+    @app.get("/farend/ack/{token}", response_class=HTMLResponse)
+    def farend_ack(token: str) -> HTMLResponse:
+        """The far end pressed the emailed link: a person has seen the alert,
+        and JIM records exactly that. Spoken in the wearer's language — the
+        contact chose to stand beside them. The token is single-purpose (it
+        can mark one alert seen and read nothing), so this door needs no
+        account."""
+        page = ("<html><body style='font-family:sans-serif;background:#0d0a20;"
+                "color:#e6edf3;display:grid;place-items:center;height:95vh'>"
+                "<div style='text-align:center'><h1>{title}</h1><p>{body}</p>"
+                "</div></body></html>")
+        result = farend.ack(token)
+        if result is None:
+            return HTMLResponse(page.format(
+                title=i18n.farend_text("ack_bad_title", "en"),
+                body=i18n.farend_text("ack_bad_body", "en")), 404)
+        key = "ack_already" if result["already"] else "ack"
+        return HTMLResponse(page.format(
+            title=i18n.farend_text(f"{key}_title", result["lang"]),
+            body=i18n.farend_text(f"{key}_body", result["lang"])))
 
     # ---- speaking and listening -------------------------------------------
 
@@ -1493,6 +1516,9 @@ def create_app(qrme_client: QRMEClient | None = None,
         note = sample.pop("note", None)
         # The calendar's bottom rung rides this sense — see jim/schedule.py.
         schedule.remind_pass(user_id, _money_lang(user_id))
+        # So does the far end's monthly liveness note (jim/farend.py): a dead
+        # mailbox gets discovered on a calm day, not during an emergency.
+        farend.liveness_pass(user_id, _money_lang(user_id))
         return guardian.monitor(user_id, sample, note, qrme=app.state.qrme,
                                 pdi=_vault(user_id))
 
@@ -1983,8 +2009,10 @@ def create_app(qrme_client: QRMEClient | None = None,
         """Ambient background observation: JIM watches an ongoing activity and
         jumps in proactively when a struggle is building — before being asked."""
         _user_or_404(user_id, request)
-        # The calendar's bottom rung rides this sense too.
+        # The calendar's bottom rung rides this sense too, and the far end's
+        # monthly liveness note with it.
         schedule.remind_pass(user_id, _money_lang(user_id))
+        farend.liveness_pass(user_id, _money_lang(user_id))
         return guardian.observe_activity(
             user_id, body.activity, body.signals, body.note,
             qrme=app.state.qrme, pdi=_vault(user_id))
@@ -2434,6 +2462,27 @@ def create_app(qrme_client: QRMEClient | None = None,
         user = _user_or_404(user_id, request)
         level = (user or {}).get("sensitivity") or "balanced"
         return escalation.policy(level)
+
+    @app.put("/farend/{user_id}")
+    def set_far_end(user_id: str, body: FarEndSet, request: Request) -> dict:
+        """Who stands on the far end of the ladder. Set after enrollment so
+        the address does not have to be known on day one — the reviewer's
+        sequencing, in a route: build the rung first, then ask who stands on
+        it. Clearing the email returns the escalation result to its honest
+        refusal rather than to silence."""
+        _user_or_404(user_id, request)
+        try:
+            return guardian.set_far_end(user_id, body.email, body.consent)
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+
+    @app.get("/farend/{user_id}")
+    def far_end_status(user_id: str, request: Request) -> dict:
+        """The far end as the console shows it: configured or the refusal,
+        and the last alert with whether a person acknowledged it — never
+        the token."""
+        user = _user_or_404(user_id, request)
+        return farend.status(user_id, user)
 
     @app.get("/baseline/{user_id}")
     def get_baseline(user_id: str, request: Request) -> list[dict]:

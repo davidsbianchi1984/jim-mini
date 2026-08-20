@@ -62,7 +62,7 @@ def test_monitor_delivers_local_guidance(client):
 
 
 def test_critical_escalates_to_emergency_contact(client):
-    user = enroll(client, emergency_name="Pat", emergency_phone="+1-555-0199",
+    user = enroll(client, emergency_name="Pat", emergency_phone="+1-555-0199", emergency_email="pat@example.com",
                   contact_consent=True)
     body = client.post(f"/monitor/{user}", json={"blood_oxygen": 84}).json()
     assert body["severity"] == "critical"

@@ -5,7 +5,7 @@ from jim.tests.conftest import enroll
 
 
 def test_blood_pressure_and_hrv_rules(client):
-    user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100",
+    user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True)
     crisis = client.post(f"/monitor/{user}",
                          json={"bp_systolic": 185, "bp_diastolic": 122}).json()
@@ -23,7 +23,7 @@ def test_blood_pressure_and_hrv_rules(client):
 
 
 def test_journal_runs_crisis_pipeline(client):
-    user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100",
+    user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True)
     calm = client.post(f"/journal/{user}",
                        json={"text": "Long walk today; felt lighter."}).json()

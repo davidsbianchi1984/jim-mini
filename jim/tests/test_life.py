@@ -126,7 +126,7 @@ def test_a_stressless_checkin_stays_exactly_what_it_was(client):
 
 
 def test_crisis_note_in_checkin_escalates(client):
-    user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100",
+    user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True)
     body = client.post(f"/checkin/{user}", json={
         "mood": 1, "note": "I don't want to live"}).json()

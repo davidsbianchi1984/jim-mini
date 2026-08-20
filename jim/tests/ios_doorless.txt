@@ -51,3 +51,16 @@ GET /users/{user_id}/widgets/{widget_id}
 POST /users/{user_id}/widgets
 POST /users/{user_id}/widgets/{widget_id}/run
 PUT /users/{user_id}/widgets/{widget_id}
+#
+# ## 0.92.0: the far end landed on the console first
+#
+# `jim/farend.py` — the escalation ladder's `notify_contact` rung became a
+# real letter to a consented address, with an acknowledgment link and a
+# monthly liveness note. The console's Held screen gained the card that
+# sets the address and shows whether a person saw the last alert; these
+# two rows are that same card not yet carried to this shell. The ack link
+# itself needs no row anywhere: it opens in the emergency contact's own
+# browser — a person with no account who installs nothing.
+
+GET /farend/{user_id}
+PUT /farend/{user_id}

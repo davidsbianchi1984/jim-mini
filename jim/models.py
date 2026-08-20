@@ -109,6 +109,10 @@ class Enroll(BaseModel):
     guardian_email: str | None = None
     emergency_name: str | None = None
     emergency_phone: str | None = None
+    # The address JIM itself can reach when the ladder says notify_contact —
+    # the phone above is for responders to dial; this is the product's own
+    # rung (jim/farend.py). Consent below covers both.
+    emergency_email: str | None = None
     contact_consent: bool = False
     language: str | None = None             # chosen at the setup gateway
     device_paired: bool = False
@@ -455,6 +459,16 @@ class PermitSet(BaseModel):
 
 class SensitivitySet(BaseModel):
     level: str                              # cautious | balanced | assertive
+
+
+class FarEndSet(BaseModel):
+    # The address a *person* reads when the ladder says notify_contact.
+    # None (or blank) clears it — and the escalation result goes back to
+    # saying, honestly, that nobody stands on the far end (jim/farend.py).
+    email: str | None = None
+    # Optionally settles contact consent in the same motion — enrollment owns
+    # it otherwise, and without it the address is stored but never written to.
+    consent: bool | None = None
 
 
 class ModelChoice(BaseModel):

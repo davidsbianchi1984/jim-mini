@@ -47,6 +47,8 @@ export function Held() {
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState("");
   const [key, setKey] = useState("journal");
+  const [farend, setFarend] = useState<Row | null>(null);
+  const [farendEmail, setFarendEmail] = useState("");
 
   const uid = session.userId;
   const token = session.userToken;
@@ -60,6 +62,7 @@ export function Held() {
     api.sources(uid, token).then(setSources).catch(fail);
     api.cloudStatus().then(setCloud).catch(fail);
     api.connectorsCatalog().then(setConnectors).catch(fail);
+    api.farEnd(uid, token).then(setFarend).catch(fail);
     // Both of these answer with a refusal on an ordinary deployment — no
     // vault configured, no provider consent given. The refusal is the
     // information, so it is caught and shown rather than thrown away.
@@ -216,6 +219,48 @@ export function Held() {
                   onClick={() => run(() =>
                     api.cancelMembership(uid!, token!))}>{tr("hld.plan.cancel", lang)}</button>
         </div>
+      </div>
+
+      {/* The far end of the escalation ladder (jim/farend.py). The status
+          line is the API's own sentence: the address alerts really go to,
+          or the refusal that nobody stands there today — shown rather than
+          smoothed over, because an honest empty room can be fixed. Saving
+          carries consent in the same motion; the button's label says so. */}
+      <div className="card">
+        <h3>{tr("hld.farend", lang)}</h3>
+        <p className="muted small">
+          {farend?.configured
+            ? tr("hld.farend.set", lang).replace("{address}",
+                String(farend.address))
+            : String(farend?.note ?? "")}
+        </p>
+        {farend?.last_alert != null && (
+          <p className="muted small">
+            {((farend.last_alert as Row).acked_at != null
+                ? tr("hld.farend.acked", lang)
+                : tr("hld.farend.unacked", lang))
+              .replace("{condition}",
+                String((farend.last_alert as Row).condition))
+              .replace("{when}", String((farend.last_alert as Row).sent_at)
+                .slice(0, 16).replace("T", " "))}
+          </p>
+        )}
+        <div className="row">
+          <input value={farendEmail}
+                 placeholder={tr("hld.farend.email.ph", lang)}
+                 onChange={(e) => setFarendEmail(e.target.value)} />
+          <button disabled={busy || !farendEmail.trim()}
+                  onClick={() => run(async () => {
+                    setFarend(await api.setFarEnd(uid!,
+                      { email: farendEmail.trim(), consent: true }, token!));
+                  })}>{tr("hld.farend.save", lang)}</button>
+          <button disabled={busy}
+                  onClick={() => run(async () => {
+                    setFarend(await api.setFarEnd(
+                      uid!, { email: null }, token!));
+                  })}>{tr("hld.farend.clear", lang)}</button>
+        </div>
+        <p className="muted small">{tr("hld.farend.pitch", lang)}</p>
       </div>
 
       <div className="card">

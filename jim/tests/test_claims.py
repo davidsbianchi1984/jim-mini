@@ -31,7 +31,7 @@ def test_declare_condition_after_enrollment(client):
 
 
 def test_fall_triggers_first_aid_with_references(client):
-    user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100",
+    user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True, devices=["smart_watch", "phone"])
     r = client.post(f"/monitor/{user}", json={"movement": "fall"}).json()
     assert r["condition"] == "physical_injury"

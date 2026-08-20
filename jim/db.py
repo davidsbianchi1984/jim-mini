@@ -34,6 +34,11 @@ CREATE TABLE IF NOT EXISTS users (
     guardian_consent   INTEGER NOT NULL DEFAULT 0,
     emergency_name     TEXT,
     emergency_phone    TEXT,
+    -- The far end of the escalation ladder: an address a *person* reads.
+    -- The phone above is what a first responder dials; this is what JIM
+    -- itself can actually reach (jim/farend.py). Without it, notify_contact
+    -- is words.
+    emergency_email    TEXT,
     contact_consent    INTEGER NOT NULL DEFAULT 0,
     device_paired      INTEGER NOT NULL DEFAULT 0,
     resting_heart_rate INTEGER,
@@ -331,6 +336,22 @@ CREATE TABLE IF NOT EXISTS medical_cards (
     user_id    TEXT PRIMARY KEY REFERENCES users(id),
     token_hash TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL
+);
+
+-- One row per alert actually mailed to the far end (jim/farend.py), and the
+-- acknowledgment when the person on that end clicked "seen". The token is a
+-- single-purpose capability that can only mark this row acknowledged — it
+-- reads nothing, so it is stored as given and dies with the row.
+CREATE TABLE IF NOT EXISTS farend_alerts (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL,
+    condition   TEXT NOT NULL,
+    severity    TEXT NOT NULL,
+    tier        TEXT NOT NULL,
+    sent_to     TEXT NOT NULL,
+    token       TEXT NOT NULL UNIQUE,
+    sent_at     TEXT NOT NULL,
+    acked_at    TEXT
 );
 
 CREATE TABLE IF NOT EXISTS specialists (
@@ -1616,6 +1637,11 @@ _NEW_COLUMNS = [
     # back to a call, and there is deliberately no column anywhere holding
     # what was said on it.
     ("appointments", "from_call_id", "TEXT"),
+    # The ladder ends at a person: the address JIM can write to when the
+    # escalation tree says notify_contact, and the last time the monthly
+    # liveness note proved that mailbox is a real one (jim/farend.py).
+    ("users", "emergency_email", "TEXT"),
+    ("users", "farend_pinged_at", "TEXT"),
 ]
 
 
