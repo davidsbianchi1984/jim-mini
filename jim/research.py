@@ -15,12 +15,22 @@ private data (PHI) out with it.
 Findings come back as general knowledge and fold into the user's guidance
 context as a ``knowledge`` note; the local model then answers using them plus the
 private context that never left.
+
+The row also says **who answered**. ``answered_by`` is the excursion's
+provenance fingerprint: the provider that actually wrote the findings — a
+registry name when that model spoke, ``vault`` when the resident did,
+``stub`` when a degrade or a keyless machine left the words to the local
+deterministic provider. It is read from the provider that generated, the
+same duck-typed record ``llm.generate_for_user`` trusts, never from the
+choice that was asked for — the letter's rule, applied to the study: the
+name on the record is whoever wrote the words.
 """
 
 from __future__ import annotations
 
 import os
 import re
+from contextvars import ContextVar
 
 from . import db, llm
 
@@ -37,6 +47,15 @@ _RESEARCH_SYSTEM = (
 
 def _offline() -> bool:
     return os.environ.get("JIM_OFFLINE", "").strip().lower() in _TRUTHY
+
+
+#: Who actually wrote the last gather on this request. Request-scoped like
+#: the sibling product's `llm` record, because the provider is built and
+#: discarded inside the gather — there is no instance for `excursion` to
+#: interrogate afterwards, and a module global would let two concurrent
+#: studies describe each other's findings.
+_GATHERED_BY: ContextVar[str | None] = ContextVar(
+    "jim_research_gathered_by", default=None)
 
 
 def _private_terms(user_id: str) -> list[str]:
@@ -68,7 +87,16 @@ def would_leave(cloud) -> bool:
 
 def gather(brief: str, cloud=None) -> str:
     provider = llm.get_provider(None if _offline() else cloud)
-    return provider.generate(_RESEARCH_SYSTEM, brief)
+    findings = provider.generate(_RESEARCH_SYSTEM, brief)
+    # Who actually answered, duck-typed the way `generate_for_user` reads
+    # it: the fallback and cloud wrappers carry `answered_by`, the bare
+    # stub is itself, and anything else stays unrecorded rather than
+    # guessed.
+    who = getattr(provider, "answered_by", None)
+    if who is None and isinstance(provider, llm.StubProvider):
+        who = "stub"
+    _GATHERED_BY.set(who)
+    return findings
 
 
 def gather_inside(brief: str, pdi=None) -> str:
@@ -85,7 +113,11 @@ def gather_inside(brief: str, pdi=None) -> str:
         except Exception:  # noqa: BLE001
             out = None
         if out and (out.get("text") or "").strip():
+            _GATHERED_BY.set("vault")
             return out["text"].strip()
+    # The fall to the local provider is recorded as itself — an older
+    # tandem's excursion must not wear the vault's name.
+    _GATHERED_BY.set("stub")
     return llm.get_provider(None).generate(_RESEARCH_SYSTEM, brief)
 
 
@@ -110,7 +142,8 @@ def excursion(user_id: str, topic: str, question: str = "",
 
     Returns the excursion id. The row is the audit trail: ``brief`` is
     precisely what could have gone out, ``redactions`` counts what was taken
-    out of it, and ``left_host`` says whether anything actually went.
+    out of it, ``left_host`` says whether anything actually went — and
+    ``answered_by``, who actually wrote what came back.
     """
     brief, redactions = sanitize(user_id, f"{topic}\n{question}".strip(),
                                  private)
@@ -120,19 +153,29 @@ def excursion(user_id: str, topic: str, question: str = "",
     # — the choice they made for the coach was a choice about where
     # their words are made, and the study path is not entitled to a
     # different answer.
-    if llm.resolve_choice(llm.get_choice(user_id)) == "vault":
-        left_host = False
-        findings = gather_inside(brief, pdi)
-    else:
-        left_host = would_leave(cloud)
-        findings = gather(brief, cloud)
+    # Who actually wrote the findings, recorded beside what could have
+    # left. Cleared before the gather so an earlier study on this request
+    # cannot describe this one, read after it, and put back the way it
+    # was found.
+    token = _GATHERED_BY.set(None)
+    try:
+        if llm.resolve_choice(llm.get_choice(user_id)) == "vault":
+            left_host = False
+            findings = gather_inside(brief, pdi)
+        else:
+            left_host = would_leave(cloud)
+            findings = gather(brief, cloud)
+        answered = _GATHERED_BY.get()
+    finally:
+        _GATHERED_BY.reset(token)
     cid = db.new_id("exc")
     conn = db.connect()
     conn.execute(
         "INSERT INTO excursions (id, user_id, topic, brief, redactions,"
-        " left_host, findings, learned, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+        " left_host, findings, learned, answered_by, created_at)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?)",
         (cid, user_id, topic, brief, redactions, int(left_host), findings,
-         1 if learn else 0, db.utcnow()))
+         1 if learn else 0, answered, db.utcnow()))
     if learn:
         conn.execute(
             "UPDATE gaps SET filled=1 WHERE user_id=?"

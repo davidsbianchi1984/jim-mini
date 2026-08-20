@@ -2658,7 +2658,10 @@ def create_app(qrme_client: QRMEClient | None = None,
         return {"id": row["id"], "user_id": row["user_id"], "topic": row["topic"],
                 "brief": row["brief"], "redactions": row["redactions"],
                 "left_host": bool(row["left_host"]), "findings": row["findings"],
-                "learned": bool(row["learned"])}
+                "learned": bool(row["learned"]),
+                # Who actually wrote the findings (jim/research.py's
+                # provenance record). None on rows that predate the column.
+                "answered_by": row["answered_by"]}
 
     @app.post("/excursions/{user_id}", status_code=201)
     def start_excursion(user_id: str, body: ExcursionStart, request: Request) -> dict:

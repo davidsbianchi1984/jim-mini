@@ -526,6 +526,7 @@ CREATE TABLE IF NOT EXISTS excursions (
     left_host    INTEGER NOT NULL DEFAULT 0,
     findings     TEXT,
     learned      INTEGER NOT NULL DEFAULT 0,
+    answered_by  TEXT,                 -- who actually wrote the findings
     created_at   TEXT NOT NULL
 );
 
@@ -1658,6 +1659,11 @@ _NEW_COLUMNS = [
     ("letters", "redactions", "INTEGER NOT NULL DEFAULT 0"),
     ("letters", "built_at", "TEXT"),
     ("users", "forgot_at", "TEXT"),
+    # The study says who answered (jim/research.py): the provider that
+    # actually wrote an excursion's findings, recorded beside what could
+    # have left. NULL on rows that predate the record — absence stays
+    # absence, never a guess.
+    ("excursions", "answered_by", "TEXT"),
 ]
 
 
