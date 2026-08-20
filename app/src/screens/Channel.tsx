@@ -31,6 +31,7 @@ export function Channel() {
   const token = session.userToken;
 
   const [devices, setDevices] = useState<DeviceRow[]>([]);
+  const [devDetail, setDevDetail] = useState<string | null>(null);
   const [types, setTypes] = useState<MicTypes | null>(null);
   const [gains, setGains] = useState<MicGains | null>(null);
   const [mic, setMic] = useState<MicState | null>(null);
@@ -457,19 +458,38 @@ export function Channel() {
 
       <h3>{tr("ch.devices", visitorLang())}</h3>
       <p className="muted">{tr("ch.devices.lead", visitorLang())}</p>
-      {devices.map((d) => (
-        <div key={d.id} className="card">
-          <div className="row">
-            <strong>{d.name}</strong>
-            <span className="muted">{d.kind}</span>
-            {d.transport && <span className="muted">{d.transport}</span>}
-            {d.has_llm && <span className="pill">{tr("ch.dev.model", visitorLang())}</span>}
-            {d.paired && (
-              <span className="pill">{tr("dev.paired", visitorLang())}</span>
+      {/* The shape the phone's own Bluetooth page taught everybody: a
+          "My devices" group of rows — name, the status word on the right,
+          an ⓘ that opens the detail — and "Other devices" underneath for
+          the scan and the manual add. A field report held the two screens
+          side by side and asked why this one was a pile of cards. */}
+      <h4>{tr("dev.my", visitorLang())}</h4>
+      {devices.length > 0 && <div className="dev-list">
+        {devices.map((d) => (
+          <div key={d.id}>
+            <div className="dev-row">
+              <strong style={{ flex: 1 }}>{d.name}</strong>
+              <span className={d.paired ? "" : "muted"}>
+                {d.paired ? tr("dev.connected", visitorLang())
+                          : tr("dev.notconn", visitorLang())}
+              </span>
+              <button className="chip" aria-label={tr("dev.details", visitorLang())}
+                      aria-expanded={devDetail === d.id}
+                      onClick={() => setDevDetail(
+                        devDetail === d.id ? null : d.id)}>ⓘ</button>
+            </div>
+            {devDetail === d.id && (
+              <p className="muted small">
+                {tr(`dev.kind.${d.kind}`, visitorLang())}
+                {d.transport && <> · {d.transport}</>}
+                {d.has_llm && <> · {tr("ch.dev.model", visitorLang())}</>}
+                {d.paired && <> · {tr("dev.paired", visitorLang())}</>}
+              </p>
             )}
           </div>
-        </div>
-      ))}
+        ))}
+      </div>}
+      <h4>{tr("dev.other", visitorLang())}</h4>
       <div className="row">
         <input value={deviceName} placeholder={tr("ch.dev.name", visitorLang())}
           onChange={(e) => setDeviceName(e.target.value)} />

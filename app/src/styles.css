@@ -687,3 +687,10 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   padding: 5px 0; font-variant-numeric: tabular-nums; }
 .w-grid-cell.on { background: var(--brand); border-color: var(--brand);
   color: #06240f; }
+
+/* The settings-page device list: a rounded group of hairline-separated
+   rows, the shape the phone's own Bluetooth screen taught everybody. */
+.dev-list { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 6px 0 10px; }
+.dev-list > div + div { border-top: 1px solid var(--line); }
+.dev-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.dev-list p { margin: 0; padding: 0 12px 10px; }

@@ -423,6 +423,32 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     pt: "emparelhado", it: "associato", ja: "ペアリング済み", zh: "已配对",
     hi: "युग्मित", ar: "مقترن",
   },
+  "dev.my": {
+    en: "My devices", es: "Mis dispositivos", fr: "Mes appareils",
+    de: "Meine Geräte", pt: "Os meus dispositivos", it: "I miei dispositivi",
+    ja: "自分のデバイス", zh: "我的设备", hi: "मेरे डिवाइस", ar: "أجهزتي",
+  },
+  "dev.other": {
+    en: "Other devices", es: "Otros dispositivos", fr: "Autres appareils",
+    de: "Andere Geräte", pt: "Outros dispositivos", it: "Altri dispositivi",
+    ja: "その他のデバイス", zh: "其他设备", hi: "अन्य डिवाइस",
+    ar: "أجهزة أخرى",
+  },
+  "dev.connected": {
+    en: "Connected", es: "Conectado", fr: "Connecté", de: "Verbunden",
+    pt: "Conectado", it: "Connesso", ja: "接続済み", zh: "已连接",
+    hi: "कनेक्टेड", ar: "متصل",
+  },
+  "dev.notconn": {
+    en: "Not connected", es: "No conectado", fr: "Non connecté",
+    de: "Nicht verbunden", pt: "Não conectado", it: "Non connesso",
+    ja: "未接続", zh: "未连接", hi: "कनेक्ट नहीं", ar: "غير متصل",
+  },
+  "dev.details": {
+    en: "Details", es: "Detalles", fr: "Détails", de: "Details",
+    pt: "Detalhes", it: "Dettagli", ja: "詳細", zh: "详细信息",
+    hi: "विवरण", ar: "التفاصيل",
+  },
   "dev.kind.wearable": {
     en: "wearable", es: "vestible", fr: "portable", de: "Wearable",
     pt: "vestível", it: "indossabile", ja: "ウェアラブル", zh: "穿戴设备",

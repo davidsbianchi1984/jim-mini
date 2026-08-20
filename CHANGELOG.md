@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Connecting a device reads like the phone's own Bluetooth page.** A
+  field report held the channel screen next to the phone's Bluetooth
+  settings and asked why this one was a pile of cards. The device block
+  is the settings shape now: a **My devices** group — rounded list,
+  hairline separators, the device's name, the status word on the right,
+  an ⓘ that opens the detail line (kind, transport, on-device model,
+  paired) — and **Other devices** underneath holding the manual add and
+  the Bluetooth scan. Same rows, ten languages.
+
+      asked     can a person find their device
+      mattered  a screen shaped like the one in their pocket needs no manual
+
 ### Fixed
 
 - **The front door answers, and the mic listens there.** Typing
