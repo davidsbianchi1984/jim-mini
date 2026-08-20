@@ -243,7 +243,17 @@ def _activate(account) -> dict:
     if payload.get("language") in i18n.SUPPORTED:
         i18n.set_language(user["id"], payload["language"])
         user["language"] = payload["language"]
-    tiers.subscribe(user["id"], payload.get("plan") or tiers.DEFAULT_PLAN)
+    # A parked plan the catalogue does not know falls to the default rather
+    # than raising: /signup validates plans now, but payloads parked before
+    # it did — and the OAuth door's free-form enroll dict — still activate
+    # here, and a raise at this line strands a just-created user with no
+    # membership (every capability gate then reads "visitor"). Activation
+    # is a click on an emailed link; there is nobody standing here to hand
+    # a 422 to.
+    plan = payload.get("plan")
+    if plan not in tiers.PLANS or plan == "visitor":
+        plan = tiers.DEFAULT_PLAN
+    tiers.subscribe(user["id"], plan)
     user["membership"] = tiers.membership(user["id"])
     conn.execute(
         "UPDATE accounts SET user_id=?, verified_at=?, pending_profile=NULL"

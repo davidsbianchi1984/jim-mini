@@ -303,7 +303,11 @@ export function Held() {
           </div>
         ))}
         <div className="row">
-          {["calendar", "mail", "photos", "messages"].map((s) => (
+          {/* Quick allows. Only names the wire accepts (models.Source):
+              "mail" and "photos" sat here for a while and every press was
+              a 422 — a button that always refuses is a broken promise with
+              a label. A standing test now holds this list to the enum. */}
+          {["calendar", "messages", "contacts", "location"].map((s) => (
             <button key={s} disabled={busy}
                     onClick={() => run(() => api.setSources(
                       uid!, { source: s, consented: true }, token!))}>

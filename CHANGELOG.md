@@ -8,6 +8,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The coach knows its own product.** Asked to "plant a quarter-hour
+  lookout", the coach gave a graceful shrug: the earlier honesty line
+  told it what an engaged session can do, but the prompt carried no map
+  of JIM's own doors, so door-shaped requests were answered from what
+  assistants generally cannot do — with the Watched pages card two
+  scrolls below the chat. The coach context now carries a short
+  deterministic feature map (watched pages, check-ins, the weekly
+  letter, the permit switches, the Safety screen), each door named with
+  the screen it lives on and the instruction to route by name instead
+  of declining. The safety line routes to the screen and still puts
+  immediate help first.
+
+      asked     can the coach do this
+      mattered  can the product, and where
+
 - **The study says who answered.** The excursion row was the audit
   trail for what could have left — the sanitized brief, the redaction
   count, `left_host` — but not for who wrote what came back: a study
@@ -24,6 +39,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
       asked     which model was this study sent to
       mattered  which model actually wrote these findings
+
+### Fixed
+
+- **The held screen's buttons match the wire, and the doors exist.**
+  Three console finds from one walk of the app. The quick-allow row
+  sent "mail" and "photos" — names the `Source` enum rejects, so every
+  press was a 422; the buttons now offer only sources the wire accepts,
+  and a standing test holds the list to the enum. The permits screen
+  rendered under its tab and appeared in no menu — reachable only
+  through the assistant's chip rail; it has its own sidebar entry now,
+  and two guards hold both directions from here on: every rendered tab
+  has a door, every door opens a rendered tab. And enrollment could
+  refuse *after* creating the user and *before* creating the
+  membership — an unknown language or plan answered 4xx with the user
+  already on disk and `tiers.subscribe` never reached, an account every
+  capability gate then read as "visitor". Everything that can refuse is
+  checked before the user exists, `/signup` validates the plan while
+  somebody is there to correct it, and activation — a click on an
+  emailed link, nobody standing there to hand a 422 to — falls back to
+  the default plan for a bad parked payload instead of stranding the
+  account planless.
+
+      asked     does the button do what its label says
+      mattered  does every promise the shell makes have a door behind it
 
 ## [0.93.0] - 2026-08-20
 

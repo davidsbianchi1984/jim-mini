@@ -2255,6 +2255,20 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "चैनल और कैमरा",
     ar: "القناة والكاميرا",
   },
+  // The menu label matches the screen's own title (`permits.title`) so the
+  // door and the room say the same thing.
+  "nav.permits": {
+    en: "What you have let it change",
+    es: "Lo que le has dejado cambiar",
+    fr: "Ce que vous l'avez laissé changer",
+    de: "Was Sie es ändern lassen",
+    pt: "O que lhe permitiu alterar",
+    it: "Cosa gli hai lasciato cambiare",
+    ja: "変更を許していること",
+    zh: "你允许它改动的部分",
+    hi: "आपने इसे क्या बदलने दिया है",
+    ar: "ما سمحتَ له بتغييره",
+  },
   "nav.held": {
     en: "What's held about you",
     es: "Qué se guarda sobre ti",

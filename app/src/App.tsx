@@ -80,6 +80,11 @@ const NAV: { id: Tab; icon: ReactNode }[] = [
   { id: "presence", icon: "◍" },
   { id: "feed", icon: "▶" },
   { id: "channel", icon: "🎙" },
+  // The permit switches had no door of their own — the screen existed,
+  // rendered under `tab === "permits"`, and was reachable only through the
+  // assistant's chip rail. A screen about what the assistant may change
+  // must not be a screen only the assistant can open.
+  { id: "permits", icon: "🛂" },
   { id: "held", icon: "🗄" },
   { id: "access", icon: "♿" },
   { id: "settings", icon: "🛡" },

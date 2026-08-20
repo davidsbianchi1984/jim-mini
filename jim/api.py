@@ -692,15 +692,29 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(403, "consent to terms of use is required to enroll")
         if body.birthdate and _age(body.birthdate) < 18 and not body.guardian_consent:
             raise HTTPException(403, "minors require parent/guardian consent")
+        # Everything that can refuse is checked before the user exists. The
+        # language check used to sit *after* `guardian.enroll`, and an
+        # unknown plan was not checked at all: either refusal answered 4xx
+        # with the user already created and `tiers.subscribe` never reached —
+        # an account that exists and has no membership, which every
+        # capability gate then reads as "visitor". A refusal must leave
+        # nothing behind.
+        if body.language and body.language not in i18n.SUPPORTED:
+            raise HTTPException(
+                422,
+                i18n.fill(i18n.MUST_BE_ONE_OF, field="language",
+                          choices=", ".join(i18n.SUPPORTED)))
+        if body.plan and (body.plan not in tiers.PLANS
+                          or body.plan == "visitor"):
+            raise HTTPException(
+                422,
+                i18n.fill(i18n.MUST_BE_ONE_OF, field="plan",
+                          choices=", ".join(p for p in tiers.PLANS
+                                            if p != "visitor")))
         user = guardian.enroll(body.model_dump(exclude={"language"}))
         # Language chosen at the setup gateway applies from the first
         # response onward.
         if body.language:
-            if body.language not in i18n.SUPPORTED:
-                raise HTTPException(
-                    422,
-                    i18n.fill(i18n.MUST_BE_ONE_OF, field="language",
-                              choices=", ".join(i18n.SUPPORTED)))
             i18n.set_language(user["id"], body.language)
             user["language"] = body.language
         # Signing up is where a membership starts. Basic unless a plan is
@@ -742,6 +756,17 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(
                 422, i18n.fill(i18n.MUST_BE_ONE_OF, field="language",
                               choices=", ".join(i18n.SUPPORTED)))
+        # Checked now, while the person is here to correct it — an unknown
+        # plan parked in the pending profile used to surface only at
+        # /verify-email, *after* the user row existed and before the
+        # membership did, stranding the account planless.
+        if body.plan and (body.plan not in tiers.PLANS
+                          or body.plan == "visitor"):
+            raise HTTPException(
+                422,
+                i18n.fill(i18n.MUST_BE_ONE_OF, field="plan",
+                          choices=", ".join(p for p in tiers.PLANS
+                                            if p != "visitor")))
         try:
             return accounts.signup(
                 body.email, body.password,
