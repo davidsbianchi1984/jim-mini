@@ -255,6 +255,19 @@ TOOLS: tuple[dict, ...] = (
      "undo": {"kind": "replace",
               "before": ("GET", "/model/{user_id}"),
               "fields": ("provider",)}},
+    # A field report asked an engaged session for "black and white" and the
+    # session had nothing to reach the look with — it refused a tool it does
+    # not have and could only promise to keep the wish in mind. Cosmetic,
+    # this person's own, and reversible: exactly the kind of change an
+    # assistant should always have a real hand for.
+    {"name": "set_appearance", "acts": True,
+     "route": ("PUT", "/appearance/{user_id}"),
+     "says": "change how the app looks — standard, midnight (black "
+             "background, white text), or paper (white background, black "
+             "text); photos and tiles untouched",
+     "undo": {"kind": "replace",
+              "before": ("GET", "/appearance/{user_id}"),
+              "fields": ("theme",)}},
     {"name": "set_band", "acts": True,
      "route": ("PUT", "/bands/{user_id}/{metric}"),
      "says": "adjust one of your personal bands",
@@ -326,6 +339,17 @@ TOOLS: tuple[dict, ...] = (
      "route": ("POST", "/liaisons/{user_id}/{link_id}/said"),
      "says": "say something about you to somebody else's guardian",
      "irreversible": "engaged.cannot_unsay"},
+    # The excursion a person asks for in the conversation, as opposed to the
+    # unattended one below: "go study strength training for me" is its own
+    # consent, so this stands opened where its sibling needs its own yes.
+    # Same wire as the coach screen's Study button — a general topic leaves,
+    # never the person, and what comes back is kept where the coach reads it.
+    {"name": "study", "acts": True,
+     "route": ("POST", "/coach/{user_id}/study"),
+     "says": "go on a knowledge excursion you ask for — study a topic in "
+             "one of the coach's areas and keep what it learns for the "
+             "coach and the monitors",
+     "irreversible": "engaged.cannot_unsay"},
     {"name": "study_unattended", "acts": True,
      "route": ("POST", "/errands/{user_id}"),
      "says": "go and study what the coach could not answer, on its own",
@@ -370,9 +394,15 @@ wrote — ask rather than guess.
 Some of what you can change is settings, and that is deliberate: the menus
 are hard to find your way around and saying it out loud should work. "Speak
 through my earbuds instead of the speaker", "answer me in Spanish", "stop
-reading my calendar", "turn messaging off" are all things you can simply do.
-Do them, say what you did, and do not send somebody to a screen for something
-you were given a tool for.
+reading my calendar", "turn messaging off", "make it black and white" are
+all things you can simply do. Do them, say what you did, and do not send
+somebody to a screen for something you were given a tool for.
+
+You can also be sent out for knowledge. "Go study strength training for
+me", "look into managing money stress" run an excursion on that topic in
+the matching coach area — mental or physical health, finance, career,
+relationships, nutrition — and what comes back is kept where the coach and
+the monitors read it. The topic leaves; the person never does.
 
 Some groups of switches need that person's permission before you may touch
 them, and you will be told `engaged.not_permitted` if you reach for one they

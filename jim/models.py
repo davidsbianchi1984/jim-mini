@@ -524,6 +524,10 @@ class LanguageChoice(BaseModel):
     mode: str = "pre"               # pre (deliver translated) | on_demand
 
 
+class AppearanceChoice(BaseModel):
+    theme: str                      # jim.appearance.THEMES key
+
+
 class TranslateRequest(BaseModel):
     text: str                       # anything the user ran across
     to: str | None = None           # target language; None -> user's choice

@@ -922,6 +922,14 @@ CREATE TABLE IF NOT EXISTS presence_surface (
     created_at TEXT NOT NULL
 );
 
+-- How the console looks. One row per user: a choice, not a history.
+-- Colors only — never a filter over photos, and never a capability.
+CREATE TABLE IF NOT EXISTS appearance (
+    user_id    TEXT PRIMARY KEY REFERENCES users(id),
+    theme      TEXT NOT NULL,   -- standard | midnight | paper
+    created_at TEXT NOT NULL
+);
+
 -- Physical embodiments (clause 16): wearables, stationary systems, and
 -- networked autonomous devices — with transport (e.g. Bluetooth), an
 -- optional on-device LLM, and links between devices (watch → phone).

@@ -3,6 +3,7 @@ import { api, type EngagedAct, type EngagedPermits, type EngagedReach,
          type EngagedSession, type EngagedStep,
          type StandingWatch } from "../api";
 import { t as tr, visitorLang } from "../l10n";
+import { loadTheme } from "../theme";
 import { useSession } from "../store";
 
 /**
@@ -73,6 +74,10 @@ export function Engaged() {
       // it from the session would have left it stale the moment one closed.
       setWatching(await api.engagedWatches(uid, token));
       setPermits(await api.engagedPermits(uid, token));
+      // "Make it black and white" lands as set_appearance server-side;
+      // re-applying here is what makes the room change color in the same
+      // breath as the reply that says it did.
+      void loadTheme(uid, token);
     } catch (e) { setError((e as Error).message); }
   }
 

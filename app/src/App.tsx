@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSession } from "./store";
 import { t as tr, visitorLang } from "./l10n";
+import { applyTheme, loadTheme } from "./theme";
 import { ProblemNotice } from "./ProblemNotice";
 import { Footsteps } from "./Footsteps";
 import { VersionGuard } from "./VersionGuard";
@@ -128,6 +129,16 @@ export function App() {
   // the page in the language it is actually written in — index.html ships
   // lang="en" and the app renders ten languages under it.
   useEffect(() => { document.documentElement.lang = visitorLang(); }, []);
+  // The look this person chose — in Settings or by asking the engaged
+  // agent — applied on sign-in and cleared on sign-out, so a shared
+  // browser never wears the previous account's colors.
+  useEffect(() => {
+    if (session.userId && session.userToken) {
+      void loadTheme(session.userId, session.userToken);
+    } else {
+      applyTheme("standard");
+    }
+  }, [session.userId]);
   if (watchOpen) {
     return (
       <>

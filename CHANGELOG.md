@@ -6,6 +6,45 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The agent's hands reach the look, and the errand can be asked
+  for.** A transcript from the field: "I'd like my homepage to be
+  decorated in black and white", said to an engaged session — which had
+  no tool for it, refused `update_setting`, and could only promise to
+  keep the wish in mind. The look is a real setting now (`standard`,
+  `midnight` — black background, white text — and `paper`, its daylight
+  mirror; colors only, photos and tiles untouched, per the same
+  report), with a Settings card, and the engaged agent holds a real
+  `set_appearance` hand for it — reversible like every other setting it
+  touches, and the room changes color in the same breath as the reply.
+  The session also takes `study` now: "go study strength training for
+  me" runs the coach's knowledge excursion on the spot — its own
+  consent, where the unattended sibling still needs its own yes — and
+  the composer hint says so, naming the areas it can be sent into. And
+  the menu tile is called what a reporter called it: **What JIM can
+  touch**, in ten languages.
+
+      asked     can the person have the app look how they want
+      mattered  an agent offering to change what it cannot reach is
+                worse than a menu
+
+### Fixed
+
+- **The conversation stands until the person leaves it.** Straight from
+  the field: push-to-talk on the coach worked perfectly — and then the
+  spoken reply ended and the veil dropped back to the screen, a
+  conversation that hangs up after every answer. The voice exchange is
+  a standing loop now, on Coach and Talk both: listen, answer aloud,
+  listen again. Quiet with nothing said re-opens the microphone instead
+  of erroring out of the conversation; a real refusal (no permission,
+  no service) still ends it with the honest sentence. Tapping the orb —
+  green or purple — is the one way out, and the labels say so in ten
+  languages.
+
+      asked     when is the conversation over
+      mattered  the person decides that, not the end of an answer
+
 ### Changed
 
 - **Connecting a device reads like the phone's own Bluetooth page.** A

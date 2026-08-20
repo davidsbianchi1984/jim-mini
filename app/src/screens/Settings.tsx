@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { t as tr, visitorLang } from "../l10n";
 import { api, type BankLinkRow, type StatementRow, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState, type MemoryShelf, type MoneyView,
-         type AnonymityPosture, type CloudContribution, type PairInfo,
-         type SeedReport, type VigilStatus,
+         type AnonymityPosture, type Appearance, type CloudContribution,
+         type PairInfo, type SeedReport, type VigilStatus,
          type WatchChannel, type Finetune } from "../api";
+import { applyTheme } from "../theme";
 import { Problems } from "../Problems";
 import { ProviderTiles } from "../ProviderTiles";
 import { say } from "../speech";
@@ -27,6 +28,7 @@ export function Settings() {
   const [llmKey, setLlmKeyInput] = useState(getLlmKey());
   const [keySaved, setKeySaved] = useState(false);
   const [pair, setPair] = useState<PairInfo | null>(null);
+  const [look, setLook] = useState<Appearance | null>(null);
 
   useEffect(() => {
     api.health().then((h) => setHealth(`ok · vault tandem: ${h.tandem ? "connected" : "not configured (set by the deployment, not a switch)"}`)).catch(() => setHealth("unreachable"));
@@ -39,6 +41,8 @@ export function Settings() {
       api.continuity(session.userId, session.userToken).then(setCont).catch(() => {});
       api.memoryShelf(session.userId, session.userToken)
         .then(setShelfState).catch(() => {});
+      api.getAppearance(session.userId, session.userToken)
+        .then(setLook).catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.userId]);
@@ -58,6 +62,30 @@ export function Settings() {
         <div className="muted small" style={{ marginTop: 10 }}>{tr("set.api.backend", lang)} {health}</div>
       </div>
       <OfflinePosture />
+
+      {/* The look. The same record the engaged agent's set_appearance
+          writes — asked for out loud or picked here, one setting. */}
+      {look && (
+        <div className="card">
+          <h3>{tr("set.look", lang)}</h3>
+          <p className="muted small">{tr("set.look.blurb", lang)}</p>
+          <div className="row">
+            {Object.keys(look.choices).map((t) => (
+              <button key={t} className={look.theme === t ? "primary" : ""}
+                      onClick={async () => {
+                        if (!session.userId || !session.userToken) return;
+                        try {
+                          const a = await api.setAppearance(
+                            session.userId, { theme: t }, session.userToken);
+                          setLook(a); applyTheme(a.theme);
+                        } catch { /* the current look stands */ }
+                      }}>
+                {tr(`look.${t}`, lang)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <ModelPanel />
 

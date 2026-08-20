@@ -2282,18 +2282,21 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     ar: "القناة والكاميرا",
   },
   // The menu label matches the screen's own title (`permits.title`) so the
-  // door and the room say the same thing.
+  // door and the room say the same thing. "What you have let it change"
+  // came back from the field as not quite fitting the tile — the words a
+  // reporter reached for describing the same screen were "the list of what
+  // I can touch", and the door now says that.
   "nav.permits": {
-    en: "What you have let it change",
-    es: "Lo que le has dejado cambiar",
-    fr: "Ce que vous l'avez laissé changer",
-    de: "Was Sie es ändern lassen",
-    pt: "O que lhe permitiu alterar",
-    it: "Cosa gli hai lasciato cambiare",
-    ja: "変更を許していること",
-    zh: "你允许它改动的部分",
-    hi: "आपने इसे क्या बदलने दिया है",
-    ar: "ما سمحتَ له بتغييره",
+    en: "What JIM can touch",
+    es: "Lo que JIM puede tocar",
+    fr: "Ce que JIM peut toucher",
+    de: "Was JIM anfassen darf",
+    pt: "O que o JIM pode tocar",
+    it: "Cosa può toccare JIM",
+    ja: "JIMが触れられること",
+    zh: "JIM 能触及的部分",
+    hi: "JIM क्या छू सकता है",
+    ar: "ما يمكن لـJIM لمسه",
   },
   "nav.held": {
     en: "What's held about you",
@@ -3721,6 +3724,30 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "set.api": {
     en: "API connection", es: "Conexión con la API", fr: "Connexion à l'API", de: "API-Verbindung", pt: "Ligação à API", it: "Connessione API", ja: "API接続", zh: "API 连接", hi: "API कनेक्शन", ar: "اتصال الواجهة",
+  },
+  "set.look": {
+    en: "How it looks", es: "Cómo se ve", fr: "Son apparence", de: "Aussehen", pt: "Como fica", it: "Aspetto", ja: "見た目", zh: "外观", hi: "यह कैसा दिखे", ar: "المظهر",
+  },
+  "set.look.blurb": {
+    en: "Colors only — photos and tiles stay as they are. You can also just ask for it in a session: \"make it black and white\".",
+    es: "Solo colores: las fotos y los mosaicos quedan como están. También puedes pedirlo en una sesión: «ponlo en blanco y negro».",
+    fr: "Couleurs uniquement — photos et vignettes restent telles quelles. Vous pouvez aussi le demander en session : « mets-le en noir et blanc ».",
+    de: "Nur Farben — Fotos und Kacheln bleiben, wie sie sind. Sie können es auch einfach in einer Sitzung sagen: „mach es schwarz-weiß“.",
+    pt: "Só cores — fotos e mosaicos ficam como estão. Também pode simplesmente pedir numa sessão: «põe a preto e branco».",
+    it: "Solo colori: foto e riquadri restano come sono. Puoi anche chiederlo in una sessione: «mettilo in bianco e nero».",
+    ja: "色だけが変わります。写真やタイルはそのままです。セッションで「白黒にして」と頼むこともできます。",
+    zh: "只改颜色——照片和图块保持原样。你也可以在会话里直接说：“把它改成黑白的”。",
+    hi: "सिर्फ़ रंग — फ़ोटो और टाइलें जैसी हैं वैसी रहती हैं। आप सत्र में बस कह भी सकते हैं: \"इसे ब्लैक एंड व्हाइट कर दो\"।",
+    ar: "الألوان فقط — تبقى الصور والمربعات كما هي. يمكنك أيضًا طلب ذلك في جلسة: «اجعله أبيض وأسود».",
+  },
+  "look.standard": {
+    en: "Standard", es: "Estándar", fr: "Standard", de: "Standard", pt: "Padrão", it: "Standard", ja: "標準", zh: "标准", hi: "मानक", ar: "قياسي",
+  },
+  "look.midnight": {
+    en: "Midnight — black, white text", es: "Medianoche — negro, texto blanco", fr: "Minuit — noir, texte blanc", de: "Mitternacht — Schwarz, weißer Text", pt: "Meia-noite — preto, texto branco", it: "Mezzanotte — nero, testo bianco", ja: "ミッドナイト — 黒地に白文字", zh: "午夜 — 黑底白字", hi: "मिडनाइट — काला, सफ़ेद टेक्स्ट", ar: "منتصف الليل — أسود بنص أبيض",
+  },
+  "look.paper": {
+    en: "Paper — white, black text", es: "Papel — blanco, texto negro", fr: "Papier — blanc, texte noir", de: "Papier — Weiß, schwarzer Text", pt: "Papel — branco, texto preto", it: "Carta — bianco, testo nero", ja: "ペーパー — 白地に黒文字", zh: "纸张 — 白底黑字", hi: "पेपर — सफ़ेद, काला टेक्स्ट", ar: "ورق — أبيض بنص أسود",
   },
   "set.api.base": {
     en: "Backend base URL", es: "URL base del servidor", fr: "URL de base du serveur", de: "Basis-URL des Backends", pt: "URL base do servidor", it: "URL base del backend", ja: "バックエンドのベースURL", zh: "后端基础 URL", hi: "बैकएंड बेस URL", ar: "عنوان الخادم الأساسي",
@@ -5448,7 +5475,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   // what makes the list readable at a glance. The full sentences are the next
   // round's work, and are recorded as such rather than pretended away.
   "permits.title": {
-    en: "What you have let it change", es: "Lo que le has dejado cambiar", fr: "Ce que vous l'avez laissé changer", de: "Was Sie es ändern lassen", pt: "O que lhe permitiu alterar", it: "Cosa gli hai lasciato cambiare", ja: "変更を許していること", zh: "你允许它改动的部分", hi: "आपने इसे क्या बदलने दिया है", ar: "ما سمحتَ له بتغييره",
+    en: "What JIM can touch", es: "Lo que JIM puede tocar", fr: "Ce que JIM peut toucher", de: "Was JIM anfassen darf", pt: "O que o JIM pode tocar", it: "Cosa può toccare JIM", ja: "JIMが触れられること", zh: "JIM 能触及的部分", hi: "JIM क्या छू सकता है", ar: "ما يمكن لـJIM لمسه",
   },
   "permits.blurb": {
     en: "Tell it out loud what you want on or off and it will do it — for the groups you have switched on here. Each one goes off again the same way.", es: "Dile en voz alta qué quieres activar o desactivar y lo hará, en los grupos que hayas activado aquí. Cada uno se desactiva igual.", fr: "Dites-lui à voix haute ce que vous voulez activer ou désactiver et il le fera — pour les groupes que vous avez activés ici. Chacun se désactive de la même façon.", de: "Sagen Sie laut, was an oder aus sein soll, und es erledigt das — für die Gruppen, die Sie hier eingeschaltet haben. Jede lässt sich genauso wieder ausschalten.", pt: "Diga em voz alta o que quer ligado ou desligado e ele fá-lo — nos grupos que tiver ligado aqui. Cada um desliga-se da mesma forma.", it: "Digli ad alta voce cosa vuoi attivo o disattivo e lo farà, per i gruppi che hai attivato qui. Ognuno si disattiva allo stesso modo.", ja: "何をオンにしたいか、オフにしたいかを声で伝えれば、ここでオンにしたグループについては実行します。同じ手順でいつでもオフにできます。", zh: "把想开或想关的事情说出来，它就会去做 —— 限于你在这里打开的组。每一组都能用同样的方式关掉。", hi: "आप जो चालू या बंद करवाना चाहते हैं, बोलकर बता दें और यह कर देगा — उन समूहों के लिए जिन्हें आपने यहाँ चालू किया है। हर एक इसी तरह बंद भी होता है।", ar: "قل بصوتك ما تريد تشغيله أو إيقافه وسيفعله — في المجموعات التي شغّلتها هنا. وكل واحدة تُطفأ بالطريقة نفسها.",
@@ -5587,16 +5614,16 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     ar: "أرسِلها"
   },
   "engaged.say.hint": {
-    en: "Tell it what you want — it will say what it is about to change before it changes it.",
-    es: "Dile lo que quieres: dirá qué va a cambiar antes de cambiarlo.",
-    fr: "Dites-lui ce que vous voulez — il annoncera ce qu'il va changer avant de le changer.",
-    de: "Sagen Sie, was Sie wollen — es nennt, was es ändern wird, bevor es das tut.",
-    pt: "Diga o que quer — dirá o que vai mudar antes de mudar.",
-    it: "Digli che cosa vuoi: dirà che cosa sta per cambiare prima di cambiarlo.",
-    ja: "望むことを伝えてください。変更する前に、何を変えるつもりかを先に言います。",
-    zh: "告诉它你想要什么——它会先说要改什么，然后再改。",
-    hi: "बताइए आप क्या चाहते हैं — बदलने से पहले यह बताएगा कि क्या बदलने जा रहा है।",
-    ar: "قل له ما تريد — سيقول ما الذي سيغيّره قبل أن يغيّره.",
+    en: "Tell it what you want — it says what it will change before changing it. You can also send it out for knowledge: ask it to study a topic for the coach — physical or mental health, finance, career, relationships, fitness and nutrition.",
+    es: "Dile lo que quieres: dirá qué va a cambiar antes de cambiarlo. También puedes enviarlo por conocimiento: pídele que estudie un tema para el coach — salud física o mental, finanzas, carrera, relaciones, fitness y nutrición.",
+    fr: "Dites-lui ce que vous voulez — il annonce ce qu'il va changer avant de le changer. Vous pouvez aussi l'envoyer chercher du savoir : demandez-lui d'étudier un sujet pour le coach — santé physique ou mentale, finances, carrière, relations, forme et nutrition.",
+    de: "Sagen Sie, was Sie wollen — es nennt, was es ändern wird, bevor es das tut. Sie können es auch nach Wissen ausschicken: Lassen Sie es ein Thema für den Coach studieren — körperliche oder mentale Gesundheit, Finanzen, Karriere, Beziehungen, Fitness und Ernährung.",
+    pt: "Diga o que quer — dirá o que vai mudar antes de mudar. Também pode enviá-lo em busca de conhecimento: peça-lhe que estude um tema para o coach — saúde física ou mental, finanças, carreira, relações, fitness e nutrição.",
+    it: "Digli che cosa vuoi: dirà che cosa sta per cambiare prima di cambiarlo. Puoi anche mandarlo a cercare conoscenza: chiedigli di studiare un tema per il coach — salute fisica o mentale, finanze, carriera, relazioni, fitness e nutrizione.",
+    ja: "望むことを伝えてください。変更する前に、何を変えるかを先に言います。知識を取りに行かせることもできます。コーチのためにテーマを学ばせてください — 身体や心の健康、お金、キャリア、人間関係、フィットネスと栄養。",
+    zh: "告诉它你想要什么——它会先说要改什么，然后再改。你也可以派它去获取知识：让它为教练研究一个主题——身体或心理健康、财务、职业、人际关系、健身与营养。",
+    hi: "बताइए आप क्या चाहते हैं — बदलने से पहले यह बताएगा कि क्या बदलेगा। आप इसे ज्ञान के लिए भी भेज सकते हैं: कोच के लिए कोई विषय पढ़ने को कहें — शारीरिक या मानसिक स्वास्थ्य, वित्त, करियर, रिश्ते, फ़िटनेस और पोषण।",
+    ar: "قل له ما تريد — سيقول ما الذي سيغيّره قبل أن يغيّره. يمكنك أيضًا إرساله بحثًا عن المعرفة: اطلب منه دراسة موضوع للمدرّب — الصحة الجسدية أو النفسية، المال، المسار المهني، العلاقات، اللياقة والتغذية.",
   },
   "engaged.step.refused": {
     en: "refused:",

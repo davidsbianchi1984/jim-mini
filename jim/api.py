@@ -21,7 +21,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                careteam, community,
                catalog,
                coach,
-               alongside, engaged, errands, liaison, lookout,
+               alongside, appearance, engaged, errands, liaison, lookout,
                monitors,
                oncall,
                mailer,
@@ -67,7 +67,7 @@ from .models import (
     RobotBind, RelayAccept, RelayQuestion,
     SelfProfileConsent, SelfProfileLink, SelfProfileSignIn,
     BandSet,
-    LanguageChoice, LocalitySet, MailSettings, MailTest,
+    AppearanceChoice, LanguageChoice, LocalitySet, MailSettings, MailTest,
     MedCreate, MedLog, MedUpdate,
     MicAttach, MicGain, MicHandover,
     ReferralPrepare, ResendCode, ResetPassword, ResetRequest, RobotCommand,
@@ -671,6 +671,22 @@ def create_app(qrme_client: QRMEClient | None = None,
         i18n.set_language(user_id, body.language, body.mode)
         return {"user_id": user_id, "language": body.language,
                 "label": i18n.SUPPORTED[body.language], "mode": body.mode}
+
+    @app.get("/appearance/{user_id}")
+    def get_appearance(user_id: str, request: Request) -> dict:
+        """How the console looks for this person — colors only, never a
+        capability. See jim/appearance.py for why this is a setting."""
+        _user_or_404(user_id, request)
+        return appearance.view(user_id)
+
+    @app.put("/appearance/{user_id}")
+    def set_appearance(user_id: str, body: AppearanceChoice,
+                       request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return appearance.set_theme(user_id, body.theme)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
 
     @app.post("/translate/{user_id}")
     def translate_text(user_id: str, body: TranslateRequest,

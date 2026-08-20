@@ -73,8 +73,10 @@ AREAS: dict[str, dict] = {
     "how_it_speaks": {
         "standing": "opened",
         "says": "change how it talks to you, what language it answers in, "
-                "which model answers, and which device it speaks through",
-        "tools": ("set_bearing", "set_language", "set_model", "set_surface"),
+                "which model answers, which device it speaks through, and "
+                "how the app looks",
+        "tools": ("set_bearing", "set_language", "set_model", "set_surface",
+                  "set_appearance"),
     },
     "your_own_normal": {
         "standing": "opened",
@@ -99,6 +101,19 @@ AREAS: dict[str, dict] = {
                 "loud on a call, and you can read afterwards exactly what "
                 "yours said",
         "tools": ("speak_to_their_guardian",),
+    },
+    # The excursion the person asks for out loud, distinct from the
+    # unattended one below on the one axis that matters for a yes: this one
+    # only ever runs because they just said so, in the session, in words —
+    # the request is the consent, the way asking a specialist is. What
+    # leaves is the same either way: a general topic, never the person.
+    "excursions_you_ask_for": {
+        "standing": "opened",
+        "says": "go on a knowledge excursion you ask for — study a topic "
+                "for the coach in any of its areas; a general topic leaves, "
+                "never you, and what comes back is kept where the coach and "
+                "the monitors read it",
+        "tools": ("study",),
     },
     "study_on_your_own": {
         "standing": "asked",

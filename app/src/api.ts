@@ -393,6 +393,11 @@ export interface CoachCurriculum { suggested: CoachSuggestion[]; note: string }
 export interface CoachStudied { studied: string; area: string | null;
   folded: boolean; left_host: boolean; excursion_id: string; note: string }
 
+// How the console looks (jim/appearance.py): colors only. `choices` maps
+// each theme name to the sentence describing it.
+export interface Appearance { user_id: string; theme: string;
+  default: string; choices: Record<string, string> }
+
 // -- two guardians working together, quietly (jim/liaison.py) ------------
 //
 // `said_by_mine` and `said_to_mine` are the point: a person reads what their
@@ -1842,6 +1847,13 @@ export const api = {
     req<CoachStudied>(`/coach/${uid}/study`, { method: "POST", body, token }),
   baseline: (uid: string, token: string) =>
     req<BaselineMetric[]>(`/baseline/${uid}`, { token }),
+  // How the console looks — colors only, never a capability. The same
+  // setting the engaged agent reaches with set_appearance, so a look asked
+  // for out loud and a look picked in Settings are one record.
+  getAppearance: (uid: string, token: string) =>
+    req<Appearance>(`/appearance/${uid}`, { token }),
+  setAppearance: (uid: string, body: { theme: string }, token: string) =>
+    req<Appearance>(`/appearance/${uid}`, { method: "PUT", body, token }),
   // The unattended pass: what the coach missed, gone and learned. Refused
   // without the permit, and refused again once the day's budget is spent —
   // two different refusals, because "not allowed" and "not today" are two

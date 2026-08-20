@@ -694,3 +694,22 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .dev-list > div + div { border-top: 1px solid var(--line); }
 .dev-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
 .dev-list p { margin: 0; padding: 0 12px 10px; }
+
+/* The two looks a person (or their engaged agent) can ask for: token
+   overrides only, so photos, tiles, and every screen's layout stand
+   exactly as they are. `midnight` is the field report's own words —
+   black background, white text; `paper` is its daylight mirror. */
+body.theme-midnight {
+  --card: #0a0a0a; --card2: #111111; --line: #2e2e2e;
+  --txt: #ffffff; --t2: #c7c7c7; --t3: #8f8f8f;
+  background: #000;
+}
+body.theme-midnight input, body.theme-midnight textarea,
+body.theme-midnight select { background: #000; }
+body.theme-paper {
+  --card: #ffffff; --card2: #f4f4f4; --line: #d4d4d4;
+  --txt: #111111; --t2: #4a4a4a; --t3: #767676;
+  background: #fff;
+}
+body.theme-paper input, body.theme-paper textarea,
+body.theme-paper select { background: #fff; color: var(--txt); }
