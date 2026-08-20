@@ -6,6 +6,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The engaged session joins the voice conversation, and the choice
+  is buttons.** The screen where somebody asks for the look or sends
+  the agent out for knowledge was the one conversational surface still
+  requiring thumbs. It carries the same standing loop as Coach and
+  Talk now — mic button, wave-ring orb, listen, answer aloud, listen
+  again, two quiet minutes to bow out, tap to leave — so "make it
+  black and white" can be said instead of typed. And the reviewer's
+  "with yes/no choice" is literal: when the agent asks its verbatim
+  study question, the console offers **Yes — go study it** and **No —
+  stay here** as buttons (ten languages), with a test holding the
+  screen's copy of the question to the prompt's. In voice mode, saying
+  it works too.
+
+      asked     can the session that acts be talked to
+      mattered  the agent with hands was the one you could not speak to
+
 ### Changed
 
 - **The reviewer's three calls on 0.96.0.** The release briefing raised

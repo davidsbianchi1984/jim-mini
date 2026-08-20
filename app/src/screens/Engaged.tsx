@@ -3,8 +3,18 @@ import { api, type EngagedAct, type EngagedPermits, type EngagedReach,
          type EngagedSession, type EngagedStep,
          type StandingWatch } from "../api";
 import { t as tr, visitorLang } from "../l10n";
+import { CONVERSATION_IDLE_MS, hush, heardNothing, listen, primeVoice,
+         say, type Listener } from "../speech";
 import { loadTheme } from "../theme";
 import { useSession } from "../store";
+
+/** The question the agent must ask before a topic leaves for a model —
+ *  the reviewer's words, verbatim, the same sentence the system prompt
+ *  carries (a test holds the two together). The screen watches for it so
+ *  the choice can be two buttons and not just a typed word. */
+const STUDY_ASK =
+  "Shall I go online and research more into this topic and bring " +
+  "back a copy for coach to hold and use while offline?";
 
 /**
  * The Guardian you leave running.
@@ -57,6 +67,19 @@ export function Engaged() {
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const foot = useRef<HTMLDivElement | null>(null);
+
+  // The standing voice conversation — the same loop Coach and Talk carry,
+  // on the screen where somebody asks for the look or sends the agent out
+  // for knowledge. Field reality: this session gets talked to, and it was
+  // the one conversational surface still requiring thumbs.
+  const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [level, setLevel] = useState(0);
+  const recorder = useRef<Listener | null>(null);
+  const talking = useRef(false);
+  const round = useRef(0);
+  const lastHeard = useRef(0);
+  useEffect(() => { void primeVoice(); }, []);
 
   useEffect(() => {
     api.engagedReach().then(setReach).catch(() => { /* the card stands */ });
@@ -111,8 +134,8 @@ export function Engaged() {
     finally { setBusy(false); }
   }
 
-  async function speak() {
-    const message = said.trim();
+  async function speak(text?: string) {
+    const message = (text ?? said).trim();
     if (!uid || !token || !message) return;
     setBusy(true); setError(null); setNote(null);
     try {
@@ -122,8 +145,73 @@ export function Engaged() {
       setSaid("");
       if (turn.stopped) setNote(turn.stopped);
       await refresh();
-    } catch (e) { setError((e as Error).message); }
+      // The same contract as Coach and Talk: a spoken question is answered
+      // out loud, the purple orb holds for the whole reply, and then the
+      // microphone opens again — with the idle clock restarted, so a long
+      // answer never eats into the person's two minutes.
+      if (turn.reply && (talking.current || speaking)) {
+        setSpeaking(true);
+        say(turn.reply).finally(() => {
+          setSpeaking(false);
+          if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+        });
+      } else {
+        setSpeaking(false);
+        if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+      }
+    } catch (e) {
+      talking.current = false;
+      setError((e as Error).message); setSpeaking(false);
+    }
     finally { setBusy(false); }
+  }
+
+  /** One turn of listening — Coach.tsx's loop, verbatim in shape: quiet
+   *  re-opens the microphone, two quiet minutes bow out, a real refusal
+   *  ends the conversation with its honest sentence. */
+  async function hear() {
+    const g = ++round.current;
+    setListening(true);
+    recorder.current = await listen(
+      (text) => {
+        if (g !== round.current) return; // the person already left
+        lastHeard.current = Date.now();
+        setListening(false); setSpeaking(true);
+        setSaid(text); void speak(text);
+      },
+      (msg) => {
+        if (g !== round.current) return;
+        if (talking.current && heardNothing(msg)) {
+          if (Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
+            exitTalk();
+            return;
+          }
+          void hear();
+          return;
+        }
+        talking.current = false;
+        setListening(false); setError(msg);
+      },
+      setLevel,
+    );
+  }
+
+  /** Leave the conversation: nothing in flight answers, nothing re-opens. */
+  function exitTalk() {
+    talking.current = false;
+    round.current++;
+    recorder.current?.stop();
+    recorder.current = null;
+    hush();
+    setListening(false); setSpeaking(false); setLevel(0);
+  }
+
+  async function toggleMic() {
+    if (listening) { exitTalk(); return; }
+    setError(null);
+    talking.current = true;
+    lastHeard.current = Date.now();
+    await hear();
   }
 
   async function undo(act: EngagedAct) {
@@ -170,6 +258,22 @@ export function Engaged() {
 
   return (
     <section className="screen">
+      {(listening || speaking) && (
+        <div className="voice-orb-veil" role="status"
+             aria-label={listening ? "Listening" : "Speaking"}
+             onClick={exitTalk}>
+          <div className={"voice-orb-holder" + (speaking ? " speaking" : "")}>
+            <div className="voice-orb-ring"
+                 style={{ transform: `scale(${1 + level * 0.45})`,
+                          opacity: 0.3 + level * 0.7 }} />
+            <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+          </div>
+          <div className="voice-orb-label">
+            {listening ? tr("cch.listening.stop", lang)
+                       : tr("cch.speaking.hush", lang)}
+          </div>
+        </div>
+      )}
       <h2>{tr("engaged.title", lang)}</h2>
       <p className="muted">{tr("engaged.blurb", lang)}</p>
 
@@ -313,12 +417,37 @@ export function Engaged() {
               </div>
             )}
 
+            {/* The reviewer's yes/no, as buttons. The agent is held to the
+                verbatim question by its prompt and the round's test, so the
+                screen can recognize the moment and offer the choice — and
+                in voice mode the person can simply say it instead. */}
+            {(() => {
+              const last = (live?.turns || []).slice(-1)[0];
+              return last && last.role !== "user"
+                && last.content.includes(STUDY_ASK);
+            })() && (
+              <div className="row">
+                <button className="primary" disabled={busy}
+                        onClick={() => speak("yes")}>
+                  {tr("engaged.study.yes", lang)}
+                </button>
+                <button disabled={busy} onClick={() => speak("no")}>
+                  {tr("engaged.study.no", lang)}
+                </button>
+              </div>
+            )}
+
             <textarea rows={3} value={said}
                       placeholder={tr("engaged.say.hint", lang)}
                       onChange={(e) => setSaid(e.target.value)} />
             <button className="primary" disabled={busy || !said.trim()}
-                    onClick={speak}>
+                    onClick={() => speak()}>
               {tr("engaged.say", lang)}
+            </button>
+            <button className={listening ? "mic listening" : "mic"}
+                    onClick={toggleMic}
+                    aria-pressed={listening}>
+              {listening ? tr("cch.listening", lang) : tr("cch.talk", lang)}
             </button>
           </>
         )}

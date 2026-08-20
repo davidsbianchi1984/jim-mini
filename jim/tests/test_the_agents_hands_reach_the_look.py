@@ -86,6 +86,24 @@ def test_the_asked_for_excursion_is_a_tool_of_its_own():
     assert "only if they say yes" in engaged.SYSTEM
 
 
+def test_the_console_offers_the_yes_no_choice():
+    """The reviewer asked for the question "with yes/no choice", and the
+    choice is buttons: the Engaged screen watches the transcript for the
+    verbatim question and offers yes and no. That only works while the
+    screen's copy of the sentence and the prompt's stay identical — this
+    is the thread holding them together."""
+    q = ("Shall I go online and research more into this topic and bring "
+         "back a copy for coach to hold and use while offline?")
+    assert q in " ".join(engaged.SYSTEM.split())
+    src = (REPO / "app/src/screens/Engaged.tsx").read_text(encoding="utf-8")
+    # TSX wraps the literal across lines with `" + "`; undo the seams and
+    # the wrapping before comparing.
+    glued = " ".join(re.sub(r'"\s*\+\s*"', "", src).split())
+    assert q in glued, (
+        "the Engaged screen's STUDY_ASK no longer matches the prompt's "
+        "question — the yes/no buttons will never appear")
+
+
 def test_the_conversation_bows_out_after_two_quiet_minutes():
     """The reviewer's number for the standing conversation: "at least two
     minutes would be enough". One constant in speech.ts, imported by both
@@ -93,7 +111,7 @@ def test_the_conversation_bows_out_after_two_quiet_minutes():
     drifts."""
     speech = (REPO / "app/src/speech.ts").read_text(encoding="utf-8")
     assert "export const CONVERSATION_IDLE_MS = 120_000" in speech
-    for screen in ("Coach", "Talk"):
+    for screen in ("Coach", "Talk", "Engaged"):
         src = (REPO / f"app/src/screens/{screen}.tsx").read_text(
             encoding="utf-8")
         assert "CONVERSATION_IDLE_MS" in src, (

@@ -5643,6 +5643,12 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "बताइए आप क्या चाहते हैं — बदलने से पहले यह बताएगा कि क्या बदलेगा। आप इसे ज्ञान के लिए भी भेज सकते हैं: कोच के लिए कोई विषय पढ़ने को कहें — शारीरिक या मानसिक स्वास्थ्य, वित्त, करियर, रिश्ते, फ़िटनेस और पोषण।",
     ar: "قل له ما تريد — سيقول ما الذي سيغيّره قبل أن يغيّره. يمكنك أيضًا إرساله بحثًا عن المعرفة: اطلب منه دراسة موضوع للمدرّب — الصحة الجسدية أو النفسية، المال، المسار المهني، العلاقات، اللياقة والتغذية.",
   },
+  "engaged.study.yes": {
+    en: "Yes — go study it", es: "Sí, ve a estudiarlo", fr: "Oui — va l'étudier", de: "Ja — geh es studieren", pt: "Sim — vai estudá-lo", it: "Sì — vai a studiarlo", ja: "はい — 調べてきて", zh: "好——去研究吧", hi: "हाँ — जाकर पढ़ो", ar: "نعم — اذهب وادرسه",
+  },
+  "engaged.study.no": {
+    en: "No — stay here", es: "No, quédate aquí", fr: "Non — reste ici", de: "Nein — bleib hier", pt: "Não — fica aqui", it: "No — resta qui", ja: "いいえ — ここにいて", zh: "不——留在这里", hi: "नहीं — यहीं रहो", ar: "لا — ابقَ هنا",
+  },
   "engaged.step.refused": {
     en: "refused:",
     es: "rechazado:",
