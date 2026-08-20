@@ -285,6 +285,8 @@ def forget(user_id: str) -> bool:
     """Drop the vector. Every derived thing in this product has to be
     droppable by the person it was derived from, and one that quietly could
     not be would make the rest of the promise untrue."""
+    from . import letter as letter_mod
+    letter_mod.mark_forgotten(user_id)
     conn = db.connect()
     cur = conn.execute("DELETE FROM user_continuity WHERE user_id=?", (user_id,))
     conn.commit()

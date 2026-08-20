@@ -49,6 +49,9 @@ CREATE TABLE IF NOT EXISTS users (
     devices            TEXT NOT NULL DEFAULT '[]',  -- e.g. ["smart_watch","phone"]
     personality        TEXT,                        -- counselor adaptation prefs
     sensitivity        TEXT NOT NULL DEFAULT 'balanced', -- cautious | balanced | assertive
+    forgot_at          TEXT,             -- when a forgetting door last touched
+                                         -- this person; letters built before
+                                         -- this rebuild (jim/letter.py shelf)
     created_at         TEXT NOT NULL
 );
 
@@ -1206,6 +1209,10 @@ CREATE TABLE IF NOT EXISTS letters (
     -- how many private terms the sanitize pass took out first.
     left_host    INTEGER NOT NULL DEFAULT 0,
     redactions   INTEGER NOT NULL DEFAULT 0,
+    -- When this body was last built. A letter is a cached view of its
+    -- week: users.forgot_at newer than this means a forgetting has
+    -- touched this person and the body rebuilds before it is shown.
+    built_at     TEXT,
     created_at   TEXT NOT NULL
 );
 
@@ -1649,6 +1656,8 @@ _NEW_COLUMNS = [
     ("users", "farend_pinged_at", "TEXT"),
     ("letters", "left_host", "INTEGER NOT NULL DEFAULT 0"),
     ("letters", "redactions", "INTEGER NOT NULL DEFAULT 0"),
+    ("letters", "built_at", "TEXT"),
+    ("users", "forgot_at", "TEXT"),
 ]
 
 

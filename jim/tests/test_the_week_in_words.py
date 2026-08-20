@@ -63,13 +63,16 @@ def test_the_letter_mentions_a_page_that_changed_this_week(client):
     from jim.tests.test_the_lookout import StandingVault
     user = enroll(client)
     vault = StandingVault()
-    _watched(client, user, vault, changed="2999-01-01T09:00:00+00:00")
+    from jim import db as db_mod
+    changed_at = db_mod.utcnow()
+    _watched(client, user, vault, changed=changed_at)
     # Nothing else logged: the changed page alone is a real event the
     # person asked to be told about, and it earns the letter.
     r = client.post(f"/users/{user}/letters")
     assert r.status_code == 201, r.text
     letter = r.json()
-    assert any("watched page https://example.com/clinic changed on 2999-01-01"
+    assert any(f"watched page https://example.com/clinic changed on"
+               f" {changed_at[:10]}"
                == line for line in letter["digest"]), letter["digest"]
 
 
@@ -172,3 +175,69 @@ def test_a_voice_that_stays_home_reads_the_full_digest(client, monkeypatch):
     assert r.status_code == 201, r.text
     letter = r.json()
     assert letter["left_host"] is False and letter["redactions"] == 0
+
+
+def test_the_letter_does_not_outlive_the_memory(client):
+    """A letter is a cached view of its week: unrecord a check-in and
+    the shelf rebuilds the letter from what the tables still hold — the
+    check-in line gone, the meal intact. The delete door reaches the
+    letters through the same forgetting it already does everywhere
+    else."""
+    user = enroll(client)
+    made_checkin = client.post(f"/checkin/{user}",
+                               json={"mood": 4, "note": "steady"}).json()
+    client.post(f"/users/{user}/meals", json={"note": "lentil soup"})
+    made = client.post(f"/users/{user}/letters").json()
+    assert any("check-in" in line for line in made["digest"])
+
+    r = client.delete(f"/checkin/{user}/{made_checkin['id']}")
+    assert r.status_code in (200, 204), r.text
+
+    shelf = client.get(f"/users/{user}/letters").json()
+    assert len(shelf) == 1
+    rebuilt = shelf[0]
+    assert "check-in" not in rebuilt["body"] or \
+        rebuilt["described_by"] == "model"
+    assert "lentil soup" in rebuilt["body"] or \
+        rebuilt["described_by"] == "model"
+
+
+def test_a_week_whose_facts_are_gone_loses_its_letter(client):
+    """When everything a letter was made from has been forgotten, the
+    letter goes with it — by design, not failure."""
+    user = enroll(client)
+    made_checkin = client.post(f"/checkin/{user}",
+                               json={"mood": 4, "note": "steady"}).json()
+    client.post(f"/users/{user}/letters")
+    r = client.delete(f"/checkin/{user}/{made_checkin['id']}")
+    assert r.status_code in (200, 204), r.text
+    assert client.get(f"/users/{user}/letters").json() == []
+    from jim import db as db_mod
+    assert db_mod.connect().execute(
+        "SELECT COUNT(*) AS n FROM letters WHERE user_id=?",
+        (user,)).fetchone()["n"] == 0
+
+
+def test_an_untouched_letter_never_changes_under_the_reader(client):
+    """No forgetting, no rebuild: the cached body is stable even as new
+    data piles up behind it."""
+    user = enroll(client)
+    client.post(f"/checkin/{user}", json={"mood": 4, "note": "steady"})
+    made = client.post(f"/users/{user}/letters").json()
+    client.post(f"/users/{user}/meals", json={"note": "toast"})
+    first = client.get(f"/users/{user}/letters").json()
+    second = client.get(f"/users/{user}/letters").json()
+    assert first[0]["body"] == made["body"] == second[0]["body"]
+
+
+def test_every_forgetting_door_bumps_the_epoch(client):
+    """The doors that unmake things all invalidate the letters' cache,
+    vault or no vault."""
+    from jim import db as db_mod, lookout as lookout_mod
+    user = enroll(client)
+    conn = db_mod.connect()
+    assert conn.execute("SELECT forgot_at FROM users WHERE id=?",
+                        (user,)).fetchone()["forgot_at"] is None
+    lookout_mod.drop_all(user, pdi=None)
+    assert conn.execute("SELECT forgot_at FROM users WHERE id=?",
+                        (user,)).fetchone()["forgot_at"] is not None

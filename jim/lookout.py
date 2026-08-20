@@ -244,6 +244,8 @@ def drop(user_id: str, lookout_id: str, pdi=None) -> dict | None:
     """Stop the watching the whole way: the appointment, the seal, the
     row — in that order, because a row whose appointment still stands
     belongs on the list, not orphaned. None: no such lookout."""
+    from . import letter as letter_mod
+    letter_mod.mark_forgotten(user_id)
     row = _row(user_id, lookout_id)
     if row is None:
         return None
@@ -266,6 +268,8 @@ def drop_all(user_id: str, pdi=None) -> int | None:
     """Erasure's call: every appointment cancelled, every capture
     unsealed. None when the tandem could not be reached — the erasure
     answer says so, and the rows die with the user's tables either way."""
+    from . import letter as letter_mod
+    letter_mod.mark_forgotten(user_id)
     rows = db.connect().execute(
         "SELECT task_id FROM lookouts WHERE user_id=?",
         (user_id,)).fetchall()

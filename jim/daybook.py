@@ -314,6 +314,8 @@ def forget(user_id: str, moment_id: str) -> dict:
     the monitor never sensed at all, and a record that quietly loses its own
     entries is the thing this module exists not to be.
     """
+    from . import letter as letter_mod
+    letter_mod.mark_forgotten(user_id)
     conn = db.connect()
     row = conn.execute(
         "SELECT id FROM day_moments WHERE id=? AND user_id=?",

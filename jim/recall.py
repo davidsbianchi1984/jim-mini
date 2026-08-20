@@ -160,6 +160,8 @@ def forget(pdi, user_id: str, kind: str, ref: str) -> dict:
     """Unmake one memory: the vector, the seal, and the ledger row — so a
     deleted entry stops being findable, not merely stops being readable.
     Non-fatal like everything here; the caller reports what happened."""
+    from . import letter as letter_mod
+    letter_mod.mark_forgotten(user_id)
     if pdi is None:
         return {"forgotten": False, "why": "no vault configured"}
     key = _key(user_id, kind, ref)
@@ -180,6 +182,8 @@ def forget_all(pdi, user_id: str) -> int | None:
     """Erasure's call: every vector under this person's memory prefix, in
     one trip. None when the tandem could not be reached — the erasure
     answer says so rather than counting what it cannot see."""
+    from . import letter as letter_mod
+    letter_mod.mark_forgotten(user_id)
     if pdi is None:
         return None
     try:
