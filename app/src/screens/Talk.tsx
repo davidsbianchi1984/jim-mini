@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type Guidance } from "../api";
 import { t as tr, visitorLang, word } from "../l10n";
-import { hush, listen, primeVoice, say, type Listener } from "../speech";
+import { hush, heardNothing, listen, primeVoice, say,
+         type Listener } from "../speech";
 import { useSession } from "../store";
 
 /**
@@ -59,6 +60,12 @@ export function Talk({ go }: {
   const [speaking, setSpeaking] = useState(false);
   const [level, setLevel] = useState(0);
   const recorder = useRef<Listener | null>(null);
+  // The conversation stands until the person leaves it (see Coach.tsx —
+  // same loop, same reason): `talking` holds it open across the
+  // listen/say callbacks, `round` stamps each listen so the exit tap
+  // orphans a transcription still in flight.
+  const talking = useRef(false);
+  const round = useRef(0);
   useEffect(() => { void primeVoice(); }, []);
 
   const uid = session.userId;
@@ -97,15 +104,22 @@ export function Talk({ go }: {
       const r = await api.coach(uid, { area: "general", message: q }, token);
       setReply(r);
       setSaid("");
-      // A spoken question is answered out loud, and the purple orb holds
-      // for the whole reply — `say` resolves when the speaking ends.
-      if (r?.content && (text !== undefined || speaking)) {
+      // A spoken question is answered out loud, the purple orb holds for
+      // the whole reply — `say` resolves when the speaking ends — and
+      // then the microphone opens again: a conversation is not over
+      // until the person leaves it.
+      if (r?.content && (talking.current || speaking)) {
         setSpeaking(true);
-        say(r.content).finally(() => setSpeaking(false));
+        say(r.content).finally(() => {
+          setSpeaking(false);
+          if (talking.current) void hear();
+        });
       } else {
         setSpeaking(false);
+        if (talking.current) void hear();
       }
     } catch (e) {
+      talking.current = false;
       setError(e instanceof Error ? e.message : String(e));
       setSpeaking(false);
     } finally {
@@ -113,23 +127,42 @@ export function Talk({ go }: {
     }
   }
 
-  async function toggleMic() {
-    if (listening) {
-      recorder.current?.stop();
-      recorder.current = null;
-      setListening(false);
-      return;
-    }
-    setError(null);
+  /** One turn of listening. Quiet with nothing said is not a failure in
+   *  a standing conversation: the microphone simply opens again. */
+  async function hear() {
+    const g = ++round.current;
     setListening(true);
     recorder.current = await listen(
       (text) => {
+        if (g !== round.current) return; // the person already left
         setListening(false); setSpeaking(true);
         setSaid(text); ask(text);
       },
-      (msg) => { setListening(false); setError(msg); },
+      (msg) => {
+        if (g !== round.current) return;
+        if (talking.current && heardNothing(msg)) { void hear(); return; }
+        talking.current = false;
+        setListening(false); setError(msg);
+      },
       setLevel,
     );
+  }
+
+  /** Leave the conversation: nothing in flight answers, nothing re-opens. */
+  function exitTalk() {
+    talking.current = false;
+    round.current++;
+    recorder.current?.stop();
+    recorder.current = null;
+    hush();
+    setListening(false); setSpeaking(false); setLevel(0);
+  }
+
+  async function toggleMic() {
+    if (listening) { exitTalk(); return; }
+    setError(null);
+    talking.current = true;
+    await hear();
   }
 
   if (!uid || !token) return <p>{tr("self.signin", lang)}</p>;
@@ -139,10 +172,7 @@ export function Talk({ go }: {
       {(listening || speaking) && (
         <div className="voice-orb-veil" role="status"
              aria-label={listening ? "Listening" : "Speaking"}
-             onClick={() => {
-               if (listening) toggleMic();
-               else { hush(); setSpeaking(false); }
-             }}>
+             onClick={exitTalk}>
           <div className={"voice-orb-holder" + (speaking ? " speaking" : "")}>
             <div className="voice-orb-ring"
                  style={{ transform: `scale(${1 + level * 0.45})`,

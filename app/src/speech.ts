@@ -72,6 +72,14 @@ export async function say(text: string): Promise<"service" | "device"> {
 
 export interface Listener { stop: () => void }
 
+/** True when a listen ended only because nothing was said — quiet, not a
+ *  refusal. A standing conversation reads this and opens the microphone
+ *  again; every other message is a real failure and ends it. */
+export function heardNothing(message: string): boolean {
+  return message === "nothing was heard in that"
+    || message === "nothing was recorded";
+}
+
 /** The minimal face of the platform's own recogniser. Typed here because
  *  the DOM lib does not ship one, and `any` would hide the contract. */
 interface DeviceRecognition {

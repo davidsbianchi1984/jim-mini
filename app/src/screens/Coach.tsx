@@ -3,7 +3,8 @@ import { api, type CoachCurriculum, type CoachStore, type ErrandLedger,
          type Guidance, type LookoutList, type LookoutPage,
          type NoticeLedger, type SpecialistAnswer } from "../api";
 import { fill, t as tr, visitorLang } from "../l10n";
-import { hush, listen, primeVoice, say, type Listener } from "../speech";
+import { hush, heardNothing, listen, primeVoice, say,
+         type Listener } from "../speech";
 import { useSession } from "../store";
 
 const AREAS: import("../api").GoalArea[] =
@@ -23,6 +24,14 @@ export function Coach() {
   const [speaking, setSpeaking] = useState(false);
   const [level, setLevel] = useState(0);
   const recorder = useRef<Listener | null>(null);
+  // The conversation stands until the person leaves it. A field report:
+  // the exchange worked perfectly once, then the spoken reply ended and
+  // the veil dropped them back to the screen — a conversation that hangs
+  // up after every answer. `talking` holds the loop open (refs, because
+  // the listen/say callbacks outlive their render); `round` stamps each
+  // listen so an exit tap orphans any transcription still in flight.
+  const talking = useRef(false);
+  const round = useRef(0);
 
   // The store the offline stack predicts from, and JIM's syllabus for it.
   const [knows, setKnows] = useState<CoachStore | null>(null);
@@ -112,38 +121,65 @@ export function Coach() {
       // Talking to it should mean being answered out loud — a spoken
       // question answered only in text is half a conversation. `say`
       // resolves when the speaking ends, so the purple orb stays for the
-      // whole answer rather than the first syllable of it.
-      if (r?.content && (text !== undefined || speaking)) {
+      // whole answer — and then the microphone opens again, because a
+      // conversation is not over until the person leaves it.
+      if (r?.content && (talking.current || speaking)) {
         setSpeaking(true);
-        say(r.content).finally(() => setSpeaking(false));
+        say(r.content).finally(() => {
+          setSpeaking(false);
+          if (talking.current) void hear();
+        });
       } else {
         setSpeaking(false);
+        if (talking.current) void hear();
       }
     }
-    catch (e) { setError((e as Error).message); setSpeaking(false); }
+    catch (e) {
+      talking.current = false;
+      setError((e as Error).message); setSpeaking(false);
+    }
     finally { setBusy(false); }
   }
 
-  async function toggleMic() {
-    if (listening) {
-      recorder.current?.stop();
-      recorder.current = null;
-      setListening(false);
-      return;
-    }
-    setError(null);
+  /** One turn of listening. The orb goes green→purple in one motion and
+   *  stays up through the thinking and the whole spoken answer — a veil
+   *  that blinks away between hearing and answering reads as the
+   *  conversation dropping. Quiet with nothing said is not a failure in
+   *  a standing conversation: the microphone simply opens again. */
+  async function hear() {
+    const g = ++round.current;
     setListening(true);
     recorder.current = await listen(
-      // The orb goes green→purple in one motion and stays up through the
-      // thinking and the whole spoken answer — a veil that blinks away
-      // between hearing and answering reads as the conversation dropping.
       (text) => {
+        if (g !== round.current) return; // the person already left
         setListening(false); setSpeaking(true);
         setMessage(text); ask(text);
       },
-      (msg) => { setListening(false); setError(msg); },
+      (msg) => {
+        if (g !== round.current) return;
+        if (talking.current && heardNothing(msg)) { void hear(); return; }
+        talking.current = false;
+        setListening(false); setError(msg);
+      },
       setLevel,
     );
+  }
+
+  /** Leave the conversation: nothing in flight answers, nothing re-opens. */
+  function exitTalk() {
+    talking.current = false;
+    round.current++;
+    recorder.current?.stop();
+    recorder.current = null;
+    hush();
+    setListening(false); setSpeaking(false); setLevel(0);
+  }
+
+  async function toggleMic() {
+    if (listening) { exitTalk(); return; }
+    setError(null);
+    talking.current = true;
+    await hear();
   }
 
   return (
@@ -151,7 +187,7 @@ export function Coach() {
       {(listening || speaking) && (
         <div className="voice-orb-veil" role="status"
              aria-label={listening ? "Listening" : "Speaking"}
-             onClick={() => { if (listening) toggleMic(); else { hush(); setSpeaking(false); } }}>
+             onClick={exitTalk}>
           <div className={"voice-orb-holder" + (speaking ? " speaking" : "")}>
             {/* The audio-wave ring: the person's own voice level, drawn
                 around the sphere while it listens — a still ring is a mic
