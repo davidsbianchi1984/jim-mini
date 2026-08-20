@@ -70,6 +70,20 @@ def capture_key(task_id: str) -> str:
     return _CAPTURE.format(task_id=task_id)
 
 
+#: URL suffixes that name a recording rather than a page. Deduced from the
+#: path alone (query stripped): a page that merely *contains* a player is
+#: still a page and keeps the eyes; only a URL that is itself the media
+#: file gets the ears. Deliberately a suffix list and not a HEAD request —
+#: planting must not cost a network trip.
+_MEDIA_SUFFIXES = (".mp3", ".mp4", ".m4a", ".wav", ".ogg", ".webm", ".mov",
+                   ".mkv", ".flac", ".aac", ".opus")
+
+
+def _is_recording(url: str) -> bool:
+    path = url.split("?", 1)[0].split("#", 1)[0].lower()
+    return path.endswith(_MEDIA_SUFFIXES)
+
+
 def plant(user_id: str, url: str, every_hours: float, pdi=None) -> dict:
     """One standing appointment in the vault, one ledger row here."""
     url = (url or "").strip()
@@ -92,9 +106,18 @@ def plant(user_id: str, url: str, every_hours: float, pdi=None) -> dict:
         # falls back to the plain fetch and the seal says so; on a vault too
         # old to know the tool at all, the plant fails with the vault's own
         # words in `why`, the same door every other lookout failure uses.
+        #
+        # And fetch.listen when the URL is itself a recording: the vault's
+        # ears seal the words said in it, under the same capture key and
+        # change-memory, so everything downstream — the read-back, the
+        # changed_at, the letter's line, the coach's prompt block — reads a
+        # transcript exactly the way it reads a page. A deployment without
+        # ears fails the cycle in words and the `trouble` line carries the
+        # reason; there is no silent stand-in for hearing.
+        tool = "fetch.listen" if _is_recording(url) else "fetch.render"
         task = pdi.resident_stand(
             goal=f"lookout: {url}",
-            steps=[{"tool": "fetch.render", "args": {"url": url}}],
+            steps=[{"tool": tool, "args": {"url": url}}],
             every_hours=every_hours)
     except Exception as exc:  # noqa: BLE001 — said, never crashed through
         return {"planted": False, "why": f"{type(exc).__name__}: {exc}"[:200]}

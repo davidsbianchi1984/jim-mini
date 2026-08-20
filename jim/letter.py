@@ -129,7 +129,12 @@ def _watching_lines(user_id: str, since: str, pdi, until: str,
         sealed = lookout_mod._capture(pdi, r["task_id"])
         changed = (sealed or {}).get("changed_at")
         if changed and since <= changed < until:
-            lines.append(f"watched page {r['url']} changed on {changed[:10]}")
+            # A transcript's change is new words said, not a page edited —
+            # the letter calls the watched thing what it is.
+            what = ("recording" if (sealed or {}).get("transcribed")
+                    else "page")
+            lines.append(f"watched {what} {r['url']} changed on"
+                         f" {changed[:10]}")
         # "Has been failing" is a fact about *now*; a letter rebuilt for
         # an old week can only honestly restate what is still derivable,
         # and this line is not.
