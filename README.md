@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v0.94.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v0.95.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **0.95.0** | **Version alignment** — the trio releases together; this release's changes live in the qrme repository (the ears arc reaching every briefcase door), and nothing changed here since 0.94.0 |
 | **0.94.0** | **The lookout grows ears, and the doors exist** — a lookout planted on a recording stands a listening appointment: the vault's new `fetch.listen` seals the words said in the media file, with the same change-memory the pages keep, and the letter says "watched recording"; the coach carries a map of the product's own doors so a door-shaped request is walked to its screen instead of shrugged at; the held screen's quick-allow buttons match the wire, the permits screen has its own menu entry with two standing guards on every door, enrollment can no longer strand a planless account, and the excursion rows wear `answered_by` on screen |
 | **0.93.0** | **The letters keep every promise, and the lookout grows eyes** — the weekly letter is no longer the looser door (a voice that would leave the host gets the sanitized digest, with `left_host` and the redaction count disclosed) and no longer outlives the memory (every forgetting door stamps an epoch; a letter rebuilds from what the tables still hold before it is shown, and a week whose facts are gone loses its letter); the lookouts watch pages as a person meets them through the vault's new rendered fetch instead of the shell the server sends |
 | **0.92.0** | **The ladder ends at a person** — `notify_contact` stopped being words: a critical detection now mails the consented far-end address with an acknowledgment link a person can press, the escalation result refuses honestly in the user's own language when nobody is configured, and a monthly liveness note proves the mailbox on a calm day instead of during an emergency; the Held screen carries the card that sets the address and shows whether a person saw the last alert, and the assistant's menu entry finally says the product's name instead of the amulet's incantation |
