@@ -99,7 +99,7 @@ def test_a_lookout_is_one_standing_appointment_and_one_ledger_row(client):
     assert out["planted"] is True and out["next_run_at"]
     task = vault.standing[out["task_id"]]
     assert task["every_hours"] == 24.0
-    assert task["plan_steps"] == [{"tool": "fetch.url",
+    assert task["plan_steps"] == [{"tool": "fetch.render",
                                    "args": {"url": "https://example.com/page"}}]
     row = db.connect().execute(
         "SELECT * FROM lookouts WHERE user_id=?", (uid,)).fetchone()

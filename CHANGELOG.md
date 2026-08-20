@@ -4,6 +4,22 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **The lookout grows eyes.** A lookout planted on a JavaScript page
+  was watching a title and a dozen characters — the shell the server
+  sends, not the page the person meant. The standing plan now asks the
+  vault's `fetch.render` (PDI's new eyes): the page as a person meets
+  it, sealed under the same key with the same change-memory. On a vault
+  without a renderer the tool itself falls back to the plain fetch and
+  the seal says so; on a vault too old to know the tool, the plant
+  fails in words through the same door every lookout failure uses.
+
+      asked     what is the lookout looking at
+      mattered  watching a shell is not watching the page
+
 ## [0.92.0] - 2026-08-20
 
 ### Added
@@ -9636,6 +9652,7 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.92.0...HEAD
 [0.92.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.91.0...app-v0.92.0
 [0.91.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.90.0...app-v0.91.0
 [0.90.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.89.0...app-v0.90.0

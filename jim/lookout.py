@@ -4,8 +4,9 @@ PDI's standing tasks (0.88) let the vault keep its own appointments —
 plan a fetch, give it an interval, and the resident re-runs it inside
 the facility with no cron, no worker, no caller. This module is JIM's
 side of that bargain: "keep an eye on this page" becomes one standing
-plan whose single `fetch.url` step re-seals the current capture under
-the same key every cycle, so the vault always holds today's page and
+plan whose single `fetch.render` step re-seals the current capture under
+the same key every cycle — the page as a person meets it, not the shell
+the server sends, so the vault always holds today's page and
 never a growing archive of yesterday's.
 
     asked     can JIM watch a page for somebody
@@ -47,7 +48,7 @@ from . import db
 
 #: The vault key a lookout's capture lives under: position 01 of the one-step
 #: plan, re-sealed by the resident every cycle (see pdi/resident.py's
-#: `_tool_fetch`).
+#: shared `_seal_capture` — both fetch tools keep the same memory).
 _CAPTURE = "resident/{task_id}/01-fetch"
 
 #: The interval window mirrors PDI's own (a quarter-hour to a month), so the
@@ -85,9 +86,15 @@ def plant(user_id: str, url: str, every_hours: float, pdi=None) -> dict:
     if pdi is None:
         return {"planted": False, "why": "no vault configured"}
     try:
+        # fetch.render: the page as a person meets it, not the shell the
+        # server sends — a lookout on a JavaScript page was watching a title
+        # and a dozen characters. On a vault without eyes the tool itself
+        # falls back to the plain fetch and the seal says so; on a vault too
+        # old to know the tool at all, the plant fails with the vault's own
+        # words in `why`, the same door every other lookout failure uses.
         task = pdi.resident_stand(
             goal=f"lookout: {url}",
-            steps=[{"tool": "fetch.url", "args": {"url": url}}],
+            steps=[{"tool": "fetch.render", "args": {"url": url}}],
             every_hours=every_hours)
     except Exception as exc:  # noqa: BLE001 — said, never crashed through
         return {"planted": False, "why": f"{type(exc).__name__}: {exc}"[:200]}
