@@ -1201,6 +1201,11 @@ CREATE TABLE IF NOT EXISTS letters (
     body         TEXT NOT NULL,
     described_by TEXT NOT NULL,      -- model | digest
     digest       TEXT NOT NULL,
+    -- The letter keeps the excursions' promise (jim/letter.py): whether
+    -- composing it sent the (sanitized) digest to an external model, and
+    -- how many private terms the sanitize pass took out first.
+    left_host    INTEGER NOT NULL DEFAULT 0,
+    redactions   INTEGER NOT NULL DEFAULT 0,
     created_at   TEXT NOT NULL
 );
 
@@ -1642,6 +1647,8 @@ _NEW_COLUMNS = [
     # liveness note proved that mailbox is a real one (jim/farend.py).
     ("users", "emergency_email", "TEXT"),
     ("users", "farend_pinged_at", "TEXT"),
+    ("letters", "left_host", "INTEGER NOT NULL DEFAULT 0"),
+    ("letters", "redactions", "INTEGER NOT NULL DEFAULT 0"),
 ]
 
 

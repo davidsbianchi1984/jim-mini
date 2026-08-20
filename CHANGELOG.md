@@ -8,6 +8,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The letter is not the looser door.** The study path sanitizes
+  what leaves the host and writes down that it left; the weekly letter
+  — carrying the week's names, meals, pages and appointments — reached
+  the same network models with neither. Now a voice that would leave
+  the host receives the *sanitized* digest (the person's own letter
+  keeps every word — sanitizing is about what leaves, never what they
+  may read of their own week), and each letter carries `left_host` and
+  the redaction count, in the excursions' own words. The vault's voice
+  and the local ones still read the full digest: nothing leaves, and
+  the prose is better for it.
+
+      asked     does the letter keep the excursions' promise
+      mattered  one loose door undoes every careful one
+
 - **The lookout grows eyes.** A lookout planted on a JavaScript page
   was watching a title and a dozen characters — the shell the server
   sends, not the page the person meant. The standing plan now asks the

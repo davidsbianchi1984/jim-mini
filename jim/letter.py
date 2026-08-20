@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import datetime as _dt
 
-from . import db, llm
+from . import db, llm, offline, research
 
 
 class LetterError(Exception):
@@ -140,7 +140,24 @@ def compose(user: dict, cloud=None, pdi=None) -> dict:
 
     digest = "\n".join("- " + l for l in lines)
     body, described_by = digest, "digest"
-    result = llm.generate_for_user(user_id, _PROSE_SYSTEM, digest,
+    # The letter is not the looser door. The study path sanitizes what
+    # leaves and writes down that it left; the letter — carrying the
+    # week's events, watched pages and appointments — reached the same
+    # network models with neither. Now a voice that would leave the host
+    # gets the *sanitized* digest (the person's own letter keeps the
+    # real one), and `left_host` says what happened, in the excursions'
+    # own word. The vault's voice and the local ones see the full digest
+    # — nothing leaves, and the prose is better for it.
+    choice = llm.resolve_choice(llm.get_choice(user_id))
+    # The vault's wire to PDI is the facility's own (`network: True` in
+    # the registry, honestly — a socket opens), but the excursions set
+    # the meaning of `left_host` and it means *left the facility*: the
+    # vault branch is explicitly not-leaving there, so it is here.
+    left_host = (choice != "vault" and not offline.enabled()
+                 and llm.is_network(choice))
+    outbound, redactions = (research.sanitize(user_id, digest)
+                            if left_host else (digest, 0))
+    result = llm.generate_for_user(user_id, _PROSE_SYSTEM, outbound,
                                    cloud=cloud)
     prose = (result.get("text") or "").strip()
     if prose and result.get("provider") not in (None, "stub"):
@@ -150,17 +167,21 @@ def compose(user: dict, cloud=None, pdi=None) -> dict:
     letter_id = db.new_id("let")
     conn.execute(
         "INSERT INTO letters (id, user_id, week_start, body, described_by,"
-        " digest, created_at) VALUES (?,?,?,?,?,?,?)",
-        (letter_id, user_id, week_start, body, described_by, digest, now))
+        " digest, left_host, redactions, created_at)"
+        " VALUES (?,?,?,?,?,?,?,?,?)",
+        (letter_id, user_id, week_start, body, described_by, digest,
+         int(left_host), redactions, now))
     conn.commit()
     return {"id": letter_id, "week_start": week_start, "body": body,
-            "described_by": described_by, "digest": lines}
+            "described_by": described_by, "digest": lines,
+            "left_host": left_host, "redactions": redactions}
 
 
 def shelf(user_id: str, limit: int = 12) -> list[dict]:
     """Past letters, newest first."""
     rows = db.connect().execute(
-        "SELECT id, week_start, body, described_by, created_at FROM letters"
+        "SELECT id, week_start, body, described_by, left_host, redactions,"
+        " created_at FROM letters"
         " WHERE user_id=? ORDER BY created_at DESC, rowid DESC LIMIT ?",
         (user_id, limit)).fetchall()
-    return [dict(r) for r in rows]
+    return [{**dict(r), "left_host": bool(r["left_host"])} for r in rows]

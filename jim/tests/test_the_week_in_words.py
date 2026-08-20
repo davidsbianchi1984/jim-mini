@@ -120,3 +120,55 @@ def test_the_letter_accounts_for_the_studying(client):
     assert any(
         "1 study taken, most recently: hydration for older adults" == line
         for line in r.json()["digest"]), r.json()["digest"]
+
+
+def test_a_network_voice_gets_the_sanitized_digest(client, monkeypatch):
+    """The letter is not the looser door: the study path sanitizes what
+    leaves and says that it left, and the letter now keeps the same
+    promise. A week whose meals name the person and their emergency
+    contact reaches a network model with those names taken out — while
+    their own letter keeps every word."""
+    from jim import llm, research
+    user = enroll(client, emergency_name="Pat", emergency_phone="+1-555-0199",
+                  emergency_email="pat@example.com", contact_consent=True)
+    client.post(f"/checkin/{user}", json={"mood": 4, "note": "steady"})
+    r = client.post(f"/users/{user}/meals",
+                    json={"note": "soup with Pat and Jordan"})
+    assert r.status_code == 201, r.text
+
+    sent = {}
+
+    def fake_generate(user_id, system, text, cloud=None):
+        sent["content"] = text
+        return {"text": "A week, retold without names.",
+                "provider": "anthropic", "degraded": False}
+    monkeypatch.setattr(llm, "generate_for_user", fake_generate)
+    monkeypatch.setattr(llm, "resolve_choice", lambda c: "anthropic")
+
+    r = client.post(f"/users/{user}/letters")
+    assert r.status_code == 201, r.text
+    letter = r.json()
+    assert letter["left_host"] is True
+    assert letter["redactions"] >= 2
+    assert "Pat" not in sent["content"] and "Jordan" not in sent["content"]
+    assert research.REDACTION in sent["content"]
+    # Their own letter keeps the real digest — sanitizing is about what
+    # leaves, never about what they may read of their own week.
+    assert any("Pat" in line for line in letter["digest"])
+
+    shelf = client.get(f"/users/{user}/letters").json()
+    assert shelf[0]["left_host"] is True and shelf[0]["redactions"] >= 2
+
+
+def test_a_voice_that_stays_home_reads_the_full_digest(client, monkeypatch):
+    """A local voice sends nothing anywhere: the digest goes to it whole,
+    and left_host says so — the same word the excursions use."""
+    from jim import llm
+    user = enroll(client)
+    client.post(f"/checkin/{user}", json={"mood": 4, "note": "steady"})
+    monkeypatch.setattr(llm, "resolve_choice", lambda c: "stub")
+
+    r = client.post(f"/users/{user}/letters")
+    assert r.status_code == 201, r.text
+    letter = r.json()
+    assert letter["left_host"] is False and letter["redactions"] == 0
