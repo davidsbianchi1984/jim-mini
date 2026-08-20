@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v0.92.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v0.93.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **0.93.0** | **The letters keep every promise, and the lookout grows eyes** — the weekly letter is no longer the looser door (a voice that would leave the host gets the sanitized digest, with `left_host` and the redaction count disclosed) and no longer outlives the memory (every forgetting door stamps an epoch; a letter rebuilds from what the tables still hold before it is shown, and a week whose facts are gone loses its letter); the lookouts watch pages as a person meets them through the vault's new rendered fetch instead of the shell the server sends |
 | **0.92.0** | **The ladder ends at a person** — `notify_contact` stopped being words: a critical detection now mails the consented far-end address with an acknowledgment link a person can press, the escalation result refuses honestly in the user's own language when nobody is configured, and a monthly liveness note proves the mailbox on a calm day instead of during an emergency; the Held screen carries the card that sets the address and shows whether a person saw the last alert, and the assistant's menu entry finally says the product's name instead of the amulet's incantation |
 | **0.91.0** | **The choice follows the person, and the letter closes the account** — a user whose provider is the vault now *studies* inside too: the sanitized brief goes to the resident (the same voice door the coach uses) from a typed question, the coach's own study, and the unattended errands alike, with `left_host` honestly false and an older tandem falling to the local provider rather than quietly shipping to the cloud. And the weekly letter accounts for the studying: the week's excursions with their latest topics join the digest, because work done on your behalf belongs in your account of it |
 | **0.90.0** | **The watching reaches the person** — the coach speaks from the watched pages: the freshest capture of each rides the prompt wearing its URL and date, capped at a digest's length, on every provider including the vault path. The lookout list says when each page last *actually* changed (PDI's fingerprinted captures) and, in red, why the latest round failed (the vault's runs ledger) — no stale alarm outliving a recovery, absence never becoming a guess. And the weekly letter carries the watching's facts unprompted: "watched page X changed on {date}", "the watch on X has been failing" — a changed page alone earns the letter |
