@@ -8,6 +8,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The answer begins before it ends.** Field report, twice in one
+  week: "still a long delay while waiting for a response." The wait had
+  two legs — the model writing the whole answer, then the voice service
+  synthesising the whole answer — and the second leg was paid in full
+  before a single word was heard. `say()` now cuts the reply at
+  sentence ends: the first sentence is synthesised alone (small, so it
+  comes back fast) and every later piece is fetched while the one
+  before it plays, so the silence before the first word no longer grows
+  with the length of the answer. Cutting off the Guardian still ends
+  the whole reply, the standing ear still reads the gap between pieces
+  as the Guardian speaking, and a piece the service fails is finished
+  by the device's own voice instead of going quiet mid-reply.
+
+      asked     when does the answer start being heard
+      mattered  does the wait grow with the length of the answer
+
 - **The sphere waits for the tap the browser demands.** Autoplay
   rules can hold the specialist's spoken chime-in until the person
   touches the screen — and a `say()` that "finished" a paragraph in

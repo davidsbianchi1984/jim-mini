@@ -5,11 +5,24 @@
 // still listens, using what the operating system already ships. An app that
 // goes mute because an API key is missing has chosen the wrong failure.
 import { api, getBase } from "./api";
+import { spokenPieces } from "./pieces";
 
 let current: HTMLAudioElement | null = null;
 
+// Bumped by hush(): a say() run that finds the world has moved on stops
+// between pieces instead of speaking the rest of a reply somebody cut off.
+let sayRun = 0;
+
+// True from the first service piece playing to the last one ending, so
+// the moment between two pieces — audio ended, next clip being fetched —
+// still reads as speaking. Without it the standing ear could catch the
+// Guardian's own voice in the gap and submit it as something heard.
+let midReply = false;
+
 /** Stop whatever is being said right now. */
 export function hush() {
+  sayRun++;
+  midReply = false;
   if (current) { current.pause(); current = null; }
   if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
 }
@@ -18,7 +31,7 @@ export function hush() {
  *  reads this so that nothing the Guardian says is ever submitted as
  *  something a monitor heard — a voice must not testify about itself. */
 export function speakingNow(): boolean {
-  return current !== null
+  return current !== null || midReply
     || (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking);
 }
 
@@ -30,41 +43,79 @@ export function speakingNow(): boolean {
  *  speaking finish" is a fact only this module can see. */
 export async function say(text: string): Promise<"service" | "device"> {
   hush();
-  try {
-    const res = await fetch(getBase() + "/voice/speak", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-    if (res.ok) {
-      const blob = await res.blob();
-      const audio = new Audio(URL.createObjectURL(blob));
-      current = audio;
-      // The reply goes to the earbud somebody already connected, where the
-      // platform lets a page choose. Where it does not (iOS), the
-      // microphone request below is the lever that moves the session.
-      const sink = await connectedEar("audiooutput");
-      if (sink && "setSinkId" in audio) {
-        await (audio as HTMLAudioElement & {
-          setSinkId(id: string): Promise<void>;
-        }).setSinkId(sink).catch(() => { /* the default route stands */ });
-      }
-      await audio.play();
-      await new Promise<void>((resolve) => {
-        // `pause` fires for hush(); `ended` for a played-out reply;
-        // `error` for a decode that dies mid-utterance. Any of them is
-        // the speaking being over.
-        audio.addEventListener("ended", () => resolve(), { once: true });
-        audio.addEventListener("pause", () => resolve(), { once: true });
-        audio.addEventListener("error", () => resolve(), { once: true });
+  const run = sayRun;
+  const pieces = spokenPieces(text);
+  if (pieces.length === 0) return "service";
+  // One request to the voice service per piece, fetched one ahead: the
+  // first sentence is synthesised alone — small, so it comes back fast —
+  // and every later piece is fetched while the one before it plays. The
+  // reply used to be a single request for the whole answer, which made
+  // the silence before the first word grow with the length of the answer.
+  const clip = async (piece: string): Promise<Blob | null> => {
+    try {
+      const res = await fetch(getBase() + "/voice/speak", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: piece }),
       });
-      // A reply that played out is no longer "speaking now" — without this,
-      // `speakingNow()` reads true until the next say() or hush(), and the
-      // standing ear would stay deaf between replies.
-      if (current === audio) current = null;
-      return "service";
+      return res.ok ? await res.blob() : null;
+    } catch { return null; }
+  };
+  // The reply goes to the earbud somebody already connected, where the
+  // platform lets a page choose. Where it does not (iOS), the
+  // microphone request in listen() is the lever that moves the session.
+  const sink = await connectedEar("audiooutput");
+  let upNext = clip(pieces[0]);
+  for (let i = 0; i < pieces.length; i++) {
+    const blob = await upNext;
+    if (run !== sayRun) return "service"; // hushed while fetching
+    if (blob === null) {
+      // The service failed on this piece. The device's own voice finishes
+      // the answer — or speaks all of it, when the first piece is the one
+      // that failed — rather than going quiet mid-reply.
+      midReply = false;
+      return sayOnDevice(pieces.slice(i).join(" "));
     }
-  } catch { /* fall through to the device's own voice */ }
+    midReply = true;
+    upNext = i + 1 < pieces.length
+      ? clip(pieces[i + 1]) : Promise.resolve(null);
+    const audio = new Audio(URL.createObjectURL(blob));
+    current = audio;
+    if (sink && "setSinkId" in audio) {
+      await (audio as HTMLAudioElement & {
+        setSinkId(id: string): Promise<void>;
+      }).setSinkId(sink).catch(() => { /* the default route stands */ });
+    }
+    try {
+      await audio.play();
+    } catch {
+      // A piece the platform refuses to play (autoplay policy, decode)
+      // ends the service's turn the same way a failed fetch does.
+      if (current === audio) current = null;
+      midReply = false;
+      if (run !== sayRun) return "service";
+      return sayOnDevice(pieces.slice(i).join(" "));
+    }
+    await new Promise<void>((resolve) => {
+      // `pause` fires for hush(); `ended` for a played-out reply;
+      // `error` for a decode that dies mid-utterance. Any of them is
+      // the speaking being over.
+      audio.addEventListener("ended", () => resolve(), { once: true });
+      audio.addEventListener("pause", () => resolve(), { once: true });
+      audio.addEventListener("error", () => resolve(), { once: true });
+    });
+    // A reply that played out is no longer "speaking now" — without this,
+    // `speakingNow()` reads true until the next say() or hush(), and the
+    // standing ear would stay deaf between replies.
+    if (current === audio) current = null;
+    if (run !== sayRun) { midReply = false; return "service"; }
+  }
+  midReply = false;
+  return "service";
+}
+
+/** The device's own voice — the fallback the module header promises. */
+async function sayOnDevice(text: string): Promise<"device"> {
   if (typeof speechSynthesis !== "undefined") {
     const utter = new SpeechSynthesisUtterance(text);
     // Prefer a male voice when the platform has one, since that is what this
