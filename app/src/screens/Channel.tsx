@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { watchScreen, type Watching } from "../watching";
 import {
   api, type AssistedCall, type CallRow, type CaptureRow,
   type LiaisonHalf, type LiaisonRow, type MonitorRow,
@@ -56,6 +57,12 @@ export function Channel() {
   const [busy, setBusy] = useState(false);
   // What the worn microphone picked up, on its way to the Guardian.
   const [heardSaid, setHeardSaid] = useState("");
+  // The screen, while it is being watched, and the last thing it noticed.
+  // `saw` is held for one glance and replaced by the next — the roster
+  // promises this monitor keeps nothing, and a console that piled the
+  // sentences up would be keeping them on the roster's behalf.
+  const [watch, setWatch] = useState<Watching | null>(null);
+  const [saw, setSaw] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [said, setSaid] = useState<string | null>(null);
   // An aid on a call somebody else can hear. It is not listening until the
@@ -382,6 +389,31 @@ export function Channel() {
               tr("mon.sensing", visitorLang()))}>
               {tr("mon.sense", visitorLang())}
             </button>
+          )}
+          {/* The screen monitor, actually looking. Its promise has always
+              been "see what is on your screen while you work", and until
+              now nothing in this console had ever called getDisplayMedia —
+              the row said sensing with no picture behind it. The browser's
+              own share chooser is the consent gesture, and stopping the
+              share (here, or from the browser's own bar) ends it. What
+              comes back is offered once and kept nowhere, which is what
+              this row's `holds` line already promised. */}
+          {m.on && m.name === "screen" && (
+            <div className="row">
+              <button disabled={busy} onClick={() => {
+                if (watch) { watch.stop(); setWatch(null); setSaw(""); return; }
+                void (async () => {
+                  try {
+                    setWatch(await watchScreen(uid!, token!, setSaw,
+                                               (msg) => setNote(msg)));
+                  } catch (e) { setNote((e as Error).message); }
+                })();
+              }}>
+                {watch ? tr("mon.screen.stop", visitorLang())
+                       : tr("mon.screen.watch", visitorLang())}
+              </button>
+              {saw && <span className="muted small">{saw}</span>}
+            </div>
           )}
           {m.on ? (
             <button disabled={busy} onClick={() => run(

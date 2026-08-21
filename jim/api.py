@@ -31,7 +31,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                landing, life, llm,
                meds, mic, mobile, noticed, notify, oauth, offline, presence,
                problems as problems_mod,
-               permits, referral, relay,
+               permits, referral, relay, sight,
                research,
                robotics,
                cues,
@@ -3534,9 +3534,35 @@ def create_app(qrme_client: QRMEClient | None = None,
         anything in this body — see `jim/daybook.py`.
         """
         _user_or_404(user_id, request)
+        content = body.content if body else ""
+        # A monitor with a lens hands in the frame; the words are made here.
+        #
+        # Describing on the server rather than in the client is the whole
+        # point of doing it at all. Half this roster promises to keep
+        # nothing, and those promises only hold if the noticing does not
+        # need the picture: `sight.describe` holds the frame for the length
+        # of this request, hands on one sentence, and nothing downstream —
+        # cues, the day, the letter — ever has a frame to put anywhere.
+        if body is not None and body.frame_base64:
+            if content:
+                raise HTTPException(
+                    422, "a moment is either the words or the frame it was "
+                         "read from, not both")
+            import base64 as _b64
+
+            try:
+                raw = _b64.b64decode(body.frame_base64, validate=True)
+            except Exception:
+                raise HTTPException(422, "frame_base64 is not valid base64")
+            try:
+                content = sight.describe(raw, body.watching_for or "")
+            except sight.SightUnavailable as exc:
+                raise HTTPException(503, i18n.raised(exc)) from None
+            except sight.SightError as exc:
+                raise HTTPException(502, i18n.raised(exc)) from None
         try:
             moment = daybook.sensed(user_id, name,
-                                    content=(body.content if body else ""),
+                                    content=content,
                                     stretch_id=(body.stretch_id if body
                                                 else None))
         except monitors.NotPluggedIn as exc:
@@ -3547,7 +3573,16 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(404, str(exc)) from None
         except monitors.NoSuchMonitor as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
-        return {"sensing": True, "monitor": name, **moment}
+        # "Offered and dropped" — the screen monitor's own promise, and an
+        # offer has to reach somebody or it is not an offer. The sentence
+        # goes back in this response, to the person whose screen it is, in
+        # the request they started. It is not stored: `moment` carries what
+        # survived, and on a monitor that keeps nothing that is nothing.
+        # Named apart from `content` on purpose, so no reader can mistake
+        # the thing that was handed back for the thing that was kept.
+        described = content if (body is not None and body.frame_base64) else ""
+        return {"sensing": True, "monitor": name, **moment,
+                **({"described": described} if described else {})}
 
     # ---- both parties on channel 2, at once -------------------------------
 

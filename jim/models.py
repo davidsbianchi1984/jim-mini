@@ -839,6 +839,16 @@ class Sensed(BaseModel):
     """
     content: str = ""
     stretch_id: str | None = None
+    #: One frame from a monitor with a lens, base64. Described into words by
+    #: `jim/sight.py` on the way in and then dropped — the sentence is what
+    #: reaches the day, and there is no column anywhere to put a frame in.
+    #: A body carrying both a frame and `content` is refused rather than
+    #: silently preferring one: two accounts of the same moment is not a
+    #: moment this product can honestly record.
+    frame_base64: str | None = None
+    #: What this monitor is watching for, if anything in particular. Narrows
+    #: the looking; never widens it — see `jim.sight.SYSTEM`.
+    watching_for: str | None = None
 
 
 class StretchOpen(BaseModel):

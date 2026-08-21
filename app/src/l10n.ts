@@ -3228,6 +3228,12 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "ch.mic.handover": {
     en: "Hand channel 2 over", es: "Ceder el canal 2", fr: "Céder le canal 2", de: "Kanal 2 übergeben", pt: "Ceder o canal 2", it: "Cedi il canale 2", ja: "チャンネル2を引き渡す", zh: "移交通道2", hi: "चैनल 2 सौंपें", ar: "تسليم القناة 2",
   },
+  "mon.screen.watch": {
+    en: "Let JIM see this screen", es: "Deja que JIM vea esta pantalla", fr: "Laisser JIM voir cet écran", de: "JIM diesen Bildschirm sehen lassen", pt: "Deixar o JIM ver este ecrã", it: "Lascia che JIM veda questo schermo", ja: "この画面をJIMに見せる", zh: "让 JIM 看这个屏幕", hi: "JIM को यह स्क्रीन देखने दें", ar: "دع جيم يرى هذه الشاشة",
+  },
+  "mon.screen.stop": {
+    en: "Stop showing the screen", es: "Dejar de mostrar la pantalla", fr: "Ne plus montrer l'écran", de: "Bildschirm nicht mehr zeigen", pt: "Parar de mostrar o ecrã", it: "Smetti di mostrare lo schermo", ja: "画面を見せるのをやめる", zh: "停止显示屏幕", hi: "स्क्रीन दिखाना बंद करें", ar: "توقّف عن عرض الشاشة",
+  },
   "ch.mic.heard": {
     en: "what your microphone picked up", es: "lo que captó tu micrófono", fr: "ce que votre microphone a capté", de: "was dein Mikrofon aufgenommen hat", pt: "o que o seu microfone captou", it: "ciò che il tuo microfono ha captato", ja: "マイクが拾った内容", zh: "你的麦克风拾取到的内容", hi: "आपके माइक्रोफ़ोन ने जो पकड़ा", ar: "ما التقطه الميكروفون الخاص بك",
   },

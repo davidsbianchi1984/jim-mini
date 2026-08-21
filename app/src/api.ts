@@ -1940,6 +1940,22 @@ export const api = {
       `/monitors/${uid}/${name}/sensed`,
       { method: "POST", body: { content, stretch_id: stretchId ?? null },
         token }),
+  /** One frame from a monitor with a lens. The words are made on the
+   *  server — see jim/sight.py — because half this roster promises to keep
+   *  nothing, and those promises only hold if the noticing does not need
+   *  the picture. `described` comes back for the person who is looking at
+   *  their own screen and is stored nowhere; `kept` says what survived,
+   *  which on the screen monitor is nothing. */
+  monitorSaw: (uid: string, name: string, token: string,
+               frameBase64: string, watchingFor?: string) =>
+    req<{ sensing: boolean; monitor: string; kept: boolean;
+          dropped_because: string; holds: string; described?: string;
+          cues?: string[] }>(
+      `/monitors/${uid}/${name}/sensed`,
+      { method: "POST",
+        body: { frame_base64: frameBase64,
+                watching_for: watchingFor ?? null },
+        token }),
   // What was sensed today and what survived of it, the meetings it fell
   // inside, and the short list that was actually kept.
   theDay: (uid: string, token: string) =>

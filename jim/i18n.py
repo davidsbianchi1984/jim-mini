@@ -1226,10 +1226,38 @@ MIC_LENT_ELSEWHERE = ("channel 2 is lent to your {yours}, not to {theirs}. "
                       "say which microphone heard this")
 
 #: Derived from the table below rather than repeated.
+#: The eyes could not be reached, and the eyes said no. Both name what
+#: leaves — one frame, sent to be described — rather than a bare code.
+SIGHT_UNREACHABLE = ("could not reach the service that describes what a "
+                     "monitor sees: {why}")
+SIGHT_REFUSED = "the eyes refused it: HTTP {code} {detail}"
+
 TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE, ERRANDS_SPENT, MONITOR_NOT_ON,
-             MIC_LENT_ELSEWHERE)
+             MIC_LENT_ELSEWHERE, SIGHT_UNREACHABLE, SIGHT_REFUSED)
 
 _TEMPLATES: dict[str, dict[str, str]] = {
+    SIGHT_UNREACHABLE: {
+        'es': 'no se pudo contactar con el servicio que describe lo que ve un monitor: {why}',
+        'fr': "impossible de joindre le service qui décrit ce qu'un capteur voit : {why}",
+        'de': 'der Dienst, der beschreibt, was ein Melder sieht, war nicht erreichbar: {why}',
+        'pt': 'não foi possível alcançar o serviço que descreve o que um monitor vê: {why}',
+        'it': 'non è stato possibile raggiungere il servizio che descrive ciò che un sensore vede: {why}',
+        'ja': 'モニターが見ているものを説明するサービスに到達できませんでした: {why}',
+        'zh': '无法连接到描述监测项所见内容的服务: {why}',
+        'hi': 'उस सेवा तक नहीं पहुँच सके जो बताती है कि मॉनिटर क्या देख रहा है: {why}',
+        'ar': 'تعذّر الوصول إلى الخدمة التي تصف ما يراه المِرقاب: {why}',
+    },
+    SIGHT_REFUSED: {
+        'es': 'los ojos lo rechazaron: HTTP {code} {detail}',
+        'fr': 'les yeux ont refusé : HTTP {code} {detail}',
+        'de': 'die Augen haben es abgelehnt: HTTP {code} {detail}',
+        'pt': 'os olhos recusaram: HTTP {code} {detail}',
+        'it': 'gli occhi lo hanno rifiutato: HTTP {code} {detail}',
+        'ja': '目がそれを拒みました: HTTP {code} {detail}',
+        'zh': '眼睛拒绝了它: HTTP {code} {detail}',
+        'hi': 'आँखों ने इसे अस्वीकार किया: HTTP {code} {detail}',
+        'ar': 'رفضته العيون: HTTP {code} {detail}',
+    },
     MIC_LENT_ELSEWHERE: {
         'es': "el canal 2 está cedido a tu {yours}, no a {theirs}. Un canal, un dispositivo — de otro modo el registro no puede decir qué micrófono oyó esto",
         'fr': "le canal 2 est cédé à votre {yours}, pas à {theirs}. Un canal, un appareil — sinon le registre ne peut pas dire quel microphone a entendu cela",
@@ -1699,6 +1727,50 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    'frame_base64 is not valid base64': {
+        'es': 'frame_base64 no es base64 válido',
+        'fr': "frame_base64 n'est pas du base64 valide",
+        'de': 'frame_base64 ist kein gültiges Base64',
+        'pt': 'frame_base64 não é base64 válido',
+        'it': 'frame_base64 non è base64 valido',
+        'ja': 'frame_base64 は有効な base64 ではありません',
+        'zh': 'frame_base64 不是有效的 base64',
+        'hi': 'frame_base64 मान्य base64 नहीं है',
+        'ar': 'frame_base64 ليس ترميز base64 صالحًا',
+    },
+    'there was no frame in that': {
+        'es': 'no había ningún fotograma en eso',
+        'fr': "il n'y avait aucune image là-dedans",
+        'de': 'darin war kein Bild',
+        'pt': 'não havia nenhum fotograma nisso',
+        'it': 'in quello non c\'era alcun fotogramma',
+        'ja': 'そこにはフレームがありませんでした',
+        'zh': '那里面没有画面',
+        'hi': 'उसमें कोई फ़्रेम नहीं था',
+        'ar': 'لم يكن هناك أي إطار في ذلك',
+    },
+    'nothing is set up to look: this deployment has no key for describing what a camera or a screen sees. The monitor stays switched on and reports nothing until one is added': {
+        'es': 'no hay nada configurado para mirar: esta instalación no tiene clave para describir lo que ve una cámara o una pantalla. El monitor sigue encendido y no informa de nada hasta que se añada una',
+        'fr': "rien n'est configuré pour regarder : cette installation n'a pas de clé pour décrire ce que voit une caméra ou un écran. Le capteur reste allumé et ne rapporte rien tant qu'on n'en ajoute pas une",
+        'de': 'nichts ist zum Schauen eingerichtet: diese Installation hat keinen Schlüssel, um zu beschreiben, was eine Kamera oder ein Bildschirm sieht. Der Melder bleibt eingeschaltet und meldet nichts, bis einer hinzugefügt wird',
+        'pt': 'nada está configurado para ver: esta instalação não tem chave para descrever o que uma câmara ou um ecrã vê. O monitor continua ligado e não reporta nada até que se adicione uma',
+        'it': 'non c\'è nulla configurato per guardare: questa installazione non ha una chiave per descrivere ciò che una telecamera o uno schermo vede. Il sensore resta acceso e non riporta nulla finché non ne viene aggiunta una',
+        'ja': '見るための設定がありません。この配備には、カメラや画面が見ているものを説明するための鍵がありません。モニターは入ったままで、鍵が追加されるまで何も報告しません',
+        'zh': '没有任何东西被配置为观看：此部署没有用于描述摄像头或屏幕所见内容的密钥。该监测项保持开启，在添加密钥之前不会报告任何内容',
+        'hi': 'देखने के लिए कुछ भी सेट नहीं है: इस परिनियोजन के पास यह बताने की कुंजी नहीं है कि कैमरा या स्क्रीन क्या देख रहा है। मॉनिटर चालू रहेगा और कुंजी जुड़ने तक कुछ भी रिपोर्ट नहीं करेगा',
+        'ar': 'لا شيء مُهيَّأ للنظر: هذا النشر لا يملك مفتاحًا لوصف ما تراه كاميرا أو شاشة. يبقى المِرقاب مشغَّلًا ولا يبلّغ عن شيء حتى يُضاف مفتاح',
+    },
+    'a moment is either the words or the frame it was read from, not both': {
+        'es': 'un momento son las palabras o el fotograma del que se leyeron, no ambos',
+        'fr': "un moment, ce sont les mots ou l'image dont ils ont été tirés, pas les deux",
+        'de': 'ein Moment sind die Worte oder das Bild, aus dem sie gelesen wurden — nicht beides',
+        'pt': 'um momento são as palavras ou o fotograma de onde foram lidas, não ambos',
+        'it': 'un momento sono le parole oppure il fotogramma da cui sono state lette, non entrambi',
+        'ja': '一つの瞬間は、言葉か、その読み取り元のフレームのどちらかであって、両方ではありません',
+        'zh': '一个瞬间要么是文字，要么是读出文字的那一帧，不能两者兼有',
+        'hi': 'एक क्षण या तो शब्द है या वह फ़्रेम जिससे वे पढ़े गए — दोनों नहीं',
+        'ar': 'اللحظة إمّا الكلمات وإمّا الإطار الذي قُرئت منه، لا الاثنان معًا',
+    },
     'no such monitor': {
         'es': 'no existe ese monitor',
         'fr': "ce capteur n'existe pas",
@@ -3745,6 +3817,8 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'window_minutes': {'en': 'Window (minutes)', 'es': 'Ventana (minutos)', 'fr': 'Fenêtre (minutes)', 'de': 'Zeitfenster (Minuten)', 'pt': 'Janela (minutos)', 'it': 'Finestra (minuti)', 'ja': 'ウィンドウ（分）', 'zh': '时间窗（分钟）', 'hi': 'विंडो (मिनट)', 'ar': 'النافذة (بالدقائق)'},    # Aligned to QRME's wording when the sibling-vocabulary guard ran for
     # real the first time: this field IS the engine's voice id, here too.
     'voice_id': {'en': 'Voice ID from the engine', 'es': 'ID de voz del motor', 'fr': 'ID de voix du moteur', 'de': 'Stimm-ID der Engine', 'pt': 'ID de voz do motor', 'it': 'ID voce del motore', 'ja': 'エンジンのボイスID', 'zh': '引擎的声音 ID', 'hi': 'इंजन की वॉइस ID', 'ar': 'معرّف الصوت من المحرّك'},
+    'frame_base64': {'en': 'The frame', 'es': 'El fotograma', 'fr': "L'image", 'de': 'Das Bild', 'pt': 'O fotograma', 'it': 'Il fotogramma', 'ja': 'フレーム', 'zh': '画面', 'hi': 'फ़्रेम', 'ar': 'الإطار'},
+    'watching_for': {'en': 'What this monitor is watching for', 'es': 'Qué vigila este monitor', 'fr': 'Ce que ce capteur surveille', 'de': 'Worauf dieser Melder achtet', 'pt': 'O que este monitor vigia', 'it': 'Che cosa sorveglia questo sensore', 'ja': 'このモニターが見張っているもの', 'zh': '此监测项在留意什么', 'hi': 'यह मॉनिटर किस बात पर नज़र रखता है', 'ar': 'ما يراقبه هذا المِرقاب'},
     'words': {'en': 'What it heard', 'es': 'Lo que oyó', 'fr': "Ce qu'il a entendu", 'de': 'Was es gehört hat', 'pt': 'O que ouviu', 'it': 'Ciò che ha sentito', 'ja': '聞き取った内容', 'zh': '它听到的内容', 'hi': 'उसने जो सुना', 'ar': 'ما سمعه'},
     'floor': {'en': 'Low-balance floor', 'es': 'Suelo de saldo bajo', 'fr': 'Plancher de solde bas', 'de': 'Untergrenze für den Kontostand', 'pt': 'Piso de saldo baixo', 'it': 'Soglia di saldo basso', 'ja': '残高の下限ライン', 'zh': '低余额下限', 'hi': 'न्यून शेष की सीमा', 'ar': 'الحد الأدنى للرصيد'},
 

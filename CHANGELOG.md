@@ -8,6 +8,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The screen is really seen.** The roster has promised since it was
+  written that the screen monitor can "see what is on your screen while
+  you work", holding nothing — "what it notices is offered and dropped".
+  For the wearables the missing half is hardware; for this one it never
+  was. The browser has had `getDisplayMedia` for years and this console
+  had never called it, and the server had no way to turn a picture into
+  the words a day is made of. Both halves are here: `jim/sight.py` is
+  the deployment's eyes, on exactly the terms `jim/voice.py` is its ears
+  — a frame goes out to be described, one sentence comes back, and no
+  frame is written down anywhere. The `sensed` door takes a frame and
+  makes the words **on the server**, which is the load-bearing choice:
+  half this roster promises to keep nothing, and those promises only
+  hold if the noticing does not need the picture. The console shares a
+  screen through the browser's own chooser (the consent gesture nobody
+  can pre-answer), samples one frame every twenty seconds with never
+  more than one in flight, and stops when the person stops the share —
+  from the console or from the browser's own bar. The description is
+  offered back once to the person whose screen it is and stored
+  nowhere; a deployment with no key to look with says so rather than
+  guessing, because a cue read out of a hallucination is an escalation
+  nobody's day contained.
+
+      asked     may JIM see this screen
+      mattered  has it ever been shown one
+
+### Added
+
 - **Channel 2 carries what it hears.** `jim/mic.py` has always said,
   honestly, that capture happens on the device and nothing in that
   module touches a sample. That was a true description of the division
