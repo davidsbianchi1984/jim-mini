@@ -4,6 +4,33 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **The Guardian does not answer herself.** Field report from a coach
+  conversation: "when I'm in the chat sphere with coach while it's
+  talking, it's listening at the same time, but it seems to be picking
+  up its own voice and triggering itself and not letting it finish."
+  The open microphone was not the defect — it is what makes
+  interrupting a turn, which an earlier report asked for. The defect is
+  what came back through it: on a phone speaker, echo cancellation
+  thins her voice without silencing it, and the transcriber turned that
+  leakage into the person's next turn, so the reply hushed itself
+  mid-sentence and answered a sentence it had just said. Two answers
+  now, and the second is the certain one: the energy bar goes up while
+  she speaks (a person inches from the microphone clears it; a speaker
+  across the table usually does not), and whatever survives that is
+  checked against her own words — three words or more, mostly made of
+  what she just said, is the room rather than a person. Short
+  interruptions ("stop", "no", "wait") are never called an echo,
+  because they are exactly the ones worth having. An echo is reported
+  as quiet, so a standing conversation re-opens the microphone instead
+  of ending over the room being a room.
+
+      asked     did somebody interrupt
+      mattered  was it a person, or the speaker on the table
+
 ## [0.98.0] - 2026-08-21
 
 ### Fixed

@@ -5,6 +5,7 @@
 // still listens, using what the operating system already ships. An app that
 // goes mute because an API key is missing has chosen the wrong failure.
 import { api, getBase } from "./api";
+import { isEcho } from "./echo";
 import { spokenPieces } from "./pieces";
 
 let current: HTMLAudioElement | null = null;
@@ -35,6 +36,22 @@ export function speakingNow(): boolean {
     || (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking);
 }
 
+// The Guardian's own last words, kept so a recording can be checked
+// against them. The rule itself lives in `echo.ts`, which imports
+// nothing so the guard suite can run it for real; this module holds the
+// one piece only it knows — what is being said right now.
+let saidText = "";
+
+/** The words being said aloud right now, or the last ones said. */
+export function spokenText(): string {
+  return saidText;
+}
+
+/** True when a heard phrase is the Guardian's own voice coming back. */
+export function echoOfTheGuardian(heard: string): boolean {
+  return isEcho(heard, saidText);
+}
+
 /** Say `text` aloud — the configured voice when there is one, the device's
  *  own otherwise. Resolves when the speaking ENDS (hush() counts as an
  *  end), not when it starts: the purple orb is bound to this promise, and
@@ -44,6 +61,10 @@ export function speakingNow(): boolean {
 export async function say(text: string): Promise<"service" | "device"> {
   hush();
   const run = sayRun;
+  // Held for the echo check below, and deliberately NOT cleared when the
+  // speaking ends: a recording that was still open as the last word
+  // played is exactly the one that needs checking.
+  saidText = text;
   const pieces = spokenPieces(text);
   if (pieces.length === 0) return "service";
   // One request to the voice service per piece, fetched one ahead: the
@@ -249,6 +270,15 @@ function deviceListener(
   };
   rec.onend = () => {
     if (failed) return;
+    // The same echo rule as the record-and-send path, and this one needs
+    // it more: the platform's own recogniser has no analyser behind it,
+    // so there is no energy bar to raise while the Guardian speaks —
+    // whatever it hears, it transcribes. Reported as quiet, so a standing
+    // conversation re-opens the microphone instead of ending.
+    if (heard && echoOfTheGuardian(heard)) {
+      onError("nothing was heard in that");
+      return;
+    }
     if (heard) onText(heard);
     else onError("nothing was heard in that");
   };
@@ -443,6 +473,11 @@ export async function listen(
   // window, and the wait between finishing a sentence and hearing the
   // reply begins is half of what it was.
   const SILENCE_STOP_MS = 2500;
+  // What it takes to count as a voice WHILE the Guardian is speaking —
+  // roughly a fifth of full scale, against a twentieth for a quiet room.
+  // Interrupting means speaking up, which is what interrupting a person
+  // means too.
+  const BARGE_PEAK = 22;
   let watcher = 0;
   let audioCtx: AudioContext | null = null;
   // Whether a voice-level sound was ever heard. Speech models hallucinate
@@ -482,7 +517,18 @@ export async function listen(
         onLevel?.(Math.min(1, peak / 40));
         // ~5% of full scale: above the hiss of a quiet room, below any
         // spoken word near the microphone.
-        if (peak > 6) { voiced = true; lastVoice = Date.now(); }
+        //
+        // While the Guardian is speaking, the bar goes up. Her own voice
+        // reaches this microphone through the room — echo cancellation
+        // thins it, the phone's speaker does not silence it — and at the
+        // quiet-room threshold that leakage reads as somebody talking.
+        // A person interrupting is inches from the microphone and clears
+        // the higher bar easily; a speaker across the table usually does
+        // not. This alone is not the fix (a loud room would still get
+        // through) — it is the cheap half, and `echoOfTheGuardian` below
+        // is the certain one.
+        const bar = speakingNow() ? BARGE_PEAK : 6;
+        if (peak > bar) { voiced = true; lastVoice = Date.now(); }
         else if (Date.now() - lastVoice >= SILENCE_STOP_MS) {
           stopWatching();
           if (rec.state !== "inactive") rec.stop();
@@ -506,6 +552,15 @@ export async function listen(
     });
     try {
       const { text } = await api.transcribe(b64);
+      // The Guardian's own voice, come back through the room. Reported as
+      // quiet rather than as an error, deliberately: "nothing was heard"
+      // is what a standing conversation treats as a pause, so it re-opens
+      // the microphone and waits — which is exactly right. Calling it a
+      // failure would end the conversation over the room being a room.
+      if (text && echoOfTheGuardian(text)) {
+        onError("nothing was heard in that");
+        return;
+      }
       if (text) onText(text);
       else onError("nothing was heard in that");
     } catch (e) {
