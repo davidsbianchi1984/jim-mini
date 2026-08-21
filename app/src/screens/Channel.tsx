@@ -98,6 +98,16 @@ export function Channel() {
     api.micTypes().then(setTypes).catch(() => setTypes(null));
     api.micGains().then(setGains).catch(() => setGains(null));
     api.captureVocabulary().then(setVocab).catch(() => setVocab(null));
+    // Arrived through the composer's + menu (Camera / Photos): land on the
+    // camera card, not the top of a long screen. The hash is consumed so a
+    // later visit starts at the top again.
+    if (window.location.hash === "#cam") {
+      window.setTimeout(() =>
+        document.getElementById("cam")?.scrollIntoView(
+          { behavior: "smooth", block: "start" }), 50);
+      window.history.replaceState(
+        null, "", window.location.pathname + window.location.search);
+    }
   }, []);
   useEffect(load, [load]);
 
@@ -708,7 +718,7 @@ export function Channel() {
         </>
       )}
 
-      <h3>{tr("ch.cam", visitorLang())}</h3>
+      <h3 id="cam">{tr("ch.cam", visitorLang())}</h3>
       {vocab && (
         <p className="muted">
           {vocab.agent_sees?.join(", ")}{vocab.vault_required

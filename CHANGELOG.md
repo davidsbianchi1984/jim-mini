@@ -107,6 +107,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       asked     does a shared field read the same in every product
       mattered  the guard that answers this had never actually run
 
+- **The menu that promised the camera.** Field report with the
+  screenshot to match: the composer's + menu offers Camera, Photos,
+  Microphone — and tapping Photos landed on *Who else is looking*,
+  the specialists screen. Both picture items were wired to the wrong
+  room. They land on the channel screen's camera card now — the one
+  place taking and importing a picture actually live, body-site
+  vocabulary and consent included — and `#cam` scrolls the long
+  screen straight to the card. A guard pins all three items to rooms
+  their labels actually name.
+
+      asked     does the menu item open what its label names
+      mattered  a label is a promise, and the wrong room breaks it
+                silently
+
 ### Changed
 
 - **The bed sensor says who it notices.** Its row read *read

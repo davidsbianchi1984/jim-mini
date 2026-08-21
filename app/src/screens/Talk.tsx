@@ -242,10 +242,20 @@ export function Talk({ go }: {
       <div className="talk-bar">
         {plus && (
           <div className="talk-plus" role="menu">
-            <button role="menuitem" onClick={() => { setPlus(false); go("attending"); }}>
+            {/* Field report: Camera and Photos pointed at the specialists
+                screen — a menu that promises the camera roll and delivers
+                a directory of clinicians. Both land on the camera card
+                now (`#cam` scrolls the channel screen to it), which is
+                where taking and importing a picture actually live, site
+                vocabulary and consent included. */}
+            <button role="menuitem" onClick={() => {
+              setPlus(false); window.location.hash = "cam"; go("channel");
+            }}>
               📷 {tr("talk.plus.camera", lang)}
             </button>
-            <button role="menuitem" onClick={() => { setPlus(false); go("attending"); }}>
+            <button role="menuitem" onClick={() => {
+              setPlus(false); window.location.hash = "cam"; go("channel");
+            }}>
               🖼 {tr("talk.plus.photos", lang)}
             </button>
             <button role="menuitem" onClick={() => { setPlus(false); go("channel"); }}>
