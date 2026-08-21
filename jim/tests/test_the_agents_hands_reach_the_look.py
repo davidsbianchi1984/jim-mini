@@ -111,7 +111,9 @@ def test_the_conversation_bows_out_after_two_quiet_minutes():
     drifts."""
     speech = (REPO / "app/src/speech.ts").read_text(encoding="utf-8")
     assert "export const CONVERSATION_IDLE_MS = 120_000" in speech
-    for screen in ("Coach", "Talk", "Engaged", "Monitor"):
+    # Checkin joined when the sphere reached it — the round the reviewer's
+    # screenshot preserved through the interruptions.
+    for screen in ("Coach", "Talk", "Engaged", "Monitor", "Checkin"):
         src = (REPO / f"app/src/screens/{screen}.tsx").read_text(
             encoding="utf-8")
         assert "CONVERSATION_IDLE_MS" in src, (

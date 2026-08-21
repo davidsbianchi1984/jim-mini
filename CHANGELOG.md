@@ -65,6 +65,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
                 server's one vocabulary, behind the roster's one
                 consent door
 
+- **The sphere reaches the check-in.** The round preserved in the
+  reviewer's screenshot through three interruptions, resumed: a
+  worrying check-in note already ran the same Guardian pipeline as
+  the monitoring screen, and the identical guidance came back as a
+  silent paragraph under the sliders. The specialist's sphere opens
+  there now — her name, the guidance spoken so it cannot be missed,
+  the tap-to-hear state when the browser withholds autoplay, and the
+  standing discussion at her own area's door — the same honesty rules
+  the monitor's sphere carries, drift-guarded by the same tests.
+
+      asked     does the worry arrive the same whichever screen
+                heard it
+      mattered  one pipeline deserves one voice
+
 - **The baseline screen is the home of every limit.** The reviewer,
   over the live screen: round up the settings that belong here, and
   give finances limit ranges with sliders. So the round-up: the
