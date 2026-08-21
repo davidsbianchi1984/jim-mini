@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v0.96.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v0.97.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **0.97.0** | **The conversation reaches everyone who talks** — the engaged session joins the standing voice loop (mic, wave-ring orb, two quiet minutes to bow out) and the study question's yes/no is literal buttons; the specialist chimes in out loud: on a detection her own sphere opens over the monitor, wearing her name, speaks the guidance, and holds the mic for a discussion at her own door (`specialist_area` on the wire) — the emergency card and call door untouched; the reviewer's three calls land: the look gets its own permit, the excursion asks first in-turn verbatim, and the idle exit is two minutes everywhere |
 | **0.96.0** | **The conversation stands, and the agent's hands reach the look** — the voice exchange on Talk and Coach is a standing loop (listen, answer aloud, listen again) until the person taps out, with quiet re-opening the microphone instead of hanging up; the engaged agent gains a real `set_appearance` hand (standard, midnight, paper — colors only, photos untouched) with a matching Settings card, and takes `study` so an asked-for knowledge excursion runs on the spot; the front door answers `general`, the composer mic really listens, the wave orb rides the voice level, and the channel's device block wears the phone's own Bluetooth-page shape; the menu tile is renamed "What JIM can touch" |
 | **0.95.0** | **Version alignment** — the trio releases together; this release's changes live in the qrme repository (the ears arc reaching every briefcase door), and nothing changed here since 0.94.0 |
 | **0.94.0** | **The lookout grows ears, and the doors exist** — a lookout planted on a recording stands a listening appointment: the vault's new `fetch.listen` seals the words said in the media file, with the same change-memory the pages keep, and the letter says "watched recording"; the coach carries a map of the product's own doors so a door-shaped request is walked to its screen instead of shrugged at; the held screen's quick-allow buttons match the wire, the permits screen has its own menu entry with two standing guards on every door, enrollment can no longer strand a planless account, and the excursion rows wear `answered_by` on screen |
