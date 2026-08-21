@@ -1,6 +1,12 @@
 :root {
   --card: #182238; --card2: #1f2b45; --line: #26314e;
   --txt: #eef1f7; --t2: #8a94ad; --t3: #626d88;
+  /* Seven rules already said var(--muted) and no rule ever defined it, so
+     seven "muted" things silently inherited full-strength color. An alias
+     of --t2 rather than a new gray: the themes override --t2, and a muted
+     that tracked the standard theme only would be the same bug dressed
+     better. */
+  --muted: var(--t2);
   --brand: #43e08a; --brand2: #2fd27a; --blue: #3aa0ff; --violet: #a78bfa;
   --amber: #f7b731; --green: #43e08a; --red: #ff4d5e;
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, system-ui, sans-serif;
@@ -477,7 +483,9 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .wl-label { font-size: 11px; color: var(--muted); }
 .wl-foot { font-size: 10px; color: var(--muted); margin-top: 2px; }
 .wl-ear { background: none; border: none; padding: 0; cursor: pointer;
-  color: var(--text); font-size: 12px; text-align: left;
+  /* var(--txt): the first draft said --text, a token that has never
+     existed, and the ghost-variable guard below this round caught it. */
+  color: var(--txt); font-size: 12px; text-align: left;
   text-decoration: underline dotted; }
 .wl-dot { position: fixed; left: 22px; bottom: 22px; width: 46px; height: 46px;
   border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); cursor: pointer;
@@ -722,3 +730,50 @@ body.theme-paper select { background: #fff; color: var(--txt); }
    dismissed as noise. */
 .voice-orb-who { color: #fff; font-weight: 600; font-size: 15px;
   margin-top: 10px; }
+
+
+/* The task window — "what is my guardian doing" — pinned opposite its
+   sibling the lights. It shipped rendering nine uw-* classes that no rule
+   styled: raw spans, words glued together, a panel sprawling across the
+   page foot. A field screenshot read "sensingwrist". A card rather than a
+   dial, because its rows arrive in unknown number. */
+.underway { position: fixed; right: 22px; bottom: 84px; width: 232px;
+  max-height: 46vh; overflow-y: auto; border-radius: 16px;
+  border: 1px solid var(--line);
+  background: radial-gradient(120% 120% at 50% 0%, #12233a 0%, #0b1120 75%);
+  box-shadow: 0 16px 40px rgba(0,0,0,.55); padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 6px; z-index: 40; }
+.uw-head { display: flex; align-items: center;
+  justify-content: space-between; }
+.uw-name { font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .04em; }
+.uw-min { background: none; border: 0; color: var(--muted); font-size: 16px;
+  line-height: 1; cursor: pointer; padding: 0 2px; }
+.uw-quiet { font-size: 12px; color: var(--muted); }
+.uw-row { display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: 2px 6px; padding: 4px 0; border-bottom: 1px solid var(--line);
+  font-size: 12px; }
+.uw-row:last-child { border-bottom: 0; }
+.uw-kind { font-weight: 700; color: var(--txt); }
+.uw-term { color: var(--txt); opacity: .85; }
+.uw-words { color: var(--muted); overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; max-width: 100%; }
+.uw-why { font-size: 11px; color: var(--muted); font-style: italic; }
+.uw-today { display: flex; flex-direction: column; gap: 2px;
+  margin-top: 4px; border-top: 1px solid var(--line); padding-top: 6px; }
+.uw-foot { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.uw-dot { position: fixed; right: 22px; bottom: 84px; width: 46px;
+  height: 46px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25); color: var(--txt);
+  background: radial-gradient(120% 120% at 50% 20%, #12233a 0%, #0b1120 70%);
+  cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  font-weight: 700; z-index: 40; }
+.uw-dot-off { background: #2c3a52; border-color: rgba(255,255,255,0.35); }
+@media (max-width: 760px) {
+  .underway { right: 12px;
+    bottom: calc(76px + env(safe-area-inset-bottom)); width: 200px;
+    max-height: 38vh; padding: 10px 12px; }
+  .uw-dot { right: 12px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    width: 22px; height: 22px; opacity: 0.75; font-size: 10px; }
+}

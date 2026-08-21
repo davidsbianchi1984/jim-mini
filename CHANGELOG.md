@@ -121,6 +121,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The window that shipped without paint.** The task window rendered
+  nine `uw-*` classes that existed in no stylesheet rule at all — a
+  field screenshot read *sensingwrist*, bare spans glued together,
+  the "pinned" panel sprawling unstyled across the page foot. It is a
+  pinned card now, opposite its sibling the lights, minimizable to a
+  dot, rows with real spacing and hairlines. The same sweep found
+  `var(--muted)` read by seven rules and defined by none (seven muted
+  things rendering at full strength) and a `--text` that had never
+  existed; `--muted` is an alias of `--t2` now so every theme carries
+  it. A new guard pins the family, not the instances: every class the
+  pinned widgets render must have a rule, and every CSS variable the
+  stylesheet reads must be one it defines.
+
+      asked     does the widget render
+      mattered  does anything style what it renders
+
 - **The third sensitivity level was unreachable.** Both the Bearing
   screen and the watch face offered a level called *direct* — a word
   the server has never accepted (its vocabulary is cautious /
