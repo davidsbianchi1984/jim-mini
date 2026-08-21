@@ -14,6 +14,14 @@ export function hush() {
   if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
 }
 
+/** True while this module is saying something aloud. The standing ear
+ *  reads this so that nothing the Guardian says is ever submitted as
+ *  something a monitor heard — a voice must not testify about itself. */
+export function speakingNow(): boolean {
+  return current !== null
+    || (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking);
+}
+
 /** Say `text` aloud — the configured voice when there is one, the device's
  *  own otherwise. Resolves when the speaking ENDS (hush() counts as an
  *  end), not when it starts: the purple orb is bound to this promise, and
@@ -41,6 +49,10 @@ export async function say(text: string): Promise<"service" | "device"> {
         audio.addEventListener("pause", () => resolve(), { once: true });
         audio.addEventListener("error", () => resolve(), { once: true });
       });
+      // A reply that played out is no longer "speaking now" — without this,
+      // `speakingNow()` reads true until the next say() or hush(), and the
+      // standing ear would stay deaf between replies.
+      if (current === audio) current = null;
       return "service";
     }
   } catch { /* fall through to the device's own voice */ }
@@ -89,8 +101,10 @@ export function heardNothing(message: string): boolean {
 }
 
 /** The minimal face of the platform's own recogniser. Typed here because
- *  the DOM lib does not ship one, and `any` would hide the contract. */
-interface DeviceRecognition {
+ *  the DOM lib does not ship one, and `any` would hide the contract.
+ *  Exported for the standing ear (ear.ts), which listens continuously
+ *  through the same recogniser this module borrows one phrase at a time. */
+export interface DeviceRecognition {
   lang: string;
   interimResults: boolean;
   continuous: boolean;
@@ -103,7 +117,7 @@ interface DeviceRecognition {
   stop(): void;
 }
 
-function deviceRecogniser(): (new () => DeviceRecognition) | null {
+export function deviceRecogniser(): (new () => DeviceRecognition) | null {
   const w = window as unknown as Record<string, unknown>;
   const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition;
   return typeof SR === "function"
@@ -310,7 +324,11 @@ export async function listen(
 
   let stream: MediaStream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Echo cancellation asked for by name, not assumed: the microphone is
+    // open while the reply plays now (interrupting is a turn), and without
+    // AEC the speaker's own voice would barge itself in.
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true } });
   } catch {
     onError("no microphone available — check the app's microphone permission");
     return { stop: () => {} };
@@ -328,6 +346,14 @@ export async function listen(
   const SILENCE_STOP_MS = 5000;
   let watcher = 0;
   let audioCtx: AudioContext | null = null;
+  // Whether a voice-level sound was ever heard. Speech models hallucinate
+  // words out of silence — a field report watched the specialist answer
+  // "thank you" after "thank you" to an empty room, each invented turn
+  // resetting the idle clock that should have closed the conversation. A
+  // recording the analyser never saw cross the voice threshold reports
+  // "nothing was heard" without ever reaching transcription.
+  let voiced = false;
+  let hadAnalyser = false;
   const stopWatching = () => {
     if (watcher) { window.clearInterval(watcher); watcher = 0; }
     if (audioCtx) { void audioCtx.close().catch(() => {}); audioCtx = null; }
@@ -341,6 +367,7 @@ export async function listen(
     const Ctx = AC.AudioContext ?? AC.webkitAudioContext;
     if (Ctx) {
       audioCtx = new Ctx();
+      hadAnalyser = true;
       const analyser = audioCtx.createAnalyser();
       analyser.fftSize = 1024;
       audioCtx.createMediaStreamSource(stream).connect(analyser);
@@ -356,7 +383,7 @@ export async function listen(
         onLevel?.(Math.min(1, peak / 40));
         // ~5% of full scale: above the hiss of a quiet room, below any
         // spoken word near the microphone.
-        if (peak > 6) lastVoice = Date.now();
+        if (peak > 6) { voiced = true; lastVoice = Date.now(); }
         else if (Date.now() - lastVoice >= SILENCE_STOP_MS) {
           stopWatching();
           if (rec.state !== "inactive") rec.stop();
@@ -369,6 +396,10 @@ export async function listen(
     stream.getTracks().forEach((t) => t.stop());
     const blob = new Blob(chunks, { type: "audio/webm" });
     if (!blob.size) { onError("nothing was recorded"); return; }
+    // The energy gate: silence never reaches the transcriber, so the
+    // transcriber can never invent a sentence from it. A platform with
+    // no analyser keeps the old behavior — it cannot tell, so it asks.
+    if (hadAnalyser && !voiced) { onError("nothing was heard in that"); return; }
     const b64: string = await new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(String(reader.result).split(",")[1] || "");

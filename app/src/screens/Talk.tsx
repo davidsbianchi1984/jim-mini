@@ -66,6 +66,12 @@ export function Talk({ go }: {
   // orphans a transcription still in flight.
   const talking = useRef(false);
   const round = useRef(0);
+  // Interrupting is a turn: the mic is open while the reply plays.
+  // `sayGen` orphans a hushed reply's cleanup so the orb does not
+  // flicker off under the interruption's own thinking; `saying` keeps
+  // the idle exit from closing a reply still being said.
+  const sayGen = useRef(0);
+  const saying = useRef(false);
   // When something was last actually heard — see Coach.tsx: a conversation
   // nobody has spoken into for two minutes ends on its own, quietly.
   const lastHeard = useRef(0);
@@ -113,11 +119,16 @@ export function Talk({ go }: {
       // until the person leaves it.
       if (r?.content && (talking.current || speaking)) {
         setSpeaking(true);
+        // The microphone opens WITH the voice, not after it: a long or
+        // off-target answer should be stoppable with words, so an
+        // interruption hushes the reply and becomes the next turn.
+        if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+        const s = ++sayGen.current;
+        saying.current = true;
         say(r.content).finally(() => {
-          setSpeaking(false);
-          // The idle clock starts when the microphone re-opens, so a long
-          // spoken answer never eats into the person's two minutes.
-          if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+          saying.current = false;
+          if (s === sayGen.current) setSpeaking(false);
+          if (talking.current) lastHeard.current = Date.now();
         });
       } else {
         setSpeaking(false);
@@ -140,6 +151,8 @@ export function Talk({ go }: {
     recorder.current = await listen(
       (text) => {
         if (g !== round.current) return; // the person already left
+        sayGen.current++;
+        hush();
         lastHeard.current = Date.now();
         setListening(false); setSpeaking(true);
         setSaid(text); ask(text);
@@ -147,7 +160,10 @@ export function Talk({ go }: {
       (msg) => {
         if (g !== round.current) return;
         if (talking.current && heardNothing(msg)) {
-          if (Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
+          // Never bow out mid-reply: the idle clock only closes a room
+          // where nobody — the person or the profile — is speaking.
+          if (!saying.current
+              && Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
             exitTalk();
             return;
           }
@@ -191,11 +207,11 @@ export function Talk({ go }: {
             <div className="voice-orb-ring"
                  style={{ transform: `scale(${1 + level * 0.45})`,
                           opacity: 0.3 + level * 0.7 }} />
-            <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+            <div className={"voice-orb " + (speaking ? "speaking" : "listening")} />
           </div>
           <div className="voice-orb-label">
-            {listening ? tr("cch.listening.stop", lang)
-                       : tr("cch.speaking.hush", lang)}
+            {speaking ? tr("cch.speaking.hush", lang)
+                      : tr("cch.listening.stop", lang)}
           </div>
         </div>
       )}

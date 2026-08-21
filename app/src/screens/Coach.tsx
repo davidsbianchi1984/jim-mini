@@ -36,6 +36,12 @@ export function Coach() {
   // but a conversation nobody has spoken into for two minutes ends on its
   // own — quietly, because leaving a room empty is not an error.
   const lastHeard = useRef(0);
+  // The microphone is open while the reply plays now — interrupting is a
+  // turn. `sayGen` orphans a hushed reply's cleanup so the purple orb
+  // does not flicker off under the interruption's own thinking, and
+  // `saying` keeps the idle exit from closing a reply still being said.
+  const sayGen = useRef(0);
+  const saying = useRef(false);
 
   // The store the offline stack predicts from, and JIM's syllabus for it.
   const [knows, setKnows] = useState<CoachStore | null>(null);
@@ -129,11 +135,16 @@ export function Coach() {
       // conversation is not over until the person leaves it.
       if (r?.content && (talking.current || speaking)) {
         setSpeaking(true);
+        // The microphone opens WITH the voice, not after it: a long or
+        // off-target answer should be stoppable with words, so an
+        // interruption hushes the reply and becomes the next turn.
+        if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+        const s = ++sayGen.current;
+        saying.current = true;
         say(r.content).finally(() => {
-          setSpeaking(false);
-          // The idle clock starts when the microphone re-opens, so a long
-          // spoken answer never eats into the person's two minutes.
-          if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+          saying.current = false;
+          if (s === sayGen.current) setSpeaking(false);
+          if (talking.current) lastHeard.current = Date.now();
         });
       } else {
         setSpeaking(false);
@@ -158,6 +169,11 @@ export function Coach() {
     recorder.current = await listen(
       (text) => {
         if (g !== round.current) return; // the person already left
+        // Barging in is a turn: whatever is still being said stops the
+        // moment something real was heard, and the orphaned cleanup must
+        // not drop the orb under the new turn's thinking.
+        sayGen.current++;
+        hush();
         lastHeard.current = Date.now();
         setListening(false); setSpeaking(true);
         setMessage(text); ask(text);
@@ -165,7 +181,10 @@ export function Coach() {
       (msg) => {
         if (g !== round.current) return;
         if (talking.current && heardNothing(msg)) {
-          if (Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
+          // Never bow out mid-reply: the idle clock only closes a room
+          // where nobody — the person or the profile — is speaking.
+          if (!saying.current
+              && Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
             exitTalk();
             return;
           }
@@ -210,11 +229,11 @@ export function Coach() {
             <div className="voice-orb-ring"
                  style={{ transform: `scale(${1 + level * 0.45})`,
                           opacity: 0.3 + level * 0.7 }} />
-            <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+            <div className={"voice-orb " + (speaking ? "speaking" : "listening")} />
           </div>
           <div className="voice-orb-label">
-            {listening ? tr("cch.listening.stop", lang)
-                       : tr("cch.speaking.hush", lang)}
+            {speaking ? tr("cch.speaking.hush", lang)
+                      : tr("cch.listening.stop", lang)}
           </div>
         </div>
       )}

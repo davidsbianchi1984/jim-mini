@@ -78,6 +78,12 @@ export function Engaged() {
   const recorder = useRef<Listener | null>(null);
   const talking = useRef(false);
   const round = useRef(0);
+  // Interrupting is a turn: the mic is open while the reply plays.
+  // `sayGen` orphans a hushed reply's cleanup so the orb does not
+  // flicker off under the interruption's own thinking; `saying` keeps
+  // the idle exit from closing a reply still being said.
+  const sayGen = useRef(0);
+  const saying = useRef(false);
   const lastHeard = useRef(0);
   useEffect(() => { void primeVoice(); }, []);
 
@@ -151,9 +157,15 @@ export function Engaged() {
       // answer never eats into the person's two minutes.
       if (turn.reply && (talking.current || speaking)) {
         setSpeaking(true);
+        // The microphone opens WITH the voice: an interruption hushes
+        // the reply and becomes the next turn.
+        if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+        const s = ++sayGen.current;
+        saying.current = true;
         say(turn.reply).finally(() => {
-          setSpeaking(false);
-          if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+          saying.current = false;
+          if (s === sayGen.current) setSpeaking(false);
+          if (talking.current) lastHeard.current = Date.now();
         });
       } else {
         setSpeaking(false);
@@ -175,6 +187,8 @@ export function Engaged() {
     recorder.current = await listen(
       (text) => {
         if (g !== round.current) return; // the person already left
+        sayGen.current++;
+        hush();
         lastHeard.current = Date.now();
         setListening(false); setSpeaking(true);
         setSaid(text); void speak(text);
@@ -182,7 +196,10 @@ export function Engaged() {
       (msg) => {
         if (g !== round.current) return;
         if (talking.current && heardNothing(msg)) {
-          if (Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
+          // Never bow out mid-reply: the idle clock only closes a room
+          // where nobody — the person or the profile — is speaking.
+          if (!saying.current
+              && Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
             exitTalk();
             return;
           }
@@ -266,11 +283,11 @@ export function Engaged() {
             <div className="voice-orb-ring"
                  style={{ transform: `scale(${1 + level * 0.45})`,
                           opacity: 0.3 + level * 0.7 }} />
-            <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+            <div className={"voice-orb " + (speaking ? "speaking" : "listening")} />
           </div>
           <div className="voice-orb-label">
-            {listening ? tr("cch.listening.stop", lang)
-                       : tr("cch.speaking.hush", lang)}
+            {speaking ? tr("cch.speaking.hush", lang)
+                      : tr("cch.listening.stop", lang)}
           </div>
         </div>
       )}

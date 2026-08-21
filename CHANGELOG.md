@@ -6,6 +6,43 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The sphere waits for the tap the browser demands.** Autoplay
+  rules can hold the specialist's spoken chime-in until the person
+  touches the screen — and a `say()` that "finished" a paragraph in
+  milliseconds played nothing. The sphere detects that silence, stands
+  instead of sailing on to a conversation about a message nobody
+  heard, and says plainly: *tap to hear it — the browser held the
+  audio until you touch the screen* (ten languages). The tap is the
+  gesture the browser wanted; the message plays and the standing
+  conversation takes over as if autoplay had worked.
+
+      asked     did the chime-in actually sound
+      mattered  a sphere that pretends it spoke is the text problem
+                with a costume on
+
+- **The conversation can be interrupted, and silence is not a turn.**
+  Two field reports on the standing conversation, one round. First:
+  answers can be long, and a person who can hear the reply drifting
+  off topic had no way in but waiting it out. The microphone now opens
+  *with* the voice on every speaking screen — Coach, Talk, the engaged
+  session, the specialist's sphere — with echo cancellation asked for
+  by name so the speaker cannot barge itself in; speak over the reply
+  and it hushes mid-sentence and takes your words as the next turn.
+  The sphere also stands until you leave it: speaking's cleanup no
+  longer closes a conversation an interruption already owns. Second:
+  the profile "replies back over and over to silence" — speech models
+  hallucinate words out of quiet, and each invented sentence reset the
+  idle clock that should have ended the visit. A recording the level
+  meter never saw cross the voice threshold now reports *nothing was
+  heard* without ever reaching transcription, so silence cannot speak,
+  and the two-minute idle exit finally fires (and never mid-reply).
+
+      asked     who can end a sentence
+      mattered  the person, from either side of it — by speaking over
+                it or by saying nothing at all
+
 ### Fixed
 
 - **The image carries what the code imports.** Field report as a 502:

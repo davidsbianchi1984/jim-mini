@@ -31,11 +31,23 @@ export function Monitor() {
   const [speaking, setSpeaking] = useState(false);
   const [level, setLevel] = useState(0);
   const [who, setWho] = useState<string | null>(null);
+  // The browser held the audio. Autoplay rules can refuse a sphere that
+  // opens without a fresh gesture — the say() resolves in milliseconds
+  // having played nothing. A sphere that then carried on to listening
+  // would have skipped the message it exists to deliver; instead it
+  // stands, says the truth, and one tap (a gesture the browser accepts)
+  // plays it and starts the conversation.
+  const [needsTap, setNeedsTap] = useState(false);
   const recorder = useRef<Listener | null>(null);
   const talking = useRef(false);
   const round = useRef(0);
   const lastHeard = useRef(0);
   const area = useRef<string | null>(null);
+  // Interrupting is a turn: the mic is open while she speaks. `sayGen`
+  // orphans a hushed reply's cleanup; `saying` keeps the idle exit from
+  // closing a reply still being said.
+  const sayGen = useRef(0);
+  const saying = useRef(false);
   useEffect(() => { void primeVoice(); }, []);
 
   async function submit() {
@@ -57,9 +69,39 @@ export function Monitor() {
     talking.current = true;
     lastHeard.current = Date.now();
     setSpeaking(true);
+    // The microphone opens WITH her voice: interrupting mid-guidance is
+    // a turn, and there is no fragile "re-open after" step to fail.
+    void hear();
+    const t0 = Date.now();
+    const sg = ++sayGen.current;
+    saying.current = true;
     say(g.content).finally(() => {
-      setSpeaking(false);
-      if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+      saying.current = false;
+      // A guidance paragraph that "finished speaking" in under half a
+      // second played nothing — the browser refused autoplay. Hold the
+      // sphere in its honest tap-to-hear state rather than sailing on
+      // to a conversation about a message nobody heard.
+      if (Date.now() - t0 < 400 && g.content.length > 40) {
+        setNeedsTap(true);
+        return;
+      }
+      if (sg === sayGen.current) setSpeaking(false);
+      if (talking.current) lastHeard.current = Date.now();
+    });
+  }
+
+  /** The tap the browser was waiting for: play the held message, then
+   *  the standing conversation takes over as if autoplay had worked. */
+  function tapToHear() {
+    const g = result?.guidance;
+    if (!g?.content) { exitTalk(); return; }
+    setNeedsTap(false);
+    const sg = ++sayGen.current;
+    saying.current = true;
+    say(g.content).finally(() => {
+      saying.current = false;
+      if (sg === sayGen.current) setSpeaking(false);
+      if (talking.current) lastHeard.current = Date.now();
     });
   }
 
@@ -79,9 +121,13 @@ export function Monitor() {
         || "";
       if (content && talking.current) {
         setSpeaking(true);
+        if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+        const sg = ++sayGen.current;
+        saying.current = true;
         say(content).finally(() => {
-          setSpeaking(false);
-          if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+          saying.current = false;
+          if (sg === sayGen.current) setSpeaking(false);
+          if (talking.current) lastHeard.current = Date.now();
         });
       } else {
         setSpeaking(false);
@@ -99,6 +145,8 @@ export function Monitor() {
     recorder.current = await listen(
       (text) => {
         if (g !== round.current) return;
+        sayGen.current++;
+        hush();
         lastHeard.current = Date.now();
         setListening(false); setSpeaking(true);
         void discuss(text);
@@ -106,7 +154,10 @@ export function Monitor() {
       (msg) => {
         if (g !== round.current) return;
         if (talking.current && heardNothing(msg)) {
-          if (Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
+          // Never bow out mid-reply: the idle clock only closes a room
+          // where nobody is speaking.
+          if (!saying.current
+              && Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
             exitTalk();
             return;
           }
@@ -143,17 +194,18 @@ export function Monitor() {
       {(listening || speaking) && (
         <div className="voice-orb-veil" role="status"
              aria-label={listening ? "Listening" : "Speaking"}
-             onClick={exitTalk}>
+             onClick={needsTap ? tapToHear : exitTalk}>
           <div className={"voice-orb-holder" + (speaking ? " speaking" : "")}>
             <div className="voice-orb-ring"
                  style={{ transform: `scale(${1 + level * 0.45})`,
                           opacity: 0.3 + level * 0.7 }} />
-            <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+            <div className={"voice-orb " + (speaking ? "speaking" : "listening")} />
           </div>
           {who && <div className="voice-orb-who">{who}</div>}
           <div className="voice-orb-label">
-            {listening ? tr("cch.listening.stop", lang)
-                       : tr("cch.speaking.hush", lang)}
+            {needsTap ? tr("mon.taptohear", lang)
+                      : speaking ? tr("cch.speaking.hush", lang)
+                      : tr("cch.listening.stop", lang)}
           </div>
         </div>
       )}
