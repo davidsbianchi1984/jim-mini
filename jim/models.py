@@ -689,6 +689,13 @@ class SavingsSet(BaseModel):
     note: str | None = None
 
 
+class FloorSet(BaseModel):
+    """The low-balance floor. `null` clears back to the derived default —
+    zero is refused, because a warning that can never fire is not a
+    setting, it is the warning switched off wearing a setting's clothes."""
+    floor: float | None = None
+
+
 class MandateSet(BaseModel):
     """The written handover: what JIM may do with the money, in caps and in
     words. Disabling needs nothing but `enabled: false`."""

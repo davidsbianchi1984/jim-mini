@@ -45,21 +45,29 @@ from . import db
 # far this person's resting value ordinarily wanders before the wandering is
 # the news. Deliberately generous — a band that fires on ordinary daily
 # variation teaches the person to ignore the one that matters.
+# `slider` is (min, max, step) for the console's range control, stated here
+# because only the metric knows its own scale. The console used to hardcode
+# 0.1–30 with one branch for °C, which was fine while every unit was
+# physiological and would have handed a currency or an hour count a
+# nonsense range the day one arrived.
 DEFAULTS: dict[str, dict] = {
     "heart_rate": {
         "margin": 8.0, "unit": "bpm", "label": "Resting heart rate",
+        "slider": (1.0, 30.0, 0.5),
         "watch_high": True, "watch_low": True,
         "high_note": "your resting heart rate has been running above your usual",
         "low_note": "your resting heart rate has dropped below your usual",
     },
     "resting_heart_rate": {
         "margin": 6.0, "unit": "bpm", "label": "Resting heart rate (device)",
+        "slider": (1.0, 30.0, 0.5),
         "watch_high": True, "watch_low": True,
         "high_note": "your resting heart rate has been running above your usual",
         "low_note": "your resting heart rate has dropped below your usual",
     },
     "hrv": {
         "margin": 15.0, "unit": "ms", "label": "Heart-rate variability",
+        "slider": (2.0, 60.0, 1.0),
         "watch_high": False, "watch_low": True,
         "high_note": "your HRV is unusually high for you",
         "low_note": "your HRV has fallen below your usual — often the first "
@@ -67,18 +75,21 @@ DEFAULTS: dict[str, dict] = {
     },
     "blood_oxygen": {
         "margin": 2.0, "unit": "%", "label": "Blood oxygen",
+        "slider": (0.5, 10.0, 0.5),
         "watch_high": False, "watch_low": True,
         "high_note": "your oxygen saturation is above your usual",
         "low_note": "your oxygen saturation has been below your usual",
     },
     "respiratory_rate": {
         "margin": 3.0, "unit": "breaths/min", "label": "Respiration",
+        "slider": (0.5, 10.0, 0.5),
         "watch_high": True, "watch_low": True,
         "high_note": "you have been breathing faster than your usual",
         "low_note": "your breathing rate is below your usual",
     },
     "body_temperature": {
         "margin": 0.4, "unit": "°C", "label": "Body temperature",
+        "slider": (0.1, 2.0, 0.1),
         "watch_high": True, "watch_low": True,
         "high_note": "you are running warmer than your usual",
         "low_note": "you are running cooler than your usual",
@@ -106,20 +117,22 @@ def band_for(user_id: str, metric: str, sensitivity: str = "balanced") -> dict:
     spec = DEFAULTS.get(metric)
     if spec is None:
         raise ValueError(f"unknown metric {metric!r}")
+    lo, hi, step = spec["slider"]
+    slider = {"slider_min": lo, "slider_max": hi, "slider_step": step}
     row = _row(user_id, metric)
     if row:
         return {"metric": metric, "label": spec["label"], "unit": spec["unit"],
                 "margin": round(row["margin"], 2),
                 "watch_high": bool(row["watch_high"]),
                 "watch_low": bool(row["watch_low"]),
-                "source": "user"}
+                "source": "user", **slider}
     scale = SENSITIVITY_SCALE.get(sensitivity, 1.0)
     # A narrower band is a *more* sensitive one: assertive should notice
     # sooner, so it divides rather than multiplies.
     return {"metric": metric, "label": spec["label"], "unit": spec["unit"],
             "margin": round(spec["margin"] / scale, 2),
             "watch_high": spec["watch_high"], "watch_low": spec["watch_low"],
-            "source": "default"}
+            "source": "default", **slider}
 
 
 def set_band(user_id: str, metric: str, margin: float | None = None,

@@ -60,7 +60,6 @@ export function Bearing() {
 
   const [language, setLanguage] = useState("en");
   const [tone, setTone] = useState("");
-  const [level, setLevel] = useState("balanced");
   const [condition, setCondition] = useState<ConditionName>("anxiety");
   const [conditionNote, setConditionNote] = useState("");
   const [source, setSource] = useState("calendar");
@@ -135,14 +134,10 @@ export function Bearing() {
           <button disabled={busy || !tone.trim()}
                   onClick={() => run(() => api.setPersonality(
                     uid!, { tone: tone.trim() }, token!))}>{tr("brg.speak.tone", lang)}</button>
-          <select value={level} onChange={(e) => setLevel(e.target.value)}>
-            <option value="cautious">{tr("brg.speak.cautious", lang)}</option>
-            <option value="balanced">{tr("brg.speak.balanced", lang)}</option>
-            <option value="direct">{tr("brg.speak.direct", lang)}</option>
-          </select>
-          <button disabled={busy}
-                  onClick={() => run(() => api.setSensitivity(
-                    uid!, { level }, token!))}>{tr("brg.speak.sens", lang)}</button>
+          {/* The sensitivity dial moved to the Baseline screen in the
+              limits round-up — it scales the drift bands shown there, so
+              it lives beside them. (Its select here also offered a third
+              level the server never accepted; the move buried that.) */}
           <button disabled={busy}
                   onClick={() => run(() => api.clearVoice(token!))}>
             {tr("brg.speak.voice", lang)}

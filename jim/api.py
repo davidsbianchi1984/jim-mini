@@ -59,7 +59,7 @@ from .models import (
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
-    MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet,
+    MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet, FloorSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     AccessReportSubmit,
     HabitLog, ImprovementSubmit, JournalEntry, ModelChoice, PersonalityUpdate,
@@ -2849,6 +2849,18 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         try:
             return money.set_savings(user_id, body.goal, body.note)
+        except money.MoneyError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.put("/money/{user_id}/floor")
+    def money_set_floor(user_id: str, body: FloorSet,
+                        request: Request) -> dict:
+        """The low-balance floor, in the owner's hands. It was a constant
+        (LOW_FLOOR / a fraction of the budget) since the money guardian
+        arrived; the baseline screen's round-up made it a slider."""
+        _user_or_404(user_id, request)
+        try:
+            return money.set_floor(user_id, body.floor)
         except money.MoneyError as exc:
             raise HTTPException(422, str(exc))
 

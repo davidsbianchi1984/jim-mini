@@ -65,7 +65,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
                 server's one vocabulary, behind the roster's one
                 consent door
 
+- **The baseline screen is the home of every limit.** The reviewer,
+  over the live screen: round up the settings that belong here, and
+  give finances limit ranges with sliders. So the round-up: the
+  vigil's quiet-days moved in from Settings, the sensitivity dial
+  moved in from Bearing (it scales the very bands this screen shows),
+  and a new *Your money limits* card holds the money guardian's lines
+  as sliders — the savings goal (moved from Settings), the standing
+  mandate's per-order and monthly caps (adjustable here; the mandate
+  itself stays in Settings, because a grant of permission is not a
+  threshold), and a **low-balance floor** that until now was a
+  constant in the code: set where "cash is running low" begins, and
+  both the warning and the investing engine's untouchable cushion
+  honor your number. Band sliders also stopped guessing their scale
+  from the unit — every metric now states its own bounds, which is
+  what makes non-physiological sliders possible at all.
+
+      asked     where does a person set a limit
+      mattered  is there one answer
+
 ### Fixed
+
+- **The third sensitivity level was unreachable.** Both the Bearing
+  screen and the watch face offered a level called *direct* — a word
+  the server has never accepted (its vocabulary is cautious /
+  balanced / assertive), so every tap of that option has been a
+  refusal since it shipped. The dial now speaks the server's word,
+  and a guard keeps the two vocabularies from drifting apart again.
+
+      asked     does the option do anything
+      mattered  an option that always refuses is a broken promise
+                drawn as a button
 
 - **The image carries what the code imports.** Field report as a 502:
   the beta box's jim container crash-looped on `import httpx` in

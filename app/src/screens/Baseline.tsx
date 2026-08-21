@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
-import { api, type CrashWatchStatus } from "../api";
+import { api, type CrashWatchStatus, type MoneyView,
+         type VigilStatus } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
 type Band = Awaited<ReturnType<typeof api.getBands>>["bands"][number];
 
-// Your own normal, and how far from it counts.
+// Your own normal, and how far from it counts — and, since the round-up,
+// every other line the Guardian draws around this person: how readily it
+// speaks up, how long a silence trips the vigil, where the money guardian
+// calls cash low. The reviewer's call: limits live in one place, not
+// scattered a screen each across the menus.
 //
 // This is not the alarm layer — that watches for episodes and can call
 // somebody. This watches for *drift from your own baseline*, in either
@@ -17,6 +22,7 @@ export function Baseline() {
   const { session } = useSession();
   const lang = visitorLang();
   const [bands, setBands] = useState<Band[]>([]);
+  const [sens, setSens] = useState<string>("balanced");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cw, setCw] = useState<CrashWatchStatus | null>(null);
@@ -25,12 +31,16 @@ export function Baseline() {
   const [cwAttempts, setCwAttempts] = useState(3);
   const [cwWindow, setCwWindow] = useState(5);
   const [cwEms, setCwEms] = useState(false);
+  const [money, setMoney] = useState<MoneyView | null>(null);
 
   function load() {
     if (!session.userId || !session.userToken) return;
     api.getBands(session.userId, session.userToken)
-      .then((r) => setBands(r.bands))
+      .then((r) => { setBands(r.bands); setSens(r.sensitivity); })
       .catch((e) => setError((e as Error).message));
+    api.moneyView(session.userId, session.userToken)
+      .then(setMoney)
+      .catch(() => setMoney(null));
     api.crashWatch(session.userId, session.userToken)
       .then((st) => {
         setCw(st);
@@ -90,6 +100,59 @@ export function Baseline() {
     if (!session.userId || !session.userToken) return;
     setBusy(metric);
     try { await api.resetBand(session.userId, metric, session.userToken); load(); }
+    finally { setBusy(null); }
+  }
+
+  async function pickSensitivity(level: string) {
+    if (!session.userId || !session.userToken) return;
+    setBusy("sensitivity"); setError(null);
+    try {
+      await api.setSensitivity(session.userId, { level }, session.userToken);
+      setSens(level);
+      load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(null); }
+  }
+
+  async function setFloor(floor: number | null) {
+    if (!session.userId || !session.userToken) return;
+    setBusy("floor"); setError(null);
+    try {
+      await api.moneySetFloor(session.userId, { floor }, session.userToken);
+      load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(null); }
+  }
+
+  async function setGoal(goal: number) {
+    if (!session.userId || !session.userToken) return;
+    setBusy("goal"); setError(null);
+    try {
+      await api.moneySetSavings(session.userId, { goal }, session.userToken);
+      load();
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(null); }
+  }
+
+  async function setCap(field: "cap_per_order" | "monthly_cap", value: number) {
+    // A cap slider edits the standing mandate in place; everything else
+    // about the handover — scope, asset classes, the enable itself — is
+    // resent exactly as it stands, because a limit change is not a new
+    // grant of permission.
+    if (!session.userId || !session.userToken || !money?.mandate) return;
+    setBusy(field); setError(null);
+    try {
+      await api.moneySetMandate(session.userId, {
+        enabled: money.mandate.enabled,
+        cap_per_order: field === "cap_per_order"
+          ? value : money.mandate.cap_per_order,
+        monthly_cap: field === "monthly_cap"
+          ? value : money.mandate.monthly_cap,
+        asset_classes: money.mandate.asset_classes,
+        scope: money.mandate.scope,
+      }, session.userToken);
+      load();
+    } catch (e) { setError((e as Error).message); }
     finally { setBusy(null); }
   }
 
@@ -186,6 +249,22 @@ export function Baseline() {
         )}
       </div>
 
+      <VigilPanel />
+
+      <div className="card">
+        <h3>{tr("bas.sens.title", lang)}</h3>
+        <p className="muted small">{tr("bas.sens.lead", lang)}</p>
+        <div className="voice-row">
+          {(["cautious", "balanced", "assertive"] as const).map((s) => (
+            <button key={s} disabled={busy === "sensitivity"}
+                    className={sens === s ? "primary" : ""}
+                    onClick={() => pickSensitivity(s)}>
+              {tr(`w.sens.${s}`, lang)}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="card">
         <h3>{tr("bas.metrics", lang)}</h3>
         {bands.length === 0 && <div className="muted small">{tr("bas.metrics.none", lang)}</div>}
@@ -219,8 +298,10 @@ export function Baseline() {
             )}
 
             <div className="voice-row">
-              <input type="range" min={0.1} max={b.unit === "°C" ? 2 : 30}
-                     step={b.unit === "°C" ? 0.1 : 0.5}
+              {/* Bounds come with the band — the metric knows its own
+                  scale, and the screen stopped guessing it from the unit. */}
+              <input type="range" min={b.slider_min} max={b.slider_max}
+                     step={b.slider_step}
                      value={b.margin} disabled={busy === b.metric}
                      onChange={(e) => change(b.metric, { margin: Number(e.target.value) })} />
               <label className="check">
@@ -242,6 +323,179 @@ export function Baseline() {
           </div>
         ))}
       </div>
+
+      {money && (
+        <div className="card">
+          <h3>{tr("bas.money.title", lang)}</h3>
+          <p className="muted small">{tr("bas.money.lead", lang)}</p>
+
+          <div className="band-row">
+            <div>
+              <div className="band-name">{tr("bas.money.floor", lang)}</div>
+              <div className="band-figures">{tr("bas.money.floor.note", lang)}</div>
+            </div>
+            <div className="muted small">
+              {money.floor.floor}
+              {money.floor.source === "user" ? tr("bas.band.yours", lang) : ""}
+            </div>
+          </div>
+          <div className="voice-row">
+            <input type="range" min={25} max={2000} step={25}
+                   value={money.floor.floor} disabled={busy === "floor"}
+                   onChange={(e) => setFloor(Number(e.target.value))} />
+            {money.floor.source === "user" && (
+              <button onClick={() => setFloor(null)} disabled={busy === "floor"}>
+                {tr("bas.metrics.reset", lang)}
+              </button>
+            )}
+          </div>
+
+          <div className="band-row">
+            <div>
+              <div className="band-name">{tr("bas.money.goal", lang)}</div>
+              <div className="band-figures">{tr("bas.money.goal.note", lang)}</div>
+            </div>
+            <div className="muted small">
+              {money.savings ? money.savings.goal : "—"}
+            </div>
+          </div>
+          <div className="voice-row">
+            <input type="range" min={250} max={50000} step={250}
+                   value={money.savings?.goal ?? 250} disabled={busy === "goal"}
+                   onChange={(e) => setGoal(Number(e.target.value))} />
+          </div>
+
+          {money.mandate?.enabled ? (
+            <>
+              <div className="band-row">
+                <div>
+                  <div className="band-name">{tr("bas.money.caps", lang)}</div>
+                  <div className="band-figures">
+                    {money.mandate.cap_per_order} {tr("bas.money.cap.order", lang)}
+                    {" · "}
+                    {money.mandate.monthly_cap} {tr("bas.money.cap.month", lang)}
+                  </div>
+                </div>
+              </div>
+              <div className="voice-row">
+                <input type="range" min={10} max={1000} step={10}
+                       value={money.mandate.cap_per_order}
+                       disabled={busy === "cap_per_order"}
+                       onChange={(e) => setCap("cap_per_order", Number(e.target.value))} />
+                <input type="range" min={50} max={5000} step={50}
+                       value={money.mandate.monthly_cap}
+                       disabled={busy === "monthly_cap"}
+                       onChange={(e) => setCap("monthly_cap", Number(e.target.value))} />
+              </div>
+            </>
+          ) : (
+            <p className="muted small">{tr("bas.money.caps.none", lang)}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Moved here whole from Settings in the limits round-up: the vigil's
+// quiet-days threshold is a line the Guardian draws around this person,
+// and those live on this screen now.
+function VigilPanel() {
+  const { session } = useSession();
+  const lang = visitorLang();
+  const [st, setSt] = useState<VigilStatus | null>(null);
+  const [name, setName] = useState("");
+  const [channel, setChannel] = useState("");
+  const [days, setDays] = useState(3);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function load() {
+    if (!session.userId || !session.userToken) return;
+    // sweep, not just read: opening the app is the natural moment to ask
+    // "has anyone gone quiet?" — it is idempotent and trips at most once.
+    api.sweepVigil(session.userId, session.userToken).then((s) => {
+      setSt(s);
+      if (s.armed) {
+        setName(s.steward_name || ""); setChannel(s.steward_channel || "");
+        setDays(s.quiet_days || 3); setNote(s.note || "");
+      }
+    }).catch(() => setSt(null));
+  }
+  useEffect(load, [session.userId]);
+
+  if (!session.userId || !session.userToken) return null;
+
+  async function run(fn: () => Promise<VigilStatus>) {
+    setBusy(true); setError(null);
+    try { setSt(await fn()); } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="card">
+      <h3>{tr("set.vigil", lang)}</h3>
+      <p className="muted small">{tr("set.vigil.pitch", lang)}</p>
+      {st?.tripped && (
+        <div className="degraded">
+          {tr("set.vigil.tripped", lang)
+            .replace("{name}", String(st.steward_name))
+            .replace("{after}", st.silent_hours != null
+              ? tr("set.vigil.after", lang).replace("{n}",
+                  String(Math.round((st.silent_hours) / 24 * 10) / 10))
+              : "")}
+          <div style={{ marginTop: 8 }}>
+            <button className="primary" disabled={busy}
+                    onClick={() => run(() => api.resolveVigil(session.userId!, session.userToken!))}>
+              {tr("set.vigil.okay", lang)}
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="row">
+        <label>{tr("set.vigil.name", lang)}<input value={name} placeholder={tr("set.vigil.name.ph", lang)} onChange={(e) => setName(e.target.value)} /></label>
+        <label>{tr("set.vigil.reach", lang)}<input value={channel} placeholder={tr("set.vigil.reach.ph", lang)} onChange={(e) => setChannel(e.target.value)} /></label>
+      </div>
+      <label>{tr("set.vigil.days", lang)}
+        <input type="number" min={1} max={60} value={days} onChange={(e) => setDays(Number(e.target.value))} />
+      </label>
+      <label>{tr("set.vigil.words", lang)} <span className="muted small">{tr("set.vigil.words.note", lang)}</span>
+        <input value={note} placeholder={tr("set.vigil.words.ph", lang)} onChange={(e) => setNote(e.target.value)} />
+      </label>
+      <div className="actions">
+        <button className="primary" disabled={busy || !name.trim() || !channel.trim()}
+                onClick={() => run(() => api.armVigil(session.userId!, session.userToken!,
+                  { steward_name: name, steward_channel: channel, quiet_days: days, note: note || undefined }))}>
+          {st?.armed ? tr("set.vigil.update", lang)
+                     : tr("set.vigil.arm", lang)}
+        </button>
+        {st?.armed && (
+          <button disabled={busy}
+                  onClick={() => run(() => api.disarmVigil(session.userId!, session.userToken!))}>
+            {tr("set.vigil.disarm", lang)}
+          </button>
+        )}
+        {/* A read, not a sweep. Opening this screen sweeps — which is the
+            right default, because opening the app is the natural moment to
+            ask whether anybody has gone quiet — but a sweep can *trip* the
+            vigil and send a stranger to somebody's door. That makes it a
+            write, and a write should not be the only way to look at a
+            thing. This is the way to look without acting. */}
+        <button disabled={busy}
+                onClick={() => run(() => api.getVigil(session.userId!, session.userToken!))}>
+          {tr("set.vigil.check", lang)}
+        </button>
+      </div>
+      {st?.armed && st.last_heard_at && !st.tripped && (
+        <div className="muted small">
+          {tr("set.vigil.armed", lang)
+            .replace("{when}", st.silent_hours != null
+              ? `${st.silent_hours}h ago` : "recently")
+            .replace("{name}", String(st.steward_name))}
+        </div>
+      )}
+      {error && <div className="error">⚠ {error}</div>}
     </div>
   );
 }

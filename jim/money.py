@@ -187,6 +187,46 @@ def _monthly_budget_total(user_id: str) -> float:
     return float(row["s"] or 0)
 
 
+def floor_for(user_id: str) -> dict:
+    """The low-balance floor this user actually has — their own when they
+    set one, the derived default otherwise. The derived figure rides along
+    either way so a screen can show what Reset would go back to."""
+    budget = _monthly_budget_total(user_id)
+    derived = round(max(LOW_FLOOR, budget * LOW_FRACTION)
+                    if budget else LOW_FLOOR, 2)
+    row = db.connect().execute(
+        "SELECT floor FROM money_floors WHERE user_id=?",
+        (user_id,)).fetchone()
+    if row:
+        return {"floor": round(float(row["floor"]), 2), "source": "user",
+                "derived": derived}
+    return {"floor": derived, "source": "default", "derived": derived}
+
+
+def set_floor(user_id: str, floor: float | None) -> dict:
+    """Set the low-balance floor, or hand it back to the derived default.
+
+    ``None`` clears rather than zero: a floor of zero would be a warning
+    that can never fire wearing a setting's clothes, and the honest way to
+    say "decide for me" is to say nothing.
+    """
+    conn = db.connect()
+    if floor is None:
+        conn.execute("DELETE FROM money_floors WHERE user_id=?", (user_id,))
+    else:
+        floor = float(floor)
+        if floor <= 0:
+            raise MoneyError("a low-balance floor is a positive amount — "
+                             "send null to go back to the derived default")
+        conn.execute(
+            "INSERT INTO money_floors (user_id, floor, set_at)"
+            " VALUES (?,?,?) ON CONFLICT (user_id) DO UPDATE SET"
+            " floor=excluded.floor, set_at=excluded.set_at",
+            (user_id, floor, db.utcnow()))
+    conn.commit()
+    return floor_for(user_id)
+
+
 def check(user_id: str, lang: str, pdi=None, qrme=None) -> list[dict]:
     """The proactive pass. Called on every observation; cheap enough to be.
 
@@ -200,8 +240,7 @@ def check(user_id: str, lang: str, pdi=None, qrme=None) -> list[dict]:
     balances = _latest_balances(user_id)
     liquid = sum(v for aid, v in balances.items()
                  if _account(aid)["kind"] in ("checking", "savings"))
-    budget = _monthly_budget_total(user_id)
-    floor = max(LOW_FLOOR, budget * LOW_FRACTION) if budget else LOW_FLOOR
+    floor = floor_for(user_id)["floor"]
 
     if balances and liquid < floor:
         doors = _doors(user_id, qrme)
@@ -376,9 +415,10 @@ def _mandate_engine(user_id: str, lang: str) -> list[dict]:
     balances = _latest_balances(user_id)
     liquid = sum(v for aid, v in balances.items()
                  if _account(aid)["kind"] in ("checking", "savings"))
-    budget = _monthly_budget_total(user_id)
-    cushion = 2 * (max(LOW_FLOOR, budget * LOW_FRACTION)
-                   if budget else LOW_FLOOR)
+    # The same floor the low-balance warning trips on — the owner's own
+    # when they set one — so raising your floor also pulls the engine's
+    # hands back before the warning would ever have to fire.
+    cushion = 2 * floor_for(user_id)["floor"]
     excess = liquid - cushion
     if excess <= 0:
         return []
@@ -647,6 +687,7 @@ def view(user_id: str, lang: str, qrme=None) -> dict:
         "accounts": accounts,
         "savings": goal,
         "mandate": m,
+        "floor": floor_for(user_id),
         "orders": orders_for(user_id),
         "doors": _doors(user_id, qrme),
         "note": i18n.money_text("custody_note", lang),

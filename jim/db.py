@@ -618,6 +618,15 @@ CREATE TABLE IF NOT EXISTS savings_goals (
     reached_at TEXT
 );
 
+-- The low-balance floor, when its owner set one. No row means the floor is
+-- derived (jim/money.py LOW_FLOOR / LOW_FRACTION), the way an absent
+-- drift_bands row means the default band.
+CREATE TABLE IF NOT EXISTS money_floors (
+    user_id TEXT PRIMARY KEY REFERENCES users(id),
+    floor   REAL NOT NULL,
+    set_at  TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS money_mandates (
     user_id       TEXT PRIMARY KEY REFERENCES users(id),
     enabled       INTEGER NOT NULL DEFAULT 0,

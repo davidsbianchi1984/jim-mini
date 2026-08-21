@@ -1149,6 +1149,9 @@ export interface BankLinkRow {
 export type MoneyView = {
   accounts: MoneyAccount[]; savings: SavingsGoal | null;
   mandate: MoneyMandate | null; orders: MoneyOrder[];
+  // The low-balance trip line: the owner's own when source is "user",
+  // and `derived` is what clearing it goes back to.
+  floor: { floor: number; source: string; derived: number };
   doors: Record<string, unknown>; note: string;
   labels: Record<string, string>;
 };
@@ -1495,6 +1498,9 @@ export const api = {
     req<{ sensitivity: string; bands: {
       metric: string; label: string; unit: string; margin: number;
       watch_high: boolean; watch_low: boolean; source: string;
+      // The metric knows its own scale — the screen stopped guessing it
+      // from the unit the day a non-physiological band became possible.
+      slider_min: number; slider_max: number; slider_step: number;
       baseline: number | null; samples: number; provisional: boolean;
       low_edge: number | null; high_edge: number | null }[] }>(
       `/bands/${uid}`, { token }),
@@ -2200,6 +2206,13 @@ export const api = {
     scope?: string }, token: string) =>
     req<MoneyMandate>(`/money/${uid}/mandate`,
       { method: "PUT", body, token }),
+  // The low-balance floor. `floor: null` clears back to the derived
+  // default; zero is refused server-side — a warning that can never fire
+  // is not a setting.
+  moneySetFloor: (uid: string, body: { floor: number | null },
+    token: string) =>
+    req<{ floor: number; source: string; derived: number }>(
+      `/money/${uid}/floor`, { method: "PUT", body, token }),
   setLocality: (uid: string, locality: string | null, token: string) =>
     req<{ locality: string | null }>(`/users/${uid}/locality`,
       { method: "PUT", body: { locality }, token }),

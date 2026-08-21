@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { t as tr, visitorLang } from "../l10n";
 import { api, type BankLinkRow, type StatementRow, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState, type MemoryShelf, type MoneyView,
          type AnonymityPosture, type Appearance, type CloudContribution,
-         type PairInfo, type SeedReport, type VigilStatus,
+         type PairInfo, type SeedReport,
          type WatchChannel, type Finetune } from "../api";
 import { applyTheme } from "../theme";
 import { Problems } from "../Problems";
@@ -107,7 +107,6 @@ export function Settings() {
 
       <WatchPanel />
 
-      <VigilPanel />
 
       <MailPanel />
 
@@ -352,7 +351,6 @@ function MoneyCard() {
   const [routing, setRouting] = useState("");
   const [obsAccount, setObsAccount] = useState("");
   const [obsBalance, setObsBalance] = useState("");
-  const [goal, setGoal] = useState("");
   const [scope, setScope] = useState("");
   const [capOrder, setCapOrder] = useState("");
   const [capMonth, setCapMonth] = useState("");
@@ -518,20 +516,10 @@ function MoneyCard() {
         </div>
       ))}
 
-      <h4>{L.savings_goal}</h4>
-      <div className="row">
-        <input placeholder={L.savings_goal} value={goal}
-          onChange={(e) => setGoal(e.target.value)} />
-        <button disabled={!goal.trim()}
-          onClick={() => run(() => api.moneySetSavings(uid,
-            { goal: Number(goal) }, token))}>
-          {L.set_goal}
-        </button>
-        {view.savings && (
-          <span className="muted small">{view.savings.goal}</span>
-        )}
-      </div>
-
+      {/* The savings goal moved to the Baseline screen in the limits
+          round-up — every line the Guardian draws lives there now. The
+          mandate stays: it is a grant of permission, not a threshold,
+          though its two caps are also adjustable from Baseline. */}
       <h4>{L.mandate}</h4>
       <div className="row">
         <input placeholder={L.cap_per_order} value={capOrder}
@@ -1082,105 +1070,6 @@ function WatchPanel() {
   );
 }
 
-function VigilPanel() {
-  const { session } = useSession();
-  const lang = visitorLang();
-  const [st, setSt] = useState<VigilStatus | null>(null);
-  const [name, setName] = useState("");
-  const [channel, setChannel] = useState("");
-  const [days, setDays] = useState(3);
-  const [note, setNote] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  function load() {
-    if (!session.userId || !session.userToken) return;
-    // sweep, not just read: opening the app is the natural moment to ask
-    // "has anyone gone quiet?" — it is idempotent and trips at most once.
-    api.sweepVigil(session.userId, session.userToken).then((s) => {
-      setSt(s);
-      if (s.armed) {
-        setName(s.steward_name || ""); setChannel(s.steward_channel || "");
-        setDays(s.quiet_days || 3); setNote(s.note || "");
-      }
-    }).catch(() => setSt(null));
-  }
-  useEffect(load, [session.userId]);
-
-  if (!session.userId || !session.userToken) return null;
-
-  async function run(fn: () => Promise<VigilStatus>) {
-    setBusy(true); setError(null);
-    try { setSt(await fn()); } catch (e) { setError((e as Error).message); }
-    finally { setBusy(false); }
-  }
-
-  return (
-    <div className="card">
-      <h3>{tr("set.vigil", lang)}</h3>
-      <p className="muted small">{tr("set.vigil.pitch", lang)}</p>
-      {st?.tripped && (
-        <div className="degraded">
-          {tr("set.vigil.tripped", lang)
-            .replace("{name}", String(st.steward_name))
-            .replace("{after}", st.silent_hours != null
-              ? tr("set.vigil.after", lang).replace("{n}",
-                  String(Math.round((st.silent_hours) / 24 * 10) / 10))
-              : "")}
-          <div style={{ marginTop: 8 }}>
-            <button className="primary" disabled={busy}
-                    onClick={() => run(() => api.resolveVigil(session.userId!, session.userToken!))}>
-              {tr("set.vigil.okay", lang)}
-            </button>
-          </div>
-        </div>
-      )}
-      <div className="row">
-        <label>{tr("set.vigil.name", lang)}<input value={name} placeholder={tr("set.vigil.name.ph", lang)} onChange={(e) => setName(e.target.value)} /></label>
-        <label>{tr("set.vigil.reach", lang)}<input value={channel} placeholder={tr("set.vigil.reach.ph", lang)} onChange={(e) => setChannel(e.target.value)} /></label>
-      </div>
-      <label>{tr("set.vigil.days", lang)}
-        <input type="number" min={1} max={60} value={days} onChange={(e) => setDays(Number(e.target.value))} />
-      </label>
-      <label>{tr("set.vigil.words", lang)} <span className="muted small">{tr("set.vigil.words.note", lang)}</span>
-        <input value={note} placeholder={tr("set.vigil.words.ph", lang)} onChange={(e) => setNote(e.target.value)} />
-      </label>
-      <div className="actions">
-        <button className="primary" disabled={busy || !name.trim() || !channel.trim()}
-                onClick={() => run(() => api.armVigil(session.userId!, session.userToken!,
-                  { steward_name: name, steward_channel: channel, quiet_days: days, note: note || undefined }))}>
-          {st?.armed ? tr("set.vigil.update", lang)
-                     : tr("set.vigil.arm", lang)}
-        </button>
-        {st?.armed && (
-          <button disabled={busy}
-                  onClick={() => run(() => api.disarmVigil(session.userId!, session.userToken!))}>
-            {tr("set.vigil.disarm", lang)}
-          </button>
-        )}
-        {/* A read, not a sweep. Opening this screen sweeps — which is the
-            right default, because opening the app is the natural moment to
-            ask whether anybody has gone quiet — but a sweep can *trip* the
-            vigil and send a stranger to somebody's door. That makes it a
-            write, and a write should not be the only way to look at a
-            thing. This is the way to look without acting. */}
-        <button disabled={busy}
-                onClick={() => run(() => api.getVigil(session.userId!, session.userToken!))}>
-          {tr("set.vigil.check", lang)}
-        </button>
-      </div>
-      {st?.armed && st.last_heard_at && !st.tripped && (
-        <div className="muted small">
-          {tr("set.vigil.armed", lang)
-            .replace("{when}", st.silent_hours != null
-              ? `${st.silent_hours}h ago` : "recently")
-            .replace("{name}", String(st.steward_name))}
-        </div>
-      )}
-      {error && <div className="error">⚠ {error}</div>}
-    </div>
-  );
-}
 
 
 /** What this deployment can and cannot reach.

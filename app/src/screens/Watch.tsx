@@ -529,7 +529,10 @@ function FaceSensitivity({ uid, token, lang }: FaceProps) {
   if (!uid || !token) return <SignIn lang={lang} />;
   return (
     <div className="w-face-body">
-      {(["cautious", "balanced", "direct"] as const).map((s) => (
+      {/* "assertive", because that is the word the server accepts — this
+          face used a different word for two releases and every tap of the
+          third button was a 422 nobody saw past the fault line. */}
+      {(["cautious", "balanced", "assertive"] as const).map((s) => (
         <button key={s} className={"w-btn" + (level === s ? " primary" : "")}
                 onClick={async () => {
                   setFault(null);
