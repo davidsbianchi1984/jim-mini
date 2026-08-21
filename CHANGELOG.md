@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Channel 2 carries what it hears.** `jim/mic.py` has always said,
+  honestly, that capture happens on the device and nothing in that
+  module touches a sample. That was a true description of the division
+  and — until now — of a pipe that did not exist: the second microphone
+  could be attached, handed over, gained, capped and audited, and there
+  was no door for the wearable to hand anything back. A field report
+  named it: the switches and the channel are permission, with nothing
+  honouring them. `POST /users/{user_id}/mic/heard` is that pipe, and
+  it is the narrowest one that works — every refusal is a rule that
+  already existed in that module with nothing enforcing it: nothing
+  attached, not handed over, a device that is not the one it was lent
+  to, and an empty delivery. A device may hand in **words** it
+  recognised itself — a watch with an on-device recogniser answers with
+  nothing but text ever leaving the wrist, and it works on a deployment
+  with no transcription key — or the **audio** for this deployment's
+  own ears. The channel now remembers that it carried something, so
+  `standing` (**unattached / silent / carrying**) can stop letting
+  "attached" be read as "listening". Doors in all three phone shells.
+
+      asked     may the agent listen on this device
+      mattered  can the device get what it hears to the agent
+
 ### Fixed
 
 - **A switch is not a sensor.** Field report, reading the task window

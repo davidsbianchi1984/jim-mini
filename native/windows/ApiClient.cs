@@ -2227,6 +2227,20 @@ public sealed class ApiClient
         Send<MicState>(Post($"/users/{uid}/mic/handover",
             new { reason, route = "earpiece" }, token));
 
+    /// Hand in what channel 2 picked up, from the device it was lent to.
+    ///
+    /// <c>words</c> where the device recognised the speech itself — a
+    /// watch with an on-device recogniser answers with nothing but text
+    /// leaving the wrist — and <c>audioBase64</c> only where it cannot.
+    /// Refused unless a channel is attached and handed over: see
+    /// jim/mic.py.
+    public Task<MicHeard> MicHeard(string uid, string token,
+                                   string deviceName, string? words = null,
+                                   string? audioBase64 = null) =>
+        Send<MicHeard>(Post($"/users/{uid}/mic/heard",
+            new { device_name = deviceName, words, audio_base64 = audioBase64 },
+            token));
+
     public Task<MicState> ReleaseMic(string uid, string token) =>
         Send<MicState>(Post($"/users/{uid}/mic/release", new { }, token));
 
@@ -3496,7 +3510,17 @@ public record MicState(
     [property: JsonPropertyName("gain")] string? Gain,
     [property: JsonPropertyName("capped")] bool Capped,
     [property: JsonPropertyName("hears")] string? Hears,
+    // unattached | silent | carrying — attached is a permission, and a
+    // channel that has never delivered is not one that is listening.
+    [property: JsonPropertyName("standing")] string? Standing,
+    [property: JsonPropertyName("last_heard")] string? LastHeard,
     [property: JsonPropertyName("note")] string? Note);
+
+/// What channel 2 handed in.
+public record MicHeard(
+    [property: JsonPropertyName("heard")] string? Heard,
+    [property: JsonPropertyName("device")] string? Device,
+    [property: JsonPropertyName("reason")] string? Reason);
 
 public record MicEventRow(
     [property: JsonPropertyName("id")] string Id,

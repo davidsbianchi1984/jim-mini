@@ -54,7 +54,7 @@ reason to have a filter and a limit rather than a filter alone.
 
 from __future__ import annotations
 
-from . import db
+from . import db, i18n
 
 # Why a primary microphone is unavailable. Recorded rather than inferred: the
 # reason is the thing that justifies the handover, so it belongs in the row.
@@ -367,6 +367,95 @@ def handover(user_id: str, reason: str, route: str,
                     f"{FOCUS_NOTE}"}
 
 
+def heard(user_id: str, device_name: str, audio: bytes = b"",
+          filename: str = "channel2.webm", words: str = "") -> dict:
+    """What channel 2 actually picked up, delivered by the device holding it.
+
+    This module's header has always said capture happens on the device and
+    nothing here touches a sample. That was a true description of the
+    division and, for a long time, of a pipe that did not exist: the
+    second microphone could be attached, handed over, gained and audited,
+    and there was no way for the wearable to hand anything in. A field
+    report put it plainly — the switches and the channel are permission,
+    with nothing honouring them.
+
+        asked     may the agent listen on this device
+        mattered  can the device get what it hears to the agent
+
+    So this is the pipe, and it is deliberately the narrowest one that
+    could work. Four refusals, each of them a rule that already existed
+    somewhere in this file and had nothing to enforce it:
+
+    * **Nothing attached.** Audio arriving for a channel nobody lent is
+      audio nobody agreed to.
+    * **Not handed over.** `handover` is the moment the agent is allowed
+      to listen, with a reason and a route recorded. Sound arriving
+      outside one is a microphone that opened itself.
+    * **A different device.** The channel is lent to *one* wearable. A
+      second device delivering under the channel's name would make the
+      audit line — which device heard this — a guess.
+    * **Nothing in it.** An empty body is a delivery that says something
+      arrived when nothing did, which is the defect this round exists to
+      stop repeating.
+
+    A device may hand in either **words** it recognised itself or the
+    **audio** for this deployment's ears to transcribe, and words are the
+    better half of that choice: a watch with an on-device recogniser can
+    answer the Guardian with nothing but text ever leaving the wrist, and
+    it keeps working on a deployment with no transcription key at all.
+    Audio is the fallback for a device that cannot listen for itself —
+    the same bargain the console already strikes between its own
+    recogniser and the record-and-send path.
+
+    What comes back is the words either way, and the channel row
+    remembers that it delivered. That last part is the honesty half:
+    `state` can now say whether this channel has ever carried anything,
+    instead of leaving "attached" to be read as "listening".
+    """
+    chan = channel(user_id)
+    if chan is None:
+        raise MicError(
+            "nothing is attached as channel 2, so there is no second "
+            "microphone to have heard this. Attach a worn microphone first")
+    live = _live(user_id)
+    if live is None:
+        raise MicError(
+            "the agent is not listening on channel 2 right now. A microphone "
+            "delivers what it heard during a handover, not outside one — "
+            "hand the channel over first, and it will be recorded with the "
+            "reason it was lent")
+    if device_name and device_name != chan["device_name"]:
+        raise MicError(i18n.fill(
+            i18n.MIC_LENT_ELSEWHERE,
+            yours=chan["device_name"].replace("_", " "),
+            theirs=device_name.replace("_", " ")))
+    said = words.strip()
+    if not said and not audio:
+        raise MicError("nothing arrived in that — an empty delivery is not "
+                       "something the microphone heard")
+    if said:
+        text = said
+    else:
+        # Transcribed by whatever this deployment uses for every other
+        # spoken thing. Imported here rather than at module scope:
+        # `voice` reaches a provider, and this module is imported by
+        # paths that must not.
+        from jim import voice
+
+        text = voice.transcribe(audio, filename)
+    conn = db.connect()
+    conn.execute("UPDATE mic_channels SET last_heard_at=? WHERE user_id=?",
+                 (db.utcnow(), user_id))
+    conn.commit()
+    # No `channel` key here on purpose: elsewhere on this wire `channel`
+    # is a *route* — "email", "call or text 988" — and a second meaning
+    # under the same name is the reader being misled between routes. The
+    # door itself says which channel this was.
+    return {"heard": text, "device": chan["device_name"],
+            "session": live["id"], "reason": live["reason"],
+            **effective_gain(user_id)}
+
+
 def release(user_id: str, why: str = "released") -> dict:
     """Take the microphone back."""
     live = _live(user_id)
@@ -384,10 +473,21 @@ def state(user_id: str) -> dict:
     """
     chan = channel(user_id)
     live = _live(user_id)
+    # Whether this channel has ever actually carried anything. The same
+    # rule the monitor roster learned: attached is a permission, and a
+    # screen that prints it as listening is printing a promise as a fact.
+    #   unattached — nothing lent
+    #   silent     — lent, and nothing has ever come through it
+    #   carrying   — something has
+    last = (chan["last_heard_at"] if chan and "last_heard_at" in chan.keys()
+            else None)
     return {
         "attached": chan["device_name"] if chan else None,
         "mic_type": chan["mic_type"] if chan else None,
         "gain": chan["gain"] if chan else None,
+        "standing": "unattached" if not chan else (
+            "carrying" if last else "silent"),
+        "last_heard": last,
         **effective_gain(user_id),
         "listening": bool(live),
         "device": live["device_name"] if live else None,

@@ -1206,6 +1206,14 @@ export type MicGains = {
   rule: string;
 };
 
+/** What channel 2 handed in. */
+export type MicHeard = {
+  heard: string;
+  device?: string;
+  session?: string;
+  reason?: string | null;
+};
+
 /** Channel 2's current state. `capped` means a call is in progress and the
  *  agent has narrowed itself regardless of the owner's setting. */
 export type MicState = {
@@ -1223,6 +1231,10 @@ export type MicState = {
   since?: string | null;
   note?: string;
   channel?: number;
+  /** unattached | silent | carrying — attached is a permission, and a
+   *  channel that has never delivered is not one that is listening. */
+  standing?: string;
+  last_heard?: string | null;
   voice_focus?: boolean;
   describes?: string;
   id?: string;
@@ -2244,6 +2256,14 @@ export const api = {
   handOverMic: (uid: string, body: { reason: string; route: string;
     others_present?: boolean; primary_device?: string }, token: string) =>
     req<MicState>(`/users/${uid}/mic/handover`, { method: "POST", body, token }),
+  /** Hand in what channel 2 picked up, from the device it was lent to.
+   *  `words` where the device recognised the speech itself — a watch with
+   *  an on-device recogniser answers with nothing but text leaving the
+   *  wrist — and `audio_base64` only where it cannot. Refused unless a
+   *  channel is attached and handed over: see jim/mic.py. */
+  micHeard: (uid: string, body: { device_name?: string; words?: string;
+    audio_base64?: string; filename?: string }, token: string) =>
+    req<MicHeard>(`/users/${uid}/mic/heard`, { method: "POST", body, token }),
   releaseMic: (uid: string, token: string) =>
     req<MicState>(`/users/${uid}/mic/release`, { method: "POST", token }),
   micHistory: (uid: string, token: string) =>

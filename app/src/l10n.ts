@@ -3228,6 +3228,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "ch.mic.handover": {
     en: "Hand channel 2 over", es: "Ceder el canal 2", fr: "Céder le canal 2", de: "Kanal 2 übergeben", pt: "Ceder o canal 2", it: "Cedi il canale 2", ja: "チャンネル2を引き渡す", zh: "移交通道2", hi: "चैनल 2 सौंपें", ar: "تسليم القناة 2",
   },
+  "ch.mic.heard": {
+    en: "what your microphone picked up", es: "lo que captó tu micrófono", fr: "ce que votre microphone a capté", de: "was dein Mikrofon aufgenommen hat", pt: "o que o seu microfone captou", it: "ciò che il tuo microfono ha captato", ja: "マイクが拾った内容", zh: "你的麦克风拾取到的内容", hi: "आपके माइक्रोफ़ोन ने जो पकड़ा", ar: "ما التقطه الميكروفون الخاص بك",
+  },
   "ch.mic.capped": {
     en: "Narrowed for the moment — a call is in progress. Your setting ({gain}) comes back afterwards.", es: "Reducido por el momento — hay una llamada en curso. Tu ajuste ({gain}) vuelve después.", fr: "Restreint pour le moment — un appel est en cours. Votre réglage ({gain}) revient ensuite.", de: "Vorübergehend verengt — ein Anruf läuft. Ihre Einstellung ({gain}) kehrt danach zurück.", pt: "Reduzido por agora — há uma chamada em curso. O seu ajuste ({gain}) volta depois.", it: "Ridotto per il momento — c'è una chiamata in corso. La tua impostazione ({gain}) torna dopo.", ja: "通話中のため一時的に絞られています。設定（{gain}）は通話後に戻ります。", zh: "通话进行中，暂时收窄。你的设置（{gain}）稍后恢复。", hi: "फ़िलहाल सीमित — कॉल चल रही है। आपकी सेटिंग ({gain}) बाद में लौट आएगी।", ar: "مقيَّد مؤقتًا — هناك مكالمة جارية. إعدادك ({gain}) يعود بعدها.",
   },

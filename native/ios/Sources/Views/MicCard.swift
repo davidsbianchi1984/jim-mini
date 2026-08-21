@@ -13,6 +13,8 @@ struct MicCard: View {
     @State private var deviceName = ""
     @State private var micType = ""
     @State private var handoverReason = ""
+    @State private var channelSaid = ""
+    @State private var channelHeard = ""
     @State private var showHistory = false
     @State private var busy = false
     @State private var error: String?
@@ -353,6 +355,24 @@ struct MicCard: View {
                     .padding(8).background(Theme.scrBot)
                     .clipShape(RoundedRectangle(cornerRadius: 9))
                     .onSubmit { handOver() }
+                // Where what the worn microphone picked up reaches the
+                // Guardian. The capture itself belongs on the device that
+                // is wearing it — a watch app hands its own words in
+                // through this same door; this field is the phone's way
+                // to carry them for a wearable that relays through it,
+                // and the microphone surface stays in TalkCard, where the
+                // capability record says the one recorder lives.
+                if mic?.listening == true {
+                    TextField(L10n.t("ns.ch.mic.heard.say", state.language),
+                              text: $channelSaid)
+                        .padding(8).background(Theme.scrBot)
+                        .clipShape(RoundedRectangle(cornerRadius: 9))
+                        .onSubmit { sendChannelTwo() }
+                    if !channelHeard.isEmpty {
+                        Text(channelHeard).font(.caption2)
+                            .foregroundStyle(Theme.t2)
+                    }
+                }
             } else {
                 Text(L10n.t("ns.ch.mic.none", state.language))
                     .font(.caption2).foregroundStyle(Theme.t3)
@@ -664,5 +684,26 @@ struct MicCard: View {
     private func release() {
         guard let uid = state.uid, let token = state.token else { return }
         run { try await ApiClient.shared.releaseMic(uid: uid, token: token) }
+    }
+
+    /// Hand in what channel 2 picked up. Refused by the server unless the
+    /// channel is attached and handed over, and unless this is the device
+    /// it was lent to — see jim/mic.py.
+    private func sendChannelTwo() {
+        guard let uid = state.uid, let token = state.token else { return }
+        let said = channelSaid.trimmingCharacters(in: .whitespaces)
+        guard !said.isEmpty else { return }
+        channelSaid = ""
+        let device = mic?.device ?? ""
+        busy = true
+        Task {
+            do {
+                let out = try await ApiClient.shared.micHeard(
+                    uid: uid, token: token, deviceName: device, words: said)
+                channelHeard = out.heard ?? ""
+                load()
+            } catch { self.error = error.localizedDescription }
+            busy = false
+        }
     }
 }

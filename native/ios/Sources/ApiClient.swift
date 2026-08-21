@@ -3042,6 +3042,18 @@ struct MicStateRow: Decodable {
     let reason: String?
     let route: String?
     let note: String?
+    /// unattached | silent | carrying — attached is a permission, and a
+    /// channel that has never delivered is not a channel that is
+    /// listening. See jim/mic.py.
+    let standing: String?
+    let last_heard: String?
+}
+
+/// What channel 2 handed in.
+struct MicHeardRow: Decodable {
+    let heard: String?
+    let device: String?
+    let reason: String?
 }
 
 struct MicEventRow: Decodable, Identifiable {
@@ -3184,6 +3196,22 @@ extension ApiClient {
         try await request("/users/\(uid)/mic/handover", method: "POST",
                           body: ["reason": reason, "route": route],
                           token: token)
+    }
+
+    /// Hand in what channel 2 picked up, from the device it was lent to.
+    ///
+    /// `words` where the device recognised the speech itself — a watch
+    /// with an on-device recogniser answers with nothing but text leaving
+    /// the wrist — and `audioBase64` only where it cannot. Refused unless
+    /// a channel is attached and handed over: see jim/mic.py.
+    func micHeard(uid: String, token: String, deviceName: String,
+                  words: String? = nil,
+                  audioBase64: String? = nil) async throws -> MicHeardRow {
+        var body: [String: Any] = ["device_name": deviceName]
+        if let words { body["words"] = words }
+        if let audioBase64 { body["audio_base64"] = audioBase64 }
+        return try await request("/users/\(uid)/mic/heard", method: "POST",
+                                 body: body, token: token)
     }
 
     func releaseMic(uid: String, token: String) async throws -> MicStateRow {

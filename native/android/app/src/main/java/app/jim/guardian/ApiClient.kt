@@ -2759,6 +2759,24 @@ object ApiClient {
             JSONObject().put("reason", reason).put("route", "earpiece"),
             token))
 
+    /**
+     * Hand in what channel 2 picked up, from the device it was lent to.
+     *
+     * `words` where the device recognised the speech itself — a watch with
+     * an on-device recogniser answers with nothing but text leaving the
+     * wrist — and `audioBase64` only where it cannot. Refused unless a
+     * channel is attached and handed over: see jim/mic.py.
+     */
+    suspend fun micHeard(uid: String, token: String, deviceName: String,
+                         words: String? = null,
+                         audioBase64: String? = null): String {
+        val body = JSONObject().put("device_name", deviceName)
+        if (words != null) body.put("words", words)
+        if (audioBase64 != null) body.put("audio_base64", audioBase64)
+        return request("/users/$uid/mic/heard", "POST", body, token)
+            .optString("heard", "")
+    }
+
     suspend fun releaseMic(uid: String, token: String): MicState =
         micStateOf(request("/users/$uid/mic/release", "POST", token = token))
 

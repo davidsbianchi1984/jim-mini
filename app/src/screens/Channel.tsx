@@ -54,6 +54,8 @@ export function Channel() {
   // the person whose body it is presses the button.
   const [shown, setShown] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  // What the worn microphone picked up, on its way to the Guardian.
+  const [heardSaid, setHeardSaid] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [said, setSaid] = useState<string | null>(null);
   // An aid on a call somebody else can hear. It is not listening until the
@@ -588,6 +590,31 @@ export function Channel() {
                 {tr("ch.mic.handover", visitorLang())}
               </button>
             </div>
+            {/* Where what the worn microphone picked up reaches the
+                Guardian. The capture belongs on the device wearing it — a
+                watch app hands its own words in through this same door —
+                and this is the console's way to carry them for a wearable
+                that relays through this machine. Offered only while the
+                channel is actually held: outside a handover the server
+                refuses, and a control that can only produce a refusal is
+                a control that should not be drawn. */}
+            {mic.listening && (
+              <div className="row">
+                <input value={heardSaid}
+                       placeholder={tr("ch.mic.heard", visitorLang())}
+                       onChange={(e) => setHeardSaid(e.target.value)}
+                       onKeyDown={(e) => {
+                         if (e.key === "Enter" && heardSaid.trim()) {
+                           const said = heardSaid.trim();
+                           setHeardSaid("");
+                           void run(() => api.micHeard(uid, {
+                             device_name: mic.device ?? undefined,
+                             words: said,
+                           }, token), "Channel 2 handed it in.");
+                         }
+                       }} />
+              </div>
+            )}
             {mic.capped && (
               <p className="muted">
                 {tr("ch.mic.capped", visitorLang()).replace(

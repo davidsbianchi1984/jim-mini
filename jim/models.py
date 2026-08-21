@@ -193,6 +193,24 @@ class VoiceTranscribe(BaseModel):
     filename: str | None = None
 
 
+class MicHeard(BaseModel):
+    """What channel 2 picked up, delivered by the device holding it.
+
+    `device_name` is checked against the attached channel rather than
+    trusted: one channel is lent to one wearable, and a delivery under
+    somebody else's name would make the audit line a guess.
+
+    Either `words` — a device that recognised the speech itself, so a
+    watch with an on-device recogniser answers with nothing but text ever
+    leaving the wrist — or `audio_base64` for this deployment's own ears.
+    Words are preferred wherever the device has them.
+    """
+    audio_base64: str | None = None
+    words: str | None = None
+    device_name: str | None = None
+    filename: str | None = None
+
+
 class MailSettings(BaseModel):
     """Where this deployment sends mail through (jim/mailer.py)."""
     host: str

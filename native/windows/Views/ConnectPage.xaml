@@ -159,6 +159,20 @@
                                             Background="{StaticResource JimRedBrush}"
                                             Foreground="White" FontSize="12" />
                                 </StackPanel>
+                                <!-- Where what the worn microphone picked up
+                                     reaches the Guardian. The capture belongs
+                                     on the device wearing it; this carries the
+                                     words for a wearable that relays through
+                                     this machine. Shown only while the channel
+                                     is live. -->
+                                <TextBox x:Name="MicHeardSaid" Visibility="Collapsed" />
+                                <Button x:Name="MicHeardButton" Click="OnMicHeard"
+                                        Background="{StaticResource JimBrandABrush}"
+                                        Foreground="White" FontSize="12"
+                                        Visibility="Collapsed" />
+                                <TextBlock x:Name="MicHeardBack" FontSize="12"
+                                           Foreground="{StaticResource JimT2Brush}"
+                                           TextWrapping="Wrap" Visibility="Collapsed" />
                             </StackPanel>
                             <Button x:Name="MicHistoryButton" Click="OnMicHistory" FontSize="11" />
                             <ItemsControl x:Name="MicHistoryList">

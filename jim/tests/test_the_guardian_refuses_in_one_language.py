@@ -274,7 +274,17 @@ def _stringified_errors(root: Path) -> set[str]:
     is turning that class's message into the sentence a person reads, and the
     next module to invent one is covered without anybody remembering to add
     it here.
+
+    `i18n.raised(exc)` counts as the same thing, and has to: it is what the
+    sibling guard (`test_a_built_sentence_is_not_laundered_through_str`)
+    *requires* the moment a domain exception can carry an interpolated
+    sentence. Reading only `str(exc)` meant that obeying one guard made a
+    module's refusals invisible to this one — the sentences were still
+    raised, still read by people, and suddenly nobody was checking them.
+    A guard that goes quiet when you follow its neighbour's advice is
+    worse than no guard, because the silence looks like a pass.
     """
+    HANDS_ON = ("str", "raised")
     out: set[str] = set()
     for path in sorted(root.rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -285,7 +295,8 @@ def _stringified_errors(root: Path) -> set[str]:
                 and (getattr(call.func, "id", "")
                      or getattr(call.func, "attr", "")) == "HTTPException"
                 and any(isinstance(arg, ast.Call)
-                        and getattr(arg.func, "id", "") == "str"
+                        and (getattr(arg.func, "id", "")
+                             or getattr(arg.func, "attr", "")) in HANDS_ON
                         for arg in list(call.args)
                         + [kw.value for kw in call.keywords])
                 for call in ast.walk(handler))

@@ -1681,6 +1681,12 @@ _NEW_COLUMNS = [
     # have left. NULL on rows that predate the record — absence stays
     # absence, never a guess.
     ("excursions", "answered_by", "TEXT"),
+    # When channel 2 last actually delivered something (jim/mic.py). The
+    # module owns permission and state; until this column there was no
+    # record of the second microphone ever having been *used*, so
+    # "attached" was the strongest thing any screen could say — and it
+    # said it as though it meant listening.
+    ("mic_channels", "last_heard_at", "TEXT"),
 ]
 
 

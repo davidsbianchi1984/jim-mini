@@ -5994,6 +5994,7 @@ private fun MicPanel(vm: GuardianViewModel) {
     var deviceName by remember { mutableStateOf("") }
     var micType by remember { mutableStateOf("") }
     var handoverReason by remember { mutableStateOf("") }
+    var channelSaid by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     // An aid on a call other people can hear. Not listening until the notice
     // has gone out on the line — see jim/oncall.py.
@@ -6369,6 +6370,28 @@ private fun MicPanel(vm: GuardianViewModel) {
                     }
                 SmallAction(L10n.t("ns.ch.mic.detach", vm.language)) {
                     run { ApiClient.detachMic(vm.uid!!, vm.token!!) }
+                }
+            }
+            // Where what the worn microphone picked up reaches the Guardian.
+            // The capture belongs on the device wearing it — a watch app
+            // hands its own words in through this same door — and this is
+            // the phone's way to carry them for a wearable that relays
+            // through it. The microphone surface stays in the Talk screen,
+            // where the capability record says the one recorder lives.
+            if (m.listening) {
+                labeledField("", channelSaid,
+                    L10n.t("ns.ch.mic.heard.say", vm.language)) {
+                    channelSaid = it
+                }
+                SmallAction(L10n.t("ns.ch.mic.heard.say", vm.language)) {
+                    if (channelSaid.isNotBlank()) {
+                        val said = channelSaid.trim()
+                        channelSaid = ""
+                        run {
+                            ApiClient.micHeard(vm.uid!!, vm.token!!,
+                                m.device ?: "", words = said)
+                        }
+                    }
                 }
             }
         } else {

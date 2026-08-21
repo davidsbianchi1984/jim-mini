@@ -69,7 +69,7 @@ from .models import (
     BandSet,
     AppearanceChoice, LanguageChoice, LocalitySet, MailSettings, MailTest,
     MedCreate, MedLog, MedUpdate,
-    MicAttach, MicGain, MicHandover,
+    MicAttach, MicGain, MicHandover, MicHeard,
     ReferralPrepare, ResendCode, ResetPassword, ResetRequest, RobotCommand,
     PermitSet, SignIn, SignOff, Signup, WatchFor,
     TranslateRequest, VerifyEmail,
@@ -3565,7 +3565,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         except mic.NotMutual as exc:
             raise HTTPException(409, str(exc)) from None
         except mic.MicError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/users/{user_id}/mic/pair")
     def mic_pair(user_id: str, request: Request) -> dict:
@@ -4068,7 +4068,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return mic.attach(user_id, body.device_name, body.mic_type)
         except mic.MicError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.delete("/users/{user_id}/mic")
     def detach_mic(user_id: str, request: Request) -> dict:
@@ -4094,7 +4094,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return mic.set_gain(user_id, body.gain)
         except mic.MicError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.post("/users/{user_id}/mic/handover", status_code=201)
     def hand_over_mic(user_id: str, body: MicHandover,
@@ -4109,7 +4109,43 @@ def create_app(qrme_client: QRMEClient | None = None,
             return mic.handover(user_id, body.reason, body.route,
                                 body.others_present, body.primary_device)
         except mic.MicError as exc:
-            raise HTTPException(403, str(exc))
+            raise HTTPException(403, i18n.raised(exc))
+
+    @app.post("/users/{user_id}/mic/heard", status_code=201)
+    def mic_heard(user_id: str, body: MicHeard, request: Request) -> dict:
+        """What channel 2 picked up, handed in by the device holding it.
+
+        The pipe the second microphone never had. `jim/mic.py` owned the
+        permission — attach, hand over, gain, audit — and said honestly
+        that capture happens on the device; there was no door for the
+        device to hand that capture back, so the whole channel was a
+        promise nothing could honour.
+
+        Refused unless a channel is attached, the agent has been handed
+        it, and the delivering device is the one it was lent to. The
+        audio is transcribed and not stored, exactly like `/voice/
+        transcribe` — what is kept is that the channel carried something,
+        so a screen can stop reading "attached" as "listening".
+        """
+        _user_or_404(user_id, request)
+        import base64 as _b64
+
+        raw = b""
+        if body.audio_base64:
+            try:
+                raw = _b64.b64decode(body.audio_base64, validate=True)
+            except Exception:
+                raise HTTPException(422, "audio_base64 is not valid base64")
+        try:
+            return mic.heard(user_id, body.device_name or "", raw,
+                             body.filename or "channel2.webm",
+                             words=body.words or "")
+        except mic.MicError as exc:
+            raise HTTPException(403, i18n.raised(exc))
+        except voice.VoiceUnavailable as exc:
+            raise HTTPException(503, str(exc))
+        except voice.VoiceError as exc:
+            raise HTTPException(502, str(exc))
 
     @app.post("/users/{user_id}/mic/release")
     def release_mic(user_id: str, request: Request) -> dict:

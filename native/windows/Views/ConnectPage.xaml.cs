@@ -173,6 +173,7 @@ public sealed partial class ConnectPage : Page
         MicHandoverReason.PlaceholderText = L10n.T("ns.ch.mic.handover");
         MicHandoverButton.Content = L10n.T("ns.ch.mic.handover");
         MicReleaseButton.Content = L10n.T("ns.ch.mic.release");
+        MicHeardButton.Content = L10n.T("ns.ch.mic.heard.say");
         MicDetachButton.Content = L10n.T("ns.ch.mic.detach");
         MicHistoryButton.Content = L10n.T("ns.ch.hist");
     }
@@ -1380,6 +1381,10 @@ public sealed partial class ConnectPage : Page
         MicHears.Text = mic.Hears ?? "";
         MicCapped.Visibility = mic.Capped ? Visibility.Visible : Visibility.Collapsed;
         MicReleaseButton.Visibility = mic.Listening ? Visibility.Visible : Visibility.Collapsed;
+        // What the worn microphone picked up only has somewhere to go
+        // while the agent is actually holding the channel.
+        MicHeardSaid.Visibility = mic.Listening ? Visibility.Visible : Visibility.Collapsed;
+        MicHeardButton.Visibility = mic.Listening ? Visibility.Visible : Visibility.Collapsed;
         try
         {
             if (MicGain.Items.Count == 0)
@@ -1443,6 +1448,28 @@ public sealed partial class ConnectPage : Page
         {
             Render(await ApiClient.Shared.HandOverMic(s.Uid, s.Token, reason));
             MicHandoverReason.Text = "";
+        }
+        catch (Exception ex) { MicFailed(ex); }
+    }
+
+    /// Hand in what channel 2 picked up. Refused by the server unless the
+    /// channel is attached and handed over, and unless this is the device it
+    /// was lent to — see jim/mic.py.
+    private async void OnMicHeard(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var said = MicHeardSaid.Text.Trim();
+        if (said.Length == 0) return;
+        MicError.Visibility = Visibility.Collapsed;
+        try
+        {
+            var got = await ApiClient.Shared.MicHeard(
+                s.Uid, s.Token, MicDevice.Text.Trim(), words: said);
+            MicHeardSaid.Text = "";
+            MicHeardBack.Text = got.Heard ?? "";
+            MicHeardBack.Visibility = string.IsNullOrEmpty(got.Heard)
+                ? Visibility.Collapsed : Visibility.Visible;
         }
         catch (Exception ex) { MicFailed(ex); }
     }

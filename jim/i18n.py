@@ -1219,10 +1219,28 @@ ERRANDS_SPENT = ("the day's {count} errands are used up; the coach keeps "
 MONITOR_NOT_ON = ("nothing is sensing that: you have not switched on the one "
                   "that would {doing}")
 
+#: Channel 2 is lent to one wearable. A delivery under another device's
+#: name would make the audit line — which microphone heard this — a guess.
+MIC_LENT_ELSEWHERE = ("channel 2 is lent to your {yours}, not to {theirs}. "
+                      "One channel, one device — otherwise the record cannot "
+                      "say which microphone heard this")
+
 #: Derived from the table below rather than repeated.
-TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE, ERRANDS_SPENT, MONITOR_NOT_ON)
+TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE, ERRANDS_SPENT, MONITOR_NOT_ON,
+             MIC_LENT_ELSEWHERE)
 
 _TEMPLATES: dict[str, dict[str, str]] = {
+    MIC_LENT_ELSEWHERE: {
+        'es': "el canal 2 está cedido a tu {yours}, no a {theirs}. Un canal, un dispositivo — de otro modo el registro no puede decir qué micrófono oyó esto",
+        'fr': "le canal 2 est cédé à votre {yours}, pas à {theirs}. Un canal, un appareil — sinon le registre ne peut pas dire quel microphone a entendu cela",
+        'de': "Kanal 2 ist an dein {yours} verliehen, nicht an {theirs}. Ein Kanal, ein Gerät — sonst kann der Eintrag nicht sagen, welches Mikrofon das gehört hat",
+        'pt': "o canal 2 está cedido ao seu {yours}, não a {theirs}. Um canal, um dispositivo — caso contrário o registo não consegue dizer que microfone ouviu isto",
+        'it': "il canale 2 è ceduto al tuo {yours}, non a {theirs}. Un canale, un dispositivo — altrimenti il registro non può dire quale microfono ha sentito questo",
+        'ja': "チャンネル2はあなたの{yours}に貸し出されており、{theirs}にではありません。1つのチャンネルに1つの機器 — そうでなければ、どのマイクが聞いたのかを記録が言えません",
+        'zh': "第二通道借给的是你的{yours}，而不是{theirs}。一个通道对应一台设备 — 否则记录无法说明是哪个麦克风听到的",
+        'hi': "चैनल 2 आपके {yours} को दिया गया है, {theirs} को नहीं। एक चैनल, एक उपकरण — अन्यथा रिकॉर्ड यह नहीं बता सकता कि किस माइक्रोफ़ोन ने यह सुना",
+        'ar': "القناة 2 مُعارة إلى {yours} الخاص بك، لا إلى {theirs}. قناة واحدة لجهاز واحد — وإلا لن يستطيع السجل أن يقول أي ميكروفون سمع هذا",
+    },
     MONITOR_NOT_ON: {
         'es': "no hay nada detectando eso: no has activado lo que serviría para {doing}",
         'fr': "rien ne capte cela : vous n'avez pas activé ce qui permettrait de {doing}",
@@ -1681,6 +1699,50 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    'no such monitor': {
+        'es': 'no existe ese monitor',
+        'fr': "ce capteur n'existe pas",
+        'de': 'diesen Melder gibt es nicht',
+        'pt': 'não existe esse monitor',
+        'it': 'quel sensore non esiste',
+        'ja': 'そのモニターはありません',
+        'zh': '没有这个监测项',
+        'hi': 'ऐसा कोई मॉनिटर नहीं है',
+        'ar': 'لا يوجد مِرقاب بهذا الاسم',
+    },
+    'nothing is attached as channel 2, so there is no second microphone to have heard this. Attach a worn microphone first': {
+        'es': 'no hay nada conectado como canal 2, así que no existe un segundo micrófono que haya podido oír esto. Conecta primero un micrófono que se lleve puesto',
+        'fr': "rien n'est attaché comme canal 2, il n'y a donc pas de second microphone qui aurait pu entendre cela. Attachez d'abord un microphone porté sur soi",
+        'de': 'nichts ist als Kanal 2 angeschlossen, also gibt es kein zweites Mikrofon, das dies gehört haben könnte. Schließe zuerst ein getragenes Mikrofon an',
+        'pt': 'nada está ligado como canal 2, por isso não existe um segundo microfone que pudesse ter ouvido isto. Ligue primeiro um microfone que se use no corpo',
+        'it': 'nulla è collegato come canale 2, quindi non esiste un secondo microfono che possa aver sentito questo. Collega prima un microfono indossato',
+        'ja': 'チャンネル2として何も接続されていないため、これを聞いた第2のマイクは存在しません。まず身につけるマイクを接続してください',
+        'zh': '没有任何设备作为第二通道接入，因此不存在能听到这段话的第二个麦克风。请先接入一个佩戴式麦克风',
+        'hi': 'चैनल 2 के रूप में कुछ भी जुड़ा नहीं है, इसलिए ऐसा कोई दूसरा माइक्रोफ़ोन नहीं है जिसने यह सुना हो। पहले पहना जाने वाला माइक्रोफ़ोन जोड़ें',
+        'ar': 'لا شيء متصل كقناة ثانية، لذا لا يوجد ميكروفون ثانٍ يمكن أن يكون قد سمع هذا. صِل أولًا ميكروفونًا يُرتدى',
+    },
+    'the agent is not listening on channel 2 right now. A microphone delivers what it heard during a handover, not outside one — hand the channel over first, and it will be recorded with the reason it was lent': {
+        'es': 'el agente no está escuchando por el canal 2 en este momento. Un micrófono entrega lo que oyó durante una cesión, no fuera de ella — cede primero el canal y quedará registrado con el motivo por el que se prestó',
+        'fr': "l'agent n'écoute pas sur le canal 2 en ce moment. Un microphone remet ce qu'il a entendu pendant une cession, pas en dehors — cédez d'abord le canal, et ce sera enregistré avec la raison du prêt",
+        'de': 'der Agent hört gerade nicht auf Kanal 2. Ein Mikrofon liefert, was es während einer Übergabe gehört hat, nicht außerhalb davon — übergib den Kanal zuerst, und es wird mit dem Grund der Leihe festgehalten',
+        'pt': 'o agente não está a ouvir no canal 2 neste momento. Um microfone entrega o que ouviu durante uma cedência, não fora dela — ceda primeiro o canal e ficará registado com o motivo pelo qual foi emprestado',
+        'it': "l'agente non sta ascoltando sul canale 2 in questo momento. Un microfono consegna ciò che ha sentito durante una cessione, non al di fuori — cedi prima il canale e verrà registrato con il motivo del prestito",
+        'ja': '今、エージェントはチャンネル2で聞いていません。マイクは引き渡しの間に聞いたものを渡すのであって、その外では渡しません — まずチャンネルを引き渡してください。貸した理由とともに記録されます',
+        'zh': '此刻代理并未在第二通道上聆听。麦克风交付的是移交期间听到的内容，而非移交之外的内容 — 请先移交通道，系统会连同出借原因一并记录',
+        'hi': 'अभी एजेंट चैनल 2 पर नहीं सुन रहा है। माइक्रोफ़ोन वही सौंपता है जो उसने सौंपे जाने की अवधि में सुना, उसके बाहर का नहीं — पहले चैनल सौंपें, और यह उस कारण सहित दर्ज होगा जिसके लिए उसे दिया गया',
+        'ar': 'الوكيل لا يستمع على القناة 2 الآن. الميكروفون يسلّم ما سمعه أثناء التسليم، لا خارجه — سلّم القناة أولًا، وسيُسجَّل مع سبب إعارتها',
+    },
+    'nothing arrived in that — an empty delivery is not something the microphone heard': {
+        'es': 'no llegó nada en eso — una entrega vacía no es algo que el micrófono haya oído',
+        'fr': "rien n'est arrivé là-dedans — une remise vide n'est pas quelque chose que le microphone a entendu",
+        'de': 'darin kam nichts an — eine leere Lieferung ist nichts, was das Mikrofon gehört hat',
+        'pt': 'não chegou nada nisso — uma entrega vazia não é algo que o microfone tenha ouvido',
+        'it': 'in quello non è arrivato nulla — una consegna vuota non è qualcosa che il microfono abbia sentito',
+        'ja': 'そこには何も届いていません — 空の受け渡しは、マイクが聞いたものではありません',
+        'zh': '那里面什么也没送到 — 空的交付并不是麦克风听到的东西',
+        'hi': 'उसमें कुछ नहीं आया — खाली सुपुर्दगी वह नहीं है जो माइक्रोफ़ोन ने सुना हो',
+        'ar': 'لم يصل شيء في ذلك — التسليم الفارغ ليس شيئًا سمعه الميكروفون',
+    },
     'a low-balance floor is a positive amount — send null to go back to the derived default': {
         'es': 'el suelo de saldo bajo es una cantidad positiva — envía null para volver al valor derivado',
         'fr': 'le plancher de solde bas est un montant positif — envoyez null pour revenir à la valeur dérivée',
@@ -3683,6 +3745,7 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'window_minutes': {'en': 'Window (minutes)', 'es': 'Ventana (minutos)', 'fr': 'Fenêtre (minutes)', 'de': 'Zeitfenster (Minuten)', 'pt': 'Janela (minutos)', 'it': 'Finestra (minuti)', 'ja': 'ウィンドウ（分）', 'zh': '时间窗（分钟）', 'hi': 'विंडो (मिनट)', 'ar': 'النافذة (بالدقائق)'},    # Aligned to QRME's wording when the sibling-vocabulary guard ran for
     # real the first time: this field IS the engine's voice id, here too.
     'voice_id': {'en': 'Voice ID from the engine', 'es': 'ID de voz del motor', 'fr': 'ID de voix du moteur', 'de': 'Stimm-ID der Engine', 'pt': 'ID de voz do motor', 'it': 'ID voce del motore', 'ja': 'エンジンのボイスID', 'zh': '引擎的声音 ID', 'hi': 'इंजन की वॉइस ID', 'ar': 'معرّف الصوت من المحرّك'},
+    'words': {'en': 'What it heard', 'es': 'Lo que oyó', 'fr': "Ce qu'il a entendu", 'de': 'Was es gehört hat', 'pt': 'O que ouviu', 'it': 'Ciò che ha sentito', 'ja': '聞き取った内容', 'zh': '它听到的内容', 'hi': 'उसने जो सुना', 'ar': 'ما سمعه'},
     'floor': {'en': 'Low-balance floor', 'es': 'Suelo de saldo bajo', 'fr': 'Plancher de solde bas', 'de': 'Untergrenze für den Kontostand', 'pt': 'Piso de saldo baixo', 'it': 'Soglia di saldo basso', 'ja': '残高の下限ライン', 'zh': '低余额下限', 'hi': 'न्यून शेष की सीमा', 'ar': 'الحد الأدنى للرصيد'},
 
 }
