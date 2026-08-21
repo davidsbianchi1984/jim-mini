@@ -150,9 +150,25 @@ def _listening(user_id: str) -> list[dict]:
 
 def _monitors(user_id: str) -> list[dict]:
     """What is sensing. Off rows are left out — this window is what is
-    running, and the roster is where the whole list lives."""
+    running, and the roster is where the whole list lives.
+
+    `why` carries the monitor's standing rather than the constant `"on"`
+    it used to. A field report read this window against a house with
+    nothing paired: "all showing sensing, but without actually being able
+    to physically connect the device, JIM has no way to actually monitor
+    what I have stored." The window was printing a permission as an
+    activity — every switched-on row said `sensing`, whether or not
+    anything had ever come from it.
+
+        asked     is this monitor switched on
+        mattered  has anything ever arrived from it
+
+    A row that is waiting still belongs here: it is a thing this person
+    switched on and is owed an answer about. What changes is the word.
+    """
     return [{"kind": "monitor", "id": None, "term": m["name"],
-             "words": m["device"] or None, "since": None, "why": "on"}
+             "words": m["device"] or None, "since": m["last_sensed"],
+             "why": m["standing"]}
             for m in monitors.roster(user_id) if m["on"]]
 
 

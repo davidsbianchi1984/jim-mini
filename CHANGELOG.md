@@ -8,6 +8,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A switch is not a sensor.** Field report, reading the task window
+  against a house with nothing paired: "my wrist, ring, glasses, room,
+  camera, speaker, doorway are all showing sensing, but without
+  actually being able to physically connect the device via Bluetooth,
+  JIM has no way to actually monitor what I have stored." Exactly
+  right, and the word was the lie: `switched_on` is a *permission* —
+  this person said this monitor may sense — and every surface printed
+  it as a fact about the world. The roster now carries a `standing`
+  (**off / waiting / sensing**) and `last_sensed`, where "sensing"
+  requires that something has actually arrived; the task window prints
+  that standing instead of the constant it used to; and the window's
+  own kind label, which read "sensing" before the standing was even
+  consulted, is a noun again. A waiting monitor still appears — it is
+  something this person switched on and is owed an answer about — but
+  it now says "waiting — nothing has come from it yet". "Has anything
+  ever arrived" is the fact these tables can establish, and it is
+  honest for both kinds: a wrist band that reports continuously and a
+  doorway that only fires when somebody passes are both silent until
+  they are real.
+
+      asked     is this monitor switched on
+      mattered  has anything ever arrived from it
+
 - **The Guardian does not answer herself.** Field report from a coach
   conversation: "when I'm in the chat sphere with coach while it's
   talking, it's listening at the same time, but it seems to be picking

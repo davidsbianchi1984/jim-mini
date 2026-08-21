@@ -221,13 +221,43 @@ def roster(user_id: str) -> list[dict]:
     The whole list every time, off rows included. A roster that shows only
     what somebody already switched on is a roster nobody can add to.
     """
-    rows = {r["monitor"]: r for r in db.connect().execute(
+    conn = db.connect()
+    rows = {r["monitor"]: r for r in conn.execute(
         "SELECT * FROM monitors WHERE user_id=?", (user_id,)).fetchall()}
+    # When something last actually arrived from each monitor.
+    #
+    # Field report, over a roster of switched-on rows: "all showing
+    # sensing, but without actually being able to physically connect the
+    # device, JIM has no way to actually monitor what I have stored."
+    # Exactly right, and the word was the lie. `switched_on` is a
+    # PERMISSION — this person said this monitor may sense — and the
+    # product was reading it as a fact about the world. Nothing had
+    # arrived from any of them, because nothing was connected to send it.
+    #
+    #     asked     is this monitor allowed to sense
+    #     mattered  has anything ever come from it
+    #
+    # "Has anything ever arrived" is the fact this table can actually
+    # establish, and it is honest for both kinds of monitor: a wrist band
+    # that reports continuously and a doorway that only fires when
+    # somebody passes are both silent until they are real.
+    heard = {r["monitor"]: r["last"] for r in conn.execute(
+        "SELECT monitor, MAX(sensed_at) AS last FROM day_moments"
+        " WHERE user_id=? GROUP BY monitor", (user_id,)).fetchall()}
     out = []
     for m in MONITORS.values():
         row = rows.get(m.name)
+        on = bool(row["switched_on"]) if row else m.default
+        last = heard.get(m.name)
         out.append({
             "name": m.name, "senses": list(m.senses), "placing": m.placing,
+            # What is TRUE of this monitor right now, in one word a screen
+            # can print without deciding anything for itself:
+            #   off      — this person has not switched it on
+            #   waiting  — switched on, and nothing has ever come from it
+            #   sensing  — switched on, and something has
+            "standing": "off" if not on else ("sensing" if last else "waiting"),
+            "last_sensed": last,
             # `holds` is the promise in words; `keeps` is the same promise as
             # the rule `jim/daybook.py` obeys. Both travel, so a screen can
             # show the sentence and branch on the rule.

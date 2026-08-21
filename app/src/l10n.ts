@@ -255,10 +255,32 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     pt: "segundo microfone", it: "secondo microfono", ja: "第2マイク",
     zh: "第二麦克风", hi: "दूसरा माइक्रोफ़ोन", ar: "الميكروفون الثاني",
   },
+  // The kind is a noun now, not a verb. It said "sensing" for every
+  // switched-on row, which printed a permission as an activity — a field
+  // report read the window against a house with nothing paired and
+  // called it: nothing was sensing anything. The verb moved to `why`,
+  // where it can tell the truth per row.
   "und.kind.monitor": {
+    en: "monitor", es: "monitor", fr: "capteur", de: "Melder",
+    pt: "monitor", it: "sensore", ja: "モニター", zh: "监测",
+    hi: "मॉनिटर", ar: "مِرقاب",
+  },
+  "und.why.sensing": {
     en: "sensing", es: "detectando", fr: "capte", de: "erfasst",
     pt: "a detetar", it: "sta rilevando", ja: "感知中", zh: "正在感知",
     hi: "महसूस कर रहा है", ar: "يستشعر",
+  },
+  "und.why.waiting": {
+    en: "waiting — nothing has come from it yet",
+    es: "esperando — aún no ha llegado nada de él",
+    fr: "en attente — rien n'en est encore venu",
+    de: "wartet — es kam noch nichts davon",
+    pt: "à espera — ainda não chegou nada dele",
+    it: "in attesa — non è ancora arrivato nulla",
+    ja: "待機中 — まだ何も届いていません",
+    zh: "等待中 — 尚未收到任何数据",
+    hi: "प्रतीक्षा में — अभी तक इससे कुछ नहीं आया",
+    ar: "في الانتظار — لم يصل منه شيء بعد",
   },
   // Why a row is still open. `proposed` and `agreed` are the two states of a
   // link's task, and only the second survives the call — so they are said
