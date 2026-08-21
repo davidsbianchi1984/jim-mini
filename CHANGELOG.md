@@ -107,6 +107,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       asked     does a shared field read the same in every product
       mattered  the guard that answers this had never actually run
 
+### Changed
+
+- **The bed sensor says who it notices.** Its row read *read
+  breathing and movement from under a mattress* — the installation
+  detail, not the agreement. The reviewer's wording: it *reads the
+  breathing and movement of someone in the house*, which is also the
+  sentence that explains why it asks whether the people in that
+  space have been told. The tutorial and the help line tell the same
+  story now; the monitor's wire name is unchanged, so nothing
+  recorded points at a ghost.
+
+      asked     what does this monitor say it does
+      mattered  the sentence a person consents to should describe
+                who is sensed, not where the strip is glued
+
 - **The image carries what the code imports.** Field report as a 502:
   the beta box's jim container crash-looped on `import httpx` in
   `jim/engaged.py`. httpx sat only in the dev extra — every test run

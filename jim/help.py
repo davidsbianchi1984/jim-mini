@@ -142,7 +142,7 @@ DIRECTIONS: dict[tuple[str, ...], str] = {
      "does it see the whole room", "who else does it hear",
      "turn the camera off"):
         "Channel → what may sense you: every camera, speaker, screen, band, "
-        "ring, patch or mattress sensor that can be plugged in, each saying "
+        "ring, patch or in-home presence sensor that can be plugged in, each saying "
         "what it takes in, who else it reaches and what stays behind. "
         "Nothing that senses other people is ever on until you switch it "
         "on, and switching one of those on asks you to say the people in "

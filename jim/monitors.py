@@ -144,7 +144,9 @@ MONITORS: dict[str, Monitor] = {m.name: m for m in (
             holds="the times, and nothing else", keeps="nothing",
             catches_others=True),
     Monitor("bed", ("vitals", "presence"), "stationary",
-            says="read breathing and movement from under a mattress",
+            # The reviewer's wording: say who it notices, not where the
+            # strip is installed. The id stays `bed` — records point at it.
+            says="read the breathing and movement of someone in the house",
             holds="the readings, as your own history", keeps="always",
             # A second person in the bed is read by the same strip.
             catches_others=True),
