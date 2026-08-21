@@ -2061,6 +2061,11 @@ public sealed class ApiClient
     public Task<SavingsGoal> MoneySetSavings(string uid, string token, double goal) =>
         Send<SavingsGoal>(Put($"/money/{uid}/savings", new { goal }, token));
 
+    // The low-balance floor. Zero is refused server-side — a warning that
+    // can never fire is not a setting.
+    public Task<MoneyFloor> MoneySetFloor(string uid, string token, double floor) =>
+        Send<MoneyFloor>(Put($"/money/{uid}/floor", new { floor }, token));
+
     // -- schedule + shopping through the tandem --
     // Labels ride the views in the reader's language; the pivots render
     // them and add no English of their own.
@@ -2964,6 +2969,13 @@ public record SavingsGoal(
     [property: JsonPropertyName("goal")] double Goal,
     [property: JsonPropertyName("note")] string? Note,
     [property: JsonPropertyName("reached_at")] string? ReachedAt);
+
+// The low-balance trip line — the owner's own when Source is "user", and
+// Derived is what clearing it goes back to.
+public record MoneyFloor(
+    [property: JsonPropertyName("floor")] double Floor,
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("derived")] double Derived);
 
 public record MoneyMandate(
     [property: JsonPropertyName("enabled")] bool Enabled,

@@ -2402,6 +2402,7 @@ private fun MoneyPanel(vm: GuardianViewModel) {
     var routingNumber by remember { mutableStateOf("") }
     var balanceText by remember { mutableStateOf("") }
     var goalText by remember { mutableStateOf("") }
+    var floorText by remember { mutableStateOf("") }
     var scope by remember { mutableStateOf("") }
     var warnings by remember { mutableStateOf<List<MoneyWarning>>(emptyList()) }
     var note by remember { mutableStateOf<String?>(null) }
@@ -2539,6 +2540,14 @@ private fun MoneyPanel(vm: GuardianViewModel) {
             labeledField(labels["savings_goal"] ?: "", goalText, "") { goalText = it }
             BrandButton(labels["set_goal"] ?: "", enabled = goalText.toDoubleOrNull() != null, busy = busy) {
                 act { ApiClient.moneySetSavings(vm.uid!!, vm.token!!, goalText.toDouble()) }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(labels["low_floor"] ?: "", color = Jim.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            labeledField(labels["low_floor"] ?: "", floorText, "") { floorText = it }
+            BrandButton(labels["set_floor"] ?: "", enabled = floorText.toDoubleOrNull() != null, busy = busy) {
+                act { ApiClient.moneySetFloor(vm.uid!!, vm.token!!, floorText.toDouble()) }
             }
         }
 

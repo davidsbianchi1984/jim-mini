@@ -2453,6 +2453,12 @@ object ApiClient {
         request("/money/$uid/savings", "PUT", JSONObject().put("goal", goal), token)
     }
 
+    // The low-balance floor. Zero is refused server-side — a warning that
+    // can never fire is not a setting.
+    suspend fun moneySetFloor(uid: String, token: String, floor: Double) {
+        request("/money/$uid/floor", "PUT", JSONObject().put("floor", floor), token)
+    }
+
     // ---- schedule + shopping through the tandem ---------------------------
     // Labels ride the views in the reader's language; these panels render
     // them and add no English of their own.

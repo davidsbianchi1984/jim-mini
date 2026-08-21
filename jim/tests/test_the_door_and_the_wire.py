@@ -284,9 +284,12 @@ def test_each_new_screen_calls_its_family():
                       "api.startExcursion(", "api.excursionEntry(",
                       "api.learnFromExcursion(", "api.communityVisits(",
                       "api.watchDrip("),
+        # `api.setSensitivity(` moved to Baseline.tsx in the limits
+        # round-up — the dial scales the drift bands that screen shows.
+        "Baseline.tsx": ("api.setSensitivity(",),
         "Bearing.tsx": ("api.languages(", "api.userLanguage(",
                         "api.setUserLanguage(", "api.translate(",
-                        "api.setPersonality(", "api.setSensitivity(",
+                        "api.setPersonality(",
                         "api.clearVoice(", "api.recordCondition(",
                         "api.giveContext(", "api.askCompanion(",
                         "api.updateMed(", "api.insights(", "api.report(",
@@ -311,9 +314,13 @@ def test_the_four_orphans_found_screens():
     """`api.enroll`, `api.getVigil`, `api.handOverMic` and `api.captureImage`
     were the whole of the unused-binding record and predate this round. Each
     had a real capability behind it that the console simply did not offer.
+
+    `api.getVigil` found Settings first, and moved home in the limits
+    round-up: the vigil's quiet-days threshold is a line the Guardian
+    draws around a person, and those live on the baseline screen now.
     """
     assert "api.enroll(" in _screen("Onboarding.tsx")
-    assert "api.getVigil(" in _screen("Settings.tsx")
+    assert "api.getVigil(" in _screen("Baseline.tsx")
     assert "api.handOverMic(" in _screen("Channel.tsx")
     assert "api.captureImage(" in _screen("Channel.tsx")
 

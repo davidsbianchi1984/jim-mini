@@ -339,6 +339,16 @@
                     <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="8">
+                            <TextBlock x:Name="MoneyFloorTitle" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="MoneyFloorBox" />
+                            <Button x:Name="MoneyFloorButton" HorizontalAlignment="Stretch"
+                                    Click="OnMoneySetFloor" />
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
                             <TextBlock x:Name="MoneyMandateTitle" FontWeight="Bold" FontSize="14"
                                        Foreground="{StaticResource JimTxtBrush}" />
                             <TextBox x:Name="MoneyScope" />

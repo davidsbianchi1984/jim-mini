@@ -22,6 +22,7 @@ struct MoneySection: View {
     @State private var routingNumber = ""
     @State private var balanceText = ""
     @State private var goalText = ""
+    @State private var floorText = ""
     @State private var capText = "500"
     @State private var monthlyText = "1000"
     @State private var scope = ""
@@ -181,6 +182,16 @@ struct MoneySection: View {
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
+                    Text(L["low_floor"] ?? "").font(.subheadline.bold())
+                        .foregroundStyle(Theme.txt)
+                    TextField(L["low_floor"] ?? "", text: $floorText)
+                        .keyboardType(.decimalPad)
+                        .textFieldStyle(.roundedBorder)
+                    Button(L["set_floor"] ?? "") { setFloor() }
+                        .disabled(busy || Double(floorText) == nil)
+                }.card()
+
+                VStack(alignment: .leading, spacing: 8) {
                     Text(L["mandate"] ?? "").font(.subheadline.bold())
                         .foregroundStyle(Theme.txt)
                     TextField(L["cap_per_order"] ?? "", text: $capText)
@@ -263,6 +274,14 @@ struct MoneySection: View {
         run {
             _ = try await ApiClient.shared.moneySetSavings(
                 uid: state.uid!, token: state.token!, goal: value)
+        }
+    }
+
+    private func setFloor() {
+        guard let value = Double(floorText) else { return }
+        run {
+            _ = try await ApiClient.shared.moneySetFloor(
+                uid: state.uid!, token: state.token!, floor: value)
         }
     }
 

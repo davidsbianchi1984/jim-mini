@@ -77,9 +77,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   threshold), and a **low-balance floor** that until now was a
   constant in the code: set where "cash is running low" begins, and
   both the warning and the investing engine's untouchable cushion
-  honor your number. Band sliders also stopped guessing their scale
-  from the unit — every metric now states its own bounds, which is
-  what makes non-physiological sliders possible at all.
+  honor your number. The floor has a door on all three phones too
+  (their money screens gained the field, labelled by the server in
+  the reader's language), its refusal speaks ten languages, and the
+  shared field vocabulary carries its label. Band sliders also
+  stopped guessing their scale from the unit — every metric now
+  states its own bounds, which is what makes non-physiological
+  sliders possible at all.
 
       asked     where does a person set a limit
       mattered  is there one answer

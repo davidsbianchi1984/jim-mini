@@ -504,6 +504,9 @@ public sealed partial class LifePage : Page
             MoneySavingsCurrent.Text = v.Savings is null ? "" : $"{v.Savings.Goal:F0}";
             MoneyGoal.Header = L("savings_goal");
             MoneyGoalButton.Content = L("set_goal");
+            MoneyFloorTitle.Text = L("low_floor");
+            MoneyFloorBox.Header = L("low_floor");
+            MoneyFloorButton.Content = L("set_floor");
             MoneyMandateTitle.Text = L("mandate");
             MoneyScope.Header = L("scope");
             MoneyMandateButton.Content = L("mandate_save");
@@ -639,6 +642,19 @@ public sealed partial class LifePage : Page
         try
         {
             await ApiClient.Shared.MoneySetSavings(s.Uid!, s.Token!, goal);
+            MoneyStatus.Text = "";
+            await LoadMoney();
+        }
+        catch (Exception ex) { MoneyStatus.Text = ex.Message; }
+    }
+
+    private async void OnMoneySetFloor(object sender, RoutedEventArgs e)
+    {
+        if (!double.TryParse(MoneyFloorBox.Text.Trim(), out var floor)) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.MoneySetFloor(s.Uid!, s.Token!, floor);
             MoneyStatus.Text = "";
             await LoadMoney();
         }

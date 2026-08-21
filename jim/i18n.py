@@ -1681,6 +1681,17 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    'a low-balance floor is a positive amount — send null to go back to the derived default': {
+        'es': 'el suelo de saldo bajo es una cantidad positiva — envía null para volver al valor derivado',
+        'fr': 'le plancher de solde bas est un montant positif — envoyez null pour revenir à la valeur dérivée',
+        'de': 'die Untergrenze für den Kontostand ist ein positiver Betrag — senden Sie null, um zum abgeleiteten Standard zurückzukehren',
+        'pt': 'o piso de saldo baixo é um montante positivo — envie null para voltar ao valor derivado',
+        'it': 'la soglia di saldo basso è un importo positivo — invia null per tornare al valore derivato',
+        'ja': '残高の下限は正の金額です — 導出された既定値に戻すには null を送ってください',
+        'zh': '低余额下限必须是正数 — 发送 null 可回到派生的默认值',
+        'hi': 'न्यून शेष की सीमा एक धनात्मक राशि है — व्युत्पन्न डिफ़ॉल्ट पर लौटने के लिए null भेजें',
+        'ar': 'الحد الأدنى للرصيد مبلغ موجب — أرسل null للعودة إلى القيمة المشتقة',
+    },
     'that does not look like an email address': {
         'es': 'eso no parece una dirección de correo',
         'fr': "cela ne ressemble pas à une adresse e-mail",
@@ -3669,7 +3680,10 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'trusted_channel': {'en': 'Trusted channel', 'es': 'Canal de confianza', 'fr': 'Canal de confiance', 'de': 'Vertrauenskanal', 'pt': 'Canal de confiança', 'it': 'Canale di fiducia', 'ja': '信頼できる連絡先', 'zh': '可信渠道', 'hi': 'विश्वसनीय चैनल', 'ar': 'القناة الموثوقة'},
     'trusted_name': {'en': 'Trusted name', 'es': 'Nombre de confianza', 'fr': 'Nom de confiance', 'de': 'Vertrauensperson', 'pt': 'Nome de confiança', 'it': 'Nome di fiducia', 'ja': '信頼できる人の名前', 'zh': '可信联系人姓名', 'hi': 'विश्वसनीय नाम', 'ar': 'الاسم الموثوق'},
     'username': {'en': 'Username', 'es': 'Nombre de usuario', 'fr': 'Nom d’utilisateur', 'de': 'Benutzername', 'pt': 'Nome de utilizador', 'it': 'Nome utente', 'ja': 'ユーザー名', 'zh': '用户名', 'hi': 'उपयोगकर्ता नाम', 'ar': 'اسم المستخدم'},
-    'window_minutes': {'en': 'Window (minutes)', 'es': 'Ventana (minutos)', 'fr': 'Fenêtre (minutes)', 'de': 'Zeitfenster (Minuten)', 'pt': 'Janela (minutos)', 'it': 'Finestra (minuti)', 'ja': 'ウィンドウ（分）', 'zh': '时间窗（分钟）', 'hi': 'विंडो (मिनट)', 'ar': 'النافذة (بالدقائق)'},    'voice_id': {'en': 'Voice', 'es': 'Voz', 'fr': 'Voix', 'de': 'Stimme', 'pt': 'Voz', 'it': 'Voce', 'ja': '音声', 'zh': '语音', 'hi': 'आवाज़', 'ar': 'الصوت'},
+    'window_minutes': {'en': 'Window (minutes)', 'es': 'Ventana (minutos)', 'fr': 'Fenêtre (minutes)', 'de': 'Zeitfenster (Minuten)', 'pt': 'Janela (minutos)', 'it': 'Finestra (minuti)', 'ja': 'ウィンドウ（分）', 'zh': '时间窗（分钟）', 'hi': 'विंडो (मिनट)', 'ar': 'النافذة (بالدقائق)'},    # Aligned to QRME's wording when the sibling-vocabulary guard ran for
+    # real the first time: this field IS the engine's voice id, here too.
+    'voice_id': {'en': 'Voice ID from the engine', 'es': 'ID de voz del motor', 'fr': 'ID de voix du moteur', 'de': 'Stimm-ID der Engine', 'pt': 'ID de voz do motor', 'it': 'ID voce del motore', 'ja': 'エンジンのボイスID', 'zh': '引擎的声音 ID', 'hi': 'इंजन की वॉइस ID', 'ar': 'معرّف الصوت من المحرّك'},
+    'floor': {'en': 'Low-balance floor', 'es': 'Suelo de saldo bajo', 'fr': 'Plancher de solde bas', 'de': 'Untergrenze für den Kontostand', 'pt': 'Piso de saldo baixo', 'it': 'Soglia di saldo basso', 'ja': '残高の下限ライン', 'zh': '低余额下限', 'hi': 'न्यून शेष की सीमा', 'ar': 'الحد الأدنى للرصيد'},
 
 }
 
@@ -3934,6 +3948,8 @@ _MONEY_LABELS: dict[str, dict[str, str]] = {
     'balance': {'en': 'Balance', 'es': 'Saldo', 'fr': 'Solde', 'de': 'Saldo', 'pt': 'Saldo', 'it': 'Saldo', 'ja': '残高', 'zh': '余额', 'hi': 'शेष राशि', 'ar': 'الرصيد'},
     'record_balance': {'en': 'Record a balance', 'es': 'Registrar un saldo', 'fr': 'Enregistrer un solde', 'de': 'Saldo erfassen', 'pt': 'Registar um saldo', 'it': 'Registra un saldo', 'ja': '残高を記録', 'zh': '记录余额', 'hi': 'शेष दर्ज करें', 'ar': 'سجّل رصيدًا'},
     'savings_goal': {'en': 'Savings goal', 'es': 'Meta de ahorro', 'fr': 'Objectif d\'épargne', 'de': 'Sparziel', 'pt': 'Meta de poupança', 'it': 'Obiettivo di risparmio', 'ja': '貯蓄目標', 'zh': '储蓄目标', 'hi': 'बचत लक्ष्य', 'ar': 'هدف الادخار'},
+    'low_floor': {'en': 'Low-balance floor', 'es': 'Suelo de saldo bajo', 'fr': 'Plancher de solde bas', 'de': 'Untergrenze für den Kontostand', 'pt': 'Piso de saldo baixo', 'it': 'Soglia di saldo basso', 'ja': '残高の下限ライン', 'zh': '低余额下限', 'hi': 'न्यून शेष की सीमा', 'ar': 'الحد الأدنى للرصيد'},
+    'set_floor': {'en': 'Set the floor', 'es': 'Fijar el suelo', 'fr': 'Fixer le plancher', 'de': 'Untergrenze festlegen', 'pt': 'Definir o piso', 'it': 'Imposta la soglia', 'ja': '下限を設定', 'zh': '设定下限', 'hi': 'सीमा तय करें', 'ar': 'حدد الحد الأدنى'},
     'set_goal': {'en': 'Set the goal', 'es': 'Fijar la meta', 'fr': 'Fixer l\'objectif', 'de': 'Ziel festlegen', 'pt': 'Definir a meta', 'it': 'Fissa l\'obiettivo', 'ja': '目標を設定', 'zh': '设定目标', 'hi': 'लक्ष्य तय करें', 'ar': 'حدّد الهدف'},
     'mandate': {'en': 'Investing mandate', 'es': 'Mandato de inversión', 'fr': 'Mandat d\'investissement', 'de': 'Anlagemandat', 'pt': 'Mandato de investimento', 'it': 'Mandato di investimento', 'ja': '投資委任', 'zh': '投资授权', 'hi': 'निवेश अधिदेश', 'ar': 'تفويض الاستثمار'},
     'mandate_save': {'en': 'Write the mandate', 'es': 'Escribir el mandato', 'fr': 'Rédiger le mandat', 'de': 'Mandat festhalten', 'pt': 'Escrever o mandato', 'it': 'Scrivi il mandato', 'ja': '委任を記す', 'zh': '写下授权', 'hi': 'अधिदेश लिखें', 'ar': 'اكتب التفويض'},

@@ -2624,6 +2624,14 @@ struct SavingsGoal: Decodable {
     let reached_at: String?
 }
 
+/// The low-balance trip line — the owner's own when `source` is "user",
+/// and `derived` is what clearing it goes back to.
+struct MoneyFloor: Decodable {
+    let floor: Double
+    let source: String
+    let derived: Double
+}
+
 struct MoneyMandate: Decodable {
     let enabled: Bool
     let cap_per_order: Double?
@@ -2762,6 +2770,15 @@ extension ApiClient {
                          goal: Double) async throws -> SavingsGoal {
         try await request("/money/\(uid)/savings", method: "PUT",
                           body: ["goal": goal], token: token)
+    }
+
+    // The low-balance floor. Zero is refused server-side; the console
+    // clears with null, and this door sets — a phone that wants to clear
+    // sends the request with no floor via the console for now.
+    func moneySetFloor(uid: String, token: String,
+                       floor: Double) async throws -> MoneyFloor {
+        try await request("/money/\(uid)/floor", method: "PUT",
+                          body: ["floor": floor], token: token)
     }
 
     func moneySetMandate(uid: String, token: String, enabled: Bool,
