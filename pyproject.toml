@@ -19,10 +19,18 @@ dependencies = [
     "uvicorn>=0.29",
     "anthropic>=0.117",
     "segno>=1.6",       # shareable Medical ID QR
+    # Imported at module scope by the server itself, so they are the
+    # image's to carry — a runtime import living only in the dev extra
+    # boots every test run and crash-loops the beta box, which is
+    # exactly how httpx was field-reported (it had ridden into earlier
+    # images as somebody else's transitive dependency, until a rebuild
+    # resolved versions where it no longer came along).
+    "httpx>=0.27",      # engaged sessions call the product's own doors
+    "pydantic>=2",      # imported directly, not only through fastapi
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "httpx>=0.27"]
+dev = ["pytest>=8"]
 
 [project.urls]
 Homepage = "https://github.com/davidsbianchi1984/jim-mini"

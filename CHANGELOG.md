@@ -4,6 +4,26 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **The image carries what the code imports.** Field report as a 502:
+  the beta box's jim container crash-looped on `import httpx` in
+  `jim/engaged.py`. httpx sat only in the dev extra — every test run
+  had it because the test client depends on it, and every earlier
+  image had it as somebody else's transitive dependency, until a
+  rebuild resolved versions where nothing dragged it along. The suite
+  was green; the deploy was down. httpx (and pydantic, imported
+  directly rather than only through fastapi) are declared main
+  dependencies now, and a new guard holds the rule: every module-scope
+  third-party import in `jim/` must be a declared dependency, and no
+  runtime import may live only in the dev extra — the exact
+  arrangement that made this invisible.
+
+      asked     does the code import it
+      mattered  does the image the code ships in install it
+
 ## [0.97.0] - 2026-08-21
 
 ### Added
@@ -9923,6 +9943,7 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.97.0...HEAD
 [0.97.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.96.0...app-v0.97.0
 [0.96.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.95.0...app-v0.96.0
 [0.95.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.94.0...app-v0.95.0
