@@ -476,6 +476,9 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .wl-count { font-size: 15px; font-weight: 800; width: 20px; text-align: right; }
 .wl-label { font-size: 11px; color: var(--muted); }
 .wl-foot { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.wl-ear { background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--text); font-size: 12px; text-align: left;
+  text-decoration: underline dotted; }
 .wl-dot { position: fixed; left: 22px; bottom: 22px; width: 46px; height: 46px;
   border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); cursor: pointer;
   box-shadow: 0 8px 24px rgba(0,0,0,.45); z-index: 40; }

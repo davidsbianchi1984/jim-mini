@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, type AlarmRow, type CrashWatchStatus, type VigilStatus } from "./api";
+import { standEar, type EarState } from "./ear";
 import { t as tr, visitorLang } from "./l10n";
 import { useSession } from "./store";
 
@@ -18,6 +19,9 @@ import { useSession } from "./store";
 
 const POLL_MS = 15000;
 const MIN_KEY = "jim.lights.min";
+// The standing ear's switch, remembered per browser like the minimize —
+// a consent this person gave on this machine, never a default.
+const EAR_KEY = "jim.ear.on";
 
 const COLORS = { green: "#43e08a", amber: "#ffb84d", red: "#e0687a" };
 
@@ -39,6 +43,16 @@ export function GuardianLights() {
   const [glance, setGlance] = useState<Glance | null>(null);
   const [unreachable, setUnreachable] = useState(false);
   const [min, setMin] = useState(() => localStorage.getItem(MIN_KEY) === "1");
+  // The standing ear: while a sound-sensing monitor is plugged in, the
+  // console can keep the device's recogniser listening and hand everything
+  // heard to that monitor's door, where the cue vocabulary (jim/cues.py)
+  // decides what any of it means. The row only appears when such a monitor
+  // is on — an ear with no door to bring sound to would be surveillance
+  // with extra steps.
+  const [soundMonitor, setSoundMonitor] = useState<string | null>(null);
+  const [earOn, setEarOn] = useState(
+    () => localStorage.getItem(EAR_KEY) === "1");
+  const [ear, setEar] = useState<EarState>("off");
 
   const load = useCallback(() => {
     const { userId, userToken } = session;
@@ -60,6 +74,14 @@ export function GuardianLights() {
         crash: c.status === "fulfilled" ? c.value : null,
       });
     });
+    // Separately, and allowed to fail without dimming the glance: is any
+    // sound-sensing monitor plugged in for the ear to feed? Polled with the
+    // rest so plugging an earpiece on the monitors screen shows the row
+    // here without a reload — and unplugging it takes the row away.
+    api.monitors(userId, userToken).then((rows) => {
+      const hears = rows.find((r) => r.on && r.senses.includes("sound"));
+      setSoundMonitor(hears ? hears.name : null);
+    }).catch(() => { /* the glance rows carry the reachability story */ });
   }, [session.userId, session.userToken]);
 
   useEffect(() => {
@@ -67,6 +89,28 @@ export function GuardianLights() {
     const timer = setInterval(load, POLL_MS);
     return () => clearInterval(timer);
   }, [load]);
+
+  // The ear's lifetime is exactly the switch's: on with a plugged sound
+  // monitor, it stands (and survives the widget being minimized — the dot
+  // still names the account being listened for); off, unplugged, or signed
+  // out, it stops. The server's door re-checks consent on every submission,
+  // so a monitor unplugged mid-listen is refused there, not trusted here.
+  useEffect(() => {
+    const { userId, userToken } = session;
+    if (!earOn || !soundMonitor || !userId || !userToken) {
+      setEar("off");
+      return;
+    }
+    const standing = standEar(userId, userToken, soundMonitor, setEar);
+    return () => standing.stop();
+  }, [earOn, soundMonitor, session.userId, session.userToken]);
+
+  const flipEar = () => {
+    const v = !earOn;
+    setEarOn(v);
+    if (v) localStorage.setItem(EAR_KEY, "1");
+    else localStorage.removeItem(EAR_KEY);
+  };
 
   if (!glance) {
     if (!unreachable || !session.userId) return null;
@@ -121,6 +165,28 @@ export function GuardianLights() {
           <span className="wl-label">{r.label}</span>
         </div>
       ))}
+      {soundMonitor && (
+        <div className="wl-row">
+          <span className="wl-light"
+                style={{ background: ear === "listening" ? COLORS.green
+                  : earOn ? COLORS.amber : "var(--muted)" }} />
+          <span className="wl-count">{ear === "listening" ? 1 : 0}</span>
+          <button className="wl-ear" onClick={flipEar}
+                  aria-label={earOn ? tr("lights.ear.stop", lang)
+                    : tr("lights.ear.start", lang)}
+                  title={earOn ? tr("lights.ear.stop", lang)
+                    : tr("lights.ear.start", lang)}>
+            {tr("lights.ear", lang)}
+          </button>
+        </div>
+      )}
+      {soundMonitor && earOn && ear !== "off" && (
+        <div className="wl-foot">
+          {ear === "listening" ? tr("lights.ear.on", lang)
+            : ear === "refused" ? tr("lights.ear.refused", lang)
+            : tr("lights.ear.none", lang)}
+        </div>
+      )}
       <div className="wl-foot">
         {tone === "green" ? tr("lights.quiet", lang)
           : tone === "amber" ? tr("lights.asking", lang)

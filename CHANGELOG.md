@@ -43,6 +43,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       mattered  the person, from either side of it — by speaking over
                 it or by saying nothing at all
 
+- **The standing ear.** Field request: *while the monitoring has been
+  activated and app or website is on, I want the microphone to be
+  listening for users to be using those keywords we discussed.* The
+  cue vocabulary already lives in `jim/cues.py` and already fires on
+  whatever a monitor senses — what was missing was a monitor that
+  could hear. When a sound-sensing monitor is plugged in, the Guardian
+  lights grow an ear row: switch it on and the device's own recogniser
+  listens continuously, handing everything heard through the monitor's
+  own sensed door, where the cues are matched, the roster's consent
+  rules gate every submission, and a critical cue climbs the same
+  ladder to a person it always did. No word list is copied to the
+  client (a guard forbids even one phrase of it appearing there), the
+  Guardian's own spoken replies are never submitted as something a
+  room said, and the pill states plainly when it is listening, when
+  the microphone was refused, and when the browser has no recogniser
+  to listen with — in ten languages.
+
+      asked     does the console hear the words the cues know
+      mattered  who decides what a call for help sounds like — the
+                server's one vocabulary, behind the roster's one
+                consent door
+
 ### Fixed
 
 - **The image carries what the code imports.** Field report as a 502:
