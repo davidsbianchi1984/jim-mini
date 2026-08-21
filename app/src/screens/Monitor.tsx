@@ -180,6 +180,15 @@ export function Monitor() {
     setListening(false); setSpeaking(false); setLevel(0);
   }
 
+  // Leaving the screen ends the conversation. There was no unmount
+  // teardown at all: navigating away mid-reply left a headless loop —
+  // the voice kept talking, and the standing conversation re-opened the
+  // microphone under a screen that no longer exists. Cleanup touches
+  // refs, the shared voice module, and stable setters only, so the
+  // first render's closure is the right one to keep.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => () => exitTalk(), []);
+
   // Spec [0039]: "did that help?" — and if it didn't, a live person.
   async function saidHelped(helped: boolean) {
     if (!session.userId || !session.userToken) return;

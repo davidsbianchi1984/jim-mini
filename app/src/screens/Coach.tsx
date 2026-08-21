@@ -208,6 +208,13 @@ export function Coach() {
     setListening(false); setSpeaking(false); setLevel(0);
   }
 
+  // Leaving the screen ends the conversation. There was no unmount
+  // teardown at all: navigating away mid-reply left a headless loop —
+  // the voice kept talking, and the standing conversation re-opened the
+  // microphone under a screen that no longer exists.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => () => exitTalk(), []);
+
   async function toggleMic() {
     if (listening) { exitTalk(); return; }
     setError(null);

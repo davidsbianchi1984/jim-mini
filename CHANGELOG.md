@@ -6,6 +6,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Leaving the room ends the conversation.** None of the five
+  conversation screens (Coach, Talk, Engaged, Monitor, Check-in) had
+  an unmount teardown. Navigating away mid-reply left a headless loop:
+  the reply kept speaking, and the standing conversation — whose whole
+  design is to re-open the microphone after each turn — kept doing
+  exactly that under a screen that no longer exists. The person is on
+  the Baseline screen; the Guardian is still listening to the kitchen.
+  Every screen now tears down on unmount through its own `exitTalk()`,
+  the same door the veil tap uses, so there is exactly one way a
+  conversation ends. The Journal's one-shot dictation lets go of the
+  microphone on unmount too — on a platform without the silence
+  watcher, an abandoned recording held it open until somebody came
+  back to tap it. A guard sweeps the screens so a future screen
+  cannot grow the machinery without the teardown.
+
+      asked     what happens to the voice when the screen goes away
+      mattered  a conversation with no screen is a hot microphone
+
 ### Added
 
 - **The answer begins before it ends.** Field report, twice in one

@@ -114,6 +114,13 @@ export function Journal() {
     );
   }
 
+  // Leaving the page stops the dictation — the one-shot form of the
+  // defect the conversation screens had: on a platform without the
+  // silence watcher, an abandoned recording held the microphone open
+  // until somebody came back to tap it.
+  useEffect(() => () => { recorder.current?.stop(); recorder.current = null; },
+            []);
+
   /** Read the draft on this device and say what is worth saying. Nothing is
    *  stored and nothing is edited: applying a remark is the writer's act. */
   async function readAlong() {
