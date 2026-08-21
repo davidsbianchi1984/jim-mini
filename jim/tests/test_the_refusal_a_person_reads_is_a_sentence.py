@@ -299,6 +299,21 @@ SHELLS = {
              r"throw ApiException\("),
     "windows": (REPO / "native/windows/ApiClient.cs",
              r"throw new HttpRequestException\("),
+    # The wrist. It is deliberately **outside** the door-completeness
+    # accounting in `clientpaths.py` — a watch is supposed to reach a handful
+    # of routes, and holding it to a completeness rule would push the billing
+    # screen onto somebody's arm to satisfy a test. That exemption is about
+    # *how many* doors it has and says nothing about how it renders a refusal
+    # through the ones it does have.
+    #
+    #     asked     is the wrist a complete client
+    #     mattered  does the wrist show a person a sentence
+    #
+    # A watch is the surface where a status code is least useful: it is
+    # glanced at, at arm's length, often in the dark. So it is audited here
+    # exactly like the phones.
+    "wear": (REPO / "native/wear/app/src/main/java/app/jim/wear/WearApi.kt",
+             r"throw Refused\("),
 }
 
 
