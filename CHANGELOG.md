@@ -88,6 +88,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       asked     where does a person set a limit
       mattered  is there one answer
 
+- **The turn ends when the talking does, and the voice follows the
+  earbud.** Two field reports off the same session. The pause: five
+  seconds of silence before a turn was judged over read as *still a
+  long delay while waiting for a response* — the window is 2.5
+  seconds now, so the reply starts in half the time. The route: an
+  earbud connected to the phone, and the conversation came out of
+  the phone's own speaker while the built-in microphone listened.
+  The conversation asks for the connected headset by name now — its
+  microphone in the capture request (on iOS, the ask that moves the
+  whole audio session to the headset) and its speaker via setSinkId
+  where the platform allows — degrading to the defaults, never to a
+  refusal, when no earbud is there.
+
+      asked     does the conversation use the device already
+                connected
+      mattered  nobody connects an earbud hoping the speaker answers
+
 ### Fixed
 
 - **The third sensitivity level was unreachable.** Both the Bearing

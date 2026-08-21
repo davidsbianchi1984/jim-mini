@@ -40,6 +40,15 @@ export async function say(text: string): Promise<"service" | "device"> {
       const blob = await res.blob();
       const audio = new Audio(URL.createObjectURL(blob));
       current = audio;
+      // The reply goes to the earbud somebody already connected, where the
+      // platform lets a page choose. Where it does not (iOS), the
+      // microphone request below is the lever that moves the session.
+      const sink = await connectedEar("audiooutput");
+      if (sink && "setSinkId" in audio) {
+        await (audio as HTMLAudioElement & {
+          setSinkId(id: string): Promise<void>;
+        }).setSinkId(sink).catch(() => { /* the default route stands */ });
+      }
       await audio.play();
       await new Promise<void>((resolve) => {
         // `pause` fires for hush(); `ended` for a played-out reply;
@@ -83,6 +92,36 @@ export async function say(text: string): Promise<"service" | "device"> {
 }
 
 export interface Listener { stop: () => void }
+
+// -- following the device that is already connected ------------------------
+//
+// Field report: an earbud connected to the phone, and the conversation came
+// out of the phone's own speaker while the built-in microphone listened —
+// the person had to disconnect the earbud to hear their guardian. A page
+// cannot re-route the operating system, but it can *ask by name*: request
+// the connected headset's microphone in getUserMedia (on iOS that request
+// is also what flips the whole audio session to the headset), and on the
+// platforms that expose setSinkId, point the reply at the headset speaker.
+// Device labels are readable only after a microphone permission has been
+// granted once, so the first-ever listen uses the defaults and every one
+// after it follows the earbud.
+const EXTERNAL_EAR =
+  /airpod|earbud|\bbuds?\b|headset|headphone|bluetooth|hands-?free|wireless|jabra|\bwf-|\bwh-/i;
+
+async function connectedEar(
+  kind: "audioinput" | "audiooutput",
+): Promise<string | null> {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const ext = devices.find(
+      (d) => d.kind === kind && EXTERNAL_EAR.test(d.label));
+    return ext ? ext.deviceId : null;
+  } catch {
+    // No enumeration (old webview, permission withheld): the defaults are
+    // what the person had before this existed, not a failure.
+    return null;
+  }
+}
 
 /** How long a standing conversation keeps re-opening the microphone with
  *  nothing heard before it bows out on its own. The reviewer's number:
@@ -326,9 +365,14 @@ export async function listen(
   try {
     // Echo cancellation asked for by name, not assumed: the microphone is
     // open while the reply plays now (interrupting is a turn), and without
-    // AEC the speaker's own voice would barge itself in.
+    // AEC the speaker's own voice would barge itself in. The connected
+    // earbud's microphone is asked for by name too — `ideal`, not `exact`,
+    // so an earbud that vanished mid-session degrades to the built-in mic
+    // instead of refusing to listen at all.
+    const mic = await connectedEar("audioinput");
     stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true } });
+      audio: { echoCancellation: true, noiseSuppression: true,
+               ...(mic ? { deviceId: { ideal: mic } } : {}) } });
   } catch {
     onError("no microphone available — check the app's microphone permission");
     return { stop: () => {} };
@@ -338,12 +382,16 @@ export async function listen(
   rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
   // Stop by silence, not only by tap. A field report from a coach
   // conversation: the green orb waits for a press however long the
-  // question has been over. Five seconds without a voice ends the
-  // listening on its own — long enough for a thinking pause mid-question,
-  // short enough that the answer starts when the asking stops. The tap
-  // still works, and a platform with no AudioContext simply keeps the
-  // old manual behavior.
-  const SILENCE_STOP_MS = 5000;
+  // question has been over. Quiet ends the listening on its own — long
+  // enough for a thinking pause mid-question, short enough that the
+  // answer starts when the asking stops. The tap still works, and a
+  // platform with no AudioContext simply keeps the old manual behavior.
+  //
+  // Five seconds first, and the same reviewer sent it back: "still a
+  // long delay while waiting for a response — drop it to 2.5". Half the
+  // window, and the wait between finishing a sentence and hearing the
+  // reply begins is half of what it was.
+  const SILENCE_STOP_MS = 2500;
   let watcher = 0;
   let audioCtx: AudioContext | null = null;
   // Whether a voice-level sound was ever heard. Speech models hallucinate
