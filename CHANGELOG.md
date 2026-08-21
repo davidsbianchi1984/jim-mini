@@ -97,6 +97,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       mattered  an option that always refuses is a broken promise
                 drawn as a button
 
+- **The shared vocabulary agrees again.** The sibling-product
+  vocabulary guard ran against a real QRME checkout for the first
+  time and found two fields drifted; the products aligned on one
+  wording per shared name — `answer` as *Your answer* (JIM's), and
+  `consent` as *Consent* (QRME's — JIM's long far-end phrase was
+  this product's meaning leaking into a shared label).
+
+      asked     does a shared field read the same in every product
+      mattered  the guard that answers this had never actually run
+
 - **The image carries what the code imports.** Field report as a 502:
   the beta box's jim container crash-looped on `import httpx` in
   `jim/engaged.py`. httpx sat only in the dev extra — every test run
