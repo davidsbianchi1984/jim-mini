@@ -713,3 +713,9 @@ body.theme-paper {
 }
 body.theme-paper input, body.theme-paper textarea,
 body.theme-paper select { background: #fff; color: var(--txt); }
+
+/* Who is speaking, over the orb: the specialist's own name, because a
+   sphere that chimes in without saying whose voice it is asks to be
+   dismissed as noise. */
+.voice-orb-who { color: #fff; font-weight: 600; font-size: 15px;
+  margin-top: 10px; }

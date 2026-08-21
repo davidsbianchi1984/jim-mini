@@ -1409,9 +1409,14 @@ def _deliver(user_id, user, detection, note, qrme, source_device=None,
             delivered["note"] = "tandem specialist registered but no QRME endpoint " \
                                 "configured; used standalone guidance"
     # Name the domain expert standing behind this condition (starter
-    # registry or operator-registered), for both local and tandem modes.
+    # registry or operator-registered), for both local and tandem modes —
+    # and the life area that leads back to them, so the console's speaking
+    # sphere can open a discussion at the same door that just spoke.
     if spec and spec.get("label"):
         delivered["specialist"] = spec["label"]
+        from . import specialists as _specialists
+        delivered["specialist_area"] = _specialists.area_for_condition(
+            detection.condition)
     channel = _delivery_channel(user, source_device)
     delivered["delivered_via"] = channel
     embodiment = device_lookup(user_id, channel) if user else None

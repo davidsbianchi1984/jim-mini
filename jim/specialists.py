@@ -88,6 +88,21 @@ AREA_CONDITIONS: dict[str, tuple[str, ...]] = {
 }
 
 
+def area_for_condition(condition: str) -> str | None:
+    """The life area whose door leads back to this detection's specialist.
+
+    The inverse read of `AREA_CONDITIONS`, for the monitoring path: a
+    detection knows its condition, the discussion door (`/coach/{id}/
+    specialist`) speaks in areas, and the console's speaking sphere needs
+    the one to reach the other. None when no area claims the condition —
+    the Guardian answers alone there, and the sphere discusses through
+    the coach instead."""
+    for area, domains in AREA_CONDITIONS.items():
+        if condition in domains:
+            return area
+    return None
+
+
 def for_area(area: str) -> dict | None:
     """The tandem specialist covering this life area, or None.
 
@@ -129,6 +144,11 @@ def offer(area: str) -> dict | None:
         "available": True,
         "label": spec["label"],
         "qrme_profile_id": spec["qrme_profile_id"],
+        # The area rides along so the surface that renders the offer can
+        # address a follow-up to the same specialist — the console's
+        # speaking sphere opens a discussion with her, and without the
+        # area it would have had to guess her door.
+        "area": area,
         "sent": False,
         "note": ("a specialist covers this area. Nothing has been sent — "
                  "asking them shares the message you just wrote with a "

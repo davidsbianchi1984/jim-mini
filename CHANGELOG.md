@@ -8,6 +8,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The specialist chimes in out loud.** Field report: blood oxygen
+  dropped, the attached doctor profile chimed in — with text. Correct
+  text, correct call door beside it, and easy to scroll past at
+  exactly the moment it should not be. When guidance lands on a
+  detection now, her own sphere opens over the monitor screen, wearing
+  her name, and the message is spoken so it cannot be missed — then
+  the microphone opens and the discussion goes to her own door (the
+  server now sends `specialist_area` beside her name), the coach's
+  front door standing in when no specialist is registered. The sphere
+  never replaces the emergency card and its call door: one tap and
+  they are in front of you — the voice is how the message stops being
+  missable, not a gate in front of the help.
+
+      asked     was the chime-in heard
+      mattered  guidance that can be missed is guidance that was not
+                given
+
 - **The engaged session joins the voice conversation, and the choice
   is buttons.** The screen where somebody asks for the look or sends
   the agent out for knowledge was the one conversational surface still

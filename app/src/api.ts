@@ -381,6 +381,10 @@ export interface SpecialistAnswer {
 export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[];
   first_aid?: FirstAid | null;
   specialist_offer?: SpecialistOffer | null;
+  // The monitoring path names who spoke and the life area that leads back
+  // to them, so the speaking sphere can open a discussion at that door.
+  specialist?: string;
+  specialist_area?: string | null;
   provenance?: { generated_by?: string; degraded?: boolean; degraded_reason?: string | null } }
 // The offline coach's store and syllabus (jim/pipeline.py): what it can
 // draw on, what JIM should study next, and what one press of study did.

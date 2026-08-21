@@ -1,8 +1,12 @@
-import { useState } from "react";
-import { api, type FollowupResult, type MonitorResult } from "../api";
+import { useRef, useState } from "react";
+import { api, type FollowupResult, type Guidance,
+         type MonitorResult } from "../api";
 import { PaceCue } from "../PaceCue";
 import { t as tr, visitorLang } from "../l10n";
+import { CONVERSATION_IDLE_MS, hush, heardNothing, listen, primeVoice,
+         say, type Listener } from "../speech";
 import { useSession } from "../store";
+import { useEffect } from "react";
 
 export function Monitor() {
   const { session } = useSession();
@@ -16,16 +20,117 @@ export function Monitor() {
   const [answer, setAnswer] = useState<FollowupResult | null>(null);
   const [asking, setAsking] = useState(false);
 
+  // The specialist's own sphere. A field report: blood oxygen dropped, the
+  // attached doctor profile chimed in — with text, easy to scroll past.
+  // When guidance lands on a detection now, she pops up and says it, and
+  // the microphone opens for a discussion at her own door. The sphere
+  // never replaces the emergency card and its call door — one tap on the
+  // veil and they are in front of you; the voice is how the message stops
+  // being missable, not a gate in front of the help.
+  const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [level, setLevel] = useState(0);
+  const [who, setWho] = useState<string | null>(null);
+  const recorder = useRef<Listener | null>(null);
+  const talking = useRef(false);
+  const round = useRef(0);
+  const lastHeard = useRef(0);
+  const area = useRef<string | null>(null);
+  useEffect(() => { void primeVoice(); }, []);
+
   async function submit() {
     if (!session.userId || !session.userToken) return;
     setBusy(true); setError(null); setAnswer(null);
     try {
-      setResult(await api.monitor(session.userId, { heart_rate: hr, respiratory_rate: resp, stress_level: stress }, session.userToken));
+      const r = await api.monitor(session.userId, { heart_rate: hr, respiratory_rate: resp, stress_level: stress }, session.userToken);
+      setResult(r);
+      if (r.detected && r.guidance?.content) chime(r.guidance);
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
 
+  /** The chime-in: her sphere opens, the guidance is spoken so it cannot
+   *  be missed, and then the mic opens for the discussion — the standing
+   *  loop every other conversational surface carries. */
+  function chime(g: Guidance) {
+    setWho(g.specialist || g.source || null);
+    area.current = g.specialist_area || null;
+    talking.current = true;
+    lastHeard.current = Date.now();
+    setSpeaking(true);
+    say(g.content).finally(() => {
+      setSpeaking(false);
+      if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+    });
+  }
+
+  /** One discussion turn. Her area when the server named one — the same
+   *  door the monitoring path just delivered through — the coach's front
+   *  door otherwise, so a local-guidance detection still talks back. */
+  async function discuss(text: string) {
+    if (!session.userId || !session.userToken) return;
+    try {
+      const reply = area.current
+        ? (await api.coachSpecialist(session.userId,
+            { area: area.current, message: text }, session.userToken))
+        : (await api.coach(session.userId,
+            { area: "general", message: text }, session.userToken));
+      const content = reply?.content
+        || ("note" in (reply || {}) ? (reply as { note?: string }).note : "")
+        || "";
+      if (content && talking.current) {
+        setSpeaking(true);
+        say(content).finally(() => {
+          setSpeaking(false);
+          if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+        });
+      } else {
+        setSpeaking(false);
+        if (talking.current) { lastHeard.current = Date.now(); void hear(); }
+      }
+    } catch (e) {
+      talking.current = false;
+      setSpeaking(false); setError((e as Error).message);
+    }
+  }
+
+  async function hear() {
+    const g = ++round.current;
+    setListening(true);
+    recorder.current = await listen(
+      (text) => {
+        if (g !== round.current) return;
+        lastHeard.current = Date.now();
+        setListening(false); setSpeaking(true);
+        void discuss(text);
+      },
+      (msg) => {
+        if (g !== round.current) return;
+        if (talking.current && heardNothing(msg)) {
+          if (Date.now() - lastHeard.current >= CONVERSATION_IDLE_MS) {
+            exitTalk();
+            return;
+          }
+          void hear();
+          return;
+        }
+        talking.current = false;
+        setListening(false); setError(msg);
+      },
+      setLevel,
+    );
+  }
+
+  function exitTalk() {
+    talking.current = false;
+    round.current++;
+    recorder.current?.stop();
+    recorder.current = null;
+    hush();
+    setListening(false); setSpeaking(false); setLevel(0);
+  }
+
   // Spec [0039]: "did that help?" — and if it didn't, a live person.
-  async function say(helped: boolean) {
+  async function saidHelped(helped: boolean) {
     if (!session.userId || !session.userToken) return;
     setAsking(true); setError(null);
     try {
@@ -35,6 +140,23 @@ export function Monitor() {
 
   return (
     <div className="screen">
+      {(listening || speaking) && (
+        <div className="voice-orb-veil" role="status"
+             aria-label={listening ? "Listening" : "Speaking"}
+             onClick={exitTalk}>
+          <div className={"voice-orb-holder" + (speaking ? " speaking" : "")}>
+            <div className="voice-orb-ring"
+                 style={{ transform: `scale(${1 + level * 0.45})`,
+                          opacity: 0.3 + level * 0.7 }} />
+            <div className={"voice-orb " + (listening ? "listening" : "speaking")} />
+          </div>
+          {who && <div className="voice-orb-who">{who}</div>}
+          <div className="voice-orb-label">
+            {listening ? tr("cch.listening.stop", lang)
+                       : tr("cch.speaking.hush", lang)}
+          </div>
+        </div>
+      )}
       <header className="screen-head">
         <h2>{tr("mon.title", lang)}</h2>
         <span className="muted small">{tr("mon.sub", lang)}</span>
@@ -100,8 +222,8 @@ export function Monitor() {
                 <div className="followup">
                   <b>{result.followup.question}</b>
                   <div className="followup-buttons">
-                    <button onClick={() => say(true)} disabled={asking}>{tr("mon.helped", lang)}</button>
-                    <button className="warn" onClick={() => say(false)} disabled={asking}>
+                    <button onClick={() => saidHelped(true)} disabled={asking}>{tr("mon.helped", lang)}</button>
+                    <button className="warn" onClick={() => saidHelped(false)} disabled={asking}>
                       {tr("mon.nothelped", lang)}
                     </button>
                   </div>
