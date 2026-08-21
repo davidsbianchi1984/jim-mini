@@ -1552,16 +1552,47 @@ def create_app(qrme_client: QRMEClient | None = None,
 
     @app.post("/monitor/{user_id}")
     def monitor(user_id: str, body: BiometricSample, request: Request) -> dict:
+        """A reading, and the ladder it climbs.
+
+        `monitor` names the roster row it came off, when the sender knows.
+        That is the half this door was missing: `monitors.roster` learned
+        to say `sensing` only once a moment had actually been recorded, and
+        readings arriving here recorded none — so a watch could post a
+        pulse every minute and leave the wrist row reading `waiting`.
+
+        Naming it does not gate the reading. The vitals ladder is not the
+        monitor roster and never has been: a dangerous heart rate is
+        escalated whether or not a switch on a settings screen is on. What
+        the switch decides is whether the day gets to remember it, which is
+        the roster's own promise, enforced where it always was — in
+        `daybook.sensed`, through `monitors.may_sense`.
+        """
         _user_or_404(user_id, request)
         sample = body.model_dump(exclude_none=True)
         note = sample.pop("note", None)
+        came_off = sample.pop("monitor", None)
         # The calendar's bottom rung rides this sense — see jim/schedule.py.
         schedule.remind_pass(user_id, _money_lang(user_id))
         # So does the far end's monthly liveness note (jim/farend.py): a dead
         # mailbox gets discovered on a calm day, not during an emergency.
         farend.liveness_pass(user_id, _money_lang(user_id))
-        return guardian.monitor(user_id, sample, note, qrme=app.state.qrme,
-                                pdi=_vault(user_id))
+        answer = guardian.monitor(user_id, sample, note, qrme=app.state.qrme,
+                                  pdi=_vault(user_id))
+        if came_off:
+            # The same two words the roster prints, so a screen reading this
+            # answer and a screen reading the roster are reading one
+            # vocabulary. A row nobody switched on says `off` here and `off`
+            # there, and the reading was still graded.
+            standing = "off"
+            try:
+                daybook.sensed(user_id, came_off)
+                standing = "sensing"
+            except monitors.NotPluggedIn:
+                pass
+            except monitors.NoSuchMonitor as exc:
+                raise HTTPException(422, i18n.raised(exc)) from None
+            answer = {**answer, "monitor": came_off, "standing": standing}
+        return answer
 
     @app.get("/events/{user_id}")
     def events(user_id: str, request: Request) -> list[dict]:

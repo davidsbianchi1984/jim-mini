@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JIM</string>
+
+    <!-- Getting in. A watch cannot enroll somebody — a birthdate typed on
+         four millimetres of glass is a birthdate somebody gave up on — so
+         this is a sign-in with the same email and password as every other
+         surface, and every field takes dictation. -->
+    <string name="deployment">Where JIM lives</string>
+    <string name="your_email">Your email</string>
+    <string name="your_password">Your password</string>
+    <string name="sign_in">Sign in</string>
+
+    <!-- The roster's own word, printed as it arrives: off, waiting or
+         sensing. Not translated into a friendlier one here, because the
+         whole point of those three words is that every surface prints the
+         same one about the same fact. -->
+    <string name="wrist_is">wrist: %1$s</string>
+
+    <string name="read_my_pulse">Read my pulse</string>
+    <string name="say_something">Say something</string>
+    <string name="how_am_i">How am I doing?</string>
+    <string name="get_help_now">Get help now</string>
+
+    <string name="mic_refused">The watch has not been allowed to listen, so
+        channel 2 has nothing to carry.</string>
+</resources>

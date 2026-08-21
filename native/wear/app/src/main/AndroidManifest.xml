@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- The Guardian is reached over the network. A watch with no route to
+         it is a watch face, so this is the one permission the app cannot
+         work without. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- The wrist's own pulse. Declared here and asked for at the moment
+         the person switches the wrist monitor on — never at launch, because
+         a permission asked before there is anything to do with it is a
+         permission somebody grants without a reason. -->
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+
+    <!-- Channel 2: the watch's microphone, lent to the Guardian while the
+         phone's own is busy. Asked for at the press, not before. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Wear OS 3 and up. `standalone` true because this app reaches the
+         Guardian itself: the wrist has to work when the phone is in another
+         room, which is the case the whole surface exists for. -->
+    <uses-feature android:name="android.hardware.type.watch" />
+
+    <!-- A watch that recognises speech on the wrist needs the recogniser to
+         exist, and on Wear it lives in another package. Without this the
+         query is invisible and `isRecognitionAvailable` answers false on a
+         watch that has one. -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.DeviceDefault"
+        android:usesCleartextTraffic="true">
+
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.DeviceDefault">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

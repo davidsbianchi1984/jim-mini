@@ -1,0 +1,92 @@
+# JIM on the wrist — a Wear OS app
+
+    asked     do the watch screens look right
+    mattered  is there a watch
+
+The console has thirty-six watch faces drawn at wrist size, and the iPhone
+app has a `WatchCard`. Neither is a watch. A field report said so plainly —
+nothing on a wrist could reach the Guardian, because there was no watch
+target at all — and this directory is the answer to it.
+
+This is a **standalone Wear OS 3 app**. It talks to the deployment itself
+over the network, which is the case the whole surface exists for: the phone
+is in another room, or in a bag, or flat, and the person is still wearing
+the thing that knows their pulse.
+
+## What is on it
+
+Four things, and one of them is an apology.
+
+| Screen        | What it does |
+| ------------- | ------------ |
+| Sign in       | Deployment, email, password — every field dictated. |
+| Read my pulse | Health Services → `POST /monitor/{uid}` with `monitor: wrist`. |
+| Say something | On-device speech → `POST /users/{uid}/mic/heard` as **words**. |
+| How am I      | `POST /companion/{uid}` — the coach reaching out first. |
+| Get help now  | `POST /emergency/{uid}`. |
+
+Nothing else. A watch is a surface with about four things on it, and a wrist
+that could reach the billing screen would be a worse product, not a more
+complete one.
+
+## Three decisions worth knowing about
+
+**Words, never audio.** The watch recognises the speech itself and hands in
+text. `jim/mic.py:heard` takes either, and words are the better half of that
+choice: nothing but text ever leaves the wrist, and it works on a deployment
+with no transcription key at all. It also keeps the privacy promise short
+enough to fit on a 45mm screen, which is the only length at which a privacy
+promise is one anybody actually has.
+
+**The pulse names its monitor.** `POST /monitor/{uid}` now accepts an
+optional `monitor` field. Without it, `monitors.roster` had no way to know a
+reading had arrived, so a watch reporting every minute left the wrist row
+reading `waiting` — the same lie the roster had just been fixed for, facing
+the other way. Naming the row does not gate the reading: the vitals ladder is
+not the monitor roster, and a dangerous rate escalates whether or not a
+switch on a settings screen is on.
+
+**The watch signs in; it cannot sign anybody up.** A birthdate typed on four
+millimetres of glass is a birthdate somebody gave up on, so there is no
+enrollment here — the same email and password as every other surface, through
+`POST /signin`, which mints the watch its own session token. Signing the watch
+out does not sign the phone out.
+
+Every field opens Wear's own input screen, which takes **dictation** as well
+as typing. That is the difference between awkward and impossible: nobody
+types an email address on a watch and everybody can say one. A short pairing
+code handed over from the phone would be better still, and does not exist
+yet — shipping the awkward thing that works beats shipping the elegant thing
+that does not.
+
+## Why this is not registered as a fourth shell
+
+`jim/tests/clientpaths.py` walks `native/ios`, `native/android` and
+`native/windows` and asks, of every route the server publishes, whether each
+of those shells can reach it. That guard is right about the phones and would
+be wrong about this: the wrist is deliberately incomplete, and holding it to
+a completeness rule would push routes onto a watch to satisfy a test.
+
+So `native/wear/` sits outside that accounting on purpose — it is its own
+Gradle project rather than a module inside `native/android/`, precisely so a
+watch-only door can never be counted as a phone shell's door.
+
+What holds *this* directory honest instead is
+`jim/tests/test_the_wrist_is_a_surface.py`: every path `WearApi` calls must
+be a route the server actually publishes, the pairing chain must be walked in
+the order the server requires, and the sensor and the microphone must both be
+released when the screen goes away.
+
+## Building it
+
+There is no Android SDK in the environment this was written in, so this app
+has never been compiled here. Expect the first build to want small fixes.
+
+```
+cd native/wear
+gradle wrapper          # or open the directory in Android Studio
+./gradlew assembleDebug
+```
+
+Then pair a watch or start a Wear emulator (API 30+) and
+`adb install app/build/outputs/apk/debug/app-debug.apk`.

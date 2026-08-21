@@ -8,6 +8,48 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The wrist is a surface.** The console draws thirty-six watch faces at
+  wrist size and the iPhone app has a `WatchCard`, and a field report
+  asked the question those had never been made to answer: do the watch
+  screens work for people who attached watches. They did not, because
+  none of them was a watch — there was no watch target at all, and
+  nothing on any wrist could reach the Guardian. `native/wear/` is one:
+  a standalone Wear OS 3 app that talks to the deployment itself, for
+  the case the whole surface exists for — the phone in another room, or
+  in a bag, or flat, and the person still wearing the thing that knows
+  their pulse. Four things on it, which is what a wrist is for: the
+  pulse through Health Services, a turn of speech through channel 2, the
+  coach reaching out first, and help now. It sends **words, never
+  audio** — the watch recognises the speech itself, so nothing but text
+  leaves the wrist and it works on a deployment with no transcription
+  key. It signs in rather than signing up, with the same email and
+  password as every other surface, through Wear's own input screen so
+  every field can be dictated instead of typed. Deliberately outside the
+  phone-shell door accounting, and its own Gradle project so it cannot
+  drift in: the wrist is *supposed* to be incomplete, and holding it to a
+  completeness rule would push routes onto a watch to satisfy a test.
+
+      asked     do the watch screens look right
+      mattered  is there a watch
+
+- **A wrist that reports stops saying `waiting`.** The roster learned
+  last round to derive `sensing` from moments actually recorded rather
+  than from a switch, because a field report caught every switched-on
+  row claiming to sense in a house where nothing was connected. Building
+  the watch walked straight into the same lie facing the other way:
+  readings arrive through `POST /monitor/{user_id}`, that door recorded
+  no moment, and a watch posting a pulse every sixty seconds would have
+  left the wrist row reading `waiting` forever. A sample may now name the
+  roster row it came off, and naming it records the moment. It does
+  **not** gate the reading: the vitals ladder is not the monitor roster,
+  and refusing to grade a dangerous heart rate because a settings toggle
+  is off would be a safety regression dressed as consistency. What the
+  toggle decides is whether the day gets to remember it — the roster's
+  own promise, enforced where it always was.
+
+      asked     did a reading arrive
+      mattered  can the roster tell
+
 - **The screen is really seen.** The roster has promised since it was
   written that the screen monitor can "see what is on your screen while
   you work", holding nothing — "what it notices is offered and dropped".

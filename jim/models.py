@@ -286,6 +286,22 @@ class BiometricSample(BaseModel):
     source_device: str | None = None        # multimodal input: smart_watch |
                                             # stationary | neural_sensor |
                                             # gesture | robot | …
+    # Which roster row this reading came off, when the sender knows.
+    #
+    # A field report caught every switched-on row calling itself sensing
+    # with nothing connected, and `monitors.roster` learned to derive that
+    # word from moments actually recorded. Which left the same lie facing
+    # the other way: a watch posting a pulse every minute through this
+    # door recorded no moment, so the wrist row said `waiting` while the
+    # wrist was reporting.
+    #
+    #     asked     did a reading arrive
+    #     mattered  can the roster tell
+    #
+    # Optional, because the ladder has never needed to know and must not
+    # start: a reading with no monitor named is processed exactly as
+    # before. See jim/api.py:monitor.
+    monitor: str | None = None              # e.g. wrist | ring | patch
     note: str | None = None
 
 
