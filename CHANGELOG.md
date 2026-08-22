@@ -4,7 +4,13 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-08-22
+
+One-point-oh. The version number is the only thing in this release that is
+about the software rather than about the people using it: everything below
+came from somebody sitting in front of the thing and saying what did not
+work. That is the reason it is 1.0.
+
 
 ### Fixed
 
