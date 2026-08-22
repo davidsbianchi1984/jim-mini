@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v1.1.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.2.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **1.2.0** | **The chosen voice is the one a phone hears** — a phone withholds autoplay unless playback descends from a real press, and this built a fresh element per sentence after the synthesis fetch, so every piece was refused and every reply fell out of the bound voice into the browser's robot; one element, opened on the first press anywhere and reused, and a reply no longer leaks a blob URL per sentence or leaves eighteen dead listeners behind it |
 | **1.1.0** | **The microphone has an off** — mid-conversation with the coach the only control on the sphere was the sphere itself, and tapping it ends the call; muting now stops the recorder outright (an ear still running and discarding is a microphone still open) without touching the standing turn, so unmuting picks up where you left off, on both the coach's sphere and the check-in's |
 | **1.0.0** | **One number across the trio** — the wrist app, the standing ear and the vitals ladder as they stood at 0.99.1, plus the voices offered on the settings screen being the account's real ones (clones included) rather than a hardcoded roster, and every box that takes an API key now saying whose bill it becomes: this deployment's keys are the owner's while the beta runs, and entering your own moves the charges to you from that moment |
 | **0.99.1** | **The wrist's first build** — the wear app's Gradle wrapper is committed and exercised (it shipped without one, so its own README's first command failed on a fresh clone), every non-obvious Android API checked against AndroidX's own source, and a watch that fails to register its heart-rate sensor now says so instead of drawing nothing |

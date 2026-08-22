@@ -4,7 +4,13 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0] - 2026-08-22
+
+The chosen voice, actually heard. A phone was refusing every piece of
+synthesised speech and the refusal was being swallowed, so the voice
+somebody picked and paid for never played once on the device this is mostly
+used on — and it looked like it was working, because the browser's own robot
+read the reply instead.
 
 ### Fixed
 
