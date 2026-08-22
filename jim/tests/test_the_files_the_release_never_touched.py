@@ -437,6 +437,38 @@ def test_every_field_the_checklist_names_carries_this_version():
         + "\n  Every field above is one a person installs or a store reads.")
 
 
+#: A dependency coordinate — `group:artifact:version` inside a Gradle
+#: `implementation(...)`, or the same shape in a plugin line.
+_COORDINATE = re.compile(
+    r'\b(?:implementation|api|compileOnly|runtimeOnly|testImplementation|'
+    r'androidTestImplementation|debugImplementation|kapt|ksp|classpath)\s*\('
+    r'\s*["\']([\w.\-]+):([\w.\-]+):([\w.\-]+)["\']')
+
+
+def _somebody_elses_version(line: str) -> bool:
+    """Is the version on this line a third party's rather than ours?
+
+    A collision, not a missing field. The sibling product cut 1.3.0 on the
+    day `androidx.credentials:credentials` happened to sit at 1.3.0, and
+    this scan read two dependency lines as unnamed version fields and
+    failed the release.
+
+        asked     does this line carry the release version
+        mattered  is it OUR version, or somebody else's package that
+                  happens to sit on the same number
+
+    Carried here rather than left for the day this product collides too:
+    the same scan, the same shells, the same failure waiting on whichever
+    number lands on a pinned dependency first.
+
+    Narrow on purpose. It matches the `group:artifact:version` triple
+    inside a known dependency call, so a real field is never waved through
+    — a field this scan skips is a field the next release silently fails
+    to write, which is exactly what it exists to prevent.
+    """
+    return _COORDINATE.search(line) is not None
+
+
 def test_every_version_a_native_shell_ships_is_named_here():
     """The reverse half: a native shell may not carry a version this file has
     not been told about.
@@ -484,6 +516,8 @@ def test_every_version_a_native_shell_ships_is_named_here():
             if version not in line and code not in line:
                 continue
             if line.lstrip().startswith(("#", "//", "<!--")):
+                continue
+            if _somebody_elses_version(line):
                 continue
             if any(re.search(loc, line) for loc in locators):
                 continue
