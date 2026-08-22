@@ -4,6 +4,32 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The sphere can be deafened without being hung up on.** Mid-conversation
+  with the coach: "everything is working flawless except for when I wanna
+  talk to you off the side while this is running — I can press the
+  microphone and not have to be worried about it picking up my voice." The
+  only control on that veil was the veil itself, and tapping it ends the
+  conversation. That is the right control for *we're done* and the wrong
+  one for *hold on*.
+
+      asked     can you stop the sphere hearing you
+      mattered  without ending the conversation
+
+  Muting **stops the recorder** rather than dropping what it hears — an ear
+  still running and discarding is a microphone still open, and the whole
+  content of the press is that it is not. It does not end the conversation:
+  the standing turn is untouched, so unmuting re-opens the ear where you
+  left it. It does not stop the sphere speaking either, because being
+  unable to interrupt is a different complaint from being overheard. The
+  silent-stretch re-open that keeps a standing conversation standing is
+  gated on it, or the microphone would come back a second after the press.
+  On both spheres, the coach's and the check-in's, since those are one
+  surface wearing two names.
+
 ## [1.0.0] - 2026-08-22
 
 One-point-oh. The version number is the only thing in this release that is

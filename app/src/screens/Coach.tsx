@@ -22,6 +22,10 @@ export function Coach() {
 
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  // Deafened on purpose, and distinct from not listening: `listening` is
+  // whether the ear is open right now, `muted` is whether it is allowed
+  // to be. The conversation stands either way.
+  const [muted, setMuted] = useState(false);
   const [level, setLevel] = useState(0);
   const recorder = useRef<Listener | null>(null);
   // The conversation stands until the person leaves it. A field report:
@@ -164,6 +168,9 @@ export function Coach() {
    *  conversation dropping. Quiet with nothing said is not a failure in
    *  a standing conversation: the microphone simply opens again. */
   async function hear() {
+    // Muted is a hard gate, not a filter: nothing opens the microphone
+    // while it is on, including the re-open every silent stretch triggers.
+    if (muted) { setListening(false); return; }
     const g = ++round.current;
     setListening(true);
     recorder.current = await listen(
@@ -198,9 +205,41 @@ export function Coach() {
     );
   }
 
+  /** Deafen the ear without ending the conversation.
+   *
+   *     asked     can you stop the sphere hearing you
+   *     mattered  without hanging up on it
+   *
+   * Tapping the veil ends the conversation, which is the wrong tool for
+   * "hold on, I'm talking to someone else." Field report: "when I wanna
+   * talk to you off the side while this is running, I can press the
+   * microphone and not have to be worried about it picking up my voice."
+   *
+   * Muted stops the recorder outright rather than dropping what it hears
+   * — an ear that is still running and discarding is a microphone that is
+   * still open, and the whole point of the press is that it is not. The
+   * conversation stands: `talking.current` is untouched, so unmuting
+   * re-opens the ear on the same standing turn rather than starting a new
+   * one, and the sphere keeps speaking while muted because being unable
+   * to interrupt is a different complaint from being overheard.
+   */
+  function flipMuted() {
+    if (muted) {
+      setMuted(false);
+      if (talking.current && !speaking) void hear();
+      return;
+    }
+    setMuted(true);
+    round.current++;            // orphan any in-flight recogniser callback
+    recorder.current?.stop();
+    recorder.current = null;
+    setListening(false); setLevel(0);
+  }
+
   /** Leave the conversation: nothing in flight answers, nothing re-opens. */
   function exitTalk() {
     talking.current = false;
+    setMuted(false);
     round.current++;
     recorder.current?.stop();
     recorder.current = null;
@@ -239,9 +278,21 @@ export function Coach() {
             <div className={"voice-orb " + (speaking ? "speaking" : "listening")} />
           </div>
           <div className="voice-orb-label">
-            {speaking ? tr("cch.speaking.hush", lang)
-                      : tr("cch.listening.stop", lang)}
+            {muted ? tr("cch.muted", lang)
+                   : speaking ? tr("cch.speaking.hush", lang)
+                              : tr("cch.listening.stop", lang)}
           </div>
+          {/* `stopPropagation`, or the press that mutes also ends the
+              conversation — the veil under it is the way out. */}
+          <button className={"voice-orb-mute" + (muted ? " muted" : "")}
+                  aria-pressed={muted}
+                  aria-label={muted ? tr("cch.unmute", lang)
+                                    : tr("cch.mute", lang)}
+                  title={muted ? tr("cch.unmute", lang)
+                               : tr("cch.mute", lang)}
+                  onClick={(e) => { e.stopPropagation(); flipMuted(); }}>
+            {muted ? "🔇" : "🎙"}
+          </button>
         </div>
       )}
       <header className="screen-head">

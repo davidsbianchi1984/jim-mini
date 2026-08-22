@@ -5233,6 +5233,15 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cch.readaloud": {
     en: "🔊 Read it aloud", es: "🔊 Léelo en voz alta", fr: "🔊 Lire à voix haute", de: "🔊 Vorlesen", pt: "🔊 Ler em voz alta", it: "🔊 Leggilo ad alta voce", ja: "🔊 読み上げる", zh: "🔊 朗读", hi: "🔊 ज़ोर से पढ़ें", ar: "🔊 اقرأه بصوت عالٍ",
   },
+  "cch.mute": {
+    en: "Mute the microphone — the conversation stays open", es: "Silenciar el micrófono — la conversación sigue abierta", fr: "Couper le micro — la conversation reste ouverte", de: "Mikrofon stummschalten — das Gespräch bleibt offen", pt: "Silenciar o microfone — a conversa continua aberta", it: "Silenzia il microfono — la conversazione resta aperta", ja: "マイクをミュート — 会話は続いたままです", zh: "将麦克风静音 — 对话仍然继续", hi: "माइक्रोफ़ोन म्यूट करें — बातचीत खुली रहेगी", ar: "كتم الميكروفون — تبقى المحادثة مفتوحة",
+  },
+  "cch.unmute": {
+    en: "Let it hear you again", es: "Deja que vuelva a oírte", fr: "Laissez-le vous entendre à nouveau", de: "Wieder zuhören lassen", pt: "Deixe-o ouvi-lo novamente", it: "Lascia che ti senta di nuovo", ja: "もう一度聞こえるようにする", zh: "让它重新听你说话", hi: "इसे फिर से सुनने दें", ar: "دعه يسمعك من جديد",
+  },
+  "cch.muted": {
+    en: "muted — it cannot hear you, and the conversation is still open", es: "silenciado — no puede oírte y la conversación sigue abierta", fr: "micro coupé — il ne vous entend pas, la conversation reste ouverte", de: "stumm — es hört dich nicht, das Gespräch bleibt offen", pt: "silenciado — não o ouve, e a conversa continua aberta", it: "silenziato — non ti sente, e la conversazione resta aperta", ja: "ミュート中 — 聞こえていません。会話は続いています", zh: "已静音 — 它听不到你，对话仍在继续", hi: "म्यूट — यह आपको नहीं सुन सकता, बातचीत अब भी खुली है", ar: "مكتوم — لا يسمعك، والمحادثة ما زالت مفتوحة",
+  },
   "cch.stop": {
     en: "■ Stop", es: "■ Detener", fr: "■ Arrêter", de: "■ Stopp", pt: "■ Parar", it: "■ Ferma", ja: "■ 停止", zh: "■ 停止", hi: "■ रोकें", ar: "■ أوقف",
   },

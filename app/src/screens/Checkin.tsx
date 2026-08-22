@@ -31,6 +31,11 @@ export function Checkin() {
   // holds a tap-to-hear state, and the idle exit never fires mid-reply.
   const [speaking, setSpeaking] = useState(false);
   const [listening, setListening] = useState(false);
+  // Deafened on purpose, and distinct from not listening: `listening` is
+  // whether the ear is open right now, `muted` is whether it is allowed
+  // to be. The same control the coach sphere carries, for the same
+  // reason — these are one surface wearing two names.
+  const [muted, setMuted] = useState(false);
   const [level, setLevel] = useState(0);
   const [who, setWho] = useState<string | null>(null);
   const [needsTap, setNeedsTap] = useState(false);
@@ -123,6 +128,9 @@ export function Checkin() {
   }
 
   async function hear() {
+    // Muted is a hard gate, not a filter: nothing opens the microphone
+    // while it is on, including the re-open a silent stretch triggers.
+    if (muted) { setListening(false); return; }
     const g = ++round.current;
     setListening(true);
     recorder.current = await listen(
@@ -152,8 +160,26 @@ export function Checkin() {
     );
   }
 
+  /** Deafen the ear without ending the conversation. Tapping the veil
+   *  ends it, which is the wrong tool for "hold on, I'm talking to
+   *  someone else." The sphere keeps speaking while muted: being unable
+   *  to interrupt is a different complaint from being overheard. */
+  function flipMuted() {
+    if (muted) {
+      setMuted(false);
+      if (talking.current && !speaking) void hear();
+      return;
+    }
+    setMuted(true);
+    round.current++;            // orphan any in-flight recogniser callback
+    recorder.current?.stop();
+    recorder.current = null;
+    setListening(false); setLevel(0);
+  }
+
   function exitTalk() {
     talking.current = false;
+    setMuted(false);
     round.current++;
     recorder.current?.stop();
     recorder.current = null;
@@ -183,9 +209,25 @@ export function Checkin() {
           {who && <div className="voice-orb-who">{who}</div>}
           <div className="voice-orb-label">
             {needsTap ? tr("mon.taptohear", lang)
+                      : muted ? tr("cch.muted", lang)
                       : speaking ? tr("cch.speaking.hush", lang)
                       : tr("cch.listening.stop", lang)}
           </div>
+          {/* Not while the veil is still asking for the first tap: a mute
+              offered before the microphone has ever opened is a control
+              for a state that does not exist yet. `stopPropagation`, or
+              the press that mutes also ends the conversation. */}
+          {!needsTap && (
+            <button className={"voice-orb-mute" + (muted ? " muted" : "")}
+                    aria-pressed={muted}
+                    aria-label={muted ? tr("cch.unmute", lang)
+                                      : tr("cch.mute", lang)}
+                    title={muted ? tr("cch.unmute", lang)
+                                 : tr("cch.mute", lang)}
+                    onClick={(e) => { e.stopPropagation(); flipMuted(); }}>
+              {muted ? "🔇" : "🎙"}
+            </button>
+          )}
         </div>
       )}
       <header className="screen-head">
