@@ -4,6 +4,14 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-08-22
+
+Nothing in this repository changed this round. The work landed in QRME,
+where a profile can hand somebody a document instead of pasting it into the
+conversation, and where a room went back to being a card on the page. The
+number moves anyway, because one version names one tested combination of
+all three.
+
 ## [1.2.0] - 2026-08-22
 
 The chosen voice, actually heard. A phone was refusing every piece of
