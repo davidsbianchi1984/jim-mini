@@ -12,6 +12,20 @@ it was listening went on saying it.
 
 ### Fixed
 
+- **Every field a person installs carries this version.** PDI's release guard
+  caught six stale fields the 1.4.0 bump missed, and the same six were stale
+  in all three repos: the numeric build codes (`CURRENT_PROJECT_VERSION`,
+  `versionCode`), the Windows shell manifest's `Version` / `AssemblyVersion`
+  / `FileVersion`, and the README's current-release banner.
+
+      asked     does the project say 1.4.0
+      mattered  does the thing a person installs say it
+
+  `pyproject`, `package.json`, the lock file's own two rows and the FastAPI
+  title are the half a developer looks at, and they had moved. The build
+  codes and the shell manifests are what a store reads and what a person's
+  installer shows, and they had not.
+
 - **A microphone that has stopped is no longer drawn as listening.** A
   field report, with a photograph: tabs dropping into the background
   mid-conversation. What happens underneath is not a crash. The browser
