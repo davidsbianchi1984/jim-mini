@@ -123,13 +123,57 @@ def test_both_listening_paths_check_her_words():
 def test_an_echo_is_reported_as_quiet_not_as_a_failure():
     """"nothing was heard" is what a standing conversation treats as a
     pause — it re-opens the microphone and waits. An error would end the
-    conversation over the room being a room."""
-    for m in re.finditer(r"echoOfTheGuardian\(\w+\)\) \{\s*\n\s*(\w+)\(",
-                         SPEECH):
-        assert m.group(1) == "onError", m.group(0)
-    assert re.search(r"echoOfTheGuardian\(\w+\)\) \{\s*\n"
-                     r'\s*onError\("nothing was heard in that"\);', SPEECH), (
-        "an echo is reported as something other than quiet")
+    conversation over the room being a room.
+
+    The property is the **message**, not the name of the function carrying
+    it. This guard used to require the literal `onError`, and it failed the
+    moment `listen` started routing both callbacks through the put-away
+    gate — where the echo now reports through `fail`, which is `onError`
+    with one condition in front of it. Nothing about what the person hears
+    changed, and the guard said it had.
+
+        asked     is the echo reported
+        mattered  is it reported as quiet
+
+    So it reads the sentence, and checks separately that whatever carries
+    it reaches the caller. A rename cannot break it; changing "nothing was
+    heard in that" to anything `heardNothing` does not match still does.
+    """
+    reports = re.findall(r"echoOfTheGuardian\(\w+\)\) \{\s*\n"
+                         r'\s*(\w+)\("([^"]*)"\);', SPEECH)
+    assert len(reports) >= 2, (
+        "one of the two listening paths no longer reports the echo at all")
+    quiet = _heard_nothing_messages()
+    for fn, said in reports:
+        assert said in quiet, (
+            f"an echo is reported as {said!r}, which `heardNothing` does not "
+            "match — a standing conversation would end over the room being "
+            "a room")
+        assert _reaches_the_caller(fn), (
+            f"the echo is reported through `{fn}`, which does not reach the "
+            "listen caller's own onError")
+
+
+def _heard_nothing_messages() -> set[str]:
+    """The sentences `heardNothing` treats as a pause, read from itself."""
+    body = re.search(r"export function heardNothing.*?\n\}", SPEECH, re.S)
+    assert body, "heardNothing moved — this guard reads it by name"
+    return set(re.findall(r'"([^"]*)"', body.group(0)))
+
+
+def _reaches_the_caller(fn: str) -> bool:
+    """Whether `fn` is the caller's own callback or a wrapper around it.
+
+    `onError` is the parameter itself. Anything else has to be a local that
+    calls it — which is what the put-away gate's `fail` is: the caller's
+    onError, skipped only once the microphone has already been put down and
+    the person told why.
+    """
+    if fn == "onError":
+        return True
+    wrapper = re.search(r"const %s = \([^)]*\) => \{([^}]*)\}" % re.escape(fn),
+                        SPEECH)
+    return bool(wrapper and "onError(" in wrapper.group(1))
 
 
 def test_the_rule_lives_where_it_can_be_run():
