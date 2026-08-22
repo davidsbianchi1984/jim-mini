@@ -4,6 +4,45 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **The chosen voice is the one a phone hears.** The sibling product got
+  the field report — "on the mobile device it's not playing voice audio
+  whatsoever" — and this product had the same eight lines with a
+  kinder-looking failure that is arguably worse.
+
+      asked     which voice is speaking
+      mattered  is it the one that was chosen
+
+  A phone withholds autoplay unless the playback descends from a real
+  press, and the grant lands on the **element** a person started. This
+  module built a fresh `new Audio()` per piece, after the await on the
+  synthesis fetch, so by then the press was over and each new element
+  carried no permission of its own. Every piece was refused.
+
+  Here a refused piece falls back to the device's own voice, so nothing
+  went silent — which is exactly what hid it. The configured voice, the
+  one somebody chose and paid an engine for and in some cases cloned from
+  their own throat, never played a single piece on a phone, and the
+  browser's robot read every reply. The product looked like it was
+  working. That is why this needed a person to report it rather than a
+  stack trace. There is now one element, opened on the first press
+  anywhere on the page and reused for every piece after it.
+
+- **A reply no longer keeps every clip it played.** Found while fixing the
+  above: a nine-sentence reply made nine blob URLs and released none, and
+  a blob whose URL is still alive cannot be collected. A standing
+  conversation makes a reply a minute, and held all of them until the tab
+  closed.
+
+- **Dead listeners no longer pile up on the element.** With one element
+  reused, `{ once: true }` left the two handlers that did *not* fire still
+  attached — eighteen of them by the end of a nine-sentence reply, and the
+  next piece's `pause` resolving a sentence that had finished a paragraph
+  ago. All three come off together now, whichever fired.
+
 ## [1.1.0] - 2026-08-22
 
 A room you can be in and a microphone you can close. Most of this release is

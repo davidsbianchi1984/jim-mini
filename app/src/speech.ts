@@ -10,6 +10,57 @@ import { spokenPieces } from "./pieces";
 
 let current: HTMLAudioElement | null = null;
 
+/** A 44-byte WAV with no samples — inaudible, instant, and the thing the
+ *  first press plays so that later pieces may play at all. */
+const SILENCE =
+  "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+
+/** The one element every piece plays through, once a press has opened it.
+ *
+ *  A phone withholds autoplay unless the playback descends from a real
+ *  press. This module used to build a fresh `new Audio()` per piece, after
+ *  an await on the synthesis fetch — so the press that started the turn was
+ *  over, and each new element carried no activation of its own. Every piece
+ *  was refused, and because a refusal here falls back to the device voice,
+ *  the effect on a phone was not silence but something subtler and worse:
+ *  the paid, chosen, cloned voice never played once, and the browser robot
+ *  read every reply. On a laptop it all worked, which is why it lasted.
+ *
+ *      asked     may this page play sound
+ *      mattered  was it ever asked while a press was still standing
+ */
+let ear: HTMLAudioElement | null = null;
+
+/** Open the ear, from inside a user gesture. Safe to call repeatedly. */
+export function openTheEar(): void {
+  if (ear) return;
+  const el = new Audio(SILENCE);
+  el.muted = true;
+  el.setAttribute("playsinline", "");
+  ear = el;
+  el.play().then(() => { el.pause(); el.muted = false; },
+                 () => { el.muted = false; });
+}
+
+/** Arm it on the first press anywhere, rather than wiring every screen.
+ *
+ *  Five screens speak here and each has several ways in. A list of gesture
+ *  sites that must all remember to call something is a list with one
+ *  missing entry — and the missing entry is a screen that is silent on a
+ *  phone and nowhere else. Any press will do, so this takes any press, in
+ *  the capture phase, cancelling nothing, and removes itself once open. */
+function armTheEar(): void {
+  if (typeof document === "undefined") return;
+  const open = () => {
+    openTheEar();
+    document.removeEventListener("pointerdown", open, true);
+    document.removeEventListener("keydown", open, true);
+  };
+  document.addEventListener("pointerdown", open, true);
+  document.addEventListener("keydown", open, true);
+}
+armTheEar();
+
 // Bumped by hush(): a say() run that finds the world has moved on stops
 // between pieces instead of speaking the rest of a reply somebody cut off.
 let sayRun = 0;
@@ -100,18 +151,23 @@ export async function say(text: string): Promise<"service" | "device"> {
     midReply = true;
     upNext = i + 1 < pieces.length
       ? clip(pieces[i + 1]) : Promise.resolve(null);
-    const audio = new Audio(URL.createObjectURL(blob));
+    // The element a press opened, not a new one — see `ear` above.
+    if (!ear) ear = new Audio();
+    const audio = ear;
+    const src = URL.createObjectURL(blob);
     current = audio;
     if (sink && "setSinkId" in audio) {
       await (audio as HTMLAudioElement & {
         setSinkId(id: string): Promise<void>;
       }).setSinkId(sink).catch(() => { /* the default route stands */ });
     }
+    audio.src = src;
     try {
       await audio.play();
     } catch {
       // A piece the platform refuses to play (autoplay policy, decode)
       // ends the service's turn the same way a failed fetch does.
+      URL.revokeObjectURL(src);
       if (current === audio) current = null;
       midReply = false;
       if (run !== sayRun) return "service";
@@ -121,10 +177,23 @@ export async function say(text: string): Promise<"service" | "device"> {
       // `pause` fires for hush(); `ended` for a played-out reply;
       // `error` for a decode that dies mid-utterance. Any of them is
       // the speaking being over.
-      audio.addEventListener("ended", () => resolve(), { once: true });
-      audio.addEventListener("pause", () => resolve(), { once: true });
-      audio.addEventListener("error", () => resolve(), { once: true });
+      //
+      // All three come off together, whichever fired. `{ once: true }`
+      // alone would leave the other two attached to an element that now
+      // outlives the piece, so a nine-sentence reply ends with eighteen
+      // dead listeners and the next piece's `pause` resolves a sentence
+      // that finished a paragraph ago.
+      const clear = () => {
+        audio.removeEventListener("ended", over);
+        audio.removeEventListener("pause", over);
+        audio.removeEventListener("error", over);
+      };
+      const over = () => { clear(); resolve(); };
+      audio.addEventListener("ended", over);
+      audio.addEventListener("pause", over);
+      audio.addEventListener("error", over);
     });
+    URL.revokeObjectURL(src);
     // A reply that played out is no longer "speaking now" — without this,
     // `speakingNow()` reads true until the next say() or hush(), and the
     // standing ear would stay deaf between replies.
