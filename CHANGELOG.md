@@ -4,6 +4,31 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.99.1] - 2026-08-22
+
+### Fixed
+
+- **The wrist's first build starts from a better place than a guess.**
+  The wear app shipped with `gradle-wrapper.properties` and neither the
+  wrapper jar nor the `gradlew` script, so the first command in its own
+  README failed on a fresh clone — a certainty rather than a risk, and
+  one nobody would have hit here, because no Android build is possible in
+  this environment at all. That is now written down rather than
+  rediscovered: `dl.google.com` serves the Android SDK, the Android
+  Gradle Plugin and every AndroidX artifact, and `maven.google.com` is
+  only a redirect to it. The wrapper is committed and exercised, and
+  every non-obvious API call was read against AndroidX's own source
+  instead of from memory. That reading found one real defect:
+  `MeasureCallback.onRegistrationFailed` carries an empty default body,
+  so a watch that failed to register its heart-rate sensor would have
+  drawn nothing and said nothing — which from the wearer's side is
+  indistinguishable from a broken app. It reports now, down the same path
+  as losing skin contact mid-reading, because to the person wearing it
+  those are one fact: nothing is being read.
+
+      asked     will the wear app compile
+      mattered  can anybody get as far as finding out
+
 ## [0.99.0] - 2026-08-21
 
 ### Added
@@ -10301,6 +10326,7 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[0.99.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.99.0...app-v0.99.1
 [0.99.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.98.0...app-v0.99.0
 [0.98.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.97.0...app-v0.98.0
 [0.97.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.96.0...app-v0.97.0
