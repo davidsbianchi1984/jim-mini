@@ -459,7 +459,28 @@ def test_every_version_a_native_shell_ships_is_named_here():
                 for _, _, _, loc in _field_rows() if not loc.startswith("$.")]
     problems = []
     for path in [IOS_SPEC, GRADLE, *CSPROJ]:
+        # Comments are skipped, and a comment is not always one line.
+        #
+        #     asked     does this line carry the release version
+        #     mattered  is it a FIELD, or is it prose about one
+        #
+        # The single-line check below missed the continuation lines of a
+        # multi-line `<!-- ... -->` block, which went unnoticed while no
+        # release number happened to appear inside one. At 1.0.0 it did:
+        # the .csproj comment explaining that an absent `<Version>` makes
+        # the build report .NET's own default names that default, and the
+        # default is literally "1.0.0". Prose about a version is not a
+        # field the next bump has to write, so the block is tracked.
+        inside_block = False
         for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            bare = line.strip()
+            was_inside = inside_block
+            if inside_block and "-->" in bare:
+                inside_block = False
+            elif not inside_block and bare.startswith("<!--") and "-->" not in bare:
+                inside_block = True
+            if was_inside or inside_block:
+                continue
             if version not in line and code not in line:
                 continue
             if line.lstrip().startswith(("#", "//", "<!--")):
