@@ -8,6 +8,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **Entering your own key says whose bill it becomes.** David, on the beta's
+  arrangement: "allowing users for the time being to use my API keys and
+  password for beta testing... notified them that they will be charging
+  their own accounts instead of using these free API keys and passwords
+  that I'm letting them use to pay a test on my dollar." The default is
+  deliberate and stays — this deployment's keys, spent by its owner, so a
+  tester can try the thing without producing a card. What was missing was
+  the sentence saying what changes the moment somebody types their own key
+  in, because the bill moved to them silently. It now sits under the input
+  it is about, in all ten languages, at **both** key boxes on the screen —
+  the model's and the voice's. A person who reads the notice at one and
+  not the other has been told half of what changed.
+
+      asked     can somebody use their own key
+      mattered  do they know what changes when they do
+
 - **The voices offered are this account's voices.** Field report, with the
   key entered and the picker open: "several names listed available, I
   don't see my name among them" — his own cloned voice, made on the

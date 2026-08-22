@@ -96,6 +96,13 @@ export function Settings() {
           <input type="password" value={llmKey} placeholder={tr("set.key.ph", lang)}
                  onChange={(e) => setLlmKeyInput(e.target.value)} />
         </label>
+        {/* Whose bill this is. Both key boxes on this screen say it — the
+         *  model's and the voice's — because a person who reads it once
+         *  and not the other time has been told half of what changed.
+         *
+         *      asked     can somebody use their own key
+         *      mattered  do they know what changes when they do */}
+        <p className="muted small">{tr("set.key.whosebill", lang)}</p>
         <button className="primary" onClick={() => {
           setLlmKey(llmKey); setKeySaved(true); setTimeout(() => setKeySaved(false), 1500);
         }}>{keySaved ? tr("set.saved", lang)
@@ -892,6 +899,18 @@ function VoicePanel() {
           <input type="password" value={apiKey} placeholder={provider === "elevenlabs" ? "ElevenLabs key" : "sk-…"}
                  onChange={(e) => setApiKey(e.target.value)} />
         </label>
+        {/* Whose bill this is.
+         *
+         *     asked     can somebody use their own key
+         *     mattered  do they know what changes when they do
+         *
+         * During the beta this deployment's own keys are what everybody
+         * is spending, and they are being spent on purpose — an owner
+         * paying so testers can try the thing without a card. The moment
+         * somebody puts their own key in this box that stops being true
+         * for them, and it stops silently. Said here, at the box, rather
+         * than in terms nobody opens. */}
+        <p className="muted small">{tr("set.key.whosebill", lang)}</p>
         {voices.length > 0 && (
           <label>{tr("set.voice", lang)}
             <select value={voiceId} onChange={(e) => { setVoiceId(e.target.value); save({ voice_id: e.target.value }); }}>
