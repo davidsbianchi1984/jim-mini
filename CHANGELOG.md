@@ -4,7 +4,13 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-08-22
+
+A room you can be in and a microphone you can close. Most of this release is
+in the sibling repository, where the room somebody sat in got taken apart and
+put back the way they described it; what landed here is the one control that
+kept coming up in the same conversation — the sphere had no way to stop
+listening that was not also a way to hang up.
 
 ### Added
 

@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v1.0.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.1.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **1.1.0** | **The microphone has an off** — mid-conversation with the coach the only control on the sphere was the sphere itself, and tapping it ends the call; muting now stops the recorder outright (an ear still running and discarding is a microphone still open) without touching the standing turn, so unmuting picks up where you left off, on both the coach's sphere and the check-in's |
 | **1.0.0** | **One number across the trio** — the wrist app, the standing ear and the vitals ladder as they stood at 0.99.1, plus the voices offered on the settings screen being the account's real ones (clones included) rather than a hardcoded roster, and every box that takes an API key now saying whose bill it becomes: this deployment's keys are the owner's while the beta runs, and entering your own moves the charges to you from that moment |
 | **0.99.1** | **The wrist's first build** — the wear app's Gradle wrapper is committed and exercised (it shipped without one, so its own README's first command failed on a fresh clone), every non-obvious Android API checked against AndroidX's own source, and a watch that fails to register its heart-rate sensor now says so instead of drawing nothing |
 | **0.99.0** | **The wrist is a surface** — a standalone Wear OS app (`native/wear/`) that talks to the deployment itself, so the phone can be in another room: the pulse read through Health Services, a turn of speech handed to channel 2 as **words never audio** (the watch recognises the speech itself, so nothing but text leaves the wrist and it works with no transcription key), the coach reaching out first, and help now — signing in through Wear's own dictation input rather than pretending a watch can enroll anybody; a reading may now name the roster row it came off, so a wrist that reports stops saying `waiting` — without gating the reading, because the vitals ladder is not the monitor roster; the screen monitor is really seen (`getDisplayMedia`, described on the server, no frame stored anywhere), channel 2 gets its pipe, the Guardian stops answering herself, and the roster stops printing permission as fact |
