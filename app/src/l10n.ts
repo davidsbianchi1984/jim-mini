@@ -606,6 +606,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "माइक्रोफ़ोन अस्वीकार हुआ — इस ब्राउज़र में अनुमति दें और फिर से चालू करें",
     ar: "رُفض الميكروفون — اسمح به في هذا المتصفح ثم أعد تشغيل الأذن",
   },
+  "lights.ear.asleep": {
+    en: "this tab is in the background — the ear starts again when you come back to it",
+    es: "esta pestaña está en segundo plano — el oído vuelve a empezar cuando regreses a ella",
+    fr: "cet onglet est en arrière-plan — l’oreille reprend dès que vous y revenez",
+    de: "dieser Tab läuft im Hintergrund — das Ohr beginnt wieder, sobald du zurückkommst",
+    pt: "este separador está em segundo plano — o ouvido recomeça quando voltares a ele",
+    it: "questa scheda è in secondo piano — l’orecchio riparte quando ci torni",
+    ja: "このタブはバックグラウンドです — 戻ると耳はまた立ち上がります",
+    zh: "此标签页在后台 — 回到它时耳朵会重新开始",
+    hi: "यह टैब पृष्ठभूमि में है — जब आप लौटेंगे तो कान फिर से सुनने लगेगा",
+    ar: "هذه التبويبة في الخلفية — تعود الأذن للاستماع حين ترجع إليها",
+  },
   "lights.ear.none": {
     en: "this browser has no recogniser to listen with — nothing is being heard",
     es: "este navegador no tiene reconocedor con el que escuchar — no se está oyendo nada",

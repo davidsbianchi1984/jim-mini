@@ -4,6 +4,63 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-08-22
+
+A slept tab does not go quietly deaf. A backgrounded page has its
+microphone stopped by the browser without an error, and every light saying
+it was listening went on saying it.
+
+### Fixed
+
+- **A microphone that has stopped is no longer drawn as listening.** A
+  field report, with a photograph: tabs dropping into the background
+  mid-conversation. What happens underneath is not a crash. The browser
+  throttles a hidden page's timers, suspends its audio, and ends its speech
+  recogniser; a frozen tab stops running at all. None of that arrives as an
+  error, so the console kept every light it had lit over a microphone that
+  had stopped minutes ago.
+
+      asked     does the console stop listening when it is put away
+      mattered  does it stop *saying* it is listening
+
+  The first half already happened, without being asked and without being
+  reported. The second was the defect: silence and deafness look identical
+  on screen and are opposite facts — one means nobody spoke, the other
+  means nobody could be heard. Neither console had a single
+  `visibilitychange` handler anywhere, so a backgrounded page could not
+  know it had been suspended, let alone say so.
+
+- **The standing ear stops restarting into a sleeping tab.** Its
+  restart-on-`onend` contract stood a fresh recogniser every 400ms into a
+  page that could not run one — all night, if the tab was left that way,
+  with the pill reading *listening for the words that call for help*
+  throughout. An ear for somebody who might be calling for help is the last
+  place a lit light may mean nothing. It now comes down when the page is
+  put away, says so on the pill, and stands itself back up on return,
+  because the person's decision never changed.
+
+- **A listen that was put away is reported as its own failure, not as
+  quiet.** A standing conversation reads *nothing was heard* as a pause and
+  opens the microphone again. Reported that way, the suspension would have
+  re-opened a microphone into a sleeping tab over and over, orb lit the
+  whole time — the bug wearing the fix's clothes. `PUT_AWAY_MESSAGE` is
+  deliberately neither of the two sentences `heardNothing` matches, so the
+  six screens that listen carry it through the error path they already
+  have: the orb goes out, and the line says which of the two happened.
+
+- **Everything the stopped recogniser says afterwards is dropped.** A
+  MediaRecorder torn down mid-recording reports *nothing was recorded*,
+  which is `heardNothing` — so one honest stop would have become the very
+  loop being fixed. The guard inside `listen` wraps both callbacks and
+  closes them the moment it fires.
+
+### Added
+
+- `app/src/away.ts` — one module the whole console asks *am I away now* and
+  *tell me when that changes*. Written once rather than at each of the six
+  screens that listen, for the same reason the audio ear is armed once: a
+  rule every caller has to remember is a rule some caller will not.
+
 ## [1.3.0] - 2026-08-22
 
 Nothing in this repository changed this round. The work landed in QRME,

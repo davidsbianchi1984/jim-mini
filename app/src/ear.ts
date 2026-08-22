@@ -22,12 +22,21 @@
 import { api } from "./api";
 import { deviceRecogniser, speakingNow, type DeviceRecognition }
   from "./speech";
+import { putAway, whenPutAway } from "./away";
 
 /** What the pill can honestly say. `norecogniser` is a platform with no
  *  recogniser to stand (some packaged webviews); `refused` is the person
  *  or the platform saying no to the microphone — tapping the pill again
- *  will not change either, and the label says which it is. */
-export type EarState = "off" | "listening" | "norecogniser" | "refused";
+ *  will not change either, and the label says which it is.
+ *
+ *  `asleep` is the state this list was missing. A backgrounded tab has its
+ *  recogniser ended by the browser, and the restart below stood a new one
+ *  every 400ms into a page that could not hear — all night, if the tab was
+ *  left that way, with the pill reading "listening for the words that call
+ *  for help" the whole time. An ear for a person who might be calling for
+ *  help is the last place a lit light may mean nothing. */
+export type EarState =
+  "off" | "listening" | "norecogniser" | "refused" | "asleep";
 
 export interface Ear { stop: () => void }
 
@@ -51,9 +60,14 @@ export function standEar(
     return { stop: () => {} };
   }
   let stopped = false;
+  // Put away, not switched off. The person's decision has not changed, so
+  // the ear stands itself back up the moment the page comes back — but
+  // while it is down it says so, and nothing restarts into a sleeping tab.
+  let dozing = false;
   let rec: DeviceRecognition | null = null;
   const start = () => {
     if (stopped) return;
+    if (putAway()) { doze(); return; }
     const r = new SR();
     rec = r;
     r.lang = navigator.language || "en";
@@ -91,7 +105,7 @@ export function standEar(
       }
     };
     r.onend = () => {
-      if (stopped) return;
+      if (stopped || dozing) return;
       window.setTimeout(start, 400);
     };
     try {
@@ -102,10 +116,23 @@ export function standEar(
       // fires onend, and onend re-arms.
     }
   };
+  const doze = () => {
+    if (stopped || dozing) return;
+    dozing = true;
+    onState("asleep");
+    try { rec?.stop(); } catch { /* already stopped is stopped */ }
+  };
+  const wake = () => {
+    if (stopped || !dozing) return;
+    dozing = false;
+    start();
+  };
+  const release = whenPutAway(doze, wake);
   start();
   return {
     stop: () => {
       stopped = true;
+      release();
       onState("off");
       try { rec?.stop(); } catch { /* already stopped is stopped */ }
     },

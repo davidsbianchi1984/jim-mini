@@ -184,6 +184,7 @@ export function GuardianLights() {
         <div className="wl-foot">
           {ear === "listening" ? tr("lights.ear.on", lang)
             : ear === "refused" ? tr("lights.ear.refused", lang)
+            : ear === "asleep" ? tr("lights.ear.asleep", lang)
             : tr("lights.ear.none", lang)}
         </div>
       )}

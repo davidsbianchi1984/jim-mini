@@ -7,6 +7,7 @@
 import { api, getBase } from "./api";
 import { isEcho } from "./echo";
 import { spokenPieces } from "./pieces";
+import { putAway, whenPutAway } from "./away";
 
 let current: HTMLAudioElement | null = null;
 
@@ -272,6 +273,19 @@ async function connectedEar(
  *  Talk so the two rooms cannot drift apart. */
 export const CONVERSATION_IDLE_MS = 120_000;
 
+/** How a listen ends when the page was put away underneath it.
+ *
+ *  Deliberately not one of `heardNothing`'s two messages, and the reason is
+ *  the whole point of it: a standing conversation treats quiet as a pause
+ *  and opens the microphone again. Reported as quiet, this would re-open a
+ *  microphone into a sleeping tab — over and over, hearing nothing, with
+ *  the orb lit green the entire time. Reported as its own failure, the
+ *  screens' existing error path runs: the orb goes out, and the sentence
+ *  says which of silence and deafness this was. */
+export const PUT_AWAY_MESSAGE =
+  "the microphone stopped when this app went to the background — "
+  + "tap to start listening again";
+
 /** True when a listen ended only because nothing was said — quiet, not a
  *  refusal. A standing conversation reads this and opens the microphone
  *  again; every other message is a real failure and ends it. */
@@ -463,6 +477,48 @@ export async function primeVoice(): Promise<void> {
   } catch { /* an unreachable settings read never changes what we knew */ }
 }
 
+/** The listen's answer to the page being put away.
+ *
+ * Holds the microphone handle, watches for the page going into the
+ * background, and when it does: stops the recogniser, releases the watch,
+ * and reports `PUT_AWAY_MESSAGE` once. Everything the stopped recogniser
+ * says afterwards is dropped — a MediaRecorder torn down mid-recording
+ * reports "nothing was recorded", which is `heardNothing`, which is what a
+ * standing conversation re-opens the microphone on. Letting that through
+ * would turn one honest stop into the very loop this fixes.
+ *
+ *     asked     is the microphone stopped when the tab sleeps
+ *     mattered  is anything still allowed to speak for it afterwards
+ *
+ * Written once here rather than at each of the six screens that listen,
+ * for the same reason the audio ear is armed once in this module: a rule
+ * every caller has to remember is a rule some caller will not.
+ */
+function awayGuard(onError: (message: string) => void) {
+  let gone = false;
+  let held: Listener | null = null;
+  let release = () => {};
+  const leave = () => {
+    if (gone) return;
+    gone = true;
+    release();
+    held?.stop();
+    onError(PUT_AWAY_MESSAGE);
+  };
+  release = whenPutAway(leave);
+  return {
+    gone: () => gone,
+    /** Take ownership of the microphone handle and hand back the one the
+     *  caller keeps. A page already hidden when the microphone opened is
+     *  put away immediately — it never gets drawn as listening at all. */
+    hold(inner: Listener): Listener {
+      held = inner;
+      if (putAway()) leave();
+      return { stop: () => { release(); inner.stop(); } };
+    },
+  };
+}
+
 /** Listen to the microphone and hand back what was said.
  *
  *  Which path listens is decided by what is configured, not by hope: a
@@ -496,16 +552,23 @@ export async function listen(
   // recogniser keeps a still orb, which is honest about what it exposes.
   onLevel?: (level: number) => void,
 ): Promise<Listener> {
+  // Every path out of this function goes through the guard: the two device
+  // recognisers, the microphone that was refused, and the recording one.
+  // A path that forgot would be a microphone the sleeping tab keeps.
+  const away = awayGuard(onError);
+  const text = (t: string) => { if (!away.gone()) onText(t); };
+  const fail = (m: string) => { if (!away.gone()) onError(m); };
+
   if (preferDevice || knownHasService === false) {
-    const dev = deviceListener(onText, onError);
-    if (dev) return dev;
+    const dev = deviceListener(text, fail);
+    if (dev) return away.hold(dev);
   }
 
   if (knownHasService === null) {
     await primeVoice();
     if (!knownHasService || preferDevice) {
-      const dev = deviceListener(onText, onError);
-      if (dev) return dev;
+      const dev = deviceListener(text, fail);
+      if (dev) return away.hold(dev);
       // No recogniser either: record anyway, so the server's own honest
       // refusal is what the person reads rather than a guess made here.
     }
@@ -524,8 +587,8 @@ export async function listen(
       audio: { echoCancellation: true, noiseSuppression: true,
                ...(mic ? { deviceId: { ideal: mic } } : {}) } });
   } catch {
-    onError("no microphone available — check the app's microphone permission");
-    return { stop: () => {} };
+    fail("no microphone available — check the app's microphone permission");
+    return away.hold({ stop: () => {} });
   }
   const chunks: BlobPart[] = [];
   const rec = new MediaRecorder(stream);
@@ -609,29 +672,29 @@ export async function listen(
     stopWatching();
     stream.getTracks().forEach((t) => t.stop());
     const blob = new Blob(chunks, { type: "audio/webm" });
-    if (!blob.size) { onError("nothing was recorded"); return; }
+    if (!blob.size) { fail("nothing was recorded"); return; }
     // The energy gate: silence never reaches the transcriber, so the
     // transcriber can never invent a sentence from it. A platform with
     // no analyser keeps the old behavior — it cannot tell, so it asks.
-    if (hadAnalyser && !voiced) { onError("nothing was heard in that"); return; }
+    if (hadAnalyser && !voiced) { fail("nothing was heard in that"); return; }
     const b64: string = await new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(String(reader.result).split(",")[1] || "");
       reader.readAsDataURL(blob);
     });
     try {
-      const { text } = await api.transcribe(b64);
+      const { text: said } = await api.transcribe(b64);
       // The Guardian's own voice, come back through the room. Reported as
       // quiet rather than as an error, deliberately: "nothing was heard"
       // is what a standing conversation treats as a pause, so it re-opens
       // the microphone and waits — which is exactly right. Calling it a
       // failure would end the conversation over the room being a room.
-      if (text && echoOfTheGuardian(text)) {
-        onError("nothing was heard in that");
+      if (said && echoOfTheGuardian(said)) {
+        fail("nothing was heard in that");
         return;
       }
-      if (text) onText(text);
-      else onError("nothing was heard in that");
+      if (said) text(said);
+      else fail("nothing was heard in that");
     } catch (e) {
       const msg = (e as Error).message;
       // The recogniser cannot transcribe a finished recording, so these
@@ -639,15 +702,16 @@ export async function listen(
       // fail the same way twice.
       if (deviceRecogniser() !== null) {
         preferDevice = true;
-        onError(msg + " — tap the mic again and the device's own recogniser "
+        fail(msg + " — tap the mic again and the device's own recogniser "
           + "will listen instead");
       } else {
-        onError(msg.includes("device")
+        fail(msg.includes("device")
           ? "no transcription service is set up — add an OpenAI or ElevenLabs key in Settings to talk to the Guardian"
           : msg);
       }
     }
   };
   rec.start();
-  return { stop: () => { if (rec.state !== "inactive") rec.stop(); } };
+  return away.hold(
+    { stop: () => { if (rec.state !== "inactive") rec.stop(); } });
 }
