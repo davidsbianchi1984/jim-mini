@@ -4,6 +4,44 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **The voices offered are this account's voices.** Field report, with the
+  key entered and the picker open: "several names listed available, I
+  don't see my name among them" — his own cloned voice, made on the
+  ElevenLabs dashboard. It could not have been there. `ELEVEN_VOICES` is a
+  hand-copied set of seven public-library ids and nothing in this product
+  had ever asked the account what it holds, so a voice made on the
+  dashboard was invisible here by construction; the only way to use one
+  was to paste its id by hand. `voice.library()` asks now, with the
+  effective key — the deployment's, or a person's own — and the picker
+  shows what comes back.
+
+      asked     is the voice list well-formed
+      mattered  is it this account's list
+
+  It falls back to the built-in seven on no key, a refused key, a failed
+  call or offline mode, and that is not the usual swallow: this list feeds
+  the picker for the Guardian *speaking to somebody*, and a picker that
+  empties itself because a provider is having an afternoon is worse than
+  one showing a stale seven. Cached per key for five minutes, so a person
+  on their own key is never shown the deployment's voices and opening the
+  screen is not a request per render.
+
+  Two rules ride with the rows. **Gender is a hint, never a gate** — a
+  voice for a device, a drawing or an idea has none, and empty is a real
+  answer rather than a reason to hide it. **A clone of a real person is
+  marked as one**, because `qrme/voiceprint.py` is emphatic that enrolment
+  is owner-only and attested, and handing every account voice to everybody
+  would walk around that through the side door.
+
+  This also sharpens an earlier reading: when the names rendered against a
+  key that turned out to be wrong, the conclusion was "the names prove
+  nothing about the key" — correct, and one step short. They are a static
+  list, so they render identically with no key at all.
+
 ## [0.99.1] - 2026-08-22
 
 ### Fixed

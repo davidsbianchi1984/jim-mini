@@ -31,6 +31,7 @@ import base64
 import json
 import logging
 import os
+import time
 import urllib.error
 import urllib.request
 
@@ -210,16 +211,100 @@ def describe_settings() -> dict:
         "key_set": bool(r["api_key"]),
         "key_source": ("environment" if not row.get("api_key") and r["api_key"]
                        else ("settings" if row.get("api_key") else "none")),
-        "voices": voices_for(r["provider"]),
+        "voices": voices_for(r["provider"], r["api_key"]),
         # The device voice is always available: it is the operating system's
         # own, needs no account, and is what the app falls back to.
         "device_fallback": True,
     }
 
 
-def voices_for(provider: str) -> list[dict]:
-    if provider == "elevenlabs":
+#: How long a fetched voice library is reused. Opening the Voice screen
+#: should not be a request per render, and an account's voices change when
+#: somebody makes one — minutes apart, not seconds.
+_LIBRARY_TTL = 300.0
+_library_cache: dict[str, tuple[float, list[dict]]] = {}
+
+
+def _as_voice(v: dict) -> dict:
+    """One of ElevenLabs' rows in the shape this product's pickers read.
+
+    `gender` is taken from the labels the account itself set and left empty
+    when there is none. Empty is a real answer here: a profile can be a
+    device, a drawing or an idea, and the picker treats gender as a hint
+    for sorting rather than a gate on who may choose what.
+
+    `cloned` is the one that carries a rule. ElevenLabs marks a voice
+    `cloned` when somebody enrolled a real person's voice, and
+    `qrme/voiceprint.py` is emphatic about what that means: enrollment is
+    owner-only and attested, and "there is no path here for enrolling a
+    stranger, a celebrity, or a recording of somebody who never agreed".
+    Listing every account voice to everybody would walk around that rule
+    through the side door — a stranger's clone, picked from a dropdown —
+    so the flag travels and the caller decides.
+    """
+    labels = v.get("labels") or {}
+    gender = str(labels.get("gender") or "").strip().lower()
+    note = ", ".join(
+        str(labels[k]) for k in ("accent", "age", "description", "use case")
+        if labels.get(k))
+    return {
+        "id": v.get("voice_id", ""),
+        "name": v.get("name") or v.get("voice_id", ""),
+        "gender": gender if gender in ("male", "female") else "",
+        "note": note or str(v.get("description") or "").strip(),
+        "cloned": v.get("category") in ("cloned", "professional"),
+    }
+
+
+def library(key: str = "") -> list[dict]:
+    """The voices this account actually has, or the built-in seven.
+
+    A field report, with the key entered and the picker open: "several
+    names listed available, I don't see my name among them" — his own
+    cloned voice. It could not have been there. `ELEVEN_VOICES` is a
+    hand-copied set of public-library ids, and nothing in this product had
+    ever asked the account what it holds, so a voice made on the dashboard
+    was invisible here by construction.
+
+        asked     is the voice list well-formed
+        mattered  is it this account's list
+
+    Falling back rather than failing is deliberate and is not the usual
+    swallow: this list feeds the picker for the Guardian *speaking to
+    somebody*, and a picker that empties itself because a provider is
+    having an afternoon is worse than one showing a stale seven. A caller
+    who needs to know the difference can compare against ELEVEN_VOICES.
+    """
+    key = (key or _env_key("elevenlabs") or "").strip()
+    if not key:
         return ELEVEN_VOICES
+    from . import offline
+    if offline.enabled():
+        return ELEVEN_VOICES
+    now = time.monotonic()
+    hit = _library_cache.get(key)
+    if hit and now - hit[0] < _LIBRARY_TTL:
+        return hit[1]
+    url = "https://api.elevenlabs.io/v1/voices"
+    try:
+        offline.allow(url, "listing the voices on this account")
+        req = urllib.request.Request(url, headers={"xi-api-key": key})
+        with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
+            rows = (json.loads(resp.read() or b"{}") or {}).get("voices") or []
+    except Exception:
+        # Including a refused key: the picker is not where somebody finds
+        # out their key is wrong — `check_key` says that in a sentence.
+        return ELEVEN_VOICES
+    voices = [_as_voice(v) for v in rows if v.get("voice_id")]
+    if not voices:
+        return ELEVEN_VOICES
+    _library_cache[key] = (now, voices)
+    return voices
+
+
+def voices_for(provider: str, key: str = "") -> list[dict]:
+    if provider == "elevenlabs":
+        return library(key)
     if provider == "openai":
         return OPENAI_VOICES
     return []

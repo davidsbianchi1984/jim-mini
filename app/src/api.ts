@@ -1529,7 +1529,12 @@ export const api = {
   getVoiceSettings: () =>
     req<{ provider: string; voice_id: string; speak_replies: boolean;
           key_set: boolean; key_source: string; device_fallback: boolean;
-          voices: { id: string; name: string; gender: string; note: string }[] }>(
+          // `gender` is a hint and may be empty — a voice for a device, a
+          // drawing or an idea has none, and empty is a real answer rather
+          // than a reason to hide the row. `cloned` marks a voice enrolled
+          // from a real person, which is not a generic one to hand out.
+          voices: { id: string; name: string; gender: string; note: string;
+                    cloned?: boolean }[] }>(
       "/settings/voice"),
   saveVoiceSettings: (body: { provider: string; api_key?: string;
                               voice_id?: string; speak_replies?: boolean }) =>
