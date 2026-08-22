@@ -79,17 +79,43 @@ released when the screen goes away.
 
 ## Building it
 
-There is no Android SDK in the environment this was written in, so this app
-has never been compiled here. Expect the first build to want small fixes.
-
 ```
 cd native/wear
-gradle wrapper          # or open the directory in Android Studio
 ./gradlew assembleDebug
 ```
 
 Then pair a watch or start a Wear emulator (API 30+) and
-`adb install app/build/outputs/apk/debug/app-debug.apk`.
+`adb install app/build/outputs/apk/debug/app-debug.apk`. Android Studio can
+open this directory directly instead.
+
+## What has and has not been verified
+
+**Never compiled.** The environment this was written in reaches Maven
+Central and `services.gradle.org`, and its network policy blocks
+`dl.google.com` — which is where the Android SDK, the Android Gradle
+Plugin and every AndroidX artifact live (`maven.google.com` is only a
+redirect to it). So no Android build is possible there at all, and this
+app's first real compile will be somebody else's.
+
+What was done instead, so that first compile starts from a better place
+than a guess:
+
+* **The wrapper is committed** — `gradlew`, `gradlew.bat` and
+  `gradle-wrapper.jar`, generated and run here against Gradle 8.9. Without
+  them the very first command in this file fails on a fresh clone, which
+  is a certainty rather than a risk.
+* **Every non-obvious API call was checked against AndroidX's own
+  source** on GitHub rather than from memory: `MeasureClient`'s three
+  methods, `MeasureCapabilities.supportedDataTypesMeasure`,
+  `RemoteInputIntentHelper`'s two, and the named parameters of Wear
+  Compose's `Chip`. That reading found one real defect —
+  `MeasureCallback.onRegistrationFailed` has an empty default body, so a
+  watch that failed to register its heart-rate sensor would have drawn
+  nothing and said nothing. It reports now.
+
+Expect the first build to still want small fixes; a signature check is not
+a compiler. What it rules out is the class of error that comes from
+writing a client against a remembered API.
 
 ## Matthew 7:24–25
 

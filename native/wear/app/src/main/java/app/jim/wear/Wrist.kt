@@ -66,6 +66,18 @@ class Wrist(context: Context) {
     fun start(onReading: (Int) -> Unit, onUnavailable: () -> Unit) {
         if (callback != null) return
         val cb = object : MeasureCallback {
+            // Health Services gives this one an empty default body, which
+            // is the wrong default for this product: registration fails on
+            // a watch whose sensor is unavailable or whose permission was
+            // withdrawn between the grant and the call, and the silent
+            // version of that is a face that draws nothing while the
+            // person waits for a number. Same reporting path as losing
+            // contact mid-reading — from the wearer's side they are the
+            // same fact, which is that nothing is being read.
+            override fun onRegistrationFailed(throwable: Throwable) {
+                onUnavailable()
+            }
+
             override fun onAvailabilityChanged(
                 dataType: DeltaDataType<*, *>,
                 availability: Availability,

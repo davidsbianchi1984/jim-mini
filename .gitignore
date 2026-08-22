@@ -34,3 +34,9 @@ htmlcov/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Gradle's own working directories. The wear module's wrapper is committed
+# (gradlew, gradlew.bat and gradle-wrapper.jar) so a fresh clone can build
+# without Gradle installed first — but everything Gradle writes while
+# running is not ours to keep.
+.gradle/
