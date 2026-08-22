@@ -254,7 +254,12 @@ RATCHETS: tuple[Ratchet, ...] = (
             "routes whose answer is decisively a list or an object"),
     Ratchet("markup.strings_scanned", 7, _markup_strings,
             "f-strings in this package that build markup"),
-    Ratchet("suite.guard_names", 1050, _guard_names,
+    # 1685, from 1050. The floor had fallen to under half of the 2107
+    # functions actually there, and a floor at half is decoration: the
+    # suite could lose a thousand guards and this would still pass. Raised
+    # to four-fifths of the real count, which is what the sibling check
+    # `test_no_registered_floor_is_decoration` asks of every row here.
+    Ratchet("suite.guard_names", 1685, _guard_names,
             "test functions this suite declares"),
     Ratchet("sweep.files_parsed", 130, _files_swept,
             "test files the bare-floor sweep can read"),
