@@ -71,7 +71,10 @@ def notify(user_id: str, user: dict | None, condition: str, reason: str,
     Returns the dict the escalation result carries as ``far_end`` —
     ``delivered`` is the honest flag: True only when a letter actually left
     (or one is already standing for this condition), never merely because a
-    contact is on file.
+    contact is on file, and never because one was printed on the server for
+    want of a mail host. The console transport is a developer's terminal,
+    not a person: it reaches nobody, so it reports ``delivered: False`` and
+    says why in the wearer's language.
     """
     lang = _lang(user)
     to = address(user)
@@ -98,6 +101,18 @@ def notify(user_id: str, user: dict | None, condition: str, reason: str,
     body = i18n.farend_text("alert_body", lang).format(
         name=name, condition=condition, reason=reason, tier=tier, link=link)
     transport = mailer.deliver(to, subject, body)
+    if transport != "smtp":
+        # No mail server is configured, so deliver() printed the letter on
+        # the server and returned. Nothing left the machine and nobody was
+        # written to, and recording it would be two untruths rather than
+        # one: `farend_alerts` is documented as one row per alert *actually
+        # mailed* (jim/db.py), and a row here is what the standing check
+        # reads — so a console print would ride as "already told" and
+        # silence the next real detection for STANDING_MINUTES, including
+        # one that could have left once mail was configured.
+        return {"channel": "email", "delivered": False, "standing": False,
+                "transport": transport,
+                "note": i18n.farend_text("undelivered", lang)}
     conn.execute(
         "INSERT INTO farend_alerts (id, user_id, condition, severity, tier,"
         " sent_to, token, sent_at) VALUES (?,?,?,?,?,?,?,?)",
@@ -157,6 +172,14 @@ def liveness_pass(user_id: str, lang: str) -> dict | None:
     user = dict(user_row) if user_row else None
     to = address(user)
     if not to:
+        return None
+    if mailer.configured_transport() != "smtp":
+        # The whole point of this note is to prove a mailbox is real. With
+        # no mail server there is nothing to prove it against, and sending
+        # anyway costs twice: this rides the monitor sense, so the console
+        # banner would print on every reading, and the stamp below would
+        # mark the far end pinged — so the note that could prove the
+        # mailbox would not fall due again for PING_DAYS.
         return None
     last = (user or {}).get("farend_pinged_at")
     if last:

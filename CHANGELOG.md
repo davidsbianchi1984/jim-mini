@@ -8,6 +8,46 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A letter printed on the server had been reported as a person notified.**
+  `farend.notify` set `delivered: True` the moment it had *written* a letter.
+  When no mail server is configured, `mailer.deliver` prints the whole letter
+  on the server's stdout and returns `"console"` — and that return value was
+  assigned to a variable and never read. So the escalation result carried
+  `notified_emergency_contact: True` while the letter went to a container log.
+
+      asked     was a letter written
+      mattered  did a person receive one
+
+  This was not an undocumented corner. Three places state the opposite claim
+  outright: `notify`'s docstring (*True only when a letter actually left*),
+  the comment above `notified_emergency_contact` in `guardian._deliver`
+  (*honest now: True only when a letter left for a person by email*), and
+  `jim/db.py` on the `farend_alerts` table (*one row per alert actually
+  mailed*). The rung was rebuilt once already, when it meant "a phone number
+  is on file"; the module's own words are *an honest empty room can be fixed;
+  a pretend notification cannot*. The console transport is a second empty
+  room, and nobody had looked in it.
+
+  **It was live.** The beta host has no SMTP configured, so every far-end
+  escalation there has been reporting the emergency contact as notified.
+
+  Three things change. `delivered` now follows the transport, and a printed
+  letter carries a note — in the wearer's language, ten of them — saying it
+  was printed rather than sent, which is a thing an operator can go and fix.
+  A printed letter is **no longer written into `farend_alerts`**, because that
+  table is what the standing check reads: a console row rode as *the far end
+  was already told* and would have suppressed the next real detection for half
+  an hour, including the first letter that could genuinely leave once mail was
+  configured. And the monthly liveness note — whose entire purpose is to prove
+  a mailbox is real on a calm day — is no longer attempted with no mail server
+  to prove it against; it rides the monitor sense, so it had been printing a
+  banner on every reading and stamping `farend_pinged_at`, putting the proof
+  that could work out of reach for another `PING_DAYS`.
+
+  Every existing far-end test replaced `mailer.deliver` with a stub returning
+  `"smtp"`, so the console path was never once exercised through `notify`. It
+  is now, by six guards holding the flag to a letter that left.
+
 - **The coach's context stops cutting a symptom in half.** QRME's wall learned
   this first — *a cut inside a word is the one outcome it refuses* — and this
   repository had not learned it anywhere, in the product where the material
