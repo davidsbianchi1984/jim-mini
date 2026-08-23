@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-08-23
+
 ## [1.6.0] - 2026-08-23
 
 ### Fixed
@@ -10724,7 +10726,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.1...HEAD
+[1.6.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.0...app-v1.6.1
 [1.6.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.5.0...app-v1.6.0
 [1.5.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.4.1...app-v1.5.0
 [1.4.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.4.0...app-v1.4.1

@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v1.6.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.6.1** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **1.6.1** | **A mail server having a bad day could discard a health reading** — the calendar's reminder pass, the far end's monthly proof-of-mailbox and the far end's own alert all send from inside the monitor sense, and none of the three was wrapped, because with no mail server configured `deliver` prints on the server and cannot fail; configuring one meant a refusal or a hung SMTP connection raised straight out of `POST /monitor/{user_id}`, discarding the reading and running no detection at all. Also: a transient outage could lock an address out of signup, by 500ing after the pending account had already committed |
 | **1.6.0** | **A letter printed on the server had been reported as a person notified** — `farend.notify` set `delivered: True` for having *written* a letter, so on a host with no mail server every far-end escalation said the emergency contact was reached while the letter went to a container log; the flag follows the transport now, a printed letter is no longer recorded as an alert (it was suppressing the next real one for half an hour), and the monthly proof-of-mailbox is not attempted with no mailbox to prove |
 | **1.5.0** | **Version alignment** — the trio releases together and one number names one tested combination of all three; this release's changes live in the qrme repository (an iPhone can speak in a room now), and nothing changed here since 1.4.0 |
 | **1.4.1** | **Version alignment** — the trio releases together and one number names one tested combination of all three; this release's changes live in the qrme repository (the room no longer prompts itself with the profile's own voice, the conversation no longer pushes the controls off the screen, and a microphone lit over a refused speech service now says so), and nothing changed here since 1.4.0 |
