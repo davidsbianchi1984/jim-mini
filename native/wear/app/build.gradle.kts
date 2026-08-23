@@ -16,8 +16,8 @@ android {
         // Guardian when the phone is in another room.
         minSdk = 30
         targetSdk = 34
-        versionCode = 1004001
-        versionName = "1.4.1"
+        versionCode = 1005000
+        versionName = "1.5.0"
     }
 
     buildTypes {

@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-08-23
+
+Nothing in this repository changed this round. An iPhone can speak in a QRME
+room now: the console records and posts the audio where the browser has no
+usable speech recogniser, which also brings the browser's own echo
+cancellation and gives back the barge-in 1.4.1 had to trade away.
+
+The number moves anyway, because one version names one tested combination of
+all three.
+
 ## [1.4.1] - 2026-08-23
 
 Nothing in this repository changed this round. Three field reports from the
