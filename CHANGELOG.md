@@ -12,6 +12,14 @@ the browser's own echo cancellation and gives back the barge-in 1.4.1 had to
 trade away. What that round learned about interruptions, the Guardian learns
 here.
 
+Also in QRME, and not in this repository: a filing arrives as words. That
+reader follows the font's own `/ToUnicode` map and a re-arranged
+`/Differences` encoding, which is the difference between a patent application
+that reads and one that arrives as a filename — reported four times. When a
+document still cannot be read it now says which kind of unreadable it is,
+because a scan, a locked file and a font that code cannot follow want three
+different answers and had been getting one.
+
 ### Added
 
 - **The Guardian answering an interruption knows where it was cut off.** A
