@@ -1856,7 +1856,12 @@ export const api = {
   // typed loosely enough to compile while the server refused it — a wrong
   // literal should fail the build, the way this file's header promises.
   coach: (uid: string,
-          body: { area: GoalArea | "general"; message: string },
+          body: { area: GoalArea | "general"; message: string;
+                  /** How much of the LAST reply was heard before this one
+                   *  spoke over it — see `heardAloud` in `speech.ts`.
+                   *  Omitted when nothing was interrupted, which is the
+                   *  ordinary turn, and ignorable by any older backend. */
+                  cut_off_heard?: string },
           token: string) =>
     req<Guidance>(`/coach/${uid}`, { method: "POST", body, token }),
   // The person's own question to the QRME specialist covering this area.

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type Guidance } from "../api";
 import { t as tr, visitorLang, word } from "../l10n";
-import { CONVERSATION_IDLE_MS, hush, heardNothing, listen, primeVoice,
+import { CONVERSATION_IDLE_MS, hush, hushAndReport, heardNothing, listen, primeVoice,
          say, type Listener } from "../speech";
 import { useSession } from "../store";
 
@@ -75,6 +75,10 @@ export function Talk({ go }: {
   // When something was last actually heard — see Coach.tsx: a conversation
   // nobody has spoken into for two minutes ends on its own, quietly.
   const lastHeard = useRef(0);
+  // How much of the last reply reached the person before they spoke over
+  // it, held from the moment of the interruption until the turn it belongs
+  // to is sent. Empty whenever nothing was interrupted, which is most turns.
+  const cutOff = useRef("");
   useEffect(() => { void primeVoice(); }, []);
 
   const uid = session.userId;
@@ -105,12 +109,17 @@ export function Talk({ go }: {
     const q = (text ?? said).trim();
     if (!uid || !token || !q) return;
     setBusy(true); setError(null);
+    // A typed question interrupts too — see Coach.tsx for the same line and
+    // the same reason.
+    const cut = cutOff.current || hushAndReport(); cutOff.current = "";
     try {
       // `general` rather than a picked area: this is the front door, and
       // making somebody choose a category before they can type is the
       // menu problem this screen exists to answer. Coach's own screen
       // still offers the picker for somebody who wants it.
-      const r = await api.coach(uid, { area: "general", message: q }, token);
+      const r = await api.coach(
+        uid, { area: "general", message: q,
+               ...(cut ? { cut_off_heard: cut } : {}) }, token);
       setReply(r);
       setSaid("");
       // A spoken question is answered out loud, the purple orb holds for
@@ -152,7 +161,11 @@ export function Talk({ go }: {
       (text) => {
         if (g !== round.current) return; // the person already left
         sayGen.current++;
-        hush();
+        // Barging in is a turn, and it is also a FACT about the answer
+        // being barged in on: the reply is played piece by piece, so this
+        // is the one moment the console can say how much of it landed.
+        // Read before the stop, because after it there is nothing to read.
+        cutOff.current = hushAndReport();
         lastHeard.current = Date.now();
         setListening(false); setSpeaking(true);
         setSaid(text); ask(text);

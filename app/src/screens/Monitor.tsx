@@ -3,7 +3,7 @@ import { api, type FollowupResult, type Guidance,
          type MonitorResult } from "../api";
 import { PaceCue } from "../PaceCue";
 import { t as tr, visitorLang } from "../l10n";
-import { CONVERSATION_IDLE_MS, hush, heardNothing, listen, primeVoice,
+import { CONVERSATION_IDLE_MS, hush, hushAndReport, heardNothing, listen, primeVoice,
          say, type Listener } from "../speech";
 import { useSession } from "../store";
 import { useEffect } from "react";
@@ -42,6 +42,10 @@ export function Monitor() {
   const talking = useRef(false);
   const round = useRef(0);
   const lastHeard = useRef(0);
+  // How much of the last reply reached the person before they spoke over
+  // it, held from the moment of the interruption until the turn it belongs
+  // to is sent. Empty whenever nothing was interrupted, which is most turns.
+  const cutOff = useRef("");
   const area = useRef<string | null>(null);
   // Interrupting is a turn: the mic is open while she speaks. `sayGen`
   // orphans a hushed reply's cleanup; `saying` keeps the idle exit from
@@ -110,12 +114,22 @@ export function Monitor() {
    *  door otherwise, so a local-guidance detection still talks back. */
   async function discuss(text: string) {
     if (!session.userId || !session.userToken) return;
+    // Spent, not read: an interruption is a fact about ONE turn. Left in
+    // place it would ride the next question too, and the Guardian would
+    // account for a paragraph nobody had cut off.
+    const cut = cutOff.current; cutOff.current = "";
     try {
+      // Only the Guardian's own door carries it. A specialist answer is a
+      // reply from a profile in QRME, reached over the tandem link, and
+      // that door takes a question and nothing else — so the honest thing
+      // is to send it where it is read and not where it would be dropped.
       const reply = area.current
         ? (await api.coachSpecialist(session.userId,
             { area: area.current, message: text }, session.userToken))
         : (await api.coach(session.userId,
-            { area: "general", message: text }, session.userToken));
+            { area: "general", message: text,
+              ...(cut ? { cut_off_heard: cut } : {}) },
+            session.userToken));
       const content = reply?.content
         || ("note" in (reply || {}) ? (reply as { note?: string }).note : "")
         || "";
@@ -146,7 +160,11 @@ export function Monitor() {
       (text) => {
         if (g !== round.current) return;
         sayGen.current++;
-        hush();
+        // Barging in is a turn, and it is also a FACT about the answer
+        // being barged in on: the reply is played piece by piece, so this
+        // is the one moment the console can say how much of it landed.
+        // Read before the stop, because after it there is nothing to read.
+        cutOff.current = hushAndReport();
         lastHeard.current = Date.now();
         setListening(false); setSpeaking(true);
         void discuss(text);

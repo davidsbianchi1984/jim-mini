@@ -183,7 +183,7 @@ _BEARING_PROMPT: dict[str, str] = {
 
 
 def reply(user_id: str, area: str, message: str, pdi=None,
-          recall_pdi=None) -> dict:
+          recall_pdi=None, cut_off_heard: str | None = None) -> dict:
     from . import i18n
 
     # Autonomous refinement happens *before* the prompt is built, so the very
@@ -261,6 +261,29 @@ def reply(user_id: str, area: str, message: str, pdi=None,
         user_id, recall_pdi if recall_pdi is not None else pdi)
     if watched:
         system += "\n\n" + watched
+    # Cut off mid-answer, and by how much. A voice screen plays a reply piece
+    # by piece, so it knows where a hush landed and can say what reached the
+    # person; everything after that point they never heard.
+    #
+    #     asked     did they interrupt
+    #     mattered  how much had they heard when they did
+    #
+    # Stated as a fact about what happened rather than as an instruction about
+    # what to do next: the model is told the situation and answers the new
+    # question, the same way it is told what a watched page says. Told to
+    # "start over" it would apologise for a paragraph instead of answering.
+    #
+    # Nothing is stored. Unlike a room transcript, a coach turn is generated
+    # from the CURRENT message rather than replayed from history, so the fact
+    # is only true of this one turn — recording it would have the Guardian
+    # apologising for the same interruption tomorrow.
+    heard = (cut_off_heard or "").strip()
+    if heard:
+        system += (
+            "\n\nThey spoke over your last answer before it finished. All of"
+            f" it they heard was: {heard}\n"
+            "Anything you said after that never reached them. Answer what they"
+            " have just said, and take as read only the part above.")
     language = i18n.effective_language(user_id)
     system += i18n.directive(language)
     gen = llm.generate_for_user(user_id, system, message)

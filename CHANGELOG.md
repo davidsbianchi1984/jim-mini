@@ -6,13 +6,55 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.5.0] - 2026-08-23
 
-Nothing in this repository changed this round. An iPhone can speak in a QRME
-room now: the console records and posts the audio where the browser has no
-usable speech recogniser, which also brings the browser's own echo
-cancellation and gives back the barge-in 1.4.1 had to trade away.
+An iPhone can speak in a QRME room now: that console records and posts the
+audio where the browser has no usable speech recogniser, which also brings
+the browser's own echo cancellation and gives back the barge-in 1.4.1 had to
+trade away. What that round learned about interruptions, the Guardian learns
+here.
 
-The number moves anyway, because one version names one tested combination of
-all three.
+### Added
+
+- **The Guardian answering an interruption knows where it was cut off.** A
+  voice screen plays a reply piece by piece, and speaking over it hushes the
+  rest — so what the person is left holding is a PREFIX. The turn that
+  followed was built as though the whole answer had landed, and the Guardian
+  carried on from a place nobody arrived at, or took as read a caveat that
+  never left the speaker.
+
+      asked     did they interrupt
+      mattered  how much had they heard when they did
+
+  The piece boundary is the answer: everything before the sentence in the air
+  reached them and everything after it did not, and the piece being played
+  counts as heard — it started, and treating it as unheard would have the
+  Guardian re-say a sentence somebody had already had enough of. One function
+  reports it for all four voice screens, because the order is the whole
+  correctness of it: read the count before the stop, not after.
+
+  **Typing interrupts too.** On the two screens with a text box, sending a
+  question now stops the reply it interrupts. Somebody who watched an answer
+  head off in the wrong direction and typed rather than spoke wanted the same
+  thing the speaker wanted; until now the voice carried on over the top of
+  their new question.
+
+  Stored nowhere, deliberately. Unlike a room transcript — which is replayed,
+  so the fact belongs on the message — a coach turn is generated from the
+  current question. A recorded interruption would be replayed into every
+  later prompt, and the Guardian would keep accounting for one nobody
+  remembers making. It is context rather than an instruction: the model is
+  told what happened and answers the new question, because told to start over
+  it would spend the turn on the last one, which is exactly what the person
+  interrupted to stop.
+
+  The one path it does not travel is the specialist door: that answer comes
+  from a profile in QRME over the tandem link, and that door takes a question
+  and nothing else. Sent there it would be dropped rather than read.
+
+  Optional on the wire and ignorable. Absent means nothing was interrupted,
+  which is the ordinary turn, and every native shell keeps working unchanged.
+
+The number moves for all three, because one version names one tested
+combination of them.
 
 ## [1.4.1] - 2026-08-23
 

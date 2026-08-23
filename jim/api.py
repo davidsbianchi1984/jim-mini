@@ -3190,7 +3190,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return coach.reply(user_id, body.area, body.message,
                            pdi=_vault(user_id),
-                           recall_pdi=app.state.pdi)
+                           recall_pdi=app.state.pdi,
+                           cut_off_heard=body.cut_off_heard)
 
     @app.post("/coach/{user_id}/specialist")
     def coach_ask_specialist(user_id: str, body: CoachMessage,

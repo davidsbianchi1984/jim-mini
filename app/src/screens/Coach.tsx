@@ -3,7 +3,7 @@ import { api, type CoachCurriculum, type CoachStore, type ErrandLedger,
          type Guidance, type LookoutList, type LookoutPage,
          type NoticeLedger, type SpecialistAnswer } from "../api";
 import { fill, t as tr, visitorLang } from "../l10n";
-import { CONVERSATION_IDLE_MS, hush, heardNothing, listen, primeVoice,
+import { CONVERSATION_IDLE_MS, hush, hushAndReport, heardNothing, listen, primeVoice,
          say, type Listener } from "../speech";
 import { useSession } from "../store";
 
@@ -40,6 +40,10 @@ export function Coach() {
   // but a conversation nobody has spoken into for two minutes ends on its
   // own — quietly, because leaving a room empty is not an error.
   const lastHeard = useRef(0);
+  // How much of the last reply reached the person before they spoke over
+  // it, held from the moment of the interruption until the turn it belongs
+  // to is sent. Empty whenever nothing was interrupted, which is most turns.
+  const cutOff = useRef("");
   // The microphone is open while the reply plays now — interrupting is a
   // turn. `sayGen` orphans a hushed reply's cleanup so the purple orb
   // does not flicker off under the interruption's own thinking, and
@@ -128,8 +132,15 @@ export function Coach() {
     const said = (text ?? message).trim();
     if (!session.userId || !session.userToken || !said) return;
     setBusy(true); setError(null);
+    // A typed question interrupts too. Somebody who watched an answer head
+    // off in the wrong direction and typed rather than spoke wanted the
+    // same thing the speaker wanted, and until now the voice carried on
+    // over the top of their new question.
+    const cut = cutOff.current || hushAndReport(); cutOff.current = "";
     try {
-      const r = await api.coach(session.userId, { area, message: said },
+      const r = await api.coach(session.userId,
+                                { area, message: said,
+                                  ...(cut ? { cut_off_heard: cut } : {}) },
                                 session.userToken);
       setReply(r); setFromSpecialist(null);
       // Talking to it should mean being answered out loud — a spoken
@@ -180,7 +191,11 @@ export function Coach() {
         // moment something real was heard, and the orphaned cleanup must
         // not drop the orb under the new turn's thinking.
         sayGen.current++;
-        hush();
+        // Barging in is a turn, and it is also a FACT about the answer
+        // being barged in on: the reply is played piece by piece, so this
+        // is the one moment the console can say how much of it landed.
+        // Read before the stop, because after it there is nothing to read.
+        cutOff.current = hushAndReport();
         lastHeard.current = Date.now();
         setListening(false); setSpeaking(true);
         setMessage(text); ask(text);

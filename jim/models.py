@@ -795,6 +795,11 @@ class HabitLog(BaseModel):
 class CoachMessage(BaseModel):
     area: CoachArea
     message: str
+    #: How much of the Guardian's LAST reply the person actually heard before
+    #: they spoke over it. Optional and ignorable: absent means nothing was
+    #: interrupted, which is the ordinary turn. Sent by the voice screens,
+    #: which play a reply piece by piece and so know where a hush landed.
+    cut_off_heard: str | None = None
 
 
 class LookoutCreate(BaseModel):

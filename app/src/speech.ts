@@ -99,6 +99,40 @@ export function spokenText(): string {
   return saidText;
 }
 
+// How many of the reply's pieces have STARTED playing. Counted rather than
+// timed, because a reply is spoken piece by piece and a piece is the only
+// boundary this module can be certain about: everything before the piece in
+// the air reached the person, and everything after it did not.
+let piecesOut = 0;
+let piecesSaid: string[] = [];
+
+/** How much of the current reply was actually heard, as text.
+ *
+ *  The piece being played when a hush lands COUNTS as heard: it started, so
+ *  the person got at least its opening words, and treating it as unheard
+ *  would have the Guardian re-say a sentence they had already had enough of.
+ *
+ *  Equal to `spokenText()` when a reply played all the way out — which is how
+ *  a caller tells "they let me finish" from "they cut me off" without keeping
+ *  its own clock. */
+export function heardAloud(): string {
+  return piecesSaid.slice(0, piecesOut).join(" ");
+}
+
+/** Stop the reply and say how much of it landed — `""` when nothing was
+ *  being said, so the caller can send it unconditionally.
+ *
+ *  One function rather than a `speakingNow()` / `heardAloud()` / `hush()`
+ *  dance repeated on every voice screen, because the order is the whole
+ *  correctness of it: read the count BEFORE the hush and the caller reports
+ *  a live reply, read it after and every screen is free to get it wrong on
+ *  its own. Four screens ask this question; there is one answer. */
+export function hushAndReport(): string {
+  const heard = speakingNow() ? heardAloud() : "";
+  hush();
+  return heard;
+}
+
 /** True when a heard phrase is the Guardian's own voice coming back. */
 export function echoOfTheGuardian(heard: string): boolean {
   return isEcho(heard, saidText);
@@ -118,6 +152,12 @@ export async function say(text: string): Promise<"service" | "device"> {
   // played is exactly the one that needs checking.
   saidText = text;
   const pieces = spokenPieces(text);
+  // A new reply is a new answer to the question of how much was heard, and
+  // the reset belongs HERE rather than in hush(): hush is what an
+  // interruption calls, and clearing the count there would wipe the very
+  // fact the interruption exists to report.
+  piecesSaid = pieces;
+  piecesOut = 0;
   if (pieces.length === 0) return "service";
   // One request to the voice service per piece, fetched one ahead: the
   // first sentence is synthesised alone — small, so it comes back fast —
@@ -146,7 +186,15 @@ export async function say(text: string): Promise<"service" | "device"> {
       // The service failed on this piece. The device's own voice finishes
       // the answer — or speaks all of it, when the first piece is the one
       // that failed — rather than going quiet mid-reply.
+      //
+      // The device speaks the remainder as ONE utterance, so from here the
+      // module can no longer see piece boundaries. Counting them all out is
+      // the honest reading of that: what the device voice says, it says, and
+      // a hush during it lands somewhere this module cannot name. Better to
+      // over-report what was heard than to have the Guardian repeat sentences
+      // the person already sat through.
       midReply = false;
+      piecesOut = pieces.length;
       return sayOnDevice(pieces.slice(i).join(" "));
     }
     midReply = true;
@@ -164,6 +212,11 @@ export async function say(text: string): Promise<"service" | "device"> {
     }
     audio.src = src;
     try {
+      // Counted before the play, not after it resolves: `play()` resolves
+      // when playback BEGINS, and the sentence is in the air from that
+      // moment. Counting on the far side of the await would lose the piece
+      // somebody actually heard themselves interrupt.
+      piecesOut = i + 1;
       await audio.play();
     } catch {
       // A piece the platform refuses to play (autoplay policy, decode)
@@ -172,6 +225,9 @@ export async function say(text: string): Promise<"service" | "device"> {
       if (current === audio) current = null;
       midReply = false;
       if (run !== sayRun) return "service";
+      // Refused before a sound came out, so this piece was NOT heard — and
+      // the device voice is about to speak it along with the rest.
+      piecesOut = pieces.length;
       return sayOnDevice(pieces.slice(i).join(" "));
     }
     await new Promise<void>((resolve) => {
