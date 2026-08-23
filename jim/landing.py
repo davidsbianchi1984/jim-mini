@@ -110,6 +110,19 @@ def _page(title: str, body: str, language: str = "en") -> str:
         f'<body><main class="card">{body}</main></body></html>')
 
 
+# The characters that can end a `<script>` element early, or end a JavaScript
+# string literal, written as the \uXXXX escapes JavaScript reads back as the
+# original character — so the value survives intact and an HTML parser cannot
+# mistake any of it for markup. In JSON these four appear only inside string
+# values, never in the structure, so rewriting them in the serialised text is
+# safe for any shape. U+2028 and U+2029 are JavaScript line terminators and
+# end a string literal where `ensure_ascii=False` leaves them raw.
+_JS_HAZARDS = {
+    "<": "\\u003c", ">": "\\u003e", "&": "\\u0026",
+    "\u2028": "\\u2028", "\u2029": "\\u2029",
+}
+
+
 def _js_literal(obj) -> str:
     """Any JSON value, safe to drop **inside a `<script>` element**.
 
@@ -119,9 +132,26 @@ def _js_literal(obj) -> str:
     ends the *element* whatever the JavaScript quoting says, closing the
     page's own nonced script and leaving everything after it to be parsed as
     markup.
+
+    Deliberately **not** `html.escape`. A browser does not decode HTML
+    entities inside a script element, so escaping there protects nothing and
+    corrupts the value: `Terms & Conditions` reached the reader as
+    `Terms &amp; Conditions`, and this is what the translated string table is
+    built on.
+
+        asked     is the value escaped
+        mattered  is it escaped for the place it lands
+
+    The page was safe by accident rather than by the mechanism written for
+    it. The `.replace("</", "<\\/")` above — the guard against a literal
+    `</script` ending the element, which is the hazard this docstring names —
+    sat *after* an `html.escape` that had already turned `<` into `&lt;`. It
+    never matched anything and never could.
     """
-    return html.escape(json.dumps(obj, ensure_ascii=False),
-                       quote=False).replace("</", "<\\/")
+    text = json.dumps(obj, ensure_ascii=False)
+    for char, escape in _JS_HAZARDS.items():
+        text = text.replace(char, escape)
+    return text
 
 
 def _js(value: str) -> str:

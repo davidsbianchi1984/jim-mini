@@ -1,4 +1,4 @@
-# status: backlog — 3 rows
+# status: backlog — 2 rows
 #
 # Every interpolation into markup whose value the sweep cannot see reach an
 # escape. Written by `test_a_page_never_prints_what_it_was_given.py`.
@@ -37,7 +37,37 @@
 # can follow it. The ceiling does not move up: a new row is a value somebody
 # can put markup into.
 #
-# ceiling: 3
-landing.py: {_CSS}
+#
+# ## What changed when the sweep learned two scopes
+#
+# Three of the rows this file carried were never defects. The sweep scanned
+# every f-string **twice** — once inside its own function, once in a pass that
+# walked the whole module — and reported the union. Each pass had a blind spot
+# the other did not, so each pass's blind spot became a permanent row:
+#
+# * the per-function pass could not see a **module-level constant**, so a
+#   stylesheet or a template interpolated inside a function was an
+#   unresolvable name;
+# * the module-wide pass merged **every function's assignments into one
+#   table**, so a name written safely in one function and unsafely in another
+#   took the unsafe binding — and was reported at the line that is correct.
+#
+#     asked     is this interpolation safe
+#     mattered  is the name being read the one that is written there
+#
+# Each function is scanned once now, in a scope seeded with the module's own
+# bindings, and the module pass scans only what is not inside a function.
+#
+# The rest left by being made visibly safe rather than argued safe in this
+# file: a count became `int(...)`, a class name from a fixed table is escaped
+# where it lands, and a cooldown returns `int(...)`. Each was already correct
+# and now says so where it is written.
+#
+# This mattered more than a few rows. A security record is read by somebody
+# deciding whether to look closer, and this file says of itself that a record
+# four-fifths noise is a record nobody reads. Rows that cannot be resolved by
+# reading the code are how that begins.
+#
+# ceiling: 2
 landing.py: {body}
 landing.py: {who}

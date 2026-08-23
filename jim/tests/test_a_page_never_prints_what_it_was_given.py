@@ -131,14 +131,35 @@ def rows(root: pathlib.Path):
         except SyntaxError:
             continue
         helpers = module_safe_helpers(tree)
-        for fn in [n for n in ast.walk(tree)
-                   if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))] + [tree]:
+        funcs = [n for n in ast.walk(tree)
+                 if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+        # The bindings written at module level, seen by every function.
+        # Without these a module constant — a stylesheet, a template — is an
+        # unresolvable Name *inside* a function, and was reported forever.
+        module_bound = {}
+        for node in tree.body:
+            if isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                    and isinstance(node.targets[0], ast.Name):
+                module_bound[node.targets[0].id] = node.value
+        # Each function is scanned once, in its own scope. The module scope
+        # scans only what is NOT inside a function: walking the whole tree
+        # again merged every function's assignments into one table, so a name
+        # written safely in one function and unsafely in another took the
+        # unsafe binding and was reported — a row for a line that is correct.
+        inside = {id(n) for fn in funcs for n in ast.walk(fn)}
+        for fn in funcs + [tree]:
             sc = Scope(helpers)
+            sc.bound.update(module_bound)
+            module_pass = fn is tree
             for node in ast.walk(fn):
+                if module_pass and id(node) in inside:
+                    continue
                 if isinstance(node, ast.Assign) and len(node.targets) == 1 \
                         and isinstance(node.targets[0], ast.Name):
                     sc.bound[node.targets[0].id] = node.value
             for node in ast.walk(fn):
+                if module_pass and id(node) in inside:
+                    continue
                 if not isinstance(node, ast.JoinedStr):
                     continue
                 lits = "".join(p.value for p in node.values

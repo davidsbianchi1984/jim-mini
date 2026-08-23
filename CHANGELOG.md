@@ -6,6 +6,57 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A script was being escaped like a page.** `_js_literal` builds the JSON and
+  JavaScript literals this product's landing page drops inside a `<script>`
+  element — including the translated string table — and it called
+  `html.escape`. That is the right tool for a page and the wrong one for a
+  script: **a browser does not decode HTML entities inside a script element**,
+  so escaping there protects nothing and corrupts the value.
+
+      asked     is the value escaped
+      mattered  is it escaped for the place it lands
+
+  `Terms & Conditions` reached the reader as `Terms &amp; Conditions`, in every
+  language that ships. Anything carrying `&`, `<` or `>` — which in ordinary
+  prose means most sentences with an ampersand in them — rendered wrong.
+
+  **The page was safe, but by accident rather than by its own mechanism.** The
+  docstring named the real hazard exactly right: a literal `</script` ends the
+  element whatever the JavaScript quoting says. The line written to stop it,
+  `.replace("</", "<\\/")`, sat *after* an `html.escape` that had already
+  turned `<` into `&lt;` — so it never matched anything and never could. The
+  protection came from the escaping that was corrupting the text.
+
+  It is `json.dumps` now, with `<`, `>`, `&` and the two JavaScript line
+  terminators U+2028/U+2029 written as `\uXXXX` — which JavaScript reads back
+  as the original character and an HTML parser cannot mistake for markup. All
+  three products carried the same helper and the same defect; all three are
+  fixed, and guarded by round-trip tests that parse the literal back.
+
+- **Three rows in the escaping ledger were never defects.** The sweep behind
+  `unescaped_markup.txt` scanned every f-string **twice** — once inside its own
+  function, once in a pass walking the whole module — and reported the union.
+  Each pass had a blind spot the other did not, so each blind spot became a
+  permanent row: the per-function pass could not see a module-level constant,
+  and the module-wide pass merged every function's assignments into one table,
+  so a name written safely in one function and unsafely in another took the
+  unsafe binding.
+
+      asked     is this interpolation safe
+      mattered  is the name being read the one that is written there
+
+  Each function is scanned once now, in a scope seeded with the module's own
+  bindings, and the module pass scans only what is not inside a function. The
+  rest of the drop came from making values visibly safe rather than argued safe
+  in a file: a count is `int(...)`, a class name from a fixed table is escaped
+  where it lands, a cooldown returns `int(...)`.
+
+  A security record is read by somebody deciding whether to look closer, and
+  the file says of itself that a record four-fifths noise is a record nobody
+  reads. Rows that cannot be resolved by reading the code are how that begins.
+
 ## [1.6.1] - 2026-08-23
 
 ## [1.6.0] - 2026-08-23
