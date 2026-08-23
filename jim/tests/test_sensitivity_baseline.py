@@ -26,7 +26,7 @@ def test_set_sensitivity_endpoint(client):
     assert bad.status_code == 422
 
 
-def test_cautious_mode_reaches_out_early_for_declared_condition(client):
+def test_cautious_mode_reaches_out_early_for_declared_condition(client, mail_server):
     uid = enroll(client, resting_heart_rate=60, contact_consent=True,
                  emergency_name="Sam", emergency_phone="+1000", emergency_email="sam@example.com",
                  known_conditions=["anxiety"])

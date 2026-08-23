@@ -197,3 +197,26 @@ def user_header(client_response_or_token) -> dict:
 def as_user(client, token) -> None:
     """Make ``token``'s user the client's default caller."""
     client.headers["authorization"] = f"Bearer {token}"
+
+
+@pytest.fixture()
+def mail_server(monkeypatch):
+    """A machine that can send mail, and the letters it received.
+
+    ``notified_emergency_contact`` is True only when a letter actually left
+    (jim/farend.py) — a letter printed on the server for want of a mail host
+    reached nobody and says so. So a test whose subject is *the far end was
+    reached* needs a deployment that can send, and asks for this.
+
+    A test whose subject is the no-mail path must not take this fixture: see
+    test_a_letter_printed_on_the_server_reached_nobody.py, which exercises
+    the real ``mailer.deliver`` precisely to hold the honest flag.
+    """
+    from jim import mailer
+    sent: list[dict] = []
+    monkeypatch.setattr(
+        mailer, "deliver",
+        lambda to, subject, body: sent.append(
+            {"to": to, "subject": subject, "body": body}) or "smtp")
+    monkeypatch.setattr(mailer, "configured_transport", lambda: "smtp")
+    return sent

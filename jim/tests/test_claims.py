@@ -30,7 +30,7 @@ def test_declare_condition_after_enrollment(client):
     assert any(e["type"] == "condition_declared" for e in events)
 
 
-def test_fall_triggers_first_aid_with_references(client):
+def test_fall_triggers_first_aid_with_references(client, mail_server):
     user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True, devices=["smart_watch", "phone"])
     r = client.post(f"/monitor/{user}", json={"movement": "fall"}).json()

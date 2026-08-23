@@ -94,7 +94,7 @@ def test_context_payload_vaulted_but_rules_still_fire(pdi_pair):
     assert stored["amount"] == 320
 
 
-def test_checkin_note_vaulted_and_crisis_still_escalates(pdi_pair):
+def test_checkin_note_vaulted_and_crisis_still_escalates(pdi_pair, mail_server):
     jim, fake = pdi_pair
     user = enroll(jim, emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True)

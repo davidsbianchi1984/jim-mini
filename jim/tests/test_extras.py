@@ -4,7 +4,7 @@ feedback loop, and the consent-gated provider portal."""
 from jim.tests.conftest import enroll
 
 
-def test_blood_pressure_and_hrv_rules(client):
+def test_blood_pressure_and_hrv_rules(client, mail_server):
     user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True)
     crisis = client.post(f"/monitor/{user}",
@@ -22,7 +22,7 @@ def test_blood_pressure_and_hrv_rules(client):
     assert "variability" in strained["reason"]
 
 
-def test_journal_runs_crisis_pipeline(client):
+def test_journal_runs_crisis_pipeline(client, mail_server):
     user = enroll(client, emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True)
     calm = client.post(f"/journal/{user}",

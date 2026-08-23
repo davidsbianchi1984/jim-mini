@@ -42,9 +42,25 @@ def test_pseudonyms_do_not_collide(client):
     assert len(names) == 12
 
 
-def test_every_emergency_path_still_works_anonymously(client):
+def test_every_emergency_path_still_works_anonymously(client, monkeypatch):
     """The point of the tradeoff: anonymity costs a name in a briefing and
-    nothing else. Detection, guidance and escalation are untouched."""
+    nothing else. Detection, guidance and escalation are untouched.
+
+    Mail is configured here because that is what the claim needs. This test
+    used to assert ``notified_emergency_contact is True`` against a machine
+    with no mail server, back when that flag was set for having *written* a
+    letter rather than sent one — so it read as "anonymity does not break
+    escalation" while proving only that the flag was hardcoded. The letter
+    now really leaves, and the far end is really reached.
+    """
+    from jim import mailer
+    sent: list[dict] = []
+    monkeypatch.setattr(mailer, "deliver",
+                        lambda to, subject, body: sent.append(
+                            {"to": to, "subject": subject, "body": body})
+                        or "smtp")
+    monkeypatch.setattr(mailer, "configured_transport", lambda: "smtp")
+
     user = enroll(client, display_name="Jordan", anonymous=True,
                   emergency_name="Ana", emergency_phone="+1 555 0100", emergency_email="ana@example.com",
                   contact_consent=True)
@@ -52,6 +68,15 @@ def test_every_emergency_path_still_works_anonymously(client):
     assert body["severity"] == "critical"
     assert body["escalation"]["notified_emergency_contact"] is True
     assert body["guidance"]["content"]
+
+    # And the letter that left is anonymous too — the rung that reaches a
+    # stranger's inbox is the one place a leaked legal name would be hardest
+    # to take back. It carries the chosen pseudonym, never "Jordan".
+    alerts = [m for m in sent if "may need help" in m["subject"]]
+    assert len(alerts) == 1 and alerts[0]["to"] == "ana@example.com"
+    known_as = guardian.get_user(user)["display_name"]
+    assert known_as in alerts[0]["subject"]
+    assert "Jordan" not in alerts[0]["subject"] + alerts[0]["body"]
 
 
 def test_the_briefing_will_not_invent_an_identity(client):

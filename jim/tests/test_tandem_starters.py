@@ -85,7 +85,7 @@ def test_anxiety_routes_through_the_qrme_psychologist(make_tandem):
     assert g["specialist"] == SPECIALISTS[conditions.ANXIETY]
 
 
-def test_crisis_escalation_is_not_bypassed_by_tandem(make_tandem):
+def test_crisis_escalation_is_not_bypassed_by_tandem(make_tandem, mail_server):
     # Depression routes tandem now, but crisis language still escalates
     # through JIM's own tree — the specialist chat never replaces it.
     jim = make_tandem()

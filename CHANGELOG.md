@@ -48,6 +48,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `"smtp"`, so the console path was never once exercised through `notify`. It
   is now, by six guards holding the flag to a letter that left.
 
+  **Nine assertions across eight other files were resting on the old flag**,
+  which is the clearest measure of how far it had spread: `test_claims`,
+  `test_extras`, `test_first_aid`, `test_life`, `test_pdi_tandem`,
+  `test_sensitivity_baseline`, `test_tandem_starters` and `test_anonymity` all
+  read `notified_emergency_contact is True` on a machine with no mail server,
+  as a convenient proxy for *escalation happened*. Their subjects are sound —
+  a fall reaches first aid, a crisis note in a check-in escalates — so they
+  take a new `mail_server` fixture and now say what they always meant: on a
+  deployment that can send, the far end is reached. `test_anonymity` gained
+  the assertion it was missing, and it is the one that matters most there: the
+  letter to a stranger's inbox carries the chosen pseudonym and never the
+  legal name, which is the one rung where a leaked name would be hardest to
+  take back.
+
 - **The coach's context stops cutting a symptom in half.** QRME's wall learned
   this first — *a cut inside a word is the one outcome it refuses* — and this
   repository had not learned it anywhere, in the product where the material
