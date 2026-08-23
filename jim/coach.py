@@ -64,6 +64,8 @@ _FEATURE_MAP = (
 
 
 def _context(user_id: str) -> str:
+    from . import text
+
     lines = []
     recent = life.checkins(user_id)[-1:]
     if recent:
@@ -131,7 +133,15 @@ def _context(user_id: str) -> str:
             " LIMIT 6", (user_id,)).fetchall():
         data = _json.loads(r["data"])
         if not data.get("vaulted") and data.get("content"):
-            lines.append(f"collected context: {data['content'][:160]}")
+            # Cut at a boundary and say so. This is somebody's health
+            # material — a symptom, a dose, a reading — and a bare slice can
+            # land inside "the pain is not radiating down the left arm" and
+            # hand the coach the opposite of the sentence, silently.
+            body, shortened = text.clipped(data["content"], 160)
+            if shortened:
+                body += (" […cut — the rest of this note is not here, and a "
+                         "negation or qualification may be in it]")
+            lines.append(f"collected context: {body}")
             if sum(l.startswith("collected context:") for l in lines) >= 3:
                 break
     return "\n".join(lines) if lines else "no recent check-ins or goals"

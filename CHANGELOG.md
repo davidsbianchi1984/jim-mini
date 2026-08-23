@@ -4,6 +4,33 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **The coach's context stops cutting a symptom in half.** QRME's wall learned
+  this first — *a cut inside a word is the one outcome it refuses* — and this
+  repository had not learned it anywhere, in the product where the material
+  being cut is somebody's health. `_context` assembled collected context as
+  `data['content'][:160]`: bare, mid-word, silent. That is whatever a person
+  or a monitor put there, which here means a symptom, a dose, a reading, and
+  cutting *"the pain is not radiating down the left arm"* at the wrong
+  character hands the coach the opposite of the sentence.
+
+      asked     does the text fit
+      mattered  what does the part that fits say
+
+  `jim/text.clipped` walks the same boundary ladder QRME uses, kept identical
+  on purpose: a coach and a profile disagreeing about where it is safe to stop
+  would be two answers to one question. The line now says outright that the
+  rest is not here and a negation or qualification may be in it — because the
+  boundary is the smaller half of this. *"The pain is not radiating"* is a
+  clean whole-word cut and still inverts.
+
+  The guard reads `_context` itself and fails on a bare slice big enough to be
+  prose, rather than listing the lines it knows about — a list is a second
+  place to update. Date slices are recorded as exempt with the reason.
+
 ## [1.5.0] - 2026-08-23
 
 An iPhone can speak in a QRME room now: that console records and posts the
