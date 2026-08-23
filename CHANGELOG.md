@@ -6,7 +6,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-08-23
+
 ### Fixed
+
+- **170 of 256 released versions rendered as literal text.** A Keep a
+  Changelog heading is a reference link: `## [1.5.0]` renders as the characters
+  `[1.5.0]` unless a definition sits at the bottom of the file. Every version
+  from 0.20.0 to 0.68.0, and every one from 1.0.0 to 1.5.0, had none — and
+  `[Unreleased]` had no definition at all. Two thirds of this changelog was
+  bracket text a reader could not click, in all three products at once.
+
+      asked     does the changelog have an entry for this version
+      mattered  can a reader get from the entry to what changed
+
+  `docs/releasing.md` has warned about exactly this for a long time — *this is
+  the step that gets missed, because nothing complains* — and being warned was
+  not enough, twice over: the warning was written after 0.1.9, 0.2.0 and 0.2.1
+  were cut without it, and 170 more went the same way afterwards. Nothing in a
+  build objects, because the file parses and the page renders; the damage sits
+  hundreds of lines from the heading that caused it.
+
+  All 256 are defined now — a compare link against the previous release
+  where both tags exist, a tag link for the first, and a commit link for each
+  of the 11 versions released without a tag at all, which is the treatment
+  0.1.5 and 0.1.6 already carried. `[Unreleased]` diffs against 1.6.0.
+
+  And it is a guard now rather than a sentence in a document, which is the
+  only part of this that stops it happening a third time:
+  `test_every_release_heading_is_a_link.py` fails the suite on a heading with
+  no definition, on an `[Unreleased]` pointing at a stale tag, and on a
+  definition for a release the changelog never describes. A warning in prose
+  is something a person has to remember.
 
 - **A letter printed on the server had been reported as a person notified.**
   `farend.notify` set `delivered: True` the moment it had *written* a letter.
@@ -10693,6 +10724,15 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.0...HEAD
+[1.6.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.5.0...app-v1.6.0
+[1.5.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.4.1...app-v1.5.0
+[1.4.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.4.0...app-v1.4.1
+[1.4.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.3.0...app-v1.4.0
+[1.3.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.2.0...app-v1.3.0
+[1.2.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.1.0...app-v1.2.0
+[1.1.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.0.0...app-v1.1.0
+[1.0.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.99.1...app-v1.0.0
 [0.99.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.99.0...app-v0.99.1
 [0.99.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.98.0...app-v0.99.0
 [0.98.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.97.0...app-v0.98.0
@@ -10726,7 +10766,170 @@ the three-product suite (with
 [0.71.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.71.0
 [0.70.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.70.1
 [0.70.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.70.0
+[0.68.0]: https://github.com/davidsbianchi1984/jim-mini/commit/682416f
+[0.67.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.66.0...app-v0.67.0
+[0.66.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.65.0...app-v0.66.0
+[0.65.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.64.0...app-v0.65.0
+[0.64.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.63.0...app-v0.64.0
+[0.63.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.62.0...app-v0.63.0
+[0.62.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.61.1...app-v0.62.0
 [0.61.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.61.1
+[0.61.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.9...app-v0.61.0
+[0.60.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.8...app-v0.60.9
+[0.60.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.7...app-v0.60.8
+[0.60.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.6...app-v0.60.7
+[0.60.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.5...app-v0.60.6
+[0.60.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.4...app-v0.60.5
+[0.60.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.3...app-v0.60.4
+[0.60.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.2...app-v0.60.3
+[0.60.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.1...app-v0.60.2
+[0.60.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.60.0...app-v0.60.1
+[0.60.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.9...app-v0.60.0
+[0.59.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.8...app-v0.59.9
+[0.59.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.7...app-v0.59.8
+[0.59.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.6...app-v0.59.7
+[0.59.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.5...app-v0.59.6
+[0.59.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.4...app-v0.59.5
+[0.59.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.3...app-v0.59.4
+[0.59.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.2...app-v0.59.3
+[0.59.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.1...app-v0.59.2
+[0.59.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.59.0...app-v0.59.1
+[0.59.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.9...app-v0.59.0
+[0.58.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.8...app-v0.58.9
+[0.58.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.7...app-v0.58.8
+[0.58.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.6...app-v0.58.7
+[0.58.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.5...app-v0.58.6
+[0.58.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.4...app-v0.58.5
+[0.58.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.3...app-v0.58.4
+[0.58.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.2...app-v0.58.3
+[0.58.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.1...app-v0.58.2
+[0.58.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.58.0...app-v0.58.1
+[0.58.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.9...app-v0.58.0
+[0.57.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.8...app-v0.57.9
+[0.57.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.7...app-v0.57.8
+[0.57.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.6...app-v0.57.7
+[0.57.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.5...app-v0.57.6
+[0.57.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.4...app-v0.57.5
+[0.57.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.3...app-v0.57.4
+[0.57.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.2...app-v0.57.3
+[0.57.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.1...app-v0.57.2
+[0.57.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.57.0...app-v0.57.1
+[0.57.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.9...app-v0.57.0
+[0.56.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.8...app-v0.56.9
+[0.56.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.7...app-v0.56.8
+[0.56.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.6...app-v0.56.7
+[0.56.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.5...app-v0.56.6
+[0.56.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.4...app-v0.56.5
+[0.56.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.3...app-v0.56.4
+[0.56.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.2...app-v0.56.3
+[0.56.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.1...app-v0.56.2
+[0.56.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.56.0...app-v0.56.1
+[0.56.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.55.0...app-v0.56.0
+[0.55.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.54.1...app-v0.55.0
+[0.54.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.54.0...app-v0.54.1
+[0.54.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.53.1...app-v0.54.0
+[0.53.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.53.0...app-v0.53.1
+[0.53.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.52.0...app-v0.53.0
+[0.52.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.51.0...app-v0.52.0
+[0.51.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.50.0...app-v0.51.0
+[0.50.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.50.0
+[0.49.0]: https://github.com/davidsbianchi1984/jim-mini/commit/230bfb0
+[0.48.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.48.2...app-v0.48.3
+[0.48.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.48.1...app-v0.48.2
+[0.48.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.48.0...app-v0.48.1
+[0.48.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.9...app-v0.48.0
+[0.47.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.8...app-v0.47.9
+[0.47.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.7...app-v0.47.8
+[0.47.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.6...app-v0.47.7
+[0.47.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.5...app-v0.47.6
+[0.47.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.4...app-v0.47.5
+[0.47.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.3...app-v0.47.4
+[0.47.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.2...app-v0.47.3
+[0.47.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.1...app-v0.47.2
+[0.47.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.47.0...app-v0.47.1
+[0.47.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.9...app-v0.47.0
+[0.46.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.8...app-v0.46.9
+[0.46.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.7...app-v0.46.8
+[0.46.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.6...app-v0.46.7
+[0.46.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.5...app-v0.46.6
+[0.46.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.4...app-v0.46.5
+[0.46.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.3...app-v0.46.4
+[0.46.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.2...app-v0.46.3
+[0.46.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.1...app-v0.46.2
+[0.46.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.46.0...app-v0.46.1
+[0.46.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.9...app-v0.46.0
+[0.45.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.8...app-v0.45.9
+[0.45.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.7...app-v0.45.8
+[0.45.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.6...app-v0.45.7
+[0.45.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.5...app-v0.45.6
+[0.45.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.4...app-v0.45.5
+[0.45.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.3...app-v0.45.4
+[0.45.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.2...app-v0.45.3
+[0.45.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.1...app-v0.45.2
+[0.45.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.45.0...app-v0.45.1
+[0.45.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.9...app-v0.45.0
+[0.44.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.8...app-v0.44.9
+[0.44.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.7...app-v0.44.8
+[0.44.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.6...app-v0.44.7
+[0.44.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.5...app-v0.44.6
+[0.44.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.4...app-v0.44.5
+[0.44.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.3...app-v0.44.4
+[0.44.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.2...app-v0.44.3
+[0.44.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.1...app-v0.44.2
+[0.44.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.44.0...app-v0.44.1
+[0.44.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.9...app-v0.44.0
+[0.43.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.8...app-v0.43.9
+[0.43.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.7...app-v0.43.8
+[0.43.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.6...app-v0.43.7
+[0.43.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.5...app-v0.43.6
+[0.43.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.4...app-v0.43.5
+[0.43.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.3...app-v0.43.4
+[0.43.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.2...app-v0.43.3
+[0.43.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.1...app-v0.43.2
+[0.43.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.43.0...app-v0.43.1
+[0.43.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.9...app-v0.43.0
+[0.42.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.8...app-v0.42.9
+[0.42.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.7...app-v0.42.8
+[0.42.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.6...app-v0.42.7
+[0.42.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.5...app-v0.42.6
+[0.42.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.4...app-v0.42.5
+[0.42.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.3...app-v0.42.4
+[0.42.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.2...app-v0.42.3
+[0.42.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.1...app-v0.42.2
+[0.42.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.42.0...app-v0.42.1
+[0.42.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.41.0...app-v0.42.0
+[0.41.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.40.9...app-v0.41.0
+[0.40.9]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.40.9
+[0.40.8]: https://github.com/davidsbianchi1984/jim-mini/commit/0ce11ba
+[0.40.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.40.6...app-v0.40.7
+[0.40.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.40.5...app-v0.40.6
+[0.40.5]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.40.5
+[0.40.4]: https://github.com/davidsbianchi1984/jim-mini/commit/aa1f6fa
+[0.40.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.40.2...app-v0.40.3
+[0.40.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.40.1...app-v0.40.2
+[0.40.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.40.0...app-v0.40.1
+[0.40.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.9...app-v0.40.0
+[0.30.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.8...app-v0.30.9
+[0.30.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.7...app-v0.30.8
+[0.30.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.6...app-v0.30.7
+[0.30.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.5...app-v0.30.6
+[0.30.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.4...app-v0.30.5
+[0.30.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.3...app-v0.30.4
+[0.30.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.2...app-v0.30.3
+[0.30.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.1...app-v0.30.2
+[0.30.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.30.0...app-v0.30.1
+[0.30.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.29.0...app-v0.30.0
+[0.29.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.28.0...app-v0.29.0
+[0.28.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.28.0
+[0.27.0]: https://github.com/davidsbianchi1984/jim-mini/commit/a2b883f
+[0.26.0]: https://github.com/davidsbianchi1984/jim-mini/commit/97acf6c
+[0.25.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.24.0...app-v0.25.0
+[0.24.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.23.0...app-v0.24.0
+[0.23.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.22.0...app-v0.23.0
+[0.22.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.21.0...app-v0.22.0
+[0.21.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.20.1...app-v0.21.0
+[0.20.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.20.0...app-v0.20.1
+[0.20.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v0.19.1...app-v0.20.0
 [0.19.1]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.19.1
 [0.19.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.19.0
 [0.18.0]: https://github.com/davidsbianchi1984/jim-mini/releases/tag/app-v0.18.0
