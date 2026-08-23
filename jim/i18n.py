@@ -3748,6 +3748,12 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'energy': {'en': 'Energy', 'es': 'Energía', 'fr': 'Énergie', 'de': 'Energie', 'pt': 'Energia', 'it': 'Energia', 'ja': '体力', 'zh': '精力', 'hi': 'ऊर्जा', 'ar': 'الطاقة'},
     'goal': {'en': 'Goal', 'es': 'Objetivo', 'fr': 'Objectif', 'de': 'Ziel', 'pt': 'Objetivo', 'it': 'Obiettivo', 'ja': '目標', 'zh': '目标', 'hi': 'लक्ष्य', 'ar': 'الهدف'},
     'handle': {'en': 'Handle', 'es': 'Identificador', 'fr': 'Identifiant', 'de': 'Kürzel', 'pt': 'Identificador', 'it': 'Handle', 'ja': 'ハンドル名', 'zh': '账号名', 'hi': 'हैंडल', 'ar': 'المعرّف'},
+    # Sent by the voice screens when somebody speaks or types over the
+    # Guardian mid-answer. Nobody types it, which is why it needs wording
+    # rather than why it does not: a refusal that names `cut_off_heard` is an
+    # error about this API's own vocabulary, shown to a person who was having
+    # a conversation.
+    'cut_off_heard': {'en': 'How much of the answer you heard', 'es': 'Cuánto alcanzaste a oír de la respuesta', 'fr': "Ce que vous avez entendu de la réponse", 'de': 'Wie viel der Antwort du gehört hast', 'pt': 'Quanto ouviu da resposta', 'it': "Quanto hai sentito della risposta", 'ja': '答えをどこまで聞いたか', 'zh': '这句回答你听到了多少', 'hi': 'उत्तर आपने कितना सुना', 'ar': 'ما سمعته من الإجابة'},
     'message': {'en': 'Message', 'es': 'Mensaje', 'fr': 'Message', 'de': 'Nachricht', 'pt': 'Mensagem', 'it': 'Messaggio', 'ja': 'メッセージ', 'zh': '消息', 'hi': 'संदेश', 'ar': 'الرسالة'},
     'mood': {'en': 'Mood', 'es': 'Ánimo', 'fr': 'Humeur', 'de': 'Stimmung', 'pt': 'Humor', 'it': 'Umore', 'ja': '気分', 'zh': '心情', 'hi': 'मनोदशा', 'ar': 'المزاج'},
     'name': {'en': 'Name', 'es': 'Nombre', 'fr': 'Nom', 'de': 'Name', 'pt': 'Nome', 'it': 'Nome', 'ja': '名前', 'zh': '名称', 'hi': 'नाम', 'ar': 'الاسم'},
