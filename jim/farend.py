@@ -100,7 +100,19 @@ def notify(user_id: str, user: dict | None, condition: str, reason: str,
     subject = i18n.farend_text("alert_subject", lang).format(name=name)
     body = i18n.farend_text("alert_body", lang).format(
         name=name, condition=condition, reason=reason, tier=tier, link=link)
-    transport = mailer.deliver(to, subject, body)
+    try:
+        transport = mailer.deliver(to, subject, body)
+    except Exception as exc:  # noqa: BLE001 — smtplib raises many kinds
+        # The rung below emergency services, and it is reached from inside
+        # `guardian.monitor`. An unhandled refusal here does not just lose
+        # the letter: it loses the detection that asked for it, and the
+        # reading that produced the detection, as a 500. The sibling rungs
+        # -- the care beacon, the crash watch, the vigil -- have each caught
+        # their own send since they were written; this one never did,
+        # because until a mail server existed `deliver` could not fail.
+        return {"channel": "email", "delivered": False, "standing": False,
+                "transport": "failed", "refused": str(exc)[:200],
+                "note": i18n.farend_text("undelivered", lang)}
     if transport != "smtp":
         # No mail server is configured, so deliver() printed the letter on
         # the server and returned. Nothing left the machine and nobody was
@@ -200,11 +212,33 @@ def liveness_pass(user_id: str, lang: str) -> dict | None:
     subject = i18n.farend_text("ping_subject", lang).format(name=name)
     body = i18n.farend_text("ping_body", lang).format(
         name=name, days=PING_DAYS, events=events)
-    transport = mailer.deliver(to, subject, body)
+    try:
+        transport = mailer.deliver(to, subject, body)
+    except Exception as exc:  # noqa: BLE001 — smtplib raises many kinds
+        # This note rides the monitor sense, and the monitor sense is how a
+        # health reading gets recorded at all. A mail server that refuses or
+        # hangs must not be able to take that down: the courtesy is the
+        # mailbox proof, the duty is the reading. It fails, says so, and the
+        # sense carries on.
+        transport = "failed"
+        note = str(exc)[:200]
+    else:
+        note = None
+    # Stamped either way, deliberately. A mailbox that is refusing does so
+    # for every attempt, and this rides *every* reading — unstamped, a broken
+    # server would be retried once per reading, each retry paying the SMTP
+    # timeout before failing. One attempt per PING_DAYS is what discovers a
+    # dead mailbox; one per reading is what a dead mailbox does to the app.
     conn.execute("UPDATE users SET farend_pinged_at=? WHERE id=?",
                  (db.utcnow(), user_id))
     conn.commit()
     from . import guardian
-    guardian._event(user_id, "farend_ping",
-                    detail={"events_counted": events, "transport": transport})
-    return {"sent": True, "events": events, "transport": transport}
+    detail = {"events_counted": events, "transport": transport}
+    if note:
+        detail["refused"] = note
+    guardian._event(user_id, "farend_ping", detail=detail)
+    out = {"sent": transport == "smtp", "events": events,
+           "transport": transport}
+    if note:
+        out["refused"] = note
+    return out

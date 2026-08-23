@@ -22,11 +22,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
 
 from . import db, mailer
+
+logger = logging.getLogger(__name__)
 
 CODE_TTL_MINUTES = 15
 _PBKDF2_ITERATIONS = 600_000
@@ -61,13 +64,33 @@ def _public_url() -> str:
     return mailer.public_url()
 
 
+def _try_send(to: str, subject: str, body: str) -> str:
+    """`mailer.deliver`, with the refusal named instead of raised."""
+    try:
+        return mailer.deliver(to, subject, body)
+    except Exception:  # noqa: BLE001 — smtplib raises many kinds
+        logger.warning("verification mail to %s was refused", to)
+        return "failed"
+
+
 def _send_code(email: str, purpose: str = "verify",
                deliver_to: str | None = None) -> str:
     """Issue a fresh code for ``email`` (retiring any previous ones for the
     same purpose), deliver it, and return the transport name — never the
     code. Verification mail leads with a **clickable link** (the shape every
     mainstream flow uses); the 6-digit code rides along as the fallback for
-    a mail client on a different device than the app."""
+    a mail client on a different device than the app.
+
+    Returns ``"failed"`` when the mail server refused or could not be
+    reached. Until a mail server existed this could not happen, so the three
+    sends inside were never wrapped — and the account row is written and
+    committed *before* the send. An unhandled refusal there is worse than a
+    lost letter: the caller gets a 500, the pending account survives, and
+    the next attempt from the same address is answered *an account is
+    already pending — verify the emailed code*, naming a code that was never
+    sent. A transient mail outage locked an address out of signup. The code
+    is stored either way, so `resend` remains the way back.
+    """
     conn = db.connect()
     conn.execute(
         "UPDATE email_codes SET consumed_at=? WHERE email=? AND purpose IN (?,?)"
@@ -91,7 +114,7 @@ def _send_code(email: str, purpose: str = "verify",
         )
     conn.commit()
     if purpose == "reset":
-        return mailer.deliver(
+        return _try_send(
             email,
             "Your JIM Guardian password reset code",
             f"Your password reset code is: {code}\n\n"
@@ -104,7 +127,7 @@ def _send_code(email: str, purpose: str = "verify",
         # stay keyed to the minor's account address, but the mail lands in
         # the guardian's inbox — activating the account is the guardian's
         # act, and the message says exactly what it authorizes.
-        return mailer.deliver(
+        return _try_send(
             deliver_to,
             "A minor is asking to join JIM Guardian — your consent is needed",
             f"Someone under 18 has created a JIM Guardian account with "
@@ -117,7 +140,7 @@ def _send_code(email: str, purpose: str = "verify",
             "consent, ignore this message — without it the account cannot "
             "be activated.",
         )
-    return mailer.deliver(
+    return _try_send(
         email,
         "Verify your JIM Guardian account",
         f"Click to verify your account:\n\n"

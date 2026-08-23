@@ -155,9 +155,19 @@ def remind_pass(user_id: str, lang: str) -> list[dict]:
         if row["email_reminder"]:
             to = _user_email(user_id)
             if to:
-                mailer.deliver(to, i18n.schedule_text("mail_subject", lang)
-                               .format(title=row["title"]), message)
-                mailed = True
+                # `mailed` used to be set from having *called* deliver, which
+                # made it true for a letter printed on a server with no mail
+                # host — the same untruth the far end carried. It follows the
+                # transport now. And the call is caught: this pass rides the
+                # monitor and observe senses, so an unhandled refusal here
+                # would lose the reading that carried it, and every later
+                # appointment in this sweep with it.
+                try:
+                    mailed = mailer.deliver(
+                        to, i18n.schedule_text("mail_subject", lang)
+                        .format(title=row["title"]), message) == "smtp"
+                except Exception:  # noqa: BLE001 — the reminder still stands
+                    mailed = False
         conn.execute("UPDATE appointments SET reminded_at=? WHERE id=?",
                      (db.utcnow(), row["id"]))
         conn.commit()
