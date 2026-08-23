@@ -4,6 +4,16 @@ All notable changes to JIM-mini are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-08-23
+
+Nothing in this repository changed this round. Three field reports from the
+room landed in QRME: the profile's own voice being picked up by the
+microphone as a prompt, the conversation pushing the controls off the bottom
+of the screen, and a microphone lit over a speech service that had refused.
+
+The number moves anyway, because one version names one tested combination of
+all three.
+
 ## [1.4.0] - 2026-08-22
 
 A slept tab does not go quietly deaf. A backgrounded page has its

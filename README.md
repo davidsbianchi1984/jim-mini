@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v1.4.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.4.1** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **1.4.1** | **Version alignment** — the trio releases together and one number names one tested combination of all three; this release's changes live in the qrme repository (the room no longer prompts itself with the profile's own voice, the conversation no longer pushes the controls off the screen, and a microphone lit over a refused speech service now says so), and nothing changed here since 1.4.0 |
 | **1.4.0** | **A slept tab does not go quietly deaf** — a backgrounded page has its speech recogniser ended by the browser with no error, and neither console had a single `visibilitychange` handler anywhere, so every light saying it was listening went on saying it over a microphone that had stopped; the standing ear stops relighting itself every 400ms into a tab that cannot run one, the pill and the orb say *this tab is in the background* instead of *listening*, and being put away is reported as its own failure rather than as quiet — reported as quiet, a standing conversation would have re-opened the microphone into the sleeping tab forever |
 | **1.3.0** | **Version alignment** — the trio releases together and one number names one tested combination of all three; this release's changes live in the qrme repository, and nothing changed here since 1.2.0 |
 | **1.2.0** | **The chosen voice is the one a phone hears** — a phone withholds autoplay unless playback descends from a real press, and this built a fresh element per sentence after the synthesis fetch, so every piece was refused and every reply fell out of the bound voice into the browser's robot; one element, opened on the first press anywhere and reused, and a reply no longer leaks a blob URL per sentence or leaves eighteen dead listeners behind it |
