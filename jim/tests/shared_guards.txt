@@ -1,4 +1,4 @@
-# status: manifest — 517 guards carried by all three products
+# status: manifest — 519 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -46,6 +46,7 @@ test_a_computed_property_is_still_not_a_key
 test_a_connection_without_an_address_is_told_so
 test_a_container_pin_reads_the_element_not_the_wrapper
 test_a_control_the_page_never_names_is_caught
+test_a_count_can_never_be_exempted
 test_a_decorative_floor_is_caught
 test_a_discarded_binding_is_not_a_key
 test_a_duplicate_that_agrees_is_not_recorded_as_a_split
@@ -160,6 +161,7 @@ test_every_declared_screen_exists
 test_every_divergence_belonging_to_a_sibling_is_present_here
 test_every_divergence_recorded_against_this_product_is_still_absent
 test_every_entry_is_well_formed
+test_every_exempted_comparison_is_still_there
 test_every_exemption_names_a_module_that_still_exists
 test_every_face_has_a_route_to_a_screen_that_exists
 test_every_failure_answers_in_the_readers_language
