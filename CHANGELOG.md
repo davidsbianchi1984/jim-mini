@@ -43,6 +43,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   backgrounded tab has its recogniser ended by the browser. Walking is inside
   this application.
 
+- **The coach knows the whole console, not five doors of it.** A field report
+  asked it to "plant a quarter-hour lookout" and got a graceful shrug, and the
+  answer was five hand-written doors in the prompt. That fixed the five.
+  Twenty-seven other screens stayed invisible, and the same shrug was
+  available for any of them.
+
+      asked     can this assistant do it
+      mattered  can the product, and where is it
+
+  `jim/productmap.py` is the console door by door — where each one is, what it
+  is for, and the words somebody would actually use to ask for it. It is
+  joined to `ui_screens.txt`, the census that already answers *does this
+  surface have a drawing*, so a screen added without a row fails the suite in
+  the round that adds it rather than going quiet for two versions.
+
+  A turn does not carry thirty-two doors — a prompt full of manual stops
+  noticing the person in front of it. It carries the load-bearing ones always
+  (safety, the permits, the check-in, the journal, the lookout), the ones the
+  message is about, and the *names* of the rest. That last part is what makes
+  "I cannot do that" wrong when the screen is in the navigation bar: an
+  assistant that can read `Medications screen` in a list will name it.
+
+  Naming a door is not permission to open it. The permit switches still decide
+  what may be changed; a signpost is not a key.
+
 ## [1.7.0] - 2026-08-24
 
 ### Fixed

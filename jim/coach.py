@@ -8,7 +8,7 @@ and active goals. Uses JIM's own LLM provider and the same safety net.
 
 from __future__ import annotations
 
-from . import continuity, db, guardian, life, llm
+from . import continuity, db, guardian, life, llm, productmap
 from .guidance import _DENY, personalize
 
 AREAS = {
@@ -38,32 +38,17 @@ _SYSTEM = (
     "{context}"
 )
 
-#: The product's own doors, and where each lives in the app — a map for the
-#: coach, not the person (the person sees the screens; the coach otherwise
-#: sees only its priors). Kept short and deterministic so the routing
-#: sentence can be exact: "that's the Watched pages card, below this chat."
+#: The doors that ride every turn, whatever was said — derived from the one
+#: table in `jim/productmap.py` rather than written twice. This used to be
+#: five doors hand-written here, which answered one field report and left
+#: twenty-seven screens the coach had never heard of.
 #:
 #:     asked     can the coach do this
 #:     mattered  can the product, and where
-_FEATURE_MAP = (
-    "the product's own doors, and where each lives in this app — when a "
-    "request belongs to one, point at it by name instead of declining:\n"
-    "- watching a page on a schedule (a lookout — 'watch this url for "
-    "me'): the Watched pages card below this chat on the Coach screen; a "
-    "lookout repeats between a quarter-hour and a month\n"
-    "- daily check-ins (mood, energy, stress): the Check-in screen\n"
-    "- the weekly letter about what the week actually held: the Journal "
-    "screen\n"
-    "- what the assistant may change on its own (the permit switches): "
-    "the What-you-have-let-it-change screen, also on the assistant's "
-    "chip rail\n"
-    "- emergencies, the escalation ladder and who gets alerted: the "
-    "Safety screen — urge immediate help first, the screen second\n"
-    "answer questions about this product from these lines rather than "
-    "from what assistants generally can or cannot do")
+_FEATURE_MAP = productmap.core()
 
 
-def _context(user_id: str) -> str:
+def _context(user_id: str, message: str = "") -> str:
     from . import text
 
     lines = []
@@ -121,7 +106,13 @@ def _context(user_id: str) -> str:
     # coach shrugged gracefully — the model knew what assistants generally
     # cannot do and nothing about the card two scrolls below the chat. A
     # request that belongs to a door gets walked to that door by name.
-    lines.append(_FEATURE_MAP)
+    # The map, selected against what they just said rather than sent whole.
+    # `_FEATURE_MAP` is the core of it — the doors that ride every turn —
+    # and the rest arrives as the screens this message is about plus an
+    # index of names. The index is the part that makes the shrug wrong: a
+    # coach that can see `Medications screen` in a list says so instead of
+    # saying it cannot.
+    lines.extend(productmap.lines(message))
     # What the connected apps collected (jim/app_connectors.py) — the
     # sentence under /apps/connector/{cid}/collect says it "now informs
     # guidance", and this line is where that stops being a claim. Unvaulted
@@ -212,7 +203,8 @@ def reply(user_id: str, area: str, message: str, pdi=None,
         presence.set_bearing(user_id, adapted_bearing)
     carried = presence.bearing(user_id)
 
-    system = _SYSTEM.format(area=AREAS[area], context=_context(user_id))
+    system = _SYSTEM.format(area=AREAS[area],
+                        context=_context(user_id, message))
     system += _BEARING_PROMPT[carried]
     system += personalize(guardian.get_user(user_id))
     # The user-specific adaptation profile (jim/adaptation.py, clause 11):
