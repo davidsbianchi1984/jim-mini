@@ -1,4 +1,4 @@
-# status: backlog — 0 rows
+# status: retired — 0 rows
 # ceiling: 0
 #
 # English refusals — the sentences the Guardian says when it says no.
@@ -18,11 +18,9 @@
 #     asked     is the safety content the Guardian drafts translated
 #     mattered  is the safety content it refuses with
 #
-# Twenty-two are translated now: the credential checks, and every literal
-# refusal from the four health domains above — the ones somebody reads while
-# setting up a fall alarm for their mother, or logging a dose. These 42 are
-# not, and pass through as English, which is a visible gap rather than a
-# confident error.
+# As of this release every constant refusal in this product is translated
+# into all nine. The count this file carried went 92 → 42 → 0; what is left
+# below the line is the part that is not a count.
 #
 # ## What this file does not cover
 #
@@ -46,7 +44,8 @@
 # something a future round can produce by accident. See
 # `test_a_refusal_whose_english_is_not_a_constant`.
 #
-# Named here rather than counted in, so 42 cannot be read as the whole number.
+# Named here rather than counted in, so the zero above cannot be read as
+# meaning there is no English left anywhere.
 #
 #
 # ## 0.80.0: the sentences behind `str(exc)`
@@ -59,10 +58,11 @@
 #     asked     what does this route pass to HTTPException
 #     mattered  where does the sentence it passes come from
 #
-# 92 rows below are what following those forwards found. They are not new
-# English; they are English this file has been unable to see for as long as
-# it has existed. `tr_refusal` treats them identically to a directly-raised
-# literal: it looks the sentence up, misses, and serves English.
+# The 92 rows this file grew that release were what following those forwards
+# found. They were not new English; they were English this file had been
+# unable to see for as long as it had existed. `tr_refusal` treated them
+# identically to a directly-raised literal: it looked the sentence up, missed,
+# and served English.
 #
 # Found in QRME first and measured here the same day — all three products
 # had it, which is what this estate keeps finding when a guard is written
