@@ -37,6 +37,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   exemption wider than the thing it exempts from. The naming check is what
   reported it.
 
+- **The refusal table's floor was a tenth of the table.** Adding tests to the
+  refusal guard moved the line numbers its floors are recorded at, and the
+  floor audit reported them — which is how the number itself came up for
+  reading. `assert len(i18n._REFUSALS) >= N` carried a literal written when
+  the table was small and never raised since: 21 against 147 here, 9 against
+  335 in QRME, 8 against 84 in PDI.
+
+      asked     is the number satisfied
+      mattered  is the number still near what it measures
+
+  A floor at a thirtieth of what it measures answers the first question every
+  run and would not notice the table being gutted. Registered as a Ratchet in
+  all three, so the comparison is made rather than assumed, and struck from
+  the unregistered-floor backlog.
+
 ### Changed
 
 - **One product, one way of addressing the reader.** German and Spanish both

@@ -206,7 +206,21 @@ def _literal_refusals() -> int:
     return len(_refusals(REPO / "jim")["literal"])
 
 
+def _translated_refusals() -> int:
+    """Rows in the hand-translated refusal table.
+
+    Its assertion carried a literal 21 while the table held 147 — a floor far
+    below what it measures, which answers "is the number satisfied" every run
+    and would not notice the table being gutted. Registered so the comparison
+    happens rather than being assumed.
+    """
+    from jim import i18n
+    return len(i18n._REFUSALS)
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("refusals.translated", 147, _translated_refusals,
+            "rows in the hand-translated refusal table"),
     Ratchet("refusals.literal", 60, _literal_refusals,
             "refusals written as a plain string — the walk every other\n            refusal check stands on"),
     Ratchet("i18n.language_tables", 8, _language_tables,

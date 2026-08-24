@@ -1,5 +1,5 @@
-# status: backlog — 62 rows
-# ceiling: 62
+# status: backlog — 61 rows
+# ceiling: 61
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -72,10 +72,9 @@ test_the_console_speaks_one_language.py:278: len(keys) >= 15
 test_the_desktop_and_the_phone_say_different_things.py:324: len(shared) > 40
 test_the_files_the_release_never_touched.py:273: len(sorted(REPO.glob('native/ios/Sources/**/*.swift'))) >= 24
 test_the_files_the_release_never_touched.py:274: len(sorted(REPO.glob('native/android/**/*.kt'))) >= 6
-test_the_guardian_refuses_in_one_language.py:588: len(handlers) >= 9
-test_the_guardian_refuses_in_one_language.py:689: len(i18n._REFUSALS) >= 21
-test_the_guardian_refuses_in_one_language.py:768: refused.status_code >= 400
-test_the_guardian_refuses_in_one_language.py:794: refused.status_code >= 400
+test_the_guardian_refuses_in_one_language.py:736: len(handlers) >= 9
+test_the_guardian_refuses_in_one_language.py:918: refused.status_code >= 400
+test_the_guardian_refuses_in_one_language.py:944: refused.status_code >= 400
 test_the_key_the_server_never_sends.py:228: len(vocabulary) >= 500
 test_the_keys_the_android_client_reads.py:358: len(reads) >= 40
 test_the_keys_the_android_client_reads.py:359: sum((len(k) for _, k in reads)) >= 155

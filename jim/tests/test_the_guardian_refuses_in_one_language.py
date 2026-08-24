@@ -49,6 +49,8 @@ import pytest
 
 from jim import i18n
 
+from . import ratchets
+
 #: The health-domain error classes. Their messages are refusals a person
 #: reads, and are counted alongside `HTTPException` details for that reason —
 #: the class a sentence is raised through says nothing about who reads it.
@@ -832,7 +834,9 @@ def test_every_translated_refusal_has_every_language():
         "these refusals are missing languages:\n    "
         + "\n    ".join(f"{k[:60]}: {', '.join(v)}"
                         for k, v in sorted(gaps.items())))
-    assert len(i18n._REFUSALS) >= 21
+    # Was a literal 21 against a table of 147 — a floor far below
+    # what it measures. Registered, so the comparison is made, not assumed.
+    assert len(i18n._REFUSALS) >= ratchets.floor("refusals.translated")
 
 
 def test_the_health_domains_are_the_ones_that_got_translated():
