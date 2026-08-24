@@ -1,5 +1,5 @@
-# status: backlog — 92 rows
-# ceiling: 92
+# status: backlog — 89 rows
+# ceiling: 89
 #
 # English refusals — the sentences the Guardian says when it says no.
 # Checked by test_the_guardian_refuses_in_one_language.py, both directions,
@@ -68,18 +68,41 @@
 # had it, which is what this estate keeps finding when a guard is written
 # once and never asked whether its siblings need it too.
 #
+#
+# ## Not refusals: sentences raised while the app is wired
+#
+# The collector derives the exception classes to follow from the handlers
+# that stringify them. `ValueError` is correctly among them — plenty of real
+# refusals are raised as one — and the sweep then took *every* raise of that
+# class in the package, constructors included.
+#
+#     asked     is this sentence raised through a class a route stringifies
+#     mattered  can a person reach the place it is raised
+#
+# These 3 were never owed a translation. Each fires in an `__init__`,
+# from environment variables, while the app is being built: there is no
+# object yet, no request to answer and no reader — if one ever fired the
+# process would not start. They left this backlog without being translated
+# because they were never in it by right.
+#
+#   CloudModelClient needs base_url or a client
+#   PDIClient needs base_url or an injected client
+#   QRMEClient needs base_url or an injected client
+#
+# `_constructor_sentences` applies the exemption and
+# `test_a_wiring_precondition_is_not_a_refusal` checks it in both
+# directions — forward, that each really is raised inside a constructor;
+# backward, that none is *also* raised where a request can reach it. An
+# exemption nothing verifies is a place to hide sentences that are owed.
 'count' must be a positive integer
 'day' must be YYYY-MM-DD
 'fingerprint' must be 8 hex characters
 'op' must be a string
 'problems' must be a non-empty list
 'status' must be an HTTP status code (0 for no answer)
-CloudModelClient needs base_url or a client
 JIM_SITE_ROTA must be a JSON list of shifts
-PDIClient needs base_url or an injected client
 QRME did not recognize that organization with this token
 QRME refused the coordination — the link may be stale; relink with a fresh owner token
-QRMEClient needs base_url or an injected client
 a band must have a width above zero
 a bank link's tokens are private data and only ever live in the vault; this plan has no vault, so no link was made
 a bank statement is private data and only ever lives in the vault; this plan has no vault, so nothing was stored

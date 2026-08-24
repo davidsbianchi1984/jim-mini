@@ -355,6 +355,61 @@ def _domain_sentences(root: Path) -> tuple[set[str], set[str]]:
     return literals, templates
 
 
+def _constructor_sentences(root: Path) -> set[str]:
+    """Sentences raised inside a constructor — refusals to *build*, not to
+    answer.
+
+    `raise ValueError("QRMEClient needs base_url or an injected client")` is
+    not a refusal. Nobody is being told no about anything they did: the
+    object does not exist yet, the raise happens while the app is being
+    wired from environment variables, and if it ever fires the process does
+    not start, so there is no reader and no request to answer.
+
+        asked     is this sentence raised through a class a route stringifies
+        mattered  can a person reach the place it is raised
+
+    The collector could not tell the difference. It derives the classes to
+    follow from the handlers that stringify them, which correctly picks up
+    `ValueError` — plenty of real refusals are raised as one — and then
+    sweeps *every* raise of that class in the package, constructors
+    included. That is how a wiring precondition ended up in a backlog that
+    describes itself as sentences a person reads in a language they did not
+    choose.
+
+    Kept separate rather than deleted, and checked by
+    `test_a_wiring_precondition_is_not_a_refusal`: an exemption nothing
+    verifies is a place to hide sentences that *are* owed a translation.
+   
+    Narrowed to the classes `_stringified_errors` follows, exactly as
+    `_domain_sentences` is. The first cut of this took every `__init__` raise
+    in the package, which exempted two sentences the collector had never
+    picked up in the first place — an exemption wider than the thing it
+    exempts from, hiding sentences from a record they were never in.
+    `test_the_exemption_is_named_where_somebody_will_see_it` is what said so.
+    """
+    classes = _stringified_errors(root)
+    out: set[str] = set()
+    for path in sorted(root.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for fn in ast.walk(tree):
+            if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)) \
+                    or fn.name != "__init__":
+                continue
+            for node in ast.walk(fn):
+                if not isinstance(node, ast.Raise) \
+                        or not isinstance(node.exc, ast.Call) \
+                        or not node.exc.args:
+                    continue
+                name = (getattr(node.exc.func, "id", "")
+                        or getattr(node.exc.func, "attr", ""))
+                if name not in classes:
+                    continue
+                arg = node.exc.args[0]
+                if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                    out.add(arg.value)
+    return out
+
+
 def _details(root: Path) -> tuple[set[str], int]:
     """Every literal refusal sentence in the package, and how many are built
     by interpolation instead.
@@ -446,6 +501,9 @@ def test_every_refusal_is_translated_or_written_down():
     # a directly-raised literal does, and fall through to English the same way.
     literals |= _domain_sentences(PKG)[0]
     literals |= _tabled()
+    # A sentence raised while the app is being wired is not a refusal —
+    # see `_constructor_sentences`, and the test below that checks it.
+    literals -= _constructor_sentences(PKG)
     undecided = sorted(literals - _translated() - _recorded())
     stale = sorted(_recorded() - literals)
     problems = []
@@ -462,6 +520,94 @@ def test_every_refusal_is_translated_or_written_down():
             + "\n    ".join(s[:90] for s in stale[:30]))
     assert not problems, "\n\n".join(problems)
 
+
+
+def test_a_wiring_precondition_is_not_a_refusal():
+    """The exemption, checked in both directions.
+
+    Forward: every sentence `_constructor_sentences` exempts really is raised
+    inside an `__init__`. Backward: none of them is *also* raised somewhere a
+    request can reach, because a sentence with two raise sites is owed a
+    translation for the reachable one no matter what the other looks like.
+
+        asked     is the exemption applied
+        mattered  is it applied only to what earned it
+    """
+    exempt = _constructor_sentences(PKG)
+    assert exempt, "no constructor preconditions found — has the sweep moved?"
+    elsewhere = set()
+    for path in sorted(PKG.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        inits = [f for f in ast.walk(tree)
+                 if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef))
+                 and f.name == "__init__"]
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Raise) \
+                    or not isinstance(node.exc, ast.Call) or not node.exc.args:
+                continue
+            arg = node.exc.args[0]
+            if not (isinstance(arg, ast.Constant)
+                    and isinstance(arg.value, str) and arg.value in exempt):
+                continue
+            if not any(f.lineno <= node.lineno <= (f.end_lineno or f.lineno)
+                       for f in inits):
+                elsewhere.add(f"{path.name}:{node.lineno}  {arg.value[:60]}")
+    assert not elsewhere, (
+        "exempted as a wiring precondition but also raised outside a "
+        "constructor, where a person can reach it:\n    "
+        + "\n    ".join(sorted(elsewhere)))
+
+
+def _named_preconditions() -> set[str]:
+    """The wiring preconditions the ledger names, read back out of it."""
+    out, inside = set(), False
+    for line in SNAPSHOT.read_text(encoding="utf-8").splitlines():
+        if line.startswith("# ## Not refusals"):
+            inside = True
+            continue
+        if inside:
+            if line.startswith("# `_constructor_sentences`"):
+                break
+            if line.startswith("#   ") and not line.startswith("#     "):
+                out.add(line[4:].strip())
+    return out
+
+
+def test_the_exemption_is_named_where_somebody_will_see_it():
+    """The exemption is only as good as its visibility.
+
+    The rule `_constructor_sentences` applies — a raise inside `__init__` is a
+    refusal to *build*, not to answer — is right about every sentence it
+    exempts today, and all of them are client constructors wired from the
+    environment. It is a rule, though, not a proof: a value object that
+    validated user input in its `__init__` would be exempted by it wrongly,
+    and the reader would meet English.
+
+        asked     is the exemption correct
+        mattered  would anybody notice if it stopped being correct
+
+    So the exempted set must match the sentences the ledger names, exactly.
+    A new one cannot appear by writing code — it takes an edit to the record,
+    where a person reviewing the change reads the sentence and decides
+    whether a reader can reach it.
+    """
+    applied, named = _constructor_sentences(PKG), _named_preconditions()
+    unnamed = sorted(applied - named)
+    phantom = sorted(named - applied)
+    problems = []
+    if unnamed:
+        problems.append(
+            f"{len(unnamed)} sentence(s) exempted as a wiring precondition but "
+            f"not named in {SNAPSHOT.name}. If a reader cannot reach it, say so "
+            "there; if they can, it is owed a translation:\n    "
+            + "\n    ".join(unnamed))
+    if phantom:
+        problems.append(
+            f"{len(phantom)} sentence(s) named in {SNAPSHOT.name} as wiring "
+            "preconditions are no longer raised in a constructor — strike "
+            "them, or they are an exemption for nothing:\n    "
+            + "\n    ".join(phantom))
+    assert not problems, "\n\n".join(problems)
 
 TEMPLATES = Path(__file__).resolve().parent / "refusal_templates.txt"
 
