@@ -245,6 +245,17 @@ _INDEX = ("the rest of this console, by name only — if one of these is what "
           "they are after, say so and name it rather than declining: ")
 
 
+#: The endings a single-word cue may wear. Written out rather than stemmed
+#: because a stemmer would need a dependency and would still be guessing:
+#: this is the closed set of things English does to the handful of verbs and
+#: nouns anybody uses to ask for a screen. It exists because a table matched
+#: on the exact word only fires for people who happen to speak the way it was
+#: typed — `follower` missed "who is following me", `medication` missed
+#: "my medications", and each one landed the person in the index instead of
+#: on the screen that was sitting in the navigation bar.
+_ENDINGS = r"(?:e?s|ing|ed|er|ers)?"
+
+
 def _row(d: Door) -> str:
     return f"- {d.what}: {d.place}"
 
@@ -258,8 +269,8 @@ def _hits(d: Door, said: str) -> int:
         # the index instead of the screen. A cue list written in the
         # singular and matched in the singular is a table that only works
         # when people happen to speak the way it was typed.
-        pattern = (r"\b" + re.escape(cue) + r"(?:e?s)?\b") if " " not in cue \
-            else re.escape(cue)
+        pattern = (r"\b" + re.escape(cue) + _ENDINGS + r"\b") \
+            if " " not in cue else re.escape(cue)
         if re.search(pattern, said):
             n += 1
     return n
