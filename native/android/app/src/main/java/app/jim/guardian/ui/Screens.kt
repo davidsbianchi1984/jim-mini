@@ -90,6 +90,7 @@ import app.jim.guardian.DockVocabulary
 import app.jim.guardian.DockState
 import app.jim.guardian.DockFace
 import app.jim.guardian.DockWhere
+import app.jim.guardian.Walking
 import app.jim.guardian.WatchSetup
 import app.jim.guardian.PairInfo
 import app.jim.guardian.DeviceRow
@@ -1888,6 +1889,49 @@ fun CoachScreen(vm: GuardianViewModel) {
             fromSpecialist = null
             vm.call({ ApiClient.coach(vm.uid!!, vm.token!!, area, message) }) {
                 reply = it.getOrNull(); busy = false
+            }
+        }
+        // Take it with you. This is the half of the feature the console
+        // cannot have: a web page put away has its recogniser ended by the
+        // browser and says so, and a phone can keep the conversation running
+        // while somebody is in another app entirely.
+        //
+        //     asked     can the conversation survive a screen change
+        //     mattered  can it survive leaving the application
+        //
+        // A press starts it and a notification says the microphone is open
+        // for as long as it is, with End as its first control. The same
+        // button ends it, because a control that only starts something is
+        // how a person ends up hunting through a notification shade.
+        run {
+            val here = androidx.compose.ui.platform.LocalContext.current
+            TextButton(onClick = {
+                if (Walking.underway) {
+                    Walking.stop(here)
+                } else {
+                    val uid = vm.uid; val token = vm.token
+                    if (uid != null && token != null) {
+                        Walking.start(here, uid, token, vm.language)
+                    }
+                }
+            }) {
+                Text(
+                    if (Walking.underway) L10n.t("walk.end", vm.language)
+                    else L10n.t("walk.take", vm.language),
+                    color = Jim.BrandA, fontSize = 12.sp)
+            }
+            // What it last heard and last said, so somebody coming back to
+            // the app can see where the conversation got to rather than
+            // finding the screen exactly as they left it.
+            if (Walking.underway && (Walking.heard.isNotEmpty()
+                                     || Walking.said.isNotEmpty())) {
+                Text(Walking.said.ifEmpty { Walking.heard },
+                    color = Jim.T2, fontSize = 11.sp)
+            }
+            // And why it stopped, when it stopped for a reason. Blank when
+            // somebody pressed End: they know.
+            if (Walking.trouble.isNotEmpty()) {
+                Text(Walking.trouble, color = Jim.Amber, fontSize = 11.sp)
             }
         }
         reply?.let { g ->

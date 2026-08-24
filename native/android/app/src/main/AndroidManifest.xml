@@ -3,6 +3,17 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- The conversation you took with you, out of the app entirely. A
+         foreground service is the only way a phone lets an app keep a
+         microphone open once it is not on screen, and the notification it is
+         obliged to show is not a tax to be minimised — it is the difference
+         between that feature and an app recording somebody after they left
+         it. POST_NOTIFICATIONS because from Android 13 the notification is
+         itself a permission, and a service whose indicator can be withheld
+         is the thing this is careful about. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -20,5 +31,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Not exported: nothing outside this app may start a microphone
+             belonging to it. `microphone` is the declared type, which from
+             Android 14 the system checks against the permission above and
+             refuses the start without. -->
+        <service
+            android:name=".WalkService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
     </application>
 </manifest>

@@ -43,6 +43,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   backgrounded tab has its recogniser ended by the browser. Walking is inside
   this application.
 
+- **On the phone it leaves the application entirely.** The console's strip
+  stops when the browser puts the page away, and no web page can do better —
+  a backgrounded tab has its recogniser ended for it. An installed app can,
+  and the Android shell now does: the walking conversation runs in a
+  foreground service while somebody is looking something up in another app.
+
+      asked     can the conversation survive a screen change
+      mattered  can it survive leaving the application
+
+  The notification that comes with it is not a platform tax to be minimised.
+  It is the entire difference between *the conversation you took with you* and
+  *an app recording you after you left it*, and the two are the same code with
+  different honesty. So: the service is declared as a microphone service and
+  not exported, the notification cannot be swiped away and its first action
+  ends the conversation, quiet reopens the ear while a refused microphone
+  stops and says which failure it was, and nothing restarts the service by
+  itself — a service the system brings back is a microphone nobody pressed
+  for.
+
+  **This has not been run.** There is no Android toolchain in the environment
+  it was written in. The guard beside it reads the declarations — permissions,
+  service type, foreground start, the notification and its stop — because
+  those are the parts whose absence is a microphone with no indicator. The
+  conversation loop has been reasoned about and not executed, and wants a
+  person with a phone before anybody calls it working.
+
+  iOS and Windows do not have it. The iOS shell has no project file to declare
+  a background audio mode in, and inventing one would be shipping a
+  declaration nothing reads; the Windows shell has no voice loop to keep
+  running in the first place. Both are named here rather than left to be
+  discovered.
+
 - **The coach knows the whole console, not five doors of it.** A field report
   asked it to "plant a quarter-hour lookout" and got a graceful shrug, and the
   answer was five hand-written doors in the prompt. That fixed the five.

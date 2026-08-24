@@ -7916,8 +7916,13 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   // Both of this console's conversations unmount when you change screens,
   // which is right for navigating away and wrong for walking away on
   // purpose. These name the strip that survives it.
+  // Not "Take it with you": `hld.take` already carries that exact English
+  // for the export file, and two keys with one English sentence and two sets
+  // of translations show a reader of that language two different words for
+  // one thing. They are also genuinely different acts — one takes a file,
+  // this one takes a conversation — so the English says which.
   "walk.take": {
-    en: "Take it with you", es: "Llévatelo contigo", fr: "Emmène-le avec toi", de: "Nimm es mit", pt: "Leva-o contigo", it: "Portalo con te", ja: "連れて行く", zh: "带着一起走", hi: "इसे साथ ले जाओ", ar: "خُذه معك",
+    en: "Take the conversation with you", es: "Llévate la conversación", fr: "Emmène la conversation avec toi", de: "Nimm das Gespräch mit", pt: "Leva a conversa contigo", it: "Porta con te la conversazione", ja: "会話を連れて行く", zh: "带着这段对话一起走", hi: "बातचीत को साथ ले जाओ", ar: "خُذ المحادثة معك",
   },
   "walk.end": {
     en: "End", es: "Terminar", fr: "Terminer", de: "Beenden", pt: "Terminar", it: "Termina", ja: "終了", zh: "结束", hi: "समाप्त", ar: "إنهاء",
