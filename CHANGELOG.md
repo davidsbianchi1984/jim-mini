@@ -6,7 +6,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-08-24
+
 ### Fixed
+
+- **A Microsoft dependency pin read as one of this release's own version
+  fields.** The guard that keeps the release checklist honest scans the native
+  build files for lines carrying the version being cut. At 1.6.2 it reported
+  `<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240923002" />`
+  — because `1.6.2` is a *substring* of `1.6.240923002`.
+
+      asked     does this line carry the release version
+      mattered  is it ours, or somebody else's that starts the same way
+
+  Acting on it would have been the worst available fix: adding that pin to
+  `release_fields.txt` makes the next bump rewrite Microsoft's version. The
+  exemption for a third party's number now covers MSBuild's
+  `<PackageReference>` as well as Gradle's `group:artifact:version`, which it
+  already did — Gradle's collided on an exact match once before, when
+  `androidx.credentials` sat at 1.3.0 on the day 1.3.0 was cut. This one
+  collided on a prefix, which is the same trap one character further along.
 
 - **A script was being escaped like a page.** `_js_literal` builds the JSON and
   JavaScript literals this product's landing page drops inside a `<script>`
@@ -10777,7 +10796,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.2...HEAD
+[1.6.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.1...app-v1.6.2
 [1.6.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.0...app-v1.6.1
 [1.6.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.5.0...app-v1.6.0
 [1.5.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.4.1...app-v1.5.0
