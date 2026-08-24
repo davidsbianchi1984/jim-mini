@@ -115,8 +115,18 @@ def test_no_path_out_of_listen_keeps_a_microphone_the_sleeping_tab_owns() -> Non
     body = body[:end]
     handed_back = re.findall(r"^\s*(?:if \(dev\) )?return (.+?);?$",
                              body, flags=re.M)
+    # A stub that does nothing needs no guard, and it is recognised by what
+    # its `stop` does rather than by how the object is spelled. The literal
+    # `"{ stop: () => {} }"` used to stand here, and stopped matching the
+    # day `Listener` grew a second member — the exemption widened to cover
+    # every returned object, silently, because a substring that is absent
+    # excludes nothing.
+    #
+    #     asked     is this the no-op stub, spelled the way I remember
+    #     mattered  does this listener hold a microphone
+    noop = re.compile(r"stop:\s*\(\)\s*=>\s*\{\s*\}")
     listeners = [r for r in handed_back if r not in ("", "null")
-                 and "{ stop: () => {} }" not in r]
+                 and not noop.search(r)]
     assert listeners, "listen hands back no Listener at all — read the shape again"
     for r in listeners:
         assert "hold(" in r, (
@@ -125,12 +135,13 @@ def test_no_path_out_of_listen_keeps_a_microphone_the_sleeping_tab_owns() -> Non
     # And `hold` is the guard, conditionally. The one exception is named
     # here rather than left to be discovered:
     #
-    # `getUserMedia` is not ended by a hidden page. An open capture keeps
-    # recording while the window is minimised and the browser shows its own
-    # recording indicator throughout, so a caller carrying a conversation
-    # out of the page asks for the recording path *by name* and is not
-    # guarded — guarding it would close a microphone the browser had not
-    # closed, which is this defect's mirror image rather than this defect.
+    # `getUserMedia` is not ended by a hidden page on a desktop or on
+    # Android. An open capture keeps recording while the window is minimised
+    # and the browser shows its own recording indicator throughout, so a
+    # caller carrying a conversation out of the page asks for the recording
+    # path *by name* and is not guarded — guarding it would close a
+    # microphone the browser had not closed, which is this defect's mirror
+    # image rather than this defect.
     #
     #     asked     does a hidden page stop hearing
     #     mattered  which of the two ways of hearing was it using
@@ -138,6 +149,12 @@ def test_no_path_out_of_listen_keeps_a_microphone_the_sleeping_tab_owns() -> Non
     # The device recogniser, which IS ended, is refused outright while
     # carrying. So no unguarded path can ever hand back a recogniser — the
     # protection this file was written for is intact, and narrower.
+    #
+    # iOS Safari is the third answer neither question anticipated: it
+    # suspends the whole page, capture included, and tells nobody. Nothing
+    # in `listen` can prevent that and this guard does not pretend to — the
+    # caller is expected to ask `live()` on the way back, which is what
+    # `test_the_strip_finds_out_when_the_capture_did_not_survive` checks.
     assert "const hold = (inner: Listener) => away ? away.hold(inner) : inner;" \
         in body, (
         "`hold` is not the conditional guard, so either every path is "

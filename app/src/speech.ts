@@ -289,7 +289,22 @@ async function sayOnDevice(text: string): Promise<"device"> {
   return "device";
 }
 
-export interface Listener { stop: () => void }
+export interface Listener {
+  stop: () => void;
+  /** Is this listener still actually open?
+   *
+   * `stop` is a thing a caller does; this is a thing a caller asks. The
+   * difference started mattering when a page turned out to be able to lose
+   * its microphone without anybody stopping it — see `carryWhenAway` below
+   * on what iOS does to a suspended tab. A caller that only ever told the
+   * microphone what to do had no way to find out it was already gone, and
+   * went on drawing itself as listening.
+   *
+   *     asked     did anything stop this
+   *     mattered  is it still running
+   */
+  live: () => boolean;
+}
 
 // -- following the device that is already connected ------------------------
 //
@@ -389,6 +404,10 @@ function deviceListener(
   rec.continuous = false;
   let heard = "";
   let failed = false;
+  // Set by `onend` below. The recogniser exposes no state to read, so this
+  // is remembered rather than asked — and it is also the path a hidden page
+  // kills, which is why `carryWhenAway` refuses it outright.
+  let ended = false;
   rec.onresult = (e) => {
     heard = Array.from({ length: e.results.length },
       (_, i) => e.results[i][0].transcript).join(" ").trim();
@@ -408,6 +427,7 @@ function deviceListener(
       : `the device's recogniser could not hear that (${e.error || "unknown"})`);
   };
   rec.onend = () => {
+    ended = true;
     if (failed) return;
     // The same echo rule as the record-and-send path, and this one needs
     // it more: the platform's own recogniser has no analyser behind it,
@@ -422,7 +442,10 @@ function deviceListener(
     else onError("nothing was heard in that");
   };
   rec.start();
-  return { stop: () => rec.stop() };
+  return {
+    stop: () => rec.stop(),
+    live: () => !ended,
+  };
 }
 
 /** What to say when the platform refuses the recogniser outright.
@@ -570,7 +593,13 @@ function awayGuard(onError: (message: string) => void) {
     hold(inner: Listener): Listener {
       held = inner;
       if (putAway()) leave();
-      return { stop: () => { release(); inner.stop(); } };
+      return {
+        stop: () => { release(); inner.stop(); },
+        // Being put away is this guard stopping the microphone, so it is a
+        // way of not being live that the inner handle may not have noticed
+        // yet. Both answers matter and the guard's own is checked first.
+        live: () => !gone && inner.live(),
+      };
     },
   };
 }
@@ -603,6 +632,26 @@ export interface ListenOptions {
    * two-and-a-half-second silence stop measured by the analyser becomes
    * coarser out there. A turn ends a little later than it would on screen.
    * It does not stop ending.
+   *
+   * ## What a phone did to the paragraph above
+   *
+   * "An open capture keeps the tab alive" is a desktop fact and an Android
+   * fact. It is not a fact about iOS Safari, which suspends the whole page
+   * the moment you leave it — capture, recorder, analyser and all — and
+   * says nothing on the way out. A field report walked, swiped up to the
+   * home screen, came back, and found the conversation had stopped without
+   * a word.
+   *
+   *     asked     which of the two ways of hearing was it using
+   *     mattered  does the platform let either of them run out there
+   *
+   * The correction is not a third path; there is no third path a page can
+   * take. It is that a caller cannot assume its microphone is still open
+   * just because nothing told it otherwise, so `Listener` now answers
+   * `live()` and a caller coming back from being away is expected to ask.
+   * This option still means what it said — the recording path is the one
+   * that will run, and it is the one with a chance out there — it just no
+   * longer promises the platform will let it.
    */
   carryWhenAway?: boolean;
 }
@@ -676,7 +725,7 @@ export async function listen(
       // being put away: there is no honest way to carry this, and saying so
       // beats a microphone that quietly hears nothing.
       fail(NO_EARS_MESSAGE);
-      return { stop: () => {} };
+      return { stop: () => {}, live: () => false };
     }
     if (!carry && (!knownHasService || preferDevice)) {
       const dev = deviceListener(text, fail);
@@ -700,7 +749,7 @@ export async function listen(
                ...(mic ? { deviceId: { ideal: mic } } : {}) } });
   } catch {
     fail("no microphone available — check the app's microphone permission");
-    return hold({ stop: () => {} });
+    return hold({ stop: () => {}, live: () => false });
   }
   const chunks: BlobPart[] = [];
   const rec = new MediaRecorder(stream);
@@ -824,6 +873,10 @@ export async function listen(
     }
   };
   rec.start();
-  return hold(
-    { stop: () => { if (rec.state !== "inactive") rec.stop(); } });
+  return hold({
+    stop: () => { if (rec.state !== "inactive") rec.stop(); },
+    // Read off the recorder rather than remembered, because the whole
+    // point of asking is the case where something else stopped it.
+    live: () => rec.state === "recording",
+  });
 }

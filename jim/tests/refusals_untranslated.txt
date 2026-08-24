@@ -1,4 +1,4 @@
-# status: retired — 0 rows
+# status: backlog — 0 rows
 # ceiling: 0
 #
 # English refusals — the sentences the Guardian says when it says no.

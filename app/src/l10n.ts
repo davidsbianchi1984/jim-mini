@@ -7944,6 +7944,10 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   // showing its own recording indicator the whole time. Said plainly,
   // because somebody who minimised the window on purpose still deserves to
   // know what is running.
+  //
+  // This is the state when the capture really did survive. iOS Safari
+  // suspends the page instead, so an iPhone gets the sentence below rather
+  // than this one — which is why both exist.
   "walk.aloft": {
     en: "still listening while you're away — the browser shows it is recording", es: "sigue escuchando mientras no estás — el navegador indica que está grabando", fr: "écoute toujours pendant ton absence — le navigateur indique qu'il enregistre", de: "hört weiter zu, während du weg bist — der Browser zeigt an, dass er aufnimmt", pt: "continua a ouvir enquanto estás fora — o navegador mostra que está a gravar", it: "continua ad ascoltare mentre non ci sei — il browser segnala che sta registrando", ja: "離れている間も聞いています — ブラウザーが録音中と表示しています", zh: "你离开时仍在聆听 — 浏览器会显示正在录音", hi: "तुम्हारे दूर रहते हुए भी सुन रहा है — ब्राउज़र दिखा रहा है कि रिकॉर्ड हो रहा है", ar: "ما زال يستمع أثناء غيابك — يُظهر المتصفّح أنه يسجّل",
   },
@@ -7952,6 +7956,14 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   // somebody picked, and on the strip there is no screen to notice that on.
   "walk.offline": {
     en: "answered from what's stored here", es: "respondido con lo que hay guardado aquí", fr: "répondu à partir de ce qui est stocké ici", de: "beantwortet aus dem, was hier gespeichert ist", pt: "respondido a partir do que está guardado aqui", it: "risposto con ciò che è conservato qui", ja: "ここに保存されている知識から回答", zh: "由本机存有的知识作答", hi: "यहाँ संग्रहीत जानकारी से उत्तर", ar: "أُجيب من المحفوظ هنا",
+  },
+  // And when it did not survive. The strip asks its listener on the way
+  // back whether the microphone is still open, and this is what it says
+  // when the answer is no — an iPhone returning from the home screen, most
+  // often. Naming the browser rather than the app, because the app did not
+  // choose this and the person can do nothing about it from inside here.
+  "walk.away.stopped": {
+    en: "the browser stopped listening while you were away", es: "el navegador dejó de escuchar mientras no estabas", fr: "le navigateur a cessé d'écouter pendant ton absence", de: "der Browser hat aufgehört zuzuhören, während du weg warst", pt: "o navegador deixou de ouvir enquanto estavas fora", it: "il browser ha smesso di ascoltare mentre non c'eri", ja: "離れている間にブラウザーが聞くのをやめました", zh: "你离开时，浏览器停止了聆听", hi: "तुम्हारे दूर रहते हुए ब्राउज़र ने सुनना बंद कर दिया", ar: "توقّف المتصفّح عن الاستماع أثناء غيابك",
   },
   "walk.lost": {
     en: "that did not reach it", es: "eso no llegó", fr: "cela n'est pas arrivé", de: "das kam nicht an", pt: "isso não chegou", it: "non è arrivato", ja: "届きませんでした", zh: "没有送达", hi: "वह नहीं पहुँचा", ar: "لم يصل ذلك",

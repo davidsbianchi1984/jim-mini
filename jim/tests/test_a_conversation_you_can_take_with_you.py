@@ -43,6 +43,25 @@ the original terms is the honesty: silence and deafness still must not look
 identical, which is now served by saying *still listening while you are
 away* rather than by stopping.
 
+## The reversal's own exception
+
+Every sentence above about an open capture surviving is a desktop sentence
+and an Android sentence. iOS Safari suspends the whole page the moment you
+leave it — capture, recorder and analyser — and says nothing on the way out.
+A field report walked on an iPhone, swiped up to the home screen, came back
+to Safari, and found the conversation had stopped without a word.
+
+    asked     does the capture survive being put away
+    mattered  does the strip find out when it did not
+
+Neither draft could have prevented that and neither is asked to; a page
+cannot argue with the platform holding it. What the strip owes is the
+finding out, so `Listener` answers `live()` — read off the recorder rather
+than remembered — and the strip asks on the way back before it goes on
+drawing itself as listening. Going away still must not close anything.
+Coming back to a shut microphone must not be silent about it. Those are two
+directions of the same term, and this file had a guard for one of them.
+
 And one term that is this console's rather than the estate's: the turn is
 `speech.ts`'s. That module decides between the service and the device
 recogniser, asks the connected earbud for its microphone by name, ends a turn
@@ -157,39 +176,106 @@ def test_a_real_failure_reads_as_one():
     assert "walk-trouble" in STRIP, "nothing renders the failure"
 
 
-def test_being_put_away_is_noted_and_not_acted_on():
-    """The reversal, held in place.
+def _put_away_handlers() -> tuple[str, str]:
+    """The two arguments of the strip's `whenPutAway(going, coming)` call.
 
-    The strip must still *know* it is away — somebody who minimised the
-    window deserves to be told the microphone is open. It must not close
-    anything, because the path it runs on did not close; a component that
-    invented that failure would be the mirror image of the one this file was
-    originally written about.
+    Split at the top level, honoring parens and braces, because the whole
+    question below is which of the two handlers does a thing — and a regex
+    that stops at the first `)` or the first `,` puts half of one handler in
+    the other.
     """
     assert "whenPutAway(" in STRIP, "the strip never asks whether it is away"
-    # The whole call, paren-matched, rather than a regex that stops at the
-    # first `)` — a `close()` inside a braced handler would sail past that.
-    i = STRIP.index("whenPutAway(")
-    depth, j = 0, i
+    i = STRIP.index("whenPutAway(") + len("whenPutAway(")
+    depth, j, comma = 1, i, -1
     while j < len(STRIP):
-        if STRIP[j] == "(":
+        c = STRIP[j]
+        if c in "({[":
             depth += 1
-        elif STRIP[j] == ")":
+        elif c in ")}]":
             depth -= 1
             if depth == 0:
                 break
+        elif c == "," and depth == 1 and comma < 0:
+            comma = j
         j += 1
-    call = STRIP[i:j + 1]
-    assert "close()" not in call, (
-        "being put away closes the ear — the recording path survives it, so "
-        "this is the component inventing a failure the browser did not have")
-    assert "hear(" not in call, (
+    assert depth == 0, "the whenPutAway call does not close — read the shape"
+    assert comma > 0, (
+        "the strip passes whenPutAway one handler, so it is told the page "
+        "went away and never told it came back — the check on the way back "
+        "is the only place a suspended capture can be noticed")
+    return STRIP[i:comma], STRIP[comma + 1:j]
+
+
+def test_going_away_is_noted_and_not_acted_on():
+    """The reversal, held in place — for the direction it is still true in.
+
+    The strip must still *know* it is away, because somebody who minimised
+    the window deserves to be told the microphone is open. On the way out it
+    must not close anything: on a desktop and on Android the capture did not
+    close, and a component that invented that failure would be the mirror
+    image of the one this file was originally written about.
+
+        asked     did the page go away
+        mattered  did anything actually stop
+    """
+    going, _ = _put_away_handlers()
+    assert "close()" not in going, (
+        "going away closes the ear — the recording path survives it on every "
+        "platform but one, so this is the component inventing a failure the "
+        "browser did not have")
+    assert "hear(" not in going, (
         "the put-away handling opens the ear itself — nothing may start a "
         "microphone but a press")
     assert 'tr("walk.aloft"' in STRIP, (
         "the strip has no way to say it is still listening while the page is "
         "away, which leaves somebody who minimised the window with no idea "
         "the microphone is open")
+
+
+def test_the_strip_finds_out_when_the_capture_did_not_survive():
+    """The platform the paragraph above does not describe.
+
+    A field report, from an iPhone: walk, swipe up to the home screen, come
+    back to Safari, and the conversation had stopped without a word. iOS
+    Safari suspends the whole page the moment you leave it, capture and all.
+    Every claim this file makes about an open capture surviving is a desktop
+    claim and an Android claim, and on that phone all of them are false.
+
+        asked     does the capture survive being put away
+        mattered  does the strip find out when it did not
+
+    Nothing on a page can prevent the suspension, so the strip is not asked
+    to. It is asked to check on the way back, and to say so — stopping
+    without a word is the one failure this whole component exists against,
+    and a platform doing the stopping is not an excuse for going on drawing
+    a microphone that is shut.
+
+    The check is `live()`, which reads the recorder rather than remembering
+    what the strip last did to it: a flag the strip set itself would say
+    exactly what the strip already believed, which is the belief in
+    question.
+    """
+    _, coming = _put_away_handlers()
+    assert "live()" in coming, (
+        "coming back does not ask the listener whether it is still open, so "
+        "an iPhone returning from the home screen is drawn as listening "
+        "while the page's capture is dead")
+    assert "close()" in coming, (
+        "the strip notices the ear is shut and leaves it half-open — the "
+        "round counter still standing means a turn in flight can answer "
+        "into a conversation that has stopped")
+    assert 'tr("walk.away.stopped"' in coming, (
+        "the strip finds out the microphone stopped and says nothing, which "
+        "is the silent stop this was reported as")
+    assert "hear(" not in coming, (
+        "coming back re-opens the microphone — a microphone that restarts "
+        "itself because a tab regained focus is one nobody pressed for")
+    # And the sentence exists in all nine, not just in English. A refusal
+    # somebody meets on their own phone is the last place to serve English.
+    keys = (APP / "l10n.ts").read_text(encoding="utf-8")
+    assert '"walk.away.stopped"' in keys, (
+        "the strip says a key that is not in the table, so a person reading "
+        "in any language is shown the key's own name")
 
 
 def test_it_asks_for_the_path_that_survives_by_name():

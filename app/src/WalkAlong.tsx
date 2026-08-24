@@ -73,12 +73,44 @@ export function WalkAlong() {
   useEffect(() => onWalk(setWho), []);
 
   // The page going away is noted and not acted on. The recording path
-  // survives it, so closing the ear here would be this component inventing
-  // a failure the browser did not have — and coming back does not reopen
-  // anything either, because nothing was closed.
+  // survives it on a desktop and on Android, so closing the ear here would
+  // be this component inventing a failure the browser did not have — and
+  // coming back does not reopen anything either, because nothing was
+  // closed.
+  //
+  // ## And what a phone did to that
+  //
+  // A field report, from an iPhone: walk, swipe up to the home screen, come
+  // back to Safari, and the conversation had stopped without a word. iOS
+  // Safari suspends the whole page the moment you leave it, capture and
+  // all — the survival above is a desktop fact and an Android fact, and on
+  // iOS it is simply false. Nothing here could have known that in advance
+  // and it does not try to; what it must do is notice on the way back.
+  //
+  //     asked     did the capture survive being put away
+  //     mattered  does the strip find out when it did not
+  //
+  // So returning asks the listener whether it is really still open, and
+  // says it stopped when it is not. Stopping without a word is the failure
+  // this whole component is written against, and a platform doing the
+  // stopping is no excuse for going on drawing a microphone that is shut.
+  // The ear is not reopened: a microphone that restarts itself because a
+  // tab regained focus is one nobody pressed for.
   useEffect(() => whenPutAway(
     () => setAsleep(true),
-    () => setAsleep(false)), []);
+    () => {
+      setAsleep(false);
+      // After the browser has finished waking the page, not during: on
+      // iOS the recorder's own state settles as the tab resumes, and
+      // reading it in the same tick as the visibility event catches it
+      // mid-answer.
+      window.setTimeout(() => {
+        if (!walking() || !rec.current) return;
+        if (rec.current.live()) return;
+        close();
+        setTrouble(tr("walk.away.stopped", lang));
+      }, 0);
+    }), []);
 
   useEffect(() => {
     if (!who) { close(); return; }
