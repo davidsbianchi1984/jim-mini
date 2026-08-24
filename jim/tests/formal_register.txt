@@ -1,0 +1,12 @@
+# status: ratchet — formal rows still to convert
+#
+# The register is informal: du / tú. Each row is a table and how many of its
+# strings still address the reader formally. The number never goes up.
+#
+# Spanish is finished (23 rows, not the 327 a `su`/`sus` count reported —
+# see the guard's docstring). What remains is German.
+#
+app/src/l10n.ts 152
+native/android/app/src/main/java/app/jim/guardian/L10n.kt 87
+native/ios/Sources/L10n.swift 87
+native/windows/L10n.cs 92
