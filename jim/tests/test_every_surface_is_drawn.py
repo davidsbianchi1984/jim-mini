@@ -69,6 +69,20 @@ NOT_A_SURFACE = {
     # place anybody navigates to — so it has no screen number and never will.
     # What the button opens is Engaged, which is drawn and numbered.
     "JimMiniOS",
+    # The walk-along strip: a bar pinned to the bottom of the viewport while
+    # a conversation is being carried, over every screen and never somewhere
+    # anybody navigates to. Chrome by the same reasoning as the version
+    # guard above, and — like the task window — not `undrawn`, which is for
+    # a surface that ought to have a drawing and has not got one yet.
+    #
+    # What makes it unlike the other chrome is that it holds a live
+    # microphone, and that is exactly the thing a drawing would not have
+    # held it to. The terms are in
+    # `test_a_conversation_you_can_take_with_you.py` instead: it is only
+    # ever started by a press, it says which of listening, answering and
+    # stopped it is, ending it is its first control, and being put away
+    # closes it and says so.
+    "WalkAlong",
 }
 
 

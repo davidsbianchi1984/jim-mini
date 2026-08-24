@@ -6,6 +6,43 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A conversation you can take with you.** Both of this console's
+  conversations — the front door and the coach — unmount when you change
+  screens, and the voice went with them. All five voice screens gained an
+  unmount teardown for exactly that reason: navigating away mid-reply used to
+  leave a headless loop, the guardian talking on under a screen that no longer
+  exists. That is right for navigating away and wrong for walking away on
+  purpose — the same event to React, opposite events to the person: one means
+  they left the conversation, the other means they took it.
+
+      asked     did the screen unmount
+      mattered  did the person mean to end the conversation
+
+  A walking figure beside Speak, and beside the coach's Ask, hands the
+  conversation to a strip mounted above the tab switch, and it keeps listening
+  and answering while you move about the console. It is the only ear here that
+  outlives its screen, and it earns that on terms a guard holds it to: nothing
+  starts it but a press, it says which of listening, answering and stopped it
+  is, ending it is the first control on the strip, a real failure reads as one
+  rather than as quiet, and when the browser puts the page away and ends the
+  recogniser the strip says *that* rather than going on claiming to hear. The
+  last term is the one `away.ts` was written about — silence and deafness look
+  identical on screen and are opposite facts.
+
+  The turn is `speech.ts`'s, not a second copy of one: the strip inherits the
+  service-or-device choice, the connected earbud asked for by name, the
+  two-and-a-half-second silence stop, the refusal to transcribe a recording no
+  voice was heard in, and the same idle window Talk and Coach already share. A
+  walk started from the coach keeps the area it was asked in, so leaving the
+  screen does not quietly turn a conversation about mental health into a
+  general one.
+
+  It does not survive the page being put away, and no web page can: a
+  backgrounded tab has its recogniser ended by the browser. Walking is inside
+  this application.
+
 ## [1.7.0] - 2026-08-24
 
 ### Fixed

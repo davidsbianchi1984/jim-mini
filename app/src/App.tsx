@@ -7,6 +7,7 @@ import { Footsteps } from "./Footsteps";
 import { VersionGuard } from "./VersionGuard";
 import { GuardianLights } from "./GuardianLights";
 import { Underway } from "./Underway";
+import { WalkAlong } from "./WalkAlong";
 import { Help } from "./Help";
 import { JimMiniOS } from "./JimMiniOS";
 import { Studio } from "./screens/Studio";
@@ -239,6 +240,11 @@ export function App() {
           panel answers whether anything is wrong, this one what is being
           done, and folding the two together would blur both. */}
       <Underway />
+      {/* Shell furniture for the sharpest version of the same reason: this
+          one *has* to outlive the screen it started on, because the whole
+          point of it is that the person changed screens. Inside `<main>` it
+          would unmount with the conversation it was carrying. */}
+      <WalkAlong />
     </div>
   );
 }

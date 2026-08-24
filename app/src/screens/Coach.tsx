@@ -6,6 +6,7 @@ import { fill, t as tr, visitorLang } from "../l10n";
 import { CONVERSATION_IDLE_MS, hush, hushAndReport, heardNothing, listen, primeVoice,
          say, type Listener } from "../speech";
 import { useSession } from "../store";
+import { startWalking } from "../walk";
 
 const AREAS: import("../api").GoalArea[] =
   ["mental_health", "health_fitness", "career", "relationships"];
@@ -337,6 +338,34 @@ export function Coach() {
               {speaking ? tr("cch.stop", lang) : tr("cch.readaloud", lang)}
             </button>
           )}
+          {/* Take the conversation with you. The area travels with it: this
+              screen is the one that offers the picker, so a walk started
+              from *mental health* keeps asking about mental health rather
+              than quietly reverting to the front door's `general`. The
+              strip never learns what an area is — the screen closes over
+              the one it had and hands over how to take a turn.
+
+              The conversation here ends first: two ears on one microphone
+              is the defect turn numbers already fixed once inside a single
+              screen, and handing the walk a listening screen would rebuild
+              it across two components. */}
+          <button className="walk-take" title={tr("walk.take", lang)}
+                  aria-label={tr("walk.take", lang)}
+                  onClick={() => {
+                    exitTalk();
+                    const u = session.userId || "";
+                    const t = session.userToken || "";
+                    const a = area;
+                    startWalking({
+                      shownName: tr("nav.coach", lang),
+                      lang,
+                      take: async (message) => {
+                        const r = await api.coach(
+                          u, { area: a, message }, t);
+                        return r?.content || "";
+                      },
+                    });
+                  }}>🚶</button>
         </div>
         {error && <div className="error">⚠ {error}</div>}
       </div>

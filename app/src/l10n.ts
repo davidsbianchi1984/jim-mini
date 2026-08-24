@@ -7912,6 +7912,34 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "उन्हें चलाने के लिए फ़ोन खोलें।",
     ar: "افتح الهاتف لتوجيهها.",
   },
+  // -- the conversation you took with you ----------------------------------
+  // Both of this console's conversations unmount when you change screens,
+  // which is right for navigating away and wrong for walking away on
+  // purpose. These name the strip that survives it.
+  "walk.take": {
+    en: "Take it with you", es: "Llévatelo contigo", fr: "Emmène-le avec toi", de: "Nimm es mit", pt: "Leva-o contigo", it: "Portalo con te", ja: "連れて行く", zh: "带着一起走", hi: "इसे साथ ले जाओ", ar: "خُذه معك",
+  },
+  "walk.end": {
+    en: "End", es: "Terminar", fr: "Terminer", de: "Beenden", pt: "Terminar", it: "Termina", ja: "終了", zh: "结束", hi: "समाप्त", ar: "إنهاء",
+  },
+  "walk.again": {
+    en: "Listen again", es: "Escuchar otra vez", fr: "Écouter à nouveau", de: "Wieder zuhören", pt: "Ouvir de novo", it: "Ascolta di nuovo", ja: "もう一度聞く", zh: "再次聆听", hi: "फिर से सुनो", ar: "استمع مرّة أخرى",
+  },
+  "walk.listening": {
+    en: "listening", es: "escuchando", fr: "à l'écoute", de: "hört zu", pt: "a ouvir", it: "in ascolto", ja: "聞いています", zh: "正在聆听", hi: "सुन रहा है", ar: "يستمع",
+  },
+  "walk.speaking": {
+    en: "answering", es: "respondiendo", fr: "répond", de: "antwortet", pt: "a responder", it: "sta rispondendo", ja: "応答しています", zh: "正在回答", hi: "जवाब दे रहा है", ar: "يجيب",
+  },
+  "walk.quiet": {
+    en: "not listening", es: "sin escuchar", fr: "n'écoute pas", de: "hört nicht zu", pt: "sem ouvir", it: "non in ascolto", ja: "聞いていません", zh: "未在聆听", hi: "नहीं सुन रहा", ar: "لا يستمع",
+  },
+  "walk.asleep": {
+    en: "stopped — this tab was put away", es: "detenido: esta pestaña quedó en segundo plano", fr: "arrêté — cet onglet est passé en arrière-plan", de: "gestoppt — dieser Tab wurde weggelegt", pt: "parado — este separador ficou em segundo plano", it: "fermo — questa scheda è passata in secondo piano", ja: "停止しました — このタブが背面に回りました", zh: "已停止 — 此标签页被切到后台", hi: "रुक गया — यह टैब पीछे चला गया", ar: "توقّف — أُبعدت هذه اللسان",
+  },
+  "walk.lost": {
+    en: "that did not reach it", es: "eso no llegó", fr: "cela n'est pas arrivé", de: "das kam nicht an", pt: "isso não chegou", it: "non è arrivato", ja: "届きませんでした", zh: "没有送达", hi: "वह नहीं पहुँचा", ar: "لم يصل ذلك",
+  },
 };
 
 export function visitorLang(): Lang {

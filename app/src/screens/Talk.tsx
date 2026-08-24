@@ -4,6 +4,7 @@ import { t as tr, visitorLang, word } from "../l10n";
 import { CONVERSATION_IDLE_MS, hush, hushAndReport, heardNothing, listen, primeVoice,
          say, type Listener } from "../speech";
 import { useSession } from "../store";
+import { startWalking } from "../walk";
 
 /**
  * Talking to JIM, and reaching everything else from the same place.
@@ -297,6 +298,31 @@ export function Talk({ go }: {
                   onClick={toggleMic}>🎤</button>
           <button className="talk-speak" disabled={busy || !said.trim()}
                   onClick={() => ask()}>{tr("talk.send", lang)}</button>
+          {/* Take the conversation with you. This screen's turn is the
+              coach with `area: "general"` — the front door does not make
+              anybody pick a category — and the strip never has to know
+              that: the screen hands over how to take a turn and stays the
+              only thing that understands its own wire.
+
+              The conversation here ends first, deliberately. Two ears on
+              one microphone is the defect this console already fixed once
+              with turn numbers, and handing the walk a screen that is
+              still listening would rebuild it across two components. */}
+          <button className="talk-walk" title={tr("walk.take", lang)}
+                  aria-label={tr("walk.take", lang)}
+                  onClick={() => {
+                    exitTalk();
+                    const u = uid || "", t = token || "";
+                    startWalking({
+                      shownName: tr("nav.engaged", lang),
+                      lang,
+                      take: async (message) => {
+                        const r = await api.coach(
+                          u, { area: "general", message }, t);
+                        return r?.content || "";
+                      },
+                    });
+                  }}>🚶</button>
         </div>
       </div>
     </div>
