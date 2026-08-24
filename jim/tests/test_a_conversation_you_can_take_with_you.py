@@ -242,3 +242,63 @@ def test_both_of_the_consoles_conversations_offer_it():
         assert 'tr("walk.take"' in src, (
             f"{name}'s walk control is unlabelled or labelled in one "
             "language")
+
+
+# ---------------------------------------------------------------------------
+# Who answered, when the deployment has no model.
+#
+# A coach turn already falls back: with no model key, `jim/pipeline.py` answers
+# from the curated pack and every deposit a paid turn left. That has been true
+# for releases, and nothing on the walking strip ever said so — text written by
+# the offline stack read exactly like text written by the model somebody chose.
+#
+#     asked     did the turn come back
+#     mattered  who wrote it
+#
+# `generated_by` is who *actually* answered rather than who was picked, and
+# that distinction is the reason the field exists at all: a silent degrade to
+# the stub under a screen naming a real model is how canned text gets demoed as
+# conversation. On the walk it matters more than anywhere, because the person
+# is on another screen — or another application — and has nothing else to
+# notice it with.
+
+
+def test_the_turn_carries_who_answered_it():
+    """`take` returns a shape rather than a string, so the answer can say
+    where it came from."""
+    store = (APP / "walk.ts").read_text(encoding="utf-8")
+    assert "export type Said" in store, (
+        "a turn is still a bare string, so nothing can say who wrote it")
+    assert "offline?: boolean" in store
+
+
+def test_the_strip_says_when_the_store_answered():
+    assert 'tr("walk.offline"' in STRIP, (
+        "the strip never says an answer came from stored knowledge, so a "
+        "fallback reads as the model somebody picked")
+    assert "setOffline(" in STRIP, "nothing on the strip reads the flag"
+    # From the answer, not invented. A strip that decided this itself would
+    # be guessing about somebody else's endpoint.
+    assert re.search(r"setOffline\(Boolean\(\s*answer\.offline\s*\)\)", STRIP), (
+        "the strip sets the flag from something other than what the screen "
+        "handed it")
+
+
+def test_the_rule_is_written_once():
+    """Two copies of *who answered* is how the two screens drift, and the
+    walk is exactly where a person is least able to notice a drift."""
+    store = (APP / "walk.ts").read_text(encoding="utf-8")
+    assert "export function answeredOffline" in store, (
+        "the offline test is not shared, so each caller has its own")
+    for name, src in _surfaces().items():
+        # Scoped to the walk's own turn, not the whole screen. Coach.tsx
+        # renders provenance on its reply card and reads `generated_by`
+        # there legitimately — a guard that banned the string outright
+        # would be forbidding the screen from showing what it already
+        # shows, which is how a guard gets loosened instead of corrected.
+        call = _braced(src, src.index("startWalking({") + len("startWalking("))
+        assert "answeredOffline(" in call, (
+            f"{name}'s walk works out for itself whether the store "
+            "answered, instead of asking the one function that knows")
+        assert '"stub"' not in call, (
+            f"{name}'s walk carries its own copy of the rule")

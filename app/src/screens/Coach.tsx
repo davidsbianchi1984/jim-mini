@@ -6,7 +6,7 @@ import { fill, t as tr, visitorLang } from "../l10n";
 import { CONVERSATION_IDLE_MS, hush, hushAndReport, heardNothing, listen, primeVoice,
          say, type Listener } from "../speech";
 import { useSession } from "../store";
-import { startWalking } from "../walk";
+import { answeredOffline, startWalking } from "../walk";
 
 const AREAS: import("../api").GoalArea[] =
   ["mental_health", "health_fitness", "career", "relationships"];
@@ -362,7 +362,10 @@ export function Coach() {
                       take: async (message) => {
                         const r = await api.coach(
                           u, { area: a, message }, t);
-                        return r?.content || "";
+                        // See Talk.tsx: an answer from the offline stack is
+                        // an answer, and it is not the model they picked.
+                        return { text: r?.content || "",
+                                 offline: answeredOffline(r) };
                       },
                     });
                   }}>🚶</button>

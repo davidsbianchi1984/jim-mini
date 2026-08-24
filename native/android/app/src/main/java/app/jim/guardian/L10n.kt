@@ -989,6 +989,21 @@ object L10n {
             "pt" to "isso não chegou", "it" to "non è arrivato",
             "ja" to "届きませんでした", "zh" to "没有送达",
             "hi" to "वह नहीं पहुँचा", "ar" to "لم يصل ذلك"),
+        // An answer from the offline stack is an answer — a deployment with
+        // no model key still coaches, from stored knowledge — but it is not
+        // the model somebody picked. Out here the notification is the only
+        // surface they have, so it is where this has to be said.
+        "walk.offline" to mapOf(
+            "en" to "Answered from what's stored here.",
+            "es" to "Respondido con lo que hay guardado aquí.",
+            "fr" to "Répondu à partir de ce qui est stocké ici.",
+            "de" to "Beantwortet aus dem, was hier gespeichert ist.",
+            "pt" to "Respondido a partir do que está guardado aqui.",
+            "it" to "Risposto con ciò che è conservato qui.",
+            "ja" to "ここに保存されている知識から回答しました。",
+            "zh" to "由本机存有的知识作答。",
+            "hi" to "यहाँ संग्रहीत जानकारी से उत्तर दिया गया।",
+            "ar" to "أُجيب من المحفوظ هنا."),
         "walk.note.channel" to mapOf(
             "en" to "Walking conversations", "es" to "Conversaciones en marcha",
             "fr" to "Conversations en déplacement",

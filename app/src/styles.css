@@ -823,3 +823,8 @@ body.theme-paper select { background: #fff; color: var(--txt); }
 .talk-walk, .walk-take { flex: 0 0 auto; background: rgba(255,255,255,0.06);
   color: var(--txt); border: 1px solid var(--line); border-radius: 50%;
   width: 34px; height: 34px; font-size: 16px; line-height: 1; padding: 0; }
+
+/* Who answered, when it was not the model. Dim rather than alarming: an
+   answer from stored knowledge is an answer, and styling it as a warning
+   would teach people to distrust a working deployment. */
+.walk-offline { white-space: nowrap; opacity: 0.75; font-style: italic; }

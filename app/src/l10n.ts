@@ -7942,6 +7942,12 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "walk.asleep": {
     en: "stopped — this tab was put away", es: "detenido: esta pestaña quedó en segundo plano", fr: "arrêté — cet onglet est passé en arrière-plan", de: "gestoppt — dieser Tab wurde weggelegt", pt: "parado — este separador ficou em segundo plano", it: "fermo — questa scheda è passata in secondo piano", ja: "停止しました — このタブが背面に回りました", zh: "已停止 — 此标签页被切到后台", hi: "रुक गया — यह टैब पीछे चला गया", ar: "توقّف — أُبعدت هذه اللسان",
   },
+  // An answer from the offline stack is an answer — a deployment with no
+  // model key still coaches, from stored knowledge — but it is not the model
+  // somebody picked, and on the strip there is no screen to notice that on.
+  "walk.offline": {
+    en: "answered from what's stored here", es: "respondido con lo que hay guardado aquí", fr: "répondu à partir de ce qui est stocké ici", de: "beantwortet aus dem, was hier gespeichert ist", pt: "respondido a partir do que está guardado aqui", it: "risposto con ciò che è conservato qui", ja: "ここに保存されている知識から回答", zh: "由本机存有的知识作答", hi: "यहाँ संग्रहीत जानकारी से उत्तर", ar: "أُجيب من المحفوظ هنا",
+  },
   "walk.lost": {
     en: "that did not reach it", es: "eso no llegó", fr: "cela n'est pas arrivé", de: "das kam nicht an", pt: "isso não chegou", it: "non è arrivato", ja: "届きませんでした", zh: "没有送达", hi: "वह नहीं पहुँचा", ar: "لم يصل ذلك",
   },

@@ -46,6 +46,18 @@ import java.util.Locale
  * conversation you took with you" and "an app recording you after you left
  * it", and the two are the same code with different honesty.
  *
+ * ## The area travels
+ *
+ * The coach card is the one place that offers the area picker, and a walk
+ * started from *mental health* that quietly reverted to the front door's
+ * `general` would be a different conversation wearing the same name. The
+ * console answers this by closing over the area the screen had; a Service
+ * cannot be handed a closure across a start intent, so the area rides as an
+ * extra and the service asks with it.
+ *
+ *     asked     can the conversation be carried
+ *     mattered  is it the same conversation afterwards
+ *
  * ## What this is not
  *
  * It is not always-on listening. Nothing here starts without a press, the
@@ -84,10 +96,19 @@ object Walking {
     var trouble by mutableStateOf("")
         internal set
 
-    fun start(context: Context, uid: String, token: String, lang: String) {
+    /** True when the last turn was answered by the offline stack rather than
+     *  by a model. Not a failure — a deployment with no model key still
+     *  coaches, from stored knowledge — but not the model somebody picked
+     *  either, and out here there is no screen to notice it on. */
+    var offline by mutableStateOf(false)
+        internal set
+
+    fun start(context: Context, uid: String, token: String, area: String,
+              lang: String) {
         val intent = Intent(context, WalkService::class.java)
             .putExtra(WalkService.EXTRA_UID, uid)
             .putExtra(WalkService.EXTRA_TOKEN, token)
+            .putExtra(WalkService.EXTRA_AREA, area)
             .putExtra(WalkService.EXTRA_LANG, lang)
         // `startForegroundService` rather than `startService`: the service
         // has one window to call `startForeground` and the system kills it if
@@ -112,6 +133,12 @@ class WalkService : Service() {
     companion object {
         const val EXTRA_UID = "uid"
         const val EXTRA_TOKEN = "token"
+        /** The coaching area the walk was started in. `general` is the front
+         *  door's own area — making somebody pick a category before they can
+         *  speak is the menu problem the front door exists to answer — and
+         *  it is a fallback here, never a silent replacement for a picked
+         *  one. */
+        const val EXTRA_AREA = "area"
         const val EXTRA_LANG = "lang"
         const val ACTION_STOP = "app.jim.guardian.WALK_STOP"
         private const val CHANNEL = "walk"
@@ -124,6 +151,7 @@ class WalkService : Service() {
     private var speaker: TextToSpeech? = null
     private var uid: String = ""
     private var token: String = ""
+    private var area: String = "general"
     private var lang: String = "en"
     /** Every opening of the ear carries a number, and a late callback from a
      *  superseded one is ignored. The console learned this the hard way: one
@@ -141,6 +169,7 @@ class WalkService : Service() {
         }
         uid = intent?.getStringExtra(EXTRA_UID).orEmpty()
         token = intent?.getStringExtra(EXTRA_TOKEN).orEmpty()
+        area = intent?.getStringExtra(EXTRA_AREA)?.ifBlank { null } ?: "general"
         lang = intent?.getStringExtra(EXTRA_LANG) ?: "en"
         if (uid.isEmpty() || token.isEmpty()) {
             stopSelf()
@@ -185,7 +214,11 @@ class WalkService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val note: Notification = Notification.Builder(this, CHANNEL)
             .setContentTitle(L10n.t("walk.note.title", lang))
-            .setContentText(L10n.t("walk.note.body", lang))
+            .setContentText(
+                if (Walking.offline)
+                    L10n.t("walk.note.body", lang) + " "
+                        + L10n.t("walk.offline", lang)
+                else L10n.t("walk.note.body", lang))
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setOngoing(true)
             .addAction(Notification.Action.Builder(
@@ -263,10 +296,13 @@ class WalkService : Service() {
     private fun take(mine: Int, message: String) {
         scope.launch {
             val reply = runCatching {
-                ApiClient.coach(uid, token, "general", message)
+                ApiClient.coach(uid, token, area, message)
             }.getOrNull()
             if (mine != turn || !wants) return@launch
             val text = reply?.content.orEmpty()
+            // Who answered — `generated_by` is who actually did, not who was
+            // picked, which is the whole reason the field exists.
+            val fromStore = reply?.provenance?.generatedBy == "stub"
             withContext(Dispatchers.Main) {
                 if (mine != turn || !wants) return@withContext
                 if (text.isEmpty()) {
@@ -274,6 +310,14 @@ class WalkService : Service() {
                 } else {
                     Walking.said = text
                     speaker?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "walk")
+                }
+                // The notification is the only surface a person walking
+                // about has, so it is where this has to be said. Rewritten
+                // rather than re-posted from scratch: the same id keeps one
+                // notification rather than stacking a new one per turn.
+                if (fromStore != Walking.offline) {
+                    Walking.offline = fromStore
+                    goForeground()
                 }
                 // The next turn opens after the answer is handed to the
                 // speaker rather than after it finishes: a person may
@@ -293,6 +337,7 @@ class WalkService : Service() {
         speaker?.shutdown()
         speaker = null
         Walking.underway = false
+        Walking.offline = false
         Walking.trouble = reason
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()

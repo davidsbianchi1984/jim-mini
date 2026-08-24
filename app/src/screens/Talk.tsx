@@ -4,7 +4,7 @@ import { t as tr, visitorLang, word } from "../l10n";
 import { CONVERSATION_IDLE_MS, hush, hushAndReport, heardNothing, listen, primeVoice,
          say, type Listener } from "../speech";
 import { useSession } from "../store";
-import { startWalking } from "../walk";
+import { answeredOffline, startWalking } from "../walk";
 
 /**
  * Talking to JIM, and reaching everything else from the same place.
@@ -319,7 +319,12 @@ export function Talk({ go }: {
                       take: async (message) => {
                         const r = await api.coach(
                           u, { area: "general", message }, t);
-                        return r?.content || "";
+                        // Who answered. A deployment with no model key
+                        // still answers — the offline stack does, from
+                        // stored knowledge — and the walk says so rather
+                        // than passing stack text off as the model's.
+                        return { text: r?.content || "",
+                                 offline: answeredOffline(r) };
                       },
                     });
                   }}>🚶</button>

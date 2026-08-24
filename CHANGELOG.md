@@ -75,6 +75,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   running in the first place. Both are named here rather than left to be
   discovered.
 
+- **The walk says who answered it.** A coach turn already falls back: with no
+  model key, the offline stack answers from the curated pack and every deposit
+  a paid turn left. That has been true for releases, and nothing ever said so —
+  text written by the stack read exactly like text written by the model
+  somebody chose.
+
+      asked     did the turn come back
+      mattered  who wrote it
+
+  On the walk it matters more than anywhere, because the person is on another
+  screen — or, on the phone, in another application — with nothing else to
+  notice it with. So a turn is no longer a bare string: it carries whether the
+  store answered, the strip says *answered from what's stored here*, and on
+  Android the notification says it too, since out there the notification is the
+  only surface there is.
+
+  It is not styled as a failure and should not be read as one. An answer from
+  stored knowledge is an answer; it is simply not the model that was picked,
+  and the difference is the person's to know rather than the product's to
+  smooth over.
+
+  The rule lives in one function that both screens ask, because two copies of
+  *who answered* is how the two drift — and the walk is exactly where a drift
+  goes unnoticed longest.
+
 - **The coach knows the whole console, not five doors of it.** A field report
   asked it to "plant a quarter-hour lookout" and got a graceful shrug, and the
   answer was five hand-written doors in the prompt. That fixed the five.

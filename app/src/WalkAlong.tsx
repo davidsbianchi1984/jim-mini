@@ -43,6 +43,10 @@ export function WalkAlong() {
   const [who, setWho] = useState<Walking | null>(walking());
   const [heard, setHeard] = useState("");
   const [said, setSaid] = useState("");
+  // Who answered the last turn. Not an error state — an answer
+  // from what is stored here is an answer — but a person hearing
+  // it should know it was not the model they picked.
+  const [offline, setOffline] = useState(false);
   const [trouble, setTrouble] = useState("");
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -121,11 +125,12 @@ export function WalkAlong() {
   async function turnTaken(w: Walking, g: number, message: string) {
     setSpeaking(true);
     try {
-      const text = await w.take(message);
+      const answer = await w.take(message);
       if (g !== round.current) return;
-      setSaid(text);
+      setSaid(answer.text);
+      setOffline(Boolean(answer.offline));
       setHeard("");
-      if (text) await say(text);
+      if (answer.text) await say(answer.text);
     } catch {
       if (g !== round.current) return;
       setSaid(tr("walk.lost", lang));
@@ -151,6 +156,13 @@ export function WalkAlong() {
                            : listening ? tr("walk.listening", lang)
                                        : tr("walk.quiet", lang)}
       </span>
+      {/* Who answered, when it was not the model. Between the state and
+          the words, because it qualifies the words rather than the ear. */}
+      {offline && !trouble && (
+        <span className="muted small walk-offline">
+          {tr("walk.offline", lang)}
+        </span>
+      )}
       {trouble && <span className="walk-trouble">{trouble}</span>}
       {(heard || said) && !trouble && (
         <span className="walk-words">{heard || said}</span>

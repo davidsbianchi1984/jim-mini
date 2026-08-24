@@ -189,3 +189,37 @@ def test_the_screen_says_why_it_stopped():
         r"Text\(Walking\.trouble", ui), (
         "the screen never shows why the conversation stopped, so a refused "
         "microphone and a person pressing End look the same afterwards")
+
+
+# ---------------------------------------------------------------------------
+# Who answered, out where there is no screen.
+#
+# A deployment with no model key still answers — the offline stack does, from
+# stored knowledge — and that has been true for releases. On the phone the
+# person is in another application entirely, so the notification is the only
+# surface they have and the only place this can be said.
+#
+#     asked     did the turn come back
+#     mattered  who wrote it
+
+
+def test_the_service_reads_who_answered():
+    src = SERVICE.read_text(encoding="utf-8")
+    assert "generatedBy" in src, (
+        "the service never reads who wrote the turn, so a fallback answer "
+        "is spoken as though the chosen model wrote it")
+    assert 'generatedBy == "stub"' in src
+
+
+def test_the_notification_says_it_and_stops_saying_it():
+    src = SERVICE.read_text(encoding="utf-8")
+    assert 'L10n.t("walk.offline"' in src, (
+        "the notification never says the answer came from stored knowledge")
+    # One notification, not one per turn: rewritten under the same id, and
+    # only when the answer actually changed hands.
+    assert "if (fromStore != Walking.offline)" in src, (
+        "the notification is rebuilt on every turn rather than when the "
+        "answerer changes, which is a notification that flickers all day")
+    assert "Walking.offline = false" in src, (
+        "the flag outlives the walk, so the next one starts by claiming a "
+        "fallback answered a turn that has not happened yet")

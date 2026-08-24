@@ -1911,7 +1911,12 @@ fun CoachScreen(vm: GuardianViewModel) {
                 } else {
                     val uid = vm.uid; val token = vm.token
                     if (uid != null && token != null) {
-                        Walking.start(here, uid, token, vm.language)
+                        // `area`, not "general": this card is the one that
+                        // offers the picker, and a walk started from mental
+                        // health that reverted to the front door's area
+                        // would be a different conversation wearing the
+                        // same name.
+                        Walking.start(here, uid, token, area, vm.language)
                     }
                 }
             }) {
