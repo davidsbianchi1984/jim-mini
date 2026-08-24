@@ -62,6 +62,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -270,8 +271,8 @@ def test_there_are_build_files_to_read():
     a clean shell by finding nothing to check, which is the failure this whole
     arc keeps producing."""
     assert IOS_SPEC.exists() and GRADLE.exists() and CSPROJ
-    assert len(sorted(REPO.glob("native/ios/Sources/**/*.swift"))) >= 24
-    assert len(sorted(REPO.glob("native/android/**/*.kt"))) >= 6
+    assert len(sorted(REPO.glob("native/ios/Sources/**/*.swift"))) >= ratchets.floor("shells.swift_files")
+    assert len(sorted(REPO.glob("native/android/**/*.kt"))) >= ratchets.floor("shells.kotlin_files")
 
 
 def test_the_capability_check_reaches_the_calls_this_shell_makes():

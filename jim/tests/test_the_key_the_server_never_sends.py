@@ -72,6 +72,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -225,7 +226,7 @@ def test_the_vocabulary_is_not_empty():
     """A vocabulary that failed to read the package is a check that passes on
     everything."""
     vocabulary = _vocabulary()
-    assert len(vocabulary) >= 500, len(vocabulary)
+    assert len(vocabulary) >= ratchets.floor("key.vocabulary"), len(vocabulary)
     assert {"display_name", "created_at", "status"} <= vocabulary
 
 

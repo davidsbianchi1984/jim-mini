@@ -307,7 +307,75 @@ def _validation_messages() -> int:
     return len(i18n._VALIDATION)
 
 
+# -- the readers that stand between a guard and nothing ---------------------
+#
+# Every one of these sits under a docstring saying, in its own words, that a
+# reader which stopped reading would report a clean result by finding nothing
+# to complain about. `console.l10n_keys` is the sharpest in the estate so far:
+# a floor of 15 against 1,351, under a guard whose own words are "an empty
+# table reports a perfect zero". It would have passed on one per cent.
+
+
+def _route_writes() -> int:
+    from .test_the_body_the_route_requires import WRITES, _sent
+    return len([w for w in _sent() if w[0] in WRITES])
+
+
+def _route_writes_readable() -> int:
+    from .test_the_body_the_route_requires import WRITES, _sent
+    return len([w for w in _sent() if w[0] in WRITES
+                and w[2] in ("literal", "parameter") and w[3] is not None])
+
+
+def _route_models() -> int:
+    from .test_the_body_the_route_requires import _models
+    return len(_models())
+
+
+def _key_vocabulary() -> int:
+    from .test_the_key_the_server_never_sends import _vocabulary
+    return len(_vocabulary())
+
+
+def _form_declared_fields() -> int:
+    from .test_the_refusal_names_the_field_on_the_form import _declared
+    return len(_declared())
+
+
+def _console_l10n_keys() -> int:
+    import re
+    from .test_the_console_speaks_one_language import SRC
+    return len(re.findall(r'^  "([\w.]+)":',
+                          (SRC / "l10n.ts").read_text("utf-8"), re.M))
+
+
+def _android_reads() -> int:
+    from .test_the_keys_the_android_client_reads import _reads
+    return len(_reads())
+
+
+def _android_read_keychars() -> int:
+    from .test_the_keys_the_android_client_reads import _reads
+    return sum(len(k) for _, k in _reads())
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("route.writes", 124, _route_writes,
+            "the write calls the extractor reads off the clients"),
+    Ratchet("route.writes_readable", 80, _route_writes_readable,
+            "the write calls whose body it can actually read"),
+    Ratchet("route.models", 100, _route_models,
+            "the request models FastAPI publishes in the schema"),
+    Ratchet("key.vocabulary", 1872, _key_vocabulary,
+            "the field names the leak check knows to look for"),
+    Ratchet("form.declared_fields", 181, _form_declared_fields,
+            "the request-model fields the refusal check maps to a control"),
+    Ratchet("console.l10n_keys", 1080, _console_l10n_keys,
+            "the keys in the console's translation table"),
+    Ratchet("android.reads", 88, _android_reads,
+            "the key reads the Android extractor finds"),
+    Ratchet("android.read_keychars", 310, _android_read_keychars,
+            "the characters across those keys, as a shape check on them"),
     Ratchet("swift.structs", 247, _swift_structs,
             "the Swift client's declared shapes"),
     Ratchet("swift.struct_fields", 1057, _swift_fields,

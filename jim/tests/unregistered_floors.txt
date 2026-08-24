@@ -1,5 +1,5 @@
-# status: backlog — 43 rows
-# ceiling: 43
+# status: backlog — 27 rows
+# ceiling: 27
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -49,6 +49,49 @@
 # The ceiling does not move up. A new bare floor is a new number nothing will
 # ever audit.
 #
+#
+# ## Not floors: a value that is not a size
+#
+# The sweep matches the *shape* `assert <something> >= <int>`. Some of what
+# it caught is not a floor on anything that can grow — it is a value read out
+# of a response or a fixture, compared against a number that means something
+# else entirely.
+#
+#     asked     is this an `assert x >= <int>`
+#     mattered  is the int a floor on something that can grow
+#
+# `refused.status_code >= 400` is the clearest. The 400 is not a size and
+# there is no "four-fifths of what is actually there" to raise it toward; it
+# asks whether the response was a refusal at all. Registering a ratchet for
+# it would produce a floor that could never be audited, which is the thing
+# this whole file exists against.
+#
+# The others are the same in their own domains. The watch one is not even a
+# minimum: 60 is enrollment's default resting rate, and the assertion is that
+# the baseline *moved off it* toward the real history — a direction, written
+# as a comparison. The vigil's 48 counts hours of real quiet after the
+# fixture ages its events by three days. `samples >= 6` follows a loop that
+# posts exactly six readings, so it asks whether all six landed.
+#
+# Each is exempted by `file.py: expr` rather than by line, because a line
+# number is a fact about today's file — paying down eighteen floors in this
+# suite moved five unrelated rows by one line each, and an exemption keyed on
+# a line would have silently started covering whatever slid into the slot.
+# One row can therefore cover two identical assertions in the same file,
+# which is why five rows remove six comparisons.
+#
+#   test_emergency.py: med['age'] >= 40
+#   test_the_guardian_refuses_in_one_language.py: refused.status_code >= 400
+#   test_the_watch_you_actually_wear.py: metrics['resting_heart_rate']['value'] > 60
+#   test_vigil.py: st['silent_hours'] >= 48
+#   test_watch.py: metrics['heart_rate']['samples'] >= 6
+#
+# `test_every_exempted_comparison_is_still_there` checks each is really
+# written somewhere, and `test_a_count_can_never_be_exempted` checks the
+# direction that matters: a comparison against `len(...)` or `sum(...)` is a
+# count of a swept surface, is always a floor, and may not be excused here
+# however convincing the prose above it. An exemption nothing verifies is a
+# place to hide the numbers this file is meant to find.
 test_a_binding_is_not_a_door.py:134: len(found) > 20
 test_a_form_that_asks_for_it_has_a_label_for_it.py:119: controls > 6000
 test_a_form_that_asks_for_it_has_a_label_for_it.py:122: len(_asked_for()) >= 10
@@ -58,30 +101,17 @@ test_a_screen_nothing_opens.py:156: len(found) >= 5
 test_a_shell_asks_for_a_key_it_has.py:313: len(wanted) >= 20
 test_a_shell_does_not_print_what_it_translated.py:370: len(_shown(spec)) > 100
 test_a_shell_does_not_print_what_it_translated.py:374: len(_fragments(spec)) >= 22
-test_emergency.py:40: med['age'] >= 40
 test_error_report_carries_nothing_private.py:398: len(segments) > 30
 test_help.py:19: len(client.get('/help/topics').json()['topics']) >= 10
 test_nothing_leaves_the_host.py:147: len(sites) >= 5
 test_the_body_the_native_clients_send.py:358: matched >= 44
-test_the_body_the_route_requires.py:246: len(writes) >= 105
-test_the_body_the_route_requires.py:247: len(readable) >= 65
-test_the_body_the_route_requires.py:254: len(models) >= 90
-test_the_body_the_route_requires.py:264: matched >= 85
-test_the_console_speaks_one_language.py:278: len(keys) >= 15
+test_the_body_the_route_requires.py:265: matched >= 85
 test_the_desktop_and_the_phone_say_different_things.py:324: len(shared) > 40
-test_the_files_the_release_never_touched.py:273: len(sorted(REPO.glob('native/ios/Sources/**/*.swift'))) >= 24
-test_the_files_the_release_never_touched.py:274: len(sorted(REPO.glob('native/android/**/*.kt'))) >= 6
 test_the_guardian_refuses_in_one_language.py:736: len(handlers) >= 9
-test_the_guardian_refuses_in_one_language.py:918: refused.status_code >= 400
-test_the_guardian_refuses_in_one_language.py:944: refused.status_code >= 400
-test_the_key_the_server_never_sends.py:228: len(vocabulary) >= 500
-test_the_keys_the_android_client_reads.py:358: len(reads) >= 40
-test_the_keys_the_android_client_reads.py:359: sum((len(k) for _, k in reads)) >= 155
-test_the_keys_the_android_client_reads.py:382: len(driven) >= 30
+test_the_keys_the_android_client_reads.py:383: len(driven) >= 30
 test_the_member_that_isnt_there.py:287: len(_declared(lang, REPO / decl)) >= 5
 test_the_member_that_isnt_there.py:296: len(keys) >= 12
 test_the_member_that_isnt_there.py:297: len(used) >= 10
-test_the_refusal_names_the_field_on_the_form.py:137: len(found) >= 150
 test_the_refusal_that_handed_the_body_back.py:155: len(found) > 80
 test_the_refusal_that_handed_the_body_back.py:159: reached > 50
 test_the_shape_the_client_expects.py:327: len(driven) >= 20
@@ -89,6 +119,3 @@ test_the_shape_the_console_expects.py:457: len(driven) >= 45
 test_the_shape_the_swift_client_expects.py:228: len(driven) >= 15
 test_the_tabs_are_translated_and_the_screens_are_not.py:553: english + calls >= 50
 test_the_tabs_are_translated_and_the_screens_are_not.py:774: len(rows) >= 10
-test_the_watch_you_actually_wear.py:118: metrics['resting_heart_rate']['value'] > 60
-test_vigil.py:75: st['silent_hours'] >= 48
-test_watch.py:145: metrics['heart_rate']['samples'] >= 6

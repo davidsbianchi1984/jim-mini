@@ -97,6 +97,28 @@ def parsed_files() -> int:
     return n
 
 
+def _not_floors() -> set[str]:
+    """`file.py: expr` pairs the record names as comparisons that are not floors.
+
+    Keyed on the expression rather than the line, because a line number is a
+    fact about today's file and an exemption keyed on one silently starts
+    covering whatever moves into that slot. Paying down eighteen floors in
+    this suite shifted five unrelated rows by a line each, which is exactly
+    the accident this avoids.
+    """
+    out, inside = set(), False
+    for line in RECORD.read_text(encoding="utf-8").splitlines():
+        if line.startswith("# ## Not floors"):
+            inside = True
+            continue
+        if inside:
+            if line.startswith("# ## "):
+                break
+            if line.startswith("#   ") and not line.startswith("#     "):
+                out.add(line[4:].strip())
+    return out
+
+
 def _bare_floors() -> list[str]:
     """Every `assert <something> > <int>` still carrying its own number.
 
@@ -105,6 +127,7 @@ def _bare_floors() -> list[str]:
     having to edit the record by hand.
     """
     rows = []
+    exempt = _not_floors()
     for path in sorted(TESTS.glob("test_*.py")):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -123,7 +146,10 @@ def _bare_floors() -> list[str]:
                     and not isinstance(right.value, bool)
                     and right.value >= SMALLEST_FLOOR):
                 continue
-            rows.append(f"{path.name}:{node.lineno}: {ast.unparse(test)[:88]}")
+            expr = ast.unparse(test)[:88]
+            if f"{path.name}: {expr}" in exempt:
+                continue
+            rows.append(f"{path.name}:{node.lineno}: {expr}")
     return rows
 
 
@@ -208,3 +234,59 @@ def test_a_decorative_floor_is_caught():
     0.58.9, against the surface it was nominally holding."""
     assert not (10 >= 279 * HEADROOM)
     assert 240 >= 300 * HEADROOM
+
+
+def test_every_exempted_comparison_is_still_there():
+    """An exemption for a line nobody writes any more is an exemption for
+    nothing, and it hides the next thing that takes the same shape."""
+    live = set()
+    for path in sorted(TESTS.glob("test_*.py")):
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except SyntaxError:                     # pragma: no cover - none today
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assert) and isinstance(node.test, ast.Compare):
+                live.add(f"{path.name}: {ast.unparse(node.test)[:88]}")
+    phantom = sorted(_not_floors() - live)
+    assert not phantom, (
+        f"{len(phantom)} comparison(s) exempted as not-a-floor are no longer "
+        "written anywhere — strike them from the record:\n    "
+        + "\n    ".join(phantom))
+
+
+def test_a_count_can_never_be_exempted():
+    """The forward direction, and the one that matters.
+
+    The record's exempt list is prose a person edits, which is the point: the
+    ledger says telling a floor from a fixed cardinality "requires knowing
+    what each one measures". Prose a person edits is also how a real floor
+    gets quietly excused to make a backlog number fall.
+
+        asked     is this comparison a floor
+        mattered  could somebody call a floor something else
+
+    So one property is checked mechanically rather than trusted: a comparison
+    against `len(...)` or `sum(...)` is a count of a swept surface, and a
+    count of a swept surface is always a floor. Those may never be exempted,
+    whatever the record says about them. What remains exemptible is a value
+    read out of a response or a fixture -- an age, a status code, a heart
+    rate -- which is not a size and cannot be raised toward one.
+    """
+    counted = []
+    for row in sorted(_not_floors()):
+        expr = row.split(": ", 1)[1] if ": " in row else row
+        try:
+            tree = ast.parse(expr, mode="eval")
+        except SyntaxError:                     # pragma: no cover - none today
+            continue
+        left = tree.body.left if isinstance(tree.body, ast.Compare) else None
+        for node in ast.walk(left) if left is not None else ():
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id in ("len", "sum")):
+                counted.append(row)
+                break
+    assert not counted, (
+        f"{len(counted)} exempted comparison(s) measure a count, which is "
+        "always a floor — register them in ratchets.py rather than excusing "
+        "them:\n    " + "\n    ".join(counted))

@@ -38,6 +38,7 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -275,7 +276,7 @@ def test_there_are_keys_at_all():
     """A guard on the guard: an empty table reports a perfect zero."""
     keys = re.findall(r'^  "([\w.]+)":', (SRC / "l10n.ts").read_text("utf-8"),
                       re.M)
-    assert len(keys) >= 15, (
+    assert len(keys) >= ratchets.floor("console.l10n_keys"), (
         f"only {len(keys)} keys found — the pattern has stopped matching, so "
         "the completeness check above would pass on nothing")
     assert len(_languages()) == 10

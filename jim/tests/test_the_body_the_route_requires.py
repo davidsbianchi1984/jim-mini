@@ -46,6 +46,7 @@ import re
 from jim.api import app
 
 from .test_the_shape_the_console_expects import _SRC, _matched, _top_level
+from . import ratchets
 
 RECORD = pathlib.Path(__file__).resolve().parent / "request_bodies_unverified.txt"
 
@@ -243,15 +244,15 @@ def test_the_extractor_reads_this_clients_writes():
     writes = [w for w in _sent() if w[0] in WRITES]
     readable = [w for w in writes if w[2] in ("literal", "parameter")
                 and w[3] is not None]
-    assert len(writes) >= 105, len(writes)
-    assert len(readable) >= 65, len(readable)
+    assert len(writes) >= ratchets.floor("route.writes"), len(writes)
+    assert len(readable) >= ratchets.floor("route.writes_readable"), len(readable)
 
 
 def test_the_routes_side_is_read_from_what_fastapi_validates():
     """Read from the published schema rather than from the Pydantic source,
     so the guard cannot describe a rule the app does not enforce."""
     models = _models()
-    assert len(models) >= 90, len(models)
+    assert len(models) >= ratchets.floor("route.models"), len(models)
     assert any(s.get("required") for s in models.values())
 
 
