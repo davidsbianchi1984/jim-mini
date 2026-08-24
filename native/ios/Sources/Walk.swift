@@ -86,6 +86,9 @@ final class Walking: ObservableObject {
 
     private let engine = AVAudioEngine()
     private let speaker = AVSpeechSynthesizer()
+    /// The served voice, held rather than local: a player that goes out of
+    /// scope stops mid-word.
+    private var player: AVAudioPlayer?
     private var recogniser: SFSpeechRecognizer?
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
@@ -281,10 +284,7 @@ final class Walking: ObservableObject {
                     self.said = L10n.t("walk.lost", self.lang)
                 } else {
                     self.said = text
-                    let utterance = AVSpeechUtterance(string: text)
-                    utterance.voice =
-                        AVSpeechSynthesisVoice(language: self.lang)
-                    self.speaker.speak(utterance)
+                    self.sayAloud(text)
                 }
                 self.heard = ""
                 // The next turn opens with the voice rather than after it: a
@@ -293,6 +293,57 @@ final class Walking: ObservableObject {
                 self.hear()
             }
         }
+    }
+
+    // MARK: - Saying it
+
+    /// Say the reply in the voice somebody chose, falling back to the phone's
+    /// own only when there is no such voice to be had.
+    ///
+    /// The first draft called `AVSpeechSynthesizer` and stopped there — the
+    /// system voice, on a deployment paying for a speaking service, while
+    /// `ApiClient.speakAloud` sat in the same target doing nothing. Every one
+    /// of this product's three shells had the identical gap, and the web
+    /// strip had it too; that one was reported from a Windows machine in
+    /// these words: *the voice is robotic again, it should be my voice when
+    /// I'm talking to my AI*.
+    ///
+    ///     asked     did the reply get spoken
+    ///     mattered  in whose voice
+    ///
+    /// The direction of the fallback is the load-bearing part. A served voice
+    /// that fails must not leave silence, because the words are already on
+    /// screen and a conversation continuing quietly beats one that stops. The
+    /// system voice used *first* is a different thing entirely: it never
+    /// fails, so the served voice would never be reached and nobody would
+    /// find out it was configured.
+    private func sayAloud(_ text: String) {
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                let audio = try await ApiClient.shared.speakAloud(text: text)
+                guard !audio.isEmpty else { throw WalkVoiceEmpty() }
+                await MainActor.run {
+                    do {
+                        // Held on the object: an AVAudioPlayer that goes out
+                        // of scope stops mid-word, which is its own silent
+                        // failure and one this app has met before.
+                        self.player = try AVAudioPlayer(data: audio)
+                        self.player?.play()
+                    } catch {
+                        self.sayWithTheSystemVoice(text)
+                    }
+                }
+            } catch {
+                await MainActor.run { self.sayWithTheSystemVoice(text) }
+            }
+        }
+    }
+
+    private func sayWithTheSystemVoice(_ text: String) {
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(language: lang)
+        speaker.speak(utterance)
     }
 
     // MARK: - Tearing down
@@ -313,6 +364,8 @@ final class Walking: ObservableObject {
         turn += 1
         endListening()
         speaker.stopSpeaking(at: .immediate)
+        player?.stop()
+        player = nil
         // Give the session back. A session left active keeps the orange
         // indicator lit over an app that is no longer listening, and an
         // indicator that lies is worse than none.
@@ -323,3 +376,7 @@ final class Walking: ObservableObject {
         trouble = reason
     }
 }
+
+/// Thrown when the speaking service answered with no audio at all, so the
+/// fallback runs rather than the walk going quiet on an empty reply.
+private struct WalkVoiceEmpty: Error {}

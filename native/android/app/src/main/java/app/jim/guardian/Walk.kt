@@ -8,6 +8,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -19,6 +20,7 @@ import android.speech.tts.TextToSpeech
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -161,6 +163,8 @@ class WalkService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var recogniser: SpeechRecognizer? = null
     private var speaker: TextToSpeech? = null
+    /** The served voice. Held, so leaving ends it with everything else. */
+    private var player: MediaPlayer? = null
     private var uid: String = ""
     private var token: String = ""
     private var area: String = "general"
@@ -322,7 +326,7 @@ class WalkService : Service() {
                     Walking.said = L10n.t("walk.lost", lang)
                 } else {
                     Walking.said = text
-                    speaker?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "walk")
+                    sayAloud(text)
                 }
                 // The notification is the only surface a person walking
                 // about has, so it is where this has to be said. Rewritten
@@ -341,6 +345,70 @@ class WalkService : Service() {
         }
     }
 
+    /**
+     * Say the reply in the voice somebody chose, and fall back to the phone's
+     * own only when there is no such voice to be had.
+     *
+     * The first draft called [TextToSpeech] and stopped there — the phone's
+     * built-in voice, on a deployment paying for a speaking service, while
+     * `ApiClient.speakAloud` sat in the same package doing nothing. All three
+     * of this product's shells had the identical gap, and so did the web
+     * strip; that one was reported from a Windows machine in these words:
+     * *the voice is robotic again, it should be my voice when I'm talking to
+     * my AI*.
+     *
+     *     asked     did the reply get spoken
+     *     mattered  in whose voice
+     *
+     * The direction of the fallback is the load-bearing part. A served voice
+     * that fails must not leave silence — the words are already on the
+     * notification and on screen, and a conversation continuing quietly beats
+     * one that stops. The built-in voice used *first* is a different thing
+     * entirely: it never fails, so the served voice would never be reached
+     * and nobody would find out it was configured.
+     *
+     * The turn number is carried through because this is a network call now
+     * rather than a local one. A served voice that arrives after the person
+     * has moved on must not start talking over the turn that replaced it —
+     * the same rule the ear has already learned in this file.
+     */
+    private fun sayAloud(text: String) {
+        val mine = turn
+        scope.launch {
+            val audio = try {
+                ApiClient.speakAloud(text).takeIf { it.isNotEmpty() }
+            } catch (_: Exception) {
+                null
+            }
+            withContext(Dispatchers.Main) {
+                if (mine != turn || !wants) return@withContext
+                if (audio == null) {
+                    speaker?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "walk")
+                    return@withContext
+                }
+                try {
+                    val file = File.createTempFile("walk", ".mp3", cacheDir)
+                    file.writeBytes(audio)
+                    player?.release()
+                    player = MediaPlayer().apply {
+                        setDataSource(file.absolutePath)
+                        // Deleted when the reply finishes rather than kept:
+                        // the app's own voice saying somebody's health
+                        // answers is not a thing to leave on the disk.
+                        setOnCompletionListener {
+                            release(); file.delete()
+                            if (player === this) player = null
+                        }
+                        prepare()
+                        start()
+                    }
+                } catch (_: Exception) {
+                    speaker?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "walk")
+                }
+            }
+        }
+    }
+
     private fun close(reason: String) {
         wants = false
         turn += 1
@@ -349,6 +417,8 @@ class WalkService : Service() {
         speaker?.stop()
         speaker?.shutdown()
         speaker = null
+        try { player?.release() } catch (_: Exception) { }
+        player = null
         Walking.underway = false
         Walking.offline = false
         Walking.trouble = reason

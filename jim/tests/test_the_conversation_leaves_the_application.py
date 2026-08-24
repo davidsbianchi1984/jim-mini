@@ -37,6 +37,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import pytest
+
 
 def _repo() -> Path:
     for d in Path(__file__).resolve().parents:
@@ -250,6 +252,31 @@ def test_the_notification_says_it_and_stops_saying_it():
 # proxy refuses `dl.google.com` so there is no Android SDK either. These read
 # the declarations, which is where the absence of an indicator would live.
 
+def _without_comments(src: str) -> str:
+    """Source with `//`, `///`, `#` and `/* */` comments removed.
+
+    A guard about what the code reaches must not be satisfied — or decided —
+    by prose that names the same symbols while explaining the rule. This suite
+    has been caught by that before, in the other direction: a docstring
+    mentioning `getUserMedia` failed a check that no recogniser was built.
+    """
+    out, i, n = [], 0, len(src)
+    while i < n:
+        if src.startswith("/*", i):
+            j = src.find("*/", i + 2)
+            i = n if j < 0 else j + 2
+        elif src.startswith("//", i):
+            j = src.find("\n", i)
+            i = n if j < 0 else j
+        elif src[i] == "#" and src[:i].rsplit("\n", 1)[-1].strip() == "":
+            j = src.find("\n", i)
+            i = n if j < 0 else j
+        else:
+            out.append(src[i])
+            i += 1
+    return "".join(out)
+
+
 IOS_SPEC = REPO / "native/ios/project.yml"
 IOS_WALK = REPO / "native/ios/Sources/Walk.swift"
 WIN_WALK = REPO / "native/windows/Walk.cs"
@@ -368,3 +395,91 @@ def test_all_three_shells_land_on_the_front_page():
     assert "Walking.Landings" in shell and "OverviewPage" in shell, (
         "the Windows shell never navigates on a walk, so the counter is a "
         "number nothing reads")
+
+
+# ---------------------------------------------------------------------------
+# The voice, in all three shells at once.
+#
+# Reported from a Windows machine against the web strip, in these words: *the
+# voice is robotic again, it should be my voice when I'm talking to my AI*.
+# The strip was fixed. Nobody asked the three native shells the same question,
+# and all three had it — `SpeechSynthesizer` on Windows, `AVSpeechSynthesizer`
+# on iOS, `TextToSpeech` on Android — each of them with a `speakAloud` sitting
+# in its own ApiClient, doing nothing.
+#
+#     asked     did the reply get spoken
+#     mattered  in whose voice
+#
+# `SpeakAloud`'s own summary in the Windows client had described the intended
+# behaviour for releases — *a deployment with no speaking service answers 503,
+# the card falls back to the device's own voice* — while the walk next door
+# never called it. A contract written and not honoured reads exactly like one
+# that is.
+
+
+#: Per shell: the walk source, the served call it must reach, the *call* into
+#: the platform's own voice it may only fall back to, and the type that call
+#: is made on.
+#:
+#: The fourth column is separate from the third on purpose. The first draft of
+#: this table compared the served call against the *type name* — `TextToSpeech`
+#: — and the first occurrence of that in a Kotlin file is the import, near the
+#: top, so every shell read as built-in-first and the ordering check was
+#: measuring nothing but where imports live.
+#:
+#:     asked     does the built-in voice appear before the served one
+#:     mattered  is it *called* before the served one
+#:
+#: Which is the same mistake, in the guard written to catch it: a name where a
+#: use was meant.
+VOICES = (
+    ("android", SERVICE, "ApiClient.speakAloud", "speaker?.speak(", "TextToSpeech"),
+    ("ios", IOS_WALK, "speakAloud(text:", "speaker.speak(", "AVSpeechUtterance"),
+    ("windows", WIN_WALK, "ApiClient.Shared.SpeakAloud",
+     "SynthesizeTextToStreamAsync(", "SpeechSynthesizer"),
+)
+
+
+@pytest.mark.parametrize("shell,path,served,spoken,kind", VOICES,
+                         ids=[v[0] for v in VOICES])
+def test_the_walk_asks_for_the_voice_somebody_chose(
+        shell, path, served, spoken, kind):
+    """Every shell can reach the speaking service, and can still fall back."""
+    src = path.read_text(encoding="utf-8")
+    assert served in src, (
+        f"the {shell} walk never calls the speaking service — it speaks in "
+        "the platform's built-in voice on a deployment paying for a chosen "
+        "one, which is the defect this file's own history is about")
+    assert spoken in src and kind in src, (
+        f"the {shell} walk has no fallback voice at all; a deployment with "
+        "no speaking service would go silent, and silence is the wrong "
+        "failure when the words are already on screen")
+
+
+@pytest.mark.parametrize("shell,path,served,spoken,kind", VOICES,
+                         ids=[v[0] for v in VOICES])
+def test_the_builtin_voice_is_the_fallback_and_not_the_first_choice(
+        shell, path, served, spoken, kind):
+    """The direction, not merely the presence, of the fallback.
+
+    Both calls being in the file proves nothing on its own: a shell that says
+    it with the built-in voice *first* has both, never fails, never reaches
+    the served one, and nobody ever finds out it was configured. So the
+    served call must come first in the source of the speaking path.
+
+        asked     can this shell reach the chosen voice
+        mattered  does it, before the one that cannot fail
+    """
+    src = path.read_text(encoding="utf-8")
+    # Comments and doc blocks say both names while explaining this rule, and
+    # would otherwise decide the ordering. Stripped, so what is compared is
+    # the code — the same lesson `_stripped` taught the slept-tab suite when a
+    # docstring failed a check about what the code reaches.
+    code = _without_comments(src)
+    assert served in code and spoken in code, (
+        f"the {shell} walk names one of the two voices only in a comment — "
+        "a call that exists in prose is not a call")
+    assert code.index(served) < code.index(spoken), (
+        f"the {shell} walk reaches its built-in voice before the chosen one. "
+        "The built-in never fails, so the served voice is unreachable and a "
+        "configured voice would never be heard.")

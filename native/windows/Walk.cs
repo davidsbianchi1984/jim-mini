@@ -1,7 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Media.SpeechRecognition;
 using Windows.Media.SpeechSynthesis;
+using Windows.Storage.Streams;
 using Microsoft.UI.Xaml.Controls;
 
 namespace JimGuardian;
@@ -195,27 +197,83 @@ public static class Walking
         {
             Said = reply;
             Heard = "";
-            try
-            {
-                if (_speaker is not null && _voice is not null)
-                {
-                    var stream = await _speaker.SynthesizeTextToStreamAsync(reply);
-                    _voice.SetSource(stream, stream.ContentType);
-                    _voice.Play();
-                }
-            }
-            catch (Exception)
-            {
-                // A voice that will not play is not a reason to end a
-                // conversation somebody is having in writing on the screen
-                // behind them. The words are already in `Said`.
-            }
+            await SayAloud(reply);
         }
         Changed?.Invoke();
         // The next turn opens with the voice rather than after it: a person
         // may interrupt, and a conversation that cannot be interrupted is a
         // broadcast.
         await Hear();
+    }
+
+    /// <summary>Say the reply in the voice somebody chose, and only fall back
+    /// to the machine's own when there is no such voice to be had.
+    ///
+    /// <para>
+    /// This method is the whole of a defect reported three times. The first
+    /// draft synthesized with <see cref="SpeechSynthesizer"/> and stopped
+    /// there — the built-in Windows voice, on a deployment paying for a
+    /// speaking service, while <c>ApiClient.SpeakAloud</c> sat one file away
+    /// with a summary describing exactly this fallback and nothing calling
+    /// it. The web strip did the same thing in its own way, and was reported
+    /// from a Windows machine in those words: <em>the voice is robotic again,
+    /// it should be my voice when I'm talking to my AI</em>.
+    /// </para>
+    ///
+    /// <para>
+    ///     asked     did the reply get spoken<br/>
+    ///     mattered  in whose voice
+    /// </para>
+    ///
+    /// <para>
+    /// The order is load-bearing and so is the direction of the fallback. A
+    /// served voice that fails must not leave silence, because the words are
+    /// on screen and a conversation continuing quietly is better than one
+    /// that stops. A built-in voice used <em>first</em> is a different thing
+    /// entirely: it never fails, so the served voice would never be reached
+    /// and nobody would ever find out it was configured.
+    /// </para>
+    /// </summary>
+    private static async Task SayAloud(string reply)
+    {
+        if (_voice is null) return;
+        try
+        {
+            // 503 here is a deployment with no speaking service, which is a
+            // fact about the deployment rather than a fault — see the
+            // summary on `SpeakAloud`. Anything else is a fault, and both
+            // land in the same fallback because the person is owed the words
+            // aloud either way.
+            var audio = await ApiClient.Shared.SpeakAloud(reply);
+            if (audio.Length > 0)
+            {
+                var served = new InMemoryRandomAccessStream();
+                await served.WriteAsync(audio.AsBuffer());
+                served.Seek(0);
+                _voice.SetSource(served, "audio/mpeg");
+                _voice.Play();
+                return;
+            }
+        }
+        catch (Exception)
+        {
+            // Fall through to the machine's own voice.
+        }
+        try
+        {
+            if (_speaker is not null)
+            {
+                var stream = await _speaker.SynthesizeTextToStreamAsync(reply);
+                _voice.SetSource(stream, stream.ContentType);
+                _voice.Play();
+            }
+        }
+        catch (Exception)
+        {
+            // A voice that will not play is not a reason to end a
+            // conversation somebody is having in writing on the screen
+            // behind them. The words are already in `Said`.
+        }
     }
 
     private static void Close(string reason)

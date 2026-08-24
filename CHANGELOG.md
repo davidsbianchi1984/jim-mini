@@ -81,6 +81,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   registered in `shared_guards.txt`, so the next round cannot fix one and
   forget the other two — which is the shape of every defect in this release.
 
+- **The voice, in all three shells.** Reported against the web strip from a
+  Windows machine — *the voice is robotic again, it should be my voice when
+  I'm talking to my AI*. The strip was fixed in 1.8.0 and nobody asked the
+  three native shells the same question. All three had it: `SpeechSynthesizer`
+  on Windows, `AVSpeechSynthesizer` on iOS, `TextToSpeech` on Android — each
+  with a `speakAloud` sitting in its own ApiClient, uncalled.
+
+      asked     did the reply get spoken
+      mattered  in whose voice
+
+  The Windows client's `SpeakAloud` summary had described the intended
+  behaviour for releases — *a deployment with no speaking service answers 503,
+  the card falls back to the device's own voice* — while the walk one file
+  away never called it. A contract written and not honoured reads exactly like
+  one that is.
+
+  All three now reach the speaking service first and fall back to the
+  platform's own voice, never the other way round: the built-in voice never
+  fails, so putting it first makes the served one unreachable and nobody ever
+  discovers it was configured. The served call carries the turn number,
+  because it is a network call now — audio that arrives after the person has
+  moved on must not talk over the turn that replaced it.
+
+  Two guards hold it, one per direction, and both were watched failing on an
+  injected regression before being kept. The first draft of the ordering one
+  compared against the *type* `TextToSpeech`, whose first appearance in a
+  Kotlin file is the import line — so every shell read as fallback-first and
+  the check measured nothing but where imports live. A name where a use was
+  meant, in the guard written against exactly that.
+
 - **A guard on the claim about the platform.** The false universal fixed above
   — an open capture keeps recording while the window is minimised — was
   written into four files here and copied into a second console, and one
