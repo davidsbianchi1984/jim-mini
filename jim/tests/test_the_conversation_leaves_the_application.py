@@ -223,3 +223,148 @@ def test_the_notification_says_it_and_stops_saying_it():
     assert "Walking.offline = false" in src, (
         "the flag outlives the walk, so the next one starts by claiming a "
         "fallback answered a turn that has not happened yet")
+
+
+# ---------------------------------------------------------------------------
+# The other two shells.
+#
+# Three platforms, three different bargains, and the differences are the
+# point rather than an inconvenience:
+#
+#   * **Android** suspends an app the moment it leaves the screen, so the
+#     conversation needs a foreground service and pays for it with a
+#     notification that cannot be dismissed.
+#   * **iOS** does the same and takes the `audio` background mode instead,
+#     paying with the orange indicator the system draws itself — better,
+#     because a person learns one indicator for every app rather than one
+#     per app.
+#   * **Windows** does not suspend a minimised window at all, and this shell
+#     is unpackaged so it does not even take the packaged app lifecycle.
+#     There was never an operating system to satisfy; what was missing was a
+#     voice loop.
+#
+#     asked     can the conversation survive a screen change
+#     mattered  what does this platform charge for it
+#
+# None of this is compiled here — no Swift toolchain, no .NET SDK, and the
+# proxy refuses `dl.google.com` so there is no Android SDK either. These read
+# the declarations, which is where the absence of an indicator would live.
+
+IOS_SPEC = REPO / "native/ios/project.yml"
+IOS_WALK = REPO / "native/ios/Sources/Walk.swift"
+WIN_WALK = REPO / "native/windows/Walk.cs"
+
+
+def test_ios_declares_the_background_mode_and_both_permissions():
+    spec = IOS_SPEC.read_text(encoding="utf-8")
+    assert "UIBackgroundModes" in spec and "- audio" in spec, (
+        "iOS is not declared as a background audio app, so the session is "
+        "torn down the moment the app leaves the screen and the walk ends "
+        "without saying why")
+    assert "NSMicrophoneUsageDescription" in spec
+    assert "NSSpeechRecognitionUsageDescription" in spec, (
+        "speech recognition is its own permission on iOS, and an app that "
+        "asks for it without a string is killed on the spot")
+    # The microphone string has to describe the walking case too. It is what
+    # somebody reads in Settings months later, and describing only the
+    # push-to-talk half would be true of the gentler feature and false of
+    # the product.
+    m = re.search(r"NSMicrophoneUsageDescription: \"([^\"]*)\"", spec)
+    assert m and "other apps" in m.group(1), (
+        "the microphone permission string describes only the hold-to-talk "
+        "case; the app also listens while the person is elsewhere, and the "
+        "string is where they find that out")
+
+
+def _swift_code(path: Path) -> str:
+    """Swift with its comments removed.
+
+    Every check in this file that searched a whole source file has been
+    caught at least once finding the thing it forbids inside the comment
+    explaining it. The prose in these files is deliberately thorough, which
+    makes searching it for API names useless.
+    """
+    src = path.read_text(encoding="utf-8")
+    src = re.sub(r"/\*.*?\*/", "", src, flags=re.S)
+    return re.sub(r"//.*", "", src)
+
+
+def test_ios_opens_and_gives_back_the_audio_session():
+    src = _swift_code(IOS_WALK)
+    assert ".playAndRecord" in src, (
+        "the session is not record-and-play, so the reply cannot play while "
+        "the microphone is open — and a conversation that cannot be "
+        "interrupted is a broadcast")
+    # Inside the options list itself. A sabotage that emptied the list while
+    # leaving the comment above it naming both options passed a
+    # whole-file search — the fourth time in this round that a guard found
+    # what it forbade inside the prose forbidding it.
+    m = re.search(r"options: \[([^\]]*)\]", src, re.S)
+    assert m, "the session takes no options at all"
+    assert ".mixWithOthers" in m.group(1) and ".duckOthers" in m.group(1), (
+        "the session stops whatever the person was listening to dead rather "
+        "than ducking it")
+    assert "setActive(true" in src, "the session is never activated"
+    assert "setActive(\n            false" in src or "setActive(false" in src, (
+        "the session is never deactivated, so the orange indicator stays lit "
+        "over an app that has stopped listening — an indicator that lies is "
+        "worse than none")
+    assert "supportsOnDeviceRecognition" in src, (
+        "recognition is not kept on the device where the phone allows it, so "
+        "the walk stops working in the one place it is for — out of the app "
+        "and out of signal")
+
+
+def test_ios_scopes_its_turns_like_the_others():
+    src = _swift_code(IOS_WALK)
+    assert re.search(r"let mine = turn", src), (
+        "the iOS listener takes no turn number, so a late callback from a "
+        "superseded recogniser acts on the one that replaced it")
+    assert "func live() -> Bool { mine == turn && wants }" in src
+
+
+def test_windows_says_why_it_needs_no_permission():
+    """The one shell with nothing to declare. That is a fact about the
+    platform and has to be written down, or the next person reads the
+    absence as an oversight and adds a service Windows never wanted."""
+    src = WIN_WALK.read_text(encoding="utf-8")
+    assert "unpackaged" in src, (
+        "nothing in the Windows walk explains why it needs no background "
+        "declaration, so its absence reads as a gap rather than a fact")
+    assert "SpeechRecognizer" in src, (
+        "the Windows shell still has no voice loop, so there is nothing to "
+        "carry however long the window stays open")
+
+
+def test_windows_scopes_its_turns_and_gives_the_microphone_back():
+    src = WIN_WALK.read_text(encoding="utf-8")
+    assert "var mine = ++_turn" in src, (
+        "the Windows loop takes no turn number")
+    assert "_recogniser?.Dispose()" in src, (
+        "the recogniser is never disposed, so the tray indicator stays lit "
+        "over an app that has stopped listening")
+    assert "TimeoutExceeded" in src, (
+        "quiet is not separated from failure, so a refusal reopens the "
+        "microphone forever with nothing to hear")
+
+
+def test_all_three_shells_land_on_the_front_page():
+    """The point of taking a conversation with you is going somewhere."""
+    android = SERVICE.read_text(encoding="utf-8")
+    assert "Walking.landings += 1" in android
+    assert "Walking.landings" in (
+        REPO / "native/android/app/src/main/java/app/jim/guardian/"
+        "MainActivity.kt").read_text(encoding="utf-8")
+    assert "landings += 1" in IOS_WALK.read_text(encoding="utf-8")
+    assert "walking.$landings" in (
+        REPO / "native/ios/Sources/JimGuardianApp.swift").read_text(
+            encoding="utf-8")
+    assert "Landings += 1" in WIN_WALK.read_text(encoding="utf-8")
+    # And the Windows shell reads it. The first draft checked only that the
+    # counter was incremented, which passes with nothing on the other end —
+    # a number nobody looks at is the same as no number.
+    shell = (REPO / "native/windows/Views/ShellPage.xaml.cs").read_text(
+        encoding="utf-8")
+    assert "Walking.Landings" in shell and "OverviewPage" in shell, (
+        "the Windows shell never navigates on a walk, so the counter is a "
+        "number nothing reads")

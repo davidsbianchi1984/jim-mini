@@ -17,6 +17,22 @@
                     <ComboBox x:Name="AreaBox" SelectedIndex="0" HorizontalAlignment="Stretch" />
                     <TextBox x:Name="MessageBox"
                              AcceptsReturn="True" TextWrapping="Wrap" Height="90" />
+                    <!-- Take the conversation with you. A minimised desktop
+                         window is not suspended, so there is no operating
+                         system to satisfy here — only a voice loop, which
+                         this shell did not have. The same control ends it;
+                         one that only starts something sends a person
+                         hunting through a tray for the way back out. -->
+                    <Button x:Name="WalkButton" HorizontalAlignment="Stretch"
+                            Background="Transparent" Click="OnWalk" />
+                    <TextBlock x:Name="WalkSaid" TextWrapping="Wrap"
+                               FontSize="12" Visibility="Collapsed" />
+                    <TextBlock x:Name="WalkTrouble" TextWrapping="Wrap"
+                               FontSize="12" Visibility="Collapsed" />
+                    <!-- The voice plays through here. Zero-height: it is a
+                         speaker, not a picture. -->
+                    <MediaElement x:Name="WalkVoice" AutoPlay="False"
+                                  Height="0" Width="0" />
                     <Button x:Name="AskButton" HorizontalAlignment="Stretch"
                             Height="44" Foreground="White" Click="OnAsk">
                         <Button.Background>

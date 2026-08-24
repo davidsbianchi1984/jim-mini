@@ -294,6 +294,16 @@ def selected(message: str, limit: int = LIMIT) -> list[Door]:
     Ties keep the navigation's order, so the answer does not reshuffle
     between two turns that said the same thing.
     """
+    # The contract, checked where it is broken rather than three frames
+    # down. A caller once handed this a list — a local variable in the
+    # prompt builder shadowed the parameter — and the failure surfaced as
+    # `'list' object has no attribute 'lower'` inside the selector, which
+    # says nothing about where the mistake was.
+    if message is not None and not isinstance(message, str):
+        raise TypeError(
+            f"the message selecting doors must be text, not "
+            f"{type(message).__name__} — something upstream is passing the "
+            "wrong thing, and the door selection is only where it shows")
     said = (message or "").lower()
     if not said:
         return []

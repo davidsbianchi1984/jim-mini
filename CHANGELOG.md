@@ -77,6 +77,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Like the Android half, **this has not been compiled** — there is no Swift
   toolchain here either.
 
+- **Windows carries it too, and needed no permission to.** This is the shell
+  that is different, and the difference is the point rather than an
+  inconvenience. A phone suspends an app the moment it leaves the screen, so
+  Android needs a foreground service and iOS needs a background audio mode —
+  both of them permission to keep running at all. A minimised desktop window
+  is not suspended, and this shell is unpackaged, so it does not even take the
+  packaged app lifecycle.
+
+  There was never an operating system to satisfy here. What was missing was a
+  voice loop, which this shell had none of at all — and a conversation that
+  cannot hear you does not become carryable by the window staying open. The
+  honesty that a notification buys on Android and an orange dot buys on iOS is
+  bought here by Windows' own microphone indicator in the tray, and stopping
+  disposes the recogniser so that indicator goes out.
+
+  Not compiled either: there is no .NET SDK here.
+
 - **On the phone it leaves the application entirely.** The console's strip
   stops when the browser puts the page away, and no web page can do better —
   a backgrounded tab has its recogniser ended for it. An installed app can,

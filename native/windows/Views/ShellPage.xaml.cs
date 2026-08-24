@@ -10,6 +10,37 @@ public sealed partial class ShellPage : Page
         InitializeComponent();
         LocalizeNav();
         ContentFrame.Navigate(typeof(OverviewPage));
+        // Pressing walk lands on the front page. The point of taking a
+        // conversation with you is going somewhere, and the screen you were
+        // on is the one place you have finished with. Here rather than on
+        // the page with the button: the shell owns navigation.
+        //
+        //     asked     did the conversation survive
+        //     mattered  can they now go anywhere
+        //
+        // Compared against the last count rather than a flag, so a second
+        // walk started from the overview still lands there. Released on
+        // unload: a shell that kept listening after it was gone would be
+        // navigating a frame that no longer exists.
+        _seenLandings = Walking.Landings;
+        Walking.Changed += OnWalkLanded;
+        Unloaded += (_, _) => Walking.Changed -= OnWalkLanded;
+    }
+
+    private int _seenLandings;
+
+    private void OnWalkLanded()
+    {
+        if (Walking.Landings == _seenLandings) return;
+        _seenLandings = Walking.Landings;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            foreach (var entry in Nav.MenuItems)
+                if (entry is NavigationViewItem nvi
+                    && nvi.Tag as string == "overview")
+                    Nav.SelectedItem = nvi;
+            ContentFrame.Navigate(typeof(OverviewPage));
+        });
     }
 
     /// Nav labels follow the user's chosen language (chrome localization);

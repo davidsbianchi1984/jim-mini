@@ -29,6 +29,17 @@ public sealed partial class CoachPage : Page
         CoachPitch.Text = L10n.T("coach.pitch");
         AreaBox.Header = L10n.T("coach.area");
         AreaBox.ItemsSource = Areas.Select(a => a.Replace('_', ' ')).ToList();
+        // The walk's own three lines, drawn now and on every change. Released
+        // on unload: a page that kept listening after it was gone would be
+        // updating controls that no longer exist — the desktop equivalent of
+        // the headless loop the console's unmount teardowns exist to prevent.
+        //
+        // The conversation itself is *not* released here. That is the whole
+        // point of it, and the reason this subscription and that ear have
+        // different lifetimes.
+        Walking.Changed += OnWalkChanged;
+        Unloaded += (_, _) => Walking.Changed -= OnWalkChanged;
+        OnWalkChanged();
         MessageBox.Header = L10n.T("coach.msg");
         MessageBox.PlaceholderText = L10n.T("coach.msg.ph");
         AskButton.Content = L10n.T("coach.ask");
@@ -492,6 +503,43 @@ public sealed partial class CoachPage : Page
     {
         BearingError.Text = message;
         BearingError.Visibility = Visibility.Visible;
+    }
+
+    /// <summary>Take the conversation with you, or end it.
+    ///
+    /// The area travels: this page is the one that offers the picker, and a
+    /// walk started from mental health that reverted to the front door's
+    /// `general` would be a different conversation wearing the same name.
+    /// </summary>
+    private async void OnWalk(object sender, RoutedEventArgs e)
+    {
+        if (Walking.Underway) { Walking.Stop(); return; }
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var area = Areas[AreaBox.SelectedIndex >= 0 ? AreaBox.SelectedIndex : 0];
+        await Walking.Start(s.Uid, s.Token, area, s.Language, WalkVoice);
+    }
+
+    /// <summary>Redraw the walk's own three lines. Subscribed on load and
+    /// released on unload: a page that kept listening after it was gone
+    /// would be updating controls that no longer exist.</summary>
+    private void OnWalkChanged()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            WalkButton.Content = Walking.Underway
+                ? L10n.T("walk.end") : L10n.T("walk.take");
+            WalkSaid.Text = Walking.Underway
+                ? (Walking.Offline
+                       ? Walking.Said + "  " + L10n.T("walk.offline")
+                       : Walking.Said)
+                : "";
+            WalkSaid.Visibility = WalkSaid.Text.Length > 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            WalkTrouble.Text = Walking.Trouble;
+            WalkTrouble.Visibility = Walking.Trouble.Length > 0
+                ? Visibility.Visible : Visibility.Collapsed;
+        });
     }
 
     private async void OnAsk(object sender, RoutedEventArgs e)
