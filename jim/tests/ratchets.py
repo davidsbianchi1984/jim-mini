@@ -391,7 +391,50 @@ def _form_asked_for() -> int:
     return len(_asked_for())
 
 
+# -- what each receiver declares --------------------------------------------
+#
+# `RECEIVERS` already carries a floor per receiver, and
+# `test_the_scan_reads_every_receiver` uses it — for the *reached* count. The
+# line above it floored the *declared* count at a blanket 5, for receivers
+# holding between eight and one thousand two hundred and fifty-two members.
+#
+#     asked     did the scan read this receiver
+#     mattered  did it read enough of it to be reading it at all
+#
+# The number was in the data the whole time; the tuple's own floor sits one
+# line below, doing this job for the other half of the check. Two quantities,
+# one of them measured per receiver and one of them guessed at once for all of
+# them — which is the same defect as a value handed to a function that never
+# reads it, and this estate has now found that shape four times in a day.
+
+
+def _receiver_declared(label: str):
+    def go() -> int:
+        from . import test_the_member_that_isnt_there as m
+        for row in m.RECEIVERS:
+            if row[0] == label:
+                return len(m._declared(row[1], m.REPO / row[2]))
+        raise KeyError(f"no receiver labelled {label!r}")
+    return go
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("receiver.declared.ios.state", 12, _receiver_declared("ios/state"),
+            "the members ios/state declares"),
+    Ratchet("receiver.declared.ios.api", 879, _receiver_declared("ios/api"),
+            "the members ios/api declares"),
+    Ratchet("receiver.declared.ios.theme", 12, _receiver_declared("ios/theme"),
+            "the members ios/theme declares"),
+    Ratchet("receiver.declared.android.state", 13, _receiver_declared("android/state"),
+            "the members android/state declares"),
+    Ratchet("receiver.declared.android.api", 1001, _receiver_declared("android/api"),
+            "the members android/api declares"),
+    Ratchet("receiver.declared.android.theme", 14, _receiver_declared("android/theme"),
+            "the members android/theme declares"),
+    Ratchet("receiver.declared.windows.state", 11, _receiver_declared("windows/state"),
+            "the members windows/state declares"),
+    Ratchet("receiver.declared.windows.api", 489, _receiver_declared("windows/api"),
+            "the members windows/api declares"),
     Ratchet("shell.shown.ios", 1162, _shell_shown("ios"),
             "the literals the iOS scan finds on any screen"),
     Ratchet("shell.shown.android", 871, _shell_shown("android"),

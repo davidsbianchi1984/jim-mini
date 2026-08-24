@@ -1,5 +1,5 @@
-# status: backlog — 24 rows
-# ceiling: 24
+# status: backlog — 23 rows
+# ceiling: 23
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -106,9 +106,8 @@ test_the_body_the_route_requires.py:265: matched >= 85
 test_the_desktop_and_the_phone_say_different_things.py:324: len(shared) > 40
 test_the_guardian_refuses_in_one_language.py:736: len(handlers) >= 9
 test_the_keys_the_android_client_reads.py:383: len(driven) >= 30
-test_the_member_that_isnt_there.py:287: len(_declared(lang, REPO / decl)) >= 5
-test_the_member_that_isnt_there.py:296: len(keys) >= 12
-test_the_member_that_isnt_there.py:297: len(used) >= 10
+test_the_member_that_isnt_there.py:301: len(keys) >= 12
+test_the_member_that_isnt_there.py:302: len(used) >= 10
 test_the_refusal_that_handed_the_body_back.py:155: len(found) > 80
 test_the_refusal_that_handed_the_body_back.py:159: reached > 50
 test_the_shape_the_client_expects.py:327: len(driven) >= 20

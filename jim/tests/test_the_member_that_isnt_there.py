@@ -72,6 +72,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -284,7 +285,11 @@ def test_the_scan_reads_every_receiver():
     makes the check above compare against an empty set — which passes."""
     for label, lang, decl, use, root, exts, floor in RECEIVERS:
         assert (REPO / decl).exists(), f"{label}: {decl} is gone"
-        assert len(_declared(lang, REPO / decl)) >= 5, label
+        declared = _declared(lang, REPO / decl)
+        assert len(declared) >= ratchets.floor(
+            f"receiver.declared.{label.replace(chr(47), chr(46))}"), (
+            f"{label}: only {len(declared)} member(s) declared — the "
+            "declaration file or its spelling has moved")
         reached = _reached(use, REPO / root, exts, Path(decl).name)
         assert len(reached) >= floor, (
             f"{label}: only {len(reached)} member(s) reached, floor {floor} — "
