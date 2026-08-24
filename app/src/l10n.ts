@@ -7939,14 +7939,13 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "walk.quiet": {
     en: "not listening", es: "sin escuchar", fr: "n'écoute pas", de: "hört nicht zu", pt: "sem ouvir", it: "non in ascolto", ja: "聞いていません", zh: "未在聆听", hi: "नहीं सुन रहा", ar: "لا يستمع",
   },
-  "walk.asleep": {
-    en: "stopped — this tab was put away", es: "detenido: esta pestaña quedó en segundo plano", fr: "arrêté — cet onglet est passé en arrière-plan", de: "gestoppt — dieser Tab wurde weggelegt", pt: "parado — este separador ficou em segundo plano", it: "fermo — questa scheda è passata in secondo piano", ja: "停止しました — このタブが背面に回りました", zh: "已停止 — 此标签页被切到后台", hi: "रुक गया — यह टैब पीछे चला गया", ar: "توقّف — أُبعدت هذه اللسان",
-  },
-  // An answer from the offline stack is an answer — a deployment with no
-  // model key still coaches, from stored knowledge — but it is not the model
-  // somebody picked, and on the strip there is no screen to notice that on.
-  "walk.offline": {
-    en: "answered from what's stored here", es: "respondido con lo que hay guardado aquí", fr: "répondu à partir de ce qui est stocké ici", de: "beantwortet aus dem, was hier gespeichert ist", pt: "respondido a partir do que está guardado aqui", it: "risposto con ciò che è conservato qui", ja: "ここに保存されている知識から回答", zh: "由本机存有的知识作答", hi: "यहाँ संग्रहीत जानकारी से उत्तर", ar: "أُجيب من المحفوظ هنا",
+  // The page is minimised or behind another tab and the microphone is still
+  // open, which is the point rather than an accident — the browser is
+  // showing its own recording indicator the whole time. Said plainly,
+  // because somebody who minimised the window on purpose still deserves to
+  // know what is running.
+  "walk.aloft": {
+    en: "still listening while you're away — the browser shows it is recording", es: "sigue escuchando mientras no estás — el navegador indica que está grabando", fr: "écoute toujours pendant ton absence — le navigateur indique qu'il enregistre", de: "hört weiter zu, während du weg bist — der Browser zeigt an, dass er aufnimmt", pt: "continua a ouvir enquanto estás fora — o navegador mostra que está a gravar", it: "continua ad ascoltare mentre non ci sei — il browser segnala che sta registrando", ja: "離れている間も聞いています — ブラウザーが録音中と表示しています", zh: "你离开时仍在聆听 — 浏览器会显示正在录音", hi: "तुम्हारे दूर रहते हुए भी सुन रहा है — ब्राउज़र दिखा रहा है कि रिकॉर्ड हो रहा है", ar: "ما زال يستمع أثناء غيابك — يُظهر المتصفّح أنه يسجّل",
   },
   "walk.lost": {
     en: "that did not reach it", es: "eso no llegó", fr: "cela n'est pas arrivé", de: "das kam nicht an", pt: "isso não chegou", it: "non è arrivato", ja: "届きませんでした", zh: "没有送达", hi: "वह नहीं पहुँचा", ar: "لم يصل ذلك",

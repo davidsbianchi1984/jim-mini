@@ -8,6 +8,7 @@ import { VersionGuard } from "./VersionGuard";
 import { GuardianLights } from "./GuardianLights";
 import { Underway } from "./Underway";
 import { WalkAlong } from "./WalkAlong";
+import { onWalk } from "./walk";
 import { Help } from "./Help";
 import { JimMiniOS } from "./JimMiniOS";
 import { Studio } from "./screens/Studio";
@@ -95,6 +96,23 @@ const NAV: { id: Tab; icon: ReactNode }[] = [
 export function App() {
   const { session, signOut } = useSession();
   const [tab, setTab] = useState<Tab>("home");
+
+  // Pressing walk lands on the front page.
+  //
+  // The point of taking a conversation with you is going somewhere, and the
+  // screen you were on is the one place you have finished with. Leaving
+  // somebody on the coach screen with the strip lit means the first thing
+  // they do is find their way out of it; the overview is where the whole
+  // console is reachable from, and from there the app itself is one swipe
+  // from being left behind.
+  //
+  //     asked     did the conversation survive
+  //     mattered  can they now go anywhere
+  //
+  // Here rather than in the four screens that offer the button: the shell
+  // owns navigation, and a screen that set the tab itself would be a second
+  // definition of where the front door is.
+  useEffect(() => onWalk((w) => { if (w) setTab("home"); }), []);
   // Every screen opened where the last one was scrolled to. A field report:
   // *I just went to this menu and it still doesn't pin to the top it jumps
   // into the middle of the material*. `.content` is the scrolling element in

@@ -75,6 +75,16 @@ class MainActivity : ComponentActivity() {
 @androidx.compose.runtime.Composable
 private fun HomeShell(vm: GuardianViewModel) {
     var tab by remember { mutableIntStateOf(0) }
+    // Pressing walk lands on the front page. Here rather than in the card
+    // that offers the button: the shell owns navigation, and a card that
+    // set the tab itself would be a second definition of where the front
+    // door is.
+    //
+    //     asked     did the conversation survive
+    //     mattered  can they now go anywhere
+    androidx.compose.runtime.LaunchedEffect(Walking.landings) {
+        if (Walking.landings > 0) tab = 0
+    }
     val tabs = listOf(
         Triple(L10n.t("tab.overview", vm.language), Icons.Filled.GridView, 0),
         Triple(L10n.t("tab.care", vm.language), Icons.Filled.Favorite, 1),

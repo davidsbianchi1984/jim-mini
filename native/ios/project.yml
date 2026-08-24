@@ -33,9 +33,29 @@ targets:
         UIUserInterfaceStyle: Dark
         UIStatusBarStyle: UIStatusBarStyleLightContent
         UILaunchScreen: {}
-        # The Talk card records a short clip for /voice/transcribe.
-        # iOS kills an app that opens the microphone without this string.
-        NSMicrophoneUsageDescription: "JIM records a short clip only while you hold the talk button, to hear what you said. The audio is sent for transcription and not stored."
+        # The Talk card records a short clip for /voice/transcribe, and a
+        # walking conversation keeps the microphone open while you are in
+        # another app. iOS kills an app that opens the microphone without
+        # this string, and the string is also what a person reads in
+        # Settings months later — so it says the second thing too rather
+        # than describing only the gentler half.
+        NSMicrophoneUsageDescription: "JIM listens while you hold the talk button, and — if you choose to take a conversation with you — while you are in other apps. iOS shows an orange dot in the status bar for as long as it is listening, and the conversation ends the moment you end it."
+        # Speech recognition is its own permission, and its own refusal.
+        NSSpeechRecognitionUsageDescription: "JIM turns what you say into words so it can answer. On phones that support it this happens on the device, and the audio does not leave your phone."
+        # The conversation you took with you, out of the app entirely.
+        #
+        #     asked     can the conversation survive a screen change
+        #     mattered  can it survive leaving the application
+        #
+        # `audio` is what lets an active AVAudioSession keep running once
+        # this app is no longer on screen. The orange indicator the system
+        # then draws is the point rather than a side effect: it is the
+        # difference between a conversation somebody is carrying and an app
+        # recording them after they left it. Nothing here starts on its own
+        # — the session is opened by a press and deactivated on stop, and
+        # the guard beside `Walk.swift` holds both ends of that.
+        UIBackgroundModes:
+          - audio
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         UISupportedInterfaceOrientations:

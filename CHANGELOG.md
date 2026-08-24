@@ -39,9 +39,43 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   screen does not quietly turn a conversation about mental health into a
   general one.
 
-  It does not survive the page being put away, and no web page can: a
-  backgrounded tab has its recogniser ended by the browser. Walking is inside
-  this application.
+  **It does survive the page being put away**, which corrects what this entry
+  said when it was first written. `away.ts` is right that a backgrounded page
+  has its *recogniser* ended by the browser; it is not right about
+  `getUserMedia`, where an open capture keeps recording while the window is
+  minimised and the browser shows its own recording indicator throughout —
+  the same bargain iOS makes with its orange dot. This console has two ways of
+  hearing, they behave oppositely when the page goes away, and they were being
+  guarded as though they behaved the same.
+
+      asked     does a hidden page stop hearing
+      mattered  which of the two ways of hearing was it using
+
+  So the strip asks `speech.ts` for the recording path by name, keeps
+  listening when you minimise the window, and says *still listening while
+  you're away* rather than stopping. A deployment with no transcription
+  service is refused outright — there is nothing there that survives being put
+  away, and opening a microphone that will hear nothing would be the silent
+  failure wearing a different coat.
+
+- **Pressing walk lands on the front page.** The point of taking a
+  conversation with you is going somewhere, and the screen you were on is the
+  one place you have finished with. Leaving somebody on the coach screen with
+  the strip lit means the first thing they do is find their way out of it; the
+  overview is where the whole console is reachable from, and from there the
+  app itself is one swipe from being left behind. In the shell rather than in
+  the screens that offer the button, because the shell owns navigation.
+
+- **iOS carries it out of the app too.** `UIBackgroundModes: audio`, an
+  `AVAudioSession` in `.playAndRecord`/`.spokenAudio` that ducks rather than
+  silences whatever music is playing, `SFSpeechRecognizer` on-device where the
+  phone supports it, and the system's orange indicator lit for as long as the
+  microphone is open. Stopping deactivates the session, because an indicator
+  left lit over an app that is no longer listening teaches people the
+  indicator lies.
+
+  Like the Android half, **this has not been compiled** — there is no Swift
+  toolchain here either.
 
 - **On the phone it leaves the application entirely.** The console's strip
   stops when the browser puts the page away, and no web page can do better —

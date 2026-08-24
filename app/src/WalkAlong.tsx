@@ -29,15 +29,29 @@ import { onWalk, stopWalking, walking, type Walking } from "./walk";
  * failure rather than as silence. A strip with its own recogniser would
  * have none of that and would drift from the two screens it was carrying.
  *
- * ## What it does not survive
+ * ## Being put away, and a correction
  *
- * Being put away. `away.ts` is explicit: a backgrounded page has its timers
- * throttled, its audio suspended and its recogniser ended by the browser,
- * and none of that arrives as an error. So the strip asks the same two
- * questions every other ear here asks — am I away, tell me when that changes
- * — and says it has stopped rather than going on claiming to listen. That is
- * the whole of the honesty available on the web: walking is inside this
- * application, and a minimised browser is a native shell's problem.
+ * This component shipped saying it could not survive being put away, and
+ * that a minimised browser was a native shell's problem. That was half
+ * right and the wrong half was load-bearing.
+ *
+ * `away.ts` is correct that a backgrounded page has its *recogniser* ended
+ * by the browser. It is not correct about `getUserMedia`: an open capture
+ * keeps the tab alive, keeps recording while the window is minimised, and
+ * makes the browser show its own recording indicator the whole time — the
+ * same bargain iOS makes with its orange dot. The two ways this console can
+ * hear behave oppositely when the page goes away, and the first draft
+ * guarded them as though they behaved the same.
+ *
+ *     asked     does a hidden page stop hearing
+ *     mattered  which of the two ways of hearing was it using
+ *
+ * So the strip now asks `speech.ts` for the path that survives, by name,
+ * and a deployment with no transcription service is told plainly that this
+ * cannot be carried rather than being handed a microphone that will hear
+ * nothing. Being put away is no longer a reason to stop — it is a fact the
+ * strip states, because a person who minimised the window on purpose still
+ * deserves to know the microphone is open.
  */
 export function WalkAlong() {
   const [who, setWho] = useState<Walking | null>(walking());
@@ -58,12 +72,12 @@ export function WalkAlong() {
 
   useEffect(() => onWalk(setWho), []);
 
-  // The page going away closes the ear and says so. Coming back does not
-  // reopen it: a microphone that restarts itself because a tab regained
-  // focus is one nobody pressed for, which is the line this whole component
-  // is on the right side of.
+  // The page going away is noted and not acted on. The recording path
+  // survives it, so closing the ear here would be this component inventing
+  // a failure the browser did not have — and coming back does not reopen
+  // anything either, because nothing was closed.
   useEffect(() => whenPutAway(
-    () => { setAsleep(true); close(); },
+    () => setAsleep(true),
     () => setAsleep(false)), []);
 
   useEffect(() => {
@@ -119,6 +133,11 @@ export function WalkAlong() {
         setListening(false);
         setTrouble(msg);
       },
+      undefined,
+      // By name, not by hope. This asks for the recording path — the one
+      // that survives a minimised window — and refuses rather than falling
+      // back to the recogniser that would die out there without saying so.
+      { carryWhenAway: true },
     );
   }
 
@@ -151,10 +170,10 @@ export function WalkAlong() {
       </button>
       <span className="walk-who">{who.shownName}</span>
       <span className="muted small walk-state">
-        {asleep ? tr("walk.asleep", lang)
-                : speaking ? tr("walk.speaking", lang)
-                           : listening ? tr("walk.listening", lang)
-                                       : tr("walk.quiet", lang)}
+        {speaking ? tr("walk.speaking", lang)
+                  : listening ? (asleep ? tr("walk.aloft", lang)
+                                        : tr("walk.listening", lang))
+                              : tr("walk.quiet", lang)}
       </span>
       {/* Who answered, when it was not the model. Between the state and
           the words, because it qualifies the words rather than the ear. */}

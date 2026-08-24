@@ -575,6 +575,44 @@ function awayGuard(onError: (message: string) => void) {
   };
 }
 
+
+/** What a caller wants from a listen beyond the three callbacks. */
+export interface ListenOptions {
+  /** Keep listening while the page is put away.
+   *
+   * `away.ts` says a backgrounded page has its recogniser ended by the
+   * browser, and that is true — of the *recogniser*. It is not true of
+   * `getUserMedia`: an open capture keeps the tab alive, keeps recording
+   * while the window is minimised, and makes the browser show its own
+   * recording indicator for as long as it runs. The two paths this module
+   * chooses between therefore behave oppositely when the page goes away,
+   * and until this option existed they were guarded as though they behaved
+   * the same.
+   *
+   *     asked     does a hidden page stop hearing
+   *     mattered  which of the two ways of hearing was it using
+   *
+   * So this is not a way of switching the away guard off. It is a claim
+   * that the *recording* path is the one that will run, enforced by
+   * refusing the device recogniser rather than by hoping: with no
+   * transcription service configured there is nothing here that survives
+   * being put away, and the listen fails saying so instead of opening a
+   * microphone that will quietly hear nothing.
+   *
+   * The one honest caveat: a hidden tab's timers are throttled, so the
+   * two-and-a-half-second silence stop measured by the analyser becomes
+   * coarser out there. A turn ends a little later than it would on screen.
+   * It does not stop ending.
+   */
+  carryWhenAway?: boolean;
+}
+
+/** There is no way to hear on a page that has been put away. */
+export const NO_EARS_MESSAGE =
+  "this deployment has no transcription service, so a conversation cannot "
+  + "be carried out of this page — it needs one to keep hearing you once "
+  + "the page is not on screen";
+
 /** Listen to the microphone and hand back what was said.
  *
  *  Which path listens is decided by what is configured, not by hope: a
@@ -607,24 +645,42 @@ export async function listen(
   // Only the record path has an analyser to read it from; the device
   // recogniser keeps a still orb, which is honest about what it exposes.
   onLevel?: (level: number) => void,
+  opts?: ListenOptions,
 ): Promise<Listener> {
   // Every path out of this function goes through the guard: the two device
   // recognisers, the microphone that was refused, and the recording one.
   // A path that forgot would be a microphone the sleeping tab keeps.
-  const away = awayGuard(onError);
-  const text = (t: string) => { if (!away.gone()) onText(t); };
-  const fail = (m: string) => { if (!away.gone()) onError(m); };
+  //
+  // Unless the caller is carrying a conversation out of the page — see
+  // `ListenOptions.carryWhenAway`, which is a claim about *which path* runs
+  // rather than a way of switching the guard off.
+  const carry = opts?.carryWhenAway === true;
+  const away = carry ? null : awayGuard(onError);
+  const text = (t: string) => { if (!away?.gone()) onText(t); };
+  const fail = (m: string) => { if (!away?.gone()) onError(m); };
+  const hold = (inner: Listener) => away ? away.hold(inner) : inner;
 
-  if (preferDevice || knownHasService === false) {
+  // The device recogniser is skipped entirely when carrying. It is the path
+  // that dies on a hidden page, so offering it there would be offering the
+  // exact failure this option exists to avoid — and it would fail silently,
+  // which is worse than refusing.
+  if (!carry && (preferDevice || knownHasService === false)) {
     const dev = deviceListener(text, fail);
-    if (dev) return away.hold(dev);
+    if (dev) return hold(dev);
   }
 
   if (knownHasService === null) {
     await primeVoice();
-    if (!knownHasService || preferDevice) {
+    if (!knownHasService && carry) {
+      // No transcription service and no device recogniser that survives
+      // being put away: there is no honest way to carry this, and saying so
+      // beats a microphone that quietly hears nothing.
+      fail(NO_EARS_MESSAGE);
+      return { stop: () => {} };
+    }
+    if (!carry && (!knownHasService || preferDevice)) {
       const dev = deviceListener(text, fail);
-      if (dev) return away.hold(dev);
+      if (dev) return hold(dev);
       // No recogniser either: record anyway, so the server's own honest
       // refusal is what the person reads rather than a guess made here.
     }
@@ -644,7 +700,7 @@ export async function listen(
                ...(mic ? { deviceId: { ideal: mic } } : {}) } });
   } catch {
     fail("no microphone available — check the app's microphone permission");
-    return away.hold({ stop: () => {} });
+    return hold({ stop: () => {} });
   }
   const chunks: BlobPart[] = [];
   const rec = new MediaRecorder(stream);
@@ -768,6 +824,6 @@ export async function listen(
     }
   };
   rec.start();
-  return away.hold(
+  return hold(
     { stop: () => { if (rec.state !== "inactive") rec.stop(); } });
 }

@@ -22,19 +22,26 @@ struct JimGuardianApp: App {
 /// Switches between the enroll flow and the signed-in tab bar.
 struct RootView: View {
     @EnvironmentObject var state: AppState
+    @ObservedObject private var walking = Walking.shared
+    @State private var tab = 0
 
     var body: some View {
         ZStack(alignment: .top) {
             Theme.bg.ignoresSafeArea()
             if state.isEnrolled {
-                TabView {
-                    OverviewView().tabItem { Label(L10n.t("tab.overview", state.language), systemImage: "circle.grid.cross") }
-                    CareView().tabItem { Label(L10n.t("tab.care", state.language), systemImage: "heart.text.square") }
-                    LifeView().tabItem { Label(L10n.t("tab.life", state.language), systemImage: "target") }
-                    SafetyView().tabItem { Label(L10n.t("tab.safety", state.language), systemImage: "sos.circle") }
-                    ConnectView().tabItem { Label(L10n.t("tab.connect", state.language), systemImage: "link") }
+                // Pressing walk lands on the front page. Here rather than in
+                // the screen that offers the button: the shell owns
+                // navigation, and a screen that selected a tab itself would
+                // be a second definition of where the front door is.
+                TabView(selection: $tab) {
+                    OverviewView().tag(0).tabItem { Label(L10n.t("tab.overview", state.language), systemImage: "circle.grid.cross") }
+                    CareView().tag(1).tabItem { Label(L10n.t("tab.care", state.language), systemImage: "heart.text.square") }
+                    LifeView().tag(2).tabItem { Label(L10n.t("tab.life", state.language), systemImage: "target") }
+                    SafetyView().tag(3).tabItem { Label(L10n.t("tab.safety", state.language), systemImage: "sos.circle") }
+                    ConnectView().tag(4).tabItem { Label(L10n.t("tab.connect", state.language), systemImage: "link") }
                 }
                 .tint(Theme.brandA)
+                .onReceive(walking.$landings) { n in if n > 0 { tab = 0 } }
             } else {
                 WelcomeView()
             }

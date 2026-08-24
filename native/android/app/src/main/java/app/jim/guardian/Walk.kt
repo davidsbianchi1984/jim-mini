@@ -96,6 +96,18 @@ object Walking {
     var trouble by mutableStateOf("")
         internal set
 
+    /** Bumped every time a walk begins, so the shell can land the person on
+     *  the front page. The point of taking a conversation with you is going
+     *  somewhere, and the screen you were on is the one place you have
+     *  finished with — leaving somebody on the coach card with the strip
+     *  lit means the first thing they do is find their way out of it.
+     *
+     *  A counter rather than a flag: a second walk started from the front
+     *  page must still land there, and a boolean that was already true
+     *  would say nothing happened. */
+    var landings by mutableStateOf(0)
+        internal set
+
     /** True when the last turn was answered by the offline stack rather than
      *  by a model. Not a failure — a deployment with no model key still
      *  coaches, from stored knowledge — but not the model somebody picked
@@ -178,6 +190,7 @@ class WalkService : Service() {
         goForeground()
         Walking.underway = true
         Walking.trouble = ""
+        Walking.landings += 1
         speaker = TextToSpeech(this) { }.also {
             it.language = Locale.forLanguageTag(lang)
         }

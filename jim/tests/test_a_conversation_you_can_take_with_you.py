@@ -19,21 +19,36 @@ exception to exactly the terms that make it one:
   * the strip says which of listening, answering and stopped it is;
   * ending it is the first control on the strip;
   * a real failure reads as one rather than as quiet;
-  * and when the browser puts the page away and ends the recogniser, the
-    strip says *that* rather than going on claiming to listen.
+  * and when the page is put away it says so — but it does not stop, which
+    reverses what this file first asserted and is explained below.
 
-The last one is not decoration. `away.ts` was written because a backgrounded
-page stops hearing without saying so, and silence and deafness look identical
-on screen while being opposite facts. An ear that survives a screen change
-would be the easiest place in the console to reintroduce that.
+## The reversal
+
+The first draft held that being put away must close the ear, because
+`away.ts` says a backgrounded page has its recogniser ended by the browser.
+That is true of the *recogniser* and false of `getUserMedia`: an open capture
+keeps the tab alive, keeps recording while the window is minimised, and makes
+the browser show its own recording indicator throughout. This console has two
+ways of hearing and they behave oppositely when the page goes away; the first
+draft guarded them as though they behaved the same, and so shipped a strip
+that closed a microphone the browser had not closed.
+
+    asked     does a hidden page stop hearing
+    mattered  which of the two ways of hearing was it using
+
+So the strip asks `speech.ts` for the recording path by name, and a
+deployment with no transcription service is refused outright rather than
+handed a recogniser that will die out there in silence. What survives from
+the original terms is the honesty: silence and deafness still must not look
+identical, which is now served by saying *still listening while you are
+away* rather than by stopping.
 
 And one term that is this console's rather than the estate's: the turn is
 `speech.ts`'s. That module decides between the service and the device
 recogniser, asks the connected earbud for its microphone by name, ends a turn
-on two and a half seconds of quiet, refuses to transcribe a recording the
-analyser never heard a voice in, and reports being put away as its own
-failure. A strip with a recogniser of its own would have none of that and
-would drift from the two screens it is carrying.
+on two and a half seconds of quiet, and refuses to transcribe a recording the
+analyser never heard a voice in. A strip with a recogniser of its own would
+have none of that and would drift from the two screens it is carrying.
 """
 
 import re
@@ -116,7 +131,10 @@ def test_nothing_opens_it_without_a_press():
 
 def test_the_strip_says_which_of_the_four_states_it_is_in():
     for owed in ("walk.listening", "walk.speaking", "walk.quiet",
-                 "walk.asleep"):
+                 # Not `walk.asleep`: being away no longer stops it, so the
+                 # fourth state is *still listening while you are away*.
+                 # See the reversal in this file's own docstring.
+                 "walk.aloft"):
         assert f'tr("{owed}"' in STRIP, f"the strip never renders {owed}"
     assert STRIP.index('tr("walk.end"') < STRIP.index("walk-who"), (
         "ending the conversation is not the first control on the strip")
@@ -139,13 +157,18 @@ def test_a_real_failure_reads_as_one():
     assert "walk-trouble" in STRIP, "nothing renders the failure"
 
 
-def test_being_put_away_stops_it_and_says_so():
-    """The failure `away.ts` was written about, in the one place best placed
-    to bring it back."""
+def test_being_put_away_is_noted_and_not_acted_on():
+    """The reversal, held in place.
+
+    The strip must still *know* it is away — somebody who minimised the
+    window deserves to be told the microphone is open. It must not close
+    anything, because the path it runs on did not close; a component that
+    invented that failure would be the mirror image of the one this file was
+    originally written about.
+    """
     assert "whenPutAway(" in STRIP, "the strip never asks whether it is away"
     # The whole call, paren-matched, rather than a regex that stops at the
-    # first `)` — a `listen(who)` inside a braced handler would sail past
-    # that, which is the shape this test exists to catch.
+    # first `)` — a `close()` inside a braced handler would sail past that.
     i = STRIP.index("whenPutAway(")
     depth, j = 0, i
     while j < len(STRIP):
@@ -157,13 +180,57 @@ def test_being_put_away_stops_it_and_says_so():
                 break
         j += 1
     call = STRIP[i:j + 1]
-    assert "close()" in call, "being put away does not close the ear"
+    assert "close()" not in call, (
+        "being put away closes the ear — the recording path survives it, so "
+        "this is the component inventing a failure the browser did not have")
     assert "hear(" not in call, (
-        "the put-away handling restarts the ear itself — a microphone that "
-        "reopens because a tab regained focus is one nobody pressed for")
-    assert 'tr("walk.asleep"' in STRIP, (
-        "the strip has no way to say it stopped because the page was put "
-        "away — which leaves silence and deafness looking identical again")
+        "the put-away handling opens the ear itself — nothing may start a "
+        "microphone but a press")
+    assert 'tr("walk.aloft"' in STRIP, (
+        "the strip has no way to say it is still listening while the page is "
+        "away, which leaves somebody who minimised the window with no idea "
+        "the microphone is open")
+
+
+def test_it_asks_for_the_path_that_survives_by_name():
+    """Not by hope. The device recogniser dies on a hidden page and does not
+    say so, so asking for it there would be choosing the one failure this is
+    about."""
+    assert "carryWhenAway: true" in STRIP, (
+        "the strip takes whichever path `listen` happens to pick, and one of "
+        "them stops hearing the moment the window is minimised")
+    speech = (APP / "speech.ts").read_text(encoding="utf-8")
+    assert "carryWhenAway" in speech, "`listen` does not offer the option"
+    # And the refusal. With no transcription service nothing here survives
+    # being put away, and a listen that opened a doomed microphone anyway
+    # would be the silent failure wearing a different coat.
+    # The call, not the name. A sabotage that renamed the export to
+    # `NO_EARS_MESSAGE_UNUSED` and deleted the refusal passed a substring
+    # check — the name was still there, doing nothing, which is exactly the
+    # shape of "declared and never reached".
+    assert "fail(NO_EARS_MESSAGE);" in speech, (
+        "a deployment with no transcription service is not refused, so the "
+        "strip opens a microphone that hears nothing once the page is put "
+        "away and never says why")
+    assert "export const NO_EARS_MESSAGE" in speech, (
+        "the sentence that refusal shows is gone")
+    # The device recogniser must be skipped, not merely deprioritised.
+    assert re.search(r"if \(!carry && \(preferDevice", speech), (
+        "the device recogniser is still reachable while carrying, which is "
+        "the path that dies on a hidden page without saying so")
+
+
+def test_pressing_walk_lands_on_the_front_page():
+    """The point of taking a conversation with you is going somewhere, and
+    the screen you were on is the one place you have finished with."""
+    assert 'setTab("home")' in SHELL, (
+        "pressing walk leaves the person on the screen they were trying to "
+        "leave, with the strip lit and the first thing to do being finding "
+        "their way out of it")
+    i = SHELL.index("onWalk((w)")
+    assert "if (w)" in SHELL[i:i + 140], (
+        "the shell navigates home when a walk *ends* as well as when it "
+        "begins, which yanks somebody off whatever screen they walked to")
 
 
 def test_the_turn_is_the_consoles_own_and_not_a_second_copy_of_one():
@@ -171,9 +238,15 @@ def test_the_turn_is_the_consoles_own_and_not_a_second_copy_of_one():
     check and the away report, and would drift from the screens it carries."""
     assert 'from "./speech"' in STRIP and "listen(" in STRIP, (
         "the strip does not listen through `speech.ts`")
+    # Against the code, with comments stripped. The first draft searched the
+    # whole file, and the comment explaining *why* the strip does not build
+    # its own `getUserMedia` failed the check that it does not build one — a
+    # guard that forbids naming the thing it forbids.
+    code = re.sub(r"/\*.*?\*/", "", STRIP, flags=re.S)
+    code = re.sub(r"//.*", "", code)
     for own in ("webkitSpeechRecognition", "SpeechRecognition",
                 "MediaRecorder", "getUserMedia", "SpeechSynthesisUtterance"):
-        assert own not in STRIP, (
+        assert own not in code, (
             f"the strip builds its own `{own}` instead of using the voice "
             "layer the two screens it carries already share")
     # In the comparison, not merely in the import line. The first draft

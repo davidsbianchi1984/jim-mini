@@ -3,6 +3,9 @@ import SwiftUI
 /// Life coach: pick an area, send a message -> POST /coach, show the reply.
 struct CoachView: View {
     @EnvironmentObject var state: AppState
+    /// The walking conversation. A singleton rather than per-view state: it
+    /// has to outlive this screen, which is the entire point of it.
+    @ObservedObject private var walking = Walking.shared
     @State private var area = "mental_health"
     @State private var message = ""
     @State private var reply: Guidance?
@@ -60,6 +63,58 @@ struct CoachView: View {
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 13))
                 }.disabled(message.isEmpty || busy)
+
+                // Take the conversation with you — out of this app entirely.
+                // A web page put away has its recogniser ended by the
+                // browser and says so; a phone keeps listening while
+                // somebody is looking something up somewhere else, and iOS
+                // draws the orange dot for as long as it does.
+                //
+                //     asked     can the conversation survive a screen change
+                //     mattered  can it survive leaving the application
+                //
+                // The same control ends it. A button that only starts
+                // something sends a person hunting through Settings for the
+                // way back out. The area travels with it: this screen is the
+                // one with the picker, and a walk started from mental health
+                // that reverted to the front door's `general` would be a
+                // different conversation wearing the same name.
+                VStack(alignment: .leading, spacing: 4) {
+                    Button {
+                        if walking.underway {
+                            walking.stop()
+                        } else if let uid = state.uid, let token = state.token {
+                            walking.start(uid: uid, token: token,
+                                          area: area, lang: state.language)
+                        }
+                    } label: {
+                        Text(walking.underway
+                             ? L10n.t("walk.end", state.language)
+                             : L10n.t("walk.take", state.language))
+                            .font(.footnote).foregroundStyle(Theme.brand)
+                    }
+                    if walking.underway {
+                        // What the orange dot means, said before somebody has
+                        // to wonder.
+                        Text(L10n.t("walk.aloft", state.language))
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                        if !walking.said.isEmpty {
+                            Text(walking.said)
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                        }
+                        if walking.offline {
+                            Text(L10n.t("walk.offline", state.language))
+                                .font(.caption2).italic()
+                                .foregroundStyle(Theme.t2)
+                        }
+                    }
+                    // Why it stopped, when it stopped for a reason. Blank
+                    // when somebody ended it: they know.
+                    if !walking.trouble.isEmpty {
+                        Text(walking.trouble)
+                            .font(.caption2).foregroundStyle(Theme.amber)
+                    }
+                }
 
                 if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
 
