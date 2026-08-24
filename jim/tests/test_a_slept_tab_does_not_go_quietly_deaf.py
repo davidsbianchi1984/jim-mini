@@ -28,6 +28,26 @@ mean nothing.
 These guards hold the rule at the two places it can be broken: a listen
 that does not notice being put away, and a relight loop that restarts
 without asking.
+
+## The one exception, added later
+
+Everything above is about the *recogniser*, which a hidden page really does
+have ended under it. It is not true of `getUserMedia`: an open capture keeps
+recording while the window is minimised, and the browser shows its own
+recording indicator throughout. The two ways this console hears behave
+oppositely when the page goes away, and for a while they were guarded as
+though they behaved the same.
+
+    asked     does a hidden page stop hearing
+    mattered  which of the two ways of hearing was it using
+
+So a caller carrying a conversation out of the page — the walk-along strip,
+and nothing else — asks for the recording path by name and is not guarded,
+because guarding it would close a microphone the browser had not closed.
+That is this defect's mirror image, not this defect. The device recogniser
+is refused outright in that mode, so no unguarded path can hand back a
+recogniser: the protection is intact and narrower, and the guards below say
+where the line is.
 """
 
 from __future__ import annotations
@@ -95,12 +115,40 @@ def test_no_path_out_of_listen_keeps_a_microphone_the_sleeping_tab_owns() -> Non
     body = body[:end]
     handed_back = re.findall(r"^\s*(?:if \(dev\) )?return (.+?);?$",
                              body, flags=re.M)
-    listeners = [r for r in handed_back if r not in ("", "null")]
+    listeners = [r for r in handed_back if r not in ("", "null")
+                 and "{ stop: () => {} }" not in r]
     assert listeners, "listen hands back no Listener at all — read the shape again"
     for r in listeners:
-        assert "away.hold" in r, (
+        assert "hold(" in r, (
             f"`return {r}` leaves listen without the put-away guard — that "
             "microphone survives the tab going to sleep")
+    # And `hold` is the guard, conditionally. The one exception is named
+    # here rather than left to be discovered:
+    #
+    # `getUserMedia` is not ended by a hidden page. An open capture keeps
+    # recording while the window is minimised and the browser shows its own
+    # recording indicator throughout, so a caller carrying a conversation
+    # out of the page asks for the recording path *by name* and is not
+    # guarded — guarding it would close a microphone the browser had not
+    # closed, which is this defect's mirror image rather than this defect.
+    #
+    #     asked     does a hidden page stop hearing
+    #     mattered  which of the two ways of hearing was it using
+    #
+    # The device recogniser, which IS ended, is refused outright while
+    # carrying. So no unguarded path can ever hand back a recogniser — the
+    # protection this file was written for is intact, and narrower.
+    assert "const hold = (inner: Listener) => away ? away.hold(inner) : inner;" \
+        in body, (
+        "`hold` is not the conditional guard, so either every path is "
+        "unguarded or the carried conversation is closed by a page change "
+        "the browser did not act on")
+    assert "const away = carry ? null : awayGuard(onError);" in body, (
+        "the guard is skipped on something other than the explicit carry "
+        "option — it may only be skipped for the path that survives")
+    assert re.search(r"if \(!carry && \(preferDevice", body), (
+        "the device recogniser is reachable while carrying, and that is the "
+        "path a hidden page ends without a word")
 
 
 def test_being_put_away_is_not_reported_as_quiet() -> None:
@@ -151,7 +199,12 @@ def test_the_guard_silences_what_the_stopped_recogniser_says_next() -> None:
         "listen no longer wraps onText and onError — the caller hears the "
         "stopped recogniser directly")
     for w in wrappers:
-        assert "away.gone()" in w, (
+        # `away?.gone()`, optional. When a conversation is being carried out
+        # of the page there is no guard to ask — see the note above — and
+        # `undefined` there means *not put down*, which is the truth for the
+        # recording path. For every other caller this is the same check it
+        # has always been.
+        assert "away?.gone()" in w or "away.gone()" in w, (
             f"the wrapper `{w.strip()}` passes callbacks through without "
             "asking whether the microphone was already put down")
     rest = re.sub(r"const (?:text|fail) = \([^)]*\) => \{[^}]*\};", "", body)
