@@ -50,6 +50,7 @@ import pathlib
 import re
 
 from .conftest import enroll
+from . import ratchets
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 WINDOWS_CLIENT = REPO / "native/windows/ApiClient.cs"
@@ -336,7 +337,7 @@ def test_the_extractor_reads_the_bindings_and_the_records():
     from .test_one_name_one_type_on_the_wire import _declared
 
     names = {wire for fields in _records().values() for wire, _ in fields}
-    assert len(_bindings()) >= 35, len(_bindings())
+    assert len(_bindings()) >= ratchets.floor("console.bindings"), len(_bindings())
     assert len(names) >= len(_declared()), (len(names), len(_declared()))
 
 def test_no_extracted_record_swallowed_the_next_one():

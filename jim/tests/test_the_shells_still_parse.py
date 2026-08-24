@@ -68,6 +68,7 @@ import pathlib
 import re
 import xml.etree.ElementTree as ET
 from collections import Counter
+from . import ratchets
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 
@@ -391,9 +392,9 @@ def test_every_control_the_code_behind_drives_is_named_in_its_screen():
 def test_there_are_shell_sources_to_read():
     """A glob that matched nothing would report three clean shells by finding
     none of them — the failure this whole arc keeps producing."""
-    assert len(SWIFT) >= 24, len(SWIFT)
-    assert len(KOTLIN) >= 6, len(KOTLIN)
-    assert len(CSHARP) >= 18, len(CSHARP)
+    assert len(SWIFT) >= ratchets.floor("shells.swift_files"), len(SWIFT)
+    assert len(KOTLIN) >= ratchets.floor("shells.kotlin_files"), len(KOTLIN)
+    assert len(CSHARP) >= ratchets.floor("shells.csharp_files"), len(CSHARP)
 
 
 def test_the_markup_checks_reach_the_windows_screens():
@@ -403,14 +404,14 @@ def test_the_markup_checks_reach_the_windows_screens():
     return `(0, [])` for a page whose code-behind they cannot find, and a
     green run over nothing is what this arc keeps producing.
     """
-    assert len(XAML) >= 13, len(XAML)
+    assert len(XAML) >= ratchets.floor("shells.xaml_files"), len(XAML)
     named = sum(len(set(_XNAME.findall(p.read_text(encoding="utf-8"))))
                 for p in XAML)
-    assert named >= 340, named
+    assert named >= ratchets.floor("shells.xaml_named"), named
     checked, _ = _handlers(XAML)
-    assert checked >= 80, checked
+    assert checked >= ratchets.floor("shells.xaml_handlers"), checked
     driven, _ = _undriveable(XAML)
-    assert driven >= 300, driven
+    assert driven >= ratchets.floor("shells.xaml_driveable"), driven
 
 
 def test_the_scope_reader_reaches_the_whole_type():

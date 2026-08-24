@@ -75,6 +75,7 @@ import pytest
 
 from .clientpaths import all_routes
 from jim import i18n
+from . import ratchets
 
 #: A string no route could produce, that reads like something a person would
 #: be sorry to see returned. Both halves matter: distinctive enough that a
@@ -270,7 +271,7 @@ def test_every_validation_message_has_every_language():
     assert not gaps, (
         "these validation messages are missing languages:\n    "
         + "\n    ".join(f"{k}: {', '.join(v)}" for k, v in sorted(gaps.items())))
-    assert len(i18n._VALIDATION) >= 10
+    assert len(i18n._VALIDATION) >= ratchets.floor("i18n.validation_messages")
 
 
 def test_an_unrecognised_pydantic_message_falls_through_as_english():

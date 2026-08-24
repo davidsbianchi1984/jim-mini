@@ -218,7 +218,132 @@ def _translated_refusals() -> int:
     return len(i18n._REFUSALS)
 
 
+# -- the client-shape extractors -------------------------------------------
+#
+# The largest cluster in `unregistered_floors.txt`, and the one the first
+# sweep predicted would be worst: every one of these reads a shell that has
+# roughly tripled since its floor was written. `wire.declared` was 240 against
+# 688 — two-thirds of the wire surface could vanish under it. The README pair
+# were 40 against 256 and 261, which is a sixth.
+
+
+def _swift_structs() -> int:
+    from .test_the_shape_the_swift_client_expects import _structs
+    return len(_structs())
+
+
+def _swift_fields() -> int:
+    from .test_the_shape_the_swift_client_expects import _structs
+    return sum(len(f) for f in _structs().values())
+
+
+def _swift_bindings() -> int:
+    from .test_the_shape_the_swift_client_expects import _bindings
+    return len(_bindings())
+
+
+def _console_shapes() -> int:
+    from .test_the_shape_the_console_expects import _shapes
+    return len(_shapes())
+
+
+def _console_shape_fields() -> int:
+    from .test_the_shape_the_console_expects import _shapes
+    return sum(len(f) for f in _shapes().values())
+
+
+def _console_gets() -> int:
+    from .test_the_shape_the_console_expects import _gets
+    return len(_gets())
+
+
+def _client_bindings() -> int:
+    from .test_the_shape_the_client_expects import _bindings
+    return len(_bindings())
+
+
+def _wire_declared() -> int:
+    from .test_one_name_one_type_on_the_wire import _declared
+    return len(_declared())
+
+
+def _shell_files(kind: str):
+    def go() -> int:
+        from . import test_the_shells_still_parse as m
+        return len(getattr(m, kind))
+    return go
+
+
+def _xaml_named() -> int:
+    from .test_the_shells_still_parse import XAML, _XNAME
+    return sum(len(set(_XNAME.findall(p.read_text(encoding="utf-8"))))
+               for p in XAML)
+
+
+def _xaml_handlers() -> int:
+    from .test_the_shells_still_parse import XAML, _handlers
+    checked, _ = _handlers(XAML)
+    return checked
+
+
+def _xaml_driveable() -> int:
+    from .test_the_shells_still_parse import XAML, _undriveable
+    driven, _ = _undriveable(XAML)
+    return driven
+
+
+def _readme_rows() -> int:
+    from .test_the_readme_says_what_shipped import _rows
+    return len(_rows())
+
+
+def _readme_released() -> int:
+    from .test_the_readme_says_what_shipped import _released
+    return len(_released())
+
+
+def _validation_messages() -> int:
+    from jim import i18n
+    return len(i18n._VALIDATION)
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("swift.structs", 247, _swift_structs,
+            "the Swift client's declared shapes"),
+    Ratchet("swift.struct_fields", 1057, _swift_fields,
+            "the fields across the Swift client's shapes"),
+    Ratchet("swift.bindings", 129, _swift_bindings,
+            "the Swift screens' bindings to those shapes"),
+    Ratchet("console.shapes", 130, _console_shapes,
+            "the console's declared shapes"),
+    Ratchet("console.shape_fields", 789, _console_shape_fields,
+            "the fields across the console's shapes"),
+    Ratchet("console.gets", 116, _console_gets,
+            "the console's read calls"),
+    Ratchet("console.bindings", 53, _client_bindings,
+            "the console screens' bindings to route shapes"),
+    Ratchet("wire.declared", 550, _wire_declared,
+            "every name declared on the wire, across all four clients"),
+    Ratchet("shells.swift_files", 45, _shell_files("SWIFT"),
+            "the Swift sources the shell parser reads"),
+    Ratchet("shells.kotlin_files", 7, _shell_files("KOTLIN"),
+            "the Kotlin sources the shell parser reads"),
+    Ratchet("shells.csharp_files", 18, _shell_files("CSHARP"),
+            "the C# sources the shell parser reads"),
+    Ratchet("shells.xaml_files", 13, _shell_files("XAML"),
+            "the XAML screens the markup checks reach"),
+    Ratchet("shells.xaml_named", 751, _xaml_named,
+            "the named elements across those XAML screens"),
+    Ratchet("shells.xaml_handlers", 170, _xaml_handlers,
+            "the XAML handlers checked against their code-behind"),
+    Ratchet("shells.xaml_driveable", 672, _xaml_driveable,
+            "the XAML elements the drive check reaches"),
+    Ratchet("readme.history_rows", 204, _readme_rows,
+            "the release history rows the README table carries"),
+    Ratchet("readme.released", 208, _readme_released,
+            "the releases the CHANGELOG declares"),
+    Ratchet("i18n.validation_messages", 8, _validation_messages,
+            "the validation sentences with a row in every language"),
     Ratchet("refusals.translated", 147, _translated_refusals,
             "rows in the hand-translated refusal table"),
     Ratchet("refusals.literal", 60, _literal_refusals,

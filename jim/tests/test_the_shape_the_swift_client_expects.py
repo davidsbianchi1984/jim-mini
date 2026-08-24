@@ -50,6 +50,7 @@ import re
 from .conftest import enroll
 from .test_the_shape_the_client_expects import (
     _accepts as _cs_accepts, _descend, _returned_keys, _shape_of, _standing)
+from . import ratchets
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 SWIFT_CLIENT = REPO / "native/ios/Sources/ApiClient.swift"
@@ -215,9 +216,9 @@ def test_the_extractor_reads_the_swift_client():
     """A pattern borrowed from the C# guard finds nothing in this file, and
     nothing found reads exactly like nothing wrong."""
     fields = sum(len(f) for f in _structs().values())
-    assert len(_structs()) >= 110, len(_structs())
-    assert fields >= 420, fields
-    assert len(_bindings()) >= 45, len(_bindings())
+    assert len(_structs()) >= ratchets.floor("swift.structs"), len(_structs())
+    assert fields >= ratchets.floor("swift.struct_fields"), fields
+    assert len(_bindings()) >= ratchets.floor("swift.bindings"), len(_bindings())
 
 
 def test_the_scan_reaches_a_real_share_of_the_bindings(client):

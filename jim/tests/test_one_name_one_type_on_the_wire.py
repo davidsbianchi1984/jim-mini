@@ -50,6 +50,7 @@ import subprocess
 import collections
 
 import pytest
+from . import ratchets
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 WINDOWS_CLIENT = REPO / "native/windows/ApiClient.cs"
@@ -131,7 +132,7 @@ def test_no_recorded_name_has_been_fixed_without_striking_it():
 def test_the_scan_reads_the_whole_wire_surface():
     """A regex rewrite that matched nothing would report this product
     collision-free, which is the most flattering possible way to be broken."""
-    assert len(_declared()) >= 240, (
+    assert len(_declared()) >= ratchets.floor("wire.declared"), (
         f"only {len(_declared())} wire name(s) parsed out of the Windows "
         f"client — the extractor has stopped matching")
 

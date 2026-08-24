@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -124,8 +125,8 @@ def test_no_row_names_a_release_that_was_never_cut():
 def test_the_scan_is_reading_the_table():
     """A guard on the guard: a pattern that stopped matching would report a
     complete history by finding no rows to compare."""
-    assert len(_rows()) >= 40, (
+    assert len(_rows()) >= ratchets.floor("readme.history_rows"), (
         f"only {len(_rows())} history row(s) parsed — the checks above would "
         "pass on almost nothing")
-    assert len(_released()) >= 40, (
+    assert len(_released()) >= ratchets.floor("readme.released"), (
         f"only {len(_released())} changelog release(s) parsed")

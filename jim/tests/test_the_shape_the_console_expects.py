@@ -52,6 +52,7 @@ import re
 
 from .test_the_shape_the_client_expects import (
     _descend, _returned_keys, _shape_of, _standing)
+from . import ratchets
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 CONSOLE_CLIENT = REPO / "app/src/api.ts"
@@ -401,9 +402,9 @@ def test_the_extractor_reads_this_clients_declarations():
     """Neither the C#, the Swift nor the Kotlin pattern finds anything in a
     TypeScript file, and nothing found reads exactly like nothing wrong."""
     shapes = _shapes()
-    assert len(shapes) >= 95, len(shapes)
-    assert sum(len(f) for f in shapes.values()) >= 600, shapes
-    assert len(_gets()) >= 105, len(_gets())
+    assert len(shapes) >= ratchets.floor("console.shapes"), len(shapes)
+    assert sum(len(f) for f in shapes.values()) >= ratchets.floor("console.shape_fields"), shapes
+    assert len(_gets()) >= ratchets.floor("console.gets"), len(_gets())
 
 
 def test_no_extracted_declaration_swallowed_the_next_one():
