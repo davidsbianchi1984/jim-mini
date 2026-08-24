@@ -1,5 +1,5 @@
-# status: backlog — 27 rows
-# ceiling: 27
+# status: backlog — 24 rows
+# ceiling: 24
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -93,14 +93,11 @@
 # however convincing the prose above it. An exemption nothing verifies is a
 # place to hide the numbers this file is meant to find.
 test_a_binding_is_not_a_door.py:134: len(found) > 20
-test_a_form_that_asks_for_it_has_a_label_for_it.py:119: controls > 6000
-test_a_form_that_asks_for_it_has_a_label_for_it.py:122: len(_asked_for()) >= 10
+test_a_form_that_asks_for_it_has_a_label_for_it.py:120: controls > 6000
 test_a_native_binding_is_not_a_door_either.py:177: n > 20
 test_a_refusal_whose_english_is_not_a_constant.py:151: len(calls) >= 6
 test_a_screen_nothing_opens.py:156: len(found) >= 5
 test_a_shell_asks_for_a_key_it_has.py:313: len(wanted) >= 20
-test_a_shell_does_not_print_what_it_translated.py:370: len(_shown(spec)) > 100
-test_a_shell_does_not_print_what_it_translated.py:374: len(_fragments(spec)) >= 22
 test_error_report_carries_nothing_private.py:398: len(segments) > 30
 test_help.py:19: len(client.get('/help/topics').json()['topics']) >= 10
 test_nothing_leaves_the_host.py:147: len(sites) >= 5

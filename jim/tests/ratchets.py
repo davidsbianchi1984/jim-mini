@@ -359,7 +359,53 @@ def _android_read_keychars() -> int:
     return sum(len(k) for _, k in _reads())
 
 
+# -- what each shell puts on a screen ---------------------------------------
+#
+# Registered per shell rather than once, because the assertion runs inside a
+# loop over SHELLS and one number cannot be four-fifths of three different
+# surfaces. The same reason `l10n.asked.ios` and its siblings are separate
+# entries: this estate has already learned that a literal shared across
+# shells is calibrated for whichever was smallest.
+#
+# The floor was 100 for all three, against 1,453 / 1,089 / 3,302 — three per
+# cent in the Windows shell, under a docstring that says a scan "reporting a
+# handful is far more likely to be broken than to be good news".
+
+
+def _shell_shown(shell: str):
+    def go() -> int:
+        from .test_a_shell_does_not_print_what_it_translated import SHELLS, _shown
+        return len(_shown(SHELLS[shell]))
+    return go
+
+
+def _shell_fragments(shell: str):
+    def go() -> int:
+        from .test_a_shell_does_not_print_what_it_translated import SHELLS, _fragments
+        return len(_fragments(SHELLS[shell]))
+    return go
+
+
+def _form_asked_for() -> int:
+    from .test_a_form_that_asks_for_it_has_a_label_for_it import _asked_for
+    return len(_asked_for())
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("shell.shown.ios", 1162, _shell_shown("ios"),
+            "the literals the iOS scan finds on any screen"),
+    Ratchet("shell.shown.android", 871, _shell_shown("android"),
+            "the literals the Android scan finds on any screen"),
+    Ratchet("shell.shown.windows", 2641, _shell_shown("windows"),
+            "the literals the Windows scan finds on any screen"),
+    Ratchet("shell.fragments.ios", 58, _shell_fragments("ios"),
+            "the fragments split out of the iOS table's slotted rows"),
+    Ratchet("shell.fragments.android", 57, _shell_fragments("android"),
+            "the fragments split out of the Android table's slotted rows"),
+    Ratchet("shell.fragments.windows", 58, _shell_fragments("windows"),
+            "the fragments split out of the Windows table's slotted rows"),
+    Ratchet("form.asked_for", 20, _form_asked_for,
+            "the request fields the form check knows a control for"),
     Ratchet("route.writes", 124, _route_writes,
             "the write calls the extractor reads off the clients"),
     Ratchet("route.writes_readable", 80, _route_writes_readable,
