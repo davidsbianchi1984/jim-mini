@@ -6,6 +6,98 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-08-24
+
+### Fixed
+
+- **The strip finds out when the phone stopped it.** A field report from an
+  iPhone, against the sibling product: walk, swipe up to the home screen, come
+  back to Safari, and the conversation had stopped without a word. It was
+  fixed there. This console has the same strip and was never told.
+
+      asked     does the capture survive being put away
+      mattered  does the strip find out when it did not
+
+  Every claim 1.8.0 made about an open capture surviving a hidden page is a
+  desktop claim and an Android claim. iOS Safari suspends the whole page the
+  moment you leave it — capture, recorder and analyser — and says nothing on
+  the way out. Four places asserted the universal version, and one of them was
+  a guard banning the correction, so the belief could not be fixed without a
+  test failing. That is what a guard is for when the belief is right and what
+  it costs when the belief is wrong.
+
+  `Listener` answers `live()` now — read off the recorder's own state rather
+  than remembered, because a flag the strip set itself would only repeat what
+  the strip already believed. Going away still closes nothing, since on every
+  platform but one nothing closed. Coming back asks, and says *the browser
+  stopped listening while you were away* in all nine languages when the answer
+  is no. It does not reopen the ear: a microphone that restarts itself because
+  a tab regained focus is one nobody pressed for.
+
+  Two defects reported against the sibling did **not** reproduce here and are
+  not fixed here, because there was nothing to fix — this strip closes the ear
+  for the whole answer and reopens it in `finally`, so it cannot transcribe
+  its own reply, and it speaks through `say()`, which uses the configured
+  voice. Checked rather than assumed, which is the whole point of the entry
+  above.
+
+- **An exemption that stopped excluding anything.** Adding a member to
+  `Listener` broke a guard that recognised the no-op stub by its exact
+  spelling. Not by failing — by passing: the substring was now absent from
+  every returned literal, so an exemption for one stub silently widened to
+  cover all of them, and the assertion that every listener goes through the
+  put-away guard would have stopped asserting anything about any of them.
+
+      asked     is this the no-op stub, spelled the way I remember
+      mattered  does this listener hold a microphone
+
+  It matches an empty `stop` body now.
+
+### Changed
+
+- **The Guardian refuses in the reader's language, and the ledger says so.**
+  The refusal backlog reached zero, and the record kept describing 42 rows as
+  outstanding — a file whose status line and whose prose disagreed for a
+  release. The ratchet only asks whether the count is under the ceiling, and 0
+  is under 0; the narrative is what a person reads to decide whether the round
+  is worth doing, and this one was telling them to redo it.
+
+### Added
+
+- **A guard that reads the translations, not just the count of missing ones.**
+  `refusals_untranslated.txt` counts sentences with no translation and only
+  shrinks. Nothing in three suites had ever read the ones that do exist, so
+  the backlog could reach zero with a Chinese row written in Cyrillic in it.
+
+      asked     is every refusal translated
+      mattered  is each translation in the language it is filed under
+
+  Two got through that way and were caught by eye rather than by anything:
+  `как` inside a Chinese string, `각` inside a Japanese one — single
+  characters in otherwise correct sentences, both of which would have
+  rendered, neither of which would have failed a test. It is deliberately
+  narrow: it cannot tell a good translation from a poor one, only that this is
+  not that language at all. Byte-identical in all three products and
+  registered in `shared_guards.txt`, so the next round cannot fix one and
+  forget the other two — which is the shape of every defect in this release.
+
+- **A guard on the claim about the platform.** The false universal fixed above
+  — an open capture keeps recording while the window is minimised — was
+  written into four files here and copied into a second console, and one
+  docstring offered iOS as the example proving it.
+
+      asked     was the claim tested
+      mattered  was it tested on the platform it was made about
+
+  It was not. The orange dot is what a native iOS application earns; a Safari
+  page gets suspended instead, which is the opposite fact, and naming the
+  exception as the proof is why the belief felt settled enough to copy.
+  `test_a_claim_about_a_platform.py` reads every TypeScript source in the
+  console, requires any file making the claim to name where it does not hold,
+  and bans the backwards sentence outright. It is in all three products,
+  including the one with no microphone at all — the day a capture arrives
+  there, the sentence that comes with it meets a guard already waiting.
+
 ## [1.8.0] - 2026-08-24
 
 ### Added
@@ -59,6 +151,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   service is refused outright — there is nothing there that survives being put
   away, and opening a microphone that will hear nothing would be the silent
   failure wearing a different coat.
+
+  **Corrected again in 1.8.1:** every sentence above about an open capture
+  surviving is a desktop sentence and an Android sentence. iOS Safari
+  suspends the whole page, capture included. See that release's entry.
 
 - **Pressing walk lands on the front page.** The point of taking a
   conversation with you is going somewhere, and the screen you were on is the
@@ -11043,7 +11139,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.1...HEAD
+[1.8.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.0...app-v1.8.1
 [1.8.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.7.0...app-v1.8.0
 [1.7.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.2...app-v1.7.0
 [1.6.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.1...app-v1.6.2

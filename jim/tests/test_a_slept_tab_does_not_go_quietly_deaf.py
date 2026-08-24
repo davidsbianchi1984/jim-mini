@@ -32,11 +32,19 @@ without asking.
 ## The one exception, added later
 
 Everything above is about the *recogniser*, which a hidden page really does
-have ended under it. It is not true of `getUserMedia`: an open capture keeps
-recording while the window is minimised, and the browser shows its own
-recording indicator throughout. The two ways this console hears behave
-oppositely when the page goes away, and for a while they were guarded as
-though they behaved the same.
+have ended under it. It is not true of `getUserMedia`: on a desktop and on
+Android an open capture keeps recording while the window is minimised, and
+the browser shows its own recording indicator throughout. The two ways this
+console hears behave oppositely when the page goes away, and for a while they
+were guarded as though they behaved the same.
+
+The qualifier in that sentence was added after the fact. It read as a
+universal for two releases, and iOS Safari is the platform it is false about:
+it suspends the whole page, capture included, and reports nothing. A caller
+carrying a conversation out there cannot be protected from that by anything in
+this module, so it is expected to ask `live()` on the way back instead — see
+`test_the_strip_finds_out_when_the_capture_did_not_survive` in the
+walk-along suite.
 
     asked     does a hidden page stop hearing
     mattered  which of the two ways of hearing was it using

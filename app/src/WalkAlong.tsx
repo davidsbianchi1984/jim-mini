@@ -36,12 +36,12 @@ import { onWalk, stopWalking, walking, type Walking } from "./walk";
  * right and the wrong half was load-bearing.
  *
  * `away.ts` is correct that a backgrounded page has its *recogniser* ended
- * by the browser. It is not correct about `getUserMedia`: an open capture
- * keeps the tab alive, keeps recording while the window is minimised, and
- * makes the browser show its own recording indicator the whole time — the
- * same bargain iOS makes with its orange dot. The two ways this console can
- * hear behave oppositely when the page goes away, and the first draft
- * guarded them as though they behaved the same.
+ * by the browser. It is not correct about `getUserMedia`: on a desktop and
+ * on Android an open capture keeps the tab alive, keeps recording while the
+ * window is minimised, and makes the browser show its own recording
+ * indicator the whole time. The two ways this console can hear behave
+ * oppositely when the page goes away, and the first draft guarded them as
+ * though they behaved the same.
  *
  *     asked     does a hidden page stop hearing
  *     mattered  which of the two ways of hearing was it using
@@ -52,6 +52,24 @@ import { onWalk, stopWalking, walking, type Walking } from "./walk";
  * nothing. Being put away is no longer a reason to stop — it is a fact the
  * strip states, because a person who minimised the window on purpose still
  * deserves to know the microphone is open.
+ *
+ * ## And the platform that correction did not cover
+ *
+ * The paragraph above once ended "the same bargain iOS makes with its
+ * orange dot", which is true of a native iOS application and false of a
+ * Safari page. iOS Safari suspends the whole page the moment you leave it,
+ * capture included, and says nothing on the way out — a field report walked
+ * on an iPhone, swiped up to the home screen, came back, and found the
+ * conversation had stopped in silence.
+ *
+ *     asked     which of the two ways of hearing was it using
+ *     mattered  does the platform let either of them run out there
+ *
+ * The sentence was not merely wrong; it named the platform that breaks the
+ * rule as the example that proves it, which is why the belief felt settled.
+ * Nothing on a page can prevent the suspension, so the strip does not try:
+ * it asks its listener `live()` on the way back and says the microphone
+ * stopped when it did. See the effect below.
  */
 export function WalkAlong() {
   const [who, setWho] = useState<Walking | null>(walking());

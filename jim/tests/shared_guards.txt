@@ -1,4 +1,4 @@
-# status: manifest — 514 guards carried by all three products
+# status: manifest — 517 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -224,6 +224,7 @@ test_every_way_out_of_this_host_consults_offline_mode
 test_every_windows_screen_is_well_formed_markup
 test_health_says_whether_signup_needs_a_key
 test_identifying_segments_are_replaced
+test_ios_is_not_offered_as_proof_of_the_rule_it_breaks
 test_it_only_shrinks
 test_it_walks_in_order_and_remembers
 test_it_works_with_no_model_configured
@@ -337,6 +338,7 @@ test_the_ceiling_is_not_left_slack_after_the_backlog_falls
 test_the_check_can_fail
 test_the_check_is_looking_at_something
 test_the_check_is_really_method_aware
+test_the_claim_about_surviving_names_its_exception
 test_the_client_list_is_the_whole_set
 test_the_client_never_hands_the_recorder_a_message
 test_the_client_records_both_kinds_of_failure
@@ -432,6 +434,7 @@ test_the_prose_and_the_manifest_agree_on_how_many
 test_the_prose_names_every_file_the_manifest_does
 test_the_python_suite_runs_where_it_is_checked
 test_the_raise_sites_were_actually_converted
+test_the_reader_can_still_see_this_console
 test_the_reader_can_still_see_this_suite
 test_the_reader_finds_the_workflows_at_all
 test_the_readers_account_for_every_header_a_client_sends
