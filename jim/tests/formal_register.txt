@@ -1,12 +1,34 @@
-# status: ratchet — formal rows still to convert
+# status: at the floor — every row left is a false positive
 #
 # The register is informal: du / tú. Each row is a table and how many of its
 # strings still address the reader formally. The number never goes up.
 #
-# Spanish is finished (23 rows, not the 327 a `su`/`sus` count reported —
-# see the guard's docstring). What remains is German.
+# Spanish is finished (23 rows, not the 327 a `su`/`sus` count reported).
+# German is finished too. The console sits on ten rows and each shell on
+# nine, and every
+# one of those is third-person `Sie`/`Ihr` or an informal plural rather than
+# formal address. Telling them apart takes parsing German; a detector that
+# guessed would be worse than one that counts. So they are counted, and
+# named here instead.
 #
-app/src/l10n.ts 152
-native/android/app/src/main/java/app/jim/guardian/L10n.kt 87
-native/ios/Sources/L10n.swift 87
-native/windows/L10n.cs 92
+# The console's ten:
+#   spec.held           "Ihre Antwort" — *their* reply
+#   pair.head           "Ihr beide" — informal plural, *you both*
+#   rch.code.scanned    "Sie wird ... ausgeliefert" — *it*, the scan page
+#   hld.farend.save     "Sie haben zugestimmt" — *they* agreed
+#   wrd.link.name.ph    "Ihr Name" — *their* name
+#   aim.activity.pitch  "Sie sagt dem Guardian" — *it*, the activity
+#   lia.who.ph          "Ihre Kennung" — *their* id
+#   lia.tomine          "Ihrer sagte:" — *theirs* said
+#   mon.plug.told       "Sie wurden informiert" — *they* have been told
+#   cal.number.ph       "Ihre Nummer" — *their* number
+#
+# The three native tables' nine: the last six above, plus
+#   spec.held, pair.head, aim.activity.pitch as above
+#   fam.theirs          "Ihr Konto, ihr Guardian" — *their* account
+#   fam.unlinked.note   "Ihr Konto ... bleiben ihre" — *theirs* stays theirs
+#
+app/src/l10n.ts 10
+native/android/app/src/main/java/app/jim/guardian/L10n.kt 9
+native/ios/Sources/L10n.swift 9
+native/windows/L10n.cs 9

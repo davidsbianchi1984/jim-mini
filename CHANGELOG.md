@@ -6,6 +6,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **One product, one way of addressing the reader.** German and Spanish both
+  distinguish a formal *you* from an informal one, and that choice is a claim
+  about the relationship rather than a synonym. This estate made both claims at
+  once: a German reader met *Sie* on the desktop console and *du* on the phone,
+  and both registers inside each of those tables.
+
+      asked     is the string translated
+      mattered  who does it think it is talking to
+
+  The decision is informal — *du* and *tú* — because every phone shell already
+  leaned that way and because these are personal products. Every formally
+  written German row across the four string tables is now informal, and a guard
+  holds the count down so a new screen cannot reintroduce the other register.
+
+  Two counting traps are recorded in the guard rather than coded around, because
+  a detector that guessed at them would be worse than one that counts. Spanish
+  `su`/`sus` is ambiguous between formal-*your* and third-person *their*, and in
+  this estate the overwhelming majority are the latter — counting them reported
+  327 rows where the truth was 23, and converting off that number would have
+  corrupted every sentence about somebody else. German capitalises any word that
+  opens a sentence, so `Sie` can be *she*, *they* or *it* while looking like
+  formal address: *Sie zu erstellen gewährt nichts* is *to create **it** grants
+  nothing*. Those rows stay counted, and each one is named in the ledger beside
+  the number it holds up.
+
 ## [1.6.2] - 2026-08-24
 
 ### Fixed

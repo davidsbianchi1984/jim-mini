@@ -31,6 +31,15 @@ about somebody else.
 American Spanish `ustedes` is the ordinary plural *you* regardless of
 register — Spain's `vosotros` is the regional form — so rewriting it would
 narrow the audience rather than warm the tone.
+**German `Sie` at the start of a sentence.** `sie` is *she*/*they*/*it* and
+capitalises like any word does when a sentence opens with it, so a row can
+read as formal address while being entirely third person. *Sie zu erstellen
+gewährt nichts* is *to create **it** grants nothing*, about a standing
+instruction; *Sie authentifiziert sich mit dem Token* is the counterparty,
+not the reader. Rewriting either would break the German rather than warm it.
+These are counted — a detector that guessed would be worse — so a table's
+floor is not always zero, and the rows behind a floor that will not move are
+listed in the ledger beside it.
 """
 
 from __future__ import annotations
