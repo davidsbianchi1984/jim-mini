@@ -486,10 +486,12 @@ def _template_calls() -> int:
 
 # -- the floors the sweep was too coarse to see -----------------------------
 #
-# `SMALLEST_FLOOR` is five, so `assert n >= 2` never entered the backlog. The
-# cutoff is right about most of what it hides: a two or a three is usually a
-# shape check on a response body, not a floor on a scanned surface. It is
-# wrong about these.
+# `SMALLEST_FLOOR` was five, so `assert n >= 2` never entered the backlog. The
+# cutoff was right about most of what it hid: a two or a three is usually a
+# shape check on a response body, not a floor on a scanned surface. It was
+# wrong about these — and measuring them is what retired the cutoff, which the
+# sweep now replaces with a question about the expression rather than the
+# number.
 #
 #     asked     is this floor big enough to be worth auditing
 #     mattered  is this floor smaller than what it stands over

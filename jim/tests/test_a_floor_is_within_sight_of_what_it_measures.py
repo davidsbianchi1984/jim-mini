@@ -52,6 +52,31 @@ So they are held in a ratcheted backlog instead of guessed at. The count may
 shrink and may not grow. A new bare floor is a new number nothing will ever
 audit, and the file says so at the moment it is written rather than three
 releases later.
+
+## What the sweep decided a floor was, and why that changed
+
+For its first several rounds this sweep took any comparison against an
+integer of five or more. Five was a stand-in: below it lay indices, small
+fixed cardinalities, and assertions about a single response — `body["count"]
+>= 2` — which are claims about one answer rather than floors under a scan.
+
+The stand-in was wrong in both directions, and the round that measured the
+hidden ones proved it. Of the 112 comparisons under five across the three
+suites, fifty-two were response-body assertions the cutoff was right to
+exclude, forty were honest floors already in band, and twenty stood well
+under what they guarded. The sharpest was an `n >= 2` over a shell building
+a hundred and twenty-seven requests. Lowering the cutoff would have swept in
+all fifty-two; leaving it kept hiding the twenty.
+
+    asked     is this floor big enough to be worth auditing
+    mattered  is this a floor at all
+
+So the sweep asks the second question now, of the expression on the left
+rather than the number on the right: is this a count of something the suite
+went and found, or a value pulled out of what something returned.
+`reads_a_result` below is that test, and it has its own guards in both
+directions, because a classifier that answered "not a floor" to everything
+would empty this backlog and read exactly like finishing it.
 """
 
 from __future__ import annotations
@@ -70,10 +95,16 @@ from . import ratchets
 #: authors happened to think of it.
 HEADROOM = 0.5
 
-#: Integer literals below this are not floors — they are counts of a handful
-#: of things, indices, small fixed cardinalities. Sweeping them in would bury
-#: the real ones under noise.
-SMALLEST_FLOOR = 5
+#: Calls that produce something to count by going and looking — a regex sweep,
+#: a directory walk, an occurrence count. A `len()` around one of these counts
+#: a surface this suite scanned, which is what a floor stands under.
+SCANNERS = frozenset({"findall", "finditer", "glob", "rglob", "count",
+                      "split", "splitlines", "readlines", "rsplit"})
+
+#: Names that wrap a count around something else, and so pass the question
+#: through to what they were handed.
+WRAPPERS = frozenset({"len", "sum", "min", "max", "sorted", "set", "list",
+                      "tuple", "abs", "int", "round"})
 
 TESTS = Path(__file__).resolve().parent
 RECORD = TESTS / "unregistered_floors.txt"
@@ -119,6 +150,101 @@ def _not_floors() -> set[str]:
     return out
 
 
+def _asserts(tree: ast.Module):
+    """Every assertion, paired with the scope whose names it can see.
+
+    The scope is needed because most floors compare a local — `controls`,
+    `sites`, `n` — and what that local was built from is the only thing that
+    says whether the comparison is a floor or a claim about one answer.
+    """
+    out = []
+    for scope in [tree] + [n for n in ast.walk(tree)
+                           if isinstance(n, (ast.FunctionDef,
+                                             ast.AsyncFunctionDef))]:
+        for node in ast.walk(scope):
+            if isinstance(node, ast.Assert):
+                out.append((scope, node))
+    seen, kept = set(), []
+    for scope, node in out:
+        # An assert inside a function is reached twice — once through the
+        # module and once through the function. The function is the tighter
+        # scope and the one that resolves its names, so it wins.
+        key = (node.lineno, node.col_offset)
+        if key in seen and isinstance(scope, ast.Module):
+            continue
+        if key in seen:
+            kept = [(s, n) for s, n in kept
+                    if (n.lineno, n.col_offset) != key]
+        seen.add(key)
+        kept.append((scope, node))
+    return sorted(kept, key=lambda p: (p[1].lineno, p[1].col_offset))
+
+
+def _assigned(scope) -> dict[str, ast.AST]:
+    """Names this scope binds to an expression, for the one hop below.
+
+    One hop, not a fixpoint: `controls = _scanned_controls()` is worth
+    following and a chain of five is worth leaving alone. A name this cannot
+    resolve is kept rather than dropped, which is the direction that errs
+    toward counting a floor twice rather than losing one.
+    """
+    out = {}
+    for node in ast.walk(scope):
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    out.setdefault(target.id, node.value)
+        elif isinstance(node, ast.AnnAssign) and node.value is not None:
+            if isinstance(node.target, ast.Name):
+                out.setdefault(node.target.id, node.value)
+    return out
+
+
+def reads_a_result(node: ast.AST, assigned: dict[str, ast.AST],
+                   depth: int = 0) -> bool:
+    """Is this expression a value pulled out of what something returned?
+
+    The question the sweep used to answer with the size of the literal. A
+    floor stands under a surface the suite went and scanned; `len(sites) >= 5`
+    is one whether the five is five or fifty. `body["redactions"] >= 2` is not
+    a floor at any number — it is a claim about a single answer, satisfied or
+    not on its own terms, and no measurement of a surface would audit it.
+
+        asked     is this floor big enough to be worth auditing
+        mattered  is this a floor at all
+
+    Selecting on size was a stand-in for selecting on kind, and it was wrong
+    in both directions: it hid a two standing over a hundred and twenty-seven,
+    and lowering it would have swept in fifty-two response-body assertions
+    that no ratchet could ever measure.
+    """
+    if depth > 6:                               # pragma: no cover - no chain
+        return False
+    if isinstance(node, (ast.Subscript, ast.Attribute, ast.BoolOp, ast.Await)):
+        return True
+    if isinstance(node, ast.Call):
+        func = node.func
+        if isinstance(func, ast.Attribute):
+            if func.attr not in SCANNERS:
+                return True
+            return False
+        if isinstance(func, ast.Name) and func.id in WRAPPERS:
+            return any(reads_a_result(a, assigned, depth + 1)
+                       for a in node.args)
+        return False
+    if isinstance(node, (ast.GeneratorExp, ast.ListComp, ast.SetComp)):
+        return reads_a_result(node.elt, assigned, depth + 1)
+    if isinstance(node, ast.BinOp):
+        return (reads_a_result(node.left, assigned, depth + 1)
+                or reads_a_result(node.right, assigned, depth + 1))
+    if isinstance(node, ast.Name):
+        value = assigned.get(node.id)
+        if value is None:
+            return False
+        return reads_a_result(value, {}, depth + 1)
+    return False
+
+
 def _bare_floors() -> list[str]:
     """Every `assert <something> > <int>` still carrying its own number.
 
@@ -133,9 +259,7 @@ def _bare_floors() -> list[str]:
             tree = ast.parse(path.read_text(encoding="utf-8"))
         except SyntaxError:                     # pragma: no cover - none today
             continue
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Assert):
-                continue
+        for scope, node in _asserts(tree):
             test = node.test
             if not (isinstance(test, ast.Compare) and len(test.ops) == 1
                     and isinstance(test.ops[0], (ast.GtE, ast.Gt))):
@@ -143,8 +267,9 @@ def _bare_floors() -> list[str]:
             right = test.comparators[0]
             if not (isinstance(right, ast.Constant)
                     and isinstance(right.value, int)
-                    and not isinstance(right.value, bool)
-                    and right.value >= SMALLEST_FLOOR):
+                    and not isinstance(right.value, bool)):
+                continue
+            if reads_a_result(test.left, _assigned(scope)):
                 continue
             expr = ast.unparse(test)[:88]
             if f"{path.name}: {expr}" in exempt:
@@ -161,6 +286,69 @@ def _recorded() -> set[str]:
 def _ceiling() -> int:
     return int(re.search(r"# ceiling: (\d+)",
                          RECORD.read_text(encoding="utf-8")).group(1))
+
+
+def test_a_scanned_count_is_a_floor_and_a_returned_field_is_not():
+    """The classifier in both directions, on lines taken from these suites.
+
+    Both directions, because the two failures are not symmetrical and only one
+    of them is loud. A rule that calls floors response fields shrinks this
+    backlog to nothing and reads like the work being finished.
+    """
+    floors = ("len(sites) >= 5",
+              "controls > 6000",
+              "n >= 2",
+              "app.count('onPlans={toPlans}') >= 20",
+              "sum(len(k) for _, k in reads) >= 28",
+              "english + calls >= 50",
+              "len(re.findall(BUILT[name], code)) >= 2")
+    returned = ("body['beats_spoken'] >= 1",
+                "log['count'] >= 2",
+                "exc['redactions'] >= 2",
+                "visits.fold_old() >= 3",
+                "escalation._SEVERITY_BASE['critical'] >= 4",
+                "(hr.get('samples') or 0) >= 1",
+                "len(out['messages']) >= 2")
+    for src in floors:
+        left = ast.parse(src, mode="eval").body.left
+        assert not reads_a_result(left, {}), f"{src} is a floor"
+    for src in returned:
+        left = ast.parse(src, mode="eval").body.left
+        assert reads_a_result(left, {}), f"{src} is not a floor"
+
+
+def test_a_local_is_judged_by_what_it_was_built_from():
+    """Most floors compare a local, so the name alone decides nothing.
+
+    `len(rows)` and `len(found)` are the same three tokens. What separates
+    them is one line above the assertion, which is why the sweep carries the
+    scope down instead of looking at the comparison on its own.
+    """
+    tree = ast.parse(
+        "def t():\n"
+        "    rows = response.json()['rows']\n"
+        "    found = _scan(REPO)\n"
+        "    assert len(rows) >= 2\n"
+        "    assert len(found) >= 2\n")
+    fn = tree.body[0]
+    assigned = _assigned(fn)
+    out_of_a_response, off_the_repo = sorted(
+        (n for n in ast.walk(fn) if isinstance(n, ast.Assert)),
+        key=lambda n: n.lineno)
+    assert reads_a_result(out_of_a_response.test.left, assigned)
+    assert not reads_a_result(off_the_repo.test.left, assigned)
+
+
+def test_the_classifier_keeps_what_it_cannot_read():
+    """A name it cannot resolve is kept, not dropped.
+
+    The direction matters. Keeping one it should have dropped puts a row in a
+    backlog somebody reads; dropping one it should have kept removes a floor
+    from the world silently, and the backlog shrinks in a way that looks like
+    progress.
+    """
+    left = ast.parse("whatever_this_is >= 7", mode="eval").body.left
+    assert not reads_a_result(left, {})
 
 
 @pytest.mark.parametrize("ratchet", ratchets.RATCHETS, ids=lambda r: r.name)

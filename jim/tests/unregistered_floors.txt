@@ -1,5 +1,5 @@
-# status: backlog — 16 rows
-# ceiling: 16
+# status: backlog — 37 rows
+# ceiling: 37
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -46,8 +46,24 @@
 # requires knowing what each one measures, which is the work of registering
 # it, which is why they are counted rather than guessed at.
 #
-# The ceiling does not move up. A new bare floor is a new number nothing will
-# ever audit.
+# The ceiling does not move up because a floor was written. It moved up once,
+# here, because the sweep was widened — and the distinction is the whole
+# reason a number like this is worth keeping.
+#
+#     asked     did the backlog grow
+#     mattered  did the suite get worse, or did the instrument get better
+#
+# The sweep used to take any comparison against an integer of five or more.
+# Five stood in for "is this a floor at all", badly: it hid an `assert n >= 2`
+# over a shell building a hundred and twenty-seven requests, and lowering it
+# would have swept in fifty-two assertions about single response bodies that
+# no ratchet could ever measure. It now asks what the left side of the
+# comparison is — a count of something the suite went and found, or a value
+# pulled out of what something returned.
+#
+# Rows that appeared the day that changed were always there. A backlog that
+# only ever falls, when the thing generating it can be narrowed, is a number
+# about the sweep rather than about the suite.
 #
 #
 # ## Not floors: a value that is not a size
@@ -92,19 +108,40 @@
 # count of a swept surface, is always a floor, and may not be excused here
 # however convincing the prose above it. An exemption nothing verifies is a
 # place to hide the numbers this file is meant to find.
+test_a_check_that_cannot_fail_before_the_merge.py:131: len(files) >= 3
+test_a_confident_wrong_diagnosis.py:69: places >= 3
+test_a_conversation_you_can_take_with_you.py:202: comma > 0
+test_a_derived_artifact_nothing_derives.py:205: total >= 3
+test_a_refused_letter_does_not_cost_a_reading.py:79: _events(user) > 0
+test_a_refused_letter_does_not_cost_a_reading.py:182: _events(user) > 0
 test_a_screen_nothing_opens.py:156: len(found) >= 5
+test_a_screen_nothing_opens.py:273: len(sites) >= 2
 test_a_shell_asks_for_a_key_it_has.py:313: len(wanted) >= 20
-test_help.py:19: len(client.get('/help/topics').json()['topics']) >= 10
+test_ability_is_not_a_gate.py:115: coach.count('aria-live=') >= 2
+test_every_degrading_path_says_so.py:195: len(found) >= 2
+test_native_shells_record_nothing_private.py:138: len(calls) >= 2
+test_the_answer_begins_before_it_ends.py:65: len(pieces) >= 2
+test_the_baseline_screen_is_the_home_of_limits.py:87: step > 0
 test_the_body_the_route_requires.py:265: matched >= 85
+test_the_conversation_leaves_the_application.py:162: body.count('close(reason =') >= 3
+test_the_crash_watch_rings_the_same_bell.py:108: len(ours) >= 2
 test_the_desktop_and_the_phone_say_different_things.py:324: len(shared) > 40
+test_the_erase_left_a_live_address.py:120: len(found) >= 4
+test_the_gallery_is_a_grid.py:74: len(found) >= 2
+test_the_guardian_does_not_answer_herself.py:118: SPEECH.count('echoOfTheGuardian(') >= 3
+test_the_guardian_does_not_answer_herself.py:144: len(reports) >= 2
 test_the_guardian_refuses_in_one_language.py:736: len(handlers) >= 9
+test_the_installer_can_actually_report.py:115: len(steps) >= 3
 test_the_keys_the_android_client_reads.py:383: len(driven) >= 30
+test_the_language_nobody_was_sending.py:308: len(found) >= 2
 test_the_member_that_isnt_there.py:301: len(keys) >= 12
 test_the_member_that_isnt_there.py:302: len(used) >= 10
 test_the_refusal_that_handed_the_body_back.py:155: len(found) > 80
 test_the_refusal_that_handed_the_body_back.py:159: reached > 50
+test_the_shape_inside_the_shape.py:485: len(sent) >= 2
 test_the_shape_the_client_expects.py:327: len(driven) >= 20
 test_the_shape_the_console_expects.py:457: len(driven) >= 45
 test_the_shape_the_swift_client_expects.py:228: len(driven) >= 15
 test_the_tabs_are_translated_and_the_screens_are_not.py:553: english + calls >= 50
+test_the_tabs_are_translated_and_the_screens_are_not.py:557: calls >= 1
 test_the_tabs_are_translated_and_the_screens_are_not.py:774: len(rows) >= 10
