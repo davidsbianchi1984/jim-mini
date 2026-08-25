@@ -67,6 +67,7 @@ from pathlib import Path
 import pytest
 
 from jim import continuity, db
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -197,12 +198,17 @@ def test_every_derived_artifact_has_a_caller_that_is_not_a_button(module, func):
         "not exist — while the code that reads it silently returns nothing.")
 
 
+def _caller_total() -> int:
+    """Calls to a deriver, across the package — the walk this file stands on."""
+    return sum(len(_callers(module, func)) for module, func in DERIVERS)
+
+
 def test_the_caller_scan_is_finding_calls():
     """A guard on the guard. An `ast` walk that stopped matching would report
     every deriver as having no callers at all, which fails in the *right*
     direction — but it would also make the list above meaningless."""
-    total = sum(len(_callers(m, f)) for m, f in DERIVERS)
-    assert total >= 3, (
+    total = _caller_total()
+    assert total >= ratchets.floor("deriver.call_sites"), (
         f"only {total} deriver call(s) found across the package — the AST "
         "walk has stopped matching")
     assert _route_handler_names(), (

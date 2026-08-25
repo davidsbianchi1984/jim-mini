@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from . import ratchets
 
 REPO = Path(__file__).resolve().parents[2]
 CONSOLE = REPO / "app" / "src"
@@ -106,13 +107,19 @@ def test_the_a11y_backlog_only_shrinks():
         assert ": " in row, f"a backlog row names no surface: {row!r}"
 
 
+def _live_regions(screen: str) -> int:
+    """Regions on this screen that announce themselves as they change."""
+    return (CONSOLE / "screens" / screen).read_text(
+        encoding="utf-8").count("aria-live=")
+
+
 def test_the_coach_and_the_checkin_tell_the_screen_reader():
     """A struck backlog row, held shut: the coach's guidance cards and the
     check-in's verdict are aria-live regions, so a screen reader hears the
     answer arrive instead of sitting in silence wondering."""
-    coach = (CONSOLE / "screens" / "Coach.tsx").read_text(encoding="utf-8")
     checkin = (CONSOLE / "screens" / "Checkin.tsx").read_text(encoding="utf-8")
-    assert coach.count('aria-live=') >= 2, (
+    assert _live_regions("Coach.tsx") >= ratchets.floor(
+            "console.coach_live_regions"), (
         "Coach.tsx lost an aria-live region (guidance or specialist card)")
     assert 'aria-live=' in checkin, (
         "Checkin.tsx lost its aria-live result region")

@@ -305,5 +305,5 @@ def test_the_console_helper_is_still_being_read():
     """A helper that moved or was renamed would make the check above compare
     the shells against an empty set, which reads exactly like passing."""
     found = _console_headers()
-    assert len(found) >= 2, found
+    assert len(found) >= ratchets.floor("console.request_headers"), found
     assert "authorization" in found

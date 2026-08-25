@@ -298,8 +298,10 @@ def test_the_scan_reads_every_receiver():
 
 def test_the_brush_scan_reads_the_pages():
     keys, used = _brushes()
-    assert len(keys) >= 12, f"only {len(keys)} key(s) in App.xaml"
-    assert len(used) >= 10, f"only {len(used)} key(s) painted with"
+    assert len(keys) >= ratchets.floor("brush.keys"), (
+        f"only {len(keys)} key(s) in App.xaml")
+    assert len(used) >= ratchets.floor("brush.used"), (
+        f"only {len(used)} key(s) painted with")
 
 
 def test_a_singleton_put_in_a_local_is_still_a_use(tmp_path):

@@ -256,13 +256,16 @@ def test_the_routes_side_is_read_from_what_fastapi_validates():
     assert any(s.get("required") for s in models.values())
 
 
-def test_a_real_share_of_the_writes_meets_a_model():
-    matched = 0
+def _writes_meeting_a_model() -> int:
+    """Writes off the clients whose verb and shape meet a declared model."""
     models = _models()
-    for verb, template, how, keys in _sent():
-        if verb in WRITES and (verb, _shape(template)) in models:
-            matched += 1
-    assert matched >= 85, (
+    return sum(1 for verb, template, _how, _keys in _sent()
+               if verb in WRITES and (verb, _shape(template)) in models)
+
+
+def test_a_real_share_of_the_writes_meets_a_model():
+    matched = _writes_meeting_a_model()
+    assert matched >= ratchets.floor("route.writes_meeting_a_model"), (
         f"only {matched} write(s) matched a route — the path spellings have "
         f"stopped lining up")
 

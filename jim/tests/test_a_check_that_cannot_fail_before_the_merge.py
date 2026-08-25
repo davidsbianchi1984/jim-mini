@@ -61,6 +61,7 @@ from __future__ import annotations
 
 import pathlib
 import re
+from . import ratchets
 
 REPO = pathlib.Path(__file__).resolve().parent.parent.parent
 WORKFLOWS = REPO / ".github" / "workflows"
@@ -128,7 +129,8 @@ def test_the_reader_finds_the_workflows_at_all():
     """A sweep that reads nothing agrees with everything — and this whole
     guard exists because something that reported nothing was believed."""
     files = _files()
-    assert len(files) >= 3, [p.name for p in files]
+    assert len(files) >= ratchets.floor("workflow.files"), (
+        [p.name for p in files])
     for p in files:
         assert _on_block(p.read_text(encoding="utf-8")), (
             f"{p.name}: no `on:` block found — the reader has stopped matching")

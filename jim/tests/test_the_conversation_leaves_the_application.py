@@ -38,6 +38,7 @@ import re
 from pathlib import Path
 
 import pytest
+from . import ratchets
 
 
 def _repo() -> Path:
@@ -145,21 +146,27 @@ def test_a_superseded_turn_cannot_close_the_one_that_replaced_it():
             "one")
 
 
+def _error_handler_body() -> str:
+    """The service's error handler, as source — empty if it has moved."""
+    found = re.search(
+        r"override fun onError\(code: Int\)\s*\{(.*?)\n            \}",
+        SERVICE.read_text(encoding="utf-8"), re.S)
+    return found.group(1) if found else ""
+
+
 def test_quiet_reopens_and_a_refusal_does_not():
     """A standing conversation treats quiet as a pause. Treating a refused
     microphone the same way is a loop that reopens forever with nothing to
     hear, and says nothing about why."""
-    src = SERVICE.read_text(encoding="utf-8")
-    m = re.search(r"override fun onError\(code: Int\)\s*\{(.*?)\n            \}",
-                  src, re.S)
-    assert m, "the service has no error handler"
-    body = m.group(1)
+    body = _error_handler_body()
+    assert body, "the service has no error handler"
     assert "ERROR_NO_MATCH" in body and "ERROR_SPEECH_TIMEOUT" in body, (
         "quiet is not separated from failure")
     assert "ERROR_INSUFFICIENT_PERMISSIONS" in body, (
         "a refused microphone is not distinguished, so it reads as quiet "
         "and the loop reopens into nothing")
-    assert body.count("close(reason =") >= 3, (
+    assert body.count("close(reason =") >= ratchets.floor(
+            "service.close_reasons"), (
         "the service has one way of failing; the console has already been "
         "caught by exactly that, where a refusal, an unreachable service "
         "and a defect all read the same")

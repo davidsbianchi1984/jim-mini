@@ -69,6 +69,7 @@ from __future__ import annotations
 import ast
 import re
 from pathlib import Path
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -475,14 +476,21 @@ def test_every_pinned_kotlin_read_matches_the_shape():
 
 # --- the pins have to point at something, and to fail ------------------------
 
+def _pin_rows() -> list[tuple[str, str, str]]:
+    """Every pin, from both tables, as the rows the contract reader takes."""
+    rows = [(module, func, container)
+            for _model, module, func, container in PINS]
+    rows += [row for _name, shapes in KOTLIN_PINS for row in shapes]
+    return rows
+
+
 def test_every_pin_still_points_at_a_function():
     """A pin whose function was renamed is a row that quietly stops
     checking — `contract` raises rather than returning an empty set."""
-    rows = [(m, f, c) for _model, m, f, c in PINS]
-    rows += [row for _name, shapes in KOTLIN_PINS for row in shapes]
-    for module, func, container in rows:
+    for module, func, container in _pin_rows():
         sent = contract(module, func, container)
-        assert len(sent) >= 2, f"{module}.{func}: only {len(sent)} key(s)"
+        assert len(sent) >= ratchets.floor("pin.thinnest"), (
+            f"{module}.{func}: only {len(sent)} key(s)")
 
 
 def test_at_least_one_end_of_every_pin_is_present():

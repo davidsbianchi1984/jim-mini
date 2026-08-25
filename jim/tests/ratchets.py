@@ -534,7 +534,149 @@ def _verbs_min() -> int:
                for lang in (CONSOLE,) + NATIVE)
 
 
+# -- the floors that were already holding ----------------------------------
+#
+# These are the other half of what widening the sweep turned up, and the half
+# that is easy to leave alone: measured, in band, several at exactly the
+# number they stand over. Nothing here is being corrected.
+#
+#     asked     is this floor wrong
+#     mattered  is anything comparing it to what it measures
+#
+# A floor at 1.00 today is a floor at 0.30 in a year, and the run it starts
+# being wrong on is a run nobody watches. What registering buys one that
+# holds is not a different number — it is the measurement attached, and the
+# audit every run. Each keeps the number it had unless four-fifths of what it
+# measures is higher, because lowering a guard that currently holds tight, to
+# satisfy a convention about where floors usually sit, is following the rule
+# off a cliff.
+
+
+def _workflow_files() -> int:
+    from .test_a_check_that_cannot_fail_before_the_merge import _files
+    return len(_files())
+
+
+def _places_named() -> int:
+    from .test_a_confident_wrong_diagnosis import _places_named
+    return _places_named()
+
+
+def _caller_total() -> int:
+    from .test_a_derived_artifact_nothing_derives import _caller_total
+    return _caller_total()
+
+
+def _console_self_keys() -> int:
+    from .test_a_shell_asks_for_a_key_it_has import _wanted
+    return len(_wanted())
+
+
+def _coach_live_regions() -> int:
+    from .test_ability_is_not_a_gate import _live_regions
+    return _live_regions("Coach.tsx")
+
+
+def _degrading_wrappers() -> int:
+    from .test_every_degrading_path_says_so import _degrading_wrappers
+    return len(_degrading_wrappers())
+
+
+def _writes_meeting_a_model() -> int:
+    from .test_the_body_the_route_requires import _writes_meeting_a_model
+    return _writes_meeting_a_model()
+
+
+def _close_reasons() -> int:
+    from .test_the_conversation_leaves_the_application import (
+        _error_handler_body)
+    return _error_handler_body().count("close(reason =")
+
+
+def _gallery_tables() -> int:
+    from .test_the_gallery_is_a_grid import _galleries
+    return len(list(_galleries()))
+
+
+def _echo_guards() -> int:
+    from .test_the_guardian_does_not_answer_herself import SPEECH
+    return SPEECH.count("echoOfTheGuardian(")
+
+
+def _echo_reports() -> int:
+    from .test_the_guardian_does_not_answer_herself import _echo_reports
+    return len(_echo_reports())
+
+
+def _exception_handlers() -> int:
+    from .test_the_guardian_refuses_in_one_language import _handlers
+    return len(_handlers())
+
+
+def _build_steps() -> int:
+    from .test_the_installer_can_actually_report import _build_steps
+    return len(_build_steps())
+
+
+def _console_request_headers() -> int:
+    from .test_the_language_nobody_was_sending import _console_headers
+    return len(_console_headers())
+
+
+def _brushes(half: int):
+    def go() -> int:
+        from .test_the_member_that_isnt_there import _brushes
+        return len(_brushes()[half])
+    return go
+
+
+def _thinnest_pin() -> int:
+    from .test_the_shape_inside_the_shape import contract, _pin_rows
+    return min(len(contract(*row)) for row in _pin_rows())
+
+
+def _answer_pieces() -> int:
+    from .test_the_answer_begins_before_it_ends import LONG_ANSWER, _pieces
+    return len(_pieces(LONG_ANSWER)[0])
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("workflow.files", 4, _workflow_files,
+            "the workflow files the gating sweep reads"),
+    Ratchet("refusal.places_named", 3, _places_named,
+            "the known causes this refusal names"),
+    Ratchet("deriver.call_sites", 4, _caller_total,
+            "the calls to a deriver across the package"),
+    Ratchet("console.self_keys", 22, _console_self_keys,
+            "the `self.*` rows the console table declares"),
+    Ratchet("console.coach_live_regions", 2, _coach_live_regions,
+            "the regions on the coach screen that announce themselves"),
+    Ratchet("degrading.wrappers", 2, _degrading_wrappers,
+            "the wrappers that degrade quietly, as the walk finds them"),
+    Ratchet("route.writes_meeting_a_model", 98, _writes_meeting_a_model,
+            "the clients' writes whose verb and shape meet a model"),
+    Ratchet("service.close_reasons", 3, _close_reasons,
+            "the ways the listening service says why it stopped"),
+    Ratchet("gallery.tables", 2, _gallery_tables,
+            "the gallery tables the README carries"),
+    Ratchet("speech.echo_guards", 3, _echo_guards,
+            "the places the shell checks a heard line against the guardian"),
+    Ratchet("speech.echo_reports", 2, _echo_reports,
+            "the listening paths that report an echo rather than swallow it"),
+    Ratchet("api.exception_handlers", 10, _exception_handlers,
+            "the exception handlers `api.py` declares"),
+    Ratchet("installer.build_steps", 3, _build_steps,
+            "the steps that run the packaging command"),
+    Ratchet("console.request_headers", 2, _console_request_headers,
+            "the headers the console attaches to every request"),
+    Ratchet("brush.keys", 16, _brushes(0),
+            "the brush keys App.xaml declares"),
+    Ratchet("brush.used", 10, _brushes(1),
+            "the brush keys the screens actually paint with"),
+    Ratchet("pin.thinnest", 2, _thinnest_pin,
+            "the keys on the thinnest pinned contract"),
+    Ratchet("speech.pieces_from_a_long_answer", 2, _answer_pieces,
+            "the pieces a long answer splits into before it is spoken"),
     # Per shell, and the reason is in the numbers: this one literal stood
     # over 4, 7 and 127 requests built. It was honest about the
     # iPhone and decoration on the desktop, which is what a single floor

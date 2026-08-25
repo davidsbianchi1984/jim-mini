@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from . import ratchets
 
 SPEECH = Path(__file__).resolve().parents[2] / "app" / "src" / "speech.ts"
 
@@ -61,12 +62,21 @@ def test_it_still_names_dictation_among_the_places_to_look():
     assert "Settings" in body
 
 
+#: The causes this refusal is meant to name. Held here rather than inside the
+#: test so the floor under it counts the same three.
+CAUSES = ("Enable Dictation", "Screen Time", "unreachable")
+
+
+def _places_named() -> int:
+    """How many of the known causes the sentence actually names."""
+    body = _refusal()
+    return sum(term in body for term in CAUSES)
+
+
 def test_it_names_more_than_one_place_to_look():
     """A list of one is an assertion wearing a list's clothes."""
-    body = _refusal()
-    places = sum(term in body for term in
-                 ("Enable Dictation", "Screen Time", "unreachable"))
-    assert places >= 3, (
+    places = _places_named()
+    assert places >= ratchets.floor("refusal.places_named"), (
         f"only {places} of the three known causes are named — the sentence "
         "reads as a diagnosis again")
 

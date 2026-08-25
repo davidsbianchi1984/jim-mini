@@ -28,6 +28,7 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from . import ratchets
 
 REPO = Path(__file__).resolve().parents[2]
 SPEECH = (REPO / "app/src/speech.ts").read_text(encoding="utf-8")
@@ -115,9 +116,16 @@ def test_the_bar_goes_up_while_she_speaks():
 def test_both_listening_paths_check_her_words():
     """The record-and-send path has an analyser; the device recogniser has
     none at all, so it needs this more, not less."""
-    assert SPEECH.count("echoOfTheGuardian(") >= 3, (
+    assert SPEECH.count("echoOfTheGuardian(") >= ratchets.floor(
+            "speech.echo_guards"), (
         "one of the two listening paths still submits whatever it hears "
         "while the Guardian is speaking")
+
+
+def _echo_reports() -> list[tuple[str, str]]:
+    """The listening paths that report an echo, and the sentence each sends."""
+    return re.findall(r"echoOfTheGuardian\(\w+\)\) \{\s*\n"
+                      r'\s*(\w+)\("([^"]*)"\);', SPEECH)
 
 
 def test_an_echo_is_reported_as_quiet_not_as_a_failure():
@@ -139,9 +147,8 @@ def test_an_echo_is_reported_as_quiet_not_as_a_failure():
     it reaches the caller. A rename cannot break it; changing "nothing was
     heard in that" to anything `heardNothing` does not match still does.
     """
-    reports = re.findall(r"echoOfTheGuardian\(\w+\)\) \{\s*\n"
-                         r'\s*(\w+)\("([^"]*)"\);', SPEECH)
-    assert len(reports) >= 2, (
+    reports = _echo_reports()
+    assert len(reports) >= ratchets.floor("speech.echo_reports"), (
         "one of the two listening paths no longer reports the echo at all")
     quiet = _heard_nothing_messages()
     for fn, said in reports:

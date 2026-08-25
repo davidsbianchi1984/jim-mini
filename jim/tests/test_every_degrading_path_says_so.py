@@ -49,6 +49,7 @@ import ast
 from pathlib import Path
 
 from jim import cloud, llm
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -192,7 +193,7 @@ def test_the_wrapper_scan_is_finding_wrappers():
     """A guard on the guard: a walk that stopped matching would report no
     silent wrappers and pass on an empty set."""
     found = _degrading_wrappers()
-    assert len(found) >= 2, (
+    assert len(found) >= ratchets.floor("degrading.wrappers"), (
         f"only {len(found)} degrading wrapper(s) parsed — this codebase has "
         "two, in llm.FallbackProvider and cloud.CloudProvider")
 

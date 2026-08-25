@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from . import ratchets
 
 REPO = Path(__file__).resolve().parents[2]
 SPEECH = (REPO / "app/src/speech.ts").read_text(encoding="utf-8")
@@ -55,14 +56,19 @@ def test_a_short_reply_is_one_piece_unchanged():
     assert piece == "Take the aspirin now."
 
 
+#: A long answer, as one. Held here rather than built inside the test so the
+#: floor under the split counts the split rather than the sentence.
+LONG_ANSWER = "Sit down somewhere comfortable first. " + " ".join(
+    f"Then step {i} follows as planned." for i in range(1, 9))
+
+
 def test_the_first_sentence_rides_alone_and_nothing_is_lost():
-    text = ("Sit down somewhere comfortable first. " * 1).strip() + " " + \
-        " ".join(f"Then step {i} follows as planned." for i in range(1, 9))
+    text = LONG_ANSWER
     [pieces] = _pieces(text)
     assert pieces[0] == "Sit down somewhere comfortable first.", (
         "the first piece must be the first sentence alone — it is the one "
         "somebody is waiting on")
-    assert len(pieces) >= 2
+    assert len(pieces) >= ratchets.floor("speech.pieces_from_a_long_answer")
     assert " ".join(pieces) == text, "no word may be lost or invented"
 
 

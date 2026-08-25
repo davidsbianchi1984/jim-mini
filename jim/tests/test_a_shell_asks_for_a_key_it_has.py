@@ -295,6 +295,22 @@ def test_the_dead_key_backlog_only_shrinks():
         "is a translation sitting beside the English it was meant to replace.")
 
 
+def _wanted() -> dict[str, str]:
+    """The `self.*` rows the console table declares, with their English.
+
+    Lifted out of the test so the floor under it reads the same table the
+    comparison walks.
+    """
+    text = (REPO / "app" / "src" / "l10n.ts").read_text(encoding="utf-8")
+    wanted = {}
+    for row in re.finditer(r'^  "(self\.[\w.]+)":\s*\{(.*?)\n  \},', text,
+                           re.S | re.M):
+        english = re.search(r'\ben:\s*"((?:[^"\\]|\\.)*)"', row.group(2))
+        if english:
+            wanted[row.group(1)] = english.group(1)
+    return wanted
+
+
 def test_the_three_shells_agree_with_the_console_on_shared_keys():
     """One wording, four surfaces.
 
@@ -302,15 +318,8 @@ def test_the_three_shells_agree_with_the_console_on_shared_keys():
     than retyped, so a person reading the same sentence on a phone and on the
     desktop reads the same sentence. Retyping is how they drift.
     """
-    console = REPO / "app" / "src" / "l10n.ts"
-    text = console.read_text(encoding="utf-8")
-    wanted = {}
-    for m in re.finditer(r'^  "(self\.[\w.]+)":\s*\{(.*?)\n  \},', text,
-                         re.S | re.M):
-        english = re.search(r'\ben:\s*"((?:[^"\\]|\\.)*)"', m.group(2))
-        if english:
-            wanted[m.group(1)] = english.group(1)
-    assert len(wanted) >= 20, (
+    wanted = _wanted()
+    assert len(wanted) >= ratchets.floor("console.self_keys"), (
         f"only {len(wanted)} self.* keys read from the console table")
 
     for shell, (_, _, table) in SHELLS.items():

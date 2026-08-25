@@ -703,17 +703,11 @@ def test_the_backlog_only_shrinks():
         "guard started at")
 
 
-def test_every_handler_returns_through_the_one_place():
-    """The structural half, and the only part of this file that is a fix.
+def _handlers() -> list[tuple[str, bool]]:
+    """Every `@app.exception_handler` in `api.py`, and whether it returns
+    through `i18n.refuse`.
 
-    Every `@app.exception_handler` in `jim/api.py` must return through
-    `i18n.refuse`. Eight of the nine were built one per health domain with
-    their own `JSONResponse`, which is how a language round could localize
-    everything a person reads *except* the medication cabinet and the vigil,
-    and pass.
-
-    Checked structurally rather than by driving each one: a driven check would
-    cover the eight that exist today and say nothing about the ninth.
+    Lifted out of the guard so the floor under it walks the same tree.
     """
     tree = ast.parse((PKG / "api.py").read_text(encoding="utf-8"))
     handlers: list[tuple[str, bool]] = []
@@ -732,8 +726,23 @@ def test_every_handler_returns_through_the_one_place():
             and getattr(n.func.value, "id", "") == "i18n"
             for n in ast.walk(node))
         handlers.append((node.name, routed))
+    return handlers
 
-    assert len(handlers) >= 9, (
+
+def test_every_handler_returns_through_the_one_place():
+    """The structural half, and the only part of this file that is a fix.
+
+    Every `@app.exception_handler` in `jim/api.py` must return through
+    `i18n.refuse`. Eight of the nine were built one per health domain with
+    their own `JSONResponse`, which is how a language round could localize
+    everything a person reads *except* the medication cabinet and the vigil,
+    and pass.
+
+    Checked structurally rather than by driving each one: a driven check would
+    cover the eight that exist today and say nothing about the ninth.
+    """
+    handlers = _handlers()
+    assert len(handlers) >= ratchets.floor("api.exception_handlers"), (
         f"only {len(handlers)} exception handlers found in api.py — the "
         "pattern has stopped matching, so this check would pass on nothing")
     astray = sorted(name for name, routed in handlers if not routed)

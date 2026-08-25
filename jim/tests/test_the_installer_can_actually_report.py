@@ -38,6 +38,7 @@ import re
 from pathlib import Path
 
 import pytest
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -112,7 +113,7 @@ def test_there_are_build_steps_to_check():
     quietly vacuous — which is the failure it exists to prevent, one level up.
     """
     steps = _build_steps()
-    assert len(steps) >= 3, (
+    assert len(steps) >= ratchets.floor("installer.build_steps"), (
         f"only {len(steps)} step(s) run the packaging command — either the "
         "workflow changed shape or this test stopped finding it")
 

@@ -34,6 +34,7 @@ import pathlib
 import re
 
 import pytest
+from . import ratchets
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 #: The two pages that carry galleries: the README keeps the watch set and
@@ -71,7 +72,7 @@ def test_there_are_galleries_to_check():
     """A regex rewrite that matched nothing would report every gallery in
     perfect shape by finding none of them."""
     found = list(_galleries())
-    assert len(found) >= 2, (
+    assert len(found) >= ratchets.floor("gallery.tables"), (
         f"only {len(found)} gallery table(s) found in the README — the checks "
         f"below are passing on almost nothing")
 
