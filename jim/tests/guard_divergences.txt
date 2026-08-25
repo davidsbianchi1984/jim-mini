@@ -1,5 +1,5 @@
-# status: backlog — 117 rows
-# ceiling: 117
+# status: backlog — 114 rows
+# ceiling: 114
 # candidates: 0
 #
 # Guards carried by two of the three products and not the third. Each row
@@ -66,15 +66,18 @@
 #
 pdi: test_a_code_is_single_use | deliberate | /verify-email
 pdi: test_a_downgrade_never_unseals_anything | deliberate | module:storage
+pdi: test_a_free_account_puts_nothing_in_the_vault | deliberate | module:storage
 pdi: test_a_free_membership_carries_its_posture | deliberate | /memberships /memberships/{}
 pdi: test_a_key_with_auto_defaults_to_a_real_model_not_the_stub | deliberate | /model /model/{}
 pdi: test_a_paid_plan_carries_no_free_disclosure | deliberate | module:storage
 pdi: test_a_request_key_makes_the_chosen_provider_usable | deliberate | /model /model/{}
+pdi: test_a_short_password_is_refused_before_any_email_is_sent | deliberate | module:accounts
 pdi: test_a_stored_widget_runs_and_answers | deliberate | /run /users /users/{}/widgets /users/{}/widgets/{}/run
 pdi: test_a_stranded_pending_account_is_finished_on_a_no_mail_machine | deliberate | /signin /signup
 pdi: test_a_test_send_reports_what_the_server_said | deliberate | /settings/mail /settings/mail/test
 pdi: test_a_test_send_without_a_server_is_refused | deliberate | /settings/mail/test
 pdi: test_a_verify_code_cannot_reset_a_password | deliberate | /password/reset /verify-email
+pdi: test_a_widget_cannot_reach_the_network | deliberate | module:widgets
 pdi: test_a_wrong_code_verifies_nothing | deliberate | /verify-email
 pdi: test_an_unknown_plan_is_refused | deliberate | /memberships /memberships/{}
 pdi: test_an_upgrade_does_not_un_expose_what_was_already_open | deliberate | module:storage
@@ -93,6 +96,7 @@ pdi: test_every_plan_in_the_catalogue_states_its_posture | deliberate | /plans
 pdi: test_every_provider_on_the_menu_can_be_chosen | deliberate | /model /model/{} /models
 pdi: test_every_refusable_plan_has_a_billing_period | deliberate | module:tiers
 pdi: test_every_sensitive_kind_is_enforced_somewhere | deliberate | module:storage
+pdi: test_every_wrapper_that_swallows_a_failure_records_who_answered | deliberate | module:llm
 pdi: test_focus_does_not_stand_in_for_the_cap | deliberate | /mic/gain /mic/handover /users /users/{}/mic/gain
 pdi: test_forgot_password_resets_via_emailed_code | deliberate | /password/reset /password/reset/request /signin
 pdi: test_free_and_basic_reach_the_same_capabilities | deliberate | module:tiers
@@ -125,6 +129,7 @@ pdi: test_the_plans_are_the_prices_that_were_agreed | deliberate | module:tiers
 pdi: test_the_recipients_switch_refuses_by_name | deliberate | /circle /circle/{}/features /circle/{}/messages /features
 pdi: test_the_refusal_screen_names_every_kind_on_the_list | deliberate | module:storage
 pdi: test_the_vault_gate_asks_about_the_plan_not_the_deployment | deliberate | module:storage
+pdi: test_the_wrapper_scan_is_finding_wrappers | deliberate | module:llm
 pdi: test_unconfigured_providers_say_so | deliberate | /auth/oauth/google/start /auth/oauth/providers
 pdi: test_unknown_provider_rejected | deliberate | /model /model/{}
 pdi: test_what_a_plan_includes_is_computed_not_typed | deliberate | /plans
@@ -145,46 +150,38 @@ qrme: test_the_structure_survives_the_lift | deliberate | /_shape/dict
 #
 jim: test_directions_never_name_a_lesson_that_is_gone | answered | JIM's DIRECTIONS map keywords to sentences rather than lesson keys; the stale-reference failure is held from the lesson side by test_no_lesson_points_at_a_screen_that_is_not_there
 jim: test_the_guide_has_no_name_and_no_face | answered | on purpose: JIM's tour is given by the guardian herself — test_the_guardian_gives_the_tour_rather_than_a_faceless_guide is the same question with this product's answer
+jim: test_this_repo_has_no_hand_translated_screen_surface_yet | answered | on purpose: the guard is a placeholder marking the absence of a hand-translated surface, and JIM's shells carry eight-hundred-row hand tables — the premise cannot hold where the surface exists
 pdi: test_a_per_surface_face_refuses_to_guess | answered | on purpose: PDI's dock has no per-surface faces — the vault is an operator console with no wrist and no alarm surface to bind
 pdi: test_a_term_is_exempt_from_the_whitespace_rule_and_a_stranger_is_not | answered | on purpose: PDI has no refusal that interpolates a closed-set Term, and its test_no_slot_is_filled_from_a_string_literal fails if that stops being true — the lack is self-guarding
 pdi: test_authenticated_submitter_sees_only_their_own | answered | test_authenticated_tenant_sees_only_their_own
+pdi: test_every_exemption_still_names_a_real_table | answered | on purpose: PDI's wipe guard sweeps every table with no exemption list to go stale
 pdi: test_every_face_says_it_does_not_act | answered | test_every_face_says_it_neither_acts_nor_reads
+pdi: test_every_header_the_console_sends_the_shells_send_too | answered | test_this_product_sends_no_header_the_console_keeps_to_itself
 pdi: test_it_draws_before_anybody_has_touched_it | answered | test_it_opens_on_the_lights_like_the_panel_it_replaced
 pdi: test_moving_it_round_trips_over_http | answered | test_moving_it_round_trips
 pdi: test_no_copy_hardcodes_a_stale_count_of_refusals | answered | PDI has no SENSITIVE set, so there is no count for prose to hardcode
 pdi: test_passwords_and_codes_are_never_stored_in_the_clear | answered | PDI has no passwords and no emailed codes; its credential material is tenant and grant tokens, hashed and guarded by test_token_hashing.py and test_the_grant_token_is_shown_once_and_only_hashes_rest
 pdi: test_revoke_stops_use | answered | test_tenant_isolation_and_revoke — the 409 after a revoke
 pdi: test_terms_are_served_versioned | answered | test_terms_served_versioned_with_key_points
+pdi: test_the_console_helper_is_still_being_read | answered | the same file's test_the_scan_reaches_every_client, and the header comparison reads the helper every run
+pdi: test_the_extractor_reads_the_bindings_and_the_records | answered | test_the_extractor_finds_this_products_calls and test_the_extractor_reads_every_record_field
 pdi: test_two_users_dont_see_each_others_words | answered | test_two_tenants_dont_see_each_others_words
 qrme: test_a_retired_code_is_indistinguishable_from_one_that_never_existed | answered | on purpose: a picked-up sticker answers 410 'picked up' where an unknown one answers 404. A beacon here is a physical thing somebody took off a wall, and saying so is the product
+qrme: test_each_new_screen_calls_its_family | answered | the binding-side half is test_a_binding_is_not_a_door here; the screen-side table is per-product authored content, to be written deliberately rather than ported
+qrme: test_every_surface_is_actually_being_scanned | answered | held by the route.calls.* ratchet audits, which measure every surface's extraction every run
 qrme: test_invoke_and_grants | answered | test_invoke_a_granted_capability — grants, and the 422 on one that was not granted
+qrme: test_the_closed_sets_are_unions_rather_than_strings | answered | a closure guard on JIM's console-doors backlog, which QRME has not closed — console_doorless.txt still holds rows; it travels when that reaches zero
+qrme: test_the_console_extracts_the_sentence_at_every_refusal_site | answered | test_the_console_hands_the_sentence_to_the_error_it_throws
+qrme: test_the_console_sites_were_actually_found | answered | test_the_windows_were_actually_found
+qrme: test_the_gallery_skips_no_number | answered | test_the_gallery_runs_in_order_and_skips_nothing
+qrme: test_the_markup_routes_do_not_go_through_the_json_helper | answered | closure guard on JIM's console-doors backlog — travels when QRME's reaches zero
 qrme: test_the_posture_is_reportable_in_one_place | answered | QRME serves the posture on GET /offline/status — the route is the one place, driven by test_offline.py and the ported open-route guard
 qrme: test_the_posture_is_served_on_a_route | answered | test_the_lifeline_answers_a_bare_get — drives the same route with no credential
+qrme: test_the_public_route_is_still_a_route | answered | test_the_public_paths_are_real_routes — plural, this product has several public doors
+qrme: test_the_shell_windows_were_actually_found | answered | test_the_windows_were_actually_found — parametrized over every shell, console included
+qrme: test_the_union_backlog_record_is_empty | answered | closure guard on JIM's console-doors backlog — travels when QRME's reaches zero
 qrme: test_the_vocabulary_and_routing_table_are_public | answered | test_the_vocabulary_and_the_routing_table_are_public — one word apart, and invisible to a comparison of names
 #
 # ## Unclassified — the guard drives no route
 #
-jim: test_this_repo_has_no_hand_translated_screen_surface_yet | unclassified | 
-pdi: test_a_free_account_puts_nothing_in_the_vault | unclassified | 
-pdi: test_a_short_password_is_refused_before_any_email_is_sent | unclassified | 
-pdi: test_a_widget_cannot_reach_the_network | unclassified | 
-pdi: test_every_exemption_still_names_a_real_table | unclassified | 
-pdi: test_every_header_the_console_sends_the_shells_send_too | unclassified | 
-pdi: test_every_wrapper_that_swallows_a_failure_records_who_answered | unclassified | 
-pdi: test_no_key_is_translated_into_ten_languages_and_used_nowhere | unclassified | 
-pdi: test_the_console_helper_is_still_being_read | unclassified | 
-pdi: test_the_extractor_reads_the_bindings_and_the_records | unclassified | 
-pdi: test_the_wrapper_scan_is_finding_wrappers | unclassified | 
-qrme: test_each_new_screen_calls_its_family | unclassified | 
-qrme: test_every_surface_is_actually_being_scanned | unclassified | 
-qrme: test_healthcheck_matches_the_port_the_suite_harness_expects | unclassified | 
-qrme: test_the_closed_sets_are_unions_rather_than_strings | unclassified | 
-qrme: test_the_console_extracts_the_sentence_at_every_refusal_site | unclassified | 
-qrme: test_the_console_reads_it_rather_than_only_binding_it | unclassified | 
-qrme: test_the_console_sites_were_actually_found | unclassified | 
-qrme: test_the_gallery_skips_no_number | unclassified | 
-qrme: test_the_markup_routes_do_not_go_through_the_json_helper | unclassified | 
-qrme: test_the_public_route_is_still_a_route | unclassified | 
-qrme: test_the_shell_windows_were_actually_found | unclassified | 
-qrme: test_the_union_backlog_record_is_empty | unclassified | 
 #
