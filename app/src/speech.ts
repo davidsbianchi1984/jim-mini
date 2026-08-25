@@ -32,32 +32,50 @@ const SILENCE =
  */
 let ear: HTMLAudioElement | null = null;
 
-/** Open the ear, from inside a user gesture. Safe to call repeatedly. */
+// Whether a press has actually opened it. Tracked apart from `ear`
+// existing, because the first cut of this kept a refused element standing
+// — `if (ear) return` — and a refusal on iPhone is the ordinary case when
+// the arming event was not one WebKit counts as a gesture. A dead element
+// nothing could reopen read as a silent product on exactly one platform.
+let earOpen = false;
+
+/** Open the ear, from inside a user gesture. Safe to call repeatedly:
+ *  a refused attempt leaves everything ready for the next press. */
 export function openTheEar(): void {
-  if (ear) return;
-  const el = new Audio(SILENCE);
+  if (earOpen) return;
+  const el = ear ?? new Audio(SILENCE);
   el.muted = true;
   el.setAttribute("playsinline", "");
+  if (!el.src) el.src = SILENCE;
   ear = el;
-  el.play().then(() => { el.pause(); el.muted = false; },
+  el.play().then(() => { el.pause(); el.muted = false; earOpen = true; },
                  () => { el.muted = false; });
 }
 
-/** Arm it on the first press anywhere, rather than wiring every screen.
+/** Arm it on presses anywhere, rather than wiring every screen.
  *
  *  Five screens speak here and each has several ways in. A list of gesture
  *  sites that must all remember to call something is a list with one
  *  missing entry — and the missing entry is a screen that is silent on a
- *  phone and nowhere else. Any press will do, so this takes any press, in
- *  the capture phase, cancelling nothing, and removes itself once open. */
+ *  phone and nowhere else.
+ *
+ *  `click` and `touchend`, NOT `pointerdown`: WebKit only counts the
+ *  gesture's tail end as user activation for media, so a pointerdown arm
+ *  succeeded everywhere except the iPhone it existed for. The listeners
+ *  stay attached until an attempt actually succeeds, so a press that was
+ *  refused is not the last press that ever tries. */
 function armTheEar(): void {
   if (typeof document === "undefined") return;
   const open = () => {
     openTheEar();
-    document.removeEventListener("pointerdown", open, true);
-    document.removeEventListener("keydown", open, true);
+    if (earOpen) {
+      document.removeEventListener("click", open, true);
+      document.removeEventListener("touchend", open, true);
+      document.removeEventListener("keydown", open, true);
+    }
   };
-  document.addEventListener("pointerdown", open, true);
+  document.addEventListener("click", open, true);
+  document.addEventListener("touchend", open, true);
   document.addEventListener("keydown", open, true);
 }
 armTheEar();
