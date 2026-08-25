@@ -1,4 +1,12 @@
-# status: backlog — 2 rows
+# status: floor — 2 rows
+#
+# ## 1.8.5: the last two rows are names, and names are the floor
+#
+# *ElevenLabs* and *OpenAI* are the two providers the voice-key picker
+# names. A brand names itself in every language — translating one would
+# manufacture a company that does not exist, the same reasoning the
+# language picker uses for "English" and the tandem badge uses for
+# "LIVE · QRME". They stay, and they are the whole of what stays.
 #
 # ## 0.69.1: the reader learned to see a sentence chosen at render time
 #

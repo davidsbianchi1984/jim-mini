@@ -1,4 +1,13 @@
-# status: backlog — 3 rows
+# status: backlog — 0 rows
+#
+# ## 1.8.5: the last three rows reconcile
+#
+# The console adopts the phone's cells for the example handle (@tú, @du,
+# @あなた — the console had ASCII approximations and two untranslated
+# @you) and the example name (ローザ, 罗莎 — a sample name written in the
+# reader's own script, as Android has done all along). The desktop shells
+# agree on the crash-watch minutes label: Windows takes the console's
+# terser Japanese.
 #
 # English strings held by both the desktop console's table and a shell's, on
 # which no console row and no native row share a wording. Checked by
@@ -53,7 +62,4 @@
 # The third axis is closed: `test_the_three_shells_say_the_same_thing.py`,
 # zero rows in all three products.
 #
-# ceiling: 3
-android: rch.acc.handle.ph :: care.handle.ph  ("@you" — an example handle)
-android: bas.cw.name.ph :: res.name.ph  ("Rosa" — an example name; one table localises it and the other does not)
-windows: bas.cw.window :: cw.minutes  ("Minutes per attempt")
+# ceiling: 0

@@ -3631,7 +3631,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "Trusted person", es: "Persona de confianza", fr: "Personne de confiance", de: "Vertrauensperson", pt: "Pessoa de confiança", it: "Persona di fiducia", ja: "信頼する人", zh: "信任的人", hi: "भरोसेमंद व्यक्ति", ar: "الشخص الموثوق",
   },
   "bas.cw.name.ph": {
-    en: "Rosa", es: "Rosa", fr: "Rosa", de: "Rosa", pt: "Rosa", it: "Rosa", ja: "Rosa", zh: "Rosa", hi: "Rosa", ar: "Rosa",
+    en: "Rosa", es: "Rosa", fr: "Rosa", de: "Rosa", pt: "Rosa", it: "Rosa", ja: "ローザ", zh: "罗莎", hi: "रोज़ा", ar: "روزا",
   },
   "bas.cw.channel": {
     en: "How to reach them (email or phone)", es: "Cómo contactarla (correo o teléfono)", fr: "Comment la joindre (e-mail ou téléphone)", de: "Wie sie erreichbar ist (E-Mail oder Telefon)", pt: "Como contactá-la (email ou telefone)", it: "Come raggiungerla (email o telefono)", ja: "連絡方法（メールまたは電話）", zh: "如何联系他们（邮箱或电话）", hi: "उन तक कैसे पहुँचें (ईमेल या फ़ोन)", ar: "كيفية الوصول إليه (بريد أو هاتف)",
@@ -3754,7 +3754,7 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     en: "mastodon", es: "mastodon", fr: "mastodon", de: "mastodon", pt: "mastodon", it: "mastodon", ja: "mastodon", zh: "mastodon", hi: "mastodon", ar: "mastodon",
   },
   "rch.acc.handle.ph": {
-    en: "@you", es: "@tu", fr: "@vous", de: "@sie", pt: "@voce", it: "@tu", ja: "@you", zh: "@you", hi: "@aap", ar: "@انت",
+    en: "@you", es: "@tú", fr: "@vous", de: "@du", pt: "@você", it: "@tu", ja: "@あなた", zh: "@你", hi: "@आप", ar: "@أنت",
   },
   "rch.acc.publish.opt": {
     en: "publish — words go out", es: "publicar — las palabras salen", fr: "publier — les mots sortent", de: "veröffentlichen — Worte gehen hinaus", pt: "publicar — as palavras saem", it: "pubblica — le parole escono", ja: "発信 — 言葉が出ていく", zh: "发布 — 话语向外", hi: "प्रकाशित — शब्द बाहर जाते हैं", ar: "نشر — الكلمات تخرج",
