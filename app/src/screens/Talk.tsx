@@ -290,12 +290,14 @@ export function Talk({ go }: {
           <input value={said} placeholder={tr("talk.ph", lang)}
                  onChange={(e) => setSaid(e.target.value)}
                  onKeyDown={(e) => { if (e.key === "Enter") ask(); }} />
-          {/* A microphone, not a door: this used to navigate to the channel
-              screen, which is a label wearing a mic's icon. The channel
-              stays one tap away in the + menu and on the rail. */}
+          {/* A door after all — the press opens the whole spoken
+              conversation (orb, listening loop, replies aloud), and a
+              field report read the mic as dictation-into-the-box, which
+              is the tandem's convention. The call glyph is the estate's
+              word for "switch this conversation to voice". */}
           <button className={"talk-mic" + (listening ? " listening" : "")}
                   aria-label={tr("cch.talk", lang)}
-                  onClick={toggleMic}>🎤</button>
+                  onClick={toggleMic}>📞</button>
           <button className="talk-speak" disabled={busy || !said.trim()}
                   onClick={() => ask()}>{tr("talk.send", lang)}</button>
           {/* Take the conversation with you. This screen's turn is the
