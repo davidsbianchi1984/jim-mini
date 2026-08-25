@@ -1,159 +1,192 @@
-# status: backlog — 121 rows
+# status: backlog — 119 rows
+# ceiling: 119
+# candidates: 0
 #
 # Guards carried by two of the three products and not the third. Each row
-# names the product that lacks it.
+# names the product that lacks it, the class the sweep put it in, and the
+# routes the sibling's guard drives.
 #
-# ## Not all of these are wrong
+# ## What the classes mean, and why a flat list was not enough
 #
-# PDI has no plans, no memberships and no emailed signup, so it carries none
-# of the guards around them, and it never should. The rows are recorded rather
-# than fixed for the same reason every backlog in this estate is: telling a
-# deliberate difference from a forgotten port requires reading both, and a
-# number nobody wrote down is a number nobody can shrink.
+# The first version of this file was 121 rows in one heap, under a header
+# saying that telling a deliberate difference from a forgotten port takes
+# reading both suites. That was true, and it left the reading undone 121
+# times.
 #
-#     asked     does this product pass its own suite
-#     mattered  do the three suites ask the same questions
+#     asked     do the three suites ask the same questions
+#     mattered  which of the differences could possibly be a defect
 #
-# ## What the first run found
+# So each row is classified against the live route table of the product
+# that lacks the guard:
 #
-# 140 rows, of which four were one defect: a CORS guard existed in QRME and
-# JIM-mini and not in PDI, and so did the code it guards. PDI's frozen backend
-# has always opened CORS for the packaged console; `serve` — the from-source
-# path — set nothing, so the installed app worked and the from-source one
-# answered every console request with no access-control header at all. Fixed
-# and measured over HTTP, which is the only place a CORS rule exists: an
-# in-process test client never sends an Origin.
+#   deliberate    that product serves none of the routes the guard drives.
+#                 It cannot be a lost fix, because the feature is not
+#                 there. PDI has no plans, no mail settings and no OAuth,
+#                 and 48 rows are that.
+#   candidate     the route IS served there. Only these can be defects,
+#                 and only these are worth a person's time.
+#   answered      read on both sides: the same ground under another name,
+#                 or a difference the product means. The sibling guard is
+#                 named so the next sweep does not read it again.
+#   unclassified  the guard drives no route — a source scan, a table walk —
+#                 so this tool has nothing to compare and says so rather
+#                 than guessing.
 #
-# Those four rows are now in shared_guards.txt. These 136 are what is left.
+# ## What the first classified run found
+#
+# Nine candidates out of 121. Seven were renames or deliberate; two were
+# real, and both are now ported and gone from this file:
+#
+#   PDI served `version` on /health and nothing compared it to the app's
+#   own. The desktop shell adopts a backend already listening on its port
+#   only when the version matches — which is how an upgraded sibling kept
+#   meeting the first version's signup.
+#
+#   QRME's /offline/status answers a bare GET with no credential. The
+#   sibling reasoned that route open on the grounds that its fields name
+#   no person, no record and no credential — a claim about the fields,
+#   with nothing checking them. QRME's posture had since grown
+#   `data_locality` and `provider`. Both are about a deployment rather
+#   than a person, so both are fine; neither was asked.
 #
 # ## A name is not a behaviour
 #
-# Some rows here are the same guard under a different name — PDI reports its
-# version from /health, under a test called something else. Those are as much
-# work to resolve as a real gap, because resolving one means reading both
-# suites, which is the work this file exists to keep track of.
+# This compares function names. `test_the_vocabulary_and_routing_table_
+# are_public` and `test_the_vocabulary_and_the_routing_table_are_public`
+# differ by the word `the`, and read as a divergence for months.
 #
-# The ceiling does not move up. A new divergence is a fix that did not travel.
+# The ceiling does not move up. A new divergence is a fix that did not
+# travel — and a row moving from deliberate to candidate is the feature
+# arriving without its guard, which is the same thing said earlier.
 #
-# ceiling: 121
-jim: test_directions_never_name_a_lesson_that_is_gone
-jim: test_the_guide_has_no_name_and_no_face
-jim: test_this_repo_has_no_hand_translated_screen_surface_yet
-pdi: test_a_code_is_single_use
-pdi: test_a_downgrade_never_unseals_anything
-pdi: test_a_free_account_puts_nothing_in_the_vault
-pdi: test_a_free_membership_carries_its_posture
-pdi: test_a_key_with_auto_defaults_to_a_real_model_not_the_stub
-pdi: test_a_paid_plan_carries_no_free_disclosure
-pdi: test_a_per_surface_face_refuses_to_guess
-pdi: test_a_request_key_makes_the_chosen_provider_usable
-pdi: test_a_short_password_is_refused_before_any_email_is_sent
-pdi: test_a_stored_widget_runs_and_answers
-pdi: test_a_stranded_pending_account_is_finished_on_a_no_mail_machine
-pdi: test_a_term_is_exempt_from_the_whitespace_rule_and_a_stranger_is_not
-pdi: test_a_test_send_reports_what_the_server_said
-pdi: test_a_test_send_without_a_server_is_refused
-pdi: test_a_verify_code_cannot_reset_a_password
-pdi: test_a_widget_cannot_reach_the_network
-pdi: test_a_wrong_code_verifies_nothing
-pdi: test_an_unknown_plan_is_refused
-pdi: test_an_upgrade_does_not_un_expose_what_was_already_open
-pdi: test_apple_asks_for_form_post_and_the_door_accepts_it
-pdi: test_authenticated_submitter_sees_only_their_own
-pdi: test_clearing_settings_returns_to_the_console_transport
-pdi: test_configuring_mail_turns_signup_back_into_real_verification
-pdi: test_console_mail_survives_a_cp1252_stdout
-pdi: test_custom_provider_stays_dark_until_its_url_is_set
-pdi: test_deepseek_and_the_founders_own_algorithm_are_on_the_menu
-pdi: test_every_capability_the_gate_names_has_a_translation
-pdi: test_every_exemption_still_names_a_real_table
-pdi: test_every_face_says_it_does_not_act
-pdi: test_every_gated_pattern_is_a_route_that_exists
-pdi: test_every_gated_pattern_names_a_real_capability
-pdi: test_every_header_the_console_sends_the_shells_send_too
-pdi: test_every_money_bearing_response_discloses_the_simulation
-pdi: test_every_plan_has_a_posture
-pdi: test_every_plan_in_the_catalogue_states_its_posture
-pdi: test_every_provider_on_the_menu_can_be_chosen
-pdi: test_every_refusable_plan_has_a_billing_period
-pdi: test_every_sensitive_kind_is_enforced_somewhere
-pdi: test_every_wrapper_that_swallows_a_failure_records_who_answered
-pdi: test_focus_does_not_stand_in_for_the_cap
-pdi: test_forgot_password_resets_via_emailed_code
-pdi: test_free_and_basic_reach_the_same_capabilities
-pdi: test_free_is_platform_custody_and_paid_is_the_users
-pdi: test_free_is_still_refused_the_paid_capabilities
-pdi: test_google_still_comes_back_on_the_query_string
-pdi: test_health_reports_the_version
-pdi: test_it_draws_before_anybody_has_touched_it
-pdi: test_list_models_includes_all_providers
-pdi: test_mail_to_another_machine_is_refused
-pdi: test_moving_between_two_private_plans_changes_nothing
-pdi: test_moving_it_round_trips_over_http
-pdi: test_moving_plan_replaces_rather_than_stacks
-pdi: test_no_copy_hardcodes_a_stale_count_of_refusals
-pdi: test_no_key_is_translated_into_ten_languages_and_used_nowhere
-pdi: test_no_signup_key_leaves_local_use_open
-pdi: test_nothing_here_reaches_a_payment_processor
-pdi: test_passwords_and_codes_are_never_stored_in_the_clear
-pdi: test_resend_retires_the_previous_code
-pdi: test_revoke_stops_use
-pdi: test_saving_settings_makes_the_transport_smtp
-pdi: test_terms_are_served_versioned
-pdi: test_the_console_helper_is_still_being_read
-pdi: test_the_downgrade_helper_performs_nothing
-pdi: test_the_emailed_link_verifies_and_the_app_notices_by_signing_in
-pdi: test_the_environment_outranks_the_settings_screen
-pdi: test_the_extractor_reads_the_bindings_and_the_records
-pdi: test_the_free_plan_costs_nothing_and_says_what_that_means
-pdi: test_the_homepage_switch_hides_it_from_everyone_but_the_owner
-pdi: test_the_key_is_never_persisted
-pdi: test_the_key_reaches_the_provider_build
-pdi: test_the_membership_says_who_holds_it
-pdi: test_the_named_exceptions_are_routes_that_exist
-pdi: test_the_open_posture_names_who_can_read_it
-pdi: test_the_order_runs_visitor_free_basic_pro
-pdi: test_the_password_never_comes_back_out
-pdi: test_the_plan_gate_arrives_whole_in_one_language
-pdi: test_the_plan_titles_stay_as_they_are_printed_everywhere_else
-pdi: test_the_plans_are_the_prices_that_were_agreed
-pdi: test_the_recipients_switch_refuses_by_name
-pdi: test_the_refusal_screen_names_every_kind_on_the_list
-pdi: test_the_shell_can_end_what_it_can_begin
-pdi: test_the_vault_gate_asks_about_the_plan_not_the_deployment
-pdi: test_the_wrapper_scan_is_finding_wrappers
-pdi: test_two_users_dont_see_each_others_words
-pdi: test_unconfigured_providers_say_so
-pdi: test_unknown_provider_rejected
-pdi: test_what_a_plan_includes_is_computed_not_typed
-pdi: test_without_a_key_the_unconfigured_choice_still_falls_back
-pdi: test_without_a_mail_transport_signup_activates_directly
-pdi: test_without_settings_nothing_can_be_emailed
-pdi: test_wrong_password_and_unknown_address_answer_identically
-qrme: test_a_dead_code_renders_a_page_too
-qrme: test_a_night_shift_is_on_at_2am
-qrme: test_a_page_is_signed_when_a_secret_is_set
-qrme: test_a_retired_code_is_indistinguishable_from_one_that_never_existed
-qrme: test_a_wrapping_shift_belongs_to_the_day_it_started
-qrme: test_each_new_screen_calls_its_family
-qrme: test_every_surface_is_actually_being_scanned
-qrme: test_healthcheck_matches_the_port_the_suite_harness_expects
-qrme: test_invoke_and_grants
-qrme: test_the_closed_sets_are_unions_rather_than_strings
-qrme: test_the_console_extracts_the_sentence_at_every_refusal_site
-qrme: test_the_console_reads_it_rather_than_only_binding_it
-qrme: test_the_console_sites_were_actually_found
-qrme: test_the_gallery_skips_no_number
-qrme: test_the_markup_routes_do_not_go_through_the_json_helper
-qrme: test_the_page_does_not_depend_on_an_animation_to_be_visible
-qrme: test_the_page_is_one_self_contained_document
-qrme: test_the_posture_is_reportable_in_one_place
-qrme: test_the_posture_is_served_on_a_route
-qrme: test_the_public_route_is_still_a_route
-qrme: test_the_route_is_open_because_the_posture_precedes_the_account
-qrme: test_the_scan_url_serves_a_page_not_json
-qrme: test_the_shell_windows_were_actually_found
-qrme: test_the_structure_survives_the_lift
-qrme: test_the_union_backlog_record_is_empty
-qrme: test_the_vocabulary_and_routing_table_are_public
-qrme: test_the_widget_is_mounted_in_the_shell
+# ## Candidate — the route is served by the product that lacks the guard
+#
+#
+# ## Deliberate — that product serves none of these routes
+#
+pdi: test_a_code_is_single_use | deliberate | /verify-email
+pdi: test_a_free_membership_carries_its_posture | deliberate | /memberships /memberships/{}
+pdi: test_a_key_with_auto_defaults_to_a_real_model_not_the_stub | deliberate | /model /model/{}
+pdi: test_a_request_key_makes_the_chosen_provider_usable | deliberate | /model /model/{}
+pdi: test_a_stored_widget_runs_and_answers | deliberate | /run /users /users/{}/widgets /users/{}/widgets/{}/run
+pdi: test_a_stranded_pending_account_is_finished_on_a_no_mail_machine | deliberate | /signin /signup
+pdi: test_a_test_send_reports_what_the_server_said | deliberate | /settings/mail /settings/mail/test
+pdi: test_a_test_send_without_a_server_is_refused | deliberate | /settings/mail/test
+pdi: test_a_verify_code_cannot_reset_a_password | deliberate | /password/reset /verify-email
+pdi: test_a_wrong_code_verifies_nothing | deliberate | /verify-email
+pdi: test_an_unknown_plan_is_refused | deliberate | /memberships /memberships/{}
+pdi: test_apple_asks_for_form_post_and_the_door_accepts_it | deliberate | /auth/oauth/apple/callback
+pdi: test_clearing_settings_returns_to_the_console_transport | deliberate | /settings/mail
+pdi: test_configuring_mail_turns_signup_back_into_real_verification | deliberate | /settings/mail /signin /signup
+pdi: test_deepseek_and_the_founders_own_algorithm_are_on_the_menu | deliberate | /models
+pdi: test_every_money_bearing_response_discloses_the_simulation | deliberate | /insights /insights/{} /memberships /memberships/{}
+pdi: test_every_plan_in_the_catalogue_states_its_posture | deliberate | /plans
+pdi: test_every_provider_on_the_menu_can_be_chosen | deliberate | /model /model/{} /models
+pdi: test_focus_does_not_stand_in_for_the_cap | deliberate | /mic/gain /mic/handover /users /users/{}/mic/gain
+pdi: test_forgot_password_resets_via_emailed_code | deliberate | /password/reset /password/reset/request /signin
+pdi: test_free_is_still_refused_the_paid_capabilities | deliberate | /devices /devices/{}
+pdi: test_google_still_comes_back_on_the_query_string | deliberate | /auth/oauth/google/callback
+pdi: test_list_models_includes_all_providers | deliberate | /models
+pdi: test_moving_plan_replaces_rather_than_stacks | deliberate | /memberships /memberships/{}
+pdi: test_no_signup_key_leaves_local_use_open | deliberate | /enroll
+pdi: test_resend_retires_the_previous_code | deliberate | /verify-email /verify-email/resend
+pdi: test_saving_settings_makes_the_transport_smtp | deliberate | /settings/mail
+pdi: test_the_emailed_link_verifies_and_the_app_notices_by_signing_in | deliberate | /signin /verify-email/click
+pdi: test_the_environment_outranks_the_settings_screen | deliberate | /settings/mail
+pdi: test_the_free_plan_costs_nothing_and_says_what_that_means | deliberate | /plans
+pdi: test_the_homepage_switch_hides_it_from_everyone_but_the_owner | deliberate | /circle /circle/{}/features /circle/{}/homepage/{} /features
+pdi: test_the_key_is_never_persisted | deliberate | /model /model/{}
+pdi: test_the_key_reaches_the_provider_build | deliberate | /coach /coach/{} /model /model/{}
+pdi: test_the_membership_says_who_holds_it | deliberate | /memberships /memberships/{}
+pdi: test_the_password_never_comes_back_out | deliberate | /settings/mail
+pdi: test_the_recipients_switch_refuses_by_name | deliberate | /circle /circle/{}/features /circle/{}/messages /features
+pdi: test_unconfigured_providers_say_so | deliberate | /auth/oauth/google/start /auth/oauth/providers
+pdi: test_unknown_provider_rejected | deliberate | /model /model/{}
+pdi: test_what_a_plan_includes_is_computed_not_typed | deliberate | /plans
+pdi: test_without_a_key_the_unconfigured_choice_still_falls_back | deliberate | /model /model/{}
+pdi: test_without_a_mail_transport_signup_activates_directly | deliberate | /signin
+pdi: test_without_settings_nothing_can_be_emailed | deliberate | /settings/mail
+pdi: test_wrong_password_and_unknown_address_answer_identically | deliberate | /signin /verify-email
+qrme: test_a_dead_code_renders_a_page_too | deliberate | /c/cbn_neverexisted
+qrme: test_the_page_does_not_depend_on_an_animation_to_be_visible | deliberate | /c /c/{}
+qrme: test_the_page_is_one_self_contained_document | deliberate | /c /c/{}
+qrme: test_the_scan_url_serves_a_page_not_json | deliberate | /c /c/{} /c/{}/card /card
+qrme: test_the_structure_survives_the_lift | deliberate | /_shape/dict
+#
+# ## Answered — read on both sides; the sibling guard is named
+#
+pdi: test_authenticated_submitter_sees_only_their_own | answered | test_authenticated_tenant_sees_only_their_own
+pdi: test_moving_it_round_trips_over_http | answered | test_moving_it_round_trips
+pdi: test_revoke_stops_use | answered | test_tenant_isolation_and_revoke — the 409 after a revoke
+pdi: test_terms_are_served_versioned | answered | test_terms_served_versioned_with_key_points
+pdi: test_two_users_dont_see_each_others_words | answered | test_two_tenants_dont_see_each_others_words
+qrme: test_a_retired_code_is_indistinguishable_from_one_that_never_existed | answered | on purpose: a picked-up sticker answers 410 'picked up' where an unknown one answers 404. A beacon here is a physical thing somebody took off a wall, and saying so is the product
+qrme: test_invoke_and_grants | answered | test_invoke_a_granted_capability — grants, and the 422 on one that was not granted
+qrme: test_the_posture_is_served_on_a_route | answered | test_the_lifeline_answers_a_bare_get — drives the same route with no credential
+qrme: test_the_vocabulary_and_routing_table_are_public | answered | test_the_vocabulary_and_the_routing_table_are_public — one word apart, and invisible to a comparison of names
+#
+# ## Unclassified — the guard drives no route
+#
+jim: test_directions_never_name_a_lesson_that_is_gone | unclassified | 
+jim: test_the_guide_has_no_name_and_no_face | unclassified | 
+jim: test_this_repo_has_no_hand_translated_screen_surface_yet | unclassified | 
+pdi: test_a_downgrade_never_unseals_anything | unclassified | 
+pdi: test_a_free_account_puts_nothing_in_the_vault | unclassified | 
+pdi: test_a_paid_plan_carries_no_free_disclosure | unclassified | 
+pdi: test_a_per_surface_face_refuses_to_guess | unclassified | 
+pdi: test_a_short_password_is_refused_before_any_email_is_sent | unclassified | 
+pdi: test_a_term_is_exempt_from_the_whitespace_rule_and_a_stranger_is_not | unclassified | 
+pdi: test_a_widget_cannot_reach_the_network | unclassified | 
+pdi: test_an_upgrade_does_not_un_expose_what_was_already_open | unclassified | 
+pdi: test_console_mail_survives_a_cp1252_stdout | unclassified | 
+pdi: test_custom_provider_stays_dark_until_its_url_is_set | unclassified | 
+pdi: test_every_capability_the_gate_names_has_a_translation | unclassified | 
+pdi: test_every_exemption_still_names_a_real_table | unclassified | 
+pdi: test_every_face_says_it_does_not_act | unclassified | 
+pdi: test_every_gated_pattern_is_a_route_that_exists | unclassified | 
+pdi: test_every_gated_pattern_names_a_real_capability | unclassified | 
+pdi: test_every_header_the_console_sends_the_shells_send_too | unclassified | 
+pdi: test_every_plan_has_a_posture | unclassified | 
+pdi: test_every_refusable_plan_has_a_billing_period | unclassified | 
+pdi: test_every_sensitive_kind_is_enforced_somewhere | unclassified | 
+pdi: test_every_wrapper_that_swallows_a_failure_records_who_answered | unclassified | 
+pdi: test_free_and_basic_reach_the_same_capabilities | unclassified | 
+pdi: test_free_is_platform_custody_and_paid_is_the_users | unclassified | 
+pdi: test_it_draws_before_anybody_has_touched_it | unclassified | 
+pdi: test_mail_to_another_machine_is_refused | unclassified | 
+pdi: test_moving_between_two_private_plans_changes_nothing | unclassified | 
+pdi: test_no_copy_hardcodes_a_stale_count_of_refusals | unclassified | 
+pdi: test_no_key_is_translated_into_ten_languages_and_used_nowhere | unclassified | 
+pdi: test_nothing_here_reaches_a_payment_processor | unclassified | 
+pdi: test_passwords_and_codes_are_never_stored_in_the_clear | unclassified | 
+pdi: test_the_console_helper_is_still_being_read | unclassified | 
+pdi: test_the_downgrade_helper_performs_nothing | unclassified | 
+pdi: test_the_extractor_reads_the_bindings_and_the_records | unclassified | 
+pdi: test_the_named_exceptions_are_routes_that_exist | unclassified | 
+pdi: test_the_open_posture_names_who_can_read_it | unclassified | 
+pdi: test_the_order_runs_visitor_free_basic_pro | unclassified | 
+pdi: test_the_plan_gate_arrives_whole_in_one_language | unclassified | 
+pdi: test_the_plan_titles_stay_as_they_are_printed_everywhere_else | unclassified | 
+pdi: test_the_plans_are_the_prices_that_were_agreed | unclassified | 
+pdi: test_the_refusal_screen_names_every_kind_on_the_list | unclassified | 
+pdi: test_the_shell_can_end_what_it_can_begin | unclassified | 
+pdi: test_the_vault_gate_asks_about_the_plan_not_the_deployment | unclassified | 
+pdi: test_the_wrapper_scan_is_finding_wrappers | unclassified | 
+qrme: test_a_night_shift_is_on_at_2am | unclassified | 
+qrme: test_a_page_is_signed_when_a_secret_is_set | unclassified | 
+qrme: test_a_wrapping_shift_belongs_to_the_day_it_started | unclassified | 
+qrme: test_each_new_screen_calls_its_family | unclassified | 
+qrme: test_every_surface_is_actually_being_scanned | unclassified | 
+qrme: test_healthcheck_matches_the_port_the_suite_harness_expects | unclassified | 
+qrme: test_the_closed_sets_are_unions_rather_than_strings | unclassified | 
+qrme: test_the_console_extracts_the_sentence_at_every_refusal_site | unclassified | 
+qrme: test_the_console_reads_it_rather_than_only_binding_it | unclassified | 
+qrme: test_the_console_sites_were_actually_found | unclassified | 
+qrme: test_the_gallery_skips_no_number | unclassified | 
+qrme: test_the_markup_routes_do_not_go_through_the_json_helper | unclassified | 
+qrme: test_the_posture_is_reportable_in_one_place | unclassified | 
+qrme: test_the_public_route_is_still_a_route | unclassified | 
+qrme: test_the_shell_windows_were_actually_found | unclassified | 
+qrme: test_the_union_backlog_record_is_empty | unclassified | 
+qrme: test_the_widget_is_mounted_in_the_shell | unclassified | 
+#

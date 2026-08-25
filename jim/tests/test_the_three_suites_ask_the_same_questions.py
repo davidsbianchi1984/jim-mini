@@ -115,9 +115,48 @@ def _rows(path: Path) -> list[str]:
             if line.strip() and not line.startswith("#")]
 
 
+def _parsed() -> list[tuple[str, str, str, str]]:
+    """Each row as (product that lacks it, guard name, class, note).
+
+    The class is what turned this record from a heap into something a person
+    can spend an afternoon on: it says which rows could possibly be defects.
+    """
+    out = []
+    for row in _rows(RECORD):
+        head, _, rest = row.partition("|")
+        product, name = [x.strip() for x in head.split(":", 1)]
+        cls, _, note = rest.partition("|")
+        out.append((product, name, cls.strip(), note.strip()))
+    return out
+
+
 def _divergences() -> dict[str, str]:
     """name -> the product recorded as lacking it."""
-    return {n: p for p, n in (row.split(": ", 1) for row in _rows(RECORD))}
+    return {name: product for product, name, _cls, _note in _parsed()}
+
+
+def _routes_here() -> set[tuple[str, ...]]:
+    """This product's live route table, as segment tuples with `{...}` wild.
+
+    Built here rather than read from a list, because the whole point of the
+    `deliberate` class is that it is a claim about what this product serves
+    *now* — a recorded list would be a second thing to keep true.
+    """
+    from . import clientpaths
+    from .test_error_report_carries_nothing_private import _app
+
+    return {tuple("*" if "{" in s else s
+                  for s in route.path.strip("/").split("/"))
+            for route in clientpaths.all_routes(_app())}
+
+
+def _reaches(shape: str) -> bool:
+    want = tuple("*" if "{" in s else s for s in shape.strip("/").split("/"))
+    for served in _routes_here():
+        if len(served) == len(want) and all(
+                a == b or a == "*" or b == "*" for a, b in zip(want, served)):
+            return True
+    return False
 
 
 def _sibling_dirs() -> dict[str, Path]:
@@ -129,6 +168,57 @@ def _sibling_dirs() -> dict[str, Path]:
                 found[name] = p.resolve()
                 break
     return found
+
+
+def test_a_deliberate_divergence_is_a_feature_this_product_still_lacks():
+    """The class that carries 48 of these rows, checked rather than asserted.
+
+    `deliberate` means this product serves none of the routes the sibling's
+    guard drives, so the guard cannot be a lost fix — the feature is not here
+    to have lost it for. That is a claim about today's route table, and route
+    tables grow.
+
+        asked     is this difference deliberate
+        mattered  is it still
+
+    A row that starts failing here is the interesting case and not a chore:
+    the feature arrived and its guard did not travel with it, which is the
+    exact defect this whole file was written after.
+    """
+    arrived = []
+    for product, name, cls, note in _parsed():
+        if product != ME or cls != "deliberate":
+            continue
+        for shape in note.split():
+            if _reaches(shape):
+                arrived.append(f"{name} — this product now serves {shape}")
+                break
+    assert not arrived, (
+        f"{len(arrived)} divergence(s) recorded as deliberate are about "
+        "routes this product now serves:\n    " + "\n    ".join(arrived[:20])
+        + "\n  Port the guard, or move the row to `candidate` and say why "
+          "not.")
+
+
+def test_the_candidate_divergences_only_shrink():
+    """The rows that could be defects, counted separately from the rows that
+    could not. A backlog whose every row costs the same attention is a backlog
+    nobody starts."""
+    text = RECORD.read_text(encoding="utf-8")
+    ceiling = int(re.search(r"# candidates: (\d+)", text).group(1))
+    found = [n for _p, n, cls, _ in _parsed() if cls == "candidate"]
+    assert len(found) <= ceiling, (
+        f"{len(found)} candidate divergences, above the {ceiling} recorded:\n"
+        "    " + "\n    ".join(sorted(found)[:20]))
+
+
+def test_every_row_carries_a_class_this_file_knows():
+    """A guard on the record. A row whose class is a typo would be counted by
+    no check and read by nobody — the same silence the flat list had, in one
+    row instead of all of them."""
+    known = {"candidate", "deliberate", "answered", "unclassified"}
+    strange = sorted({cls for _p, _n, cls, _ in _parsed()} - known)
+    assert not strange, f"unknown class(es) in the record: {strange}"
 
 
 def test_every_shared_guard_is_present_here():
