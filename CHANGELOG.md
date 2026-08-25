@@ -6,6 +6,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.3] - 2026-08-25
+
+### Changed
+
+- **The guardian refuses in the reader's language, all the way down.** The
+  78 interpolated refusals `refusal_templates.txt` was holding open become
+  registered templates: ~63 new constants in `jim/i18n.py`, each with
+  frames in the nine languages, and every raise site builds its sentence
+  through `i18n.fill` so `localize_detail` can refill the frame in the
+  reader's language.
+
+      asked     every sentence the guardian says when it says no
+      mattered  the reader who picked a language and was answered in English
+
+  Handlers that stringified a carrying exception hand it on through
+  `i18n.raised` instead — `str(exc)` drops the template and leaves the
+  refusal English in every language, and the launder guard drove that sweep
+  module by module as each error class became a carrier. The estate
+  noticed: the `refusals.template_calls` floor rises 15 → 78 (four-fifths
+  of the 98 fill sites now standing), and the unannounced-speaker test
+  follows the sentence it checks into `i18n.SPEAKER_ROUTE_REFUSED`, where
+  it now lives.
+
 ## [1.8.2] - 2026-08-25
 
 ### Fixed
@@ -11213,7 +11236,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.3...HEAD
+[1.8.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.2...app-v1.8.3
 [1.8.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.1...app-v1.8.2
 [1.8.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.0...app-v1.8.1
 [1.8.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.7.0...app-v1.8.0
