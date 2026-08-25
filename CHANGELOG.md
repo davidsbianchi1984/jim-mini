@@ -6,6 +6,50 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.2] - 2026-08-25
+
+### Fixed
+
+- **The last answer does not depend on anything that can fail.** Found by
+  a full suite run, once, order-dependently: the catch-all middleware —
+  the one that turns a crashed route into an answer the console can read —
+  builds its 500 in the reader's language, and the translation is itself a
+  call that can fail. When it did, the exception left the handler,
+  Starlette's outermost layer answered instead, and the 500 went back
+  without the CORS header, so the browser dropped the whole response and
+  the console read a crash as an unreachable backend.
+
+      asked     does the last answer say it in the reader's language
+      mattered  does the last answer leave at all
+
+  The handler is the one place with nobody behind it to try again, so the
+  translation is guarded and the fallback is English and constant. A
+  sentence in the wrong language beats no sentence. The middleware was
+  byte-identical in all three products, so the defect was too, and so is
+  the fix — with a guard each that poisons the translator and checks the
+  product's own answer still leaves.
+
+### Changed
+
+- **The suite audits its own floors by kind, not by size.** A night-long
+  sweep of the guards' guards: the floor registry grew from 68 ratchets to
+  145, each one a number measured against what it stands over every run.
+  The sweep that finds unregistered floors asks what the left side of the
+  comparison *is* now — a count of something the suite scanned, or a value
+  pulled out of one answer — instead of how big the number on the right is,
+  which had hidden an `n >= 2` standing over a shell building 127 requests.
+
+      asked     is the number satisfied
+      mattered  is the number still near what it measures
+
+  The unregistered-floor backlog holds 10 rows, every one a quantity that
+  needs a live client to measure. The 98 unlabelled request fields were
+  verified as decisions on every surface — console mechanically, the three
+  shells by hand — and a new guard fails the moment a form starts asking
+  for one. The three-suite divergence record reaches zero unread rows:
+  114, each provably deliberate, answered by a named sibling guard, or
+  ported.
+
 ## [1.8.1] - 2026-08-24
 
 ### Fixed
@@ -11169,7 +11213,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.2...HEAD
+[1.8.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.1...app-v1.8.2
 [1.8.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.0...app-v1.8.1
 [1.8.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.7.0...app-v1.8.0
 [1.7.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.6.2...app-v1.7.0
