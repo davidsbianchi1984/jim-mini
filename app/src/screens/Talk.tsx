@@ -297,7 +297,7 @@ export function Talk({ go }: {
               word for "switch this conversation to voice". */}
           <button className={"talk-mic" + (listening ? " listening" : "")}
                   aria-label={tr("cch.talk", lang)}
-                  onClick={toggleMic}>📞</button>
+                  onClick={toggleMic}>🎙️</button>
           <button className="talk-speak" disabled={busy || !said.trim()}
                   onClick={() => ask()}>{tr("talk.send", lang)}</button>
           {/* Take the conversation with you. This screen's turn is the
