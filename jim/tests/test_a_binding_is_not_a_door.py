@@ -34,6 +34,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from . import ratchets
+
 
 def _repo_root() -> Path:
     for d in Path(__file__).resolve().parents:
@@ -126,12 +128,15 @@ def test_the_scan_finds_the_bindings_at_all():
     indent, a different declaration style — this would find nothing, every
     binding would read as used, and the file would pass vacuously.
 
-    Thresholds are kept low enough to hold in all three repositories, which
-    have consoles of very different sizes. What matters is that the number is
-    not near zero.
+    The floor used to be twenty, under a sentence saying it was kept low
+    enough to hold in all three repositories, which have consoles of very
+    different sizes. That is a true sentence about why the number was small
+    and a false one about what it held: twenty against this console's 342
+    bindings is six per cent, and the identical literal in QRME is three. It
+    is registered per product now, measured against this product.
     """
     found = _bindings()
-    assert len(found) > 20, (
+    assert len(found) >= ratchets.floor("console.bindings_scanned"), (
         f"only {len(found)} bindings parsed out of api.ts — the pattern has "
         "stopped matching, so 'nothing is unused' means nothing")
     exported = {m.group(1) for m in re.finditer(

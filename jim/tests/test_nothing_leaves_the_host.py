@@ -46,6 +46,8 @@ import pytest
 
 from jim import offline
 
+from . import ratchets
+
 
 def _repo_root() -> Path:
     for d in Path(__file__).resolve().parents:
@@ -144,7 +146,7 @@ def test_the_extraction_finds_the_paths_out():
     """A guard on the guard. A renamed import makes the walk find nothing, and
     a check over no sites passes while every one of them is ungated."""
     sites = _egress_sites()
-    assert len(sites) >= 5, (
+    assert len(sites) >= ratchets.floor("host.egress_sites"), (
         f"only {len(sites)} egress site(s) found — the AST walk has stopped "
         "matching, and the check below would pass on nothing")
     names = {name for _, _, name, _ in sites}

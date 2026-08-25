@@ -49,6 +49,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from . import ratchets
+
 
 def _repo_root() -> Path:
     for d in Path(__file__).resolve().parents:
@@ -62,6 +64,19 @@ SNAPSHOT = Path(__file__).resolve().parent / "unused_native_bindings.txt"
 
 #: Where it stood when this guard was written.
 STARTED_AT = 3
+
+#: Where each shell declares the calls it can make, and how that language
+#: spells a declaration. Held here rather than inside the guard below so the
+#: floor under it can measure the same thing the guard counts.
+API_CLIENTS = {
+    "ios": (REPO / "native/ios/Sources/ApiClient.swift",
+            r"^\s{4}func (\w+)\("),
+}
+
+
+def _api_functions(shell: str) -> list[str]:
+    path, pattern = API_CLIENTS[shell]
+    return re.findall(pattern, path.read_text(encoding="utf-8"), re.M)
 
 
 def _swift() -> list[str]:
@@ -170,13 +185,12 @@ def test_the_extractors_are_reading_something():
     Five false positives in this audit have come from a pattern that quietly
     stopped matching. This one fails loudly instead.
     """
-    api = REPO / "native/ios/Sources/ApiClient.swift"
-    if api.exists():
-        n = len(re.findall(r"^\s{4}func (\w+)\(",
-                           api.read_text(encoding="utf-8"), re.M))
-        assert n > 20, (
-            f"only {n} Swift bindings found — the pattern has stopped "
-            "matching, so an empty result here would mean nothing")
+    for shell, (path, _) in API_CLIENTS.items():
+        assert path.exists(), f"{shell}: {path.name} is gone"
+        found = _api_functions(shell)
+        assert len(found) >= ratchets.floor(f"native.api_functions.{shell}"), (
+            f"only {len(found)} {shell} bindings found — the pattern has "
+            "stopped matching, so an empty result here would mean nothing")
 
 
 def test_the_shell_can_end_what_it_can_begin():

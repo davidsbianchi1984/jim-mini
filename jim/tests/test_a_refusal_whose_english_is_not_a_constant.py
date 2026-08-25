@@ -46,6 +46,8 @@ import pytest
 
 from jim import i18n
 
+from . import ratchets
+
 
 def _repo_root() -> Path:
     for d in Path(__file__).resolve().parents:
@@ -148,7 +150,7 @@ def _template_calls() -> list[tuple[str, int, dict]]:
 def test_the_raise_sites_were_actually_converted():
     """A guard on the guard: everything below passes vacuously on no calls."""
     calls = _template_calls()
-    assert len(calls) >= 6, (
+    assert len(calls) >= ratchets.floor("refusals.template_calls"), (
         f"only {len(calls)} `i18n.fill` call(s) found — either the conversion "
         "was reverted or this extraction has stopped matching")
 

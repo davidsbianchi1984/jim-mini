@@ -33,6 +33,8 @@ from pathlib import Path
 
 import pytest
 
+from . import ratchets
+
 def _repo_root() -> Path:
     """The directory holding pyproject.toml.
 
@@ -340,6 +342,20 @@ def test_identifying_segments_are_replaced(raw, expected):
     assert _redact(raw) == expected
 
 
+def _segments() -> set[str]:
+    """Every literal segment this product serves, from the live route table.
+
+    Lifted out of the guard below so the floor under it reads the same set the
+    guard walks. A floor sitting beside a computation it does not share is a
+    number nothing compares.
+    """
+    from . import clientpaths
+
+    return {seg for route in clientpaths.all_routes(_app())
+            for seg in route.path.split("/")
+            if seg and not seg.startswith("{")}
+
+
 def _app():
     """The product's FastAPI app, found rather than named.
 
@@ -388,14 +404,8 @@ def test_no_real_route_segment_is_mistaken_for_an_id():
     improves is worse than no test, because nothing announces the moment it
     stopped meaning anything.
     """
-    from . import clientpaths
-
-    segments = set()
-    for route in clientpaths.all_routes(_app()):
-        for seg in route.path.split("/"):
-            if seg and not seg.startswith("{"):
-                segments.add(seg)
-    assert len(segments) > 30, (
+    segments = _segments()
+    assert len(segments) >= ratchets.floor("route.path_segments"), (
         f"only {len(segments)} route segments read — the app did not build")
     eaten = sorted(s for s in segments if _redact("/" + s) == "/{id}")
     assert not eaten, (

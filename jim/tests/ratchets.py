@@ -193,7 +193,6 @@ def _language_tables() -> int:
                 and isinstance(getattr(i18n, n), dict)])
 
 
-
 def _literal_refusals() -> int:
     """Refusal sentences written as a plain string, as the classifier counts
     them now. The floor is here rather than inside the assertion because a
@@ -418,7 +417,92 @@ def _receiver_declared(label: str):
     return go
 
 
+# -- the guards on the guards -----------------------------------------------
+#
+# Every floor below stands under a docstring that says, in its own file's
+# words, that a reader which stopped reading would report a clean result. Four
+# of them carried the same literal in all three products, and three carried
+# some version of the same sentence:
+#
+#     Thresholds are kept low enough to hold in all three repositories, which
+#     have consoles of very different sizes.
+#
+# This file's header diagnosed that sentence once already, in
+# `test_the_console_is_a_client_too.py` — a true sentence about why the number
+# is small and a false one about what it holds. It was fixed there and never
+# carried anywhere else. Twenty against this console's 342 bindings is six per
+# cent; the identical twenty in QRME is three.
+#
+#     asked     does one number hold in all three products
+#     mattered  does it hold anything in any of them
+#
+# Two more of these sat inside a loop, where one literal has to be
+# four-fifths of three surfaces at once and settles for being four-fifths of
+# none. Those are registered per surface.
+
+
+def _console_bindings() -> int:
+    from .test_a_binding_is_not_a_door import _bindings
+    return len(_bindings())
+
+
+def _api_functions(shell: str):
+    def go() -> int:
+        from .test_a_native_binding_is_not_a_door_either import _api_functions
+        return len(_api_functions(shell))
+    return go
+
+
+def _path_segments() -> int:
+    from .test_error_report_carries_nothing_private import _segments
+    return len(_segments())
+
+
+def _scanned_controls() -> int:
+    from .test_a_form_that_asks_for_it_has_a_label_for_it import (
+        _scanned_controls as go)
+    return go()
+
+
+def _egress_sites() -> int:
+    from .test_nothing_leaves_the_host import _egress_sites
+    return len(_egress_sites())
+
+
+def _body_matched(slug: str):
+    def go() -> int:
+        from . import test_the_body_the_native_clients_send as m
+        for client, short in m.SLUG.items():
+            if short == slug:
+                return m._writes_meeting_a_model(client)
+        raise KeyError(f"no native client slugged {slug!r}")
+    return go
+
+
+def _template_calls() -> int:
+    from .test_a_refusal_whose_english_is_not_a_constant import _template_calls
+    return len(_template_calls())
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("console.bindings_scanned", 273, _console_bindings,
+            "the bindings the console scan parses out of api.ts"),
+    Ratchet("native.api_functions.ios", 270, _api_functions("ios"),
+            "the calls the iPhone's ApiClient declares"),
+    Ratchet("route.path_segments", 202, _path_segments,
+            "the literal path segments this product's routes contribute"),
+    Ratchet("form.controls_scanned", 13349, _scanned_controls,
+            "the characters of form control the screen scan matches"),
+    Ratchet("host.egress_sites", 13, _egress_sites,
+            "the calls in this package that can put bytes on a wire"),
+    Ratchet("native.body_matched.windows", 96, _body_matched("windows"),
+            "the desktop client's writes that meet a declared model"),
+    Ratchet("native.body_matched.ios", 95, _body_matched("ios"),
+            "the iPhone client's writes that meet a declared model"),
+    Ratchet("native.body_matched.android", 95, _body_matched("android"),
+            "the Android client's writes that meet a declared model"),
+    Ratchet("refusals.template_calls", 15, _template_calls,
+            "the `i18n.fill` call sites the conversion left behind"),
     Ratchet("receiver.declared.ios.state", 12, _receiver_declared("ios/state"),
             "the members ios/state declares"),
     Ratchet("receiver.declared.ios.api", 879, _receiver_declared("ios/api"),

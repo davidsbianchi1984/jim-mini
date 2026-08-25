@@ -48,6 +48,8 @@ import re
 
 from .test_the_body_the_route_requires import _models
 
+from . import ratchets
+
 RECORD = (pathlib.Path(__file__).resolve().parent
           / "native_bodies_unverified.txt")
 REPO = pathlib.Path(__file__).resolve().parents[2]
@@ -59,7 +61,20 @@ CLIENTS = {
         REPO / "native/android/app/src/main/java/app/jim/guardian/ApiClient.kt",
 }
 
+#: The short name each client's floors are registered under. The guards below
+#: run inside a loop over CLIENTS, and one literal cannot be four-fifths of
+#: three clients at once — which is how a floor of 44 came to stand under
+#: clients sending 119, 119 and 120.
+SLUG = {name: name.split()[1].lower() for name in CLIENTS}
+
 WRITES = ("POST", "PUT", "PATCH")
+
+
+def _writes_meeting_a_model(client: str) -> int:
+    """This client's writes whose verb and shape meet a declared model."""
+    models = _models()
+    return sum(1 for verb, template, _ in _sent(client)
+               if (verb, _shape(template)) in models)
 
 
 def _shape(path: str) -> str:
@@ -351,11 +366,10 @@ def test_every_client_is_read_at_a_share_of_its_writes():
 
 
 def test_a_real_share_of_native_writes_meets_a_model():
-    models = _models()
     for client in CLIENTS:
-        matched = sum(1 for verb, template, _ in _sent(client)
-                      if (verb, _shape(template)) in models)
-        assert matched >= 44, (client, matched)
+        matched = _writes_meeting_a_model(client)
+        assert matched >= ratchets.floor(
+            f"native.body_matched.{SLUG[client]}"), (client, matched)
 
 
 def test_the_csharp_reader_sees_an_inferred_property_name():
