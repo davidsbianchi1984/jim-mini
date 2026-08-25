@@ -40,9 +40,9 @@ ContinuityState.conditioning
 ContinuityState.vector
 ContinuityState.meanings
 ContinuityState.method
-HelpTally.answered            # once somebody has answered whether help helped
+HelpTally.answered_count            # once somebody has answered whether help helped
 HelpTally.did_not
-HelpTally.helped
+HelpTally.helped_count
 HelpTally.hit_rate
 CheckinTrend.avg_mood         # once there are enough check-ins to average
 CheckinTrend.avg_stress
@@ -51,7 +51,7 @@ PresenceArea.area             # once presence has an area it is standing on
 PresenceArea.known
 PresenceArea.standing
 PresenceBoundary.says         # once a boundary has been set
-PresenceBoundary.value
+PresenceBoundary.stands
 PresenceSpoken.due            # once a beat is scheduled
 PresenceSpoken.slot_from_hour
 PresenceBeat.deepened_line    # only when a real model answers — under the stub

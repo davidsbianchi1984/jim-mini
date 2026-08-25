@@ -157,7 +157,7 @@ public record EngagedPermits(
 
 public record EngagedStep(
     [property: JsonPropertyName("tool")] string? Tool,
-    [property: JsonPropertyName("answered")] int? Answered,
+    [property: JsonPropertyName("status_code")] int? StatusCode,
     [property: JsonPropertyName("says")] string? Says,
     [property: JsonPropertyName("acts")] bool Acts,
     [property: JsonPropertyName("reversible")] bool Reversible,
@@ -168,7 +168,7 @@ public record EngagedAct(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("tool")] string Tool,
     [property: JsonPropertyName("says")] string Says,
-    [property: JsonPropertyName("answered")] int Answered,
+    [property: JsonPropertyName("status_code")] int StatusCode,
     [property: JsonPropertyName("created_at")] string CreatedAt,
     [property: JsonPropertyName("undone_at")] string? UndoneAt,
     [property: JsonPropertyName("reversible")] bool Reversible,
@@ -575,8 +575,8 @@ public record FollowupAnswered(
     [property: JsonPropertyName("live_assistance")] LiveAssistance? Live);
 
 public record HelpTally(
-    [property: JsonPropertyName("helped")] int Helped,
-    [property: JsonPropertyName("answered")] int Answered);
+    [property: JsonPropertyName("helped_count")] int HelpedCount,
+    [property: JsonPropertyName("answered_count")] int AnsweredCount);
 
 public record AdaptationDetail(
     [property: JsonPropertyName("what_helps")] Dictionary<string, HelpTally>? WhatHelps,
@@ -592,7 +592,7 @@ public record Finetune(
     [property: JsonPropertyName("build")] int Build,
     [property: JsonPropertyName("backend")] string Backend,
     [property: JsonPropertyName("examples")] int Examples,
-    [property: JsonPropertyName("helped")] int Helped,
+    [property: JsonPropertyName("helped_count")] int HelpedCount,
     [property: JsonPropertyName("did_not_help")] int DidNotHelp,
     [property: JsonPropertyName("method")] string Method,
     [property: JsonPropertyName("digest")] string Digest,
@@ -653,7 +653,7 @@ public record PresenceWho(
     [property: JsonPropertyName("boundaries")] Dictionary<string, PresenceBoundary>? Boundaries);
 
 public record PresenceBoundary(
-    [property: JsonPropertyName("value")] bool Value,
+    [property: JsonPropertyName("stands")] bool Stands,
     [property: JsonPropertyName("says")] string Says);
 
 /// <summary>One unprompted turn — or silence, which is an outcome rather
@@ -697,7 +697,7 @@ public record PresenceSurfaceRow(
     [property: JsonPropertyName("note")] string Note);
 
 public record PresenceSurfaces(
-    [property: JsonPropertyName("chosen")] string Chosen,
+    [property: JsonPropertyName("chosen_surface")] string Chosen,
     [property: JsonPropertyName("rule")] string Rule,
     [property: JsonPropertyName("surfaces")] PresenceSurfaceRow[]? Surfaces);
 
@@ -3052,7 +3052,7 @@ public record MoneyAccount(
     [property: JsonPropertyName("balance")] double? Balance);
 
 public record SavingsGoal(
-    [property: JsonPropertyName("goal")] double Goal,
+    [property: JsonPropertyName("goal_amount")] double Goal,
     [property: JsonPropertyName("note")] string? Note,
     [property: JsonPropertyName("reached_at")] string? ReachedAt);
 

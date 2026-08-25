@@ -356,12 +356,12 @@ export function Baseline() {
               <div className="band-figures">{tr("bas.money.goal.note", lang)}</div>
             </div>
             <div className="muted small">
-              {money.savings ? money.savings.goal : "—"}
+              {money.savings ? money.savings.goal_amount : "—"}
             </div>
           </div>
           <div className="voice-row">
             <input type="range" min={250} max={50000} step={250}
-                   value={money.savings?.goal ?? 250} disabled={busy === "goal"}
+                   value={money.savings?.goal_amount ?? 250} disabled={busy === "goal"}
                    onChange={(e) => setGoal(Number(e.target.value))} />
           </div>
 

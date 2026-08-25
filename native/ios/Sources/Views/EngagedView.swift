@@ -175,7 +175,7 @@ struct EngagedView: View {
                             .font(.caption2).foregroundStyle(Theme.red)
                     } else {
                         HStack(spacing: 6) {
-                            Text("\(step.answered ?? 0)")
+                            Text("\(step.status_code ?? 0)")
                                 .font(.caption2.bold()).foregroundStyle(Theme.t2)
                             Text(step.says ?? step.tool ?? "")
                                 .font(.caption).foregroundStyle(Theme.txt)

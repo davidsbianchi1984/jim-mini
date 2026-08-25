@@ -79,40 +79,44 @@ AREAS = ("mental_health", "health_fitness", "career", "finance",
          "relationships", "personal_growth")
 
 #: What it will not be, stated on the wire because a boundary in a docstring
+#: (`stands`, not `value`: on this wire `value` is a baseline metric's
+#: number and `holds` is already a permission's string —
+#: number, and a boolean under the same name was the primitive clash
+#: `wire_name_collisions.txt` records)
 #: is a boundary the client cannot show anybody. Each is a fact and a sentence;
 #: the sentences are the fallback English (see :data:`LINES`).
 BOUNDARIES: dict[str, dict] = {
     "is_synthetic": {
-        "value": True,
+        "stands": True,
         "says": "I am a program. I will tell you that whenever you ask, and "
                 "I will not let you forget it by accident.",
     },
     "has_body": {
-        "value": False,
+        "stands": False,
         "says": "I do not have a body and I will not pretend to have one.",
     },
     "claims_human": {
-        "value": False,
+        "stands": False,
         "says": "I will never say I am a person, or let a conversation drift "
                 "into you believing it.",
     },
     "romantic": {
-        "value": False,
+        "stands": False,
         "says": "I am not going to be your partner. I can care how your week "
                 "goes without either of us calling it love.",
     },
     "exclusive": {
-        "value": False,
+        "stands": False,
         "says": "I am not the only one you should talk to, and I will keep "
                 "pointing at people who are not me.",
     },
     "simulates_intimacy": {
-        "value": False,
+        "stands": False,
         "says": "I do not do intimacy, and there is no setting that turns "
                 "that on.",
     },
     "leaves_quietly": {
-        "value": False,
+        "stands": False,
         "says": "If I am going away — an upgrade, a shutdown, a plan ending — "
                 "you get a sentence about it first.",
     },
@@ -971,7 +975,10 @@ def surfaces(user_id: str) -> dict:
         row["withholds"] = ([] if row["reads_health_aloud"]
                             else list(NOT_ALOUD_IN_COMPANY))
         out.append(row)
-    return {"user_id": user_id, "surfaces": out, "chosen": chosen,
+    # `chosen_surface`, not `chosen`: each row already answers "is this
+    # the chosen one" under that name as a boolean, and a string beside it
+    # under the same name is the clash `wire_name_collisions.txt` records.
+    return {"user_id": user_id, "surfaces": out, "chosen_surface": chosen,
             "glasses_makes": list(GLASSES),
             "rule": ("On a surface somebody else can hear, your health is "
                      "shown rather than spoken. The beat still reaches you.")}

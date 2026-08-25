@@ -53,12 +53,18 @@ def _followup_tallies(user_id: str) -> dict:
         (user_id,)).fetchall()
     out: dict[str, dict] = {}
     for r in rows:
-        entry = out.setdefault(r["condition"], {"helped": 0, "did_not": 0})
-        entry["helped" if r["helped"] else "did_not"] += r["n"]
+        # `helped_count` / `answered_count`, not `helped` / `answered`:
+        # the follow-up itself answers under those names as booleans, and a
+        # count under the same name is the primitive clash
+        # `wire_name_collisions.txt` records.
+        entry = out.setdefault(r["condition"],
+                               {"helped_count": 0, "did_not": 0})
+        entry["helped_count" if r["helped"] else "did_not"] += r["n"]
     for entry in out.values():
-        total = entry["helped"] + entry["did_not"]
-        entry["answered"] = total
-        entry["hit_rate"] = round(entry["helped"] / total, 2) if total else None
+        total = entry["helped_count"] + entry["did_not"]
+        entry["answered_count"] = total
+        entry["hit_rate"] = (round(entry["helped_count"] / total, 2)
+                             if total else None)
     return out
 
 
@@ -98,7 +104,7 @@ def rebuild(user_id: str, pdi=None) -> dict:
     personality = user.get("personality") or {}
 
     # Evidence volume, not model fluency, decides confidence.
-    answered = sum(t["answered"] for t in tallies.values())
+    answered = sum(t["answered_count"] for t in tallies.values())
     evidence = answered + trend.get("count", 0) + sum(areas.values())
     confidence = round(min(1.0, evidence / 20), 2)
 
@@ -151,7 +157,7 @@ def _evidence_now(user_id: str) -> int:
     """How much history exists to derive from, counted the same way `rebuild`
     counts it. Three cheap COUNTs; no profile is built."""
     tallies = _followup_tallies(user_id)
-    return (sum(t["answered"] for t in tallies.values())
+    return (sum(t["answered_count"] for t in tallies.values())
             + _checkin_trend(user_id).get("count", 0)
             + sum(_area_counts(user_id).values()))
 
@@ -232,16 +238,22 @@ def prompt_lines(user_id: str) -> list[str]:
     profile = json.loads(row["profile"])
     lines: list[str] = []
     for condition, tally in sorted(profile.get("what_helps", {}).items()):
-        if tally["answered"] < _MIN_FOLLOWUPS:
+        # `.get` with the old names beside the new: this reads a STORED
+        # profile, and one built before the rename carries the old keys
+        # until the next rebuild. Crashing on history would be worse than
+        # the clash was.
+        answered = tally.get("answered_count", tally.get("answered", 0))
+        helped = tally.get("helped_count", tally.get("helped", 0))
+        if answered < _MIN_FOLLOWUPS:
             continue          # a coincidence is not a finding
         if tally["hit_rate"] is not None and tally["hit_rate"] >= 0.6:
             lines.append(f"guidance for {condition} has worked for this "
-                         f"person before ({tally['helped']} of "
-                         f"{tally['answered']} times) — stay with what works")
+                         f"person before ({helped} of "
+                         f"{answered} times) — stay with what works")
         elif tally["hit_rate"] is not None and tally["hit_rate"] <= 0.34:
             lines.append(f"guidance for {condition} has NOT been landing for "
-                         f"this person ({tally['helped']} of "
-                         f"{tally['answered']}) — try a different approach and "
+                         f"this person ({helped} of "
+                         f"{answered}) — try a different approach and "
                          f"offer a human")
     areas = profile.get("areas_brought") or {}
     if areas:

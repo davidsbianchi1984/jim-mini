@@ -97,7 +97,9 @@ def corpus(user_id: str) -> list[dict]:
         " FROM guidance_followups WHERE user_id=? AND helped IS NOT NULL"
         " ORDER BY asked_at", (user_id,)).fetchall()
     return [{"condition": r["condition"], "severity": r["severity"],
-             "helped": int(r["helped"]),
+             # A bool, as the follow-up serves it — the 0/1 int under the
+             # same name was half of the `helped` clash on this wire.
+             "helped": bool(r["helped"]),
              "asked_at": r["asked_at"], "answered_at": r["answered_at"]}
             for r in rows]
 
@@ -260,7 +262,7 @@ def train(user_id: str, pdi=None, backend: str | None = None) -> dict:
     finally:
         _restore(original)
 
-    helped = sum(r["helped"] for r in rows)
+    helped = sum(r["helped"] for r in rows)  # bools; the sum is the count
     artifact = {
         # `build` and not `version`: `/health` answers a `version` too, and
         # that one is a semantic version string while this counts how many
@@ -270,7 +272,9 @@ def train(user_id: str, pdi=None, backend: str | None = None) -> dict:
         "build": VERSION,
         "user_id": user_id,
         "examples": len(rows),
-        "helped": helped,
+        # `helped_count`: a count, and the follow-up's own `helped` is a
+        # yes/no — the same clash the tally rows carried.
+        "helped_count": helped,
         "did_not_help": len(rows) - helped,
         **trained,
         # Said in the artifact rather than left to a reader's assumption. The

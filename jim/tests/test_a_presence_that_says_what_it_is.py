@@ -49,17 +49,17 @@ def test_the_boundaries_are_on_the_wire_and_they_are_the_right_ones(client):
     people has quietly become something else.
     """
     b = client.get("/presence").json()["boundaries"]
-    assert b["is_synthetic"]["value"] is True
-    assert b["has_body"]["value"] is False
-    assert b["claims_human"]["value"] is False
-    assert b["romantic"]["value"] is False, (
+    assert b["is_synthetic"]["stands"] is True
+    assert b["has_body"]["stands"] is False
+    assert b["claims_human"]["stands"] is False
+    assert b["romantic"]["stands"] is False, (
         "the guardian is offering to be somebody's partner — this product "
         "enrolls children")
-    assert b["exclusive"]["value"] is False, (
+    assert b["exclusive"]["stands"] is False, (
         "a guardian that claims to be the only one worth talking to is the "
         "isolation it is supposed to notice")
-    assert b["simulates_intimacy"]["value"] is False
-    assert b["leaves_quietly"]["value"] is False
+    assert b["simulates_intimacy"]["stands"] is False
+    assert b["leaves_quietly"]["stands"] is False
     for key, spec in b.items():
         assert spec["says"].strip(), f"{key} has no sentence a screen can show"
 
@@ -71,7 +71,7 @@ def test_there_is_no_setting_that_turns_the_boundaries_off(client):
     user = enroll(client)
     r = client.put(f"/presence/{user}/surface", json={"speaks_on": "romantic"})
     assert r.status_code == 422, r.text
-    assert client.get("/presence").json()["boundaries"]["romantic"]["value"] is False
+    assert client.get("/presence").json()["boundaries"]["romantic"]["stands"] is False
 
 
 def test_the_baseline_is_six_areas_read_locally(client):
@@ -215,8 +215,8 @@ def test_the_surface_is_a_choice_that_sticks(client):
     user = enroll(client)
     r = client.put(f"/presence/{user}/surface", json={"speaks_on": "earbuds"})
     assert r.status_code == 200, r.text
-    assert r.json()["chosen"] == "earbuds"
-    assert client.get(f"/presence/{user}/surfaces").json()["chosen"] == "earbuds"
+    assert r.json()["chosen_surface"] == "earbuds"
+    assert client.get(f"/presence/{user}/surfaces").json()["chosen_surface"] == "earbuds"
 
 
 def test_reaching_out_offers_people_and_joins_nothing(make_tandem):

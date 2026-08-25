@@ -171,7 +171,7 @@ struct MoneySection: View {
                     Text(L["savings_goal"] ?? "").font(.subheadline.bold())
                         .foregroundStyle(Theme.txt)
                     if let goal = v.savings {
-                        Text(String(format: "%.0f", goal.goal))
+                        Text(String(format: "%.0f", goal.goal_amount))
                             .font(.caption).foregroundStyle(Theme.txt)
                     }
                     TextField(L["savings_goal"] ?? "", text: $goalText)

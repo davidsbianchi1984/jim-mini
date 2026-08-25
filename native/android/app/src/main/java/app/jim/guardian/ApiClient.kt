@@ -50,12 +50,12 @@ data class EngagedPermitArea(val area: String, val says: String,
 
 data class EngagedPermits(val groups: List<EngagedPermitArea>, val note: String)
 
-data class EngagedStep(val tool: String?, val answered: Int?, val says: String?,
+data class EngagedStep(val tool: String?, val statusCode: Int?, val says: String?,
                        val acts: Boolean, val reversible: Boolean,
                        val irreversibleBecause: String?, val refused: String?)
 
 data class EngagedAct(val id: String, val tool: String, val says: String,
-                      val answered: Int, val createdAt: String,
+                      val statusCode: Int, val createdAt: String,
                       val undoneAt: String?, val reversible: Boolean,
                       val irreversibleBecause: String?)
 
@@ -311,11 +311,11 @@ data class LiveOption(val kind: String, val name: String?, val channel: String?,
 data class FollowupAnswered(val answered: Boolean, val reason: String?,
                             val helped: Boolean?, val next: String?,
                             val options: List<LiveOption>, val liveNote: String?)
-data class HelpTally(val helped: Int, val answered: Int)
+data class HelpTally(val helpedCount: Int, val answeredCount: Int)
 /** Claim 11's user-specific model, derived locally from this user's own
  *  stored history — nothing was sent to a model vendor to build it. */
 data class Finetune(val build: Int, val backend: String, val examples: Int,
-                    val helped: Int, val didNotHelp: Int, val method: String,
+                    val helpedCount: Int, val didNotHelp: Int, val method: String,
                     val digest: String, val trainedAt: String,
                     val active: Boolean)
 data class AdaptationProfile(val built: Boolean, val note: String?,
@@ -943,7 +943,7 @@ object ApiClient {
 
     private fun actRow(o: JSONObject) = EngagedAct(
         o.getString("id"), o.optString("tool", ""), o.optString("says", ""),
-        o.optInt("answered"), o.optString("created_at", ""),
+        o.optInt("status_code"), o.optString("created_at", ""),
         if (o.isNull("undone_at")) null else o.optString("undone_at"),
         o.optBoolean("reversible", false),
         if (o.isNull("irreversible_because")) null
@@ -1013,7 +1013,7 @@ object ApiClient {
                 val st = arr.getJSONObject(i)
                 EngagedStep(
                     if (st.isNull("tool")) null else st.optString("tool"),
-                    if (st.isNull("answered")) null else st.optInt("answered"),
+                    if (st.isNull("status_code")) null else st.optInt("status_code"),
                     if (st.isNull("says")) null else st.optString("says"),
                     st.optBoolean("acts", false),
                     st.optBoolean("reversible", false),
@@ -2266,7 +2266,7 @@ object ApiClient {
                 r.optBoolean("chosen"), r.optBoolean("reads_health_aloud"),
                 r.optString("note", ""))
         }
-        return PresenceSurfaces(o.optString("chosen", ""),
+        return PresenceSurfaces(o.optString("chosen_surface", ""),
             o.optString("rule", ""), rows)
     }
 
@@ -2351,7 +2351,7 @@ object ApiClient {
         val helpsObj = prof.optJSONObject("what_helps") ?: JSONObject()
         val helps = helpsObj.keys().asSequence().associateWith { k ->
             val t = helpsObj.getJSONObject(k)
-            HelpTally(t.optInt("helped"), t.optInt("answered"))
+            HelpTally(t.optInt("helped_count"), t.optInt("answered_count"))
         }
         return AdaptationProfile(
             o.optBoolean("built"),
@@ -2369,7 +2369,7 @@ object ApiClient {
 
     private fun finetuneOf(o: JSONObject) = Finetune(
         o.optInt("build"), o.optString("backend"), o.optInt("examples"),
-        o.optInt("helped"), o.optInt("did_not_help"),
+        o.optInt("helped_count"), o.optInt("did_not_help"),
         o.optString("method"), o.optString("digest"),
         o.optString("trained_at"), o.optBoolean("active"))
 
@@ -2452,7 +2452,7 @@ object ApiClient {
             l.keys().forEach { k -> labels[k] = l.getString(k) }
         }
         val goal = o.optJSONObject("savings")
-        return MoneyOverview(accounts, goal?.optDouble("goal"), orders,
+        return MoneyOverview(accounts, goal?.optDouble("goal_amount"), orders,
                              o.optString("note"), labels)
     }
 

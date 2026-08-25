@@ -258,18 +258,18 @@ private struct AdaptationCard: View {
                 // Only conditions with enough answers to mean anything: a
                 // coincidence is not a finding, and the backend says so too.
                 ForEach(d.what_helps.sorted(by: { $0.key < $1.key }), id: \.key) { entry in
-                    if entry.value.answered > 0 {
+                    if entry.value.answered_count > 0 {
                         HStack {
                             Text(entry.key.replacingOccurrences(of: "_", with: " "))
                                 .font(.subheadline).foregroundStyle(Theme.txt)
                             Spacer()
                             Text(L10n.t("ov.helped", state.language)
                                 .replacingOccurrences(of: "{n}",
-                                                      with: "\(entry.value.helped)")
+                                                      with: "\(entry.value.helped_count)")
                                 .replacingOccurrences(of: "{total}",
-                                                      with: "\(entry.value.answered)"))
+                                                      with: "\(entry.value.answered_count)"))
                                 .font(.caption).monospacedDigit()
-                                .foregroundStyle(entry.value.helped * 2 >= entry.value.answered
+                                .foregroundStyle(entry.value.helped_count * 2 >= entry.value.answered_count
                                                  ? Theme.green : Theme.amber)
                         }
                     }

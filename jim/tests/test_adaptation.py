@@ -49,7 +49,7 @@ def test_the_profile_is_derived_from_the_users_own_history(client):
     assert built["built"] is True and built["version"] == adaptation.VERSION
     profile = built["profile"]
     assert profile["known_conditions"] == ["anxiety"]
-    assert profile["what_helps"]["anxiety"]["helped"] == 3
+    assert profile["what_helps"]["anxiety"]["helped_count"] == 3
     assert profile["what_helps"]["anxiety"]["hit_rate"] == 1.0
     assert profile["checkins"]["count"] == 1
     assert profile["areas_brought"]["career"] == 1

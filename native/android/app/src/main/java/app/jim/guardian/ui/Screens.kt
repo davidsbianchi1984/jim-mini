@@ -4240,7 +4240,7 @@ fun EngagedScreen(vm: GuardianViewModel) {
                         Text(step.refused, color = Jim.Red, fontSize = 11.sp)
                     } else {
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text("${step.answered ?: 0}", color = Jim.T2,
+                            Text("${step.statusCode ?: 0}", color = Jim.T2,
                                 fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             Text(step.says ?: step.tool ?: "", color = Jim.Txt,
                                 fontSize = 12.sp)
@@ -5449,13 +5449,13 @@ private fun AdaptationCard(vm: GuardianViewModel) {
                     .replace("{n}", "${p.evidenceItems}"),
                 color = Jim.T2, fontSize = 12.sp)
             p.whatHelps.entries.sortedBy { it.key }.forEach { (condition, tally) ->
-                if (tally.answered > 0) {
+                if (tally.answeredCount > 0) {
                     Row(Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(condition.replace('_', ' '), color = Jim.Txt, fontSize = 14.sp)
                         Text(L10n.t("ov.helped", vm.language)
-                                .replace("{n}", "${tally.helped}")
-                                .replace("{total}", "${tally.answered}"),
+                                .replace("{n}", "${tally.helpedCount}")
+                                .replace("{total}", "${tally.answeredCount}"),
                             color = if (tally.helped * 2 >= tally.answered) Jim.Green
                                     else Jim.Amber,
                             fontSize = 12.sp)

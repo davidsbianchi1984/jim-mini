@@ -744,12 +744,12 @@ export interface EngagedPermits {
   can: EngagedTool[];
 }
 export interface EngagedStep {
-  tool: string | null; answered?: number | null; says?: string;
+  tool: string | null; status_code?: number | null; says?: string;
   acts?: boolean; reversible?: boolean;
   irreversible_because?: string | null; refused?: string;
 }
 export interface EngagedAct {
-  id: string; tool: string; says: string; answered: number;
+  id: string; tool: string; says: string; status_code: number;
   created_at: string; undone_at: string | null; reversible: boolean;
   irreversible_because: string | null;
 }
@@ -826,7 +826,7 @@ export interface Finetune {
   build: number;
   backend: string;
   examples: number;
-  helped: number;
+  helped_count: number;
   did_not_help: number;
   weights: number[];
   vocab: Record<string, number>;
@@ -844,8 +844,9 @@ export interface AdaptationProfile {
   rebuilt_at?: string;
   profile?: {
     known_conditions: string[];
-    what_helps: Record<string, { helped: number; did_not: number;
-                                 answered: number; hit_rate: number | null }>;
+    what_helps: Record<string, { helped_count: number; did_not: number;
+                                 answered_count: number;
+                                 hit_rate: number | null }>;
     areas_brought: Record<string, number>;
     checkins: { count: number; avg_mood?: number | null;
                 avg_stress?: number | null };
@@ -1087,7 +1088,7 @@ export type MoneyAccount = {
   id: string; kind: string; institution: string; label: string;
   last4?: string | null; credentials: string; balance?: number | null;
 };
-export type SavingsGoal = { goal: number; note?: string | null;
+export type SavingsGoal = { goal_amount: number; note?: string | null;
   reached_at?: string | null };
 export type MoneyMandate = { enabled: boolean; cap_per_order: number;
   monthly_cap: number; asset_classes: string[]; scope: string };
@@ -1368,7 +1369,7 @@ export interface PresenceWho {
   name: string; kind: string; says: string; note: string;
   hands_free: boolean; works_offline: boolean;
   areas: string[]; registers: string[];
-  boundaries: Record<string, { value: boolean; says: string }>;
+  boundaries: Record<string, { stands: boolean; says: string }>;
 }
 
 export interface PresenceBeat {
@@ -1399,7 +1400,7 @@ export interface PresenceReach {
 }
 
 export interface PresenceSurfaces {
-  chosen: string; rule: string; glasses_makes: string[];
+  chosen_surface: string; rule: string; glasses_makes: string[];
   surfaces: { surface: string; audio: boolean; visual: boolean;
               private: boolean; note: string; chosen: boolean;
               reads_health_aloud: boolean; withholds: string[] }[];

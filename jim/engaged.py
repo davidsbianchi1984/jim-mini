@@ -313,8 +313,8 @@ TOOLS: tuple[dict, ...] = (
              "speaker in the room",
      "undo": {"kind": "replace",
               "before": ("GET", "/presence/{user_id}/surfaces"),
-              "fields": ("chosen",),
-              "as": {"chosen": "speaks_on"}}},
+              "fields": ("chosen_surface",),
+              "as": {"chosen_surface": "speaks_on"}}},
     {"name": "set_source", "acts": True,
      "route": ("PUT", "/sources/{user_id}"),
      "says": "switch one of your sources on or off — changing what the "
@@ -866,7 +866,11 @@ def acts(engagement_id: str) -> list[dict]:
 
 def _act_row(r) -> dict:
     return {"id": r["id"], "tool": r["tool"], "says": r["says"],
-            "answered": r["status"], "created_at": r["created_at"],
+            # `status_code`, not `answered`: this is the HTTP-shaped code
+            # the tool call came back with, and `answered` elsewhere on
+            # this wire is a follow-up's yes — the primitive clash
+            # `wire_name_collisions.txt` records.
+            "status_code": r["status"], "created_at": r["created_at"],
             "undone_at": r["undone_at"],
             "reversible": bool(r["undo"]) and r["undone_at"] is None,
             "irreversible_because": r["irreversible"]}
@@ -923,7 +927,7 @@ def undo(user_id: str, act_id: str, *, app,
                  (db.utcnow(), act_id))
     conn.commit()
     audit.record("engaged.undo", user_id=user_id, ref=row["tool"])
-    return {"act_id": act_id, "undone": True, "answered": status,
+    return {"act_id": act_id, "undone": True, "status_code": status,
             "tool": row["tool"], "says": row["says"]}
 
 
@@ -1161,7 +1165,8 @@ def converse(user_id: str, said: str, *, app, authorization: str | None,
             # A refused call is a turn in the conversation, not the end of
             # one: it asked for something it does not have, and being told so
             # is how it stops asking.
-            steps.append({"tool": name, "answered": None, "refused": str(exc)})
+            steps.append({"tool": name, "status_code": None,
+                          "refused": str(exc)})
             history += [{"role": "assistant", "content": text},
                         {"role": "user", "content": f"REFUSED {exc}"}]
             said = ""
@@ -1172,7 +1177,7 @@ def converse(user_id: str, said: str, *, app, authorization: str | None,
         # as "undo failed", at worst somebody else's row of the same shape.
         if result["acts"] and 200 <= result["status"] < 300:
             _record_act(engagement_id, user_id, result)
-        steps.append({"tool": name, "answered": result["status"],
+        steps.append({"tool": name, "status_code": result["status"],
                       "says": tool(name)["says"], "acts": result["acts"],
                       "reversible": bool(result["undo"]),
                       "irreversible_because": result.get("irreversible")})

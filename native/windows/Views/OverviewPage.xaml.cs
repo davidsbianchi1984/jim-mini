@@ -160,14 +160,14 @@ public sealed partial class OverviewPage : Page
 
         var helps = p.Profile?.WhatHelps ?? new System.Collections.Generic.Dictionary<string, HelpTally>();
         AdaptationHelps.ItemsSource = helps
-            .Where(kv => kv.Value.Answered > 0)
+            .Where(kv => kv.Value.AnsweredCount > 0)
             .OrderBy(kv => kv.Key)
             .Select(kv => new HelpVm
             {
                 Condition = kv.Key.Replace('_', ' '),
                 Tally = L10n.T("ov.helped")
-                    .Replace("{n}", $"{kv.Value.Helped}")
-                    .Replace("{total}", $"{kv.Value.Answered}"),
+                    .Replace("{n}", $"{kv.Value.HelpedCount}")
+                    .Replace("{total}", $"{kv.Value.AnsweredCount}"),
             }).ToList();
 
         var dials = new System.Collections.Generic.List<string>();

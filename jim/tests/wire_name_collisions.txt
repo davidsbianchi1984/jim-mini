@@ -1,5 +1,5 @@
-# status: backlog — 20 rows
-# ceiling: 20
+# status: backlog — 15 rows
+# ceiling: 15
 #
 # One wire field name carrying more than one type across this product's API.
 #
@@ -55,16 +55,32 @@
 # under the same name, and both routes have served them that way since
 # 0.9.0.
 #
-answered
+#
+# ## 1.8.5 — the five primitive clashes close
+#
+# The dangerous class went first: a decoder coerces a primitive and hands
+# the reader a plausible wrong answer. Each meaning has its own name now:
+#
+#   answered   the engaged act's HTTP-shaped code is `status_code`; the
+#              adaptation tally's total is `answered_count`; the follow-up's
+#              yes keeps the word.
+#   helped     the tally and the finetune artifact count as `helped_count`;
+#              the finetune listing serves the yes/no as the bool it is;
+#              the follow-up's yes keeps the word.
+#   chosen     the surfaces' top-level string is `chosen_surface`; each
+#              row's boolean keeps the word.
+#   goal       the savings number is `goal_amount`; the care plan's and the
+#              handoff's sentence keep the word. The column stays `goal` —
+#              the ambiguity was never in the database.
+#   value      the boundary's boolean is `holds`; the baseline metric's
+#              number keeps the word.
+#
 attached
-chosen
 cue
 days
 insights
 faces
 first_aid
-goal
-helped
 intimate
 medications
 messages
@@ -74,4 +90,3 @@ sealed
 specialist
 step
 steps
-value

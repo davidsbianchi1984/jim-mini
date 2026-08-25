@@ -258,14 +258,14 @@ def check(user_id: str, lang: str, pdi=None, qrme=None) -> list[dict]:
     if goal and balances:
         saved = sum(v for aid, v in balances.items()
                     if _account(aid)["kind"] == "savings")
-        if saved >= goal["goal"] and not goal.get("reached_at"):
+        if saved >= goal["goal_amount"] and not goal.get("reached_at"):
             conn = db.connect()
             conn.execute(
                 "UPDATE savings_goals SET reached_at=? WHERE user_id=?",
                 (db.utcnow(), user_id))
             conn.commit()
             message = i18n.money_text("goal_reached", lang).format(
-                goal=f"{goal['goal']:.0f}")
+                goal=f"{goal['goal_amount']:.0f}")
             warnings.append({"kind": "goal_reached", "message": message})
             life._insight(user_id, "suggestion", message, area="finance",
                           source="money")
@@ -324,7 +324,15 @@ def set_savings(user_id: str, goal: float, note: str | None) -> dict:
 def savings_goal(user_id: str) -> dict | None:
     row = db.connect().execute(
         "SELECT * FROM savings_goals WHERE user_id=?", (user_id,)).fetchone()
-    return dict(row) if row else None
+    if row is None:
+        return None
+    # `goal_amount`, not the column's `goal`: on this wire `goal` is the
+    # sentence a care plan or a handoff is aimed at, and a number under the
+    # same name is the primitive clash `wire_name_collisions.txt` records.
+    # The column stays `goal` — the ambiguity was never in the database.
+    out = dict(row)
+    out["goal_amount"] = out.pop("goal")
+    return out
 
 
 # --------------------------------------------------------------------------

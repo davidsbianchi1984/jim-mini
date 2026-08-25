@@ -163,8 +163,8 @@ export function Settings() {
                 <li key={cond}>
                   {tr("set.adapt.helped", lang)
                     .replace("{cond}", cond)
-                    .replace("{h}", String(t.helped))
-                    .replace("{a}", String(t.answered))}
+                    .replace("{h}", String(t.helped_count))
+                    .replace("{a}", String(t.answered_count))}
                 </li>
               ))}
               {adapt.profile.occupation && (

@@ -414,7 +414,7 @@ export function Engaged() {
                           {tr("engaged.step.refused", lang)} {s.tool}
                         </span>
                       : <>
-                          <span className="chip">{s.answered}</span>{" "}
+                          <span className="chip">{s.status_code}</span>{" "}
                           {s.says || s.tool}
                           {s.acts && !s.reversible && (
                             <em className="danger small">

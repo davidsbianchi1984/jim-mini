@@ -119,20 +119,20 @@ struct EngagedPermits: Decodable {
 
 struct EngagedStep: Decodable, Identifiable {
     let tool: String?
-    let answered: Int?
+    let status_code: Int?
     let says: String?
     let acts: Bool?
     let reversible: Bool?
     let irreversible_because: String?
     let refused: String?
-    var id: String { (tool ?? "?") + (refused ?? "") + String(answered ?? 0) }
+    var id: String { (tool ?? "?") + (refused ?? "") + String(status_code ?? 0) }
 }
 
 struct EngagedAct: Decodable, Identifiable {
     let id: String
     let tool: String
     let says: String
-    let answered: Int
+    let status_code: Int
     let created_at: String
     let undone_at: String?
     let reversible: Bool
@@ -195,7 +195,7 @@ struct EngagedSignOff: Decodable {
 struct EngagedUndone: Decodable {
     let act_id: String
     let undone: Bool
-    let answered: Int
+    let status_code: Int
     let tool: String
     let says: String
 }
@@ -982,9 +982,9 @@ struct FollowupAnswered: Decodable {
 }
 
 struct HelpTally: Decodable {
-    let helped: Int
+    let helped_count: Int
     let did_not: Int
-    let answered: Int
+    let answered_count: Int
     let hit_rate: Double?
 }
 
@@ -1026,7 +1026,7 @@ struct Finetune: Decodable {
     let build: Int
     let backend: String
     let examples: Int
-    let helped: Int
+    let helped_count: Int
     let did_not_help: Int
     let weights: [Double]
     let method: String
@@ -1089,7 +1089,7 @@ struct PresenceWho: Decodable {
 }
 
 struct PresenceBoundary: Decodable {
-    let value: Bool
+    let stands: Bool
     let says: String
 }
 
@@ -1158,7 +1158,7 @@ struct PresenceSurfaceRow: Decodable {
 }
 
 struct PresenceSurfaces: Decodable {
-    let chosen: String
+    let chosen_surface: String
     let rule: String
     let glasses_makes: [String]
     let surfaces: [PresenceSurfaceRow]
@@ -2650,7 +2650,7 @@ struct MoneyAccount: Decodable {
 }
 
 struct SavingsGoal: Decodable {
-    let goal: Double
+    let goal_amount: Double
     let note: String?
     let reached_at: String?
 }
