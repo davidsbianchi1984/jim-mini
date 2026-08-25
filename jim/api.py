@@ -4662,12 +4662,31 @@ def create_app(qrme_client: QRMEClient | None = None,
             # answer every route can give — the one a person meets when the
             # product is already failing them — was the one answer that only
             # ever came back in English.
+            #
+            # And guarded, because the translation is itself a call that can
+            # fail. When it did, the exception left this handler, was caught
+            # by Starlette's outermost layer instead, and went back as a bare
+            # 500 without the CORS header — so the browser dropped the whole
+            # response and the console read a crash as an unreachable
+            # backend, which is the precise outcome this middleware exists to
+            # prevent.
+            #
+            #     asked     does the last answer say it in the reader's language
+            #     mattered  does the last answer leave at all
+            #
+            # The fallback is English and constant. A sentence in the wrong
+            # language beats no sentence, from the one handler with nobody
+            # behind it to try again.
+            try:
+                message = i18n.tr_refusal(i18n.SERVER_ERROR,
+                                          i18n.refusal_language(request))
+            except Exception:
+                _log.exception("the refusal translator failed inside the "
+                               "last-answer middleware")
+                message = "Something went wrong on our side. Please try again."
             return JSONResponse(
                 status_code=500,
-                content={"detail": "server_error",
-                         "message": i18n.tr_refusal(
-                             i18n.SERVER_ERROR,
-                             i18n.refusal_language(request))})
+                content={"detail": "server_error", "message": message})
 
     # Last on purpose, and this is load-bearing. `add_middleware` inserts at
     # the front, so the middleware registered last is the outermost — and CORS

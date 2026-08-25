@@ -466,3 +466,46 @@ def test_a_page_built_outside_a_request_carries_no_borrowed_nonce():
     pagehead._NONCE.set("")
     assert pagehead.script_open() == "<script>"
     assert "script-src 'none'" in pagehead.policy("")
+
+
+def test_the_last_answer_does_not_depend_on_the_translator(monkeypatch):
+    """Found by the full suite, not by anybody reading.
+
+    The catch-all builds its 500 in the reader's language, and the
+    translation is itself a call that can fail. When a poisoned translator
+    made it raise, the exception left the catch-all, Starlette's outermost
+    layer answered instead, and the 500 went back without the CORS header —
+    the browser dropped it and the console read a crash as an unreachable
+    backend. Everything this file measures over real HTTP was defeated by
+    one raise inside the middleware that exists to prevent exactly that.
+
+        asked     does the last answer say it in the reader's language
+        mattered  does the last answer leave at all
+
+    In-process on purpose: what is being guarded is that the middleware
+    still *returns* — any response it returns flows out through the CORS
+    layer, which is what the tests above prove over the wire. If the
+    handler let the exception escape, the body here would be Starlette's
+    plain-text "Internal Server Error" instead of this product's JSON.
+    """
+    from fastapi.testclient import TestClient
+
+    from jim import i18n
+    from jim.api import create_app
+
+    app = create_app()
+
+    @app.get("/__the_translator_is_down")
+    def _raises():
+        raise RuntimeError("a route that fails the way routes fail")
+
+    def _poisoned(*_a, **_k):
+        raise KeyError("the translator is part of what can fail")
+
+    monkeypatch.setattr(i18n, "tr_refusal", _poisoned)
+    answered = TestClient(app, raise_server_exceptions=False).get(
+        "/__the_translator_is_down")
+    assert answered.status_code == 500
+    body = answered.json()
+    assert body["detail"] == "server_error"
+    assert body["message"], "the fallback sentence is gone"
