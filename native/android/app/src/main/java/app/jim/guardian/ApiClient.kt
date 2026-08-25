@@ -493,6 +493,84 @@ object ApiClient {
                 .optBoolean("forgotten")
         }
 
+    // -- The far end, and the widgets: the console-first debt paid ----------
+    // (the doorless record's own words). Nine routes only the console could
+    // reach; these are this shell's doors to them.
+
+    private fun farEndOf(o: JSONObject) = FarEndState(
+        o.optBoolean("configured"),
+        if (o.isNull("address")) null else o.optString("address"),
+        if (o.isNull("note")) null else o.optString("note"))
+
+    suspend fun farEnd(uid: String, token: String): FarEndState =
+        withContext(Dispatchers.IO) {
+            farEndOf(request("/farend/$uid", "GET", null, token))
+        }
+
+    suspend fun setFarEnd(uid: String, email: String?, consent: Boolean?,
+                          token: String): FarEndState =
+        withContext(Dispatchers.IO) {
+            val body = JSONObject().put("email", email ?: JSONObject.NULL)
+            if (consent != null) body.put("consent", consent)
+            farEndOf(request("/farend/$uid", "PUT", body, token))
+        }
+
+    suspend fun studioLimits(): StudioLimits =
+        withContext(Dispatchers.IO) {
+            val o = request("/studio/limits", "GET", null, null)
+            StudioLimits(o.optBoolean("available"),
+                if (o.isNull("unavailable_because")) null
+                else o.optString("unavailable_because"))
+        }
+
+    private fun widgetOf(o: JSONObject) = WidgetRow(
+        o.optString("id"), o.optString("name"), o.optString("source"))
+
+    suspend fun widgets(uid: String, token: String): List<WidgetRow> =
+        withContext(Dispatchers.IO) {
+            val a = request("/users/$uid/widgets", "GET", null, token)
+                .optJSONArray("widgets")
+            (0 until (a?.length() ?: 0)).map { widgetOf(a!!.getJSONObject(it)) }
+        }
+
+    suspend fun widget(uid: String, widgetId: String,
+                       token: String): WidgetRow =
+        withContext(Dispatchers.IO) {
+            widgetOf(request("/users/$uid/widgets/$widgetId", "GET", null,
+                token))
+        }
+
+    suspend fun writeWidget(uid: String, name: String, source: String,
+                            token: String): WidgetRow =
+        withContext(Dispatchers.IO) {
+            widgetOf(request("/users/$uid/widgets", "POST",
+                JSONObject().put("name", name).put("source", source), token))
+        }
+
+    suspend fun reviseWidget(uid: String, widgetId: String, name: String,
+                             source: String, token: String): WidgetRow =
+        withContext(Dispatchers.IO) {
+            widgetOf(request("/users/$uid/widgets/$widgetId", "PUT",
+                JSONObject().put("name", name).put("source", source), token))
+        }
+
+    suspend fun removeWidget(uid: String, widgetId: String,
+                             token: String): Boolean =
+        withContext(Dispatchers.IO) {
+            request("/users/$uid/widgets/$widgetId", "DELETE", null, token)
+                .optBoolean("removed")
+        }
+
+    suspend fun runWidget(uid: String, widgetId: String,
+                          token: String): WidgetRan =
+        withContext(Dispatchers.IO) {
+            val o = request("/users/$uid/widgets/$widgetId/run", "POST",
+                JSONObject(), token)
+            WidgetRan(o.optString("status"),
+                if (o.isNull("detail")) null else o.optString("detail"),
+                if (o.isNull("ms")) null else o.optInt("ms"))
+        }
+
     /** The transparency half of the coach's long-term memory: what it can
      * find again, read back from the vault, droppable one moment at a time. */
     // The lookout: a page the vault re-reads on its schedule — JIM never
@@ -4159,6 +4237,15 @@ data class OfflinePosture(val offline: Boolean,
 
 data class MemoryMoment(val kind: String, val ref: String,
                         val line: String?, val at: String?)
+// The far end as the backend says it may be shown: configured or the
+// refusal, never the token.
+data class FarEndState(val configured: Boolean, val address: String?,
+                       val note: String?)
+data class WidgetRow(val id: String, val name: String, val source: String)
+// A failed widget is a 200 carrying `status: error` — the call worked, the
+// code did not (the route's own words).
+data class WidgetRan(val status: String, val detail: String?, val ms: Int?)
+data class StudioLimits(val available: Boolean, val unavailableBecause: String?)
 data class MemoryShelf(val moments: List<MemoryMoment>,
                        val readable: Boolean, val held: Int)
 

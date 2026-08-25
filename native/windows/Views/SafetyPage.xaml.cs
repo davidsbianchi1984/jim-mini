@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -54,6 +55,62 @@ public sealed partial class SafetyPage : Page
     {
         InitializeComponent();
         LocalizeTheRest();
+        FarEndTitle.Text = L10n.T("nfe.title");
+        FarEndEmailBox.PlaceholderText = L10n.T("nfe.email.ph");
+        FarEndSaveButton.Content = L10n.T("nfe.save");
+        FarEndClearButton.Content = L10n.T("nfe.clear");
+        FarEndPitch.Text = L10n.T("nfe.pitch");
+        Loaded += async (_, _) => await ReloadFarEnd();
+    }
+
+    // Who stands on the far end of the ladder — the person a letter really
+    // reaches. The status is the address or the backend's own refusal
+    // sentence, already in the reader's language; never the token.
+    private async Task ReloadFarEnd()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var f = await ApiClient.Shared.FarEnd(s.Uid, s.Token);
+            FarEndStatusText.Text = f.Configured ? (f.Address ?? "")
+                : (f.Note ?? "");
+        }
+        catch { /* the card stands; the doors below still work */ }
+    }
+
+    private async void OnFarEndSave(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var email = FarEndEmailBox.Text.Trim();
+        if (email.Length == 0) return;
+        try
+        {
+            // Consent settles in the same motion, as the console's save
+            // does — the button's own words carry the condition.
+            var f = await ApiClient.Shared.SetFarEnd(s.Uid, email, true,
+                s.Token);
+            FarEndStatusText.Text = f.Configured ? (f.Address ?? "")
+                : (f.Note ?? "");
+            FarEndEmailBox.Text = "";
+        }
+        catch (Exception ex) { FarEndStatusText.Text = ex.Message; }
+    }
+
+    private async void OnFarEndClear(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            // Clearing returns the escalation to its honest refusal
+            // rather than to silence — the route's own reasoning.
+            var f = await ApiClient.Shared.SetFarEnd(s.Uid, null, null,
+                s.Token);
+            FarEndStatusText.Text = f.Note ?? "";
+        }
+        catch (Exception ex) { FarEndStatusText.Text = ex.Message; }
     }
 
     /// The rest of the same screen.

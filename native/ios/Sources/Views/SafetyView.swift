@@ -48,7 +48,7 @@ struct SafetyView: View {
                 // on a bad reading, the other on no readings at all.
                 case .crash: CrashWatchSection(); VigilCard()
                 case .medical: MedicalSection()
-                case .policy: PolicySection()
+                case .policy: PolicySection(); FarEndCard()
                 case .robots: RobotsSection()
                 case .vault: CustodySection()
                 }

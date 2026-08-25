@@ -317,6 +317,25 @@
                                        Foreground="{StaticResource JimT2Brush}" FontSize="12" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
+                    <!-- The far end: who a letter really reaches when the
+                         ladder says notify. Console door since the ladder
+                         was built; this is this shell's. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="FarEndTitle" FontWeight="Bold"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="FarEndStatusText" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="FarEndEmailBox" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="FarEndSaveButton" Click="OnFarEndSave" />
+                                <Button x:Name="FarEndClearButton" Click="OnFarEndClear" />
+                            </StackPanel>
+                            <TextBlock x:Name="FarEndPitch" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT3Brush}" />
+                        </StackPanel>
+                    </Border>
                     <ItemsControl x:Name="PolicyList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>

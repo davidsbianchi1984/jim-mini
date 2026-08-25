@@ -103,6 +103,41 @@
                 <Button x:Name="UnlinkButton" Click="OnUnlink" />
             </StackPanel>
 
+            <!-- The Widget Studio, on the desktop shell: the small
+                 programs somebody writes for themselves — listed, written,
+                 run and removed the way the console has done since the
+                 Studio shipped. The doorless record called this the debt
+                 of a console-first feature; these are the doors. -->
+            <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="StudioTitle" FontWeight="Bold"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="StudioLimitsText" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" Visibility="Collapsed" />
+                    <ItemsControl x:Name="StudioList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Line}" FontSize="12"
+                                           Foreground="{StaticResource JimT2Brush}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBox x:Name="StudioNameBox" />
+                    <TextBox x:Name="StudioSourceBox" AcceptsReturn="True" MinHeight="72"
+                             FontFamily="Consolas" TextWrapping="Wrap" />
+                    <TextBox x:Name="StudioIdBox" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="StudioSaveButton" Click="OnStudioSave" />
+                        <Button x:Name="StudioShowButton" Click="OnStudioShow" />
+                        <Button x:Name="StudioRunButton" Click="OnStudioRun" />
+                        <Button x:Name="StudioRemoveButton" Click="OnStudioRemove" />
+                    </StackPanel>
+                    <TextBlock x:Name="StudioRanText" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                </StackPanel>
+            </Border>
+
             <TextBlock x:Name="NoteText" FontSize="13" TextWrapping="Wrap"
                        Foreground="{StaticResource JimT2Brush}" Visibility="Collapsed" />
         </StackPanel>

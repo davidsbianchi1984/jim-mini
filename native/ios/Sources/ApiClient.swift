@@ -3541,6 +3541,40 @@ struct VoiceQuotaOut: Decodable {
 }
 
 /// The mail configuration — never the password, only whether one is set.
+/// The far end as the backend says it may be shown: configured or the
+/// refusal, never the token.
+struct FarEndOut: Decodable {
+    let configured: Bool
+    let address: String?
+    let note: String?
+}
+
+struct WidgetOut: Decodable {
+    let id: String
+    let name: String
+    let source: String
+    let revision: Int?
+}
+
+struct WidgetListOut: Decodable { let widgets: [WidgetOut] }
+
+struct WidgetRemovedOut: Decodable { let removed: Bool }
+
+/// A failed widget is a 200 carrying `status: error` — the call worked,
+/// the code did not, and the person needs the message beside their
+/// editor rather than a status code (the route's own words).
+struct WidgetRanOut: Decodable {
+    let status: String
+    let detail: String?
+    let ms: Int?
+}
+
+/// What the box can do here, and the honest reason when it cannot.
+struct StudioLimitsOut: Decodable {
+    let available: Bool
+    let unavailable_because: String?
+}
+
 struct MailSettingsOut: Decodable {
     let transport: String
     let source: String
@@ -3605,6 +3639,59 @@ extension ApiClient {
         if !sender.isEmpty { body["sender"] = sender }
         if !publicUrl.isEmpty { body["public_url"] = publicUrl }
         return try await request("/settings/mail", method: "PUT", body: body)
+    }
+
+    // -- The far end, and the widgets: the console-first debt paid ----------
+    // (the doorless record's own words). Nine routes only the console could
+    // reach; these are the phone's doors to them.
+
+    func farEnd(uid: String, token: String) async throws -> FarEndOut {
+        try await request("/farend/\(uid)", token: token)
+    }
+
+    func setFarEnd(uid: String, email: String?, consent: Bool?,
+                   token: String) async throws -> FarEndOut {
+        var body: [String: Any] = ["email": email as Any]
+        if let consent { body["consent"] = consent }
+        return try await request("/farend/\(uid)", method: "PUT",
+                                 body: body, token: token)
+    }
+
+    func studioLimits() async throws -> StudioLimitsOut {
+        try await request("/studio/limits")
+    }
+
+    func widgets(uid: String, token: String) async throws -> WidgetListOut {
+        try await request("/users/\(uid)/widgets", token: token)
+    }
+
+    func widget(uid: String, widgetId: String,
+                token: String) async throws -> WidgetOut {
+        try await request("/users/\(uid)/widgets/\(widgetId)", token: token)
+    }
+
+    func writeWidget(uid: String, name: String, source: String,
+                     token: String) async throws -> WidgetOut {
+        try await request("/users/\(uid)/widgets", method: "POST",
+                          body: ["name": name, "source": source], token: token)
+    }
+
+    func reviseWidget(uid: String, widgetId: String, name: String,
+                      source: String, token: String) async throws -> WidgetOut {
+        try await request("/users/\(uid)/widgets/\(widgetId)", method: "PUT",
+                          body: ["name": name, "source": source], token: token)
+    }
+
+    func removeWidget(uid: String, widgetId: String,
+                      token: String) async throws -> WidgetRemovedOut {
+        try await request("/users/\(uid)/widgets/\(widgetId)",
+                          method: "DELETE", token: token)
+    }
+
+    func runWidget(uid: String, widgetId: String,
+                   token: String) async throws -> WidgetRanOut {
+        try await request("/users/\(uid)/widgets/\(widgetId)/run",
+                          method: "POST", body: [:], token: token)
     }
 
     /// Forget the mail server; delivery falls back to the console.

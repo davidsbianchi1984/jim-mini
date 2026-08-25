@@ -39,6 +39,7 @@ struct SelfProfileSection: View {
                 ProblemReportingCard()
                 ContinuityCard()
                 MemoryCard()
+                StudioCard()
                 Text(L10n.t("self.lead", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
             }.card()

@@ -842,6 +842,52 @@ public sealed class ApiClient
         await Send<OfflinePosture>(new HttpRequestMessage(HttpMethod.Get,
             "/offline/status"));
 
+    // -- The far end, and the widgets: the console-first debt paid ----------
+    // (the doorless record's own words). Nine routes only the console could
+    // reach; these are this shell's doors to them.
+
+    public Task<FarEndOut> FarEnd(string uid, string token) =>
+        Send<FarEndOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/farend/{uid}"), token);
+
+    public Task<FarEndOut> SetFarEnd(string uid, string? email, bool? consent,
+                                     string token) =>
+        Send<FarEndOut>(Put($"/farend/{uid}",
+            new { email, consent }, token));
+
+    public Task<StudioLimitsOut> StudioLimits() =>
+        Send<StudioLimitsOut>(new HttpRequestMessage(HttpMethod.Get,
+            "/studio/limits"));
+
+    public Task<WidgetListOut> Widgets(string uid, string token) =>
+        Send<WidgetListOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/widgets"), token);
+
+    public Task<WidgetOut> Widget(string uid, string widgetId, string token) =>
+        Send<WidgetOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/users/{uid}/widgets/{widgetId}"), token);
+
+    public Task<WidgetOut> WriteWidget(string uid, string name, string source,
+                                       string token) =>
+        Send<WidgetOut>(Post($"/users/{uid}/widgets",
+            new { name, source }, token));
+
+    public Task<WidgetOut> ReviseWidget(string uid, string widgetId,
+                                        string name, string source,
+                                        string token) =>
+        Send<WidgetOut>(Put($"/users/{uid}/widgets/{widgetId}",
+            new { name, source }, token));
+
+    public Task<WidgetRemovedOut> RemoveWidget(string uid, string widgetId,
+                                               string token) =>
+        Send<WidgetRemovedOut>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/users/{uid}/widgets/{widgetId}"), token);
+
+    public Task<WidgetRanOut> RunWidget(string uid, string widgetId,
+                                        string token) =>
+        Send<WidgetRanOut>(Post($"/users/{uid}/widgets/{widgetId}/run",
+            new { }, token));
+
     /// <summary>The same send, with the caller's bearer attached.
     ///
     /// <para>Four calls were written against an overload that did not exist.
@@ -3720,6 +3766,36 @@ public record VoiceQuotaOut(
     [property: JsonPropertyName("resets_at")] string? ResetsAt);
 
 /// The mail configuration — never the password, only whether one is set.
+/// The far end as the backend says it may be shown: configured or the
+/// refusal, never the token.
+public record FarEndOut(
+    [property: JsonPropertyName("configured")] bool Configured,
+    [property: JsonPropertyName("address")] string? Address,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record WidgetOut(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("source")] string Source);
+
+public record WidgetListOut(
+    [property: JsonPropertyName("widgets")] WidgetOut[] Widgets);
+
+public record WidgetRemovedOut(
+    [property: JsonPropertyName("removed")] bool Removed);
+
+/// A failed widget is a 200 carrying `status: error` — the call worked,
+/// the code did not (the route's own words).
+public record WidgetRanOut(
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("detail")] string? Detail,
+    [property: JsonPropertyName("ms")] int? Ms);
+
+/// What the box can do here, and the honest reason when it cannot.
+public record StudioLimitsOut(
+    [property: JsonPropertyName("available")] bool Available,
+    [property: JsonPropertyName("unavailable_because")] string? UnavailableBecause);
+
 public record MailSettingsOut(
     [property: JsonPropertyName("transport")] string Transport,
     [property: JsonPropertyName("source")] string Source,

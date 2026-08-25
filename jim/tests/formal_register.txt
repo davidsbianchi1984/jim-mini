@@ -29,6 +29,12 @@
 #   fam.unlinked.note   "Ihr Konto ... bleiben ihre" — *theirs* stays theirs
 #
 app/src/l10n.ts 10
-native/android/app/src/main/java/app/jim/guardian/L10n.kt 9
-native/ios/Sources/L10n.swift 9
-native/windows/L10n.cs 9
+# 9 -> 10 per shell at 1.8.5: `nfe.save` — "They agreed — save", the far
+# end's consent button, copied cell-for-cell from the console's
+# hld.farend.save. Its German is "Sie haben zugestimmt", and that "Sie" is
+# *they*, the contact who agreed — the third person, not the reader
+# addressed formally. The same false-positive family as every other row
+# this file holds.
+native/android/app/src/main/java/app/jim/guardian/L10n.kt 10
+native/ios/Sources/L10n.swift 10
+native/windows/L10n.cs 10

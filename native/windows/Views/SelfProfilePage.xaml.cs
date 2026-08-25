@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -33,6 +34,14 @@ public sealed partial class SelfProfilePage : Page
         ChooseText.Text = L10n.T("self.signin.choose");
         ChooseButton.Content = L10n.T("self.signin.button");
         PasteInsteadButton.Content = L10n.T("self.signin.paste_instead");
+        StudioTitle.Text = L10n.T("nst.title");
+        StudioNameBox.Header = L10n.T("nst.name");
+        StudioSourceBox.Header = L10n.T("nst.source");
+        StudioIdBox.Header = L10n.T("nst.id");
+        StudioSaveButton.Content = L10n.T("nst.save");
+        StudioShowButton.Content = L10n.T("nst.show");
+        StudioRunButton.Content = L10n.T("nst.run");
+        StudioRemoveButton.Content = L10n.T("nst.remove");
         LinkHeading.Text = L10n.T("self.link");
         PasteText.Text = L10n.T("self.paste");
         ProfileIdBox.PlaceholderText = L10n.T("self.profile_id");
@@ -50,6 +59,7 @@ public sealed partial class SelfProfilePage : Page
         ContForget.Content = L10n.T("cont.forget");
         MemTitle.Text = L10n.T("mem.title");
         MemLead.Text = L10n.T("mem.lead");
+        Loaded += async (_, _) => await ReloadStudio();
         Loaded += async (_, _) =>
         { await LoadContinuity(); await LoadMemory(); await Refresh(); };
     }
@@ -304,5 +314,106 @@ public sealed partial class SelfProfilePage : Page
         }
         catch (Exception ex) { Say(ex.Message); }
         await Refresh();
+    }
+
+
+    public record StudioRow(string Line);
+
+    // -- The Widget Studio's doors -----------------------------------------
+
+    private async Task ReloadStudio()
+    {
+        var s = AppState.Current;
+        try
+        {
+            var limits = await ApiClient.Shared.StudioLimits();
+            // The key travels; the sentence would be the table's. The
+            // desktop shows the label and the key — the same honesty,
+            // one hop shorter.
+            StudioLimitsText.Text = L10n.T("nst.limits") + " — "
+                + (limits.UnavailableBecause ?? "");
+            StudioLimitsText.Visibility = limits.Available
+                ? Visibility.Collapsed : Visibility.Visible;
+        }
+        catch { }
+        if (s.Uid is null || s.Token is null)
+        {
+            StudioRanText.Text = L10n.T("nst.none");
+            return;
+        }
+        try
+        {
+            var listing = await ApiClient.Shared.Widgets(s.Uid, s.Token);
+            StudioList.ItemsSource = listing.Widgets
+                .Select(w => new StudioRow($"{w.Name} \u00b7 {w.Id}")).ToList();
+            if (listing.Widgets.Length == 0)
+                StudioRanText.Text = L10n.T("nst.none");
+        }
+        catch (Exception ex) { StudioRanText.Text = ex.Message; }
+    }
+
+    private async void OnStudioSave(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            // The id box decides new widget or new revision — the same
+            // fork the console's editor takes.
+            var id = StudioIdBox.Text.Trim();
+            var saved = id.Length == 0
+                ? await ApiClient.Shared.WriteWidget(s.Uid,
+                    StudioNameBox.Text.Trim(), StudioSourceBox.Text, s.Token)
+                : await ApiClient.Shared.ReviseWidget(s.Uid, id,
+                    StudioNameBox.Text.Trim(), StudioSourceBox.Text, s.Token);
+            StudioIdBox.Text = saved.Id;
+            await ReloadStudio();
+        }
+        catch (Exception ex) { StudioRanText.Text = ex.Message; }
+    }
+
+    private async void OnStudioShow(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var w = await ApiClient.Shared.Widget(s.Uid,
+                StudioIdBox.Text.Trim(), s.Token);
+            StudioNameBox.Text = w.Name; StudioSourceBox.Text = w.Source;
+        }
+        catch (Exception ex) { StudioRanText.Text = ex.Message; }
+    }
+
+    private async void OnStudioRun(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            // A failed widget is a 200 carrying its status — shown beside
+            // the editor, not thrown as an error.
+            var ran = await ApiClient.Shared.RunWidget(s.Uid,
+                StudioIdBox.Text.Trim(), s.Token);
+            StudioRanText.Text = ran.Status
+                + (ran.Ms is int ms ? $" \u00b7 {ms}ms" : "")
+                + (ran.Detail is string d ? $" \u00b7 {d}" : "");
+        }
+        catch (Exception ex) { StudioRanText.Text = ex.Message; }
+    }
+
+    private async void OnStudioRemove(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            await ApiClient.Shared.RemoveWidget(s.Uid,
+                StudioIdBox.Text.Trim(), s.Token);
+            StudioIdBox.Text = ""; StudioNameBox.Text = "";
+            StudioSourceBox.Text = "";
+            await ReloadStudio();
+        }
+        catch (Exception ex) { StudioRanText.Text = ex.Message; }
     }
 }

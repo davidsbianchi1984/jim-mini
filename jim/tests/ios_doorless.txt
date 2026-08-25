@@ -1,4 +1,4 @@
-# status: backlog — 8 rows
+# status: backlog — 3 rows
 #
 # Every route this shell cannot reach.
 #
@@ -44,13 +44,6 @@
 # from the phone in their pocket, and today they cannot. That is the next
 # round's work, and these rows are what will still be here saying so.
 
-DELETE /users/{user_id}/widgets/{widget_id}
-GET /studio/limits
-GET /users/{user_id}/widgets
-GET /users/{user_id}/widgets/{widget_id}
-POST /users/{user_id}/widgets
-POST /users/{user_id}/widgets/{widget_id}/run
-PUT /users/{user_id}/widgets/{widget_id}
 #
 # ## 0.92.0: the far end landed on the console first
 #
@@ -62,8 +55,20 @@ PUT /users/{user_id}/widgets/{widget_id}
 # itself needs no row anywhere: it opens in the emergency contact's own
 # browser — a person with no account who installs nothing.
 
-GET /farend/{user_id}
-PUT /farend/{user_id}
+#
+# ## after 1.8.9 — the nine doors open
+#
+# (Written as the 1.8.5 round on a branch; a parallel line released
+# 1.8.5–1.8.9 first, so the nine closes land folded onto that line.)
+#
+# The Studio's seven widget routes and the far end's two, on this shell:
+# a Widgets card (list, write, show, run, remove, and the limits line) and
+# a Far end card (the address or the honest refusal, save-with-consent,
+# clear). The console-first debt the 0.72.0 note named is paid on all
+# three shells in one round, the same all-or-none bargain the engaged
+# sessions round set.
+#
+
 # The staleness contract's heartbeat (jim/freshness.py): the wrist
 # channel's pulse apart from the readings, so the person going quiet and
 # the network going dark stop being one silence. The shell that holds the

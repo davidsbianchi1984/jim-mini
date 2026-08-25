@@ -3163,7 +3163,7 @@ fun SafetyScreen(vm: GuardianViewModel) {
             // a bad reading, the other on no readings at all.
             2 -> { CrashWatchPanel(vm); VigilPanel(vm) }
             3 -> MedicalPanel(vm)
-            4 -> PolicyPanel(vm)
+            4 -> { PolicyPanel(vm); FarEndCard(vm.uid!!, vm.token!!, vm.language) }
             5 -> RobotsPanel(vm)
             else -> { CustodyPanel(vm); VeilPanel(vm) }
         }
@@ -5783,6 +5783,165 @@ fun ContinuityCard(uid: String, token: String, lang: String) {
 }
 
 @Composable
+fun FarEndCard(uid: String, token: String, lang: String) {
+    // Who stands on the far end of the ladder — the person a letter really
+    // reaches. Console door since the ladder was built; this is the
+    // phone's, and it says the same things: the address or the honest
+    // refusal, never the token.
+    var farend by remember { mutableStateOf<FarEndState?>(null) }
+    var email by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    fun load() {
+        scope.launch(Dispatchers.IO) {
+            farend = runCatching { ApiClient.farEnd(uid, token) }.getOrNull()
+        }
+    }
+    LaunchedEffect(Unit) { load() }
+
+    Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(L10n.t("nfe.title", lang), style = MaterialTheme.typography.titleSmall)
+            val f = farend
+            if (f != null && f.configured) {
+                Text(f.address ?: "", color = Jim.Green, fontSize = 11.sp)
+            } else if (f?.note != null) {
+                // The backend's refusal sentence, already in the reader's
+                // language — not a wording of this shell's.
+                Text(f.note, color = Jim.T2, fontSize = 11.sp)
+            }
+            labeledField(L10n.t("nfe.email.ph", lang), email, "") { email = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                BrandButton(L10n.t("nfe.save", lang),
+                    enabled = email.isNotBlank()) {
+                    scope.launch(Dispatchers.IO) {
+                        // Consent settles in the same motion, as the
+                        // console's save does — the button's own words
+                        // carry the condition.
+                        note = runCatching {
+                            farend = ApiClient.setFarEnd(uid, email.trim(),
+                                true, token)
+                            email = ""
+                        }.exceptionOrNull()?.message
+                    }
+                }
+                BrandButton(L10n.t("nfe.clear", lang)) {
+                    scope.launch(Dispatchers.IO) {
+                        note = runCatching {
+                            farend = ApiClient.setFarEnd(uid, null, null,
+                                token)
+                        }.exceptionOrNull()?.message
+                    }
+                }
+            }
+            Text(L10n.t("nfe.pitch", lang), color = Jim.T3, fontSize = 10.sp)
+            note?.let { Text(it, color = Jim.Red, fontSize = 11.sp) }
+        }
+    }
+}
+
+@Composable
+fun StudioCard(uid: String, token: String, lang: String) {
+    // The Widget Studio, in the pocket: listed, written, run and removed
+    // from the phone the way the console has done since the Studio
+    // shipped. The doorless record called this the debt of a
+    // console-first feature; these are the doors.
+    var rows by remember { mutableStateOf(listOf<WidgetRow>()) }
+    var limits by remember { mutableStateOf<StudioLimits?>(null) }
+    var widgetId by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var source by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    fun load() {
+        scope.launch(Dispatchers.IO) {
+            limits = runCatching { ApiClient.studioLimits() }.getOrNull()
+            rows = runCatching { ApiClient.widgets(uid, token) }
+                .getOrNull() ?: emptyList()
+        }
+    }
+    LaunchedEffect(Unit) { load() }
+
+    Card(colors = CardDefaults.cardColors(containerColor = Jim.Card)) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(L10n.t("nst.title", lang), style = MaterialTheme.typography.titleSmall)
+            val l = limits
+            if (l != null && !l.available) {
+                Text(L10n.t("nst.limits", lang) + " — "
+                    + (l.unavailableBecause ?: ""), color = Jim.T2,
+                    fontSize = 11.sp)
+            }
+            if (rows.isEmpty()) {
+                Text(L10n.t("nst.none", lang), color = Jim.T2, fontSize = 11.sp)
+            }
+            rows.forEach { w ->
+                TextButton(onClick = {
+                    widgetId = w.id
+                    scope.launch(Dispatchers.IO) {
+                        note = runCatching {
+                            val got = ApiClient.widget(uid, w.id, token)
+                            name = got.name; source = got.source
+                        }.exceptionOrNull()?.message
+                    }
+                }) { Text(w.name + " · " + w.id, color = Jim.T2, fontSize = 11.sp) }
+            }
+            labeledField(L10n.t("nst.name", lang), name, "") { name = it }
+            labeledField(L10n.t("nst.source", lang), source, "") { source = it }
+            labeledField(L10n.t("nst.id", lang), widgetId, "") { widgetId = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                BrandButton(L10n.t("nst.save", lang),
+                    enabled = name.isNotBlank() && source.isNotBlank()) {
+                    scope.launch(Dispatchers.IO) {
+                        // The id field decides new widget or new revision —
+                        // the same fork the console's editor takes.
+                        note = runCatching {
+                            val saved = if (widgetId.isBlank())
+                                ApiClient.writeWidget(uid, name, source, token)
+                            else ApiClient.reviseWidget(uid, widgetId, name,
+                                source, token)
+                            widgetId = saved.id
+                        }.exceptionOrNull()?.message
+                        load()
+                    }
+                }
+                BrandButton(L10n.t("nst.show", lang),
+                    enabled = widgetId.isNotBlank()) {
+                    scope.launch(Dispatchers.IO) {
+                        note = runCatching {
+                            val got = ApiClient.widget(uid, widgetId, token)
+                            name = got.name; source = got.source
+                        }.exceptionOrNull()?.message
+                    }
+                }
+                BrandButton(L10n.t("nst.run", lang),
+                    enabled = widgetId.isNotBlank()) {
+                    scope.launch(Dispatchers.IO) {
+                        // A failed widget is a 200 carrying its status —
+                        // shown beside the editor, not thrown as an error.
+                        note = runCatching {
+                            val out = ApiClient.runWidget(uid, widgetId, token)
+                            out.status + (out.ms?.let { " · ${it}ms" } ?: "") +
+                                (out.detail?.let { " · $it" } ?: "")
+                        }.getOrElse { it.message }
+                    }
+                }
+                BrandButton(L10n.t("nst.remove", lang),
+                    enabled = widgetId.isNotBlank()) {
+                    scope.launch(Dispatchers.IO) {
+                        note = runCatching {
+                            ApiClient.removeWidget(uid, widgetId, token)
+                            widgetId = ""; name = ""; source = ""
+                        }.exceptionOrNull()?.message
+                        load()
+                    }
+                }
+            }
+            note?.let { Text(it, color = Jim.T2, fontSize = 11.sp) }
+        }
+    }
+}
+
+@Composable
 fun MemoryCard(uid: String, token: String, lang: String) {
     // Remembered moments (jim/recall.py): the transparency half of the
     // coach's long-term memory. The continuity card above holds "every
@@ -5870,6 +6029,7 @@ fun SelfProfileScreen(api: ApiClient, uid: String, token: String, lang: String) 
         ProblemReportingCard(lang)
         ContinuityCard(uid, token, lang)
         MemoryCard(uid, token, lang)
+        StudioCard(uid, token, lang)
         Text(L10n.t("self.lead", lang), style = MaterialTheme.typography.bodySmall)
 
         // Signing in comes first; the paste-it form is behind a toggle.
