@@ -46,7 +46,7 @@ from __future__ import annotations
 
 from fastapi import HTTPException, Request
 
-from . import db, storage
+from . import db, i18n, storage
 
 PLANS: dict[str, dict] = {
     "visitor": {
@@ -339,7 +339,8 @@ def guard_dependant_write(user_id: str) -> None:
 
 def entitles(plan: str, capability: str) -> bool:
     if capability not in CAPABILITIES:
-        raise TierError(f"unknown capability {capability!r}")
+        raise TierError(i18n.fill(i18n.UNKNOWN_VALUE, field="capability",
+                                  got=repr(capability)))
     return _rank(plan) >= _rank(CAPABILITIES[capability]["from"])
 
 
@@ -486,9 +487,9 @@ def gate(request: Request) -> None:
 
 def subscribe(account_id: str, plan: str) -> dict:
     if plan not in PLANS or plan == "visitor":
-        raise TierError(
-            f"unknown plan {plan!r}; one of "
-            f"{', '.join(p for p in PLANS if p != 'visitor')}")
+        raise TierError(i18n.fill(
+            i18n.UNKNOWN_CHOICE, field="plan", got=repr(plan),
+            choices=", ".join(p for p in PLANS if p != "visitor")))
     conn = db.connect()
     now = db.utcnow()
     conn.execute(

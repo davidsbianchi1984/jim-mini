@@ -56,6 +56,8 @@ import json
 import os
 from datetime import datetime, time, timezone
 
+from . import i18n
+
 DAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 
 
@@ -108,7 +110,7 @@ def _parse_days(spec) -> tuple[str, ...]:
             a, _, b = part.partition("-")
             a, b = a.strip()[:3], b.strip()[:3]
             if a not in DAYS or b not in DAYS:
-                raise RotaError(f"unknown day range {part!r}")
+                raise RotaError(i18n.fill(i18n.UNKNOWN_DAY_RANGE, got=repr(part)))
             i, j = DAYS.index(a), DAYS.index(b)
             # mon-fri and fri-mon are both meaningful; the second wraps the
             # week the same way a night shift wraps a day.
@@ -117,7 +119,7 @@ def _parse_days(spec) -> tuple[str, ...]:
         else:
             d = part[:3]
             if d not in DAYS:
-                raise RotaError(f"unknown day {part!r}")
+                raise RotaError(i18n.fill(i18n.UNKNOWN_DAY, got=repr(part)))
             out.append(d)
     return tuple(dict.fromkeys(out))
 
@@ -135,7 +137,7 @@ def _parse_time(spec, fallback: time) -> time:
             return datetime.strptime(s, fmt).time()
         except ValueError:
             continue
-    raise RotaError(f"unreadable time {spec!r} — use HH:MM")
+    raise RotaError(i18n.fill(i18n.UNREADABLE_TIME, got=repr(spec)))
 
 
 def _flat() -> list[dict]:
@@ -158,13 +160,13 @@ def entries() -> list[dict]:
         try:
             parsed = json.loads(raw)
         except ValueError as exc:
-            raise RotaError(f"JIM_SITE_ROTA is not valid JSON: {exc}") from exc
+            raise RotaError(i18n.fill(i18n.ROTA_NOT_JSON, detail=exc)) from exc
         if not isinstance(parsed, list):
             raise RotaError("JIM_SITE_ROTA must be a JSON list of shifts")
         out = []
         for i, e in enumerate(parsed):
             if not isinstance(e, dict) or not str(e.get("name", "")).strip():
-                raise RotaError(f"rota entry {i} needs a name")
+                raise RotaError(i18n.fill(i18n.ROTA_ENTRY_NEEDS_NAME, index=i))
             out.append({
                 "name": str(e["name"]).strip(),
                 "role": str(e.get("role") or "responder").strip(),
@@ -202,7 +204,7 @@ def read() -> tuple[list[dict], str | None]:
     try:
         return entries(), None
     except RotaError as exc:
-        return _flat(), str(exc)
+        return _flat(), i18n.raised(exc)
 
 
 def configured() -> bool:

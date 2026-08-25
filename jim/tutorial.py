@@ -28,7 +28,7 @@ Everything else is the same shape as `qrme/tutorial.py`, for the same reasons:
 
 from __future__ import annotations
 
-from . import db
+from . import db, i18n
 
 GUIDE = ("This is your Guardian — the same one that watches your signals and "
          "speaks up when something changes. It is showing you around because "
@@ -712,7 +712,7 @@ def _index(key: str) -> int:
     for i, le in enumerate(LESSONS):
         if le["key"] == key:
             return i
-    raise TutorialError(f"no such step {key!r}")
+    raise TutorialError(i18n.fill(i18n.NO_SUCH_STEP, got=repr(key)))
 
 
 def say(lesson: dict, mode: str = "text") -> dict:
@@ -722,7 +722,8 @@ def say(lesson: dict, mode: str = "text") -> dict:
     often by somebody who is not well, and a spoken screen number is noise.
     """
     if mode not in MODES:
-        raise TutorialError(f"unknown mode {mode!r} — one of {', '.join(MODES)}")
+        raise TutorialError(i18n.fill(i18n.UNKNOWN_MODE_ONE_OF, got=repr(mode),
+                                      choices=", ".join(MODES)))
     out = {"key": lesson["key"], "chapter": lesson["chapter"],
            "title": lesson["title"], "try_it": lesson["try_it"], "mode": mode}
     if mode == "voice":

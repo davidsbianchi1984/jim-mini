@@ -73,9 +73,9 @@ def features_of(user_id: str) -> dict:
 
 def set_feature(user_id: str, feature: str, enabled: bool) -> dict:
     if feature not in FEATURES:
-        raise CircleError(
-            f"unknown feature {feature!r}; the switches are "
-            f"{', '.join(sorted(FEATURES))}")
+        raise CircleError(i18n.fill(i18n.UNKNOWN_FEATURE_SWITCHES,
+                                    got=repr(feature),
+                                    choices=", ".join(sorted(FEATURES))))
     conn = db.connect()
     conn.execute(
         "INSERT INTO user_features (user_id, feature, enabled, updated_at)"
@@ -239,8 +239,7 @@ def _validate_doc(user_id: str, doc: dict) -> dict:
 
     links = doc.get("links") or []
     if len(links) > _MAX_LINKS:
-        raise CircleError(f"up to {_MAX_LINKS} links; a homepage is a "
-                          "page, not a directory")
+        raise CircleError(i18n.fill(i18n.MAX_LINKS, max=_MAX_LINKS))
     clean_links = []
     for link in links:
         url = str((link or {}).get("url") or "")
@@ -252,8 +251,8 @@ def _validate_doc(user_id: str, doc: dict) -> dict:
 
     tops = list(doc.get("top_friends") or [])[: _MAX_TOP_FRIENDS + 1]
     if len(tops) > _MAX_TOP_FRIENDS:
-        raise CircleError(f"top friends is at most {_MAX_TOP_FRIENDS} — "
-                          "that is what makes it a ranking")
+        raise CircleError(i18n.fill(i18n.TOP_FRIENDS_MAX,
+                                    max=_MAX_TOP_FRIENDS))
     for friend_id in tops:
         if not _mutual(user_id, str(friend_id)):
             raise CircleError("top friends are chosen from your actual "

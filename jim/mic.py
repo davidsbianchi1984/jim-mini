@@ -177,23 +177,17 @@ def attach(user_id: str, device_name: str, mic_type: str) -> dict:
         " ORDER BY created_at DESC, rowid DESC LIMIT 1",
         (user_id, device_name)).fetchone()
     if row is None:
-        raise MicError(f"no device called {device_name!r} on this account")
+        raise MicError(i18n.fill(i18n.NO_SUCH_DEVICE, device=repr(device_name)))
     if mic_type not in MIC_TYPES:
-        raise MicError(
-            f"unknown microphone type {mic_type!r} — one of "
-            f"{', '.join(sorted(MIC_TYPES))}")
+        raise MicError(i18n.fill(i18n.UNKNOWN_MIC_TYPE, got=repr(mic_type),
+                                 choices=", ".join(sorted(MIC_TYPES))))
     if not MIC_TYPES[mic_type]:
-        raise MicError(
-            f"a {mic_type.replace('_', ' ')} microphone is pointed at a room, "
-            "not at you. Everyone it picks up would be lending their voice "
-            "without being asked, so it cannot be channel 2. A worn or "
-            "clipped-on microphone can: "
-            f"{', '.join(t.replace('_', ' ') for t in PERSONAL_TYPES)}")
+        raise MicError(i18n.fill(
+            i18n.ROOM_MIC_REFUSED, mic_type=mic_type.replace("_", " "),
+            choices=", ".join(t.replace("_", " ") for t in PERSONAL_TYPES)))
     if row["kind"] == "stationary":
-        raise MicError(
-            f"{device_name!r} is registered as a stationary device. Something "
-            "bolted to a room hears the room, whatever kind of microphone is "
-            "in it")
+        raise MicError(i18n.fill(i18n.STATIONARY_DEVICE,
+                                 device=repr(device_name)))
 
     conn = db.connect()
     conn.execute(
@@ -242,8 +236,8 @@ def set_gain(user_id: str, gain: str) -> dict:
     that the situation is temporarily narrower than their preference.
     """
     if gain not in GAIN_LEVELS:
-        raise MicError(
-            f"gain must be one of {', '.join(GAIN_LEVELS)}")
+        raise MicError(i18n.fill(i18n.MUST_BE_ONE_OF, field="gain",
+                                 choices=", ".join(GAIN_LEVELS)))
     if channel(user_id) is None:
         raise MicError("nothing attached — attach a microphone first")
     conn = db.connect()
@@ -321,21 +315,16 @@ def handover(user_id: str, reason: str, route: str,
         raise MicError(
             "nothing attached — attach a microphone before handing it over")
     if primary_device and primary_device == chan["device_name"]:
-        raise MicError(
-            f"your {chan['device_name'].replace('_', ' ')} is already carrying "
-            "the call — one microphone cannot be both channels. Attach a "
-            "different one as channel 2, or take the call on something else")
+        raise MicError(i18n.fill(
+            i18n.MIC_ALREADY_ON_CALL,
+            device=chan["device_name"].replace("_", " ")))
     if reason not in REASONS:
-        raise MicError(
-            f"reason must be one of {', '.join(REASONS)} — what is occupying "
-            "your microphone is what justifies lending another one")
+        raise MicError(i18n.fill(i18n.REASON_MUST_BE,
+                                 choices=", ".join(REASONS)))
 
     if route not in PRIVATE_ROUTES:
-        raise MicError(
-            f"not while the call is on {route!r}. On speaker the watch hears "
-            "whoever you are talking to, and they are not a user here — they "
-            "were never asked and could not revoke it. Switch to an earpiece "
-            "or a headset and it can listen to you alone")
+        raise MicError(i18n.fill(i18n.SPEAKER_ROUTE_REFUSED,
+                                 route=repr(route)))
     if others_present:
         raise MicError(
             "not while other people are in earshot — the agent would be "

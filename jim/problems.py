@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import re
 
-from . import db
+from . import db, i18n
 
 TOP_LEVEL = {"source", "app_version", "platform", "language", "problems"}
 PROBLEM_FIELDS = {"op", "status", "count", "day", "fingerprint"}
@@ -62,9 +62,8 @@ class Rejected(Exception):
 
 def _check_short(name: str, value: object) -> str:
     if not isinstance(value, str) or not _SHORT.match(value):
-        raise Rejected(
-            f"{name!r} must be a short plain string (≤{MAX_SHORT} chars, no "
-            f"newlines or punctuation beyond ._-()/;:+) — got {value!r}")
+        raise Rejected(i18n.fill(i18n.SHORT_STRING_REQUIRED, field=name,
+                                 max=MAX_SHORT, got=repr(value)))
     return value
 
 
@@ -73,17 +72,14 @@ def _check_op(value: object) -> str:
         raise Rejected("'op' must be a string")
     m = _OP.match(value)
     if not m:
-        raise Rejected(
-            f"'op' must look like 'VERB /template/path' — got {value!r}")
+        raise Rejected(i18n.fill(i18n.OP_SHAPE, got=repr(value)))
     for segment in m.group(2).split("/"):
         if segment in ("", "{id}") or segment.startswith("{"):
             continue
         for pattern in _ID_LIKE:
             if pattern.match(segment):
-                raise Rejected(
-                    f"'op' contains a segment that looks like an identifier "
-                    f"({segment!r}) — the client's redaction has stopped "
-                    f"working, and accepting this would hide that")
+                raise Rejected(i18n.fill(i18n.OP_IDENTIFIER_SEGMENT,
+                                         got=repr(segment)))
     return value
 
 
@@ -94,17 +90,16 @@ def screen(payload: object) -> dict:
 
     extra = sorted(set(payload) - TOP_LEVEL)
     if extra:
-        raise Rejected(
-            f"unknown top-level keys {extra} — this intake accepts exactly "
-            f"{sorted(TOP_LEVEL)}. A new key is refused rather than ignored: "
-            "silently dropping it would let a client start sending content "
-            "and never learn that nobody wanted it.")
+        raise Rejected(i18n.fill(i18n.UNKNOWN_KEYS,
+                                 keys=", ".join(extra),
+                                 accepts=", ".join(sorted(TOP_LEVEL))))
     missing = sorted(TOP_LEVEL - set(payload))
     if missing:
-        raise Rejected(f"missing keys {missing}")
+        raise Rejected(i18n.fill(i18n.MISSING_KEYS, keys=", ".join(missing)))
 
     if payload["source"] not in SOURCES:
-        raise Rejected(f"'source' must be one of {sorted(SOURCES)}")
+        raise Rejected(i18n.fill(i18n.MUST_BE_ONE_OF, field="source",
+                                 choices=", ".join(sorted(SOURCES))))
     _check_short("app_version", payload["app_version"])
     _check_short("platform", payload["platform"])
     _check_short("language", payload["language"])  # validated, then unused
@@ -113,16 +108,18 @@ def screen(payload: object) -> dict:
     if not isinstance(problems, list) or not problems:
         raise Rejected("'problems' must be a non-empty list")
     if len(problems) > MAX_PROBLEMS:
-        raise Rejected(f"at most {MAX_PROBLEMS} problems per report")
+        raise Rejected(i18n.fill(i18n.MAX_PROBLEMS_PER_REPORT, max=MAX_PROBLEMS))
     for p in problems:
         if not isinstance(p, dict):
             raise Rejected("each problem is an object")
         extra = sorted(set(p) - PROBLEM_FIELDS)
         if extra:
-            raise Rejected(f"unknown problem keys {extra}")
+            raise Rejected(i18n.fill(i18n.UNKNOWN_PROBLEM_KEYS,
+                                     keys=", ".join(extra)))
         missing = sorted(PROBLEM_FIELDS - set(p))
         if missing:
-            raise Rejected(f"problem missing keys {missing}")
+            raise Rejected(i18n.fill(i18n.PROBLEM_MISSING_KEYS,
+                                     keys=", ".join(missing)))
         _check_op(p["op"])
         if not isinstance(p["status"], int) or not 0 <= p["status"] <= 599:
             raise Rejected("'status' must be an HTTP status code (0 for no "

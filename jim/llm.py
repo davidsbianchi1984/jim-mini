@@ -30,6 +30,8 @@ import urllib.request
 from contextvars import ContextVar
 from typing import Protocol
 
+from . import i18n
+
 logger = logging.getLogger("jim.llm")
 
 # Bring-your-own key: a caller may send ``x-llm-api-key`` and the request's
@@ -502,7 +504,8 @@ def get_choice(user_id: str) -> str:
 
 def set_choice(user_id: str, provider: str) -> str:
     if provider not in CHOICES:
-        raise ValueError(f"unknown provider {provider!r}")
+        raise ValueError(i18n.fill(i18n.UNKNOWN_VALUE, field="provider",
+                                   got=repr(provider)))
     from . import db
     conn = db.connect()
     conn.execute(

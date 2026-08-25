@@ -35,7 +35,7 @@ import time
 import urllib.error
 import urllib.request
 
-from . import db
+from . import db, i18n
 
 logger = logging.getLogger("jim.voice")
 
@@ -105,14 +105,15 @@ def stored_settings() -> dict | None:
 def save_settings(provider: str, api_key: str = "", voice_id: str = "",
                   speak_replies: bool | None = None) -> dict:
     if provider not in PROVIDERS:
-        raise ValueError(f"provider must be one of {', '.join(PROVIDERS)}")
+        raise ValueError(i18n.fill(i18n.MUST_BE_ONE_OF, field="provider",
+                                   choices=", ".join(PROVIDERS)))
     # Stripped here as well as at the point of use, so the stored value is
     # clean rather than merely tolerated. See `_resolved`.
     api_key = (api_key or "").strip()
     current = stored_settings() or {}
     if provider != "device" and not (api_key or current.get("api_key")
                                      or _env_key(provider)):
-        raise ValueError(f"{provider} needs an API key")
+        raise ValueError(i18n.fill(i18n.NEEDS_API_KEY, provider=provider))
     conn = db.connect()
     conn.execute(
         "INSERT INTO voice_settings (id, provider, api_key, voice_id,"
@@ -325,9 +326,11 @@ def _subscription(key: str, purpose: str) -> dict:
             return json.loads(resp.read() or b"{}")
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode(errors="replace")[:300]
-        raise VoiceError(f"elevenlabs refused it: HTTP {exc.code} {detail}")
+        raise VoiceError(i18n.fill(i18n.PROVIDER_REFUSED, provider=PROVIDERS[0],
+                                   code=exc.code, detail=detail))
     except (urllib.error.URLError, TimeoutError) as exc:
-        raise VoiceError(f"could not reach elevenlabs: {exc}")
+        raise VoiceError(i18n.fill(i18n.PROVIDER_UNREACHABLE,
+                                   provider=PROVIDERS[0], detail=exc))
 
 
 #: What a key check can conclude, keyed the way `SPECIALIST_STANDING` is in
@@ -399,16 +402,15 @@ def verify() -> dict:
         # this one has no cheap read that is certain to be permitted on a
         # key scoped to audio alone. Saying so beats a check that fails for
         # a reason unrelated to the key.
-        raise VoiceUnavailable(
-            f"{r['provider']} keys are not checked here — this check is the "
-            "ElevenLabs account read")
+        raise VoiceUnavailable(i18n.fill(
+            i18n.KEYS_NOT_CHECKED_HERE, provider=r["provider"]))
     from . import offline
     try:
         _subscription(r["api_key"], "checking the speaking key")
     except offline.LeftTheHost:
         verdict = "key.unchecked"
     except VoiceError as exc:
-        said = str(exc)
+        said = i18n.raised(exc)
         # `payment_issue` is checked before the generic HTTP branch, and the
         # order is the whole point. ElevenLabs answers **401** to an unpaid
         # subscription — the same status as a bad credential — so a
@@ -475,9 +477,8 @@ def remaining() -> dict:
         # had are gone, and the billing figures live behind the dashboard's
         # own session rather than an API key. Saying so is better than
         # inventing a number or showing an empty line.
-        raise VoiceUnavailable(
-            f"{r['provider']} does not publish a remaining allowance — its "
-            "balance is only visible on the provider's own dashboard")
+        raise VoiceUnavailable(i18n.fill(
+            i18n.NO_PUBLISHED_ALLOWANCE, provider=r["provider"]))
     data = _subscription(r["api_key"], "reading the speaking allowance")
     used = int(data.get("character_count") or 0)
     limit = int(data.get("character_limit") or 0)
@@ -555,9 +556,11 @@ def speak(text: str, voice_id: str | None = None) -> tuple[bytes, str]:
             return resp.read(), resp.headers.get("content-type", "audio/mpeg")
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode(errors="replace")[:300]
-        raise VoiceError(f"{r['provider']} refused it: HTTP {exc.code} {detail}")
+        raise VoiceError(i18n.fill(i18n.PROVIDER_REFUSED, provider=r["provider"],
+                                   code=exc.code, detail=detail))
     except (urllib.error.URLError, TimeoutError) as exc:
-        raise VoiceError(f"could not reach {r['provider']}: {exc}")
+        raise VoiceError(i18n.fill(i18n.PROVIDER_UNREACHABLE,
+                                   provider=r["provider"], detail=exc))
 
 
 def transcribe(audio: bytes, filename: str = "speech.webm") -> str:
@@ -603,9 +606,10 @@ def transcribe(audio: bytes, filename: str = "speech.webm") -> str:
             data = json.loads(resp.read() or b"{}")
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode(errors="replace")[:300]
-        raise VoiceError(f"transcription refused it: HTTP {exc.code} {detail}")
+        raise VoiceError(i18n.fill(i18n.TRANSCRIPTION_REFUSED, code=exc.code,
+                                   detail=detail))
     except (urllib.error.URLError, TimeoutError) as exc:
-        raise VoiceError(f"could not reach the transcription service: {exc}")
+        raise VoiceError(i18n.fill(i18n.TRANSCRIPTION_UNREACHABLE, detail=exc))
     return (data.get("text") or "").strip()
 
 

@@ -264,11 +264,16 @@ def test_a_private_route_is_refused_here(client):
 
 def test_mic_still_refuses_the_unannounced_speaker_call():
     """This round adds the path that refusal was waiting for. It does not
-    weaken it: a speaker call with nobody told is still refused there."""
-    from jim import mic
+    weaken it: a speaker call with nobody told is still refused there.
+
+    The sentence moved into `i18n.SPEAKER_ROUTE_REFUSED` when the refusal
+    was templated, so this follows it: the handover still raises through
+    that constant, and the constant still says why."""
+    from jim import i18n, mic
     source = inspect.getsource(mic.handover)
     assert "PRIVATE_ROUTES" in source
-    assert "were never asked" in source
+    assert "SPEAKER_ROUTE_REFUSED" in source
+    assert "were never asked" in i18n.SPEAKER_ROUTE_REFUSED
 
 
 def test_a_call_that_never_announced_stays_in_the_history(client):

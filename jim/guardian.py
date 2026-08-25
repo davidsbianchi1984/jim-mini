@@ -13,7 +13,7 @@ import json
 import secrets
 from datetime import date
 
-from . import (audit, bands, conditions, db, earlywarning, escalation, tiers,
+from . import (audit, bands, conditions, db, earlywarning, escalation, i18n, tiers,
                guidance as local_guidance, i18n, life, llm, robotics, signal,
                terms)
 
@@ -108,8 +108,8 @@ SENSITIVITY_LEVELS = ("cautious", "balanced", "assertive")
 def set_sensitivity(user_id: str, level: str) -> dict:
     """Tune how readily the Guardian escalates (cautious/balanced/assertive)."""
     if level not in SENSITIVITY_LEVELS:
-        raise ValueError(
-            f"sensitivity must be one of {', '.join(SENSITIVITY_LEVELS)}")
+        raise ValueError(i18n.fill(i18n.MUST_BE_ONE_OF, field="sensitivity",
+                                   choices=", ".join(SENSITIVITY_LEVELS)))
     conn = db.connect()
     conn.execute("UPDATE users SET sensitivity=? WHERE id=?", (level, user_id))
     conn.commit()
@@ -329,15 +329,17 @@ def bind_robot(user_id: str, model: str, name: str | None,
     device; the robot additionally receives a role-appropriate directive."""
     spec = robotics.get(model)
     if spec is None:
-        raise ValueError(f"unknown robot model '{model}'")
+        raise ValueError(i18n.fill(i18n.UNKNOWN_ROBOT_MODEL, got=repr(model)))
     provider = None
     if spec["llm_capable"]:
         provider = llm_provider or llm.get_choice(user_id)
         if provider not in llm.CHOICES:
-            raise ValueError(
-                f"llm_provider must be one of {', '.join(llm.CHOICES)}")
+            raise ValueError(i18n.fill(i18n.MUST_BE_ONE_OF,
+                                       field="llm_provider",
+                                       choices=", ".join(llm.CHOICES)))
     elif llm_provider:
-        raise ValueError(f"{spec['label']} cannot run an onboard LLM")
+        raise ValueError(i18n.fill(i18n.CANNOT_RUN_ONBOARD_LLM,
+                                   label=spec["label"]))
 
     robot_name = name or spec["label"]
     conn = db.connect()
@@ -518,9 +520,10 @@ def robot_command(user_id: str, robot_id: str, command: str,
     allowed = robotics.allowed_commands(model)
     if command not in allowed:
         spec = robotics.get(model) or {}
-        raise ValueError(
-            f"'{command}' is not permitted for {spec.get('label', model)}; "
-            f"allowed: {', '.join(allowed)}")
+        raise ValueError(i18n.fill(i18n.COMMAND_NOT_PERMITTED,
+                                   command=repr(command),
+                                   label=spec.get("label", model),
+                                   choices=", ".join(allowed)))
 
     waived = waiver_for(user_id) is not None
 

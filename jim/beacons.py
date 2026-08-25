@@ -39,7 +39,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 
-from . import audit, db, escalation, family, guardian
+from . import audit, db, escalation, family, guardian, i18n
 
 KINDS = ("personal", "site")
 
@@ -124,7 +124,8 @@ def place(user: dict, label: str, placement: str | None = None,
     decide it exists is the one already accountable for the account.
     """
     if kind not in KINDS:
-        raise BeaconError(f"kind must be one of {', '.join(KINDS)}")
+        raise BeaconError(i18n.fill(i18n.MUST_BE_ONE_OF, field="kind",
+                                    choices=", ".join(KINDS)))
     if not label.strip():
         raise BeaconError(
             "a beacon needs a label so its owner can tell their codes apart "

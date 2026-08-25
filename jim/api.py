@@ -410,7 +410,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             payload = problems_mod.screen(await request.json())
         except problems_mod.Rejected as exc:
-            raise HTTPException(422, str(exc)) from exc
+            raise HTTPException(422, i18n.raised(exc)) from exc
         folded = problems_mod.add(payload)
         return {"accepted": True, "problems": len(payload["problems"]),
                 "failures": folded}
@@ -547,7 +547,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return help_mod.ask(body.question, body.mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/tutorial")
     def tutorial_outline(mode: str = "text") -> dict:
@@ -555,14 +555,14 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return tutorial.outline(mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/tutorial/steps/{key}")
     def tutorial_step(key: str, mode: str = "text") -> dict:
         try:
             return tutorial.step(key, mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.get("/tutorial/for-screen/{number}")
     def tutorial_for_screen(number: int, mode: str = "text") -> dict:
@@ -586,7 +586,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return tutorial.mark(body.learner_id, body.lesson, body.mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.get("/connectors/catalog")
     def connector_catalog() -> dict:
@@ -686,7 +686,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return appearance.set_theme(user_id, body.theme)
         except ValueError as exc:
-            raise HTTPException(422, str(exc)) from exc
+            raise HTTPException(422, i18n.raised(exc)) from exc
 
     @app.post("/translate/{user_id}")
     def translate_text(user_id: str, body: TranslateRequest,
@@ -699,7 +699,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return i18n.translate(user_id, body.text, body.to)
         except ValueError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.post("/enroll", status_code=201,
               dependencies=[Depends(auth.require_signup_key)])
@@ -858,7 +858,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                 provider=body.provider, api_key=body.api_key or "",
                 voice_id=body.voice_id or "", speak_replies=body.speak_replies)
         except ValueError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.delete("/settings/voice",
                 dependencies=[Depends(auth.require_signup_key)])
@@ -882,7 +882,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return voice.verify()
         except voice.VoiceUnavailable as exc:
-            raise HTTPException(503, str(exc))
+            raise HTTPException(503, i18n.raised(exc))
 
     @app.get("/voice/quota")
     def voice_quota() -> dict:
@@ -897,9 +897,9 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return voice.remaining()
         except voice.VoiceUnavailable as exc:
-            raise HTTPException(503, str(exc))
+            raise HTTPException(503, i18n.raised(exc))
         except voice.VoiceError as exc:
-            raise HTTPException(502, str(exc))
+            raise HTTPException(502, i18n.raised(exc))
 
     @app.post("/voice/speak")
     def voice_speak(body: VoiceSpeak) -> Response:
@@ -911,9 +911,9 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             audio, media_type = voice.speak(body.text, body.voice_id)
         except voice.VoiceUnavailable as exc:
-            raise HTTPException(503, str(exc))
+            raise HTTPException(503, i18n.raised(exc))
         except voice.VoiceError as exc:
-            raise HTTPException(502, str(exc))
+            raise HTTPException(502, i18n.raised(exc))
         return Response(content=audio, media_type=media_type)
 
     @app.post("/voice/transcribe")
@@ -930,9 +930,9 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return {"text": voice.transcribe(raw, body.filename or "speech.webm")}
         except voice.VoiceUnavailable as exc:
-            raise HTTPException(503, str(exc))
+            raise HTTPException(503, i18n.raised(exc))
         except voice.VoiceError as exc:
-            raise HTTPException(502, str(exc))
+            raise HTTPException(502, i18n.raised(exc))
 
     # ---- your own normal, and how far from it counts ----------------------
 
@@ -958,14 +958,15 @@ def create_app(qrme_client: QRMEClient | None = None,
                                   watch_high=body.watch_high,
                                   watch_low=body.watch_low)
         except ValueError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.delete("/bands/{user_id}/{metric}")
     def delete_band(user_id: str, metric: str, request: Request) -> dict:
         """Back to the default width for this metric."""
         _user_or_404(user_id, request)
         if metric not in bands.DEFAULTS:
-            raise HTTPException(422, f"unknown metric {metric!r}")
+            raise HTTPException(422, i18n.fill(i18n.UNKNOWN_METRIC,
+                                               got=repr(metric)))
         return bands.reset_band(user_id, metric)
 
     # ---- where this deployment sends mail through -------------------------
@@ -988,7 +989,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                 password=body.password or "", sender=body.sender or "",
                 public_url=body.public_url or "")
         except ValueError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.delete("/settings/mail",
                 dependencies=[Depends(auth.require_signup_key)])
@@ -1013,7 +1014,8 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "in your inbox, verification emails will reach your users "
                 "too.")
         except Exception as exc:  # noqa: BLE001 — smtplib raises many kinds
-            raise HTTPException(502, f"the mail server refused it: {exc}")
+            raise HTTPException(502, i18n.fill(i18n.MAIL_SERVER_REFUSED,
+                                               detail=exc))
         return {"sent": True, "to": body.to}
 
     @app.post("/verify-email/resend")
@@ -1134,7 +1136,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         except storage.StorageError:
             raise
         except (meals_mod.MealError, capture_mod.CaptureError) as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/users/{user_id}/meals")
     def meal_board(user_id: str, request: Request) -> list[dict]:
@@ -1232,7 +1234,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             # from the 503 above, which no amount of money fixes.
             raise
         except capture_mod.CaptureError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/users/{user_id}/captures")
     def list_captures(user_id: str, request: Request,
@@ -1259,7 +1261,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         except capture_mod.VaultRequired as exc:
             raise HTTPException(503, str(exc)) from None
         except capture_mod.CaptureError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
         return {"id": capture_id, "kind": cap["kind"], "content": content}
 
     @app.post("/users/{user_id}/captures/attach")
@@ -1274,7 +1276,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return capture_mod.attach_to_referral(body.capture_ids, user_id)
         except capture_mod.CaptureError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.delete("/users/{user_id}/captures/{capture_id}")
     def delete_capture(user_id: str, capture_id: str,
@@ -1285,7 +1287,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return capture_mod.delete(capture_id, user_id, app.state.pdi)
         except capture_mod.CaptureError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     # ---- the pane in the corner -------------------------------------------
 
@@ -1301,7 +1303,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return dock_mod.route(face)
         except dock_mod.DockError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.get("/dock/{user_id}")
     def dock_settings(user_id: str, request: Request,
@@ -1317,7 +1319,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             return dock_mod.configure(user_id, body.corner, body.state,
                                       body.face, body.faces)
         except dock_mod.DockError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/dock/{user_id}/face/{name}")
     def dock_face(user_id: str, name: str, request: Request,
@@ -1326,7 +1328,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return dock_mod.face(user_id, name, surface_id)
         except dock_mod.DockError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     # ---- membership -------------------------------------------------------
 
@@ -1354,7 +1356,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return tiers.subscribe(account_id, body.plan)
         except tiers.TierError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.delete("/memberships/{account_id}")
     def cancel_membership(account_id: str, request: Request) -> dict:
@@ -1384,7 +1386,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise
         except ValueError as e:
             raise HTTPException(
-                403 if "verified-adult" in str(e) else 422, str(e))
+                403 if "verified-adult" in i18n.raised(e) else 422, i18n.raised(e))
         if body.language:
             if body.language not in i18n.SUPPORTED:
                 raise HTTPException(
@@ -1862,7 +1864,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             return beacons.place(user, body.label, body.placement, body.kind,
                                  placed_by=who["subject_id"])
         except beacons.BeaconError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.get("/users/{user_id}/beacons")
     def list_beacons(user_id: str, request: Request) -> list[dict]:
@@ -2004,7 +2006,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return rota.describe()
         except rota.RotaError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.get("/relay/channel")
     def relay_channel() -> dict:
@@ -2044,7 +2046,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                    if alarm_id == crashwatch.ALARM_ID
                    else relay.accept(user_id, alarm_id, body.responder))
         except ValueError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
         if out is None:
             raise HTTPException(404, "no open alarm with that id")
         return out
@@ -2120,7 +2122,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             return guardian.bind_robot(user_id, body.model, body.name,
                                        body.llm_provider)
         except ValueError as e:
-            raise HTTPException(422 if "llm" in str(e).lower() else 404, str(e))
+            raise HTTPException(422 if "llm" in i18n.raised(e).lower() else 404, i18n.raised(e))
 
     @app.get("/robots/{user_id}")
     def list_robots(user_id: str, request: Request) -> list[dict]:
@@ -2173,8 +2175,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         expected = (user.get("display_name") or "").strip().lower()
         if expected and signature.lower() != expected:
             raise HTTPException(
-                422, f"signature must match the enrolled name "
-                     f"({user['display_name']})")
+                422, i18n.fill(i18n.SIGNATURE_MUST_MATCH,
+                               name=user["display_name"]))
         return guardian.sign_waiver(user_id, signature)
 
     @app.delete("/waivers/{user_id}")
@@ -2199,7 +2201,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             result = guardian.robot_command(user_id, robot_id,
                                             body.command, body.arg)
         except ValueError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
         if result is None:
             raise HTTPException(404, "robot not found")
         return result
@@ -2351,7 +2353,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return presence.choose_surface(user_id, body.speaks_on)
         except ValueError as exc:
-            raise HTTPException(422, str(exc)) from exc
+            raise HTTPException(422, i18n.raised(exc)) from exc
 
     @app.get("/presence/{user_id}/bearing")
     def presence_bearing(user_id: str, request: Request) -> dict:
@@ -2368,7 +2370,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return presence.set_bearing(user_id, body.bearing)
         except ValueError as exc:
-            raise HTTPException(422, str(exc)) from exc
+            raise HTTPException(422, i18n.raised(exc)) from exc
 
     @app.get("/presence/{user_id}/say")
     def presence_say(user_id: str, request: Request,
@@ -2524,7 +2526,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return guardian.set_sensitivity(user_id, body.level)
         except ValueError as e:
-            raise HTTPException(422, str(e))
+            raise HTTPException(422, i18n.raised(e))
 
     @app.get("/escalation-policy/{user_id}")
     def escalation_policy(user_id: str, request: Request) -> dict:
@@ -2546,7 +2548,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return guardian.set_far_end(user_id, body.email, body.consent)
         except ValueError as e:
-            raise HTTPException(422, str(e))
+            raise HTTPException(422, i18n.raised(e))
 
     @app.get("/farend/{user_id}")
     def far_end_status(user_id: str, request: Request) -> dict:
@@ -2581,7 +2583,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         if not life.source_allowed(user_id, body.source):
             raise HTTPException(
-                403, f"source '{body.source}' is not consented for this user")
+                403, i18n.fill(i18n.SOURCE_NOT_CONSENTED,
+                               source=repr(body.source)))
         return life.add_context(user_id, body.source, body.kind, body.data,
                                 pdi=_vault(user_id))
 
@@ -2630,11 +2633,13 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return social.fetch_page(row, _public_base(), pdi=_vault(row["user_id"]))
         except ValueError as e:
-            raise HTTPException(409, str(e))
+            raise HTTPException(409, i18n.raised(e))
         except LookupError as e:
             raise HTTPException(400, str(e))
         except Exception as e:                                # noqa: BLE001
-            raise HTTPException(502, f"could not fetch — {e.__class__.__name__}: {e}")
+            raise HTTPException(502, i18n.fill(i18n.COULD_NOT_FETCH,
+                                               kind=e.__class__.__name__,
+                                               detail=e))
 
     @app.post("/social/connection/{cid}/publish", status_code=201)
     def social_publish(cid: str, body: SocialPublish, request: Request) -> dict:
@@ -2674,10 +2679,14 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         e = app_connectors.entry(body.provider, body.app)
         if e is None:
-            raise HTTPException(404, f"unknown connector: {body.provider}/{body.app}")
+            raise HTTPException(404, i18n.fill(i18n.UNKNOWN_CONNECTOR,
+                                               provider=body.provider,
+                                               app=body.app))
         unknown = set(body.capabilities) - set(e["capabilities"])
         if unknown:
-            raise HTTPException(422, f"{body.app} does not offer: {sorted(unknown)}")
+            raise HTTPException(422, i18n.fill(i18n.APP_DOES_NOT_OFFER,
+                                               app=body.app,
+                                               capabilities=", ".join(sorted(unknown))))
         return app_connectors.connect(user_id, e, body.capabilities)
 
     @app.get("/apps/{user_id}")
@@ -2700,7 +2709,8 @@ def create_app(qrme_client: QRMEClient | None = None,
     def app_collect(cid: str, body: AppCollect, request: Request) -> dict:
         row = _app_or_404(cid, request)
         if "collect" not in json.loads(row["directions"]):
-            raise HTTPException(409, f"{row['app']} does not support collecting context")
+            raise HTTPException(409, i18n.fill(i18n.NO_COLLECT_SUPPORT,
+                                               app=row["app"]))
         if row["status"] != "active":
             raise HTTPException(409, "connector has been revoked")
         return app_connectors.collect(row, [i.model_dump() for i in body.items],
@@ -2712,8 +2722,9 @@ def create_app(qrme_client: QRMEClient | None = None,
         if row["status"] != "active":
             raise HTTPException(409, "connector has been revoked")
         if body.capability not in json.loads(row["capabilities"]):
-            raise HTTPException(422, f"this {row['app']} connector was not granted "
-                                     f"'{body.capability}'")
+            raise HTTPException(422, i18n.fill(i18n.CAPABILITY_NOT_GRANTED,
+                                           app=row["app"],
+                                           capability=repr(body.capability)))
         return app_connectors.invoke(row, body.capability, body.input)
 
     # ---- safe knowledge excursions ----------------------------------------
@@ -2800,7 +2811,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                 body.account_number, body.routing_number, body.api_key,
                 pdi=_vault(user_id))
         except money.MoneyError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.post("/money/{user_id}/observe")
     def money_observe(user_id: str, body: MoneyObserve,
@@ -2811,7 +2822,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                                  body.note, _money_lang(user_id),
                                  pdi=_vault(user_id), qrme=app.state.qrme)
         except money.MoneyError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.post("/money/{user_id}/statements", status_code=201)
     def money_drop_statement(user_id: str, body: StatementDrop,
@@ -2826,7 +2837,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                 _money_lang(user_id), pdi=_vault(user_id),
                 qrme=app.state.qrme)
         except money.MoneyError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.get("/money/{user_id}/statements")
     def money_statements(user_id: str, request: Request) -> list[dict]:
@@ -2847,7 +2858,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                                    body.aggregator, body.kind,
                                    pdi=_vault(user_id))
         except money.MoneyError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.get("/money/{user_id}/links")
     def money_links(user_id: str, request: Request) -> list[dict]:
@@ -2862,7 +2873,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return money.sync_bank(user_id, link_id)
         except money.MoneyError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.delete("/money/{user_id}/links/{link_id}")
     def money_revoke_link(user_id: str, link_id: str,
@@ -2872,7 +2883,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return money.revoke_link(user_id, link_id)
         except money.MoneyError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.put("/money/{user_id}/savings")
     def money_set_savings(user_id: str, body: SavingsSet,
@@ -2881,7 +2892,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return money.set_savings(user_id, body.goal, body.note)
         except money.MoneyError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.put("/money/{user_id}/floor")
     def money_set_floor(user_id: str, body: FloorSet,
@@ -2893,7 +2904,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return money.set_floor(user_id, body.floor)
         except money.MoneyError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.put("/money/{user_id}/mandate")
     def money_set_mandate(user_id: str, body: MandateSet,
@@ -2918,7 +2929,7 @@ def create_app(qrme_client: QRMEClient | None = None,
                                      body.cap_per_order, body.monthly_cap,
                                      body.asset_classes, body.scope)
         except money.MoneyError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     # ---- booking and scheduling (jim/schedule.py) --------------------------
     # A booking is a row, not a hostage; reminders ride the ladder's bottom
@@ -3000,7 +3011,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return circle.set_feature(user_id, body.feature, body.enabled)
         except circle.CircleError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.post("/circle/{user_id}/contacts", status_code=201)
     def circle_invite(user_id: str, body: CircleInviteIn,
@@ -3009,7 +3020,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return circle.invite(user_id, body.other_id)
         except circle.CircleError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.delete("/circle/{user_id}/contacts/{other_id}")
     def circle_leave(user_id: str, other_id: str,
@@ -3024,7 +3035,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return circle.send_message(user_id, body.to, body.body)
         except circle.CircleError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.get("/circle/{user_id}/messages")
     def circle_messages(user_id: str, request: Request,
@@ -3056,7 +3067,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             return circle.set_homepage(user_id, body.model_dump(
                 exclude_none=True))
         except circle.CircleError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     # ---- budgeting plans ----------------------------------------------------
 
@@ -3248,7 +3259,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return permits.set_grant(user_id, area, body.granted)
         except ValueError as exc:
-            raise HTTPException(422, str(exc)) from exc
+            raise HTTPException(422, i18n.raised(exc)) from exc
 
     @app.post("/engaged/{user_id}", status_code=201)
     def engage(user_id: str, body: EngageOpen, request: Request) -> dict:
@@ -4210,9 +4221,9 @@ def create_app(qrme_client: QRMEClient | None = None,
         except mic.MicError as exc:
             raise HTTPException(403, i18n.raised(exc))
         except voice.VoiceUnavailable as exc:
-            raise HTTPException(503, str(exc))
+            raise HTTPException(503, i18n.raised(exc))
         except voice.VoiceError as exc:
-            raise HTTPException(502, str(exc))
+            raise HTTPException(502, i18n.raised(exc))
 
     @app.post("/users/{user_id}/mic/release")
     def release_mic(user_id: str, request: Request) -> dict:
@@ -4260,7 +4271,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             return referral.prepare(user_id, body.condition, body.provider_id,
                                     spec, app.state.qrme, body.capture_ids)
         except capture_mod.CaptureError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.post("/users/{user_id}/referral/requests/{request_id}/released")
     def confirm_referral_release(user_id: str, request_id: str,

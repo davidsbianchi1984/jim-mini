@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import json
 
-from . import db, life, offline, scrape
+from . import db, i18n, life, offline, scrape
 
 _PLATFORM_URL = {
     "instagram": "https://instagram.com/{h}",
@@ -135,7 +135,7 @@ def fetch_page(row: dict, public_base: str, pdi=None) -> dict:
     page = scrape.extract(scrape.fetch(url))
     parts = [p for p in (page["description"], page["text"]) if p]
     if not (page["title"] or parts):
-        raise ValueError(f"{url} answered with nothing readable")
+        raise ValueError(i18n.fill(i18n.NOTHING_READABLE, url=url))
     body = "\n\n".join(([page["title"]] if page["title"] else []) + parts)
     body += f"\n\nFetched from {url} at {db.utcnow()}"
     life.add_context(row["user_id"], f"social:{row['platform']}",

@@ -820,7 +820,7 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the iPhone client's writes that meet a declared model"),
     Ratchet("native.body_matched.android", 95, _body_matched("android"),
             "the Android client's writes that meet a declared model"),
-    Ratchet("refusals.template_calls", 15, _template_calls,
+    Ratchet("refusals.template_calls", 78, _template_calls,
             "the `i18n.fill` call sites the conversion left behind"),
     Ratchet("receiver.declared.ios.state", 12, _receiver_declared("ios/state"),
             "the members ios/state declares"),

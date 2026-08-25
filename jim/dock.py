@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import json
 
-from . import db
+from . import db, i18n
 
 CORNERS: dict[str, str] = {
     "bottom_right": "the default — under the right thumb",
@@ -119,13 +119,15 @@ def vocabulary() -> dict:
 
 def route(face: str) -> dict:
     if face not in ROUTES:
-        raise DockError(f"no such face {face!r}; one of {', '.join(FACES)}")
+        raise DockError(i18n.fill(i18n.NO_SUCH_FACE, got=repr(face),
+                                  choices=", ".join(FACES)))
     return {"face": face, **ROUTES[face], "opens_dock_face": face}
 
 
 def _check_face(face: str) -> None:
     if face not in FACES:
-        raise DockError(f"no such face {face!r}; one of {', '.join(FACES)}")
+        raise DockError(i18n.fill(i18n.NO_SUCH_FACE, got=repr(face),
+                                  choices=", ".join(FACES)))
 
 
 def settings(user_id: str) -> dict:
@@ -150,10 +152,11 @@ def configure(user_id: str, corner: str | None = None,
     chosen = list(now["faces"] if faces is None else faces)
 
     if corner not in CORNERS:
-        raise DockError(
-            f"the pane sits in a bottom corner — {', '.join(CORNERS)}")
+        raise DockError(i18n.fill(i18n.PANE_BOTTOM_CORNER,
+                                  choices=", ".join(CORNERS)))
     if state not in STATES:
-        raise DockError(f"unknown state {state!r}; one of {', '.join(STATES)}")
+        raise DockError(i18n.fill(i18n.UNKNOWN_STATE, got=repr(state),
+                                  choices=", ".join(STATES)))
     for f in chosen:
         _check_face(f)
     if not chosen:
@@ -161,14 +164,11 @@ def configure(user_id: str, corner: str | None = None,
                         "— set the state to 'handle' instead")
     _check_face(face)
     if face not in chosen:
-        raise DockError(f"{face!r} is not one of the faces this dock carries")
+        raise DockError(i18n.fill(i18n.FACE_NOT_CARRIED, got=repr(face)))
     for must in ALWAYS_SHOWN:
         if must not in chosen:
-            raise DockError(
-                f"{must!r} cannot be removed from the pane — it is the face "
-                "that appears when something is wrong, and a pane somebody "
-                "configured out of the way months ago is not a decision they "
-                "made about the day it fires")
+            raise DockError(i18n.fill(i18n.FACE_CANNOT_BE_REMOVED,
+                                      face=repr(must)))
 
     conn = db.connect()
     conn.execute(
@@ -210,8 +210,7 @@ def face(user_id: str, name: str, surface_id: str | None = None) -> dict:
     """One face, as the pane would draw it. Read-only by construction."""
     _check_face(name)
     if name in PER_SURFACE and not surface_id:
-        raise DockError(
-            f"the {name} face is about a particular one — tell it which")
+        raise DockError(i18n.fill(i18n.FACE_NEEDS_A_SURFACE, face=name))
     return {
         "face": name,
         "shows": FACES[name],

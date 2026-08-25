@@ -68,9 +68,11 @@ def effective_language(user_id: str) -> str:
 
 def set_language(user_id: str, language: str, mode: str = "pre") -> str:
     if language not in SUPPORTED:
-        raise ValueError(f"unknown language {language!r}")
+        raise ValueError(fill(UNKNOWN_VALUE, field="language",
+                              got=repr(language)))
     if mode not in MODES:
-        raise ValueError(f"mode must be one of {MODES}")
+        raise ValueError(fill(MUST_BE_ONE_OF, field="mode",
+                              choices=", ".join(MODES)))
     from . import db
     conn = db.connect()
     conn.execute(
@@ -90,7 +92,8 @@ def translate(user_id: str, text: str, to: str | None = None) -> dict:
     from . import llm
     target = to or get_language(user_id)
     if target not in SUPPORTED:
-        raise ValueError(f"unknown language {target!r}")
+        raise ValueError(fill(UNKNOWN_VALUE, field="language",
+                              got=repr(target)))
     if target == DEFAULT:
         return {"text": text, "translation": text, "language": target,
                 "engine": "none", "note": "target language is English"}
@@ -1232,8 +1235,160 @@ SIGHT_UNREACHABLE = ("could not reach the service that describes what a "
                      "monitor sees: {why}")
 SIGHT_REFUSED = "the eyes refused it: HTTP {code} {detail}"
 
+# -- the voice's refusals, from the round that made every refusal a template.
+# `provider` is a token ("elevenlabs", "device"); `detail` is usually the
+# provider's own prose and marks the fill untranslatable at runtime, which is
+# the SIGHT_* precedent: the frame is translated for the day the slot is
+# clean, and an English slot keeps the whole sentence English on purpose.
+NEEDS_API_KEY = "{provider} needs an API key"
+KEYS_NOT_CHECKED_HERE = ("{provider} keys are not checked here — this check "
+                         "is the ElevenLabs account read")
+NO_PUBLISHED_ALLOWANCE = ("{provider} does not publish a remaining allowance "
+                          "— its balance is only visible on the provider's "
+                          "own dashboard")
+PROVIDER_REFUSED = "{provider} refused it: HTTP {code} {detail}"
+PROVIDER_UNREACHABLE = "could not reach {provider}: {detail}"
+TRANSCRIPTION_REFUSED = "transcription refused it: HTTP {code} {detail}"
+TRANSCRIPTION_UNREACHABLE = ("could not reach the transcription service: "
+                             "{detail}")
+
+# -- the problem intake's refusals. Read by the developer of a client that
+# sent a malformed report, in whatever language that person set — a protocol
+# error is still a sentence somebody reads. `got` carries the offending
+# value and usually marks the fill untranslatable; the key lists are joined
+# with commas so they stay tokens and the sentence still translates.
+SHORT_STRING_REQUIRED = ("'{field}' must be a short plain string (≤{max} "
+                         "chars, no newlines or punctuation beyond "
+                         "._-()/;:+) — got {got}")
+OP_SHAPE = "'op' must look like 'VERB /template/path' — got {got}"
+OP_IDENTIFIER_SEGMENT = ("'op' contains a segment that looks like an "
+                         "identifier ({got}) — the client's redaction has "
+                         "stopped working, and accepting this would hide "
+                         "that")
+UNKNOWN_KEYS = ("unknown top-level keys {keys} — this intake accepts exactly "
+                "{accepts}. A new key is refused rather than ignored: "
+                "silently dropping it would let a client start sending "
+                "content and never learn that nobody wanted it.")
+MISSING_KEYS = "missing keys {keys}"
+MAX_PROBLEMS_PER_REPORT = "at most {max} problems per report"
+UNKNOWN_PROBLEM_KEYS = "unknown problem keys {keys}"
+PROBLEM_MISSING_KEYS = "problem missing keys {keys}"
+
+# -- the microphone's own refusals, same round. Every slot is a token: a
+# device name, a mic type, a route. The long ones are the sentences this
+# product is proudest of — the reasons a microphone is refused — and they
+# were the ones going out in English.
+NO_SUCH_DEVICE = "no device called {device} on this account"
+UNKNOWN_MIC_TYPE = "unknown microphone type {got} — one of {choices}"
+ROOM_MIC_REFUSED = ("a {mic_type} microphone is pointed at a room, not at "
+                    "you. Everyone it picks up would be lending their voice "
+                    "without being asked, so it cannot be channel 2. A worn "
+                    "or clipped-on microphone can: {choices}")
+STATIONARY_DEVICE = ("{device} is registered as a stationary device. "
+                     "Something bolted to a room hears the room, whatever "
+                     "kind of microphone is in it")
+MIC_ALREADY_ON_CALL = ("your {device} is already carrying the call — one "
+                       "microphone cannot be both channels. Attach a "
+                       "different one as channel 2, or take the call on "
+                       "something else")
+REASON_MUST_BE = ("reason must be one of {choices} — what is occupying your "
+                  "microphone is what justifies lending another one")
+SPEAKER_ROUTE_REFUSED = ("not while the call is on {route}. On speaker the "
+                         "watch hears whoever you are talking to, and they "
+                         "are not a user here — they were never asked and "
+                         "could not revoke it. Switch to an earpiece or a "
+                         "headset and it can listen to you alone")
+
+# -- the API surface's own interpolated refusals, same round.
+UNKNOWN_METRIC = "unknown metric {got}"
+MAIL_SERVER_REFUSED = "the mail server refused it: {detail}"
+SIGNATURE_MUST_MATCH = "signature must match the enrolled name ({name})"
+SOURCE_NOT_CONSENTED = "source {source} is not consented for this user"
+COULD_NOT_FETCH = "could not fetch — {kind}: {detail}"
+UNKNOWN_CONNECTOR = "unknown connector: {provider}/{app}"
+APP_DOES_NOT_OFFER = "{app} does not offer: {capabilities}"
+NO_COLLECT_SUPPORT = "{app} does not support collecting context"
+CAPABILITY_NOT_GRANTED = "this {app} connector was not granted {capability}"
+
+# -- the dock's refusals, same round.
+NO_SUCH_FACE = "no such face {got}; one of {choices}"
+PANE_BOTTOM_CORNER = "the pane sits in a bottom corner — {choices}"
+UNKNOWN_STATE = "unknown state {got}; one of {choices}"
+FACE_NOT_CARRIED = "{got} is not one of the faces this dock carries"
+FACE_CANNOT_BE_REMOVED = ("{face} cannot be removed from the pane — it is "
+                          "the face that appears when something is wrong, "
+                          "and a pane somebody configured out of the way "
+                          "months ago is not a decision they made about the "
+                          "day it fires")
+FACE_NEEDS_A_SURFACE = "the {face} face is about a particular one — tell it which"
+
+# -- the rota's and the money module's refusals, same round.
+ROTA_NOT_JSON = "JIM_SITE_ROTA is not valid JSON: {detail}"
+ROTA_ENTRY_NEEDS_NAME = "rota entry {index} needs a name"
+UNKNOWN_DAY_RANGE = "unknown day range {got}"
+UNKNOWN_DAY = "unknown day {got}"
+UNREADABLE_TIME = "unreadable time {got} — use HH:MM"
+UNKNOWN_ACCOUNT_KIND = "unknown account kind {got}; expected one of {choices}"
+UNKNOWN_AGGREGATOR = ("unknown aggregator {got}; this module holds consents "
+                      "for {choices}")
+UNKNOWN_ASSET_CLASSES = ("unknown asset class(es): {got}; expected among "
+                         "{choices}")
+NO_AGGREGATOR_CREDENTIALS = ("this deployment holds no {aggregator} "
+                             "credentials — the consent stands and will "
+                             "sync when the aggregator is configured; until "
+                             "then, drop a statement or observe a balance "
+                             "by hand")
+AGGREGATOR_NOT_WIRED = ("the {aggregator} client is not wired into this "
+                        "build; the consent stands, and nothing was "
+                        "invented in its name")
+
+# -- the last of the round: every module's remaining one-liners.
+UNKNOWN_CHOICE = "unknown {field} {got}; one of {choices}"
+UNKNOWN_VALUE = "unknown {field} {got}"
+UNKNOWN_MODE_ONE_OF = "unknown mode {got} — one of {choices}"
+UNKNOWN_FEATURE_SWITCHES = "unknown feature {got}; the switches are {choices}"
+UNKNOWN_ROBOT_MODEL = "unknown robot model {got}"
+COMMAND_NOT_PERMITTED = "{command} is not permitted for {label}; allowed: {choices}"
+NO_BEARING = "no bearing called {got} — it is companion or professional"
+NO_PERMIT_AREA = "no permit area called {got}"
+NO_SUCH_STEP = "no such step {got}"
+NO_SURFACE = "no surface called {got}"
+FILE_TOO_LARGE = "that is {size}MB; the limit is {limit}MB"
+TOP_FRIENDS_MAX = ("top friends is at most {max} — that is what makes it a "
+                   "ranking")
+MAX_LINKS = "up to {max} links; a homepage is a page, not a directory"
+NOTHING_READABLE = "{url} answered with nothing readable"
+CANNOT_RUN_ONBOARD_LLM = "{label} cannot run an onboard LLM"
+INTIMATE_NEEDS_CONSENT = ("{site} needs an explicit confirmation before it "
+                          "is stored. It will be kept out of anything "
+                          "automatic — no synthetic agent ever receives it, "
+                          "and it is never folded into an assembled summary; "
+                          "a clinician opens it deliberately or not at all.")
+
 TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE, ERRANDS_SPENT, MONITOR_NOT_ON,
-             MIC_LENT_ELSEWHERE, SIGHT_UNREACHABLE, SIGHT_REFUSED)
+             MIC_LENT_ELSEWHERE, SIGHT_UNREACHABLE, SIGHT_REFUSED,
+             NEEDS_API_KEY, KEYS_NOT_CHECKED_HERE, NO_PUBLISHED_ALLOWANCE,
+             PROVIDER_REFUSED, PROVIDER_UNREACHABLE, TRANSCRIPTION_REFUSED,
+             TRANSCRIPTION_UNREACHABLE, SHORT_STRING_REQUIRED, OP_SHAPE,
+             OP_IDENTIFIER_SEGMENT, UNKNOWN_KEYS, MISSING_KEYS,
+             MAX_PROBLEMS_PER_REPORT, UNKNOWN_PROBLEM_KEYS,
+             PROBLEM_MISSING_KEYS, NO_SUCH_DEVICE, UNKNOWN_MIC_TYPE,
+             ROOM_MIC_REFUSED, STATIONARY_DEVICE, MIC_ALREADY_ON_CALL,
+             REASON_MUST_BE, SPEAKER_ROUTE_REFUSED, UNKNOWN_METRIC,
+             MAIL_SERVER_REFUSED, SIGNATURE_MUST_MATCH, SOURCE_NOT_CONSENTED,
+             COULD_NOT_FETCH, UNKNOWN_CONNECTOR, APP_DOES_NOT_OFFER,
+             NO_COLLECT_SUPPORT, CAPABILITY_NOT_GRANTED, NO_SUCH_FACE,
+             PANE_BOTTOM_CORNER, UNKNOWN_STATE, FACE_NOT_CARRIED,
+             FACE_CANNOT_BE_REMOVED, FACE_NEEDS_A_SURFACE, ROTA_NOT_JSON,
+             ROTA_ENTRY_NEEDS_NAME, UNKNOWN_DAY_RANGE, UNKNOWN_DAY,
+             UNREADABLE_TIME, UNKNOWN_ACCOUNT_KIND, UNKNOWN_AGGREGATOR,
+             UNKNOWN_ASSET_CLASSES, NO_AGGREGATOR_CREDENTIALS,
+             AGGREGATOR_NOT_WIRED, UNKNOWN_CHOICE, UNKNOWN_VALUE,
+             UNKNOWN_MODE_ONE_OF, UNKNOWN_FEATURE_SWITCHES,
+             UNKNOWN_ROBOT_MODEL, COMMAND_NOT_PERMITTED, NO_BEARING,
+             NO_PERMIT_AREA, NO_SUCH_STEP, NO_SURFACE, FILE_TOO_LARGE,
+             TOP_FRIENDS_MAX, MAX_LINKS, NOTHING_READABLE,
+             CANNOT_RUN_ONBOARD_LLM, INTIMATE_NEEDS_CONSENT)
 
 _TEMPLATES: dict[str, dict[str, str]] = {
     SIGHT_UNREACHABLE: {
@@ -1337,6 +1492,976 @@ _TEMPLATES: dict[str, dict[str, str]] = {
         'zh': '{field} 必须是以下之一：{choices}',
         'hi': '{field} इनमें से एक होना चाहिए: {choices}',
         'ar': '{field} يجب أن يكون أحد التالي: {choices}',
+    },
+    NEEDS_API_KEY: {
+        'es': '{provider} necesita una clave de API',
+        'fr': '{provider} nécessite une clé API',
+        'de': '{provider} benötigt einen API-Schlüssel',
+        'pt': '{provider} precisa de uma chave de API',
+        'it': '{provider} richiede una chiave API',
+        'ja': '{provider} には API キーが必要です',
+        'zh': '{provider} 需要 API 密钥',
+        'hi': '{provider} के लिए API कुंजी चाहिए',
+        'ar': '{provider} يتطلب مفتاح API',
+    },
+    KEYS_NOT_CHECKED_HERE: {
+        'es': 'las claves de {provider} no se comprueban aquí — esta '
+              'comprobación lee la cuenta de ElevenLabs',
+        'fr': 'les clés {provider} ne sont pas vérifiées ici — cette '
+              'vérification lit le compte ElevenLabs',
+        'de': '{provider}-Schlüssel werden hier nicht geprüft — diese '
+              'Prüfung liest das ElevenLabs-Konto',
+        'pt': 'as chaves de {provider} não são verificadas aqui — esta '
+              'verificação lê a conta ElevenLabs',
+        'it': "le chiavi di {provider} non vengono verificate qui — questa "
+              "verifica legge l'account ElevenLabs",
+        'ja': '{provider} のキーはここでは確認されません — この確認は '
+              'ElevenLabs アカウントの読み取りです',
+        'zh': '此处不检查 {provider} 密钥 — 该检查读取的是 ElevenLabs 账户',
+        'hi': '{provider} कुंजियाँ यहाँ जाँची नहीं जातीं — यह जाँच ElevenLabs '
+              'खाते को पढ़ती है',
+        'ar': 'مفاتيح {provider} لا تُفحص هنا — هذا الفحص يقرأ حساب ElevenLabs',
+    },
+    NO_PUBLISHED_ALLOWANCE: {
+        'es': '{provider} no publica un saldo restante — su balance solo es '
+              'visible en el panel del propio proveedor',
+        'fr': "{provider} ne publie pas de solde restant — il n'est visible "
+              'que sur le tableau de bord du fournisseur',
+        'de': '{provider} veröffentlicht kein Restguthaben — der Stand ist '
+              'nur im Dashboard des Anbieters sichtbar',
+        'pt': '{provider} não publica um saldo restante — o saldo só é '
+              'visível no painel do próprio fornecedor',
+        'it': '{provider} non pubblica un saldo residuo — il saldo è '
+              'visibile solo nella dashboard del fornitore',
+        'ja': '{provider} は残量を公開していません — 残高はプロバイダー自身の'
+              'ダッシュボードでのみ確認できます',
+        'zh': '{provider} 不公布剩余额度 — 余额只能在提供商自己的控制台查看',
+        'hi': '{provider} शेष सीमा प्रकाशित नहीं करता — शेष राशि केवल प्रदाता '
+              'के अपने डैशबोर्ड पर दिखती है',
+        'ar': '{provider} لا ينشر رصيدًا متبقيًا — الرصيد يظهر فقط في لوحة '
+              'تحكم المزوّد نفسه',
+    },
+    PROVIDER_REFUSED: {
+        'es': '{provider} lo rechazó: HTTP {code} {detail}',
+        'fr': "{provider} l'a refusé : HTTP {code} {detail}",
+        'de': '{provider} hat es abgelehnt: HTTP {code} {detail}',
+        'pt': '{provider} recusou: HTTP {code} {detail}',
+        'it': '{provider} lo ha rifiutato: HTTP {code} {detail}',
+        'ja': '{provider} に拒否されました: HTTP {code} {detail}',
+        'zh': '{provider} 拒绝了请求：HTTP {code} {detail}',
+        'hi': '{provider} ने अस्वीकार किया: HTTP {code} {detail}',
+        'ar': '{provider} رفض الطلب: HTTP {code} {detail}',
+    },
+    PROVIDER_UNREACHABLE: {
+        'es': 'no se pudo contactar con {provider}: {detail}',
+        'fr': 'impossible de joindre {provider} : {detail}',
+        'de': '{provider} war nicht erreichbar: {detail}',
+        'pt': 'não foi possível contactar {provider}: {detail}',
+        'it': 'impossibile raggiungere {provider}: {detail}',
+        'ja': '{provider} に接続できませんでした: {detail}',
+        'zh': '无法连接 {provider}：{detail}',
+        'hi': '{provider} से संपर्क नहीं हो सका: {detail}',
+        'ar': 'تعذّر الوصول إلى {provider}: {detail}',
+    },
+    TRANSCRIPTION_REFUSED: {
+        'es': 'la transcripción lo rechazó: HTTP {code} {detail}',
+        'fr': "la transcription l'a refusé : HTTP {code} {detail}",
+        'de': 'die Transkription hat es abgelehnt: HTTP {code} {detail}',
+        'pt': 'a transcrição recusou: HTTP {code} {detail}',
+        'it': 'la trascrizione lo ha rifiutato: HTTP {code} {detail}',
+        'ja': '文字起こしに拒否されました: HTTP {code} {detail}',
+        'zh': '转写服务拒绝了请求：HTTP {code} {detail}',
+        'hi': 'प्रतिलेखन ने अस्वीकार किया: HTTP {code} {detail}',
+        'ar': 'رفضت خدمة التفريغ الطلب: HTTP {code} {detail}',
+    },
+    TRANSCRIPTION_UNREACHABLE: {
+        'es': 'no se pudo contactar con el servicio de transcripción: {detail}',
+        'fr': 'impossible de joindre le service de transcription : {detail}',
+        'de': 'der Transkriptionsdienst war nicht erreichbar: {detail}',
+        'pt': 'não foi possível contactar o serviço de transcrição: {detail}',
+        'it': 'impossibile raggiungere il servizio di trascrizione: {detail}',
+        'ja': '文字起こしサービスに接続できませんでした: {detail}',
+        'zh': '无法连接转写服务：{detail}',
+        'hi': 'प्रतिलेखन सेवा से संपर्क नहीं हो सका: {detail}',
+        'ar': 'تعذّر الوصول إلى خدمة التفريغ: {detail}',
+    },
+    SHORT_STRING_REQUIRED: {
+        'es': "'{field}' debe ser una cadena corta y simple (≤{max} "
+              'caracteres, sin saltos de línea ni signos más allá de '
+              '._-()/;:+) — se recibió {got}',
+        'fr': "'{field}' doit être une chaîne courte et simple (≤{max} "
+              'caractères, sans retour à la ligne ni ponctuation au-delà de '
+              '._-()/;:+) — reçu {got}',
+        'de': "'{field}' muss eine kurze einfache Zeichenkette sein (≤{max} "
+              'Zeichen, keine Zeilenumbrüche, keine Zeichen außer '
+              '._-()/;:+) — erhalten: {got}',
+        'pt': "'{field}' deve ser um texto curto e simples (≤{max} "
+              'caracteres, sem quebras de linha nem pontuação além de '
+              '._-()/;:+) — recebido {got}',
+        'it': "'{field}' deve essere una stringa breve e semplice (≤{max} "
+              'caratteri, senza a capo né punteggiatura oltre '
+              '._-()/;:+) — ricevuto {got}',
+        'ja': "'{field}' は短い単純な文字列にしてください（{max} 文字以内、"
+              '改行や ._-()/;:+ 以外の記号は不可）— 受け取った値: {got}',
+        'zh': "'{field}' 必须是简短的纯字符串（≤{max} 个字符，不含换行，"
+              '标点仅限 ._-()/;:+）— 收到 {got}',
+        'hi': "'{field}' एक छोटी सादी स्ट्रिंग होनी चाहिए (≤{max} अक्षर, "
+              'कोई नई पंक्ति नहीं, विराम केवल ._-()/;:+) — मिला {got}',
+        'ar': "'{field}' يجب أن يكون نصًا قصيرًا بسيطًا (≤{max} حرفًا، دون "
+              'أسطر جديدة أو علامات غير ._-()/;:+) — الوارد {got}',
+    },
+    OP_SHAPE: {
+        'es': "'op' debe tener la forma 'VERB /template/path' — se recibió {got}",
+        'fr': "'op' doit avoir la forme 'VERB /template/path' — reçu {got}",
+        'de': "'op' muss die Form 'VERB /template/path' haben — erhalten: {got}",
+        'pt': "'op' deve ter a forma 'VERB /template/path' — recebido {got}",
+        'it': "'op' deve avere la forma 'VERB /template/path' — ricevuto {got}",
+        'ja': "'op' は 'VERB /template/path' の形式にしてください — 受け取った値: {got}",
+        'zh': "'op' 必须形如 'VERB /template/path' — 收到 {got}",
+        'hi': "'op' का रूप 'VERB /template/path' होना चाहिए — मिला {got}",
+        'ar': "'op' يجب أن يكون بالشكل 'VERB /template/path' — الوارد {got}",
+    },
+    OP_IDENTIFIER_SEGMENT: {
+        'es': "'op' contiene un segmento que parece un identificador ({got}) "
+              '— la redacción del cliente ha dejado de funcionar, y '
+              'aceptarlo lo ocultaría',
+        'fr': "'op' contient un segment qui ressemble à un identifiant "
+              '({got}) — la rédaction côté client ne fonctionne plus, et '
+              "l'accepter le masquerait",
+        'de': "'op' enthält ein Segment, das wie ein Bezeichner aussieht "
+              '({got}) — die Schwärzung des Clients funktioniert nicht '
+              'mehr, und es anzunehmen würde das verbergen',
+        'pt': "'op' contém um segmento que parece um identificador ({got}) "
+              '— a redação do cliente deixou de funcionar, e aceitá-lo '
+              'esconderia isso',
+        'it': "'op' contiene un segmento che sembra un identificatore "
+              '({got}) — la redazione del client ha smesso di funzionare, '
+              'e accettarlo lo nasconderebbe',
+        'ja': "'op' に識別子のようなセグメントが含まれています（{got}）— "
+              'クライアントの伏せ字処理が機能しておらず、受け入れると'
+              'それが隠れてしまいます',
+        'zh': "'op' 包含一个看似标识符的片段（{got}）— 客户端的脱敏已失效，"
+              '接受它会掩盖这一点',
+        'hi': "'op' में एक खंड है जो पहचानकर्ता जैसा दिखता है ({got}) — "
+              'क्लाइंट की गोपन प्रक्रिया काम नहीं कर रही, और इसे स्वीकारना '
+              'उसे छिपा देगा',
+        'ar': "'op' يحتوي على مقطع يبدو كمعرّف ({got}) — إخفاء البيانات لدى "
+              'العميل توقف عن العمل، وقبوله سيخفي ذلك',
+    },
+    UNKNOWN_KEYS: {
+        'es': 'claves de primer nivel desconocidas: {keys} — esta entrada '
+              'acepta exactamente {accepts}. Una clave nueva se rechaza en '
+              'vez de ignorarse: descartarla en silencio dejaría al cliente '
+              'enviando contenido sin enterarse nunca de que nadie lo quería.',
+        'fr': 'clés de premier niveau inconnues : {keys} — cette entrée '
+              "accepte exactement {accepts}. Une nouvelle clé est refusée "
+              "plutôt qu'ignorée : la supprimer en silence laisserait le "
+              "client envoyer du contenu sans jamais apprendre que personne "
+              "n'en voulait.",
+        'de': 'unbekannte Schlüssel auf oberster Ebene: {keys} — diese '
+              'Annahme akzeptiert genau {accepts}. Ein neuer Schlüssel wird '
+              'abgelehnt statt ignoriert: ihn still zu verwerfen ließe einen '
+              'Client Inhalte senden, ohne je zu erfahren, dass sie niemand '
+              'wollte.',
+        'pt': 'chaves de nível superior desconhecidas: {keys} — esta entrada '
+              'aceita exatamente {accepts}. Uma chave nova é recusada em vez '
+              'de ignorada: descartá-la em silêncio deixaria o cliente a '
+              'enviar conteúdo sem nunca saber que ninguém o queria.',
+        'it': 'chiavi di primo livello sconosciute: {keys} — questo intake '
+              'accetta esattamente {accepts}. Una chiave nuova viene '
+              'rifiutata anziché ignorata: scartarla in silenzio lascerebbe '
+              'il client a inviare contenuti senza mai sapere che nessuno li '
+              'voleva.',
+        'ja': '不明なトップレベルキー: {keys} — この受け口が受け付けるのは '
+              '{accepts} だけです。新しいキーは無視ではなく拒否されます。'
+              '黙って捨てると、誰も求めていない内容をクライアントが送り'
+              '続け、それを知る機会が失われます。',
+        'zh': '未知的顶层键：{keys} — 此入口只接受 {accepts}。新键会被拒绝'
+              '而不是被忽略：静默丢弃会让客户端持续发送没人需要的内容，'
+              '且永远不会得知。',
+        'hi': 'अज्ञात शीर्ष-स्तरीय कुंजियाँ: {keys} — यह इनटेक केवल {accepts} '
+              'स्वीकार करता है। नई कुंजी को अनदेखा करने के बजाय अस्वीकार '
+              'किया जाता है: चुपचाप हटाने से क्लाइंट सामग्री भेजता रहेगा और '
+              'कभी नहीं जान पाएगा कि वह किसी को नहीं चाहिए थी।',
+        'ar': 'مفاتيح عليا غير معروفة: {keys} — هذا المدخل يقبل بالضبط '
+              '{accepts}. المفتاح الجديد يُرفض بدل تجاهله: إسقاطه بصمت '
+              'سيترك العميل يرسل محتوى دون أن يعلم أبدًا أن أحدًا لم يرده.',
+    },
+    MISSING_KEYS: {
+        'es': 'faltan las claves {keys}',
+        'fr': 'clés manquantes : {keys}',
+        'de': 'fehlende Schlüssel: {keys}',
+        'pt': 'faltam as chaves {keys}',
+        'it': 'chiavi mancanti: {keys}',
+        'ja': 'キーが不足しています: {keys}',
+        'zh': '缺少键：{keys}',
+        'hi': 'कुंजियाँ अनुपस्थित हैं: {keys}',
+        'ar': 'مفاتيح ناقصة: {keys}',
+    },
+    MAX_PROBLEMS_PER_REPORT: {
+        'es': 'como máximo {max} problemas por informe',
+        'fr': 'au plus {max} problèmes par rapport',
+        'de': 'höchstens {max} Probleme pro Bericht',
+        'pt': 'no máximo {max} problemas por relatório',
+        'it': 'al massimo {max} problemi per segnalazione',
+        'ja': '1 レポートにつき最大 {max} 件までです',
+        'zh': '每份报告最多 {max} 个问题',
+        'hi': 'प्रति रिपोर्ट अधिकतम {max} समस्याएँ',
+        'ar': 'بحد أقصى {max} مشكلة لكل تقرير',
+    },
+    UNKNOWN_PROBLEM_KEYS: {
+        'es': 'claves de problema desconocidas: {keys}',
+        'fr': 'clés de problème inconnues : {keys}',
+        'de': 'unbekannte Problem-Schlüssel: {keys}',
+        'pt': 'chaves de problema desconhecidas: {keys}',
+        'it': 'chiavi di problema sconosciute: {keys}',
+        'ja': '不明な問題キー: {keys}',
+        'zh': '未知的问题键：{keys}',
+        'hi': 'अज्ञात समस्या कुंजियाँ: {keys}',
+        'ar': 'مفاتيح مشكلة غير معروفة: {keys}',
+    },
+    PROBLEM_MISSING_KEYS: {
+        'es': 'al problema le faltan las claves {keys}',
+        'fr': 'clés manquantes pour le problème : {keys}',
+        'de': 'dem Problem fehlen die Schlüssel: {keys}',
+        'pt': 'faltam chaves ao problema: {keys}',
+        'it': 'al problema mancano le chiavi: {keys}',
+        'ja': '問題にキーが不足しています: {keys}',
+        'zh': '问题缺少键：{keys}',
+        'hi': 'समस्या में कुंजियाँ अनुपस्थित हैं: {keys}',
+        'ar': 'المشكلة تنقصها المفاتيح: {keys}',
+    },
+    NO_SUCH_DEVICE: {
+        'es': 'no hay ningún dispositivo llamado {device} en esta cuenta',
+        'fr': 'aucun appareil nommé {device} sur ce compte',
+        'de': 'kein Gerät namens {device} auf diesem Konto',
+        'pt': 'não há nenhum dispositivo chamado {device} nesta conta',
+        'it': 'nessun dispositivo chiamato {device} su questo account',
+        'ja': 'このアカウントに {device} という機器はありません',
+        'zh': '此账户上没有名为 {device} 的设备',
+        'hi': 'इस खाते पर {device} नाम का कोई उपकरण नहीं है',
+        'ar': 'لا يوجد جهاز باسم {device} على هذا الحساب',
+    },
+    UNKNOWN_MIC_TYPE: {
+        'es': 'tipo de micrófono desconocido {got} — uno de {choices}',
+        'fr': 'type de micro inconnu {got} — parmi {choices}',
+        'de': 'unbekannter Mikrofontyp {got} — einer von {choices}',
+        'pt': 'tipo de microfone desconhecido {got} — um de {choices}',
+        'it': 'tipo di microfono sconosciuto {got} — uno tra {choices}',
+        'ja': '不明なマイクの種類 {got} — 次のいずれか: {choices}',
+        'zh': '未知的麦克风类型 {got} — 应为 {choices} 之一',
+        'hi': 'अज्ञात माइक्रोफ़ोन प्रकार {got} — इनमें से एक: {choices}',
+        'ar': 'نوع ميكروفون غير معروف {got} — أحد التالي: {choices}',
+    },
+    ROOM_MIC_REFUSED: {
+        'es': 'un micrófono {mic_type} apunta a una habitación, no a ti. '
+              'Todos los que capta estarían prestando su voz sin que se les '
+              'pregunte, así que no puede ser el canal 2. Uno llevado puesto '
+              'o de pinza sí puede: {choices}',
+        'fr': 'un micro {mic_type} est pointé vers une pièce, pas vers '
+              "vous. Tous ceux qu'il capte prêteraient leur voix sans qu'on "
+              'le leur demande, il ne peut donc pas être le canal 2. Un '
+              'micro porté ou à pince le peut : {choices}',
+        'de': 'ein {mic_type}-Mikrofon zeigt auf einen Raum, nicht auf '
+              'dich. Alle, die es aufnimmt, würden ihre Stimme ungefragt '
+              'hergeben, deshalb kann es nicht Kanal 2 sein. Ein getragenes '
+              'oder angestecktes Mikrofon kann es: {choices}',
+        'pt': 'um microfone {mic_type} aponta para uma sala, não para ti. '
+              'Todos os que ele capta estariam a emprestar a voz sem serem '
+              'perguntados, por isso não pode ser o canal 2. Um usado no '
+              'corpo ou de prender pode: {choices}',
+        'it': 'un microfono {mic_type} è puntato su una stanza, non su di '
+              'te. Chiunque venga captato presterebbe la voce senza essere '
+              'stato interpellato, quindi non può essere il canale 2. Uno '
+              'indossato o a clip può: {choices}',
+        'ja': '{mic_type} マイクはあなたではなく部屋に向いています。拾われる'
+              '人はみな、同意なく声を貸すことになるため、チャンネル 2 には'
+              'できません。身に着けるマイクやクリップ式ならできます: '
+              '{choices}',
+        'zh': '{mic_type} 麦克风对着的是房间，不是你。它拾取到的每个人都'
+              '在未被询问的情况下出借自己的声音，所以它不能作为通道 2。'
+              '佩戴式或夹式麦克风可以：{choices}',
+        'hi': '{mic_type} माइक्रोफ़ोन कमरे की ओर है, आपकी ओर नहीं। जो भी '
+              'इसमें सुनाई देगा वह बिना पूछे अपनी आवाज़ दे रहा होगा, इसलिए '
+              'यह चैनल 2 नहीं हो सकता। पहनने वाला या क्लिप वाला हो सकता '
+              'है: {choices}',
+        'ar': 'ميكروفون {mic_type} موجه نحو غرفة، لا نحوك. كل من يلتقطه '
+              'سيُعير صوته دون أن يُسأل، لذا لا يمكن أن يكون القناة 2. '
+              'الميكروفون المحمول أو المثبت بمشبك يمكنه ذلك: {choices}',
+    },
+    STATIONARY_DEVICE: {
+        'es': '{device} está registrado como dispositivo fijo. Algo '
+              'atornillado a una habitación oye la habitación, sea cual sea '
+              'el micrófono que lleve',
+        'fr': "{device} est enregistré comme appareil fixe. Ce qui est fixé "
+              'à une pièce entend la pièce, quel que soit le micro qui '
+              "l'équipe",
+        'de': '{device} ist als stationäres Gerät registriert. Was in einem '
+              'Raum verschraubt ist, hört den Raum, egal welches Mikrofon '
+              'darin steckt',
+        'pt': '{device} está registado como dispositivo fixo. Algo '
+              'aparafusado a uma sala ouve a sala, seja qual for o '
+              'microfone que tiver',
+        'it': '{device} è registrato come dispositivo fisso. Qualcosa di '
+              'fissato a una stanza sente la stanza, qualunque microfono '
+              'contenga',
+        'ja': '{device} は据え置き機器として登録されています。部屋に固定'
+              'されたものは、どんなマイクが入っていても部屋の音を聞きます',
+        'zh': '{device} 登记为固定设备。固定在房间里的东西听到的是整个'
+              '房间，无论装的是哪种麦克风',
+        'hi': '{device} स्थिर उपकरण के रूप में पंजीकृत है। कमरे में लगा '
+              'हुआ कुछ भी कमरे को सुनता है, चाहे उसमें कोई भी माइक्रोफ़ोन हो',
+        'ar': '{device} مسجل كجهاز ثابت. ما هو مثبت في غرفة يسمع الغرفة، '
+              'أيًا كان الميكروفون فيه',
+    },
+    MIC_ALREADY_ON_CALL: {
+        'es': 'tu {device} ya lleva la llamada — un micrófono no puede ser '
+              'los dos canales. Conecta otro como canal 2, o pasa la '
+              'llamada a otro aparato',
+        'fr': 'votre {device} porte déjà l’appel — un micro ne peut pas '
+              'être les deux canaux. Attachez-en un autre comme canal 2, ou '
+              "prenez l'appel sur autre chose",
+        'de': 'dein {device} trägt bereits den Anruf — ein Mikrofon kann '
+              'nicht beide Kanäle sein. Häng ein anderes als Kanal 2 an, '
+              'oder nimm den Anruf auf etwas anderem an',
+        'pt': 'o teu {device} já leva a chamada — um microfone não pode ser '
+              'os dois canais. Liga outro como canal 2, ou atende a chamada '
+              'noutro aparelho',
+        'it': 'il tuo {device} sta già portando la chiamata — un microfono '
+              'non può essere entrambi i canali. Collegane un altro come '
+              'canale 2, o prendi la chiamata su altro',
+        'ja': 'あなたの {device} はすでに通話を担っています — 1 本のマイクが'
+              '両方のチャンネルにはなれません。別のマイクをチャンネル 2 と'
+              'して接続するか、通話を別の機器に移してください',
+        'zh': '你的 {device} 已经承载着通话 — 一个麦克风不能同时是两个'
+              '通道。请再接一个作为通道 2，或改用其他设备接听',
+        'hi': 'आपका {device} पहले से कॉल संभाल रहा है — एक माइक्रोफ़ोन दोनों '
+              'चैनल नहीं हो सकता। चैनल 2 के लिए दूसरा जोड़ें, या कॉल किसी '
+              'और उपकरण पर लें',
+        'ar': 'جهازك {device} يحمل المكالمة بالفعل — ميكروفون واحد لا يمكن '
+              'أن يكون القناتين. صِل آخر كقناة 2، أو خذ المكالمة على جهاز '
+              'آخر',
+    },
+    REASON_MUST_BE: {
+        'es': 'el motivo debe ser uno de {choices} — lo que ocupa tu '
+              'micrófono es lo que justifica prestar otro',
+        'fr': 'le motif doit être parmi {choices} — ce qui occupe votre '
+              "micro est ce qui justifie d'en prêter un autre",
+        'de': 'der Grund muss einer von {choices} sein — was dein Mikrofon '
+              'belegt, ist die Rechtfertigung, ein weiteres zu leihen',
+        'pt': 'o motivo deve ser um de {choices} — o que ocupa o teu '
+              'microfone é o que justifica emprestar outro',
+        'it': 'il motivo deve essere uno tra {choices} — ciò che occupa il '
+              'tuo microfono è ciò che giustifica prestarne un altro',
+        'ja': '理由は次のいずれかにしてください: {choices} — あなたのマイクを'
+              '塞いでいるものこそが、もう 1 本を貸す理由になります',
+        'zh': '原因必须是 {choices} 之一 — 占用你麦克风的事，正是出借另'
+              '一个的理由',
+        'hi': 'कारण इनमें से एक होना चाहिए: {choices} — आपके माइक्रोफ़ोन को '
+              'जो घेर रहा है वही दूसरा उधार देने का औचित्य है',
+        'ar': 'السبب يجب أن يكون أحد التالي: {choices} — ما يشغل '
+              'ميكروفونك هو ما يبرر إعارة آخر',
+    },
+    SPEAKER_ROUTE_REFUSED: {
+        'es': 'no mientras la llamada esté en {route}. En altavoz el reloj '
+              'oye a la persona con la que hablas, y no es usuaria aquí — '
+              'nunca se le preguntó y no podría revocarlo. Cambia a un '
+              'auricular y podrá escucharte solo a ti',
+        'fr': "pas tant que l'appel est sur {route}. En haut-parleur la "
+              'montre entend votre interlocuteur, qui n’est pas un '
+              "utilisateur ici — on ne le lui a jamais demandé et il ne "
+              'pourrait pas le révoquer. Passez à une oreillette ou un '
+              'casque et elle ne pourra écouter que vous',
+        'de': 'nicht, solange der Anruf auf {route} läuft. Über den '
+              'Lautsprecher hört die Uhr dein Gegenüber, das hier kein '
+              'Nutzer ist — es wurde nie gefragt und könnte nicht '
+              'widerrufen. Wechsle auf Hörer oder Headset, dann hört sie '
+              'nur dich',
+        'pt': 'não enquanto a chamada estiver em {route}. Em alta-voz o '
+              'relógio ouve a pessoa com quem falas, e ela não é utilizadora '
+              'aqui — nunca lhe perguntaram e não poderia revogar. Passa '
+              'para um auricular e ele passa a ouvir-te só a ti',
+        'it': 'non finché la chiamata è su {route}. In vivavoce '
+              "l'orologio sente il tuo interlocutore, che qui non è un "
+              'utente — non gli è mai stato chiesto e non potrebbe '
+              'revocarlo. Passa a un auricolare o a cuffie e potrà '
+              'ascoltare solo te',
+        'ja': '通話が {route} にある間はできません。スピーカーでは、時計が'
+              '通話相手の声も聞きますが、その人はここのユーザーではありま'
+              'せん — 同意を求められたことも、取り消すこともできません。'
+              'イヤホンかヘッドセットに切り替えれば、あなただけを聞けます',
+        'zh': '通话在 {route} 上时不行。开着扬声器，手表会听到与你通话的'
+              '人，而对方不是这里的用户 — 从未被询问，也无法撤回。换成'
+              '耳机后它就只听你一个人',
+        'hi': 'जब कॉल {route} पर हो तब नहीं। स्पीकर पर घड़ी उस व्यक्ति को '
+              'भी सुनती है जिससे आप बात कर रहे हैं, और वह यहाँ उपयोगकर्ता '
+              'नहीं है — उससे कभी पूछा नहीं गया और वह इसे रद्द नहीं कर '
+              'सकता। इयरपीस या हेडसेट पर जाएँ तो यह केवल आपको सुनेगी',
+        'ar': 'ليس والمكالمة على {route}. على مكبر الصوت تسمع الساعة من '
+              'تتحدث معه، وهو ليس مستخدمًا هنا — لم يُسأل قط ولا يمكنه '
+              'الإلغاء. انتقل إلى سماعة أذن أو رأس فتسمعك وحدك',
+    },
+    UNKNOWN_METRIC: {
+        'es': 'métrica desconocida {got}',
+        'fr': 'métrique inconnue {got}',
+        'de': 'unbekannte Messgröße {got}',
+        'pt': 'métrica desconhecida {got}',
+        'it': 'metrica sconosciuta {got}',
+        'ja': '不明な指標 {got}',
+        'zh': '未知指标 {got}',
+        'hi': 'अज्ञात मीट्रिक {got}',
+        'ar': 'مقياس غير معروف {got}',
+    },
+    MAIL_SERVER_REFUSED: {
+        'es': 'el servidor de correo lo rechazó: {detail}',
+        'fr': "le serveur de courrier l'a refusé : {detail}",
+        'de': 'der Mailserver hat es abgelehnt: {detail}',
+        'pt': 'o servidor de correio recusou: {detail}',
+        'it': 'il server di posta lo ha rifiutato: {detail}',
+        'ja': 'メールサーバーに拒否されました: {detail}',
+        'zh': '邮件服务器拒绝了它：{detail}',
+        'hi': 'मेल सर्वर ने अस्वीकार किया: {detail}',
+        'ar': 'رفضه خادم البريد: {detail}',
+    },
+    SIGNATURE_MUST_MATCH: {
+        'es': 'la firma debe coincidir con el nombre inscrito ({name})',
+        'fr': "la signature doit correspondre au nom inscrit ({name})",
+        'de': 'die Unterschrift muss dem eingetragenen Namen entsprechen '
+              '({name})',
+        'pt': 'a assinatura deve corresponder ao nome inscrito ({name})',
+        'it': 'la firma deve corrispondere al nome registrato ({name})',
+        'ja': '署名は登録された名前と一致する必要があります（{name}）',
+        'zh': '签名必须与登记的姓名一致（{name}）',
+        'hi': 'हस्ताक्षर पंजीकृत नाम से मेल खाना चाहिए ({name})',
+        'ar': 'يجب أن يطابق التوقيع الاسم المسجل ({name})',
+    },
+    SOURCE_NOT_CONSENTED: {
+        'es': 'la fuente {source} no tiene consentimiento para este usuario',
+        'fr': "la source {source} n'a pas de consentement pour cet "
+              'utilisateur',
+        'de': 'für die Quelle {source} liegt keine Einwilligung dieses '
+              'Nutzers vor',
+        'pt': 'a fonte {source} não tem consentimento para este utilizador',
+        'it': 'la fonte {source} non ha il consenso per questo utente',
+        'ja': 'ソース {source} はこのユーザーについて同意されていません',
+        'zh': '来源 {source} 未获得该用户的同意',
+        'hi': 'स्रोत {source} के लिए इस उपयोगकर्ता की सहमति नहीं है',
+        'ar': 'المصدر {source} غير مأذون به لهذا المستخدم',
+    },
+    COULD_NOT_FETCH: {
+        'es': 'no se pudo obtener — {kind}: {detail}',
+        'fr': 'récupération impossible — {kind} : {detail}',
+        'de': 'Abruf fehlgeschlagen — {kind}: {detail}',
+        'pt': 'não foi possível obter — {kind}: {detail}',
+        'it': 'impossibile recuperare — {kind}: {detail}',
+        'ja': '取得できませんでした — {kind}: {detail}',
+        'zh': '无法获取 — {kind}：{detail}',
+        'hi': 'प्राप्त नहीं हो सका — {kind}: {detail}',
+        'ar': 'تعذّر الجلب — {kind}: {detail}',
+    },
+    UNKNOWN_CONNECTOR: {
+        'es': 'conector desconocido: {provider}/{app}',
+        'fr': 'connecteur inconnu : {provider}/{app}',
+        'de': 'unbekannter Connector: {provider}/{app}',
+        'pt': 'conector desconhecido: {provider}/{app}',
+        'it': 'connettore sconosciuto: {provider}/{app}',
+        'ja': '不明なコネクタ: {provider}/{app}',
+        'zh': '未知连接器：{provider}/{app}',
+        'hi': 'अज्ञात कनेक्टर: {provider}/{app}',
+        'ar': 'موصل غير معروف: {provider}/{app}',
+    },
+    APP_DOES_NOT_OFFER: {
+        'es': '{app} no ofrece: {capabilities}',
+        'fr': "{app} n'offre pas : {capabilities}",
+        'de': '{app} bietet nicht an: {capabilities}',
+        'pt': '{app} não oferece: {capabilities}',
+        'it': '{app} non offre: {capabilities}',
+        'ja': '{app} は提供していません: {capabilities}',
+        'zh': '{app} 不提供：{capabilities}',
+        'hi': '{app} यह प्रदान नहीं करता: {capabilities}',
+        'ar': '{app} لا يقدم: {capabilities}',
+    },
+    NO_COLLECT_SUPPORT: {
+        'es': '{app} no admite recopilar contexto',
+        'fr': '{app} ne prend pas en charge la collecte de contexte',
+        'de': '{app} unterstützt kein Einsammeln von Kontext',
+        'pt': '{app} não suporta recolher contexto',
+        'it': '{app} non supporta la raccolta di contesto',
+        'ja': '{app} はコンテキストの収集に対応していません',
+        'zh': '{app} 不支持收集上下文',
+        'hi': '{app} संदर्भ एकत्र करने का समर्थन नहीं करता',
+        'ar': '{app} لا يدعم جمع السياق',
+    },
+    CAPABILITY_NOT_GRANTED: {
+        'es': 'a este conector de {app} no se le concedió {capability}',
+        'fr': "ce connecteur {app} n'a pas reçu {capability}",
+        'de': 'diesem {app}-Connector wurde {capability} nicht gewährt',
+        'pt': 'a este conector de {app} não foi concedido {capability}',
+        'it': 'a questo connettore {app} non è stato concesso {capability}',
+        'ja': 'この {app} コネクタには {capability} が許可されていません',
+        'zh': '这个 {app} 连接器未被授予 {capability}',
+        'hi': 'इस {app} कनेक्टर को {capability} नहीं दिया गया',
+        'ar': 'هذا الموصل {app} لم يُمنح {capability}',
+    },
+    NO_SUCH_FACE: {
+        'es': 'no existe la cara {got}; una de {choices}',
+        'fr': 'aucune face {got} ; parmi {choices}',
+        'de': 'keine Kachel {got}; eine von {choices}',
+        'pt': 'não existe a face {got}; uma de {choices}',
+        'it': 'nessuna faccia {got}; una tra {choices}',
+        'ja': '{got} という面はありません。次のいずれか: {choices}',
+        'zh': '没有 {got} 这个面板；应为 {choices} 之一',
+        'hi': '{got} नाम का कोई फ़ेस नहीं; इनमें से एक: {choices}',
+        'ar': 'لا يوجد وجه {got}؛ أحد التالي: {choices}',
+    },
+    PANE_BOTTOM_CORNER: {
+        'es': 'el panel va en una esquina inferior — {choices}',
+        'fr': 'le panneau se place dans un coin inférieur — {choices}',
+        'de': 'die Leiste sitzt in einer unteren Ecke — {choices}',
+        'pt': 'o painel fica num canto inferior — {choices}',
+        'it': 'il pannello sta in un angolo inferiore — {choices}',
+        'ja': 'パネルは下側の隅に置かれます — {choices}',
+        'zh': '面板位于底部角落 — {choices}',
+        'hi': 'पैन नीचे के किसी कोने में रहता है — {choices}',
+        'ar': 'اللوحة تكون في زاوية سفلية — {choices}',
+    },
+    UNKNOWN_STATE: {
+        'es': 'estado desconocido {got}; uno de {choices}',
+        'fr': 'état inconnu {got} ; parmi {choices}',
+        'de': 'unbekannter Zustand {got}; einer von {choices}',
+        'pt': 'estado desconhecido {got}; um de {choices}',
+        'it': 'stato sconosciuto {got}; uno tra {choices}',
+        'ja': '不明な状態 {got}。次のいずれか: {choices}',
+        'zh': '未知状态 {got}；应为 {choices} 之一',
+        'hi': 'अज्ञात स्थिति {got}; इनमें से एक: {choices}',
+        'ar': 'حالة غير معروفة {got}؛ أحد التالي: {choices}',
+    },
+    FACE_NOT_CARRIED: {
+        'es': '{got} no es una de las caras que lleva este panel',
+        'fr': "{got} n'est pas une des faces portées par ce panneau",
+        'de': '{got} gehört nicht zu den Kacheln dieser Leiste',
+        'pt': '{got} não é uma das faces que este painel transporta',
+        'it': '{got} non è una delle facce di questo pannello',
+        'ja': '{got} はこのドックが載せている面ではありません',
+        'zh': '{got} 不在这个面板承载的面之中',
+        'hi': '{got} इस डॉक की फ़ेसों में से नहीं है',
+        'ar': '{got} ليس من الوجوه التي تحملها هذه اللوحة',
+    },
+    FACE_CANNOT_BE_REMOVED: {
+        'es': '{face} no se puede quitar del panel — es la cara que aparece '
+              'cuando algo va mal, y un panel que alguien apartó hace meses '
+              'no es una decisión que tomara sobre el día en que salta',
+        'fr': '{face} ne peut pas être retirée du panneau — c’est la face '
+              'qui apparaît quand quelque chose va mal, et un panneau '
+              'écarté il y a des mois n’est pas une décision prise pour le '
+              'jour où il se déclenche',
+        'de': '{face} kann nicht aus der Leiste entfernt werden — es ist '
+              'die Kachel, die erscheint, wenn etwas nicht stimmt, und eine '
+              'vor Monaten beiseitegeschobene Leiste ist keine Entscheidung '
+              'über den Tag, an dem sie anschlägt',
+        'pt': '{face} não pode ser removida do painel — é a face que '
+              'aparece quando algo está mal, e um painel que alguém afastou '
+              'há meses não é uma decisão sobre o dia em que ele dispara',
+        'it': '{face} non può essere tolta dal pannello — è la faccia che '
+              'compare quando qualcosa va male, e un pannello messo da '
+              'parte mesi fa non è una decisione presa sul giorno in cui '
+              'scatta',
+        'ja': '{face} はパネルから外せません — 何かが起きたときに現れる面'
+              'であり、何か月も前に脇へ寄せた設定は、それが鳴る日について'
+              'の判断ではありません',
+        'zh': '{face} 不能从面板中移除 — 它是出问题时出现的那个面，几个月'
+              '前被人挪开的面板并不是对它响起那天做出的决定',
+        'hi': '{face} को पैन से हटाया नहीं जा सकता — यही वह फ़ेस है जो कुछ '
+              'गलत होने पर दिखती है, और महीनों पहले किनारे किया गया पैन उस '
+              'दिन के बारे में लिया गया निर्णय नहीं है जिस दिन वह बजे',
+        'ar': '{face} لا يمكن إزالته من اللوحة — إنه الوجه الذي يظهر حين '
+              'يسوء شيء، ولوحة أزاحها أحدهم قبل أشهر ليست قرارًا اتخذه '
+              'بشأن اليوم الذي تنطلق فيه',
+    },
+    FACE_NEEDS_A_SURFACE: {
+        'es': 'la cara {face} trata de una en particular — dile cuál',
+        'fr': 'la face {face} concerne une en particulier — dites-lui '
+              'laquelle',
+        'de': 'die Kachel {face} bezieht sich auf eine bestimmte — sag ihr '
+              'welche',
+        'pt': 'a face {face} é sobre uma em particular — diz-lhe qual',
+        'it': 'la faccia {face} riguarda una in particolare — dille quale',
+        'ja': '{face} の面は特定の対象についてのものです — どれかを指定して'
+              'ください',
+        'zh': '{face} 面针对的是特定的一个 — 请告诉它是哪一个',
+        'hi': '{face} फ़ेस किसी विशेष के बारे में है — बताएँ किसके',
+        'ar': 'وجه {face} يخص واحدًا بعينه — حدد أيها',
+    },
+    ROTA_NOT_JSON: {
+        'es': 'JIM_SITE_ROTA no es JSON válido: {detail}',
+        'fr': "JIM_SITE_ROTA n'est pas du JSON valide : {detail}",
+        'de': 'JIM_SITE_ROTA ist kein gültiges JSON: {detail}',
+        'pt': 'JIM_SITE_ROTA não é JSON válido: {detail}',
+        'it': 'JIM_SITE_ROTA non è JSON valido: {detail}',
+        'ja': 'JIM_SITE_ROTA が有効な JSON ではありません: {detail}',
+        'zh': 'JIM_SITE_ROTA 不是有效的 JSON：{detail}',
+        'hi': 'JIM_SITE_ROTA मान्य JSON नहीं है: {detail}',
+        'ar': 'JIM_SITE_ROTA ليس JSON صالحًا: {detail}',
+    },
+    ROTA_ENTRY_NEEDS_NAME: {
+        'es': 'la entrada {index} de la rota necesita un nombre',
+        'fr': "l'entrée {index} du planning a besoin d'un nom",
+        'de': 'Rota-Eintrag {index} braucht einen Namen',
+        'pt': 'a entrada {index} da escala precisa de um nome',
+        'it': 'la voce {index} del turno ha bisogno di un nome',
+        'ja': 'ロタの項目 {index} には名前が必要です',
+        'zh': '排班条目 {index} 需要一个名字',
+        'hi': 'रोटा प्रविष्टि {index} को एक नाम चाहिए',
+        'ar': 'مدخل الجدول {index} يحتاج إلى اسم',
+    },
+    UNKNOWN_DAY_RANGE: {
+        'es': 'rango de días desconocido {got}',
+        'fr': 'plage de jours inconnue {got}',
+        'de': 'unbekannter Tagesbereich {got}',
+        'pt': 'intervalo de dias desconhecido {got}',
+        'it': 'intervallo di giorni sconosciuto {got}',
+        'ja': '不明な曜日範囲 {got}',
+        'zh': '未知的日期范围 {got}',
+        'hi': 'अज्ञात दिन-सीमा {got}',
+        'ar': 'نطاق أيام غير معروف {got}',
+    },
+    UNKNOWN_DAY: {
+        'es': 'día desconocido {got}',
+        'fr': 'jour inconnu {got}',
+        'de': 'unbekannter Tag {got}',
+        'pt': 'dia desconhecido {got}',
+        'it': 'giorno sconosciuto {got}',
+        'ja': '不明な曜日 {got}',
+        'zh': '未知的日子 {got}',
+        'hi': 'अज्ञात दिन {got}',
+        'ar': 'يوم غير معروف {got}',
+    },
+    UNREADABLE_TIME: {
+        'es': 'hora ilegible {got} — usa HH:MM',
+        'fr': 'heure illisible {got} — utilisez HH:MM',
+        'de': 'unlesbare Zeit {got} — HH:MM verwenden',
+        'pt': 'hora ilegível {got} — usa HH:MM',
+        'it': 'orario illeggibile {got} — usa HH:MM',
+        'ja': '読み取れない時刻 {got} — HH:MM で指定してください',
+        'zh': '无法读取的时间 {got} — 请用 HH:MM',
+        'hi': 'अपठनीय समय {got} — HH:MM प्रयोग करें',
+        'ar': 'وقت غير مقروء {got} — استخدم HH:MM',
+    },
+    UNKNOWN_ACCOUNT_KIND: {
+        'es': 'tipo de cuenta desconocido {got}; se esperaba uno de {choices}',
+        'fr': 'type de compte inconnu {got} ; attendu parmi {choices}',
+        'de': 'unbekannte Kontoart {got}; erwartet: eine von {choices}',
+        'pt': 'tipo de conta desconhecido {got}; esperava-se um de {choices}',
+        'it': 'tipo di conto sconosciuto {got}; atteso uno tra {choices}',
+        'ja': '不明な口座種別 {got}。次のいずれかが必要です: {choices}',
+        'zh': '未知的账户类型 {got}；应为 {choices} 之一',
+        'hi': 'अज्ञात खाता प्रकार {got}; इनमें से एक अपेक्षित: {choices}',
+        'ar': 'نوع حساب غير معروف {got}؛ المتوقع أحد التالي: {choices}',
+    },
+    UNKNOWN_AGGREGATOR: {
+        'es': 'agregador desconocido {got}; este módulo guarda '
+              'consentimientos para {choices}',
+        'fr': 'agrégateur inconnu {got} ; ce module détient des '
+              'consentements pour {choices}',
+        'de': 'unbekannter Aggregator {got}; dieses Modul hält '
+              'Einwilligungen für {choices}',
+        'pt': 'agregador desconhecido {got}; este módulo guarda '
+              'consentimentos para {choices}',
+        'it': 'aggregatore sconosciuto {got}; questo modulo conserva '
+              'consensi per {choices}',
+        'ja': '不明なアグリゲータ {got}。このモジュールが同意を保持するのは '
+              '{choices} です',
+        'zh': '未知的聚合方 {got}；本模块保存的同意仅涵盖 {choices}',
+        'hi': 'अज्ञात एग्रीगेटर {got}; यह मॉड्यूल {choices} के लिए सहमतियाँ '
+              'रखता है',
+        'ar': 'مجمّع غير معروف {got}؛ هذه الوحدة تحفظ الموافقات لـ {choices}',
+    },
+    UNKNOWN_ASSET_CLASSES: {
+        'es': 'clase(s) de activo desconocida(s): {got}; se esperaba entre '
+              '{choices}',
+        'fr': "classe(s) d'actifs inconnue(s) : {got} ; attendu parmi "
+              '{choices}',
+        'de': 'unbekannte Anlageklasse(n): {got}; erwartet unter {choices}',
+        'pt': 'classe(s) de ativos desconhecida(s): {got}; esperava-se '
+              'entre {choices}',
+        'it': 'classe/i di attivo sconosciuta/e: {got}; attese tra {choices}',
+        'ja': '不明な資産クラス: {got}。{choices} のいずれかが必要です',
+        'zh': '未知的资产类别：{got}；应在 {choices} 之中',
+        'hi': 'अज्ञात परिसंपत्ति वर्ग: {got}; {choices} में से अपेक्षित',
+        'ar': 'فئة/فئات أصول غير معروفة: {got}؛ المتوقع من بين {choices}',
+    },
+    NO_AGGREGATOR_CREDENTIALS: {
+        'es': 'este despliegue no tiene credenciales de {aggregator} — el '
+              'consentimiento sigue en pie y sincronizará cuando el '
+              'agregador esté configurado; hasta entonces, deja un extracto '
+              'o registra un saldo a mano',
+        'fr': "ce déploiement ne détient pas d'identifiants {aggregator} — "
+              'le consentement demeure et synchronisera quand '
+              "l'agrégateur sera configuré ; d'ici là, déposez un relevé ou "
+              'notez un solde à la main',
+        'de': 'diese Installation hält keine {aggregator}-Zugangsdaten — '
+              'die Einwilligung bleibt bestehen und synchronisiert, sobald '
+              'der Aggregator eingerichtet ist; bis dahin lege einen '
+              'Kontoauszug ab oder trage einen Stand von Hand ein',
+        'pt': 'esta instalação não guarda credenciais de {aggregator} — o '
+              'consentimento mantém-se e sincronizará quando o agregador '
+              'estiver configurado; até lá, deixa um extrato ou regista um '
+              'saldo à mão',
+        'it': 'questa installazione non detiene credenziali {aggregator} — '
+              "il consenso resta e sincronizzerà quando l'aggregatore sarà "
+              'configurato; fino ad allora, deposita un estratto o annota '
+              'un saldo a mano',
+        'ja': 'この環境は {aggregator} の資格情報を持っていません — 同意は'
+              '有効なままで、アグリゲータが設定されれば同期します。それ'
+              'までは明細を置くか、残高を手で記録してください',
+        'zh': '此部署没有 {aggregator} 的凭据 — 同意仍然有效，待聚合方配置'
+              '好后会同步；在那之前，请上传对账单或手工记录余额',
+        'hi': 'इस परिनियोजन में {aggregator} की साख नहीं है — सहमति बनी '
+              'रहेगी और एग्रीगेटर सेट होने पर समन्वय होगा; तब तक विवरण डालें '
+              'या शेष हाथ से दर्ज करें',
+        'ar': 'هذا النشر لا يحمل بيانات اعتماد {aggregator} — الموافقة '
+              'قائمة وستتزامن عند تهيئة المجمّع؛ حتى ذلك الحين، أودع كشفًا '
+              'أو سجّل رصيدًا يدويًا',
+    },
+    AGGREGATOR_NOT_WIRED: {
+        'es': 'el cliente de {aggregator} no está integrado en esta '
+              'compilación; el consentimiento sigue en pie, y nada se '
+              'inventó en su nombre',
+        'fr': "le client {aggregator} n'est pas câblé dans cette version ; "
+              "le consentement demeure, et rien n'a été inventé en son nom",
+        'de': 'der {aggregator}-Client ist in diesem Build nicht verdrahtet; '
+              'die Einwilligung bleibt bestehen, und nichts wurde in ihrem '
+              'Namen erfunden',
+        'pt': 'o cliente de {aggregator} não está ligado nesta compilação; '
+              'o consentimento mantém-se, e nada foi inventado em seu nome',
+        'it': 'il client {aggregator} non è collegato in questa build; il '
+              'consenso resta, e nulla è stato inventato a suo nome',
+        'ja': 'このビルドには {aggregator} クライアントが組み込まれていま'
+              'せん。同意は有効なままで、その名の下に何も作り出されて'
+              'いません',
+        'zh': '此构建未接入 {aggregator} 客户端；同意仍然有效，也没有以其'
+              '名义虚构任何数据',
+        'hi': 'इस बिल्ड में {aggregator} क्लाइंट जुड़ा नहीं है; सहमति बनी '
+              'है, और उसके नाम पर कुछ भी गढ़ा नहीं गया',
+        'ar': 'عميل {aggregator} غير موصول في هذا الإصدار؛ الموافقة قائمة، '
+              'ولم يُختلق شيء باسمها',
+    },
+    UNKNOWN_CHOICE: {
+        'es': '{field} desconocido {got}; uno de {choices}',
+        'fr': '{field} inconnu {got} ; parmi {choices}',
+        'de': 'unbekannte(r) {field} {got}; eine(r) von {choices}',
+        'pt': '{field} desconhecido {got}; um de {choices}',
+        'it': '{field} sconosciuto {got}; uno tra {choices}',
+        'ja': '不明な {field} {got}。次のいずれか: {choices}',
+        'zh': '未知的 {field} {got}；应为 {choices} 之一',
+        'hi': 'अज्ञात {field} {got}; इनमें से एक: {choices}',
+        'ar': '{field} غير معروف {got}؛ أحد التالي: {choices}',
+    },
+    UNKNOWN_VALUE: {
+        'es': '{field} desconocido {got}',
+        'fr': '{field} inconnu {got}',
+        'de': 'unbekannte(r) {field} {got}',
+        'pt': '{field} desconhecido {got}',
+        'it': '{field} sconosciuto {got}',
+        'ja': '不明な {field} {got}',
+        'zh': '未知的 {field} {got}',
+        'hi': 'अज्ञात {field} {got}',
+        'ar': '{field} غير معروف {got}',
+    },
+    UNKNOWN_MODE_ONE_OF: {
+        'es': 'modo desconocido {got} — uno de {choices}',
+        'fr': 'mode inconnu {got} — parmi {choices}',
+        'de': 'unbekannter Modus {got} — einer von {choices}',
+        'pt': 'modo desconhecido {got} — um de {choices}',
+        'it': 'modalità sconosciuta {got} — una tra {choices}',
+        'ja': '不明なモード {got} — 次のいずれか: {choices}',
+        'zh': '未知模式 {got} — 应为 {choices} 之一',
+        'hi': 'अज्ञात मोड {got} — इनमें से एक: {choices}',
+        'ar': 'وضع غير معروف {got} — أحد التالي: {choices}',
+    },
+    UNKNOWN_FEATURE_SWITCHES: {
+        'es': 'función desconocida {got}; los interruptores son {choices}',
+        'fr': 'fonction inconnue {got} ; les interrupteurs sont {choices}',
+        'de': 'unbekannte Funktion {got}; die Schalter sind {choices}',
+        'pt': 'função desconhecida {got}; os interruptores são {choices}',
+        'it': 'funzione sconosciuta {got}; gli interruttori sono {choices}',
+        'ja': '不明な機能 {got}。スイッチは {choices} です',
+        'zh': '未知功能 {got}；开关有 {choices}',
+        'hi': 'अज्ञात फ़ीचर {got}; स्विच ये हैं: {choices}',
+        'ar': 'ميزة غير معروفة {got}؛ المفاتيح هي {choices}',
+    },
+    UNKNOWN_ROBOT_MODEL: {
+        'es': 'modelo de robot desconocido {got}',
+        'fr': 'modèle de robot inconnu {got}',
+        'de': 'unbekanntes Robotermodell {got}',
+        'pt': 'modelo de robô desconhecido {got}',
+        'it': 'modello di robot sconosciuto {got}',
+        'ja': '不明なロボットモデル {got}',
+        'zh': '未知的机器人型号 {got}',
+        'hi': 'अज्ञात रोबोट मॉडल {got}',
+        'ar': 'طراز روبوت غير معروف {got}',
+    },
+    COMMAND_NOT_PERMITTED: {
+        'es': '{command} no está permitido para {label}; permitidos: {choices}',
+        'fr': "{command} n'est pas permis pour {label} ; autorisés : {choices}",
+        'de': '{command} ist für {label} nicht erlaubt; erlaubt: {choices}',
+        'pt': '{command} não é permitido para {label}; permitidos: {choices}',
+        'it': '{command} non è permesso per {label}; consentiti: {choices}',
+        'ja': '{command} は {label} には許可されていません。許可: {choices}',
+        'zh': '{command} 不允许用于 {label}；允许的有：{choices}',
+        'hi': '{command} {label} के लिए अनुमत नहीं; अनुमत: {choices}',
+        'ar': '{command} غير مسموح به لـ {label}؛ المسموح: {choices}',
+    },
+    NO_BEARING: {
+        'es': 'no hay porte llamado {got} — es companion o professional',
+        'fr': "aucune posture nommée {got} — c'est companion ou professional",
+        'de': 'keine Haltung namens {got} — companion oder professional',
+        'pt': 'não há postura chamada {got} — é companion ou professional',
+        'it': 'nessun portamento chiamato {got} — è companion o professional',
+        'ja': '{got} という立ち位置はありません — companion か professional です',
+        'zh': '没有名为 {got} 的姿态 — 只有 companion 或 professional',
+        'hi': '{got} नाम की कोई भूमिका नहीं — companion या professional है',
+        'ar': 'لا توجد هيئة باسم {got} — إنها companion أو professional',
+    },
+    NO_PERMIT_AREA: {
+        'es': 'no hay área de permiso llamada {got}',
+        'fr': "aucune zone d'autorisation nommée {got}",
+        'de': 'kein Freigabebereich namens {got}',
+        'pt': 'não há área de permissão chamada {got}',
+        'it': 'nessuna area di permesso chiamata {got}',
+        'ja': '{got} という許可領域はありません',
+        'zh': '没有名为 {got} 的许可区域',
+        'hi': '{got} नाम का कोई अनुमति क्षेत्र नहीं',
+        'ar': 'لا توجد منطقة تصريح باسم {got}',
+    },
+    NO_SUCH_STEP: {
+        'es': 'no existe el paso {got}',
+        'fr': 'aucune étape {got}',
+        'de': 'kein Schritt {got}',
+        'pt': 'não existe o passo {got}',
+        'it': 'nessun passo {got}',
+        'ja': '{got} という手順はありません',
+        'zh': '没有 {got} 这一步',
+        'hi': '{got} नाम का कोई चरण नहीं',
+        'ar': 'لا توجد خطوة {got}',
+    },
+    NO_SURFACE: {
+        'es': 'no hay superficie llamada {got}',
+        'fr': 'aucune surface nommée {got}',
+        'de': 'keine Oberfläche namens {got}',
+        'pt': 'não há superfície chamada {got}',
+        'it': 'nessuna superficie chiamata {got}',
+        'ja': '{got} というサーフェスはありません',
+        'zh': '没有名为 {got} 的表面',
+        'hi': '{got} नाम की कोई सतह नहीं',
+        'ar': 'لا يوجد سطح باسم {got}',
+    },
+    FILE_TOO_LARGE: {
+        'es': 'eso son {size}MB; el límite es {limit}MB',
+        'fr': 'cela fait {size}Mo ; la limite est de {limit}Mo',
+        'de': 'das sind {size}MB; die Grenze liegt bei {limit}MB',
+        'pt': 'isso são {size}MB; o limite é {limit}MB',
+        'it': 'sono {size}MB; il limite è {limit}MB',
+        'ja': 'それは {size}MB です。上限は {limit}MB です',
+        'zh': '这有 {size}MB；上限是 {limit}MB',
+        'hi': 'यह {size}MB है; सीमा {limit}MB है',
+        'ar': 'هذا {size} ميغابايت؛ الحد هو {limit} ميغابايت',
+    },
+    TOP_FRIENDS_MAX: {
+        'es': 'los mejores amigos son como máximo {max} — eso es lo que lo '
+              'hace un ranking',
+        'fr': 'les meilleurs amis sont au plus {max} — c’est ce qui en fait '
+              'un classement',
+        'de': 'Top-Freunde sind höchstens {max} — genau das macht es zu '
+              'einer Rangliste',
+        'pt': 'os melhores amigos são no máximo {max} — é isso que faz dele '
+              'um ranking',
+        'it': 'i migliori amici sono al massimo {max} — è questo che lo '
+              'rende una classifica',
+        'ja': 'トップフレンドは最大 {max} 人です — だからこそランキングに'
+              'なります',
+        'zh': '挚友最多 {max} 位 — 正因如此它才是个排名',
+        'hi': 'शीर्ष मित्र अधिकतम {max} — यही इसे रैंकिंग बनाता है',
+        'ar': 'أفضل الأصدقاء بحد أقصى {max} — هذا ما يجعله ترتيبًا',
+    },
+    MAX_LINKS: {
+        'es': 'hasta {max} enlaces; una página de inicio es una página, no '
+              'un directorio',
+        'fr': "jusqu'à {max} liens ; une page d'accueil est une page, pas "
+              'un annuaire',
+        'de': 'bis zu {max} Links; eine Startseite ist eine Seite, kein '
+              'Verzeichnis',
+        'pt': 'até {max} ligações; uma página inicial é uma página, não um '
+              'diretório',
+        'it': 'fino a {max} link; una homepage è una pagina, non una '
+              'directory',
+        'ja': 'リンクは最大 {max} 件です。ホームページはページであって、'
+              'ディレクトリではありません',
+        'zh': '最多 {max} 个链接；主页是一个页面，不是目录',
+        'hi': 'अधिकतम {max} लिंक; होमपेज एक पन्ना है, निर्देशिका नहीं',
+        'ar': 'حتى {max} روابط؛ الصفحة الرئيسية صفحة، وليست دليلًا',
+    },
+    NOTHING_READABLE: {
+        'es': '{url} respondió sin nada legible',
+        'fr': "{url} a répondu sans rien de lisible",
+        'de': '{url} hat nichts Lesbares geliefert',
+        'pt': '{url} respondeu sem nada legível',
+        'it': '{url} ha risposto senza nulla di leggibile',
+        'ja': '{url} からは読めるものが返ってきませんでした',
+        'zh': '{url} 的响应中没有可读内容',
+        'hi': '{url} ने कुछ भी पठनीय नहीं लौटाया',
+        'ar': '{url} أجاب دون أي شيء مقروء',
+    },
+    CANNOT_RUN_ONBOARD_LLM: {
+        'es': '{label} no puede ejecutar un LLM a bordo',
+        'fr': '{label} ne peut pas exécuter de LLM embarqué',
+        'de': '{label} kann kein Onboard-LLM ausführen',
+        'pt': '{label} não pode executar um LLM a bordo',
+        'it': '{label} non può eseguire un LLM a bordo',
+        'ja': '{label} はオンボード LLM を実行できません',
+        'zh': '{label} 无法运行板载 LLM',
+        'hi': '{label} ऑनबोर्ड LLM नहीं चला सकता',
+        'ar': '{label} لا يمكنه تشغيل LLM مدمج',
+    },
+    INTIMATE_NEEDS_CONSENT: {
+        'es': '{site} necesita una confirmación explícita antes de '
+              'guardarse. Quedará fuera de todo lo automático — ningún '
+              'agente sintético lo recibe jamás, y nunca se incorpora a un '
+              'resumen compuesto; un clínico lo abre deliberadamente o no '
+              'lo abre',
+        'fr': '{site} demande une confirmation explicite avant '
+              "d'être conservé. Il restera hors de tout automatisme — aucun "
+              "agent synthétique ne le reçoit jamais, et il n'est jamais "
+              'intégré à un résumé assemblé ; un clinicien l’ouvre '
+              'délibérément ou pas du tout',
+        'de': '{site} braucht eine ausdrückliche Bestätigung, bevor es '
+              'gespeichert wird. Es bleibt aus allem Automatischen heraus — '
+              'kein synthetischer Agent erhält es je, und es fließt nie in '
+              'eine zusammengestellte Übersicht ein; eine Fachkraft öffnet '
+              'es bewusst oder gar nicht',
+        'pt': '{site} precisa de uma confirmação explícita antes de ser '
+              'guardado. Ficará fora de tudo o que é automático — nenhum '
+              'agente sintético o recebe, e nunca é incorporado num resumo '
+              'montado; um clínico abre-o deliberadamente ou não o abre',
+        'it': '{site} richiede una conferma esplicita prima di essere '
+              'conservato. Resterà fuori da tutto ciò che è automatico — '
+              'nessun agente sintetico lo riceve mai, e non viene mai '
+              'incluso in un riepilogo assemblato; un clinico lo apre '
+              'deliberatamente o non lo apre affatto',
+        'ja': '{site} は保存の前に明示的な確認が必要です。自動処理からは'
+              '一切外されます — 合成エージェントが受け取ることはなく、'
+              '組み立てられた要約に折り込まれることもありません。臨床医が'
+              '意図して開くか、まったく開かないかのどちらかです',
+        'zh': '{site} 在存储前需要明确确认。它将被排除在一切自动处理之外 '
+              '— 任何合成代理都不会收到它，也绝不会被并入汇总摘要；只有'
+              '临床医生有意打开，或根本不打开',
+        'hi': '{site} को संग्रहित करने से पहले स्पष्ट पुष्टि चाहिए। यह हर '
+              'स्वचालित चीज़ से बाहर रहेगा — कोई सिंथेटिक एजेंट इसे कभी नहीं '
+              'पाता, और यह कभी किसी संकलित सारांश में नहीं जुड़ता; चिकित्सक '
+              'इसे जान-बूझकर खोलता है या बिल्कुल नहीं',
+        'ar': '{site} يحتاج إلى تأكيد صريح قبل تخزينه. سيبقى خارج كل ما هو '
+              'تلقائي — لا يتلقاه أي وكيل اصطناعي أبدًا، ولا يُدمج في '
+              'ملخص مجمّع؛ يفتحه الطبيب عمدًا أو لا يفتحه إطلاقًا',
     },
 }
 

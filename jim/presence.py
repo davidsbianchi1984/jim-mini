@@ -70,7 +70,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta, timezone
 
-from . import db
+from . import db, i18n
 
 #: The six areas of a life this presence keeps a baseline in. Nutrition is not
 #: a seventh: it rides with health & fitness, because a person does not
@@ -201,8 +201,7 @@ def bearing(user_id: str) -> str:
 
 def set_bearing(user_id: str, value: str) -> dict:
     if value not in BEARINGS:
-        raise ValueError(
-            f"no bearing called {value!r} — it is companion or professional")
+        raise ValueError(i18n.fill(i18n.NO_BEARING, got=repr(value)))
     conn = db.connect()
     conn.execute(
         "INSERT INTO presence_bearing (user_id, bearing, created_at)"
@@ -980,7 +979,7 @@ def surfaces(user_id: str) -> dict:
 
 def choose_surface(user_id: str, surface: str) -> dict:
     if surface not in SURFACES:
-        raise ValueError(f"no surface called {surface!r}")
+        raise ValueError(i18n.fill(i18n.NO_SURFACE, got=repr(surface)))
     conn = db.connect()
     conn.execute(
         "INSERT INTO presence_surface (user_id, surface, created_at)"

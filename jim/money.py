@@ -82,9 +82,8 @@ def add_account(user_id: str, kind: str, institution: str, label: str,
     and None refuses, because rule 1 is the module's spine.
     """
     if kind not in ACCOUNT_KINDS:
-        raise MoneyError(
-            f"unknown account kind {kind!r}; expected one of "
-            f"{', '.join(ACCOUNT_KINDS)}")
+        raise MoneyError(i18n.fill(i18n.UNKNOWN_ACCOUNT_KIND, got=repr(kind),
+                                   choices=", ".join(ACCOUNT_KINDS)))
     if not (institution or "").strip():
         raise MoneyError("name the institution — a bank, a broker, an "
                          "exchange")
@@ -346,9 +345,9 @@ def set_mandate(user_id: str, enabled: bool, cap_per_order: float,
                              "per month")
         bad = [a for a in asset_classes if a not in ASSET_CLASSES]
         if bad:
-            raise MoneyError(
-                f"unknown asset class(es): {', '.join(bad)}; expected among "
-                f"{', '.join(ASSET_CLASSES)}")
+            raise MoneyError(i18n.fill(i18n.UNKNOWN_ASSET_CLASSES,
+                                       got=", ".join(bad),
+                                       choices=", ".join(ASSET_CLASSES)))
         if not asset_classes:
             raise MoneyError("name at least one asset class the mandate "
                              "covers")
@@ -587,12 +586,12 @@ def link_bank(user_id: str, institution: str, aggregator: str,
     status tells the truth: ``consented`` until this deployment holds that
     aggregator's credentials — no data is ever pretended in."""
     if aggregator not in AGGREGATORS:
-        raise MoneyError(f"unknown aggregator {aggregator!r}; this module "
-                         f"holds consents for {', '.join(AGGREGATORS)}")
+        raise MoneyError(i18n.fill(i18n.UNKNOWN_AGGREGATOR,
+                                   got=repr(aggregator),
+                                   choices=", ".join(AGGREGATORS)))
     if kind not in ACCOUNT_KINDS:
-        raise MoneyError(
-            f"unknown account kind {kind!r}; expected one of "
-            f"{', '.join(ACCOUNT_KINDS)}")
+        raise MoneyError(i18n.fill(i18n.UNKNOWN_ACCOUNT_KIND, got=repr(kind),
+                                   choices=", ".join(ACCOUNT_KINDS)))
     if not (institution or "").strip():
         raise MoneyError("name the institution — a bank, a broker, an "
                          "exchange")
@@ -644,17 +643,13 @@ def sync_bank(user_id: str, link_id: str) -> dict:
     if link["status"] == "revoked":
         raise MoneyError("this bank link was revoked; link again to sync")
     if not os.environ.get(f"{link['aggregator'].upper()}_CLIENT_ID"):
-        raise MoneyError(
-            f"this deployment holds no {link['aggregator']} credentials — "
-            "the consent stands and will sync when the aggregator is "
-            "configured; until then, drop a statement or observe a "
-            "balance by hand")
+        raise MoneyError(i18n.fill(i18n.NO_AGGREGATOR_CREDENTIALS,
+                                   aggregator=link["aggregator"]))
     # Credentials present: the client call would land here, tokens to the
     # vault and balances through `observe`. Until a client is wired, the
     # truth is the same refusal — nothing is pretended in.
-    raise MoneyError(
-        f"the {link['aggregator']} client is not wired into this build; "
-        "the consent stands, and nothing was invented in its name")
+    raise MoneyError(i18n.fill(i18n.AGGREGATOR_NOT_WIRED,
+                               aggregator=link["aggregator"]))
 
 
 def revoke_link(user_id: str, link_id: str) -> dict:

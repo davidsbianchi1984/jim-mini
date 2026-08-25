@@ -54,7 +54,7 @@ import hashlib
 import json
 from datetime import date, datetime, timezone
 
-from . import db, storage, tiers
+from . import db, i18n, storage, tiers
 
 # What can be captured. Video and audio are here because some things are only
 # visible in motion — a tremor, a gait, a wheeze — and a still frame loses
@@ -204,15 +204,17 @@ def take(user: dict, kind: str, site: str, content_b64: str,
     """
     user_id = user["id"]
     if kind not in KINDS:
-        raise CaptureError(
-            f"unknown kind {kind!r}; one of {', '.join(KINDS)}")
+        raise CaptureError(i18n.fill(i18n.UNKNOWN_CHOICE, field="kind",
+                                     got=repr(kind),
+                                     choices=", ".join(KINDS)))
     if site not in SITES:
-        raise CaptureError(
-            f"unknown site {site!r}; one of {', '.join(SITES)}")
+        raise CaptureError(i18n.fill(i18n.UNKNOWN_CHOICE, field="site",
+                                     got=repr(site),
+                                     choices=", ".join(SITES)))
     if provenance not in PROVENANCE:
-        raise CaptureError(
-            f"unknown provenance {provenance!r}; one of "
-            f"{', '.join(PROVENANCE)}")
+        raise CaptureError(i18n.fill(i18n.UNKNOWN_CHOICE, field="provenance",
+                                     got=repr(provenance),
+                                     choices=", ".join(PROVENANCE)))
 
     age = _age_of(user)
     if site in INTIMATE:
@@ -226,12 +228,8 @@ def take(user: dict, kind: str, site: str, content_b64: str,
                 "a clinician or a paediatric service directly — they can "
                 "examine in person, which is the right way to handle this.")
         if not intimate_consent:
-            raise CaptureError(
-                f"{SITES[site]} needs an explicit confirmation before it is "
-                "stored. It will be kept out of anything automatic — no "
-                "synthetic agent ever receives it, and it is never folded "
-                "into an assembled summary; a clinician opens it deliberately "
-                "or not at all.")
+            raise CaptureError(i18n.fill(i18n.INTIMATE_NEEDS_CONSENT,
+                                         site=SITES[site]))
 
     try:
         raw = base64.b64decode(content_b64, validate=True)
@@ -241,9 +239,9 @@ def take(user: dict, kind: str, site: str, content_b64: str,
     if not raw:
         raise CaptureError("the capture is empty")
     if len(raw) > MAX_BYTES:
-        raise CaptureError(
-            f"that is {len(raw) // (1024 * 1024)}MB; the limit is "
-            f"{MAX_BYTES // (1024 * 1024)}MB")
+        raise CaptureError(i18n.fill(i18n.FILE_TOO_LARGE,
+                                     size=len(raw) // (1024 * 1024),
+                                     limit=MAX_BYTES // (1024 * 1024)))
 
     cleaned, removed = strip_metadata(raw)
 

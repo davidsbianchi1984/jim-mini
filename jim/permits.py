@@ -54,7 +54,7 @@ engagement and still reversible.
 
 from __future__ import annotations
 
-from . import audit, db
+from . import audit, db, i18n
 
 #: Every acting tool, in the group a person would look for it in — and whether
 #: that group is covered by opening a session or needs its own yes.
@@ -206,7 +206,7 @@ def set_grant(user_id: str, area: str, on: bool) -> dict:
     that" answerable.
     """
     if area not in AREAS:
-        raise ValueError(f"no permit area called {area!r}")
+        raise ValueError(i18n.fill(i18n.NO_PERMIT_AREA, got=repr(area)))
     conn = db.connect()
     conn.execute(
         "INSERT INTO engaged_permits (user_id, area, granted, created_at)"

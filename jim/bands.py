@@ -38,7 +38,7 @@ metric, in the unit the metric is measured in, from the app.
 
 from __future__ import annotations
 
-from . import db
+from . import db, i18n
 
 # Default half-width of each band, in the metric's own units, and whether a
 # direction is worth reporting at all. These are *within-person* margins: how
@@ -116,7 +116,8 @@ def band_for(user_id: str, metric: str, sensitivity: str = "balanced") -> dict:
     they have one, the default scaled by their sensitivity otherwise."""
     spec = DEFAULTS.get(metric)
     if spec is None:
-        raise ValueError(f"unknown metric {metric!r}")
+        raise ValueError(i18n.fill(i18n.UNKNOWN_VALUE, field="metric",
+                                   got=repr(metric)))
     lo, hi, step = spec["slider"]
     slider = {"slider_min": lo, "slider_max": hi, "slider_step": step}
     row = _row(user_id, metric)
@@ -140,7 +141,8 @@ def set_band(user_id: str, metric: str, margin: float | None = None,
              watch_low: bool | None = None) -> dict:
     """Adjust one band. Omitted fields keep whatever is in force."""
     if metric not in DEFAULTS:
-        raise ValueError(f"metric must be one of {', '.join(METRICS)}")
+        raise ValueError(i18n.fill(i18n.MUST_BE_ONE_OF, field="metric",
+                                   choices=", ".join(METRICS)))
     current = band_for(user_id, metric)
     margin = current["margin"] if margin is None else float(margin)
     if margin <= 0:
