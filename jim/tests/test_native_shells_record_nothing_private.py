@@ -22,6 +22,7 @@ import re
 from pathlib import Path
 
 import pytest
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -122,6 +123,12 @@ def test_the_fingerprint_is_the_console_s(shell):
     assert "16777619" in src, f"{shell}: not FNV-1a (prime missing)"
 
 
+def _record_calls(shell: str) -> list[str]:
+    """The problem-record calls this client makes, as their argument lists."""
+    src = CLIENTS[shell].read_text(encoding="utf-8")
+    return re.findall(r"[Pp]roblems\.[Rr]ecord\(([^)]*)\)", src)
+
+
 @pytest.mark.parametrize("shell", sorted(CLIENTS))
 def test_the_client_records_both_kinds_of_failure(shell):
     """Reaching a server and being refused, and never reaching one at all.
@@ -134,8 +141,8 @@ def test_the_client_records_both_kinds_of_failure(shell):
     path = CLIENTS[shell]
     assert path is not None and path.exists(), f"{shell}: no ApiClient"
     src = path.read_text(encoding="utf-8")
-    calls = re.findall(r"[Pp]roblems\.[Rr]ecord\(([^)]*)\)", src)
-    assert len(calls) >= 2, (
+    calls = _record_calls(shell)
+    assert len(calls) >= ratchets.floor(f"problems.recorded.{shell}"), (
         f"{shell}: {len(calls)} record call(s) — expected the refused case "
         "and the never-reached-a-server case")
     # The last argument, whichever way the language spells it: Swift and

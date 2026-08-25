@@ -62,6 +62,7 @@ import re
 from pathlib import Path
 
 import pytest
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -153,7 +154,7 @@ def test_the_screen_extraction_finds_something(shell):
     """A guard on the guard. Every false pass in this audit has come from a
     pattern that stopped matching, and a check over an empty set is green."""
     found = _declared(shell)
-    assert len(found) >= 5, (
+    assert len(found) >= ratchets.floor(f"screens.declared.{shell}"), (
         f"only {len(found)} screen(s) found in {shell} — the declaration "
         "pattern has stopped matching, and the check above would pass on "
         "nothing")
@@ -270,7 +271,8 @@ def test_the_call_extraction_finds_something(shell):
     reports zero, which this still catches.
     """
     sites = _call_sites(shell)
-    assert len(sites) >= 2, (
+    assert len(sites) >= ratchets.floor(
+            f"screens.localizer_calls.{shell}"), (
         f"only {len(sites)} localizer call(s) found in {shell} — the call "
         "pattern has stopped matching")
     assert _declared_arities(shell) and min(_declared_arities(shell)) >= 1, (

@@ -175,6 +175,36 @@ def test_no_recorded_field_is_also_labelled():
         + "\n    ".join(both))
 
 
+def test_no_recorded_field_is_on_a_form():
+    """The record's whole justification, held rather than believed.
+
+    Every row in the record stands on one sentence: these are fields no
+    person types — enum members a control sets, ids a client fills in, flags
+    a switch owns — so the identifier fallback is a decision and not a gap.
+    That was verified once, by hand, across the console and all three native
+    shells. It is a claim about today's forms, and forms grow.
+
+        asked     was no recorded field on a form when it was recorded
+        mattered  is it still off every form now
+
+    So the console half is checked every run: a recorded field the form scan
+    reads as form-bound is a field a person can now mistype, and the 422
+    naming it stops being a client bug and becomes a person reading an API
+    identifier next to a label the form shows in ten languages. The native
+    shells have no mechanical form scan; when one exists this check should
+    widen to it. Until then, the hand-verification stands for them, and this
+    stands for the surface that changes most.
+    """
+    from .test_a_form_that_asks_for_it_has_a_label_for_it import _asked_for
+
+    arrived = sorted(_recorded() & set(_asked_for()))
+    assert not arrived, (
+        f"{len(arrived)} recorded field(s) are now asked for on a form:\n    "
+        + "\n    ".join(arrived)
+        + "\n  A person can type these and meet the identifier. Give each "
+          "the label its form shows and strike the row.")
+
+
 def test_the_record_only_shrinks():
     ceiling = int(re.search(r"^# ceiling: (\d+)$",
                             RECORD.read_text(encoding="utf-8"), re.M).group(1))

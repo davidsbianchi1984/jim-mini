@@ -640,7 +640,118 @@ def _answer_pieces() -> int:
     return len(_pieces(LONG_ANSWER)[0])
 
 
+# -- the floors the parametrize hid -----------------------------------------
+#
+# Every one of these sat inside a `@pytest.mark.parametrize("shell", ...)`,
+# which is the same defect as a literal under a loop wearing pytest's
+# clothes: one number standing for three shells, calibrated for none of
+# them, and invisible to the replay harness because the name `shell` only
+# exists while pytest is running.
+#
+# The sharpest fossil: a docstring reading "QRME's Windows shell makes
+# exactly two localizer calls — the nav loop and one button". It makes
+# 1,278 now. The floor of 2 under it was two tenths of one per cent of the
+# surface it claimed to hold, under a sentence that had been precisely true
+# the day it was written.
+
+
+def _screens_declared(shell: str):
+    def go() -> int:
+        from .test_a_screen_nothing_opens import _declared
+        return len(_declared(shell))
+    return go
+
+
+def _screens_localizer_calls(shell: str):
+    def go() -> int:
+        from .test_a_screen_nothing_opens import _call_sites
+        return len(_call_sites(shell))
+    return go
+
+
+def _problems_recorded(shell: str):
+    def go() -> int:
+        from .test_native_shells_record_nothing_private import _record_calls
+        return len(_record_calls(shell))
+    return go
+
+
+def _tabs_onscreen(shell: str):
+    def go() -> int:
+        from .test_the_tabs_are_translated_and_the_screens_are_not import (
+            _measure)
+        english, calls = _measure(shell)
+        return english + calls
+    return go
+
+
+def _tabs_localizer_calls(shell: str):
+    def go() -> int:
+        from .test_the_tabs_are_translated_and_the_screens_are_not import (
+            _measure)
+        return _measure(shell)[1]
+    return go
+
+
+def _tabs_table_rows(shell: str):
+    def go() -> int:
+        from .test_the_tabs_are_translated_and_the_screens_are_not import (
+            _rows)
+        return len(_rows(shell))
+    return go
+
+
+def _shared_with_console(shell: str):
+    def go() -> int:
+        from .test_the_desktop_and_the_phone_say_different_things import (
+            _shared_with_console)
+        return len(_shared_with_console(shell))
+    return go
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("screens.declared.android", 8, _screens_declared("android"),
+            "the screens android declares, as the navigation scan reads them"),
+    Ratchet("screens.declared.ios", 15, _screens_declared("ios"),
+            "the screens ios declares, as the navigation scan reads them"),
+    Ratchet("screens.declared.windows", 11, _screens_declared("windows"),
+            "the screens windows declares, as the navigation scan reads them"),
+    Ratchet("screens.localizer_calls.android", 622, _screens_localizer_calls("android"),
+            "the localizer call sites the android screen scan finds"),
+    Ratchet("screens.localizer_calls.ios", 688, _screens_localizer_calls("ios"),
+            "the localizer call sites the ios screen scan finds"),
+    Ratchet("screens.localizer_calls.windows", 703, _screens_localizer_calls("windows"),
+            "the localizer call sites the windows screen scan finds"),
+    Ratchet("problems.recorded.android", 3, _problems_recorded("android"),
+            "the failure kinds android's client records — the refusal and the never-reached case"),
+    Ratchet("problems.recorded.ios", 4, _problems_recorded("ios"),
+            "the failure kinds ios's client records — the refusal and the never-reached case"),
+    Ratchet("problems.recorded.windows", 2, _problems_recorded("windows"),
+            "the failure kinds windows's client records — the refusal and the never-reached case"),
+    Ratchet("tabs.onscreen.android", 622, _tabs_onscreen("android"),
+            "the on-screen strings the android extraction reads"),
+    Ratchet("tabs.onscreen.ios", 689, _tabs_onscreen("ios"),
+            "the on-screen strings the ios extraction reads"),
+    Ratchet("tabs.onscreen.windows", 703, _tabs_onscreen("windows"),
+            "the on-screen strings the windows extraction reads"),
+    Ratchet("tabs.localizer_calls.android", 622, _tabs_localizer_calls("android"),
+            "the localizer calls the android tabs scan finds"),
+    Ratchet("tabs.localizer_calls.ios", 688, _tabs_localizer_calls("ios"),
+            "the localizer calls the ios tabs scan finds"),
+    Ratchet("tabs.localizer_calls.windows", 703, _tabs_localizer_calls("windows"),
+            "the localizer calls the windows tabs scan finds"),
+    Ratchet("tabs.table_rows.android", 692, _tabs_table_rows("android"),
+            "the rows the android table parser reads"),
+    Ratchet("tabs.table_rows.ios", 690, _tabs_table_rows("ios"),
+            "the rows the ios table parser reads"),
+    Ratchet("tabs.table_rows.windows", 672, _tabs_table_rows("windows"),
+            "the rows the windows table parser reads"),
+    Ratchet("table.shared_with_console.android", 443, _shared_with_console("android"),
+            "the English strings android's table shares with the console"),
+    Ratchet("table.shared_with_console.ios", 440, _shared_with_console("ios"),
+            "the English strings ios's table shares with the console"),
+    Ratchet("table.shared_with_console.windows", 440, _shared_with_console("windows"),
+            "the English strings windows's table shares with the console"),
     Ratchet("workflow.files", 4, _workflow_files,
             "the workflow files the gating sweep reads"),
     Ratchet("refusal.places_named", 3, _places_named,

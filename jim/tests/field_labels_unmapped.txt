@@ -14,6 +14,23 @@
 # match to the form in front of them.
 #
 # ceiling: 99
+#
+# ## Verified, not believed — the night sweep of 1.8.1
+#
+# The claim above — that no row here is a field a person types — was checked
+# against every surface rather than taken from this header:
+#
+#   console   mechanical: recorded ∩ the form scan's field->control map is
+#             empty, and test_no_recorded_field_is_on_a_form now holds that
+#             every run, because forms grow and this file does not watch them.
+#   shells    by hand: every recorded name that appears in a native view file
+#             is an L10n slot ("age" filling ns.st.effective), a nav tag, or
+#             a choice value ("blind"/"contact") — none is bound to a text
+#             input. The shells have no mechanical form scan yet; when one
+#             exists, the new guard should widen to it.
+#
+# So this backlog's rows are decisions, not debt. What was owed was the
+# check that keeps them decisions.
 accept
 action
 activity_level

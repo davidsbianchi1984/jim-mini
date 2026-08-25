@@ -111,6 +111,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import pytest
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -312,6 +313,11 @@ def test_the_console_native_split_only_shrinks():
         f"{len(_measured())} split rows, above the {ceiling} recorded")
 
 
+def _shared_with_console(shell: str) -> set:
+    """English strings this shell's table and the console's both carry."""
+    return set(_by_english(_console())) & set(_by_english(_native(shell)))
+
+
 @pytest.mark.parametrize("shell", sorted(TABLES))
 def test_the_two_tables_share_enough_to_be_worth_comparing(shell):
     """If the overlap collapsed, every check above would pass on nothing.
@@ -320,8 +326,9 @@ def test_the_two_tables_share_enough_to_be_worth_comparing(shell):
     English strings; a number far below that means the extraction changed,
     not that the product did.
     """
-    shared = set(_by_english(_console())) & set(_by_english(_native(shell)))
-    assert len(shared) > 40, (
+    shared = _shared_with_console(shell)
+    assert len(shared) >= ratchets.floor(
+            f"table.shared_with_console.{shell}"), (
         f"{shell}: only {len(shared)} English strings are held by both the "
         "console table and this shell's, which is too few to conclude "
         "anything from — check the parse before the product")

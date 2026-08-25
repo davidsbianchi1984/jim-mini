@@ -78,6 +78,7 @@ import re
 from pathlib import Path
 
 import pytest
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -550,11 +551,11 @@ def test_the_measurement_still_measures(shell):
     with no untranslated strings, which is exactly the answer this file exists
     to refuse to give by accident."""
     english, calls = _measure(shell)
-    assert english + calls >= 50, (
+    assert english + calls >= ratchets.floor(f"tabs.onscreen.{shell}"), (
         f"only {english + calls} on-screen strings found in {shell} — the "
         "extraction has stopped matching, and the ratchet above would pass on "
         "nothing")
-    assert calls >= 1, (
+    assert calls >= ratchets.floor(f"tabs.localizer_calls.{shell}"), (
         f"{shell} makes no localizer calls at all — either the call pattern "
         "broke or the shell lost its localization entirely")
 
@@ -771,7 +772,7 @@ def test_the_row_parser_reads_the_table(shell):
     check above skips a shell with no slotted rows; this one is what catches a
     parser that has stopped reading rows at all."""
     rows = _rows(shell)
-    assert len(rows) >= 10, (
+    assert len(rows) >= ratchets.floor(f"tabs.table_rows.{shell}"), (
         f"only {len(rows)} rows parsed from {shell}'s table — the row pattern "
         "has stopped matching, and the slot check would pass on nothing")
     assert all(r.get("en") for r in rows.values()), (

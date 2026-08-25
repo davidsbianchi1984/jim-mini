@@ -1,5 +1,5 @@
-# status: backlog — 17 rows
-# ceiling: 17
+# status: backlog — 10 rows
+# ceiling: 10
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -120,11 +120,7 @@
 # place to hide the numbers this file is meant to find.
 test_a_refused_letter_does_not_cost_a_reading.py:79: _events(user) > 0
 test_a_refused_letter_does_not_cost_a_reading.py:182: _events(user) > 0
-test_a_screen_nothing_opens.py:156: len(found) >= 5
-test_a_screen_nothing_opens.py:273: len(sites) >= 2
-test_native_shells_record_nothing_private.py:138: len(calls) >= 2
 test_the_crash_watch_rings_the_same_bell.py:108: len(ours) >= 2
-test_the_desktop_and_the_phone_say_different_things.py:324: len(shared) > 40
 test_the_erase_left_a_live_address.py:120: len(found) >= 4
 test_the_keys_the_android_client_reads.py:383: len(driven) >= 30
 test_the_refusal_that_handed_the_body_back.py:155: len(found) > 80
@@ -132,6 +128,3 @@ test_the_refusal_that_handed_the_body_back.py:159: reached > 50
 test_the_shape_the_client_expects.py:327: len(driven) >= 20
 test_the_shape_the_console_expects.py:457: len(driven) >= 45
 test_the_shape_the_swift_client_expects.py:228: len(driven) >= 15
-test_the_tabs_are_translated_and_the_screens_are_not.py:553: english + calls >= 50
-test_the_tabs_are_translated_and_the_screens_are_not.py:557: calls >= 1
-test_the_tabs_are_translated_and_the_screens_are_not.py:774: len(rows) >= 10
