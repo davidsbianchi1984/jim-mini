@@ -34,6 +34,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from . import ratchets
+
 
 def _repo_root() -> Path:
     for d in Path(__file__).resolve().parents:
@@ -235,7 +237,8 @@ def test_the_scan_reaches_every_client():
         seen[name] = len(re.findall(BUILT[name], _code(path)))
     assert len(seen) == 3, f"only found {sorted(seen)}"
     for name, n in seen.items():
-        assert n >= 2, f"{name}: only {n} request(s) built — the pattern has "
+        assert n >= ratchets.floor(f"language.requests_built.{name}"), (
+            f"{name}: only {n} request(s) built — the pattern has ")
 
 
 #: Where the console attaches a header to every request it makes. The three

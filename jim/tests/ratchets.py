@@ -484,7 +484,71 @@ def _template_calls() -> int:
     return len(_template_calls())
 
 
+# -- the floors the sweep was too coarse to see -----------------------------
+#
+# `SMALLEST_FLOOR` is five, so `assert n >= 2` never entered the backlog. The
+# cutoff is right about most of what it hides: a two or a three is usually a
+# shape check on a response body, not a floor on a scanned surface. It is
+# wrong about these.
+#
+#     asked     is this floor big enough to be worth auditing
+#     mattered  is this floor smaller than what it stands over
+#
+# It filters on the number's size as a stand-in for the number's kind, and
+# the stand-in fails in both directions — it would drag in fifty-two runtime
+# assertions if it were lowered, and it hides a two standing over a hundred
+# and twenty-seven.
+
+def _requests_built(shell: str):
+    def go() -> int:
+        import re
+        from . import test_the_language_nobody_was_sending as m
+        for name, _, _, _, client, _ in m.SHELLS:
+            if name == shell:
+                return len(re.findall(m.BUILT[name], m._code(m.REPO / client)))
+        raise KeyError(f"no shell named {shell!r}")
+    return go
+
+
+def _ratchet_files() -> int:
+    from .test_a_record_that_outlived_the_code import _ratchets
+    return len(_ratchets())
+
+
+def _readme_files() -> int:
+    from .test_readme_scripture import _readmes
+    return len(_readmes())
+
+
+def _verbs_min() -> int:
+    """The fewest distinct verbs any one surface reports.
+
+    A minimum rather than a total, because the assertion runs per surface: a
+    floor on the sum would be satisfied by one surface reading well while
+    another had gone silent.
+    """
+    from .test_client_routes_exist import CONSOLE, NATIVE, calls
+    return min(len({method for method, _ in calls(lang)})
+               for lang in (CONSOLE,) + NATIVE)
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    # Per shell, and the reason is in the numbers: this one literal stood
+    # over 4, 7 and 127 requests built. It was honest about the
+    # iPhone and decoration on the desktop, which is what a single floor
+    # under a loop over three surfaces always ends up being.
+    Ratchet("language.requests_built.ios", 3, _requests_built("ios"),
+            "the requests the iPhone client builds"),
+    Ratchet("language.requests_built.android", 5, _requests_built("android"),
+            "the requests the Android client builds"),
+    Ratchet("language.requests_built.windows", 101, _requests_built("windows"),
+            "the requests the desktop client builds"),
+    Ratchet("ratchet.files", 18, _ratchet_files,
+            "the ratchet records this suite keeps"),
+    Ratchet("route.verbs_min", 4, _verbs_min,
+            "the distinct verbs the thinnest-reading surface reports"),
+    Ratchet("readme.files", 5, _readme_files,
+            "the READMEs the passage check reads"),
     Ratchet("console.bindings_scanned", 273, _console_bindings,
             "the bindings the console scan parses out of api.ts"),
     Ratchet("native.api_functions.ios", 270, _api_functions("ios"),

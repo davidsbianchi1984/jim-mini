@@ -47,6 +47,8 @@ from pathlib import Path
 
 import pytest
 
+from . import ratchets
+
 HERE = Path(__file__).resolve().parent
 
 #: Every record with a ceiling — the ratchets proper. Files without one are
@@ -66,7 +68,7 @@ def test_there_are_ratchets_to_check():
     """A guard on the guard: a glob that stopped matching would report every
     ratchet in perfect order by finding none of them."""
     found = _ratchets()
-    assert len(found) >= 2, (
+    assert len(found) >= ratchets.floor("ratchet.files"), (
         f"only {len(found)} ratchet file(s) found in {HERE.name} — the checks "
         "below are passing on almost nothing")
 

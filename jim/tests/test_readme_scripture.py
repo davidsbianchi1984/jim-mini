@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import pathlib
 
+from . import ratchets
+
 HEADING = "## Matthew 7:24–25"
 SKIP = {".pytest_cache", "node_modules", "dist", "release", ".git"}
 
@@ -27,7 +29,9 @@ def test_every_readme_ends_on_the_rock():
     assert block.endswith("And those with the vision shall enter in.")
 
     readmes = _readmes()
-    assert len(readmes) >= 2, "expected more than just the root README"
+    assert len(readmes) >= ratchets.floor("readme.files"), (
+        f"only {len(readmes)} README(s) found — the walk has stopped reaching "
+        "them, and the passage check below would pass on almost nothing")
     for p in readmes:
         text = p.read_text(encoding="utf-8").rstrip()
         assert text.endswith(block), (

@@ -24,6 +24,8 @@ from . import clientpaths
 from .clientpaths import (CONSOLE, NATIVE, VERBS, accepts, calls,
                           methods_for, normalise, paths)
 
+from . import ratchets
+
 # Low enough to allow a shell to shed a screen, high enough that a pattern which
 # has stopped matching altogether cannot pass as coverage.
 _MIN_CONSOLE_PATHS = 20
@@ -132,7 +134,7 @@ def test_the_check_is_really_method_aware():
         assert made, f"{lang.name}: no calls extracted at all"
         verbs = {method for method, _ in made}
         assert verbs <= set(VERBS), f"{lang.name}: unexpected verbs {verbs}"
-        assert len(verbs) > 1, (
+        assert len(verbs) >= ratchets.floor("route.verbs_min"), (
             f"{lang.name} reports only {verbs} across {len(made)} calls — its "
             "verb reader has probably stopped matching, which would turn every "
             "call into an unchecked GET"
