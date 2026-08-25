@@ -6,6 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.4] - 2026-08-25
+
+### Changed
+
+- **The ear that opens stays open.** The console's audio unlock armed on
+  `pointerdown`, took its one shot, and removed itself whether or not the
+  platform granted anything — and WebKit counts the tail of the gesture,
+  so on an iPhone the one press this ever took was one the platform
+  refused. It arms on click, touchend and keydown now, retries until
+  granted, and the coach spoke on an iPhone the same hour.
+
+      asked     did a press open the ear
+      mattered  does a refusal get another press
+
+- **The same sentence, said once.** The split-wording ledger closed: the
+  native tables no longer carry two translations of one English sentence,
+  and the crisis screen's "End it" became "End the hold" — es/ja read the
+  short form as something much darker than ending a breathing hold.
+- **The voice door is the studio microphone.** The front-door voice
+  conversation button wears 🎙️ instead of the telephone, matching the
+  sibling console — the owner's call off the working screen.
+
 ## [1.8.3] - 2026-08-25
 
 ### Changed
@@ -11236,7 +11258,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.4...HEAD
+[1.8.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.3...app-v1.8.4
 [1.8.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.2...app-v1.8.3
 [1.8.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.1...app-v1.8.2
 [1.8.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.0...app-v1.8.1
