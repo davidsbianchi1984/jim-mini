@@ -86,7 +86,7 @@ def test_it_can_be_told_which_device_to_speak_through(client, engaged_user,
     here, deliberately: this is the case that must keep working untouched.
     """
     uid = engaged_user
-    assert client.get(f"/presence/{uid}/surfaces").json()["chosen"] \
+    assert client.get(f"/presence/{uid}/surfaces").json()["chosen_surface"] \
         == "phone_screen"
 
     _script(monkeypatch,
@@ -95,7 +95,7 @@ def test_it_can_be_told_which_device_to_speak_through(client, engaged_user,
     turn = client.post(f"/engaged/{uid}/turn",
                        json={"message": "talk to me through my earbuds"})
     assert turn.status_code == 200, turn.text
-    assert client.get(f"/presence/{uid}/surfaces").json()["chosen"] == "earbuds"
+    assert client.get(f"/presence/{uid}/surfaces").json()["chosen_surface"] == "earbuds"
 
 
 def test_the_surface_it_overwrote_comes_back(client, engaged_user,
@@ -111,7 +111,7 @@ def test_the_surface_it_overwrote_comes_back(client, engaged_user,
         asked     is the prior value stored
         mattered  is it stored under the name the door will accept
 
-    Replaying `{"chosen": "phone_screen"}` at a door expecting `speaks_on` is a
+    Replaying `{"chosen_surface": "phone_screen"}` at a door expecting `speaks_on` is a
     422 — found not in review but by somebody trying to take something back,
     which is the worst moment for an undo to be wrong.
     """
@@ -119,7 +119,7 @@ def test_the_surface_it_overwrote_comes_back(client, engaged_user,
     _script(monkeypatch,
             'CALL set_surface {"speaks_on": "speaker"}', "Done.")
     client.post(f"/engaged/{uid}/turn", json={"message": "use the speaker"})
-    assert client.get(f"/presence/{uid}/surfaces").json()["chosen"] == "speaker"
+    assert client.get(f"/presence/{uid}/surfaces").json()["chosen_surface"] == "speaker"
 
     act = [a for a in client.get(f"/engaged/{uid}/acts").json()
            if a["tool"] == "set_surface"][0]
@@ -129,7 +129,7 @@ def test_the_surface_it_overwrote_comes_back(client, engaged_user,
         "read's name")
     assert client.post(f"/engaged/{uid}/acts/{act['id']}/undo").status_code \
         == 200
-    assert client.get(f"/presence/{uid}/surfaces").json()["chosen"] \
+    assert client.get(f"/presence/{uid}/surfaces").json()["chosen_surface"] \
         == "phone_screen"
 
 
