@@ -330,12 +330,16 @@ def care_page(card: dict, language: str = "en") -> str:
     # holding a beacon for somebody with a first name on it got the one
     # sentence at the top of the page in English — the greeting, on the
     # page's largest type, above everything else.
-    who = (t(FOUND_NAMED).replace("{name}", html.escape(first)) if first
+    # The name rides in raw and the whole sentence is escaped at the sink,
+    # so the escape is where the interpolation is — one place a reader (and
+    # the markup sweep) can see, instead of a fragment escaped early inside
+    # a composite the sweep could not follow.
+    who = (t(FOUND_NAMED).replace("{name}", first) if first
            else t("You've found someone."))
     site = card.get("site")
     body = (
         '<div class="panel">'
-        f"<h1>{who}</h1>"
+        f"<h1>{html.escape(who)}</h1>"
         f'<p class="watched">{html.escape(card.get("note") or "")}</p>'
         '<div class="first"><b>'
         + html.escape(t("If this is an emergency, call your local emergency "

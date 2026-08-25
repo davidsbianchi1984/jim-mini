@@ -1,4 +1,16 @@
-# status: backlog — 2 rows
+# status: floor — 1 row
+#
+# ## 1.8.5: one fixed, one deliberate
+#
+# `{who}` is escaped at the sink now — the name rides into the sentence raw
+# and `html.escape` wraps the whole heading where it is interpolated, one
+# visible place instead of a fragment escaped inside a composite this sweep
+# could not follow.
+#
+# `{body}` is the page skeleton's slot for already-composed markup: every
+# caller builds it from escaped pieces, and escaping it here would print
+# the product's own tags to the reader. It is the one deliberate composite
+# left, and this row is the decision written down.
 #
 # Every interpolation into markup whose value the sweep cannot see reach an
 # escape. Written by `test_a_page_never_prints_what_it_was_given.py`.
@@ -70,4 +82,3 @@
 #
 # ceiling: 2
 landing.py: {body}
-landing.py: {who}
