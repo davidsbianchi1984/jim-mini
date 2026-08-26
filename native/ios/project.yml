@@ -15,8 +15,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.jim.guardian
-        MARKETING_VERSION: "1.8.5"
-        CURRENT_PROJECT_VERSION: "1008005"
+        MARKETING_VERSION: "1.8.6"
+        CURRENT_PROJECT_VERSION: "1008006"
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1,2"
     # A generated Info.plist and an `info:` block are mutually exclusive:

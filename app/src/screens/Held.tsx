@@ -48,6 +48,13 @@ export function Held() {
   const [confirm, setConfirm] = useState("");
   const [key, setKey] = useState("journal");
   const [farend, setFarend] = useState<Row | null>(null);
+  // The synced book — or the reason there is none. The refusal is the
+  // information (the grant lives on the sources card), so it is caught
+  // and shown, the same shape custody and provider take above.
+  const [book, setBook] = useState<
+    { book: { id: string; name: string; has_guardian: boolean;
+              added_at: string }[]; held: number } | null>(null);
+  const [bookError, setBookError] = useState<string | null>(null);
   const [farendEmail, setFarendEmail] = useState("");
 
   const uid = session.userId;
@@ -63,6 +70,9 @@ export function Held() {
     api.cloudStatus().then(setCloud).catch(fail);
     api.connectorsCatalog().then(setConnectors).catch(fail);
     api.farEnd(uid, token).then(setFarend).catch(fail);
+    api.contactsBook(uid, token)
+      .then((b) => { setBook(b); setBookError(null); })
+      .catch((e) => { setBook(null); setBookError((e as Error).message); });
     // Both of these answer with a refusal on an ordinary deployment — no
     // vault configured, no provider consent given. The refusal is the
     // information, so it is caught and shown rather than thrown away.
@@ -97,6 +107,43 @@ export function Held() {
   }
 
   const storage = (membership?.storage ?? {}) as Record<string, unknown>;
+
+
+  /** The device's book, through the browser's own picker.
+   *
+   *  The address book is a SYNCED source, never something people type —
+   *  the round's first correction. Where the platform offers no picker
+   *  (most desktops, iOS Safari today), the honest sentence stands in;
+   *  the native shells are the road for those, and their backlogs carry
+   *  the route.
+   */
+  async function syncBook() {
+    if (!uid || !token) return;
+    const nav = navigator as unknown as {
+      contacts?: {
+        select: (props: string[], opts: { multiple: boolean })
+          => Promise<{ name?: string[]; tel?: string[] }[]>;
+      };
+    };
+    if (!nav.contacts?.select) {
+      setBookError(tr("hld.book.nopicker", lang));
+      return;
+    }
+    let picked: { name?: string[]; tel?: string[] }[];
+    try {
+      picked = await nav.contacts.select(["name", "tel"], { multiple: true });
+    } catch {
+      return; // closed the picker; nothing to say
+    }
+    // One entry per number — a person with two numbers is recognisable at
+    // both, and the server's tail-digit dedup makes them one row.
+    const entries = picked.flatMap((person) =>
+      (person.tel || []).map((number) => ({
+        name: (person.name || [])[0] || "", number })));
+    if (entries.length) {
+      run(() => api.syncContacts(uid, entries, token).then(load));
+    }
+  }
 
   return (
     <div className="screen">
@@ -315,6 +362,40 @@ export function Held() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="card">
+        <h3>{tr("hld.book", lang)}</h3>
+        {/* The refusal is the information: not granted says so in the
+            person's language, and the grant is one card up. */}
+        {bookError && <p className="muted small">{bookError}</p>}
+        {book && (
+          <p className="muted small">
+            {tr("hld.book.held", lang).replace("{n}", String(book.held))}
+          </p>
+        )}
+        {book && book.book.length === 0 && (
+          <p className="muted small">{tr("hld.book.empty", lang)}</p>
+        )}
+        {book && book.book.slice(0, 30).map((c) => (
+          <div className="row" key={c.id}>
+            <span style={{ flex: 1 }}>{c.name}</span>
+            {c.has_guardian && (
+              <span className="muted small">
+                {tr("hld.book.guardian", lang)}
+              </span>
+            )}
+          </div>
+        ))}
+        {book && book.book.length > 30 && (
+          <p className="muted small">
+            {tr("hld.book.more", lang)
+              .replace("{n}", String(book.book.length - 30))}
+          </p>
+        )}
+        <button disabled={busy} onClick={() => void syncBook()}>
+          {tr("hld.book.sync", lang)}
+        </button>
       </div>
 
       <div className="card">

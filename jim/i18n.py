@@ -2852,6 +2852,31 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    # -- the synced book's two vault sentences (jim/contacts.py). They
+    # reached the wire when the doors opened, and a sentence on the wire is
+    # a sentence somebody reads.
+    ("this book is sealed into the vault and no vault was supplied"): {
+        'es': "esta libreta está sellada en la bóveda y no se proporcionó ninguna bóveda",
+        'fr': "ce carnet est scellé dans le coffre et aucun coffre n'a été fourni",
+        'de': "dieses Buch ist im Tresor versiegelt und kein Tresor wurde bereitgestellt",
+        'pt': "esta lista está selada no cofre e nenhum cofre foi fornecido",
+        'it': "questa rubrica è sigillata nel caveau e nessun caveau è stato fornito",
+        'ja': "この連絡帳は保管庫に封印されていますが、保管庫が渡されていません",
+        'zh': "这本通讯录封存在保管库中，但没有提供保管库",
+        'hi': "यह सूची तिजोरी में सील है और कोई तिजोरी नहीं दी गई",
+        'ar': "هذا الدفتر مختوم في الخزانة ولم تُقدَّم أي خزانة",
+    },
+    ("the sealed book is not in the vault"): {
+        'es': "la libreta sellada no está en la bóveda",
+        'fr': "le carnet scellé n'est pas dans le coffre",
+        'de': "das versiegelte Buch ist nicht im Tresor",
+        'pt': "a lista selada não está no cofre",
+        'it': "la rubrica sigillata non è nel caveau",
+        'ja': "封印された連絡帳が保管庫にありません",
+        'zh': "封存的通讯录不在保管库中",
+        'hi': "सील की गई सूची तिजोरी में नहीं है",
+        'ar': "الدفتر المختوم ليس في الخزانة",
+    },
     'a meal needs a note or a photo — there is nothing to log in an empty plate': {
         'es': 'una comida necesita una nota o una foto: no hay nada que registrar en un plato vacío',
         'fr': "un repas a besoin d'une note ou d'une photo — il n'y a rien à consigner dans une assiette vide",
@@ -5878,6 +5903,8 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     'code': {'en': 'Code', 'es': 'Código', 'fr': 'Code', 'de': 'Code', 'pt': 'Código', 'it': 'Codice', 'ja': 'コード', 'zh': '验证码', 'hi': 'कोड', 'ar': 'الرمز'},
     'command': {'en': 'Command', 'es': 'Comando', 'fr': 'Commande', 'de': 'Befehl', 'pt': 'Comando', 'it': 'Comando', 'ja': 'コマンド', 'zh': '指令', 'hi': 'कमांड', 'ar': 'الأمر'},
     'condition': {'en': 'Condition', 'es': 'Afección', 'fr': 'Affection', 'de': 'Erkrankung', 'pt': 'Condição', 'it': 'Condizione', 'ja': '症状', 'zh': '状况', 'hi': 'स्थिति', 'ar': 'الحالة'},
+    'entries': {'en': "The address book, as the device holds it", 'es': 'La libreta, tal como la tiene el dispositivo', 'fr': "Le carnet, tel que l'appareil le détient", 'de': 'Das Adressbuch, wie das Gerät es hält', 'pt': 'A lista, tal como o dispositivo a tem', 'it': 'La rubrica, come la tiene il dispositivo', 'ja': '端末が持つままの連絡帳', 'zh': '设备中原样的通讯录', 'hi': 'सूची, जैसी डिवाइस में है', 'ar': 'الدفتر كما يحمله الجهاز'},
+    'jim_user_id': {'en': "Their guardian's account, when the shell matched one", 'es': 'La cuenta de su guardián, cuando la app la reconoció', 'fr': "Le compte de leur gardien, quand l'application l'a reconnu", 'de': 'Das Konto ihres Wächters, wenn eine App es erkannt hat', 'pt': 'A conta do guardião deles, quando a app a reconheceu', 'it': "L'account del loro guardiano, quando un'app l'ha riconosciuto", 'ja': '相手のガーディアンのアカウント（アプリが照合できた場合）', 'zh': '对方守护者的账户（应用匹配到时）', 'hi': 'उनके गार्जियन का खाता, जब ऐप ने मिलाया हो', 'ar': 'حساب وصيّهم، عندما يطابقه تطبيق'},
     'consented': {'en': 'Consent', 'es': 'Consentimiento', 'fr': 'Consentement', 'de': 'Einwilligung', 'pt': 'Consentimento', 'it': 'Consenso', 'ja': '同意', 'zh': '同意', 'hi': 'सहमति', 'ar': 'الموافقة'},
     'contact_emergency_services': {'en': 'Contact emergency services', 'es': 'Contactar a emergencias', 'fr': 'Contacter les secours', 'de': 'Notdienste rufen', 'pt': 'Contactar os serviços de emergência', 'it': 'Contattare i soccorsi', 'ja': '救急機関へ連絡', 'zh': '联系急救服务', 'hi': 'आपातकालीन सेवाओं से संपर्क करें', 'ar': 'الاتصال بخدمات الطوارئ'},
     'critical': {'en': 'Critical', 'es': 'Crítico', 'fr': 'Critique', 'de': 'Kritisch', 'pt': 'Crítico', 'it': 'Critico', 'ja': '重要', 'zh': '关键', 'hi': 'अति आवश्यक', 'ar': 'حرج'},

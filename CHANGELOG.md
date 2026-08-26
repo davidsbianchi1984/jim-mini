@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.6] - 2026-08-27
+
+### Added
+
+- **The address book has doors.** The contacts module shipped whole in
+  the contacts round — grant, synced book, vault custody, dial-time
+  recognition — and was reachable from Python and from nowhere a phone
+  actually is. `PUT /contacts/{user}` syncs, `GET` reads names back
+  (never the numbers), the grant stays on the sources switch it always
+  had, and the Held screen carries a card: the book, a picker-based
+  sync where the browser offers one, and the count. The native shells'
+  backlogs record the doors they owe.
+
 ### Changed
 
 - **The ladder winds itself.** The coach→JIM ladder shipped whole — free
@@ -11282,7 +11295,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.5...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.6...HEAD
+[1.8.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.5...app-v1.8.6
 [1.8.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.4...app-v1.8.5
 [1.8.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.3...app-v1.8.4
 [1.8.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.2...app-v1.8.3

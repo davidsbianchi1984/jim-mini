@@ -1,5 +1,5 @@
-# status: backlog — 193 rows
-# ceiling: 193
+# status: backlog — 194 rows
+# ceiling: 194
 # candidates: 0
 #
 # Guards carried by two of the three products and not the third. Each row
@@ -104,6 +104,7 @@ pdi: test_a_short_reply_is_one_piece_unchanged | unclassified | swept in with th
 pdi: test_a_stored_widget_runs_and_answers | deliberate | /run /users /users/{}/widgets /users/{}/widgets/{}/run
 pdi: test_a_stranded_pending_account_is_finished_on_a_no_mail_machine | deliberate | /signin /signup
 pdi: test_a_superseded_turn_cannot_close_the_one_that_replaced_it | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_sync_replaces_rather_than_merges | deliberate | the estate's two address-book halves (jim/contacts.py, qrme/contacts.py) each hold the replace rule at their own door; PDI holds no book to sync
 pdi: test_a_term_is_exempt_from_the_whitespace_rule_and_a_stranger_is_not | answered | on purpose: PDI has no refusal that interpolates a closed-set Term, and its test_no_slot_is_filled_from_a_string_literal fails if that stops being true — the lack is self-guarding
 pdi: test_a_test_send_reports_what_the_server_said | deliberate | /settings/mail /settings/mail/test
 pdi: test_a_test_send_without_a_server_is_refused | deliberate | /settings/mail/test

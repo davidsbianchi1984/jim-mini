@@ -2603,6 +2603,17 @@ export const api = {
                token: string) =>
     req<{ source: string; consented: boolean }>(`/sources/${uid}`,
       { method: "PUT", body, token }),
+  // -- the synced address book (jim/contacts.py). Names and whether each
+  // holds a guardian come back; the numbers never do — the phone already
+  // has them.
+  syncContacts: (uid: string, entries: { name: string; number: string }[],
+                 token: string) =>
+    req<{ held: number; skipped: number; sealed: boolean }>(
+      `/contacts/${uid}`, { method: "PUT", body: { entries }, token }),
+  contactsBook: (uid: string, token: string) =>
+    req<{ book: { id: string; name: string; has_guardian: boolean;
+                  added_at: string }[];
+          held: number }>(`/contacts/${uid}`, { token }),
   recordCondition: (uid: string, body: { condition: ConditionName;
                                          note?: string }, token: string) =>
     req<Row>(`/conditions/${uid}`, { method: "POST", body, token }),

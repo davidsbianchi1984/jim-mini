@@ -25,7 +25,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                monitors,
                oncall,
                mailer,
-               circle, contribution, db, money, schedule, shopping,
+               circle, contacts, contribution, db, money, schedule, shopping,
                escalation, family, farend, followup, guardian, handoff, i18n,
                identity,
                landing, life, llm,
@@ -78,7 +78,8 @@ from .models import (
     FarEndSet,
     SensitivitySet, SessionStart, SocialCollect, SocialConnect, SocialPublish,
     SourceConsent, SpecialistRegister, SpecialistTaskStart,
-    CaptureAttach, CaptureTake, DockConfig, PlanChoice, TutorialMark, MealLog,
+    CaptureAttach, CaptureTake, ContactsSync, DockConfig, PlanChoice,
+    TutorialMark, MealLog,
     WidgetRun, WidgetWrite,
     DrillStart, DrillAnswer, StatementDrop, BankLink,
 )
@@ -106,7 +107,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="1.8.5",
+    app = FastAPI(title="JIM-mini / Guardian", version="1.8.6",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2587,6 +2588,46 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return life.set_source(user_id, body.source, body.consented,
                                app.state.pdi)
+
+    # ---- the synced address book (jim/contacts.py) ------------------------
+    # The module shipped whole in the contacts round and had no wire: sync,
+    # book and recognition were reachable from Python and from nowhere a
+    # phone actually is. These are its doors. The GRANT stays where grants
+    # live — `PUT /sources` above with source "contacts" — and withdrawal
+    # stays on that same switch (life.set_source calls contacts.withdrawn),
+    # so a person turning it off never has to find a second control.
+
+    @app.put("/contacts/{user_id}")
+    def sync_contacts(user_id: str, body: ContactsSync,
+                      request: Request) -> dict:
+        """Replace the book with what the device has.
+
+        A replace, never a merge — the device's book is the truth, and the
+        module says why. The REAL vault and the plan ride together: the
+        module clears the custody the previous plan used before writing to
+        the one the current plan says."""
+        _user_or_404(user_id, request)
+        try:
+            return contacts.sync(
+                user_id, [e.model_dump() for e in body.entries],
+                pdi=app.state.pdi, plan=tiers.plan_of(user_id))
+        except contacts.NotGranted as exc:
+            raise HTTPException(403, i18n.raised(exc)) from None
+
+    @app.get("/contacts/{user_id}")
+    def contacts_book(user_id: str, request: Request) -> dict:
+        """Everybody in the synced book, by name — names and whether each
+        holds a guardian, never the numbers back out."""
+        _user_or_404(user_id, request)
+        try:
+            return {"book": contacts.book(user_id, pdi=app.state.pdi),
+                    "held": contacts.held(user_id)}
+        except contacts.NotGranted as exc:
+            raise HTTPException(403, i18n.raised(exc)) from None
+        except contacts.VaultUnreachable as exc:
+            # *You know nobody* and *I could not open your book* are
+            # different sentences; 503 keeps them apart on the wire too.
+            raise HTTPException(503, i18n.raised(exc)) from None
 
     @app.post("/context/{user_id}", status_code=201)
     def add_context(user_id: str, body: ContextEvent, request: Request) -> dict:

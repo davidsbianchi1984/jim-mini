@@ -64,3 +64,9 @@ PUT /users/{user_id}/widgets/{widget_id}
 
 GET /farend/{user_id}
 PUT /farend/{user_id}
+
+# The synced address book's doors (jim/contacts.py). The console carries a
+# picker-based sync where the platform offers one; the native shells are
+# the real road for the rest and owe their own.
+PUT /contacts/{user_id}
+GET /contacts/{user_id}

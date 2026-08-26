@@ -4425,6 +4425,27 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "hld.src.allow.button": {
     en: "Allow", es: "Permitir", fr: "Autoriser", de: "Erlauben", pt: "Permitir", it: "Consenti", ja: "許可する", zh: "允许", hi: "अनुमति दें", ar: "اسمح",
   },
+  "hld.book": {
+    en: "The people in your phone", es: "Las personas de tu teléfono", fr: "Les personnes de votre téléphone", de: "Die Menschen in deinem Telefon", pt: "As pessoas do seu telefone", it: "Le persone nel tuo telefono", ja: "電話の連絡先の人たち", zh: "你手机里的联系人", hi: "आपके फ़ोन के लोग", ar: "الأشخاص في هاتفك",
+  },
+  "hld.book.sync": {
+    en: "Sync from this device", es: "Sincronizar desde este dispositivo", fr: "Synchroniser depuis cet appareil", de: "Von diesem Gerät synchronisieren", pt: "Sincronizar deste dispositivo", it: "Sincronizza da questo dispositivo", ja: "この端末から同期", zh: "从此设备同步", hi: "इस डिवाइस से सिंक करें", ar: "مزامنة من هذا الجهاز",
+  },
+  "hld.book.held": {
+    en: "{n} people held — names only, never the numbers back out", es: "{n} personas guardadas — solo nombres, nunca los números", fr: "{n} personnes conservées — les noms seulement, jamais les numéros", de: "{n} Personen gehalten — nur Namen, nie die Nummern zurück", pt: "{n} pessoas guardadas — só nomes, nunca os números", it: "{n} persone conservate — solo i nomi, mai i numeri", ja: "{n} 人を保持 — 名前のみ、番号は返しません", zh: "已保存 {n} 人——只有名字，号码绝不返回", hi: "{n} लोग रखे गए — केवल नाम, नंबर कभी वापस नहीं", ar: "{n} شخصًا محفوظًا — الأسماء فقط، الأرقام لا تعود أبدًا",
+  },
+  "hld.book.empty": {
+    en: "Nothing synced yet", es: "Aún no hay nada sincronizado", fr: "Rien de synchronisé pour l'instant", de: "Noch nichts synchronisiert", pt: "Ainda nada sincronizado", it: "Ancora niente di sincronizzato", ja: "まだ何も同期されていません", zh: "尚未同步任何内容", hi: "अभी तक कुछ सिंक नहीं हुआ", ar: "لم تتم مزامنة أي شيء بعد",
+  },
+  "hld.book.guardian": {
+    en: "has a guardian", es: "tiene guardián", fr: "a un gardien", de: "hat einen Wächter", pt: "tem guardião", it: "ha un guardiano", ja: "ガーディアンあり", zh: "有守护者", hi: "गार्जियन है", ar: "لديه وصيّ",
+  },
+  "hld.book.more": {
+    en: "…and {n} more", es: "…y {n} más", fr: "…et {n} de plus", de: "…und {n} weitere", pt: "…e mais {n}", it: "…e altri {n}", ja: "…ほか {n} 人", zh: "…还有 {n} 人", hi: "…और {n} लोग", ar: "…و{n} آخرون",
+  },
+  "hld.book.nopicker": {
+    en: "This browser cannot hand its contacts over — sync from the phone app instead", es: "Este navegador no puede entregar sus contactos: sincroniza desde la aplicación del teléfono", fr: "Ce navigateur ne peut pas transmettre ses contacts — synchronisez depuis l'application du téléphone", de: "Dieser Browser kann seine Kontakte nicht übergeben — synchronisiere über die Telefon-App", pt: "Este navegador não pode entregar os contactos — sincronize pela aplicação do telefone", it: "Questo browser non può consegnare i contatti — sincronizza dall'app del telefono", ja: "このブラウザは連絡先を渡せません — スマホアプリから同期してください", zh: "此浏览器无法交出联系人——请通过手机应用同步", hi: "यह ब्राउज़र संपर्क नहीं दे सकता — फ़ोन ऐप से सिंक करें", ar: "لا يستطيع هذا المتصفح تسليم جهات الاتصال — زامِن من تطبيق الهاتف",
+  },
   "hld.src.withdraw": {
     en: "Withdraw", es: "Retirar", fr: "Retirer", de: "Zurückziehen", pt: "Retirar", it: "Ritira", ja: "取り消す", zh: "撤回", hi: "वापस लें", ar: "اسحب",
   },

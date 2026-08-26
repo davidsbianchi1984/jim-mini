@@ -290,3 +290,54 @@ def test_the_plan_question_is_storages_and_is_asked_once():
     # And it is the same function every other seal point asks.
     assert storage.vault_for(  # noqa: S101 — the shape, not a behaviour
         "free", object()) is None
+
+
+# --- the doors ---------------------------------------------------------------
+#
+# The module shipped whole and had no wire: sync, book and recognition were
+# reachable from Python and from nowhere a phone actually is. These hold the
+# two doors and the shape of what crosses them — and that the grant's own
+# switch stays the only off switch.
+
+
+def test_the_phone_can_put_its_book_through_the_door(client):
+    user_id = granted(client)
+    r = client.put(f"/contacts/{user_id}",
+                   json={"entries": [{"name": "Mom", "number": MOM}]})
+    assert r.status_code == 200, r.text
+    assert r.json()["held"] == 1
+    got = client.get(f"/contacts/{user_id}")
+    assert got.status_code == 200, got.text
+    body = got.json()
+    assert [c["name"] for c in body["book"]] == ["Mom"]
+    assert body["held"] == 1
+
+
+def test_the_numbers_never_come_back_out_the_door(client):
+    """The module's own rule, held at the wire: the phone already has the
+    numbers, so nothing here returns them."""
+    user_id = granted(client)
+    client.put(f"/contacts/{user_id}",
+               json={"entries": [{"name": "Mom", "number": MOM}]})
+    body = client.get(f"/contacts/{user_id}").text
+    assert "2233" not in body, "a number crossed back over the wire"
+
+
+def test_without_the_grant_both_doors_refuse_with_the_sentence(client):
+    user_id = enroll(client)
+    r = client.put(f"/contacts/{user_id}", json={"entries": []})
+    assert r.status_code == 403, r.text
+    assert "people in your phone" in r.text
+    assert client.get(f"/contacts/{user_id}").status_code == 403
+
+
+def test_withdrawing_the_source_is_still_the_only_off_switch(client):
+    """The wire adds no second control: the sources switch that granted the
+    book is the one that drops it, exactly as it did before the doors."""
+    user_id = granted(client)
+    client.put(f"/contacts/{user_id}",
+               json={"entries": [{"name": "Mom", "number": MOM}]})
+    r = client.put(f"/sources/{user_id}",
+                   json={"source": "contacts", "consented": False})
+    assert r.status_code == 200, r.text
+    assert local_rows(user_id) == [] and sealed_row(user_id) is None

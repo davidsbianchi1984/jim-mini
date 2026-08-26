@@ -572,6 +572,22 @@ class SourceConsent(BaseModel):
     consented: bool
 
 
+class ContactEntry(BaseModel):
+    """One row of a device's address book, as the device holds it.
+
+    `number` arrives however the phone formats it — spaces, dashes, a
+    leading + — and `jim.contacts.digits` is the one place that decides
+    what of it is kept. `jim_user_id` is set by a shell that already knows
+    a contact holds a guardian; absent otherwise, and never guessed."""
+    name: str
+    number: str
+    jim_user_id: str | None = None
+
+
+class ContactsSync(BaseModel):
+    entries: list[ContactEntry] = Field(default_factory=list)
+
+
 class ContextEvent(BaseModel):
     source: Source
     kind: str                      # e.g. transaction | sleep | event | message
