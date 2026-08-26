@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { api, type FollowupResult, type Guidance,
+import { api, type FollowupResult, type FreshnessFacts, type Guidance,
          type MonitorResult } from "../api";
 import { PaceCue } from "../PaceCue";
 import { t as tr, visitorLang } from "../l10n";
@@ -54,11 +54,32 @@ export function Monitor() {
   const saying = useRef(false);
   useEffect(() => { void primeVoice(); }, []);
 
+  // The staleness contract's console half (jim/freshness.py). While this
+  // screen is open the console beats the channel heartbeat — a web page
+  // on the phone is honestly a channel, and its pulse is not a reading —
+  // and shows the facts: which silence this is, and the p95 age at the
+  // moment of decision, the number "real-time" has to answer with.
+  const [fresh, setFresh] = useState<FreshnessFacts | null>(null);
+  useEffect(() => {
+    if (!session.userId || !session.userToken) return;
+    const uid = session.userId, tok = session.userToken;
+    const look = () => api.freshness(uid, tok).then(setFresh)
+      .catch(() => setFresh(null));
+    void api.heartbeat(uid, tok).catch(() => undefined);
+    look();
+    const pulse = window.setInterval(() => {
+      void api.heartbeat(uid, tok).catch(() => undefined);
+      look();
+    }, 30_000);
+    return () => window.clearInterval(pulse);
+  }, [session.userId, session.userToken]);
+
   async function submit() {
     if (!session.userId || !session.userToken) return;
     setBusy(true); setError(null); setAnswer(null);
     try {
-      const r = await api.monitor(session.userId, { heart_rate: hr, respiratory_rate: resp, stress_level: stress }, session.userToken);
+      const now = new Date().toISOString();
+      const r = await api.monitor(session.userId, { heart_rate: hr, respiratory_rate: resp, stress_level: stress, observed_at: now, device_now: now }, session.userToken);
       setResult(r);
       if (r.detected && r.guidance?.content) chime(r.guidance);
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
@@ -251,6 +272,28 @@ export function Monitor() {
         <button className="primary" onClick={submit} disabled={busy}>{busy ? tr("mon.analyzing", lang) : tr("mon.send", lang)}</button>
         {error && <div className="error">⚠ {error}</div>}
       </div>
+
+      {fresh && (
+        <div className="card">
+          <h3>{tr("mon.fresh.title", lang)}</h3>
+          <p className="muted small">
+            {tr(`mon.fresh.${fresh.verdict}`, lang)}
+            {fresh.reading_age_ms !== null
+              ? " · " + tr("mon.fresh.age", lang)
+                  .replace("{s}",
+                           String(Math.round(fresh.reading_age_ms / 1000)))
+              : ""}
+          </p>
+          <p className="muted small">
+            {tr("mon.fresh.p95", lang).replace("{s}",
+              fresh.consumers.display
+                && fresh.consumers.display.p95_age_at_decision_ms !== null
+                ? String(Math.round(
+                    fresh.consumers.display.p95_age_at_decision_ms / 100) / 10)
+                : "—")}
+          </p>
+        </div>
+      )}
 
       {result && (
         <div className={"card detect " + (result.detected ? "hit" : "calm")}>

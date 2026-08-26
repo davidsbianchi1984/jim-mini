@@ -860,6 +860,16 @@ export interface AnonymityPosture {
   anonymous: boolean; known_as?: string; legal_name_on_record: boolean;
   keeps: string[]; costs: string[];
 }
+export type FreshnessFacts = {
+  verdict: string; reading_age_ms: number | null;
+  heartbeat_age_ms: number | null;
+  ingress: { p95_age_ms: number | null; readings: number;
+             unknown_age: number };
+  consumers: Record<string, { window_ms: number;
+    p95_age_at_decision_ms: number | null;
+    decisions: Record<string, number> }>;
+};
+
 export interface MonitorResult {
   detected: boolean; condition?: string; severity?: string; reason?: string;
   guidance?: Guidance | null; escalation?: unknown; forecast?: unknown;
@@ -1767,9 +1777,18 @@ export const api = {
   // `respiration`, it was dropped by the model with no error — the
   // console collected a breathing rate and the guardian never saw it.
   monitor: (uid: string, body: { heart_rate: number;
-            respiratory_rate?: number; stress_level?: number },
+            respiratory_rate?: number; stress_level?: number;
+            observed_at?: string; device_now?: string },
             token: string) =>
     req<MonitorResult>(`/monitor/${uid}`, { method: "POST", body, token }),
+  // The staleness contract (jim/freshness.py). The beat is the channel's
+  // pulse apart from the readings; the stats are the number you can
+  // produce on demand — p95 age at the moment of decision, per consumer.
+  heartbeat: (uid: string, token: string) =>
+    req<{ skew_ms: number | null }>(`/heartbeat/${uid}`, {
+      method: "POST", body: { device_now: new Date().toISOString() }, token }),
+  freshness: (uid: string, token: string) =>
+    req<FreshnessFacts>(`/freshness/${uid}`, { token }),
   // Spec [0039]: whether the guidance actually worked. "No" escalates toward
   // a live person and comes back with the humans reachable right now.
   answerFollowup: (uid: string, body: { helped: boolean; note?: string }, token: string) =>

@@ -5035,6 +5035,29 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "mon.title": {
     en: "Live Monitoring", es: "Vigilancia en directo", fr: "Surveillance en direct", de: "Live-Überwachung", pt: "Vigilância em direto", it: "Monitoraggio dal vivo", ja: "ライブ・モニタリング", zh: "实时监测", hi: "लाइव निगरानी", ar: "المراقبة الحيّة",
   },
+  // The staleness contract's card (jim/freshness.py): which silence this
+  // is, and the number "real-time" answers with.
+  "mon.fresh.title": {
+    en: "How fresh the readings are", es: "Qué tan recientes son las lecturas", fr: "Fraîcheur des mesures", de: "Wie frisch die Messwerte sind", pt: "Quão recentes são as leituras", it: "Quanto sono fresche le letture", ja: "読み取りの新しさ", zh: "读数有多新", hi: "रीडिंग कितनी ताज़ा हैं", ar: "مدى حداثة القراءات",
+  },
+  "mon.fresh.alive": {
+    en: "Readings are current.", es: "Las lecturas están al día.", fr: "Les mesures sont à jour.", de: "Die Messwerte sind aktuell.", pt: "As leituras estão em dia.", it: "Le letture sono aggiornate.", ja: "読み取りは最新です。", zh: "读数是最新的。", hi: "रीडिंग ताज़ा हैं।", ar: "القراءات حديثة.",
+  },
+  "mon.fresh.person-quiet": {
+    en: "The channel is alive but no readings — the watch may be off the wrist.", es: "El canal está activo pero sin lecturas: el reloj puede no estar en la muñeca.", fr: "Le canal est actif mais sans mesures — la montre n'est peut-être pas au poignet.", de: "Der Kanal lebt, aber keine Messwerte — die Uhr ist womöglich nicht am Handgelenk.", pt: "O canal está ativo mas sem leituras — o relógio pode não estar no pulso.", it: "Il canale è attivo ma senza letture — l'orologio potrebbe non essere al polso.", ja: "チャンネルは生きていますが読み取りがありません — 時計が手首にないかもしれません。", zh: "通道正常但没有读数——手表可能不在手腕上。", hi: "चैनल चालू है पर रीडिंग नहीं — घड़ी शायद कलाई पर नहीं है।", ar: "القناة تعمل لكن لا قراءات — قد تكون الساعة ليست على المعصم.",
+  },
+  "mon.fresh.phone-between": {
+    en: "The phone sits between the wrist and the wire — its relay has gone quiet.", es: "El teléfono está entre la muñeca y la red: su relé se ha callado.", fr: "Le téléphone est entre le poignet et le réseau — son relais s'est tu.", de: "Das Telefon sitzt zwischen Handgelenk und Netz — sein Relais ist verstummt.", pt: "O telefone está entre o pulso e a rede — o seu relé silenciou.", it: "Il telefono sta tra il polso e la rete — il suo relè tace.", ja: "電話が手首と回線の間にあり、その中継が止まっています。", zh: "手机在手腕与网络之间——它的中继安静了。", hi: "फ़ोन कलाई और नेटवर्क के बीच है — उसका रिले चुप हो गया है।", ar: "الهاتف بين المعصم والشبكة — توقّف وسيطه عن الإرسال.",
+  },
+  "mon.fresh.network-dark": {
+    en: "The network is dark — no channel pulse and no readings.", es: "La red está a oscuras: sin pulso del canal ni lecturas.", fr: "Le réseau est muet — ni pouls du canal ni mesures.", de: "Das Netz ist dunkel — kein Kanalpuls und keine Messwerte.", pt: "A rede está às escuras — sem pulso do canal nem leituras.", it: "La rete è muta — nessun battito del canale e nessuna lettura.", ja: "ネットワークが沈黙しています — チャンネルの鼓動も読み取りもありません。", zh: "网络无响应——没有通道脉冲也没有读数。", hi: "नेटवर्क अंधेरे में है — न चैनल की धड़कन, न रीडिंग।", ar: "الشبكة صامتة — لا نبض للقناة ولا قراءات.",
+  },
+  "mon.fresh.age": {
+    en: "last reading {s}s old", es: "última lectura hace {s}s", fr: "dernière mesure il y a {s}s", de: "letzter Messwert {s}s alt", pt: "última leitura há {s}s", it: "ultima lettura {s}s fa", ja: "最新の読み取りは{s}秒前", zh: "最近读数 {s} 秒前", hi: "आख़िरी रीडिंग {s} सेकंड पुरानी", ar: "آخر قراءة قبل {s} ثانية",
+  },
+  "mon.fresh.p95": {
+    en: "p95 age at decision: {s}s — measured, not designed", es: "edad p95 al decidir: {s}s — medida, no diseñada", fr: "âge p95 à la décision : {s}s — mesuré, pas conçu", de: "p95-Alter bei der Entscheidung: {s}s — gemessen, nicht entworfen", pt: "idade p95 na decisão: {s}s — medida, não desenhada", it: "età p95 alla decisione: {s}s — misurata, non progettata", ja: "判断時のp95経過時間: {s}秒 — 設計値ではなく実測値", zh: "决策时的 p95 年龄：{s} 秒——实测，而非设计", hi: "निर्णय के समय p95 आयु: {s} सेकंड — मापी गई, तय नहीं", ar: "عمر p95 عند القرار: {s} ثانية — مقاس لا مُصمَّم",
+  },
   "mon.sub": {
     en: "detect → guide → escalate", es: "detectar → guiar → escalar", fr: "détecter → guider → escalader", de: "erkennen → anleiten → eskalieren", pt: "detetar → orientar → escalar", it: "rileva → guida → escala", ja: "検知 → 案内 → エスカレート", zh: "检测 → 指导 → 升级", hi: "पहचान → मार्गदर्शन → वृद्धि", ar: "اكتشاف ← إرشاد ← تصعيد",
   },

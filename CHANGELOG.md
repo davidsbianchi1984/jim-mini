@@ -21,7 +21,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   phone sitting between, and the network going dark are three silences
   instead of one. `GET /freshness/{user}` answers with the p95 age at
   the moment of decision per consumer — measured, not designed. The
-  heartbeat door is recorded in all three shell backlogs.
+  heartbeat door is recorded in all three shell backlogs, and the
+  console carries both doors itself: the Monitor screen beats the
+  channel pulse while open and shows which silence this is, the last
+  reading's age, and the p95.
 
 ## [1.8.7] - 2026-08-27
 
