@@ -11,7 +11,14 @@ import { answeredOffline, startWalking } from "../walk";
 const AREAS: import("../api").GoalArea[] =
   ["mental_health", "health_fitness", "career", "relationships"];
 
-export function Coach() {
+export function Coach({ go }: {
+  /** The four boxes beside the conversation — the coach's own settings,
+   *  reachable from the one screen where you are looking at the coach.
+   *  The estate's chat surfaces all carry this rail now; JIM's version
+   *  points at the screens its settings already live on, because unlike
+   *  QRME's panels they have screens of their own. */
+  go?: (t: "aims" | "journal" | "bearing" | "permits") => void;
+}) {
   const { session } = useSession();
   const [area, setArea] = useState<import("../api").GoalArea>("mental_health");
   const [message, setMessage] = useState("I've been feeling stressed about work.");
@@ -280,6 +287,24 @@ export function Coach() {
 
   return (
     <div className="screen">
+      {/* "Those four extra boxes should be located in all the chats...
+          including coach" — what we are working toward, what it holds,
+          how it carries itself, what it may do. */}
+      {go && (
+        <div className="coach-rail" role="group">
+          {([["aims", "🎯", "aim.title"],
+             ["journal", "📖", "jrn.title"],
+             ["bearing", "🧭", "brg.title"],
+             ["permits", "🛂", "engaged.title"]] as const).map(
+            ([tab, glyph, key]) => (
+            <button key={tab} className="coach-rail-btn"
+                    onClick={() => go(tab)}>
+              <span aria-hidden="true">{glyph}</span>
+              <span className="coach-rail-label">{tr(key, lang)}</span>
+            </button>
+          ))}
+        </div>
+      )}
       {(listening || speaking) && (
         <div className="voice-orb-veil" role="status"
              aria-label={listening ? "Listening" : "Speaking"}

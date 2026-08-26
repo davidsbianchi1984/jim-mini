@@ -10,12 +10,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- **Cut with the siblings** — no functional change in this product. QRME
-  took the round: rooms that read handed links, hand documents back (as
-  PDFs when asked), and remember their own person; a friends-only circle
-  screen; and the field afternoon's smaller repairs. The three move
-  ahead together, and a box carrying two versions reports the mismatch
-  to whoever is using it.
+- **The coach carries its own settings.** The estate's chat surfaces
+  all grew a rail of four boxes this round, and JIM's telling is four
+  doors beside the coach conversation — Aims, Journal, Bearing, and
+  what JIM may do — each opening the screen the setting already lives
+  on, from the one screen where you are looking at the coach.
+
+- **Cut with the siblings** — the rest of the round is QRME's: rooms
+  that read handed links, hand documents back (as PDFs when asked), and
+  remember their own person; a friends-only circle screen; the panels
+  rail in every chat; and the field afternoon's smaller repairs. The
+  three move ahead together, and a box carrying two versions reports
+  the mismatch to whoever is using it.
 
 ## [1.8.6] - 2026-08-27
 

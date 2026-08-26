@@ -223,7 +223,7 @@ export function App() {
         {tab === "selfprofile" && <SelfProfile />}
         {tab === "monitor" && <Monitor />}
         {tab === "baseline" && <Baseline />}
-        {tab === "coach" && <Coach />}
+        {tab === "coach" && <Coach go={setTab} />}
         {tab === "engaged" && <Talk go={(id) => setTab(id as Tab)} />}
         {tab === "permits" && <Engaged />}
         {tab === "studio" && <Studio />}

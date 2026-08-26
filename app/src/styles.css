@@ -828,3 +828,18 @@ body.theme-paper select { background: #fff; color: var(--txt); }
    answer from stored knowledge is an answer, and styling it as a warning
    would teach people to distrust a working deployment. */
 .walk-offline { white-space: nowrap; opacity: 0.75; font-style: italic; }
+
+/* The four boxes beside the coach conversation — the estate's chat rail,
+   JIM's telling: each opens the screen the setting already lives on.
+   Fixed to the right edge, below where the footsteps sit. */
+.coach-rail { position: fixed; right: 6px; top: calc(50% - 40px);
+              display: flex; flex-direction: column; gap: 8px; z-index: 40; }
+.coach-rail-btn { display: flex; flex-direction: column; align-items: center;
+                  gap: 2px; min-width: 60px; padding: 8px 6px;
+                  font-size: 18px; line-height: 1.1; border-radius: 14px;
+                  background: rgba(13,10,32,0.62);
+                  border: 1px solid var(--line); color: inherit;
+                  cursor: pointer; }
+.coach-rail-label { font-size: 10px; font-weight: 600; max-width: 58px;
+                    text-align: center; overflow: hidden;
+                    text-overflow: ellipsis; white-space: nowrap; }
