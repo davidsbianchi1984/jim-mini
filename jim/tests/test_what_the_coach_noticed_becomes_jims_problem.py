@@ -438,3 +438,101 @@ def test_this_pass_reaches_no_acting_tool():
 @pytest.mark.parametrize("settled", noticed.SETTLED_BY)
 def test_every_way_a_notice_settles_is_a_word_somebody_can_read(settled):
     assert settled and settled.isalpha()
+
+
+# -- the ladder winds itself -----------------------------------------------
+#
+# The whole module shipped and then closed only from a button on the Coach
+# screen — the loop-that-a-person-has-to-know-about defect its own header
+# quotes jim/errands.py naming, rebuilt one module over. "For autonomous
+# stuff throughout your day" is the ask; the trigger is the traffic where
+# the work is born, handed to the response's background at the doors that
+# take a reading, a check-in, a journal line, an activity, or a coach turn.
+
+
+def test_the_pass_runs_on_the_heels_of_a_reading(client):
+    """No button anywhere in this test: a reading arrives, and the ladder
+    has run by the time the response has gone out."""
+    uid = enroll(client)
+    _allow(client, uid)
+    _detect(uid, condition="restless nights")
+    _store(uid, "restless nights")
+    r = client.post(f"/monitor/{uid}", json={"heart_rate": 72})
+    assert r.status_code == 200, r.text
+    handled = noticed.ledger(uid)
+    assert [n["condition"] for n in handled] == ["restless nights"]
+    assert handled[0]["settled_by"] == "coach"
+    assert errands.spent_today(uid) == 0, "the free half spent nothing"
+
+
+def test_without_the_permit_the_traffic_winds_nothing(client):
+    """The person said nothing may run unattended, and honoring that
+    silently IS the honoring — no rows, and no refusal into a background
+    task nobody can hear."""
+    uid = enroll(client)
+    _detect(uid, condition="restless nights")
+    _store(uid, "restless nights")
+    r = client.post(f"/monitor/{uid}", json={"heart_rate": 72})
+    assert r.status_code == 200, r.text
+    assert noticed.ledger(uid) == []
+
+
+def test_a_failing_pass_never_breaks_the_door_it_rides(client, monkeypatch):
+    """A band posting a pulse must never learn that an unattended nicety
+    behind its door fell over."""
+    uid = enroll(client)
+    _allow(client, uid)
+    _detect(uid, condition="restless nights")
+
+    def falls_over(*a, **k):
+        raise RuntimeError("the nicety fell over")
+
+    monkeypatch.setattr(noticed, "run", falls_over)
+    r = client.post(f"/monitor/{uid}", json={"heart_rate": 72})
+    assert r.status_code == 200, r.text
+
+
+def test_every_door_where_work_is_born_winds_the_pass():
+    """Checked in the source, per door: the winding is only autonomous if it
+    rides EVERY door its work is born at — four kinds of detection traffic
+    and the coach turn where knowledge gaps come from. A door that forgot
+    is a day that quietly stops handling itself for people who only use
+    that door."""
+    from pathlib import Path
+
+    import jim.api as api_mod
+
+    src = Path(api_mod.__file__).read_text(encoding="utf-8")
+    for door in ('"/monitor/{user_id}"', '"/checkin/{user_id}"',
+                 '"/journal/{user_id}"', '"/activity/{user_id}"',
+                 '"/coach/{user_id}"'):
+        # Without the closing paren: three of these doors carry a
+        # status_code in the same decorator.
+        at = src.index(f"@app.post({door}")
+        block = src[at:src.index("@app.", at + 1)]
+        assert "noticed.after_traffic" in block, (
+            f"the {door} door takes traffic the ladder feeds on and does "
+            "not wind it")
+
+
+def test_the_study_half_rides_the_same_traffic_behind_its_own_permit(
+        client, monkeypatch):
+    """Both halves wind, each behind its own yes — the two-switch split is
+    about what leaves, and a person who allowed study and not handling gets
+    exactly the half they allowed."""
+    uid = enroll(client)
+    _allow(client, uid, permit=errands.PERMIT)
+
+    studied = []
+    monkeypatch.setattr(errands, "due",
+                        lambda user_id, limit=errands.DAILY:
+                        [{"topic": "sleep", "area": "health_fitness",
+                          "why": "for the test"}][:limit])
+    monkeypatch.setattr(errands, "run",
+                        lambda user_id, cloud=None, limit=errands.DAILY,
+                        pdi=None: studied.append(user_id))
+    r = client.post(f"/monitor/{uid}", json={"heart_rate": 72})
+    assert r.status_code == 200, r.text
+    assert studied == [uid], "the study half did not ride the traffic"
+    # And the handling half, unpermitted, stayed home.
+    assert noticed.ledger(uid) == []

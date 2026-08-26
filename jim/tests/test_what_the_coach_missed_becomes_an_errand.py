@@ -100,10 +100,17 @@ def test_the_permit_says_what_leaves_and_what_is_kept(client):
 
 def test_a_miss_becomes_an_errand_and_the_coach_keeps_it(client):
     """The whole loop, end to end: the coach could not answer, JIM went and
-    studied it, and what came back is where the offline coach reads it."""
+    studied it, and what came back is where the offline coach reads it.
+
+    The permit is granted AFTER the miss, not before. Since the ladder
+    winds itself (jim/noticed.py, after_traffic), a permitted study pass
+    rides the coach turn that records the miss — and studies it before
+    this test's explicit press, which is the feature doing its job on a
+    test written for the world before it. Withholding the permit until
+    the misses exist is what keeps this the test of the BUTTON."""
     user_id = enroll(client)
-    _allow(client, user_id)
     asked = _miss(client, user_id)
+    _allow(client, user_id)
 
     out = client.post(f"/errands/{user_id}")
     assert out.status_code == 201, out.text
@@ -163,9 +170,12 @@ def test_the_day_has_a_ceiling_and_the_ledger_is_what_counts_it(client):
     """Counted from the rows, not from a variable — a counter can only agree
     with itself, and a restart would hand back a fresh day's spending."""
     user_id = enroll(client)
-    _allow(client, user_id)
+    # Misses first, permit after — same reason as the end-to-end test
+    # above: a permitted pass rides the coach turns and would spend the
+    # day before this test measures the ceiling.
     for n in range(errands.DAILY + 2):
         _miss(client, user_id, f"an unanswerable question number {n}")
+    _allow(client, user_id)
 
     client.post(f"/errands/{user_id}")
     assert errands.spent_today(user_id) <= errands.DAILY

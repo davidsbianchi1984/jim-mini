@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The ladder winds itself.** The coach→JIM ladder shipped whole — free
+  half asked first, one shared ceiling, every settlement on the ledger —
+  and then ran only from a button on the Coach screen, which is a loop
+  that closes only for somebody who already knows it is there. Now the
+  doors where its work is born hand the pass to the response's
+  background: a reading, a check-in, a journal line, an observed
+  activity (where situations come from) and a coach turn (where
+  knowledge gaps come from). No scheduler, no thread — the day's own
+  traffic winds the clock, each half behind its own permit, every
+  failure yielding to the door it rides.
+
 ## [1.8.5] - 2026-08-26
 
 ### Changed

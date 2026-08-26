@@ -10,8 +10,8 @@ import os
 from datetime import date, datetime
 
 from fastapi.exceptions import RequestValidationError
-from fastapi import (Depends, FastAPI, Header, HTTPException, Request,
-                     Response)
+from fastapi import (BackgroundTasks, Depends, FastAPI, Header,
+                     HTTPException, Request, Response)
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse
 
@@ -1553,7 +1553,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         return guardian.register_specialist(body.model_dump())
 
     @app.post("/monitor/{user_id}")
-    def monitor(user_id: str, body: BiometricSample, request: Request) -> dict:
+    def monitor(user_id: str, body: BiometricSample, request: Request,
+                background: BackgroundTasks) -> dict:
         """A reading, and the ladder it climbs.
 
         `monitor` names the roster row it came off, when the sender knows.
@@ -1580,6 +1581,11 @@ def create_app(qrme_client: QRMEClient | None = None,
         farend.liveness_pass(user_id, _money_lang(user_id))
         answer = guardian.monitor(user_id, sample, note, qrme=app.state.qrme,
                                   pdi=_vault(user_id))
+        # The reading this door just took is how situations are born, so the
+        # self-winding pass runs on its heels — after the response is sent,
+        # behind its own permits (jim/noticed.py, after_traffic).
+        background.add_task(noticed.after_traffic, user_id,
+                            app.state.cloud, _vault(user_id))
         if came_off:
             # The same two words the roster prints, so a screen reading this
             # answer and a screen reading the roster are reading one
@@ -2079,7 +2085,8 @@ def create_app(qrme_client: QRMEClient | None = None,
 
     @app.post("/activity/{user_id}", status_code=201)
     def observe_activity(user_id: str, body: ActivityObserve,
-                         request: Request) -> dict:
+                         request: Request,
+                         background: BackgroundTasks) -> dict:
         """Ambient background observation: JIM watches an ongoing activity and
         jumps in proactively when a struggle is building — before being asked."""
         _user_or_404(user_id, request)
@@ -2087,9 +2094,12 @@ def create_app(qrme_client: QRMEClient | None = None,
         # monthly liveness note with it.
         schedule.remind_pass(user_id, _money_lang(user_id))
         farend.liveness_pass(user_id, _money_lang(user_id))
-        return guardian.observe_activity(
+        answer = guardian.observe_activity(
             user_id, body.activity, body.signals, body.note,
             qrme=app.state.qrme, pdi=_vault(user_id))
+        background.add_task(noticed.after_traffic, user_id,
+                            app.state.cloud, _vault(user_id))
+        return answer
 
     # ---- physical embodiments (clause 16) ---------------------------------
 
@@ -3093,7 +3103,8 @@ def create_app(qrme_client: QRMEClient | None = None,
     # ---- mood & energy check-ins ------------------------------------------
 
     @app.post("/checkin/{user_id}", status_code=201)
-    def check_in(user_id: str, body: CheckIn, request: Request) -> dict:
+    def check_in(user_id: str, body: CheckIn, request: Request,
+                 background: BackgroundTasks) -> dict:
         _user_or_404(user_id, request)
         result = life.check_in(user_id, body.mood, body.energy, body.note,
                                pdi=_vault(user_id), stress=body.stress)
@@ -3103,6 +3114,10 @@ def create_app(qrme_client: QRMEClient | None = None,
             result["guardian"] = guardian.monitor(
                 user_id, {}, body.note, qrme=app.state.qrme,
                 pdi=_vault(user_id))
+        # Same heels, same reason as /monitor: a check-in is a place a
+        # situation can be born.
+        background.add_task(noticed.after_traffic, user_id,
+                            app.state.cloud, _vault(user_id))
         return result
 
     @app.delete("/checkin/{user_id}/{checkin_id}")
@@ -3197,12 +3212,19 @@ def create_app(qrme_client: QRMEClient | None = None,
     # ---- life coach & insights --------------------------------------------
 
     @app.post("/coach/{user_id}")
-    def coach_reply(user_id: str, body: CoachMessage, request: Request) -> dict:
+    def coach_reply(user_id: str, body: CoachMessage, request: Request,
+                    background: BackgroundTasks) -> dict:
         _user_or_404(user_id, request)
-        return coach.reply(user_id, body.area, body.message,
-                           pdi=_vault(user_id),
-                           recall_pdi=app.state.pdi,
-                           cut_off_heard=body.cut_off_heard)
+        answer = coach.reply(user_id, body.area, body.message,
+                             pdi=_vault(user_id),
+                             recall_pdi=app.state.pdi,
+                             cut_off_heard=body.cut_off_heard)
+        # A coach turn is where knowledge gaps are born — the study half
+        # of the self-winding pass runs on this door's heels, behind its
+        # own permit (jim/noticed.py, after_traffic).
+        background.add_task(noticed.after_traffic, user_id,
+                            app.state.cloud, _vault(user_id))
+        return answer
 
     @app.post("/coach/{user_id}/specialist")
     def coach_ask_specialist(user_id: str, body: CoachMessage,
@@ -3961,12 +3983,15 @@ def create_app(qrme_client: QRMEClient | None = None,
     # ---- journal, feedback, reports, provider portal ----------------------
 
     @app.post("/journal/{user_id}", status_code=201)
-    def add_journal(user_id: str, body: JournalEntry, request: Request) -> dict:
+    def add_journal(user_id: str, body: JournalEntry, request: Request,
+                    background: BackgroundTasks) -> dict:
         _user_or_404(user_id, request)
         result = life.add_journal(user_id, body.text, pdi=_vault(user_id))
         # Journal text runs the same crisis pipeline as check-in notes.
         result["guardian"] = guardian.monitor(
             user_id, {}, body.text, qrme=app.state.qrme, pdi=_vault(user_id))
+        background.add_task(noticed.after_traffic, user_id,
+                            app.state.cloud, _vault(user_id))
         return result
 
     @app.get("/journal/{user_id}")

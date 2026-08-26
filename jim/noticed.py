@@ -297,6 +297,57 @@ def run(user_id: str, cloud=None, limit: int = LOOK_AT) -> dict:
     }
 
 
+def after_traffic(user_id: str, cloud=None, pdi=None) -> None:
+    """The ladder, winding itself on the heels of the traffic that feeds it.
+
+    The ladder shipped whole and then closed only from a button on the
+    Coach screen — the exact loop-that-a-person-has-to-know-about defect
+    this module's own header quotes :mod:`jim.errands` naming for the study
+    screen, rebuilt one module over. "For autonomous stuff throughout your
+    day" is the ask, and a pass behind a button is attended by definition.
+
+    So the doors where its work is BORN hand this to the response's
+    background: a reading, a check-in, a journal line, an observed
+    activity — the places detections come from — and a coach turn, which
+    is where knowledge gaps come from. That trigger is the honest reading
+    of "throughout your day": a guardian's day IS its readings arriving,
+    and an account whose devices are silent has no situations to handle.
+    No scheduler, no thread, no machinery running for an account nobody
+    touches — the day's own traffic winds the clock.
+
+    Everything here yields to the door it rides behind:
+
+    * an absent permit is a quiet return, never a refusal — the person
+      said nothing may run unattended, and honoring that silently IS the
+      honoring; a 403 into a background task is an alarm in an empty room;
+    * nothing due is one cheap query and out, which is the ordinary case
+      and the reason no throttle is needed — :func:`run` files every
+      situation it settles, so the next call finds the queue shorter, and
+      what could not be settled waits for a day with budget or a
+      reachable model exactly as the pass already records;
+    * every failure is swallowed. A band posting a pulse must never learn
+      that an unattended nicety behind its door fell over; what the pass
+      did or could not do is read from the ledger and :func:`standing`,
+      where the outcomes already live.
+
+    Both halves ride, each behind its own permit — the two-switch split
+    the header explains is about *what leaves* — so a person who allowed
+    study and not handling gets exactly the half they allowed.
+    """
+    try:
+        if permits.granted(user_id, PERMIT) and due(user_id, 1):
+            run(user_id, cloud=cloud)
+    except Exception:
+        pass
+    try:
+        if (permits.granted(user_id, errands.PERMIT)
+                and errands.spent_today(user_id) < errands.DAILY
+                and errands.due(user_id, 1)):
+            errands.run(user_id, cloud=cloud, pdi=pdi)
+    except Exception:
+        pass
+
+
 def ledger(user_id: str, limit: int = 20) -> list[dict]:
     """What it noticed and what settled it, newest first.
 
