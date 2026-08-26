@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The staleness contract.** "Real-time" stops being a word in a claim
+  and becomes a number you can produce on demand. Every reading may
+  carry the device's own clock at measurement and at send — age computed
+  source-side so the phone's outbox can never make an old reading look
+  newborn, skew measured at ingress, a future timestamp logged as a
+  failed skew measurement rather than clamped. Every consumer declares
+  the maximum age it acts on (display 5 s, conditioning 30 s, escalation
+  60 s, trend 15 min) and past it gets a named state — fresh, stale,
+  unreachable — on the record, never a guess. The wrist channel gains a
+  heartbeat apart from the readings, so the person going quiet, the
+  phone sitting between, and the network going dark are three silences
+  instead of one. `GET /freshness/{user}` answers with the p95 age at
+  the moment of decision per consumer — measured, not designed. The
+  heartbeat door is recorded in all three shell backlogs.
+
 ## [1.8.7] - 2026-08-27
 
 ### Changed

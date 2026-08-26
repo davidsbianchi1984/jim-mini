@@ -5806,6 +5806,10 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     # meeting a moment fell inside — named as the form asks them rather than
     # as the column stores them.
     'monitor': {'en': 'Which one is sensing', 'es': 'Cuál está detectando', 'fr': "Lequel capte", 'de': 'Welches erfasst gerade', 'pt': 'Qual está a detetar', 'it': 'Quale sta rilevando', 'ja': 'どれが感知しているか', 'zh': '哪一项在感知', 'hi': 'कौन-सा महसूस कर रहा है', 'ar': 'أيّها يستشعر'},
+    # The staleness contract's two stamps (jim/freshness.py), worded as a
+    # device would be asked for them rather than as the columns store them.
+    'observed_at': {'en': 'When the device took the reading', 'es': 'Cuándo tomó el dispositivo la lectura', 'fr': "Quand l'appareil a pris la mesure", 'de': 'Wann das Gerät die Messung nahm', 'pt': 'Quando o dispositivo fez a leitura', 'it': 'Quando il dispositivo ha preso la lettura', 'ja': 'デバイスが測定した時刻', 'zh': '设备测量的时间', 'hi': 'डिवाइस ने रीडिंग कब ली', 'ar': 'متى أخذ الجهاز القراءة'},
+    'device_now': {'en': "The device's clock, at sending", 'es': 'El reloj del dispositivo al enviar', 'fr': "L'horloge de l'appareil à l'envoi", 'de': 'Die Geräteuhr beim Senden', 'pt': 'O relógio do dispositivo ao enviar', 'it': "L'orologio del dispositivo all'invio", 'ja': '送信時のデバイスの時計', 'zh': '发送时设备的时钟', 'hi': 'भेजते समय डिवाइस की घड़ी', 'ar': 'ساعة الجهاز عند الإرسال'},
     'stretch_id': {'en': 'The meeting this belongs to', 'es': 'La reunión a la que pertenece', 'fr': "La réunion à laquelle ceci appartient", 'de': 'Die Besprechung, zu der dies gehört', 'pt': 'A reunião a que isto pertence', 'it': 'La riunione a cui appartiene', 'ja': 'これが属する会議', 'zh': '这属于哪场会议', 'hi': 'यह किस बैठक का हिस्सा है', 'ar': 'الاجتماع الذي ينتمي إليه هذا'},
     # The assisted-call form. `number` is not asked for so it can be kept —
     # it is read for which language the notice is spoken in and dropped — so

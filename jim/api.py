@@ -26,7 +26,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                oncall,
                mailer,
                circle, contacts, contribution, db, money, schedule, shopping,
-               escalation, family, farend, followup, guardian, handoff, i18n,
+               escalation, family, farend, followup, freshness, guardian, handoff, i18n,
                identity,
                landing, life, llm,
                meds, mic, mobile, noticed, notify, oauth, offline, presence,
@@ -49,7 +49,7 @@ from . import capture as capture_mod
 from . import dock as dock_mod
 from .models import (
     ActivityObserve, Alongside, AppCollect, AppConnect, AppInvoke, BeaconAlarm,
-    BeaconPlace, BiometricSample, CheckIn,
+    BeaconPlace, BiometricSample, CheckIn, HeartbeatPing,
     ChildEnroll,
     CareTeamGoal, CareTeamLink,
     CoachMessage, LookoutCreate, ConditionDeclare, ContextEvent, DeviceRegister, EmergencyRequest,
@@ -1575,6 +1575,12 @@ def create_app(qrme_client: QRMEClient | None = None,
         sample = body.model_dump(exclude_none=True)
         note = sample.pop("note", None)
         came_off = sample.pop("monitor", None)
+        # The staleness contract's ingress half (jim/freshness.py): stamp
+        # the reading with the source's own clock and measure the skew,
+        # before anything decides on it. The two stamps leave the sample
+        # so the grader below reads vitals, not clocks.
+        aged = freshness.noted(user_id, sample.pop("observed_at", None),
+                               sample.pop("device_now", None))
         # The calendar's bottom rung rides this sense — see jim/schedule.py.
         schedule.remind_pass(user_id, _money_lang(user_id))
         # So does the far end's monthly liveness note (jim/farend.py): a dead
@@ -1582,6 +1588,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         farend.liveness_pass(user_id, _money_lang(user_id))
         answer = guardian.monitor(user_id, sample, note, qrme=app.state.qrme,
                                   pdi=_vault(user_id))
+        answer["freshness"] = aged
         # The reading this door just took is how situations are born, so the
         # self-winding pass runs on its heels — after the response is sent,
         # behind its own permits (jim/noticed.py, after_traffic).
@@ -3626,6 +3633,23 @@ def create_app(qrme_client: QRMEClient | None = None,
             return monitors.unplug(user_id, name)
         except monitors.NoSuchMonitor as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.post("/heartbeat/{user_id}", status_code=201)
+    def heartbeat(user_id: str, body: HeartbeatPing,
+                  request: Request) -> dict:
+        """The wrist channel's pulse, apart from the readings — so the
+        person going quiet and the network going dark stop being one
+        silence (jim/freshness.py, part 3)."""
+        _user_or_404(user_id, request)
+        return freshness.beat(user_id, body.device_now)
+
+    @app.get("/freshness/{user_id}")
+    def freshness_standing(user_id: str, request: Request) -> dict:
+        """The number you can produce on demand: p95 age at the moment of
+        decision per consumer, the ingress age distribution, and which of
+        the three silences this currently is."""
+        _user_or_404(user_id, request)
+        return freshness.stats(user_id)
 
     @app.post("/monitors/{user_id}/{name}/sensed")
     def monitor_sensed(user_id: str, name: str, request: Request,

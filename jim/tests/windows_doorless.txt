@@ -1,4 +1,4 @@
-# status: backlog — 7 rows
+# status: backlog — 8 rows
 #
 # Every route this shell cannot reach.
 #
@@ -70,3 +70,9 @@ PUT /farend/{user_id}
 # the real road for the rest and owe their own.
 PUT /contacts/{user_id}
 GET /contacts/{user_id}
+
+# The staleness contract's heartbeat (jim/freshness.py): the wrist
+# channel's pulse apart from the readings, so the person going quiet and
+# the network going dark stop being one silence. The shell that holds the
+# BLE link to the watch is the road for the beat.
+POST /heartbeat/{user_id}

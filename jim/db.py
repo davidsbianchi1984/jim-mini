@@ -1613,6 +1613,30 @@ CREATE TABLE IF NOT EXISTS audit (
 -- network, one directory, no child processes, capped CPU and memory.
 -- Scoped by user_id at every read and write and not only at the door,
 -- because this deployment's disk holds other people's clinical captures.
+-- The staleness contract (jim/freshness.py): every reading's age from
+-- the source's own clock, every consumer's decision with the age it
+-- decided on, and the wrist channel's heartbeat — so the two silences
+-- can finally mean different things.
+CREATE TABLE IF NOT EXISTS freshness_readings (
+    user_id     TEXT NOT NULL,
+    observed_at TEXT,
+    received_at TEXT NOT NULL,
+    skew_ms     REAL,
+    age_ms      REAL
+);
+CREATE TABLE IF NOT EXISTS freshness_heartbeats (
+    user_id     TEXT NOT NULL,
+    received_at TEXT NOT NULL,
+    skew_ms     REAL
+);
+CREATE TABLE IF NOT EXISTS freshness_decisions (
+    user_id    TEXT NOT NULL,
+    consumer   TEXT NOT NULL,
+    age_ms     REAL,
+    state      TEXT NOT NULL,
+    decided_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS widgets (
     id          TEXT PRIMARY KEY,
     user_id     TEXT NOT NULL REFERENCES users(id),

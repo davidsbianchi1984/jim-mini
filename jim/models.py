@@ -256,6 +256,12 @@ class SpecialistRegister(BaseModel):
     qrme_profile_id: str | None = None   # required when mode == "tandem"
 
 
+class HeartbeatPing(BaseModel):
+    """The wrist channel's pulse, no reading attached (jim/freshness.py) —
+    so the readings stopping and the channel dying stop being one silence."""
+    device_now: str | None = None
+
+
 class BiometricSample(BaseModel):
     heart_rate: int | None = None
     resting_heart_rate: int | None = None
@@ -286,6 +292,13 @@ class BiometricSample(BaseModel):
     source_device: str | None = None        # multimodal input: smart_watch |
                                             # stationary | neural_sensor |
                                             # gesture | robot | …
+    # The staleness contract's two stamps (jim/freshness.py): the device's
+    # clock at measurement and at send. Stamping on arrival instead is
+    # measuring your own ingest queue and calling it physiology. Optional
+    # because three shipped clients predate them — a reading without them
+    # is kept with UNKNOWN age, which every consumer treats as stale.
+    observed_at: str | None = None
+    device_now: str | None = None
     # Which roster row this reading came off, when the sender knows.
     #
     # A field report caught every switched-on row calling itself sensing
