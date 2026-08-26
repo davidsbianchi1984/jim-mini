@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.7] - 2026-08-27
+
+### Changed
+
+- **Cut with the siblings** — no functional change in this product. QRME
+  took the round: rooms that read handed links, hand documents back (as
+  PDFs when asked), and remember their own person; a friends-only circle
+  screen; and the field afternoon's smaller repairs. The three move
+  ahead together, and a box carrying two versions reports the mismatch
+  to whoever is using it.
+
 ## [1.8.6] - 2026-08-27
 
 ### Added
@@ -11295,7 +11306,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.6...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.7...HEAD
+[1.8.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.6...app-v1.8.7
 [1.8.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.5...app-v1.8.6
 [1.8.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.4...app-v1.8.5
 [1.8.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.3...app-v1.8.4

@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v1.8.6** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.8.7** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **1.8.7** | Cut with the siblings — QRME took the round: rooms that read links, hand documents back and remember their person; the friends-only circle |
 | **1.8.6** | **The ladder winds itself, and the book has doors** — the coach→JIM ladder runs on the day's own traffic behind its two permits, no button anywhere; the synced address book is reachable from a phone at last, with a picker-based sync on the console and the numbers never returned |
 | **1.8.5** | **Cut with the siblings** — no functional change; QRME took this number for the owner-released voice, the unclaimable premades, the loudness rail and the iPhone ear fork |
 | **1.8.4** | **The ear that opens stays open** — the console's audio unlock armed on `pointerdown`, took its one refused shot on WebKit and never tried again; it arms on click/touchend/keydown now and retries until granted, and the coach spoke on an iPhone the same hour. The split-wording ledger closed — the crisis screen's "End it" became "End the hold" — and the voice door wears the studio microphone, matching the sibling console |
