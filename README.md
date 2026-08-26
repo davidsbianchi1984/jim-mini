@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v1.8.4** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.8.5** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **1.8.5** | **Cut with the siblings** — no functional change; QRME took this number for the owner-released voice, the unclaimable premades, the loudness rail and the iPhone ear fork |
 | **1.8.4** | **The ear that opens stays open** — the console's audio unlock armed on `pointerdown`, took its one refused shot on WebKit and never tried again; it arms on click/touchend/keydown now and retries until granted, and the coach spoke on an iPhone the same hour. The split-wording ledger closed — the crisis screen's "End it" became "End the hold" — and the voice door wears the studio microphone, matching the sibling console |
 | **1.8.3** | **The guardian refuses in the reader's language, all the way down** — the 78 interpolated refusals the record was holding open become registered templates, ~63 new constants each with frames in nine languages, and every raise site builds its sentence through `i18n.fill` so the reader's language can refill the frame. Handlers hand a carrying exception on through `i18n.raised` instead of `str(exc)`, which would drop the template and leave the refusal English everywhere. The `refusals.template_calls` floor rises 15 → 78, and the unannounced-speaker test follows its sentence into the constant where it now lives |
 | **1.8.2** | **The last answer does not depend on anything that can fail** — the catch-all that turns a crashed route into an answer the console can read built its 500 through a translator that could itself fail; when it did, the answer left without the CORS header and a crash read as an unreachable backend. Guarded now, with a constant English fallback, in all three products. Also: the suite's floor registry grew from 68 to 145 ratchets in a night-long audit of the guards' guards — the unregistered-floor backlog holds ten rows, every one needing a live client; the 98 unlabelled request fields are verified decisions with a guard that fires the day a form asks for one; and the three-suite divergence record reaches zero unread rows |

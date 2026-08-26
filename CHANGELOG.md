@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.5] - 2026-08-26
+
+### Changed
+
+- **Cut with the siblings** — no functional change in this product. QRME
+  took this number for the voice its owner set loose (the recorded,
+  revocable waiver releasing one cloned voice to every account), the
+  unclaimable premade voices, the loudness rail, and the iPhone ear fork;
+  the three move ahead together, and a box carrying two versions reports
+  the mismatch to whoever is using it.
+
 ## [1.8.4] - 2026-08-25
 
 ### Changed
@@ -11258,7 +11269,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.4...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.5...HEAD
+[1.8.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.4...app-v1.8.5
 [1.8.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.3...app-v1.8.4
 [1.8.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.2...app-v1.8.3
 [1.8.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.1...app-v1.8.2

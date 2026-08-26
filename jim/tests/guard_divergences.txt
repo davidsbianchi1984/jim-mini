@@ -1,5 +1,5 @@
-# status: backlog — 114 rows
-# ceiling: 114
+# status: backlog — 193 rows
+# ceiling: 193
 # candidates: 0
 #
 # Guards carried by two of the three products and not the third. Each row
@@ -64,38 +64,98 @@
 #
 # ## Deliberate — that product serves none of these routes
 #
+# ## The 1.8.x sweep
+#
+# 79 rows arrived at once when the sibling releases landed, recorded
+# as `unclassified` rather than guessed at: the class is a reading of
+# two suites, and a guess wearing a class would be counted by checks
+# it never earned. The ceiling rose to admit them — the record grows
+# only by edits like this one, which is the ratchet doing its job.
+#
+pdi: test_a_capture_before_fingerprints_says_nothing_not_now | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_capture_rides_as_a_digest_not_an_archive | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_a_code_is_single_use | deliberate | /verify-email
+pdi: test_a_cue_is_something_a_person_could_actually_say | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_a_dead_code_renders_a_page_too | deliberate | /c/cbn_neverexisted
+pdi: test_a_degraded_study_is_not_dressed_as_the_model | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_down_tandem_keeps_the_row_on_the_list | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_a_downgrade_never_unseals_anything | deliberate | module:storage
 pdi: test_a_free_account_puts_nothing_in_the_vault | deliberate | module:storage
 pdi: test_a_free_membership_carries_its_posture | deliberate | /memberships /memberships/{}
 pdi: test_a_key_with_auto_defaults_to_a_real_model_not_the_stub | deliberate | /model /model/{}
+pdi: test_a_long_answer_is_a_few_requests_not_thirty | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_lookout_is_one_standing_appointment_and_one_ledger_row | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_memory_is_a_line_not_a_transcript | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_models_study_carries_the_models_name | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_network_voice_gets_the_sanitized_digest | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_a_night_shift_is_on_at_2am | deliberate | module:rota
+qrme: test_a_page_is_signed_when_a_secret_is_set | deliberate | module:notify
+pdi: test_a_page_still_gets_the_eyes | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_a_paid_plan_carries_no_free_disclosure | deliberate | module:storage
+pdi: test_a_per_surface_face_refuses_to_guess | answered | on purpose: PDI's dock has no per-surface faces — the vault is an operator console with no wrist and no alarm surface to bind
+pdi: test_a_piece_is_not_played_through_a_brand_new_element | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_provider_having_an_afternoon_does_not_empty_the_picker | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_recording_url_plants_a_listening_appointment | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_recovered_lookout_carries_no_stale_trouble | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_a_request_key_makes_the_chosen_provider_usable | deliberate | /model /model/{}
+qrme: test_a_retired_code_is_indistinguishable_from_one_that_never_existed | answered | on purpose: a picked-up sticker answers 410 'picked up' where an unknown one answers 404. A beacon here is a physical thing somebody took off a wall, and saying so is the product
 pdi: test_a_short_password_is_refused_before_any_email_is_sent | deliberate | module:accounts
+pdi: test_a_short_reply_is_one_piece_unchanged | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_a_stored_widget_runs_and_answers | deliberate | /run /users /users/{}/widgets /users/{}/widgets/{}/run
 pdi: test_a_stranded_pending_account_is_finished_on_a_no_mail_machine | deliberate | /signin /signup
+pdi: test_a_superseded_turn_cannot_close_the_one_that_replaced_it | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_term_is_exempt_from_the_whitespace_rule_and_a_stranger_is_not | answered | on purpose: PDI has no refusal that interpolates a closed-set Term, and its test_no_slot_is_filled_from_a_string_literal fails if that stops being true — the lack is self-guarding
 pdi: test_a_test_send_reports_what_the_server_said | deliberate | /settings/mail /settings/mail/test
 pdi: test_a_test_send_without_a_server_is_refused | deliberate | /settings/mail/test
 pdi: test_a_verify_code_cannot_reset_a_password | deliberate | /password/reset /verify-email
+pdi: test_a_voice_that_stays_home_reads_the_full_digest | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_a_week_whose_facts_are_gone_loses_its_letter | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_a_whole_table_survives_it_too | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_a_widget_cannot_reach_the_network | deliberate | module:widgets
+pdi: test_a_word_is_never_cut_in_half | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_a_wrapping_shift_belongs_to_the_day_it_started | deliberate | module:rota
 pdi: test_a_wrong_code_verifies_nothing | deliberate | /verify-email
+pdi: test_an_empty_week_gets_no_letter | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_an_older_pdi_speaks_ungrounded_and_says_so | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_an_older_tandem_is_not_dressed_as_the_vault | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_an_older_tandem_without_the_door_falls_back_too | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_an_older_vault_studies_at_home_never_by_shipping_anyway | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_an_older_vault_without_the_ledger_says_nothing | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_an_older_vault_without_the_resident_is_said_not_hidden | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_an_unknown_plan_is_refused | deliberate | /memberships /memberships/{}
+pdi: test_an_unreadable_tandem_contributes_nothing_not_a_failure | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_an_untouched_letter_never_changes_under_the_reader | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_an_upgrade_does_not_un_expose_what_was_already_open | deliberate | module:storage
 pdi: test_apple_asks_for_form_post_and_the_door_accepts_it | deliberate | /auth/oauth/apple/callback
+pdi: test_authenticated_submitter_sees_only_their_own | answered | test_authenticated_tenant_sees_only_their_own
+pdi: test_both_of_the_consoles_conversations_offer_it | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_clearing_settings_returns_to_the_console_transport | deliberate | /settings/mail
 pdi: test_configuring_mail_turns_signup_back_into_real_verification | deliberate | /settings/mail /signin /signup
 pdi: test_console_mail_survives_a_cp1252_stdout | deliberate | module:mailer
 pdi: test_custom_provider_stays_dark_until_its_url_is_set | deliberate | module:llm
 pdi: test_deepseek_and_the_founders_own_algorithm_are_on_the_menu | deliberate | /models
+jim: test_directions_never_name_a_lesson_that_is_gone | answered | JIM's DIRECTIONS map keywords to sentences rather than lesson keys; the stale-reference failure is held from the lesson side by test_no_lesson_points_at_a_screen_that_is_not_there
+pdi: test_dropping_stops_the_watching_the_whole_way | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_each_new_screen_calls_its_family | answered | the binding-side half is test_a_binding_is_not_a_door here; the screen-side table is per-product authored content, to be written deliberately rather than ported
+pdi: test_erasure_cancels_every_appointment_and_unseals_every_capture | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_every_capability_the_gate_names_has_a_translation | deliberate | module:tiers
+pdi: test_every_exemption_still_names_a_real_table | answered | on purpose: PDI's wipe guard sweeps every table with no exemption list to go stale
+pdi: test_every_face_says_it_does_not_act | answered | test_every_face_says_it_neither_acts_nor_reads
+pdi: test_every_forgetting_door_bumps_the_epoch | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_every_gated_pattern_is_a_route_that_exists | deliberate | module:tiers
 pdi: test_every_gated_pattern_names_a_real_capability | deliberate | module:tiers
+pdi: test_every_header_the_console_sends_the_shells_send_too | answered | test_this_product_sends_no_header_the_console_keeps_to_itself
+pdi: test_every_language_carries_it | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_every_money_bearing_response_discloses_the_simulation | deliberate | /insights /insights/{} /memberships /memberships/{}
 pdi: test_every_plan_has_a_posture | deliberate | module:tiers
 pdi: test_every_plan_in_the_catalogue_states_its_posture | deliberate | /plans
 pdi: test_every_provider_on_the_menu_can_be_chosen | deliberate | /model /model/{} /models
 pdi: test_every_refusable_plan_has_a_billing_period | deliberate | module:tiers
+pdi: test_every_row_says_where_it_is_and_what_it_is_for | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_every_sensitive_kind_is_enforced_somewhere | deliberate | module:storage
+qrme: test_every_surface_is_actually_being_scanned | answered | held by the route.calls.* ratchet audits, which measure every surface's extraction every run
+pdi: test_every_surface_that_offers_the_walk_hands_over_its_own_turn | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_every_surface_the_census_knows_has_a_row | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_every_wrapper_that_swallows_a_failure_records_who_answered | deliberate | module:llm
 pdi: test_focus_does_not_stand_in_for_the_cap | deliberate | /mic/gain /mic/handover /users /users/{}/mic/gain
 pdi: test_forgot_password_resets_via_emailed_code | deliberate | /password/reset /password/reset/request /signin
@@ -103,85 +163,105 @@ pdi: test_free_and_basic_reach_the_same_capabilities | deliberate | module:tiers
 pdi: test_free_is_platform_custody_and_paid_is_the_users | deliberate | module:storage
 pdi: test_free_is_still_refused_the_paid_capabilities | deliberate | /devices /devices/{}
 pdi: test_google_still_comes_back_on_the_query_string | deliberate | /auth/oauth/google/callback
+qrme: test_invoke_and_grants | answered | test_invoke_a_granted_capability — grants, and the 422 on one that was not granted
+pdi: test_ios_declares_the_background_mode_and_both_permissions | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_it_draws_before_anybody_has_touched_it | answered | test_it_opens_on_the_lights_like_the_panel_it_replaced
+pdi: test_it_is_mounted_above_the_thing_it_has_to_outlive | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_it_says_the_charges_move | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_list_models_includes_all_providers | deliberate | /models
 pdi: test_mail_to_another_machine_is_refused | deliberate | module:mailer
 pdi: test_moving_between_two_private_plans_changes_nothing | deliberate | module:storage
+pdi: test_moving_it_round_trips_over_http | answered | test_moving_it_round_trips
 pdi: test_moving_plan_replaces_rather_than_stacks | deliberate | /memberships /memberships/{}
+pdi: test_no_copy_hardcodes_a_stale_count_of_refusals | answered | PDI has no SENSITIVE set, so there is no count for prose to hardcode
 pdi: test_no_signup_key_leaves_local_use_open | deliberate | /enroll
+pdi: test_no_surface_is_described_twice | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_no_tandem_means_the_choice_is_not_configured | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_nothing_here_reaches_a_payment_processor | deliberate | module:tiers
+pdi: test_nothing_opens_it_without_a_press | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_nothing_restarts_it_by_itself | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_offline_never_reaches_the_provider | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_passwords_and_codes_are_never_stored_in_the_clear | answered | PDI has no passwords and no emailed codes; its credential material is tenant and grant tokens, hashed and guarded by test_token_hashing.py and test_the_grant_token_is_shown_once_and_only_hashes_rest
+pdi: test_planting_is_honest_at_every_edge | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_quiet_reopens_and_a_refusal_does_not | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_recall_survives_a_move_to_an_open_plan | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_resend_retires_the_previous_code | deliberate | /verify-email /verify-email/resend
+pdi: test_revoke_stops_use | answered | test_tenant_isolation_and_revoke — the 409 after a revoke
 pdi: test_saving_settings_makes_the_transport_smtp | deliberate | /settings/mail
+pdi: test_terms_are_served_versioned | answered | test_terms_served_versioned_with_key_points
+pdi: test_the_button_starts_it_and_the_same_button_ends_it | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_capture_reads_back_from_the_seal | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_the_closed_sets_are_unions_rather_than_strings | answered | a closure guard on JIM's console-doors backlog, which QRME has not closed — console_doorless.txt still holds rows; it travels when that reaches zero
+qrme: test_the_console_extracts_the_sentence_at_every_refusal_site | answered | test_the_console_hands_the_sentence_to_the_error_it_throws
+pdi: test_the_console_has_somewhere_to_ask_whether_it_was_put_away | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_console_helper_is_still_being_read | answered | the same file's test_the_scan_reaches_every_client, and the header comparison reads the helper every run
+qrme: test_the_console_sites_were_actually_found | answered | test_the_windows_were_actually_found
 pdi: test_the_downgrade_helper_performs_nothing | deliberate | module:storage
+pdi: test_the_ear_is_opened_by_a_press_and_reused | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_the_emailed_link_verifies_and_the_app_notices_by_signing_in | deliberate | /signin /verify-email/click
 pdi: test_the_environment_outranks_the_settings_screen | deliberate | /settings/mail
+pdi: test_the_extractor_reads_the_bindings_and_the_records | answered | test_the_extractor_finds_this_products_calls and test_the_extractor_reads_every_record_field
+pdi: test_the_first_sentence_rides_alone_and_nothing_is_lost | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_foreground_start_carries_the_microphone_type | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_the_free_plan_costs_nothing_and_says_what_that_means | deliberate | /plans
+qrme: test_the_gallery_skips_no_number | answered | test_the_gallery_runs_in_order_and_skips_nothing
+jim: test_the_guide_has_no_name_and_no_face | answered | on purpose: JIM's tour is given by the guardian herself — test_the_guardian_gives_the_tour_rather_than_a_faceless_guide is the same question with this product's answer
 pdi: test_the_homepage_switch_hides_it_from_everyone_but_the_owner | deliberate | /circle /circle/{}/features /circle/{}/homepage/{} /features
+pdi: test_the_index_names_the_screens_this_message_did_not | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_the_key_is_never_persisted | deliberate | /model /model/{}
 pdi: test_the_key_reaches_the_provider_build | deliberate | /coach /coach/{} /model /model/{}
+pdi: test_the_letter_calls_a_recording_what_it_is | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_letter_does_not_outlive_the_memory | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_letter_holds_the_week_and_only_the_week | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_list_and_the_page_say_when_the_page_changed | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_list_carries_what_the_vault_says | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_list_says_why_the_watching_last_failed | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_local_study_is_named_stub | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_map_names_no_surface_that_is_gone | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_the_markup_routes_do_not_go_through_the_json_helper | answered | closure guard on JIM's console-doors backlog — travels when QRME's reaches zero
 pdi: test_the_membership_says_who_holds_it | deliberate | /memberships /memberships/{}
+pdi: test_the_models_list_carries_the_vault | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_the_named_exceptions_are_routes_that_exist | deliberate | module:tiers
+pdi: test_the_notice_is_not_a_secret_shaped_thing | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_notification_says_it_and_can_end_it | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_notification_says_it_and_stops_saying_it | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_the_open_posture_names_who_can_read_it | deliberate | module:storage
 pdi: test_the_order_runs_visitor_free_basic_pro | deliberate | module:tiers
+qrme: test_the_page_does_not_depend_on_an_animation_to_be_visible | deliberate | /c /c/{}
+qrme: test_the_page_is_one_self_contained_document | deliberate | /c /c/{}
 pdi: test_the_password_never_comes_back_out | deliberate | /settings/mail
+pdi: test_the_permissions_the_platform_will_ask_for_are_declared | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_the_plan_gate_arrives_whole_in_one_language | deliberate | module:tiers
 pdi: test_the_plan_titles_stay_as_they_are_printed_everywhere_else | deliberate | module:tiers
 pdi: test_the_plans_are_the_prices_that_were_agreed | deliberate | module:tiers
+qrme: test_the_posture_is_reportable_in_one_place | answered | QRME serves the posture on GET /offline/status — the route is the one place, driven by test_offline.py and the ported open-route guard
+qrme: test_the_posture_is_served_on_a_route | answered | test_the_lifeline_answers_a_bare_get — drives the same route with no credential
+qrme: test_the_public_route_is_still_a_route | answered | test_the_public_paths_are_real_routes — plural, this product has several public doors
 pdi: test_the_recipients_switch_refuses_by_name | deliberate | /circle /circle/{}/features /circle/{}/messages /features
 pdi: test_the_refusal_screen_names_every_kind_on_the_list | deliberate | module:storage
+qrme: test_the_scan_url_serves_a_page_not_json | deliberate | /c /c/{} /c/{}/card /card
+pdi: test_the_screen_says_why_it_stopped | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_sentence_sits_at_every_box | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_service_exists_at_all | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_service_is_declared_typed_and_not_exported | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_service_reads_who_answered | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_the_shell_windows_were_actually_found | answered | test_the_windows_were_actually_found — parametrized over every shell, console included
+qrme: test_the_structure_survives_the_lift | deliberate | /_shape/dict
+pdi: test_the_suffix_is_read_from_the_path_not_the_query | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_turn_carries_who_answered_it | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+pdi: test_the_turn_never_carries_the_whole_manual | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_the_union_backlog_record_is_empty | answered | closure guard on JIM's console-doors backlog — travels when QRME's reaches zero
 pdi: test_the_vault_gate_asks_about_the_plan_not_the_deployment | deliberate | module:storage
+pdi: test_the_vault_study_is_named_vault | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
+qrme: test_the_vocabulary_and_routing_table_are_public | answered | test_the_vocabulary_and_the_routing_table_are_public — one word apart, and invisible to a comparison of names
 pdi: test_the_wrapper_scan_is_finding_wrappers | deliberate | module:llm
+jim: test_this_repo_has_no_hand_translated_screen_surface_yet | answered | on purpose: the guard is a placeholder marking the absence of a hand-translated surface, and JIM's shells carry eight-hundred-row hand tables — the premise cannot hold where the surface exists
+pdi: test_two_users_dont_see_each_others_words | answered | test_two_tenants_dont_see_each_others_words
 pdi: test_unconfigured_providers_say_so | deliberate | /auth/oauth/google/start /auth/oauth/providers
 pdi: test_unknown_provider_rejected | deliberate | /model /model/{}
 pdi: test_what_a_plan_includes_is_computed_not_typed | deliberate | /plans
+pdi: test_what_somebody_says_reaches_the_screen_they_meant | unclassified | swept in with the 1.8.x sibling releases; the reading is still owed
 pdi: test_without_a_key_the_unconfigured_choice_still_falls_back | deliberate | /model /model/{}
 pdi: test_without_a_mail_transport_signup_activates_directly | deliberate | /signin
 pdi: test_without_settings_nothing_can_be_emailed | deliberate | /settings/mail
 pdi: test_wrong_password_and_unknown_address_answer_identically | deliberate | /signin /verify-email
-qrme: test_a_dead_code_renders_a_page_too | deliberate | /c/cbn_neverexisted
-qrme: test_a_night_shift_is_on_at_2am | deliberate | module:rota
-qrme: test_a_page_is_signed_when_a_secret_is_set | deliberate | module:notify
-qrme: test_a_wrapping_shift_belongs_to_the_day_it_started | deliberate | module:rota
-qrme: test_the_page_does_not_depend_on_an_animation_to_be_visible | deliberate | /c /c/{}
-qrme: test_the_page_is_one_self_contained_document | deliberate | /c /c/{}
-qrme: test_the_scan_url_serves_a_page_not_json | deliberate | /c /c/{} /c/{}/card /card
-qrme: test_the_structure_survives_the_lift | deliberate | /_shape/dict
-#
-# ## Answered — read on both sides; the sibling guard is named
-#
-jim: test_directions_never_name_a_lesson_that_is_gone | answered | JIM's DIRECTIONS map keywords to sentences rather than lesson keys; the stale-reference failure is held from the lesson side by test_no_lesson_points_at_a_screen_that_is_not_there
-jim: test_the_guide_has_no_name_and_no_face | answered | on purpose: JIM's tour is given by the guardian herself — test_the_guardian_gives_the_tour_rather_than_a_faceless_guide is the same question with this product's answer
-jim: test_this_repo_has_no_hand_translated_screen_surface_yet | answered | on purpose: the guard is a placeholder marking the absence of a hand-translated surface, and JIM's shells carry eight-hundred-row hand tables — the premise cannot hold where the surface exists
-pdi: test_a_per_surface_face_refuses_to_guess | answered | on purpose: PDI's dock has no per-surface faces — the vault is an operator console with no wrist and no alarm surface to bind
-pdi: test_a_term_is_exempt_from_the_whitespace_rule_and_a_stranger_is_not | answered | on purpose: PDI has no refusal that interpolates a closed-set Term, and its test_no_slot_is_filled_from_a_string_literal fails if that stops being true — the lack is self-guarding
-pdi: test_authenticated_submitter_sees_only_their_own | answered | test_authenticated_tenant_sees_only_their_own
-pdi: test_every_exemption_still_names_a_real_table | answered | on purpose: PDI's wipe guard sweeps every table with no exemption list to go stale
-pdi: test_every_face_says_it_does_not_act | answered | test_every_face_says_it_neither_acts_nor_reads
-pdi: test_every_header_the_console_sends_the_shells_send_too | answered | test_this_product_sends_no_header_the_console_keeps_to_itself
-pdi: test_it_draws_before_anybody_has_touched_it | answered | test_it_opens_on_the_lights_like_the_panel_it_replaced
-pdi: test_moving_it_round_trips_over_http | answered | test_moving_it_round_trips
-pdi: test_no_copy_hardcodes_a_stale_count_of_refusals | answered | PDI has no SENSITIVE set, so there is no count for prose to hardcode
-pdi: test_passwords_and_codes_are_never_stored_in_the_clear | answered | PDI has no passwords and no emailed codes; its credential material is tenant and grant tokens, hashed and guarded by test_token_hashing.py and test_the_grant_token_is_shown_once_and_only_hashes_rest
-pdi: test_revoke_stops_use | answered | test_tenant_isolation_and_revoke — the 409 after a revoke
-pdi: test_terms_are_served_versioned | answered | test_terms_served_versioned_with_key_points
-pdi: test_the_console_helper_is_still_being_read | answered | the same file's test_the_scan_reaches_every_client, and the header comparison reads the helper every run
-pdi: test_the_extractor_reads_the_bindings_and_the_records | answered | test_the_extractor_finds_this_products_calls and test_the_extractor_reads_every_record_field
-pdi: test_two_users_dont_see_each_others_words | answered | test_two_tenants_dont_see_each_others_words
-qrme: test_a_retired_code_is_indistinguishable_from_one_that_never_existed | answered | on purpose: a picked-up sticker answers 410 'picked up' where an unknown one answers 404. A beacon here is a physical thing somebody took off a wall, and saying so is the product
-qrme: test_each_new_screen_calls_its_family | answered | the binding-side half is test_a_binding_is_not_a_door here; the screen-side table is per-product authored content, to be written deliberately rather than ported
-qrme: test_every_surface_is_actually_being_scanned | answered | held by the route.calls.* ratchet audits, which measure every surface's extraction every run
-qrme: test_invoke_and_grants | answered | test_invoke_a_granted_capability — grants, and the 422 on one that was not granted
-qrme: test_the_closed_sets_are_unions_rather_than_strings | answered | a closure guard on JIM's console-doors backlog, which QRME has not closed — console_doorless.txt still holds rows; it travels when that reaches zero
-qrme: test_the_console_extracts_the_sentence_at_every_refusal_site | answered | test_the_console_hands_the_sentence_to_the_error_it_throws
-qrme: test_the_console_sites_were_actually_found | answered | test_the_windows_were_actually_found
-qrme: test_the_gallery_skips_no_number | answered | test_the_gallery_runs_in_order_and_skips_nothing
-qrme: test_the_markup_routes_do_not_go_through_the_json_helper | answered | closure guard on JIM's console-doors backlog — travels when QRME's reaches zero
-qrme: test_the_posture_is_reportable_in_one_place | answered | QRME serves the posture on GET /offline/status — the route is the one place, driven by test_offline.py and the ported open-route guard
-qrme: test_the_posture_is_served_on_a_route | answered | test_the_lifeline_answers_a_bare_get — drives the same route with no credential
-qrme: test_the_public_route_is_still_a_route | answered | test_the_public_paths_are_real_routes — plural, this product has several public doors
-qrme: test_the_shell_windows_were_actually_found | answered | test_the_windows_were_actually_found — parametrized over every shell, console included
-qrme: test_the_union_backlog_record_is_empty | answered | closure guard on JIM's console-doors backlog — travels when QRME's reaches zero
-qrme: test_the_vocabulary_and_routing_table_are_public | answered | test_the_vocabulary_and_the_routing_table_are_public — one word apart, and invisible to a comparison of names
-#
-# ## Unclassified — the guard drives no route
-#
-#
