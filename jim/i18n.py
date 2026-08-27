@@ -1249,6 +1249,10 @@ NO_PUBLISHED_ALLOWANCE = ("{provider} does not publish a remaining allowance "
 PROVIDER_REFUSED = "{provider} refused it: HTTP {code} {detail}"
 PROVIDER_UNREACHABLE = "could not reach {provider}: {detail}"
 TRANSCRIPTION_REFUSED = "transcription refused it: HTTP {code} {detail}"
+#: The provider said the key itself is bad (401/403). The raw JSON body is
+#: an operator's fact; the person mid-conversation needs the switch.
+KEY_REFUSED = ("the {provider} key was refused — paste a fresh one on the "
+               "Voice card, or fix the key in the deployment's settings")
 TRANSCRIPTION_UNREACHABLE = ("could not reach the transcription service: "
                              "{detail}")
 
@@ -1391,6 +1395,18 @@ TEMPLATES = (MUST_BE_ONE_OF, PLAN_GATE, ERRANDS_SPENT, MONITOR_NOT_ON,
              CANNOT_RUN_ONBOARD_LLM, INTIMATE_NEEDS_CONSENT)
 
 _TEMPLATES: dict[str, dict[str, str]] = {
+    ("the {provider} key was refused — paste a fresh one on the "
+     "Voice card, or fix the key in the deployment's settings"): {
+        "es": "la clave de {provider} fue rechazada — pega una nueva en la tarjeta de Voz, o corrige la clave en la configuración del despliegue",
+        "fr": "la clé {provider} a été refusée — collez-en une nouvelle sur la carte Voix, ou corrigez la clé dans les réglages du déploiement",
+        "de": "der {provider}-Schlüssel wurde abgelehnt — füge auf der Stimme-Karte einen frischen ein oder korrigiere den Schlüssel in den Einstellungen der Installation",
+        "pt": "a chave {provider} foi recusada — cole uma nova no cartão de Voz, ou corrija a chave nas definições da instalação",
+        "it": "la chiave {provider} è stata rifiutata — incollane una nuova sulla scheda Voce, o correggi la chiave nelle impostazioni dell'installazione",
+        "ja": "{provider}のキーが拒否されました。ボイスカードに新しいキーを貼るか、環境設定のキーを修正してください",
+        "zh": "{provider} 密钥被拒绝——在语音卡片粘贴新密钥，或修正部署设置中的密钥",
+        "hi": "{provider} कुंजी अस्वीकार हुई — वॉइस कार्ड पर नई कुंजी चिपकाएँ, या परिनियोजन सेटिंग्स में कुंजी ठीक करें",
+        "ar": "رُفض مفتاح {provider} — الصق مفتاحًا جديدًا في بطاقة الصوت، أو صحّح المفتاح في إعدادات النشر",
+    },
     SIGHT_UNREACHABLE: {
         'es': 'no se pudo contactar con el servicio que describe lo que ve un monitor: {why}',
         'fr': "impossible de joindre le service qui décrit ce qu'un capteur voit : {why}",
