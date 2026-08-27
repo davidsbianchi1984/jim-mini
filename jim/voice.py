@@ -325,9 +325,10 @@ def _subscription(key: str, purpose: str) -> dict:
         with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
             return json.loads(resp.read() or b"{}")
     except urllib.error.HTTPError as exc:
-        if exc.code in (401, 403):
-            raise VoiceError(i18n.fill(i18n.KEY_REFUSED,
-                                       provider=PROVIDERS[0]))
+        # Deliberately NOT the KEY_REFUSED sentence: this read's consumer
+        # is the key-check classifier, which reads the provider's own
+        # body to name verdicts a person can act on (key.is_an_id,
+        # payment_issue). Collapsing it here would blind that.
         detail = exc.read().decode(errors="replace")[:300]
         raise VoiceError(i18n.fill(i18n.PROVIDER_REFUSED, provider=PROVIDERS[0],
                                    code=exc.code, detail=detail))
