@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.9] - 2026-08-27
+
+### Changed
+
+- **Cut with the siblings** — no functional change in this product.
+  QRME took the round: the avatar registry with its shelf, labels and
+  painted-from-words; the slimmer room strip; the invite's waiting
+  seat; the panels dock that fits a phone. The three move ahead
+  together, and a box carrying two versions reports the mismatch to
+  whoever is using it.
+
 ## [1.8.8] - 2026-08-27
 
 ### Added
@@ -11352,7 +11363,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.8...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.9...HEAD
+[1.8.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.8...app-v1.8.9
 [1.8.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.7...app-v1.8.8
 [1.8.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.6...app-v1.8.7
 [1.8.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.5...app-v1.8.6

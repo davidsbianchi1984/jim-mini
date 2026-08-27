@@ -8,7 +8,7 @@ readings collapse or the questions go unanswered, the help they programmed
 in advance. It is built for seniors and their families who want safety,
 independence, and peace of mind — around the clock, including during sleep.
 
-**Current release: v1.8.8** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.8.9** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -185,6 +185,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **1.8.9** | Cut with the siblings — QRME took the round: the avatar registry, the slimmer room strip, the waiting seat, the dock that fits |
 | **1.8.8** | **How old is the reading** — the staleness contract: source-stamped ages, per-consumer windows with named states, the two silences separated, p95-at-decision on demand; meetings arrive as words under the roster's own keeping; the synced address book reaches all three shells |
 | **1.8.7** | **The coach carries its own settings** — four doors beside the conversation (Aims, Journal, Bearing, what JIM may do); the rest of the round is QRME's |
 | **1.8.6** | **The ladder winds itself, and the book has doors** — the coach→JIM ladder runs on the day's own traffic behind its two permits, no button anywhere; the synced address book is reachable from a phone at last, with a picker-based sync on the console and the numbers never returned |
