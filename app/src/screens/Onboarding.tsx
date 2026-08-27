@@ -74,7 +74,7 @@ export function Onboarding({ onAccess }: { onAccess?: () => void } = {}) {
   const [oauthWaiting, setOauthWaiting] = useState(false);
 
   useEffect(() => {
-    api.oauthProviders().then((r) => setOauthDoors(r.providers)).catch(() => {});
+    api.oauthProviders().then((r) => setOauthDoors(r.signin_providers)).catch(() => {});
   }, []);
 
   async function signInWith(provider: string) {

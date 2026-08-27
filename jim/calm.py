@@ -42,7 +42,7 @@ SESSIONS: dict[str, dict] = {
         "what": "Sixty seconds of grounding for the moment everything is "
                 "too much — five things routed through the senses.",
         "repeat": 1,
-        "steps": [
+        "calm_steps": [
             {"say": "Sit back. Feel your feet on the floor.", "seconds": 10},
             {"say": "Name five things you can see.", "seconds": 15},
             {"say": "Four things you can feel.", "seconds": 15},
@@ -58,7 +58,7 @@ SESSIONS: dict[str, dict] = {
         "what": "Four counts in, four held, four out, four held — the "
                 "steadiest pattern there is, four rounds.",
         "repeat": 4,
-        "steps": [
+        "calm_steps": [
             {"say": "Breathe in through the nose — two, three, four.",
              "seconds": 4},
             {"say": "Hold — two, three, four.", "seconds": 4},
@@ -72,7 +72,7 @@ SESSIONS: dict[str, dict] = {
         "what": "In for four, held for seven, out for eight — the long "
                 "exhale is the point. Four rounds.",
         "repeat": 4,
-        "steps": [
+        "calm_steps": [
             {"say": "In through the nose for four.", "seconds": 4},
             {"say": "Hold for seven.", "seconds": 7},
             {"say": "Out slowly for eight, like fogging a mirror.",
@@ -85,7 +85,7 @@ SESSIONS: dict[str, dict] = {
         "what": "A longer sit: settle, follow the breath, return when the "
                 "mind wanders — which is the practice, not the failure.",
         "repeat": 1,
-        "steps": [
+        "calm_steps": [
             {"say": "Settle into your seat. Let your shoulders drop.",
              "seconds": 30},
             {"say": "Close your eyes, or rest them low.", "seconds": 15},
@@ -114,7 +114,7 @@ def start(user_id: str, kind: str) -> dict:
         raise CalmError(422, f"no such session {kind!r}; one of "
                              f"{', '.join(SESSIONS)}")
     s = SESSIONS[kind]
-    steps = s["steps"] * s["repeat"]
+    steps = s["calm_steps"] * s["repeat"]
     total = sum(st["seconds"] for st in steps)
     conn = db.connect()
     conn.execute(
@@ -124,7 +124,7 @@ def start(user_id: str, kind: str) -> dict:
          json.dumps({"title": s["title"], "seconds": total}), db.utcnow()))
     conn.commit()
     return {"kind": kind, "title": s["title"], "what": s["what"],
-            "total_seconds": total, "steps": steps,
+            "total_seconds": total, "calm_steps": steps,
             "note": "a protocol, not a generation — the counts never vary"}
 
 

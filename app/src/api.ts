@@ -217,7 +217,7 @@ export type VoiceKeyCheck = {
 
 export type DockState = {
   user_id: string; corner: string; state: string; face: string;
-  faces: string[]; set: boolean; wanted: string; forced: boolean;
+  chosen_faces: string[]; set: boolean; wanted: string; forced: boolean;
   why?: string | null;
 };
 
@@ -376,7 +376,7 @@ export interface SpecialistAnswer {
   reason?: string; note?: string;
   specialist_who?: { label: string; qrme_profile_id: string };
   held_for_owner_approval?: boolean;
-  provenance?: { method: string; shared: string };
+  answer_provenance?: { method: string; shared: string };
 }
 export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[];
   first_aid?: FirstAid | null;
@@ -769,7 +769,7 @@ export interface EngagedSession {
 export interface EngagedTurn {
   engagement_id: string; reply: string; did: EngagedStep[];
   stopped: string | null; engaged: boolean; watches: StandingWatch[];
-  provenance: { generated_by: string; degraded: boolean;
+  generation: { generated_by: string; degraded: boolean;
     degraded_reason: string | null };
 }
 export interface EngagedSignOff {
@@ -999,7 +999,7 @@ export interface LetterRow {
 
 export interface CalmSession {
   kind: string; title: string; what: string; total_seconds: number;
-  steps: { say: string; seconds: number }[];
+  calm_steps: { say: string; seconds: number }[];
 }
 export interface WorkoutPlan {
   minutes_asked: number; level: string; focus: string;
@@ -1269,7 +1269,7 @@ export type MicEvent = {
 export type CaptureVocabulary = {
   kinds: Record<string, string>;
   sites: Record<string, string>;
-  provenance: Record<string, string>;
+  provenance_kinds: Record<string, string>;
   intimate_sites: string[];
   minors?: string;
   agent_sees?: string[];   // the field names, not a sentence about them
@@ -1476,8 +1476,8 @@ export const api = {
     req<{ id: string; display_name: string; user_token: string }>("/enroll", { method: "POST", body }),
   // Accounts: the email is verified (emailed code) before the user exists.
   oauthProviders: () =>
-    req<{ providers: { provider: string; name: string; configured: boolean;
-                       setup?: string }[] }>("/auth/oauth/providers"),
+    req<{ signin_providers: { provider: string; name: string; configured: boolean;
+                              setup?: string }[] }>("/auth/oauth/providers"),
   oauthStart: (provider: string, enroll?: Record<string, unknown>) =>
     req<{ url: string; state: string }>(
       `/auth/oauth/${provider}/start`, { method: "POST", body: { enroll } }),
@@ -1647,7 +1647,7 @@ export const api = {
             body: { action: "taken" | "skipped"; slot?: string; note?: string }) =>
     req<MedBoard>(`/meds/${uid}/${mid}/log`, { method: "POST", body, token }),
   medsAdherence: (uid: string, token: string, days = 7) =>
-    req<{ window_days: number; medications: { id: string; name: string;
+    req<{ window_days: number; adherence_rows: { id: string; name: string;
           expected: number; taken: number; rate: number | null }[] }>(
       `/meds/${uid}/adherence?days=${days}`, { token }),
 

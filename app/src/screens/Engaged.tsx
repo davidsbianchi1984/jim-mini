@@ -147,7 +147,7 @@ export function Engaged() {
     try {
       const turn = await api.engagedTurn(uid, { message }, token);
       setSteps(turn.did || []);
-      setProvenance(turn.provenance);
+      setProvenance(turn.generation);
       setSaid("");
       if (turn.stopped) setNote(turn.stopped);
       await refresh();

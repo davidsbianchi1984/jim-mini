@@ -311,7 +311,7 @@ private struct AppsSection: View {
     private func load() async {
         guard let uid = state.uid, let token = state.token else { return }
         if let cat = try? await ApiClient.shared.appsCatalog() {
-            flat = cat.providers.flatMap { p in
+            flat = cat.app_providers.flatMap { p in
                 p.apps.map { (provider: p.provider, app: $0.app, label: $0.label) }
             }
         }

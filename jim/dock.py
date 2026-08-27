@@ -136,9 +136,9 @@ def settings(user_id: str) -> dict:
     if row is None:
         return {"user_id": user_id, "corner": DEFAULT_CORNER,
                 "state": DEFAULT_STATE, "face": DEFAULT_FACE,
-                "faces": list(FACES), "set": False}
+                "chosen_faces": list(FACES), "set": False}
     return {"user_id": user_id, "corner": row["corner"], "state": row["state"],
-            "face": row["face"], "faces": json.loads(row["faces"]),
+            "face": row["face"], "chosen_faces": json.loads(row["faces"]),
             "set": True}
 
 
@@ -149,7 +149,7 @@ def configure(user_id: str, corner: str | None = None,
     corner = now["corner"] if corner is None else corner
     state = now["state"] if state is None else state
     face = now["face"] if face is None else face
-    chosen = list(now["faces"] if faces is None else faces)
+    chosen = list(now["chosen_faces"] if faces is None else faces)
 
     if corner not in CORNERS:
         raise DockError(i18n.fill(i18n.PANE_BOTTOM_CORNER,

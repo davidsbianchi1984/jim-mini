@@ -1006,7 +1006,7 @@ object ApiClient {
         // `did`, not `acted`: a session's `acted` is the trail of completed
         // changes, and a turn's list includes refusals, which are not acts.
         val arr = o.optJSONArray("did") ?: JSONArray()
-        val pv = o.optJSONObject("provenance")
+        val pv = o.optJSONObject("generation")
         return EngagedTurnResult(
             o.optString("reply", ""),
             (0 until arr.length()).map { i ->
@@ -1518,7 +1518,7 @@ object ApiClient {
         val o = request("/coach/$uid/specialist", "POST",
             JSONObject().put("area", area).put("message", message), token)
         val who = o.optJSONObject("specialist_who")
-        val prov = o.optJSONObject("provenance")
+        val prov = o.optJSONObject("answer_provenance")
         return SpecialistAnswer(
             o.optBoolean("delivered"),
             if (o.isNull("content")) null else o.optString("content"),
@@ -2019,7 +2019,7 @@ object ApiClient {
     }
 
     suspend fun appsCatalog(): List<CatalogApp> {
-        val providers = request("/connectors/catalog").getJSONArray("providers")
+        val providers = request("/connectors/catalog").getJSONArray("app_providers")
         val out = mutableListOf<CatalogApp>()
         for (i in 0 until providers.length()) {
             val p = providers.getJSONObject(i)
@@ -2993,7 +2993,7 @@ object ApiClient {
     suspend fun medAdherence(uid: String, token: String): List<AdherenceRow> {
         val o = request("/meds/$uid/adherence", token = token)
         val out = mutableListOf<AdherenceRow>()
-        o.optJSONArray("medications")?.let { a ->
+        o.optJSONArray("adherence_rows")?.let { a ->
             for (i in 0 until a.length()) {
                 val m = a.getJSONObject(i)
                 out.add(AdherenceRow(
@@ -3261,7 +3261,7 @@ object ApiClient {
 
     private fun dockStateOf(o: JSONObject): DockState {
         val chosen = mutableListOf<String>()
-        o.optJSONArray("faces")?.let { a ->
+        o.optJSONArray("chosen_faces")?.let { a ->
             for (i in 0 until a.length()) chosen.add(a.getString(i))
         }
         return DockState(o.optString("user_id", ""),
@@ -3415,7 +3415,7 @@ object ApiClient {
     suspend fun oauthProviders(): List<OAuthDoor> {
         val o = request("/auth/oauth/providers")
         val out = mutableListOf<OAuthDoor>()
-        o.optJSONArray("providers")?.let { a ->
+        o.optJSONArray("signin_providers")?.let { a ->
             for (i in 0 until a.length()) {
                 val d = a.getJSONObject(i)
                 out.add(OAuthDoor(d.getString("provider"), d.getString("name"),
@@ -3479,7 +3479,7 @@ object ApiClient {
     suspend fun startCalm(uid: String, token: String, kind: String): CalmStarted {
         val o = request("/calm/$uid/$kind", "POST", token = token)
         val steps = mutableListOf<CalmStep>()
-        o.optJSONArray("steps")?.let { a ->
+        o.optJSONArray("calm_steps")?.let { a ->
             for (i in 0 until a.length()) {
                 val s = a.getJSONObject(i)
                 steps.add(CalmStep(s.getString("say"), s.optInt("seconds", 0)))

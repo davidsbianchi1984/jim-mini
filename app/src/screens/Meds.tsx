@@ -122,10 +122,10 @@ export function Meds() {
         {board && <p className="muted small" style={{ marginTop: 10 }}>{board.disclaimer}</p>}
       </div>
 
-      {adherence && adherence.medications.some((m) => m.rate !== null) && (
+      {adherence && adherence.adherence_rows.some((m) => m.rate !== null) && (
         <div className="card">
           <h3>{tr("med.last", lang).replace("{n}", String(adherence.window_days))}</h3>
-          {adherence.medications.filter((m) => m.rate !== null).map((m) => (
+          {adherence.adherence_rows.filter((m) => m.rate !== null).map((m) => (
             <div key={m.id} className="med-adherence">
               <span>{m.name}</span>
               <div className="med-bar"><div className="med-bar-fill" style={{ width: `${Math.round((m.rate || 0) * 100)}%` }} /></div>

@@ -361,7 +361,7 @@ struct EngagedView: View {
                                                         message: message)
             steps = turn.did
             stopped = turn.stopped
-            provenance = turn.provenance
+            provenance = turn.generation
             said = ""
             await load()
         } catch { self.error = error.localizedDescription }

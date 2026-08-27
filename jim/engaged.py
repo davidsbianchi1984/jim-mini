@@ -1198,6 +1198,6 @@ def converse(user_id: str, said: str, *, app, authorization: str | None,
     return {"engagement_id": engagement_id, "reply": reply, "did": steps,
             "stopped": stopped, "engaged": True,
             "watches": watches(user_id),
-            "provenance": {"generated_by": generated["provider"],
+            "generation": {"generated_by": generated["provider"],
                            "degraded": generated.get("degraded", False),
                            "degraded_reason": generated.get("reason")}}

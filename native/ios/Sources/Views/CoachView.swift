@@ -360,7 +360,7 @@ struct CoachView: View {
                                  + (a.note.map { " — \($0)" } ?? ""))
                                 .font(.caption).foregroundStyle(Theme.amber)
                         }
-                        if let p = a.provenance {
+                        if let p = a.answer_provenance {
                             Text(p.method).font(.caption2).foregroundStyle(Theme.t2)
                             Text(L10n.t("spec.shared", state.language) + ": " + p.shared)
                                 .font(.caption2).foregroundStyle(Theme.t2)

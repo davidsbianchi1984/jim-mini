@@ -121,7 +121,7 @@ struct AccountCard: View {
         .card()
         .task {
             doors = (try? await ApiClient.shared.oauthProviders())?
-                .providers ?? []
+                .signin_providers ?? []
         }
     }
 

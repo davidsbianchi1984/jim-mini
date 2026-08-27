@@ -279,7 +279,7 @@ def _medication(user_id: str):
     """
     from . import meds
     report = meds.adherence(user_id, days=7)
-    rows = report.get("medications") or []
+    rows = report.get("adherence_rows") or []
     if not rows:
         return None
     rated = [r["rate"] for r in rows if r.get("rate") is not None]

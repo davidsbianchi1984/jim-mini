@@ -295,7 +295,7 @@ def adherence(user_id: str, days: int = 7, now: datetime | None = None) -> dict:
                     "expected": expected, "taken": min(taken, expected),
                     "rate": round(min(taken, expected) / expected, 2)
                     if expected else None})
-    return {"window_days": days, "medications": out}
+    return {"window_days": days, "adherence_rows": out}
 
 
 def coach_context(user_id: str, now: datetime | None = None) -> list[str]:
@@ -309,7 +309,7 @@ def coach_context(user_id: str, now: datetime | None = None) -> list[str]:
                      f"{miss['name']} ({miss['slot']}) — worth asking about "
                      "gently, never scolding")
     week = adherence(user_id, days=7, now=now)
-    for m in week["medications"]:
+    for m in week["adherence_rows"]:
         if m["rate"] is not None and m["expected"] >= 3 and m["rate"] < 0.5:
             lines.append(f"medication adherence low this week: {m['name']} "
                          f"taken {m['taken']} of {m['expected']}")

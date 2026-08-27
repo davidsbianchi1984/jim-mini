@@ -1,5 +1,5 @@
-# status: backlog — 5 rows
-# ceiling: 5
+# status: backlog — 0 rows
+# ceiling: 0
 #
 # One wire field name carrying more than one type across this product's API.
 #
@@ -110,13 +110,26 @@
 #               outline's tally `lessons_count` — the words the tutorial's
 #               own database column already used.
 #
-# The five below are object-shape against object-shape: every client
-# already decodes each route into its own record and a mismatch fails
-# loudly at the decoder, so they are the least dangerous kind, and each
-# rename is a multi-record break that deserves its own deliberate round.
+# ## after 1.8.9, the second round — the last five rows close, and the
+# ## file reaches zero
 #
-faces
-medications
-provenance
-providers
-steps
+#   faces        the vocabulary's name-to-description table keeps the
+#                word; the settings' chosen list is `chosen_faces`.
+#   medications  the cabinet board's rows keep the word; the adherence
+#                tally's rows are `adherence_rows`.
+#   provenance   guidance's account (and the coach's superset of it, and
+#                the capture row's code) keep the word; the engaged
+#                turn's who-generated block is `generation`; the
+#                specialist answer's method-and-shared is
+#                `answer_provenance`; the capture vocabulary's code
+#                table is `provenance_kinds`.
+#   providers    the LLM roster keeps the word; the app catalog's
+#                companies are `app_providers`; the sign-in doors are
+#                `signin_providers`.
+#   steps        the instruction strings (playbook, watch setup) keep
+#                the word; the calm protocol's say-and-seconds rows are
+#                `calm_steps`.
+#
+# Zero rows, ceiling zero: from here a new collision is a build error,
+# not a backlog entry. The guard still runs on every commit — this file
+# staying empty is the feature.

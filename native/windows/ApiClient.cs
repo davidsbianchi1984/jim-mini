@@ -208,7 +208,7 @@ public record EngagedTurnResult(
     [property: JsonPropertyName("stopped")] string? Stopped,
     [property: JsonPropertyName("engaged")] bool Engaged,
     [property: JsonPropertyName("watches")] StandingWatch[] Watches,
-    [property: JsonPropertyName("provenance")] EngagedProvenance Provenance);
+    [property: JsonPropertyName("generation")] EngagedProvenance Provenance);
 
 public record EngagedSignOff(
     [property: JsonPropertyName("engagement_id")] string EngagementId,
@@ -501,7 +501,7 @@ public record CatalogProvider(
     [property: JsonPropertyName("apps")] CatalogApp[] Apps);
 
 public record AppsCatalog(
-    [property: JsonPropertyName("providers")] CatalogProvider[] Providers);
+    [property: JsonPropertyName("app_providers")] CatalogProvider[] Providers);
 
 public record AppConn(
     [property: JsonPropertyName("id")] string Id,
@@ -3557,7 +3557,7 @@ public record SpecialistAnswer(
     [property: JsonPropertyName("note")] string? Note,
     [property: JsonPropertyName("held_for_owner_approval")] bool HeldForOwnerApproval,
     [property: JsonPropertyName("specialist_who")] SpecialistWho? Specialist,
-    [property: JsonPropertyName("provenance")] SpecialistProvenance? Provenance);
+    [property: JsonPropertyName("answer_provenance")] SpecialistProvenance? Provenance);
 
 public record CarePlanRow(
     [property: JsonPropertyName("id")] string Id,
@@ -3683,7 +3683,7 @@ public record AdherenceRow(
 
 public record MedAdherence(
     [property: JsonPropertyName("window_days")] int WindowDays,
-    [property: JsonPropertyName("medications")] AdherenceRow[] Medications);
+    [property: JsonPropertyName("adherence_rows")] AdherenceRow[] Medications);
 
 /// The vigil's whole answer. Until armed the route says {"armed": false}
 /// and nothing else, which is why everything past Armed is nullable.
@@ -3864,7 +3864,7 @@ public record DockState(
     [property: JsonPropertyName("corner")] string Corner,
     [property: JsonPropertyName("state")] string State,
     [property: JsonPropertyName("face")] string? Face,
-    [property: JsonPropertyName("faces")] string[] Faces,
+    [property: JsonPropertyName("chosen_faces")] string[] Faces,
     [property: JsonPropertyName("set")] bool Chosen,
     [property: JsonPropertyName("wanted")] string Wanted,
     [property: JsonPropertyName("forced")] bool Forced,
@@ -3958,7 +3958,7 @@ public record OauthProviderRow(
     [property: JsonPropertyName("setup")] string? Setup);
 
 public record OauthProviders(
-    [property: JsonPropertyName("providers")] OauthProviderRow[] Providers);
+    [property: JsonPropertyName("signin_providers")] OauthProviderRow[] Providers);
 
 public record OauthStarted(
     [property: JsonPropertyName("provider")] string Provider,
@@ -4013,7 +4013,7 @@ public record CalmStarted(
     [property: JsonPropertyName("title")] string Title,
     [property: JsonPropertyName("what")] string What,
     [property: JsonPropertyName("total_seconds")] int TotalSeconds,
-    [property: JsonPropertyName("steps")] CalmStep[] Steps,
+    [property: JsonPropertyName("calm_steps")] CalmStep[] Steps,
     [property: JsonPropertyName("note")] string Note);
 
 public record CalmHistoryRow(

@@ -74,7 +74,7 @@ def providers() -> dict:
         if not configured:
             entry["setup"] = spec["setup"]
         out.append(entry)
-    return {"providers": out}
+    return {"signin_providers": out}
 
 
 def _spec(provider: str) -> dict:

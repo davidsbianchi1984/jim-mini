@@ -62,7 +62,7 @@ struct MedsCard: View {
             }
 
             if showAdherence, let adherence {
-                ForEach(adherence.medications, id: \.id) { row in
+                ForEach(adherence.adherence_rows, id: \.id) { row in
                     HStack {
                         Text(row.name).font(.caption2)
                             .foregroundStyle(Theme.txt)

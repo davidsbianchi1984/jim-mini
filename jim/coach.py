@@ -497,7 +497,7 @@ def ask_specialist(user_id: str, area: str, message: str, qrme,
         # owner's approval, and saying "no answer" would misdescribe a message
         # that exists and is waiting.
         "held_for_owner_approval": content is None,
-        "provenance": {
+        "answer_provenance": {
             "method": "answered by a QRME specialist profile through the "
                       "tandem, not by JIM's own model",
             "shared": "the message you sent, and nothing else from your "

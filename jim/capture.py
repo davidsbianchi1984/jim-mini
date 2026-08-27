@@ -437,7 +437,7 @@ def vocabulary() -> dict:
         "kinds": KINDS,
         "sites": SITES,
         "intimate_sites": sorted(INTIMATE),
-        "provenance": PROVENANCE,
+        "provenance_kinds": PROVENANCE,
         "max_bytes": MAX_BYTES,
         "vault_required": True,
         "agent_sees": list(AGENT_FIELDS),

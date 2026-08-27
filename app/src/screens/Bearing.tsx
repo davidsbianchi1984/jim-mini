@@ -301,7 +301,7 @@ export function Bearing() {
           </p>
         )}
         <div className="row">
-          {(dock?.faces ?? []).map((f) => (
+          {(dock?.chosen_faces ?? []).map((f) => (
             <button key={f} disabled={busy}
                     onClick={() => run(async () => {
                       setFace(await api.dockFace(uid!, f, token!));

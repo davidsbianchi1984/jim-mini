@@ -20,6 +20,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   phantoms decoding what the wire never sent — the attach outcome's
   `attached` (the wire says `release`) and a capture-row `sealed` that
   nothing serves — and now say what actually arrives.
+- **The collision record reaches zero.** The last five shape-vs-shape
+  names split: the dock's chosen list is `chosen_faces`, the adherence
+  tally's rows `adherence_rows`, the engaged turn's who-generated block
+  `generation`, the specialist answer's account `answer_provenance`,
+  the capture vocabulary's code table `provenance_kinds`, the app
+  catalog's companies `app_providers`, the sign-in doors
+  `signin_providers`, and the calm protocol's rows `calm_steps`. From
+  here a new two-meaning wire name is a failing guard, not a backlog
+  entry.
 
 ### Fixed
 

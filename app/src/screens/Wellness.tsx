@@ -40,11 +40,11 @@ export function Wellness() {
   }, []);
 
   function runStep(s: CalmSession, ix: number) {
-    if (ix >= s.steps.length) { setStepIx(-1); return; }
+    if (ix >= s.calm_steps.length) { setStepIx(-1); return; }
     setStepIx(ix);
-    if (spoken) say(s.steps[ix].say);
+    if (spoken) say(s.calm_steps[ix].say);
     timer.current = setTimeout(() => runStep(s, ix + 1),
-                               s.steps[ix].seconds * 1000);
+                               s.calm_steps[ix].seconds * 1000);
   }
 
   async function startCalm(kind: string) {
@@ -119,12 +119,12 @@ export function Wellness() {
         </div>
         {calm && stepIx >= 0 && (
           <div className="calm-run">
-            <div className="calm-say">{calm.steps[stepIx].say}</div>
+            <div className="calm-say">{calm.calm_steps[stepIx].say}</div>
             <div className="muted small">
               {tr("wel.calm.step", lang)
                 .replace("{i}", String(stepIx + 1))
-                .replace("{n}", String(calm.steps.length))
-                .replace("{sec}", String(calm.steps[stepIx].seconds))}
+                .replace("{n}", String(calm.calm_steps.length))
+                .replace("{sec}", String(calm.calm_steps[stepIx].seconds))}
             </div>
             <button onClick={stopCalm}>{tr("wel.calm.end", lang)}</button>
           </div>

@@ -54,12 +54,12 @@ struct WellnessCard: View {
                 }
             }
             if let started {
-                ForEach(Array(started.steps.enumerated()), id: \.offset) { index, step in
+                ForEach(Array(started.calm_steps.enumerated()), id: \.offset) { index, step in
                     Text(L10n.t("wel.calm.step", state.language)
                             .replacingOccurrences(of: "{i}",
                                                   with: String(index + 1))
                             .replacingOccurrences(of: "{n}",
-                                                  with: String(started.steps.count))
+                                                  with: String(started.calm_steps.count))
                             .replacingOccurrences(of: "{sec}",
                                                   with: String(step.seconds))
                          + " — " + step.say)

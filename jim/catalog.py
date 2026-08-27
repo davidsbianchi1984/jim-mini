@@ -123,6 +123,6 @@ def catalog() -> dict:
         })
         g["apps"].append({"app": c["app"], "label": c["label"],
                           "capabilities": c["capabilities"], "directions": c["directions"]})
-    return {"providers": list(groups.values()),
+    return {"app_providers": list(groups.values()),
             "app_count": len(CONNECTORS),
             "provider_count": len(groups)}

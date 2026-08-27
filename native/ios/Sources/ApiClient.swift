@@ -181,7 +181,7 @@ struct EngagedTurnResult: Decodable {
     let stopped: String?
     let engaged: Bool
     let watches: [StandingWatch]
-    let provenance: EngagedProvenance
+    let generation: EngagedProvenance
 }
 
 struct EngagedSignOff: Decodable {
@@ -913,7 +913,7 @@ struct SocialConn: Decodable {
 
 struct CatalogApp: Decodable { let app: String; let label: String; let capabilities: [String] }
 struct CatalogProvider: Decodable { let provider: String; let label: String; let apps: [CatalogApp] }
-struct AppsCatalog: Decodable { let providers: [CatalogProvider] }
+struct AppsCatalog: Decodable { let app_providers: [CatalogProvider] }
 
 struct AppConn: Decodable {
     let id: String
@@ -2631,7 +2631,7 @@ struct SpecialistAnswer: Decodable {
     struct Who: Decodable { let label: String; let qrme_profile_id: String }
     let specialist_who: Who?
     struct Where: Decodable { let method: String; let shared: String }
-    let provenance: Where?
+    let answer_provenance: Where?
 }
 
 // MARK: - Money — the guardian that watches balances (jim/money.py)
@@ -3348,7 +3348,7 @@ struct AdherenceRow: Decodable {
 
 struct MedAdherence: Decodable {
     let window_days: Int
-    let medications: [AdherenceRow]
+    let adherence_rows: [AdherenceRow]
 }
 
 /// The vigil's whole answer. Until armed the route says `{"armed": false}`
@@ -3771,7 +3771,7 @@ struct DockState: Decodable {
     let corner: String
     let state: String
     let face: String?
-    let faces: [String]
+    let chosen_faces: [String]
     let `set`: Bool
     let wanted: String
     let forced: Bool
@@ -4015,7 +4015,7 @@ struct OAuthProviderRow: Decodable {
     let setup: String?
 }
 
-struct OAuthProviders: Decodable { let providers: [OAuthProviderRow] }
+struct OAuthProviders: Decodable { let signin_providers: [OAuthProviderRow] }
 
 struct OAuthStarted: Decodable {
     let provider: String
@@ -4141,7 +4141,7 @@ struct CalmStarted: Decodable {
     let title: String
     let what: String
     let total_seconds: Int
-    let steps: [CalmStep]
+    let calm_steps: [CalmStep]
     let note: String
 }
 

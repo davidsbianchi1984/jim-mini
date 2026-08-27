@@ -676,11 +676,11 @@ export function Coach({ go }: {
               {fromSpecialist.note ? ` — ${fromSpecialist.note}` : ""}
             </div>
           )}
-          {fromSpecialist.provenance && (
+          {fromSpecialist.answer_provenance && (
             <>
-              <div className="muted small">{fromSpecialist.provenance.method}</div>
+              <div className="muted small">{fromSpecialist.answer_provenance.method}</div>
               <div className="muted small">
-                {tr("spec.shared", lang)}: {fromSpecialist.provenance.shared}
+                {tr("spec.shared", lang)}: {fromSpecialist.answer_provenance.shared}
               </div>
             </>
           )}
