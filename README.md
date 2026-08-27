@@ -1,12 +1,16 @@
 # JIM-mini
 
-**A personal health guardian for people managing known conditions.**
+**A personal health guardian for anyone, at any age.**
 
-JIM-mini watches the vital signs of a person living with known health
-conditions and responds when they cannot: a check-in first, and when
-readings collapse or the questions go unanswered, the help they programmed
-in advance. It is built for seniors and their families who want safety,
-independence, and peace of mind — around the clock, including during sleep.
+JIM-mini watches over one person's health the way a good companion would:
+it learns what is normal *for them*, notices when something drifts, asks
+before it assumes, and — only when readings collapse or the questions go
+unanswered — runs the help they programmed in advance. It is built for
+anyone living with a body: a person managing a chronic condition, an
+athlete watching recovery, a parent keeping half an eye on the numbers, a
+student under stress, somebody who lives alone at any age, and the
+families and care teams around all of them. Safety, independence, and
+peace of mind are not an age bracket.
 
 **Current release: v1.8.9** — see [CHANGELOG.md](CHANGELOG.md).
 
@@ -15,18 +19,69 @@ JIM-mini is one of three products versioned and released together:
 [PDI](https://github.com/davidsbianchi1984/pdi) (personal data vault). One
 version number names one tested combination of all three.
 
+## Who it is for
+
+Anyone who wants their own numbers watched on their own terms. The same
+product serves a twenty-five-year-old tuning training load, a new parent
+running on no sleep, a person of any age managing diabetes or a heart
+condition, and an elder whose family wants to know the quiet is ordinary
+quiet. Every capability below works for every account; nothing is gated,
+worded, or designed around one generation.
+
 ## What it does
+
+**Watching**
 
 | Capability | Description |
 |---|---|
-| **Guardian monitoring** | Live readings (heart rate, oxygen, respiration, temperature) are compared against the person's own learned baseline, not population averages. Drift raises a check-in; collapse or silence escalates. |
+| **Guardian monitoring** | Live readings (heart rate, oxygen, respiration, temperature, stress) compared against the person's own learned baseline, never population averages. Drift raises a check-in; collapse or silence escalates. |
+| **Baselines and foresight** | The system learns each person's normal from history they already have — a one-time health export seeds weeks of baseline instantly — and projects short-term trends so a decline is raised before it is a crisis. |
+| **Reading freshness** | Every reading carries its source and age; each consumer states how old is too old, so a stale number is never quietly treated as a current one. |
+| **Crash watch and vigil** | The crash watch notices when the person cannot press anything; the vigil notices when the signals simply stop, and asks a named steward to check in after a chosen quiet period. |
+| **Room and device senses** | Cameras, speakers, bands, rings, patches and doorway sensors each declare what they take in and who else they reach — cues are graded and kept, footage is not, and nothing that catches other people is on by default. |
+| **Wrist channel** | No watch app required: a phone automation drips readings to a per-user URL. Recipes for Apple Watch, Wear OS, Fitbit, Garmin, and any other brand via its own app — plus a standalone Wear OS app (`native/wear/`). |
+
+**Responding**
+
+| Capability | Description |
+|---|---|
 | **Early-warning escalation** | A programmed ladder: check in with the person first, then contacts, then the emergency path they configured in advance. See [docs/early-warning-escalation.md](docs/early-warning-escalation.md). |
-| **Baselines and foresight** | The system learns each person's normal from history they already have, and projects short-term trends so a decline is raised before it is a crisis. |
-| **Check-ins, journal, and coaching** | Daily mood and energy check-ins, a private journal, and a life coach that escalates to the guardian when a conversation reveals something the monitors cannot see. |
-| **Emergency tools** | A CPR metronome that keeps clinical time with no network, a scannable Medical ID, and an emergency screen that shares location. The dialer never claims a call it did not place. |
-| **Care circle** | Family and care-team visibility with per-person consent, quiet hours, and a full audit trail of who saw what. |
-| **Privacy and offline mode** | With `JIM_OFFLINE=1`, nothing leaves the host — enforced at every socket in the codebase and verified by tests, not policy. Optional on-prem storage through the PDI vault. |
+| **The far end** | A critical detection mails the consented emergency contact a real letter with an acknowledgment link, and a monthly liveness note proves the mailbox on a calm day instead of during an emergency. |
+| **Beacons and the rota** | Location beacons for finders, an answering queue for carers, and a relay that pages a rota of responders — every attempt on the ledger, and the sentence a finder reads derived from what actually happened. |
+| **Emergency tools** | A CPR metronome that keeps clinical time with no network and no account, first-aid playbooks localized in ten languages, a scannable Medical ID, and an emergency screen that shares location. The device dials; JIM never claims a call it did not place. |
+
+**Living**
+
+| Capability | Description |
+|---|---|
+| **Check-ins, journal, coaching** | Daily mood, energy and stress check-ins, a private journal, and a coach that answers with the network cut — an offline knowledge stack with every layer on the record — escalating to the Guardian when a conversation reveals what the monitors cannot see. |
+| **A presence that speaks first** | A companion (or professional, by request) that starts conversations from six areas of the person's own history, says why, and states on the wire what it will never be. |
+| **Engaged sessions** | An agent session that stays open until you sign off, acts across your own records through a written allowlist, and lands every change on a trail with the undo beside it. |
+| **The medicine cabinet** | Scheduled and as-needed medications, dose logging, adherence over a window, and missed-critical alerts — with the honesty line that JIM does not check drug interactions. |
+| **The money guardian** | Accounts whose numbers live only in the vault, balance warnings through the same proactive ladder, savings goals, and a written, revocable investing mandate whose orders are logged proposals. |
+| **Wellness** | Guided calm protocols whose counts never vary, fitness blocks with pace cues, meal plans, and meal photos that seal like clinical captures. |
+| **Clinical captures** | Photographs of what worries you, sealed in the vault, released to a clinician one deliberate choice at a time — intimate sites never swept in automatically, and no model ever sees the image. |
+| **Your people** | A circle by mutual invitation, messages that never leave the deployment, the phone's address book under a revocable grant, meetings that arrive as words, and shopping through the tandem that QRME is never told about. |
+
+**Speaking**
+
+| Capability | Description |
+|---|---|
+| **Standing voice conversations** | Talk, coach and check-in hold a real conversation: listen, answer aloud, listen again — the reply spoken piece by piece so the wait never grows with the answer, interruptible mid-sentence, ending only when the person leaves. |
+| **The ear that behaves** | The microphone has an off, silence is never a turn, a backgrounded tab says so instead of pretending to listen, and the voice follows the earbud in and out. |
+| **Ten languages** | Every screen, refusal and alarm sentence translated across the console and all three native shells — including what the product says while something is going wrong. |
+| **Ability is not a gate** | Every function works by text alone, voice is always optional, no step is timed, and the accessibility screen is reachable before sign-in. |
+
+**Trust**
+
+| Capability | Description |
+|---|---|
+| **Privacy and offline mode** | With `JIM_OFFLINE=1`, nothing leaves the host — enforced at every socket in the codebase and verified by tests, not policy. |
+| **Memory with an eraser** | Long-term memory lives sealed in the PDI vault, shown to the person it is about, with a per-moment forget that unmakes the vector, the seal and the ledger row together. |
+| **A record that shows tampering** | Consequential acts land in an append-only, hash-chained audit log; an erase records itself rather than removing what the chain already said. |
+| **Take it or delete it, anytime** | A full export derived from the schema, and an erasure measured against the schema — never against a list somebody wrote once. |
 | **Clinical handoff** | A sealed, revocable summary a person can hand to a clinician. See [docs/hipaa-baa.md](docs/hipaa-baa.md). |
+| **Honest degradation** | A refused key is a translated sentence naming the fix; a printed letter is never reported as a person notified; a stub answer is never dressed as the model you chose. |
 
 ## Product surfaces
 
@@ -38,7 +93,8 @@ version number names one tested combination of all three.
 | iOS shell | `native/ios/` | SwiftUI. |
 | Android shell | `native/android/` | Kotlin. |
 | Windows shell | `native/windows/` | C# / WinUI. |
-| Wrist channel | `jim/watch.py` | No app to install: a phone automation drips Health readings to a per-user URL, and a one-time health export seeds weeks of baseline instantly. Recipes for Apple Watch, Wear OS, Fitbit, and Garmin. |
+| Wear OS app | `native/wear/` | Standalone: the pulse read on the wrist, words never audio. |
+| Wrist channel | `jim/watch.py` | A phone automation drips Health readings to a per-user URL; a one-time export seeds weeks of baseline. |
 
 ## On the wrist
 
@@ -126,6 +182,7 @@ them); the links under them are the product.
 </tr>
 </table>
 
+
 ## Quick start
 
 ```bash
@@ -157,6 +214,7 @@ Everything is environment-driven; the defaults run locally with no keys.
 | `JIM_OFFLINE` | `1` guarantees nothing leaves the host. |
 | `ANTHROPIC_API_KEY` (or `JIM_LLM=stub`) | Conversation model. OpenAI, Gemini, Grok, DeepSeek, Perplexity, Ollama, and custom endpoints are also supported (`JIM_*_MODEL`, `JIM_OLLAMA_URL`, `JIM_CUSTOM_LLM_URL`). |
 | `JIM_MODEL` | Model override for the default provider. |
+| `ELEVENLABS_API_KEY` | Spoken voice; without it the device voice stands in and says so. |
 | `JIM_QRME_URL` / `JIM_PDI_URL` / `JIM_PDI_TOKEN` | Tandem links to the sister products. |
 | `JIM_CORS_ORIGINS` | Allowed console origins. |
 
