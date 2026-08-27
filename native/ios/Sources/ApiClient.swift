@@ -2279,6 +2279,37 @@ actor ApiClient {
                                              "consented": consented], token: token)
     }
 
+    // The synced address book (jim/contacts.py). The grant is the
+    // "contacts" source one card up; the sync REPLACES the book, and the
+    // book reads back names — never the numbers.
+
+    struct BookRow: Decodable {
+        let id: String
+        let name: String
+        let has_guardian: Bool?
+    }
+
+    struct Book: Decodable {
+        let book: [BookRow]
+        let held: Int
+    }
+
+    struct BookSynced: Decodable {
+        let held: Int
+        let skipped: Int
+        let sealed: Bool
+    }
+
+    func syncContacts(uid: String, entries: [[String: String]],
+                      token: String) async throws -> BookSynced {
+        try await request("/contacts/\(uid)", method: "PUT",
+                          body: ["entries": entries], token: token)
+    }
+
+    func contactsBook(uid: String, token: String) async throws -> Book {
+        try await request("/contacts/\(uid)", token: token)
+    }
+
     func socialConnections(uid: String, token: String) async throws -> [SocialConn] {
         try await request("/social/\(uid)", token: token)
     }

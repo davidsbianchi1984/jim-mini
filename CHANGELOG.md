@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The synced address book reaches the phones.** The two contact doors
+  leave the shell backlogs: iOS and Android read the device's own
+  contacts (declared, permissioned, refusals said in the reader's
+  language), Windows takes typed rows, and all three ask for the
+  contacts grant first so the decision is on the record before any name
+  moves. The freshness stats and the meeting-recording door are recorded
+  in each shell backlog as the two the shells still owe.
+
 - **A meeting's recording arrives as words.** `POST /day/{user}/
   stretches/{id}/heard` takes raw audio, transcribes it on the way
   through, and hands the transcript to the day as an ordinary moment on

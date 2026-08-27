@@ -287,7 +287,10 @@ def test_the_capability_check_reaches_the_calls_this_shell_makes():
     android = _used(sorted(REPO.glob("native/android/**/*.kt")), ANDROID_NEEDS)
     assert len(IOS_NEEDS) >= 8 and len(ANDROID_NEEDS) >= 5
     assert ios == {"AVAudioRecorder": "TalkCard.swift",
-                   "AVAudioSession": "TalkCard.swift"}, ios
+                   "AVAudioSession": "TalkCard.swift",
+                   # The synced address book: read once per press of sync,
+                   # declared in project.yml, never in the background.
+                   "CNContactStore": "ContactsBookCard.swift"}, ios
     assert android == {"MediaRecorder": "Screens.kt"}, android
 
 

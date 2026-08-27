@@ -4051,6 +4051,38 @@ object ApiClient {
         return ProviderSummaryK(o.optString("display_name", ""), conditions,
             o.optInt("escalations", 0))
     }
+    // -- the synced address book (jim/contacts.py) ---------------------------
+    // The grant is the "contacts" source; the sync REPLACES the book, and
+    // the book reads back names — never the numbers.
+
+    data class BookRow(val id: String, val name: String,
+                       val hasGuardian: Boolean)
+
+    suspend fun syncContacts(uid: String,
+                             entries: List<Pair<String, String>>,
+                             token: String): Int {
+        val body = JSONObject().put("entries", JSONArray().apply {
+            entries.forEach {
+                put(JSONObject().put("name", it.first).put("number", it.second))
+            }
+        })
+        return JSONObject(request("/contacts/$uid", "PUT", body, token))
+            .optInt("held", 0)
+    }
+
+    suspend fun contactsBook(uid: String,
+                             token: String): Pair<List<BookRow>, Int> {
+        val said = JSONObject(request("/contacts/$uid", token = token))
+        val rows = mutableListOf<BookRow>()
+        val book = said.optJSONArray("book") ?: JSONArray()
+        for (i in 0 until book.length()) {
+            val row = book.getJSONObject(i)
+            rows.add(BookRow(row.getString("id"), row.getString("name"),
+                             row.optBoolean("has_guardian", false)))
+        }
+        return rows to said.optInt("held", 0)
+    }
+
 }
 
 data class MoneyAccount(val id: String, val kind: String,

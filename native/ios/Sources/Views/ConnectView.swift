@@ -32,6 +32,11 @@ struct ConnectView: View {
                 switch tab {
                 case .sources:
                     SourcesSection()
+                    // The people in the phone, synced under the contacts
+                    // grant one card up — the shell's own road for the two
+                    // doors the console can only offer where a browser has
+                    // a picker.
+                    ContactsBookCard()
                     // Channel 2 sits with the sources: the lent microphone
                     // is a way in for the world's sound, consented the same.
                     MicCard()

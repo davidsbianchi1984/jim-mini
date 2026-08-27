@@ -128,6 +128,11 @@ public sealed partial class ConnectPage : Page
     /// is stamped once per row and a name addresses only one of them.
     private void Localize()
     {
+        BookHead.Text = L10n.T("book.title");
+        BookLead.Text = L10n.T("book.lead");
+        BookLines.PlaceholderText = L10n.T("book.lines");
+        BookSyncButton.Content = L10n.T("book.sync");
+
         SourcesPivot.Header = L10n.T("jcon.tab.sources");
         SocialPivot.Header = L10n.T("jcon.tab.social");
         AppsPivot.Header = L10n.T("jcon.tab.apps");
@@ -180,6 +185,7 @@ public sealed partial class ConnectPage : Page
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
+        _ = ReadBook();
         PlatformBox.ItemsSource = Platforms.ToList();
         PlatformBox.SelectedIndex = 0;
         await ReloadSources();
@@ -2013,4 +2019,56 @@ public sealed partial class ConnectPage : Page
             SitError.Visibility = Visibility.Visible;
         }
     }
+    // -- the synced address book (jim/contacts.py) ---------------------------
+    // Classic Windows holds no system address book, so the sync here is the
+    // rows a person types — one per line, name then number, split on the
+    // last comma so a name may carry its own. The grant is the contacts
+    // source above and goes first, so the decision is on the record before
+    // any name moves.
+
+    private async System.Threading.Tasks.Task ReadBook()
+    {
+        var s = AppState.Current;
+        if (!s.IsEnrolled) return;
+        try
+        {
+            var got = await ApiClient.Shared.ContactsBook(s.Uid!, s.Token!);
+            BookHeld.Text = L10n.T("book.held")
+                .Replace("{n}", got.held.ToString());
+            BookHeld.Visibility =
+                got.held > 0 ? Visibility.Visible : Visibility.Collapsed;
+            BookList.ItemsSource = got.book
+                .Take(30)
+                .Select(r => r.has_guardian
+                    ? $"{r.name} · {L10n.T("book.guardian")}"
+                    : r.name)
+                .ToList();
+        }
+        catch (Exception ex) { BookNote.Text = ex.Message; }
+    }
+
+    private async void OnBookSync(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (!s.IsEnrolled) return;
+        var entries = new List<object>();
+        foreach (var line in (BookLines.Text ?? "").Split('\n'))
+        {
+            var cut = line.LastIndexOf(',');
+            if (cut <= 0 || cut >= line.Length - 1) continue;
+            var name = line[..cut].Trim();
+            var number = line[(cut + 1)..].Trim();
+            if (name.Length > 0 && number.Length > 0)
+                entries.Add(new { name, number });
+        }
+        try
+        {
+            BookNote.Text = "";
+            await ApiClient.Shared.SetSource(s.Uid!, s.Token!, "contacts", true);
+            await ApiClient.Shared.SyncContacts(s.Uid!, entries, s.Token!);
+            await ReadBook();
+        }
+        catch (Exception ex) { BookNote.Text = ex.Message; }
+    }
+
 }

@@ -2968,6 +2968,32 @@ public sealed class ApiClient
                                           string robotId) =>
         Send<RobotUnbound>(new HttpRequestMessage(HttpMethod.Delete,
             $"/robots/{uid}/{robotId}"), token);
+    // -- the synced address book (jim/contacts.py) ---------------------------
+    // The grant is the "contacts" source; the sync REPLACES the book, and
+    // the book reads back names — never the numbers. Classic Windows holds
+    // no system address book, so this shell's sync is the rows a person
+    // types in.
+
+    public sealed class BookRow
+    {
+        public string id { get; init; } = "";
+        public string name { get; init; } = "";
+        public bool has_guardian { get; init; }
+    }
+
+    public sealed class ContactBook
+    {
+        public List<BookRow> book { get; init; } = new();
+        public int held { get; init; }
+    }
+
+    public Task SyncContacts(string uid, IEnumerable<object> entries,
+                             string token) =>
+        Send<JsonElement>(Put($"/contacts/{uid}", new { entries }, token));
+
+    public Task<ContactBook> ContactsBook(string uid, string token) =>
+        Send<ContactBook>(Get($"/contacts/{uid}", token));
+
 }
 
 public record MoneyAccount(

@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- The synced address book: read once per press of sync, never in
+         the background. Names and one number each go up under the contacts
+         grant; withdrawing the grant drops the book server-side. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- The conversation you took with you, out of the app entirely. A
          foreground service is the only way a phone lets an app keep a

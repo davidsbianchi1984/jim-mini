@@ -4886,7 +4886,7 @@ fun ConnectScreen(vm: GuardianViewModel) {
         when (tab) {
             // Channel 2 sits with the sources: the lent microphone is a
             // way in for the world's sound, consented the same.
-            0 -> { SourcesPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); TalkPanel(vm); MailSettingsPanel(vm); WatchPanel(vm); DevicesPanel(vm); SittingPanel(vm) }
+            0 -> { SourcesPanel(vm); ContactsBookPanel(vm); MicPanel(vm); VoiceSettingsPanel(vm); TalkPanel(vm); MailSettingsPanel(vm); WatchPanel(vm); DevicesPanel(vm); SittingPanel(vm) }
             1 -> SocialPanel(vm)
             2 -> AppsPanel(vm)
             3 -> {
@@ -4901,6 +4901,67 @@ fun ConnectScreen(vm: GuardianViewModel) {
             //     mattered  does anything open the screen
             else -> SelfProfileScreen(ApiClient, vm.uid!!, vm.token!!, vm.language)
         }
+    }
+}
+
+@Composable
+private fun ContactsBookPanel(vm: GuardianViewModel) {
+    // The synced address book (jim/contacts.py) — the shell's own road.
+    // The grant is the "contacts" source on the panel above; asked for on
+    // the first sync so the decision is on the record before any name
+    // moves. The sync REPLACES the book; withdrawing the source drops it.
+    var book by remember { mutableStateOf<List<ApiClient.BookRow>>(emptyList()) }
+    var held by remember { mutableStateOf(0) }
+    var bookNote by remember { mutableStateOf<String?>(null) }
+    val ctx = LocalContext.current
+    fun readBook() {
+        vm.call({ ApiClient.contactsBook(vm.uid!!, vm.token!!) }) { r ->
+            r.getOrNull()?.let { (rows, n) -> book = rows; held = n }
+        }
+    }
+    fun readAndSync() {
+        val entries = mutableListOf<Pair<String, String>>()
+        ctx.contentResolver.query(
+            android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            arrayOf(
+                android.provider.ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER),
+            null, null, null)?.use { cur ->
+            while (cur.moveToNext()) {
+                val name = cur.getString(0) ?: continue
+                val number = cur.getString(1) ?: continue
+                if (name.isNotBlank()) entries.add(name to number)
+            }
+        }
+        vm.call({
+            ApiClient.setSource(vm.uid!!, vm.token!!, "contacts", true)
+            ApiClient.syncContacts(vm.uid!!, entries, vm.token!!)
+        }) { readBook() }
+    }
+    val askContacts = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { allowed ->
+        if (allowed) readAndSync()
+        else bookNote = L10n.t("book.denied", vm.language)
+    }
+    LaunchedEffect(Unit) { readBook() }
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("book.title", vm.language), color = Jim.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("book.lead", vm.language), color = Jim.T2, fontSize = 12.sp)
+        SmallAction(L10n.t("book.sync", vm.language)) {
+            askContacts.launch(android.Manifest.permission.READ_CONTACTS)
+        }
+        if (held > 0) {
+            Text(L10n.t("book.held", vm.language).replace("{n}", held.toString()),
+                color = Jim.T2, fontSize = 12.sp)
+            book.take(30).forEach { row ->
+                Text(if (row.hasGuardian)
+                        "${row.name} · ${L10n.t("book.guardian", vm.language)}"
+                     else row.name,
+                    color = Jim.Txt, fontSize = 13.sp)
+            }
+        }
+        bookNote?.let { Text(it, color = Jim.T2, fontSize = 12.sp) }
     }
 }
 

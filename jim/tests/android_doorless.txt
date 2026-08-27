@@ -65,14 +65,16 @@ PUT /users/{user_id}/widgets/{widget_id}
 GET /farend/{user_id}
 PUT /farend/{user_id}
 
-# The synced address book's doors (jim/contacts.py). The console carries a
-# picker-based sync where the platform offers one; the native shells are
-# the real road for the rest and owe their own.
-PUT /contacts/{user_id}
-GET /contacts/{user_id}
-
 # The staleness contract's heartbeat (jim/freshness.py): the wrist
 # channel's pulse apart from the readings, so the person going quiet and
 # the network going dark stop being one silence. The shell that holds the
 # BLE link to the watch is the road for the beat.
 POST /heartbeat/{user_id}
+
+# The staleness contract's stats and the meeting-recording door
+# (jim/freshness.py, jim/daybook.py). The console carries both; the
+# shells owe their own tellings — the freshness card beside their
+# monitor reads, and handing a meeting's audio up from the device that
+# actually sat in the meeting.
+GET /freshness/{user_id}
+POST /day/{user_id}/stretches/{stretch_id}/heard

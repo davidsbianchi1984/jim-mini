@@ -39,6 +39,30 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- The synced address book (jim/contacts.py). Classic
+                         Windows holds no system address book, so the sync is
+                         the rows a person types — one per line, name then
+                         number. The grant is the contacts source above; the
+                         sync replaces the book. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="BookHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="BookLead" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="BookLines" AcceptsReturn="True" MinHeight="72"
+                                     TextWrapping="Wrap" />
+                            <Button x:Name="BookSyncButton" Click="OnBookSync"
+                                    Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                            <TextBlock x:Name="BookHeld" FontSize="12"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="BookList" />
+                            <TextBlock x:Name="BookNote" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                        </StackPanel>
+                    </Border>
+
                     <!-- Two guardians, working together and never on the
                          line. It opens only between people who are already
                          each other's contacts, and the half shown is what
