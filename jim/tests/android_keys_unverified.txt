@@ -1,5 +1,5 @@
-# status: backlog — 9 rows
-# ceiling: 9
+# status: backlog — 5 rows
+# ceiling: 5
 #
 # Keys the Android client asks for that the route does not send *yet*, which
 # are real.
@@ -15,19 +15,21 @@
 #
 # These are states, not fictions. The 0.56.5 rule is that driving into a
 # state beats recording that you did not, and where that is a call or two the
-# guard makes them. These cannot be manufactured: continuity is derived from
-# accumulated check-ins, coach turns and helpfulness answers over time, and
-# no route builds one. A fixture that faked the history would be asserting
-# against its own fiction.
+# guard makes them. This file once said continuity could not be manufactured
+# — "no route builds one" — and there is indeed no single route, but three
+# check-ins and two answered guidance rounds build one anyway. The shared
+# fixture lives that state now, so the five continuity keys left this list
+# verified, and `note` joined going the other way: it is the "nothing yet"
+# sentence, and a fixture with a history stops seeing it.
 #
 # The care-team rows joined when 0.61.1+ typed the phones against
 # /users/{id}/care-team. The route's unlinked answer is `{"linked": false}`
 # and nothing else; the linked answer carries the organization, department
 # and latest plan. Linking requires a standing organization on the QRME side
 # of the tandem — `careteam.link` calls across to QRME to verify the org —
-# and no fixture inside this suite can stand one up. Same class as
-# continuity: a state the guard cannot manufacture without asserting against
-# its own fiction.
+# and no fixture inside this suite can stand one up. The class continuity
+# turned out not to be in: a state the guard genuinely cannot manufacture
+# without asserting against its own fiction.
 #
 # Ratcheted: this list may shrink freely and grows only by raising the
 # ceiling in the same commit — a deliberate, visible edit. A row leaves it
@@ -35,11 +37,8 @@
 #
 /adaptation/{id} note           # only while `built` is false — the sentence
                                 # saying there is no profile yet
-/continuity/{id} observations   # once continuity is built, which takes a
-/continuity/{id} conditioning   # history of check-ins and coach turns over
-/continuity/{id} vector         # time
-/continuity/{id} meanings
-/continuity/{id} method
+/continuity/{id} note           # the "nothing yet" sentence — gone once the
+                                # history builds, and the fixture builds one
 /users/{id}/care-team org_id         # only once linked, and linking needs a
 /users/{id}/care-team department_id  # real QRME organization through the
 /users/{id}/care-team latest_plan    # tandem
