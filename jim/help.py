@@ -249,8 +249,8 @@ def ask(question: str, mode: str = "text") -> dict:
         return {"answer": step.get("speak")
                           or f"{step['title']}. {step['what']}",
                 "source": "written", "ai": False, "disclosure": DISCLOSURE,
-                "walkthrough": {"started": True, "step": step,
-                                "steps": len(tutorial.LESSONS),
+                "walkthrough": {"started": True, "next_lesson": step,
+                                "lessons_count": len(tutorial.LESSONS),
                                 "next": "/tutorial/done"}}
     for keywords, answer in DIRECTIONS.items():
         if any(k in q for k in keywords):

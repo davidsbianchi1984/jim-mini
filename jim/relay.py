@@ -92,7 +92,7 @@ def incident(alarm: dict, beacon: dict) -> dict:
         "beacon": beacon["id"],
         "site_label": beacon["label"],
         "raised_at": alarm["created_at"],
-        "reported": alarm["messages"],
+        "reported": alarm["alert_texts"],
         "state": alarm["state"],
         "accepted_by": alarm["accepted_by"],
         "needed": "a person to attend and confirm they are attending",

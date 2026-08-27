@@ -25,12 +25,12 @@ def test_catalog_rates_platforms_for_first_aid(client):
     cat = client.get("/robotics/catalog").json()
     by_model = {r["model"]: r for r in cat["robots"]}
     assert by_model["optimus"]["maker"] == "Tesla"
-    assert by_model["optimus"]["first_aid"] == "perform"
-    assert by_model["figure_03"]["first_aid"] == "perform"
-    assert by_model["atlas"]["first_aid"] == "perform"
-    assert by_model["neo"]["first_aid"] == "assist"
-    assert by_model["g1"]["first_aid"] == "assist"
-    assert by_model["saros_20"]["first_aid"] is None
+    assert by_model["optimus"]["first_aid_rating"] == "perform"
+    assert by_model["figure_03"]["first_aid_rating"] == "perform"
+    assert by_model["atlas"]["first_aid_rating"] == "perform"
+    assert by_model["neo"]["first_aid_rating"] == "assist"
+    assert by_model["g1"]["first_aid_rating"] == "assist"
+    assert by_model["saros_20"]["first_aid_rating"] is None
     assert cat["cardiac_directives"]["perform"].startswith("begin_hands_only_cpr")
 
 
@@ -128,7 +128,7 @@ def test_cardiac_escalation_assigns_first_aid_roles(client):
     assert r["condition"] == "cardiac_event"
     directives = {d["model"]: d for d in r["escalation"]["robot_directives"]}
     assert directives["optimus"]["directive"].startswith("begin_hands_only_cpr")
-    assert directives["optimus"]["first_aid"] == "perform"
+    assert directives["optimus"]["first_aid_rating"] == "perform"
     assert directives["neo"]["directive"] == "fetch_aed_and_coach_cpr_pace"
     assert directives["saros_20"]["directive"] == "dock_and_clear_floor"
 

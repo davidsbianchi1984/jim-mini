@@ -1041,9 +1041,9 @@ def localize_playbook(playbook: dict, language: str) -> dict:
     pace = playbook.get("pace")
     if pace:
         pace = dict(pace)
-        cue = pace.get("cue")
+        cue = pace.get("pace_cue")
         if cue:
-            pace["cue"] = {k: tr(v, language) for k, v in cue.items()}
+            pace["pace_cue"] = {k: tr(v, language) for k, v in cue.items()}
         out["pace"] = pace
     return out
 

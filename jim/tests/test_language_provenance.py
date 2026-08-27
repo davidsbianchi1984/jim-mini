@@ -38,7 +38,7 @@ def test_cardiac_playbook_is_hand_translated(client):
     aid = g["first_aid"]
     assert aid["language"] == "es"
     assert aid["steps"][0].startswith("Llame")
-    assert "metrónomo" in aid["pace"]["cue"]["audio"]
+    assert "metrónomo" in aid["pace"]["pace_cue"]["audio"]
     # The offline stub can't translate free text — the response says so
     # instead of pretending.
     assert "translation_note" in g

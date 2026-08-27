@@ -25,8 +25,8 @@ def test_collapse_with_absent_pulse_gets_cpr_with_pace_cues(client, mail_server)
     pace = aid["pace"]
     assert 100 <= pace["compressions_per_minute"] <= 120
     assert pace["compression_to_breath_ratio"] == "30:2"
-    assert "green" in pace["cue"]["light"] and "red" in pace["cue"]["light"]
-    assert "metronome" in pace["cue"]["audio"]
+    assert "green" in pace["pace_cue"]["light"] and "red" in pace["pace_cue"]["light"]
+    assert "metronome" in pace["pace_cue"]["audio"]
 
     # Autonomous coordinated response: alerts dispatched to every connected
     # system, contact notified, live help flagged.

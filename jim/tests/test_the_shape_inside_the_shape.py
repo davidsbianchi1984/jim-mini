@@ -697,17 +697,17 @@ def test_a_container_pin_reads_the_element_not_the_wrapper(tmp_path):
 
 
 def test_the_check_can_fail():
-    """The real one: the chapter carries `chapter` and `steps`, and the
-    iPhone read `key` and `title`."""
+    """The real one: the chapter carries `chapter` and `lessons` (née
+    `steps`), and the iPhone read `key` and `title`."""
     sent = contract("tutorial", "outline", "chapters")
     assert sorted({"key", "title"} - sent) == ["key", "title"]
-    assert "chapter" in sent and "steps" in sent
+    assert "chapter" in sent and "lessons" in sent
 
 
 def test_a_wrapper_is_not_its_contents():
-    """`tutorial.where` wraps the step. Decoding it as a bare step is how
+    """`tutorial.where` wraps the lesson. Decoding it as a bare lesson is how
     three buttons on two phones came back blank."""
     wrapper = contract("tutorial", "where", None)
     step = contract("tutorial", "say", None)
-    assert "step" in wrapper
+    assert "next_lesson" in wrapper
     assert not (step & wrapper), sorted(step & wrapper)

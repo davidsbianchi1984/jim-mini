@@ -387,7 +387,7 @@ def test_the_vocabulary_is_public_and_states_the_limits(client):
     assert out["vault_required"] is True
     assert "image itself" in out["agent_never_sees"]
     assert "no override" in out["minors"]
-    assert set(out["intimate"]) == set(capture.INTIMATE)
+    assert set(out["intimate_sites"]) == set(capture.INTIMATE)
 
 
 def test_taking_one_over_http_without_a_vault_is_a_503(client):

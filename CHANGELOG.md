@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Ten wire names mean one thing each.** One field name carrying two
+  meanings across routes misleads the reader the API told to rely on
+  it. The adherence window is `window_days`, the progress tally
+  `insights_count`, the thread tally `messages_count`, the alarm's
+  texts `alert_texts`, the vocabulary's list `intimate_sites`, the CPR
+  pace object `pace_cue`, a robot's rating `first_aid_rating`, the
+  money screen's door `specialist_door`, the coach answer's person
+  `specialist_who`, and the tutorial's object `next_lesson` beside its
+  `lessons` and `lessons_count`. Two shell fields turned out to be
+  phantoms decoding what the wire never sent — the attach outcome's
+  `attached` (the wire says `release`) and a capture-row `sealed` that
+  nothing serves — and now say what actually arrives.
+
 ### Fixed
 
 - **A refused key is a sentence, not a JSON blob.** A handheld showed

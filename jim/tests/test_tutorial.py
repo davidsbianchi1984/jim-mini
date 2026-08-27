@@ -68,7 +68,7 @@ def test_it_works_with_no_model_configured(client):
     src = inspect.getsource(tutorial)
     for provider in ("llm.", "get_provider", "anthropic", "openai"):
         assert provider not in src
-    assert tutorial.outline()["steps"] == len(tutorial.LESSONS)
+    assert tutorial.outline()["lessons_count"] == len(tutorial.LESSONS)
 
 
 def test_voice_drops_the_screen_numbers(client):
@@ -84,12 +84,12 @@ def test_voice_drops_the_screen_numbers(client):
 
 def test_it_walks_in_order_and_remembers(client):
     first = client.post("/tutorial/start", json={"learner_id": "u1"}).json()
-    assert first["step"]["key"] == tutorial.LESSONS[0]["key"]
+    assert first["next_lesson"]["key"] == tutorial.LESSONS[0]["key"]
     nxt = client.post("/tutorial/done",
                       json={"learner_id": "u1",
-                            "lesson": first["step"]["key"]}).json()
+                            "lesson": first["next_lesson"]["key"]}).json()
     assert nxt["done"] == 1
-    assert client.get("/tutorial/progress/u1").json()["step"]["key"] == \
+    assert client.get("/tutorial/progress/u1").json()["next_lesson"]["key"] == \
         tutorial.LESSONS[1]["key"]
 
 
@@ -97,7 +97,7 @@ def test_progress_is_per_step_not_a_cursor(client):
     client.post("/tutorial/start", json={"learner_id": "u2"})
     client.post("/tutorial/done", json={"learner_id": "u2", "lesson": "mic"})
     out = client.get("/tutorial/progress/u2").json()
-    assert out["done"] == 1 and out["step"]["key"] == tutorial.LESSONS[0]["key"]
+    assert out["done"] == 1 and out["next_lesson"]["key"] == tutorial.LESSONS[0]["key"]
 
 
 def test_a_screen_can_ask_which_lesson_it_is(client):
@@ -169,6 +169,6 @@ def test_the_assistant_can_speak_the_tour(client):
     spoken = client.post("/help", json={"question": "show me around",
                                         "mode": "voice"}).json()
     written = client.post("/help", json={"question": "show me around"}).json()
-    assert spoken["walkthrough"]["step"]["screens"] == []
-    assert written["walkthrough"]["step"]["screens"]
+    assert spoken["walkthrough"]["next_lesson"]["screens"] == []
+    assert written["walkthrough"]["next_lesson"]["screens"]
     assert spoken["answer"] and written["answer"]

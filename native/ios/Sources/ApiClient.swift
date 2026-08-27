@@ -4236,7 +4236,7 @@ struct ReportCheckins: Decodable {
 struct ProgressReport: Decodable {
     let checkins: ReportCheckins
     let detections: [String: Int]
-    let insights: Int
+    let insights_count: Int
     let journal_entries: Int
     let feedback: [String: Int]
 }

@@ -143,7 +143,7 @@ def test_the_second_finder_joins_rather_than_being_dropped(client):
     alarms = client.get(f"/users/{u['id']}/alarms",
                         headers=_auth(u["user_token"])).json()
     assert len(alarms) == 1
-    assert alarms[0]["messages"] == ["he's down", "ambulance called"]
+    assert alarms[0]["alert_texts"] == ["he's down", "ambulance called"]
 
 
 def test_an_alarm_lands_in_the_owners_event_timeline(client):
