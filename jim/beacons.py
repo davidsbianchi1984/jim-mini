@@ -416,7 +416,7 @@ def alarms_for(user_id: str, open_only: bool = False) -> list[dict]:
     return [{
         "id": r["id"],
         "beacon_id": r["beacon_id"],
-        "messages": json.loads(r["messages"]),
+        "alert_texts": json.loads(r["messages"]),
         "state": r["state"],
         "tier": r["tier"],
         # Structural rather than a judgement about this particular alarm.

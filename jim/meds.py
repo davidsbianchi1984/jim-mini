@@ -295,7 +295,7 @@ def adherence(user_id: str, days: int = 7, now: datetime | None = None) -> dict:
                     "expected": expected, "taken": min(taken, expected),
                     "rate": round(min(taken, expected) / expected, 2)
                     if expected else None})
-    return {"days": days, "medications": out}
+    return {"window_days": days, "medications": out}
 
 
 def coach_context(user_id: str, now: datetime | None = None) -> list[str]:

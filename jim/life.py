@@ -772,7 +772,7 @@ def progress_report(user_id: str) -> dict:
         "habits": [{"name": h["name"], "streak": h["streak"]}
                    for h in habits(user_id)],
         "detections": {r["severity"]: r["n"] for r in detections},
-        "insights": len(insights(user_id)),
+        "insights_count": len(insights(user_id)),
         "journal_entries": conn.execute(
             "SELECT COUNT(*) AS n FROM journal WHERE user_id=?",
             (user_id,)).fetchone()["n"],

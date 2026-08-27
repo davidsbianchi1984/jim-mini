@@ -1,5 +1,5 @@
-# status: backlog — 15 rows
-# ceiling: 15
+# status: backlog — 5 rows
+# ceiling: 5
 #
 # One wire field name carrying more than one type across this product's API.
 #
@@ -72,21 +72,51 @@
 #   goal       the savings number is `goal_amount`; the care plan's and the
 #              handoff's sentence keep the word. The column stays `goal` —
 #              the ambiguity was never in the database.
-#   value      the boundary's boolean is `holds`; the baseline metric's
+#   value      the boundary's boolean is `stands` (`holds` was itself
+#              taken by a permission's string — the file's own lesson); the baseline metric's
 #              number keeps the word.
 #
-attached
-cue
-days
-insights
+#
+# ## after 1.8.9 — ten of the fifteen object-shape rows close
+#
+#   attached    the mic channel's boolean keeps the word. The Windows and
+#               iOS attach-outcome fields were PHANTOMS — the wire has
+#               always served `release`, and both shells decoded a field
+#               that never arrived. The records now say `release`.
+#   cue         the cue-name and coaching-line strings keep the word; the
+#               CPR pace object is `pace_cue`.
+#   days        the meal plan's day list keeps the word; the adherence
+#               window is `window_days`.
+#   insights    the insight rows keep the word; the progress report's
+#               tally is `insights_count`.
+#   first_aid   the playbook keeps the word; the robot's rating string is
+#               `first_aid_rating`.
+#   intimate    the capture row's boolean keeps the word; the vocabulary's
+#               site list is `intimate_sites`.
+#   messages    the thread's message rows keep the word; the thread list's
+#               tally is `messages_count`; the alarm's texts are
+#               `alert_texts`.
+#   sealed      the custody seal keeps the word — it is PDI's field,
+#               passed through, and not JIM's to rename. The capture-row
+#               boolean was another phantom (nothing serves it; a seal
+#               badge would have read always-unsealed) — struck from the
+#               three shell records rather than renamed.
+#   specialist  the guidance label string keeps the word; the money
+#               screen's door is `specialist_door`; the coach answer's
+#               person is `specialist_who`.
+#   step        the escalation flow's id keeps the word; the tutorial's
+#               object is `next_lesson` (`lesson` was already the coach
+#               store's text — this file's own lesson, learned twice), its chapter list `lessons`, and the
+#               outline's tally `lessons_count` — the words the tutorial's
+#               own database column already used.
+#
+# The five below are object-shape against object-shape: every client
+# already decodes each route into its own record and a mismatch fails
+# loudly at the decoder, so they are the least dangerous kind, and each
+# rename is a multi-record break that deserves its own deliberate round.
+#
 faces
-first_aid
-intimate
 medications
-messages
 provenance
 providers
-sealed
-specialist
-step
 steps

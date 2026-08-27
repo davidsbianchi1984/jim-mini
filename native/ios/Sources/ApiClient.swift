@@ -9,7 +9,7 @@ struct PaceCue: Decodable { let light: String; let audio: String }
 struct Pace: Decodable {
     let compressions_per_minute: Int
     let compression_to_breath_ratio: String
-    let cue: PaceCue?
+    let pace_cue: PaceCue?
 }
 
 struct FirstAid: Decodable {
@@ -806,7 +806,7 @@ struct EscalationPolicy: Decodable {
 struct AlarmRow: Decodable, Identifiable {
     let id: String
     let beacon_id: String?
-    let messages: [String]?
+    let alert_texts: [String]?
     let state: String
     let tier: String?
     let accepted_by: String?
@@ -863,7 +863,7 @@ struct RobotSpec: Decodable {
     let label: String
     let maker: String
     let kind: String
-    let first_aid: String?             // "perform" | "assist" | nil
+    let first_aid_rating: String?      // "perform" | "assist" | nil
 }
 
 struct RoboticsCatalog: Decodable { let robots: [RobotSpec] }
@@ -874,7 +874,7 @@ struct Robot: Decodable {
     let name: String
     let status: String?
     let escalation_directive: String?
-    let first_aid: String?
+    let first_aid_rating: String?
     let commands: [String]?
 }
 
@@ -2629,7 +2629,7 @@ struct SpecialistAnswer: Decodable {
     let note: String?
     let held_for_owner_approval: Bool?
     struct Who: Decodable { let label: String; let qrme_profile_id: String }
-    let specialist: Who?
+    let specialist_who: Who?
     struct Where: Decodable { let method: String; let shared: String }
     let provenance: Where?
 }
@@ -2687,7 +2687,7 @@ struct MoneyDoors: Decodable {
     }
     struct Specialist: Decodable { let label: String?; let route: String? }
     let coach: String?
-    let specialist: Specialist?
+    let specialist_door: Specialist?
     let desks: [Desk]
 }
 
@@ -2931,7 +2931,7 @@ struct CirclePersonRow: Decodable, Identifiable {
 struct CircleThreadRow: Decodable, Identifiable {
     let other_id: String
     let other_name: String?
-    let messages: Int
+    let messages_count: Int
     let last_at: String
     var id: String { other_id }
 }
@@ -3123,7 +3123,7 @@ struct MicGainChoices: Decodable {
 struct CaptureVocabularyRow: Decodable {
     let kinds: [String: String]
     let sites: [String: String]
-    let intimate: [String]
+    let intimate_sites: [String]
     let vault_required: Bool?
     let max_bytes: Int?
 }
@@ -3136,7 +3136,6 @@ struct CaptureRecord: Decodable, Identifiable {
     let note: String?
     let condition: String?
     let intimate: Bool?
-    let sealed: Bool?
     let created_at: String?
 }
 
@@ -3147,7 +3146,7 @@ struct CaptureImageRow: Decodable {
 }
 
 struct CaptureAttachOutcome: Decodable {
-    let attached: [String]?
+    let release: [String]?
     let explicit: [String]?
 }
 
@@ -3348,7 +3347,7 @@ struct AdherenceRow: Decodable {
 }
 
 struct MedAdherence: Decodable {
-    let days: Int
+    let window_days: Int
     let medications: [AdherenceRow]
 }
 
@@ -3723,7 +3722,7 @@ struct TutorialStep: Decodable {
 
 struct TutorialChapter: Decodable {
     let chapter: String
-    let steps: [TutorialStep]
+    let lessons: [TutorialStep]
 }
 
 /// The whole walkthrough, chaptered. The count is deliberately not
@@ -3737,7 +3736,7 @@ struct TutorialOutline: Decodable {
 struct TutorialProgress: Decodable {
     let learner_id: String
     let guide: String
-    let step: TutorialStep?
+    let next_lesson: TutorialStep?
     let done: Int
     let total: Int
     let finished: Bool

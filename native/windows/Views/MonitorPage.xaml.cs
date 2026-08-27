@@ -291,7 +291,7 @@ public sealed partial class MonitorPage : Page
     {
         var site = SelectedSite();
         CapConsent.Visibility =
-            site is not null && _vocabulary?.Intimate.Contains(site) == true
+            site is not null && _vocabulary?.IntimateSites.Contains(site) == true
                 ? Visibility.Visible : Visibility.Collapsed;
     }
 

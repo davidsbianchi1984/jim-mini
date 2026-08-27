@@ -281,13 +281,13 @@ def _doors(user_id: str, qrme) -> dict:
     """
     out: dict = {
         "coach": "/coach/{user_id} (area: finance)",
-        "specialist": None,
+        "specialist_door": None,
         "desks": [],
     }
     from . import specialists
     spec = specialists.for_area("finance")
     if spec is not None and spec.get("qrme_profile_id"):
-        out["specialist"] = {"label": spec.get("label"),
+        out["specialist_door"] = {"label": spec.get("label"),
                              "route": "/coach/{user_id}/specialist"}
     if qrme is not None:
         try:

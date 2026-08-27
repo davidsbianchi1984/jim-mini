@@ -428,7 +428,7 @@ object ApiClient {
             val steps = a.optJSONArray("steps")
             val paceObj = a.optJSONObject("pace")
             val pace = paceObj?.let { pc ->
-                val cue = pc.optJSONObject("cue")
+                val cue = pc.optJSONObject("pace_cue")
                 Pace(pc.optInt("compressions_per_minute"),
                     pc.optString("compression_to_breath_ratio", ""),
                     cue?.optString("light", null), cue?.optString("audio", null))
@@ -1517,7 +1517,7 @@ object ApiClient {
                                 message: String): SpecialistAnswer {
         val o = request("/coach/$uid/specialist", "POST",
             JSONObject().put("area", area).put("message", message), token)
-        val who = o.optJSONObject("specialist")
+        val who = o.optJSONObject("specialist_who")
         val prov = o.optJSONObject("provenance")
         return SpecialistAnswer(
             o.optBoolean("delivered"),
@@ -1769,7 +1769,7 @@ object ApiClient {
         }
         return (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
-            val msgs = o.optJSONArray("messages")
+            val msgs = o.optJSONArray("alert_texts")
             AlarmRow(
                 o.getString("id"), o.optString("beacon_id", ""),
                 (0 until (msgs?.length() ?: 0)).map { msgs!!.getString(it) },
@@ -1883,7 +1883,7 @@ object ApiClient {
         return Robot(
             o.getString("id"), o.optString("model", ""), o.optString("name", ""),
             o.optString("status", null), o.optString("escalation_directive", null),
-            o.optString("first_aid", null),
+            o.optString("first_aid_rating", null),
             (0 until (cmds?.length() ?: 0)).map { cmds!!.getString(it) })
     }
 
@@ -1892,7 +1892,7 @@ object ApiClient {
         return (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
             RobotSpec(o.getString("model"), o.getString("label"), o.getString("maker"),
-                o.optString("first_aid", null))
+                o.optString("first_aid_rating", null))
         }
     }
 
@@ -2432,7 +2432,7 @@ object ApiClient {
                                     d.optString("location")))
             }
         }
-        val spec = doors?.optJSONObject("specialist")
+        val spec = doors?.optJSONObject("specialist_door")
         return MoneyWarning(o.optString("kind"), o.optString("message"),
                             spec?.optString("label"), desks)
     }
@@ -2665,7 +2665,7 @@ object ApiClient {
                 val t = a.getJSONObject(i)
                 threads.add(CircleThread(t.getString("other_id"),
                     if (t.isNull("other_name")) null else t.optString("other_name"),
-                    t.optInt("messages")))
+                    t.optInt("messages_count")))
             }
         }
         val labels = mutableMapOf<String, String>()
@@ -2871,7 +2871,7 @@ object ApiClient {
     private fun captureOf(o: JSONObject) = CaptureRecord(
         o.getString("id"), o.optString("kind", "photo"),
         o.optString("site", ""), o.optString("note", null),
-        o.optBoolean("intimate", false), o.optBoolean("sealed", false),
+        o.optBoolean("intimate", false),
         o.optString("created_at", null))
 
     suspend fun captureVocabulary(): CaptureVocabulary {
@@ -2883,7 +2883,7 @@ object ApiClient {
             return out
         }
         val intimate = mutableListOf<String>()
-        o.optJSONArray("intimate")?.let { a ->
+        o.optJSONArray("intimate_sites")?.let { a ->
             for (i in 0 until a.length()) intimate.add(a.getString(i))
         }
         return CaptureVocabulary(table("kinds"), table("sites"), intimate,
@@ -3182,7 +3182,7 @@ object ApiClient {
 
     private fun tutorialProgressOf(o: JSONObject) = TutorialProgress(
         o.optString("learner_id", ""), o.optString("guide", ""),
-        o.optJSONObject("step")?.let { tutorialStepOf(it) },
+        o.optJSONObject("next_lesson")?.let { tutorialStepOf(it) },
         o.optInt("done"), o.optInt("total"),
         o.optBoolean("finished", false), o.optString("note", ""))
 
@@ -3193,7 +3193,7 @@ object ApiClient {
             for (i in 0 until a.length()) {
                 val c = a.getJSONObject(i)
                 val steps = mutableListOf<TutorialStep>()
-                c.optJSONArray("steps")?.let { s ->
+                c.optJSONArray("lessons")?.let { s ->
                     for (j in 0 until s.length())
                         steps.add(tutorialStepOf(s.getJSONObject(j)))
                 }
@@ -4284,7 +4284,7 @@ data class CaptureVocabulary(val kinds: Map<String, String>,
                              val vaultRequired: Boolean)
 data class CaptureRecord(val id: String, val kind: String, val site: String,
                          val note: String?, val intimate: Boolean,
-                         val sealed: Boolean, val createdAt: String?)
+                         val createdAt: String?)
 
 /** One dose slot of a scheduled medication:
  *  taken | skipped | upcoming | due | missed. */

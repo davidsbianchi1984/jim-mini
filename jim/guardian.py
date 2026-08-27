@@ -357,7 +357,7 @@ def bind_robot(user_id: str, model: str, name: str | None,
             "kind": spec["kind"], "name": robot_name,
             "llm_provider": provider,
             "escalation_directive": robotics.directive_for(model),
-            "first_aid": robotics.first_aid_rating(model),
+            "first_aid_rating": robotics.first_aid_rating(model),
             "commands": robotics.allowed_commands(model)}
 
 
@@ -367,7 +367,7 @@ def robots_for(user_id: str) -> list[dict]:
         (user_id,)).fetchall()
     return [{**dict(r),
              "escalation_directive": robotics.directive_for(r["model"]),
-             "first_aid": robotics.first_aid_rating(r["model"]),
+             "first_aid_rating": robotics.first_aid_rating(r["model"]),
              "commands": robotics.allowed_commands(r["model"])} for r in rows]
 
 
@@ -469,7 +469,7 @@ def _robot_directives(user_id: str, cardiac: bool = False) -> list[dict]:
                  "directive": directive}
         rating = robotics.first_aid_rating(r["model"])
         if cardiac and rating:
-            entry["first_aid"] = rating
+            entry["first_aid_rating"] = rating
             if waived and rating == "perform":
                 entry["waiver"] = "autonomous resuscitation pre-authorized"
         directives.append(entry)

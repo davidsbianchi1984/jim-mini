@@ -100,7 +100,7 @@ private struct AlarmsSection: View {
                         Spacer()
                         Text(a.tier ?? "").font(.caption2).foregroundStyle(Theme.t2)
                     }
-                    ForEach(a.messages ?? [], id: \.self) { m in
+                    ForEach(a.alert_texts ?? [], id: \.self) { m in
                         Text("“\(m)”").font(.subheadline)
                     }
 
@@ -613,7 +613,7 @@ private struct RobotsSection: View {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text(r.name).font(.subheadline.bold()).foregroundStyle(Theme.txt)
-                        if let rating = r.first_aid {
+                        if let rating = r.first_aid_rating {
                             Text(rating == "perform" ? L10n.t("rob.cpr_rated", state.language)
                                              : L10n.t("sos.firstaid", state.language))
                                 .font(.caption2.bold())

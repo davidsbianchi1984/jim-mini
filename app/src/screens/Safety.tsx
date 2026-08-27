@@ -239,7 +239,7 @@ export function Safety() {
               alarm, or the crash watch's own sentence. This used to read
               `m.from: m.text` off a shape the server never sent, and every
               beacon message rendered as ": ". */}
-          {(a.messages ?? []).map((m, i) => (
+          {(a.alert_texts ?? []).map((m, i) => (
             <p key={i} className="muted">{String(m)}</p>
           ))}
           <div className="row">

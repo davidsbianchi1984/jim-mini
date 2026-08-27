@@ -58,7 +58,7 @@ struct GuidanceExtras: View {
                                    ["cpm": "\(pace.compressions_per_minute)",
                                     "ratio": pace.compression_to_breath_ratio]))
                         .font(.caption.bold()).foregroundStyle(Theme.amber)
-                    if let cue = pace.cue {
+                    if let cue = pace.pace_cue {
                         Text("💡 \(cue.light)").font(.caption2).foregroundStyle(Theme.t2)
                         Text("🔊 \(cue.audio)").font(.caption2).foregroundStyle(Theme.t2)
                     }

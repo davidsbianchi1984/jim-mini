@@ -101,7 +101,7 @@ struct MoneySection: View {
                                 if let doors = w.doors {
                                     Text(L["doors"] ?? "").font(.caption2.bold())
                                         .foregroundStyle(Theme.t2)
-                                    if let spec = doors.specialist, let label = spec.label {
+                                    if let spec = doors.specialist_door, let label = spec.label {
                                         Text("· \(label)").font(.caption2)
                                             .foregroundStyle(Theme.t2)
                                     }

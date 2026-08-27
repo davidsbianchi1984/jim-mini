@@ -157,7 +157,7 @@ export type MedicalIdCode = {
 
 export type RobotModel = {
   model: string; label: string; maker: string; kind: string;
-  capabilities: string[]; llm_capable: boolean; first_aid: string;
+  capabilities: string[]; llm_capable: boolean; first_aid_rating: string;
 };
 
 export type RelayChannel = {
@@ -365,7 +365,7 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; tok
 export interface FirstAid {
   kind: string; title?: string; steps: string[];
   pace?: { compressions_per_minute: number; compression_to_breath_ratio: string;
-           cue: { light: string; audio: string } };
+           pace_cue: { light: string; audio: string } };
 }
 export interface SpecialistOffer {
   available: boolean; label: string; qrme_profile_id: string;
@@ -374,7 +374,7 @@ export interface SpecialistOffer {
 export interface SpecialistAnswer {
   delivered: boolean; area?: string; content?: string | null;
   reason?: string; note?: string;
-  specialist?: { label: string; qrme_profile_id: string };
+  specialist_who?: { label: string; qrme_profile_id: string };
   held_for_owner_approval?: boolean;
   provenance?: { method: string; shared: string };
 }
@@ -1034,7 +1034,7 @@ export type AlarmRow = {
   cleared_at?: string | null;
   /** Plain strings — a finder's words, or the crash watch's sentence. The
    *  shells decode [String]; one queue, one shape. */
-  messages?: string[];
+  alert_texts?: string[];
   /** True on every row this queue holds, because JIM cannot place a call at
    *  any tier — a beacon alarm is ceilinged below emergency services, and a
    *  crash watch that reached the top rung issued a dispatch *request*. The
@@ -1129,7 +1129,7 @@ export type CircleTie = { other_id: string; other_name?: string | null;
 export type CircleMessage = { id: string; low_id: string; high_id: string;
   sender_id: string; body: string; sent_at: string };
 export type CircleThread = { other_id: string; other_name: string | null;
-  messages: number; last_at: string };
+  messages_count: number; last_at: string };
 export type CircleHomepage = {
   user_id: string; display_name: string | null; headline: string;
   about: string; theme: { bg: string; accent: string };
@@ -1270,7 +1270,7 @@ export type CaptureVocabulary = {
   kinds: Record<string, string>;
   sites: Record<string, string>;
   provenance: Record<string, string>;
-  intimate: string[];
+  intimate_sites: string[];
   minors?: string;
   agent_sees?: string[];   // the field names, not a sentence about them
   agent_never_sees?: string;
@@ -1292,7 +1292,7 @@ export type CaptureRow = {
 };
 
 export type CaptureAttachResult = {
-  attached?: string[];
+  release?: string[];
   explicit?: string[];
   [key: string]: unknown;
 };
@@ -1647,7 +1647,7 @@ export const api = {
             body: { action: "taken" | "skipped"; slot?: string; note?: string }) =>
     req<MedBoard>(`/meds/${uid}/${mid}/log`, { method: "POST", body, token }),
   medsAdherence: (uid: string, token: string, days = 7) =>
-    req<{ days: number; medications: { id: string; name: string;
+    req<{ window_days: number; medications: { id: string; name: string;
           expected: number; taken: number; rate: number | null }[] }>(
       `/meds/${uid}/adherence?days=${days}`, { token }),
 

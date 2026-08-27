@@ -124,7 +124,7 @@ export function Meds() {
 
       {adherence && adherence.medications.some((m) => m.rate !== null) && (
         <div className="card">
-          <h3>{tr("med.last", lang).replace("{n}", String(adherence.days))}</h3>
+          <h3>{tr("med.last", lang).replace("{n}", String(adherence.window_days))}</h3>
           {adherence.medications.filter((m) => m.rate !== null).map((m) => (
             <div key={m.id} className="med-adherence">
               <span>{m.name}</span>

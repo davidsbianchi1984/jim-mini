@@ -491,7 +491,7 @@ def ask_specialist(user_id: str, area: str, message: str, qrme,
         "delivered": content is not None,
         "area": area,
         "content": content,
-        "specialist": {"label": spec["label"],
+        "specialist_who": {"label": spec["label"],
                        "qrme_profile_id": spec["qrme_profile_id"]},
         # Held rather than refused: QRME's moderation can hold a reply for its
         # owner's approval, and saying "no answer" would misdescribe a message

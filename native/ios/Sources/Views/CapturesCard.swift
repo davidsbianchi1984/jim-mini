@@ -20,7 +20,7 @@ struct CapturesCard: View {
     @State private var error: String?
 
     private var siteIsIntimate: Bool {
-        vocabulary?.intimate.contains(site) ?? false
+        vocabulary?.intimate_sites.contains(site) ?? false
     }
 
     var body: some View {

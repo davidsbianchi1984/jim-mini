@@ -205,7 +205,7 @@ def threads(user_id: str) -> list[dict]:
     for r in rows:
         other = r["high_id"] if r["low_id"] == user_id else r["low_id"]
         out.append({"other_id": other, "other_name": _display_name(other),
-                    "messages": r["n"], "last_at": r["last_at"]})
+                    "messages_count": r["n"], "last_at": r["last_at"]})
     return out
 
 

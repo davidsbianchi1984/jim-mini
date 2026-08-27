@@ -346,7 +346,7 @@ struct CoachView: View {
 
                 if let a = fromSpecialist {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text((a.specialist?.label ?? L10n.t("spec.fallback", state.language))
+                        Text((a.specialist_who?.label ?? L10n.t("spec.fallback", state.language))
                              + " · " + L10n.t("spec.via", state.language))
                             .font(.headline).foregroundStyle(Theme.txt)
                         if a.delivered, let content = a.content {

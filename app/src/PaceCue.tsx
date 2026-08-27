@@ -76,8 +76,8 @@ export function PaceCue({ aid }: { aid: FirstAid }) {
       </button>
       <div className="pace-notes">
         <b>{pace.compressions_per_minute}/min · {pace.compression_to_breath_ratio}</b>
-        <div className="muted small">{pace.cue.light}</div>
-        <div className="muted small">{pace.cue.audio}</div>
+        <div className="muted small">{pace.pace_cue.light}</div>
+        <div className="muted small">{pace.pace_cue.audio}</div>
         {!running && <div className="pace-red">stopped — a stopped pace is off pace</div>}
       </div>
     </div>

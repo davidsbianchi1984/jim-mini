@@ -854,7 +854,7 @@ public sealed partial class LifePage : Page
                 .ToList();
             CirclePeople.ItemsSource = people;
             CircleThreads.ItemsSource = v.Threads.Select(t => new Row(
-                $"{t.OtherId} · {t.OtherName ?? ""} · {t.Messages}")).ToList();
+                $"{t.OtherId} · {t.OtherName ?? ""} · {t.MessagesCount}")).ToList();
             _circleLoading = false;
         }
         catch { _circleLoading = false; /* leave as-is */ }

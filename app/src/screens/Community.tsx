@@ -342,7 +342,7 @@ function CircleCard() {
         <div key={t.other_id} className="row"
              style={{ justifyContent: "space-between" }}>
           <span>{t.other_name || t.other_id} ·{" "}
-            <span className="muted small">{t.messages}</span></span>
+            <span className="muted small">{t.messages_count}</span></span>
           <button onClick={() => open(t.other_id)}>{L.open}</button>
         </div>
       ))}

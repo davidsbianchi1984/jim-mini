@@ -354,7 +354,7 @@ function FaceMonitoring({ uid, token, lang }: FaceProps) {
       )}
       {open.slice(0, 2).map((a) => (
         <p className="w-line w-alert" key={a.id}>
-          {a.tier}{a.messages?.[0] ? ` — ${a.messages[0]}` : ""}
+          {a.tier}{a.alert_texts?.[0] ? ` — ${a.alert_texts[0]}` : ""}
         </p>
       ))}
       <button className="w-btn primary" onClick={async () => {

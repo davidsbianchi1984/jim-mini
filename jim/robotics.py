@@ -116,9 +116,9 @@ CARDIAC_DIRECTIVE_WAIVED = {
 def catalog() -> dict:
     makers: dict[str, list[dict]] = {}
     for row in BY_KEY.values():
-        entry = {**row, "first_aid": FIRST_AID_RATING.get(row["model"])}
+        entry = {**row, "first_aid_rating": FIRST_AID_RATING.get(row["model"])}
         makers.setdefault(row["maker"], []).append(entry)
-    return {"robots": [{**r, "first_aid": FIRST_AID_RATING.get(r["model"])}
+    return {"robots": [{**r, "first_aid_rating": FIRST_AID_RATING.get(r["model"])}
                        for r in BY_KEY.values()],
             "by_maker": makers,
             "commands": COMMANDS,

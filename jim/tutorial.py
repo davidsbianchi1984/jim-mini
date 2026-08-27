@@ -739,9 +739,9 @@ def outline(mode: str = "text") -> dict:
     return {
         "guide": GUIDE,
         "chapters": [{"chapter": c,
-                      "steps": [say(le, mode) for le in LESSONS
+                      "lessons": [say(le, mode) for le in LESSONS
                                 if le["chapter"] == c]} for c in CHAPTERS],
-        "steps": len(LESSONS),
+        "lessons_count": len(LESSONS),
     }
 
 
@@ -757,7 +757,7 @@ def where(learner_id: str, mode: str = "text") -> dict:
     remaining = [le for le in LESSONS if le["key"] not in done]
     return {
         "learner_id": learner_id, "guide": GUIDE,
-        "step": None if not remaining else say(remaining[0], mode),
+        "next_lesson": None if not remaining else say(remaining[0], mode),
         "done": len(done), "total": len(LESSONS), "finished": not remaining,
         "note": ("that is all of it — ask the Guardian for any part again"
                  if not remaining else

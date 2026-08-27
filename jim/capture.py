@@ -436,7 +436,7 @@ def vocabulary() -> dict:
     return {
         "kinds": KINDS,
         "sites": SITES,
-        "intimate": sorted(INTIMATE),
+        "intimate_sites": sorted(INTIMATE),
         "provenance": PROVENANCE,
         "max_bytes": MAX_BYTES,
         "vault_required": True,

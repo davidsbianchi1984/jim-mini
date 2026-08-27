@@ -168,7 +168,7 @@ _CPR_PLAYBOOK = {
     "pace": {
         "compressions_per_minute": 110,
         "compression_to_breath_ratio": "30:2",
-        "cue": {
+        "pace_cue": {
             "light": "green flashes on each compression beat; red means "
                      "you've drifted off pace",
             "audio": "metronome tick at 110 beats per minute",

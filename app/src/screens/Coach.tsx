@@ -662,7 +662,7 @@ export function Coach({ go }: {
       {fromSpecialist && (
         <div className="card guidance" role="status" aria-live="polite">
           <div className="guidance-src">
-            {fromSpecialist.specialist?.label || tr("spec.fallback", lang)} · {tr("spec.via", lang)}
+            {fromSpecialist.specialist_who?.label || tr("spec.fallback", lang)} · {tr("spec.via", lang)}
           </div>
           {fromSpecialist.delivered ? (
             <p>{fromSpecialist.content}</p>

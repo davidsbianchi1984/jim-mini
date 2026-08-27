@@ -23,7 +23,7 @@ public record PaceCue(
 public record Pace(
     [property: JsonPropertyName("compressions_per_minute")] int CompressionsPerMinute,
     [property: JsonPropertyName("compression_to_breath_ratio")] string CompressionToBreathRatio,
-    [property: JsonPropertyName("cue")] PaceCue? Cue);
+    [property: JsonPropertyName("pace_cue")] PaceCue? Cue);
 
 public record FirstAid(
     [property: JsonPropertyName("kind")] string Kind,
@@ -389,7 +389,7 @@ public record ModelChoice(
 public record AlarmRow(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("beacon_id")] string? BeaconId,
-    [property: JsonPropertyName("messages")] string[]? Messages,
+    [property: JsonPropertyName("alert_texts")] string[]? AlertTexts,
     [property: JsonPropertyName("state")] string State,
     [property: JsonPropertyName("tier")] string? Tier,
     [property: JsonPropertyName("accepted_by")] string? AcceptedBy,
@@ -447,7 +447,7 @@ public record RobotSpec(
     [property: JsonPropertyName("model")] string Model,
     [property: JsonPropertyName("label")] string Label,
     [property: JsonPropertyName("maker")] string Maker,
-    [property: JsonPropertyName("first_aid")] string? FirstAidRating);
+    [property: JsonPropertyName("first_aid_rating")] string? FirstAidRating);
 
 public record RoboticsCatalog(
     [property: JsonPropertyName("robots")] RobotSpec[] Robots);
@@ -458,7 +458,7 @@ public record Robot(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("status")] string? Status,
     [property: JsonPropertyName("escalation_directive")] string? EscalationDirective,
-    [property: JsonPropertyName("first_aid")] string? FirstAidRating,
+    [property: JsonPropertyName("first_aid_rating")] string? FirstAidRating,
     [property: JsonPropertyName("commands")] string[]? Commands);
 
 public record RobotCmdResult(
@@ -3082,7 +3082,7 @@ public record MoneySpecialistDoor(
     [property: JsonPropertyName("label")] string? Label);
 
 public record MoneyDoors(
-    [property: JsonPropertyName("specialist")] MoneySpecialistDoor? Specialist,
+    [property: JsonPropertyName("specialist_door")] MoneySpecialistDoor? Specialist,
     [property: JsonPropertyName("desks")] MoneyDesk[] Desks);
 
 public record MoneyWarning(
@@ -3157,7 +3157,7 @@ public record CirclePersonRow(
 public record CircleThreadRow(
     [property: JsonPropertyName("other_id")] string OtherId,
     [property: JsonPropertyName("other_name")] string? OtherName,
-    [property: JsonPropertyName("messages")] int Messages);
+    [property: JsonPropertyName("messages_count")] int MessagesCount);
 
 public record CircleMessageRow(
     [property: JsonPropertyName("id")] string Id,
@@ -3556,7 +3556,7 @@ public record SpecialistAnswer(
     [property: JsonPropertyName("reason")] string? Reason,
     [property: JsonPropertyName("note")] string? Note,
     [property: JsonPropertyName("held_for_owner_approval")] bool HeldForOwnerApproval,
-    [property: JsonPropertyName("specialist")] SpecialistWho? Specialist,
+    [property: JsonPropertyName("specialist_who")] SpecialistWho? Specialist,
     [property: JsonPropertyName("provenance")] SpecialistProvenance? Provenance);
 
 public record CarePlanRow(
@@ -3620,7 +3620,7 @@ public record MicGainChoices(
 public record CaptureVocabulary(
     [property: JsonPropertyName("kinds")] Dictionary<string, string> Kinds,
     [property: JsonPropertyName("sites")] Dictionary<string, string> Sites,
-    [property: JsonPropertyName("intimate")] string[] Intimate,
+    [property: JsonPropertyName("intimate_sites")] string[] IntimateSites,
     [property: JsonPropertyName("vault_required")] bool VaultRequired);
 
 public record CaptureRecord(
@@ -3629,7 +3629,6 @@ public record CaptureRecord(
     [property: JsonPropertyName("site")] string Site,
     [property: JsonPropertyName("note")] string? Note,
     [property: JsonPropertyName("intimate")] bool Intimate,
-    [property: JsonPropertyName("sealed")] bool Sealed,
     [property: JsonPropertyName("created_at")] string? CreatedAt);
 
 public record CaptureImageRow(
@@ -3638,7 +3637,7 @@ public record CaptureImageRow(
     [property: JsonPropertyName("content")] string Content);
 
 public record CaptureAttachOutcome(
-    [property: JsonPropertyName("attached")] string[]? Attached,
+    [property: JsonPropertyName("release")] string[]? Release,
     [property: JsonPropertyName("explicit")] string[]? Explicit);
 
 /// One dose slot of a scheduled medication:
@@ -3683,7 +3682,7 @@ public record AdherenceRow(
     [property: JsonPropertyName("rate")] double? Rate);
 
 public record MedAdherence(
-    [property: JsonPropertyName("days")] int Days,
+    [property: JsonPropertyName("window_days")] int WindowDays,
     [property: JsonPropertyName("medications")] AdherenceRow[] Medications);
 
 /// The vigil's whole answer. Until armed the route says {"armed": false}
@@ -3822,11 +3821,11 @@ public record TutorialStep(
 
 public record TutorialChapter(
     [property: JsonPropertyName("chapter")] string Chapter,
-    [property: JsonPropertyName("steps")] TutorialStep[] Steps);
+    [property: JsonPropertyName("lessons")] TutorialStep[] Steps);
 
-/// The whole walkthrough. The count field is deliberately not declared:
-/// `steps` means the lesson list inside a chapter and the tally here, and
-/// one name with two meanings is not a shape to promise.
+/// The whole walkthrough. The count now has its own wire name
+/// (`lessons_count`) and the chapter's list is `lessons` — the tally and
+/// the list stopped sharing a name when the collision record closed.
 public record TutorialOutline(
     [property: JsonPropertyName("guide")] string Guide,
     [property: JsonPropertyName("chapters")] TutorialChapter[] Chapters);
@@ -3834,7 +3833,7 @@ public record TutorialOutline(
 public record TutorialProgress(
     [property: JsonPropertyName("learner_id")] string LearnerId,
     [property: JsonPropertyName("guide")] string Guide,
-    [property: JsonPropertyName("step")] TutorialStep? Step,
+    [property: JsonPropertyName("next_lesson")] TutorialStep? Step,
     [property: JsonPropertyName("done")] int Done,
     [property: JsonPropertyName("total")] int Total,
     [property: JsonPropertyName("finished")] bool Finished,
@@ -4104,7 +4103,7 @@ public record ReportCheckins(
 public record ProgressReport(
     [property: JsonPropertyName("checkins")] ReportCheckins Checkins,
     [property: JsonPropertyName("detections")] Dictionary<string, int> Detections,
-    [property: JsonPropertyName("insights")] int Insights,
+    [property: JsonPropertyName("insights_count")] int InsightsCount,
     [property: JsonPropertyName("journal_entries")] int JournalEntries,
     [property: JsonPropertyName("feedback")] Dictionary<string, int> Feedback);
 

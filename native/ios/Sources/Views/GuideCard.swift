@@ -31,7 +31,7 @@ struct GuideCard: View {
                                               with: String(progress.total))
                      + " · " + progress.note)
                     .font(.caption2).foregroundStyle(Theme.t2)
-                if let step = progress.step {
+                if let step = progress.next_lesson {
                     stepView(step)
                     HStack {
                         Button(L10n.t("ns.gd.done", state.language)) {

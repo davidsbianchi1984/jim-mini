@@ -129,7 +129,7 @@ export function Channel() {
 
   if (!uid || !token) return <p>{tr("ch.signin", visitorLang())}</p>;
 
-  const intimate = new Set(vocab?.intimate ?? []);
+  const intimate = new Set(vocab?.intimate_sites ?? []);
   const siteIsIntimate = site !== "" && intimate.has(site);
 
   return (

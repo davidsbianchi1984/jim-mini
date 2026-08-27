@@ -245,7 +245,7 @@ public sealed partial class SafetyPage : Page
                 ? Visibility.Visible : Visibility.Collapsed;
             AlarmsList.ItemsSource = open.Select(a => new AlarmCard(
                 L10n.T("alarm.raised"),
-                string.Join("  ", a.Messages ?? System.Array.Empty<string>()),
+                string.Join("  ", a.AlertTexts ?? System.Array.Empty<string>()),
                 // True on every row this queue holds: the beacon path is
                 // ceilinged below emergency services, and a crash watch at the
                 // top rung sent a dispatch request rather than placing a call.

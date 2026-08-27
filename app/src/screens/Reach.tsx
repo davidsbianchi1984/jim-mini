@@ -97,7 +97,7 @@ export function Reach() {
                 {tr("rch.body.model", lang)
                   .replace("{label}", m.label)
                   .replace("{maker}", m.maker)
-                  .replace("{aid}", m.first_aid)}
+                  .replace("{aid}", m.first_aid_rating)}
               </option>
             ))}
           </select>
