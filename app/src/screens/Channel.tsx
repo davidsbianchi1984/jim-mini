@@ -341,10 +341,28 @@ export function Channel() {
             {tr("day.kept", visitorLang())}
           </p>
           {st.running && (
-            <button disabled={busy} onClick={() => run(async () => {
-              await api.closeStretch(uid!, st.id, token!);
-              setToday(await api.theDay(uid!, token!));
-            })}>{tr("day.meet.end", visitorLang())}</button>
+            <>
+              <button disabled={busy} onClick={() => run(async () => {
+                await api.closeStretch(uid!, st.id, token!);
+                setToday(await api.theDay(uid!, token!));
+              })}>{tr("day.meet.end", visitorLang())}</button>
+              {/* Hand the meeting a recording. The bytes are transcribed
+                  on the way through and never stored; the words survive
+                  only as far as this stretch's monitor promises. */}
+              <label className="muted small">
+                {tr("day.meet.heard", visitorLang())}
+                <input type="file" accept="audio/*" disabled={busy}
+                       onChange={(e) => {
+                         const f = e.target.files?.[0];
+                         e.target.value = "";
+                         if (!f) return;
+                         void run(async () => {
+                           await api.heardInStretch(uid!, st.id, token!, f);
+                           setToday(await api.theDay(uid!, token!));
+                         });
+                       }} />
+              </label>
+            </>
           )}
         </div>
       ))}

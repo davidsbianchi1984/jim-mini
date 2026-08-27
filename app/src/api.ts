@@ -2003,6 +2003,19 @@ export const api = {
     req<MicPaired>(`/users/${uid}/mic/pair`, { token }),
   unpairMic: (uid: string, token: string) =>
     req<MicPaired>(`/users/${uid}/mic/pair`, { method: "DELETE", token }),
+  // A recording from inside a meeting, as raw bytes — req() would
+  // JSON-encode it. Transcribed on the way through; the audio is never
+  // stored, and the roster decides whether the words survive.
+  heardInStretch: async (uid: string, stretchId: string, token: string,
+                         file: File) => {
+    const res = await fetch(
+      getBase() + `/day/${uid}/stretches/${stretchId}/heard`,
+      { method: "POST",
+        headers: { authorization: `Bearer ${token}` }, body: file });
+    const text = await res.text();
+    if (!res.ok) throw new Error(text || res.statusText);
+    return JSON.parse(text) as Moment;
+  },
   openStretch: (uid: string, body: { monitor: string; about?: string;
                                      others_told?: boolean }, token: string) =>
     req<Stretch>(`/day/${uid}/stretches`, { method: "POST", body, token }),

@@ -8,6 +8,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **A meeting's recording arrives as words.** `POST /day/{user}/
+  stretches/{id}/heard` takes raw audio, transcribes it on the way
+  through, and hands the transcript to the day as an ordinary moment on
+  the stretch's own monitor — so the roster's keeping promise, the
+  person's keeping switch and the others-told claim govern a meeting
+  exactly as they govern any other sensed thing. The audio bytes are
+  stored nowhere, for anyone, ever — proven by a guard that sweeps every
+  table for them. The Channel screen hands a recording to any running
+  stretch.
+
 - **The staleness contract.** "Real-time" stops being a word in a claim
   and becomes a number you can produce on demand. Every reading may
   carry the device's own clock at measurement and at send — age computed

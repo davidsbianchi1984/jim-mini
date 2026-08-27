@@ -3801,6 +3801,35 @@ def create_app(qrme_client: QRMEClient | None = None,
         except monitors.NoSuchMonitor as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
 
+    @app.post("/day/{user_id}/stretches/{stretch_id}/heard",
+              status_code=201)
+    async def stretch_heard(user_id: str, stretch_id: str,
+                            request: Request) -> dict:
+        """A recording from inside a meeting, arriving as words.
+
+        Raw audio in; transcribed on the way through; the bytes never
+        stored. The transcript enters the day as an ordinary moment on
+        the stretch's own monitor, so the roster's keeping promise —
+        and the person's own keeping switch — decide what survives, the
+        same as every other moment (jim/daybook.py, heard).
+        """
+        _user_or_404(user_id, request)
+        raw = await request.body()
+        if not raw:
+            raise HTTPException(422, "the recording arrived empty")
+        try:
+            words = voice.transcribe(raw, "meeting.webm")
+        except voice.VoiceUnavailable as exc:
+            raise HTTPException(503, str(exc)) from None
+        try:
+            return daybook.heard(user_id, stretch_id, words)
+        except daybook.NotYours as exc:
+            raise HTTPException(403, str(exc)) from None
+        except daybook.NoSuchStretch as exc:
+            raise HTTPException(404, str(exc)) from None
+        except monitors.NotPluggedIn as exc:
+            raise HTTPException(403, i18n.raised(exc)) from None
+
     @app.delete("/day/{user_id}/stretches/{stretch_id}")
     def close_stretch(user_id: str, stretch_id: str,
                       request: Request) -> dict:

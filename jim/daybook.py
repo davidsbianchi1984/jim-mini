@@ -207,6 +207,21 @@ def _mine(stretch_id: str, user_id: str) -> dict:
     return row
 
 
+def heard(user_id: str, stretch_id: str, transcript: str) -> dict:
+    """A meeting's audio arrived as words — the always-on capture's honest
+    shape. The bytes were transcribed on the way through and never stored
+    (jim/voice.py holds the same promise for every clip it hears); what
+    survives is the transcript, and only as far as the stretch's own
+    monitor promises — the roster decides, exactly as it does for every
+    other moment. "Record every call" arrives as *keep the words of the
+    calls whose monitor may keep, from a stretch somebody opened, having
+    told the people in it* — which is the version two-party consent law
+    and the roster's own promises leave standing.
+    """
+    row = _mine(stretch_id, user_id)
+    return sensed(user_id, row["monitor"], transcript, stretch_id)
+
+
 def close_stretch(user_id: str, stretch_id: str) -> dict:
     """End it. Closing twice is closing once — a meeting that ended does not
     end again, and a second press is a person making sure rather than an
