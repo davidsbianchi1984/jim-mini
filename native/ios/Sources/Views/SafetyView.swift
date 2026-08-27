@@ -514,6 +514,8 @@ private struct PolicySection: View {
     @EnvironmentObject var state: AppState
     @State private var policy: EscalationPolicy?
     @State private var level = "balanced"
+    @State private var farend: FarEndStatus?
+    @State private var farendEmail = ""
 
     private let levels = ["cautious", "balanced", "assertive"]
 
@@ -550,6 +552,47 @@ private struct PolicySection: View {
                     }
                 }.card()
             }
+
+            // The far end of the ladder (jim/farend.py): the address alerts
+            // really go to, or the honest refusal that nobody stands there —
+            // and whether a person saw the last one. The console's Held card,
+            // carried here as the backlog promised.
+            VStack(alignment: .leading, spacing: 10) {
+                Text(L10n.t("hld.farend", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                if let f = farend {
+                    Text(f.configured
+                         ? L10n.t("hld.farend.set", state.language)
+                             .replacingOccurrences(of: "{address}", with: f.address ?? "")
+                         : (f.note ?? ""))
+                        .font(.caption).foregroundStyle(Theme.t2)
+                    if let a = f.last_alert {
+                        Text(L10n.t(a.acked_at != nil ? "hld.farend.acked"
+                                                      : "hld.farend.unacked", state.language)
+                            .replacingOccurrences(of: "{condition}", with: a.condition)
+                            .replacingOccurrences(of: "{when}",
+                                with: String(a.sent_at.prefix(16))
+                                    .replacingOccurrences(of: "T", with: " ")))
+                            .font(.caption).foregroundStyle(Theme.t2)
+                    }
+                }
+                TextField(L10n.t("hld.farend.email.ph", state.language), text: $farendEmail)
+                    .textFieldStyle(.roundedBorder)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                HStack(spacing: 10) {
+                    Button(L10n.t("hld.farend.save", state.language)) {
+                        setFarEnd(email: farendEmail.trimmingCharacters(in: .whitespaces))
+                    }
+                    .font(.caption.bold()).foregroundStyle(Theme.brandA)
+                    .disabled(farendEmail.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Button(L10n.t("hld.farend.clear", state.language)) {
+                        setFarEnd(email: nil)
+                    }
+                    .font(.caption).foregroundStyle(Theme.t2)
+                }
+                Text(L10n.t("hld.farend.pitch", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }.card()
         }
         .task { await load() }
     }
@@ -558,6 +601,16 @@ private struct PolicySection: View {
         guard let uid = state.uid, let token = state.token else { return }
         policy = try? await ApiClient.shared.escalationPolicy(uid: uid, token: token)
         if let p = policy { level = p.sensitivity }
+        farend = try? await ApiClient.shared.farEnd(uid: uid, token: token)
+    }
+
+    private func setFarEnd(email: String?) {
+        guard let uid = state.uid, let token = state.token else { return }
+        Task {
+            farend = try? await ApiClient.shared.setFarEnd(uid: uid, token: token,
+                                                           email: email)
+            if email == nil { farendEmail = "" }
+        }
     }
 
     private func apply() {

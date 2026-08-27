@@ -3230,8 +3230,11 @@ private fun SOSPanel(vm: GuardianViewModel) {
 @Composable
 private fun PolicyPanel(vm: GuardianViewModel) {
     var policy by remember { mutableStateOf<EscalationPolicy?>(null) }
+    var farend by remember { mutableStateOf<FarEnd?>(null) }
+    var farendEmail by remember { mutableStateOf("") }
     fun reload() {
         vm.call({ ApiClient.escalationPolicy(vm.uid!!, vm.token!!) }) { r -> policy = r.getOrNull() }
+        vm.call({ ApiClient.farEnd(vm.uid!!, vm.token!!) }) { r -> farend = r.getOrNull() }
     }
     LaunchedEffect(Unit) { reload() }
 
@@ -3270,6 +3273,43 @@ private fun PolicyPanel(vm: GuardianViewModel) {
                     }
                 }
             }
+        }
+
+        // The far end of the ladder (jim/farend.py): the address alerts
+        // really go to, or the honest refusal that nobody stands there —
+        // and whether a person saw the last one. The console's Held card,
+        // carried here as the backlog promised.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("hld.farend", vm.language), color = Jim.Txt, fontSize = 16.sp,
+                fontWeight = FontWeight.Bold)
+            farend?.let { f ->
+                Text(if (f.configured)
+                        L10n.t("hld.farend.set", vm.language).replace("{address}", f.address)
+                     else f.note,
+                    color = Jim.T2, fontSize = 12.sp)
+                f.lastAlert?.let { a ->
+                    Text(L10n.t(if (a.acked) "hld.farend.acked" else "hld.farend.unacked",
+                                vm.language)
+                        .replace("{condition}", a.condition)
+                        .replace("{when}", a.sentAt.take(16).replace("T", " ")),
+                        color = Jim.T2, fontSize = 12.sp)
+                }
+            }
+            labeledField(L10n.t("hld.farend.email.ph", vm.language), farendEmail,
+                "…") { farendEmail = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SmallAction(L10n.t("hld.farend.save", vm.language),
+                    enabled = farendEmail.isNotBlank()) {
+                    vm.call({ ApiClient.setFarEnd(vm.uid!!, vm.token!!,
+                        farendEmail.trim()) }) { r -> farend = r.getOrNull() }
+                }
+                SmallAction(L10n.t("hld.farend.clear", vm.language)) {
+                    vm.call({ ApiClient.setFarEnd(vm.uid!!, vm.token!!, null) }) { r ->
+                        farend = r.getOrNull(); farendEmail = ""
+                    }
+                }
+            }
+            Text(L10n.t("hld.farend.pitch", vm.language), color = Jim.T2, fontSize = 11.sp)
         }
     }
 }

@@ -108,6 +108,12 @@ public sealed partial class SafetyPage : Page
         SensAssertive.Content = L10n.T("cw.assertive");
         SensSub.Text = L10n.T("cw.sensitivity.sub");
 
+        FarEndHead.Text = L10n.T("hld.farend");
+        FarEndEmailBox.PlaceholderText = L10n.T("hld.farend.email.ph");
+        FarEndSaveButton.Content = L10n.T("hld.farend.save");
+        FarEndClearButton.Content = L10n.T("hld.farend.clear");
+        FarEndPitch.Text = L10n.T("hld.farend.pitch");
+
         RobotModelBox.Header = L10n.T("rob.bind");
         BindButton.Content = L10n.T("rob.bind.go");
         RobotsSub.Text = L10n.T("rob.sub");
@@ -392,6 +398,48 @@ public sealed partial class SafetyPage : Page
         }
         catch { /* backend offline — leave empty */ }
         finally { _loading = false; }
+        try { RenderFarEnd(await ApiClient.Shared.FarEnd(s.Uid!, s.Token!)); }
+        catch { /* backend offline — leave empty */ }
+    }
+
+    // The far end of the ladder: the status line is the API's own sentence —
+    // the address alerts really go to, or the refusal that nobody stands
+    // there today. Saving carries consent in the same motion.
+    private void RenderFarEnd(FarEndStatus f)
+    {
+        FarEndStatusText.Text = f.Configured
+            ? L10n.T("hld.farend.set").Replace("{address}", f.Address ?? "")
+            : f.Note ?? "";
+        if (f.LastAlert is { } a)
+        {
+            FarEndAlertText.Text = L10n
+                .T(a.AckedAt is not null ? "hld.farend.acked" : "hld.farend.unacked")
+                .Replace("{condition}", a.Condition)
+                .Replace("{when}", a.SentAt.Length >= 16
+                    ? a.SentAt[..16].Replace("T", " ") : a.SentAt);
+            FarEndAlertText.Visibility = Visibility.Visible;
+        }
+        else FarEndAlertText.Visibility = Visibility.Collapsed;
+    }
+
+    private async void OnFarEndSave(object sender, RoutedEventArgs e)
+    {
+        var email = FarEndEmailBox.Text.Trim();
+        if (email.Length == 0) return;
+        var s = AppState.Current;
+        try { RenderFarEnd(await ApiClient.Shared.SetFarEnd(s.Uid!, s.Token!, email)); }
+        catch { /* ignore */ }
+    }
+
+    private async void OnFarEndClear(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        try
+        {
+            RenderFarEnd(await ApiClient.Shared.SetFarEnd(s.Uid!, s.Token!, null));
+            FarEndEmailBox.Text = "";
+        }
+        catch { /* ignore */ }
     }
 
     private async void OnSensitivityPicked(object sender, SelectionChangedEventArgs e)

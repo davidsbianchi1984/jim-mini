@@ -429,6 +429,22 @@ public record EscalationPolicy(
     [property: JsonPropertyName("ladder")] string[] Ladder,
     [property: JsonPropertyName("by_severity")] System.Collections.Generic.Dictionary<string, string> BySeverity);
 
+// The far end of the escalation ladder (jim/farend.py), as the API tells
+// it: configured or the refusal that nobody stands there, and the last
+// alert with whether a person saw it — never the acknowledgment token.
+public record FarEndAlert(
+    [property: JsonPropertyName("condition")] string Condition,
+    [property: JsonPropertyName("severity")] string Severity,
+    [property: JsonPropertyName("tier")] string Tier,
+    [property: JsonPropertyName("sent_at")] string SentAt,
+    [property: JsonPropertyName("acked_at")] string? AckedAt);
+
+public record FarEndStatus(
+    [property: JsonPropertyName("configured")] bool Configured,
+    [property: JsonPropertyName("address")] string? Address,
+    [property: JsonPropertyName("last_alert")] FarEndAlert? LastAlert,
+    [property: JsonPropertyName("note")] string? Note);
+
 public record FlowStep(
     [property: JsonPropertyName("step")] string Step,
     [property: JsonPropertyName("label")] string Label,
@@ -1672,6 +1688,17 @@ public sealed class ApiClient
         var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
     }
+
+    public Task<FarEndStatus> FarEnd(string uid, string token) =>
+        Send<FarEndStatus>(Get($"/farend/{uid}", token));
+
+    /// <summary>Sets who stands on the far end — saving carries consent in
+    /// the same motion, and a null email clears the address so the ladder
+    /// goes back to its honest refusal rather than to silence.</summary>
+    public Task<FarEndStatus> SetFarEnd(string uid, string token, string? email) =>
+        Send<FarEndStatus>(Put($"/farend/{uid}",
+            email is null ? new { email = (string?)null }
+                          : (object)new { email, consent = true }, token));
 
     public Task<EmergencyResult> Emergency(string uid, string token,
                                            string? situation, string? location) =>

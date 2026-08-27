@@ -262,6 +262,14 @@ data class FlowStep(val step: String, val label: String, val detail: String)
 data class RobotDirective(val robot: String, val directive: String)
 data class EmergencyResult(val flow: List<FlowStep>, val directives: List<RobotDirective>)
 data class EscalationPolicy(val sensitivity: String, val bySeverity: Map<String, String>)
+
+// The far end of the escalation ladder (jim/farend.py), as the API tells
+// it: configured or the refusal that nobody stands there, and the last
+// alert with whether a person saw it — never the acknowledgment token.
+data class FarEndAlert(val condition: String, val sentAt: String, val acked: Boolean)
+data class FarEnd(val configured: Boolean, val address: String,
+                  val note: String, val lastAlert: FarEndAlert?)
+
 /// An open alarm, raised when somebody scanned a care code on a door.
 ///
 /// `acceptedBy` is the point of the type. Accepting and clearing are separate
@@ -1778,6 +1786,33 @@ object ApiClient {
 
     suspend fun setSensitivity(uid: String, token: String, level: String) {
         request("/sensitivity/$uid", "PUT", JSONObject().put("level", level), token)
+    }
+
+    suspend fun farEnd(uid: String, token: String): FarEnd =
+        farEndOf(request("/farend/$uid", token = token))
+
+    // Sets who stands on the far end — saving carries consent in the same
+    // motion, and a null email clears the address so the ladder goes back
+    // to its honest refusal rather than to silence.
+    suspend fun setFarEnd(uid: String, token: String, email: String?): FarEnd {
+        val body = JSONObject()
+        if (email == null) body.put("email", JSONObject.NULL)
+        else body.put("email", email).put("consent", true)
+        return farEndOf(request("/farend/$uid", "PUT", body, token))
+    }
+
+    private fun farEndOf(o: JSONObject): FarEnd {
+        val a = o.optJSONObject("last_alert")
+        return FarEnd(
+            o.optBoolean("configured", false),
+            o.optString("address", ""),
+            o.optString("note", ""),
+            if (a == null) null else FarEndAlert(
+                a.optString("condition", ""),
+                a.optString("sent_at", ""),
+                !a.isNull("acked_at"),
+            ),
+        )
     }
 
     suspend fun emergency(uid: String, token: String, situation: String?,

@@ -795,6 +795,25 @@ struct EscalationPolicy: Decodable {
     let by_severity: [String: String]
 }
 
+/// The last letter the far end was sent, and whether a person saw it.
+struct FarEndAlert: Decodable {
+    let condition: String
+    let severity: String
+    let tier: String
+    let sent_at: String
+    let acked_at: String?
+}
+
+/// The far end of the escalation ladder (jim/farend.py), as the API tells
+/// it: configured or the refusal that nobody stands there, and the last
+/// alert — never the acknowledgment token.
+struct FarEndStatus: Decodable {
+    let configured: Bool
+    let address: String?
+    let last_alert: FarEndAlert?
+    let note: String?
+}
+
 /// An open alarm, raised when somebody scanned a care code on a door.
 ///
 /// `accepted_by` is the whole point of the type. `accept` and `clear` are
@@ -2154,6 +2173,23 @@ actor ApiClient {
         struct Ok: Decodable {}
         let _: Ok = try await request("/sensitivity/\(uid)", method: "PUT",
                                       body: ["level": level], token: token)
+    }
+
+    func farEnd(uid: String, token: String) async throws -> FarEndStatus {
+        try await request("/farend/\(uid)", token: token)
+    }
+
+    /// Sets who stands on the far end — saving carries consent in the same
+    /// motion, and a nil email clears the address so the ladder goes back
+    /// to its honest refusal rather than to silence.
+    func setFarEnd(uid: String, token: String, email: String?) async throws -> FarEndStatus {
+        // NSNull, not a dropped key: the route reads an explicit null as
+        // "clear the address", and JSONSerialization cannot write a Swift
+        // Optional.
+        var body: [String: Any] = ["email": email ?? NSNull()]
+        if email != nil { body["consent"] = true }
+        return try await request("/farend/\(uid)", method: "PUT",
+                                 body: body, token: token)
     }
 
     func emergency(uid: String, token: String, situation: String?,

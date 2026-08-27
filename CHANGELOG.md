@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The far end reaches the shells.** The card the console's Held
+  screen has carried since 0.92.0 — who stands on the far end of the
+  escalation ladder, whether a person saw the last alert, and the
+  save-with-consent and clear that set the address — lands on the
+  Policy tab of the iOS, Android and Windows safety screens, in the
+  same ten languages. Three shell backlogs shrink by the pair of rows
+  that promised it.
+
 ### Fixed
 
 - **A refused key is a sentence, not a JSON blob.** A handheld showed

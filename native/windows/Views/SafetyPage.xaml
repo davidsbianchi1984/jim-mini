@@ -329,6 +329,32 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    <!-- The far end of the ladder (jim/farend.py): the address
+                         alerts really go to, or the honest refusal that nobody
+                         stands there — and whether a person saw the last one.
+                         The console's Held card, carried here as the backlog
+                         promised. -->
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="10">
+                            <TextBlock x:Name="FarEndHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="FarEndStatusText" FontSize="12" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="FarEndAlertText" FontSize="12" TextWrapping="Wrap"
+                                       Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBox x:Name="FarEndEmailBox" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="FarEndSaveButton" Click="OnFarEndSave"
+                                        Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                                <Button x:Name="FarEndClearButton" Click="OnFarEndClear" />
+                            </StackPanel>
+                            <TextBlock x:Name="FarEndPitch" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>

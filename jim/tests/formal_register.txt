@@ -5,7 +5,7 @@
 #
 # Spanish is finished (23 rows, not the 327 a `su`/`sus` count reported).
 # German is finished too. The console sits on ten rows and each shell on
-# nine, and every
+# ten, and every
 # one of those is third-person `Sie`/`Ihr` or an informal plural rather than
 # formal address. Telling them apart takes parsing German; a detector that
 # guessed would be worse than one that counts. So they are counted, and
@@ -23,12 +23,13 @@
 #   mon.plug.told       "Sie wurden informiert" — *they* have been told
 #   cal.number.ph       "Ihre Nummer" — *their* number
 #
-# The three native tables' nine: the last six above, plus
+# The three native tables' ten: the last six above, plus
 #   spec.held, pair.head, aim.activity.pitch as above
+#   hld.farend.save     as above — the far-end card carried the row over
 #   fam.theirs          "Ihr Konto, ihr Guardian" — *their* account
 #   fam.unlinked.note   "Ihr Konto ... bleiben ihre" — *theirs* stays theirs
 #
 app/src/l10n.ts 10
-native/android/app/src/main/java/app/jim/guardian/L10n.kt 9
-native/ios/Sources/L10n.swift 9
-native/windows/L10n.cs 9
+native/android/app/src/main/java/app/jim/guardian/L10n.kt 10
+native/ios/Sources/L10n.swift 10
+native/windows/L10n.cs 10
