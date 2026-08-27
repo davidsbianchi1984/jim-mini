@@ -21,7 +21,7 @@ ENROLL = {"display_name": "Jordan", "birthdate": "1995-05-05",
 
 
 def test_unconfigured_providers_say_so(client):
-    listed = client.get("/auth/oauth/providers").json()["providers"]
+    listed = client.get("/auth/oauth/providers").json()["signin_providers"]
     assert {p["provider"] for p in listed} == {"google", "apple"}
     assert all(p["configured"] is False for p in listed)
     r = client.post("/auth/oauth/google/start", json={})
