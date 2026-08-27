@@ -1,4 +1,4 @@
-# status: backlog — 8 rows
+# status: backlog — 6 rows
 #
 # Every route this shell cannot reach.
 #
@@ -39,17 +39,15 @@
 #     asked     can every client reach every route
 #     mattered  is each client the right place for this one
 #
-# What that argument does *not* excuse is the reading half. Somebody who wrote
-# a widget at a desk should be able to open it, run it and read the answer
-# from the phone in their pocket, and today they cannot. That is the next
-# round's work, and these rows are what will still be here saying so.
+# The reading half that argument never excused — open it, run it, read the
+# answer from the phone in a pocket — landed on this shell, as the rows that
+# stood here promised. What remains is the writing half: the first draft of a
+# program is desk work, and the editor's doors stay with the editor, on the
+# console, alongside the delete that ends a widget's life where its
+# revisions are shown.
 
 DELETE /users/{user_id}/widgets/{widget_id}
-GET /studio/limits
-GET /users/{user_id}/widgets
-GET /users/{user_id}/widgets/{widget_id}
 POST /users/{user_id}/widgets
-POST /users/{user_id}/widgets/{widget_id}/run
 PUT /users/{user_id}/widgets/{widget_id}
 
 # The staleness contract's heartbeat (jim/freshness.py): the wrist

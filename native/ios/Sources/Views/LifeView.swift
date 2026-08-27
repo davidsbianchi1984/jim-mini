@@ -5,7 +5,7 @@ struct LifeView: View {
     enum Tab: String, CaseIterable {
         case goals = "Goals", habits = "Habits", journal = "Journal",
              money = "Money", schedule = "Schedule", shop = "Shop",
-             circle = "Circle"
+             circle = "Circle", studio = "Widgets"
 
         /// The strip said *Shop* where the backend already serves
         /// *Shops* through `i18n.shop_labels`, which the desktop
@@ -20,6 +20,7 @@ struct LifeView: View {
             case .schedule: return L10n.t("life.schedule", lang)
             case .shop: return L10n.t("life.shops", lang)
             case .circle: return L10n.t("life.circle", lang)
+            case .studio: return L10n.t("studio.title", lang)
             }
         }
     }
@@ -46,6 +47,7 @@ struct LifeView: View {
                 case .schedule: ScheduleSection(); MedsCard()
                 case .shop: ShoppingSection()
                 case .circle: CircleSection()
+                case .studio: StudioSection()
                 }
             }.padding(20)
         }

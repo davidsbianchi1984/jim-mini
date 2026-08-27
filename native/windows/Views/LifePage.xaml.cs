@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -48,6 +49,18 @@ public sealed partial class LifePage : Page
         GoalsPivot.Header = L10n.T("life.goals");
         HabitsPivot.Header = L10n.T("life.habits");
         JournalPivot.Header = L10n.T("life.journal");
+        StudioPivot.Header = L10n.T("studio.title");
+        StudioSub.Text = L10n.T("studio.sub");
+        StudioYours.Text = L10n.T("studio.yours");
+        StudioNone.Text = L10n.T("studio.none");
+        StudioSourceLabel.Text = L10n.T("studio.source");
+        TryItHead.Text = L10n.T("studio.tryit");
+        WidgetInputsBox.Header = L10n.T("studio.inputs");
+        WidgetInputsBox.Text = "{}";
+        RunWidgetButton.Content = L10n.T("studio.run");
+        CannotRunText.Text = L10n.T("studio.cannotrun");
+        LimitsHead.Text = L10n.T("studio.limits");
+        LimitsWhy.Text = L10n.T("studio.limits.why");
         GoalNewHead.Text = L10n.T("goal.new");
         GoalArea.Header = L10n.T("coach.area");
         GoalArea.ItemsSource = GoalAreas.Select(a => a.Replace('_', ' ')).ToList();
@@ -101,6 +114,142 @@ public sealed partial class LifePage : Page
         await LoadTandemShops();
         await LoadCircle();
         await LoadMeds();
+        await LoadStudio();
+    }
+
+    // -- The Studio's reading half (jim/widgets.py). A widget is written
+    // at a desk; this page opens it, runs it and reads the answer. --
+
+    private record WidgetChoice(string Id, string Line);
+    private record LimitRow(string Label, string Value);
+
+    private StudioLimits? _box;
+    private StudioWidget? _openWidget;
+
+    /// Every refusal key the Studio can send back, spelled out rather than
+    /// composed — a key nothing can see is a key nobody notices going
+    /// missing. The console keeps the same list.
+    private static readonly string[] StudioSaid = {
+        "widgets.no_rlimits", "widgets.no_unshare", "widgets.no_node",
+        "widgets.node_too_old", "widgets.no_netns", "widgets.threw",
+        "widgets.timeout", "widgets.killed", "widgets.no_answer",
+    };
+
+    private static string? Said(string? key) =>
+        key is not null && Array.IndexOf(StudioSaid, key) >= 0
+            ? L10n.T(key) : null;
+
+    private async System.Threading.Tasks.Task LoadStudio()
+    {
+        var s = AppState.Current;
+        try
+        {
+            _box = await ApiClient.Shared.StudioLimits();
+            StudioBanner.Text = Said(_box.UnavailableBecause)
+                ?? L10n.T("studio.nobox");
+            StudioBanner.Visibility = _box.Available
+                ? Visibility.Collapsed : Visibility.Visible;
+            LimitsList.ItemsSource = _box.Allowances
+                .OrderBy(kv => kv.Key)
+                .Select(kv => new LimitRow(L10n.T($"studio.limit.{kv.Key}"),
+                                           $"{kv.Value}"))
+                .ToList();
+        }
+        catch { /* backend offline — leave empty */ }
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var rows = (await ApiClient.Shared.Widgets(s.Uid, s.Token)).Widgets;
+            StudioNone.Visibility = rows.Length == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            WidgetList.ItemsSource = rows.Select(w => new WidgetChoice(
+                w.Id,
+                $"{w.Name} · " + L10n.T("studio.revision")
+                    .Replace("{n}", $"{w.Revision}"))).ToList();
+        }
+        catch { /* backend offline — leave empty */ }
+    }
+
+    private async void OnWidgetOpen(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        var id = (sender as FrameworkElement)?.Tag as string;
+        if (id is null) return;
+        AnswerTook.Visibility = Visibility.Collapsed;
+        AnswerValue.Text = "";
+        AnswerError.Visibility = Visibility.Collapsed;
+        try
+        {
+            // Opening re-reads the row: the desk may have saved a new
+            // revision since the list loaded.
+            _openWidget = await ApiClient.Shared.ReadWidget(s.Uid, id, s.Token);
+        }
+        catch { return; }
+        OpenWidgetName.Text = _openWidget.Name;
+        WidgetSourceText.Text = _openWidget.Source;
+        OpenWidgetCard.Visibility = Visibility.Visible;
+        // No run button at all when the box cannot be built — a control
+        // that refuses on every press is a dead control, and the banner
+        // above already said why.
+        var runnable = _box?.Available != false;
+        RunWidgetButton.Visibility = runnable
+            ? Visibility.Visible : Visibility.Collapsed;
+        CannotRunText.Visibility = runnable
+            ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private async void OnWidgetRun(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null || _openWidget is null) return;
+        StudioError.Visibility = Visibility.Collapsed;
+        AnswerError.Visibility = Visibility.Collapsed;
+        AnswerValue.Text = "";
+        // Their JSON, not the server's problem: say so here rather than
+        // sending something the widget will be blamed for.
+        JsonElement inputs;
+        var text = WidgetInputsBox.Text.Trim();
+        try
+        {
+            inputs = JsonDocument.Parse(text.Length == 0 ? "{}" : text)
+                .RootElement;
+        }
+        catch
+        {
+            StudioError.Text = L10n.T("studio.badinputs");
+            StudioError.Visibility = Visibility.Visible;
+            return;
+        }
+        try
+        {
+            var a = await ApiClient.Shared.RunWidget(
+                s.Uid, _openWidget.Id, inputs, s.Token);
+            AnswerTook.Text = L10n.T("studio.took").Replace("{ms}", $"{a.Ms}");
+            AnswerTook.Visibility = Visibility.Visible;
+            if (a.Status == "ok")
+            {
+                AnswerValue.Text = a.Truncated == true
+                    ? L10n.T("studio.toobig")
+                    : a.Value is { } v
+                        ? JsonSerializer.Serialize(v,
+                            new JsonSerializerOptions { WriteIndented = true })
+                        : "";
+            }
+            else
+            {
+                // `Message` is the widget's own error, verbatim; `Detail`
+                // is a refusal key for this shell's table.
+                AnswerError.Text = a.Message ?? Said(a.Detail)
+                    ?? L10n.T("studio.failed");
+                AnswerError.Visibility = Visibility.Visible;
+            }
+        }
+        catch (Exception ex)
+        {
+            StudioError.Text = ex.Message;
+            StudioError.Visibility = Visibility.Visible;
+        }
     }
 
     private static string Pretty(string s) =>

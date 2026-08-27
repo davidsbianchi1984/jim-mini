@@ -4936,9 +4936,97 @@ extension ApiClient {
                           body: ["audio_base64": audioBase64,
                                  "filename": filename])
     }
+
+    // ---- the Studio's reading half (jim/widgets.py) ----
+
+    func studioLimits() async throws -> StudioLimits {
+        try await request("/studio/limits")
+    }
+
+    func widgets(uid: String, token: String) async throws -> [StudioWidget] {
+        struct Listing: Decodable { let widgets: [StudioWidget] }
+        let got: Listing = try await request("/users/\(uid)/widgets",
+                                             token: token)
+        return got.widgets
+    }
+
+    func readWidget(uid: String, widgetId: String,
+                    token: String) async throws -> StudioWidget {
+        try await request("/users/\(uid)/widgets/\(widgetId)", token: token)
+    }
+
+    /// Run a stored widget. Raw JSON handling rather than Decodable because
+    /// `value` is whatever the widget returned — the screen shows it, it
+    /// does not use it.
+    func runWidget(uid: String, widgetId: String, inputs: [String: Any],
+                   token: String) async throws -> WidgetAnswer {
+        var req = URLRequest(url: base.appendingPathComponent(
+            "/users/\(uid)/widgets/\(widgetId)/run"))
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "content-type")
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
+        req.httpBody = try JSONSerialization.data(
+            withJSONObject: ["inputs": inputs])
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            let status = (resp as? HTTPURLResponse)?.statusCode ?? 0
+            Problems.record(method: "POST", path: req.url?.path ?? "",
+                            status: status)
+            let said = (try? JSONSerialization.jsonObject(with: data))
+                as? [String: Any]
+            let message = (said?["message"] as? String)
+                ?? (said?["detail"] as? String) ?? "HTTP \(status)"
+            throw ApiError.http(message)
+        }
+        let o = (try? JSONSerialization.jsonObject(with: data))
+            as? [String: Any] ?? [:]
+        var valueJSON: String?
+        if let v = o["value"],
+           let pretty = try? JSONSerialization.data(
+               withJSONObject: v, options: [.prettyPrinted, .fragmentsAllowed]) {
+            valueJSON = String(data: pretty, encoding: .utf8)
+        }
+        return WidgetAnswer(status: o["status"] as? String ?? "error",
+                            ms: o["ms"] as? Int ?? 0,
+                            truncated: o["truncated"] as? Bool ?? false,
+                            valueJSON: valueJSON,
+                            message: o["message"] as? String,
+                            detail: o["detail"] as? String)
+    }
 }
 
 struct Transcribed: Decodable { let text: String }
+
+// ---- the Studio's reading half (jim/widgets.py) ----
+
+/// A widget as stored: written at a desk, readable anywhere.
+struct StudioWidget: Decodable {
+    let id: String
+    let name: String
+    let source: String
+    let revision: Int
+}
+
+/// What the box can do on this deployment, and the honest reason when it
+/// cannot. Readable without a token, like /plans.
+struct StudioLimits: Decodable {
+    let available: Bool
+    let unavailable_because: String?
+    let allowances: [String: Int]
+}
+
+/// One run's answer, flattened for a screen: the value arrives as
+/// pretty-printed JSON text because a phone shows it, it does not use it.
+struct WidgetAnswer {
+    let status: String
+    let ms: Int
+    let truncated: Bool
+    let valueJSON: String?
+    let message: String?
+    let detail: String?
+}
 
 // ---- safe knowledge excursions + the community window ----
 

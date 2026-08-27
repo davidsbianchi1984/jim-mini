@@ -270,6 +270,18 @@ data class FarEndAlert(val condition: String, val sentAt: String, val acked: Boo
 data class FarEnd(val configured: Boolean, val address: String,
                   val note: String, val lastAlert: FarEndAlert?)
 
+// ---- the Studio's reading half (jim/widgets.py) ----
+// A widget is written at a desk; a phone opens it, runs it and reads the
+// answer. The value arrives as pretty-printed JSON text because a screen
+// shows it, it does not use it.
+data class StudioWidget(val id: String, val name: String,
+                        val source: String, val revision: Int)
+data class StudioLimits(val available: Boolean, val unavailableBecause: String,
+                        val allowances: Map<String, Int>)
+data class WidgetAnswer(val status: String, val ms: Int, val truncated: Boolean,
+                        val valueJson: String?, val message: String?,
+                        val detail: String?)
+
 /// An open alarm, raised when somebody scanned a care code on a door.
 ///
 /// `acceptedBy` is the point of the type. Accepting and clearing are separate
@@ -1800,6 +1812,49 @@ object ApiClient {
         else body.put("email", email).put("consent", true)
         return farEndOf(request("/farend/$uid", "PUT", body, token))
     }
+
+    // ---- the Studio's reading half (jim/widgets.py) ----
+
+    suspend fun studioLimits(): StudioLimits {
+        val o = request("/studio/limits")
+        val a = o.optJSONObject("allowances") ?: JSONObject()
+        return StudioLimits(o.optBoolean("available", false),
+            o.optString("unavailable_because", ""),
+            a.keys().asSequence().associateWith { a.getInt(it) })
+    }
+
+    suspend fun widgets(uid: String, token: String): List<StudioWidget> {
+        val arr = request("/users/$uid/widgets", token = token)
+            .getJSONArray("widgets")
+        return (0 until arr.length()).map { widgetOf(arr.getJSONObject(it)) }
+    }
+
+    // Opening re-reads the row: the desk may have saved a new revision
+    // since the list loaded, and the phone should run what is stored.
+    suspend fun readWidget(uid: String, widgetId: String,
+                           token: String): StudioWidget =
+        widgetOf(request("/users/$uid/widgets/$widgetId", token = token))
+
+    suspend fun runWidget(uid: String, widgetId: String, inputs: JSONObject,
+                          token: String): WidgetAnswer {
+        val o = request("/users/$uid/widgets/$widgetId/run", "POST",
+            JSONObject().put("inputs", inputs), token)
+        val v = o.opt("value")
+        return WidgetAnswer(o.optString("status", "error"), o.optInt("ms", 0),
+            o.optBoolean("truncated", false),
+            when (v) {
+                null, JSONObject.NULL -> null
+                is JSONObject -> v.toString(2)
+                is org.json.JSONArray -> v.toString(2)
+                else -> v.toString()
+            },
+            if (o.isNull("message")) null else o.optString("message"),
+            if (o.isNull("detail")) null else o.optString("detail"))
+    }
+
+    private fun widgetOf(o: JSONObject) = StudioWidget(
+        o.getString("id"), o.optString("name", ""),
+        o.optString("source", ""), o.optInt("revision", 0))
 
     private fun farEndOf(o: JSONObject): FarEnd {
         val a = o.optJSONObject("last_alert")

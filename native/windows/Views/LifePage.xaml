@@ -616,5 +616,93 @@
                 </StackPanel>
             </ScrollViewer>
         </PivotItem>
+
+        <!-- The Studio's reading half. A widget is written at a desk — the
+             console holds the editor — but somebody who wrote one should be
+             able to open it, run it and read the answer here. No editor
+             ships on this page, deliberately. -->
+        <PivotItem x:Name="StudioPivot">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <TextBlock x:Name="StudioSub" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="StudioBanner" FontSize="12" TextWrapping="Wrap"
+                               Visibility="Collapsed"
+                               Foreground="{StaticResource JimRedBrush}" />
+                    <TextBlock x:Name="StudioError" FontSize="12" TextWrapping="Wrap"
+                               Visibility="Collapsed"
+                               Foreground="{StaticResource JimRedBrush}" />
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="StudioYours" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="StudioNone" FontSize="12" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="WidgetList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding Line}" Tag="{Binding Id}"
+                                                Click="OnWidgetOpen" HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Left" Margin="0,2,0,2" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                    <Border x:Name="OpenWidgetCard" Visibility="Collapsed"
+                            Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="OpenWidgetName" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="StudioSourceLabel" FontSize="11"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" MaxHeight="180">
+                                <TextBlock x:Name="WidgetSourceText" FontFamily="Consolas" FontSize="11"
+                                           Foreground="{StaticResource JimTxtBrush}" />
+                            </ScrollViewer>
+                            <TextBlock x:Name="TryItHead" FontWeight="Bold" FontSize="14"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBox x:Name="WidgetInputsBox" FontFamily="Consolas" />
+                            <Button x:Name="RunWidgetButton" Click="OnWidgetRun"
+                                    Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                            <TextBlock x:Name="CannotRunText" FontSize="12" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <TextBlock x:Name="AnswerTook" FontSize="10" Visibility="Collapsed"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" MaxHeight="180">
+                                <TextBlock x:Name="AnswerValue" FontFamily="Consolas" FontSize="11"
+                                           Foreground="{StaticResource JimTxtBrush}" />
+                            </ScrollViewer>
+                            <TextBlock x:Name="AnswerError" FontSize="12" TextWrapping="Wrap"
+                                       Visibility="Collapsed"
+                                       Foreground="{StaticResource JimRedBrush}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource JimCardBrush}" BorderBrush="{StaticResource JimLineBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="16">
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="LimitsHead" FontWeight="Bold" FontSize="16"
+                                       Foreground="{StaticResource JimTxtBrush}" />
+                            <TextBlock x:Name="LimitsWhy" FontSize="11" TextWrapping="Wrap"
+                                       Foreground="{StaticResource JimT2Brush}" />
+                            <ItemsControl x:Name="LimitsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Padding="2">
+                                            <TextBlock Text="{Binding Label}" Foreground="{StaticResource JimTxtBrush}"
+                                                       FontSize="12" HorizontalAlignment="Left" />
+                                            <TextBlock Text="{Binding Value}" Foreground="{StaticResource JimT2Brush}"
+                                                       FontSize="12" HorizontalAlignment="Right" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
     </Pivot>
 </Page>

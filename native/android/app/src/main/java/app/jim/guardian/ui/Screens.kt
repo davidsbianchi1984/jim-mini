@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -2186,6 +2187,7 @@ fun LifeScreen(vm: GuardianViewModel) {
         L10n.t("life.schedule", vm.language),
         L10n.t("life.shops", vm.language),
         L10n.t("life.circle", vm.language),
+        L10n.t("studio.title", vm.language),
     )
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -2203,7 +2205,168 @@ fun LifeScreen(vm: GuardianViewModel) {
             // The dose board is a schedule the body keeps.
             4 -> { SchedulePanel(vm); MedsPanel(vm) }
             5 -> TandemShopPanel(vm)
-            else -> CirclePanel(vm)
+            6 -> CirclePanel(vm)
+            else -> StudioPanel(vm)
+        }
+    }
+}
+
+// The Studio's reading half. A widget is written at a desk — the console
+// holds the editor — but somebody who wrote one should be able to open it,
+// run it and read the answer from the phone in their pocket. This is that
+// half, and only that half: no editor ships here, because a phone keyboard
+// is the wrong instrument for the first draft of a program.
+@Composable
+private fun StudioPanel(vm: GuardianViewModel) {
+    var box by remember { mutableStateOf<StudioLimits?>(null) }
+    var rows by remember { mutableStateOf<List<StudioWidget>>(emptyList()) }
+    var open by remember { mutableStateOf<StudioWidget?>(null) }
+    var given by remember { mutableStateOf("{}") }
+    var answer by remember { mutableStateOf<WidgetAnswer?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    // Every refusal key the Studio can send back, spelled out rather than
+    // composed — a key nothing can see is a key nobody notices going
+    // missing. The console keeps the same list.
+    val saidKeys = setOf(
+        "widgets.no_rlimits", "widgets.no_unshare", "widgets.no_node",
+        "widgets.node_too_old", "widgets.no_netns", "widgets.threw",
+        "widgets.timeout", "widgets.killed", "widgets.no_answer")
+    fun said(key: String?): String? =
+        if (key != null && key in saidKeys) L10n.t(key, vm.language) else null
+
+    fun reload() {
+        vm.call({ ApiClient.studioLimits() }) { r -> box = r.getOrNull() }
+        vm.call({ ApiClient.widgets(vm.uid!!, vm.token!!) }) { r ->
+            rows = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(L10n.t("studio.sub", vm.language), color = Jim.T2, fontSize = 12.sp)
+        box?.let { b ->
+            if (!b.available) {
+                Column(Modifier.card()) {
+                    Text(said(b.unavailableBecause)
+                            ?: L10n.t("studio.nobox", vm.language),
+                        color = Jim.Red, fontSize = 12.sp)
+                }
+            }
+        }
+        error?.let { Text("⚠ $it", color = Jim.Red, fontSize = 12.sp) }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("studio.yours", vm.language), color = Jim.Txt,
+                fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            if (rows.isEmpty())
+                Text(L10n.t("studio.none", vm.language), color = Jim.T2,
+                    fontSize = 12.sp)
+            rows.forEach { w ->
+                Row(Modifier.fillMaxWidth().clickable {
+                        answer = null; open = w
+                        // Opening re-reads the row: the desk may have saved
+                        // a new revision since this list loaded.
+                        vm.call({ ApiClient.readWidget(vm.uid!!, w.id,
+                            vm.token!!) }) { r ->
+                            r.getOrNull()?.let { open = it }
+                        }
+                    },
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(w.name, fontSize = 14.sp,
+                        color = if (open?.id == w.id) Jim.BrandA else Jim.Txt)
+                    Text(L10n.t("studio.revision", vm.language)
+                            .replace("{n}", "${w.revision}"),
+                        color = Jim.T2, fontSize = 11.sp)
+                }
+            }
+        }
+
+        open?.let { w ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(w.name, color = Jim.Txt, fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold)
+                // Read-only on purpose: the reading half shows the program,
+                // the console is where it is written.
+                Text(L10n.t("studio.source", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+                Text(w.source, color = Jim.Txt, fontSize = 10.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 160.dp)
+                        .horizontalScroll(rememberScrollState()))
+                Text(L10n.t("studio.tryit", vm.language), color = Jim.Txt,
+                    fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                labeledField(L10n.t("studio.inputs", vm.language), given,
+                    "{}") { given = it }
+                // No run button at all when the box cannot be built — a
+                // control that refuses on every press is a dead control,
+                // and the banner above already said why.
+                if (box?.available != false) {
+                    SmallAction(L10n.t("studio.run", vm.language),
+                        enabled = !busy) {
+                        // Their JSON, not the server's problem: say so here
+                        // rather than sending something the widget will be
+                        // blamed for.
+                        val text = given.trim()
+                        val inputs = if (text.isEmpty()) JSONObject() else try {
+                            JSONObject(text)
+                        } catch (_: Exception) {
+                            error = L10n.t("studio.badinputs", vm.language)
+                            return@SmallAction
+                        }
+                        busy = true; error = null; answer = null
+                        vm.call({ ApiClient.runWidget(vm.uid!!, w.id, inputs,
+                            vm.token!!) }) { r ->
+                            busy = false
+                            r.fold({ answer = it }, { error = it.message })
+                        }
+                    }
+                } else {
+                    Text(L10n.t("studio.cannotrun", vm.language),
+                        color = Jim.T2, fontSize = 12.sp)
+                }
+                answer?.let { a ->
+                    Text(L10n.t("studio.took", vm.language)
+                            .replace("{ms}", "${a.ms}"),
+                        color = Jim.T2, fontSize = 10.sp)
+                    if (a.status == "ok") {
+                        Text(if (a.truncated) L10n.t("studio.toobig", vm.language)
+                             else a.valueJson ?: "",
+                            color = Jim.Txt, fontSize = 10.sp,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 160.dp)
+                                .horizontalScroll(rememberScrollState()))
+                    } else {
+                        // `message` is the widget's own error, verbatim;
+                        // `detail` is a refusal key for this shell's table.
+                        Text(a.message ?: said(a.detail)
+                                ?: L10n.t("studio.failed", vm.language),
+                            color = Jim.Red, fontSize = 12.sp)
+                    }
+                }
+            }
+        }
+
+        box?.let { b ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("studio.limits", vm.language), color = Jim.Txt,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("studio.limits.why", vm.language), color = Jim.T2,
+                    fontSize = 11.sp)
+                b.allowances.toSortedMap().forEach { (k, v) ->
+                    Row(Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(L10n.t("studio.limit.$k", vm.language),
+                            color = Jim.Txt, fontSize = 12.sp)
+                        Text("$v", color = Jim.T2, fontSize = 12.sp)
+                    }
+                }
+            }
         }
     }
 }

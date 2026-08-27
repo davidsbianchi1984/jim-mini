@@ -8,6 +8,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The Studio's reading half reaches the shells.** The 0.72.0 debt
+  said it plainly: somebody who wrote a widget at a desk should be able
+  to open it, run it and read the answer from the phone in their
+  pocket. The Life screens on iOS, Android and Windows gain a Widgets
+  tab — the list with revisions, the source read-only, a JSON inputs
+  box, the run button that vanishes when the deployment has no box to
+  run in, the answer with its honest status, and the limits card — in
+  the console's ten languages. The editor deliberately stays on the
+  console: a phone keyboard is the wrong instrument for the first
+  draft of a program, and the writing half's three rows remain on the
+  backlogs saying so.
+
 - **The far end reaches the shells.** The card the console's Held
   screen has carried since 0.92.0 — who stands on the far end of the
   escalation ladder, whether a person saw the last alert, and the

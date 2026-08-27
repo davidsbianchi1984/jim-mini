@@ -445,6 +445,32 @@ public record FarEndStatus(
     [property: JsonPropertyName("last_alert")] FarEndAlert? LastAlert,
     [property: JsonPropertyName("note")] string? Note);
 
+// ---- the Studio's reading half (jim/widgets.py) ----
+// A widget is written at a desk; this shell opens it, runs it and reads the
+// answer. `Value` stays a JsonElement because the screen shows it, it does
+// not use it.
+public record StudioWidget(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("revision")] int Revision);
+
+public record StudioWidgetListing(
+    [property: JsonPropertyName("widgets")] StudioWidget[] Widgets);
+
+public record StudioLimits(
+    [property: JsonPropertyName("available")] bool Available,
+    [property: JsonPropertyName("unavailable_because")] string? UnavailableBecause,
+    [property: JsonPropertyName("allowances")] Dictionary<string, int> Allowances);
+
+public record WidgetRunAnswer(
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("ms")] int Ms,
+    [property: JsonPropertyName("truncated")] bool? Truncated,
+    [property: JsonPropertyName("value")] JsonElement? Value,
+    [property: JsonPropertyName("message")] string? Message,
+    [property: JsonPropertyName("detail")] string? Detail);
+
 public record FlowStep(
     [property: JsonPropertyName("step")] string Step,
     [property: JsonPropertyName("label")] string Label,
@@ -1699,6 +1725,27 @@ public sealed class ApiClient
         Send<FarEndStatus>(Put($"/farend/{uid}",
             email is null ? new { email = (string?)null }
                           : (object)new { email, consent = true }, token));
+
+    // ---- the Studio's reading half (jim/widgets.py) ----
+
+    public Task<StudioLimits> StudioLimits() =>
+        Send<StudioLimits>(new HttpRequestMessage(HttpMethod.Get,
+            "/studio/limits"));
+
+    public Task<StudioWidgetListing> Widgets(string uid, string token) =>
+        Send<StudioWidgetListing>(Get($"/users/{uid}/widgets", token));
+
+    /// <summary>Opening re-reads the row: the desk may have saved a new
+    /// revision since the list loaded, and this shell should run what is
+    /// stored, not what it remembers.</summary>
+    public Task<StudioWidget> ReadWidget(string uid, string widgetId,
+                                         string token) =>
+        Send<StudioWidget>(Get($"/users/{uid}/widgets/{widgetId}", token));
+
+    public Task<WidgetRunAnswer> RunWidget(string uid, string widgetId,
+                                           JsonElement inputs, string token) =>
+        Send<WidgetRunAnswer>(Post($"/users/{uid}/widgets/{widgetId}/run",
+            new { inputs }, token));
 
     public Task<EmergencyResult> Emergency(string uid, string token,
                                            string? situation, string? location) =>
