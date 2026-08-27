@@ -28,6 +28,9 @@ struct MicCard: View {
     @State private var mons: [MonitorRow] = []
     // The day as it was taken in, and what survived of it.
     @State private var today: TheDay?
+    @State private var fresh: FreshnessFacts?
+    @State private var hearingStretch: String?
+    @State private var hearingImport = false
     // What the rooms noticed, read on the way through rather than out of
     // anything kept.
     @State private var noticedCues: CuesSeen?
@@ -218,10 +221,36 @@ struct MicCard: View {
                         }
                         Spacer()
                         if st.running {
+                            Button(L10n.t("day.meet.hear", state.language)) {
+                                hearingStretch = st.id
+                                hearingImport = true
+                            }.font(.caption).tint(Theme.brandA)
                             Button(L10n.t("day.meet.end", state.language)) {
                                 endStretch(st)
                             }.font(.caption).tint(Theme.t2)
                         }
+                    }
+                }
+                // The staleness card — the two ages and the verdict, from
+                // the same contract the console reads, beside the channel
+                // that produces them.
+                if let f = fresh {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L10n.t("day.fresh.title", state.language))
+                            .font(.caption.bold()).foregroundStyle(Theme.txt)
+                        Text(f.verdict).font(.caption2)
+                            .foregroundStyle(Theme.t2)
+                        Text(L10n.t("day.fresh.reading", state.language)
+                                .replacingOccurrences(of: "{age}",
+                                                      with: age(f.reading_age_ms)))
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                        Text(L10n.t("day.fresh.beat", state.language)
+                                .replacingOccurrences(of: "{age}",
+                                                      with: age(f.heartbeat_age_ms)))
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                        Button(L10n.t("day.fresh.refresh", state.language)) {
+                            Task { await beatAndRead() }
+                        }.font(.caption).tint(Theme.brandA)
                     }
                 }
             }
@@ -416,13 +445,45 @@ struct MicCard: View {
             }
         }
         .card()
+        .fileImporter(isPresented: $hearingImport,
+                      allowedContentTypes: [.audio, .data]) { result in
+            if case .success(let url) = result { hearIntoStretch(url) }
+        }
         .task {
             await load()
+            await beatAndRead()
             types = try? await ApiClient.shared.micTypes()
             gains = try? await ApiClient.shared.micGains()
             if micType.isEmpty, let first = types?.personal.first {
                 micType = first
             }
+        }
+    }
+
+    /// One beat and one read: opening this screen is the shell holding
+    /// the channel, which is exactly when the pulse should be sent.
+    private func beatAndRead() async {
+        guard let uid = state.uid, let token = state.token else { return }
+        _ = try? await ApiClient.shared.heartbeat(uid: uid, token: token)
+        fresh = try? await ApiClient.shared.freshness(uid: uid, token: token)
+    }
+
+    private func age(_ ms: Double?) -> String {
+        guard let ms else { return "—" }
+        let minutes = Int((ms / 60000).rounded())
+        return minutes < 1 ? "<1 min" : "\(minutes) min"
+    }
+
+    private func hearIntoStretch(_ url: URL) {
+        guard let uid = state.uid, let token = state.token,
+              let sid = hearingStretch else { return }
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        guard let data = try? Data(contentsOf: url) else { return }
+        Task {
+            try? await ApiClient.shared.stretchHeard(
+                uid: uid, stretchId: sid, data: data, token: token)
+            await load()
         }
     }
 

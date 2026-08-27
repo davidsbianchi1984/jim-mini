@@ -1,4 +1,4 @@
-# status: backlog — 3 rows
+# status: backlog — 0 rows
 #
 # Every route this shell cannot reach.
 #
@@ -69,16 +69,11 @@
 # sessions round set.
 #
 
-# The staleness contract's heartbeat (jim/freshness.py): the wrist
-# channel's pulse apart from the readings, so the person going quiet and
-# the network going dark stop being one silence. The shell that holds the
-# BLE link to the watch is the road for the beat.
-POST /heartbeat/{user_id}
-
-# The staleness contract's stats and the meeting-recording door
-# (jim/freshness.py, jim/daybook.py). The console carries both; the
-# shells owe their own tellings — the freshness card beside their
-# monitor reads, and handing a meeting's audio up from the device that
-# actually sat in the meeting.
-GET /freshness/{user_id}
-POST /day/{user_id}/stretches/{stretch_id}/heard
+# ## after 1.8.9, second close — the staleness trio opens, and the file
+# ## returns to zero
+#
+# The heartbeat, the freshness card and the meeting-recording door landed
+# on this shell together: one beat sent on the day screen's way in, the
+# two ages and the verdict beside the channel that produces them, and a
+# running stretch takes an audio file straight to the transcriber. The
+# 1.8.8 note above said the shells owed their own tellings; paid.

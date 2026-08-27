@@ -1138,6 +1138,9 @@ public sealed partial class ConnectPage : Page
                 if (run.Running)
                 {
                     var stretchId = run.Id;
+                    var hear = new Button { Content = L10n.T("day.meet.hear") };
+                    hear.Click += async (_, _) => await HearIntoStretch(stretchId);
+                    DayPanel.Children.Add(hear);
                     var end = new Button { Content = L10n.T("day.meet.end") };
                     end.Click += async (_, _) =>
                     {
@@ -1152,8 +1155,70 @@ public sealed partial class ConnectPage : Page
                     DayPanel.Children.Add(end);
                 }
             }
+            // The staleness card — the two ages and the verdict, from the
+            // same contract the console reads, beside the channel that
+            // produces them. One beat on the way in: opening this screen
+            // is the shell holding the channel.
+            try
+            {
+                await ApiClient.Shared.Heartbeat(s.Uid, s.Token);
+                var f = await ApiClient.Shared.Freshness(s.Uid, s.Token);
+                DayPanel.Children.Add(new TextBlock
+                {
+                    Text = L10n.T("day.fresh.title"), FontSize = 13,
+                    FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                    Foreground = txt,
+                });
+                DayPanel.Children.Add(new TextBlock
+                {
+                    Text = f.Verdict + "\n"
+                        + L10n.T("day.fresh.reading").Replace("{age}", AgeOf(f.ReadingAgeMs))
+                        + "\n"
+                        + L10n.T("day.fresh.beat").Replace("{age}", AgeOf(f.HeartbeatAgeMs)),
+                    FontSize = 11, TextWrapping = TextWrapping.Wrap,
+                    Foreground = t2,
+                });
+                var again = new Button { Content = L10n.T("day.fresh.refresh") };
+                again.Click += async (_, _) => await LoadDay();
+                DayPanel.Children.Add(again);
+            }
+            catch { /* the day above stands on its own */ }
         }
         catch { /* the roster above stands on its own */ }
+    }
+
+    private static string AgeOf(double? ms)
+    {
+        if (ms is null) return "\u2014";
+        var minutes = (int)Math.Round(ms.Value / 60000.0);
+        return minutes < 1 ? "<1 min" : $"{minutes} min";
+    }
+
+    /// One audio file, chosen by the person, straight to the transcriber —
+    /// the bytes are never stored on either side of the door.
+    private async System.Threading.Tasks.Task HearIntoStretch(string stretchId)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try
+        {
+            var picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.FileTypeFilter.Add(".webm");
+            picker.FileTypeFilter.Add(".m4a");
+            picker.FileTypeFilter.Add(".mp3");
+            picker.FileTypeFilter.Add(".wav");
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainAppWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+            var file = await picker.PickSingleFileAsync();
+            if (file is null) return;
+            var buffer = await Windows.Storage.FileIO.ReadBufferAsync(file);
+            var bytes = new byte[buffer.Length];
+            using (var reader = Windows.Storage.Streams.DataReader.FromBuffer(buffer))
+                reader.ReadBytes(bytes);
+            await ApiClient.Shared.StretchHeard(s.Uid, s.Token, stretchId, bytes);
+            await LoadDay();
+        }
+        catch (Exception ex) { MicFailed(ex); }
     }
 
     private async System.Threading.Tasks.Task LoadMonitors()

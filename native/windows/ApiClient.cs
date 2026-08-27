@@ -1204,6 +1204,31 @@ public sealed class ApiClient
     public Task<TheDay> Day(string uid, string token) =>
         Send<TheDay>(Get($"/day/{uid}", token));
 
+    // ---- the staleness contract (jim/freshness.py) ----------------------
+
+    /// The wrist channel's pulse apart from the readings — the shell
+    /// holding the link to the watch is the road for the beat.
+    public Task<HeartbeatSkew> Heartbeat(string uid, string token) =>
+        Send<HeartbeatSkew>(Post($"/heartbeat/{uid}",
+            new { device_now = DateTimeOffset.UtcNow.ToString("o") }, token));
+
+    /// The two ages and the verdict, on demand.
+    public Task<FreshnessFacts> Freshness(string uid, string token) =>
+        Send<FreshnessFacts>(Get($"/freshness/{uid}", token));
+
+    /// A recording from inside a meeting, as raw bytes — transcribed on
+    /// the way through, the audio never stored.
+    public async Task StretchHeard(string uid, string token,
+                                   string stretchId, byte[] audio)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post,
+            $"/day/{uid}/stretches/{stretchId}/heard");
+        req.Content = new ByteArrayContent(audio);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var res = await Dispatch(req);
+        res.EnsureSuccessStatusCode();
+    }
+
     /// <summary>Begin a meeting or working stretch. Where the monitor catches
     /// other people, somebody has to say they were told — asked again here
     /// rather than inherited from the switch.</summary>
@@ -3409,6 +3434,14 @@ public record Stretch(
     [property: JsonPropertyName("ended_at")] string? EndedAt,
     [property: JsonPropertyName("moments")] int Moments,
     [property: JsonPropertyName("kept")] int Kept);
+
+public record HeartbeatSkew(
+    [property: JsonPropertyName("skew_ms")] double? SkewMs);
+
+public record FreshnessFacts(
+    [property: JsonPropertyName("verdict")] string Verdict,
+    [property: JsonPropertyName("reading_age_ms")] double? ReadingAgeMs,
+    [property: JsonPropertyName("heartbeat_age_ms")] double? HeartbeatAgeMs);
 
 public record TheDay(
     [property: JsonPropertyName("account")] DayAccount Account,

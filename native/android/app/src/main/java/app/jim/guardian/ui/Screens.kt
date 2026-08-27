@@ -6255,8 +6255,35 @@ private fun CareTeamPanel(vm: GuardianViewModel) {
 }
 
 @Composable
+private fun ageOf(ms: Double?): String {
+    if (ms == null) return "\u2014"
+    val minutes = kotlin.math.roundToInt(ms / 60000.0)
+    return if (minutes < 1) "<1 min" else "$minutes min"
+}
+
 private fun MicPanel(vm: GuardianViewModel) {
     var mic by remember { mutableStateOf<MicState?>(null) }
+    var fresh by remember { mutableStateOf<FreshnessFacts?>(null) }
+    var hearStretch by remember { mutableStateOf<String?>(null) }
+    val hearContext = androidx.compose.ui.platform.LocalContext.current
+    // The system picker hands over one audio file and nothing else; the
+    // bytes go to the transcriber and are never stored.
+    val hearPicker = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    ) { uri ->
+        val sid = hearStretch
+        if (uri != null && sid != null) {
+            val bytes = hearContext.contentResolver.openInputStream(uri)
+                ?.use { it.readBytes() }
+            if (bytes != null) {
+                vm.call({ ApiClient.stretchHeard(vm.uid!!, sid, bytes,
+                    vm.token!!) }) {
+                    vm.call({ ApiClient.theDay(vm.uid!!, vm.token!!) }) { r ->
+                        today = r.getOrNull() }
+                }
+            }
+        }
+    }
     var types by remember { mutableStateOf<MicTypeChoices?>(null) }
     var gains by remember { mutableStateOf<MicGainChoices?>(null) }
     var history by remember { mutableStateOf<List<MicEvent>>(emptyList()) }
@@ -6304,6 +6331,12 @@ private fun MicPanel(vm: GuardianViewModel) {
             mons = r.getOrDefault(emptyList()) }
         vm.call({ ApiClient.theDay(vm.uid!!, vm.token!!) }) { r ->
             today = r.getOrNull() }
+        // One beat and one read: opening this screen is the shell holding
+        // the channel, which is exactly when the pulse should be sent.
+        vm.call({ ApiClient.heartbeat(vm.uid!!, vm.token!!) }) {
+            vm.call({ ApiClient.freshness(vm.uid!!, vm.token!!) }) { r ->
+                fresh = r.getOrNull() }
+        }
         vm.call({ ApiClient.cues(vm.uid!!, vm.token!!) }) { r ->
             noticedCues = r.getOrNull() }
         vm.call({ ApiClient.micPaired(vm.uid!!, vm.token!!) }) { r ->
@@ -6488,12 +6521,36 @@ private fun MicPanel(vm: GuardianViewModel) {
                     Text(L10n.t("day.meet.told", vm.language),
                         color = Jim.T2, fontSize = 11.sp)
                 if (st.running) {
+                    BrandButton(L10n.t("day.meet.hear", vm.language)) {
+                        hearStretch = st.id
+                        hearPicker.launch("audio/*")
+                    }
                     BrandButton(L10n.t("day.meet.end", vm.language)) {
                         vm.call({ ApiClient.closeStretch(vm.uid!!, vm.token!!,
                             st.id) }) {
                             vm.call({ ApiClient.theDay(vm.uid!!, vm.token!!) }) { r ->
                                 today = r.getOrNull() }
                         }
+                    }
+                }
+            }
+            // The staleness card — the two ages and the verdict, from the
+            // same contract the console reads, beside the channel that
+            // produces them.
+            fresh?.let { f ->
+                Text(L10n.t("day.fresh.title", vm.language), color = Jim.Txt,
+                    fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(f.verdict, color = Jim.T2, fontSize = 11.sp)
+                Text(L10n.t("day.fresh.reading", vm.language)
+                    .replace("{age}", ageOf(f.readingAgeMs)),
+                    color = Jim.T2, fontSize = 11.sp)
+                Text(L10n.t("day.fresh.beat", vm.language)
+                    .replace("{age}", ageOf(f.heartbeatAgeMs)),
+                    color = Jim.T2, fontSize = 11.sp)
+                BrandButton(L10n.t("day.fresh.refresh", vm.language)) {
+                    vm.call({ ApiClient.heartbeat(vm.uid!!, vm.token!!) }) {
+                        vm.call({ ApiClient.freshness(vm.uid!!, vm.token!!) }) { r ->
+                            fresh = r.getOrNull() }
                     }
                 }
             }

@@ -165,6 +165,9 @@ data class Stretch(val id: String, val monitor: String, val about: String,
                    val othersTold: Boolean, val catchesOthers: Boolean,
                    val running: Boolean, val openedAt: String,
                    val endedAt: String?, val moments: Int, val kept: Int)
+data class FreshnessFacts(val verdict: String, val readingAgeMs: Double?,
+                          val heartbeatAgeMs: Double?)
+
 data class TheDay(val account: DayAccount, val survived: List<Moment>,
                   val stretches: List<Stretch>)
 /** One thing that can be plugged in and sense somebody. `catchesOthers` is
@@ -1267,6 +1270,35 @@ object ApiClient {
     }
 
     /** What was sensed today and what survived of it. */
+    // ---- the staleness contract (jim/freshness.py) --------------------
+
+    /** The wrist channel's pulse apart from the readings — the shell
+     *  holding the link to the watch is the road for the beat. */
+    suspend fun heartbeat(uid: String, token: String) {
+        request("/heartbeat/$uid", "POST",
+            JSONObject().put("device_now",
+                java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC)
+                    .toString()), token)
+    }
+
+    /** The two ages and the verdict, on demand. */
+    suspend fun freshness(uid: String, token: String): FreshnessFacts {
+        val o = request("/freshness/$uid", token = token)
+        return FreshnessFacts(o.optString("verdict", ""),
+            if (o.isNull("reading_age_ms")) null
+            else o.optDouble("reading_age_ms"),
+            if (o.isNull("heartbeat_age_ms")) null
+            else o.optDouble("heartbeat_age_ms"))
+    }
+
+    /** A recording from inside a meeting, as raw bytes — transcribed on
+     *  the way through, the audio never stored. */
+    suspend fun stretchHeard(uid: String, stretchId: String,
+                             audio: ByteArray, token: String) {
+        request("/day/$uid/stretches/$stretchId/heard", "POST",
+            token = token, raw = audio)
+    }
+
     suspend fun theDay(uid: String, token: String): TheDay {
         val o = request("/day/$uid", token = token)
         val d = o.optJSONObject("account") ?: JSONObject()
