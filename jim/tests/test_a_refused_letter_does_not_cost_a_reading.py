@@ -76,7 +76,7 @@ def test_the_reading_lands_however_the_mail_server_fails(client, monkeypatch,
     _refusing_server(monkeypatch, boom)
     resp = client.post(f"/monitor/{user}", json={"blood_oxygen": 84})
     assert resp.status_code == 200, resp.text
-    assert _events(user) > 0, "the reading left no trace — it was discarded"
+    assert _events(user), "the reading left no trace — it was discarded"
 
 
 def test_the_detection_still_runs(client, monkeypatch):
@@ -179,7 +179,7 @@ def test_a_refused_reminder_does_not_cost_the_reading_either(client,
     _refusing_server(monkeypatch)
     resp = client.post(f"/monitor/{user}", json={"blood_oxygen": 84})
     assert resp.status_code == 200, resp.text
-    assert _events(user) > 0, "the reading was discarded with the reminder"
+    assert _events(user), "the reading was discarded with the reminder"
 
 def test_a_refused_verification_does_not_strand_the_address(client,
                                                             monkeypatch):

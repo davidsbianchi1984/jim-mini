@@ -709,6 +709,17 @@ def _shared_with_console(shell: str):
     return go
 
 
+def _body_routes_count() -> int:
+    from jim.api import app
+    from .test_the_refusal_that_handed_the_body_back import _body_routes
+    return len(_body_routes(app))
+
+
+def _credential_tables_count() -> int:
+    from .test_the_erase_left_a_live_address import _credential_tables
+    return len(_credential_tables())
+
+
 RATCHETS: tuple[Ratchet, ...] = (
     Ratchet("screens.declared.android", 8, _screens_declared("android"),
             "the screens android declares, as the navigation scan reads them"),
@@ -810,6 +821,10 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the calls the iPhone's ApiClient declares"),
     Ratchet("route.path_segments", 202, _path_segments,
             "the literal path segments this product's routes contribute"),
+    Ratchet("routes.body_taking", 82, _body_routes_count,
+            "the body-taking routes the junk sweep drives"),
+    Ratchet("erase.credential_tables", 4, _credential_tables_count,
+            "the user-scoped credential tables the erase scan reads"),
     Ratchet("form.controls_scanned", 13349, _scanned_controls,
             "the characters of form control the screen scan matches"),
     Ratchet("host.egress_sites", 13, _egress_sites,

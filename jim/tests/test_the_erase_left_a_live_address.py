@@ -46,6 +46,8 @@ import ast
 import re
 from pathlib import Path
 
+from . import ratchets
+
 from jim import db, life
 
 
@@ -117,7 +119,7 @@ def test_the_credential_scan_is_finding_tables(client):
     """A guard on the guard: a scan that stopped matching would report nothing
     left behind and pass on an empty set."""
     found = _credential_tables()
-    assert len(found) >= 4, (
+    assert len(found) >= ratchets.floor("erase.credential_tables"), (
         f"only {len(found)} user-scoped credential table(s) found — this "
         "schema has four, and the check above is passing on almost nothing")
 

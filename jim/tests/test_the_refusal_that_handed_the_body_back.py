@@ -152,7 +152,7 @@ def test_the_sweep_reaches_the_thing_it_is_sweeping(client):
     made-up path id is a 404.
     """
     found = _body_routes(client.app)
-    assert len(found) > 80, (
+    assert len(found) >= ratchets.floor("routes.body_taking"), (
         f"only {len(found)} body-taking routes found — `all_routes` or the "
         "method filter has stopped matching")
     _, reached = _sweep(client)
