@@ -2852,6 +2852,20 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    # -- the meeting-recording door (jim/api.py, stretch_heard). Both
+    # sentences reached the wire with the door; a sentence on the wire is
+    # a sentence somebody reads.
+    ("the recording arrived empty"): {
+        'es': "la grabación llegó vacía",
+        'fr': "l'enregistrement est arrivé vide",
+        'de': "die Aufnahme kam leer an",
+        'pt': "a gravação chegou vazia",
+        'it': "la registrazione è arrivata vuota",
+        'ja': "録音が空のまま届きました",
+        'zh': "收到的录音是空的",
+        'hi': "रिकॉर्डिंग खाली पहुंची",
+        'ar': "وصل التسجيل فارغًا",
+    },
     # -- the synced book's two vault sentences (jim/contacts.py). They
     # reached the wire when the doors opened, and a sentence on the wire is
     # a sentence somebody reads.

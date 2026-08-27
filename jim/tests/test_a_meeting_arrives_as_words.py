@@ -102,7 +102,9 @@ def test_a_strangers_recording_is_refused(client, monkeypatch):
 
 def test_no_ears_is_a_sentence_not_a_crash(client, monkeypatch):
     def refuse(audio, filename="x"):
-        raise voice.VoiceUnavailable("no listening service is configured")
+        raise voice.VoiceUnavailable(
+            "no listening service is configured — the app will use the "
+            "device's own recogniser")
     monkeypatch.setattr(voice, "transcribe", refuse)
     uid = enroll(client)
     _on(client, uid, "room_speaker", keeping=True)

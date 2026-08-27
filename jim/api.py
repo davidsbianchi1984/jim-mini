@@ -3820,7 +3820,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             words = voice.transcribe(raw, "meeting.webm")
         except voice.VoiceUnavailable as exc:
-            raise HTTPException(503, str(exc)) from None
+            raise HTTPException(503, i18n.raised(exc)) from None
         try:
             return daybook.heard(user_id, stretch_id, words)
         except daybook.NotYours as exc:
