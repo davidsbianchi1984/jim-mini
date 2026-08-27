@@ -6,7 +6,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-08-27
+
+### Added
+
+- **Three doorless doors open on every shell.** The heartbeat
+  (`POST /heartbeat/{uid}` answering the clock's skew), the freshness
+  verdict (`GET /freshness/{uid}` with both ages on the card), and the
+  stretch that hears (`POST /day/{uid}/stretches/{id}/heard`, raw audio
+  in, words out, nothing stored) reach iOS, Android and Windows: beat
+  once on day-screen entry, a freshness card with a refresh button, and
+  a file-picker upload on any running stretch. Five new phrases ride
+  the localization tables of all ten languages on all three shells.
+  Three doorless ledgers close to zero for the second time.
+
 ### Changed
+
+- **Two floors joined the registry.** The body-route sweep's floor and
+  the erase audit's credential-table floor now live in `ratchets.py`
+  with the way to measure the same quantity, audited every run; the six
+  rows left in the unregistered-floors ledger are each told apart in
+  prose — the guards' own driven counts, and directions written as
+  comparisons.
+- **The front page welcomes every age.** The README stops leading with
+  seniors: JIM watches over anyone living with a body, with five
+  capability tables (Watching, Responding, Living, Speaking, Trust),
+  keeping the wrist gallery, the release history and the scripture.
 
 - **Ten wire names mean one thing each.** One field name carrying two
   meanings across routes misleads the reader the API told to rely on
@@ -11406,7 +11431,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.9...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.9.0...HEAD
+[1.9.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.9...app-v1.9.0
 [1.8.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.8...app-v1.8.9
 [1.8.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.7...app-v1.8.8
 [1.8.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.6...app-v1.8.7
