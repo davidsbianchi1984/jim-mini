@@ -325,6 +325,9 @@ def _subscription(key: str, purpose: str) -> dict:
         with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
             return json.loads(resp.read() or b"{}")
     except urllib.error.HTTPError as exc:
+        if exc.code in (401, 403):
+            raise VoiceError(i18n.fill(i18n.KEY_REFUSED,
+                                       provider=PROVIDERS[0]))
         detail = exc.read().decode(errors="replace")[:300]
         raise VoiceError(i18n.fill(i18n.PROVIDER_REFUSED, provider=PROVIDERS[0],
                                    code=exc.code, detail=detail))
@@ -555,6 +558,9 @@ def speak(text: str, voice_id: str | None = None) -> tuple[bytes, str]:
         with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
             return resp.read(), resp.headers.get("content-type", "audio/mpeg")
     except urllib.error.HTTPError as exc:
+        if exc.code in (401, 403):
+            raise VoiceError(i18n.fill(i18n.KEY_REFUSED,
+                                       provider=r["provider"]))
         detail = exc.read().decode(errors="replace")[:300]
         raise VoiceError(i18n.fill(i18n.PROVIDER_REFUSED, provider=r["provider"],
                                    code=exc.code, detail=detail))
@@ -605,6 +611,13 @@ def transcribe(audio: bytes, filename: str = "speech.webm") -> str:
         with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
             data = json.loads(resp.read() or b"{}")
     except urllib.error.HTTPError as exc:
+        # A 401/403 is not a transcription fact, it is a key fact — and
+        # the person mid-conversation needs the switch, not the
+        # provider's JSON (field report: a red strip of raw 401 body on
+        # a handheld).
+        if exc.code in (401, 403):
+            raise VoiceError(i18n.fill(i18n.KEY_REFUSED,
+                                       provider=r["provider"]))
         detail = exc.read().decode(errors="replace")[:300]
         raise VoiceError(i18n.fill(i18n.TRANSCRIPTION_REFUSED, code=exc.code,
                                    detail=detail))

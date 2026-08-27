@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A refused key is a sentence, not a JSON blob.** A handheld showed
+  `transcription refused it: HTTP 401 {"detail":{"type":"authentication
+  _error"...` mid-conversation — the provider's raw body on a person's
+  screen. Every provider call in the voice module now turns 401/403
+  into the fact that matters, translated: the key was refused — paste a
+  fresh one on the Voice card, or fix the deployment's. Other statuses
+  keep the honest code.
+
 ## [1.8.9] - 2026-08-27
 
 ### Changed
