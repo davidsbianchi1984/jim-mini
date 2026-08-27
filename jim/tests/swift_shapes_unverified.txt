@@ -1,5 +1,5 @@
-# status: backlog — 29 rows
-# ceiling: 29
+# status: backlog — 13 rows
+# ceiling: 13
 #
 # iOS fields the Swift shape guard saw a route not return, which are real.
 #
@@ -32,26 +32,26 @@
 # ceiling in the same commit — a deliberate, visible edit. A row leaves it
 # when somebody writes a test that lives the state and reads the field.
 #
+# ## after 1.8.9 — seventeen rows lived, one learned
+#
+# This file said continuity "cannot be manufactured: there is no route
+# that builds one." There is no single route — and three check-ins plus
+# two answered guidance rounds build one anyway. The fixture lives that
+# state now, which verified the six continuity fields, the check-in
+# trend, and the helpfulness tally for real. The presence area and
+# boundary rows were never dead at all: they sit inside `[String: X]`
+# maps, and the walker was comparing their fields against the map's own
+# keys — condition names, area names — so fields genuinely on the wire
+# read as fiction (the C# walker skipped maps entirely; both fixed, with
+# canaries). `ContinuityState.note` joins going the other way: it is the
+# "nothing yet" sentence, and a fixture that builds the history stops
+# seeing it — the same shape as AdaptationProfile.note.
+#
 AdaptationProfile.note        # only while `built` is false — the sentence
                               # saying there is no profile yet
-ContinuityState.version       # once continuity is built, which takes a history
-ContinuityState.observations  # of check-ins and coach turns over time
-ContinuityState.conditioning
-ContinuityState.vector
-ContinuityState.meanings
-ContinuityState.method
-HelpTally.answered_count            # once somebody has answered whether help helped
-HelpTally.did_not
-HelpTally.helped_count
-HelpTally.hit_rate
-CheckinTrend.avg_mood         # once there are enough check-ins to average
-CheckinTrend.avg_stress
+ContinuityState.note          # the "nothing yet" sentence — only until the
+                              # history builds, and the fixture now builds one
 BaselineMetric.state          # once a personal baseline has bands to be in
-PresenceArea.area             # once presence has an area it is standing on
-PresenceArea.known
-PresenceArea.standing
-PresenceBoundary.says         # once a boundary has been set
-PresenceBoundary.stands
 PresenceSpoken.due            # once a beat is scheduled
 PresenceSpoken.slot_from_hour
 PresenceBeat.deepened_line    # only when a real model answers — under the stub

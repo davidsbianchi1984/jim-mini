@@ -29,6 +29,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `signin_providers`, and the calm protocol's rows `calm_steps`. From
   here a new two-meaning wire name is a failing guard, not a backlog
   entry.
+- **Seventeen "unverifiable" iOS fields verified for real.** The shape
+  guard's fixture now lives the states its record said could not be
+  manufactured — three check-ins and two answered guidance rounds build
+  a continuity, a trend, and a helpfulness tally. And the presence rows
+  were never dead: fields inside `[String: X]` map values were being
+  compared against the map's own keys, so real wire fields read as
+  fiction — the Swift walker descended into the wrapper and the C#
+  walker skipped maps entirely. Both walkers fixed, with canaries; the
+  unverified record drops from 29 rows to 13.
 
 ### Fixed
 
