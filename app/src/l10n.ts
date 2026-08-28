@@ -5280,6 +5280,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cch.ask": {
     en: "Ask the coach", es: "Preguntar al coach", fr: "Demander au coach", de: "Den Coach fragen", pt: "Perguntar ao coach", it: "Chiedi al coach", ja: "コーチに尋ねる", zh: "询问教练", hi: "कोच से पूछें", ar: "اسأل المدرّب",
   },
+  "cch.show.pic": {
+    en: "Show it a picture", es: "Muéstrale una imagen", fr: "Montrez-lui une image", de: "Zeig ihm ein Bild", pt: "Mostre-lhe uma imagem", it: "Mostragli un'immagine", ja: "画像を見せる", zh: "给它看一张图片", hi: "इसे एक चित्र दिखाएँ", ar: "أرِه صورة",
+  },
+  "cch.show.screen": {
+    en: "Show it your screen", es: "Muéstrale tu pantalla", fr: "Montrez-lui votre écran", de: "Zeig ihm deinen Bildschirm", pt: "Mostre-lhe o seu ecrã", it: "Mostragli il tuo schermo", ja: "画面を見せる", zh: "给它看你的屏幕", hi: "इसे अपनी स्क्रीन दिखाएँ", ar: "أرِه شاشتك",
+  },
+  "cch.show.grabbed": {
+    en: "your screen, one frame", es: "tu pantalla, un fotograma", fr: "votre écran, une image", de: "dein Bildschirm, ein Einzelbild", pt: "o seu ecrã, um quadro", it: "il tuo schermo, un fotogramma", ja: "あなたの画面・1コマ", zh: "你的屏幕，一帧", hi: "आपकी स्क्रीन, एक फ़्रेम", ar: "شاشتك، إطار واحد",
+  },
+  "cch.show.drop": {
+    en: "Put the picture down", es: "Retirar la imagen", fr: "Retirer l'image", de: "Das Bild weglegen", pt: "Retirar a imagem", it: "Mettere via l'immagine", ja: "画像を取り下げる", zh: "放下图片", hi: "चित्र हटाएँ", ar: "أنزِل الصورة",
+  },
   "cch.thinking": {
     en: "Thinking…", es: "Pensando…", fr: "Réflexion…", de: "Denkt nach…", pt: "A pensar…", it: "Sto pensando…", ja: "考えています…", zh: "思考中…", hi: "सोच रहा है…", ar: "يفكّر…",
   },

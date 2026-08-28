@@ -379,6 +379,10 @@ export interface SpecialistAnswer {
   answer_provenance?: { method: string; shared: string };
 }
 export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[];
+  /** What the Guardian's eyes read off a picture shown for this turn —
+   *  returned beside the reply so the person sees exactly what the coach
+   *  was told. Null when nothing was shown. */
+  seen?: string | null;
   first_aid?: FirstAid | null;
   specialist_offer?: SpecialistOffer | null;
   // The monitoring path names who spoke and the life area that leads back
@@ -1881,7 +1885,11 @@ export const api = {
                    *  spoke over it — see `heardAloud` in `speech.ts`.
                    *  Omitted when nothing was interrupted, which is the
                    *  ordinary turn, and ignorable by any older backend. */
-                  cut_off_heard?: string },
+                  cut_off_heard?: string;
+                  /** A picture being shown to the coach for this turn, as
+                   *  base64 — read by the Guardian's eyes and stored
+                   *  nowhere. */
+                  shown?: string },
           token: string) =>
     req<Guidance>(`/coach/${uid}`, { method: "POST", body, token }),
   // The person's own question to the QRME specialist covering this area.

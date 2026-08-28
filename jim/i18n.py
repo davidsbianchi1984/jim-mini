@@ -2868,6 +2868,32 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    # -- the coach's eye (jim/api.py, coach_reply). A shown picture that
+    # cannot be read is refused out loud — a coach that quietly ignores
+    # what it was shown is agreeing to a lie.
+    ("the eyes read JPEG, PNG and WebP pictures — this file "
+     "is none of them"): {
+        'es': "los ojos leen imágenes JPEG, PNG y WebP — este archivo no es ninguna de ellas",
+        'fr': "les yeux lisent les images JPEG, PNG et WebP — ce fichier n'en est aucune",
+        'de': "die Augen lesen JPEG-, PNG- und WebP-Bilder — diese Datei ist keines davon",
+        'pt': "os olhos leem imagens JPEG, PNG e WebP — este arquivo não é nenhuma delas",
+        'it': "gli occhi leggono immagini JPEG, PNG e WebP — questo file non è nessuna di esse",
+        'ja': "目が読めるのは JPEG・PNG・WebP の画像です。このファイルはどれでもありません",
+        'zh': "眼睛能读取 JPEG、PNG 和 WebP 图片——这个文件都不是",
+        'hi': "आँखें JPEG, PNG और WebP चित्र पढ़ती हैं — यह फ़ाइल इनमें से कोई नहीं है",
+        'ar': "العيون تقرأ صور JPEG وPNG وWebP — هذا الملف ليس أيًا منها",
+    },
+    ("the shown picture is not valid base64"): {
+        'es': "la imagen mostrada no es base64 válido",
+        'fr': "l'image montrée n'est pas du base64 valide",
+        'de': "das gezeigte Bild ist kein gültiges Base64",
+        'pt': "a imagem mostrada não é base64 válido",
+        'it': "l'immagine mostrata non è base64 valido",
+        'ja': "見せられた画像は有効な base64 ではありません",
+        'zh': "所展示的图片不是有效的 base64",
+        'hi': "दिखाई गई तस्वीर मान्य base64 नहीं है",
+        'ar': "الصورة المعروضة ليست base64 صالحًا",
+    },
     # -- the meeting-recording door (jim/api.py, stretch_heard). Both
     # sentences reached the wire with the door; a sentence on the wire is
     # a sentence somebody reads.
@@ -5818,6 +5844,7 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    "shown": {"en": "The picture being shown for this turn", "es": "La imagen que se muestra en este turno", "fr": "L'image montrée pour ce tour", "de": "Das für diesen Zug gezeigte Bild", "pt": "A imagem mostrada nesta vez", "it": "L'immagine mostrata per questo turno", "ja": "このターンで見せる画像", "zh": "本轮展示的图片", "hi": "इस बारी में दिखाई जा रही तस्वीर", "ar": "الصورة المعروضة لهذا الدور"},
     'url': {'en': 'Page address', 'es': 'Dirección de la página', 'fr': 'Adresse de la page', 'de': 'Adresse der Seite', 'pt': 'Endereço da página', 'it': 'Indirizzo della pagina', 'ja': 'ページのアドレス', 'zh': '页面地址', 'hi': 'पेज का पता', 'ar': 'عنوان الصفحة'},
     # The far end (jim/farend.py): worded as the Held screen's box asks it.
     'emergency_email': {'en': "Emergency contact's email", 'es': 'Correo del contacto de emergencia', 'fr': "E-mail du contact d'urgence", 'de': 'E-Mail des Notfallkontakts', 'pt': 'E-mail do contacto de emergência', 'it': "Email del contatto di emergenza", 'ja': '緊急連絡先のメールアドレス', 'zh': '紧急联系人的邮箱', 'hi': 'आपातकालीन संपर्क का ईमेल', 'ar': 'البريد الإلكتروني لجهة اتصال الطوارئ'},

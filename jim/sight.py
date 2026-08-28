@@ -76,6 +76,46 @@ SYSTEM = (
     "worth remarking on, say so plainly."
 )
 
+#: And the other posture the same eyes take: not a monitor glancing, but
+#: the person deliberately holding something up — a photo, a screenshot,
+#: a frame of their own screen — to ask the Guardian about it. Fuller on
+#: purpose: a screenshot is usually shown FOR its words, so the text on
+#: it is read out. The credential line is the one part both postures
+#: share unchanged.
+SHOWN = (
+    "You are the eyes of a personal health guardian. The person you help "
+    "is deliberately showing you one picture — a photo, a screenshot, or "
+    "a frame of their own screen — and will ask about it. Describe "
+    "exactly what it shows, plainly and completely: what is happening, "
+    "any readable text (say it), and what application or page it appears "
+    "to be. Describe only what you can see. Never read out passwords, "
+    "card numbers or anything that looks like a credential."
+)
+
+#: How much room each posture gets. A monitor's glance is one sentence;
+#: a shown picture is read out properly.
+_GLANCE_ROOM = 160
+_SHOWN_ROOM = 500
+
+#: Image kinds the eyes accept, by magic bytes — the same three the
+#: sibling platform's eyes read, for the same reasons (GIF's first frame
+#: is not the animation; RIFF is shared ground with WAVE).
+_IMAGE_MAGIC = (
+    (b"\xff\xd8", "image/jpeg"),
+    (b"\x89PNG", "image/png"),
+    (b"RIFF", "image/webp"),
+)
+
+
+def image_kind(data: bytes) -> str | None:
+    """The media type of a picture these eyes can read, or None."""
+    for magic, kind in _IMAGE_MAGIC:
+        if data[:len(magic)] == magic:
+            if kind == "image/webp" and data[8:12] != b"WEBP":
+                continue
+            return kind
+    return None
+
 
 class SightError(Exception):
     """The service was reachable in principle and said no."""
@@ -119,10 +159,34 @@ def describe(frame: bytes, asked: str = "", kind: str = "image/jpeg") -> str:
     if not frame:
         raise SightError("there was no frame in that")
     told = SYSTEM + (f" This monitor is watching for: {asked}." if asked else "")
+    return _look(key, told, frame, kind, _GLANCE_ROOM)
+
+
+def read_shown(frame: bytes, kind: str = "image/jpeg") -> str:
+    """A picture the person deliberately holds up, read out properly.
+
+    The same eyes and the same wire as :func:`describe`, in the other
+    posture (:data:`SHOWN`): fuller, with the readable text said, because
+    a screenshot is usually shown FOR its words — and on a phone that
+    cannot hand a live screen to a web page, a screenshot IS the screen
+    being shown. Still one frame, still stored nowhere.
+    """
+    key = _key()
+    if not key:
+        raise SightUnavailable(
+            "nothing is set up to look: this deployment has no key for "
+            "describing what a camera or a screen sees. The monitor stays "
+            "switched on and reports nothing until one is added")
+    if not frame:
+        raise SightError("there was no frame in that")
+    return _look(key, SHOWN, frame, kind, _SHOWN_ROOM)
+
+
+def _look(key: str, told: str, frame: bytes, kind: str, room: int) -> str:
     url = "https://api.openai.com/v1/chat/completions"
     body = json.dumps({
         "model": _MODEL,
-        "max_tokens": 160,
+        "max_tokens": room,
         "messages": [
             {"role": "system", "content": told},
             {"role": "user", "content": [{

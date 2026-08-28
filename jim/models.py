@@ -829,6 +829,11 @@ class CoachMessage(BaseModel):
     #: interrupted, which is the ordinary turn. Sent by the voice screens,
     #: which play a reply piece by piece and so know where a hush landed.
     cut_off_heard: str | None = None
+    #: A picture being shown to the coach for this turn — a photo, a
+    #: screenshot, a grabbed screen — as base64. Read by the deployment's
+    #: eyes (jim/sight.py, the SHOWN posture) and gone: the account rides
+    #: with the words, the frame is stored nowhere.
+    shown: str | None = None
 
 
 class LookoutCreate(BaseModel):

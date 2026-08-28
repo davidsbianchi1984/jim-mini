@@ -3263,10 +3263,41 @@ def create_app(qrme_client: QRMEClient | None = None,
     def coach_reply(user_id: str, body: CoachMessage, request: Request,
                     background: BackgroundTasks) -> dict:
         _user_or_404(user_id, request)
-        answer = coach.reply(user_id, body.area, body.message,
+        # The eye. A picture shown for this turn is read by the same eyes
+        # the monitors use — the SHOWN posture, fuller and with the text
+        # said — and the account travels WITH the words, labelled for what
+        # it is. Refused out loud when it cannot be read: a coach that
+        # quietly ignores what it was shown is agreeing to a lie. The
+        # frame is stored nowhere, same promise as every monitor.
+        message, seen = body.message, None
+        if body.shown:
+            import base64 as _b64
+            try:
+                picture = _b64.b64decode(body.shown, validate=True)
+            except Exception:  # noqa: BLE001 — one honest reason
+                raise HTTPException(
+                    422, "the shown picture is not valid base64")
+            kind = sight.image_kind(picture)
+            if kind is None:
+                raise HTTPException(
+                    422, "the eyes read JPEG, PNG and WebP pictures — "
+                         "this file is none of them")
+            try:
+                seen = sight.read_shown(picture, kind)
+            except sight.SightUnavailable as exc:
+                raise HTTPException(503, i18n.raised(exc)) from None
+            except sight.SightError as exc:
+                raise HTTPException(502, i18n.raised(exc)) from None
+            message = (message + "\n\n[what is being shown on the "
+                                 "attached picture or screen, as read by "
+                                 "the Guardian's eyes: " + seen + "]")
+        answer = coach.reply(user_id, body.area, message,
                              pdi=_vault(user_id),
                              recall_pdi=app.state.pdi,
                              cut_off_heard=body.cut_off_heard)
+        # What the eyes read, beside the reply, so the person can see
+        # exactly what their coach was told about the picture.
+        answer["seen"] = seen
         # A coach turn is where knowledge gaps are born — the study half
         # of the self-winding pass runs on this door's heels, behind its
         # own permit (jim/noticed.py, after_traffic).
