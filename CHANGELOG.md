@@ -6,6 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-08-28
+
+### Added
+
+- **The coach grows eyes** — show it a picture, a screenshot, or (on
+  platforms whose browser holds the door) one frame of your own screen.
+  The same eyes the monitors use (`jim/sight.py`), in a second posture:
+  fuller, with the readable text said out, and the frame stored nowhere.
+  The account rides with your words and returns beside the reply as
+  `seen`, so you read exactly what your coach was told. Refusals out
+  loud, translated: junk base64, a file the eyes cannot read, a
+  deployment with no sight key.
+- **The README shows the product** — every major component and tool now
+  carries its screen on the front page, thirty-two drawings across eight
+  themes, beside the watch gallery.
+
 ## [2.0.0] - 2026-08-28
 
 ### Changed
@@ -11441,7 +11457,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.0.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.0.1...HEAD
+[2.0.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.0.0...app-v2.0.1
 [2.0.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.9.0...app-v2.0.0
 [1.9.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.9...app-v1.9.0
 [1.8.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.8...app-v1.8.9

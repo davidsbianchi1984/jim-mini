@@ -779,7 +779,7 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the clients' writes whose verb and shape meet a model"),
     Ratchet("service.close_reasons", 3, _close_reasons,
             "the ways the listening service says why it stopped"),
-    Ratchet("gallery.tables", 2, _gallery_tables,
+    Ratchet("gallery.tables", 9, _gallery_tables,
             "the gallery tables the README carries"),
     Ratchet("speech.echo_guards", 3, _echo_guards,
             "the places the shell checks a heard line against the guardian"),
