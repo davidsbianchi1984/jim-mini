@@ -1,6 +1,6 @@
 [project]
 name = "jim-mini"
-version = "2.3.0"
+version = "2.3.1"
 description = "Guardian — personal guidance for known conditions: monitor, predict, guide, escalate"
 readme = "README.md"
 requires-python = ">=3.11"

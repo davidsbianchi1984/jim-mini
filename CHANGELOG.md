@@ -6,6 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-08-28
+
+- Tandem release with QRME 2.3.1 (the head the forge builds is actually
+  drawn); version alignment across the trio, no functional change in this repository.
+
 ## [2.3.0] - 2026-08-28
 
 - Tandem release with QRME 2.3.0 (the forge: a photograph becomes a 3-D
@@ -11474,7 +11479,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.1...HEAD
+[2.3.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.0...app-v2.3.1
 [2.3.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.2.0...app-v2.3.0
 [2.2.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.1.0...app-v2.2.0
 [2.1.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.0.1...app-v2.1.0
