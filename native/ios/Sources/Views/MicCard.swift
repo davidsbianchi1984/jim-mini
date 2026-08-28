@@ -471,7 +471,9 @@ struct MicCard: View {
     private func age(_ ms: Double?) -> String {
         guard let ms else { return "—" }
         let minutes = Int((ms / 60000).rounded())
-        return minutes < 1 ? "<1 min" : "\(minutes) min"
+        return minutes < 1 ? L10n.t("day.fresh.now", state.language)
+            : L10n.t("day.fresh.mins", state.language)
+                .replacingOccurrences(of: "{m}", with: String(minutes))
     }
 
     private func hearIntoStretch(_ url: URL) {

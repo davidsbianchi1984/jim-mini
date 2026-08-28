@@ -1191,7 +1191,8 @@ public sealed partial class ConnectPage : Page
     {
         if (ms is null) return "\u2014";
         var minutes = (int)Math.Round(ms.Value / 60000.0);
-        return minutes < 1 ? "<1 min" : $"{minutes} min";
+        return minutes < 1 ? L10n.T("day.fresh.now")
+            : L10n.T("day.fresh.mins").Replace("{m}", minutes.ToString());
     }
 
     /// One audio file, chosen by the person, straight to the transcriber —

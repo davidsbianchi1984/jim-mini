@@ -134,11 +134,22 @@ def test_the_p95_at_decision_is_measured_not_designed(client):
     assert r.json()["ingress"]["readings"] >= 1
 
 
-def test_the_heartbeat_is_recorded_in_every_shells_backlog():
-    """The BLE link to the watch lives in a shell; each owes the beat."""
+def test_every_shell_pays_the_heartbeat_door():
+    """The BLE link to the watch lives in a shell; each owed the beat, and
+    the second doorless close paid it. The guard flips with the debt: a
+    shell that loses its heartbeat call has reopened a door this file
+    watched close, and the ledger must say so again before this passes."""
     from pathlib import Path
     root = Path(__file__).resolve().parent
-    for shell in ("ios", "android", "windows"):
-        text = (root / f"{shell}_doorless.txt").read_text(encoding="utf-8")
-        assert "POST /heartbeat/{user_id}" in text, (
-            f"the {shell} shell does not owe the heartbeat door")
+    repo = root.parents[1]
+    clients = {
+        "ios": repo / "native/ios/Sources/ApiClient.swift",
+        "android": repo / "native/android/app/src/main/java/app/jim/guardian/ApiClient.kt",
+        "windows": repo / "native/windows/ApiClient.cs",
+    }
+    for shell, path in clients.items():
+        assert "/heartbeat/" in path.read_text(encoding="utf-8"), (
+            f"the {shell} client no longer calls the heartbeat door")
+        ledger = (root / f"{shell}_doorless.txt").read_text(encoding="utf-8")
+        assert "POST /heartbeat/{user_id}" not in ledger, (
+            f"the {shell} ledger still owes a door its client pays")

@@ -6255,10 +6255,11 @@ private fun CareTeamPanel(vm: GuardianViewModel) {
 }
 
 @Composable
-private fun ageOf(ms: Double?): String {
+private fun ageOf(ms: Double?, lang: String): String {
     if (ms == null) return "\u2014"
     val minutes = kotlin.math.roundToInt(ms / 60000.0)
-    return if (minutes < 1) "<1 min" else "$minutes min"
+    return if (minutes < 1) L10n.t("day.fresh.now", lang)
+    else L10n.t("day.fresh.mins", lang).replace("{m}", minutes.toString())
 }
 
 private fun MicPanel(vm: GuardianViewModel) {
@@ -6542,10 +6543,10 @@ private fun MicPanel(vm: GuardianViewModel) {
                     fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 Text(f.verdict, color = Jim.T2, fontSize = 11.sp)
                 Text(L10n.t("day.fresh.reading", vm.language)
-                    .replace("{age}", ageOf(f.readingAgeMs)),
+                    .replace("{age}", ageOf(f.readingAgeMs, vm.language)),
                     color = Jim.T2, fontSize = 11.sp)
                 Text(L10n.t("day.fresh.beat", vm.language)
-                    .replace("{age}", ageOf(f.heartbeatAgeMs)),
+                    .replace("{age}", ageOf(f.heartbeatAgeMs, vm.language)),
                     color = Jim.T2, fontSize = 11.sp)
                 BrandButton(L10n.t("day.fresh.refresh", vm.language)) {
                     vm.call({ ApiClient.heartbeat(vm.uid!!, vm.token!!) }) {
