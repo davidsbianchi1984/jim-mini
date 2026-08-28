@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v2.2.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v2.3.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -340,6 +340,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **2.3.0** | Tandem release with QRME 2.3.0 (the forge: a photograph becomes a 3-D face on the deployment's own hardware); version alignment across the trio, no functional change in this repository. |
 | **2.2.0** | Tandem release with QRME 2.2.0 (Raise: the three time controls) and PDI 2.2.0; version alignment across the trio, no functional change in this repository |
 | **2.1.0** | Tandem release with QRME 2.1.0 (Raise — grow your own); version alignment across the trio, no functional change in this repository |
 | **2.0.1** | **The coach grows eyes** — show it a picture, a screenshot, or one frame of your own screen; the monitors' own eyes in a fuller posture, the account returned beside the reply, the frame stored nowhere. The README now carries a screen for every major component. Tandem release with QRME 2.0.1 (the eyes and the room society) |
