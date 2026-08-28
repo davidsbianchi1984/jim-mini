@@ -8,9 +8,9 @@
          thing a problem report from an install can be pinned to.
          Absent until 0.57.7, which meant every build since the
          shell was written reported the 1.0.0 default. -->
-    <Version>2.1.0</Version>
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
+    <Version>2.2.0</Version>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <FileVersion>2.2.0.0</FileVersion>
     <RootNamespace>JimGuardian</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64;ARM64</Platforms>
