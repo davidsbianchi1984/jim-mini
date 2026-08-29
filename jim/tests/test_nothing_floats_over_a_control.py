@@ -183,8 +183,17 @@ def test_the_bar_actually_publishes_its_height():
 def test_the_fallback_is_the_number_it_replaced():
     """A browser with no ResizeObserver is exactly the case the old guess
     was written for, so that is what it falls back to — not zero, which
-    would drop every float onto the bar."""
-    block = _phone_block()
-    assert "var(--tabbar-h, 76px)" in block, (
+    would drop every float onto the bar.
+
+    The default lives in `:root`, not in a `var(--tabbar-h, 76px)` spelled
+    at each of the four places that read it: the stylesheet must define
+    every variable it reads (the guard next door), and a number repeated
+    four times inside `calc()` is one nobody can find to change."""
+    root = re.search(r":root\s*\{(.*?)\}", CSS.read_text(encoding="utf-8"), re.S)
+    assert root, "the stylesheet has no :root block"
+    assert re.search(r"--tabbar-h\s*:\s*76px", root.group(1)), (
         "the fallback is missing or different — without one, a browser "
         "that cannot observe the bar puts the help button on the menu")
+    assert "var(--tabbar-h)" in _phone_block(), (
+        "the phone rule no longer reads the published height, so the bar "
+        "measuring itself changes nothing")

@@ -10,6 +10,13 @@
   --brand: #43e08a; --brand2: #2fd27a; --blue: #3aa0ff; --violet: #a78bfa;
   --amber: #f7b731; --green: #43e08a; --red: #ff4d5e;
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, system-ui, sans-serif;
+  /* How tall the phone tab bar is. The bar measures itself and overwrites
+     this on the root element (see `App.tsx`); the value here is what a
+     browser without ResizeObserver gets. Declared rather than written as
+     `var(--tabbar-h, 76px)` at each of the four places that read it: a
+     fallback spelled inline four times is a number nobody can find, and
+     the stylesheet must define every variable it reads. */
+  --tabbar-h: 76px;
 }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
@@ -863,9 +870,10 @@ body.theme-paper select { background: #fff; color: var(--txt); }
    is, and the bar is as tall as its labels — "Live Monitoring" and "Your
    Baseline" wrap to two lines and push it past 76. Every label here is
    translated into ten languages and the longer ones wrap sooner. So the
-   bar measures itself and publishes `--tabbar-h` (see `App.tsx`); 76px
-   survives only as the fallback for a browser with no ResizeObserver,
-   which is the case the guess was written for.
+   bar measures itself and publishes `--tabbar-h` (see `App.tsx`), which
+   overwrites the `76px` `:root` declares; that declaration survives only
+   for a browser with no ResizeObserver, which is the case the guess was
+   written for.
 
    The task window had no phone rule at all, kept its desktop `bottom:
    84px`, and floated mid-screen over the Hands screen's move checkboxes.
@@ -874,22 +882,22 @@ body.theme-paper select { background: #fff; color: var(--txt); }
    --------------------------------------------------------------------- */
 @media (max-width: 760px) {
   .help-fab, .help-panel {
-    bottom: calc(var(--tabbar-h, 76px) + 12px + env(safe-area-inset-bottom));
+    bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
   }
   .watch-lights {
     left: 12px;
-    bottom: calc(var(--tabbar-h, 76px) + 12px + env(safe-area-inset-bottom));
+    bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
     width: 132px; height: 132px; padding: 12px; gap: 4px;
   }
   .wl-dot {
     left: 12px;
-    bottom: calc(var(--tabbar-h, 76px) + 12px + env(safe-area-inset-bottom));
+    bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
     width: 22px; height: 22px; opacity: 0.75;
     box-shadow: 0 2px 8px rgba(0,0,0,.35);
   }
   .underway, .uw-dot {
     right: 12px;
-    bottom: calc(var(--tabbar-h, 76px) + 12px + env(safe-area-inset-bottom));
+    bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
   }
   .underway { width: min(232px, calc(100vw - 24px)); }
 }
