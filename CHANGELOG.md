@@ -8,6 +8,35 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.7.0] - 2026-08-29
 
+### Fixed
+
+- **The rule that lifted the help button off the tab bar had never once
+  applied.** On a phone the sidebar becomes the bottom bar, and the
+  floating things — the help button, the Guardian lights, the task window
+  — are told to sit clear of it. That rule was written in the layout media
+  block two hundred lines above the base `.help-fab { bottom: 22px }`.
+  Same specificity, later wins: the browser used the desktop rule, and the
+  comment above the override explained a fix nobody was getting. The task
+  window had no phone rule at all and floated over the Hands screen's move
+  checkboxes, which are the controls that card exists to offer.
+  - The overrides now sit after the rules they override, and the clearance
+    is measured rather than guessed: `76px` was a guess about the bar's
+    height, and the bar is as tall as its labels, which are translated
+    into ten languages and wrap sooner in the longer ones. The bar
+    measures itself and publishes `--tabbar-h`.
+  - `test_nothing_floats_over_a_control` reads the stylesheet for which
+    rule *wins*, not for which rules exist. The first draft of it checked
+    presence and passed on the broken file; that draft is described in the
+    guard's own docstring, because a guard that would have missed the
+    defect it was written for is the thing worth writing down.
+
+### Changed
+
+- **The front-page gallery is photographs of the running console**, not
+  drawings of it — 26 screens shot against a real backend, a real build
+  and a real enrolment, by a harness that refuses to file a capture it
+  cannot prove it reached.
+
 ### Added
 
 - **The Guardian gets hands** — the coach could already see, hear and
