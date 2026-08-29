@@ -39,8 +39,9 @@ import { Bearing } from "./screens/Bearing";
 import { Held } from "./screens/Held";
 import { Access } from "./screens/Access";
 import { Watch } from "./screens/Watch";
+import { Hands } from "./screens/Hands";
 
-type Tab = "watch" | "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "access" | "settings";
+type Tab = "watch" | "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "hands" | "bearing" | "held" | "access" | "settings";
 // Labels live in `l10n.ts` and are looked up by id — see `nav.*` there.
 //
 // They used to sit here as English literals, which made the console's own
@@ -78,6 +79,7 @@ const NAV: { id: Tab; icon: ReactNode }[] = [
   { id: "wards", icon: "🧒" },
   { id: "attending", icon: "🩺" },
   { id: "reach", icon: "🤖" },
+  { id: "hands", icon: "🖐" },
   { id: "bearing", icon: "🧭" },
   { id: "community", icon: "🗣" },
   { id: "presence", icon: "◍" },
@@ -239,6 +241,7 @@ export function App() {
         {tab === "wards" && <Wards />}
         {tab === "attending" && <Attending />}
         {tab === "reach" && <Reach />}
+        {tab === "hands" && <Hands />}
         {tab === "bearing" && <Bearing />}
         {tab === "held" && <Held />}
         {tab === "access" && <Access />}
