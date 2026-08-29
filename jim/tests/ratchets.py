@@ -821,7 +821,7 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the calls the iPhone's ApiClient declares"),
     Ratchet("route.path_segments", 202, _path_segments,
             "the literal path segments this product's routes contribute"),
-    Ratchet("routes.body_taking", 82, _body_routes_count,
+    Ratchet("routes.body_taking", 138, _body_routes_count,
             "the body-taking routes the junk sweep drives"),
     Ratchet("erase.credential_tables", 4, _credential_tables_count,
             "the user-scoped credential tables the erase scan reads"),

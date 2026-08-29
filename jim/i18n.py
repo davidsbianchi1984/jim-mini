@@ -2868,6 +2868,20 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    # The hands. Carried from the sibling word for word — a refusal a
+    # person meets on one console and then on the other has to say the
+    # same thing in their own language.
+    'no such reach': {
+        'es': 'no existe esa sesión de control',
+        'fr': "cette prise en main n'existe pas",
+        'de': 'diesen Zugriff gibt es nicht',
+        'pt': 'essa sessão de controlo não existe',
+        'it': 'questa sessione di controllo non esiste',
+        'ja': 'その操作セッションはありません',
+        'zh': '没有这个操作会话',
+        'hi': 'ऐसा कोई नियंत्रण सत्र नहीं है',
+        'ar': 'لا توجد هذه الجلسة',
+    },
     # -- the coach's eye (jim/api.py, coach_reply). A shown picture that
     # cannot be read is refused out loud — a coach that quietly ignores
     # what it was shown is agreeing to a lie.
@@ -5844,6 +5858,29 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    # The hands (jim/hands.py), worded exactly as the sibling product
+    # words them. Somebody who read the grant card on one console and
+    # then meets a refusal on the other has to be reading the same
+    # noun for the same box.
+    "about_step": {"en": "The step this is a report about", "es": "El paso del que se informa", "fr": "L'étape dont il s'agit", "de": "Der Schritt, um den es geht", "pt": "O passo de que se trata", "it": "Il passo di cui si riferisce", "ja": "報告の対象となる手順", "zh": "此报告所指的步骤", "hi": "वह चरण जिसकी यह रिपोर्ट है", "ar": "الخطوة التي يتعلق بها هذا التقرير"},
+    "detail": {"en": "The move's argument", "es": "El argumento del movimiento", "fr": "L'argument du geste", "de": "Das Argument der Bewegung", "pt": "O argumento do movimento", "it": "L'argomento della mossa", "ja": "動作の引数", "zh": "该动作的参数", "hi": "चाल का तर्क", "ar": "معطى الحركة"},
+    "errand": {"en": "What it should do", "es": "Qué debe hacer", "fr": "Ce qu'il doit faire", "de": "Was es tun soll", "pt": "O que deve fazer", "it": "Cosa deve fare", "ja": "してほしいこと", "zh": "它该做什么", "hi": "इसे क्या करना है", "ar": "ما ينبغي أن يفعله"},
+    "frame": {"en": "The picture of the screen", "es": "La imagen de la pantalla", "fr": "L'image de l'écran", "de": "Das Bild vom Bildschirm", "pt": "A imagem do ecrã", "it": "L'immagine dello schermo", "ja": "画面の画像", "zh": "屏幕的图像", "hi": "स्क्रीन की तस्वीर", "ar": "صورة الشاشة"},
+    "grant_id": {"en": "Which permission", "es": "Qué permiso", "fr": "Quelle permission", "de": "Welche Erlaubnis", "pt": "Que permissão", "it": "Quale permesso", "ja": "どの許可", "zh": "用哪个许可", "hi": "कौन-सी अनुमति", "ar": "أي إذن"},
+    "in_words": {"en": "The permission, in your own words", "es": "El permiso, con tus propias palabras", "fr": "La permission, avec vos propres mots", "de": "Die Erlaubnis, in deinen eigenen Worten", "pt": "A permissão, nas suas próprias palavras", "it": "Il permesso, con parole tue", "ja": "許可を、あなた自身の言葉で", "zh": "用你自己的话说出这个许可", "hi": "अनुमति, आपके अपने शब्दों में", "ar": "الإذن، بكلماتك أنت"},
+    "landed": {"en": "What became of that step on the machine", "es": "Qué fue de ese paso en la máquina", "fr": "Ce qu'est devenue cette étape sur la machine", "de": "Was aus diesem Schritt auf der Maschine wurde", "pt": "O que aconteceu a esse passo na máquina", "it": "Che ne è stato di quel passo sulla macchina", "ja": "その手順がマシン上でどうなったか", "zh": "该步骤在那台机器上的结果", "hi": "मशीन पर उस चरण का क्या हुआ", "ar": "ما آل إليه ذلك الإجراء على الآلة"},
+    "landed_note": {"en": "Why it did not happen", "es": "Por qué no ocurrió", "fr": "Pourquoi cela n'a pas eu lieu", "de": "Warum es nicht passiert ist", "pt": "Porque não aconteceu", "it": "Perché non è successo", "ja": "実行されなかった理由", "zh": "未能发生的原因", "hi": "यह क्यों नहीं हुआ", "ar": "لماذا لم يحدث"},
+    "learned": {"en": "How it was learned", "es": "Cómo se aprendió", "fr": "Comment il a été appris", "de": "Wie es gelernt wurde", "pt": "Como foi aprendido", "it": "Come è stato imparato", "ja": "どう覚えたか", "zh": "是怎么学会的", "hi": "यह कैसे सीखा गया", "ar": "كيف تعلَّمه"},
+    "places": {"en": "Apps or sites", "es": "Aplicaciones o sitios", "fr": "Applications ou sites", "de": "Apps oder Seiten", "pt": "Aplicações ou sites", "it": "App o siti", "ja": "アプリまたはサイト", "zh": "应用或网站", "hi": "ऐप या साइट", "ar": "تطبيقات أو مواقع"},
+    "reach_id": {"en": "Which session", "es": "Qué sesión", "fr": "Quelle session", "de": "Welche Sitzung", "pt": "Que sessão", "it": "Quale sessione", "ja": "どのセッション", "zh": "哪一次会话", "hi": "कौन-सा सत्र", "ar": "أي جلسة"},
+    "saw": {"en": "What the eyes read on the screen", "es": "Lo que los ojos leyeron en la pantalla", "fr": "Ce que les yeux ont lu à l'écran", "de": "Was die Augen auf dem Bildschirm lasen", "pt": "O que os olhos leram no ecrã", "it": "Cosa hanno letto gli occhi sullo schermo", "ja": "目が画面から読み取った内容", "zh": "眼睛在屏幕上读到的内容", "hi": "आँखों ने स्क्रीन पर क्या पढ़ा", "ar": "ما قرأته العينان على الشاشة"},
+    "steps": {"en": "Steps", "es": "Pasos", "fr": "Étapes", "de": "Schritte", "pt": "Passos", "it": "Passi", "ja": "手数", "zh": "步数", "hi": "चरण", "ar": "خطوات"},
+    'surface': {'en': 'Surface', 'es': 'Superficie', 'fr': 'Surface', 'de': 'Fläche', 'pt': 'Superfície', 'it': 'Superficie', 'ja': 'サーフェス', 'zh': '表面', 'hi': 'सतह', 'ar': 'السطح'},
+    "to_user_id": {"en": "Who it is handed to", "es": "A quién se le entrega", "fr": "À qui c'est confié", "de": "Wem es übergeben wird", "pt": "A quem é entregue", "it": "A chi viene passato", "ja": "誰に渡すか", "zh": "交给谁", "hi": "किसे सौंपा जा रहा है", "ar": "إلى مَن يُسلَّم"},
+    "verb": {"en": "The move", "es": "El movimiento", "fr": "Le geste", "de": "Die Bewegung", "pt": "O movimento", "it": "La mossa", "ja": "動作", "zh": "动作", "hi": "चाल", "ar": "الحركة"},
+    "verbs": {"en": "The moves it may make", "es": "Los movimientos que puede hacer", "fr": "Les gestes qu'il peut faire", "de": "Die Bewegungen, die es machen darf", "pt": "Os movimentos que pode fazer", "it": "Le mosse che può fare", "ja": "許される動作", "zh": "它可以做的动作", "hi": "जो चालें यह चल सकता है", "ar": "الحركات المسموح بها"},
+    "watched": {"en": "Only while somebody is watching", "es": "Solo mientras alguien mira", "fr": "Seulement pendant que quelqu'un regarde", "de": "Nur solange jemand zusieht", "pt": "Apenas enquanto alguém observa", "it": "Solo mentre qualcuno guarda", "ja": "誰かが見ている間だけ", "zh": "仅在有人看着时", "hi": "केवल जब कोई देख रहा हो", "ar": "فقط بينما يراقب أحد"},
+    "why": {"en": "Why it stopped", "es": "Por qué se detuvo", "fr": "Pourquoi il s'est arrêté", "de": "Warum es aufgehört hat", "pt": "Porque parou", "it": "Perché si è fermato", "ja": "止まった理由", "zh": "为何停下", "hi": "यह क्यों रुका", "ar": "لماذا توقّف"},
     "shown": {"en": "The picture being shown for this turn", "es": "La imagen que se muestra en este turno", "fr": "L'image montrée pour ce tour", "de": "Das für diesen Zug gezeigte Bild", "pt": "A imagem mostrada nesta vez", "it": "L'immagine mostrata per questo turno", "ja": "このターンで見せる画像", "zh": "本轮展示的图片", "hi": "इस बारी में दिखाई जा रही तस्वीर", "ar": "الصورة المعروضة لهذا الدور"},
     'url': {'en': 'Page address', 'es': 'Dirección de la página', 'fr': 'Adresse de la page', 'de': 'Adresse der Seite', 'pt': 'Endereço da página', 'it': 'Indirizzo della pagina', 'ja': 'ページのアドレス', 'zh': '页面地址', 'hi': 'पेज का पता', 'ar': 'عنوان الصفحة'},
     # The far end (jim/farend.py): worded as the Held screen's box asks it.

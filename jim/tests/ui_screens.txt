@@ -1,4 +1,4 @@
-# status: floor — 32 rows
+# status: floor — 33 rows
 #
 # Which console surface each screen drawing depicts.
 #
@@ -75,3 +75,4 @@ Talk            110
 Studio          111
 
 Watch           112   # the shell; its 36 faces are docs/watch's own gallery
+Hands           113

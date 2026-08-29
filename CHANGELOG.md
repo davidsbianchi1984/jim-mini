@@ -6,6 +6,57 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-08-29
+
+### Added
+
+- **The Guardian gets hands** — the coach could already see, hear and
+  speak, and could not press anything. A grant is now something a person
+  writes down: which surface, which named apps, which moves, for how many
+  minutes and how many steps — and one press takes the whole thing back.
+  The bounds live on the server (`jim/hands.py`), the screen fetches them
+  rather than inventing its own, and nothing moves without a small program
+  the person runs on their own machine.
+  - **Deliberately the sibling's machinery.** Verb for verb, bound for
+    bound, path for path with QRME's. A permission that means one thing in
+    one product and something looser in the other is worse than not having
+    it in the second at all — and the motor that performs these moves runs
+    on somebody's own machine, where a program that has to know which of
+    two products it is talking to gets shipped twice and fixed once.
+  - **Two doors, one row.** Pick the permission from the form, or say it
+    in words. The spoken door is strict on purpose: words that name no app
+    grant nothing, and the echo shows what the sentence was understood to
+    mean before anything moves.
+  - **It looks before it presses,** through the eyes this product already
+    had (`jim/sight.py`), and says what it saw. The screen is data to be
+    read, never instructions to be obeyed.
+  - **It will not type a secret.** A password field ends the step rather
+    than being filled, by field name and by the shape of the text, and the
+    ledger records the refusal as the system working.
+  - **What was permitted and what happened are two facts.** A landing is
+    reported by the only end that can see a cursor and lands in its own
+    table; a step nobody reported on reads as unlanded rather than as a
+    quiet yes, and a second report cannot rewrite the first.
+  - **A body is not a screen.** The `body` surface can watch and describe
+    and is refused outright for acting, naming the four things a screen
+    never needed — where it may be, a ceiling on force and speed, a stop
+    within reach of the person beside it, and a landing reported by a
+    sensor rather than by the thing asked to move. `jim/robotics.py` rates
+    some bodies as able to deliver chest compressions; none of those
+    commands is a hand verb, because that rating is reached through the
+    escalation ladder where a person on scene confirms it.
+  - Screen 113 on the front page, a door in the assistant's index, and a
+    tutorial lesson whose whole content is what it will not do.
+
+### Changed
+
+- **The trio is back on one number.** The README of each of the three
+  products promises that one version names one tested combination of all
+  three, and three hands rounds cut in QRME alone drifted that apart —
+  QRME at 2.6.0, this product and PDI at 2.3.1. This cut takes all three
+  to 2.7.0 rather than each to its own next number, because a promise the
+  numbers do not keep is worse than a gap in the sequence.
+
 ## [2.3.1] - 2026-08-28
 
 - Tandem release with QRME 2.3.1 (the head the forge builds is actually
@@ -11479,7 +11530,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.0...HEAD
+[2.7.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.1...app-v2.7.0
 [2.3.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.0...app-v2.3.1
 [2.3.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.2.0...app-v2.3.0
 [2.2.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.1.0...app-v2.2.0

@@ -463,6 +463,24 @@ LESSONS: tuple[dict, ...] = (
               "transcripts never cross at any setting.",
          screens=(101,),
          try_it="Link the profile, tick nothing, and read the empty brief."),
+    dict(key="hands", chapter="Beyond the app", title="Giving it hands",
+         what="It could already see, hear and speak. This is where you let "
+              "it work a screen on a machine you own — and the whole lesson "
+              "is what it will not do. A grant names the apps it covers and "
+              "refuses everywhere else; it looks before every press and "
+              "tells you what it saw; it will not type into a password "
+              "field, so a secret ends the step rather than being filled "
+              "in; and the grant runs out on its own, on both a clock and a "
+              "step count, with one press that ends it sooner. Nothing "
+              "moves without a small program you run yourself on that "
+              "machine, and it stops if you shove the pointer into a "
+              "corner. A body that is not a screen is refused outright — a "
+              "robot has no cap on force and no stop within arm's reach, "
+              "and until those are decided it can watch through one and "
+              "tell you what it sees, nothing more.",
+         screens=(113,),
+         try_it="Grant it two minutes on one app, watch it read the screen, "
+                "then take it back."),
     dict(key="aims", chapter="Day to day", title="What you're working on",
          what="Goals, habits and a monthly budget. None of it is a list for "
               "its own sake: a goal is read by the coach and by the daily "

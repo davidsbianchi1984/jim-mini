@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v2.3.1** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v2.7.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -340,6 +340,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **2.7.0** | The Guardian gets hands: a written grant to work a screen on a machine you own — named apps, named moves, capped in minutes and steps, taken back in one press. It looks before every press through the eyes this product already had, refuses to type a secret, records what actually landed separately from what was permitted, and refuses a body outright until four things a screen never needed are decided. The whole trio returns to one version number. |
 | **2.3.1** | Tandem release with QRME 2.3.1 (the head the forge builds is actually drawn); version alignment across the trio, no functional change in this repository. |
 | **2.3.0** | Tandem release with QRME 2.3.0 (the forge: a photograph becomes a 3-D face on the deployment's own hardware); version alignment across the trio, no functional change in this repository. |
 | **2.2.0** | Tandem release with QRME 2.2.0 (Raise: the three time controls) and PDI 2.2.0; version alignment across the trio, no functional change in this repository |

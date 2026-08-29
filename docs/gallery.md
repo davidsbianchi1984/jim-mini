@@ -196,6 +196,9 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="screens/111-widgets.svg" width="160" alt="111 Widgets"><br><sub>111 · Widgets</sub></td>
 <td align="center" width="25%"><img src="screens/112-the-watch-on-the-wrist.svg" width="160" alt="112 The Watch on the Wrist"><br><sub>112 · The Watch on the Wrist</sub></td>
 </tr>
+<tr>
+<td align="center" width="25%"><img src="screens/113-hands.svg" width="160" alt="113 Hands"><br><sub>113 · Hands</sub></td>
+</tr>
 </table>
 
 The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 72 Pick a Plan → 73 Payment → 46 All Set**, landing on **78 You're on Free** — or **74 You're on Basic** if the plan step was paid — then hands off to the daily app and, at the other end, **41 End Session**.

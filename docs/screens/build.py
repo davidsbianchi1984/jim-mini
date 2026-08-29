@@ -1965,6 +1965,22 @@ SCREENS = [
         dict(icon="heart", color="cyan", k="The same doors as the phone",
              s="a check-in here is the check-in tab's own POST"),
     ], button=("Open the watch", "brand")),
+    # 113 — the Hands (app/src/screens/Hands.tsx). The four cards are the
+    # four bounds, because the person reading this drawing is the one being
+    # asked to grant, and a picture of a feature is no use to them. What it
+    # will not do is the product.
+    dict(num=113, title="Hands",
+         sub="permission to work a screen, taken back in one press",
+         accent="brand", cards=[
+        dict(icon="eye", color="cyan", k="It sees before it presses",
+             s="every step reads the screen first and says what it saw"),
+        dict(icon="shield", color="brand", k="Named places only",
+             s="a grant lists the apps it covers; everywhere else is refused"),
+        dict(icon="warn", color="amber", k="It will not type a secret",
+             s="a password field ends the step instead of filling it"),
+        dict(icon="bolt", color="violet", k="Minutes and steps, both capped",
+             s="the grant expires on its own and one press ends it sooner"),
+    ], button=("Give it hands", "brand")),
 ]
 
 
