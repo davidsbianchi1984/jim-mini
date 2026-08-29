@@ -161,6 +161,16 @@ def main(shots: list[tuple[str, str, str]]) -> None:
                     button.click()
                     page.wait_for_timeout(400)
                     break
+            # The status bubble floats over the bottom-left of every
+            # screen, and at phone width it sits on top of the content the
+            # gallery is about. It carries its own minimise control, which
+            # is what a person does with it, so this presses that rather
+            # than hiding the element: what is photographed stays a state
+            # the product can actually be in.
+            minimise = page.query_selector(".wl-min")
+            if minimise:
+                minimise.evaluate("el => el.click()")
+                page.wait_for_timeout(200)
             for number, tab, stem in shots:
                 if not open_tab(page, tab):
                     print(f"  ! {tab}: never reached — nothing written")
