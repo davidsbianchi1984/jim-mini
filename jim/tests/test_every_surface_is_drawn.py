@@ -134,7 +134,8 @@ def test_every_declared_screen_exists():
     """A mapping that points at nothing is worse than no mapping, because it
     reads as a promise that the surface was drawn."""
     on_disk = {int(m.group(1))
-               for p in (REPO / "docs" / "screens").glob("*.svg")
+               for p in (REPO / "docs" / "screens").iterdir()
+               if p.suffix in (".svg", ".png")
                if (m := re.match(r"(\d+)-", p.name))}
     broken = {}
     for name, status in _manifest().items():

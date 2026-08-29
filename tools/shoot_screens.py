@@ -131,6 +131,79 @@ def open_tab(page, tab: str) -> bool:
     return bool(active and active.get_attribute("data-tab") == tab)
 
 
+
+def census() -> dict[str, int]:
+    """Which screen number each console surface is, per `ui_screens.txt`.
+
+    The captures are filed under the census's numbers so that a photograph
+    replaces the drawing that stood for the same surface, rather than
+    landing beside it under a number somebody invented.
+
+    The sibling's version of this harness described that intent in a
+    comment and then numbered its output 1, 2, 3 in the order the tabs
+    happened to be listed — so `home`, which its census calls screen 5, was
+    written as `1-home.png`, claiming to be the Welcome screen.
+
+        asked     photograph every surface
+        mattered  file each photograph under the surface it is of
+
+    A comment that says what the author meant while the code does something
+    else is worse than no comment, because the next reader trusts it. So
+    the census is read here rather than described.
+    """
+    rows: dict[str, int] = {}
+    path = REPO / "jim" / "tests" / "ui_screens.txt"
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        parts = line.split()
+        if len(parts) >= 2 and parts[1].split(",")[0].isdigit():
+            rows[parts[0]] = int(parts[1].split(",")[0])
+    return rows
+
+
+def components() -> dict[str, str]:
+    """The component each tab renders, read off `App.tsx` rather than
+    written down here — a second list would drift from the first."""
+    import re
+    source = (REPO / "app" / "src" / "App.tsx").read_text(encoding="utf-8")
+    return {tab: name for tab, name in
+            re.findall(r'tab === "([a-z]+)" && <([A-Z][A-Za-z]*)', source)}
+
+
+#: Where a surface has several drawings, which one the photograph stands
+#: in for. The census lists *every* drawing of a surface, so its first
+#: number is not always the one the tab actually shows — `Coach` is
+#: `14,24,82`, and 14 is the CPR pacer, which is a face on the watch and
+#: not the coach screen. Filing the photograph of the coach under the CPR
+#: drawing would be a wrong claim made silently, so the two cases where
+#: the order does not answer the question are answered here, by name.
+#:
+#: Everything else takes the first number, which is right for it.
+STANDS_IN_FOR = {
+    "Coach": 24,      # Life Coach, not 14 (CPR) or 82 (Coach, Out Loud)
+    "Baseline": 81,   # Your Baseline — the tab; 38 is the learning story
+}
+
+
+def numbered(tabs: list[str]) -> list[tuple[str, str, str]]:
+    """(census number, tab, stem) for every tab the census knows.
+
+    A tab whose component the census does not carry is skipped loudly
+    rather than given a number nobody agreed on.
+    """
+    seen, by_tab = census(), components()
+    out = []
+    for tab in tabs:
+        component = by_tab.get(tab)
+        number = STANDS_IN_FOR.get(component or "") or seen.get(component or "")
+        if number is None:
+            print(f"  ? {tab} ({component or 'no component'}): not in the "
+                  "census — no number to file it under")
+            continue
+        out.append((f"{number:03d}", tab, tab))
+    return out
+
+
 def main(shots: list[tuple[str, str, str]]) -> None:
     """``shots`` is (screen number, tab id, filename stem)."""
     from playwright.sync_api import sync_playwright
@@ -157,7 +230,13 @@ def main(shots: list[tuple[str, str, str]]) -> None:
             for label in ("That's fine", "No thanks", "Yes, send them"):
                 button = page.query_selector(f"text={label}")
                 if button:
-                    page.screenshot(path=str(OUT / "00-first-question.png"))
+                    # The census already knows this one: screen 94,
+                    # "Before Anything Is Sent". It is a real screen a
+                    # real person meets before any byte leaves, so it
+                    # is photographed on its own and then answered,
+                    # rather than hidden to get at the ones behind it.
+                    page.screenshot(
+                        path=str(OUT / "094-before-anything-is-sent.png"))
                     button.click()
                     page.wait_for_timeout(400)
                     break
@@ -200,4 +279,4 @@ TABS = [
 
 
 if __name__ == "__main__":
-    main([(f"{200 + i}", tab, tab) for i, tab in enumerate(TABS)])
+    main(numbered(TABS))

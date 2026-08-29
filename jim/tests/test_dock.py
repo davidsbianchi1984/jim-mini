@@ -43,7 +43,8 @@ def test_every_face_has_a_route_to_a_screen_that_exists(client):
     root = os.path.join(os.path.dirname(os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))), "docs", "screens")
     drawn = {int(f.split("-", 1)[0]) for f in os.listdir(root)
-             if f.endswith(".svg") and f.split("-", 1)[0].isdigit()}
+             if f.endswith((".svg", ".png"))
+             and f.split("-", 1)[0].isdigit()}
     for name in dock.FACES:
         assert dock.route(name)["screen"] in drawn, name
 

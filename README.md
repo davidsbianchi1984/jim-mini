@@ -110,7 +110,7 @@ faces have their own gallery below.
 <table>
   <tr>
     <td align="center" width="25%"><a href="docs/screens/01-welcome.svg"><img src="docs/screens/01-welcome.svg" width="165" alt="Welcome"></a><br><sub><b>01</b> · Welcome<br>the front door answers, and the mic listens there</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/02-home.svg"><img src="docs/screens/02-home.svg" width="165" alt="Home"></a><br><sub><b>02</b> · Home<br>the guardian's day at a glance</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/002-home.png"><img src="docs/screens/002-home.png" width="165" alt="Home"></a><br><sub><b>02</b> · Home<br>the guardian's day at a glance</sub></td>
     <td align="center" width="25%"><a href="docs/screens/40-sign-in.svg"><img src="docs/screens/40-sign-in.svg" width="165" alt="Sign in"></a><br><sub><b>40</b> · Sign in<br>your account, your baseline, your say</sub></td>
     <td align="center" width="25%"><a href="docs/screens/05-daily-briefing.svg"><img src="docs/screens/05-daily-briefing.svg" width="165" alt="Daily briefing"></a><br><sub><b>05</b> · Daily briefing<br>the morning letter, in your own words</sub></td>
   </tr>
@@ -121,7 +121,7 @@ faces have their own gallery below.
 <table>
   <tr>
     <td align="center" width="25%"><a href="docs/screens/03-chat.svg"><img src="docs/screens/03-chat.svg" width="165" alt="Chat"></a><br><sub><b>03</b> · Chat<br>type or talk; answers stream and speak piece by piece</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/110-talk.svg"><img src="docs/screens/110-talk.svg" width="165" alt="Talk"></a><br><sub><b>110</b> · Talk<br>the standing conversation that lasts until you leave it</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/110-engaged.png"><img src="docs/screens/110-engaged.png" width="165" alt="Talk"></a><br><sub><b>110</b> · Talk<br>the standing conversation that lasts until you leave it</sub></td>
     <td align="center" width="25%"><a href="docs/screens/04-voice.svg"><img src="docs/screens/04-voice.svg" width="165" alt="Voice"></a><br><sub><b>04</b> · Voice<br>hands-free, interruptible, silence is not a turn</sub></td>
     <td align="center" width="25%"><a href="docs/screens/82-coach-out-loud.svg"><img src="docs/screens/82-coach-out-loud.svg" width="165" alt="Coach out loud"></a><br><sub><b>82</b> · Coach out loud<br>the coach speaks, and follows the earbud</sub></td>
   </tr>
@@ -131,7 +131,7 @@ faces have their own gallery below.
 
 <table>
   <tr>
-    <td align="center" width="25%"><a href="docs/screens/13-live-monitoring.svg"><img src="docs/screens/13-live-monitoring.svg" width="165" alt="Live monitoring"></a><br><sub><b>13</b> · Live monitoring<br>what the monitors sense, read into words</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/013-monitor.png"><img src="docs/screens/013-monitor.png" width="165" alt="Live monitoring"></a><br><sub><b>13</b> · Live monitoring<br>what the monitors sense, read into words</sub></td>
     <td align="center" width="25%"><a href="docs/screens/17-foresight.svg"><img src="docs/screens/17-foresight.svg" width="165" alt="Foresight"></a><br><sub><b>17</b> · Foresight<br>early warning before the emergency</sub></td>
     <td align="center" width="25%"><a href="docs/screens/54-escalation-ladder.svg"><img src="docs/screens/54-escalation-ladder.svg" width="165" alt="Escalation ladder"></a><br><sub><b>54</b> · Escalation ladder<br>each rung named — and it ends at a person</sub></td>
     <td align="center" width="25%"><a href="docs/screens/11-emergency.svg"><img src="docs/screens/11-emergency.svg" width="165" alt="Emergency"></a><br><sub><b>11</b> · Emergency<br>the device dials; JIM never claims a call it did not make</sub></td>
@@ -144,8 +144,8 @@ faces have their own gallery below.
   <tr>
     <td align="center" width="25%"><a href="docs/screens/06-health.svg"><img src="docs/screens/06-health.svg" width="165" alt="Health"></a><br><sub><b>06</b> · Health<br>pulse, sleep, movement — the body's own ledger</sub></td>
     <td align="center" width="25%"><a href="docs/screens/38-baseline.svg"><img src="docs/screens/38-baseline.svg" width="165" alt="Baseline"></a><br><sub><b>38</b> · Baseline<br>the home of every limit: vigil, sensitivity, money</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/85-medications.svg"><img src="docs/screens/85-medications.svg" width="165" alt="Medications"></a><br><sub><b>85</b> · Medications<br>what is taken, when, and what noticed it</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/22-check-in.svg"><img src="docs/screens/22-check-in.svg" width="165" alt="Check-in"></a><br><sub><b>22</b> · Check-in<br>mood, energy, stress — thirty seconds, kept</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/085-meds.png"><img src="docs/screens/085-meds.png" width="165" alt="Medications"></a><br><sub><b>85</b> · Medications<br>what is taken, when, and what noticed it</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/022-checkin.png"><img src="docs/screens/022-checkin.png" width="165" alt="Check-in"></a><br><sub><b>22</b> · Check-in<br>mood, energy, stress — thirty seconds, kept</sub></td>
   </tr>
 </table>
 
@@ -153,10 +153,10 @@ faces have their own gallery below.
 
 <table>
   <tr>
-    <td align="center" width="25%"><a href="docs/screens/24-life-coach.svg"><img src="docs/screens/24-life-coach.svg" width="165" alt="Life coach"></a><br><sub><b>24</b> · Life coach<br>career, relationships, mental health — grounded in the vault</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/024-coach.png"><img src="docs/screens/024-coach.png" width="165" alt="Life coach"></a><br><sub><b>24</b> · Life coach<br>career, relationships, mental health — grounded in the vault</sub></td>
     <td align="center" width="25%"><a href="docs/screens/09-goals.svg"><img src="docs/screens/09-goals.svg" width="165" alt="Goals"></a><br><sub><b>09</b> · Goals<br>aims with dates, and the coach holds you to them</sub></td>
     <td align="center" width="25%"><a href="docs/screens/21-habits.svg"><img src="docs/screens/21-habits.svg" width="165" alt="Habits"></a><br><sub><b>21</b> · Habits<br>ticked days, unticked honestly</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/23-journal.svg"><img src="docs/screens/23-journal.svg" width="165" alt="Journal"></a><br><sub><b>23</b> · Journal<br>written to yourself, read by nobody else</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/023-journal.png"><img src="docs/screens/023-journal.png" width="165" alt="Journal"></a><br><sub><b>23</b> · Journal<br>written to yourself, read by nobody else</sub></td>
   </tr>
 </table>
 
@@ -176,9 +176,9 @@ faces have their own gallery below.
 <table>
   <tr>
     <td align="center" width="25%"><a href="docs/screens/29-privacy-data.svg"><img src="docs/screens/29-privacy-data.svg" width="165" alt="Privacy & data"></a><br><sub><b>29</b> · Privacy & data<br>what is kept, where, and the way out</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/97-whats-held-about-you.svg"><img src="docs/screens/97-whats-held-about-you.svg" width="165" alt="What's held about you"></a><br><sub><b>97</b> · What's held about you<br>the memory shelf — shown, curatable, forgettable</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/097-held.png"><img src="docs/screens/097-held.png" width="165" alt="What's held about you"></a><br><sub><b>97</b> · What's held about you<br>the memory shelf — shown, curatable, forgettable</sub></td>
     <td align="center" width="25%"><a href="docs/screens/61-what-would-be-shared.svg"><img src="docs/screens/61-what-would-be-shared.svg" width="165" alt="What would be shared"></a><br><sub><b>61</b> · What would be shared<br>read the exact words before anybody else does</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/94-before-anything-is-sent.svg"><img src="docs/screens/94-before-anything-is-sent.svg" width="165" alt="Before anything is sent"></a><br><sub><b>94</b> · Before anything is sent<br>the first-run notice, ahead of the first byte</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/094-before-anything-is-sent.png"><img src="docs/screens/094-before-anything-is-sent.png" width="165" alt="Before anything is sent"></a><br><sub><b>94</b> · Before anything is sent<br>the first-run notice, ahead of the first byte</sub></td>
   </tr>
 </table>
 
@@ -186,7 +186,7 @@ faces have their own gallery below.
 
 <table>
   <tr>
-    <td align="center" width="25%"><a href="docs/screens/86-care-team.svg"><img src="docs/screens/86-care-team.svg" width="165" alt="Care team"></a><br><sub><b>86</b> · Care team<br>the humans on the ladder, by name</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/086-careteam.png"><img src="docs/screens/086-careteam.png" width="165" alt="Care team"></a><br><sub><b>86</b> · Care team<br>the humans on the ladder, by name</sub></td>
     <td align="center" width="25%"><a href="docs/screens/58-family-oversight.svg"><img src="docs/screens/58-family-oversight.svg" width="165" alt="Family oversight"></a><br><sub><b>58</b> · Family oversight<br>what family sees, decided with you</sub></td>
     <td align="center" width="25%"><a href="docs/screens/63-find-a-clinician.svg"><img src="docs/screens/63-find-a-clinician.svg" width="165" alt="Find a clinician"></a><br><sub><b>63</b> · Find a clinician<br>a real appointment, not a substitute for one</sub></td>
     <td align="center" width="25%"><a href="docs/screens/39-tandem-specialist.svg"><img src="docs/screens/39-tandem-specialist.svg" width="165" alt="Tandem specialist"></a><br><sub><b>39</b> · Tandem specialist<br>QRME's specialists, one door away</sub></td>

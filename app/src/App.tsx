@@ -203,7 +203,8 @@ export function App() {
         </div>
         <nav>
           {NAV.map((n) => (
-            <button key={n.id} className={"nav-item" + (tab === n.id ? " active" : "")} onClick={() => {
+            <button key={n.id} data-tab={n.id}
+                    className={"nav-item" + (tab === n.id ? " active" : "")} onClick={() => {
               // The watch is a place rather than a pane — it takes the
               // whole viewport and the URL, so the README's face links
               // and the menu entry arrive through the same door.
