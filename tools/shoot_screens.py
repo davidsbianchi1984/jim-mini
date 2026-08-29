@@ -223,33 +223,41 @@ def main(shots: list[tuple[str, str, str]]) -> None:
             # The problem-reporting consent card opens over everything on a
             # browser that has never answered it — which is every fresh
             # browser, and so every capture taken after it. It is a real
-            # screen a real person meets, so it is photographed once on its
-            # own and then answered, rather than hidden.
-            page.goto(CONSOLE, wait_until="networkidle")
-            page.wait_for_timeout(1500)
+            # screen a real person meets before any byte leaves, so it is
+            # photographed on its own and then answered, rather than
+            # hidden to get at the ones behind it.
+            #
+            # Its number comes from the census like every other screen's.
+            # It was hard-coded once, and when this harness was carried to
+            # a third product the number came with it — filing that
+            # product's consent card under a number belonging to another
+            # one. `ProblemNotice` is the component that draws it in all
+            # three; the census says which screen that is in each.
+            notice = census().get("ProblemNotice")
             for label in ("That's fine", "No thanks", "Yes, send them"):
                 button = page.query_selector(f"text={label}")
                 if button:
-                    # The census already knows this one: screen 94,
-                    # "Before Anything Is Sent". It is a real screen a
-                    # real person meets before any byte leaves, so it
-                    # is photographed on its own and then answered,
-                    # rather than hidden to get at the ones behind it.
-                    page.screenshot(
-                        path=str(OUT / "094-before-anything-is-sent.png"))
+                    if notice is not None:
+                        page.screenshot(path=str(
+                            OUT / f"{notice:03d}-before-anything-is-sent.png"))
                     button.click()
                     page.wait_for_timeout(400)
                     break
-            # The status bubble floats over the bottom-left of every
-            # screen, and at phone width it sits on top of the content the
-            # gallery is about. It carries its own minimise control, which
-            # is what a person does with it, so this presses that rather
-            # than hiding the element: what is photographed stays a state
-            # the product can actually be in.
-            minimise = page.query_selector(".wl-min")
-            if minimise:
-                minimise.evaluate("el => el.click()")
-                page.wait_for_timeout(200)
+            # Each console spells this control differently — `.wl-min` in
+            # the two that carry a lights widget, `.vl-min` in the vault —
+            # so the sweep asks for both rather than one, and a console
+            # that has neither simply finds nothing.
+            #
+            # It is pressed, not hidden: the widget carries its own
+            # minimise control, which is what a person does with it, and
+            # the state is remembered per browser so one press carries
+            # across every reload. What is photographed stays a state the
+            # product can actually be in.
+            for control in (".wl-min", ".vl-min"):
+                minimise = page.query_selector(control)
+                if minimise:
+                    minimise.evaluate("el => el.click()")
+                    page.wait_for_timeout(200)
             for number, tab, stem in shots:
                 if not open_tab(page, tab):
                     print(f"  ! {tab}: never reached — nothing written")
