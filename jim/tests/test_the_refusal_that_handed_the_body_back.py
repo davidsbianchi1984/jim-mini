@@ -156,7 +156,7 @@ def test_the_sweep_reaches_the_thing_it_is_sweeping(client):
         f"only {len(found)} body-taking routes found — `all_routes` or the "
         "method filter has stopped matching")
     _, reached = _sweep(client)
-    assert reached > 50, (
+    assert reached >= ratchets.floor("routes.body_validated"), (
         f"only {reached} of {len(found)} routes reached validation. The sweep "
         "below would be reporting a clean product it never asked.")
 

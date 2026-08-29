@@ -105,7 +105,14 @@ def test_the_pages_ledger_shows_the_trips_page(client):
     client.post(f"/users/{user}/alarms/{crashwatch.ALARM_ID}/escalate")
     pages = client.get(f"/users/{user}/pages").json()
     ours = [p for p in pages if p.get("responder") == "Rosa"]
-    assert len(ours) >= 2          # the trip's page, and the escalation's
+    # Two, exactly: the trip's page and the escalation's. This was written
+    # `>= 2`, which the floor sweep read as a floor and which is not one —
+    # there is no growing surface here to raise it toward, only a scenario
+    # that pages Rosa twice. A floor would sit quiet if a third page went
+    # out, and a third page to the same responder from these two steps is
+    # something a person should be told about rather than something to
+    # allow.
+    assert len(ours) == 2
 
 
 def test_no_trip_means_no_crash_alarm_and_a_404_on_its_doors(client):

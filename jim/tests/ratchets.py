@@ -123,14 +123,60 @@ def _markup_strings() -> int:
     return scanned()
 
 
+# Both of these read `db.connect()`, which answers about whichever database
+# the process happens to be pointed at. Inside the suite that is one
+# fixture's temporary file, chosen by whatever ran last; alone it is the
+# repository's own `jim.db`. The number moved with the run, and a floor
+# audited against a moving number is audited against nothing — which is how
+# both of these came to sit under half of the schema without the sweep or
+# the audit being able to say so. They get a database of their own, built
+# from the schema and nothing else, so the answer is a fact about the schema
+# and the planter rather than about test order.
+
+
+def _in_a_fresh_jim(work):
+    """Run `work()` against an empty JIM database, then put the room back.
+
+    The environment is borrowed and restored: this runs inside a suite whose
+    own fixtures point `JIM_DB` at their own temporary files, and a measure
+    that left the pointer moved would be a guard breaking the run it audits.
+    """
+    import os
+    import pathlib
+    import tempfile
+    from jim import db as jim_db
+
+    kept = {name: os.environ.get(name)
+            for name in ("JIM_DB", "JIM_LLM", "JIM_QRME_URL")}
+    with tempfile.TemporaryDirectory() as tmp:
+        os.environ["JIM_DB"] = str(pathlib.Path(tmp) / "jim.db")
+        os.environ["JIM_LLM"] = "stub"
+        os.environ.pop("JIM_QRME_URL", None)
+        jim_db.reset()
+        try:
+            return work()
+        finally:
+            jim_db.reset()
+            for name, value in kept.items():
+                if value is None:
+                    os.environ.pop(name, None)
+                else:
+                    os.environ[name] = value
+            jim_db.reset()
+
+
 def _erase_planted() -> int:
-    from .test_an_erase_is_measured_against_the_schema import plantable
-    return plantable()
+    def go():
+        from .test_an_erase_is_measured_against_the_schema import plantable
+        return plantable()
+    return _in_a_fresh_jim(go)
 
 
 def _erase_scoped() -> int:
-    from .test_an_erase_is_measured_against_the_schema import scoped_tables
-    return len(scoped_tables())
+    def go():
+        from .test_an_erase_is_measured_against_the_schema import scoped_tables
+        return len(scoped_tables())
+    return _in_a_fresh_jim(go)
 
 
 def _route_shapes() -> int:
@@ -259,6 +305,59 @@ def _console_gets() -> int:
 def _client_bindings() -> int:
     from .test_the_shape_the_client_expects import _bindings
     return len(_bindings())
+
+
+# -- the drives, which have to run to be counted -----------------------------
+#
+# Five floors stood outside this file until 2.7.1, and the reason was the
+# same for all five: each stands under *what a live drive reached*, and every
+# other measure here is a static scan. A scan of the population — the Swift
+# client's 170 bindings, the console's 152 read calls — is the wrong
+# denominator, because most of a client's templates carry an id this fixture
+# cannot substitute and are unreachable by construction. Measuring against
+# the population would demand a floor above what the drive can ever reach,
+# which is the failure mode the header calls "lowered until it means
+# nothing", arrived at from the other side.
+#
+#     asked     how much of this client exists
+#     mattered  how much of it did the probe actually reach
+#
+# So these measures drive. It costs about two seconds across all five, which
+# is what the guards they stand under already spend, and it buys the only
+# denominator that answers the question.
+
+
+def _driving(work) -> Callable[[], int]:
+    """Run `work(client, uid, other)` against a throwaway JIM and count."""
+    def go() -> int:
+        from fastapi.testclient import TestClient
+
+        def driven() -> int:
+            from jim.api import create_app
+            from .test_the_shape_the_client_expects import _standing
+            with TestClient(create_app()) as client:
+                return work(client, *_standing(client))
+
+        return _in_a_fresh_jim(driven)
+    return go
+
+
+def _reached(module: str) -> Callable[[], int]:
+    """The bindings one client's drive actually got an answer out of."""
+    def work(client, uid, other) -> int:
+        from importlib import import_module
+        driven = import_module(f".{module}", __package__)._drive(
+            client, uid, other)
+        return sum(1 for row in driven if row[-1] is not None)
+    return _driving(work)
+
+
+def _bodies_validated() -> int:
+    """The body-taking routes the canary sweep got as far as validation on."""
+    def work(client, _uid, _other) -> int:
+        from .test_the_refusal_that_handed_the_body_back import _sweep
+        return _sweep(client)[1]
+    return _driving(work)()
 
 
 def _wire_declared() -> int:
@@ -897,6 +996,20 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the console's read calls"),
     Ratchet("console.bindings", 53, _client_bindings,
             "the console screens' bindings to route shapes"),
+    Ratchet("swift.driven", 59,
+            _reached("test_the_shape_the_swift_client_expects"),
+            "the Swift bindings the shape drive gets an answer out of"),
+    Ratchet("windows.driven", 25,
+            _reached("test_the_shape_the_client_expects"),
+            "the Windows records the shape drive gets an answer out of"),
+    Ratchet("console.driven", 54,
+            _reached("test_the_shape_the_console_expects"),
+            "the console read calls the shape drive gets an answer out of"),
+    Ratchet("android.driven", 63,
+            _reached("test_the_keys_the_android_client_reads"),
+            "the Android reads the key drive gets an answer out of"),
+    Ratchet("routes.body_validated", 76, _bodies_validated,
+            "the body-taking routes the canary sweep reaches validation on"),
     Ratchet("wire.declared", 550, _wire_declared,
             "every name declared on the wire, across all four clients"),
     Ratchet("shells.swift_files", 45, _shell_files("SWIFT"),
@@ -960,9 +1073,9 @@ RATCHETS: tuple[Ratchet, ...] = (
             "TypeScript sources the console sink sweep reads"),
     Ratchet("console.calls_typed", 195, _calls_typed,
             "console calls that declare the shape they expect back"),
-    Ratchet("erase.tables_planted", 40, _erase_planted,
+    Ratchet("erase.tables_planted", 69, _erase_planted,
             "tables this suite can put a probe row into"),
-    Ratchet("erase.scoped_tables", 52, _erase_scoped,
+    Ratchet("erase.scoped_tables", 78, _erase_scoped,
             "tables the schema scopes to a single user"),
     Ratchet("route.declared_shapes", 210, _route_shapes,
             "routes whose answer is decisively a list or an object"),

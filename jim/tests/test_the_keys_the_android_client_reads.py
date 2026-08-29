@@ -380,7 +380,7 @@ def test_the_scan_reaches_a_real_share_of_the_routes(client):
     uid, other = _standing(client)
     driven = [f for _, f in _drive(client, uid, other)
               if f is not None]
-    assert len(driven) >= 30, (
+    assert len(driven) >= ratchets.floor("android.driven"), (
         f"only {len(driven)} route(s) were reachable — the fixture or the "
         f"extractor has stopped working")
 
