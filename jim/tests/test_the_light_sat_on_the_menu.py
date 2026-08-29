@@ -117,14 +117,42 @@ def _rule(block: str, selector: str) -> str | None:
     return " ".join(found) if found else None
 
 
+def _declared() -> dict[str, str]:
+    """What `:root` declares, so a value written as a variable can be read.
+
+    The clearance is no longer a literal: the bar measures itself and
+    publishes `--tabbar-h`, and `:root` declares the height a browser
+    without a ResizeObserver gets. That declaration is the floor this guard
+    can check — the measured value is only ever the true height, and the
+    true height is what the rule is trying to clear.
+    """
+    root = re.search(r":root\s*\{([^}]*)\}", _stylesheet())
+    body = root.group(1) if root else ""
+    return dict(re.findall(r"(--[a-z0-9-]+)\s*:\s*([^;]+);", body))
+
+
+def _resolve(value: str) -> str:
+    """`var(--x)` replaced by what `:root` says, or by its own fallback."""
+    declared = _declared()
+    return re.sub(
+        r"var\((--[a-z0-9-]+)(?:,\s*([^()]*))?\)",
+        lambda m: declared.get(m.group(1), m.group(2) or ""), value)
+
+
 def _px(declarations: str, prop: str) -> float | None:
     m = re.search(rf"\b{prop}:\s*([^;]+);", declarations)
     if not m:
         return None
-    value = m.group(1)
-    # `calc(76px + env(safe-area-inset-bottom))` — the safe-area term is a
-    # phone's home indicator and only ever adds, so the literal px is the
-    # floor of what the rule reserves.
+    value = _resolve(m.group(1))
+    # `calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom))` — every
+    # term adds, and the safe-area term is a phone's home indicator, so the
+    # px terms summed are the floor of what the rule reserves. Reading only
+    # the first px here read the 12px gap as the whole clearance and called
+    # a rule that clears the bar by 88px a lid on the menu.
+    if " - " not in value and "min(" not in value and "max(" not in value:
+        terms = re.findall(r"(\d+(?:\.\d+)?)px", value)
+        if terms:
+            return sum(float(t) for t in terms)
     px = re.search(r"(\d+(?:\.\d+)?)px", value)
     return float(px.group(1)) if px else None
 
