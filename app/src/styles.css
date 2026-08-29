@@ -474,12 +474,31 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
      existed, and the ghost-variable guard below this round caught it. */
   color: var(--txt); font-size: 12px; text-align: left;
   text-decoration: underline dotted; }
-.wl-dot { position: fixed; left: 22px; bottom: 22px; width: 46px; height: 46px;
-  border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0,0,0,.45); z-index: 40; }
+/* Two elements, and the reason is a phone.
+   
+   The dot is a button, and the phone block sets `button { min-height: 44px }`
+   so every control is a real tap target. `min-height` beats `height`, so the
+   22px dot this widget shrinks to on a phone rendered 22 wide and 44 tall —
+   a green ellipse. The declared width and height both said 22 and the guard
+   next door read them and passed; nothing here could see the rectangle.
+
+       asked     how big is the dot declared
+       mattered  how big is the dot drawn
+
+   So the button is the tap target and carries no paint, and `.wl-dot-face`
+   is the circle. The target keeps its 44px on a phone and the face shrinks
+   inside it, which is what the field report asked for without giving up the
+   thing the 44px is there for. */
+.wl-dot { position: fixed; left: 22px; bottom: 22px; z-index: 40;
+  width: 46px; height: 46px; padding: 0; border: 0; background: none;
+  display: grid; place-items: center; cursor: pointer; }
+.wl-dot-face { width: 46px; height: 46px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,.45); }
 /* The unreachable state: the same dot, unlit. Gray on purpose — the
    three live colors all mean "the backend answered". */
-.wl-dot-off { background: #2c3a52; border-color: rgba(255,255,255,0.35); }
+.wl-dot-off .wl-dot-face { background: #2c3a52;
+  border-color: rgba(255,255,255,0.35); }
 
 @media (max-width: 760px) {
   .watch-lights {
@@ -489,9 +508,6 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   .watch-lights .wl-row { width: 104px; }
   .watch-lights .wl-count { font-size: 13px; }
   .watch-lights .wl-label, .watch-lights .wl-name { font-size: 10px; }
-  .wl-dot {
-    left: 12px; bottom: calc(76px + env(safe-area-inset-bottom));
-  }
 }
 
 /* When the device asks for reduced motion, nothing here moves. The
@@ -892,6 +908,9 @@ body.theme-paper select { background: #fff; color: var(--txt); }
   .wl-dot {
     left: 12px;
     bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
+    width: 44px; height: 44px;
+  }
+  .wl-dot-face {
     width: 22px; height: 22px; opacity: 0.75;
     box-shadow: 0 2px 8px rgba(0,0,0,.35);
   }

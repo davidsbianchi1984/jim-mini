@@ -44,8 +44,21 @@ console marks `active` is the one it asked for. If it is not, nothing is
 written. A missing screen is a gap somebody notices; a wrong screen is a
 gap nobody notices.
 
-Run it with ``python tools/shoot_screens.py`` from the repository root,
-with ``app/dist`` built (``npm run build`` in ``app/``).
+Run it with ``python tools/shoot_screens.py`` from the repository root.
+It builds the console first, and that is not a convenience.
+
+The build requirement used to live in this sentence and nowhere else — the
+harness served whatever was already in ``app/dist`` and never looked at how
+old it was. So a gallery could be re-shot to show a stylesheet fix, and
+photograph a bundle from four days earlier, and every capture would look
+exactly as convincing as one that showed the fix. It happened: a round that
+replaced drawings with photographs *because a drawing is obviously a drawing
+and this looks like evidence* shot its evidence against a stale build.
+
+    asked     is the console built
+    mattered  is the console built from what is on disk now
+
+A prose requirement is a requirement somebody skips. This one is a step.
 """
 
 from __future__ import annotations
@@ -69,6 +82,24 @@ OUT = REPO / "docs" / "screens"
 #: Doubled so the capture is legible when GitHub scales it into a gallery.
 VIEWPORT = {"width": 430, "height": 932}
 SCALE = 2
+
+
+def build_console() -> None:
+    """`npm run build`, every run, before anything is photographed.
+
+    Not conditional on a timestamp comparison: a source file can be older
+    than the bundle and still not be in it — a dependency bump, an aborted
+    build, a file restored from git. The build is a few seconds and the
+    thing it protects is whether these pictures mean anything.
+    """
+    app = REPO / "app"
+    print("building the console…", flush=True)
+    done = subprocess.run(["npm", "run", "build"], cwd=app,
+                          capture_output=True, text=True)
+    if done.returncode != 0:
+        raise SystemExit(
+            "the console did not build, so there is nothing honest to "
+            f"photograph:\n{done.stdout[-2000:]}\n{done.stderr[-2000:]}")
 
 
 def start_backend() -> subprocess.Popen:
@@ -208,6 +239,7 @@ def main(shots: list[tuple[str, str, str]]) -> None:
     """``shots`` is (screen number, tab id, filename stem)."""
     from playwright.sync_api import sync_playwright
 
+    build_console()
     proc = start_backend()
     written = 0
     try:

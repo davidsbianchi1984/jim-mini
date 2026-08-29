@@ -118,7 +118,9 @@ export function GuardianLights() {
       <button className="wl-dot wl-dot-off"
               onClick={load}
               aria-label={tr("lights.unreachable", lang)}
-              title={tr("lights.unreachable", lang)} />
+              title={tr("lights.unreachable", lang)}>
+        <span className="wl-dot-face" />
+      </button>
     );
   }
   const tone = worst(glance);
@@ -131,10 +133,13 @@ export function GuardianLights() {
 
   if (min) {
     return (
-      <button className="wl-dot" style={{ background: COLORS[tone] }}
+      <button className="wl-dot"
               onClick={() => setMinimized(false)}
               aria-label={tr("lights.show", lang)}
-              title={tr("lights.title", lang)} />
+              title={tr("lights.title", lang)}>
+        <span className="wl-dot-face"
+              style={{ background: COLORS[tone] }} />
+      </button>
     );
   }
 

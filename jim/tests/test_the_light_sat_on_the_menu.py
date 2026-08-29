@@ -217,6 +217,11 @@ def test_nothing_fixed_to_the_bottom_covers_the_bar(selector):
 #: about the same widget.
 DOT_MAX_PX, DOT_MAX_OPACITY = 24.0, 0.9
 
+#: What a thumb has to be able to hit. The blanket
+#: `button { min-height: 44px }` in the phone block is where this
+#: number comes from, and the dot is a button like any other.
+TAP_MIN_PX = 44.0
+
 
 def test_the_minimized_light_is_a_dot_and_not_a_disc():
     """The second half of the same field report.
@@ -234,10 +239,35 @@ def test_the_minimized_light_is_a_dot_and_not_a_disc():
     answers by staying the same size in a different shape has not obeyed;
     it has only stopped explaining itself.
     """
-    rule = _rule(_mobile_block(), ".wl-dot")
-    assert rule, (
+    # The dot is a <button>, and the phone block sets
+    # `button { min-height: 44px }` so every control is a real tap target.
+    # `min-height` beats `height`, so a 22px square rendered 22 wide and 44
+    # tall — an ellipse. This guard read the declared width and height, saw
+    # 22 and 22, and passed on it for two releases.
+    #
+    #     asked     how big is the dot declared
+    #     mattered  how big is the dot drawn
+    #
+    # So there are two elements and two questions. The button is the tap
+    # target and may not shrink under 44; the face is the paint and may not
+    # grow past a dot. Neither number can be read off the other, which is
+    # the whole reason the first version of this could not see the defect.
+    target = _rule(_mobile_block(), ".wl-dot")
+    assert target, (
         ".wl-dot has no rule at the mobile breakpoint, so it keeps its "
         "desktop size on a phone")
+    for prop in ("width", "height"):
+        size = _px(target, prop)
+        assert size is not None and size >= TAP_MIN_PX, (
+            f"the minimized light's tap target is {size}px {prop} on a "
+            f"phone, under the {TAP_MIN_PX}px every other control here "
+            "gets. The face inside it may be small; the thing a thumb has "
+            "to hit may not be")
+
+    rule = _rule(_mobile_block(), ".wl-dot-face")
+    assert rule, (
+        ".wl-dot-face has no rule at the mobile breakpoint, so the dot keeps "
+        "its desktop size on a phone")
     for prop in ("width", "height"):
         size = _px(rule, prop)
         assert size is not None and size <= DOT_MAX_PX, (
