@@ -171,6 +171,11 @@ SURFACES = ("computer", "phone", "here", "body")
 #: refuses `acting` on one and says all four out loud. Watching is
 #: allowed: seeing through a robot and saying what is there carries none
 #: of this.
+#:
+#: This matters more here than in the sibling product. A body in this one
+#: is in somebody's home, often near somebody who is already unwell, and
+#: the person who would be standing next to it is the person the whole
+#: product exists to look after.
 BODY_UNDECIDED = (
     "where the body may be, which is not a list of app names",
     "a ceiling on force and speed, which a step budget does not give",
