@@ -231,26 +231,6 @@ button.danger { background: rgba(255,77,94,0.14) !important; color: var(--red) !
   input, textarea, select { font-size: 16px; }
   button { min-height: 44px; }
 
-  /* The help fab lives above the tab bar, never on it — at 22px it sat on
-     top of the right-most nav items, which made them unpressable. */
-  .help-fab, .help-panel {
-    bottom: calc(76px + env(safe-area-inset-bottom));
-  }
-
-  /* The same rule, for the widget on the other corner. The fab was lifted
-     when it was reported; the lights were left at 22px, so a 176px face sat
-     over the left-hand tabs — the shape a PDI field report named as
-     "blocking the menus". On a phone they ride above the bar and shrink a
-     notch: still a watch face, just a smaller wrist. */
-  .watch-lights {
-    left: 12px; bottom: calc(76px + env(safe-area-inset-bottom));
-    width: 132px; height: 132px; padding: 12px; gap: 4px;
-  }
-  .wl-dot {
-    left: 12px; bottom: calc(76px + env(safe-area-inset-bottom));
-    width: 22px; height: 22px; opacity: 0.75;
-    box-shadow: 0 2px 8px rgba(0,0,0,.35);
-  }
 }
 
 /* Pick which model answers, and which voice speaks — tiles, not dropdowns. */
@@ -860,4 +840,56 @@ body.theme-paper select { background: #fff; color: var(--txt); }
   display: block; margin-top: 4px; padding: 6px 8px;
   border: 1px solid var(--line); border-radius: 6px;
   word-break: break-all; user-select: all;
+}
+
+
+/* ---------------------------------------------------------------------
+   The floats clear the tab bar — and this block is at the END of the file
+   on purpose.
+
+   There has been a rule lifting `.help-fab` above the phone's tab bar for
+   a long time, with a comment saying it was written because the button
+   "sat on top of the right-most nav items, which made them unpressable".
+   The rule was correct and it never once applied: it lived in the layout
+   media block near the top of this file, and the base `.help-fab { bottom:
+   22px }` is declared two hundred lines further down. Same specificity,
+   later wins. The button went back on the tab bar the moment it was
+   styled, and the comment said otherwise to everybody who read it.
+
+       asked     is there a rule that lifts it
+       mattered  is that the rule the browser uses
+
+   The second thing is the number. `76px` is a guess about how tall the bar
+   is, and the bar is as tall as its labels — "Live Monitoring" and "Your
+   Baseline" wrap to two lines and push it past 76. Every label here is
+   translated into ten languages and the longer ones wrap sooner. So the
+   bar measures itself and publishes `--tabbar-h` (see `App.tsx`); 76px
+   survives only as the fallback for a browser with no ResizeObserver,
+   which is the case the guess was written for.
+
+   The task window had no phone rule at all, kept its desktop `bottom:
+   84px`, and floated mid-screen over the Hands screen's move checkboxes.
+   Floating over everything is what that window is for; floating over a
+   form control is not.
+   --------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  .help-fab, .help-panel {
+    bottom: calc(var(--tabbar-h, 76px) + 12px + env(safe-area-inset-bottom));
+  }
+  .watch-lights {
+    left: 12px;
+    bottom: calc(var(--tabbar-h, 76px) + 12px + env(safe-area-inset-bottom));
+    width: 132px; height: 132px; padding: 12px; gap: 4px;
+  }
+  .wl-dot {
+    left: 12px;
+    bottom: calc(var(--tabbar-h, 76px) + 12px + env(safe-area-inset-bottom));
+    width: 22px; height: 22px; opacity: 0.75;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
+  .underway, .uw-dot {
+    right: 12px;
+    bottom: calc(var(--tabbar-h, 76px) + 12px + env(safe-area-inset-bottom));
+  }
+  .underway { width: min(232px, calc(100vw - 24px)); }
 }

@@ -220,6 +220,20 @@ def main(shots: list[tuple[str, str, str]]) -> None:
             page.goto(CONSOLE, wait_until="networkidle")
             page.evaluate("s => localStorage.setItem('jim.session', s)",
                           json.dumps(session))
+            # Reload, so the console has actually read that session.
+            #
+            # The sweeps below look for things only a signed-in console
+            # draws — the consent card, the lights widget. Setting
+            # localStorage does not re-render the page that is already on
+            # screen, so without this the browser is still showing the
+            # signed-out onboarding, both sweeps find nothing, and every
+            # capture afterwards carries an unanswered consent card and a
+            # widget nobody minimised.
+            #
+            #     asked     is the session set
+            #     mattered  is the console showing the session
+            page.goto(CONSOLE, wait_until="networkidle")
+            page.wait_for_timeout(1500)
             # The problem-reporting consent card opens over everything on a
             # browser that has never answered it — which is every fresh
             # browser, and so every capture taken after it. It is a real
@@ -243,17 +257,26 @@ def main(shots: list[tuple[str, str, str]]) -> None:
                     button.click()
                     page.wait_for_timeout(400)
                     break
-            # Each console spells this control differently — `.wl-min` in
-            # the two that carry a lights widget, `.vl-min` in the vault —
-            # so the sweep asks for both rather than one, and a console
-            # that has neither simply finds nothing.
+            # Each console spells this control differently — `.wl-min` on
+            # the lights widget, `.vl-min` in the vault, `.uw-min` on the
+            # task window — so the sweep asks for all of them and a console
+            # that has none simply finds nothing.
+            #
+            # The task window earns its place on this list the hard way. It
+            # is *meant* to float over everything running, and at the phone
+            # width these captures use it came to rest on the Hands
+            # screen's move checkboxes: the controls that card exists to
+            # offer. Clearing the tab bar fixed the half of that which was
+            # a bug; a fixed float covers page content at some scroll
+            # position no matter where it sits, and that half is the
+            # feature. So the gallery minimises it, the way a person does.
             #
             # It is pressed, not hidden: the widget carries its own
             # minimise control, which is what a person does with it, and
             # the state is remembered per browser so one press carries
             # across every reload. What is photographed stays a state the
             # product can actually be in.
-            for control in (".wl-min", ".vl-min"):
+            for control in (".wl-min", ".vl-min", ".uw-min"):
                 minimise = page.query_selector(control)
                 if minimise:
                     minimise.evaluate("el => el.click()")

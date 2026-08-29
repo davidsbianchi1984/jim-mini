@@ -123,6 +123,33 @@ export function App() {
   // thing that moved. `instant` because this is a new screen, not a journey
   // through the old one, and an animated fly-up reads as content moving.
   const content = useRef<HTMLElement>(null);
+  const bar = useRef<HTMLElement>(null);
+
+  // What the floating things have to clear.
+  //
+  // On a phone the sidebar becomes the bottom tab bar, and everything that
+  // floats — the help button, the Guardian lights, the task window — was
+  // told to sit 76px up from the bottom to stay off it. 76 is a guess about
+  // how tall that bar is, and the bar is as tall as its labels: "Live
+  // Monitoring" and "Your Baseline" wrap to two lines and push it past 76,
+  // so the help button landed on top of a tab. It is worse in the languages
+  // with longer words, which is every language this console is translated
+  // into and the one nobody was looking at.
+  //
+  //     asked     is the button clear of the bar
+  //     mattered  is it clear of *this* bar, with these words in it
+  //
+  // So the bar measures itself and says so, and the floats read it.
+  useEffect(() => {
+    const el = bar.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const publish = () => document.documentElement.style.setProperty(
+      "--tabbar-h", `${Math.round(el.getBoundingClientRect().height)}px`);
+    publish();
+    const watching = new ResizeObserver(publish);
+    watching.observe(el);
+    return () => watching.disconnect();
+  }, []);
   useEffect(() => {
     content.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [tab]);
@@ -193,7 +220,7 @@ export function App() {
     <div className="app">
       <VersionGuard />
       <Footsteps />
-      <aside className="sidebar">
+      <aside className="sidebar" ref={bar}>
         <div className="brand">
           <span className="orb" />
           <div>
