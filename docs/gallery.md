@@ -48,7 +48,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 </tr>
 <tr>
 <td align="center" width="25%"><img src="screens/013-monitor.png" width="160" alt="13 Live Monitoring"><br><sub>13 · Live Monitoring</sub></td>
-<td align="center" width="25%"><img src="screens/14-cpr-coach.svg" width="160" alt="14 CPR Coach"><br><sub>14 · CPR Coach</sub></td>
+<td align="center" width="25%"><img src="screens/14-cpr-coach.png" width="160" alt="14 CPR Coach"><br><sub>14 · CPR Coach</sub></td>
 <td align="center" width="25%"><img src="screens/15-emergency.svg" width="160" alt="15 Emergency"><br><sub>15 · Emergency</sub></td>
 <td align="center" width="25%"><img src="screens/16-medical-id.svg" width="160" alt="16 Medical ID"><br><sub>16 · Medical ID</sub></td>
 </tr>

@@ -258,13 +258,9 @@ def open_inside(page, session, start, presses, proof) -> bool:
         answer_the_notice(page)
         tuck_the_widgets(page)
     page.wait_for_timeout(900)
-    for press in presses:
-        target = page.query_selector(press)
-        if target is None:
-            print(f"  ? nothing matched {press}")
-            return False
-        target.evaluate("el => el.click()")
-        page.wait_for_timeout(900)
+    if not follow(page, presses):
+        return False
+    page.wait_for_timeout(600)
     return page.query_selector(proof) is not None
 
 
@@ -362,6 +358,15 @@ ELEMENTS: tuple[tuple[str, str, str, tuple[str, ...]], ...] = (
     ("83", "which-model-answers", "settings", ()),
     ("93", "what-went-wrong", "settings", ()),
     ("38", "baseline-metrics", "baseline", ()),
+    # `jim/conditions.py`: an extreme rate with *slow* breathing is
+    # cardiac until proven otherwise — 200 bpm at respiration 10 clears
+    # `hr >= max(180, resting + 100)` with `slow_breath`, and the
+    # first-aid guidance that comes back is what draws the pace circle.
+    # The numbers are the rule's, not a guess: change the rule and this
+    # recipe stops reaching the screen and says so.
+    ("14", "cpr-coach", "monitor",
+     (("input[type=number]", 200), ("input[type=number] >> nth=1", 10),
+      "button.primary")),
 )
 
 
@@ -374,15 +379,41 @@ def shoot_element(page, session, number, start, presses) -> bool:
         return False
     answer_the_notice(page)
     tuck_the_widgets(page)
-    for press in presses:
-        target = page.query_selector(press)
+    if not follow(page, presses):
+        return False
+    page.wait_for_timeout(600)
+    return page.query_selector(f'[data-screen="{number}"]') is not None
+
+
+def follow(page, steps) -> bool:
+    """Do what a person does to get there: press, or type and then press.
+
+    A step is a selector to press, or `(selector, value)` to fill. Filling
+    needs `input()` dispatched the way React listens for it — setting
+    `.value` alone updates the DOM node and leaves the component's state
+    where it was, so the form submits its defaults and the screen the
+    recipe asked for never appears.
+
+        asked     is the field showing the number
+        mattered  does the component know the number changed
+    """
+    for step in steps:
+        if isinstance(step, tuple):
+            selector, value = step
+            field = page.query_selector(selector)
+            if field is None:
+                print(f"  ? nothing matched {selector}")
+                return False
+            field.fill(str(value))
+            page.wait_for_timeout(200)
+            continue
+        target = page.query_selector(step)
         if target is None:
-            print(f"  ? nothing matched {press}")
+            print(f"  ? nothing matched {step}")
             return False
         target.evaluate("el => el.click()")
         page.wait_for_timeout(700)
-    page.wait_for_timeout(600)
-    return page.query_selector(f'[data-screen="{number}"]') is not None
+    return True
 
 
 #: What the shell floats over every screen, hidden while a card sits for
@@ -401,7 +432,15 @@ def shoot_element(page, session, number, start, presses) -> bool:
 #: photographed on all twenty-seven page captures, which is where a reader
 #: meets them. What a card portrait is *for* is the card.
 FURNITURE = (".help-fab", ".help-panel", ".watch-lights", ".wl-dot",
-             ".underway", ".uw-dot", ".footsteps")
+             ".underway", ".uw-dot", ".footsteps",
+             # The specialist's sphere, and the veil it stands behind.
+             # A detection with guidance opens it and speaks; when the
+             # browser refuses the audio without a fresh gesture it holds,
+             # veil and all, waiting for a tap. That is a real state and
+             # it is photographed on the Monitor page itself — but it is
+             # drawn over the whole viewport, so a portrait of the card
+             # underneath came back as a blurred veil and nothing else.
+             ".voice-orb-veil")
 
 _HIDE = "jim-camera-hide"
 

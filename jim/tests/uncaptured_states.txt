@@ -1,4 +1,4 @@
-# status: backlog — 3 rows
+# status: backlog — 2 rows
 #
 # Gallery screens the camera cannot yet photograph, and why each one.
 #
@@ -15,8 +15,7 @@
 #
 # A state is now found by `data-screen="<number>"` on the element that owns
 # it, and a page that no tab opens by a recipe naming the press that gets
-# there. Six came off this list the day it was written — 83, 87, 93, 107,
-# 38 and 111. These three are what is left, each with the specific thing
+# there. Seven came off this list — 83, 87, 93, 107, 38, 111 and 14. These three are what is left, each with the specific thing
 # standing in the way rather than a shrug.
 #
 # The number never goes up. A new component that owns a numbered state
@@ -39,10 +38,3 @@
      open, and the browser this camera drives has no speech recogniser
      behind it; what it would capture is a button mid-press, not the screen
      the drawing shows.
-
-14   Coach · CPR coach
-     `PaceCue` is the pace circle of 14, and it renders inside
-     `Monitor.tsx` under `result.guidance.first_aid` — the guidance that
-     comes back only when a reading is read as cardiac arrest. It is a
-     state of the Monitor screen behind a simulated emergency, so it wants
-     a recipe that sets a rate and runs the monitor, not a marker.

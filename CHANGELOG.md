@@ -64,6 +64,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   nobody reads, so it is exempt by name with the reason beside it. What
   remains is only content clipped away by accident.
 
+- **The CPR coach is a photograph.** Screen 14 is a state of the Monitor
+  screen behind a reading the product reads as cardiac arrest, so the
+  camera learned to type as well as press: a step is now a selector to
+  press, or `(selector, value)` to fill. The numbers in the recipe are
+  `jim/conditions.py`'s own — 200 bpm at respiration 10 clears
+  `hr >= max(180, resting + 100)` with slow breathing — so a change to
+  that rule stops the recipe reaching the screen and says so, instead of
+  quietly photographing something else.
+
+  Filling dispatches the event React listens for. Setting `.value` alone
+  updates the DOM node and leaves the component's state where it was, so
+  the form submits its defaults and the screen never appears.
+
+  The first capture came back as a blurred veil: a detection with guidance
+  opens the specialist's sphere, and when the browser refuses the audio
+  without a fresh gesture it holds, veil and all, over the whole viewport.
+  That is a real state and the Monitor page photographs it — but a
+  portrait of the card underneath is not where it belongs, so it joins the
+  furniture that steps aside while a card sits.
+
 - **`uncaptured_states.txt`** — the three the camera still cannot reach, each
   with the specific thing in the way rather than a shrug. 105's card is
   behind a route that answers 409 for a freshly enrolled account with no

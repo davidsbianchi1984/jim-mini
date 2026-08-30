@@ -327,7 +327,7 @@ export function Monitor() {
                 .replace("{source}", String(result.guidance.source))}</div>
               <p>{result.guidance.content}</p>
               {result.guidance.first_aid && (
-                <div className="first-aid">
+                <div className="first-aid" data-screen="14">
                   <b>{result.guidance.first_aid.title || tr("mon.firstaid", lang)}</b>
                   <ol className="refs">
                     {result.guidance.first_aid.steps.map((s, i) => <li key={i}>{s}</li>)}
