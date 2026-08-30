@@ -182,7 +182,7 @@ faces have their own gallery below.
 <table>
   <tr>
     <td align="center" width="25%"><a href="docs/screens/06-health.svg"><img src="docs/screens/06-health.svg" width="165" alt="Health"></a><br><sub><b>06</b> · Health<br>pulse, sleep, movement — the body's own ledger</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/38-baseline.svg"><img src="docs/screens/38-baseline.svg" width="165" alt="Baseline"></a><br><sub><b>38</b> · Baseline<br>the home of every limit: vigil, sensitivity, money</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/38-baseline-metrics.png"><img src="docs/screens/38-baseline-metrics.png" width="165" alt="Baseline"></a><br><sub><b>38</b> · Baseline<br>the home of every limit: vigil, sensitivity, money</sub></td>
     <td align="center" width="25%"><a href="docs/screens/085-meds.png"><img src="docs/screens/085-meds.png" width="165" alt="Medications"></a><br><sub><b>85</b> · Medications<br>what is taken, when, and what noticed it</sub></td>
     <td align="center" width="25%"><a href="docs/screens/022-checkin.png"><img src="docs/screens/022-checkin.png" width="165" alt="Check-in"></a><br><sub><b>22</b> · Check-in<br>mood, energy, stress — thirty seconds, kept</sub></td>
   </tr>

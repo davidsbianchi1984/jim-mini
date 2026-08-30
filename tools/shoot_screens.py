@@ -188,7 +188,56 @@ INSIDE: tuple[tuple[str, str, str, tuple[str, ...], str], ...] = (
     ("40", "sign-in", SIGNED_OUT, (), ".tabs .tab.active"),
     ("42", "log-in", SIGNED_OUT, (".tabs .tab:nth-child(2)",),
      ".tabs .tab:nth-child(2).active"),
+    # The Studio is not a nav tile. It is reached the way a person reaches
+    # it: from the Talk screen's rail, by the chip that names it.
+    ("111", "widgets", "engaged", ('.talk-chip[data-go="studio"]',),
+     '[data-screen="111"]'),
 )
+
+
+def answer_the_notice(page) -> None:
+    """Answer the problem-reporting consent card, if it is asking.
+
+    It opens over everything on a browser that has never answered it, and
+    it is answered once at the start of a run. `open_inside` then clears
+    `localStorage` to reach the signed-out screens — which is exactly the
+    state the notice keys off, so it came back, and every capture after
+    the first signed-out recipe carried it. The Studio's page came back
+    with the whole card sitting above the heading.
+
+        asked     was the notice answered
+        mattered  is it still answered when this shot is taken
+
+    Idempotent: on a browser that has already answered, nothing matches
+    and this does nothing.
+    """
+    for label in ("That's fine", "No thanks", "Yes, send them"):
+        button = page.query_selector(f"text={label}")
+        if button:
+            button.click()
+            page.wait_for_timeout(400)
+            return
+
+
+def tuck_the_widgets(page) -> None:
+    """Minimise the floating widgets, the way a person does.
+
+    The second half of the same repair as `answer_the_notice`: the
+    minimise is remembered per browser, `localStorage.clear()` forgets it,
+    and the Studio's page came back with the Guardian's lights open across
+    the code box. Each console spells the control differently — `.wl-min`
+    on the lights, `.vl-min` in the vault, `.uw-min` on the task window —
+    so this asks for all of them and a console with none finds nothing.
+
+    Pressed, not hidden: the widget carries its own minimise control,
+    which is what a person does with it, so what is photographed stays a
+    state the product can actually be in.
+    """
+    for control in (".wl-min", ".vl-min", ".uw-min"):
+        minimise = page.query_selector(control)
+        if minimise:
+            minimise.evaluate("el => el.click()")
+            page.wait_for_timeout(200)
 
 
 def open_inside(page, session, start, presses, proof) -> bool:
@@ -203,6 +252,11 @@ def open_inside(page, session, start, presses, proof) -> bool:
         if not open_tab(page, start):
             print(f"  ? could not open the {start} tab")
             return False
+        # A signed-out recipe earlier in this run cleared
+        # `localStorage`, so the consent notice may be asking again and
+        # the widgets may have forgotten they were tucked away.
+        answer_the_notice(page)
+        tuck_the_widgets(page)
     page.wait_for_timeout(900)
     for press in presses:
         target = page.query_selector(press)
@@ -286,6 +340,7 @@ ELEMENTS: tuple[tuple[str, str, str, tuple[str, ...]], ...] = (
     ("87", "journal-new-entry", "journal", ()),
     ("83", "which-model-answers", "settings", ()),
     ("93", "what-went-wrong", "settings", ()),
+    ("38", "baseline-metrics", "baseline", ()),
 )
 
 
@@ -296,6 +351,8 @@ def shoot_element(page, session, number, start, presses) -> bool:
     if not open_tab(page, start):
         print(f"  ? could not open the {start} tab")
         return False
+    answer_the_notice(page)
+    tuck_the_widgets(page)
     for press in presses:
         target = page.query_selector(press)
         if target is None:

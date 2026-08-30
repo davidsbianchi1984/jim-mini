@@ -84,7 +84,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 </tr>
 <tr>
 <td align="center" width="25%"><img src="screens/37-history.svg" width="160" alt="37 History"><br><sub>37 · History</sub></td>
-<td align="center" width="25%"><img src="screens/38-baseline.svg" width="160" alt="38 Baseline"><br><sub>38 · Baseline</sub></td>
+<td align="center" width="25%"><img src="screens/38-baseline-metrics.png" width="160" alt="38 Baseline"><br><sub>38 · Baseline</sub></td>
 <td align="center" width="25%"><img src="screens/39-tandem-specialist.svg" width="160" alt="39 Tandem Specialist"><br><sub>39 · Tandem Specialist</sub></td>
 <td align="center" width="25%"><img src="screens/40-sign-in.png" width="160" alt="40 Sign In"><br><sub>40 · Sign In</sub></td>
 </tr>
@@ -193,7 +193,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="screens/109-permits.png" width="160" alt="109 Engaged"><br><sub>109 · Engaged</sub></td>
 <td align="center" width="25%"><img src="screens/110-engaged.png" width="160" alt="110 Talk"><br><sub>110 · Talk</sub></td>
-<td align="center" width="25%"><img src="screens/111-widgets.svg" width="160" alt="111 Widgets"><br><sub>111 · Widgets</sub></td>
+<td align="center" width="25%"><img src="screens/111-widgets.png" width="160" alt="111 Widgets"><br><sub>111 · Widgets</sub></td>
 <td align="center" width="25%"><img src="screens/112-the-watch-on-the-wrist.svg" width="160" alt="112 The Watch on the Wrist"><br><sub>112 · The Watch on the Wrist</sub></td>
 </tr>
 <tr>

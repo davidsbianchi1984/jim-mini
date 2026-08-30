@@ -1,8 +1,8 @@
-# status: backlog — 5 rows
+# status: backlog — 3 rows
 #
 # Gallery screens the camera cannot yet photograph, and why each one.
 #
-# The gallery has two kinds of screen. A *page* is what a nav tab opens and
+# The gallery has two kinds of screen. A *page* is what a nav tab opens, and
 # `tools/shoot_screens.py` has always been able to photograph one. A *state*
 # is something the census numbers separately — `Coach 14,24,82`, `Baseline
 # 38,81` — because a component draws more than one thing a person meets.
@@ -13,37 +13,36 @@
 #     asked     can the camera reach every page
 #     mattered  can it reach everything the gallery numbers
 #
-# The camera now photographs a state by the `data-screen="<number>"` marker
-# on the element that owns it — the same shape as the `data-tab` the nav has
-# always carried, and for the same reason: a marker in the markup is a thing
-# the camera and the reader can both check, where a selector guessed from
-# outside silently starts matching the wrong card. Four states came off this
-# list the day it was written (83, 87, 93, 107). These five are what is left,
-# each with the specific thing standing in the way rather than a shrug.
+# A state is now found by `data-screen="<number>"` on the element that owns
+# it, and a page that no tab opens by a recipe naming the press that gets
+# there. Six came off this list the day it was written — 83, 87, 93, 107,
+# 38 and 111. These three are what is left, each with the specific thing
+# standing in the way rather than a shrug.
 #
 # The number never goes up. A new component that owns a numbered state
 # either carries its marker or does not ship.
 
 105  Feed · what this tab won't do
-     The card is `{view && ...}`, and `view` comes from
+     The card is `{view && ...}` and `view` comes from
      GET /community/{id}/feed, which answers 409 for the harness's freshly
-     enrolled account — it has no QRME tandem, so there is no community
-     feed to describe. Reaching it needs the enrolment to link a tandem
-     first, which is a bigger change to `enrol()` than this round made.
-     The camera refused rather than writing the empty-state card under a
-     number that means something else.
+     enrolled account: it has no QRME tandem, so there is no community feed
+     to describe and nothing for the card to say. Reaching it means teaching
+     `enrol()` to link a tandem first, which is a larger change than this
+     round made. The camera refused rather than writing the empty state
+     under a number that means something else.
 
-111  Studio · widgets
-     Not a nav tab: it is reached from the Talk screen's launcher tiles
-     (`Talk.tsx`, `{ id: "studio", icon: "🛠" }`). A page, not a state, so
-     it wants an `INSIDE` recipe rather than a marker — the mechanism for
-     that exists and this screen has not been given one yet.
+82   Coach · coach out loud
+     Not a separate element. It is the *listening* state of the same card
+     screen 24 already shows — `<button className={listening ? "mic
+     listening" : "mic"}>` — so a marker on the card would photograph 24
+     again under 82's number. Reaching it means holding the microphone
+     open, and the browser this camera drives has no speech recogniser
+     behind it; what it would capture is a button mid-press, not the screen
+     the drawing shows.
 
 14   Coach · CPR coach
-38   Baseline · learning your normal
-82   Coach · coach out loud
-     Three states whose owning element has not been identified in the
-     source yet. Each is a real card in a shipped component — `PaceCue` is
-     the pace circle of 14, and the census has said so since 0.42.3 — but
-     the card that *contains* each one has to be found and marked, and
-     guessing a selector would file a right number over a wrong picture.
+     `PaceCue` is the pace circle of 14, and it renders inside
+     `Monitor.tsx` under `result.guidance.first_aid` — the guidance that
+     comes back only when a reading is read as cardiac arrest. It is a
+     state of the Monitor screen behind a simulated emergency, so it wants
+     a recipe that sets a rate and runs the monitor, not a marker.

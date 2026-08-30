@@ -163,7 +163,7 @@ export function Studio() {
   };
 
   return (
-    <div className="stack">
+    <div className="stack" data-screen="111">
       <h2>{tr("studio.title", lang)}</h2>
       <p className="muted">{tr("studio.sub", lang)}</p>
 

@@ -254,7 +254,13 @@ export function Talk({ go }: {
           rather than becoming four rows of chips on a phone. */}
       <div className="talk-rail">
         {rail.map((c) => (
-          <button key={c.id} className="talk-chip" onClick={() => go(c.id)}>
+          // `data-go` names where the chip goes, in the markup rather
+          // than only in the closure. The nav has carried `data-tab` for
+          // the same reason: a destination a camera or a reader can check
+          // from outside, and the only way to press *this* chip rather
+          // than the eleventh child of a list that reorders.
+          <button key={c.id} className="talk-chip" data-go={c.id}
+                  onClick={() => go(c.id)}>
             <span aria-hidden="true">{c.icon}</span> {word("talk.rail", c.id, lang)}
           </button>
         ))}

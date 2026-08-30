@@ -34,7 +34,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   from the gallery by this — every one of those is photographed on all
   twenty-seven page captures, which is where a reader meets them.
 
-- **`uncaptured_states.txt`** — the five the camera still cannot reach, each
+- **Two more off the list, and the two bugs finding them exposed.** The
+  Baseline metrics card (38) carries a marker; the Studio (111) is a page
+  no nav tile opens, reached the way a person reaches it — from the Talk
+  screen's rail, by the chip that names it. The rail's chips now carry
+  `data-go`, the destination stated in the markup rather than only inside
+  a closure, so the camera can press *that* chip instead of the eleventh
+  child of a list that reorders.
+
+  The Studio's first capture came back with the consent notice sitting
+  above its heading and the Guardian's lights open across its code box.
+  Both had the same cause: the signed-out recipes call
+  `localStorage.clear()` to reach the front door, and both the answered
+  notice and the tucked-away widgets are remembered exactly there. The
+  camera answered the notice and tucked the widgets once, at the start of
+  a run, and every capture after the first signed-out recipe carried the
+  consequence.
+
+      asked     was the notice answered
+      mattered  is it still answered when this shot is taken
+
+  Both repairs are idempotent and run before every capture that follows a
+  clear, so the order recipes are written in stops mattering.
+
+- **`uncaptured_states.txt`** — the three the camera still cannot reach, each
   with the specific thing in the way rather than a shrug. 105's card is
   behind a route that answers 409 for a freshly enrolled account with no
   tandem; 111 is a page reached from the Talk screen's tiles and wants a
