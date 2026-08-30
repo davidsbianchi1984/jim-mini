@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-08-30
+
 ### Added
 
 - **`test_a_media_query_adds_no_specificity.py`, carried by all three
@@ -11673,7 +11675,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.8.0...HEAD
+[2.8.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.1...app-v2.8.0
 [2.7.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.0...app-v2.7.1
 [2.7.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.1...app-v2.7.0
 [2.3.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.0...app-v2.3.1

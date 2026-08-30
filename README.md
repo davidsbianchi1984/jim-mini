@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v2.7.1** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v2.8.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -379,6 +379,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **2.8.0** | Nine faculties on one page. Every capability a Guardian can be given already had a door and none had a place that named the set, so a reader could only answer *what can this thing do* by already knowing where to look. The new Capabilities screen carries each faculty beside its live state, the permission it rests on, and the screen that withdraws it. The onboarding card that drew wider than a 390px phone is fixed, the camera now reports anything painted past the right edge, and a new guard refuses a media query that a later rule overrules. |
 | **2.7.1** | The floats on a phone stop lying: the rule lifting the help button off the tab bar had never once applied, the task window had no phone rule at all, and the minimized light rendered as an ellipse because a tap-target minimum beat its declared height. The clearance is measured from the bar rather than guessed, the camera builds the console before photographing it, and the guards read rectangles rather than declarations. |
 | **2.7.0** | The Guardian gets hands: a written grant to work a screen on a machine you own — named apps, named moves, capped in minutes and steps, taken back in one press. It looks before every press through the eyes this product already had, refuses to type a secret, records what actually landed separately from what was permitted, and refuses a body outright until four things a screen never needed are decided. The whole trio returns to one version number. |
 | **2.3.1** | Tandem release with QRME 2.3.1 (the head the forge builds is actually drawn); version alignment across the trio, no functional change in this repository. |
