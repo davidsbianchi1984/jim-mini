@@ -103,7 +103,7 @@ def test_progress_is_per_step_not_a_cursor(client):
 
 
 def test_a_screen_can_ask_which_lesson_it_is(client):
-    assert client.get("/tutorial/for-screen/65").json()["key"] == "mic"
+    assert client.get("/tutorial/for-screen/12").json()["key"] == "mic"
     assert client.get("/tutorial/for-screen/9999").status_code == 404
 
 

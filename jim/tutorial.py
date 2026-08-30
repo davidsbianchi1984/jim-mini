@@ -44,7 +44,7 @@ LESSONS: tuple[dict, ...] = (
          what="It watches the signals you allow it — from a watch, a band, a "
               "phone — notices when a condition you have told it about is "
               "starting, and says something before it becomes an emergency.",
-         screens=(1, 2, 3, 4, 5), try_it="Open the home screen and read the "
+         screens=(1,), try_it="Open the home screen and read the "
                                          "signals it is using."),
     dict(key="signup", chapter="Getting started", title="Signing up",
          what="Your name, your birthdate, what the Guardian may see, who to "
@@ -54,13 +54,13 @@ LESSONS: tuple[dict, ...] = (
               "after the emergency contacts on purpose: you have just told us "
               "who to ring, so the next screen says plainly that no plan "
               "withholds that. Billing is simulated and no real funds move.",
-         screens=(72, 73, 74, 75),
+         screens=(),
          try_it="Open Pick a Plan and read the third card."),
     dict(key="consent", chapter="Getting started", title="What it may see",
          what="Every source is one you turned on, and every one can be turned "
               "off in the same place. Nothing is read that you did not hand "
               "over.",
-         screens=(6, 7, 8, 9, 10, 11, 12),
+         screens=(2,),
          try_it="Open your sources and switch one off."),
     dict(key="anonymity", chapter="Getting started", title="Your name here",
          what="You can enroll under a pseudonym. Every emergency path still "
@@ -69,24 +69,24 @@ LESSONS: tuple[dict, ...] = (
               "yours. The one cost is stated plainly: an emergency briefing "
               "cannot hand responders a legal name unless you left one for "
               "that purpose alone.",
-         screens=(91,),
+         screens=(),
          try_it="Read the keeps and costs before you choose."),
     dict(key="conditions", chapter="Being watched over",
          title="Conditions it knows",
          what="You tell it what to watch for — the ones you live with, in your "
               "own words. It matches signals against those, and nothing else.",
-         screens=(13, 14, 15, 16, 17, 18, 19, 20),
+         screens=(3, 4),
          try_it="Add a condition and see which signals it will use."),
     dict(key="guidance", chapter="Being watched over", title="What it says",
          what="Guidance is written for the moment it fires — short, and it "
               "tells you what it saw. It never diagnoses and it says so.",
-         screens=(21, 22, 23, 24, 25, 26, 27, 28),
+         screens=(5, 6, 7),
          try_it="Read a piece of guidance and the reason under it."),
     dict(key="escalate", chapter="Being watched over",
          title="When it gets serious",
          what="On a critical event it reaches your emergency contact, and then "
               "live help. You choose who, and you can see every time it did.",
-         screens=(29, 30, 31, 32, 33, 34, 35, 36),
+         screens=(),
          try_it="Set an emergency contact, and read the escalation log."),
     dict(key="bands", chapter="Being watched over", title="Your own normal",
          what="Beside the alarm layer sits a quieter question: are you "
@@ -95,7 +95,7 @@ LESSONS: tuple[dict, ...] = (
               "— and crossing a watched edge earns a question, never an "
               "alarm. A band still learning says so and stays silent. One "
               "dial makes every band tighter or looser at once.",
-         screens=(81,),
+         screens=(13,),
          try_it="Open Your Baseline and find the band that is still "
                 "learning."),
     dict(key="meds", chapter="Being watched over", title="The medicine cabinet",
@@ -107,7 +107,7 @@ LESSONS: tuple[dict, ...] = (
               "is a question, never an alarm, and JIM is not a pharmacist — "
               "interactions are your pharmacist's call, and the board says "
               "so on its face.",
-         screens=(85,),
+         screens=(17,),
          try_it="Add one medication and tap Take on today's dose."),
     dict(key="careteam", chapter="Being watched over",
          title="The care team, coordinated",
@@ -118,7 +118,7 @@ LESSONS: tuple[dict, ...] = (
               "comes back for you to read. Your own credential, pasted "
               "knowingly; summaries cross, never raw readings; once a day "
               "at most, on the calm path only.",
-         screens=(86,),
+         screens=(18,),
          try_it="Link your org and read the latest plan."),
     dict(key="journal", chapter="Being watched over",
          title="The journal, in your own words",
@@ -133,7 +133,7 @@ LESSONS: tuple[dict, ...] = (
               "letter: your week in words, composed only from what you "
               "actually logged, and a week with nothing in it says so "
               "rather than inventing one.",
-         screens=(87,),
+         screens=(19,),
          try_it="Open Journal and write one sentence about today."),
     dict(key="liaison", chapter="Being watched over",
          title="Two guardians working together",
@@ -157,7 +157,7 @@ LESSONS: tuple[dict, ...] = (
               "Two guardians that had a job to finish is a different thing "
               "from two that met once and stayed in touch, and only one of "
               "them is what anybody would assume.",
-         screens=(88,),
+         screens=(20,),
          try_it="Open one with a contact, say something across it, then "
                 "read your own half."),
     dict(key="monitors", chapter="Being watched over",
@@ -185,7 +185,7 @@ LESSONS: tuple[dict, ...] = (
               "already flipped: a person who turns a camera on has "
               "decided, and a person who finds one on has been decided "
               "about.",
-         screens=(88,),
+         screens=(20,),
          try_it="Try switching the hall camera on without saying the room "
                 "knows, then read what comes back."),
     dict(key="oncall", chapter="Being watched over",
@@ -212,7 +212,7 @@ LESSONS: tuple[dict, ...] = (
               "is the order — a call that started hearing before it spoke "
               "is the failure this exists to prevent, and one function is "
               "the only door.",
-         screens=(88,),
+         screens=(20,),
          try_it="Set one up, try to listen before playing the notice, and "
                 "read the refusal — then look at the row it left behind."),
     dict(key="alongside", chapter="Being watched over",
@@ -235,7 +235,7 @@ LESSONS: tuple[dict, ...] = (
               "changes nothing: applying a remark is your own act. And it "
               "is not watching your screen. It reads what you hand it, in a "
               "request you made.",
-         screens=(88,),
+         screens=(20,),
          try_it="Paste something you are working on, and check that a "
                 "remark names where it came from."),
     dict(key="errands", chapter="Being watched over",
@@ -263,7 +263,7 @@ LESSONS: tuple[dict, ...] = (
               "the provenance of everything it knows so a model's claim can "
               "be set beside it, and grows with you for as long as you use "
               "it.",
-         screens=(88,),
+         screens=(20,),
          try_it="Allow it, then open Coach and look at what it studied — "
                 "each row says why, and whether anything left the device."),
     dict(key="crashwatch", chapter="Being watched over",
@@ -275,7 +275,7 @@ LESSONS: tuple[dict, ...] = (
               "through every attempt sends the help you programmed; any "
               "sign of you — the button, a normal reading — calls "
               "it off. Gentle drift check-ins can never trigger it.",
-         screens=(88,),
+         screens=(20,),
          try_it="Open Your Baseline and arm the crash watch."),
     dict(key="followup", chapter="Being watched over",
          title="Did that help?",
@@ -286,7 +286,7 @@ LESSONS: tuple[dict, ...] = (
               "support line, your emergency contact, whoever is on shift. The "
               "question waits for you rather than expiring, so one you missed "
               "is still there next time you open the app.",
-         screens=(89,),
+         screens=(),
          try_it="Answer an open follow-up honestly, even if it did not help."),
     dict(key="adaptation", chapter="Being watched over",
          title="What JIM has learned about you",
@@ -297,17 +297,17 @@ LESSONS: tuple[dict, ...] = (
               "thin history says so instead of pretending. Nothing was sent "
               "to a model vendor to build it; the sealed copy lives in your "
               "own vault.",
-         screens=(90,),
+         screens=(),
          try_it="Open Settings and read what it thinks helps you."),
     dict(key="life", chapter="The life layer", title="Check-ins and goals",
          what="Mood and energy, smart goals, habit streaks, and a coach across "
               "six life areas. The part that is not about emergencies.",
-         screens=(37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48),
+         screens=(8, 9, 10),
          try_it="Do one check-in and set one goal."),
     dict(key="people", chapter="The life layer", title="Family and helpers",
          what="The people who can see how you are doing, and exactly how much "
               "each one sees. A guardian's view is not the same as a friend's.",
-         screens=(49, 50, 51, 52, 53, 54, 55, 56),
+         screens=(11,),
          try_it="Invite somebody and choose what they get."),
     dict(key="speak", chapter="The life layer", title="Talking out loud",
          what="The coach has a microphone and a voice. Speak a question and "
@@ -315,31 +315,31 @@ LESSONS: tuple[dict, ...] = (
               "if a key is set, in your device's own voice if not. Type "
               "instead and it stays quiet: a spoken question gets a spoken "
               "answer, a typed one gets text.",
-         screens=(82,),
+         screens=(14,),
          try_it="Hold the microphone on the coach screen and ask anything."),
     dict(key="tandem", chapter="Beyond the app", title="The tandem",
          what="When configured, JIM-mini hands a question to a QRME specialist "
               "profile and brings the answer back — moderated, and marked as "
               "AI. Your vault stays yours.",
-         screens=(57, 58, 59, 60), try_it="Open the tandem settings."),
+         screens=(), try_it="Open the tandem settings."),
     dict(key="referral", chapter="Beyond the app",
          title="Reaching a real clinician",
          what="A referral is signed for with your face or your fingerprint, "
               "not a checkbox — and the link opens once. The clinician writes "
               "back once, attributed to them by name.",
-         screens=(61, 62, 63, 64), try_it="Read what a referral package "
+         screens=(), try_it="Read what a referral package "
                                           "contains before you sign one."),
     dict(key="mic", chapter="Beyond the app", title="The second microphone",
          what="While you are on a call your phone's microphone is busy, which "
               "is exactly when you might want to ask the Guardian something. "
               "This lends it the one on your watch — yours, near-field, and "
               "yours to take back.",
-         screens=(65, 66), try_it="Lend it, then take it back."),
+         screens=(12,), try_it="Lend it, then take it back."),
     dict(key="agents", chapter="Beyond the app", title="What is running",
          what="Green, amber, red: working, needs you, stopped. One question — "
               "does this need me right now — answered on the wrist and in the "
               "app.",
-         screens=(67, 68), try_it="Open Agents and find the amber one."),
+         screens=(), try_it="Open Agents and find the amber one."),
     dict(key="capture", chapter="Beyond the app", title="Showing it",
          what="Some things text loses — a rash, a wound that is not closing, "
               "a tremor. Photograph it, mark where on the body, and it is "
@@ -349,7 +349,7 @@ LESSONS: tuple[dict, ...] = (
               "address. And the Guardian is told a photograph exists and "
               "where — never what it shows. It routes you to a person; it "
               "will not look at a mole and tell you it is fine.",
-         screens=(76, 77),
+         screens=(),
          try_it="Open Show It and read what Jim is and is not told."),
     dict(key="plans", chapter="Beyond the app", title="What it costs",
          what="Free is the whole Guardian — your conditions, guidance, the "
@@ -363,7 +363,7 @@ LESSONS: tuple[dict, ...] = (
               "escalation still fires, and a responder can still read your "
               "medical ID, on any plan or none. Billing here is simulated and "
               "no real funds move.",
-         screens=(69, 70),
+         screens=(),
          try_it="Open Choose a Plan and read what is never gated."),
     dict(key="storage", chapter="Beyond the app",
          title="Where your record lives",
@@ -384,7 +384,7 @@ LESSONS: tuple[dict, ...] = (
               "Moving up seals what you write from then on and cannot "
               "un-expose what was already open; moving down never unseals "
               "anything already in the vault.",
-         screens=(78, 79, 80),
+         screens=(),
          try_it="Open Where It Lives and read who can read a free record."),
     dict(key="dock", chapter="Beyond the app", title="The pane in the corner",
          what="A small pane in the bottom corner of the app carrying the "
@@ -393,7 +393,7 @@ LESSONS: tuple[dict, ...] = (
               "wrist, which on Basic is everyone. It shows and it points at "
               "the real screen; it never acts. And when an alarm is live it "
               "opens on the alarm whatever you had it set to.",
-         screens=(71,),
+         screens=(),
          try_it="Tap the helper button and cycle the faces."),
     dict(key="model", chapter="Beyond the app", title="Who is answering",
          what="Every reply comes from a model you can see and change — a "
@@ -401,7 +401,7 @@ LESSONS: tuple[dict, ...] = (
               "actually wrote it, and if the built-in offline helper had to "
               "step in, an amber notice says so and why instead of letting "
               "canned text wear a model's name.",
-         screens=(83,),
+         screens=(15,),
          try_it="Open Which Model Answers and read which tile is active."),
     dict(key="watch", chapter="Beyond the app", title="The watch finds a way",
          what="No app store needed: an iPhone Shortcut drips Health "
@@ -409,7 +409,7 @@ LESSONS: tuple[dict, ...] = (
               "schedule, and uploading the Health app's export teaches JIM "
               "your baseline from months of history in one step — armed the "
               "same day, raising nothing about the past.",
-         screens=(84,),
+         screens=(16,),
          try_it="Open Settings → Apple Watch and copy your drip address."),
     dict(key="community", chapter="Beyond the app", title="Community",
          what="Rooms, forums and local events live in QRME, and JIM opens the "
@@ -418,7 +418,7 @@ LESSONS: tuple[dict, ...] = (
               "data crosses over — the screen states all three from what the "
               "bridge actually reports. Opening a room notes the visit on your "
               "timeline and nothing from inside it.",
-         screens=(92,),
+         screens=(21,),
          try_it="Open Connect → Community and read what JIM will not do."),
     dict(key="problems", chapter="Beyond the app", title="What went wrong",
          what="When a request fails, JIM writes down the operation and the "
@@ -434,7 +434,7 @@ LESSONS: tuple[dict, ...] = (
               "client's failures folded into counters, no messages to leak — "
               "behind JIM_PROBLEMS_KEY, or freely from the backend's own "
               "machine.",
-         screens=(93, 94),
+         screens=(22, 23),
          try_it="Open Privacy and press 'Show me exactly what would be shared'."),
     dict(key="reach", chapter="Beyond the app", title="What reaches out",
          what="Everything here crosses a boundary, so everything here shows "
@@ -446,7 +446,7 @@ LESSONS: tuple[dict, ...] = (
               "building. An excursion that asks the open web carries back how "
               "many redactions it took to send and whether it left this host "
               "at all: the findings without that is half an answer.",
-         screens=(99,),
+         screens=(28,),
          try_it="Place a code, then look at the card a stranger would see."),
     dict(key="selfprofile", chapter="Beyond the app",
          title="Your own profile",
@@ -461,7 +461,7 @@ LESSONS: tuple[dict, ...] = (
               "can say more than a name, and that is a decision to make with "
               "it in front of you. Journal entries, check-in notes and "
               "transcripts never cross at any setting.",
-         screens=(101,),
+         screens=(30,),
          try_it="Link the profile, tick nothing, and read the empty brief."),
     dict(key="hands", chapter="Beyond the app", title="Giving it hands",
          what="It could already see, hear and speak. This is where you let "
@@ -478,7 +478,7 @@ LESSONS: tuple[dict, ...] = (
               "robot has no cap on force and no stop within arm's reach, "
               "and until those are decided it can watch through one and "
               "tell you what it sees, nothing more.",
-         screens=(113,),
+         screens=(42,),
          try_it="Grant it two minutes on one app, watch it read the screen, "
                 "then take it back."),
     dict(key="capabilities", chapter="Day to day",
@@ -497,7 +497,7 @@ LESSONS: tuple[dict, ...] = (
               "accident. Where a faculty shows as absent, that is because "
               "no permission for it exists, not because the page is "
               "hiding it.",
-         screens=(114,),
+         screens=(43,),
          try_it="Open Capabilities and read the middle line of each card — "
                 "that is what your Guardian can actually do today."),
     dict(key="aims", chapter="Day to day", title="What you're working on",
@@ -513,7 +513,7 @@ LESSONS: tuple[dict, ...] = (
               "under it, and an honest reading of your answer — a model's "
               "when one is reachable, a written checklist's when not, and "
               "it says which.",
-         screens=(95,),
+         screens=(24,),
          try_it="Set one goal and one habit, then log something you did."),
     dict(key="wellness", chapter="Day to day", title="Wellness",
          what="The on-purpose half of guidance: a guided calm session the "
@@ -523,7 +523,7 @@ LESSONS: tuple[dict, ...] = (
               "backend, because a breathing count is not something to "
               "improvise. The Coach stays the place to talk about any "
               "of it.",
-         screens=(103,),
+         screens=(32,),
          try_it="Start a two-minute calm session and let it pace you."),
     dict(key="feed", chapter="Day to day", title="Feed",
          what="QRME's public stream, shown here — one card at a time: "
@@ -534,7 +534,7 @@ LESSONS: tuple[dict, ...] = (
               "publishing happens in QRME under your own QRME identity. "
               "Nothing is mirrored here, no health data crosses over, and "
               "nothing about what you watched is stored.",
-         screens=(104, 105),
+         screens=(33, 34),
          try_it="Open the Feed tab and read the posture card before the "
                 "first video — it says what this tab will not do."),
     dict(key="presence", chapter="Day to day", title="Presence",
@@ -547,7 +547,7 @@ LESSONS: tuple[dict, ...] = (
               "line better and nothing else. It is warm and it is a program, "
               "and it says which: no body, no romance, never the only one "
               "you should talk to, and no leaving without a sentence first.",
-         screens=(106, 107),
+         screens=(35, 36),
          try_it="Read the second card before the first — what it will not be "
                 "is the part that makes the rest safe."),
     dict(key="bearing", chapter="Day to day", title="How it carries itself",
@@ -560,7 +560,7 @@ LESSONS: tuple[dict, ...] = (
               "safety path is identical, and the boundaries are not a "
               "setting in either. A dial that quietly narrowed what a health "
               "guardian sees would be a dial that hurts whoever turned it.",
-         screens=(106, 107),
+         screens=(35, 36),
          try_it="Say 'keep it professional' in a normal message and watch the "
                 "reply come back saying which bearing it used."),
     dict(key="aloud", chapter="Day to day", title="What the room hears",
@@ -575,7 +575,7 @@ LESSONS: tuple[dict, ...] = (
               "so it is not a setting a client can talk itself out of. And "
               "harmless lines are not caught by it: a good streak may be said "
               "out loud in a room.",
-         screens=(106, 107),
+         screens=(35, 36),
          try_it="Set where it speaks to the speaker, then ask it to say a "
                 "beat — the answer tells you what it held and why."),
     dict(key="access", chapter="Day to day", title="Ability is not a gate",
@@ -591,7 +591,7 @@ LESSONS: tuple[dict, ...] = (
               "and your words stay on this deployment, read with the "
               "reviewer token and turned into rows in a backlog that only "
               "shrinks.",
-         screens=(108,),
+         screens=(37,),
          try_it="Sign out, open the Accessibility link under the sign-in "
                 "form, and read the statement in your own language."),
     dict(key="wards", chapter="Looking after somebody", title="Who you watch",
@@ -604,7 +604,7 @@ LESSONS: tuple[dict, ...] = (
               "own words every time you use one: monitoring, crisis "
               "escalation and the emergency path never pause. A guardian who "
               "believed otherwise would have been told something false.",
-         screens=(96,),
+         screens=(25,),
          try_it="Link a child, then press Pause and read what it says it did."),
     dict(key="attending", chapter="Looking after somebody",
          title="Who else is looking",
@@ -617,7 +617,7 @@ LESSONS: tuple[dict, ...] = (
               "watching over you and stops there. Only your own credential "
               "reaches an ambulance, which is why the emergency button on "
               "this screen is yours and the one on a scanned code is not.",
-         screens=(98,),
+         screens=(27,),
          try_it="Read the ladder, then look at where the ceiling sits."),
     dict(key="held", chapter="What is yours", title="What's held about you",
          what="Four questions on one screen: is it sealed, is anybody's "
@@ -629,7 +629,7 @@ LESSONS: tuple[dict, ...] = (
               "facts. Consent for a source is enforced rather than asked: "
               "giving JIM context from a source you have not allowed is "
               "refused by the server, not politely skipped.",
-         screens=(97,),
+         screens=(26,),
          try_it="Read the access log, then allow a source and give it context."),
     dict(key="bearing", chapter="What is yours", title="Bearing",
          what="Three things kept apart on purpose. What you set — language, "
@@ -642,7 +642,7 @@ LESSONS: tuple[dict, ...] = (
               "The guide and the corner dock live here too — a walkthrough "
               "whose own job is explaining the app had no door of its own "
               "until this screen.",
-         screens=(100,),
+         screens=(29,),
          try_it="Read what JIM has written about you, then set the tone."),
     dict(key="safety", chapter="When it matters", title="Answering an alarm",
          what="The safety screen runs in the order of who is pressing. Get "
@@ -661,7 +661,7 @@ LESSONS: tuple[dict, ...] = (
               "the way; clearing is the direction that asks, because "
               "clearing is the irreversible one. What paged out and what "
               "was recorded sit below the fold, history under the urgent.",
-         screens=(102,),
+         screens=(31,),
          try_it="Read what Get help now will do before you need it."),
     dict(key="engaged", chapter="Being looked after",
          title="Leaving it engaged",
@@ -682,7 +682,7 @@ LESSONS: tuple[dict, ...] = (
               "the session was about goes to the offline coach, and anything "
               "you name on the way out becomes something the Guardian keeps "
               "an eye on and raises unprompted while you are away.",
-         screens=(109,),
+         screens=(38,),
          try_it="Open Engaged and read the list of what it can touch before "
                 "you press Engage."),
     dict(key="talk", chapter="Finding your way",
@@ -700,7 +700,7 @@ LESSONS: tuple[dict, ...] = (
               "today — camera, photos and voice — and stays short on "
               "purpose, because a button that does nothing is worse than a "
               "short menu.",
-         screens=(110,),
+         screens=(39,),
          try_it="Type a question into the box at the bottom, then swipe the "
                 "row above it to see everything it reaches."),
     dict(key="studio", chapter="Finding your way",
@@ -718,7 +718,7 @@ LESSONS: tuple[dict, ...] = (
               "there, and you can still write and keep your widgets. The "
               "limits shown at the bottom are read from the thing that "
               "enforces them, so what you see is what you get.",
-         screens=(111,),
+         screens=(40,),
          try_it="Open Widgets, press New, and run the example that greets "
                 "you by name."),
     dict(key="watchfaces", chapter="Every day", title="The watch on the wrist",
@@ -732,7 +732,7 @@ LESSONS: tuple[dict, ...] = (
               "network. The emergency face hands the number to the device, "
               "which is the thing that can place a call; JIM never claims a "
               "call it did not make.",
-         screens=(112,),
+         screens=(41,),
          try_it="Open jim-mini.com/#watch/heart and swipe to the faces on "
                 "either side."),
 )

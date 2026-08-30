@@ -56,7 +56,7 @@ export function Problems() {
   const unsent = (payload.problems as Problem[]).length;
 
   return (
-    <div className="card" data-screen="93">
+    <div className="card" data-screen="22">
       <h3>What went wrong</h3>
       <p className="muted small">
         Failed requests this app has seen. The operation and the status code are

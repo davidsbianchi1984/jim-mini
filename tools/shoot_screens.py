@@ -185,13 +185,13 @@ SIGNED_OUT = "signed-out"
 #: does not appear writes nothing and says so, because a wrong screen
 #: filed under a right number is worse than a gap.
 INSIDE: tuple[tuple[str, str, str, tuple[str, ...], str], ...] = (
-    ("40", "sign-in", SIGNED_OUT, (), ".tabs .tab.active"),
-    ("42", "log-in", SIGNED_OUT, (".tabs .tab:nth-child(2)",),
+    ("9", "sign-in", SIGNED_OUT, (), ".tabs .tab.active"),
+    ("10", "log-in", SIGNED_OUT, (".tabs .tab:nth-child(2)",),
      ".tabs .tab:nth-child(2).active"),
     # The Studio is not a nav tile. It is reached the way a person reaches
     # it: from the Talk screen's rail, by the chip that names it.
-    ("111", "widgets", "engaged", ('.talk-chip[data-go="studio"]',),
-     '[data-screen="111"]'),
+    ("40", "widgets", "engaged", ('.talk-chip[data-go="studio"]',),
+     '[data-screen="40"]'),
 )
 
 
@@ -352,19 +352,19 @@ def past_the_edge(page) -> list[str]:
 #: outside is a thing that silently starts matching the wrong card. A
 #: recipe whose element is not on the page writes nothing and says so.
 ELEMENTS: tuple[tuple[str, str, str, tuple[str, ...]], ...] = (
-    ("105", "what-this-tab-wont-do", "feed", ()),
-    ("107", "what-it-will-not-be", "presence", ()),
-    ("87", "journal-new-entry", "journal", ()),
-    ("83", "which-model-answers", "settings", ()),
-    ("93", "what-went-wrong", "settings", ()),
-    ("38", "baseline-metrics", "baseline", ()),
+    ("34", "what-this-tab-wont-do", "feed", ()),
+    ("36", "what-it-will-not-be", "presence", ()),
+    ("19", "journal-new-entry", "journal", ()),
+    ("15", "which-model-answers", "settings", ()),
+    ("22", "what-went-wrong", "settings", ()),
+    ("8", "baseline-metrics", "baseline", ()),
     # `jim/conditions.py`: an extreme rate with *slow* breathing is
     # cardiac until proven otherwise — 200 bpm at respiration 10 clears
     # `hr >= max(180, resting + 100)` with `slow_breath`, and the
     # first-aid guidance that comes back is what draws the pace circle.
     # The numbers are the rule's, not a guess: change the rule and this
     # recipe stops reaching the screen and says so.
-    ("14", "cpr-coach", "monitor",
+    ("4", "cpr-coach", "monitor",
      (("input[type=number]", 200), ("input[type=number] >> nth=1", 10),
       "button.primary")),
 )
