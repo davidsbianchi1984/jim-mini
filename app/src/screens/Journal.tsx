@@ -165,7 +165,7 @@ export function Journal() {
         ))}
       </div>
 
-      <div className="card">
+      <div className="card" data-screen="87">
         <h3>{tr("jrn.new", lang)}</h3>
         <textarea rows={4} value={text}
                   placeholder={tr("jrn.ph", lang)}

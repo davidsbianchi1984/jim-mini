@@ -262,6 +262,90 @@ def past_the_edge(page) -> list[str]:
     }""")
 
 
+#: Screens that are a card on a screen, not a screen of their own.
+#:
+#: The census lets one component own several numbers — `Coach 14,24,82`,
+#: `Baseline 38,81` — because a component draws more than one thing a
+#: person meets. The tab captures the whole page; these are the parts of
+#: it the gallery numbers separately, and until now every one of them was
+#: a drawing for the same reason the non-tab screens were: the camera
+#: could photograph a page and nothing smaller.
+#:
+#:     asked     can the camera reach every page
+#:     mattered  can it reach everything the gallery numbers
+#:
+#: The element is found by `data-screen="<number>"` on the element that
+#: owns it — the same shape as the `data-tab` the nav has always carried,
+#: and for the same reason: a marker in the markup is a thing the camera
+#: and the reader can both check, where a CSS selector guessed from
+#: outside is a thing that silently starts matching the wrong card. A
+#: recipe whose element is not on the page writes nothing and says so.
+ELEMENTS: tuple[tuple[str, str, str, tuple[str, ...]], ...] = (
+    ("105", "what-this-tab-wont-do", "feed", ()),
+    ("107", "what-it-will-not-be", "presence", ()),
+    ("87", "journal-new-entry", "journal", ()),
+    ("83", "which-model-answers", "settings", ()),
+    ("93", "what-went-wrong", "settings", ()),
+)
+
+
+def shoot_element(page, session, number, start, presses) -> bool:
+    """Photograph one card, and refuse to photograph the wrong one."""
+    page.evaluate("s => localStorage.setItem('jim.session', s)",
+                  json.dumps(session))
+    if not open_tab(page, start):
+        print(f"  ? could not open the {start} tab")
+        return False
+    for press in presses:
+        target = page.query_selector(press)
+        if target is None:
+            print(f"  ? nothing matched {press}")
+            return False
+        target.evaluate("el => el.click()")
+        page.wait_for_timeout(700)
+    page.wait_for_timeout(600)
+    return page.query_selector(f'[data-screen="{number}"]') is not None
+
+
+#: What the shell floats over every screen, hidden while a card sits for
+#: its portrait.
+#:
+#: An element screenshot is a crop of the rendered page, not a render of
+#: the element alone, so anything painted over that rectangle lands in the
+#: picture — and all of this is `position: fixed`, which means it is
+#: painted over every rectangle. The first card shot came back with the
+#: Guardian's lights across one corner and the task window across another.
+#:
+#:     asked     is the card in the picture
+#:     mattered  is anything else in it
+#:
+#: Hiding it here is not hiding it from the gallery: every one of these is
+#: photographed on all twenty-seven page captures, which is where a reader
+#: meets them. What a card portrait is *for* is the card.
+FURNITURE = (".help-fab", ".help-panel", ".watch-lights", ".wl-dot",
+             ".underway", ".uw-dot", ".footsteps")
+
+_HIDE = "jim-camera-hide"
+
+
+def hide_furniture(page) -> None:
+    page.evaluate(
+        """(sel) => {
+          const style = document.createElement('style');
+          style.id = 'jim-camera-hide';
+          style.textContent = sel.join(',') + '{visibility:hidden!important}';
+          document.head.appendChild(style);
+        }""", list(FURNITURE))
+
+
+def show_furniture(page) -> None:
+    page.evaluate(
+        """() => {
+          const style = document.getElementById('jim-camera-hide');
+          if (style) style.remove();
+        }""")
+
+
 def census() -> dict[str, int]:
     """Which screen number each console surface is, per `ui_screens.txt`.
 
@@ -440,6 +524,23 @@ def main(shots: list[tuple[str, str, str]]) -> None:
                 print(f"  {target.name}")
                 for offender in past_the_edge(page):
                     print(f"      past the right edge: {offender}")
+            # The cards. Same refusal as the screens: a recipe whose
+            # element is not on the page writes nothing.
+            for number, stem, start, presses in ELEMENTS:
+                if not shoot_element(page, session, number, start, presses):
+                    print(f"  ! {number}-{stem}: never reached — "
+                          "nothing written")
+                    continue
+                el = page.query_selector(f'[data-screen="{number}"]')
+                el.scroll_into_view_if_needed()
+                page.wait_for_timeout(250)
+                target = OUT / f"{number}-{stem}.png"
+                hide_furniture(page)
+                el.screenshot(path=str(target))
+                show_furniture(page)
+                written += 1
+                print(f"  {target.name}")
+
             browser.close()
     finally:
         proc.terminate()

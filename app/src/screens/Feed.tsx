@@ -79,7 +79,7 @@ export function Feed() {
 
       {/* Whose feed this is, said before any of it is shown. */}
       {view && (
-        <div className="card">
+        <div className="card" data-screen="105">
           <p className="muted small">{view.note}</p>
           <p className="muted small">{tr("feed.cannotpost", lang)}</p>
           {view.open_in_qrme && (

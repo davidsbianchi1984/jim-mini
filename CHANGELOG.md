@@ -6,6 +6,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The camera can photograph a card, not just a page.** The gallery has
+  two kinds of screen and until now the harness could only reach one. A
+  *page* is what a nav tab opens. A *state* is something the census numbers
+  separately — `Coach 14,24,82`, `Baseline 38,81` — because a component
+  draws more than one thing a person meets. Every state in the gallery was
+  a drawing, and not because anybody chose that: a drawing is what fills a
+  gap nobody can photograph.
+
+      asked     can the camera reach every page
+      mattered  can it reach everything the gallery numbers
+
+  A state is now found by `data-screen="<number>"` on the element that owns
+  it — the same shape as the `data-tab` the nav has always carried, and for
+  the same reason. A marker in the markup is a thing the camera and the
+  reader can both check; a CSS selector guessed from outside is a thing
+  that silently starts matching the wrong card. Four states are photographs
+  now: the provider picker (83), the journal's new entry (87), what went
+  wrong (93), and what it will not be (107).
+
+  Card portraits hide the shell's fixed furniture while they sit. An
+  element screenshot is a crop of the rendered page, not a render of the
+  element alone, so the first one came back with the Guardian's lights
+  across one corner and the task window across another. Nothing is hidden
+  from the gallery by this — every one of those is photographed on all
+  twenty-seven page captures, which is where a reader meets them.
+
+- **`uncaptured_states.txt`** — the five the camera still cannot reach, each
+  with the specific thing in the way rather than a shrug. 105's card is
+  behind a route that answers 409 for a freshly enrolled account with no
+  tandem; 111 is a page reached from the Talk screen's tiles and wants a
+  recipe rather than a marker; 14, 38 and 82 have owning elements that have
+  not been identified in the source yet. The camera refused all five rather
+  than filing a right number over a wrong picture.
+
 ## [2.8.0] - 2026-08-30
 
 ### Added

@@ -151,13 +151,13 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="screens/081-baseline.png" width="160" alt="81 Your Baseline"><br><sub>81 · Your Baseline</sub></td>
 <td align="center" width="25%"><img src="screens/82-coach-out-loud.svg" width="160" alt="82 Coach Out Loud"><br><sub>82 · Coach, Out Loud</sub></td>
-<td align="center" width="25%"><img src="screens/83-which-model-answers.svg" width="160" alt="83 Which Model Answers"><br><sub>83 · Which Model Answers</sub></td>
+<td align="center" width="25%"><img src="screens/83-which-model-answers.png" width="160" alt="83 Which Model Answers"><br><sub>83 · Which Model Answers</sub></td>
 <td align="center" width="25%"><img src="screens/84-apple-watch.svg" width="160" alt="84 Apple Watch"><br><sub>84 · Apple Watch</sub></td>
 </tr>
 <tr>
 <td align="center" width="25%"><img src="screens/085-meds.png" width="160" alt="85 Medications"><br><sub>85 · Medications</sub></td>
 <td align="center" width="25%"><img src="screens/086-careteam.png" width="160" alt="86 Care Team"><br><sub>86 · Care Team</sub></td>
-<td align="center" width="25%"><img src="screens/87-journal.svg" width="160" alt="87 Journal"><br><sub>87 · Journal</sub></td>
+<td align="center" width="25%"><img src="screens/87-journal-new-entry.png" width="160" alt="87 Journal"><br><sub>87 · Journal</sub></td>
 <td align="center" width="25%"><img src="screens/88-crash-watch.svg" width="160" alt="88 Crash Watch"><br><sub>88 · Crash Watch</sub></td>
 </tr>
 <tr>
@@ -167,7 +167,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="screens/092-community.png" width="160" alt="92 Community"><br><sub>92 · Community</sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><img src="screens/93-what-went-wrong.svg" width="160" alt="93 What Went Wrong"><br><sub>93 · What Went Wrong</sub></td>
+<td align="center" width="25%"><img src="screens/93-what-went-wrong.png" width="160" alt="93 What Went Wrong"><br><sub>93 · What Went Wrong</sub></td>
 <td align="center" width="25%"><img src="screens/094-before-anything-is-sent.png" width="160" alt="94 Before Anything Is Sent"><br><sub>94 · Before Anything Is Sent</sub></td>
 <td align="center" width="25%"><img src="screens/095-aims.png" width="160" alt="95 What You're Working On"><br><sub>95 · What You're Working On</sub></td>
 <td align="center" width="25%"><img src="screens/096-wards.png" width="160" alt="96 Who You Watch"><br><sub>96 · Who You Watch</sub></td>
@@ -187,7 +187,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <tr>
 <td align="center" width="25%"><img src="screens/105-what-this-tab-wont-do.svg" width="160" alt="105 What This Tab Won't Do"><br><sub>105 · What This Tab Won't Do</sub></td>
 <td align="center" width="25%"><img src="screens/106-presence.png" width="160" alt="106 Presence"><br><sub>106 · Presence</sub></td>
-<td align="center" width="25%"><img src="screens/107-what-it-will-not-be.svg" width="160" alt="107 What It Will Not Be"><br><sub>107 · What It Will Not Be</sub></td>
+<td align="center" width="25%"><img src="screens/107-what-it-will-not-be.png" width="160" alt="107 What It Will Not Be"><br><sub>107 · What It Will Not Be</sub></td>
 <td align="center" width="25%"><img src="screens/108-access.png" width="160" alt="108 Ability Is Not A Gate"><br><sub>108 · Ability Is Not A Gate</sub></td>
 </tr>
 <tr>

@@ -130,7 +130,7 @@ export function ProviderTiles(props: {
     ...props.providers,
   ];
   return (
-    <div className="provider-tiles">
+    <div className="provider-tiles" data-screen="83">
       {tiles.map((p) => {
         const mark = MARKS[p.name] || MARKS.stub;
         const active = props.chosen === p.name;
