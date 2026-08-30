@@ -96,6 +96,45 @@ worded, or designed around one generation.
 | Wear OS app | `native/wear/` | Standalone: the pulse read on the wrist, words never audio. |
 | Wrist channel | `jim/watch.py` | A phone automation drips Health readings to a per-user URL; a one-time export seeds weeks of baseline. |
 
+## Capabilities, and what each one rests on
+
+Nine faculties can be given to a Guardian. None is on by default, each
+requires a permission that is recorded before the faculty exists, and
+each is withdrawn on one screen — the same screen the console reads to
+say whether it is on at all.
+
+The console carries this table as a live screen (**Capabilities**,
+screen 114): the same four columns, with the third read from the running
+deployment rather than written here. A register that could disagree with
+the product would be a brochure, so it is built to read the same routes
+the owning screens read.
+
+| Faculty | What it does | What it rests on | Withdrawn on |
+|---|---|---|---|
+| **Visual perception** | A monitor with a lens describes what it is pointed at, in one sentence. The frame is held only long enough to describe it and is never written down. | A monitor switched on by the account holder, with a lens among its senses. Anything that senses other people is refused until they have been told. | Channel & camera |
+| **Auxiliary audio input** | A second microphone — a watch, earbuds, a clip-on, glasses — lent to the agent as its own channel while the phone's own microphone is occupied. | A device paired and switched on for this purpose, and consent recorded on this browser. Capture happens on the device; no audio sample is stored by the service. | Channel & camera |
+| **Speech output** | Written replies spoken aloud through the configured speaking provider, in the reader's own language. | A speaking provider configured for the deployment. With none configured the allowance route refuses, and the register says so rather than showing a balance of zero. | Bearing |
+| **Presented appearance** | The face the Guardian shows in the helper dock — a pane that shows and routes, and never acts. | A face chosen by the account holder. Until one is chosen the dock stays behind the helper button. | Bearing |
+| **Physical embodiment** | A robot bound to the account as a guardian responder. It registers as a device, so an escalation dispatches to it like any other, with a directive appropriate to its kind. | An explicit binding to a named platform from the published catalogue. Only platforms shipping or open for preorder can be bound; an announced one is refused by name. | What reaches out |
+| **Locomotion directives** | The movement a bound body may be told to make — come, follow, patrol, dock, stop — checked against a per-platform allowlist before anything reaches the robot. | A bound body with mobility among its capabilities. Not a separate switch: with no body bound there is nothing that could be told to move. | What reaches out |
+| **Screen observation** | Reading a screen without acting on it. Text found on a screen is treated as data and can never widen what is allowed, whatever that text claims. | A look permit naming its applications, its minutes and its steps. A wildcard is refused. | Hands |
+| **Interface operation** | Working a screen — moving a pointer, pressing a control, typing into a field — under a grant bounded in applications, moves, minutes and steps. | A grant naming all four limits, enforced where the move happens rather than on the screen that requested it. It never types passwords, PINs, one-time codes, card numbers or recovery phrases, and says so instead of trying. | Hands |
+| **Unattended operation** | A session left running: open until it is signed off, acting across the account holder's own records through a written allowlist, with the request that would undo each act recorded beside it. | A session the account holder opened, an area they named, and a per-area permit they granted. Every act is listed with its reversal; signing off closes it. | What JIM can touch |
+
+**On the naming.** These are named for what they do, not for the body
+part they resemble. The engineering shorthand behind them is anatomical
+— the eyes, the ears, the hands — and that shorthand is exactly wrong
+in front of a clinician, a regulator or an attorney: *eyes* claims a
+faculty, where *visual perception, described in words and not retained*
+states a behaviour that can be checked against the code and found true
+or false.
+
+**What is not here.** No faculty on this list can move a human body, and
+none is granted implicitly by another. A grant may be narrowed when it
+is handed on, never widened. The refusals are published by name at
+`GET /hands/vocabulary`, so a client that knew only what was permitted
+could not draw a documented refusal as a missing feature.
+
 ## The screens you'll meet
 
 The app screens a person actually lives in — every major component
@@ -111,7 +150,7 @@ faces have their own gallery below.
   <tr>
     <td align="center" width="25%"><a href="docs/screens/01-welcome.svg"><img src="docs/screens/01-welcome.svg" width="165" alt="Welcome"></a><br><sub><b>01</b> · Welcome<br>the front door answers, and the mic listens there</sub></td>
     <td align="center" width="25%"><a href="docs/screens/002-home.png"><img src="docs/screens/002-home.png" width="165" alt="Home"></a><br><sub><b>02</b> · Home<br>the guardian's day at a glance</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/40-sign-in.svg"><img src="docs/screens/40-sign-in.svg" width="165" alt="Sign in"></a><br><sub><b>40</b> · Sign in<br>your account, your baseline, your say</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/40-sign-in.png"><img src="docs/screens/40-sign-in.png" width="165" alt="Sign in"></a><br><sub><b>40</b> · Sign in<br>your account, your baseline, your say</sub></td>
     <td align="center" width="25%"><a href="docs/screens/05-daily-briefing.svg"><img src="docs/screens/05-daily-briefing.svg" width="165" alt="Daily briefing"></a><br><sub><b>05</b> · Daily briefing<br>the morning letter, in your own words</sub></td>
   </tr>
 </table>

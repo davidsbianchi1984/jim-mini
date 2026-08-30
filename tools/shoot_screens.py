@@ -163,6 +163,105 @@ def open_tab(page, tab: str) -> bool:
 
 
 
+#: Where a recipe starts when there is no session yet — the screens a
+#: person meets before the console has anybody in it.
+SIGNED_OUT = "signed-out"
+
+#: Screens that are not a tab.
+#:
+#: Every capture until now came from pressing a nav tab, so every screen
+#: that lives *inside* one — behind a card, a button, a mode switch —
+#: stayed a drawing. Not because anybody decided it should: because the
+#: camera had no way to get there, and a drawing is what fills a gap
+#: nobody can photograph.
+#:
+#:     asked     can this camera reach every tab
+#:     mattered  can it reach every screen
+#:
+#: A recipe is: the number, the file stem, where to start, what a person
+#: presses to get there, and how this knows it arrived. `proof` is a
+#: selector that exists on the screen being asked for and nowhere on the
+#: way to it — the same refusal `open_tab` makes. A recipe whose proof
+#: does not appear writes nothing and says so, because a wrong screen
+#: filed under a right number is worse than a gap.
+INSIDE: tuple[tuple[str, str, str, tuple[str, ...], str], ...] = (
+    ("40", "sign-in", SIGNED_OUT, (), ".tabs .tab.active"),
+    ("42", "log-in", SIGNED_OUT, (".tabs .tab:nth-child(2)",),
+     ".tabs .tab:nth-child(2).active"),
+)
+
+
+def open_inside(page, session, start, presses, proof) -> bool:
+    """Reach a screen that is not a tab, and refuse to lie about it."""
+    if start == SIGNED_OUT:
+        page.goto(CONSOLE, wait_until="networkidle")
+        page.evaluate("() => localStorage.clear()")
+        page.goto(CONSOLE, wait_until="networkidle")
+    else:
+        page.evaluate("s => localStorage.setItem('jim.session', s)",
+                      json.dumps(session))
+        if not open_tab(page, start):
+            print(f"  ? could not open the {start} tab")
+            return False
+    page.wait_for_timeout(900)
+    for press in presses:
+        target = page.query_selector(press)
+        if target is None:
+            print(f"  ? nothing matched {press}")
+            return False
+        target.evaluate("el => el.click()")
+        page.wait_for_timeout(900)
+    return page.query_selector(proof) is not None
+
+
+def past_the_edge(page) -> list[str]:
+    """Everything this viewport draws to the right of its own right edge.
+
+    A page can overflow horizontally in two unrelated ways, and only one of
+    them is visible to `document.scrollWidth`. When the document itself is
+    the scroll container, too-wide content widens the document and the
+    number goes up. When the too-wide content sits inside an element with
+    its own `overflow`, the scroll container absorbs it: the document stays
+    exactly as wide as the window, the number says the page fits, and the
+    right-hand end of whatever is inside is simply clipped away.
+
+    The front door was the second kind. `.onboarding` scrolls vertically,
+    so it is a scroll container, so a card 74px too wide for a 390px phone
+    cost the Sign in button its right half while every width this harness
+    knew how to ask about answered "fits".
+
+        asked     is the document wider than the window
+        mattered  is anything drawn past the window's edge
+
+    So this asks the second question of every element on the page and names
+    the ones that answer yes, per capture, for every screen — not just the
+    one that happened to be caught by eye. A rectangle is measured where it
+    was actually painted, which is the only place a person meets it.
+    """
+    return page.evaluate("""() => {
+      const edge = document.documentElement.clientWidth;
+      const over = [];
+      for (const el of document.querySelectorAll('body *')) {
+        const style = getComputedStyle(el);
+        if (style.visibility === 'hidden' || style.display === 'none') continue;
+        const box = el.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) continue;
+        // A fixed float parked off-screen on purpose is not this bug, and
+        // neither is something scrolled sideways by a person: only what is
+        // painted past the edge while the page sits at its own origin.
+        if (box.right <= edge + 1) continue;
+        const name = el.tagName.toLowerCase()
+          + (el.id ? '#' + el.id : '')
+          + (el.className && typeof el.className === 'string'
+             ? '.' + el.className.trim().split(/\\s+/).join('.') : '');
+        over.push(name + ' +' + Math.round(box.right - edge) + 'px');
+      }
+      // The outermost offender is the one to fix; its children overflow
+      // because it does. Report the first few, deepest last.
+      return over.slice(0, 6);
+    }""")
+
+
 def census() -> dict[str, int]:
     """Which screen number each console surface is, per `ui_screens.txt`.
 
@@ -323,6 +422,24 @@ def main(shots: list[tuple[str, str, str]]) -> None:
                 page.screenshot(path=str(target), full_page=True)
                 written += 1
                 print(f"  {target.name}")
+                for offender in past_the_edge(page):
+                    print(f"      past the right edge: {offender}")
+
+            # The screens that are not tabs. Same refusal: a recipe whose
+            # proof does not appear writes nothing.
+            for number, stem, start, presses, proof in INSIDE:
+                if not open_inside(page, session, start, presses, proof):
+                    print(f"  ! {number}-{stem}: never reached — "
+                          "nothing written")
+                    continue
+                page.evaluate("window.scrollTo(0, 0)")
+                page.wait_for_timeout(250)
+                target = OUT / f"{number}-{stem}.png"
+                page.screenshot(path=str(target), full_page=True)
+                written += 1
+                print(f"  {target.name}")
+                for offender in past_the_edge(page):
+                    print(f"      past the right edge: {offender}")
             browser.close()
     finally:
         proc.terminate()
@@ -337,7 +454,8 @@ TABS = [
     "home", "monitor", "safety", "baseline", "meds", "careteam",
     "selfprofile", "coach", "engaged", "wellness", "checkin", "journal",
     "aims", "wards", "attending", "reach", "hands", "bearing", "community",
-    "presence", "feed", "channel", "permits", "held", "access", "settings",
+    "presence", "feed", "channel", "capabilities", "permits", "held",
+    "access", "settings",
 ]
 
 

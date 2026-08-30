@@ -481,6 +481,25 @@ LESSONS: tuple[dict, ...] = (
          screens=(113,),
          try_it="Grant it two minutes on one app, watch it read the screen, "
                 "then take it back."),
+    dict(key="capabilities", chapter="Day to day",
+         title="Everything it can be given, on one page",
+         what="Nine faculties can be given to a Guardian, and none is on "
+              "when you arrive: seeing through a lens, hearing on a second "
+              "microphone, speaking aloud, wearing a face, standing in a "
+              "robot, telling that robot to move, reading a screen, "
+              "working a screen, and running a session while you are "
+              "elsewhere. This page names all nine in one place, says what "
+              "each one is doing right now, names the permission it rests "
+              "on, and takes you to the screen that withdraws it. It reads "
+              "the same routes those screens read, so it cannot tell you "
+              "one thing while the product does another — and it grants "
+              "nothing itself, so nothing here can be switched on by "
+              "accident. Where a faculty shows as absent, that is because "
+              "no permission for it exists, not because the page is "
+              "hiding it.",
+         screens=(114,),
+         try_it="Open Capabilities and read the middle line of each card — "
+                "that is what your Guardian can actually do today."),
     dict(key="aims", chapter="Day to day", title="What you're working on",
          what="Goals, habits and a monthly budget. None of it is a list for "
               "its own sake: a goal is read by the coach and by the daily "

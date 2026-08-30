@@ -119,7 +119,22 @@ nav { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1;
   box-shadow: 0 0 18px rgba(124,92,255,0.5); }
 .orb.big { width: 76px; height: 76px; }
 
-.onboarding { display: grid; place-items: center; height: 100%; padding: 24px; overflow-y: auto; }
+/* `minmax(0, 1fr)`, not the implicit `auto` track this had.
+   
+   An auto track is sized to its item's max-content — 440px, the card's own
+   width — so the card's `max-width: 100%` resolved against 440 and capped
+   nothing. On a 390px phone the front door rendered 74px wider than the
+   screen and the page did not scroll, so the right-hand end of every
+   control on it — the Sign in button, the email and password fields — was
+   simply not there. On the first screen anybody meets.
+
+       asked     is the card allowed to be as wide as its parent
+       mattered  is its parent as wide as the screen
+
+   A definite track makes the percentage mean what it says. */
+.onboarding { display: grid; grid-template-columns: minmax(0, 1fr);
+              justify-items: center; align-items: center;
+              height: 100%; padding: 24px; overflow-y: auto; }
 .onboard-card { width: 440px; max-width: 100%; background: linear-gradient(160deg, var(--card), var(--card2));
   border: 1px solid var(--line); border-radius: 20px; padding: 28px; text-align: center; }
 .onboard-card .orb.big { margin: 4px auto 10px; }

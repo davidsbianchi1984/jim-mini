@@ -38,10 +38,11 @@ import { Reach } from "./screens/Reach";
 import { Bearing } from "./screens/Bearing";
 import { Held } from "./screens/Held";
 import { Access } from "./screens/Access";
+import { Capabilities } from "./screens/Capabilities";
 import { Watch } from "./screens/Watch";
 import { Hands } from "./screens/Hands";
 
-type Tab = "watch" | "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "hands" | "bearing" | "held" | "access" | "settings";
+type Tab = "watch" | "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "hands" | "bearing" | "capabilities" | "held" | "access" | "settings";
 // Labels live in `l10n.ts` and are looked up by id — see `nav.*` there.
 //
 // They used to sit here as English literals, which made the console's own
@@ -89,6 +90,7 @@ const NAV: { id: Tab; icon: ReactNode }[] = [
   // rendered under `tab === "permits"`, and was reachable only through the
   // assistant's chip rail. A screen about what the assistant may change
   // must not be a screen only the assistant can open.
+  { id: "capabilities", icon: "▤" },
   { id: "permits", icon: "🛂" },
   { id: "held", icon: "🗄" },
   { id: "access", icon: "♿" },
@@ -271,6 +273,7 @@ export function App() {
         {tab === "reach" && <Reach />}
         {tab === "hands" && <Hands />}
         {tab === "bearing" && <Bearing />}
+        {tab === "capabilities" && <Capabilities go={(id) => setTab(id as Tab)} />}
         {tab === "held" && <Held />}
         {tab === "access" && <Access />}
         {tab === "settings" && <Settings />}

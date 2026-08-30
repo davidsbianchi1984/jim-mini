@@ -86,11 +86,11 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 <td align="center" width="25%"><img src="screens/37-history.svg" width="160" alt="37 History"><br><sub>37 · History</sub></td>
 <td align="center" width="25%"><img src="screens/38-baseline.svg" width="160" alt="38 Baseline"><br><sub>38 · Baseline</sub></td>
 <td align="center" width="25%"><img src="screens/39-tandem-specialist.svg" width="160" alt="39 Tandem Specialist"><br><sub>39 · Tandem Specialist</sub></td>
-<td align="center" width="25%"><img src="screens/40-sign-in.svg" width="160" alt="40 Sign In"><br><sub>40 · Sign In</sub></td>
+<td align="center" width="25%"><img src="screens/40-sign-in.png" width="160" alt="40 Sign In"><br><sub>40 · Sign In</sub></td>
 </tr>
 <tr>
 <td align="center" width="25%"><img src="screens/41-end-session.svg" width="160" alt="41 End Session"><br><sub>41 · End Session</sub></td>
-<td align="center" width="25%"><img src="screens/42-log-in.svg" width="160" alt="42 Log In"><br><sub>42 · Log In</sub></td>
+<td align="center" width="25%"><img src="screens/42-log-in.png" width="160" alt="42 Log In"><br><sub>42 · Log In</sub></td>
 <td align="center" width="25%"><img src="screens/43-permissions.svg" width="160" alt="43 Permissions"><br><sub>43 · Permissions</sub></td>
 <td align="center" width="25%"><img src="screens/44-about-you.svg" width="160" alt="44 About You"><br><sub>44 · About You</sub></td>
 </tr>
@@ -198,6 +198,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 </tr>
 <tr>
 <td align="center" width="25%"><img src="screens/113-hands.png" width="160" alt="113 Hands"><br><sub>113 · Hands</sub></td>
+<td align="center" width="25%"><img src="screens/114-capabilities.png" width="160" alt="114 Capabilities"><br><sub>114 · Capabilities</sub></td>
 </tr>
 </table>
 

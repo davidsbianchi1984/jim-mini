@@ -6,6 +6,62 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The capability register: nine faculties, on one page, each beside the
+  permission it rests on.** Every one of these already had a door —
+  `console_doorless.txt` has stood at zero for many rounds — and not one of
+  them had a place that named the set. Seeing was a card inside Channel &
+  camera; a bound body was one of twenty-four rows on What reaches out; the
+  look permit was a checkbox on Hands. Somebody wanting to answer *what can
+  this thing actually do* had to already know where to look, which meant the
+  only people who could answer it were the people who built it.
+
+      asked     can each capability be reached
+      mattered  can the whole set be read at once
+
+  The new **Capabilities** screen (114) carries four columns for each of the
+  nine — what it is, where it stands, what it rests on, where it is
+  withdrawn — and the third is read live from the same routes the owning
+  screens read, so the register cannot drift into a brochure. Nothing on it
+  grants, commands or revokes: it reads, and it routes. `README.md` carries
+  the same four columns as a table, for a reader who never opens the app.
+
+  The nine are named for what they do, not for the body part they resemble.
+  The engineering shorthand behind them is anatomical — the eyes, the ears,
+  the hands — and that shorthand is exactly wrong in front of a clinician, a
+  regulator or an attorney: *eyes* claims a faculty, where *visual
+  perception, described in words and not retained* states a behaviour that
+  can be checked against the code and found true or false.
+
+  A capability this console could not ask about renders as unread, never as
+  off. The two are different facts and the register refuses to let them look
+  the same — the same refusal the Held screen makes about an empty access
+  list.
+
+### Fixed
+
+- **The front door was drawn wider than the phone it was on.** `.onboarding`
+  is a grid whose one column was the implicit `auto` track, sized to its
+  item's max-content — 440px, the card's own width — so the card's
+  `max-width: 100%` resolved against 440 and capped nothing. On a 390px
+  phone the right-hand end of the Sign in button and the email and password
+  fields was simply not drawn, on the first screen anybody meets. The track
+  is `minmax(0, 1fr)` now, which makes the percentage mean what it says.
+
+  Every width this harness knew how to ask about had answered "fits", because
+  `.onboarding` scrolls and a scroll container absorbs its own overflow: the
+  document stayed exactly as wide as the window while the content inside was
+  clipped away. `tools/shoot_screens.py` grew `past_the_edge()`, which asks
+  every element on every capture whether it is painted past the viewport's
+  right edge, and names the ones that are.
+
+  Screens 40 and 42 were drawings because the camera could only press nav
+  tabs and neither of these is one. The harness grew a recipe table — where
+  to start, what to press, and a selector that proves it arrived — and both
+  are photographs now; the superseded drawings are deleted rather than left
+  beside them.
+
 ## [2.7.1] - 2026-08-30
 
 ### Fixed
