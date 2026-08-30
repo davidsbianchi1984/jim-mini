@@ -57,6 +57,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Both repairs are idempotent and run before every capture that follows a
   clear, so the order recipes are written in stops mattering.
 
+- **The right-edge check stopped crying wolf.** It reported the phone's
+  tab bar on every capture, and that bar keeps its row and scrolls
+  sideways on purpose — twenty-four tiles at a readable icon size do not
+  fit across a phone. A check with a false positive per capture is a check
+  nobody reads, so it is exempt by name with the reason beside it. What
+  remains is only content clipped away by accident.
+
 - **`uncaptured_states.txt`** — the three the camera still cannot reach, each
   with the specific thing in the way rather than a shrug. 105's card is
   behind a route that answers 409 for a freshly enrolled account with no

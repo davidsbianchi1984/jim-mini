@@ -268,6 +268,26 @@ def open_inside(page, session, start, presses, proof) -> bool:
     return page.query_selector(proof) is not None
 
 
+#: Things that are painted past the right edge on purpose.
+#:
+#: `past_the_edge` exists to catch content clipped away by accident, and
+#: the phone's tab bar is off-edge by design. Reported every run against
+#: every screen, it would bury the one row that mattered — which is how a
+#: check with a false positive per capture stops being read at all.
+#:
+#:     asked     is anything drawn past the edge
+#:     mattered  is anything drawn past it that did not mean to be
+#:
+#: Each row names the reason, so a rule that stops being deliberate stops
+#: being exempt. The element and everything inside it is skipped.
+EDGE_EXEMPT = (
+    ("nav",
+     "the phone bar keeps its row and scrolls sideways: twenty-four tiles "
+     "at a readable icon size do not fit across a phone, and squeezing "
+     "them to fit is how the mark became unreadable in the first place. "
+     "The tiles past the edge are the ones a thumb scrolls to."),
+)
+
 def past_the_edge(page) -> list[str]:
     """Everything this viewport draws to the right of its own right edge.
 
@@ -292,7 +312,7 @@ def past_the_edge(page) -> list[str]:
     one that happened to be caught by eye. A rectangle is measured where it
     was actually painted, which is the only place a person meets it.
     """
-    return page.evaluate("""() => {
+    return page.evaluate("""(skip) => {
       const edge = document.documentElement.clientWidth;
       const over = [];
       for (const el of document.querySelectorAll('body *')) {
@@ -304,6 +324,7 @@ def past_the_edge(page) -> list[str]:
         // neither is something scrolled sideways by a person: only what is
         // painted past the edge while the page sits at its own origin.
         if (box.right <= edge + 1) continue;
+        if (skip.some((sel) => el.closest(sel))) continue;
         const name = el.tagName.toLowerCase()
           + (el.id ? '#' + el.id : '')
           + (el.className && typeof el.className === 'string'
@@ -313,7 +334,7 @@ def past_the_edge(page) -> list[str]:
       // The outermost offender is the one to fix; its children overflow
       // because it does. Report the first few, deepest last.
       return over.slice(0, 6);
-    }""")
+    }""", [s for s, _why in EDGE_EXEMPT])
 
 
 #: Screens that are a card on a screen, not a screen of their own.
