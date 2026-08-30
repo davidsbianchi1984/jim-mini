@@ -8,6 +8,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`test_a_media_query_adds_no_specificity.py`, carried by all three
+  products.** This defect has now shipped four times in this estate — the
+  `.help-fab` lift fixed here in 2.7.1, `.vault-light` in PDI, and
+  `.talk-panel` and `.waveform` in QRME this round — and no test said a
+  word about any of them. Each time somebody wrote the override, read it
+  back, and had every reason to believe it worked; the browser disagreed
+  because a media query adds no specificity, so between two rules on the
+  identical selector the later one wins on source order.
+
+      asked     is there a rule that overrides it
+      mattered  is that the rule the browser uses
+
+  The check compares only *textually identical* selectors, so a hit is
+  never a specificity judgement call. `.dock .thing` beating `.thing` is
+  the cascade working and is not reported. Three of its four tests are
+  about the checker rather than the sheet — it fails on a sample that has
+  the defect, passes the same sample reordered, and leaves a more specific
+  later selector alone — because two of this estate's proof tests once
+  passed vacuously, and a checker whose only evidence is a green run is
+  not evidence. This console is clean; the guard is here so it stays that
+  way.
+
 - **The capability register: nine faculties, on one page, each beside the
   permission it rests on.** Every one of these already had a door —
   `console_doorless.txt` has stood at zero for many rounds — and not one of
