@@ -6,6 +6,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.7.1] - 2026-08-30
+
+### Fixed
+
+- **Nothing that floats sits on a control any more, and the guards can see
+  it.** Three separate defects, all of them invisible to a suite that reads
+  declarations.
+  - The phone rule lifting the help button and the status widgets clear of
+    the tab bar was declared two hundred lines above the base rules it
+    overrides. Same specificity, later wins: it had never once applied,
+    under a comment explaining the fix. The task window had no phone rule
+    at all and floated over the Hands screen's move checkboxes.
+  - The clearance was `76px`, a guess about a bar that is as tall as its
+    labels — translated into ten languages, and wrapping sooner in the
+    longer ones. The bar measures itself now and publishes `--tabbar-h`,
+    which `:root` also declares for a browser without a ResizeObserver.
+  - The minimized light rendered 22 wide and 44 tall — an ellipse. It is a
+    `<button>`, and the phone block sets `button { min-height: 44px }` so
+    every control is a real tap target; `min-height` beats `height`. The
+    button is the tap target now and carries no paint, and a face inside it
+    is the circle, so the widget is small again without giving up the thing
+    the 44px is there for.
+
+- **The screenshot harness builds the console before photographing it.**
+  The build was a requirement written in prose in its own docstring, never
+  checked, and this checkout's bundle was four days old. A gallery could be
+  re-shot to show a stylesheet fix and photograph a bundle from before it,
+  looking exactly as convincing. The gallery is re-shot on a console built
+  from this tree.
+
+### Changed
+
+- **Every numeric floor in the suite is registered and audited.** The last
+  six left `unregistered_floors.txt`, and registering them found one that
+  had been passing while measuring a different quantity on every run.
+
 ## [2.7.0] - 2026-08-29
 
 ### Fixed
@@ -11559,7 +11595,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.1...HEAD
+[2.7.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.0...app-v2.7.1
 [2.7.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.1...app-v2.7.0
 [2.3.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.0...app-v2.3.1
 [2.3.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.2.0...app-v2.3.0
