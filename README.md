@@ -312,23 +312,23 @@ them); the links under them are the product.
 ## Feature reference: every behaviour, defined
 
 Each entry below states a behaviour of the running product plainly enough
-to be checked against the code and found true or false. The console
-screens are drawn in `docs/desktop/` (regenerate with
-`python3 docs/desktop/build.py`); the full gallery is
-[docs/gallery.md](docs/gallery.md).
+to be checked against the code and found true or false. The screens are
+photographs of the running console, taken by `tools/shoot_screens.py`
+from the live app — a photograph outranks a drawing as evidence; the
+full tour is [docs/gallery.md](docs/gallery.md).
 
 <table>
   <tr>
-    <td align="center" width="50%"><a href="docs/desktop/01-overview.svg"><img src="docs/desktop/01-overview.svg" width="300" alt="Overview"></a><br><sub><b>01</b> · Overview<br>the day at a glance, the task window pinned</sub></td>
-    <td align="center" width="50%"><a href="docs/desktop/02-live-monitoring.svg"><img src="docs/desktop/02-live-monitoring.svg" width="300" alt="Live monitoring"></a><br><sub><b>02</b> · Live monitoring<br>readings against the person's own baseline</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/03-monitor.png"><img src="docs/screens/03-monitor.png" width="165" alt="Monitor"></a><br><sub><b>03</b> · Monitor<br>live readings against the learned baseline</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/08-baseline-metrics.png"><img src="docs/screens/08-baseline-metrics.png" width="165" alt="Baseline metrics"></a><br><sub><b>08</b> · Baseline metrics<br>the person's own normal, metric by metric</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/13-baseline.png"><img src="docs/screens/13-baseline.png" width="165" alt="Baseline"></a><br><sub><b>13</b> · Baseline<br>every limit on one screen, rounding up</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/04-cpr-coach.png"><img src="docs/screens/04-cpr-coach.png" width="165" alt="CPR coach"></a><br><sub><b>04</b> · CPR coach<br>clinical time with no network and no account</sub></td>
   </tr>
   <tr>
-    <td align="center" width="50%"><a href="docs/desktop/03-health.svg"><img src="docs/desktop/03-health.svg" width="300" alt="Health"></a><br><sub><b>03</b> · Health<br>history, trends, and foresight</sub></td>
-    <td align="center" width="50%"><a href="docs/desktop/04-emergency-guardian.svg"><img src="docs/desktop/04-emergency-guardian.svg" width="300" alt="Emergency &amp; guardian"></a><br><sub><b>04</b> · Emergency &amp; guardian<br>the ladder, the alarm queue, the record</sub></td>
-  </tr>
-  <tr>
-    <td align="center" width="50%"><a href="docs/desktop/05-coach-life.svg"><img src="docs/desktop/05-coach-life.svg" width="300" alt="Coach &amp; life"></a><br><sub><b>05</b> · Coach &amp; life<br>check-ins, journal, the grounded coach</sub></td>
-    <td align="center" width="50%"><a href="docs/desktop/06-privacy-data.svg"><img src="docs/desktop/06-privacy-data.svg" width="300" alt="Privacy &amp; data"></a><br><sub><b>06</b> · Privacy &amp; data<br>consents, sources, offline, the vault</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/07-coach.png"><img src="docs/screens/07-coach.png" width="165" alt="Coach"></a><br><sub><b>07</b> · Coach<br>grounded in the vault and the watched pages</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/15-which-model-answers.png"><img src="docs/screens/15-which-model-answers.png" width="165" alt="Which model answers"></a><br><sub><b>15</b> · Which model answers<br>who answered, on the record</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/18-careteam.png"><img src="docs/screens/18-careteam.png" width="165" alt="Care team"></a><br><sub><b>18</b> · Care team<br>per-person consent, quiet hours, the audit trail</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/12-channel.png"><img src="docs/screens/12-channel.png" width="165" alt="Channel"></a><br><sub><b>12</b> · Channel<br>the wrist drip: no watch app required</sub></td>
   </tr>
 </table>
 
