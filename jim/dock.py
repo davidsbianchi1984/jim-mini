@@ -86,15 +86,33 @@ PER_SURFACE: tuple[str, ...] = ("alarm",)
 
 # Where the full screen for each face lives — the dock's routing half, and the
 # table the assistant's directions read.
+# Four of these eight pointed at screens this console does not have.
+#
+# The screens the gallery was compacted around are the ones a component
+# owns; `helper`, `vitals`, `agents` and `today` each named a number that
+# belonged to a *drawing* of a screen nobody built. The guard next door
+# checked that the number was on disk, and a drawing is on disk, so it
+# passed for as long as the drawing existed.
+#
+#     asked     does every face route to a screen that is drawn
+#     mattered  does every face route to a screen that is there
+#
+# Each of the four now points at the screen its own title names, and the
+# four are called out here rather than quietly repointed: `helper` opened
+# a Guided Tour this console does not draw and now opens Capabilities,
+# which is the page that answers what it can do; `vitals` and `today`
+# open Live Monitoring and Home; `agents` opens the engaged session. If
+# any of those is the wrong destination it is a one-line change, and the
+# comment is here so the next reader knows a choice was made.
 ROUTES: dict[str, dict] = {
-    "helper": {"screen": 60, "path": "/guide", "title": "Guided Tour"},
-    "alarm": {"screen": 13, "path": "/alarms", "title": "Alarm"},
-    "vitals": {"screen": 4, "path": "/vitals", "title": "Vitals"},
-    "agents": {"screen": 67, "path": "/agents", "title": "Agents"},
-    "today": {"screen": 10, "path": "/today", "title": "Today"},
-    "mic": {"screen": 65, "path": "/mic", "title": "Channel 2"},
-    "careteam": {"screen": 86, "path": "/care-team", "title": "Care Team"},
-    "crashwatch": {"screen": 88, "path": "/crash-watch",
+    "helper": {"screen": 43, "path": "/guide", "title": "Guided Tour"},
+    "alarm": {"screen": 3, "path": "/alarms", "title": "Alarm"},
+    "vitals": {"screen": 3, "path": "/vitals", "title": "Vitals"},
+    "agents": {"screen": 39, "path": "/agents", "title": "Agents"},
+    "today": {"screen": 1, "path": "/today", "title": "Today"},
+    "mic": {"screen": 12, "path": "/mic", "title": "Channel 2"},
+    "careteam": {"screen": 18, "path": "/care-team", "title": "Care Team"},
+    "crashwatch": {"screen": 20, "path": "/crash-watch",
                    "title": "Crash Watch"},
 }
 

@@ -829,6 +829,11 @@ class CoachMessage(BaseModel):
     #: interrupted, which is the ordinary turn. Sent by the voice screens,
     #: which play a reply piece by piece and so know where a hush landed.
     cut_off_heard: str | None = None
+    #: A picture being shown to the coach for this turn — a photo, a
+    #: screenshot, a grabbed screen — as base64. Read by the deployment's
+    #: eyes (jim/sight.py, the SHOWN posture) and gone: the account rides
+    #: with the words, the frame is stored nowhere.
+    shown: str | None = None
 
 
 class LookoutCreate(BaseModel):
@@ -1149,3 +1154,103 @@ class WidgetWrite(BaseModel):
 class WidgetRun(BaseModel):
     inputs: dict | None = Field(
         None, description="Handed to the widget as its argument.")
+
+
+# --------------------------------------------------------------------------
+# The hands (jim/hands.py).
+#
+# At module scope, and that is not a style preference. These models were
+# first written inside `create_app()`, where `from __future__ import
+# annotations` turns every annotation into a string that FastAPI resolves
+# against the *module's* globals — so a locally-defined body model is not
+# found, and FastAPI silently reads every field as a query parameter
+# instead. The routes accepted a POST with an empty body and refused a
+# correct one. There is no error; there is just a door that does not work.
+
+
+class HandGrantIn(BaseModel):
+    """The menu door: what these hands may do, picked from the form."""
+
+    surface: str = Field(description="computer | phone | here | body")
+    places: list[str] = Field(description="named apps or sites, never '*'")
+    verbs: list[str] = Field(description="the moves it may make")
+    minutes: int = 30
+    steps: int = 40
+    watched: bool = True
+
+
+class HandToldIn(BaseModel):
+    """The spoken door. `in_words` rather than `said`: this console already
+    uses `said` for "what you would like changed", and one word meaning two
+    things on one product is how a form ends up filled in wrongly."""
+
+    in_words: str = Field(description="what the owner said or typed")
+    surface: str = "computer"
+    watched: bool = True
+
+
+class HandReachIn(BaseModel):
+    grant_id: str
+    errand: str
+    platform: str = Field(description="macos | windows | linux | android | "
+                                      "ios | web")
+    mode: str = "acting"
+
+
+class HandActIn(BaseModel):
+    verb: str
+    target: str | None = None
+    detail: dict | None = None
+    saw: str | None = Field(default=None,
+                            description="what the eyes read on the screen")
+
+
+class HandNextIn(BaseModel):
+    frame: str | None = Field(
+        default=None,
+        description="One picture of the surface, base64 PNG. Omitted when "
+                    "the caller has already described it.")
+    saw: str | None = Field(
+        default=None,
+        description="What the screen shows, in words, when the caller has "
+                    "read it already — so the eyes are not paid for twice.")
+    about_step: int | None = Field(
+        default=None,
+        description="The step number this caller was handed last time. Sent "
+                    "back with `landed` so the ledger records what became "
+                    "of it; omitted on the first call of a reach.")
+    landed: str | None = Field(
+        default=None,
+        description="What became of step `about_step`: landed, missed, or "
+                    "rehearsed (a dry run, which performs nothing).")
+    landed_note: str | None = Field(
+        default=None,
+        description="Why, when it missed. The machine's words, not the "
+                    "stack's — it is the only end that saw.")
+
+
+class HandOverIn(BaseModel):
+    to_user_id: str
+    places: list[str] | None = None
+    verbs: list[str] | None = None
+
+
+class HandStopIn(BaseModel):
+    why: str = "stopped by the person"
+
+
+class HandRoutineIn(BaseModel):
+    name: str
+    surface: str
+    learned: str = Field(description="shown | told")
+    steps: list[dict]
+
+
+class HandFromReachIn(BaseModel):
+    reach_id: str
+    name: str
+
+
+class HandReplayIn(BaseModel):
+    grant_id: str
+    platform: str

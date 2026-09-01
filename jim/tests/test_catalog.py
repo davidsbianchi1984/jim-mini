@@ -5,7 +5,7 @@ from jim import catalog
 
 def test_catalog_endpoint(client):
     body = client.get("/connectors/catalog").json()
-    providers = {p["provider"] for p in body["providers"]}
+    providers = {p["provider"] for p in body["app_providers"]}
     assert providers == {"apple", "google", "microsoft", "canva"}
     assert body["provider_count"] == 4
     assert body["app_count"] == len(catalog.CONNECTORS)

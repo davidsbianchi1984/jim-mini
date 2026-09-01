@@ -131,7 +131,7 @@ def _cooled_down(user_id: str, now: datetime) -> bool:
 def _slipping_meds(user_id: str, now: datetime) -> list[dict]:
     board = meds.adherence(user_id, days=7, now=now)
     out = []
-    for med in board.get("medications", []):
+    for med in board.get("adherence_rows", []):
         rate = med.get("rate")
         if rate is not None and rate < ADHERENCE_FLOOR:
             out.append({"name": med.get("name"), "rate": rate})

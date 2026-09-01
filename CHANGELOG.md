@@ -6,7 +6,364 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-08-31
+
+### Added
+
+- **The camera can photograph a card, not just a page.** The gallery has
+  two kinds of screen and until now the harness could only reach one. A
+  *page* is what a nav tab opens. A *state* is something the census numbers
+  separately — `Coach 14,24,82`, `Baseline 38,81` — because a component
+  draws more than one thing a person meets. Every state in the gallery was
+  a drawing, and not because anybody chose that: a drawing is what fills a
+  gap nobody can photograph.
+
+      asked     can the camera reach every page
+      mattered  can it reach everything the gallery numbers
+
+  A state is now found by `data-screen="<number>"` on the element that owns
+  it — the same shape as the `data-tab` the nav has always carried, and for
+  the same reason. A marker in the markup is a thing the camera and the
+  reader can both check; a CSS selector guessed from outside is a thing
+  that silently starts matching the wrong card. Four states are photographs
+  now: the provider picker (83), the journal's new entry (87), what went
+  wrong (93), and what it will not be (107).
+
+  Card portraits hide the shell's fixed furniture while they sit. An
+  element screenshot is a crop of the rendered page, not a render of the
+  element alone, so the first one came back with the Guardian's lights
+  across one corner and the task window across another. Nothing is hidden
+  from the gallery by this — every one of those is photographed on all
+  twenty-seven page captures, which is where a reader meets them.
+
+- **Two more off the list, and the two bugs finding them exposed.** The
+  Baseline metrics card (38) carries a marker; the Studio (111) is a page
+  no nav tile opens, reached the way a person reaches it — from the Talk
+  screen's rail, by the chip that names it. The rail's chips now carry
+  `data-go`, the destination stated in the markup rather than only inside
+  a closure, so the camera can press *that* chip instead of the eleventh
+  child of a list that reorders.
+
+  The Studio's first capture came back with the consent notice sitting
+  above its heading and the Guardian's lights open across its code box.
+  Both had the same cause: the signed-out recipes call
+  `localStorage.clear()` to reach the front door, and both the answered
+  notice and the tucked-away widgets are remembered exactly there. The
+  camera answered the notice and tucked the widgets once, at the start of
+  a run, and every capture after the first signed-out recipe carried the
+  consequence.
+
+      asked     was the notice answered
+      mattered  is it still answered when this shot is taken
+
+  Both repairs are idempotent and run before every capture that follows a
+  clear, so the order recipes are written in stops mattering.
+
+- **The right-edge check stopped crying wolf.** It reported the phone's
+  tab bar on every capture, and that bar keeps its row and scrolls
+  sideways on purpose — twenty-four tiles at a readable icon size do not
+  fit across a phone. A check with a false positive per capture is a check
+  nobody reads, so it is exempt by name with the reason beside it. What
+  remains is only content clipped away by accident.
+
+- **The CPR coach is a photograph.** Screen 14 is a state of the Monitor
+  screen behind a reading the product reads as cardiac arrest, so the
+  camera learned to type as well as press: a step is now a selector to
+  press, or `(selector, value)` to fill. The numbers in the recipe are
+  `jim/conditions.py`'s own — 200 bpm at respiration 10 clears
+  `hr >= max(180, resting + 100)` with slow breathing — so a change to
+  that rule stops the recipe reaching the screen and says so, instead of
+  quietly photographing something else.
+
+  Filling dispatches the event React listens for. Setting `.value` alone
+  updates the DOM node and leaves the component's state where it was, so
+  the form submits its defaults and the screen never appears.
+
+  The first capture came back as a blurred veil: a detection with guidance
+  opens the specialist's sphere, and when the browser refuses the audio
+  without a fresh gesture it holds, veil and all, over the whole viewport.
+  That is a real state and the Monitor page photographs it — but a
+  portrait of the card underneath is not where it belongs, so it joins the
+  furniture that steps aside while a card sits.
+
+- **`uncaptured_states.txt`** — the three the camera still cannot reach, each
+  with the specific thing in the way rather than a shrug. 105's card is
+  behind a route that answers 409 for a freshly enrolled account with no
+  tandem; 111 is a page reached from the Talk screen's tiles and wants a
+  recipe rather than a marker; 14, 38 and 82 have owning elements that have
+  not been identified in the source yet. The camera refused all five rather
+  than filing a right number over a wrong picture.
+
+## [2.8.0] - 2026-08-30
+
+### Added
+
+- **`test_a_media_query_adds_no_specificity.py`, carried by all three
+  products.** This defect has now shipped four times in this estate — the
+  `.help-fab` lift fixed here in 2.7.1, `.vault-light` in PDI, and
+  `.talk-panel` and `.waveform` in QRME this round — and no test said a
+  word about any of them. Each time somebody wrote the override, read it
+  back, and had every reason to believe it worked; the browser disagreed
+  because a media query adds no specificity, so between two rules on the
+  identical selector the later one wins on source order.
+
+      asked     is there a rule that overrides it
+      mattered  is that the rule the browser uses
+
+  The check compares only *textually identical* selectors, so a hit is
+  never a specificity judgement call. `.dock .thing` beating `.thing` is
+  the cascade working and is not reported. Three of its four tests are
+  about the checker rather than the sheet — it fails on a sample that has
+  the defect, passes the same sample reordered, and leaves a more specific
+  later selector alone — because two of this estate's proof tests once
+  passed vacuously, and a checker whose only evidence is a green run is
+  not evidence. This console is clean; the guard is here so it stays that
+  way.
+
+- **The capability register: nine faculties, on one page, each beside the
+  permission it rests on.** Every one of these already had a door —
+  `console_doorless.txt` has stood at zero for many rounds — and not one of
+  them had a place that named the set. Seeing was a card inside Channel &
+  camera; a bound body was one of twenty-four rows on What reaches out; the
+  look permit was a checkbox on Hands. Somebody wanting to answer *what can
+  this thing actually do* had to already know where to look, which meant the
+  only people who could answer it were the people who built it.
+
+      asked     can each capability be reached
+      mattered  can the whole set be read at once
+
+  The new **Capabilities** screen (114) carries four columns for each of the
+  nine — what it is, where it stands, what it rests on, where it is
+  withdrawn — and the third is read live from the same routes the owning
+  screens read, so the register cannot drift into a brochure. Nothing on it
+  grants, commands or revokes: it reads, and it routes. `README.md` carries
+  the same four columns as a table, for a reader who never opens the app.
+
+  The nine are named for what they do, not for the body part they resemble.
+  The engineering shorthand behind them is anatomical — the eyes, the ears,
+  the hands — and that shorthand is exactly wrong in front of a clinician, a
+  regulator or an attorney: *eyes* claims a faculty, where *visual
+  perception, described in words and not retained* states a behaviour that
+  can be checked against the code and found true or false.
+
+  A capability this console could not ask about renders as unread, never as
+  off. The two are different facts and the register refuses to let them look
+  the same — the same refusal the Held screen makes about an empty access
+  list.
+
+### Fixed
+
+- **The front door was drawn wider than the phone it was on.** `.onboarding`
+  is a grid whose one column was the implicit `auto` track, sized to its
+  item's max-content — 440px, the card's own width — so the card's
+  `max-width: 100%` resolved against 440 and capped nothing. On a 390px
+  phone the right-hand end of the Sign in button and the email and password
+  fields was simply not drawn, on the first screen anybody meets. The track
+  is `minmax(0, 1fr)` now, which makes the percentage mean what it says.
+
+  Every width this harness knew how to ask about had answered "fits", because
+  `.onboarding` scrolls and a scroll container absorbs its own overflow: the
+  document stayed exactly as wide as the window while the content inside was
+  clipped away. `tools/shoot_screens.py` grew `past_the_edge()`, which asks
+  every element on every capture whether it is painted past the viewport's
+  right edge, and names the ones that are.
+
+  Screens 40 and 42 were drawings because the camera could only press nav
+  tabs and neither of these is one. The harness grew a recipe table — where
+  to start, what to press, and a selector that proves it arrived — and both
+  are photographs now; the superseded drawings are deleted rather than left
+  beside them.
+
+## [2.7.1] - 2026-08-30
+
+### Fixed
+
+- **Nothing that floats sits on a control any more, and the guards can see
+  it.** Three separate defects, all of them invisible to a suite that reads
+  declarations.
+  - The phone rule lifting the help button and the status widgets clear of
+    the tab bar was declared two hundred lines above the base rules it
+    overrides. Same specificity, later wins: it had never once applied,
+    under a comment explaining the fix. The task window had no phone rule
+    at all and floated over the Hands screen's move checkboxes.
+  - The clearance was `76px`, a guess about a bar that is as tall as its
+    labels — translated into ten languages, and wrapping sooner in the
+    longer ones. The bar measures itself now and publishes `--tabbar-h`,
+    which `:root` also declares for a browser without a ResizeObserver.
+  - The minimized light rendered 22 wide and 44 tall — an ellipse. It is a
+    `<button>`, and the phone block sets `button { min-height: 44px }` so
+    every control is a real tap target; `min-height` beats `height`. The
+    button is the tap target now and carries no paint, and a face inside it
+    is the circle, so the widget is small again without giving up the thing
+    the 44px is there for.
+
+- **The screenshot harness builds the console before photographing it.**
+  The build was a requirement written in prose in its own docstring, never
+  checked, and this checkout's bundle was four days old. A gallery could be
+  re-shot to show a stylesheet fix and photograph a bundle from before it,
+  looking exactly as convincing. The gallery is re-shot on a console built
+  from this tree.
+
 ### Changed
+
+- **Every numeric floor in the suite is registered and audited.** The last
+  six left `unregistered_floors.txt`, and registering them found one that
+  had been passing while measuring a different quantity on every run.
+
+## [2.7.0] - 2026-08-29
+
+### Fixed
+
+- **The rule that lifted the help button off the tab bar had never once
+  applied.** On a phone the sidebar becomes the bottom bar, and the
+  floating things — the help button, the Guardian lights, the task window
+  — are told to sit clear of it. That rule was written in the layout media
+  block two hundred lines above the base `.help-fab { bottom: 22px }`.
+  Same specificity, later wins: the browser used the desktop rule, and the
+  comment above the override explained a fix nobody was getting. The task
+  window had no phone rule at all and floated over the Hands screen's move
+  checkboxes, which are the controls that card exists to offer.
+  - The overrides now sit after the rules they override, and the clearance
+    is measured rather than guessed: `76px` was a guess about the bar's
+    height, and the bar is as tall as its labels, which are translated
+    into ten languages and wrap sooner in the longer ones. The bar
+    measures itself and publishes `--tabbar-h`.
+  - `test_nothing_floats_over_a_control` reads the stylesheet for which
+    rule *wins*, not for which rules exist. The first draft of it checked
+    presence and passed on the broken file; that draft is described in the
+    guard's own docstring, because a guard that would have missed the
+    defect it was written for is the thing worth writing down.
+
+### Changed
+
+- **The front-page gallery is photographs of the running console**, not
+  drawings of it — 26 screens shot against a real backend, a real build
+  and a real enrolment, by a harness that refuses to file a capture it
+  cannot prove it reached.
+
+### Added
+
+- **The Guardian gets hands** — the coach could already see, hear and
+  speak, and could not press anything. A grant is now something a person
+  writes down: which surface, which named apps, which moves, for how many
+  minutes and how many steps — and one press takes the whole thing back.
+  The bounds live on the server (`jim/hands.py`), the screen fetches them
+  rather than inventing its own, and nothing moves without a small program
+  the person runs on their own machine.
+  - **Deliberately the sibling's machinery.** Verb for verb, bound for
+    bound, path for path with QRME's. A permission that means one thing in
+    one product and something looser in the other is worse than not having
+    it in the second at all — and the motor that performs these moves runs
+    on somebody's own machine, where a program that has to know which of
+    two products it is talking to gets shipped twice and fixed once.
+  - **Two doors, one row.** Pick the permission from the form, or say it
+    in words. The spoken door is strict on purpose: words that name no app
+    grant nothing, and the echo shows what the sentence was understood to
+    mean before anything moves.
+  - **It looks before it presses,** through the eyes this product already
+    had (`jim/sight.py`), and says what it saw. The screen is data to be
+    read, never instructions to be obeyed.
+  - **It will not type a secret.** A password field ends the step rather
+    than being filled, by field name and by the shape of the text, and the
+    ledger records the refusal as the system working.
+  - **What was permitted and what happened are two facts.** A landing is
+    reported by the only end that can see a cursor and lands in its own
+    table; a step nobody reported on reads as unlanded rather than as a
+    quiet yes, and a second report cannot rewrite the first.
+  - **A body is not a screen.** The `body` surface can watch and describe
+    and is refused outright for acting, naming the four things a screen
+    never needed — where it may be, a ceiling on force and speed, a stop
+    within reach of the person beside it, and a landing reported by a
+    sensor rather than by the thing asked to move. `jim/robotics.py` rates
+    some bodies as able to deliver chest compressions; none of those
+    commands is a hand verb, because that rating is reached through the
+    escalation ladder where a person on scene confirms it.
+  - Screen 113 on the front page, a door in the assistant's index, and a
+    tutorial lesson whose whole content is what it will not do.
+
+### Changed
+
+- **The trio is back on one number.** The README of each of the three
+  products promises that one version names one tested combination of all
+  three, and three hands rounds cut in QRME alone drifted that apart —
+  QRME at 2.6.0, this product and PDI at 2.3.1. This cut takes all three
+  to 2.7.0 rather than each to its own next number, because a promise the
+  numbers do not keep is worse than a gap in the sequence.
+
+## [2.3.1] - 2026-08-28
+
+- Tandem release with QRME 2.3.1 (the head the forge builds is actually
+  drawn); version alignment across the trio, no functional change in this repository.
+
+## [2.3.0] - 2026-08-28
+
+- Tandem release with QRME 2.3.0 (the forge: a photograph becomes a 3-D
+  face on the deployment's own hardware) and the third of the trio;
+  version alignment across the three, no functional change in this repository.
+
+## [2.2.0] - 2026-08-28
+
+- Tandem release with QRME 2.2.0 (Raise: the three time controls) and
+  PDI 2.2.0; version alignment across the trio, no functional change
+  in this repository.
+
+## [2.1.0] - 2026-08-28
+
+- Tandem release with QRME 2.1.0 (Raise — grow your own); version
+  alignment across the trio, no functional change in this repository.
+
+## [2.0.1] - 2026-08-28
+
+### Added
+
+- **The coach grows eyes** — show it a picture, a screenshot, or (on
+  platforms whose browser holds the door) one frame of your own screen.
+  The same eyes the monitors use (`jim/sight.py`), in a second posture:
+  fuller, with the readable text said out, and the frame stored nowhere.
+  The account rides with your words and returns beside the reply as
+  `seen`, so you read exactly what your coach was told. Refusals out
+  loud, translated: junk base64, a file the eyes cannot read, a
+  deployment with no sight key.
+- **The README shows the product** — every major component and tool now
+  carries its screen on the front page, thirty-two drawings across eight
+  themes, beside the watch gallery.
+
+## [2.0.0] - 2026-08-28
+
+### Changed
+
+- **Version alignment.** The trio releases in step; this cut
+  carries no functional change in this repository. QRME 2.0.0
+  ships the avatar round — the second ring on every seat, the
+  full-screen wardrobe, guest styling, the default-faces shelf,
+  and the XR platforms card.
+
+## [1.9.0] - 2026-08-27
+
+### Added
+
+- **Three doorless doors open on every shell.** The heartbeat
+  (`POST /heartbeat/{uid}` answering the clock's skew), the freshness
+  verdict (`GET /freshness/{uid}` with both ages on the card), and the
+  stretch that hears (`POST /day/{uid}/stretches/{id}/heard`, raw audio
+  in, words out, nothing stored) reach iOS, Android and Windows: beat
+  once on day-screen entry, a freshness card with a refresh button, and
+  a file-picker upload on any running stretch. Five new phrases ride
+  the localization tables of all ten languages on all three shells.
+  Three doorless ledgers close to zero for the second time.
+
+### Changed
+
+- **Two floors joined the registry.** The body-route sweep's floor and
+  the erase audit's credential-table floor now live in `ratchets.py`
+  with the way to measure the same quantity, audited every run; the six
+  rows left in the unregistered-floors ledger are each told apart in
+  prose — the guards' own driven counts, and directions written as
+  comparisons.
+- **The front page welcomes every age.** The README stops leading with
+  seniors: JIM watches over anyone living with a body, with five
+  capability tables (Watching, Responding, Living, Speaking, Trust),
+  keeping the wrist gallery, the release history and the scripture.
 
 - **Ten wire names mean one thing each.** One field name carrying two
   meanings across routes misleads the reader the API told to rely on
@@ -29,6 +386,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `signin_providers`, and the calm protocol's rows `calm_steps`. From
   here a new two-meaning wire name is a failing guard, not a backlog
   entry.
+- **Seventeen "unverifiable" iOS fields verified for real.** The shape
+  guard's fixture now lives the states its record said could not be
+  manufactured — three check-ins and two answered guidance rounds build
+  a continuity, a trend, and a helpfulness tally. And the presence rows
+  were never dead: fields inside `[String: X]` map values were being
+  compared against the map's own keys, so real wire fields read as
+  fiction — the Swift walker descended into the wrapper and the C#
+  walker skipped maps entirely. Both walkers fixed, with canaries; the
+  unverified record drops from 29 rows to 13.
 
 ### Fixed
 
@@ -11397,7 +11763,18 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.9...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.9.0...HEAD
+[2.9.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.8.0...app-v2.9.0
+[2.8.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.1...app-v2.8.0
+[2.7.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.0...app-v2.7.1
+[2.7.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.1...app-v2.7.0
+[2.3.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.3.0...app-v2.3.1
+[2.3.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.2.0...app-v2.3.0
+[2.2.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.1.0...app-v2.2.0
+[2.1.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.0.1...app-v2.1.0
+[2.0.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.0.0...app-v2.0.1
+[2.0.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.9.0...app-v2.0.0
+[1.9.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.9...app-v1.9.0
 [1.8.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.8...app-v1.8.9
 [1.8.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.7...app-v1.8.8
 [1.8.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v1.8.6...app-v1.8.7

@@ -137,7 +137,7 @@ def test_every_robot_in_the_catalog_can_be_bound(client):
 def test_every_connector_in_the_catalog_can_be_connected(client):
     """Provider and app together, which is how the catalog is keyed."""
     uid = enroll(client)
-    catalog = client.get("/connectors/catalog").json()["providers"]
+    catalog = client.get("/connectors/catalog").json()["app_providers"]
     pairs = [(p["provider"], app["app"])
              for p in catalog for app in (p.get("apps") or [])]
     _check(

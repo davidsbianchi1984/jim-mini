@@ -1,32 +1,87 @@
 # JIM-mini
 
-**A personal health guardian for people managing known conditions.**
+**A personal health guardian for anyone, at any age.**
 
-JIM-mini watches the vital signs of a person living with known health
-conditions and responds when they cannot: a check-in first, and when
-readings collapse or the questions go unanswered, the help they programmed
-in advance. It is built for seniors and their families who want safety,
-independence, and peace of mind — around the clock, including during sleep.
+JIM-mini watches over one person's health the way a good companion would:
+it learns what is normal *for them*, notices when something drifts, asks
+before it assumes, and — only when readings collapse or the questions go
+unanswered — runs the help they programmed in advance. It is built for
+anyone living with a body: a person managing a chronic condition, an
+athlete watching recovery, a parent keeping half an eye on the numbers, a
+student under stress, somebody who lives alone at any age, and the
+families and care teams around all of them. Safety, independence, and
+peace of mind are not an age bracket.
 
-**Current release: v1.8.9** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v2.9.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
 [PDI](https://github.com/davidsbianchi1984/pdi) (personal data vault). One
 version number names one tested combination of all three.
 
+## Who it is for
+
+Anyone who wants their own numbers watched on their own terms. The same
+product serves a twenty-five-year-old tuning training load, a new parent
+running on no sleep, a person of any age managing diabetes or a heart
+condition, and an elder whose family wants to know the quiet is ordinary
+quiet. Every capability below works for every account; nothing is gated,
+worded, or designed around one generation.
+
 ## What it does
+
+**Watching**
 
 | Capability | Description |
 |---|---|
-| **Guardian monitoring** | Live readings (heart rate, oxygen, respiration, temperature) are compared against the person's own learned baseline, not population averages. Drift raises a check-in; collapse or silence escalates. |
+| **Guardian monitoring** | Live readings (heart rate, oxygen, respiration, temperature, stress) compared against the person's own learned baseline, never population averages. Drift raises a check-in; collapse or silence escalates. |
+| **Baselines and foresight** | The system learns each person's normal from history they already have — a one-time health export seeds weeks of baseline instantly — and projects short-term trends so a decline is raised before it is a crisis. |
+| **Reading freshness** | Every reading carries its source and age; each consumer states how old is too old, so a stale number is never quietly treated as a current one. |
+| **Crash watch and vigil** | The crash watch notices when the person cannot press anything; the vigil notices when the signals simply stop, and asks a named steward to check in after a chosen quiet period. |
+| **Room and device senses** | Cameras, speakers, bands, rings, patches and doorway sensors each declare what they take in and who else they reach — cues are graded and kept, footage is not, and nothing that catches other people is on by default. |
+| **Wrist channel** | No watch app required: a phone automation drips readings to a per-user URL. Recipes for Apple Watch, Wear OS, Fitbit, Garmin, and any other brand via its own app — plus a standalone Wear OS app (`native/wear/`). |
+
+**Responding**
+
+| Capability | Description |
+|---|---|
 | **Early-warning escalation** | A programmed ladder: check in with the person first, then contacts, then the emergency path they configured in advance. See [docs/early-warning-escalation.md](docs/early-warning-escalation.md). |
-| **Baselines and foresight** | The system learns each person's normal from history they already have, and projects short-term trends so a decline is raised before it is a crisis. |
-| **Check-ins, journal, and coaching** | Daily mood and energy check-ins, a private journal, and a life coach that escalates to the guardian when a conversation reveals something the monitors cannot see. |
-| **Emergency tools** | A CPR metronome that keeps clinical time with no network, a scannable Medical ID, and an emergency screen that shares location. The dialer never claims a call it did not place. |
-| **Care circle** | Family and care-team visibility with per-person consent, quiet hours, and a full audit trail of who saw what. |
-| **Privacy and offline mode** | With `JIM_OFFLINE=1`, nothing leaves the host — enforced at every socket in the codebase and verified by tests, not policy. Optional on-prem storage through the PDI vault. |
+| **The far end** | A critical detection mails the consented emergency contact a real letter with an acknowledgment link, and a monthly liveness note proves the mailbox on a calm day instead of during an emergency. |
+| **Beacons and the rota** | Location beacons for finders, an answering queue for carers, and a relay that pages a rota of responders — every attempt on the ledger, and the sentence a finder reads derived from what actually happened. |
+| **Emergency tools** | A CPR metronome that keeps clinical time with no network and no account, first-aid playbooks localized in ten languages, a scannable Medical ID, and an emergency screen that shares location. The device dials; JIM never claims a call it did not place. |
+
+**Living**
+
+| Capability | Description |
+|---|---|
+| **Check-ins, journal, coaching** | Daily mood, energy and stress check-ins, a private journal, and a coach that answers with the network cut — an offline knowledge stack with every layer on the record — escalating to the Guardian when a conversation reveals what the monitors cannot see. |
+| **A presence that speaks first** | A companion (or professional, by request) that starts conversations from six areas of the person's own history, says why, and states on the wire what it will never be. |
+| **Engaged sessions** | An agent session that stays open until you sign off, acts across your own records through a written allowlist, and lands every change on a trail with the undo beside it. |
+| **The medicine cabinet** | Scheduled and as-needed medications, dose logging, adherence over a window, and missed-critical alerts — with the honesty line that JIM does not check drug interactions. |
+| **The money guardian** | Accounts whose numbers live only in the vault, balance warnings through the same proactive ladder, savings goals, and a written, revocable investing mandate whose orders are logged proposals. |
+| **Wellness** | Guided calm protocols whose counts never vary, fitness blocks with pace cues, meal plans, and meal photos that seal like clinical captures. |
+| **Clinical captures** | Photographs of what worries you, sealed in the vault, released to a clinician one deliberate choice at a time — intimate sites never swept in automatically, and no model ever sees the image. |
+| **Your people** | A circle by mutual invitation, messages that never leave the deployment, the phone's address book under a revocable grant, meetings that arrive as words, and shopping through the tandem that QRME is never told about. |
+
+**Speaking**
+
+| Capability | Description |
+|---|---|
+| **Standing voice conversations** | Talk, coach and check-in hold a real conversation: listen, answer aloud, listen again — the reply spoken piece by piece so the wait never grows with the answer, interruptible mid-sentence, ending only when the person leaves. |
+| **The ear that behaves** | The microphone has an off, silence is never a turn, a backgrounded tab says so instead of pretending to listen, and the voice follows the earbud in and out. |
+| **Ten languages** | Every screen, refusal and alarm sentence translated across the console and all three native shells — including what the product says while something is going wrong. |
+| **Ability is not a gate** | Every function works by text alone, voice is always optional, no step is timed, and the accessibility screen is reachable before sign-in. |
+
+**Trust**
+
+| Capability | Description |
+|---|---|
+| **Privacy and offline mode** | With `JIM_OFFLINE=1`, nothing leaves the host — enforced at every socket in the codebase and verified by tests, not policy. |
+| **Memory with an eraser** | Long-term memory lives sealed in the PDI vault, shown to the person it is about, with a per-moment forget that unmakes the vector, the seal and the ledger row together. |
+| **A record that shows tampering** | Consequential acts land in an append-only, hash-chained audit log; an erase records itself rather than removing what the chain already said. |
+| **Take it or delete it, anytime** | A full export derived from the schema, and an erasure measured against the schema — never against a list somebody wrote once. |
 | **Clinical handoff** | A sealed, revocable summary a person can hand to a clinician. See [docs/hipaa-baa.md](docs/hipaa-baa.md). |
+| **Honest degradation** | A refused key is a translated sentence naming the fix; a printed letter is never reported as a person notified; a stub answer is never dressed as the model you chose. |
 
 ## Product surfaces
 
@@ -38,7 +93,135 @@ version number names one tested combination of all three.
 | iOS shell | `native/ios/` | SwiftUI. |
 | Android shell | `native/android/` | Kotlin. |
 | Windows shell | `native/windows/` | C# / WinUI. |
-| Wrist channel | `jim/watch.py` | No app to install: a phone automation drips Health readings to a per-user URL, and a one-time health export seeds weeks of baseline instantly. Recipes for Apple Watch, Wear OS, Fitbit, and Garmin. |
+| Wear OS app | `native/wear/` | Standalone: the pulse read on the wrist, words never audio. |
+| Wrist channel | `jim/watch.py` | A phone automation drips Health readings to a per-user URL; a one-time export seeds weeks of baseline. |
+
+## Capabilities, and what each one rests on
+
+Nine faculties can be given to a Guardian. None is on by default, each
+requires a permission that is recorded before the faculty exists, and
+each is withdrawn on one screen — the same screen the console reads to
+say whether it is on at all.
+
+The console carries this table as a live screen (**Capabilities**,
+screen 114): the same four columns, with the third read from the running
+deployment rather than written here. A register that could disagree with
+the product would be a brochure, so it is built to read the same routes
+the owning screens read.
+
+| Faculty | What it does | What it rests on | Withdrawn on |
+|---|---|---|---|
+| **Visual perception** | A monitor with a lens describes what it is pointed at, in one sentence. The frame is held only long enough to describe it and is never written down. | A monitor switched on by the account holder, with a lens among its senses. Anything that senses other people is refused until they have been told. | Channel & camera |
+| **Auxiliary audio input** | A second microphone — a watch, earbuds, a clip-on, glasses — lent to the agent as its own channel while the phone's own microphone is occupied. | A device paired and switched on for this purpose, and consent recorded on this browser. Capture happens on the device; no audio sample is stored by the service. | Channel & camera |
+| **Speech output** | Written replies spoken aloud through the configured speaking provider, in the reader's own language. | A speaking provider configured for the deployment. With none configured the allowance route refuses, and the register says so rather than showing a balance of zero. | Bearing |
+| **Presented appearance** | The face the Guardian shows in the helper dock — a pane that shows and routes, and never acts. | A face chosen by the account holder. Until one is chosen the dock stays behind the helper button. | Bearing |
+| **Physical embodiment** | A robot bound to the account as a guardian responder. It registers as a device, so an escalation dispatches to it like any other, with a directive appropriate to its kind. | An explicit binding to a named platform from the published catalogue. Only platforms shipping or open for preorder can be bound; an announced one is refused by name. | What reaches out |
+| **Locomotion directives** | The movement a bound body may be told to make — come, follow, patrol, dock, stop — checked against a per-platform allowlist before anything reaches the robot. | A bound body with mobility among its capabilities. Not a separate switch: with no body bound there is nothing that could be told to move. | What reaches out |
+| **Screen observation** | Reading a screen without acting on it. Text found on a screen is treated as data and can never widen what is allowed, whatever that text claims. | A look permit naming its applications, its minutes and its steps. A wildcard is refused. | Hands |
+| **Interface operation** | Working a screen — moving a pointer, pressing a control, typing into a field — under a grant bounded in applications, moves, minutes and steps. | A grant naming all four limits, enforced where the move happens rather than on the screen that requested it. It never types passwords, PINs, one-time codes, card numbers or recovery phrases, and says so instead of trying. | Hands |
+| **Unattended operation** | A session left running: open until it is signed off, acting across the account holder's own records through a written allowlist, with the request that would undo each act recorded beside it. | A session the account holder opened, an area they named, and a per-area permit they granted. Every act is listed with its reversal; signing off closes it. | What JIM can touch |
+
+**On the naming.** These are named for what they do, not for the body
+part they resemble. The engineering shorthand behind them is anatomical
+— the eyes, the ears, the hands — and that shorthand is exactly wrong
+in front of a clinician, a regulator or an attorney: *eyes* claims a
+faculty, where *visual perception, described in words and not retained*
+states a behaviour that can be checked against the code and found true
+or false.
+
+**What is not here.** No faculty on this list can move a human body, and
+none is granted implicitly by another. A grant may be narrowed when it
+is handed on, never widened. The refusals are published by name at
+`GET /hands/vocabulary`, so a client that knew only what was permitted
+could not draw a documented refusal as a missing feature.
+
+## The screens you'll meet
+
+The app screens a person actually lives in — every major component
+and tool, drawn at phone scale in the product's dark-OLED style.
+The same screens serve the web console, the installed app and the
+three native shells; the desktop workspace and the complete tour of
+all 112 live in [docs/gallery.md](docs/gallery.md), and the watch
+faces have their own gallery below.
+
+**First meeting**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/09-sign-in.png"><img src="docs/screens/09-sign-in.png" width="165" alt="Sign in"></a><br><sub><b>09</b> · Sign in<br>your account, your baseline, your say</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/10-log-in.png"><img src="docs/screens/10-log-in.png" width="165" alt="42 Log In"></a><br><sub><b>10</b> · 42 Log In</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/23-before-anything-is-sent.png"><img src="docs/screens/23-before-anything-is-sent.png" width="165" alt="Before anything is sent"></a><br><sub><b>23</b> · Before anything is sent<br>the first-run notice, ahead of the first byte</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/01-home.png"><img src="docs/screens/01-home.png" width="165" alt="Home"></a><br><sub><b>01</b> · Home<br>the guardian's day at a glance</sub></td>
+  </tr>
+</table>
+
+**Talking to JIM**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/07-coach.png"><img src="docs/screens/07-coach.png" width="165" alt="Life coach"></a><br><sub><b>07</b> · Life coach<br>career, relationships, mental health — grounded in the vault</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/14-coach-out-loud.svg"><img src="docs/screens/14-coach-out-loud.svg" width="165" alt="Coach out loud"></a><br><sub><b>14</b> · Coach out loud<br>the coach speaks, and follows the earbud</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/15-which-model-answers.png"><img src="docs/screens/15-which-model-answers.png" width="165" alt="83 Which Model Answers"></a><br><sub><b>15</b> · 83 Which Model Answers</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/39-engaged.png"><img src="docs/screens/39-engaged.png" width="165" alt="Talk"></a><br><sub><b>39</b> · Talk<br>the standing conversation that lasts until you leave it</sub></td>
+  </tr>
+</table>
+
+**The guardian at work**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/03-monitor.png"><img src="docs/screens/03-monitor.png" width="165" alt="Live monitoring"></a><br><sub><b>03</b> · Live monitoring<br>what the monitors sense, read into words</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/04-cpr-coach.png"><img src="docs/screens/04-cpr-coach.png" width="165" alt="14 CPR Coach"></a><br><sub><b>04</b> · 14 CPR Coach</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/31-safety.png"><img src="docs/screens/31-safety.png" width="165" alt="102 Safety"></a><br><sub><b>31</b> · 102 Safety</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/12-channel.png"><img src="docs/screens/12-channel.png" width="165" alt="65 Channel 2"></a><br><sub><b>12</b> · 65 Channel 2</sub></td>
+  </tr>
+</table>
+
+**Health, held**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/13-baseline.png"><img src="docs/screens/13-baseline.png" width="165" alt="81 Your Baseline"></a><br><sub><b>13</b> · 81 Your Baseline</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/08-baseline-metrics.png"><img src="docs/screens/08-baseline-metrics.png" width="165" alt="Baseline"></a><br><sub><b>08</b> · Baseline<br>the home of every limit: vigil, sensitivity, money</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/17-meds.png"><img src="docs/screens/17-meds.png" width="165" alt="Medications"></a><br><sub><b>17</b> · Medications<br>what is taken, when, and what noticed it</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/05-checkin.png"><img src="docs/screens/05-checkin.png" width="165" alt="Check-in"></a><br><sub><b>05</b> · Check-in<br>mood, energy, stress — thirty seconds, kept</sub></td>
+  </tr>
+</table>
+
+**The life half**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/06-journal.png"><img src="docs/screens/06-journal.png" width="165" alt="Journal"></a><br><sub><b>06</b> · Journal<br>written to yourself, read by nobody else</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/19-journal-new-entry.png"><img src="docs/screens/19-journal-new-entry.png" width="165" alt="87 Journal"></a><br><sub><b>19</b> · 87 Journal</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/32-wellness.png"><img src="docs/screens/32-wellness.png" width="165" alt="103 Wellness"></a><br><sub><b>32</b> · 103 Wellness</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/24-aims.png"><img src="docs/screens/24-aims.png" width="165" alt="95 What You're Working On"></a><br><sub><b>24</b> · 95 What You're Working On</sub></td>
+  </tr>
+</table>
+
+**Eyes and ears**
+
+**Your data, your say**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/26-held.png"><img src="docs/screens/26-held.png" width="165" alt="What's held about you"></a><br><sub><b>26</b> · What's held about you<br>the memory shelf — shown, curatable, forgettable</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/38-permits.png"><img src="docs/screens/38-permits.png" width="165" alt="109 Engaged"></a><br><sub><b>38</b> · 109 Engaged</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/43-capabilities.png"><img src="docs/screens/43-capabilities.png" width="165" alt="114 Capabilities"></a><br><sub><b>43</b> · 114 Capabilities</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/37-access.png"><img src="docs/screens/37-access.png" width="165" alt="108 Ability Is Not A Gate"></a><br><sub><b>37</b> · 108 Ability Is Not A Gate</sub></td>
+  </tr>
+</table>
+
+**People around you**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/18-careteam.png"><img src="docs/screens/18-careteam.png" width="165" alt="Care team"></a><br><sub><b>18</b> · Care team<br>the humans on the ladder, by name</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/25-wards.png"><img src="docs/screens/25-wards.png" width="165" alt="96 Who You Watch"></a><br><sub><b>25</b> · 96 Who You Watch</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/21-community.png"><img src="docs/screens/21-community.png" width="165" alt="92 Community"></a><br><sub><b>21</b> · 92 Community</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/27-attending.png"><img src="docs/screens/27-attending.png" width="165" alt="98 Who Else Is Looking"></a><br><sub><b>27</b> · 98 Who Else Is Looking</sub></td>
+  </tr>
+</table>
 
 ## On the wrist
 
@@ -70,60 +253,60 @@ The drawings are the design set (`python3 docs/watch/build.py` regenerates
 them); the links under them are the product.
 
 <table>
-<tr>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/01-home"><img src="docs/watch/01-home.svg" width="120" alt="01 Home"></a><br><sub><a href="https://jim-mini.com/#watch/01-home">01 · Home</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/02-talk"><img src="docs/watch/02-talk.svg" width="120" alt="02 Talk"></a><br><sub><a href="https://jim-mini.com/#watch/02-talk">02 · Talk</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/03-voice"><img src="docs/watch/03-voice.svg" width="120" alt="03 Voice"></a><br><sub><a href="https://jim-mini.com/#watch/03-voice">03 · Voice</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/04-health"><img src="docs/watch/04-health.svg" width="120" alt="04 Health"></a><br><sub><a href="https://jim-mini.com/#watch/04-health">04 · Health</a></sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/05-heart"><img src="docs/watch/05-heart.svg" width="120" alt="05 Heart"></a><br><sub><a href="https://jim-mini.com/#watch/05-heart">05 · Heart</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/06-rings"><img src="docs/watch/06-rings.svg" width="120" alt="06 Rings"></a><br><sub><a href="https://jim-mini.com/#watch/06-rings">06 · Rings</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/07-briefing"><img src="docs/watch/07-briefing.svg" width="120" alt="07 Briefing"></a><br><sub><a href="https://jim-mini.com/#watch/07-briefing">07 · Briefing</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/08-streak"><img src="docs/watch/08-streak.svg" width="120" alt="08 Streak"></a><br><sub><a href="https://jim-mini.com/#watch/08-streak">08 · Streak</a></sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/09-check-in"><img src="docs/watch/09-check-in.svg" width="120" alt="09 Check-in"></a><br><sub><a href="https://jim-mini.com/#watch/09-check-in">09 · Check-in</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/10-insight"><img src="docs/watch/10-insight.svg" width="120" alt="10 Insight"></a><br><sub><a href="https://jim-mini.com/#watch/10-insight">10 · Insight</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/11-monitoring"><img src="docs/watch/11-monitoring.svg" width="120" alt="11 Monitoring"></a><br><sub><a href="https://jim-mini.com/#watch/11-monitoring">11 · Monitoring</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/12-foresight"><img src="docs/watch/12-foresight.svg" width="120" alt="12 Foresight"></a><br><sub><a href="https://jim-mini.com/#watch/12-foresight">12 · Foresight</a></sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/13-emergency"><img src="docs/watch/13-emergency.svg" width="120" alt="13 Emergency"></a><br><sub><a href="https://jim-mini.com/#watch/13-emergency">13 · Emergency</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/14-cpr"><img src="docs/watch/14-cpr.svg" width="120" alt="14 CPR"></a><br><sub><a href="https://jim-mini.com/#watch/14-cpr">14 · CPR</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/15-medical-id"><img src="docs/watch/15-medical-id.svg" width="120" alt="15 Medical ID"></a><br><sub><a href="https://jim-mini.com/#watch/15-medical-id">15 · Medical ID</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/16-sensitivity"><img src="docs/watch/16-sensitivity.svg" width="120" alt="16 Sensitivity"></a><br><sub><a href="https://jim-mini.com/#watch/16-sensitivity">16 · Sensitivity</a></sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/17-ambient"><img src="docs/watch/17-ambient.svg" width="120" alt="17 Ambient"></a><br><sub><a href="https://jim-mini.com/#watch/17-ambient">17 · Ambient</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/18-companion"><img src="docs/watch/18-companion.svg" width="120" alt="18 Companion"></a><br><sub><a href="https://jim-mini.com/#watch/18-companion">18 · Companion</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/19-notifications"><img src="docs/watch/19-notifications.svg" width="120" alt="19 Notifications"></a><br><sub><a href="https://jim-mini.com/#watch/19-notifications">19 · Notifications</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/20-devices"><img src="docs/watch/20-devices.svg" width="120" alt="20 Devices"></a><br><sub><a href="https://jim-mini.com/#watch/20-devices">20 · Devices</a></sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/21-guardian"><img src="docs/watch/21-guardian.svg" width="120" alt="21 Guardian"></a><br><sub><a href="https://jim-mini.com/#watch/21-guardian">21 · Guardian</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/22-settings"><img src="docs/watch/22-settings.svg" width="120" alt="22 Settings"></a><br><sub><a href="https://jim-mini.com/#watch/22-settings">22 · Settings</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/23-breathe"><img src="docs/watch/23-breathe.svg" width="120" alt="23 Breathe"></a><br><sub><a href="https://jim-mini.com/#watch/23-breathe">23 · Breathe</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/24-feedback"><img src="docs/watch/24-feedback.svg" width="120" alt="24 Feedback"></a><br><sub><a href="https://jim-mini.com/#watch/24-feedback">24 · Feedback</a></sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/25-journal"><img src="docs/watch/25-journal.svg" width="120" alt="25 Journal"></a><br><sub><a href="https://jim-mini.com/#watch/25-journal">25 · Journal</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/26-coach"><img src="docs/watch/26-coach.svg" width="120" alt="26 Coach"></a><br><sub><a href="https://jim-mini.com/#watch/26-coach">26 · Coach</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/27-baseline"><img src="docs/watch/27-baseline.svg" width="120" alt="27 Baseline"></a><br><sub><a href="https://jim-mini.com/#watch/27-baseline">27 · Baseline</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/28-sources"><img src="docs/watch/28-sources.svg" width="120" alt="28 Sources"></a><br><sub><a href="https://jim-mini.com/#watch/28-sources">28 · Sources</a></sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/29-privacy"><img src="docs/watch/29-privacy.svg" width="120" alt="29 Privacy"></a><br><sub><a href="https://jim-mini.com/#watch/29-privacy">29 · Privacy</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/30-handoff"><img src="docs/watch/30-handoff.svg" width="120" alt="30 Handoff"></a><br><sub><a href="https://jim-mini.com/#watch/30-handoff">30 · Handoff</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/31-offline"><img src="docs/watch/31-offline.svg" width="120" alt="31 Offline"></a><br><sub><a href="https://jim-mini.com/#watch/31-offline">31 · Offline</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/32-conditions"><img src="docs/watch/32-conditions.svg" width="120" alt="32 Conditions"></a><br><sub><a href="https://jim-mini.com/#watch/32-conditions">32 · Conditions</a></sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/33-style"><img src="docs/watch/33-style.svg" width="120" alt="33 Style"></a><br><sub><a href="https://jim-mini.com/#watch/33-style">33 · Style</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/34-history"><img src="docs/watch/34-history.svg" width="120" alt="34 History"></a><br><sub><a href="https://jim-mini.com/#watch/34-history">34 · History</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/35-family"><img src="docs/watch/35-family.svg" width="120" alt="35 Family"></a><br><sub><a href="https://jim-mini.com/#watch/35-family">35 · Family</a></sub></td>
-<td align="center" width="25%"><a href="https://jim-mini.com/#watch/36-agents"><img src="docs/watch/36-agents.svg" width="120" alt="36 Agents"></a><br><sub><a href="https://jim-mini.com/#watch/36-agents">36 · Agents</a></sub></td>
-</tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/01-home"><img src="docs/watch/01-home.svg" width="120" alt="01 Home"></a><br><sub><a href="https://jim-mini.com/#watch/01-home">01 · Home</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/02-talk"><img src="docs/watch/02-talk.svg" width="120" alt="02 Talk"></a><br><sub><a href="https://jim-mini.com/#watch/02-talk">02 · Talk</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/03-voice"><img src="docs/watch/03-voice.svg" width="120" alt="03 Voice"></a><br><sub><a href="https://jim-mini.com/#watch/03-voice">03 · Voice</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/04-health"><img src="docs/watch/04-health.svg" width="120" alt="04 Health"></a><br><sub><a href="https://jim-mini.com/#watch/04-health">04 · Health</a></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/05-heart"><img src="docs/watch/05-heart.svg" width="120" alt="05 Heart"></a><br><sub><a href="https://jim-mini.com/#watch/05-heart">05 · Heart</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/06-rings"><img src="docs/watch/06-rings.svg" width="120" alt="06 Rings"></a><br><sub><a href="https://jim-mini.com/#watch/06-rings">06 · Rings</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/07-briefing"><img src="docs/watch/07-briefing.svg" width="120" alt="07 Briefing"></a><br><sub><a href="https://jim-mini.com/#watch/07-briefing">07 · Briefing</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/08-streak"><img src="docs/watch/08-streak.svg" width="120" alt="08 Streak"></a><br><sub><a href="https://jim-mini.com/#watch/08-streak">08 · Streak</a></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/09-check-in"><img src="docs/watch/09-check-in.svg" width="120" alt="09 Check-in"></a><br><sub><a href="https://jim-mini.com/#watch/09-check-in">09 · Check-in</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/10-insight"><img src="docs/watch/10-insight.svg" width="120" alt="10 Insight"></a><br><sub><a href="https://jim-mini.com/#watch/10-insight">10 · Insight</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/11-monitoring"><img src="docs/watch/11-monitoring.svg" width="120" alt="11 Monitoring"></a><br><sub><a href="https://jim-mini.com/#watch/11-monitoring">11 · Monitoring</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/12-foresight"><img src="docs/watch/12-foresight.svg" width="120" alt="12 Foresight"></a><br><sub><a href="https://jim-mini.com/#watch/12-foresight">12 · Foresight</a></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/13-emergency"><img src="docs/watch/13-emergency.svg" width="120" alt="13 Emergency"></a><br><sub><a href="https://jim-mini.com/#watch/13-emergency">13 · Emergency</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/14-cpr"><img src="docs/watch/14-cpr.svg" width="120" alt="14 CPR"></a><br><sub><a href="https://jim-mini.com/#watch/14-cpr">14 · CPR</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/15-medical-id"><img src="docs/watch/15-medical-id.svg" width="120" alt="15 Medical ID"></a><br><sub><a href="https://jim-mini.com/#watch/15-medical-id">15 · Medical ID</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/16-sensitivity"><img src="docs/watch/16-sensitivity.svg" width="120" alt="16 Sensitivity"></a><br><sub><a href="https://jim-mini.com/#watch/16-sensitivity">16 · Sensitivity</a></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/17-ambient"><img src="docs/watch/17-ambient.svg" width="120" alt="17 Ambient"></a><br><sub><a href="https://jim-mini.com/#watch/17-ambient">17 · Ambient</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/18-companion"><img src="docs/watch/18-companion.svg" width="120" alt="18 Companion"></a><br><sub><a href="https://jim-mini.com/#watch/18-companion">18 · Companion</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/19-notifications"><img src="docs/watch/19-notifications.svg" width="120" alt="19 Notifications"></a><br><sub><a href="https://jim-mini.com/#watch/19-notifications">19 · Notifications</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/20-devices"><img src="docs/watch/20-devices.svg" width="120" alt="20 Devices"></a><br><sub><a href="https://jim-mini.com/#watch/20-devices">20 · Devices</a></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/21-guardian"><img src="docs/watch/21-guardian.svg" width="120" alt="21 Guardian"></a><br><sub><a href="https://jim-mini.com/#watch/21-guardian">21 · Guardian</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/22-settings"><img src="docs/watch/22-settings.svg" width="120" alt="22 Settings"></a><br><sub><a href="https://jim-mini.com/#watch/22-settings">22 · Settings</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/23-breathe"><img src="docs/watch/23-breathe.svg" width="120" alt="23 Breathe"></a><br><sub><a href="https://jim-mini.com/#watch/23-breathe">23 · Breathe</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/24-feedback"><img src="docs/watch/24-feedback.svg" width="120" alt="24 Feedback"></a><br><sub><a href="https://jim-mini.com/#watch/24-feedback">24 · Feedback</a></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/25-journal"><img src="docs/watch/25-journal.svg" width="120" alt="25 Journal"></a><br><sub><a href="https://jim-mini.com/#watch/25-journal">25 · Journal</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/26-coach"><img src="docs/watch/26-coach.svg" width="120" alt="26 Coach"></a><br><sub><a href="https://jim-mini.com/#watch/26-coach">26 · Coach</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/27-baseline"><img src="docs/watch/27-baseline.svg" width="120" alt="27 Baseline"></a><br><sub><a href="https://jim-mini.com/#watch/27-baseline">27 · Baseline</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/28-sources"><img src="docs/watch/28-sources.svg" width="120" alt="28 Sources"></a><br><sub><a href="https://jim-mini.com/#watch/28-sources">28 · Sources</a></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/29-privacy"><img src="docs/watch/29-privacy.svg" width="120" alt="29 Privacy"></a><br><sub><a href="https://jim-mini.com/#watch/29-privacy">29 · Privacy</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/30-handoff"><img src="docs/watch/30-handoff.svg" width="120" alt="30 Handoff"></a><br><sub><a href="https://jim-mini.com/#watch/30-handoff">30 · Handoff</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/31-offline"><img src="docs/watch/31-offline.svg" width="120" alt="31 Offline"></a><br><sub><a href="https://jim-mini.com/#watch/31-offline">31 · Offline</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/32-conditions"><img src="docs/watch/32-conditions.svg" width="120" alt="32 Conditions"></a><br><sub><a href="https://jim-mini.com/#watch/32-conditions">32 · Conditions</a></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/33-style"><img src="docs/watch/33-style.svg" width="120" alt="33 Style"></a><br><sub><a href="https://jim-mini.com/#watch/33-style">33 · Style</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/34-history"><img src="docs/watch/34-history.svg" width="120" alt="34 History"></a><br><sub><a href="https://jim-mini.com/#watch/34-history">34 · History</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/35-family"><img src="docs/watch/35-family.svg" width="120" alt="35 Family"></a><br><sub><a href="https://jim-mini.com/#watch/35-family">35 · Family</a></sub></td>
+    <td align="center" width="25%"><a href="https://jim-mini.com/#watch/36-agents"><img src="docs/watch/36-agents.svg" width="120" alt="36 Agents"></a><br><sub><a href="https://jim-mini.com/#watch/36-agents">36 · Agents</a></sub></td>
+  </tr>
 </table>
 
 ## Feature reference: every behaviour, defined
@@ -258,6 +441,7 @@ Everything is environment-driven; the defaults run locally with no keys.
 | `JIM_OFFLINE` | `1` guarantees nothing leaves the host. |
 | `ANTHROPIC_API_KEY` (or `JIM_LLM=stub`) | Conversation model. OpenAI, Gemini, Grok, DeepSeek, Perplexity, Ollama, and custom endpoints are also supported (`JIM_*_MODEL`, `JIM_OLLAMA_URL`, `JIM_CUSTOM_LLM_URL`). |
 | `JIM_MODEL` | Model override for the default provider. |
+| `ELEVENLABS_API_KEY` | Spoken voice; without it the device voice stands in and says so. |
 | `JIM_QRME_URL` / `JIM_PDI_URL` / `JIM_PDI_TOKEN` | Tandem links to the sister products. |
 | `JIM_CORS_ORIGINS` | Allowed console origins. |
 
@@ -286,6 +470,17 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **2.9.0** | Cut with the siblings — QRME took the round: the room holds the second key, so a profile's owner says what it can ever do and the room says what it may do there, for the people in it. The AI and VERIFIED marks left the image pixels for the surface that draws them, because every face is drawn as a circle and a mark in a square's corner is what a circle crops. No functional changes to JIM's own faculties this round |
+| **2.8.0** | Nine faculties on one page. Every capability a Guardian can be given already had a door and none had a place that named the set, so a reader could only answer *what can this thing do* by already knowing where to look. The new Capabilities screen carries each faculty beside its live state, the permission it rests on, and the screen that withdraws it. The onboarding card that drew wider than a 390px phone is fixed, the camera now reports anything painted past the right edge, and a new guard refuses a media query that a later rule overrules. |
+| **2.7.1** | The floats on a phone stop lying: the rule lifting the help button off the tab bar had never once applied, the task window had no phone rule at all, and the minimized light rendered as an ellipse because a tap-target minimum beat its declared height. The clearance is measured from the bar rather than guessed, the camera builds the console before photographing it, and the guards read rectangles rather than declarations. |
+| **2.7.0** | The Guardian gets hands: a written grant to work a screen on a machine you own — named apps, named moves, capped in minutes and steps, taken back in one press. It looks before every press through the eyes this product already had, refuses to type a secret, records what actually landed separately from what was permitted, and refuses a body outright until four things a screen never needed are decided. The whole trio returns to one version number. |
+| **2.3.1** | Tandem release with QRME 2.3.1 (the head the forge builds is actually drawn); version alignment across the trio, no functional change in this repository. |
+| **2.3.0** | Tandem release with QRME 2.3.0 (the forge: a photograph becomes a 3-D face on the deployment's own hardware); version alignment across the trio, no functional change in this repository. |
+| **2.2.0** | Tandem release with QRME 2.2.0 (Raise: the three time controls) and PDI 2.2.0; version alignment across the trio, no functional change in this repository |
+| **2.1.0** | Tandem release with QRME 2.1.0 (Raise — grow your own); version alignment across the trio, no functional change in this repository |
+| **2.0.1** | **The coach grows eyes** — show it a picture, a screenshot, or one frame of your own screen; the monitors' own eyes in a fuller posture, the account returned beside the reply, the frame stored nowhere. The README now carries a screen for every major component. Tandem release with QRME 2.0.1 (the eyes and the room society) |
+| **2.0.0** | Tandem release with QRME 2.0.0 (the avatar round); version alignment across the trio, no functional change in this repository |
+| **1.9.0** | Three doorless doors open on every shell — heartbeat, freshness verdict, and the stretch that hears reach iOS, Android and Windows in all ten languages; ten-plus-five wire names each mean one thing and the collision record holds at zero; two floors join the live-measured registry; the front page welcomes every age |
 | **1.8.9** | Cut with the siblings — QRME took the round: the avatar registry, the slimmer room strip, the waiting seat, the dock that fits |
 | **1.8.8** | **How old is the reading** — the staleness contract: source-stamped ages, per-consumer windows with named states, the two silences separated, p95-at-decision on demand; meetings arrive as words under the roster's own keeping; the synced address book reaches all three shells |
 | **1.8.7** | **The coach carries its own settings** — four doors beside the conversation (Aims, Journal, Bearing, what JIM may do); the rest of the round is QRME's |
@@ -551,8 +746,16 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 | **0.1.1** | Native iOS / Android / Windows apps at parity. First-run onboarding. **Predictive early warning**, robots as guardian responders, family oversight, and provable custody |
 | **0.1.0** | First public release — **monitor → predict → guide → escalate**, tunable sensitivity, the life layer, Medical ID, provider handoff, and the QRME tandem |
 
-
 </details>
+
+## Made by
+
+Founded, owned and directed by **David Bianchi**
+([davidsbianchi1984](https://github.com/davidsbianchi1984)) — the product
+vision, the field reports that shaped every screen above, and the tandem
+design that ties JIM-mini to
+[QRME](https://github.com/davidsbianchi1984/qrme) and
+[PDI](https://github.com/davidsbianchi1984/pdi) under one version number.
 
 ## License
 

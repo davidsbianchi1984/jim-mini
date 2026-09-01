@@ -161,6 +161,22 @@ DOORS: tuple[Door, ...] = (
          # it was typed.
          ("excursion", "online", "the web", "internet", "look up",
           "browse", "robot", "printed code", "qr code", "post for me")),
+    Door("Hands", "Hands screen",
+         "permission for the Guardian to work a screen on a machine you "
+         "own — which apps, which moves, for how many minutes, and the "
+         "one press that takes it all back",
+         ("hands", "press for me", "click for me", "type for me",
+          "work my screen", "drive my computer", "do it on my phone",
+          "take over my screen", "fill it in for me")),
+    Door("Capabilities", "Capabilities screen",
+         "the register of every faculty this Guardian can be given — what "
+         "each one currently is, the permission it rests on, and the "
+         "screen that withdraws it; it reads and routes, and grants "
+         "nothing itself",
+         ("capabilities", "what can it do", "what can you do",
+          "what is it allowed to do", "permissions", "what did i agree to",
+          "what can it see", "what can it hear", "can it move",
+          "what is switched on", "how do i turn it off")),
     Door("Bearing", "Bearing screen",
          "how it speaks (language, tone, sensitivity, voice), what it was "
          "told about you, and what it made of that",

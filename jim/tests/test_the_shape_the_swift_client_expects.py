@@ -49,7 +49,8 @@ import re
 
 from .conftest import enroll
 from .test_the_shape_the_client_expects import (
-    _accepts as _cs_accepts, _descend, _returned_keys, _shape_of, _standing)
+    _accepts as _cs_accepts, _descend, _map_element, _returned_keys,
+    _shape_of, _standing)
 from . import ratchets
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
@@ -142,7 +143,10 @@ def _findings(struct: str, body, structs, seen=()) -> list[str]:
                        f"{shape}")
             continue
         nested = typ.strip("[]").split(":")[-1].strip()
-        out += _findings(nested, _descend(body, wire), structs, seen + (struct,))
+        value = _descend(body, wire)
+        if typ.replace(" ", "").startswith("[") and ":" in typ:
+            value = _map_element(value)     # the values are the records
+        out += _findings(nested, value, structs, seen + (struct,))
     return out
 
 
@@ -225,7 +229,7 @@ def test_the_scan_reaches_a_real_share_of_the_bindings(client):
     uid, other = _standing(client)
     driven = [f for _, _, f in _drive(client, uid, other)
               if f is not None]
-    assert len(driven) >= 15, (
+    assert len(driven) >= ratchets.floor("swift.driven"), (
         f"only {len(driven)} binding(s) were reachable — the fixture or the "
         f"extractor has stopped working")
 
@@ -239,6 +243,19 @@ def test_the_guard_would_catch_both_shapes_of_defect():
     assert _findings("Board", body, structs) == [
         "Board.widths is not on the wire",
         "Board.kinds is declared [String] and arrives as a object"]
+
+
+def test_the_guard_reads_a_map_element_not_its_wrapper():
+    """`HelpTally.helped_count` sat inside every value of `what_helps` and
+    the walker compared it against the map's own keys — condition names —
+    so a field genuinely on the wire read as fiction."""
+    structs = {"Profile": [("what_helps", "[String: Tally]")],
+               "Tally": [("helped_count", "Int")]}
+    body = {"what_helps": {"anxiety": {"helped_count": 2}}}
+    assert _findings("Profile", body, structs) == []
+    body = {"what_helps": {"anxiety": {"answered": 2}}}
+    assert _findings("Profile", body, structs) == [
+        "Tally.helped_count is not on the wire"]
 
 
 def test_swift_and_csharp_agree_about_what_a_list_is():

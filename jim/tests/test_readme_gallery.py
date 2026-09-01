@@ -30,6 +30,16 @@ GALLERY = os.path.join(ROOT, "docs", "gallery.md")
 SCREENS = os.path.join(ROOT, "docs", "screens")
 WATCH = os.path.join(ROOT, "docs", "watch")
 
+#: A screen is a drawing **or** a photograph. Until 2.7.0 every one of
+#: them was an SVG somebody drew, and these guards spelled that out — they
+#: globbed `*.svg` and would have called a photographed surface a missing
+#: one. The console is now photographed rather than illustrated, so the
+#: file extension is no longer the thing that makes a screen a screen.
+#:
+#:     asked     is there an SVG for this surface
+#:     mattered  is there a picture of this surface
+SCREEN_KINDS = (".svg", ".png")
+
 
 def _readme() -> str:
     with open(README, encoding="utf-8") as fh:
@@ -45,12 +55,14 @@ def _pages() -> str:
 
 
 def _on_disk(folder: str) -> set[str]:
-    return {f for f in os.listdir(folder) if f.endswith(".svg")}
+    return {f for f in os.listdir(folder)
+            if f.endswith(SCREEN_KINDS)}
 
 
 def _referenced(folder_name: str) -> list[str]:
     seen: dict[str, None] = {}
-    for name in re.findall(rf"(?:docs/)?{folder_name}/([\w\-.'%]+\.svg)",
+    for name in re.findall(
+            rf"(?:docs/)?{folder_name}/([\w\-.'%]+\.(?:svg|png))",
                             _pages()):
         seen.setdefault(name, None)
     return list(seen)
@@ -65,7 +77,8 @@ def test_no_screen_is_named_something_a_url_cannot_carry():
     that is going to be addressed from markup.
     """
     bad = sorted(f for f in _on_disk(SCREENS) | _on_disk(WATCH)
-                 if not re.fullmatch(r"[0-9a-z][0-9a-z\-.]*\.svg", f))
+                 if not re.fullmatch(
+                     r"[0-9a-z][0-9a-z\-.]*\.(?:svg|png)", f))
     assert not bad, ("screen files whose names are unsafe in a URL:\n  "
                      + "\n  ".join(bad))
 

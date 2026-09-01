@@ -112,6 +112,22 @@ def _descend(body, key):
     return body[key]
 
 
+def _map_element(value):
+    """A sample value out of a map field, for checking the element record.
+
+    A `Dictionary<string, X>` (C#) or `[String: X]` (Swift) field arrives as
+    an object whose KEYS are data — area names, conditions — and whose values
+    are the records worth checking. Descending into the wrapper compared X's
+    fields against those data keys: `HelpTally.helped_count` read as "not on
+    the wire" while it sat one level down inside every value, and the C#
+    walker skipped maps entirely — two guards, two different blindnesses over
+    the same shape. The container-pin lesson, relearned for maps.
+    """
+    if not isinstance(value, dict):
+        return None
+    return next((v for v in value.values() if isinstance(v, dict)), None)
+
+
 def _shape_of(value) -> str:
     """The kind of thing a JSON value is — the coarsest fact a decoder needs."""
     if isinstance(value, bool):
@@ -171,6 +187,12 @@ def _wrong_types(record: str, body, recs, seen=()) -> list[str]:
             out.append(f"{record}.{wire} is declared {typ} and arrives as a "
                        f"{shape}")
             continue
+        if typ.replace(" ", "").startswith("Dictionary<"):
+            inner = typ.replace(" ", "")[len("Dictionary<"):-1].split(",", 1)[-1]
+            nested = inner.replace("[]", "").split(".")[-1].rstrip(">")
+            out += _wrong_types(nested, _map_element(body[wire]), recs,
+                                seen + (record,))
+            continue
         nested = typ.replace("[]", "").split(".")[-1]
         out += _wrong_types(nested, _descend(body, wire), recs, seen + (record,))
     return out
@@ -187,6 +209,12 @@ def _mismatches(record: str, body, recs, seen=()) -> list[str]:
     for wire, typ in recs[record]:
         if wire not in got:
             out.append(f"{record}.{wire}")
+            continue
+        if typ.replace(" ", "").startswith("Dictionary<"):
+            inner = typ.replace(" ", "")[len("Dictionary<"):-1].split(",", 1)[-1]
+            nested = inner.replace("[]", "").split(".")[-1].rstrip(">")
+            out += _mismatches(nested, _map_element(_descend(body, wire)),
+                               recs, seen + (record,))
             continue
         nested = typ.replace("[]", "").split(".")[-1]
         out += _mismatches(nested, _descend(body, wire), recs, seen + (record,))
@@ -226,6 +254,19 @@ def _standing(client) -> tuple[str, str]:
     client.post(f"/meds/{uid}", json={
         "name": "Ibuprofen", "dose": "200 mg",
         "schedule": {"as_needed": True, "max_per_day": 3}})
+    # The swift record claimed continuity "cannot be manufactured: there is
+    # no route that builds one". There is no single route — and three
+    # check-ins plus two answered guidance rounds build one anyway, along
+    # with the check-in trend, the helpfulness tally and an area's standing.
+    # Living the state beat recording that you could not, again.
+    for mood, stress in ((4, 2), (3, 3), (5, 1)):
+        client.post(f"/checkin/{uid}", json={"mood": mood, "energy": 3,
+                                             "stress": stress})
+    for helped in (True, False, True):
+        client.post(f"/monitor/{uid}", json={"heart_rate": 120,
+                                             "respiratory_rate": 22})
+        client.post(f"/followup/{uid}", json={"helped": helped})
+    client.post(f"/adaptation/{uid}", json={})   # rebuilt with the answers in
     return uid, other
 
 
@@ -324,7 +365,7 @@ def test_the_scan_reaches_a_real_share_of_the_bindings(client):
     the most flattering possible way to be broken."""
     uid, other = _standing(client)
     driven = [m for _, _, m in _drive(client, uid, other) if m is not None]
-    assert len(driven) >= 20, (
+    assert len(driven) >= ratchets.floor("windows.driven"), (
         f"only {len(driven)} binding(s) were reachable — the fixture or the "
         f"extractor has stopped working")
 

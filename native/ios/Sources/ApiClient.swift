@@ -346,6 +346,16 @@ struct CuesSeen: Decodable {
 
 /// One moment a monitor took something in. `kept` is false for most of what
 /// is sensed and `dropped_because` says which promise stopped it.
+struct HeartbeatSkew: Decodable { let skew_ms: Double? }
+
+/// The staleness contract's stats, thinned to what a wrist-adjacent card
+/// shows; the consumer table stays a console reading.
+struct FreshnessFacts: Decodable {
+    let verdict: String
+    let reading_age_ms: Double?
+    let heartbeat_age_ms: Double?
+}
+
 struct Moment: Decodable {
     let id: String
     let monitor: String
@@ -3931,6 +3941,36 @@ extension ApiClient {
     func rotateWatchChannel(uid: String, token: String) async throws -> WatchSetup {
         try await request("/watch/channel/\(uid)/rotate", method: "POST",
                           token: token)
+    }
+
+    // ---- the staleness contract (jim/freshness.py) --------------------
+
+    /// The wrist channel's pulse apart from the readings, so the person
+    /// going quiet and the network going dark stop being one silence. The
+    /// shell that holds the link to the watch is the road for the beat.
+    func heartbeat(uid: String, token: String) async throws -> HeartbeatSkew {
+        try await request("/heartbeat/\(uid)", method: "POST",
+                          body: ["device_now": isoNow()], token: token)
+    }
+
+    /// The number you can produce on demand: how old the last reading and
+    /// the last pulse are, and which of the three silences this is.
+    func freshness(uid: String, token: String) async throws -> FreshnessFacts {
+        try await request("/freshness/\(uid)", token: token)
+    }
+
+    /// A recording from inside a meeting, as raw bytes — transcribed on
+    /// the way through, the audio never stored; the roster decides what
+    /// survives.
+    func stretchHeard(uid: String, stretchId: String, data: Data,
+                      token: String) async throws {
+        let _: Moment = try await request(
+            "/day/\(uid)/stretches/\(stretchId)/heard", method: "POST",
+            token: token, rawBody: data)
+    }
+
+    private func isoNow() -> String {
+        ISO8601DateFormatter().string(from: Date())
     }
 
     /// Upload the Health app's export.zip (or bare export.xml). History

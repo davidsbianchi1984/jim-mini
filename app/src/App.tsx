@@ -38,9 +38,11 @@ import { Reach } from "./screens/Reach";
 import { Bearing } from "./screens/Bearing";
 import { Held } from "./screens/Held";
 import { Access } from "./screens/Access";
+import { Capabilities } from "./screens/Capabilities";
 import { Watch } from "./screens/Watch";
+import { Hands } from "./screens/Hands";
 
-type Tab = "watch" | "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "bearing" | "held" | "access" | "settings";
+type Tab = "watch" | "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "hands" | "bearing" | "capabilities" | "held" | "access" | "settings";
 // Labels live in `l10n.ts` and are looked up by id — see `nav.*` there.
 //
 // They used to sit here as English literals, which made the console's own
@@ -78,6 +80,7 @@ const NAV: { id: Tab; icon: ReactNode }[] = [
   { id: "wards", icon: "🧒" },
   { id: "attending", icon: "🩺" },
   { id: "reach", icon: "🤖" },
+  { id: "hands", icon: "🖐" },
   { id: "bearing", icon: "🧭" },
   { id: "community", icon: "🗣" },
   { id: "presence", icon: "◍" },
@@ -87,6 +90,7 @@ const NAV: { id: Tab; icon: ReactNode }[] = [
   // rendered under `tab === "permits"`, and was reachable only through the
   // assistant's chip rail. A screen about what the assistant may change
   // must not be a screen only the assistant can open.
+  { id: "capabilities", icon: "▤" },
   { id: "permits", icon: "🛂" },
   { id: "held", icon: "🗄" },
   { id: "access", icon: "♿" },
@@ -121,6 +125,33 @@ export function App() {
   // thing that moved. `instant` because this is a new screen, not a journey
   // through the old one, and an animated fly-up reads as content moving.
   const content = useRef<HTMLElement>(null);
+  const bar = useRef<HTMLElement>(null);
+
+  // What the floating things have to clear.
+  //
+  // On a phone the sidebar becomes the bottom tab bar, and everything that
+  // floats — the help button, the Guardian lights, the task window — was
+  // told to sit 76px up from the bottom to stay off it. 76 is a guess about
+  // how tall that bar is, and the bar is as tall as its labels: "Live
+  // Monitoring" and "Your Baseline" wrap to two lines and push it past 76,
+  // so the help button landed on top of a tab. It is worse in the languages
+  // with longer words, which is every language this console is translated
+  // into and the one nobody was looking at.
+  //
+  //     asked     is the button clear of the bar
+  //     mattered  is it clear of *this* bar, with these words in it
+  //
+  // So the bar measures itself and says so, and the floats read it.
+  useEffect(() => {
+    const el = bar.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const publish = () => document.documentElement.style.setProperty(
+      "--tabbar-h", `${Math.round(el.getBoundingClientRect().height)}px`);
+    publish();
+    const watching = new ResizeObserver(publish);
+    watching.observe(el);
+    return () => watching.disconnect();
+  }, []);
   useEffect(() => {
     content.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [tab]);
@@ -191,7 +222,7 @@ export function App() {
     <div className="app">
       <VersionGuard />
       <Footsteps />
-      <aside className="sidebar">
+      <aside className="sidebar" ref={bar}>
         <div className="brand">
           <span className="orb" />
           <div>
@@ -201,7 +232,8 @@ export function App() {
         </div>
         <nav>
           {NAV.map((n) => (
-            <button key={n.id} className={"nav-item" + (tab === n.id ? " active" : "")} onClick={() => {
+            <button key={n.id} data-tab={n.id}
+                    className={"nav-item" + (tab === n.id ? " active" : "")} onClick={() => {
               // The watch is a place rather than a pane — it takes the
               // whole viewport and the URL, so the README's face links
               // and the menu entry arrive through the same door.
@@ -239,7 +271,9 @@ export function App() {
         {tab === "wards" && <Wards />}
         {tab === "attending" && <Attending />}
         {tab === "reach" && <Reach />}
+        {tab === "hands" && <Hands />}
         {tab === "bearing" && <Bearing />}
+        {tab === "capabilities" && <Capabilities go={(id) => setTab(id as Tab)} />}
         {tab === "held" && <Held />}
         {tab === "access" && <Access />}
         {tab === "settings" && <Settings />}

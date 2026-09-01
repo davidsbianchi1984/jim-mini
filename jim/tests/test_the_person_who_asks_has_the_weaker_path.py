@@ -224,11 +224,11 @@ def test_asking_reaches_the_specialist_and_says_where_the_answer_came_from(
     assert body["delivered"] is True, body
     assert body["content"]
     assert body["specialist_who"]["qrme_profile_id"] == "prf_specialist"
-    assert "not by JIM's own model" in body["provenance"]["method"], (
+    assert "not by JIM's own model" in body["answer_provenance"]["method"], (
         "the answer does not say it came from outside JIM — a reply that "
         "reads as the Guardian's own when a third party wrote it is the one "
         "thing this path must never do")
-    assert "nothing else from your record" in body["provenance"]["shared"]
+    assert "nothing else from your record" in body["answer_provenance"]["shared"]
 
 
 def test_the_exchange_lands_in_the_same_thread_as_the_rest(make_tandem):

@@ -27,6 +27,12 @@ export function Coach({ go }: {
   const [error, setError] = useState<string | null>(null);
   const [fromSpecialist, setFromSpecialist] = useState<SpecialistAnswer | null>(null);
   const lang = visitorLang();
+  // The eye: a picture being shown to the coach for the next turn — a
+  // photo, a screenshot, a grabbed screen — read by the Guardian's own
+  // eyes (the monitors' eyes, in the shown posture) and stored nowhere.
+  const showPick = useRef<HTMLInputElement>(null);
+  const [shown, setShown] = useState<{ b64: string; name: string } | null>(
+    null);
 
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -148,8 +154,10 @@ export function Coach({ go }: {
     try {
       const r = await api.coach(session.userId,
                                 { area, message: said,
-                                  ...(cut ? { cut_off_heard: cut } : {}) },
+                                  ...(cut ? { cut_off_heard: cut } : {}),
+                                  ...(shown ? { shown: shown.b64 } : {}) },
                                 session.userToken);
+      setShown(null);
       setReply(r); setFromSpecialist(null);
       // Talking to it should mean being answered out loud — a spoken
       // question answered only in text is half a conversation. `say`
@@ -349,10 +357,62 @@ export function Coach({ go }: {
         <label>{tr("cch.mind", lang)}
           <textarea rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
         </label>
+        {shown && (
+          <p className="muted small">
+            👁 {shown.name}{" "}
+            <button onClick={() => setShown(null)}
+                    aria-label={tr("cch.show.drop", lang)}>✕</button>
+          </p>
+        )}
+        {/* The eye's own picker — never an upload. The picture is read by
+            the Guardian's eyes for this one turn and stored nowhere, the
+            same promise every monitor makes. */}
+        <input ref={showPick} type="file" accept="image/*"
+               style={{ display: "none" }}
+               onChange={(e) => {
+                 const f = e.target.files?.[0]; e.target.value = "";
+                 if (!f) return;
+                 const rd = new FileReader();
+                 rd.onload = () => {
+                   const url = String(rd.result || "");
+                   setShown({ b64: url.split(",", 2)[1] || "",
+                              name: f.name });
+                 };
+                 rd.readAsDataURL(f);
+               }} />
         <div className="voice-row">
           <button className="primary" onClick={() => ask()} disabled={busy || listening}>
             {busy ? tr("cch.thinking", lang) : tr("cch.ask", lang)}
           </button>
+          <button onClick={() => showPick.current?.click()} disabled={busy}>
+            👁 {tr("cch.show.pic", lang)}
+          </button>
+          {typeof navigator !== "undefined"
+            && !!navigator.mediaDevices?.getDisplayMedia && (
+            <button disabled={busy} onClick={async () => {
+              // One frame of the person's own screen, via the browser's
+              // picker — a statement, not a feed: the capture stops the
+              // moment the still is taken.
+              try {
+                const stream = await navigator.mediaDevices.getDisplayMedia(
+                  { video: true });
+                const video = document.createElement("video");
+                video.srcObject = stream; video.muted = true;
+                await video.play();
+                await new Promise((r) => setTimeout(r, 300));
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth || 1280;
+                canvas.height = video.videoHeight || 720;
+                canvas.getContext("2d")?.drawImage(video, 0, 0);
+                stream.getTracks().forEach((t) => t.stop());
+                const url = canvas.toDataURL("image/jpeg", 0.85);
+                setShown({ b64: url.split(",", 2)[1] || "",
+                           name: tr("cch.show.grabbed", lang) });
+              } catch { /* the person closed the picker — their call */ }
+            }}>
+              🖥️ {tr("cch.show.screen", lang)}
+            </button>
+          )}
           <button className={listening ? "mic listening" : "mic"} onClick={toggleMic}
                   disabled={busy}>
             {listening ? tr("cch.listening", lang) : tr("cch.talk", lang)}
@@ -403,6 +463,11 @@ export function Coach({ go }: {
         <div className="card guidance" role="status" aria-live="polite">
           <div className="guidance-src">{tr("cch.guidance", lang)
             .replace("{area}", area.replace("_", " "))}</div>
+          {reply.seen && (
+            /* What the eyes read off the shown picture, verbatim, so the
+               person sees exactly what their coach was told. */
+            <p className="muted small">👁 {reply.seen}</p>
+          )}
           <p>{reply.content}</p>
           {/* Who actually answered. When the model layer degraded, say so in
               amber — canned fallback text presented as the chosen model is a

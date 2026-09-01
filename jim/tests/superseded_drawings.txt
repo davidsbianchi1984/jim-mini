@@ -1,0 +1,52 @@
+# status: decision — 231 rows across three products
+#
+# The drawings that depict a screen the console does not have, and why
+# deleting them is not the one-line change it looks like.
+#
+# A three-way pass over every drawing in this estate sorted them into
+# three piles: KEEP (7 — the watch faces and wearables, which are drawings
+# on purpose), PHOTOGRAPH (53 — a console component owns the screen, so a
+# photograph exists to be taken), and DROP (231 — nothing in the console
+# owns it). The PHOTOGRAPH pile is what the camera work has been closing.
+# This file is about the third pile.
+#
+#     asked     do these drawings depict the product
+#     mattered  what happens to the gallery when they stop being in it
+#
+# ## Why they are still here
+#
+# `test_the_gallery_skips_no_number` requires the numbers the README and
+# the gallery reference to form a contiguous run from 1 to the highest.
+# It was written to catch a screen quietly falling out of a full row
+# while its file still existed and its link still resolved — a real
+# failure that happened.
+#
+# Deleting 231 drawings punches 231 holes in that run. Closing the holes
+# means renumbering the galleries, and a screen number in this estate is
+# not only a gallery caption: `ui_screens.txt` maps components to numbers,
+# `tutorial.LESSONS` names the screens each lesson explains, the
+# `data-screen` markers the camera now reads carry them, and the three
+# native shells' own galleries carry them again. Renumbering is a rewrite
+# of all of that, in three repositories, at once.
+#
+# ## The two honest ways forward
+#
+# **Renumber.** Compact each gallery to 1..N and carry the new numbers
+# through the census, the tutorial, the markers and the native galleries.
+# One large mechanical change, verifiable by the suites, and the numbers
+# stop matching anything written down before it — every prior release
+# note that names a screen number becomes wrong.
+#
+# **Retire in place.** Keep the numbers, delete the files, and let the
+# contiguity guard read a retirement registry: a number may be missing
+# only if this file says it is retired and why. The gallery shrinks, the
+# numbers keep meaning what they always meant, and the guard keeps
+# catching the accident it was written for.
+#
+# The second is what the rest of this estate does with things that stop
+# being true — a registry with a reason per row, checked by the suite.
+# It is also the one that does not invalidate every screen number in
+# every release note going back to 0.19.0.
+#
+# This is a decision about what a screen number means, not a cleanup, so
+# it is written down and left rather than taken while nobody is awake.

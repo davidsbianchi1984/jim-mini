@@ -16,8 +16,8 @@ def test_calm_catalog_is_public_and_sessions_are_protocols(client):
     out = r.json()
     # Box breathing is 4-4-4-4 across four rounds — sixteen timed steps,
     # every count exactly four seconds. A protocol, not a generation.
-    assert len(out["steps"]) == 16
-    assert all(s["seconds"] == 4 for s in out["steps"])
+    assert len(out["calm_steps"]) == 16
+    assert all(s["seconds"] == 4 for s in out["calm_steps"])
     assert out["total_seconds"] == 64
     r = client.post(f"/calm/{user}/screaming")
     assert r.status_code == 422

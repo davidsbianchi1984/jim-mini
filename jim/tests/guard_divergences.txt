@@ -1,6 +1,28 @@
-# status: backlog — 194 rows
-# ceiling: 194
+# status: backlog — 199 rows
+# ceiling: 199
 # candidates: 0
+#
+# ## Why the ceiling rose once
+#
+# It had never risen before, and the rule that it only falls is the reason
+# this file is worth reading. 2.7.0 raised it by five, for the five guards
+# of `test_nothing_floats_over_a_control`, and the reasoning is written
+# down here so the next rise has to argue with it.
+#
+# That guard reads the stylesheet for which rule the cascade actually
+# gives the win, after a phone override in JIM-mini and another in PDI
+# turned out to have been declared above the base rules they override and
+# to have never once applied. Both products put their phone navigation in
+# a bottom bar, so "does this float clear the bar" is a question there.
+# QRME's phone navigation is a drawer. There is no bar, no height to
+# measure, and no version of the question to ask — which is exactly what
+# the `answered` class is for, and why these five are not a debt.
+#
+#     asked     is the record allowed to grow
+#     mattered  is this row a fix that failed to travel
+#
+# A row that could be a lost fix is a `candidate`, and that count is still
+# zero.
 #
 # Guards carried by two of the three products and not the third. Each row
 # names the product that lacks it, the class the sweep put it in, and the
@@ -266,3 +288,8 @@ pdi: test_without_a_key_the_unconfigured_choice_still_falls_back | deliberate | 
 pdi: test_without_a_mail_transport_signup_activates_directly | deliberate | /signin
 pdi: test_without_settings_nothing_can_be_emailed | deliberate | /settings/mail
 pdi: test_wrong_password_and_unknown_address_answer_identically | deliberate | /signin /verify-email
+qrme: test_every_floating_thing_clears_the_bar_on_a_phone | answered | QRME's phone nav is a drawer, not a bottom bar — there is no bar to clear and no height to measure; its floats sit in the corner and the drawer wins by z-index. The order half of the question is real there and already true: its corner-widget block is last in the file on purpose. Sibling: test_the_light_sat_on_the_menu, carried by all three.
+qrme: test_the_phone_rule_is_declared_after_the_rule_it_overrides | answered | QRME's phone nav is a drawer, not a bottom bar — there is no bar to clear and no height to measure; its floats sit in the corner and the drawer wins by z-index. The order half of the question is real there and already true: its corner-widget block is last in the file on purpose. Sibling: test_the_light_sat_on_the_menu, carried by all three.
+qrme: test_the_clearance_is_measured_rather_than_guessed | answered | QRME's phone nav is a drawer, not a bottom bar — there is no bar to clear and no height to measure; its floats sit in the corner and the drawer wins by z-index. The order half of the question is real there and already true: its corner-widget block is last in the file on purpose. Sibling: test_the_light_sat_on_the_menu, carried by all three.
+qrme: test_the_bar_actually_publishes_its_height | answered | QRME's phone nav is a drawer, not a bottom bar — there is no bar to clear and no height to measure; its floats sit in the corner and the drawer wins by z-index. The order half of the question is real there and already true: its corner-widget block is last in the file on purpose. Sibling: test_the_light_sat_on_the_menu, carried by all three.
+qrme: test_the_fallback_is_the_number_it_replaced | answered | QRME's phone nav is a drawer, not a bottom bar — there is no bar to clear and no height to measure; its floats sit in the corner and the drawer wins by z-index. The order half of the question is real there and already true: its corner-widget block is last in the file on purpose. Sibling: test_the_light_sat_on_the_menu, carried by all three.

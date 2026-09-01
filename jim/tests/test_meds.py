@@ -79,7 +79,7 @@ def test_one_slot_one_answer_and_it_is_correctable(client):
     assert slot["status"] == "taken"
     assert "pocket" in slot["note"]
     week = client.get(f"/meds/{u['id']}/adherence", headers=_auth(u)).json()
-    assert all(x["taken"] <= x["expected"] for x in week["medications"])
+    assert all(x["taken"] <= x["expected"] for x in week["adherence_rows"])
 
 
 def test_a_missed_critical_dose_is_a_checkin_not_an_alarm(client):
@@ -152,7 +152,7 @@ def test_adherence_counts_whole_days_only(client):
     u = _enroll(client)
     _med(client, u)
     a = meds.adherence(u["id"], days=7)
-    med = a["medications"][0]
+    med = a["adherence_rows"][0]
     assert med["expected"] == 0        # created today; yesterday it didn't exist
     assert med["rate"] is None
 

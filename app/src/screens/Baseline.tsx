@@ -265,7 +265,7 @@ export function Baseline() {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card" data-screen="8">
         <h3>{tr("bas.metrics", lang)}</h3>
         {bands.length === 0 && <div className="muted small">{tr("bas.metrics.none", lang)}</div>}
         {bands.map((b) => (

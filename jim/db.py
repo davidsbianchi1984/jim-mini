@@ -1646,6 +1646,112 @@ CREATE TABLE IF NOT EXISTS widgets (
     created_at  INTEGER NOT NULL,
     updated_at  INTEGER NOT NULL
 );
+
+-- ===================================================================
+-- The hands (jim/hands.py). The Guardian could already see, hear and
+-- speak; these five tables are what it takes for it to ACT on a screen —
+-- and four of the five exist to bound that rather than to enable it.
+--
+-- The authority a hand moves under. Never implicit, never inherited from a
+-- conversation, never widened by anything read off a screen. `places` is a
+-- JSON list of NAMED apps or hosts and the module refuses "*" outright,
+-- because a grant that names everything is the absence of a grant wearing
+-- its clothes.
+CREATE TABLE IF NOT EXISTS hand_grants (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    granted_by  TEXT NOT NULL,        -- who said yes
+    surface     TEXT NOT NULL,        -- hands.SURFACES
+    places      TEXT NOT NULL,        -- JSON list of named places, never "*"
+    verbs       TEXT NOT NULL,        -- JSON subset of hands.VERBS
+    steps       INTEGER NOT NULL,     -- step budget for the whole grant
+    watched     INTEGER NOT NULL DEFAULT 1,   -- 1 = only while somebody watches
+    door        TEXT NOT NULL,        -- picked | told — how it was granted
+    said        TEXT,                 -- the words themselves, when `told`
+    expires_at  TEXT NOT NULL,
+    revoked_at  TEXT,
+    created_at  TEXT NOT NULL
+);
+
+-- One session of the Guardian having hands on a surface. `mode` is the
+-- whole difference between watching somebody work and doing the work:
+-- `watching` is eyes only and cannot spend a step, `acting` moves.
+CREATE TABLE IF NOT EXISTS reaches (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    grant_id    TEXT NOT NULL REFERENCES hand_grants(id),
+    surface     TEXT NOT NULL,
+    platform    TEXT NOT NULL,        -- hands.PLATFORMS
+    errand      TEXT NOT NULL,        -- what it was asked to do, in words
+    mode        TEXT NOT NULL,        -- watching | acting
+    state       TEXT NOT NULL,        -- open | asking | done | stopped
+    why         TEXT,                 -- why it stopped, in plain words
+    handed_to   TEXT REFERENCES users(id),   -- who holds it now, if handed
+    routine_id  TEXT,                 -- the routine being learned or replayed
+    steps_used  INTEGER NOT NULL DEFAULT 0,
+    opened_at   TEXT NOT NULL,
+    closed_at   TEXT
+);
+
+-- Append-only. Nothing in the package updates or deletes a row here, and
+-- `n` is unique per reach so a step cannot be quietly rewritten by a second
+-- insert. `saw` keeps what the eyes reported at the moment the hand decided,
+-- which is the only way a person reading this afterwards can tell whether
+-- the move was reasonable on the evidence it actually had.
+CREATE TABLE IF NOT EXISTS hand_actions (
+    id         TEXT PRIMARY KEY,
+    reach_id   TEXT NOT NULL REFERENCES reaches(id),
+    user_id    TEXT NOT NULL REFERENCES users(id),   -- who moved
+    n          INTEGER NOT NULL,      -- step number within the reach
+    verb       TEXT NOT NULL,
+    target     TEXT,                  -- what it aimed at, in words
+    detail     TEXT,                  -- JSON argument, secrets never in it
+    saw        TEXT,                  -- what the eyes reported before deciding
+    outcome    TEXT NOT NULL,         -- done | refused | failed
+    note       TEXT,
+    at         TEXT NOT NULL,
+    UNIQUE (reach_id, n)
+);
+
+-- What the machine reported back about a step it was handed.
+--
+-- `hand_actions.outcome` is written where the move is *permitted*, which is
+-- the server, and the server cannot see a cursor. So `done` there has only
+-- ever meant "chosen and allowed" — a dry run and a live one left identical
+-- records, and a click that missed left one saying it landed. A permission
+-- trail that cannot tell a rehearsal from the real thing is not a trail.
+--
+-- Its own table because `hand_actions` is append-only and stays that way:
+-- the machine's report is a second fact about a step, arriving later from
+-- somewhere else, not a correction to the first.
+CREATE TABLE IF NOT EXISTS hand_landings (
+    id       TEXT PRIMARY KEY,
+    reach_id TEXT NOT NULL REFERENCES reaches(id),
+    n        INTEGER NOT NULL,      -- the step in hand_actions this is about
+    landed   TEXT NOT NULL,         -- landed | missed | rehearsed
+    note     TEXT,
+    at       TEXT NOT NULL,
+    UNIQUE (reach_id, n)
+);
+
+-- A thing it can do again: learned by watching somebody do it (`shown`) or
+-- by being told the steps in words (`told`). One table for both, because a
+-- routine dictated over the phone and a routine demonstrated on screen are
+-- the same object and the product should not have two of them.
+CREATE TABLE IF NOT EXISTS routines (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    name       TEXT NOT NULL,
+    surface    TEXT NOT NULL,
+    learned    TEXT NOT NULL,         -- shown | told
+    steps      TEXT NOT NULL,         -- JSON list of {verb, target, detail}
+    runs       INTEGER NOT NULL DEFAULT 0,
+    last_run   TEXT,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_actions_reach ON hand_actions (reach_id, n);
+CREATE INDEX IF NOT EXISTS idx_landings_reach ON hand_landings (reach_id, n);
+CREATE INDEX IF NOT EXISTS idx_reaches_user ON reaches (user_id);
 """
 
 _local = threading.local()

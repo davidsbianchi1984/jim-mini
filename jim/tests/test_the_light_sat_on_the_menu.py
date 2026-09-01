@@ -117,14 +117,42 @@ def _rule(block: str, selector: str) -> str | None:
     return " ".join(found) if found else None
 
 
+def _declared() -> dict[str, str]:
+    """What `:root` declares, so a value written as a variable can be read.
+
+    The clearance is no longer a literal: the bar measures itself and
+    publishes `--tabbar-h`, and `:root` declares the height a browser
+    without a ResizeObserver gets. That declaration is the floor this guard
+    can check — the measured value is only ever the true height, and the
+    true height is what the rule is trying to clear.
+    """
+    root = re.search(r":root\s*\{([^}]*)\}", _stylesheet())
+    body = root.group(1) if root else ""
+    return dict(re.findall(r"(--[a-z0-9-]+)\s*:\s*([^;]+);", body))
+
+
+def _resolve(value: str) -> str:
+    """`var(--x)` replaced by what `:root` says, or by its own fallback."""
+    declared = _declared()
+    return re.sub(
+        r"var\((--[a-z0-9-]+)(?:,\s*([^()]*))?\)",
+        lambda m: declared.get(m.group(1), m.group(2) or ""), value)
+
+
 def _px(declarations: str, prop: str) -> float | None:
     m = re.search(rf"\b{prop}:\s*([^;]+);", declarations)
     if not m:
         return None
-    value = m.group(1)
-    # `calc(76px + env(safe-area-inset-bottom))` — the safe-area term is a
-    # phone's home indicator and only ever adds, so the literal px is the
-    # floor of what the rule reserves.
+    value = _resolve(m.group(1))
+    # `calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom))` — every
+    # term adds, and the safe-area term is a phone's home indicator, so the
+    # px terms summed are the floor of what the rule reserves. Reading only
+    # the first px here read the 12px gap as the whole clearance and called
+    # a rule that clears the bar by 88px a lid on the menu.
+    if " - " not in value and "min(" not in value and "max(" not in value:
+        terms = re.findall(r"(\d+(?:\.\d+)?)px", value)
+        if terms:
+            return sum(float(t) for t in terms)
     px = re.search(r"(\d+(?:\.\d+)?)px", value)
     return float(px.group(1)) if px else None
 
@@ -189,6 +217,11 @@ def test_nothing_fixed_to_the_bottom_covers_the_bar(selector):
 #: about the same widget.
 DOT_MAX_PX, DOT_MAX_OPACITY = 24.0, 0.9
 
+#: What a thumb has to be able to hit. The blanket
+#: `button { min-height: 44px }` in the phone block is where this
+#: number comes from, and the dot is a button like any other.
+TAP_MIN_PX = 44.0
+
 
 def test_the_minimized_light_is_a_dot_and_not_a_disc():
     """The second half of the same field report.
@@ -206,10 +239,35 @@ def test_the_minimized_light_is_a_dot_and_not_a_disc():
     answers by staying the same size in a different shape has not obeyed;
     it has only stopped explaining itself.
     """
-    rule = _rule(_mobile_block(), ".wl-dot")
-    assert rule, (
+    # The dot is a <button>, and the phone block sets
+    # `button { min-height: 44px }` so every control is a real tap target.
+    # `min-height` beats `height`, so a 22px square rendered 22 wide and 44
+    # tall — an ellipse. This guard read the declared width and height, saw
+    # 22 and 22, and passed on it for two releases.
+    #
+    #     asked     how big is the dot declared
+    #     mattered  how big is the dot drawn
+    #
+    # So there are two elements and two questions. The button is the tap
+    # target and may not shrink under 44; the face is the paint and may not
+    # grow past a dot. Neither number can be read off the other, which is
+    # the whole reason the first version of this could not see the defect.
+    target = _rule(_mobile_block(), ".wl-dot")
+    assert target, (
         ".wl-dot has no rule at the mobile breakpoint, so it keeps its "
         "desktop size on a phone")
+    for prop in ("width", "height"):
+        size = _px(target, prop)
+        assert size is not None and size >= TAP_MIN_PX, (
+            f"the minimized light's tap target is {size}px {prop} on a "
+            f"phone, under the {TAP_MIN_PX}px every other control here "
+            "gets. The face inside it may be small; the thing a thumb has "
+            "to hit may not be")
+
+    rule = _rule(_mobile_block(), ".wl-dot-face")
+    assert rule, (
+        ".wl-dot-face has no rule at the mobile breakpoint, so the dot keeps "
+        "its desktop size on a phone")
     for prop in ("width", "height"):
         size = _px(rule, prop)
         assert size is not None and size <= DOT_MAX_PX, (

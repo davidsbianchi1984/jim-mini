@@ -1,4 +1,4 @@
-# status: floor — 32 rows
+# status: floor — 34 rows
 #
 # Which console surface each screen drawing depicts.
 #
@@ -36,42 +36,44 @@
 # are those drawings, and `undrawn=0` is true for the first time since the
 # column was seeded. `unaudited` is not a status a new component may use.
 
-Baseline        38,81
-CareTeam        86
-Channel         65
-Checkin         22
-Coach           14,24,82
-Community       92
-Feed            104,105
-Presence        106,107
-Home            2
-Journal         23,87
-Monitor         13
-Settings        12
+Baseline        8,13
+CareTeam        18
+Channel         12
+Checkin         5
+Coach           4,7,14
+Community       21
+Feed            33,34
+Presence        35,36
+Home            1
+Journal         6,19
+Monitor         3
+Settings        2
 
-Meds            85
-Onboarding      40,42
-Safety          102
-Wellness        103
-PaceCue         14
-ProviderTiles   83
+Meds            17
+Onboarding      9,10
+Safety          31
+Wellness        32
+PaceCue         4
+ProviderTiles   15
 
-Problems        93
-ProblemNotice   94
+Problems        22
+ProblemNotice   23
 
 # The six that closed the console backlog. Each is one family of the 109
 # routes the desktop app could not reach.
-Aims            95
-Wards           96
-Held            97
-Attending       98
-Reach           99
-Bearing         100
-SelfProfile     101
-Access          108
+Aims            24
+Wards           25
+Held            26
+Attending       27
+Reach           28
+Bearing         29
+SelfProfile     30
+Access          37
 
-Engaged         109
-Talk            110
-Studio          111
+Engaged         38
+Talk            39
+Studio          40
 
-Watch           112   # the shell; its 36 faces are docs/watch's own gallery
+Watch           41   # the shell; its 36 faces are docs/watch's own gallery
+Hands           42
+Capabilities    43

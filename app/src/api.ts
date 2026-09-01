@@ -379,6 +379,10 @@ export interface SpecialistAnswer {
   answer_provenance?: { method: string; shared: string };
 }
 export interface Guidance { delivered: boolean; source?: string; content: string; references?: string[];
+  /** What the Guardian's eyes read off a picture shown for this turn —
+   *  returned beside the reply so the person sees exactly what the coach
+   *  was told. Null when nothing was shown. */
+  seen?: string | null;
   first_aid?: FirstAid | null;
   specialist_offer?: SpecialistOffer | null;
   // The monitoring path names who spoke and the life area that leads back
@@ -1881,7 +1885,11 @@ export const api = {
                    *  spoke over it — see `heardAloud` in `speech.ts`.
                    *  Omitted when nothing was interrupted, which is the
                    *  ordinary turn, and ignorable by any older backend. */
-                  cut_off_heard?: string },
+                  cut_off_heard?: string;
+                  /** A picture being shown to the coach for this turn, as
+                   *  base64 — read by the Guardian's eyes and stored
+                   *  nowhere. */
+                  shown?: string },
           token: string) =>
     req<Guidance>(`/coach/${uid}`, { method: "POST", body, token }),
   // The person's own question to the QRME specialist covering this area.
@@ -2745,6 +2753,84 @@ export const api = {
   runWidget: (uid: string, widgetId: string, inputs: unknown, token: string) =>
     req<WidgetRun>(`/users/${uid}/widgets/${widgetId}/run`,
                    { method: "POST", body: { inputs }, token }),
+
+  // The hands. Every path here is the sibling console's verbatim, because
+  // the motor that performs these moves is one program serving either
+  // stack. The vocabulary door is public and publishes the refusals by
+  // name: a client that knew only what was allowed would draw the thing
+  // the product cannot engineer its way around (an iPhone's interface is
+  // not drivable by anything, so on iOS it watches and says where to
+  // press) as a missing feature rather than a decision.
+  handsVocabulary: () => req<HandsVocabulary>("/hands/vocabulary"),
+  handGrants: (uid: string, token: string, live = false) =>
+    req<{ grants: HandGrant[] }>(
+      `/profiles/${uid}/hands/grants${live ? "?live=true" : ""}`, { token }),
+  grantHands: (uid: string, token: string, body: {
+    surface: string; places: string[]; verbs: string[];
+    minutes?: number; steps?: number; watched?: boolean;
+  }) => req<HandGrant>(`/profiles/${uid}/hands/grants`,
+                       { method: "POST", token, body }),
+  // The second door onto the same row: the owner says it instead of
+  // picking it. Strict about what the words named — words that name no
+  // place are refused rather than read generously.
+  tellHands: (uid: string, token: string, body: {
+    in_words: string; surface?: string; watched?: boolean;
+  }) => req<HandGrant>(`/profiles/${uid}/hands/told`,
+                       { method: "POST", token, body }),
+  takeHandsBack: (uid: string, token: string, grantId: string) =>
+    req<HandGrant>(`/profiles/${uid}/hands/grants/${grantId}`,
+                   { method: "DELETE", token }),
+  openReach: (uid: string, token: string, body: {
+    grant_id: string; errand: string; platform: string; mode?: string;
+  }) => req<HandReach>(`/profiles/${uid}/hands/reaches`,
+                       { method: "POST", token, body }),
+  readReach: (uid: string, token: string, reachId: string) =>
+    req<{ reach: HandReach; ledger: HandAction[] }>(
+      `/profiles/${uid}/hands/reaches/${reachId}`, { token }),
+  // A refusal comes back 200 with the refusal in the row: a hand declining
+  // to type a password is the system working, not the request failing.
+  handAct: (uid: string, token: string, reachId: string, body: {
+    verb: string; target?: string | null;
+    detail?: Record<string, unknown>; saw?: string | null;
+  }) => req<HandStep>(`/profiles/${uid}/hands/reaches/${reachId}/act`,
+                      { method: "POST", token, body }),
+  // One frame in, one bounded move out. What comes back has already been
+  // through every bound the grant carries and is already written in the
+  // ledger — a refusal arrives the same way. A caller performs only what
+  // carries `outcome: "done"`. The report of what became of the *last*
+  // step rides this call rather than a door of its own: it is the same
+  // conversation, and a machine that has stopped calling has stopped
+  // reporting.
+  nextMove: (uid: string, token: string, reachId: string, body: {
+    frame?: string | null; saw?: string | null;
+    about_step?: number | null; landed?: string | null;
+    landed_note?: string | null;
+  }) => req<HandStep>(`/profiles/${uid}/hands/reaches/${reachId}/next`,
+                      { method: "POST", token, body }),
+  handOver: (uid: string, token: string, reachId: string, body: {
+    to_user_id: string; places?: string[]; verbs?: string[];
+  }) => req<HandReach>(
+    `/profiles/${uid}/hands/reaches/${reachId}/hand-over`,
+    { method: "POST", token, body }),
+  stopReach: (uid: string, token: string, reachId: string, why?: string) =>
+    req<HandReach>(`/profiles/${uid}/hands/reaches/${reachId}/stop`,
+                   { method: "POST", token, body: { why: why || undefined } }),
+  handRoutines: (uid: string, token: string) =>
+    req<{ routines: HandRoutine[] }>(`/profiles/${uid}/hands/routines`,
+                                     { token }),
+  writeRoutine: (uid: string, token: string, body: {
+    name: string; surface: string; learned: string; steps: HandStep[];
+  }) => req<HandRoutine>(`/profiles/${uid}/hands/routines`,
+                         { method: "POST", token, body }),
+  routineFromReach: (uid: string, token: string, body: {
+    reach_id: string; name: string;
+  }) => req<HandRoutine>(`/profiles/${uid}/hands/routines/from-reach`,
+                         { method: "POST", token, body }),
+  replayRoutine: (uid: string, token: string, routineId: string,
+                  body: { grant_id: string; platform: string }) =>
+    req<{ reach: HandReach; steps: HandStep[] }>(
+      `/profiles/${uid}/hands/routines/${routineId}/replay`,
+      { method: "POST", token, body }),
 };
 
 /** What the box can do on this deployment, and the honest reason when it
@@ -2809,4 +2895,71 @@ export type SelfProfilePreview = {
   consented?: string[];
   brief: Record<string, unknown> | null;
   empty?: boolean;
+};
+
+// --------------------------------------------------------------------------
+// The hands. The shapes are the sibling console's, field for field, because
+// the motor that performs these moves is one program that talks to either
+// stack — see `jim/hands.py`. `profile_id` on the wire is this product's
+// user id; the name is the sibling's and stays so the two agree.
+
+export type HandGrant = {
+  id: string; user_id: string; surface: string;
+  places: string[]; verbs: string[];
+  steps: number; watched: boolean;
+  /** `picked` from the list, or `told` in words. Both write this row. */
+  door: string;
+  /** The words themselves, when the door was `told` — kept so the owner can
+   *  read back exactly what their sentence was understood to mean. */
+  said: string | null;
+  expires_at: string; revoked_at: string | null;
+  live: boolean; created_at: string;
+};
+
+/** One session of having hands on a surface. `mode` is the whole
+ *  difference between watching somebody work and doing the work. */
+export type HandReach = {
+  id: string; user_id: string; grant_id: string;
+  surface: string; platform: string; errand: string;
+  mode: string; state: string; why: string | null;
+  handed_to: string | null; routine_id: string | null;
+  steps_used: number; steps_left: number; hands_on: boolean;
+  opened_at: string; closed_at: string | null;
+};
+
+/** One move, including the refused ones — a ledger that only kept the
+ *  moves that worked would be a story about the errand, not a record. */
+export type HandAction = {
+  n: number; user_id: string; verb: string;
+  target: string | null; detail: Record<string, unknown>;
+  saw: string | null; outcome: string; note: string | null;
+  // `outcome` is what the stack permitted; `landed` is what the machine
+  // came back and said became of it. null means nobody ever did — which
+  // is a third state, not a quiet no.
+  landed: "landed" | "missed" | "rehearsed" | null;
+  landed_note: string | null;
+  at: string;
+};
+
+export type HandStep = {
+  id?: string; reach_id?: string; user_id?: string; n?: number;
+  verb: string; target: string | null;
+  detail: Record<string, unknown>;
+  outcome?: string; note?: string | null;
+};
+
+/** A thing it can do again — watched (`shown`) or dictated (`told`). */
+export type HandRoutine = {
+  id: string; user_id: string; name: string; surface: string;
+  learned: string; steps: HandStep[]; runs: number;
+  last_run: string | null; created_at: string;
+};
+
+export type HandsVocabulary = {
+  surfaces: string[]; platforms: string[]; drivable: string[];
+  verbs: string[]; eyes_only: string[]; keys: string[]; doors: string[];
+  caps: { steps: number; minutes: number; wait_seconds: number };
+  /** Published, not merely enforced. A client that knew only what was
+   *  allowed would draw the iPhone case as a missing feature. */
+  never: string[];
 };

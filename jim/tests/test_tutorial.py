@@ -30,8 +30,9 @@ def test_every_screen_is_covered_by_a_lesson(client):
     """Add a feature, draw its screen, and the walkthrough fails until
     somebody has said what it is for."""
     root = pathlib.Path(__file__).resolve().parents[2] / "docs" / "screens"
-    drawn = {int(p.name.split("-", 1)[0]) for p in root.glob("*.svg")
-             if p.name.split("-", 1)[0].isdigit()}
+    drawn = {int(p.name.split("-", 1)[0]) for p in root.iterdir()
+             if p.suffix in (".svg", ".png")
+             and p.name.split("-", 1)[0].isdigit()}
     taught = set()
     for lesson in tutorial.LESSONS:
         taught.update(lesson["screens"])
@@ -41,8 +42,9 @@ def test_every_screen_is_covered_by_a_lesson(client):
 
 def test_no_lesson_points_at_a_screen_that_is_not_there(client):
     root = pathlib.Path(__file__).resolve().parents[2] / "docs" / "screens"
-    drawn = {int(p.name.split("-", 1)[0]) for p in root.glob("*.svg")
-             if p.name.split("-", 1)[0].isdigit()}
+    drawn = {int(p.name.split("-", 1)[0]) for p in root.iterdir()
+             if p.suffix in (".svg", ".png")
+             and p.name.split("-", 1)[0].isdigit()}
     for lesson in tutorial.LESSONS:
         stale = sorted(set(lesson["screens"]) - drawn)
         assert not stale, f"{lesson['key']} points at missing: {stale}"
@@ -101,7 +103,7 @@ def test_progress_is_per_step_not_a_cursor(client):
 
 
 def test_a_screen_can_ask_which_lesson_it_is(client):
-    assert client.get("/tutorial/for-screen/65").json()["key"] == "mic"
+    assert client.get("/tutorial/for-screen/12").json()["key"] == "mic"
     assert client.get("/tutorial/for-screen/9999").status_code == 404
 
 

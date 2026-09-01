@@ -1,4 +1,4 @@
-# status: backlog — 3 rows
+# status: backlog — 15 rows
 #
 # Every route this shell cannot reach.
 #
@@ -69,16 +69,49 @@
 # sessions round set.
 #
 
-# The staleness contract's heartbeat (jim/freshness.py): the wrist
-# channel's pulse apart from the readings, so the person going quiet and
-# the network going dark stop being one silence. The shell that holds the
-# BLE link to the watch is the road for the beat.
-POST /heartbeat/{user_id}
+# ## after 1.8.9, second close — the staleness trio opens, and the file
+# ## returns to zero
+#
+# The heartbeat, the freshness card and the meeting-recording door landed
+# on this shell together: one beat sent on the day screen's way in, the
+# two ages and the verdict beside the channel that produces them, and a
+# running stretch takes an audio file straight to the transcriber. The
+# 1.8.8 note above said the shells owed their own tellings; paid.
 
-# The staleness contract's stats and the meeting-recording door
-# (jim/freshness.py, jim/daybook.py). The console carries both; the
-# shells owe their own tellings — the freshness card beside their
-# monitor reads, and handing a meeting's audio up from the device that
-# actually sat in the meeting.
-GET /freshness/{user_id}
-POST /day/{user_id}/stretches/{stretch_id}/heard
+# --- the hands (2.7.0 / jim/hands.py) ---------------------------------------
+#
+# Fifteen routes, and this shell reaches none of them. The reason is one
+# thing, and it is not scheduling.
+#
+# A hand needs a motor: something that can actually move a pointer, press a
+# control and type into a field on the surface in front of it. None of these
+# three shells has one, and what it would take differs per platform:
+#
+#   a motor here is an AccessibilityService — a separate app component with
+#   its own Play policy review for precisely this class of use. Until that
+#   component exists and has been through that review, binding these fifteen
+#   calls would take them off this list and build nothing.
+#
+#     asked     can this client reach the route
+#     mattered  can this client do the thing the route records
+#
+# Binding the fifteen calls now would be the precise failure the unused-
+# binding guard exists to catch. The web console has the whole surface
+# today, and the thing that can photograph a screen and then act on it is
+# the companion program that runs on the person's own desk. These rows
+# stand until a motor does.
+DELETE /profiles/{profile_id}/hands/grants/{grant_id}
+GET /hands/vocabulary
+GET /profiles/{profile_id}/hands/grants
+GET /profiles/{profile_id}/hands/reaches/{reach_id}
+GET /profiles/{profile_id}/hands/routines
+POST /profiles/{profile_id}/hands/grants
+POST /profiles/{profile_id}/hands/reaches
+POST /profiles/{profile_id}/hands/reaches/{reach_id}/act
+POST /profiles/{profile_id}/hands/reaches/{reach_id}/hand-over
+POST /profiles/{profile_id}/hands/reaches/{reach_id}/next
+POST /profiles/{profile_id}/hands/reaches/{reach_id}/stop
+POST /profiles/{profile_id}/hands/routines
+POST /profiles/{profile_id}/hands/routines/from-reach
+POST /profiles/{profile_id}/hands/routines/{routine_id}/replay
+POST /profiles/{profile_id}/hands/told

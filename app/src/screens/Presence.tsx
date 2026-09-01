@@ -167,7 +167,7 @@ export function Presence() {
 
       {/* Honest before warm, deliberately in that order. */}
       {who && (
-        <div className="card">
+        <div className="card" data-screen="36">
           <p><strong>{tr("presence.what", lang)}</strong></p>
           <p>{who.says}</p>
           <p className="muted small">{tr("presence.will.not", lang)}</p>

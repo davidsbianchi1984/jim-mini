@@ -2324,6 +2324,231 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     hi: "और कौन देख रहा है",
     ar: "من غيرك يراقب",
   },
+  // The hands. Carried verbatim from the sibling console — one
+  // wording for one faculty, so somebody who has read the grant
+  // card on one product has read it on the other.
+  "hnd.again": {
+    en: "Things it can do again", es: "Cosas que puede repetir", fr: "Ce qu'il peut refaire", de: "Was es wiederholen kann", pt: "Coisas que pode repetir", it: "Cose che può rifare", ja: "またできること", zh: "它能重复做的事", hi: "जो यह दोबारा कर सकता है", ar: "أشياء يمكنه تكرارها",
+  },
+  "hnd.again.go": {
+    en: "Do it again", es: "Repetir", fr: "Refaire", de: "Wiederholen", pt: "Repetir", it: "Rifallo", ja: "もう一度", zh: "再做一次", hi: "फिर करें", ar: "كرّره",
+  },
+  "hnd.again.pitch": {
+    en: "Learned by watching you, or dictated in words. Either way it is a memory of moves and never a stored permission — doing it again goes through a live grant like any fresh decision.", es: "Aprendido mirándote, o dictado con palabras. En ambos casos es un recuerdo de movimientos y nunca un permiso guardado — repetirlo pasa por un permiso vigente como cualquier decisión nueva.", fr: "Appris en vous regardant, ou dicté avec des mots. Dans les deux cas c'est un souvenir de gestes et jamais une permission stockée — le refaire passe par une permission en cours comme toute décision nouvelle.", de: "Durch Zusehen gelernt oder in Worten diktiert. So oder so ist es eine Erinnerung an Bewegungen und nie eine gespeicherte Erlaubnis — die Wiederholung geht durch eine gültige Erlaubnis wie jede neue Entscheidung.", pt: "Aprendido a observá-lo, ou ditado por palavras. Em qualquer dos casos é uma memória de movimentos e nunca uma permissão guardada — repeti-lo passa por uma permissão em vigor como qualquer decisão nova.", it: "Imparato guardandoti, o dettato a parole. In ogni caso è un ricordo di mosse e mai un permesso conservato — rifarlo passa da un permesso valido come ogni decisione nuova.", ja: "あなたを見て覚えたか、言葉で伝えられたもの。どちらも動作の記憶であって、保存された許可ではありません — 繰り返すときも、新しい判断と同じく有効な許可を通ります。", zh: "看你做而学会的，或是用话口述的。无论哪种，它都只是动作的记忆，绝不是存下来的许可 — 再做一次同样要经过一份有效的许可，和任何新决定一样。", hi: "आपको देखकर सीखा, या शब्दों में बताया गया। दोनों ही हाल में यह चालों की स्मृति है, कोई सहेजी हुई अनुमति नहीं — दोबारा करना भी किसी नए निर्णय की तरह एक जीवित अनुमति से होकर जाता है।", ar: "تعلّمه بمشاهدتك، أو أُملي عليه بالكلمات. في الحالتين هو ذاكرة حركات لا إذن مخزَّن — وتكراره يمرّ عبر إذن سارٍ كأي قرار جديد.",
+  },
+  "hnd.always": {
+    en: "Looking, asking and stopping are always included — a hand that cannot see, ask or stop is a worse hand, not a safer one.", es: "Mirar, preguntar y detenerse van siempre incluidos: una mano que no puede ver, preguntar ni detenerse es una mano peor, no más segura.", fr: "Regarder, demander et s'arrêter sont toujours inclus : une main qui ne peut ni voir, ni demander, ni s'arrêter est une moins bonne main, pas une main plus sûre.", de: "Sehen, Fragen und Aufhören sind immer dabei — eine Hand, die nicht sehen, fragen oder aufhören kann, ist eine schlechtere Hand, keine sicherere.", pt: "Olhar, perguntar e parar estão sempre incluídos — uma mão que não pode ver, perguntar ou parar é uma mão pior, não mais segura.", it: "Guardare, chiedere e fermarsi sono sempre inclusi: una mano che non può vedere, chiedere o fermarsi è una mano peggiore, non più sicura.", ja: "見ること、尋ねること、やめることは常に含まれます — 見ることも尋ねることもやめることもできない手は、より安全な手ではなく、より悪い手です。", zh: "查看、询问和停止始终包含在内 — 一只不能看、不能问、不能停的手是更差的手，而不是更安全的手。", hi: "देखना, पूछना और रुकना हमेशा शामिल हैं — जो हाथ देख, पूछ या रुक नहीं सकता वह बेहतर नहीं, बदतर हाथ है।", ar: "النظر والسؤال والتوقّف مشمولة دائمًا — فاليد التي لا تستطيع أن ترى أو تسأل أو تتوقّف يد أسوأ لا أكثر أمانًا.",
+  },
+  "hnd.choose": {
+    en: "Let it choose the next move", es: "Deja que elija el siguiente movimiento", fr: "Laissez-le choisir le geste suivant", de: "Lass es die nächste Bewegung wählen", pt: "Deixa-o escolher o próximo movimento", it: "Lascia che scelga la mossa successiva", ja: "次の一手を選ばせる", zh: "让它选择下一步", hi: "इसे अगली चाल चुनने दें", ar: "دعه يختار الحركة التالية",
+  },
+  "hnd.choose.go": {
+    en: "Choose", es: "Elegir", fr: "Choisir", de: "Wählen", pt: "Escolher", it: "Scegli", ja: "選ぶ", zh: "选择", hi: "चुनें", ar: "اختر",
+  },
+  "hnd.choose.ph": {
+    en: "what is on the screen, in your words", es: "qué hay en la pantalla, con tus palabras", fr: "ce qu'il y a à l'écran, avec vos mots", de: "was auf dem Bildschirm ist, in deinen Worten", pt: "o que está no ecrã, nas tuas palavras", it: "cosa c'è sullo schermo, con parole tue", ja: "画面に何があるか、あなたの言葉で", zh: "屏幕上有什么，用你的话说", hi: "स्क्रीन पर क्या है, आपके शब्दों में", ar: "ما على الشاشة، بكلماتك",
+  },
+  "hnd.dictate.go": {
+    en: "Write it down", es: "Anotarlo", fr: "Le noter", de: "Aufschreiben", pt: "Anotar", it: "Annotalo", ja: "書き留める", zh: "记下来", hi: "लिख लें", ar: "دوّنه",
+  },
+  "hnd.dictate.ph": {
+    en: "one step a line — press: New event", es: "un paso por línea — press: Nuevo evento", fr: "une étape par ligne — press: Nouvel événement", de: "ein Schritt pro Zeile — press: Neuer Termin", pt: "um passo por linha — press: Novo evento", it: "un passo per riga — press: Nuovo evento", ja: "1行に1手 — 「press」: 新しい予定", zh: "每行一步 — 「press」：新建事件", hi: "हर पंक्ति में एक चरण — press: नया इवेंट", ar: "خطوة في كل سطر — press: حدث جديد",
+  },
+  "hnd.errand": {
+    en: "what it should do", es: "qué debe hacer", fr: "ce qu'il doit faire", de: "was es tun soll", pt: "o que deve fazer", it: "cosa deve fare", ja: "してほしいこと", zh: "它该做什么", hi: "इसे क्या करना है", ar: "ما ينبغي أن يفعله",
+  },
+  "hnd.gave": {
+    en: "Hands given for {places}.", es: "Manos dadas para {places}.", fr: "Mains données pour {places}.", de: "Hände gegeben für {places}.", pt: "Mãos dadas para {places}.", it: "Mani date per {places}.", ja: "{places} に手を与えました。", zh: "已为 {places} 给出双手。", hi: "{places} के लिए हाथ दिए गए।", ar: "مُنحت اليدان لـ {places}.",
+  },
+  "hnd.give": {
+    en: "Give it hands", es: "Darle manos", fr: "Lui donner des mains", de: "Ihm Hände geben", pt: "Dar-lhe mãos", it: "Dargli le mani", ja: "手を与える", zh: "给它双手", hi: "इसे हाथ दें", ar: "امنحه يدين",
+  },
+  "hnd.give.go": {
+    en: "Give", es: "Dar", fr: "Donner", de: "Geben", pt: "Dar", it: "Dai", ja: "与える", zh: "给予", hi: "दें", ar: "امنح",
+  },
+  "hnd.give.pitch": {
+    en: "Name the apps or sites, the moves, the minutes and the steps. All four are limits, and all four are enforced where the move happens rather than on this screen.", es: "Nombra las aplicaciones o sitios, los movimientos, los minutos y los pasos. Los cuatro son límites, y los cuatro se aplican donde ocurre el movimiento, no en esta pantalla.", fr: "Nommez les applications ou sites, les gestes, les minutes et les étapes. Ces quatre éléments sont des limites, appliquées là où le geste se produit et non sur cet écran.", de: "Nenn die Apps oder Seiten, die Bewegungen, die Minuten und die Schritte. Alle vier sind Grenzen, und alle vier gelten dort, wo die Bewegung geschieht, nicht auf diesem Bildschirm.", pt: "Nomeie as aplicações ou sites, os movimentos, os minutos e os passos. Os quatro são limites, e os quatro são impostos onde o movimento acontece, não neste ecrã.", it: "Indica le app o i siti, le mosse, i minuti e i passi. Tutti e quattro sono limiti, imposti dove avviene la mossa e non su questo schermo.", ja: "アプリまたはサイト、動作、分数、手数を指定します。四つとも上限であり、この画面ではなく動作が起きる場所で守られます。", zh: "写明应用或网站、动作、分钟数与步数。这四项都是上限，都在动作发生之处生效，而不是在这个屏幕上。", hi: "ऐप या साइट, चालें, मिनट और चरण बताएँ। चारों सीमाएँ हैं, और चारों वहीं लागू होती हैं जहाँ चाल चलती है, इस स्क्रीन पर नहीं।", ar: "سمِّ التطبيقات أو المواقع والحركات والدقائق والخطوات. الأربعة حدود، وتُطبَّق جميعها حيث تقع الحركة لا على هذه الشاشة.",
+  },
+  "hnd.heard": {
+    en: "Heard: {places} · {verbs}", es: "Oído: {places} · {verbs}", fr: "Entendu : {places} · {verbs}", de: "Gehört: {places} · {verbs}", pt: "Ouvido: {places} · {verbs}", it: "Sentito: {places} · {verbs}", ja: "聞き取り: {places} · {verbs}", zh: "听到：{places} · {verbs}", hi: "सुना: {places} · {verbs}", ar: "المسموع: {places} · {verbs}",
+  },
+  "hnd.landed.landed": {
+    en: "it happened", es: "ocurrió", fr: "c'est arrivé", de: "es ist passiert", pt: "aconteceu", it: "è successo", ja: "実行された", zh: "已发生", hi: "यह हुआ", ar: "حدث فعلًا",
+  },
+  "hnd.landed.missed": {
+    en: "it did not happen", es: "no ocurrió", fr: "ce n'est pas arrivé", de: "es ist nicht passiert", pt: "não aconteceu", it: "non è successo", ja: "実行されなかった", zh: "未发生", hi: "यह नहीं हुआ", ar: "لم يحدث",
+  },
+  "hnd.landed.rehearsed": {
+    en: "a rehearsal — nothing was touched", es: "un ensayo: no se tocó nada", fr: "une répétition — rien n'a été touché", de: "eine Probe — nichts wurde angefasst", pt: "um ensaio — nada foi tocado", it: "una prova: non è stato toccato nulla", ja: "リハーサル — 何にも触れていない", zh: "一次排练——什么都没碰", hi: "एक पूर्वाभ्यास — कुछ भी नहीं छुआ गया", ar: "بروفة — لم يُلمس شيء",
+  },
+  "hnd.landed.unknown": {
+    en: "nobody said whether it happened", es: "nadie dijo si ocurrió", fr: "personne n'a dit si c'est arrivé", de: "niemand hat gesagt, ob es passiert ist", pt: "ninguém disse se aconteceu", it: "nessuno ha detto se è successo", ja: "実行されたかどうか、誰も報告していない", zh: "没人说它是否发生", hi: "किसी ने नहीं बताया कि यह हुआ या नहीं", ar: "لم يقل أحد إن كان قد حدث",
+  },
+  "hnd.minutes": {
+    en: "Minutes", es: "Minutos", fr: "Minutes", de: "Minuten", pt: "Minutos", it: "Minuti", ja: "分", zh: "分钟", hi: "मिनट", ar: "دقائق",
+  },
+  "hnd.mode.act": {
+    en: "do the work", es: "hacer el trabajo", fr: "faire le travail", de: "die Arbeit tun", pt: "fazer o trabalho", it: "fare il lavoro", ja: "作業する", zh: "动手做", hi: "काम करे", ar: "يؤدي العمل",
+  },
+  "hnd.mode.watch": {
+    en: "watch only", es: "solo mirar", fr: "regarder seulement", de: "nur zusehen", pt: "apenas observar", it: "solo guardare", ja: "見るだけ", zh: "只观看", hi: "केवल देखे", ar: "المشاهدة فقط",
+  },
+  "hnd.motor": {
+    en: "Run this on the machine you want worked", es: "Ejecuta esto en la máquina que quieres que maneje", fr: "Lancez ceci sur la machine à faire manœuvrer", de: "Führe das auf der Maschine aus, die bedient werden soll", pt: "Executa isto na máquina que queres que seja usada", it: "Esegui questo sulla macchina che vuoi far usare", ja: "操作させたいマシンでこれを実行してください", zh: "在你想让它操作的那台机器上运行这个", hi: "जिस मशीन पर काम कराना है, उस पर यह चलाएँ", ar: "شغّل هذا على الجهاز الذي تريد تشغيله",
+  },
+  "hnd.motor.copied": {
+    en: "Copied. Paste it into a terminal on that machine.", es: "Copiado. Pégalo en una terminal de esa máquina.", fr: "Copié. Collez-le dans un terminal sur cette machine.", de: "Kopiert. Füg es in ein Terminal auf dieser Maschine ein.", pt: "Copiado. Cole-o num terminal dessa máquina.", it: "Copiato. Incollalo in un terminale su quella macchina.", ja: "コピーしました。そのマシンのターミナルに貼り付けてください。", zh: "已复制。粘贴到那台机器的终端里。", hi: "कॉपी हो गया। उस मशीन के टर्मिनल में चिपकाएँ।", ar: "نُسخ. الصقه في طرفية على تلك الآلة.",
+  },
+  "hnd.motor.copy": {
+    en: "Copy the command", es: "Copiar el comando", fr: "Copier la commande", de: "Befehl kopieren", pt: "Copiar o comando", it: "Copia il comando", ja: "コマンドをコピー", zh: "复制命令", hi: "कमांड कॉपी करें", ar: "انسخ الأمر",
+  },
+  "hnd.motor.dry": {
+    en: "It prints what it would do and touches nothing. Add --live when you want it to act.", es: "Imprime lo que haría y no toca nada. Añade --live cuando quieras que actúe.", fr: "Il imprime ce qu'il ferait et ne touche à rien. Ajoutez --live quand vous voulez qu'il agisse.", de: "Es druckt, was es tun würde, und rührt nichts an. Füge --live hinzu, wenn es handeln soll.", pt: "Imprime o que faria e não toca em nada. Acrescenta --live quando quiseres que aja.", it: "Stampa cosa farebbe e non tocca nulla. Aggiungi --live quando vuoi che agisca.", ja: "何をするかを表示するだけで、何にも触れません。実際に動かすときは --live を付けてください。", zh: "它只打印将要做什么，不碰任何东西。想让它真正动手时加上 --live。", hi: "यह बताता है कि क्या करता, छूता कुछ नहीं। जब चाहें कि यह सचमुच करे, --live जोड़ें।", ar: "يطبع ما كان سيفعله ولا يلمس شيئًا. أضف ‎--live حين تريده أن يتصرف.",
+  },
+  "hnd.motor.install": {
+    en: "Copy the install line", es: "Copiar la línea de instalación", fr: "Copier la ligne d'installation", de: "Installationszeile kopieren", pt: "Copiar a linha de instalação", it: "Copia la riga di installazione", ja: "導入用の行をコピー", zh: "复制安装那一行", hi: "इंस्टॉल वाली पंक्ति कॉपी करें", ar: "انسخ سطر التثبيت",
+  },
+  "hnd.motor.installed": {
+    en: "Copied. Run it once on that machine, then the command below.", es: "Copiado. Ejecútalo una vez en esa máquina y luego el comando de abajo.", fr: "Copié. Lancez-le une fois sur cette machine, puis la commande ci-dessous.", de: "Kopiert. Führ es einmal auf jener Maschine aus, dann den Befehl darunter.", pt: "Copiado. Execute-o uma vez nessa máquina e depois o comando abaixo.", it: "Copiato. Eseguilo una volta su quella macchina, poi il comando qui sotto.", ja: "コピーしました。そのマシンで一度実行し、次に下のコマンドを実行してください。", zh: "已复制。在那台机器上运行一次，然后运行下面的命令。", hi: "कॉपी हो गया। उस मशीन पर एक बार चलाएँ, फिर नीचे वाली कमांड।", ar: "نُسخ. شغّله مرة واحدة على تلك الآلة، ثم الأمر أدناه.",
+  },
+  "hnd.motor.select": {
+    en: "This browser will not reach the clipboard — select the line above and copy it.", es: "Este navegador no llega al portapapeles: selecciona la línea de arriba y cópiala.", fr: "Ce navigateur n'accède pas au presse-papiers — sélectionnez la ligne ci-dessus et copiez-la.", de: "Dieser Browser kommt nicht an die Zwischenablage — markier die Zeile oben und kopier sie.", pt: "Este navegador não alcança a área de transferência — selecione a linha acima e copie-a.", it: "Questo browser non raggiunge gli appunti: seleziona la riga qui sopra e copiala.", ja: "このブラウザーはクリップボードに届きません — 上の行を選択してコピーしてください。", zh: "此浏览器无法访问剪贴板 — 请选中上面那行并复制。", hi: "यह ब्राउज़र क्लिपबोर्ड तक नहीं पहुँचता — ऊपर की पंक्ति चुनकर कॉपी करें।", ar: "هذا المتصفح لا يصل إلى الحافظة — حدّد السطر أعلاه وانسخه.",
+  },
+  "hnd.motor.sub": {
+    en: "This deployment cannot move a cursor — a small program on that machine does, started by you and stopped by you. Install it once with the line below. It will ask for your token rather than take it here: the program photographs the screen it runs on, so a token typed into that window would be in every picture it sends.", es: "Este despliegue no puede mover un cursor: lo hace un pequeño programa en esa máquina, iniciado por ti y detenido por ti. Instálalo una vez con la línea de abajo. Te pedirá tu token en vez de tomarlo aquí: el programa fotografía la pantalla en la que se ejecuta, así que un token escrito en esa ventana estaría en cada imagen que envía.", fr: "Ce déploiement ne peut pas déplacer un curseur — un petit programme sur cette machine le fait, lancé par vous et arrêté par vous. Installez-le une fois avec la ligne ci-dessous. Il demandera votre jeton plutôt que de le prendre ici : le programme photographie l'écran sur lequel il tourne, donc un jeton tapé dans cette fenêtre serait dans chaque image qu'il envoie.", de: "Diese Installation kann keinen Cursor bewegen — das tut ein kleines Programm auf jener Maschine, von dir gestartet und von dir gestoppt. Richte es einmal mit der Zeile unten ein. Es fragt nach deinem Token, statt ihn hier zu nehmen: das Programm fotografiert den Bildschirm, auf dem es läuft, ein in jenes Fenster getippter Token wäre also in jedem Bild, das es schickt.", pt: "Esta instalação não pode mover um cursor — um pequeno programa nessa máquina fá-lo, iniciado por si e parado por si. Instale-o uma vez com a linha abaixo. Pedirá o seu token em vez de o receber aqui: o programa fotografa o ecrã em que corre, por isso um token escrito nessa janela estaria em cada imagem que envia.", it: "Questa installazione non può muovere un cursore: lo fa un piccolo programma su quella macchina, avviato da te e fermato da te. Installalo una volta con la riga qui sotto. Chiederà il tuo token invece di prenderlo qui: il programma fotografa lo schermo su cui gira, quindi un token digitato in quella finestra sarebbe in ogni immagine che invia.", ja: "この環境はカーソルを動かせません。動かすのは、あなたが起動し、あなたが止める、そのマシン上の小さなプログラムです。下の行で一度だけ導入してください。トークンはここで渡すのではなく、プログラムが尋ねます。プログラムは自分が動いている画面を撮影するので、その窓に打ち込まれたトークンは送られるすべての画像に写ります。", zh: "本部署无法移动光标——那台机器上的一个小程序才能，由你启动、由你停止。用下面这一行安装一次。它会向你索取令牌，而不是在这里取走：该程序会拍摄它自己所在的屏幕，写进那个窗口的令牌会出现在它发送的每一张图里。", hi: "यह तैनाती कर्सर नहीं हिला सकती — वह काम उस मशीन पर चलने वाला एक छोटा प्रोग्राम करता है, जिसे आप शुरू करते हैं और आप ही रोकते हैं। नीचे दी गई पंक्ति से इसे एक बार इंस्टॉल करें। वह आपका टोकन यहाँ लेने के बजाय पूछेगा: प्रोग्राम उसी स्क्रीन की तस्वीर लेता है जिस पर वह चलता है, इसलिए उस विंडो में टाइप किया टोकन उसकी भेजी हर तस्वीर में होगा।", ar: "هذا النشر لا يستطيع تحريك مؤشر — يفعل ذلك برنامج صغير على تلك الآلة، تشغّله أنت وتوقفه أنت. ثبّته مرة واحدة بالسطر أدناه. سيطلب منك الرمز بدل أخذه هنا: البرنامج يصوّر الشاشة التي يعمل عليها، فالرمز المكتوب في تلك النافذة سيكون في كل صورة يرسلها.",
+  },
+  "hnd.motor.token": {
+    en: "Copy my token", es: "Copiar mi token", fr: "Copier mon jeton", de: "Mein Token kopieren", pt: "Copiar o meu token", it: "Copia il mio token", ja: "自分のトークンをコピー", zh: "复制我的令牌", hi: "मेरा टोकन कॉपी करें", ar: "انسخ رمزي",
+  },
+  "hnd.motor.token.copied": {
+    en: "Copied, not shown. Paste it when the program asks — nothing will appear as you type.", es: "Copiado, no mostrado. Pégalo cuando el programa lo pida: no aparecerá nada mientras escribes.", fr: "Copié, non affiché. Collez-le quand le programme le demande — rien n'apparaîtra pendant la saisie.", de: "Kopiert, nicht angezeigt. Füg es ein, wenn das Programm fragt — beim Tippen erscheint nichts.", pt: "Copiado, não mostrado. Cole-o quando o programa pedir — nada aparecerá enquanto escreve.", it: "Copiato, non mostrato. Incollalo quando il programma lo chiede: mentre digiti non apparirà nulla.", ja: "コピーしました。画面には出していません。プログラムに聞かれたら貼り付けてください — 入力しても何も表示されません。", zh: "已复制，未显示。程序询问时粘贴即可 — 输入时不会有任何显示。", hi: "कॉपी हो गया, दिखाया नहीं गया। प्रोग्राम पूछे तब चिपकाएँ — टाइप करते समय कुछ नहीं दिखेगा।", ar: "نُسخ، ولم يُعرض. الصقه حين يطلبه البرنامج — لن يظهر شيء أثناء الكتابة.",
+  },
+  "hnd.motor.token.show": {
+    en: "show it instead", es: "mostrarlo en su lugar", fr: "l'afficher plutôt", de: "stattdessen anzeigen", pt: "mostrá-lo em vez disso", it: "mostralo invece", ja: "代わりに表示する", zh: "改为显示它", hi: "इसके बजाय दिखाएँ", ar: "أظهره بدلًا من ذلك",
+  },
+  "hnd.motor.token.stuck": {
+    en: "This browser will not reach the clipboard. Open the fold below and copy it by hand.", es: "Este navegador no llega al portapapeles. Abre el pliegue de abajo y cópialo a mano.", fr: "Ce navigateur n'accède pas au presse-papiers. Ouvrez le repli ci-dessous et copiez-le à la main.", de: "Dieser Browser kommt nicht an die Zwischenablage. Klapp unten auf und kopier es von Hand.", pt: "Este navegador não alcança a área de transferência. Abra a dobra abaixo e copie-o à mão.", it: "Questo browser non raggiunge gli appunti. Apri la piega qui sotto e copialo a mano.", ja: "このブラウザーはクリップボードに届きません。下の折りたたみを開いて手で写してください。", zh: "此浏览器无法访问剪贴板。展开下方的折叠内容，手动复制。", hi: "यह ब्राउज़र क्लिपबोर्ड तक नहीं पहुँचता। नीचे की तह खोलकर हाथ से कॉपी करें।", ar: "هذا المتصفح لا يصل إلى الحافظة. افتح الطيّة أدناه وانسخه يدويًا.",
+  },
+  "hnd.motor.token.warn": {
+    en: "Opening this puts your token on the screen the hands are about to photograph. Close it again before you begin.", es: "Abrir esto pone tu token en la pantalla que las manos van a fotografiar. Ciérralo antes de empezar.", fr: "L'ouvrir met votre jeton sur l'écran que les mains vont photographier. Refermez-le avant de commencer.", de: "Das hier zu öffnen legt dein Token auf den Bildschirm, den die Hände gleich fotografieren. Mach es wieder zu, bevor du anfängst.", pt: "Abrir isto põe o seu token no ecrã que as mãos vão fotografar. Feche-o antes de começar.", it: "Aprirlo mette il tuo token sullo schermo che le mani stanno per fotografare. Richiudilo prima di cominciare.", ja: "これを開くと、手がこれから撮影する画面にトークンが載ります。始める前に閉じてください。", zh: "展开它会把你的令牌放在双手即将拍摄的屏幕上。开始前请合上。", hi: "इसे खोलने पर आपका टोकन उसी स्क्रीन पर आ जाता है जिसकी तस्वीर हाथ लेने वाले हैं। शुरू करने से पहले इसे बंद कर दें।", ar: "فتح هذا يضع رمزك على الشاشة التي توشك اليدان على تصويرها. أغلقه قبل أن تبدأ.",
+  },
+  "hnd.move": {
+    en: "Make a move yourself", es: "Haz un movimiento tú", fr: "Faites un geste vous-même", de: "Mach selbst eine Bewegung", pt: "Faz tu um movimento", it: "Fai tu una mossa", ja: "自分で動かす", zh: "自己动一下", hi: "खुद एक चाल चलें", ar: "حرّك أنت",
+  },
+  "hnd.move.at": {
+    en: "what it is aiming at", es: "a qué apunta", fr: "ce qu'il vise", de: "worauf es zielt", pt: "a que aponta", it: "a cosa mira", ja: "何を狙うか", zh: "瞄准什么", hi: "किस पर निशाना", ar: "ما يستهدفه",
+  },
+  "hnd.move.go": {
+    en: "Move", es: "Mover", fr: "Faire", de: "Bewegen", pt: "Mover", it: "Muovi", ja: "動かす", zh: "执行", hi: "चलें", ar: "نفّذ",
+  },
+  "hnd.move.key": {
+    en: "which key", es: "qué tecla", fr: "quelle touche", de: "welche Taste", pt: "que tecla", it: "quale tasto", ja: "どのキー", zh: "哪个键", hi: "कौन-सी कुंजी", ar: "أي مفتاح",
+  },
+  "hnd.move.text": {
+    en: "what to type", es: "qué escribir", fr: "quoi écrire", de: "was getippt wird", pt: "o que escrever", it: "cosa scrivere", ja: "入力する内容", zh: "要输入什么", hi: "क्या टाइप करना है", ar: "ما يُكتب",
+  },
+  "hnd.moves": {
+    en: "The moves it may make", es: "Los movimientos que puede hacer", fr: "Les gestes qu'il peut faire", de: "Die Bewegungen, die es machen darf", pt: "Os movimentos que pode fazer", it: "Le mosse che può fare", ja: "許される動作", zh: "它可以做的动作", hi: "जो चालें यह चल सकता है", ar: "الحركات المسموح بها",
+  },
+  "hnd.name": {
+    en: "call this something", es: "llámalo de algún modo", fr: "donnez-lui un nom", de: "gib dem einen Namen", pt: "dê-lhe um nome", it: "dagli un nome", ja: "名前をつける", zh: "给它起个名字", hi: "इसे कोई नाम दें", ar: "سمِّ هذا",
+  },
+  "hnd.never": {
+    en: "What it will never do", es: "Lo que nunca hará", fr: "Ce qu'il ne fera jamais", de: "Was es nie tun wird", pt: "O que nunca fará", it: "Cosa non farà mai", ja: "決してしないこと", zh: "它绝不会做的事", hi: "यह क्या कभी नहीं करेगा", ar: "ما لن يفعله أبدًا",
+  },
+  "hnd.none": {
+    en: "Nothing. It has no hands until you give it some.", es: "Nada. No tiene manos hasta que se las des.", fr: "Rien. Il n'a pas de mains tant que vous ne lui en donnez pas.", de: "Nichts. Es hat keine Hände, bis du ihm welche gibst.", pt: "Nada. Não tem mãos até que lhas dê.", it: "Niente. Non ha mani finché non gliene dai.", ja: "何もありません。手を与えるまで、手はありません。", zh: "没有。在你给它之前，它没有手。", hi: "कुछ नहीं। जब तक आप न दें, इसके हाथ नहीं हैं।", ar: "لا شيء. لا يدين له حتى تمنحه إياهما.",
+  },
+  "hnd.noroutines": {
+    en: "Nothing yet.", es: "Nada todavía.", fr: "Rien encore.", de: "Noch nichts.", pt: "Ainda nada.", it: "Ancora niente.", ja: "まだありません。", zh: "还没有。", hi: "अभी कुछ नहीं।", ar: "لا شيء بعد.",
+  },
+  "hnd.now": {
+    en: "What it may do now", es: "Lo que puede hacer ahora", fr: "Ce qu'il peut faire maintenant", de: "Was es jetzt darf", pt: "O que pode fazer agora", it: "Cosa può fare adesso", ja: "いま許されていること", zh: "它现在可以做什么", hi: "अभी यह क्या कर सकता है", ar: "ما يُسمح له الآن",
+  },
+  "hnd.over": {
+    en: "over", es: "terminado", fr: "terminé", de: "abgelaufen", pt: "terminado", it: "scaduto", ja: "終了", zh: "已结束", hi: "समाप्त", ar: "منتهٍ",
+  },
+  "hnd.pass.go": {
+    en: "Hand it over", es: "Pasarlo", fr: "Le confier", de: "Übergeben", pt: "Passar", it: "Passalo", ja: "渡す", zh: "交出去", hi: "सौंपें", ar: "سلّمه",
+  },
+  "hnd.pass.note": {
+    en: "The second profile can only ever hold less — the same apps or fewer, the same moves or fewer, and the steps that are left rather than a fresh budget.", es: "El segundo perfil solo puede tener menos: las mismas aplicaciones o menos, los mismos movimientos o menos, y los pasos que quedan en vez de un presupuesto nuevo.", fr: "Le second profil ne peut jamais détenir que moins : les mêmes applications ou moins, les mêmes gestes ou moins, et les étapes restantes plutôt qu'un nouveau budget.", de: "Das zweite Profil kann immer nur weniger halten — dieselben Apps oder weniger, dieselben Bewegungen oder weniger, und die verbleibenden Schritte statt eines neuen Budgets.", pt: "O segundo perfil só pode ter menos — as mesmas aplicações ou menos, os mesmos movimentos ou menos, e os passos que restam em vez de um orçamento novo.", it: "Il secondo profilo può solo avere meno — le stesse app o meno, le stesse mosse o meno, e i passi rimasti invece di un budget nuovo.", ja: "二つ目のプロフィールが持てるのは、常により少ないものだけです — 同じか少ないアプリ、同じか少ない動作、そして新しい持ち分ではなく残りの手数。", zh: "第二个资料只能拿到更少 — 同样或更少的应用、同样或更少的动作，以及剩下的步数，而不是重新一份额度。", hi: "दूसरा प्रोफ़ाइल हमेशा कम ही रख सकता है — वही या कम ऐप, वही या कम चालें, और बचे हुए चरण, नया बजट नहीं।", ar: "لا يمكن للملف الثاني أن يحمل إلا أقل — التطبيقات ذاتها أو أقل، والحركات ذاتها أو أقل، والخطوات المتبقية لا حصة جديدة.",
+  },
+  "hnd.pass.who": {
+    en: "hand it to which profile", es: "a qué perfil se lo pasas", fr: "à quel profil le confier", de: "an welches Profil übergeben", pt: "a que perfil o passas", it: "a quale profilo passarlo", ja: "どのプロフィールに渡すか", zh: "交给哪个资料", hi: "किस प्रोफ़ाइल को सौंपें", ar: "إلى أي ملف تُسلّمه",
+  },
+  "hnd.pickgrant": {
+    en: "Which permission", es: "Qué permiso", fr: "Quelle permission", de: "Welche Erlaubnis", pt: "Que permissão", it: "Quale permesso", ja: "どの許可", zh: "用哪个许可", hi: "कौन-सी अनुमति", ar: "أي إذن",
+  },
+  "hnd.pitch": {
+    en: "It can already see and speak. This is where it is given permission to work a screen — and taken back in one press.", es: "Ya puede ver y hablar. Aquí se le da permiso para manejar una pantalla — y se le retira con una sola pulsación.", fr: "Il voit et parle déjà. Ici, on lui donne la permission de manœuvrer un écran — et on la reprend d'une seule pression.", de: "Sehen und sprechen kann es schon. Hier bekommt es die Erlaubnis, einen Bildschirm zu bedienen — und mit einem Druck ist sie wieder weg.", pt: "Já consegue ver e falar. Aqui dá-se-lhe permissão para trabalhar um ecrã — e retira-se num só toque.", it: "Vedere e parlare sa già farlo. Qui gli si dà il permesso di usare uno schermo — e lo si ritira con una sola pressione.", ja: "見ることも話すこともすでにできます。ここでは画面を操作する許可を与えます — そして一度の操作で取り戻せます。", zh: "它已经能看、能说。在这里给它操作屏幕的许可 — 也能一按收回。", hi: "यह पहले ही देख और बोल सकता है। यहाँ इसे स्क्रीन चलाने की अनुमति दी जाती है — और एक ही दबाव में वापस ले ली जाती है।", ar: "هو يرى ويتكلم بالفعل. هنا يُمنح إذن تشغيل شاشة — ويُسترد بضغطة واحدة.",
+  },
+  "hnd.places": {
+    en: "Apps or sites", es: "Aplicaciones o sitios", fr: "Applications ou sites", de: "Apps oder Seiten", pt: "Aplicações ou sites", it: "App o siti", ja: "アプリまたはサイト", zh: "应用或网站", hi: "ऐप या साइट", ar: "تطبيقات أو مواقع",
+  },
+  "hnd.places.hint": {
+    en: "calendar, mail — separated by commas", es: "calendario, correo — separados por comas", fr: "agenda, courrier — séparés par des virgules", de: "Kalender, Mail — durch Kommas getrennt", pt: "calendário, correio — separados por vírgulas", it: "calendario, posta — separati da virgole", ja: "カレンダー、メール — カンマ区切り", zh: "日历、邮件 — 用逗号分隔", hi: "कैलेंडर, मेल — अल्पविराम से अलग", ar: "التقويم، البريد — مفصولة بفواصل",
+  },
+  "hnd.put": {
+    en: "Put its hands on something", es: "Poner sus manos en algo", fr: "Poser ses mains sur quelque chose", de: "Ihm etwas in die Hände geben", pt: "Pôr as mãos em algo", it: "Mettergli le mani su qualcosa", ja: "何かに手をかける", zh: "让它上手做事", hi: "इसे किसी काम पर लगाएँ", ar: "ضع يديه على شيء",
+  },
+  "hnd.put.go": {
+    en: "Begin", es: "Comenzar", fr: "Commencer", de: "Beginnen", pt: "Começar", it: "Inizia", ja: "開始", zh: "开始", hi: "शुरू करें", ar: "ابدأ",
+  },
+  "hnd.reach.line": {
+    en: "{state} · {left} steps left · {where}", es: "{state} · quedan {left} pasos · {where}", fr: "{state} · {left} étapes restantes · {where}", de: "{state} · noch {left} Schritte · {where}", pt: "{state} · restam {left} passos · {where}", it: "{state} · {left} passi rimasti · {where}", ja: "{state} · 残り{left}手 · {where}", zh: "{state} · 剩余 {left} 步 · {where}", hi: "{state} · {left} चरण शेष · {where}", ar: "{state} · بقيت {left} خطوة · {where}",
+  },
+  "hnd.refresh": {
+    en: "Refresh", es: "Actualizar", fr: "Actualiser", de: "Aktualisieren", pt: "Atualizar", it: "Aggiorna", ja: "更新", zh: "刷新", hi: "ताज़ा करें", ar: "تحديث",
+  },
+  "hnd.steps": {
+    en: "Steps", es: "Pasos", fr: "Étapes", de: "Schritte", pt: "Passos", it: "Passi", ja: "手数", zh: "步数", hi: "चरण", ar: "خطوات",
+  },
+  "hnd.stepsword": {
+    en: "steps", es: "pasos", fr: "étapes", de: "Schritte", pt: "passos", it: "passi", ja: "手", zh: "步", hi: "चरण", ar: "خطوات",
+  },
+  "hnd.stop": {
+    en: "Take the screen back", es: "Recuperar la pantalla", fr: "Reprendre l'écran", de: "Bildschirm zurücknehmen", pt: "Recuperar o ecrã", it: "Riprendi lo schermo", ja: "画面を取り戻す", zh: "收回屏幕", hi: "स्क्रीन वापस लें", ar: "استرجع الشاشة",
+  },
+  "hnd.surface": {
+    en: "Where", es: "Dónde", fr: "Où", de: "Wo", pt: "Onde", it: "Dove", ja: "場所", zh: "何处", hi: "कहाँ", ar: "أين",
+  },
+  "hnd.takeback": {
+    en: "Take back", es: "Retirar", fr: "Reprendre", de: "Zurücknehmen", pt: "Retirar", it: "Ritira", ja: "取り消す", zh: "收回", hi: "वापस लें", ar: "استرداد",
+  },
+  "hnd.title": {
+    en: "Hands", es: "Manos", fr: "Mains", de: "Hände", pt: "Mãos", it: "Mani", ja: "手", zh: "双手", hi: "हाथ", ar: "اليدان",
+  },
+  "hnd.told": {
+    en: "Or just say it", es: "O simplemente dilo", fr: "Ou dites-le simplement", de: "Oder sag es einfach", pt: "Ou basta dizê-lo", it: "Oppure dillo e basta", ja: "または、言うだけ", zh: "或者直接说出来", hi: "या बस कह दीजिए", ar: "أو قُلها فحسب",
+  },
+  "hnd.told.go": {
+    en: "Say it", es: "Dilo", fr: "Dites-le", de: "Sag es", pt: "Diga-o", it: "Dillo", ja: "言う", zh: "说出来", hi: "कहो", ar: "قلها",
+  },
+  "hnd.told.hint": {
+    en: "you can click and type in my calendar for the next hour", es: "puedes hacer clic y escribir en mi calendario durante la próxima hora", fr: "tu peux cliquer et écrire dans mon agenda pendant la prochaine heure", de: "du darfst in der nächsten Stunde in meinem Kalender klicken und tippen", pt: "podes clicar e escrever no meu calendário durante a próxima hora", it: "puoi cliccare e scrivere nel mio calendario per la prossima ora", ja: "これから一時間、私のカレンダーでクリックと入力をしていい", zh: "接下来一小时你可以在我的日历里点击和输入", hi: "अगले एक घंटे तक तुम मेरे कैलेंडर में क्लिक और टाइप कर सकते हो", ar: "يمكنك النقر والكتابة في تقويمي خلال الساعة القادمة",
+  },
+  "hnd.told.pitch": {
+    en: "The same permission, said instead of picked. Words that name no app or site grant nothing — the refusal quotes back what was heard so you can say it better.", es: "El mismo permiso, dicho en vez de elegido. Palabras que no nombran ninguna aplicación o sitio no conceden nada — el rechazo repite lo que se oyó para que puedas decirlo mejor.", fr: "La même permission, dite au lieu d'être choisie. Des mots qui ne nomment aucune application ni aucun site n'accordent rien — le refus cite ce qui a été entendu pour que vous puissiez mieux le dire.", de: "Dieselbe Erlaubnis, gesagt statt ausgewählt. Worte, die keine App und keine Seite nennen, gewähren nichts — die Ablehnung zitiert das Gehörte zurück, damit du es besser sagen kannst.", pt: "A mesma permissão, dita em vez de escolhida. Palavras que não nomeiam nenhuma aplicação ou site não concedem nada — a recusa cita o que foi ouvido para que possa dizê-lo melhor.", it: "Lo stesso permesso, detto invece che scelto. Parole che non nominano alcuna app o sito non concedono nulla — il rifiuto ripete ciò che ha sentito perché tu possa dirlo meglio.", ja: "同じ許可を、選ぶ代わりに言葉で。アプリやサイトを挙げない言葉は何も許可しません — 拒否は聞き取った内容をそのまま返すので、言い直せます。", zh: "同一个许可，用说的而不是选的。没有点名应用或网站的话什么也不授予 — 拒绝会把听到的原话回给你，好让你说得更清楚。", hi: "वही अनुमति, चुनने के बजाय कही गई। जो शब्द किसी ऐप या साइट का नाम नहीं लेते वे कुछ नहीं देते — इनकार सुनी हुई बात दोहरा देता है ताकि आप बेहतर कह सकें।", ar: "الإذن نفسه، مقولًا بدل أن يكون مختارًا. الكلمات التي لا تسمّي تطبيقًا أو موقعًا لا تمنح شيئًا — والرفض يقتبس ما سُمع كي تقولها على نحو أوضح.",
+  },
+  "hnd.tookback": {
+    en: "Taken back. Anything running stops at its next step.", es: "Retirado. Lo que esté en marcha se detiene en su próximo paso.", fr: "Repris. Ce qui est en cours s'arrête à l'étape suivante.", de: "Zurückgenommen. Was läuft, hält beim nächsten Schritt an.", pt: "Retirado. O que estiver a decorrer para no passo seguinte.", it: "Ritirato. Ciò che è in corso si ferma al passo successivo.", ja: "取り消しました。実行中のものは次の一手で止まります。", zh: "已收回。正在进行的会在下一步停下。", hi: "वापस ले लिया। जो चल रहा है वह अगले चरण पर रुक जाएगा।", ar: "تم الاسترداد. ما يجري يتوقف عند خطوته التالية.",
+  },
+  "hnd.undrivable": {
+    en: "Nothing can operate another app's interface on an iPhone — Apple provides no way, so there is no permission to ask for. It can still watch this screen and tell you where to press.", es: "Nada puede manejar la interfaz de otra aplicación en un iPhone — Apple no ofrece ninguna vía, así que no hay permiso que pedir. Aún puede mirar esta pantalla y decirte dónde pulsar.", fr: "Rien ne peut manœuvrer l'interface d'une autre application sur un iPhone — Apple n'offre aucun moyen, il n'y a donc aucune permission à demander. Il peut toujours regarder cet écran et vous dire où appuyer.", de: "Auf einem iPhone kann nichts die Oberfläche einer anderen App bedienen — Apple bietet keinen Weg, also gibt es keine Erlaubnis zu erfragen. Zusehen und dir sagen, wo du drücken sollst, kann es weiterhin.", pt: "Nada consegue operar a interface de outra aplicação num iPhone — a Apple não oferece qualquer via, por isso não há permissão a pedir. Ainda pode observar este ecrã e dizer-lhe onde carregar.", it: "Su un iPhone nulla può usare l'interfaccia di un'altra app — Apple non offre alcuna via, quindi non c'è alcun permesso da chiedere. Può comunque guardare questo schermo e dirti dove premere.", ja: "iPhone では、他アプリの画面を操作できるものはありません — Apple がその手段を用意していないため、求めるべき許可自体が存在しません。画面を見て、どこを押せばよいか伝えることはできます。", zh: "在 iPhone 上，任何程序都无法操作另一个应用的界面 — 苹果没有提供途径，因此根本没有可申请的权限。它仍然可以看这块屏幕并告诉你按哪里。", hi: "iPhone पर कोई भी दूसरे ऐप का इंटरफ़ेस नहीं चला सकता — Apple कोई रास्ता नहीं देता, इसलिए माँगने को कोई अनुमति ही नहीं है। यह फिर भी यह स्क्रीन देख सकता है और बता सकता है कि कहाँ दबाना है।", ar: "لا شيء يستطيع تشغيل واجهة تطبيق آخر على الآيفون — لا توفّر آبل أي سبيل لذلك، فلا وجود لإذن يُطلب. ويظل بوسعه مشاهدة هذه الشاشة وإخبارك أين تضغط.",
+  },
+  "hnd.watched": {
+    en: "only while somebody is watching", es: "solo mientras alguien mira", fr: "seulement pendant que quelqu'un regarde", de: "nur solange jemand zusieht", pt: "apenas enquanto alguém observa", it: "solo mentre qualcuno guarda", ja: "誰かが見ている間だけ", zh: "仅在有人看着时", hi: "केवल जब कोई देख रहा हो", ar: "فقط بينما يراقب أحد",
+  },
+  "hnd.write": {
+    en: "Write it down", es: "Anotarlo", fr: "Le noter", de: "Aufschreiben", pt: "Anotar", it: "Annotalo", ja: "書き留める", zh: "记下来", hi: "लिख लें", ar: "دوّنه",
+  },
+  "hnd.wrotedown": {
+    en: "Written down. It can do that again.", es: "Anotado. Puede hacerlo de nuevo.", fr: "Noté. Il peut le refaire.", de: "Aufgeschrieben. Es kann das wieder tun.", pt: "Anotado. Pode fazê-lo outra vez.", it: "Annotato. Può rifarlo.", ja: "書き留めました。同じことをまたできます。", zh: "已记下。它可以再做一次。", hi: "लिख लिया गया। यह इसे फिर कर सकता है।", ar: "دُوّن. يستطيع فعل ذلك مجددًا.",
+  },
+  "nav.hands": {
+    en: "Hands", es: "Manos", fr: "Mains", de: "Hände", pt: "Mãos", it: "Mani", ja: "手", zh: "双手", hi: "हाथ", ar: "اليدان",
+  },
   "nav.reach": {
     en: "What reaches out",
     es: "Qué se pone en contacto",
@@ -5280,6 +5505,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cch.ask": {
     en: "Ask the coach", es: "Preguntar al coach", fr: "Demander au coach", de: "Den Coach fragen", pt: "Perguntar ao coach", it: "Chiedi al coach", ja: "コーチに尋ねる", zh: "询问教练", hi: "कोच से पूछें", ar: "اسأل المدرّب",
   },
+  "cch.show.pic": {
+    en: "Show it a picture", es: "Muéstrale una imagen", fr: "Montrez-lui une image", de: "Zeig ihm ein Bild", pt: "Mostre-lhe uma imagem", it: "Mostragli un'immagine", ja: "画像を見せる", zh: "给它看一张图片", hi: "इसे एक चित्र दिखाएँ", ar: "أرِه صورة",
+  },
+  "cch.show.screen": {
+    en: "Show it your screen", es: "Muéstrale tu pantalla", fr: "Montrez-lui votre écran", de: "Zeig ihm deinen Bildschirm", pt: "Mostre-lhe o seu ecrã", it: "Mostragli il tuo schermo", ja: "画面を見せる", zh: "给它看你的屏幕", hi: "इसे अपनी स्क्रीन दिखाएँ", ar: "أرِه شاشتك",
+  },
+  "cch.show.grabbed": {
+    en: "your screen, one frame", es: "tu pantalla, un fotograma", fr: "votre écran, une image", de: "dein Bildschirm, ein Einzelbild", pt: "o seu ecrã, um quadro", it: "il tuo schermo, un fotogramma", ja: "あなたの画面・1コマ", zh: "你的屏幕，一帧", hi: "आपकी स्क्रीन, एक फ़्रेम", ar: "شاشتك، إطار واحد",
+  },
+  "cch.show.drop": {
+    en: "Put the picture down", es: "Retirar la imagen", fr: "Retirer l'image", de: "Das Bild weglegen", pt: "Retirar a imagem", it: "Mettere via l'immagine", ja: "画像を取り下げる", zh: "放下图片", hi: "चित्र हटाएँ", ar: "أنزِل الصورة",
+  },
   "cch.thinking": {
     en: "Thinking…", es: "Pensando…", fr: "Réflexion…", de: "Denkt nach…", pt: "A pensar…", it: "Sto pensando…", ja: "考えています…", zh: "思考中…", hi: "सोच रहा है…", ar: "يفكّر…",
   },
@@ -8014,6 +8251,180 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "walk.lost": {
     en: "that did not reach it", es: "eso no llegó", fr: "cela n'est pas arrivé", de: "das kam nicht an", pt: "isso não chegou", it: "non è arrivato", ja: "届きませんでした", zh: "没有送达", hi: "वह नहीं पहुँचा", ar: "لم يصل ذلك",
+  },
+
+  // ---- the capability register (screens/Capabilities.tsx) -------
+  //
+  // Named for what each faculty does, not for the body part it
+  // resembles. The shorthand behind these rows is anatomical and
+  // that shorthand is precisely wrong in front of a clinician, a
+  // regulator or an attorney: "eyes" claims a faculty, where
+  // "visual perception, described in words and not retained"
+  // states a behaviour somebody else can hold this product to.
+  "nav.capabilities": {
+    en: "Capabilities", es: "Capacidades", fr: "Capacités", de: "Fähigkeiten", pt: "Capacidades", it: "Capacità", ja: "機能", zh: "功能权限", hi: "क्षमताएँ", ar: "القدرات",
+  },
+  "cap.title": {
+    en: "Capabilities", es: "Capacidades", fr: "Capacités", de: "Fähigkeiten", pt: "Capacidades", it: "Capacità", ja: "機能", zh: "功能权限", hi: "क्षमताएँ", ar: "القدرات",
+  },
+  "cap.lead": {
+    en: "Every faculty this Guardian can be given, what each one currently is, the permission it rests on, and the screen that withdraws it.", es: "Cada facultad que puede otorgarse a este Guardian, en qué estado se encuentra, el permiso en que se apoya y la pantalla que la retira.", fr: "Chaque faculté que ce Guardian peut recevoir, son état actuel, l'autorisation sur laquelle elle repose et l'écran qui la retire.", de: "Jede Fähigkeit, die dieser Guardian erhalten kann, ihr aktueller Stand, die zugrunde liegende Erlaubnis und der Bildschirm, der sie zurücknimmt.", pt: "Cada faculdade que pode ser dada a este Guardian, o estado atual, a permissão em que assenta e o ecrã que a retira.", it: "Ogni facoltà che questo Guardian può ricevere, il suo stato attuale, il permesso su cui si fonda e la schermata che lo revoca.", ja: "この Guardian に与えられる各機能と、その現在の状態、根拠となる許可、および取り消しを行う画面。", zh: "此 Guardian 可被授予的每项功能、当前状态、所依据的许可，以及撤销该功能的页面。", hi: "इस Guardian को दी जा सकने वाली हर क्षमता, उसकी वर्तमान स्थिति, जिस अनुमति पर वह टिकी है, और वह स्क्रीन जो उसे वापस लेती है।", ar: "كل قدرة يمكن منحها لهذا الـ Guardian، وحالتها الراهنة، والإذن الذي تستند إليه، والشاشة التي تسحبها.",
+  },
+  "cap.standing": {
+    en: "Nothing on this screen grants or revokes. It reads the same routes the owning screens read, and routes to them. A capability shown here as absent is absent because no permission for it exists — not because this page is withholding it.", es: "Nada en esta pantalla otorga ni revoca. Lee las mismas rutas que leen las pantallas propietarias y conduce a ellas. Una capacidad que aquí aparece ausente lo está porque no existe permiso para ella, no porque esta página la oculte.", fr: "Rien sur cet écran n'accorde ni ne révoque. Il lit les mêmes routes que les écrans propriétaires et y conduit. Une capacité indiquée ici comme absente l'est parce qu'aucune autorisation n'existe pour elle, non parce que cette page la dissimule.", de: "Nichts auf diesem Bildschirm erteilt oder entzieht etwas. Er liest dieselben Routen wie die zuständigen Bildschirme und führt zu ihnen. Eine hier als fehlend angezeigte Fähigkeit fehlt, weil keine Erlaubnis dafür besteht — nicht weil diese Seite sie zurückhält.", pt: "Nada neste ecrã concede ou revoga. Lê as mesmas rotas que os ecrãs proprietários leem e encaminha para eles. Uma capacidade aqui indicada como ausente está ausente porque não existe permissão para ela, não porque esta página a esconda.", it: "Nulla in questa schermata concede o revoca. Legge le stesse rotte lette dalle schermate competenti e vi conduce. Una capacità qui indicata come assente lo è perché non esiste alcun permesso per essa, non perché questa pagina la nasconda.", ja: "この画面は許可の付与も取り消しも行いません。各機能を所管する画面と同じ経路を読み取り、そこへ案内するだけです。ここで「なし」と表示される機能は、そのための許可が存在しないからであり、このページが伏せているからではありません。", zh: "本页面不授予也不撤销任何权限。它读取与各功能所属页面相同的接口，并引导至这些页面。此处显示为「无」的功能，是因为不存在相应许可，而非本页面有所隐瞒。", hi: "इस स्क्रीन पर कुछ भी अनुमति नहीं देता और न ही वापस लेता है। यह वही मार्ग पढ़ती है जो सम्बंधित स्क्रीनें पढ़ती हैं, और उन तक पहुँचाती है। यहाँ जो क्षमता अनुपस्थित दिखती है वह इसलिए अनुपस्थित है कि उसके लिए कोई अनुमति मौजूद नहीं — इसलिए नहीं कि यह पृष्ठ उसे छिपा रहा है।", ar: "لا شيء في هذه الشاشة يمنح أو يسحب. إنّها تقرأ المسارات ذاتها التي تقرأها الشاشات المختصّة وتوجّه إليها. القدرة التي تظهر هنا غائبة فهي غائبة لعدم وجود إذن بها، لا لأنّ هذه الصفحة تحجبها.",
+  },
+  "cap.now": {
+    en: "Now:", es: "Ahora:", fr: "Actuellement :", de: "Jetzt:", pt: "Agora:", it: "Ora:", ja: "現在:", zh: "当前：", hi: "अभी:", ar: "الآن:",
+  },
+  "cap.rests": {
+    en: "Rests on:", es: "Se apoya en:", fr: "Repose sur :", de: "Beruht auf:", pt: "Assenta em:", it: "Si fonda su:", ja: "根拠:", zh: "依据：", hi: "किस पर टिका:", ar: "يستند إلى:",
+  },
+  "cap.open": {
+    en: "Open {screen}", es: "Abrir {screen}", fr: "Ouvrir {screen}", de: "{screen} öffnen", pt: "Abrir {screen}", it: "Apri {screen}", ja: "{screen} を開く", zh: "打开{screen}", hi: "{screen} खोलें", ar: "فتح {screen}",
+  },
+  "cap.reading": {
+    en: "reading…", es: "leyendo…", fr: "lecture…", de: "wird gelesen…", pt: "a ler…", it: "in lettura…", ja: "読み取り中…", zh: "读取中…", hi: "पढ़ा जा रहा है…", ar: "جارٍ القراءة…",
+  },
+  "cap.unreadable": {
+    en: "could not be read from this device", es: "no se pudo leer desde este dispositivo", fr: "n'a pas pu être lu depuis cet appareil", de: "konnte von diesem Gerät nicht gelesen werden", pt: "não foi possível ler a partir deste dispositivo", it: "non è stato possibile leggerlo da questo dispositivo", ja: "この端末からは読み取れませんでした", zh: "无法从本设备读取", hi: "इस डिवाइस से पढ़ा नहीं जा सका", ar: "تعذّرت القراءة من هذا الجهاز",
+  },
+  "cap.sight.title": {
+    en: "Visual perception", es: "Percepción visual", fr: "Perception visuelle", de: "Visuelle Wahrnehmung", pt: "Perceção visual", it: "Percezione visiva", ja: "視覚的知覚", zh: "视觉感知", hi: "दृश्य बोध", ar: "الإدراك البصري",
+  },
+  "cap.sight.what": {
+    en: "A monitor with a lens describes what it is pointed at, in one sentence. The frame is held only long enough to describe it and is never written down.", es: "Un monitor con lente describe en una frase aquello a lo que apunta. El fotograma se retiene solo el tiempo necesario para describirlo y nunca se guarda.", fr: "Un moniteur doté d'un objectif décrit en une phrase ce qu'il vise. L'image n'est conservée que le temps de la décrire et n'est jamais enregistrée.", de: "Ein Monitor mit Objektiv beschreibt in einem Satz, worauf er gerichtet ist. Das Bild wird nur so lange gehalten, wie die Beschreibung dauert, und nie gespeichert.", pt: "Um monitor com lente descreve numa frase aquilo para onde aponta. O fotograma é retido apenas o tempo necessário para o descrever e nunca é guardado.", it: "Un monitor dotato di obiettivo descrive in una frase ciò che inquadra. Il fotogramma è trattenuto solo per il tempo della descrizione e non viene mai salvato.", ja: "レンズを備えたモニターが、向けられた対象を一文で説明します。映像は説明に要する間だけ保持され、記録されることはありません。", zh: "带镜头的监测设备用一句话描述其所对准的对象。画面仅在生成描述期间保留，不会被写入存储。", hi: "लेंस वाला मॉनिटर जिस ओर लक्षित है उसे एक वाक्य में बताता है। फ़्रेम केवल वर्णन जितनी देर रखा जाता है और कभी लिखा नहीं जाता।", ar: "تصف شاشة مزوّدة بعدسة ما هي موجّهة إليه في جملة واحدة. تُحتفظ الصورة بقدر ما يلزم لوصفها فقط ولا تُدوَّن أبدًا.",
+  },
+  "cap.sight.rests": {
+    en: "A monitor switched on by the account holder, with a lens among its senses. Anything that senses other people is refused until they have been told.", es: "Un monitor encendido por la persona titular de la cuenta, con una lente entre sus sentidos. Todo lo que perciba a otras personas se rechaza hasta que se les haya informado.", fr: "Un moniteur activé par le titulaire du compte, dont les capteurs comprennent un objectif. Tout capteur percevant d'autres personnes est refusé tant qu'elles n'ont pas été informées.", de: "Ein von der kontoführenden Person eingeschalteter Monitor, dessen Sinne ein Objektiv umfassen. Alles, was andere Personen wahrnimmt, wird abgelehnt, bis diese informiert wurden.", pt: "Um monitor ligado pela pessoa titular da conta, com uma lente entre os seus sentidos. Tudo o que percecione outras pessoas é recusado até que estas tenham sido informadas.", it: "Un monitor acceso dal titolare dell'account, con un obiettivo fra i suoi sensi. Tutto ciò che percepisce altre persone è rifiutato finché non siano state informate.", ja: "アカウント保有者が有効にした、センサーにレンズを含むモニター。他者を感知するものは、その旨が伝えられるまで拒否されます。", zh: "由账户持有人开启、且传感方式包含镜头的监测设备。任何会感知他人的功能，在其被告知之前一律拒绝。", hi: "खाताधारक द्वारा चालू किया गया मॉनिटर, जिसकी इंद्रियों में लेंस शामिल हो। जो कुछ अन्य लोगों को भाँपता है, उसे तब तक अस्वीकार किया जाता है जब तक उन्हें बताया न गया हो।", ar: "شاشة شغّلها صاحب الحساب وتضمّ عدسة بين حواسّها. ويُرفض كل ما يستشعر أشخاصًا آخرين إلى أن يُبلَّغوا بذلك.",
+  },
+  "cap.sight.none": {
+    en: "no monitor with a lens is switched on", es: "no hay ningún monitor con lente encendido", fr: "aucun moniteur doté d'un objectif n'est activé", de: "kein Monitor mit Objektiv ist eingeschaltet", pt: "nenhum monitor com lente está ligado", it: "nessun monitor con obiettivo è acceso", ja: "レンズ付きのモニターは有効になっていません", zh: "未开启任何带镜头的监测设备", hi: "लेंस वाला कोई मॉनिटर चालू नहीं है", ar: "لا توجد شاشة بعدسة مشغّلة",
+  },
+  "cap.sight.some": {
+    en: "{n} switched on — {names}", es: "{n} encendidos — {names}", fr: "{n} activés — {names}", de: "{n} eingeschaltet — {names}", pt: "{n} ligados — {names}", it: "{n} accesi — {names}", ja: "{n} 台が有効 — {names}", zh: "已开启 {n} 台 — {names}", hi: "{n} चालू — {names}", ar: "{n} مشغّلة — {names}",
+  },
+  "cap.hearing.title": {
+    en: "Auxiliary audio input", es: "Entrada de audio auxiliar", fr: "Entrée audio auxiliaire", de: "Zusätzlicher Audioeingang", pt: "Entrada de áudio auxiliar", it: "Ingresso audio ausiliario", ja: "補助音声入力", zh: "辅助音频输入", hi: "सहायक ऑडियो इनपुट", ar: "مدخل صوتي مساعد",
+  },
+  "cap.hearing.what": {
+    en: "A second microphone — a watch, earbuds, a clip-on, glasses — lent to the agent as its own channel while the phone's own microphone is occupied.", es: "Un segundo micrófono —un reloj, auriculares, un micrófono de solapa, unas gafas— cedido al agente como canal propio mientras el micrófono del teléfono está ocupado.", fr: "Un second microphone — montre, écouteurs, micro-cravate, lunettes — prêté à l'agent comme canal propre tant que le microphone du téléphone est occupé.", de: "Ein zweites Mikrofon — eine Uhr, Ohrhörer, ein Ansteckmikrofon, eine Brille — das dem Agenten als eigener Kanal geliehen wird, solange das Mikrofon des Telefons belegt ist.", pt: "Um segundo microfone — um relógio, auriculares, um microfone de lapela, óculos — emprestado ao agente como canal próprio enquanto o microfone do telemóvel está ocupado.", it: "Un secondo microfono — un orologio, auricolari, un microfono a clip, occhiali — prestato all'agente come canale proprio mentre il microfono del telefono è occupato.", ja: "腕時計、イヤホン、クリップマイク、眼鏡といった第二のマイクを、端末本体のマイクが使用中の間、エージェント専用の入力として貸し出します。", zh: "在手机自身麦克风被占用期间，将第二个麦克风——手表、耳机、领夹麦克风、眼镜——借给该代理作为其专属通道。", hi: "दूसरा माइक्रोफ़ोन — घड़ी, इयरबड, क्लिप-ऑन या चश्मा — फ़ोन का अपना माइक्रोफ़ोन व्यस्त रहने तक एजेंट को उसके अपने चैनल के रूप में दिया जाता है।", ar: "ميكروفون ثانٍ — ساعة أو سمّاعات أو ميكروفون لاقط أو نظّارة — يُعار للوكيل كقناة خاصّة به ما دام ميكروفون الهاتف مشغولًا.",
+  },
+  "cap.hearing.rests": {
+    en: "A device paired and switched on for this purpose, and consent recorded on this browser. Capture happens on the device; no audio sample is stored by this service.", es: "Un dispositivo emparejado y encendido para este fin, y el consentimiento registrado en este navegador. La captura ocurre en el dispositivo; este servicio no almacena ninguna muestra de audio.", fr: "Un appareil appairé et activé à cette fin, et un consentement enregistré sur ce navigateur. La capture a lieu sur l'appareil ; ce service ne conserve aucun échantillon audio.", de: "Ein für diesen Zweck gekoppeltes und eingeschaltetes Gerät sowie eine in diesem Browser hinterlegte Einwilligung. Die Aufnahme erfolgt auf dem Gerät; dieser Dienst speichert keine Audioprobe.", pt: "Um dispositivo emparelhado e ligado para este fim, e o consentimento registado neste navegador. A captura ocorre no dispositivo; este serviço não guarda qualquer amostra de áudio.", it: "Un dispositivo associato e acceso a questo scopo, e il consenso registrato su questo browser. L'acquisizione avviene sul dispositivo; questo servizio non conserva alcun campione audio.", ja: "この目的のためにペアリングされ有効化された機器と、このブラウザーに記録された同意。収音は機器側で行われ、本サービスは音声データを保存しません。", zh: "为此目的配对并开启的设备，以及记录在本浏览器中的同意。采集在设备端进行；本服务不存储任何音频样本。", hi: "इस प्रयोजन हेतु युग्मित और चालू किया गया उपकरण, तथा इस ब्राउज़र में दर्ज सहमति। कैप्चर उपकरण पर होता है; यह सेवा कोई ऑडियो नमूना संग्रहीत नहीं करती।", ar: "جهاز مقترن ومشغّل لهذا الغرض، وموافقة مسجّلة في هذا المتصفّح. يجري الالتقاط على الجهاز؛ ولا تخزّن هذه الخدمة أي عيّنة صوتية.",
+  },
+  "cap.hearing.none": {
+    en: "no second microphone is attached", es: "no hay ningún segundo micrófono conectado", fr: "aucun second microphone n'est raccordé", de: "kein zweites Mikrofon ist angeschlossen", pt: "nenhum segundo microfone está ligado", it: "nessun secondo microfono è collegato", ja: "第二のマイクは接続されていません", zh: "未连接第二个麦克风", hi: "कोई दूसरा माइक्रोफ़ोन संलग्न नहीं है", ar: "لا يوجد ميكروفون ثانٍ موصول",
+  },
+  "cap.hearing.idle": {
+    en: "{n} attached, not listening", es: "{n} conectados, sin escuchar", fr: "{n} raccordés, sans écoute", de: "{n} angeschlossen, hört nicht zu", pt: "{n} ligados, sem escutar", it: "{n} collegati, non in ascolto", ja: "{n} 台接続、待機中", zh: "已连接 {n} 台，未在聆听", hi: "{n} संलग्न, सुन नहीं रहा", ar: "{n} موصول، وغير مُنصِت",
+  },
+  "cap.hearing.live": {
+    en: "listening on {device}", es: "escuchando en {device}", fr: "écoute sur {device}", de: "hört über {device} zu", pt: "a escutar em {device}", it: "in ascolto su {device}", ja: "{device} で受音中", zh: "正在通过 {device} 聆听", hi: "{device} पर सुन रहा है", ar: "يُنصِت عبر {device}",
+  },
+  "cap.speech.title": {
+    en: "Speech output", es: "Salida de voz", fr: "Sortie vocale", de: "Sprachausgabe", pt: "Saída de voz", it: "Uscita vocale", ja: "音声出力", zh: "语音输出", hi: "वाक् आउटपुट", ar: "الإخراج الصوتي",
+  },
+  "cap.speech.what": {
+    en: "Written replies spoken aloud through the configured speaking provider, in the reader's own language.", es: "Respuestas escritas pronunciadas en voz alta mediante el proveedor de voz configurado, en el idioma de quien lee.", fr: "Des réponses écrites énoncées à voix haute par le fournisseur vocal configuré, dans la langue du lecteur.", de: "Geschriebene Antworten, die über den eingerichteten Sprachanbieter vorgelesen werden, in der Sprache der lesenden Person.", pt: "Respostas escritas ditas em voz alta pelo fornecedor de voz configurado, na língua de quem lê.", it: "Risposte scritte pronunciate ad alta voce tramite il fornitore vocale configurato, nella lingua di chi legge.", ja: "設定済みの音声提供者を通じて、読み手の言語で回答を読み上げます。", zh: "通过已配置的语音服务提供方，以读者自身的语言朗读书面回复。", hi: "कॉन्फ़िगर किए गए वाक् प्रदाता के माध्यम से लिखित उत्तर पाठक की अपनी भाषा में बोलकर सुनाए जाते हैं।", ar: "ردود مكتوبة تُنطق بصوت مسموع عبر مزوّد الصوت المهيّأ، بلغة القارئ.",
+  },
+  "cap.speech.rests": {
+    en: "A speaking provider configured for this deployment. With none configured the allowance route refuses, and this row says so rather than showing a balance of zero.", es: "Un proveedor de voz configurado para esta instalación. Si no hay ninguno, la ruta de saldo rechaza la petición y esta fila lo indica en lugar de mostrar un saldo de cero.", fr: "Un fournisseur vocal configuré pour ce déploiement. En l'absence de fournisseur, la route de quota refuse, et cette ligne le dit plutôt que d'afficher un solde nul.", de: "Ein für diese Installation eingerichteter Sprachanbieter. Ist keiner eingerichtet, lehnt die Kontingentroute ab, und diese Zeile sagt das, statt ein Guthaben von null anzuzeigen.", pt: "Um fornecedor de voz configurado para esta instalação. Sem nenhum, a rota de saldo recusa, e esta linha di-lo em vez de mostrar um saldo de zero.", it: "Un fornitore vocale configurato per questa installazione. Se non ve n'è alcuno la rotta del credito rifiuta, e questa riga lo dichiara invece di mostrare un saldo pari a zero.", ja: "この配備に設定された音声提供者。未設定の場合、残量の経路は拒否を返し、この行は残量ゼロと示す代わりにその旨を述べます。", zh: "为本次部署配置的语音服务提供方。若未配置，额度接口将予以拒绝，本行如实说明，而不是显示余额为零。", hi: "इस परिनियोजन के लिए कॉन्फ़िगर किया गया वाक् प्रदाता। कोई न होने पर शेष-राशि मार्ग अस्वीकार करता है, और यह पंक्ति शून्य शेष दिखाने के बजाय यही बताती है।", ar: "مزوّد صوت مهيّأ لهذا النشر. وفي غياب أي مزوّد يرفض مسار الرصيد، وتذكر هذه السطر ذلك بدل إظهار رصيد صفري.",
+  },
+  "cap.speech.none": {
+    en: "no speaking provider is configured for this deployment", es: "no hay ningún proveedor de voz configurado para esta instalación", fr: "aucun fournisseur vocal n'est configuré pour ce déploiement", de: "für diese Installation ist kein Sprachanbieter eingerichtet", pt: "não há fornecedor de voz configurado para esta instalação", it: "nessun fornitore vocale è configurato per questa installazione", ja: "この配備には音声提供者が設定されていません", zh: "本次部署未配置语音服务提供方", hi: "इस परिनियोजन के लिए कोई वाक् प्रदाता कॉन्फ़िगर नहीं है", ar: "لا يوجد مزوّد صوت مهيّأ لهذا النشر",
+  },
+  "cap.speech.some": {
+    en: "speaking through {provider}", es: "hablando mediante {provider}", fr: "énonce via {provider}", de: "spricht über {provider}", pt: "a falar através de {provider}", it: "parla tramite {provider}", ja: "{provider} を通じて発話", zh: "通过 {provider} 发声", hi: "{provider} के माध्यम से बोल रहा है", ar: "ينطق عبر {provider}",
+  },
+  "cap.appearance.title": {
+    en: "Presented appearance", es: "Apariencia presentada", fr: "Apparence présentée", de: "Dargestellte Erscheinung", pt: "Aparência apresentada", it: "Aspetto presentato", ja: "提示される外観", zh: "呈现的外观", hi: "प्रस्तुत रूप", ar: "المظهر المعروض",
+  },
+  "cap.appearance.what": {
+    en: "The face the Guardian shows in the helper dock — a small pane in the corner of the app that shows and routes, and never acts.", es: "El rostro que el Guardian muestra en el panel auxiliar: un recuadro pequeño en la esquina de la aplicación que muestra y conduce, y nunca actúa.", fr: "Le visage que le Guardian présente dans le bandeau d'assistance : un petit panneau au coin de l'application, qui affiche et oriente, et n'agit jamais.", de: "Das Gesicht, das der Guardian im Hilfsfenster zeigt — eine kleine Fläche in der Ecke der Anwendung, die anzeigt und weiterleitet und nie handelt.", pt: "O rosto que o Guardian mostra no painel auxiliar — um pequeno painel ao canto da aplicação, que mostra e encaminha, e nunca age.", it: "Il volto che il Guardian mostra nel riquadro di assistenza — un piccolo pannello nell'angolo dell'applicazione, che mostra e indirizza, e non agisce mai.", ja: "Guardian がヘルパードックに表示する顔。アプリの隅にある小さな枠で、表示と案内のみを行い、操作は一切行いません。", zh: "Guardian 在助手停靠面板中呈现的面孔——位于应用一角的小窗格，只做展示与跳转，从不执行操作。", hi: "सहायक डॉक में Guardian जो चेहरा दिखाता है — ऐप के कोने में एक छोटा फलक, जो दिखाता और मार्ग देता है, कभी कार्य नहीं करता।", ar: "الوجه الذي يعرضه الـ Guardian في لوحة المساعدة — لوحة صغيرة في زاوية التطبيق، تعرض وتوجّه، ولا تفعل شيئًا أبدًا.",
+  },
+  "cap.appearance.rests": {
+    en: "A face chosen by the account holder. Until one is chosen the dock stays behind the helper button.", es: "Un rostro elegido por la persona titular de la cuenta. Hasta que se elija uno, el panel permanece tras el botón de ayuda.", fr: "Un visage choisi par le titulaire du compte. Tant qu'aucun n'est choisi, le bandeau reste derrière le bouton d'aide.", de: "Ein von der kontoführenden Person gewähltes Gesicht. Bis eines gewählt ist, bleibt das Fenster hinter der Hilfeschaltfläche.", pt: "Um rosto escolhido pela pessoa titular da conta. Até que um seja escolhido, o painel permanece atrás do botão de ajuda.", it: "Un volto scelto dal titolare dell'account. Finché non ne è scelto uno, il riquadro resta dietro il pulsante di aiuto.", ja: "アカウント保有者が選んだ顔。選ばれるまで、ドックはヘルプボタンの背後にとどまります。", zh: "由账户持有人选定的面孔。在选定之前，该面板始终留在帮助按钮之后。", hi: "खाताधारक द्वारा चुना गया चेहरा। जब तक एक चुना न जाए, डॉक सहायता बटन के पीछे ही रहता है।", ar: "وجه يختاره صاحب الحساب. وإلى أن يُختار واحد تبقى اللوحة خلف زر المساعدة.",
+  },
+  "cap.appearance.none": {
+    en: "no face chosen", es: "no se ha elegido rostro", fr: "aucun visage choisi", de: "kein Gesicht gewählt", pt: "nenhum rosto escolhido", it: "nessun volto scelto", ja: "顔は選ばれていません", zh: "未选定面孔", hi: "कोई चेहरा नहीं चुना गया", ar: "لم يُختَر أي وجه",
+  },
+  "cap.appearance.some": {
+    en: "showing face {face}", es: "mostrando el rostro {face}", fr: "affiche le visage {face}", de: "zeigt Gesicht {face}", pt: "a mostrar o rosto {face}", it: "mostra il volto {face}", ja: "顔 {face} を表示中", zh: "正在显示面孔 {face}", hi: "चेहरा {face} दिखा रहा है", ar: "يعرض الوجه {face}",
+  },
+  "cap.body.title": {
+    en: "Physical embodiment", es: "Encarnación física", fr: "Incarnation physique", de: "Physische Verkörperung", pt: "Encarnação física", it: "Incarnazione fisica", ja: "物理的な身体の付与", zh: "实体化载体", hi: "भौतिक मूर्तरूप", ar: "التجسيد المادي",
+  },
+  "cap.body.what": {
+    en: "A robot bound to this account as a guardian responder. It registers as a device, so an escalation dispatches to it like any other, with a directive appropriate to its kind.", es: "Un robot vinculado a esta cuenta como respondedor del Guardian. Se registra como dispositivo, de modo que un escalado se le despacha como a cualquier otro, con una directiva apropiada a su tipo.", fr: "Un robot rattaché à ce compte comme intervenant du Guardian. Il s'enregistre comme appareil, de sorte qu'une escalade lui est adressée comme à tout autre, avec une directive adaptée à son type.", de: "Ein Roboter, der diesem Konto als Guardian-Einsatzmittel zugeordnet ist. Er meldet sich als Gerät an, sodass eine Eskalation ihn wie jedes andere erreicht, mit einer seiner Art angemessenen Anweisung.", pt: "Um robô associado a esta conta como respondedor do Guardian. Regista-se como dispositivo, pelo que um escalonamento lhe é despachado como a qualquer outro, com uma diretiva adequada ao seu tipo.", it: "Un robot associato a questo account come soccorritore del Guardian. Si registra come dispositivo, così un'escalation gli viene inoltrata come a ogni altro, con una direttiva adeguata al suo tipo.", ja: "この口座に guardian responder として結び付けられたロボット。機器として登録されるため、エスカレーションは他の機器と同様にその種別に応じた指示とともに送られます。", zh: "绑定至本账户、作为 Guardian 响应装置的机器人。它以设备身份注册，因此升级事件会像分派给其他设备一样分派给它，并附带与其类型相称的指令。", hi: "इस खाते से guardian responder के रूप में जुड़ा एक रोबोट। यह एक उपकरण के रूप में पंजीकृत होता है, इसलिए कोई भी एस्केलेशन इसे अन्य उपकरणों की तरह ही, इसके प्रकार के अनुरूप निर्देश सहित भेजा जाता है।", ar: "روبوت مرتبط بهذا الحساب بوصفه مستجيبًا للـ Guardian. يُسجَّل كجهاز، فيُرسل إليه التصعيد كما يُرسل إلى أي جهاز آخر، مع توجيه يناسب نوعه.",
+  },
+  "cap.body.rests": {
+    en: "An explicit binding to a named platform from the published catalogue. Only platforms that are shipping or open for preorder can be bound; an announced one is refused by name.", es: "Una vinculación explícita a una plataforma nombrada del catálogo publicado. Solo pueden vincularse plataformas en venta o en reserva; una simplemente anunciada se rechaza indicando su estado.", fr: "Un rattachement explicite à une plateforme nommée du catalogue publié. Seules les plateformes commercialisées ou ouvertes à la précommande peuvent être rattachées ; une plateforme seulement annoncée est refusée en la nommant.", de: "Eine ausdrückliche Zuordnung zu einer benannten Plattform aus dem veröffentlichten Katalog. Zuordnen lassen sich nur Plattformen, die ausgeliefert werden oder vorbestellbar sind; eine nur angekündigte wird unter Nennung ihres Status abgelehnt.", pt: "Uma associação explícita a uma plataforma nomeada do catálogo publicado. Só podem ser associadas plataformas à venda ou em pré-venda; uma apenas anunciada é recusada pelo nome.", it: "Un vincolo esplicito a una piattaforma nominata dal catalogo pubblicato. Possono essere vincolate solo piattaforme in vendita o prenotabili; una soltanto annunciata è rifiutata indicandone lo stato.", ja: "公開カタログに載る特定機種への明示的な結び付け。出荷中または予約受付中の機種のみを結び付けられます。発表のみの機種は、その状態を挙げて拒否されます。", zh: "与已公布目录中某一具名平台的明确绑定。仅可绑定已发货或已开放预订的平台；仅处于发布阶段的平台会被指名拒绝。", hi: "प्रकाशित सूची में से किसी नामित प्लेटफ़ॉर्म से स्पष्ट बंधन। केवल बिक्री पर या प्री-ऑर्डर हेतु खुले प्लेटफ़ॉर्म ही बाँधे जा सकते हैं; मात्र घोषित प्लेटफ़ॉर्म को नाम लेकर अस्वीकार किया जाता है।", ar: "ارتباط صريح بمنصّة مسمّاة من الفهرس المنشور. ولا يمكن ربط سوى المنصّات المتاحة للشحن أو المفتوحة للحجز المسبق؛ أمّا المعلَن عنها فحسب فتُرفض مع ذكر اسمها.",
+  },
+  "cap.body.none": {
+    en: "no body bound", es: "ningún cuerpo vinculado", fr: "aucun corps rattaché", de: "kein Körper zugeordnet", pt: "nenhum corpo associado", it: "nessun corpo vincolato", ja: "身体は結び付けられていません", zh: "未绑定任何载体", hi: "कोई मूर्तरूप नहीं बाँधा गया", ar: "لا جسد مرتبط",
+  },
+  "cap.body.some": {
+    en: "{n} bound — {names}", es: "{n} vinculados — {names}", fr: "{n} rattachés — {names}", de: "{n} zugeordnet — {names}", pt: "{n} associados — {names}", it: "{n} vincolati — {names}", ja: "{n} 台を結び付け済み — {names}", zh: "已绑定 {n} 台 — {names}", hi: "{n} बाँधे गए — {names}", ar: "{n} مرتبط — {names}",
+  },
+  "cap.movement.title": {
+    en: "Locomotion directives", es: "Directivas de desplazamiento", fr: "Directives de déplacement", de: "Fortbewegungsanweisungen", pt: "Diretivas de deslocação", it: "Direttive di locomozione", ja: "移動の指示", zh: "移动指令", hi: "गमन निर्देश", ar: "توجيهات التنقّل",
+  },
+  "cap.movement.what": {
+    en: "The movement a bound body may be told to make — come, follow, patrol, dock, stop — checked against a per-platform allowlist before anything reaches the robot.", es: "El movimiento que puede ordenarse a un cuerpo vinculado —venir, seguir, patrullar, acoplarse, detenerse— cotejado con una lista blanca propia de cada plataforma antes de que nada llegue al robot.", fr: "Le déplacement qu'un corps rattaché peut recevoir l'ordre d'effectuer — venir, suivre, patrouiller, s'amarrer, s'arrêter — vérifié contre une liste d'autorisation propre à la plateforme avant que quoi que ce soit n'atteigne le robot.", de: "Die Bewegung, zu der ein zugeordneter Körper angewiesen werden darf — kommen, folgen, patrouillieren, andocken, anhalten — geprüft gegen eine plattformeigene Positivliste, bevor irgendetwas den Roboter erreicht.", pt: "O movimento que um corpo associado pode ser mandado fazer — vir, seguir, patrulhar, acoplar, parar — confrontado com uma lista de permissões própria de cada plataforma antes de algo chegar ao robô.", it: "Il movimento che un corpo vincolato può ricevere l'ordine di compiere — venire, seguire, pattugliare, agganciarsi, fermarsi — verificato contro un elenco di consenso proprio della piattaforma prima che alcunché raggiunga il robot.", ja: "結び付けられた身体に指示できる動き — 来る、追従する、巡回する、ドックに戻る、停止する — は、ロボットに届く前に機種ごとの許可一覧と照合されます。", zh: "可命令已绑定载体执行的移动——前来、跟随、巡查、归位、停止——在任何指令抵达机器人之前，都会先与该平台专属的允许清单比对。", hi: "बाँधे गए मूर्तरूप को जो गति करने को कहा जा सकता है — आना, पीछे चलना, गश्त करना, डॉक होना, रुकना — रोबोट तक कुछ भी पहुँचने से पहले प्रति-प्लेटफ़ॉर्म अनुमति-सूची से जाँची जाती है।", ar: "الحركة التي يجوز أن يُؤمر بها جسد مرتبط — الإقبال والمتابعة والتجوال والرسوّ والتوقّف — تُطابَق مع قائمة سماح خاصّة بكل منصّة قبل أن يصل شيء إلى الروبوت.",
+  },
+  "cap.movement.rests": {
+    en: "A bound body with mobility among its capabilities. This is not a separate switch: with no body bound there is nothing that could be told to move.", es: "Un cuerpo vinculado que tenga movilidad entre sus capacidades. No es un interruptor aparte: sin un cuerpo vinculado no hay nada a lo que pueda ordenarse moverse.", fr: "Un corps rattaché dont les capacités comprennent la mobilité. Ce n'est pas un interrupteur distinct : sans corps rattaché, rien ne peut recevoir l'ordre de se déplacer.", de: "Ein zugeordneter Körper, zu dessen Fähigkeiten Mobilität zählt. Das ist kein eigener Schalter: ohne zugeordneten Körper gibt es nichts, das zur Bewegung angewiesen werden könnte.", pt: "Um corpo associado com mobilidade entre as suas capacidades. Não é um interruptor à parte: sem corpo associado não há nada a que se possa mandar mover.", it: "Un corpo vincolato che abbia la mobilità fra le proprie capacità. Non è un interruttore a sé: senza un corpo vincolato non c'è nulla a cui si possa ordinare di muoversi.", ja: "移動性を備えた、結び付け済みの身体。これは独立した切り替えではありません。身体が結び付けられていなければ、動くよう指示できる対象自体が存在しません。", zh: "具备移动能力且已绑定的载体。这并非一个独立开关：未绑定载体时，根本不存在可被命令移动的对象。", hi: "ऐसा बाँधा गया मूर्तरूप जिसकी क्षमताओं में गतिशीलता हो। यह कोई अलग स्विच नहीं है: कोई मूर्तरूप बाँधा न हो तो ऐसा कुछ है ही नहीं जिसे चलने को कहा जा सके।", ar: "جسد مرتبط تندرج الحركة ضمن قدراته. وليس هذا مفتاحًا مستقلًّا: فمن دون جسد مرتبط لا يوجد ما يمكن أن يُؤمر بالتحرّك.",
+  },
+  "cap.movement.none": {
+    en: "nothing bound that could be told to move", es: "no hay nada vinculado a lo que pueda ordenarse moverse", fr: "rien de rattaché ne peut recevoir l'ordre de se déplacer", de: "nichts zugeordnet, das zur Bewegung angewiesen werden könnte", pt: "nada associado a que se possa mandar mover", it: "nulla di vincolato a cui si possa ordinare di muoversi", ja: "動くよう指示できる結び付けはありません", zh: "未绑定任何可被命令移动的对象", hi: "ऐसा कुछ नहीं बाँधा गया जिसे चलने को कहा जा सके", ar: "لا شيء مرتبط يمكن أن يُؤمر بالتحرّك",
+  },
+  "cap.movement.some": {
+    en: "limited to the bound platform's own list", es: "limitado a la lista propia de la plataforma vinculada", fr: "limité à la liste propre de la plateforme rattachée", de: "beschränkt auf die eigene Liste der zugeordneten Plattform", pt: "limitado à lista própria da plataforma associada", it: "limitato all'elenco proprio della piattaforma vincolata", ja: "結び付けた機種自身の一覧に限定されます", zh: "仅限于所绑定平台自身的清单", hi: "बाँधे गए प्लेटफ़ॉर्म की अपनी सूची तक सीमित", ar: "مقصور على قائمة المنصّة المرتبطة نفسها",
+  },
+  "cap.observation.title": {
+    en: "Screen observation", es: "Observación de pantalla", fr: "Observation d'écran", de: "Bildschirmbeobachtung", pt: "Observação de ecrã", it: "Osservazione dello schermo", ja: "画面の観察", zh: "屏幕观察", hi: "स्क्रीन अवलोकन", ar: "مراقبة الشاشة",
+  },
+  "cap.observation.what": {
+    en: "Reading a screen without acting on it. Text found on a screen is treated as data and can never widen what is allowed, whatever that text claims.", es: "Leer una pantalla sin actuar sobre ella. El texto hallado en una pantalla se trata como dato y nunca puede ampliar lo permitido, sea lo que sea que ese texto afirme.", fr: "Lire un écran sans agir dessus. Le texte trouvé sur un écran est traité comme une donnée et ne peut jamais élargir ce qui est permis, quoi que ce texte prétende.", de: "Einen Bildschirm lesen, ohne auf ihm zu handeln. Text auf einem Bildschirm gilt als Datum und kann das Erlaubte nie erweitern, was dieser Text auch behauptet.", pt: "Ler um ecrã sem agir sobre ele. O texto encontrado num ecrã é tratado como dado e nunca pode alargar o que é permitido, seja o que for que esse texto afirme.", it: "Leggere uno schermo senza agirvi. Il testo trovato su uno schermo è trattato come dato e non può mai ampliare ciò che è consentito, qualunque cosa quel testo affermi.", ja: "画面を操作せずに読み取ること。画面上の文字はデータとして扱われ、そこに何が書かれていようと、許可された範囲を広げることはできません。", zh: "只读取屏幕而不对其操作。屏幕上出现的文字被视为数据，无论其声称什么，都绝不能扩大已获许可的范围。", hi: "स्क्रीन पर कार्य किए बिना उसे पढ़ना। स्क्रीन पर मिला पाठ डेटा माना जाता है और वह जो भी दावा करे, अनुमत सीमा को कभी नहीं बढ़ा सकता।", ar: "قراءة شاشة دون التصرّف فيها. ويُعامَل النص الوارد على الشاشة بوصفه بيانات، ولا يمكنه قطّ توسيع ما هو مسموح به مهما ادّعى.",
+  },
+  "cap.observation.rests": {
+    en: "A look permit naming its applications, its minutes and its steps. A wildcard is refused.", es: "Un permiso de observación que nombre sus aplicaciones, sus minutos y sus pasos. Un comodín se rechaza.", fr: "Une autorisation de lecture nommant ses applications, ses minutes et ses étapes. Un joker est refusé.", de: "Eine Leseerlaubnis, die ihre Anwendungen, ihre Minuten und ihre Schritte benennt. Ein Platzhalter wird abgelehnt.", pt: "Uma permissão de observação que nomeie as suas aplicações, os seus minutos e os seus passos. Um caráter universal é recusado.", it: "Un permesso di lettura che nomini le proprie applicazioni, i propri minuti e i propri passi. Un carattere jolly è rifiutato.", ja: "対象アプリ、分数、手数を明示した閲覧許可。ワイルドカードは拒否されます。", zh: "一份指明其应用范围、分钟数与步数的观察许可。通配符一律拒绝。", hi: "एक अवलोकन अनुमति जो अपने अनुप्रयोग, अपने मिनट और अपने चरण नाम से बताए। वाइल्डकार्ड अस्वीकार किया जाता है।", ar: "إذن اطّلاع يسمّي تطبيقاته ودقائقه وخطواته. ويُرفض رمز الشمول.",
+  },
+  "cap.observation.none": {
+    en: "no look permit is live", es: "no hay ningún permiso de observación vigente", fr: "aucune autorisation de lecture n'est en cours", de: "keine Leseerlaubnis ist aktiv", pt: "nenhuma permissão de observação está em vigor", it: "nessun permesso di lettura è attivo", ja: "有効な閲覧許可はありません", zh: "当前没有生效的观察许可", hi: "कोई अवलोकन अनुमति सक्रिय नहीं है", ar: "لا يوجد إذن اطّلاع سارٍ",
+  },
+  "cap.observation.some": {
+    en: "{n} live", es: "{n} vigentes", fr: "{n} en cours", de: "{n} aktiv", pt: "{n} em vigor", it: "{n} attivi", ja: "{n} 件が有効", zh: "{n} 项生效中", hi: "{n} सक्रिय", ar: "{n} سارٍ",
+  },
+  "cap.operation.title": {
+    en: "Interface operation", es: "Manejo de la interfaz", fr: "Manipulation d'interface", de: "Bedienung der Oberfläche", pt: "Manuseio da interface", it: "Uso dell'interfaccia", ja: "画面操作", zh: "界面操作", hi: "इंटरफ़ेस संचालन", ar: "تشغيل الواجهة",
+  },
+  "cap.operation.what": {
+    en: "Working a screen — moving a pointer, pressing a control, typing into a field — under a grant bounded in applications, moves, minutes and steps.", es: "Manejar una pantalla —mover un puntero, pulsar un control, escribir en un campo— bajo una concesión acotada en aplicaciones, movimientos, minutos y pasos.", fr: "Manipuler un écran — déplacer un pointeur, actionner un contrôle, saisir dans un champ — sous une autorisation bornée en applications, gestes, minutes et étapes.", de: "Einen Bildschirm bedienen — einen Zeiger bewegen, ein Element betätigen, in ein Feld schreiben — unter einer Erlaubnis, die in Anwendungen, Aktionen, Minuten und Schritten begrenzt ist.", pt: "Manusear um ecrã — mover um ponteiro, premir um controlo, escrever num campo — ao abrigo de uma concessão limitada em aplicações, movimentos, minutos e passos.", it: "Operare uno schermo — muovere un puntatore, premere un comando, scrivere in un campo — sotto una concessione limitata in applicazioni, azioni, minuti e passi.", ja: "画面を操作すること — ポインターを動かす、コントロールを押す、欄に入力する — 対象アプリ、動作、分数、手数で限られた許可のもとで行われます。", zh: "操作屏幕——移动指针、按下控件、在字段中输入——均在按应用、动作、分钟数与步数设限的授权之下进行。", hi: "स्क्रीन चलाना — पॉइंटर हिलाना, कोई नियंत्रण दबाना, किसी क्षेत्र में टाइप करना — ऐसी स्वीकृति के अधीन जो अनुप्रयोगों, क्रियाओं, मिनटों और चरणों में सीमित हो।", ar: "تشغيل شاشة — تحريك مؤشّر، والضغط على عنصر، والكتابة في حقل — بموجب إذن محدود بالتطبيقات والحركات والدقائق والخطوات.",
+  },
+  "cap.operation.rests": {
+    en: "A grant naming all four limits, enforced where the move happens rather than on the screen that requested it. It never types passwords, PINs, one-time codes, card numbers or recovery phrases, and says so instead of trying.", es: "Una concesión que nombre los cuatro límites, aplicada allí donde ocurre el movimiento y no en la pantalla que lo pidió. Nunca escribe contraseñas, PIN, códigos de un solo uso, números de tarjeta ni frases de recuperación: lo dice en lugar de intentarlo.", fr: "Une autorisation nommant les quatre limites, appliquée là où le geste a lieu et non sur l'écran qui l'a demandé. Elle ne saisit jamais de mots de passe, de codes PIN, de codes à usage unique, de numéros de carte ni de phrases de récupération, et le dit plutôt que d'essayer.", de: "Eine Erlaubnis, die alle vier Grenzen benennt und dort durchgesetzt wird, wo die Aktion geschieht, nicht auf dem Bildschirm, der sie angefordert hat. Passwörter, PINs, Einmalcodes, Kartennummern und Wiederherstellungsphrasen werden nie getippt; statt eines Versuchs kommt der Hinweis darauf.", pt: "Uma concessão que nomeie os quatro limites, imposta onde o movimento acontece e não no ecrã que o pediu. Nunca escreve palavras-passe, PIN, códigos de uso único, números de cartão ou frases de recuperação, e di-lo em vez de tentar.", it: "Una concessione che nomini tutti e quattro i limiti, applicata dove l'azione avviene e non sulla schermata che l'ha richiesta. Non digita mai password, PIN, codici monouso, numeri di carta o frasi di recupero, e lo dichiara invece di provarci.", ja: "四つの限度をすべて明示した許可であり、要求した画面ではなく動作が起きる場所で適用されます。パスワード、暗証番号、ワンタイムコード、カード番号、復旧フレーズを入力することは決してなく、試みる代わりにその旨を述べます。", zh: "一份指明全部四项限度的授权，且在动作发生之处而非发出请求的页面上予以强制执行。它绝不输入密码、PIN、一次性验证码、卡号或恢复短语，而是如实说明，而非尝试。", hi: "ऐसी स्वीकृति जो चारों सीमाएँ नाम से बताए, और जो अनुरोध करने वाली स्क्रीन पर नहीं, बल्कि जहाँ क्रिया होती है वहाँ लागू की जाए। यह कभी पासवर्ड, पिन, एक-बार कोड, कार्ड नंबर या रिकवरी वाक्यांश टाइप नहीं करती, और प्रयास करने के बजाय यही बताती है।", ar: "إذن يسمّي الحدود الأربعة جميعًا، ويُنفَّذ حيث تقع الحركة لا على الشاشة التي طلبتها. ولا يكتب أبدًا كلمات مرور أو أرقامًا سرّية أو رموزًا لمرّة واحدة أو أرقام بطاقات أو عبارات استرداد، ويصرّح بذلك بدل أن يحاول.",
+  },
+  "cap.operation.none": {
+    en: "no grant to act is live", es: "no hay ninguna concesión de actuación vigente", fr: "aucune autorisation d'agir n'est en cours", de: "keine Handlungserlaubnis ist aktiv", pt: "nenhuma concessão para agir está em vigor", it: "nessuna concessione ad agire è attiva", ja: "有効な操作許可はありません", zh: "当前没有生效的操作授权", hi: "कार्य करने की कोई स्वीकृति सक्रिय नहीं है", ar: "لا يوجد إذن بالتصرّف سارٍ",
+  },
+  "cap.operation.some": {
+    en: "{n} live", es: "{n} vigentes", fr: "{n} en cours", de: "{n} aktiv", pt: "{n} em vigor", it: "{n} attive", ja: "{n} 件が有効", zh: "{n} 项生效中", hi: "{n} सक्रिय", ar: "{n} سارٍ",
+  },
+  "cap.unattended.title": {
+    en: "Unattended operation", es: "Funcionamiento sin supervisión", fr: "Fonctionnement sans surveillance", de: "Unbeaufsichtigter Betrieb", pt: "Funcionamento sem supervisão", it: "Funzionamento non presidiato", ja: "無人での稼働", zh: "无人值守运行", hi: "अनिरीक्षित संचालन", ar: "التشغيل دون إشراف",
+  },
+  "cap.unattended.what": {
+    en: "A session left running: open until it is signed off, acting across the account holder's own records through a written allowlist, with the request that would undo each act recorded beside it.", es: "Una sesión que se deja en marcha: abierta hasta que se cierre, que actúa sobre los registros de la propia persona titular mediante una lista blanca escrita, y que anota junto a cada acto la petición que lo desharía.", fr: "Une session laissée en cours : ouverte jusqu'à sa clôture, agissant sur les propres enregistrements du titulaire au moyen d'une liste d'autorisation écrite, la requête qui annulerait chaque acte étant consignée à côté de lui.", de: "Eine laufen gelassene Sitzung: offen bis zur Abmeldung, tätig auf den eigenen Aufzeichnungen der kontoführenden Person über eine geschriebene Positivliste, wobei neben jeder Handlung die Anfrage steht, die sie rückgängig machen würde.", pt: "Uma sessão deixada a correr: aberta até ser encerrada, agindo sobre os registos da própria pessoa titular através de uma lista de permissões escrita, com o pedido que desfaria cada ato registado ao lado dele.", it: "Una sessione lasciata in esecuzione: aperta finché non viene chiusa, che agisce sui registri del titolare stesso tramite un elenco di consenso scritto, con accanto a ogni atto la richiesta che lo annullerebbe.", ja: "動かしたままにできるセッション。終了操作を行うまで開いており、書かれた許可一覧を通じてアカウント保有者自身の記録に対して動作し、各操作の取り消しに必要な要求がその横に記録されます。", zh: "可持续运行的会话：在签退之前保持开启，通过成文的允许清单对账户持有人自己的记录执行操作，并在每项操作旁记录可将其撤销的请求。", hi: "चालू छोड़ा गया एक सत्र: साइन-ऑफ़ होने तक खुला, लिखित अनुमति-सूची के माध्यम से खाताधारक के अपने ही अभिलेखों पर कार्य करता हुआ, और हर कार्य के साथ वह अनुरोध दर्ज जो उसे पलट देगा।", ar: "جلسة تُترك عاملة: مفتوحة إلى أن تُنهى، تتصرّف في سجلّات صاحب الحساب نفسه عبر قائمة سماح مكتوبة، ويُدوَّن بجانب كل تصرّف الطلبُ الذي يبطله.",
+  },
+  "cap.unattended.rests": {
+    en: "A session the account holder opened, an area they named, and a per-area permit they granted. Every act is listed with its reversal; signing off closes it.", es: "Una sesión abierta por la persona titular, un ámbito que ella nombró y un permiso por ámbito que ella concedió. Cada acto figura junto a su reversión; cerrar la sesión la termina.", fr: "Une session ouverte par le titulaire, un domaine qu'il a nommé et une autorisation par domaine qu'il a accordée. Chaque acte est consigné avec son annulation ; la clôture y met fin.", de: "Eine von der kontoführenden Person geöffnete Sitzung, ein von ihr benannter Bereich und eine von ihr erteilte Erlaubnis je Bereich. Jede Handlung ist mit ihrer Rücknahme verzeichnet; das Abmelden beendet sie.", pt: "Uma sessão aberta pela pessoa titular, uma área que nomeou e uma permissão por área que concedeu. Cada ato consta com a sua reversão; encerrar termina-a.", it: "Una sessione aperta dal titolare, un ambito da lui nominato e un permesso per ambito da lui concesso. Ogni atto è elencato con la sua revoca; la chiusura la termina.", ja: "アカウント保有者が開いたセッション、保有者が指定した領域、および保有者が領域ごとに与えた許可。各操作はその取り消し方とともに記載され、終了操作でセッションは閉じます。", zh: "由账户持有人开启的会话、其指定的范围，以及其按范围授予的许可。每项操作均连同其撤销方式一并列出；签退即结束该会话。", hi: "खाताधारक द्वारा खोला गया सत्र, उनके द्वारा नामित क्षेत्र, और उनके द्वारा प्रति-क्षेत्र दी गई अनुमति। हर कार्य अपने प्रत्यावर्तन सहित सूचीबद्ध है; साइन-ऑफ़ करने पर सत्र बंद हो जाता है।", ar: "جلسة فتحها صاحب الحساب، ومجال سمّاه، وإذن لكل مجال منحه. ويُدرج كل تصرّف مع سبيل الرجوع عنه؛ وإنهاء الجلسة يغلقها.",
+  },
+  "cap.unattended.none": {
+    en: "no session open", es: "ninguna sesión abierta", fr: "aucune session ouverte", de: "keine Sitzung offen", pt: "nenhuma sessão aberta", it: "nessuna sessione aperta", ja: "開いているセッションはありません", zh: "没有开启的会话", hi: "कोई सत्र खुला नहीं है", ar: "لا جلسة مفتوحة",
+  },
+  "cap.unattended.some": {
+    en: "open on {area} — {n} act(s) recorded", es: "abierta en {area} — {n} acto(s) registrado(s)", fr: "ouverte sur {area} — {n} acte(s) consigné(s)", de: "offen zu {area} — {n} Handlung(en) verzeichnet", pt: "aberta em {area} — {n} ato(s) registado(s)", it: "aperta su {area} — {n} atto/i registrato/i", ja: "{area} で開いています — 記録された操作 {n} 件", zh: "在 {area} 上开启 — 已记录 {n} 项操作", hi: "{area} पर खुला — {n} कार्य दर्ज", ar: "مفتوحة على {area} — {n} تصرّف مسجَّل",
   },
 };
 

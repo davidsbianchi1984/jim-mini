@@ -1,4 +1,4 @@
-# status: floor — 1 row
+# status: backlog — 1 row
 #
 # ## 1.8.5: one fixed, one deliberate
 #
@@ -42,6 +42,37 @@
 #
 # It does not read prose as markup: `http://localhost:<port>` in a WebAuthn
 # diagnostic is a sentence, and the first draft called it a page.
+#
+# ## 2.7.2: most of these were the sweep's blind spots, not the page's
+#
+# Every row here was read as *a composite the analysis cannot follow*, and
+# that was true. What was not asked is whether the analysis should be able
+# to follow it. Most were ordinary safe shapes:
+#
+#   a join over a comprehension   `"".join(f"<b>{escape(p)}</b>" for p in ps)`
+#   a list built by append        `out = [...]`, `out.append(...)`, joined
+#   a translated template         `t("… {holder}").format(holder=escape(h))`
+#   a private function's parameter  `_page(title, body)` — read at its callers
+#   a `%` mapping of escaped values
+#
+# None is a hard question; each was a node type the walk returned False on,
+# and the record filled with correct code because the reader was narrow.
+#
+#     asked     can this expression be followed
+#     mattered  should it have to be written differently to be
+#
+# Two of the widenings needed the walk to get more careful rather than more
+# generous. A list is only as safe as everything appended to it, so `append`
+# and `extend` are collected as more elements and anything else that touches
+# the name — a subscript assignment, an `insert`, a pass into a call that
+# could append inside — disqualifies it: an unmodelled mutation must never
+# read as safety. And a private function's parameter is as safe as the worst
+# thing any caller passes, checked at every call site, and only for a name
+# that is private *and* imported nowhere else.
+#
+# What is left in each product is one call into another module. This
+# analysis does not cross module boundaries, and saying so is better than
+# widening it until it can be told nothing.
 #
 # ## How a row leaves this file
 #
