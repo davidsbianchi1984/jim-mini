@@ -126,6 +126,107 @@ them); the links under them are the product.
 </tr>
 </table>
 
+## Feature reference: every behaviour, defined
+
+Each entry below states a behaviour of the running product plainly enough
+to be checked against the code and found true or false. The console
+screens are drawn in `docs/desktop/` (regenerate with
+`python3 docs/desktop/build.py`); the full gallery is
+[docs/gallery.md](docs/gallery.md).
+
+<table>
+  <tr>
+    <td align="center" width="50%"><a href="docs/desktop/01-overview.svg"><img src="docs/desktop/01-overview.svg" width="300" alt="Overview"></a><br><sub><b>01</b> · Overview<br>the day at a glance, the task window pinned</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/02-live-monitoring.svg"><img src="docs/desktop/02-live-monitoring.svg" width="300" alt="Live monitoring"></a><br><sub><b>02</b> · Live monitoring<br>readings against the person's own baseline</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><a href="docs/desktop/03-health.svg"><img src="docs/desktop/03-health.svg" width="300" alt="Health"></a><br><sub><b>03</b> · Health<br>history, trends, and foresight</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/04-emergency-guardian.svg"><img src="docs/desktop/04-emergency-guardian.svg" width="300" alt="Emergency &amp; guardian"></a><br><sub><b>04</b> · Emergency &amp; guardian<br>the ladder, the alarm queue, the record</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><a href="docs/desktop/05-coach-life.svg"><img src="docs/desktop/05-coach-life.svg" width="300" alt="Coach &amp; life"></a><br><sub><b>05</b> · Coach &amp; life<br>check-ins, journal, the grounded coach</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/06-privacy-data.svg"><img src="docs/desktop/06-privacy-data.svg" width="300" alt="Privacy &amp; data"></a><br><sub><b>06</b> · Privacy &amp; data<br>consents, sources, offline, the vault</sub></td>
+  </tr>
+</table>
+
+**The personal baseline.** Normal is learned from the person's own
+history — imported in one health export that seeds weeks of baseline
+instantly, or dripped from the wrist — never from population averages.
+Drift against that baseline raises a check-in; collapse or silence
+escalates. The rate alone can be the emergency: a reading in collapse
+needs no second signal and no unanswered question before the ladder
+starts climbing.
+
+**The ladder ends at a person.** Escalation is programmed in advance and
+runs in order: the person first, then their contacts, then the emergency
+path they chose. Every rung is recorded. The dialer hands the number to
+the device — the thing that can actually place a call — and JIM never
+claims a call it did not make.
+
+<p align="center"><a href="docs/diagrams/escalation.svg"><img src="docs/diagrams/escalation.svg" width="640" alt="The escalation ladder"></a></p>
+
+**Check-ins, the journal, and the coach.** Daily mood and energy
+check-ins and a private journal feed the same record the monitors write.
+The life coach answers grounded in the person's own vault and watched
+pages — and names who answered, the cloud model or the vault's resident
+— and when a conversation reveals something the monitors cannot see, the
+coach escalates to the guardian through the same ladder.
+
+**The voice conversation.** The front door answers and the microphone
+listens there. A conversation stands until the person leaves it: the
+reply is spoken piece by piece as it is composed, a turn closes 2.5
+seconds after the person stops, speech can be barged into, silence is
+not treated as a turn, and the voice follows the earbud when one
+connects. A standing ear listens for the cue words the person chose, and
+the talking sphere carries an interrupted check-in back to the round
+where it was interrupted.
+
+**Memory through the vault.** Long-term memory lives in the PDI
+resident: the memory shelf is shown on its own screen and curatable item
+by item, forgetting reaches down to the vectors, and the weekly letter
+neither outlives the memory it summarizes nor becomes a looser door than
+the record it summarizes from.
+
+**The lookout.** A page the person cares about is watched by the vault
+and kept fresh: the lookout says when the page changed, says why a fetch
+failed rather than failing silently, and has ears — a watched page that
+is audio or video is transcribed into words. What the watching noticed
+rides the weekly letter.
+
+**Every limit on one screen.** The baseline screen holds the vigil,
+sensitivity and spending sliders — each rounding up, in the person's
+favor — and the reviewer's three calls stand in code: the agent's look
+at a screen needs a permit, an excursion asks first, and an idle session
+exits. The agent's errand knows its six roads and the task window over
+everything running is pinned beside every screen.
+
+**Devices.** Connecting a wearable reads like the phone's own Bluetooth
+page — scan, see what was found, choose. The wrist channel needs no app
+at all: a phone automation drips Health readings to a per-user URL, with
+recipes for Apple Watch, Wear OS, Fitbit and Garmin.
+
+**Emergency tools.** The CPR face is a metronome at 110 compressions per
+minute scheduled on the audio clock — a drifting timer is a wrong
+compression rate — sounding the 30:2 rhythm in tone and vibration, with
+no account and no network. The Medical ID is scannable by whoever is
+helping. The emergency screen shares location and hands the number to
+the device.
+
+**The care circle.** Family and care-team visibility is per-person
+consent with quiet hours, and every look is in the audit trail — who saw
+what, and when. The clinical handoff is a sealed, revocable summary the
+person hands to a clinician; see
+[docs/hipaa-baa.md](docs/hipaa-baa.md).
+
+**A matter is a record.** When something goes wrong, the issue becomes a
+matter that carries its history across every client until it is
+resolved — a complaint is not a toast that disappears.
+
+**Offline is enforced, not promised.** With `JIM_OFFLINE=1` nothing
+leaves the host — held at every socket in the codebase and verified by
+tests. Sensitive payloads can live in the PDI vault on-premises; see the
+tandem flow in [docs/diagrams/tandem-flow.svg](docs/diagrams/tandem-flow.svg).
+
 ## Quick start
 
 ```bash
