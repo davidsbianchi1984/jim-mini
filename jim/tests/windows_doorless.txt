@@ -1,4 +1,4 @@
-# status: backlog — 28 rows
+# status: backlog — 31 rows
 #
 # Every route this shell cannot reach.
 #
@@ -155,3 +155,17 @@ DELETE /corpus/{user_id}
 GET /corpus/{user_id}
 POST /corpus/{user_id}/archive
 PUT /corpus/{user_id}/consent
+
+# ## 3.0.5: the model menu by region, and app edits — desktop surfaces
+#
+# The region is chosen at sign-up on every client (it is an Enroll field), and
+# the backend applies the loadout no matter which client asks — so the
+# *menu* reaches the phones already through the model picker's own doors. What
+# this round added desktop doors for is reading the loadout with its origins,
+# changing region afterwards, the video menu (QRME's), and the app-edit seam:
+# proposing a change, having the assistant draft one, and reading your own.
+# Those are Settings and Studio surfaces on the console; the phones defer them
+# this round. Company oversight's doors are reviewer-token, not client, doors.
+GET /models/{user_id}
+GET /video/providers/{user_id}
+PUT /users/{user_id}/region

@@ -6,6 +6,48 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.5] - 2026-09-02
+
+### Added
+
+- **Users can edit the app itself — submitted, and held at apply.** A
+  person (and, when this seam is lifted into QRME, a synthetic profile)
+  proposes a change to the app, or has the coding assistant write one from
+  an instruction, right in the Studio. Two lanes (`jim/appedits.py`): on
+  their **own server** (`JIM_SELF_HOSTED=1`) they have free rein and the
+  edit is approved as it arrives; on the **hosted cloud** it is *held for
+  company oversight* to approve or reject through reviewer-token doors
+  (`JIM_ADMIN_TOKEN`). Either way an approved edit is queued to ride the
+  next publish-merge — this seam never writes to the running app or
+  deploys on its own, the same held-at-apply discipline the 911 dialer and
+  the mailbox keep. Every exchange the assistant has is banked for the
+  offline corpus, tagged.
+- **The model menu is a loadout per region.** The registry grows to
+  twenty-two providers, each tagged with its origin — American (Anthropic,
+  OpenAI, Google, xAI, Meta, Microsoft, Amazon, Perplexity, Groq, Together,
+  Fireworks, NVIDIA), foreign (DeepSeek, Mistral, Qwen, Kimi, GLM, Cohere),
+  and the ones that never leave the machine. `jim/loadouts.py` decides what
+  an account is *offered* by the region it chose at sign-up (a fact on the
+  account, editable on Settings): home providers first, then a curated few
+  popular ones from elsewhere — a US account is American-led with a
+  handful of foreign; a Chinese account leads with Qwen, DeepSeek, Kimi and
+  GLM; every region has its own row. `JIM_MODEL_POLICY=american` tapers
+  the **American-region** menu to American, local and self-supplied
+  providers in one line — the lever for the day the government asks —
+  and binds no other region. Anthropic leads as the beta default. Video
+  generation shares the same table (Runway, Pika, Luma, Veo, Sora,
+  Higgsfield; Kling,
+  Hailuo, Vidu, Seedance), mostly consumed by QRME. Choosing a provider off
+  your region's menu is refused.
+- **No company emblems.** The model tiles no longer borrow any provider's
+  mark: every provider is drawn as a generic monogram in one accent, and
+  the public name is the label. No rainbow.
+
+### Changed
+
+- The reviewer token (`JIM_ADMIN_TOKEN`) now also stands for company
+  oversight on app edits, alongside the accessibility reports.
+
 ## [3.0.4] - 2026-09-02
 
 ### Added
@@ -11907,7 +11949,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.4...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.5...HEAD
+[3.0.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.4...app-v3.0.5
 [3.0.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.3...app-v3.0.4
 [3.0.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.2...app-v3.0.3
 [3.0.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.1...app-v3.0.2

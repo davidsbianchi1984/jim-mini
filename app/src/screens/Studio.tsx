@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { api, type StudioLimits, type Widget, type WidgetRun } from "../api";
+import { api, type AppEdit, type AppEditPosture, type ProviderRow,
+         type StudioLimits, type Widget, type WidgetRun } from "../api";
 import { fill, t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
 
@@ -50,6 +51,15 @@ export function Studio() {
   const [answer, setAnswer] = useState<WidgetRun | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Edit the app itself — the submit + approval seam (jim/appedits.py).
+  const [editPosture, setEditPosture] = useState<AppEditPosture | null>(null);
+  const [edits, setEdits] = useState<AppEdit[]>([]);
+  const [editModels, setEditModels] = useState<(ProviderRow & { origin: string })[]>([]);
+  const [editModel, setEditModel] = useState("auto");
+  const [editTarget, setEditTarget] = useState("");
+  const [editInstruction, setEditInstruction] = useState("");
+  const [propTitle, setPropTitle] = useState("");
+  const [propDesc, setPropDesc] = useState("");
 
   const uid = session.userId;
   const token = session.userToken;
@@ -59,6 +69,9 @@ export function Studio() {
     api.widgets(uid, token)
       .then((r) => setWidgets(r.widgets))
       .catch((e) => setError((e as Error).message));
+    api.appEdits(uid, token)
+      .then((r) => { setEditPosture(r.posture); setEdits(r.edits); setEditModels(r.models); })
+      .catch(() => { setEditPosture(null); setEdits([]); setEditModels([]); });
   }, [uid, token]);
 
   useEffect(() => {
@@ -194,6 +207,79 @@ export function Studio() {
             <button onClick={() => drop(w)} disabled={busy}>
               {tr("studio.remove", lang)}
             </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Edit the app itself — the submit + approval seam (jim/appedits.py).
+          The assistant writes the change with the person's pick from their
+          region's model menu. On their own server it is approved as it
+          arrives; on the hosted cloud it is held for company oversight; and
+          either way nothing here touches the running app — an approved edit
+          rides the next publish-merge. */}
+      <div className="card">
+        <h3>{tr("edit.title", lang)}</h3>
+        <p className="muted small">{tr("edit.sub", lang)}</p>
+        {editPosture && (
+          <p className="muted small">
+            <b>{tr(`edit.lane.${editPosture.lane}`, lang)}</b>{" "}
+            {tr("edit.never", lang)}
+          </p>
+        )}
+        <label>
+          {tr("edit.model", lang)}
+          <select value={editModel} onChange={(e) => setEditModel(e.target.value)}>
+            <option value="auto">{tr("edit.model.auto", lang)}</option>
+            {editModels.map((m) => (
+              <option key={m.name} value={m.name}>
+                {m.label} · {tr(`edit.origin.${m.origin}`, lang)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <input value={editTarget} placeholder={tr("edit.target.ph", lang)}
+               onChange={(e) => setEditTarget(e.target.value)} />
+        <textarea rows={4} value={editInstruction}
+                  placeholder={tr("edit.instruction.ph", lang)}
+                  onChange={(e) => setEditInstruction(e.target.value)} />
+        <button disabled={busy || !editInstruction.trim()} onClick={async () => {
+          if (!uid || !token) return;
+          setBusy(true); setError(null);
+          try {
+            await api.draftAppEdit(uid, {
+              target: editTarget.trim(), instruction: editInstruction.trim(),
+              model: editModel === "auto" ? "" : editModel,
+            }, token);
+            setEditInstruction(""); load();
+          } catch (e) { setError((e as Error).message); }
+          finally { setBusy(false); }
+        }}>{tr("edit.draft", lang)}</button>
+        {/* Or file the change yourself, in your own words, without the
+            assistant — the same lane, the same hold. */}
+        <p className="muted small">{tr("edit.propose.pitch", lang)}</p>
+        <input value={propTitle} placeholder={tr("edit.propose.title.ph", lang)}
+               onChange={(e) => setPropTitle(e.target.value)} />
+        <textarea rows={3} value={propDesc}
+                  placeholder={tr("edit.propose.desc.ph", lang)}
+                  onChange={(e) => setPropDesc(e.target.value)} />
+        <button disabled={busy || !propTitle.trim() || !propDesc.trim()} onClick={async () => {
+          if (!uid || !token) return;
+          setBusy(true); setError(null);
+          try {
+            await api.proposeAppEdit(uid, {
+              title: propTitle.trim(), description: propDesc.trim(),
+              target: editTarget.trim(),
+            }, token);
+            setPropTitle(""); setPropDesc(""); load();
+          } catch (e) { setError((e as Error).message); }
+          finally { setBusy(false); }
+        }}>{tr("edit.propose", lang)}</button>
+        <h3>{tr("edit.mine", lang)}</h3>
+        {edits.length === 0 && <p className="muted small">{tr("edit.none", lang)}</p>}
+        {edits.map((e) => (
+          <div key={e.id} className="row">
+            <span>{e.title}</span>
+            <span className="muted small">{tr(`edit.state.${e.state}`, lang)}</span>
           </div>
         ))}
       </div>

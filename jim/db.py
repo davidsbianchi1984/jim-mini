@@ -375,6 +375,30 @@ CREATE TABLE IF NOT EXISTS corpus_consent (
     updated_at    TEXT NOT NULL
 );
 
+-- App edits (jim/appedits.py): a person's proposed change to the app itself.
+-- Two lanes. On a self-hosted server the person has free rein and the edit
+-- is approved on arrival; on the hosted cloud it is HELD for company
+-- oversight to approve or reject. Either way an approved edit is queued to
+-- ride the next publish-merge — this seam never writes to the running code
+-- or deploys; the merge stays a reviewed human step (held at apply, the way
+-- the 911 dialer holds its send).
+CREATE TABLE IF NOT EXISTS app_edits (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    title         TEXT NOT NULL,
+    description   TEXT NOT NULL,
+    target        TEXT NOT NULL DEFAULT '',  -- the area or file the edit touches
+    patch         TEXT NOT NULL DEFAULT '',  -- the proposed change, as a diff or text
+    model         TEXT NOT NULL DEFAULT '',  -- which provider drafted it, if one did
+    lane          TEXT NOT NULL,             -- self_hosted | cloud
+    state         TEXT NOT NULL,             -- proposed | approved | rejected
+    note          TEXT NOT NULL DEFAULT '',  -- oversight's words on the decision
+    decided_by    TEXT,
+    decided_at    TEXT,
+    created_at    TEXT NOT NULL,
+    updated_at    TEXT NOT NULL
+);
+
 -- The Apple Watch bridge (jim/watch.py): one drip channel per user, the
 -- address an iPhone Shortcut deposits readings at. The token is stored in
 -- the clear, deliberately breaking the never-return-the-secret house rule,
@@ -1906,6 +1930,12 @@ _NEW_COLUMNS = [
     # "attached" was the strongest thing any screen could say — and it
     # said it as though it meant listening.
     ("mic_channels", "last_heard_at", "TEXT"),
+    # Where the account holder signed up from (jim/loadouts.py). The model
+    # menu is a per-region loadout — an account outside the US is not bound
+    # by American-only rules, and a US account can be tapered to American
+    # providers if the government asks — so the region has to be a fact on
+    # the account, chosen at sign-up, not inferred from an address later.
+    ("users", "region", "TEXT"),
 ]
 
 

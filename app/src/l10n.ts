@@ -5328,6 +5328,113 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "cor.purge.confirm": {
     en: "Clear the banked training corpus? This cannot be undone.", es: "¿Borrar el corpus de entrenamiento guardado? Esto no se puede deshacer.", fr: "Effacer le corpus d'entraînement conservé ? Cette action est irréversible.", de: "Den gesicherten Trainingskorpus löschen? Das lässt sich nicht rückgängig machen.", pt: "Limpar o corpus de treino guardado? Isto não pode ser desfeito.", it: "Cancellare il corpus di addestramento conservato? L'azione è irreversibile.", ja: "保存した学習コーパスを消去しますか？ この操作は取り消せません。", zh: "清除已保存的训练语料？此操作无法撤销。", hi: "सहेजा गया प्रशिक्षण कॉर्पस साफ़ करें? इसे पूर्ववत नहीं किया जा सकता।", ar: "مسح متن التدريب المحفوظ؟ لا يمكن التراجع عن هذا.",
   },
+  // Edit the app — the submit + approval seam, in the Studio. The assistant
+  // writes the change with the person's pick from their region's menu.
+  "edit.title": {
+    en: "Edit the app", es: "Editar la app", fr: "Modifier l'app", de: "Die App bearbeiten", pt: "Editar a app", it: "Modifica l'app", ja: "アプリを編集", zh: "编辑应用", hi: "ऐप संपादित करें", ar: "تعديل التطبيق",
+  },
+  "edit.sub": {
+    en: "Describe a change and the assistant writes it. On your own server it's yours as soon as it lands; on the hosted cloud it's held for company oversight, then rides the next release.", es: "Describe un cambio y el asistente lo escribe. En tu propio servidor es tuyo en cuanto llega; en la nube alojada se retiene para la supervisión de la empresa y luego sale en la siguiente versión.", fr: "Décrivez un changement et l'assistant l'écrit. Sur votre propre serveur il est à vous dès qu'il arrive ; sur le cloud hébergé il est retenu pour la supervision de l'entreprise, puis part avec la prochaine version.", de: "Beschreibe eine Änderung und der Assistent schreibt sie. Auf deinem eigenen Server gehört sie dir, sobald sie ankommt; in der gehosteten Cloud wird sie für die Prüfung durch das Unternehmen zurückgehalten und fährt dann mit der nächsten Version mit.", pt: "Descreve uma alteração e o assistente escreve-a. No teu próprio servidor é tua assim que chega; na nuvem alojada fica retida para supervisão da empresa e segue na próxima versão.", it: "Descrivi una modifica e l'assistente la scrive. Sul tuo server è tua appena arriva; sul cloud ospitato viene trattenuta per la supervisione dell'azienda e parte con la prossima versione.", ja: "変更内容を書くと、アシスタントがコードを書きます。自分のサーバーでは届いた時点であなたのものになり、ホストされたクラウドでは会社の監督のために保留され、次のリリースに乗ります。", zh: "描述一处改动，助手会把它写出来。在你自己的服务器上，它一到即归你所有；在托管云上，它会被保留等待公司监督，然后随下一个版本发布。", hi: "कोई बदलाव बताएँ और सहायक उसे लिख देगा। आपके अपने सर्वर पर वह आते ही आपका है; होस्टेड क्लाउड पर उसे कंपनी की निगरानी के लिए रोका जाता है, फिर वह अगले रिलीज़ के साथ जाता है।", ar: "صف تغييرًا وسيكتبه المساعد. على خادمك الخاص يصبح لك فور وصوله؛ وعلى السحابة المستضافة يُحتجَز لإشراف الشركة ثم يخرج مع الإصدار التالي.",
+  },
+  "edit.lane.self_hosted": {
+    en: "Your own server — free rein. Approved as it arrives.", es: "Tu propio servidor — vía libre. Se aprueba al llegar.", fr: "Votre propre serveur — carte blanche. Approuvé à l'arrivée.", de: "Dein eigener Server — freie Hand. Freigegeben, sobald es ankommt.", pt: "O teu próprio servidor — rédea solta. Aprovado assim que chega.", it: "Il tuo server — mano libera. Approvato all'arrivo.", ja: "自分のサーバー — 制限なし。届いた時点で承認されます。", zh: "你自己的服务器 — 完全自由。到达即批准。", hi: "आपका अपना सर्वर — पूरी छूट। आते ही स्वीकृत।", ar: "خادمك الخاص — حرية كاملة. يُعتمد فور وصوله.",
+  },
+  "edit.lane.cloud": {
+    en: "Hosted cloud — held for company oversight, then queued for the next release.", es: "Nube alojada — retenido para la supervisión de la empresa y luego en cola para la siguiente versión.", fr: "Cloud hébergé — retenu pour la supervision de l'entreprise, puis en file pour la prochaine version.", de: "Gehostete Cloud — für die Prüfung durch das Unternehmen zurückgehalten, dann für die nächste Version eingereiht.", pt: "Nuvem alojada — retido para supervisão da empresa, depois em fila para a próxima versão.", it: "Cloud ospitato — trattenuto per la supervisione dell'azienda, poi in coda per la prossima versione.", ja: "ホストされたクラウド — 会社の監督のために保留され、次のリリース待ちになります。", zh: "托管云 — 保留等待公司监督，然后排队进入下一个版本。", hi: "होस्टेड क्लाउड — कंपनी की निगरानी के लिए रोका गया, फिर अगले रिलीज़ की कतार में।", ar: "السحابة المستضافة — محتجَز لإشراف الشركة، ثم في طابور الإصدار التالي.",
+  },
+  "edit.never": {
+    en: "Nothing here changes the running app or deploys on its own — an approved edit rides the next publish-merge.", es: "Nada de esto cambia la app en ejecución ni se despliega por sí solo: una edición aprobada sale con la siguiente publicación.", fr: "Rien ici ne modifie l'app en cours ni ne se déploie tout seul — une modification approuvée part avec la prochaine publication.", de: "Nichts hier ändert die laufende App oder wird von selbst ausgerollt — eine freigegebene Änderung fährt mit der nächsten Veröffentlichung mit.", pt: "Nada aqui altera a app em execução nem se implanta sozinho — uma edição aprovada segue na próxima publicação.", it: "Nulla qui cambia l'app in esecuzione né si distribuisce da solo — una modifica approvata parte con la prossima pubblicazione.", ja: "ここで動作中のアプリが変わったり、勝手にデプロイされることはありません — 承認された編集は次の公開マージに乗ります。", zh: "这里不会更改正在运行的应用，也不会自行部署 — 已批准的编辑随下一次发布合并生效。", hi: "यहाँ कुछ भी चल रहे ऐप को नहीं बदलता, न अपने आप डिप्लॉय होता है — स्वीकृत संपादन अगले प्रकाशन-मर्ज के साथ जाता है।", ar: "لا شيء هنا يغيّر التطبيق قيد التشغيل أو ينشر من تلقاء نفسه — التعديل المعتمد يخرج مع دمج النشر التالي.",
+  },
+  "edit.model": {
+    en: "Model", es: "Modelo", fr: "Modèle", de: "Modell", pt: "Modelo", it: "Modello", ja: "モデル", zh: "模型", hi: "मॉडल", ar: "النموذج",
+  },
+  "edit.model.auto": {
+    en: "Automatic — the default during beta", es: "Automático — el predeterminado durante la beta", fr: "Automatique — le choix par défaut pendant la bêta", de: "Automatisch — die Vorgabe während der Beta", pt: "Automático — o predefinido durante a beta", it: "Automatico — il predefinito durante la beta", ja: "自動 — ベータ期間中の既定", zh: "自动 — 测试期间的默认", hi: "स्वचालित — बीटा के दौरान डिफ़ॉल्ट", ar: "تلقائي — الافتراضي خلال التجريب",
+  },
+  "edit.target.ph": {
+    en: "Where — a screen or file (optional)", es: "Dónde — una pantalla o archivo (opcional)", fr: "Où — un écran ou un fichier (facultatif)", de: "Wo — ein Bildschirm oder eine Datei (optional)", pt: "Onde — um ecrã ou ficheiro (opcional)", it: "Dove — una schermata o un file (facoltativo)", ja: "どこ — 画面またはファイル（任意）", zh: "哪里 — 某个界面或文件（可选）", hi: "कहाँ — कोई स्क्रीन या फ़ाइल (वैकल्पिक)", ar: "أين — شاشة أو ملف (اختياري)",
+  },
+  "edit.instruction.ph": {
+    en: "What should change?", es: "¿Qué debería cambiar?", fr: "Que faut-il changer ?", de: "Was soll sich ändern?", pt: "O que deve mudar?", it: "Cosa dovrebbe cambiare?", ja: "何を変えますか？", zh: "应该改什么？", hi: "क्या बदलना चाहिए?", ar: "ما الذي ينبغي تغييره؟",
+  },
+  "edit.draft": {
+    en: "Have the assistant write it", es: "Que el asistente lo escriba", fr: "Faire écrire par l'assistant", de: "Vom Assistenten schreiben lassen", pt: "Deixar o assistente escrever", it: "Fai scrivere all'assistente", ja: "アシスタントに書かせる", zh: "让助手来写", hi: "सहायक से लिखवाएँ", ar: "دع المساعد يكتبه",
+  },
+  "edit.mine": {
+    en: "Your edits", es: "Tus ediciones", fr: "Vos modifications", de: "Deine Änderungen", pt: "As tuas edições", it: "Le tue modifiche", ja: "あなたの編集", zh: "你的编辑", hi: "आपके संपादन", ar: "تعديلاتك",
+  },
+  "edit.none": {
+    en: "No edits yet.", es: "Aún no hay ediciones.", fr: "Aucune modification pour l'instant.", de: "Noch keine Änderungen.", pt: "Ainda não há edições.", it: "Ancora nessuna modifica.", ja: "まだ編集はありません。", zh: "暂无编辑。", hi: "अभी तक कोई संपादन नहीं।", ar: "لا تعديلات بعد.",
+  },
+  "edit.state.proposed": {
+    en: "Held for oversight", es: "Retenido para supervisión", fr: "Retenu pour supervision", de: "Zur Prüfung zurückgehalten", pt: "Retido para supervisão", it: "Trattenuto per supervisione", ja: "監督のため保留中", zh: "等待监督", hi: "निगरानी के लिए रोका गया", ar: "محتجَز للإشراف",
+  },
+  "edit.state.approved": {
+    en: "Approved — rides the next release", es: "Aprobado — sale en la siguiente versión", fr: "Approuvé — part avec la prochaine version", de: "Freigegeben — fährt mit der nächsten Version", pt: "Aprovado — segue na próxima versão", it: "Approvato — parte con la prossima versione", ja: "承認済み — 次のリリースに乗ります", zh: "已批准 — 随下一个版本发布", hi: "स्वीकृत — अगले रिलीज़ के साथ", ar: "معتمد — يخرج مع الإصدار التالي",
+  },
+  "edit.state.rejected": {
+    en: "Not accepted", es: "No aceptado", fr: "Non retenu", de: "Nicht angenommen", pt: "Não aceite", it: "Non accettata", ja: "不採用", zh: "未被接受", hi: "स्वीकार नहीं", ar: "غير مقبول",
+  },
+  "edit.origin.US": {
+    en: "American", es: "estadounidense", fr: "américain", de: "amerikanisch", pt: "americano", it: "americano", ja: "米国", zh: "美国", hi: "अमेरिकी", ar: "أمريكي",
+  },
+  "edit.origin.CN": {
+    en: "Chinese", es: "chino", fr: "chinois", de: "chinesisch", pt: "chinês", it: "cinese", ja: "中国", zh: "中国", hi: "चीनी", ar: "صيني",
+  },
+  "edit.origin.FR": {
+    en: "French", es: "francés", fr: "français", de: "französisch", pt: "francês", it: "francese", ja: "フランス", zh: "法国", hi: "फ़्रांसीसी", ar: "فرنسي",
+  },
+  "edit.origin.CA": {
+    en: "Canadian", es: "canadiense", fr: "canadien", de: "kanadisch", pt: "canadiano", it: "canadese", ja: "カナダ", zh: "加拿大", hi: "कनाडाई", ar: "كندي",
+  },
+  "edit.origin.local": {
+    en: "on this machine", es: "en este equipo", fr: "sur cette machine", de: "auf diesem Gerät", pt: "nesta máquina", it: "su questa macchina", ja: "この端末上", zh: "本机", hi: "इसी मशीन पर", ar: "على هذا الجهاز",
+  },
+  "edit.origin.any": {
+    en: "your own endpoint", es: "tu propio punto de conexión", fr: "votre propre point d'accès", de: "dein eigener Endpunkt", pt: "o teu próprio ponto de acesso", it: "il tuo endpoint", ja: "あなた自身のエンドポイント", zh: "你自己的端点", hi: "आपका अपना एंडपॉइंट", ar: "نقطة الوصول الخاصة بك",
+  },
+  // The region on Settings — the model menu is a loadout per region.
+  "edit.propose.pitch": {
+    en: "Or file the change yourself, in your own words — same lane, same hold.", es: "O presenta el cambio tú mismo, con tus palabras — misma vía, misma retención.", fr: "Ou déposez le changement vous-même, avec vos mots — même voie, même attente.", de: "Oder reiche die Änderung selbst ein, in deinen Worten — gleicher Weg, gleiche Prüfung.", pt: "Ou submete a alteração tu mesmo, com as tuas palavras — mesma via, mesma retenção.", it: "Oppure presenta la modifica tu stesso, con parole tue — stessa via, stessa attesa.", ja: "またはアシスタントを使わず、自分の言葉で変更を提出できます — 同じレーン、同じ保留。", zh: "或者用你自己的话直接提交改动 — 同一通道，同样保留。", hi: "या बदलाव ख़ुद अपने शब्दों में दर्ज करें — वही लेन, वही रोक।", ar: "أو قدّم التغيير بنفسك بكلماتك — نفس المسار، نفس الاحتجاز.",
+  },
+  "edit.propose.title.ph": {
+    en: "A short title", es: "Un título corto", fr: "Un titre court", de: "Ein kurzer Titel", pt: "Um título curto", it: "Un titolo breve", ja: "短いタイトル", zh: "简短标题", hi: "एक छोटा शीर्षक", ar: "عنوان قصير",
+  },
+  "edit.propose.desc.ph": {
+    en: "What changes, and why", es: "Qué cambia y por qué", fr: "Ce qui change, et pourquoi", de: "Was sich ändert, und warum", pt: "O que muda, e porquê", it: "Cosa cambia, e perché", ja: "何がどう変わるか、その理由", zh: "改什么，为什么", hi: "क्या बदलता है, और क्यों", ar: "ما الذي يتغير، ولماذا",
+  },
+  "edit.propose": {
+    en: "File it", es: "Presentarlo", fr: "Déposer", de: "Einreichen", pt: "Submeter", it: "Presenta", ja: "提出する", zh: "提交", hi: "दर्ज करें", ar: "قدّمه",
+  },
+  "set.video": {
+    en: "Video models for your region", es: "Modelos de vídeo para tu región", fr: "Modèles vidéo pour votre région", de: "Videomodelle für deine Region", pt: "Modelos de vídeo para a tua região", it: "Modelli video per la tua regione", ja: "お住まいの地域の動画モデル", zh: "你所在地区的视频模型", hi: "आपके क्षेत्र के वीडियो मॉडल", ar: "نماذج الفيديو لمنطقتك",
+  },
+  "set.video.sub": {
+    en: "The same regional loadout, for generating video — used by the synthetic profiles.", es: "El mismo conjunto regional, para generar vídeo — lo usan los perfiles sintéticos.", fr: "La même sélection régionale, pour générer de la vidéo — utilisée par les profils synthétiques.", de: "Dieselbe regionale Auswahl, für Videoerzeugung — genutzt von den synthetischen Profilen.", pt: "A mesma seleção regional, para gerar vídeo — usada pelos perfis sintéticos.", it: "La stessa selezione regionale, per generare video — usata dai profili sintetici.", ja: "動画生成向けの同じ地域別構成 — 合成プロフィールが使用します。", zh: "同样的地区配置，用于生成视频 — 由合成档案使用。", hi: "वीडियो बनाने के लिए वही क्षेत्रीय सेट — सिंथेटिक प्रोफ़ाइल इसे उपयोग करती हैं।", ar: "التشكيلة الإقليمية نفسها لتوليد الفيديو — تستخدمها الملفات الاصطناعية.",
+  },
+  "set.region": {
+    en: "Your region", es: "Tu región", fr: "Votre région", de: "Deine Region", pt: "A tua região", it: "La tua regione", ja: "あなたの地域", zh: "你的地区", hi: "आपका क्षेत्र", ar: "منطقتك",
+  },
+  "set.region.sub": {
+    en: "Where you signed up from. Your model menu is the loadout for your region — home providers first, then a few popular ones from elsewhere.", es: "Desde dónde te registraste. Tu menú de modelos es el conjunto de tu región: primero los proveedores locales, luego algunos populares de otros lugares.", fr: "D'où vous vous êtes inscrit. Votre menu de modèles est la sélection de votre région — les fournisseurs locaux d'abord, puis quelques-uns populaires d'ailleurs.", de: "Von wo du dich registriert hast. Dein Modellmenü ist die Auswahl für deine Region — heimische Anbieter zuerst, dann ein paar beliebte von anderswo.", pt: "De onde te registaste. O teu menu de modelos é a seleção da tua região — fornecedores locais primeiro, depois alguns populares de outros lugares.", it: "Da dove ti sei registrato. Il tuo menu di modelli è la selezione della tua regione — prima i fornitori di casa, poi alcuni popolari da altrove.", ja: "登録した場所です。モデルのメニューは地域ごとの構成で、まず自国のプロバイダー、次に他地域の人気のものが並びます。", zh: "你注册时所在的地区。你的模型菜单是该地区的配置 — 本地提供商优先，然后是一些其他地区的热门选项。", hi: "आपने कहाँ से साइन अप किया। आपका मॉडल मेन्यू आपके क्षेत्र का सेट है — पहले घरेलू प्रदाता, फिर कहीं और के कुछ लोकप्रिय।", ar: "من أين سجّلت. قائمة النماذج لديك هي تشكيلة منطقتك — المزوّدون المحليون أولًا، ثم بعض المشهورين من أماكن أخرى.",
+  },
+  "region.us": { en: "United States", es: "Estados Unidos", fr: "États-Unis", de: "Vereinigte Staaten", pt: "Estados Unidos", it: "Stati Uniti", ja: "アメリカ合衆国", zh: "美国", hi: "संयुक्त राज्य", ar: "الولايات المتحدة" },
+  "region.ca": { en: "Canada", es: "Canadá", fr: "Canada", de: "Kanada", pt: "Canadá", it: "Canada", ja: "カナダ", zh: "加拿大", hi: "कनाडा", ar: "كندا" },
+  "region.eu": { en: "European Union", es: "Unión Europea", fr: "Union européenne", de: "Europäische Union", pt: "União Europeia", it: "Unione Europea", ja: "欧州連合", zh: "欧盟", hi: "यूरोपीय संघ", ar: "الاتحاد الأوروبي" },
+  "region.uk": { en: "United Kingdom", es: "Reino Unido", fr: "Royaume-Uni", de: "Vereinigtes Königreich", pt: "Reino Unido", it: "Regno Unito", ja: "イギリス", zh: "英国", hi: "यूनाइटेड किंगडम", ar: "المملكة المتحدة" },
+  "region.cn": { en: "China", es: "China", fr: "Chine", de: "China", pt: "China", it: "Cina", ja: "中国", zh: "中国", hi: "चीन", ar: "الصين" },
+  "region.in": { en: "India", es: "India", fr: "Inde", de: "Indien", pt: "Índia", it: "India", ja: "インド", zh: "印度", hi: "भारत", ar: "الهند" },
+  "region.jp": { en: "Japan", es: "Japón", fr: "Japon", de: "Japan", pt: "Japão", it: "Giappone", ja: "日本", zh: "日本", hi: "जापान", ar: "اليابان" },
+  "region.kr": { en: "South Korea", es: "Corea del Sur", fr: "Corée du Sud", de: "Südkorea", pt: "Coreia do Sul", it: "Corea del Sud", ja: "韓国", zh: "韩国", hi: "दक्षिण कोरिया", ar: "كوريا الجنوبية" },
+  "region.br": { en: "Brazil", es: "Brasil", fr: "Brésil", de: "Brasilien", pt: "Brasil", it: "Brasile", ja: "ブラジル", zh: "巴西", hi: "ब्राज़ील", ar: "البرازيل" },
+  "region.au": { en: "Australia", es: "Australia", fr: "Australie", de: "Australien", pt: "Austrália", it: "Australia", ja: "オーストラリア", zh: "澳大利亚", hi: "ऑस्ट्रेलिया", ar: "أستراليا" },
+  "region.other": { en: "Elsewhere", es: "Otro lugar", fr: "Ailleurs", de: "Anderswo", pt: "Outro lugar", it: "Altrove", ja: "その他の地域", zh: "其他地区", hi: "अन्य", ar: "مكان آخر" },
+  "set.model.auto": {
+    en: "Automatic", es: "Automático", fr: "Automatique", de: "Automatisch", pt: "Automático", it: "Automatico", ja: "自動", zh: "自动", hi: "स्वचालित", ar: "تلقائي",
+  },
+  "set.model.needskey": {
+    en: "needs a key — add one above", es: "necesita una clave — añade una arriba", fr: "nécessite une clé — ajoutez-en une ci-dessus", de: "braucht einen Schlüssel — oben eintragen", pt: "precisa de uma chave — adiciona uma acima", it: "serve una chiave — aggiungila sopra", ja: "キーが必要です — 上で追加してください", zh: "需要密钥 — 请在上方添加", hi: "कुंजी चाहिए — ऊपर जोड़ें", ar: "يحتاج إلى مفتاح — أضف واحدًا أعلاه",
+  },
   "aim.title": {
     en: "What you're working on", es: "En qué estás trabajando", fr: "Ce sur quoi vous travaillez", de: "Woran du arbeitest", pt: "No que está a trabalhar", it: "A cosa stai lavorando", ja: "取り組んでいること", zh: "你在努力的事", hi: "आप किस पर काम कर रहे हैं", ar: "ما تعمل عليه",
   },

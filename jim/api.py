@@ -41,8 +41,10 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                rota, social, storage, synthetic_self, terms as terms_mod, tiers, tutorial,
                underway,
                vigil, voice, watch, widgets)
+from . import appedits
 from . import continuity
 from . import corpus
+from . import loadouts
 from . import crashwatch
 from . import dialer
 from . import mailbox
@@ -67,6 +69,7 @@ from .models import (
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     ReachOutBegin, ReachOutDigit, ReachOutHeard,
     MailReceive, MailCompose, MailModerate, CorpusConsent,
+    RegionChoice, AppEditPropose, AppEditDraft, AppEditDecide,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet, FloorSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     AccessReportSubmit,
@@ -118,7 +121,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="3.0.4",
+    app = FastAPI(title="JIM-mini / Guardian", version="3.0.5",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -883,6 +886,12 @@ def create_app(qrme_client: QRMEClient | None = None,
             raise HTTPException(
                 422, i18n.fill(i18n.MUST_BE_ONE_OF, field="provider",
                               choices=", ".join(llm.CHOICES)))
+        # The menu is a per-region loadout (jim/loadouts.py): a provider the
+        # region is not offered cannot be chosen, however it was typed.
+        if not loadouts.allowed(user_id, body.provider):
+            raise HTTPException(
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="provider",
+                              choices=", ".join(loadouts.providers_for(user_id))))
         llm.set_choice(user_id, body.provider)
         return {"user_id": user_id, "provider": body.provider,
                 "effective": llm.resolve_choice(body.provider)}
@@ -2194,6 +2203,96 @@ def create_app(qrme_client: QRMEClient | None = None,
         """Clear the banked corpus — the forget door for training data."""
         _user_or_404(user_id, request)
         return corpus.purge(user_id)
+
+    # -- the model menu, by region (jim/loadouts.py) -------------------------
+    # Which providers this account is offered is a per-region loadout: home
+    # providers first, a curated few popular foreign ones, a lever to taper
+    # the American-region menu if the government asks. The region is a fact
+    # on the account, chosen at sign-up and editable here.
+
+    @app.get("/models/{user_id}")
+    def models_for_user(user_id: str, request: Request) -> dict:
+        """The providers this account is offered, in loadout order, each with
+        its origin — and the region and policy that produced the list."""
+        _user_or_404(user_id, request)
+        return {"providers": loadouts.offered(user_id),
+                "region": loadouts.region_of(user_id),
+                "regions": list(loadouts.REGIONS),
+                "policy": loadouts.policy(), "default": llm.default_name()}
+
+    @app.put("/users/{user_id}/region")
+    def set_user_region(user_id: str, body: RegionChoice,
+                        request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return loadouts.set_region(user_id, body.region)
+        except ValueError as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.get("/video/providers/{user_id}")
+    def video_providers_for_user(user_id: str, request: Request) -> dict:
+        """The video-generation menu for this account's region — mostly read
+        by QRME, where profiles render video; curated in one place."""
+        _user_or_404(user_id, request)
+        return {"providers": loadouts.video_providers_for(user_id),
+                "region": loadouts.region_of(user_id)}
+
+    # -- app edits (jim/appedits.py) ----------------------------------------
+    # A person's proposed change to the app itself, and the coding assistant
+    # that writes one. Free rein on a self-hosted server; held for company
+    # oversight on the cloud; either way queued to ride the next publish-merge
+    # — never applied to running code from here. The oversight doors carry
+    # the deployment's reviewer token (JIM_ADMIN_TOKEN), not a user's, and are
+    # declared before the {user_id} doors so the literal path wins.
+
+    @app.get("/appedits/oversight/queue")
+    def appedits_queue(request: Request) -> dict:
+        """What awaits a decision and what is approved and queued."""
+        auth.require_reviewer(request)
+        return appedits.queue()
+
+    @app.post("/appedits/oversight/{edit_id}/decide")
+    def appedits_decide(edit_id: str, body: AppEditDecide,
+                        request: Request) -> dict:
+        """Company oversight's word on a held edit."""
+        auth.require_reviewer(request)
+        try:
+            return appedits.decide(edit_id, body.action, by="oversight",
+                                   note=body.note)
+        except ValueError as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.get("/appedits/{user_id}")
+    def appedits_mine(user_id: str, request: Request) -> dict:
+        """This person's edits, the lane they run in, and the model menu the
+        assistant can draft with."""
+        _user_or_404(user_id, request)
+        return {"posture": appedits.posture(), "edits": appedits.mine(user_id),
+                "models": loadouts.offered(user_id)}
+
+    @app.post("/appedits/{user_id}", status_code=201)
+    def appedits_propose(user_id: str, body: AppEditPropose,
+                         request: Request) -> dict:
+        _user_or_404(user_id, request)
+        try:
+            return appedits.propose(user_id, title=body.title,
+                                    description=body.description,
+                                    target=body.target, patch=body.patch,
+                                    model=body.model)
+        except ValueError as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.post("/appedits/{user_id}/draft", status_code=201)
+    def appedits_draft(user_id: str, body: AppEditDraft,
+                       request: Request) -> dict:
+        """The coding assistant writes the change, then files it."""
+        _user_or_404(user_id, request)
+        try:
+            return appedits.draft(user_id, target=body.target,
+                                  instruction=body.instruction,
+                                  model=body.model)
+        except ValueError as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     # -- the medicine cabinet (jim/meds.py) ---------------------------------
     # What the user takes, in their words. JIM is not a pharmacist: it

@@ -823,9 +823,24 @@ function ModelPanel() {
   const [effective, setEffective] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The menu is a per-region loadout (jim/loadouts.py); signed in, the
+  // region's own menu replaces the whole catalogue.
+  const [region, setRegion] = useState("us");
+  const [regions, setRegions] = useState<string[]>([]);
+  // The video-generation menu for the region — the same table, mostly
+  // consumed by the sibling product; shown here so the person sees it.
+  const [video, setVideo] = useState<{ name: string; label: string; origin: string }[]>([]);
 
   function load() {
-    api.listModels().then((m) => setProviders(m.providers)).catch(() => setProviders([]));
+    if (session.userId && session.userToken) {
+      api.modelsFor(session.userId, session.userToken)
+        .then((m) => { setProviders(m.providers); setRegion(m.region); setRegions(m.regions); })
+        .catch(() => setProviders([]));
+      api.videoProviders(session.userId, session.userToken)
+        .then((v) => setVideo(v.providers)).catch(() => setVideo([]));
+    } else {
+      api.listModels().then((m) => setProviders(m.providers)).catch(() => setProviders([]));
+    }
     if (session.userId && session.userToken) {
       api.getModelChoice(session.userId, session.userToken)
         .then((c) => { setChosen(c.provider); setEffective(c.effective); })
@@ -844,12 +859,47 @@ function ModelPanel() {
     finally { setBusy(false); }
   }
 
+  async function pickRegion(next: string) {
+    if (!session.userId || !session.userToken) return;
+    setBusy(true); setError(null);
+    try { await api.setRegion(session.userId, next, session.userToken); load(); }
+    catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
   return (
     <div className="card">
       <h3>{tr("set.model", lang)}</h3>
       <p className="muted small">{tr("set.model.pitch", lang)}</p>
+      {regions.length > 0 && (
+        <label>
+          {tr("set.region", lang)}
+          <select value={region} disabled={busy}
+                  onChange={(e) => pickRegion(e.target.value)}>
+            {regions.map((r) => (
+              <option key={r} value={r}>{tr(`region.${r}`, lang)}</option>
+            ))}
+          </select>
+          <span className="muted small">{tr("set.region.sub", lang)}</span>
+        </label>
+      )}
       <ProviderTiles providers={providers} chosen={chosen}
-                     effective={effective} onPick={pick} busy={busy} />
+                     effective={effective} onPick={pick} busy={busy}
+                     autoLabel={tr("set.model.auto", lang)}
+                     needsKey={tr("set.model.needskey", lang)} />
+      {video.length > 0 && (
+        <>
+          <h3>{tr("set.video", lang)}</h3>
+          <p className="muted small">{tr("set.video.sub", lang)}</p>
+          <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
+            {video.map((v) => (
+              <span key={v.name} className="pill">
+                {v.label}{" · "}{tr(`edit.origin.${v.origin}`, lang)}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
       {/* The truth about what will actually answer. The silent case was the
           bad one: Automatic quietly resolving to the stub while the screen
           full of logos implied a real model was on. */}

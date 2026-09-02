@@ -124,6 +124,7 @@ class Enroll(BaseModel):
     emergency_email: str | None = None
     contact_consent: bool = False
     language: str | None = None             # chosen at the setup gateway
+    region: str | None = None               # where they signed up from — the model menu is a per-region loadout
     device_paired: bool = False
     # The plan this person joins on. Omitted means Basic — which includes
     # every emergency path, so the cheapest plan is never the unsafe one.
@@ -1316,3 +1317,38 @@ class CorpusConsent(BaseModel):
     Off stops capture; it does not clear what is already banked."""
 
     enabled: bool
+
+
+class RegionChoice(BaseModel):
+    """Where the account holder is — the region their model menu is the
+    loadout for (jim/loadouts.py)."""
+
+    region: str
+
+
+class AppEditPropose(BaseModel):
+    """A proposed change to the app itself: what it is, what it does, where it
+    lands, and the change — filed into the deployment's lane."""
+
+    title: str
+    description: str
+    target: str = ""
+    patch: str = ""
+    model: str = ""
+
+
+class AppEditDraft(BaseModel):
+    """Ask the coding assistant to write the change from an instruction, with
+    the model picked from the region's menu (auto = the beta default)."""
+
+    target: str = ""
+    instruction: str
+    model: str = ""
+
+
+class AppEditDecide(BaseModel):
+    """Company oversight's word on a held edit: approve or reject, with a
+    note the proposer reads."""
+
+    action: str
+    note: str = ""

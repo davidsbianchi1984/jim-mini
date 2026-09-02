@@ -80,6 +80,11 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "corpus.consent": ("life", "the person turned offline training-data capture on or off for their own model"),
     "corpus.archived": ("life", "the banked training corpus was sealed into the vault so it survives this machine"),
     "corpus.purged": ("life", "the person cleared their banked training corpus — the forget door for offline training data"),
+    "region.set": ("access", "the account holder set the region their model menu is the loadout for"),
+    "appedit.proposed": ("access", "a person filed a proposed change to the app itself into the deployment's lane"),
+    "appedit.drafted": ("access", "the coding assistant wrote a proposed change to the app from the person's instruction"),
+    "appedit.approved": ("access", "an app edit was approved — free rein on a self-hosted server, or company oversight on the cloud — and queued to ride the next publish-merge"),
+    "appedit.rejected": ("access", "company oversight rejected a proposed app edit; nothing was queued"),
 
     # -- money: no transaction can occur, so the audited act is the grant ---
     "mandate.set": ("money", "a written mandate over money was granted, with caps"),

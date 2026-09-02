@@ -117,7 +117,10 @@ def test_every_provider_on_the_menu_can_be_chosen(client):
     user can set the choice before pasting the key.
     """
     uid = enroll(client)
-    providers = client.get("/models").json()["providers"]
+    # The account's own menu, not the whole catalogue: what a person is
+    # offered is their region's loadout (jim/loadouts.py), and a provider off
+    # it is refused on purpose — that refusal is the loadout working.
+    providers = client.get(f"/models/{uid}").json()["providers"]
     _check(
         "provider", [(p["name"], p["model"]) for p in providers],
         lambda pair: client.put(f"/model/{uid}",

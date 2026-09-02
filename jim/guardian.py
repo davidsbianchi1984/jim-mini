@@ -55,8 +55,8 @@ def enroll(body: dict) -> dict:
         " provider_consent, cloud_contribution, guardian_consent,"
         " emergency_name, emergency_phone, emergency_email,"
         " contact_consent, device_paired,"
-        " resting_heart_rate, goals, known_conditions, devices, created_at)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        " resting_heart_rate, goals, known_conditions, devices, region, created_at)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (
             user_id, display_name, int(anonymous), legal_name,
             body.get("birthdate").isoformat() if body.get("birthdate") else None,
@@ -72,7 +72,9 @@ def enroll(body: dict) -> dict:
             int(body.get("device_paired", False)),
             body.get("resting_heart_rate"), body.get("goals"),
             json.dumps(body.get("known_conditions") or []),
-            json.dumps(body.get("devices") or []), db.utcnow(),
+            json.dumps(body.get("devices") or []),
+            # The sign-up region drives the model menu (jim/loadouts.py).
+            body.get("region"), db.utcnow(),
         ),
     )
     conn.commit()

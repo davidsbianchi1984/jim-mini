@@ -1056,6 +1056,32 @@ export interface CorpusPosture {
   local_language_model_ready: boolean;
   note: string;
 }
+/** The model menu this account is offered — a per-region loadout, each row
+ * carrying its origin (a country code, `local`, or `any`). */
+export interface ModelMenu {
+  providers: (ProviderRow & { origin: string })[];
+  region: string;
+  regions: string[];
+  policy: string;               // all | american
+  default: string;
+}
+export interface ProviderRow {
+  name: string; label: string; network: boolean; model: string;
+  configured: boolean; origin?: string;
+}
+export interface VideoProviderRow { name: string; label: string; origin: string; }
+/** A proposed change to the app itself, in the deployment's lane. */
+export interface AppEdit {
+  id: string; title: string; description: string; target: string;
+  patch: string; model: string;
+  lane: string;                 // self_hosted | cloud
+  state: string;                // proposed | approved | rejected
+  note: string; decided_at: string | null; created_at: string;
+}
+export interface AppEditPosture {
+  lane: string; free_rein: boolean; held_for_approval: boolean;
+  apply_wired: boolean; note: string;
+}
 export interface MealRow {
   id: string;
   note?: string | null;
@@ -1805,6 +1831,31 @@ export const api = {
       `/corpus/${uid}/archive`, { method: "POST", token }),
   corpusPurge: (uid: string, token: string) =>
     req<{ purged: number }>(`/corpus/${uid}`, { method: "DELETE", token }),
+
+  // The model menu by region, and app edits held at apply. The menu is a
+  // per-region loadout; the assistant drafts a change with the person's pick
+  // from it; on the cloud the edit is held for company oversight.
+  modelsFor: (uid: string, token: string) =>
+    req<ModelMenu>(`/models/${uid}`, { token }),
+  setRegion: (uid: string, region: string, token: string) =>
+    req<{ region: string; providers: string[] }>(
+      `/users/${uid}/region`, { method: "PUT", body: { region }, token }),
+  videoProviders: (uid: string, token: string) =>
+    req<{ providers: VideoProviderRow[]; region: string }>(
+      `/video/providers/${uid}`, { token }),
+  appEdits: (uid: string, token: string) =>
+    req<{ posture: AppEditPosture; edits: AppEdit[];
+          models: (ProviderRow & { origin: string })[] }>(
+      `/appedits/${uid}`, { token }),
+  proposeAppEdit: (uid: string, body: {
+    title: string; description: string; target?: string; patch?: string;
+    model?: string;
+  }, token: string) =>
+    req<AppEdit>(`/appedits/${uid}`, { method: "POST", body, token }),
+  draftAppEdit: (uid: string, body: {
+    target?: string; instruction: string; model?: string;
+  }, token: string) =>
+    req<AppEdit>(`/appedits/${uid}/draft`, { method: "POST", body, token }),
 
   // The journal: text or spoken, sealed on private plans.
   addJournal: (uid: string, text: string, token: string) =>

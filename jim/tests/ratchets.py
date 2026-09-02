@@ -819,7 +819,18 @@ def _credential_tables_count() -> int:
     return len(_credential_tables())
 
 
+def _real_providers() -> int:
+    """Providers on the menu that are somebody else's model — not the stub,
+    not the local ones, not the user's own endpoint. The owner asked for at
+    least eight; the floor sits within sight of what the registry holds."""
+    from jim import llm
+    return sum(1 for s in llm._REGISTRY.values()
+               if s.get("origin") not in ("local", "any"))
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("llm.real_providers", 12, _real_providers,
+            "the third-party providers the model menu can offer"),
     Ratchet("screens.declared.android", 8, _screens_declared("android"),
             "the screens android declares, as the navigation scan reads them"),
     Ratchet("screens.declared.ios", 15, _screens_declared("ios"),
