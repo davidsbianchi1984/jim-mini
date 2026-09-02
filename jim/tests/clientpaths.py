@@ -632,6 +632,16 @@ NOT_A_CLIENT_CALL = (
     # a scope is requested, so its half of the door arrives as a POST with
     # the code in a urlencoded body.
     "/auth/oauth/{provider}/callback",
+    # The reach-out cascade's call handlers (jim/reachout.py). A telephony
+    # provider's webhook turns these when a contact answers, presses a key, or
+    # the line drops — the same machine-facing shape as the far-end
+    # acknowledgment above, keyed on an opaque call id the provider carries
+    # back. No client of this product constructs them, and none should: the
+    # conversation is between JIM and the person on the phone, not the console.
+    "/reachout/call/{call_id}/consent",
+    "/reachout/call/{call_id}/say",
+    "/reachout/call/{call_id}/reached",
+    "/reachout/call/{call_id}/unreached",
 )
 
 

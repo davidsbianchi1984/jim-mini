@@ -114,25 +114,23 @@ def test_an_opted_out_only_list_exhausts_immediately(a_db):
     assert out["emergency_services"]["held"] is True
 
 
-# --- the HTTP doors, and who may turn them ---------------------------------
+# --- the provider's webhook handlers, over HTTP ----------------------------
+# Starting a cascade and reading its status are library calls today — the
+# operator screen and the crash-watch trigger that will surface them come in a
+# later round, so `reachout.begin` is driven here directly. What IS on HTTP is
+# the set of handlers a telephony provider's webhook turns: the keypad choice
+# and the spoken conversation, keyed on the opaque call id.
 
-def test_the_begin_door_is_owner_only_and_the_call_ids_carry_the_rest(client):
+def test_the_call_id_handlers_run_the_conversation_over_http(client):
     from jim.tests.conftest import enroll
-    uid = enroll(client)   # the client is now authed as this user
-    body = {"contacts": [{"name": "Rosa", "channel": "+15551110000"}],
-            "situation": {"who": "Ada", "about": "a fall"},
-            "life_threatening": True}
-    # A token that is not this user's cannot open a reach-out for them.
-    assert client.post(f"/reachout/{uid}", json=body,
-                       headers={"authorization": "Bearer not-the-owner"}
-                       ).status_code in (401, 403)
-    # The owner can, and the first call comes back prepared, never placed.
-    r = client.post(f"/reachout/{uid}", json=body)
-    assert r.status_code == 201, r.text
-    out = r.json()
-    assert out["dialer"]["placed"] is False
+    uid = enroll(client)   # a real user in the client's DB
+    out = reachout.begin(uid, [{"name": "Rosa", "channel": "+15551110000"}],
+                         {"who": "Ada", "about": "a fall"},
+                         life_threatening=True)
+    assert out["dialer"]["placed"] is False   # prepared, never placed
     call_id = out["call"]["id"]
-    # The keypad + conversation run over the call-id handlers.
+    # The keypad and the conversation run over the call-id handlers — the same
+    # doors a provider's webhook turns, no user token required.
     assert client.post(f"/reachout/call/{call_id}/consent",
                        json={"digit": "1"}).status_code == 200
     said = client.post(f"/reachout/call/{call_id}/say",
@@ -140,8 +138,6 @@ def test_the_begin_door_is_owner_only_and_the_call_ids_carry_the_rest(client):
     assert said.status_code == 200 and said.json()["said"]
     assert client.post(f"/reachout/call/{call_id}/reached").status_code == 200
 
-
-def test_the_dialer_posture_door_says_held(client):
-    p = client.get("/dialer/posture")
-    assert p.status_code == 200
-    assert p.json()["send_enabled"] is False
+    # A call id nobody minted is a 404, not a way in.
+    assert client.post("/reachout/call/rcl_nope/consent",
+                       json={"digit": "1"}).status_code == 404

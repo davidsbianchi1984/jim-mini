@@ -47,21 +47,6 @@ export function Safety() {
   const [watch, setWatch] = useState<CrashWatchStatus | null>(null);
   const [waiver, setWaiver] = useState<WaiverOffer | null>(null);
   const [signature, setSignature] = useState("");
-  // The reach-out cascade, and the held dialer beneath it. This panel drives
-  // the held cascade by hand — the only way to walk it end to end until a
-  // telephony transport is wired, and the doors a provider's webhooks turn.
-  const [dialer, setDialer] = useState<Awaited<
-    ReturnType<typeof api.dialerPosture>> | null>(null);
-  const [roName, setRoName] = useState("");
-  const [roChannel, setRoChannel] = useState("");
-  const [roAbout, setRoAbout] = useState("");
-  const [roLife, setRoLife] = useState(false);
-  const [roCall, setRoCall] = useState<{ id: string; name: string } | null>(null);
-  const [roReachoutId, setRoReachoutId] = useState<string | null>(null);
-  const [roHeard, setRoHeard] = useState("");
-  const [roSaid, setRoSaid] = useState<string | null>(null);
-  const [roState, setRoState] = useState<Awaited<
-    ReturnType<typeof api.reachOutStatus>> | null>(null);
 
   const uid = session.userId;
   const token = session.userToken;
@@ -76,7 +61,6 @@ export function Safety() {
     api.beacons(uid, token).then(setBeacons).catch(() => setBeacons([]));
     api.crashWatch(uid, token).then(setWatch).catch(() => setWatch(null));
     api.waivers(uid, token).then(setWaiver).catch(() => setWaiver(null));
-    api.dialerPosture().then(setDialer).catch(() => setDialer(null));
   }, [uid, token]);
   useEffect(load, [load]);
 
@@ -323,100 +307,6 @@ export function Safety() {
           </div>
         </div>
       ))}
-
-      {/* The reach-out cascade, and the held line beneath it. Safety
-          sentences stay English by house rule, like the emergency card above.
-          This panel walks the cascade by hand — the only way to drive it end
-          to end until a telephony transport is wired, and the same handlers a
-          provider's webhooks turn. No call rings from here. */}
-      <h3>Reach a contact</h3>
-      {dialer && (
-        <p className="muted">
-          The line is built and held: it would reach {dialer.would_reach} for
-          emergency services, carried {dialer.transport_kind}
-          {dialer.provider ? ` (${dialer.provider})` : ""}, and it can place
-          and receive — but the 911 send stays shut
-          {dialer.transport_ready ? "" : ", and nothing rings until a "
-            + "telephony transport is wired"}.
-        </p>
-      )}
-      <div className="card">
-        <div className="row">
-          <input value={roName} placeholder="Contact name"
-            onChange={(e) => setRoName(e.target.value)} />
-          <input value={roChannel} placeholder="Phone or email"
-            onChange={(e) => setRoChannel(e.target.value)} />
-        </div>
-        <div className="row">
-          <input value={roAbout} placeholder="What it is about"
-            onChange={(e) => setRoAbout(e.target.value)} />
-          <label className="row">
-            <input type="checkbox" checked={roLife}
-              onChange={(e) => setRoLife(e.target.checked)} />
-            life-threatening
-          </label>
-        </div>
-        <button className="primary" disabled={busy || !roName || !roChannel}
-          onClick={() => run(async () => {
-            const out = await api.beginReachOut(uid, {
-              contacts: [{ name: roName, channel: roChannel }],
-              situation: { who: "the person JIM watches over", about: roAbout },
-              life_threatening: roLife,
-            }, token);
-            setRoReachoutId(out.reachout_id ?? null);
-            setRoCall(out.call ?? null);
-            setRoSaid(null);
-            if (out.reachout_id) {
-              setRoState(await api.reachOutStatus(out.reachout_id, token));
-            }
-          })}>
-          Begin reach-out
-        </button>
-        {roCall && (
-          <div className="card">
-            <p><strong>Calling {roCall.name}</strong> — prepared, not placed.
-              Their keypad choice:</p>
-            <div className="row">
-              <button disabled={busy} onClick={() => run(async () => {
-                await api.reachOutConsent(roCall.id, "1");
-              })}>1 · hear the message</button>
-              <button disabled={busy} onClick={() => run(async () => {
-                await api.reachOutConsent(roCall.id, "2");
-                if (roReachoutId)
-                  setRoState(await api.reachOutStatus(roReachoutId, token));
-              })}>2 · do not call again</button>
-            </div>
-            <div className="row">
-              <input value={roHeard} placeholder="What they said"
-                onChange={(e) => setRoHeard(e.target.value)} />
-              <button disabled={busy} onClick={() => run(async () => {
-                const t = await api.reachOutSay(roCall.id, roHeard);
-                setRoSaid(t.said);
-              })}>Say</button>
-            </div>
-            {roSaid && <p className="muted">JIM: {roSaid}</p>}
-            <div className="row">
-              <button disabled={busy} onClick={() => run(async () => {
-                await api.reachOutReached(roCall.id);
-                if (roReachoutId)
-                  setRoState(await api.reachOutStatus(roReachoutId, token));
-              })}>Reached</button>
-              <button disabled={busy} onClick={() => run(async () => {
-                await api.reachOutUnreached(roCall.id);
-                if (roReachoutId)
-                  setRoState(await api.reachOutStatus(roReachoutId, token));
-              })}>No answer</button>
-            </div>
-          </div>
-        )}
-        {roState && (
-          <p className="muted">Cascade {roState.status}
-            {roState.calls.length
-              ? ": " + roState.calls.map((c) => `${c.name} (${c.status})`)
-                  .join(", ")
-              : ""}.</p>
-        )}
-      </div>
 
       <h3>{tr("sfy.history", lang)}</h3>
       {past.length === 0 && incidents.length === 0

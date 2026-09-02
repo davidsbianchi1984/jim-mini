@@ -43,7 +43,6 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                vigil, voice, watch, widgets)
 from . import continuity
 from . import crashwatch
-from . import dialer
 from . import reachout
 from . import help as help_mod
 from . import calm as calm_mod
@@ -63,7 +62,7 @@ from .models import (
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
-    ReachOutBegin, ReachOutDigit, ReachOutHeard,
+    ReachOutDigit, ReachOutHeard,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet, FloorSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     AccessReportSubmit,
@@ -2017,33 +2016,20 @@ def create_app(qrme_client: QRMEClient | None = None,
         return crashwatch.respond(user_id)
 
     # -- the reach-out cascade (jim/reachout.py) ----------------------------
-    # JIM calling emergency contacts one after another — the consent gate,
-    # the grounded conversation, the opt-out, and the exhaust into the held
-    # 911 rung. No real call goes out until a telephony transport is wired
-    # (jim/dialer.py); the call-id handlers below are the doors that
-    # transport's webhooks will turn, and the same doors the tests drive.
+    # JIM calling emergency contacts one after another — the consent gate, the
+    # grounded conversation, the opt-out, and the exhaust into the held 911
+    # rung. Only the call-id handlers are HTTP, and only because a telephony
+    # provider's webhooks turn them (the same machine-facing shape as the
+    # farend acknowledgment link) — they are exempt from the client-door audit
+    # in jim/tests/clientpaths.py for that reason. Starting a cascade
+    # (`reachout.begin`), reading its status, and the dialer's posture stay
+    # library calls until the operator screen and the crash-watch trigger that
+    # will surface them land in a later round; the logic is tested directly.
 
-    @app.get("/dialer/posture")
-    def dialer_posture() -> dict:
-        """What the dialer is and is not — built, how a call would be carried,
-        and that the 911 send is held shut. Public: it makes no call and
-        reveals nothing about a person, only the standing policy."""
-        return dialer.posture()
-
-    @app.post("/reachout/{user_id}", status_code=201)
-    def reachout_begin(user_id: str, body: ReachOutBegin,
-                       request: Request) -> dict:
-        _user_or_404(user_id, request)
-        try:
-            return reachout.begin(user_id, body.contacts, body.situation,
-                                  life_threatening=body.life_threatening)
-        except ValueError as exc:
-            raise HTTPException(422, i18n.raised(exc)) from None
-
-    # The call-id is the capability on the three handlers below — the opaque
-    # id a provider's webhook carries back, the same shape as the drip
-    # endpoint's token-in-path. A provider signature is the wiring step; there
-    # is no transport to sign yet.
+    # The call-id is the capability on the handlers below — the opaque id a
+    # provider's webhook carries back, the same shape as the drip endpoint's
+    # token-in-path. A provider signature is the wiring step; there is no
+    # transport to sign yet.
     @app.post("/reachout/call/{call_id}/consent")
     def reachout_consent(call_id: str, body: ReachOutDigit) -> dict:
         try:
@@ -2071,20 +2057,6 @@ def create_app(qrme_client: QRMEClient | None = None,
             return reachout.unreached(call_id)
         except ValueError as exc:
             raise HTTPException(404, i18n.raised(exc)) from None
-
-    @app.get("/reachout/{reachout_id}")
-    def reachout_status(reachout_id: str, request: Request) -> dict:
-        try:
-            state = reachout.status(reachout_id)
-        except ValueError as exc:
-            raise HTTPException(404, i18n.raised(exc)) from None
-        # Scoped to its subject: the cascade belongs to a person, and its
-        # status is theirs to read.
-        owner = db.connect().execute(
-            "SELECT user_id FROM reachouts WHERE id=?",
-            (reachout_id,)).fetchone()
-        _user_or_404(owner["user_id"], request)
-        return state
 
     # -- the medicine cabinet (jim/meds.py) ---------------------------------
     # What the user takes, in their words. JIM is not a pharmacist: it
