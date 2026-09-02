@@ -223,8 +223,14 @@ def posture() -> dict:
         "provider": chosen_provider(),
         "providers": list(PROVIDERS),
         "transport_ready": transport_ready(),
-        "note": "emergency contacts may be called once a telephony transport "
-                "is wired; the 911 send is held shut in source and cannot be "
-                "opened by a setting, a plan, or a waiver — only by a reviewed "
-                "change to jim/dialer.py that also wires a transport.",
+        # One transport carries calls both ways: JIM (and, when this seam is
+        # lifted into QRME, a synthetic profile) can place a call and answer
+        # one, speaking to its assigned task or profession. Both directions
+        # wait on the same wiring, and neither rings today.
+        "directions": ["place", "receive"],
+        "note": "emergency contacts may be called — and the line answered — "
+                "once a telephony transport is wired; the 911 send is held "
+                "shut in source and cannot be opened by a setting, a plan, or "
+                "a waiver, only by a reviewed change to jim/dialer.py that "
+                "also wires a transport.",
     }
