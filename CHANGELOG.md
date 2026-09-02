@@ -6,6 +6,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-09-02
+
+### Added
+
+- **The guardian's walkthrough: every road driven, and photographed
+  driven.** The gate for this number is a person, not a checklist —
+  someone who has never seen this code opens the app, picks any road,
+  and drives it to the end without finding a wall. `tools/walkthrough.py`
+  is that person made repeatable: it builds the console, starts the
+  backend, enrols a member, and drives nineteen steps over real doors —
+  the drip channel minted and a vitals reading landed on it, the
+  baseline read back, a check-in logged, a journal entry kept, the
+  coach answering in its own shape with the network cut, the lookout
+  refusing a watch by name instead of pretending, the Medical ID minted
+  and then read the way a finder's phone would read it, a circle
+  invitation between two enrolled people, the memory shelf, the
+  problems record, the device page — counting an honest refusal as a
+  pass and a silent dead end as a wall. Nineteen steps, zero walls.
+  Six photographs of the driven console land in `docs/walkthrough/`.
+
+### Changed
+
+- **3.0.0 is cut with the siblings, and it means the same thing in all
+  three houses.** Every avenue functions properly inside the apps —
+  not new roads, the ones already drawn, all of them, working.
+
 ## [2.9.0] - 2026-08-31
 
 ### Added
@@ -11763,7 +11789,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.9.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.0...HEAD
+[3.0.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.9.0...app-v3.0.0
 [2.9.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.8.0...app-v2.9.0
 [2.8.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.1...app-v2.8.0
 [2.7.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.0...app-v2.7.1
