@@ -96,8 +96,8 @@ def main() -> int:
                     {"area": "health_fitness",
                      "message": "I slept badly. What should I watch?"},
                     tok)
-        said = bool((r or {}).get("reply") or (r or {}).get("answer")
-                    or (r or {}).get("message"))
+        said = bool((r or {}).get("content")
+                    or (r or {}).get("delivered"))
         step("coach", f"a grounded answer with the network cut ({s})",
              s in (200, 201) and said, r if s not in (200, 201) else None)
 
