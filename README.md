@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.0.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.0.1** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -495,6 +495,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.0.1** | **The reach-out cascade, built to the send and held there** — JIM can now assemble and route emergency calls to trusted contacts one after another: a keypad gate (1 to hear the message, 2 to never be called again), a language-model conversation grounded in what is happening, an opt-out that sticks, and a cascade to the next contact when one is not reached. When the contacts are spent and the situation is life-threatening, the last rung is the 911 dialer — assembled, routed, and **held shut** in source, openable by no setting, plan, or waiver. Nothing rings yet: every call comes back *prepared* until a telephony transport is wired (online, the dependable default on a selectable provider; or the user's own device SIM). Every step leaves a catalogued audit trace. |
 | **3.0.0** | **Every avenue functions properly inside the apps** — the celebration release, cut with the siblings under the same gate: a person who has never seen this code picks any road and drives it to the end without finding a wall. `tools/walkthrough.py` is that person made repeatable — nineteen steps over real doors: the drip channel minted and a reading landed, the baseline, a check-in, a journal entry, the coach answering in its own shape, the lookout refusing by name, the Medical ID minted and read by a finder, a circle invitation between two enrolled people, the memory shelf, the problems record, the device page — an honest refusal counted as a pass, a silent dead end as a wall. Nineteen steps, zero walls, six photographs of the driven console in `docs/walkthrough/`. |
 | **2.9.0** | Cut with the siblings — QRME took the round: the room holds the second key, so a profile's owner says what it can ever do and the room says what it may do there, for the people in it. The AI and VERIFIED marks left the image pixels for the surface that draws them, because every face is drawn as a circle and a mark in a square's corner is what a circle crops. No functional changes to JIM's own faculties this round |
 | **2.8.0** | Nine faculties on one page. Every capability a Guardian can be given already had a door and none had a place that named the set, so a reader could only answer *what can this thing do* by already knowing where to look. The new Capabilities screen carries each faculty beside its live state, the permission it rests on, and the screen that withdraws it. The onboarding card that drew wider than a 390px phone is fixed, the camera now reports anything painted past the right edge, and a new guard refuses a media query that a later rule overrules. |

@@ -6,6 +6,35 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-09-02
+
+### Added
+
+- **The reach-out cascade — JIM calls the emergency contacts, and the
+  911 door stays held shut.** The guardian can assemble and route a
+  cascade of calls to a person's trusted emergency contacts, one after
+  another. Each call opens with a keypad gate — press 1 to hear the
+  message, 2 to never be called this way again. On 1, the language model
+  actually talks, grounded in what is happening and what to do, and the
+  exchange is documented; on 2, the number is opted out and never rung
+  for this person again; no answer moves the cascade to the next
+  contact. When the contacts are exhausted and the situation is
+  life-threatening, the last rung is the 911 dialer (`jim/dialer.py`) —
+  the connection assembled and routed, the send **held shut** in source
+  and openable by no setting, plan, or waiver, only a reviewed change
+  that also wires a transport, failing closed if ever armed without one.
+- **A telephony seam with two transport kinds and a choice of
+  provider.** Nothing rings yet: `dialer.call_contact` returns each
+  call *prepared* because no transport is wired — the owner's
+  infrastructure step. The seam names two kinds — `online` (the
+  dependable, headless default that bills per minute, on a provider
+  that defaults to Twilio and is selectable via `JIM_TELEPHONY_PROVIDER`)
+  and `device_sim` (the user's own phone and cellular plan) — and holds
+  either until a transport is actually wired. The whole cascade runs and
+  is tested now by driving the call-id handlers a provider's webhooks
+  will one day turn; the `begin` door is owner-only, and every step
+  leaves a catalogued audit trace.
+
 ## [3.0.0] - 2026-09-02
 
 ### Added
@@ -11789,7 +11818,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.1...HEAD
+[3.0.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.0...app-v3.0.1
 [3.0.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.9.0...app-v3.0.0
 [2.9.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.8.0...app-v2.9.0
 [2.8.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.7.1...app-v2.8.0
