@@ -5299,6 +5299,35 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "mail.state.discarded": {
     en: "Discarded", es: "Descartado", fr: "Rejeté", de: "Verworfen", pt: "Descartado", it: "Scartato", ja: "破棄済み", zh: "已丢弃", hi: "हटाया गया", ar: "مُتجاهَل",
   },
+  // The offline training corpus — every exchange banked on this machine so a
+  // local model can grow able enough to run offline. The person's own.
+  "cor.title": {
+    en: "Offline training", es: "Entrenamiento sin conexión", fr: "Entraînement hors ligne", de: "Offline-Training", pt: "Treino offline", it: "Addestramento offline", ja: "オフライン学習", zh: "离线训练", hi: "ऑफ़लाइन प्रशिक्षण", ar: "التدريب دون اتصال",
+  },
+  "cor.sub": {
+    en: "Every exchange your agents have is banked on this machine as training data, so a local model can grow able enough to answer offline. It's yours to keep or clear.", es: "Cada intercambio de tus agentes se guarda en este dispositivo como datos de entrenamiento, para que un modelo local llegue a ser capaz de responder sin conexión. Es tuyo: consérvalo o bórralo.", fr: "Chaque échange de vos agents est conservé sur cet appareil comme données d'entraînement, pour qu'un modèle local devienne capable de répondre hors ligne. Il est à vous : gardez-le ou effacez-le.", de: "Jeder Austausch deiner Agenten wird auf diesem Gerät als Trainingsdaten gesichert, damit ein lokales Modell fähig genug wird, offline zu antworten. Es gehört dir — behalte es oder lösche es.", pt: "Cada interação dos teus agentes fica guardada neste dispositivo como dados de treino, para que um modelo local se torne capaz de responder offline. É teu: guarda-o ou apaga-o.", it: "Ogni scambio dei tuoi agenti viene conservato su questo dispositivo come dati di addestramento, così un modello locale può diventare capace di rispondere offline. È tuo: tienilo o cancellalo.", ja: "エージェントのやり取りはすべて学習データとしてこの端末に保存され、ローカルモデルがオフラインでも答えられるように育ちます。これはあなたのもので、保持も削除も自由です。", zh: "你的助手的每一次交流都会作为训练数据保存在本机上，让本地模型逐渐有能力离线作答。它归你所有——可保留也可清除。", hi: "आपके एजेंट की हर बातचीत इस मशीन पर प्रशिक्षण डेटा के रूप में सहेजी जाती है, ताकि एक स्थानीय मॉडल ऑफ़लाइन उत्तर देने योग्य बन सके। यह आपका है — रखें या मिटाएँ।", ar: "كل تبادل تجريه وكلاؤك يُحفَظ على هذا الجهاز كبيانات تدريب، لينمو نموذج محلي قادر على الرد دون اتصال. إنه ملكك: احتفظ به أو امسحه.",
+  },
+  "cor.banked": {
+    en: "{n} exchanges banked", es: "{n} intercambios guardados", fr: "{n} échanges conservés", de: "{n} Austausche gesichert", pt: "{n} interações guardadas", it: "{n} scambi conservati", ja: "{n}件のやり取りを保存", zh: "已保存 {n} 次交流", hi: "{n} बातचीत सहेजी गईं", ar: "{n} تبادلًا محفوظًا",
+  },
+  "cor.growing": {
+    en: "A local offline model isn't wired yet — it grows more capable as the corpus fills (about {n} to begin).", es: "Todavía no hay un modelo local sin conexión — se vuelve más capaz a medida que crece el corpus (unos {n} para empezar).", fr: "Aucun modèle local hors ligne n'est encore branché — il gagne en capacité à mesure que le corpus se remplit (environ {n} pour commencer).", de: "Ein lokales Offline-Modell ist noch nicht angeschlossen — es wird fähiger, während der Korpus wächst (etwa {n} zum Anfang).", pt: "Ainda não há um modelo local offline ligado — torna-se mais capaz à medida que o corpus cresce (cerca de {n} para começar).", it: "Un modello locale offline non è ancora collegato — diventa più capace man mano che il corpus si riempie (circa {n} per iniziare).", ja: "ローカルのオフラインモデルはまだ接続されていません — コーパスが増えるほど能力が高まります（開始の目安は約{n}件）。", zh: "本地离线模型尚未接入 — 随着语料增多它会更有能力（约 {n} 条起步）。", hi: "स्थानीय ऑफ़लाइन मॉडल अभी नहीं जुड़ा — जैसे-जैसे कॉर्पस भरता है यह अधिक सक्षम होता है (शुरू करने के लिए लगभग {n})।", ar: "لا يوجد نموذج محلي دون اتصال موصول بعد — يزداد قدرةً كلما امتلأ المتن (نحو {n} للبدء).",
+  },
+  "cor.ready": {
+    en: "A local offline model is ready.", es: "Hay un modelo local sin conexión listo.", fr: "Un modèle local hors ligne est prêt.", de: "Ein lokales Offline-Modell ist bereit.", pt: "Há um modelo local offline pronto.", it: "Un modello locale offline è pronto.", ja: "ローカルのオフラインモデルが利用可能です。", zh: "本地离线模型已就绪。", hi: "एक स्थानीय ऑफ़लाइन मॉडल तैयार है।", ar: "يوجد نموذج محلي دون اتصال جاهز.",
+  },
+  "cor.capture": {
+    en: "Keep banking my exchanges", es: "Seguir guardando mis intercambios", fr: "Continuer à conserver mes échanges", de: "Meine Austausche weiter sichern", pt: "Continuar a guardar as minhas interações", it: "Continua a conservare i miei scambi", ja: "やり取りの保存を続ける", zh: "继续保存我的交流", hi: "मेरी बातचीत सहेजते रहें", ar: "استمر في حفظ تبادلاتي",
+  },
+  "cor.archive": {
+    en: "Archive to the vault", es: "Archivar en la bóveda", fr: "Archiver dans le coffre", de: "Im Tresor archivieren", pt: "Arquivar no cofre", it: "Archivia nel caveau", ja: "保管庫へアーカイブ", zh: "归档到保险库", hi: "वॉल्ट में संग्रहीत करें", ar: "أرشفة في الخزنة",
+  },
+  "cor.purge": {
+    en: "Clear the corpus", es: "Borrar el corpus", fr: "Effacer le corpus", de: "Korpus löschen", pt: "Limpar o corpus", it: "Cancella il corpus", ja: "コーパスを消去", zh: "清除语料", hi: "कॉर्पस साफ़ करें", ar: "مسح المتن",
+  },
+  "cor.purge.confirm": {
+    en: "Clear the banked training corpus? This cannot be undone.", es: "¿Borrar el corpus de entrenamiento guardado? Esto no se puede deshacer.", fr: "Effacer le corpus d'entraînement conservé ? Cette action est irréversible.", de: "Den gesicherten Trainingskorpus löschen? Das lässt sich nicht rückgängig machen.", pt: "Limpar o corpus de treino guardado? Isto não pode ser desfeito.", it: "Cancellare il corpus di addestramento conservato? L'azione è irreversibile.", ja: "保存した学習コーパスを消去しますか？ この操作は取り消せません。", zh: "清除已保存的训练语料？此操作无法撤销。", hi: "सहेजा गया प्रशिक्षण कॉर्पस साफ़ करें? इसे पूर्ववत नहीं किया जा सकता।", ar: "مسح متن التدريب المحفوظ؟ لا يمكن التراجع عن هذا.",
+  },
   "aim.title": {
     en: "What you're working on", es: "En qué estás trabajando", fr: "Ce sur quoi vous travaillez", de: "Woran du arbeitest", pt: "No que está a trabalhar", it: "A cosa stai lavorando", ja: "取り組んでいること", zh: "你在努力的事", hi: "आप किस पर काम कर रहे हैं", ar: "ما تعمل عليه",
   },

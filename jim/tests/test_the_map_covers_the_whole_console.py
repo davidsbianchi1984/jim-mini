@@ -165,7 +165,7 @@ def test_the_whole_map_rides_every_coach_turn(client, monkeypatch):
     uid = enroll(client)
     seen: dict = {}
 
-    def capture(user_id, system, message, cloud=None):
+    def capture(user_id, system, message, cloud=None, source=None):
         seen["system"] = system
         return {"text": "ok", "provider": "anthropic", "degraded": False,
                 "reason": None, "grounded": False, "drew_on": []}
@@ -190,7 +190,7 @@ def test_a_screen_nobody_asked_about_is_still_reachable(client, monkeypatch):
     uid = enroll(client)
     seen: dict = {}
 
-    def capture(user_id, system, message, cloud=None):
+    def capture(user_id, system, message, cloud=None, source=None):
         seen["system"] = system
         return {"text": "ok", "provider": "anthropic", "degraded": False,
                 "reason": None, "grounded": False, "drew_on": []}

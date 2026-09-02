@@ -34,7 +34,7 @@ SPEECH = (APP / "speech.ts").read_text(encoding="utf-8")
 
 
 def _spy(monkeypatch, seen: dict):
-    def capture(user_id, system, message, cloud=None):
+    def capture(user_id, system, message, cloud=None, source=None):
         seen["system"] = system
         seen["message"] = message
         return {"text": "ok", "provider": "anthropic", "degraded": False,

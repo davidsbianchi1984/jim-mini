@@ -305,7 +305,7 @@ def _compose_reply(user_id: str, thread: dict, prompt: str,
         user_turn = (f"Reply to the latest email.\n\nThe thread so far:\n"
                      f"{transcript}\n\nThe email to answer:\n{prompt}")
     gen = llm.generate_for_user(user_id, _system(user_id, thread["role"], thread),
-                                user_turn)
+                                user_turn, source="mailbox")
     return gen["text"].strip()
 
 

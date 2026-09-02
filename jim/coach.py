@@ -288,7 +288,8 @@ def reply(user_id: str, area: str, message: str, pdi=None,
             " have just said, and take as read only the part above.")
     language = i18n.effective_language(user_id)
     system += i18n.directive(language)
-    gen = llm.generate_for_user(user_id, system, message)
+    gen = llm.generate_for_user(user_id, system, message,
+                                 source="coach")
     text = gen["text"]
 
     # When the stub is what answered, the offline stack answers better: the

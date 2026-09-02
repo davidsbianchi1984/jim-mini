@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.0.3** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.0.4** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -163,6 +163,9 @@ faces have their own gallery below.
     <td align="center" width="25%"><a href="docs/screens/14-coach-out-loud.svg"><img src="docs/screens/14-coach-out-loud.svg" width="165" alt="Coach out loud"></a><br><sub><b>14</b> · Coach out loud<br>the coach speaks, and follows the earbud</sub></td>
     <td align="center" width="25%"><a href="docs/screens/15-which-model-answers.png"><img src="docs/screens/15-which-model-answers.png" width="165" alt="83 Which Model Answers"></a><br><sub><b>15</b> · 83 Which Model Answers</sub></td>
     <td align="center" width="25%"><a href="docs/screens/39-engaged.png"><img src="docs/screens/39-engaged.png" width="165" alt="Talk"></a><br><sub><b>39</b> · Talk<br>the standing conversation that lasts until you leave it</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/44-mail.svg"><img src="docs/screens/44-mail.svg" width="165" alt="Correspondence"></a><br><sub><b>44</b> · Correspondence<br>the coach's moderated mailbox — drafts held until you approve</sub></td>
   </tr>
 </table>
 
@@ -495,6 +498,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.0.4** | **The offline training corpus — every exchange banked so the local model grows** — `offline.py` makes offline *safe* (nothing leaves the machine); this makes it *capable*. Every exchange the agents have is banked as a training example at the one place they all pass through (`jim.llm.generate_for_user`), so a local model trained from it grows able enough to answer offline. The person owns it: capture is on by default (their own data, like the memory vault), the switch stops it, purge clears it, `archive` seals it to the vault, and a full account erase reaches it with no line of its own. Honest that a local language model served when offline is the next step — the corpus filling is what it waits on. An Offline-training card lives on Settings. |
 | **3.0.3** | **The moderated mailbox — the coach agent carries on email, and every send is held for a person** — the coach reads what comes in, drafts a reply grounded in the thread, answers back and forth, and can write to someone new, but **nothing leaves without approval**: every outbound message is a draft in a moderation queue, and only Approve sends it — over SMTP when the deployment has a mail server, and *staged* (composed and held) otherwise, the same held-at-the-send shape the 911 dialer holds. A mailbox's `role` chooses the voice: `coach` here, a profession when this seam is lifted into a QRME synthetic profile. The Mail screen is the operator surface — take a message in, draft, edit, approve or discard, or originate one — every word through the console's ten-language table. |
 | **3.0.2** | **The reach-out operator screen, and the crash watch that fires it** — the cascade 3.0.1 built now has a person-facing door on the Safety screen: the dialer's posture said plainly (the 911 line built and **held shut in source**, and how a call would be carried once a transport is wired), the reach-outs that are running with each contact call's live status, and a control to start one by hand — every word through the console's ten-language table. And a crash-watch trip now fires the cascade automatically: an unanswered critical reading rings the trusted person first, then the account's emergency contact, with the ticked emergency-services box becoming the cascade's `life_threatening` flag — the held 911 rung reached only once the contacts are exhausted, in the ladder's own order. Nothing rings yet; each call is prepared and documented, and the send stays held shut. |
 | **3.0.1** | **The reach-out cascade, built to the send and held there** — JIM can now assemble and route emergency calls to trusted contacts one after another: a keypad gate (1 to hear the message, 2 to never be called again), a language-model conversation grounded in what is happening, an opt-out that sticks, and a cascade to the next contact when one is not reached. When the contacts are spent and the situation is life-threatening, the last rung is the 911 dialer — assembled, routed, and **held shut** in source, openable by no setting, plan, or waiver. Nothing rings yet: every call comes back *prepared* until a telephony transport is wired (online, the dependable default on a selectable provider; or the user's own device SIM). Every step leaves a catalogued audit trace. |

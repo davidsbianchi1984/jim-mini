@@ -97,7 +97,7 @@ def _model_answers(monkeypatch, text="try a wind-down hour before bed"):
     *nothing was bought* — which leaves the rung this whole round exists for
     untested unless something stands in for a real provider.
     """
-    def answered(user_id, system, message, cloud=None):
+    def answered(user_id, system, message, cloud=None, source=None):
         return {"text": text, "provider": "claude", "degraded": False,
                 "reason": None}
     monkeypatch.setattr("jim.llm.generate_for_user", answered)

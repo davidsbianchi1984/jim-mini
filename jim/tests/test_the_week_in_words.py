@@ -141,7 +141,7 @@ def test_a_network_voice_gets_the_sanitized_digest(client, monkeypatch):
 
     sent = {}
 
-    def fake_generate(user_id, system, text, cloud=None):
+    def fake_generate(user_id, system, text, cloud=None, source=None):
         sent["content"] = text
         return {"text": "A week, retold without names.",
                 "provider": "anthropic", "degraded": False}

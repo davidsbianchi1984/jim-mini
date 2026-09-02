@@ -534,7 +534,8 @@ def is_network(name: str) -> bool:
     return bool(_REGISTRY.get(name, {}).get("network"))
 
 
-def generate_for_user(user_id: str, system: str, user: str, cloud=None) -> dict:
+def generate_for_user(user_id: str, system: str, user: str, cloud=None,
+                      source: str | None = None) -> dict:
     """Generate a reply and report honestly who produced the words.
 
     ``provider_for_user().generate()`` answers, but it cannot say *who*
@@ -586,6 +587,12 @@ def generate_for_user(user_id: str, system: str, user: str, cloud=None) -> dict:
     # one is standing in front of it.
     inner = getattr(provider, "_primary", provider)
     grounded = bool(getattr(inner, "grounded", False)) and actual != "stub"
+    # Bank the exchange for the offline training corpus. The one place every
+    # generated word passes, so the corpus is complete by construction
+    # (jim/corpus.py). Best-effort and consent-gated inside capture; it never
+    # raises into a generation.
+    from . import corpus
+    corpus.capture(user_id, system, user, text, actual, source=source)
     return {"text": text, "provider": actual, "degraded": degraded,
             "reason": reason, "grounded": grounded,
             "drew_on": list(getattr(inner, "drew_on", []) or [])

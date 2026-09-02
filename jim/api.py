@@ -42,6 +42,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                underway,
                vigil, voice, watch, widgets)
 from . import continuity
+from . import corpus
 from . import crashwatch
 from . import dialer
 from . import mailbox
@@ -65,7 +66,7 @@ from .models import (
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     ReachOutBegin, ReachOutDigit, ReachOutHeard,
-    MailReceive, MailCompose, MailModerate,
+    MailReceive, MailCompose, MailModerate, CorpusConsent,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet, FloorSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     AccessReportSubmit,
@@ -117,7 +118,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="3.0.3",
+    app = FastAPI(title="JIM-mini / Guardian", version="3.0.4",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2158,6 +2159,41 @@ def create_app(qrme_client: QRMEClient | None = None,
                                     edited=body.edited)
         except ValueError as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
+
+    # -- the offline training corpus (jim/corpus.py) ------------------------
+    # Every exchange the agents have is banked as a training example at the one
+    # place they all pass through (jim.llm.generate_for_user), so the local
+    # model trained from it grows able enough to run offline. Owner-gated: it
+    # is the person's own data, for their own model — capture is consented, off
+    # stops it, and purge (or a full account erase) clears it.
+
+    @app.get("/corpus/{user_id}")
+    def corpus_posture(user_id: str, request: Request) -> dict:
+        """How much is banked, from where, and what offline capability still
+        waits on — with the zero-egress guarantee it makes worth having."""
+        _user_or_404(user_id, request)
+        return corpus.posture(user_id, app)
+
+    @app.put("/corpus/{user_id}/consent")
+    def corpus_set_consent(user_id: str, body: CorpusConsent,
+                           request: Request) -> dict:
+        """Turn banking on or off. Off stops capture and leaves what is already
+        banked (purge clears that)."""
+        _user_or_404(user_id, request)
+        return corpus.set_consent(user_id, body.enabled)
+
+    @app.post("/corpus/{user_id}/archive")
+    def corpus_archive(user_id: str, request: Request) -> dict:
+        """Seal the un-archived corpus into the vault so it survives this
+        machine and rides the vault's own erasure."""
+        _user_or_404(user_id, request)
+        return corpus.archive(user_id, pdi=_vault(user_id))
+
+    @app.delete("/corpus/{user_id}")
+    def corpus_purge(user_id: str, request: Request) -> dict:
+        """Clear the banked corpus — the forget door for training data."""
+        _user_or_404(user_id, request)
+        return corpus.purge(user_id)
 
     # -- the medicine cabinet (jim/meds.py) ---------------------------------
     # What the user takes, in their words. JIM is not a pharmacist: it

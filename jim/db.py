@@ -351,6 +351,30 @@ CREATE TABLE IF NOT EXISTS mail_messages (
     updated_at    TEXT NOT NULL
 );
 
+-- The offline training corpus (jim/corpus.py): every exchange the agents have
+-- — JIM, the coach, the mailbox, the reach-out cascade — banked as a training
+-- example at the one place they all pass through (jim.llm.generate_for_user),
+-- so the local model trained from it grows able enough to run offline. The
+-- person owns it: capture is consented (corpus_consent), off stops it, purge
+-- clears it, and a full account erase reaches it with no line of its own —
+-- this table is user_id-scoped and jim/life.py reads the schema.
+CREATE TABLE IF NOT EXISTS training_examples (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    source        TEXT NOT NULL DEFAULT '',  -- coach | mailbox | reachout | ...
+    provider      TEXT NOT NULL DEFAULT '',  -- who generated it (claude, stub, ...)
+    system        TEXT NOT NULL,
+    prompt        TEXT NOT NULL,
+    completion    TEXT NOT NULL,
+    archived_at   TEXT,                       -- when sealed to the vault, else NULL
+    created_at    TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS corpus_consent (
+    user_id       TEXT PRIMARY KEY REFERENCES users(id),
+    enabled       INTEGER NOT NULL DEFAULT 1,
+    updated_at    TEXT NOT NULL
+);
+
 -- The Apple Watch bridge (jim/watch.py): one drip channel per user, the
 -- address an iPhone Shortcut deposits readings at. The token is stored in
 -- the clear, deliberately breaking the never-return-the-secret house rule,

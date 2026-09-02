@@ -111,6 +111,12 @@ DOORS: tuple[Door, ...] = (
          ("lookout", "url", "keep an eye on", "coach", "study",
           "this page", "this site"),
          always=True),
+    Door("Mail", "Mail tab",
+         "the coach's moderated correspondence — read what comes in, have the "
+         "coach draft a reply, and approve, edit, or discard it before "
+         "anything is sent",
+         ("email", "mail", "inbox", "reply", "draft", "message", "letter",
+          "correspondence")),
     Door("Talk", "JIM-mini tab — the front door",
          "talking to JIM, and the rail that opens every other screen",
          ("talk to jim", "front door", "ask jim", "jim-mini")),

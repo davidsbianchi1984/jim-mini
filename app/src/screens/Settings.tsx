@@ -3,7 +3,7 @@ import { t as tr, visitorLang } from "../l10n";
 import { api, type BankLinkRow, type StatementRow, getBase, getLlmKey, setBase, setLlmKey, type AdaptationProfile, type ContinuityState, type MemoryShelf, type MoneyView,
          type AnonymityPosture, type Appearance, type CloudContribution,
          type PairInfo, type SeedReport,
-         type WatchChannel, type Finetune } from "../api";
+         type WatchChannel, type Finetune, type CorpusPosture } from "../api";
 import { applyTheme } from "../theme";
 import { Problems } from "../Problems";
 import { ProviderTiles } from "../ProviderTiles";
@@ -20,6 +20,8 @@ export function Settings() {
   const [ft, setFt] = useState<Finetune | null>(null);
   const [ftBusy, setFtBusy] = useState(false);
   const [ftError, setFtError] = useState<string | null>(null);
+  const [cor, setCor] = useState<CorpusPosture | null>(null);
+  const [corBusy, setCorBusy] = useState(false);
   const [cont, setCont] = useState<ContinuityState | null>(null);
   const [shelfState, setShelfState] = useState<MemoryShelf | null>(null);
   const lang = visitorLang();
@@ -37,6 +39,7 @@ export function Settings() {
       api.adaptation(session.userId, session.userToken).then(setAdapt).catch(() => {});
       // 404 until something has been trained, which is the normal state.
       api.finetune(session.userId, session.userToken).then(setFt).catch(() => {});
+      api.corpus(session.userId, session.userToken).then(setCor).catch(() => {});
       api.anonymity(session.userId, session.userToken).then(setAnon).catch(() => {});
       api.continuity(session.userId, session.userToken).then(setCont).catch(() => {});
       api.memoryShelf(session.userId, session.userToken)
@@ -242,6 +245,56 @@ export function Settings() {
         )}
         {ftError && <p className="muted small">{ftError}</p>}
       </div>
+
+      {/* The offline training corpus. Distinct from the fine-tune above: that
+          is a small clinical weight file from answered follow-ups; this is the
+          language corpus — every exchange banked so a local model can grow able
+          enough to run offline. The person owns it, and the switch stops it. */}
+      {cor && (
+        <div className="card">
+          <h3>{tr("cor.title", lang)}</h3>
+          <p className="muted small">{tr("cor.sub", lang)}</p>
+          <div className="spec-row">
+            <div>
+              <b>{tr("cor.banked", lang).replace("{n}", String(cor.examples))}</b>
+              <div className="muted small">
+                {cor.local_language_model_ready
+                  ? tr("cor.ready", lang)
+                  : tr("cor.growing", lang).replace("{n}", String(cor.ready_at))}
+              </div>
+            </div>
+            <button disabled={corBusy} onClick={async () => {
+              if (!session.userId || !session.userToken) return;
+              setCorBusy(true);
+              try {
+                await api.corpusArchive(session.userId, session.userToken);
+                setCor(await api.corpus(session.userId, session.userToken));
+              } catch { /* honest no-op when there is no vault */ }
+              finally { setCorBusy(false); }
+            }}>{tr("cor.archive", lang)}</button>
+          </div>
+          <label className="spec-row">
+            <span>{tr("cor.capture", lang)}</span>
+            <input type="checkbox" checked={cor.capturing}
+              onChange={async (e) => {
+                if (!session.userId || !session.userToken) return;
+                try {
+                  setCor(await api.corpusConsent(
+                    session.userId, e.target.checked, session.userToken));
+                } catch { /* leave the box as it was */ }
+              }} />
+          </label>
+          <button disabled={corBusy} onClick={async () => {
+            if (!session.userId || !session.userToken) return;
+            if (!confirm(tr("cor.purge.confirm", lang))) return;
+            setCorBusy(true);
+            try {
+              await api.corpusPurge(session.userId, session.userToken);
+              setCor(await api.corpus(session.userId, session.userToken));
+            } finally { setCorBusy(false); }
+          }}>{tr("cor.purge", lang)}</button>
+        </div>
+      )}
 
       <div className="card">
         <h3>{tr("cont.title", lang)}</h3>

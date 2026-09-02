@@ -1,4 +1,4 @@
-# status: backlog — 24 rows
+# status: backlog — 28 rows
 #
 # Every route this shell cannot reach.
 #
@@ -143,3 +143,16 @@ POST /mail/{user_id}/compose
 POST /mail/{user_id}/draft/{draft_id}/moderate
 POST /mail/{user_id}/message/{message_id}/draft
 POST /mail/{user_id}/receive
+# ## 3.0.4: the offline training corpus is a desktop settings surface
+#
+# Every exchange is banked as training data at the backend choke point
+# (jim.llm.generate_for_user) no matter which client made the request — that
+# capture needs no phone door. What this round added a door for is the
+# person's *view and control* of it: the bank's size, the capture switch,
+# archive-to-vault, and the purge. That is a card on the console's Settings
+# screen (app/src/screens/Settings.tsx). The phones defer the control surface
+# this round; capture reaches the corpus from them already.
+DELETE /corpus/{user_id}
+GET /corpus/{user_id}
+POST /corpus/{user_id}/archive
+PUT /corpus/{user_id}/consent

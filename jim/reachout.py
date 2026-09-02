@@ -220,7 +220,8 @@ def say(call_id: str, heard: str) -> dict:
     reachout = _load(call["reachout_id"])
     situation = json.loads(reachout["situation"])
     gen = llm.generate_for_user(call["user_id"], _system(situation),
-                                heard or "(the contact said nothing yet)")
+                                heard or "(the contact said nothing yet)",
+                                source="reachout")
     reply = gen["text"]
     transcript = json.loads(call["transcript"])
     transcript.append({"heard": heard, "said": reply})

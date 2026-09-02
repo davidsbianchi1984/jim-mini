@@ -1035,6 +1035,27 @@ export interface MailThread {
   held_drafts: number;
   messages: MailMessage[];
 }
+/** The offline training corpus: how much of the person's own exchanges are
+ * banked for a local model, and what offline capability still waits on. */
+export interface CorpusPosture {
+  examples: number;
+  archived: number;
+  by_source: Record<string, number>;
+  by_provider: Record<string, number>;
+  capturing: boolean;
+  ready_to_train: boolean;
+  ready_at: number;
+  offline: {
+    offline: boolean;
+    external_transmission_possible: boolean;
+    [k: string]: unknown;
+  };
+  local_clinical_model: {
+    version: number; backend: string; examples: number; active: boolean;
+  } | null;
+  local_language_model_ready: boolean;
+  note: string;
+}
 export interface MealRow {
   id: string;
   note?: string | null;
@@ -1770,6 +1791,20 @@ export const api = {
     req<{ status: string; message?: MailMessage; draft?: MailMessage;
           reason?: string }>(
       `/mail/${uid}/draft/${draftId}/moderate`, { method: "POST", body, token }),
+
+  // The offline training corpus: every exchange banked on this machine so a
+  // local model grows able enough to run offline. The person's own — capture
+  // is consented, and purge (or a full erase) clears it.
+  corpus: (uid: string, token: string) =>
+    req<CorpusPosture>(`/corpus/${uid}`, { token }),
+  corpusConsent: (uid: string, enabled: boolean, token: string) =>
+    req<CorpusPosture>(`/corpus/${uid}/consent`,
+      { method: "PUT", body: { enabled }, token }),
+  corpusArchive: (uid: string, token: string) =>
+    req<{ archived: number; reason?: string; bundle?: string }>(
+      `/corpus/${uid}/archive`, { method: "POST", token }),
+  corpusPurge: (uid: string, token: string) =>
+    req<{ purged: number }>(`/corpus/${uid}`, { method: "DELETE", token }),
 
   // The journal: text or spoken, sealed on private plans.
   addJournal: (uid: string, text: string, token: string) =>

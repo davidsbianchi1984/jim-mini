@@ -43,7 +43,7 @@ def test_the_map_rides_every_coach_turn(client, monkeypatch):
     uid = enroll(client)
     seen: dict = {}
 
-    def capture(user_id, system, message, cloud=None):
+    def capture(user_id, system, message, cloud=None, source=None):
         seen["system"] = system
         return {"text": "ok", "provider": "anthropic", "degraded": False,
                 "reason": None, "grounded": False, "drew_on": []}

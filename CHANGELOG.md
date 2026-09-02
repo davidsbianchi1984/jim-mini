@@ -6,6 +6,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.4] - 2026-09-02
+
+### Added
+
+- **The offline training corpus — every exchange banked so the local
+  model grows.** `offline.py` makes offline *safe* (nothing leaves the
+  machine); this makes it *capable*. Every exchange the agents have — JIM,
+  the coach, the mailbox, the reach-out cascade — is banked as a training
+  example at the one place they all pass through
+  (`jim.llm.generate_for_user`), so a local model trained from it grows
+  able enough to actually answer offline. The corpus is complete by
+  construction rather than by remembering to log at each call site
+  (`jim/corpus.py`).
+- **The person owns it.** Capture is on by default — it is their own data,
+  for their own model, the same posture the memory vault takes — but it is
+  theirs: the switch stops it, purge clears it, `archive` seals it into the
+  vault, and a full account erase reaches it with no line of its own (the
+  table is `user_id`-scoped and `jim/life.py` reads the schema). Doors:
+  `GET /corpus/{user}` (the bank + posture), `PUT /corpus/{user}/consent`,
+  `POST /corpus/{user}/archive`, and `DELETE /corpus/{user}` (the forget
+  door for training data), with an Offline-training card on Settings.
+- **Honest about what is wired.** The corpus banks now; a local *language*
+  model trained from it and served when offline is the infrastructure
+  step. The posture says how many examples are banked and that the model
+  is not wired yet — the same way the telephony and mail seams name their
+  transports — and the corpus filling is what that step waits on.
+
 ## [3.0.3] - 2026-09-02
 
 ### Added
@@ -11880,7 +11907,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.4...HEAD
+[3.0.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.3...app-v3.0.4
 [3.0.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.2...app-v3.0.3
 [3.0.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.1...app-v3.0.2
 [3.0.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.0...app-v3.0.1

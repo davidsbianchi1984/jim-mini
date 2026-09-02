@@ -317,6 +317,15 @@ LESSONS: tuple[dict, ...] = (
               "answer, a typed one gets text.",
          screens=(14,),
          try_it="Hold the microphone on the coach screen and ask anything."),
+    dict(key="mail", chapter="The life layer", title="The coach's mailbox",
+         what="The coach can carry on email — read what comes in and draft a "
+              "reply grounded in the thread — but nothing is sent until you "
+              "approve it. Every message it would send is held for you to "
+              "approve, edit, or discard, and it sends over your own mail "
+              "server or is staged and held when there is none.",
+         screens=(44,),
+         try_it="Take a message in on the Mail screen and have the coach draft "
+                "a reply, then approve or discard it."),
     dict(key="tandem", chapter="Beyond the app", title="The tandem",
          what="When configured, JIM-mini hands a question to a QRME specialist "
               "profile and brings the answer back — moderated, and marked as "

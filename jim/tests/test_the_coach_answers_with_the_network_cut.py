@@ -78,7 +78,7 @@ def test_a_paid_turn_becomes_a_deposit_the_offline_stack_answers_from(client):
     taught = ("Progressive overload with two rest days beats daily "
               "maxing; log every session and add load only when form holds.")
 
-    def fake_model(user_id, system, message, cloud=None):
+    def fake_model(user_id, system, message, cloud=None, source=None):
         return {"text": taught, "provider": "anthropic",
                 "degraded": False, "reason": None}
 

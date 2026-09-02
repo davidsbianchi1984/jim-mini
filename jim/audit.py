@@ -77,6 +77,9 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "mail.sent": ("life", "a moderator approved a drafted email and it was carried out over the configured mail transport"),
     "mail.staged": ("life", "a moderator approved a drafted email but no mail transport is wired, so it is held composed rather than sent"),
     "mail.discarded": ("life", "a moderator discarded a drafted email; nothing was sent and the draft was thrown away"),
+    "corpus.consent": ("life", "the person turned offline training-data capture on or off for their own model"),
+    "corpus.archived": ("life", "the banked training corpus was sealed into the vault so it survives this machine"),
+    "corpus.purged": ("life", "the person cleared their banked training corpus — the forget door for offline training data"),
 
     # -- money: no transaction can occur, so the audited act is the grant ---
     "mandate.set": ("money", "a written mandate over money was granted, with caps"),

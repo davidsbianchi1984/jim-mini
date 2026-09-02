@@ -1309,3 +1309,10 @@ class MailModerate(BaseModel):
 
     action: str
     edited: str = ""
+
+
+class CorpusConsent(BaseModel):
+    """Whether the person's exchanges are banked as offline training data.
+    Off stops capture; it does not clear what is already banked."""
+
+    enabled: bool
