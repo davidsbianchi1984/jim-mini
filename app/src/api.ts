@@ -971,6 +971,38 @@ export interface CrashWatchStatus {
   tripped?: boolean;
   tripped_at?: string | null;
 }
+/** The emergency dialer's posture — built, held shut in source, and how a
+ * call would be carried once a transport is wired. `send_enabled` is False on
+ * the box and can only be flipped by a reviewed source edit (jim/dialer.py). */
+export interface DialerPosture {
+  built: boolean;
+  send_enabled: boolean;
+  would_reach: string;
+  transport_kind: string;
+  transport_kinds: string[];
+  provider: string;
+  providers: string[];
+  transport_ready: boolean;
+  directions: string[];
+  note: string;
+}
+export interface ReachOutCall {
+  id: string;
+  name: string;
+  status: string;         // ringing | consented | talking | reached | unreached | declined
+}
+/** One reach-out cascade and each contact call's live status — the same shape
+ * whether it was started by hand on the operator screen or fired by a
+ * crash-watch trip. */
+export interface ReachOutStatus {
+  id: string;
+  user_id?: string;
+  status: string;         // calling | reached | exhausted
+  life_threatening: boolean;
+  about?: string | null;
+  started_at?: string;
+  calls: ReachOutCall[];
+}
 export interface MealRow {
   id: string;
   note?: string | null;
@@ -1668,6 +1700,18 @@ export const api = {
     req<CrashWatchStatus>(`/crash-watch/${uid}`, { method: "DELETE", token }),
   imOkay: (uid: string, token: string) =>
     req<CrashWatchStatus>(`/crash-watch/${uid}/respond`, { method: "POST", token }),
+
+  // The reach-out cascade: JIM rings the emergency contacts one after another,
+  // and the 911 door stays held shut in source. The operator screen reads the
+  // dialer's posture and the running cascades, and can start one by hand.
+  dialerPosture: (uid: string, token: string) =>
+    req<DialerPosture>(`/dialer/${uid}/posture`, { token }),
+  reachOuts: (uid: string, token: string) =>
+    req<ReachOutStatus[]>(`/reachout/${uid}`, { token }),
+  beginReachOut: (uid: string, body: {
+    situation: string; life_threatening: boolean;
+  }, token: string) =>
+    req<ReachOutStatus>(`/reachout/${uid}`, { method: "POST", body, token }),
 
   // The journal: text or spoken, sealed on private plans.
   addJournal: (uid: string, text: string, token: string) =>

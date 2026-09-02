@@ -6,6 +6,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-09-02
+
+### Added
+
+- **The reach-out operator screen, and the crash watch that fires it.**
+  The cascade that 3.0.1 built as library and webhook now has a
+  person-facing door on the Safety screen: the dialer's posture said
+  plainly — the 911 line is built and **held shut in source**, and how a
+  call would be carried (`online` through the chosen provider, or the
+  user's own phone) once a transport is wired — a list of the reach-outs
+  that are running with each contact call's live status, and a control to
+  start one by hand. Every word on it goes through the console's ten-language
+  table; the situation text and contact names are the server's and render
+  verbatim.
+- **A crash-watch trip now reaches for people, not just a page.** When a
+  critical reading goes unanswered through every attempt, the trip fires
+  the reach-out cascade automatically — ringing the trusted person first,
+  then the account's emergency contact — alongside the email it already
+  sent. The ticked emergency-services box becomes the cascade's
+  `life_threatening` flag: it authorizes the held 911 rung as the **last**
+  rung, reached only once the contacts are exhausted, in the ladder's own
+  order. Nothing rings yet and nothing is ever claimed to have — each call
+  is prepared and documented, and the 911 send stays held shut in
+  `jim/dialer.py`.
+- **Owner-gated doors for the cascade.** `GET /dialer/{user}/posture`,
+  `GET /reachout/{user}` (the running cascades), and
+  `POST /reachout/{user}` (start one — contacts default to the account's
+  emergency people) join the provider's call-id webhook handlers, each
+  behind the account holder's token.
+
 ## [3.0.1] - 2026-09-02
 
 ### Added
@@ -11818,7 +11848,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.2...HEAD
+[3.0.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.1...app-v3.0.2
 [3.0.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.0...app-v3.0.1
 [3.0.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.9.0...app-v3.0.0
 [2.9.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.8.0...app-v2.9.0

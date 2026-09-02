@@ -277,5 +277,19 @@ def status(reachout_id: str) -> dict:
     calls = [dict(c) for c in db.connect().execute(
         "SELECT id, name, status FROM reachout_calls WHERE reachout_id=?"
         " ORDER BY created_at", (reachout_id,)).fetchall()]
-    return {"id": r["id"], "status": r["status"],
-            "life_threatening": bool(r["life_threat"]), "calls": calls}
+    situation = json.loads(r["situation"])
+    return {"id": r["id"], "user_id": r["user_id"], "status": r["status"],
+            "life_threatening": bool(r["life_threat"]),
+            "about": situation.get("about"),
+            "started_at": r["created_at"], "calls": calls}
+
+
+def for_user(user_id: str, limit: int = 20) -> list[dict]:
+    """Every reach-out this user has, newest first — the operator screen's
+    read. Each is the same shape :func:`status` returns, so the screen renders
+    one thing whether the cascade was started by hand or by a crash-watch
+    trip."""
+    rows = db.connect().execute(
+        "SELECT id FROM reachouts WHERE user_id=? ORDER BY created_at DESC"
+        " LIMIT ?", (user_id, int(limit))).fetchall()
+    return [status(r["id"]) for r in rows]

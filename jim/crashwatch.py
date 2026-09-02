@@ -74,7 +74,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 
-from . import audit, db, dialer
+from . import audit, db
 
 # The one severity that opens a concern: the clinical detector's
 # "critical" — the severity that already escalates. Never "guidance"
@@ -329,8 +329,33 @@ def _decide(row) -> dict:
         ceiling=None if row["contact_ems"] else UNTICKED_CEILING)
 
 
+def _contacts_from(row, user) -> list[dict]:
+    """The people the reach-out cascade rings, in order: the crash watch's
+    trusted person first, then the account's emergency contact when it is a
+    different number. Blank or duplicate entries fall out — the same shape
+    :func:`jim.reachout.begin` expects."""
+    out: list[dict] = []
+    if row is not None and (row["trusted_name"] or "").strip() \
+            and (row["trusted_channel"] or "").strip():
+        out.append({"name": row["trusted_name"],
+                    "channel": row["trusted_channel"]})
+    ephone = ((user or {}).get("emergency_phone") or "").strip()
+    if ephone and not any(c["channel"] == ephone for c in out):
+        out.append({"name": (user or {}).get("emergency_name")
+                    or "emergency contact", "channel": ephone})
+    return out
+
+
+def reachout_contacts(user_id: str) -> list[dict]:
+    """The account's reach-out contacts, assembled from the crash watch and
+    the emergency contact on file. The operator screen's ``POST /reachout``
+    uses this when the caller passes no list of its own."""
+    from . import guardian
+    return _contacts_from(_row(user_id), guardian.get_user(user_id) or {})
+
+
 def _trip(user_id: str, row, t: datetime) -> dict:
-    from . import guardian, mailer
+    from . import guardian, mailer, reachout
     user = guardian.get_user(user_id) or {}
     name = user.get("display_name", "someone you care about")
     decision = _decide(row)
@@ -360,6 +385,27 @@ def _trip(user_id: str, row, t: datetime) -> dict:
     # connected system the user registered relays the alert, so whichever
     # is nearest can surface it — or a human near it can act.
     dispatched = [d["name"] for d in guardian.devices_for(user_id)]
+    # The reach-out cascade the trip fires. JIM rings the emergency contacts
+    # one after another — the trusted person first — each offered the keypad
+    # gate and, on 1, a conversation grounded in this collapse. The held-shut
+    # 911 dialer is the cascade's LAST rung, reached only once the contacts
+    # are exhausted, and only when the arming ticked emergency services — the
+    # ladder the owner drew, in that order (jim/reachout.py, jim/dialer.py).
+    # No telephony transport is wired, so each call comes back *prepared*:
+    # nothing rings, and nothing is ever claimed to have.
+    contacts_list = _contacts_from(row, user)
+    reach = (reachout.begin(
+        user_id, contacts_list,
+        {"who": name,
+         "about": (f"an unanswered {row['concern']} — JIM asked "
+                   f"\"are you okay?\" {row['attempts']} time(s) over "
+                   f"{row['attempts'] * row['window_minutes']:g} minutes and "
+                   "nothing answered"),
+         "what_to_do": ("check on them, and if you believe this is an "
+                        "emergency call your local emergency number "
+                        "yourself")},
+        life_threatening=bool(row["contact_ems"]))
+             if contacts_list else None)
     detail = {
         "trusted": row["trusted_name"], "delivery": delivery,
         "concern": row["concern"],
@@ -373,22 +419,25 @@ def _trip(user_id: str, row, t: datetime) -> dict:
         "clipped_by_ceiling": decision["clipped_by_ceiling"],
         "escalation_path": decision["path"],
         # True on both settings of the box: what the tick changes is whether
-        # the emergency connection is assembled and routed, not whether a
-        # call was placed — the dialer holds the send shut either way.
+        # the cascade may reach its 911 rung, not whether a call was placed —
+        # the dialer holds that send shut either way.
         "call_emergency_services_yourself": True,
-        # When the box is ticked, the connection is actually MADE now: the
-        # briefing is assembled and handed to the dialer, which routes it to
-        # the emergency number and holds the send (jim/dialer.py). The receipt
-        # is honest — everything but the dial happened — and it can never
-        # claim a call, because the dialer has no path that places one.
-        "emergency_services": (
-            {"requested": True,
-             **dialer.place(
-                 {"who": row["trusted_name"], "concern": row["concern"],
-                  "unanswered_attempts": row["attempts"],
-                  "channels": dispatched},
-                 user_id=user_id)}
-            if row["contact_ems"] else {"requested": False, "held": None}),
+        # The cascade the trip started, so the record names the ladder that
+        # runs from here. Never a claim that a call was placed.
+        "reach_out": ({"started": True, "id": reach.get("reachout_id"),
+                       "status": reach["status"],
+                       "life_threatening": bool(row["contact_ems"])}
+                      if reach else
+                      {"started": False,
+                       "reason": "no reachable contact was on file"}),
+        # The emergency-services door, said plainly: the ticked box is what
+        # authorizes the cascade's final 911 rung, and that rung stays held
+        # shut in source (jim/dialer.py). Reached only once the contacts are
+        # exhausted — never at the trip, and never as a placed call.
+        "emergency_services": {
+            "requested": bool(row["contact_ems"]),
+            "via": "reach_out",
+            "held_rung": True if row["contact_ems"] else None},
     }
     conn = db.connect()
     now_iso = db.utcnow()

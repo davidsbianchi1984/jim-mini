@@ -5125,6 +5125,75 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "sfy.history.answered": {
     en: "answered by {who}", es: "atendida por {who}", fr: "répondu par {who}", de: "beantwortet von {who}", pt: "atendido por {who}", it: "risposto da {who}", ja: "{who}が対応", zh: "由{who}处理", hi: "{who} ने संभाला", ar: "تولّاه {who}",
   },
+  // The reach-out operator — JIM ringing the emergency contacts one after
+  // another, and the held-shut 911 line said plainly. The crash-watch trip
+  // fires the same cascade; this screen is where a person starts and watches
+  // one.
+  "ro.title": {
+    en: "When JIM reaches out", es: "Cuando JIM llama", fr: "Quand JIM prend contact", de: "Wenn JIM Kontakt aufnimmt", pt: "Quando o JIM contacta", it: "Quando JIM chiama", ja: "JIMが連絡を取るとき", zh: "当 JIM 主动联系时", hi: "जब JIM संपर्क करता है", ar: "عندما يتواصل JIM",
+  },
+  "ro.pitch": {
+    en: "If you collapse and can't answer, JIM rings your trusted contacts one after another. Each can press 1 to hear what's happening, or 2 to never be called this way again. The 911 line is built and held shut.", es: "Si te desplomas y no puedes responder, JIM llama a tus contactos de confianza uno tras otro. Cada uno puede pulsar 1 para escuchar lo que ocurre, o 2 para no volver a recibir esta llamada. La línea de emergencias está construida y sellada.", fr: "Si vous vous effondrez et ne pouvez pas répondre, JIM appelle vos contacts de confiance l'un après l'autre. Chacun peut taper 1 pour entendre ce qui se passe, ou 2 pour ne plus jamais être appelé ainsi. La ligne d'urgence est construite et scellée.", de: "Wenn du zusammenbrichst und nicht antworten kannst, ruft JIM deine Vertrauenspersonen nacheinander an. Jede kann 1 drücken, um zu hören, was los ist, oder 2, um nie wieder so angerufen zu werden. Die Notrufleitung ist gebaut und verschlossen.", pt: "Se desmaiares e não conseguires responder, o JIM liga aos teus contactos de confiança um a um. Cada um pode premir 1 para ouvir o que se passa, ou 2 para nunca mais ser chamado assim. A linha de emergência está construída e selada.", it: "Se crolli e non puoi rispondere, JIM chiama i tuoi contatti fidati uno dopo l'altro. Ognuno può premere 1 per sentire cosa succede, o 2 per non essere più chiamato così. La linea di emergenza è costruita e sigillata.", ja: "あなたが倒れて応答できないとき、JIMは信頼できる連絡先を一人ずつ呼び出します。相手は1を押して状況を聞くか、2を押してこの方法で二度と呼ばれないようにできます。緊急通報の回線は用意され、閉じたままです。", zh: "如果你倒下且无法应答，JIM 会逐一致电你的可信联系人。对方可按 1 听取情况，或按 2 表示不再以此方式联系。急救专线已建好，并保持封闭。", hi: "अगर आप गिर पड़ें और जवाब न दे सकें, तो JIM आपके भरोसेमंद संपर्कों को एक-एक करके कॉल करता है। हर कोई 1 दबाकर स्थिति सुन सकता है, या 2 दबाकर दोबारा इस तरह कॉल न पाने का विकल्प चुन सकता है। आपातकालीन लाइन बनी है और बंद रखी गई है।", ar: "إذا انهرت ولم تستطع الرد، يتصل JIM بجهات اتصالك الموثوقة واحدة تلو الأخرى. يمكن لكل منها الضغط على 1 لسماع ما يجري، أو 2 لعدم الاتصال بها بهذه الطريقة مرة أخرى. خط الطوارئ مبني ومغلق.",
+  },
+  "ro.posture.held": {
+    en: "The emergency line is built and held shut in the code. JIM cannot place a 911 call — that stays sealed until it is reviewed and a phone line is wired.", es: "La línea de emergencias está construida y sellada en el código. JIM no puede hacer una llamada al 911: eso permanece sellado hasta que se revise y se conecte una línea telefónica.", fr: "La ligne d'urgence est construite et scellée dans le code. JIM ne peut pas passer d'appel au 911 — cela reste scellé jusqu'à révision et raccordement d'une ligne téléphonique.", de: "Die Notrufleitung ist gebaut und im Code verschlossen. JIM kann keinen 911-Anruf tätigen — das bleibt versiegelt, bis es geprüft und eine Telefonleitung angeschlossen ist.", pt: "A linha de emergência está construída e selada no código. O JIM não pode fazer uma chamada para o 911 — isso permanece selado até ser revisto e ligada uma linha telefónica.", it: "La linea di emergenza è costruita e sigillata nel codice. JIM non può chiamare il 911 — resta sigillato finché non viene rivisto e collegata una linea telefonica.", ja: "緊急通報の回線は用意され、コード内で閉じられています。JIMは911に発信できません — それは審査され、電話回線が接続されるまで封印されたままです。", zh: "急救专线已建好，并在代码中保持封闭。JIM 无法拨打 911 — 在经过审核并接入电话线路之前，它始终封存。", hi: "आपातकालीन लाइन बनी है और कोड में बंद रखी गई है। JIM 911 पर कॉल नहीं कर सकता — जब तक इसकी समीक्षा न हो और फ़ोन लाइन न जोड़ी जाए, यह सील रहती है।", ar: "خط الطوارئ مبني ومغلق داخل الشيفرة. لا يستطيع JIM إجراء اتصال بالطوارئ — يبقى مختومًا حتى تُراجَع ويُوصَل خط هاتفي.",
+  },
+  "ro.posture.carry": {
+    en: "Calls will be carried online through {provider} once a line is connected.", es: "Las llamadas se harán en línea a través de {provider} cuando se conecte una línea.", fr: "Les appels passeront en ligne via {provider} une fois une ligne raccordée.", de: "Anrufe laufen online über {provider}, sobald eine Leitung angeschlossen ist.", pt: "As chamadas serão feitas online através de {provider} assim que uma linha estiver ligada.", it: "Le chiamate passeranno online tramite {provider} una volta collegata una linea.", ja: "回線が接続されると、通話は{provider}を通じてオンラインで行われます。", zh: "接入线路后，通话将通过 {provider} 在线拨出。", hi: "लाइन जुड़ने पर कॉल {provider} के ज़रिए ऑनलाइन की जाएँगी।", ar: "ستُجرى المكالمات عبر الإنترنت من خلال {provider} بمجرد توصيل خط.",
+  },
+  "ro.posture.device": {
+    en: "Calls will be placed from your own phone once it is connected.", es: "Las llamadas se harán desde tu propio teléfono cuando esté conectado.", fr: "Les appels seront passés depuis votre propre téléphone une fois connecté.", de: "Anrufe werden von deinem eigenen Telefon aus getätigt, sobald es verbunden ist.", pt: "As chamadas serão feitas a partir do teu próprio telefone assim que estiver ligado.", it: "Le chiamate partiranno dal tuo telefono una volta collegato.", ja: "接続されると、通話はあなた自身の電話から発信されます。", zh: "连接后，通话将从你自己的手机拨出。", hi: "जुड़ने पर कॉल आपके अपने फ़ोन से की जाएँगी।", ar: "ستُجرى المكالمات من هاتفك الخاص بمجرد توصيله.",
+  },
+  "ro.posture.waiting": {
+    en: "No phone line is wired yet, so nothing rings — each call is prepared and documented.", es: "Todavía no hay línea telefónica conectada, así que nada suena: cada llamada se prepara y se documenta.", fr: "Aucune ligne téléphonique n'est encore raccordée, donc rien ne sonne — chaque appel est préparé et documenté.", de: "Noch ist keine Telefonleitung angeschlossen, also klingelt nichts — jeder Anruf wird vorbereitet und dokumentiert.", pt: "Ainda não há linha telefónica ligada, por isso nada toca — cada chamada é preparada e documentada.", it: "Nessuna linea telefonica è ancora collegata, quindi non squilla nulla: ogni chiamata viene preparata e documentata.", ja: "電話回線はまだ接続されていないため、何も鳴りません — 各通話は準備され、記録されます。", zh: "尚未接入电话线路，因此不会响铃 — 每通电话都已准备并记录在案。", hi: "अभी कोई फ़ोन लाइन नहीं जुड़ी है, इसलिए कुछ नहीं बजता — हर कॉल तैयार और दर्ज की जाती है।", ar: "لا يوجد خط هاتفي موصول بعد، لذا لا شيء يرن — كل مكالمة تُجهَّز وتُوثَّق.",
+  },
+  "ro.none": {
+    en: "No reach-outs yet.", es: "Aún no hay llamadas.", fr: "Aucun contact pour l'instant.", de: "Noch keine Kontaktversuche.", pt: "Ainda não há contactos.", it: "Ancora nessun contatto.", ja: "まだ連絡はありません。", zh: "暂无联系记录。", hi: "अभी तक कोई संपर्क नहीं।", ar: "لا محاولات تواصل بعد.",
+  },
+  "ro.lifethreat": {
+    en: "life-threatening", es: "riesgo vital", fr: "danger de mort", de: "lebensbedrohlich", pt: "risco de vida", it: "pericolo di vita", ja: "生命の危険", zh: "危及生命", hi: "जानलेवा", ar: "خطر على الحياة",
+  },
+  // Word-for-word the shells' `sos.what` — the same emergency prompt on the
+  // desktop and the phone (test_the_desktop_and_the_phone_say_different_things).
+  "ro.start.ph": {
+    en: "What's happening? (optional)", es: "¿Qué está pasando? (opcional)", fr: "Que se passe-t-il ? (facultatif)", de: "Was ist los? (optional)", pt: "O que se passa? (opcional)", it: "Cosa sta succedendo? (facoltativo)", ja: "何が起きていますか？（任意）", zh: "发生了什么？（可选）", hi: "क्या हो रहा है? (वैकल्पिक)", ar: "ماذا يجري؟ (اختياري)",
+  },
+  "ro.start.lifethreat": {
+    en: "Life-threatening", es: "Riesgo vital", fr: "Danger de mort", de: "Lebensbedrohlich", pt: "Risco de vida", it: "Pericolo di vita", ja: "生命の危険あり", zh: "危及生命", hi: "जानलेवा", ar: "خطر على الحياة",
+  },
+  "ro.start.go": {
+    en: "Start reach-out", es: "Iniciar llamada", fr: "Lancer le contact", de: "Kontakt starten", pt: "Iniciar contacto", it: "Avvia contatto", ja: "連絡を開始", zh: "开始联系", hi: "संपर्क शुरू करें", ar: "ابدأ التواصل",
+  },
+  "ro.start.hint": {
+    en: "JIM rings your trusted contacts in order — the trusted person first.", es: "JIM llama a tus contactos de confianza en orden: primero la persona de confianza.", fr: "JIM appelle vos contacts de confiance dans l'ordre — la personne de confiance d'abord.", de: "JIM ruft deine Vertrauenspersonen der Reihe nach an — die Vertrauensperson zuerst.", pt: "O JIM liga aos teus contactos de confiança por ordem — a pessoa de confiança primeiro.", it: "JIM chiama i tuoi contatti fidati in ordine — prima la persona di fiducia.", ja: "JIMは信頼できる連絡先を順番に呼び出します — まず信頼できる人から。", zh: "JIM 会按顺序致电你的可信联系人 — 先联系那位可信的人。", hi: "JIM आपके भरोसेमंद संपर्कों को क्रम से कॉल करता है — पहले भरोसेमंद व्यक्ति को।", ar: "يتصل JIM بجهات اتصالك الموثوقة بالترتيب — الشخص الموثوق أولًا.",
+  },
+  "ro.rs.calling": {
+    en: "Ringing the contacts", es: "Llamando a los contactos", fr: "Appel des contacts", de: "Kontakte werden angerufen", pt: "A ligar aos contactos", it: "Sto chiamando i contatti", ja: "連絡先に発信中", zh: "正在致电联系人", hi: "संपर्कों को कॉल किया जा रहा है", ar: "يجري الاتصال بجهات الاتصال",
+  },
+  "ro.rs.reached": {
+    en: "A contact was reached", es: "Se contactó a alguien", fr: "Un contact a été joint", de: "Ein Kontakt wurde erreicht", pt: "Um contacto foi alcançado", it: "Un contatto è stato raggiunto", ja: "連絡先とつながりました", zh: "已联系到一位联系人", hi: "एक संपर्क से बात हुई", ar: "تم الوصول إلى جهة اتصال",
+  },
+  "ro.rs.exhausted": {
+    en: "Contacts exhausted", es: "Contactos agotados", fr: "Contacts épuisés", de: "Kontakte erschöpft", pt: "Contactos esgotados", it: "Contatti esauriti", ja: "連絡先を使い切りました", zh: "联系人已用尽", hi: "सभी संपर्क आज़मा लिए गए", ar: "استُنفدت جهات الاتصال",
+  },
+  "ro.cs.ringing": {
+    en: "Ringing", es: "Llamando", fr: "Sonne", de: "Klingelt", pt: "A tocar", it: "Squilla", ja: "呼び出し中", zh: "正在响铃", hi: "घंटी बज रही है", ar: "يرن",
+  },
+  "ro.cs.consented": {
+    en: "On the line", es: "En línea", fr: "En ligne", de: "In der Leitung", pt: "Em linha", it: "In linea", ja: "通話中", zh: "已接通", hi: "लाइन पर", ar: "على الخط",
+  },
+  "ro.cs.talking": {
+    en: "Talking", es: "Hablando", fr: "En conversation", de: "Im Gespräch", pt: "A falar", it: "In conversazione", ja: "会話中", zh: "通话中", hi: "बातचीत जारी", ar: "يتحدث",
+  },
+  "ro.cs.reached": {
+    en: "Reached", es: "Contactado", fr: "Joint", de: "Erreicht", pt: "Alcançado", it: "Raggiunto", ja: "つながった", zh: "已联系", hi: "संपर्क हुआ", ar: "تم الوصول",
+  },
+  "ro.cs.unreached": {
+    en: "No answer", es: "Sin respuesta", fr: "Sans réponse", de: "Keine Antwort", pt: "Sem resposta", it: "Nessuna risposta", ja: "応答なし", zh: "无人应答", hi: "कोई जवाब नहीं", ar: "لا رد",
+  },
+  "ro.cs.declined": {
+    en: "Asked not to be called", es: "Pidió no ser llamado", fr: "A demandé à ne plus être appelé", de: "Bat, nicht angerufen zu werden", pt: "Pediu para não ser chamado", it: "Ha chiesto di non essere chiamato", ja: "連絡しないよう希望", zh: "要求不要再联系", hi: "कॉल न करने को कहा", ar: "طلب عدم الاتصال به",
+  },
   "aim.title": {
     en: "What you're working on", es: "En qué estás trabajando", fr: "Ce sur quoi vous travaillez", de: "Woran du arbeitest", pt: "No que está a trabalhar", it: "A cosa stai lavorando", ja: "取り組んでいること", zh: "你在努力的事", hi: "आप किस पर काम कर रहे हैं", ar: "ما تعمل عليه",
   },

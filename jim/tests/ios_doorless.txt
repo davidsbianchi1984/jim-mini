@@ -1,4 +1,4 @@
-# status: backlog — 15 rows
+# status: backlog — 18 rows
 #
 # Every route this shell cannot reach.
 #
@@ -118,3 +118,17 @@ POST /profiles/{profile_id}/hands/routines
 POST /profiles/{profile_id}/hands/routines/from-reach
 POST /profiles/{profile_id}/hands/routines/{routine_id}/replay
 POST /profiles/{profile_id}/hands/told
+# ## 3.0.2: the reach-out operator screen is a desktop affordance
+#
+# The reach-out cascade — JIM ringing the emergency contacts one after
+# another — fires automatically on a crash-watch trip, on the backend, no
+# matter which surface armed the watch. What this round added a door for is
+# the *operator*'s view of it: reading the dialer's held-shut posture,
+# listing the cascades that are running, and starting one by hand. That is a
+# console screen (app/src/screens/Safety.tsx). The phone's crisis job is the
+# one it already must do and does — answering the alarm, which is what stops
+# the ladder — and the automatic trigger needs no phone door. Starting and
+# watching a cascade by hand is deferred here on purpose.
+GET /dialer/{user_id}/posture
+GET /reachout/{user_id}
+POST /reachout/{user_id}

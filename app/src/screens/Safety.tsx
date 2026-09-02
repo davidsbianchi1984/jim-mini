@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   api, type AlarmRow, type BeaconRow, type CrashWatchStatus,
-  type IncidentRow, type PageRow, type WaiverOffer,
+  type DialerPosture, type IncidentRow, type PageRow,
+  type ReachOutStatus, type WaiverOffer,
 } from "../api";
 import { t as tr, visitorLang } from "../l10n";
 import { useSession } from "../store";
@@ -47,6 +48,10 @@ export function Safety() {
   const [watch, setWatch] = useState<CrashWatchStatus | null>(null);
   const [waiver, setWaiver] = useState<WaiverOffer | null>(null);
   const [signature, setSignature] = useState("");
+  const [posture, setPosture] = useState<DialerPosture | null>(null);
+  const [reachouts, setReachouts] = useState<ReachOutStatus[]>([]);
+  const [roSituation, setRoSituation] = useState("");
+  const [roLife, setRoLife] = useState(false);
 
   const uid = session.userId;
   const token = session.userToken;
@@ -61,6 +66,8 @@ export function Safety() {
     api.beacons(uid, token).then(setBeacons).catch(() => setBeacons([]));
     api.crashWatch(uid, token).then(setWatch).catch(() => setWatch(null));
     api.waivers(uid, token).then(setWaiver).catch(() => setWaiver(null));
+    api.dialerPosture(uid, token).then(setPosture).catch(() => setPosture(null));
+    api.reachOuts(uid, token).then(setReachouts).catch(() => setReachouts([]));
   }, [uid, token]);
   useEffect(load, [load]);
 
@@ -151,6 +158,67 @@ export function Safety() {
       ) : (
         <p className="muted">{tr("sfy.auto.off", lang)}</p>
       )}
+
+      {/* The reach-out operator. JIM rings the emergency contacts one after
+          another — the cascade a crash-watch trip fires automatically, and
+          that a person can start and watch here. The dialer's posture says the
+          911 line is built and held shut in source; the calls are *prepared*
+          because no telephony transport is wired yet. Contact-facing prose
+          goes through l10n like the rest of the chrome; the situation text and
+          contact names are the server's and render verbatim. */}
+      <h3>{tr("ro.title", lang)}</h3>
+      <p className="muted">{tr("ro.pitch", lang)}</p>
+      <div className="card">
+        <p className="error"><strong>{tr("ro.posture.held", lang)}</strong></p>
+        {posture && (
+          <p className="muted small">
+            {posture.transport_kind === "device_sim"
+              ? tr("ro.posture.device", lang)
+              : tr("ro.posture.carry", lang)
+                  .replace("{provider}", posture.provider)}
+            {" "}{tr("ro.posture.waiting", lang)}
+          </p>
+        )}
+        <div className="row">
+          <input value={roSituation} placeholder={tr("ro.start.ph", lang)}
+            onChange={(e) => setRoSituation(e.target.value)} />
+          <label className="muted small">
+            <input type="checkbox" checked={roLife}
+              onChange={(e) => setRoLife(e.target.checked)} />
+            {" "}{tr("ro.start.lifethreat", lang)}
+          </label>
+          <button className="primary" disabled={busy}
+            onClick={() => run(async () => {
+              await api.beginReachOut(uid, {
+                situation: roSituation.trim(), life_threatening: roLife,
+              }, token);
+              setRoSituation(""); setRoLife(false);
+            })}>
+            {tr("ro.start.go", lang)}
+          </button>
+        </div>
+        <p className="muted small">{tr("ro.start.hint", lang)}</p>
+      </div>
+      {reachouts.length === 0
+        ? <p className="muted">{tr("ro.none", lang)}</p>
+        : reachouts.map((r) => (
+          <div key={r.id} className="card">
+            <div className="row">
+              <strong>{tr(`ro.rs.${r.status}`, lang)}</strong>
+              {r.life_threatening
+                && <span className="pill">{tr("ro.lifethreat", lang)}</span>}
+              {r.started_at && <span className="muted">
+                {r.started_at.slice(0, 16).replace("T", " ")}</span>}
+            </div>
+            {r.about && <p className="muted small">{r.about}</p>}
+            {r.calls.map((c) => (
+              <div key={c.id} className="row">
+                <span>{c.name}</span>
+                <span className="muted">{tr(`ro.cs.${c.status}`, lang)}</span>
+              </div>
+            ))}
+          </div>
+        ))}
 
       {/* The waiver that lets a machine act without asking — here, directly
           under the automatic path it modifies.

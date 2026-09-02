@@ -83,14 +83,23 @@ def test_unanswered_attempts_trip_and_summon_the_programmed_help(client):
     detail = _json.loads(row["detail"])
     assert detail["trusted"] == "Rosa"
     assert detail["unanswered_attempts"] == 3
-    # The connection is assembled and routed to the dialer, and the dialer
-    # holds the send shut — see jim/dialer.py. The record carries both the
-    # request and the held truth, and never claims a call was placed.
+    # The trip fires the reach-out cascade: JIM rings the emergency contacts
+    # one after another (each *prepared* — no telephony transport is wired),
+    # and the held-shut 911 dialer is that cascade's last rung, reached only
+    # once the contacts are exhausted (jim/reachout.py, jim/dialer.py). The
+    # record names the cascade and the request, and never claims a call was
+    # placed.
+    assert detail["reach_out"]["started"] is True
+    assert detail["reach_out"]["life_threatening"] is True
     ems = detail["emergency_services"]
     assert ems["requested"] is True
-    assert ems["assembled"] is True and ems["routed"] is True
-    assert ems["placed"] is False and ems["held"] is True
-    assert "does not place the call" in ems["reason"]
+    assert ems["via"] == "reach_out"
+    # The cascade is real and still running: the reach-out row exists, and its
+    # first contact — the trusted person — has been rung (prepared).
+    from jim import reachout
+    st = reachout.status(detail["reach_out"]["id"])
+    assert st["status"] == "calling"
+    assert st["calls"] and st["calls"][0]["name"] == "Rosa"
 
 
 def test_without_the_ticked_box_no_emergency_services(client):

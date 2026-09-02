@@ -1257,12 +1257,13 @@ class HandReplayIn(BaseModel):
 
 
 class ReachOutBegin(BaseModel):
-    """Open a reach-out cascade: the ordered emergency contacts to try, what
-    the call is about, and whether the held 911 rung may be reached when the
-    contacts are spent."""
+    """Open a reach-out cascade from the operator screen: what the call is
+    about, and whether the held 911 rung may be reached when the contacts are
+    spent. ``contacts`` is an optional override — left empty, the server
+    assembles the account's emergency contacts (the trusted person first)."""
 
-    contacts: list[dict]          # ordered [{"name": ..., "channel": ...}]
-    situation: dict               # {"who", "about", "what_to_do"}
+    situation: str = ""           # free text; who/about assembled server-side
+    contacts: list[dict] = []     # optional [{"name": ..., "channel": ...}]
     life_threatening: bool = False
 
 

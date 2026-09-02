@@ -43,6 +43,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
                vigil, voice, watch, widgets)
 from . import continuity
 from . import crashwatch
+from . import dialer
 from . import reachout
 from . import help as help_mod
 from . import calm as calm_mod
@@ -62,7 +63,7 @@ from .models import (
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
-    ReachOutDigit, ReachOutHeard,
+    ReachOutBegin, ReachOutDigit, ReachOutHeard,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet, FloorSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     AccessReportSubmit,
@@ -114,7 +115,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="3.0.1",
+    app = FastAPI(title="JIM-mini / Guardian", version="3.0.2",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2018,13 +2019,49 @@ def create_app(qrme_client: QRMEClient | None = None,
     # -- the reach-out cascade (jim/reachout.py) ----------------------------
     # JIM calling emergency contacts one after another — the consent gate, the
     # grounded conversation, the opt-out, and the exhaust into the held 911
-    # rung. Only the call-id handlers are HTTP, and only because a telephony
-    # provider's webhooks turn them (the same machine-facing shape as the
-    # farend acknowledgment link) — they are exempt from the client-door audit
-    # in jim/tests/clientpaths.py for that reason. Starting a cascade
-    # (`reachout.begin`), reading its status, and the dialer's posture stay
-    # library calls until the operator screen and the crash-watch trigger that
-    # will surface them land in a later round; the logic is tested directly.
+    # rung. Two kinds of door reach it: the OWNER's, token-gated, that the
+    # operator screen turns (start a cascade, read the ones that are running,
+    # read the dialer's held posture); and the PROVIDER's call-id handlers,
+    # which a telephony webhook turns (the same machine-facing shape as the
+    # farend acknowledgment link) — those carry no user token and are exempt
+    # from the client-door audit in jim/tests/clientpaths.py.
+
+    @app.get("/dialer/{user_id}/posture")
+    def dialer_posture(user_id: str, request: Request) -> dict:
+        """What the dialer is, for the operator screen: built, held shut in
+        source, and how a call would be carried once a transport is wired."""
+        _user_or_404(user_id, request)
+        return dialer.posture()
+
+    @app.get("/reachout/{user_id}")
+    def reachout_list(user_id: str, request: Request) -> list[dict]:
+        """Every reach-out on this account, newest first — the ones a
+        crash-watch trip started and the ones started here, with each call's
+        live status."""
+        _user_or_404(user_id, request)
+        return reachout.for_user(user_id)
+
+    @app.post("/reachout/{user_id}", status_code=201)
+    def reachout_begin(user_id: str, body: ReachOutBegin,
+                       request: Request) -> dict:
+        """Open a cascade by hand. The contacts default to the account's
+        emergency people (the crash watch's trusted person first); the
+        life-threatening flag is what authorizes the held 911 rung once they
+        are spent."""
+        _user_or_404(user_id, request)
+        user = guardian.get_user(user_id) or {}
+        contacts = body.contacts or crashwatch.reachout_contacts(user_id)
+        situation = {
+            "who": user.get("display_name") or "the person JIM watches over",
+            "about": body.situation.strip() or "a situation that needs a "
+                     "trusted person",
+            "what_to_do": "check on them; if you believe this is an emergency, "
+                          "call your local emergency number yourself"}
+        try:
+            return reachout.begin(user_id, contacts, situation,
+                                  life_threatening=body.life_threatening)
+        except ValueError as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     # The call-id is the capability on the handlers below — the opaque id a
     # provider's webhook carries back, the same shape as the drip endpoint's
