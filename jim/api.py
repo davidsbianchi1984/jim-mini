@@ -2038,7 +2038,7 @@ def create_app(qrme_client: QRMEClient | None = None,
             return reachout.begin(user_id, body.contacts, body.situation,
                                   life_threatening=body.life_threatening)
         except ValueError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     # The call-id is the capability on the three handlers below — the opaque
     # id a provider's webhook carries back, the same shape as the drip
@@ -2049,35 +2049,35 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return reachout.consent(call_id, body.digit)
         except ValueError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.post("/reachout/call/{call_id}/say")
     def reachout_say(call_id: str, body: ReachOutHeard) -> dict:
         try:
             return reachout.say(call_id, body.heard)
         except ValueError as exc:
-            raise HTTPException(409, str(exc)) from None
+            raise HTTPException(409, i18n.raised(exc)) from None
 
     @app.post("/reachout/call/{call_id}/reached")
     def reachout_reached(call_id: str) -> dict:
         try:
             return reachout.reached(call_id)
         except ValueError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.post("/reachout/call/{call_id}/unreached")
     def reachout_unreached(call_id: str) -> dict:
         try:
             return reachout.unreached(call_id)
         except ValueError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.get("/reachout/{reachout_id}")
     def reachout_status(reachout_id: str, request: Request) -> dict:
         try:
             state = reachout.status(reachout_id)
         except ValueError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
         # Scoped to its subject: the cascade belongs to a person, and its
         # status is theirs to read.
         owner = db.connect().execute(
