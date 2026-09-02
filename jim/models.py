@@ -1254,3 +1254,26 @@ class HandFromReachIn(BaseModel):
 class HandReplayIn(BaseModel):
     grant_id: str
     platform: str
+
+
+class ReachOutBegin(BaseModel):
+    """Open a reach-out cascade: the ordered emergency contacts to try, what
+    the call is about, and whether the held 911 rung may be reached when the
+    contacts are spent."""
+
+    contacts: list[dict]          # ordered [{"name": ..., "channel": ...}]
+    situation: dict               # {"who", "about", "what_to_do"}
+    life_threatening: bool = False
+
+
+class ReachOutDigit(BaseModel):
+    """The keypad choice a contact pressed — "1" to hear the message, "2" to
+    never be called this way again."""
+
+    digit: str
+
+
+class ReachOutHeard(BaseModel):
+    """What the contact said on the line, for JIM's next spoken turn."""
+
+    heard: str = ""

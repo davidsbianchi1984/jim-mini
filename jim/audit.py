@@ -67,6 +67,11 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "beacon.alarm": ("safety", "a passer-by raised an alarm from a care beacon"),
     "emergency.raise": ("safety", "the account holder pressed Get help now"),
     "dial.held": ("safety", "an emergency connection was assembled and routed to the dialer, and the dialer held the send shut — no call was placed"),
+    "contact.called": ("safety", "an emergency contact was called with a JIM-composed message — the reach-out cascade's first act toward a person"),
+    "contact.reached": ("safety", "an emergency contact chose to receive the message; the exchange with them is documented"),
+    "contact.declined": ("safety", "an emergency contact pressed do-not-call-again; that number is not called for this person again"),
+    "contact.unreached": ("safety", "an emergency contact did not answer or consent; the cascade moves to the next person"),
+    "reachout.exhausted": ("safety", "every emergency contact was tried without reaching one; the held 911 rung is where the cascade ends"),
 
     # -- money: no transaction can occur, so the audited act is the grant ---
     "mandate.set": ("money", "a written mandate over money was granted, with caps"),

@@ -286,6 +286,40 @@ CREATE TABLE IF NOT EXISTS crash_watches (
     updated_at        TEXT NOT NULL
 );
 
+-- The reach-out cascade: JIM calling emergency contacts in turn, and the
+-- calls it placed. One cascade row holds the ordered attempt; each call row
+-- is one contact tried, its consent choice, and the conversation transcript.
+CREATE TABLE IF NOT EXISTS reachouts (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    situation     TEXT NOT NULL,   -- JSON: what JIM is calling about
+    life_threat   INTEGER NOT NULL DEFAULT 0,  -- may the held 911 rung be reached
+    status        TEXT NOT NULL,   -- calling | reached | exhausted
+    idx           INTEGER NOT NULL DEFAULT 0,  -- which contact is current
+    contacts      TEXT NOT NULL,   -- JSON: the ordered [{name, channel}] tried
+    created_at    TEXT NOT NULL,
+    updated_at    TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS reachout_calls (
+    id            TEXT PRIMARY KEY,
+    reachout_id   TEXT NOT NULL REFERENCES reachouts(id),
+    user_id       TEXT NOT NULL,
+    name          TEXT NOT NULL,
+    channel       TEXT NOT NULL,
+    status        TEXT NOT NULL,   -- ringing | consented | reached | declined | unreached
+    transcript    TEXT NOT NULL DEFAULT '[]',  -- JSON: the conversation turns
+    created_at    TEXT NOT NULL,
+    updated_at    TEXT NOT NULL
+);
+-- Numbers that pressed do-not-call-again. Checked before every reach-out so
+-- a person who opted out is never rung for this user again.
+CREATE TABLE IF NOT EXISTS do_not_call (
+    user_id       TEXT NOT NULL,
+    channel       TEXT NOT NULL,
+    at            TEXT NOT NULL,
+    PRIMARY KEY (user_id, channel)
+);
+
 -- The Apple Watch bridge (jim/watch.py): one drip channel per user, the
 -- address an iPhone Shortcut deposits readings at. The token is stored in
 -- the clear, deliberately breaking the never-return-the-secret house rule,
