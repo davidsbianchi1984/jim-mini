@@ -1,4 +1,4 @@
-# status: backlog — 18 rows
+# status: backlog — 24 rows
 #
 # Every route this shell cannot reach.
 #
@@ -132,3 +132,17 @@ POST /profiles/{profile_id}/hands/told
 GET /dialer/{user_id}/posture
 GET /reachout/{user_id}
 POST /reachout/{user_id}
+# ## 3.0.3: the moderated mailbox is a desktop operator surface
+#
+# The coach agent's correspondence — read an inbound message, have the agent
+# draft a reply, approve/edit/discard it, or write to someone new — is a
+# console screen (app/src/screens/Mail.tsx). Every outbound message is held
+# for a person to approve; the moderation queue is an operator affordance, not
+# a crisis surface. The phones defer it on purpose this round; when a phone
+# grows a mailbox these come with it.
+GET /mail/{user_id}
+GET /mail/{user_id}/posture
+POST /mail/{user_id}/compose
+POST /mail/{user_id}/draft/{draft_id}/moderate
+POST /mail/{user_id}/message/{message_id}/draft
+POST /mail/{user_id}/receive

@@ -72,6 +72,11 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "contact.declined": ("safety", "an emergency contact pressed do-not-call-again; that number is not called for this person again"),
     "contact.unreached": ("safety", "an emergency contact did not answer or consent; the cascade moves to the next person"),
     "reachout.exhausted": ("safety", "every emergency contact was tried without reaching one; the held 911 rung is where the cascade ends"),
+    "mail.received": ("life", "an inbound email was taken into the moderated mailbox for the agent to answer"),
+    "mail.drafted": ("life", "the agent composed an email reply and held it for a person to approve before sending"),
+    "mail.sent": ("life", "a moderator approved a drafted email and it was carried out over the configured mail transport"),
+    "mail.staged": ("life", "a moderator approved a drafted email but no mail transport is wired, so it is held composed rather than sent"),
+    "mail.discarded": ("life", "a moderator discarded a drafted email; nothing was sent and the draft was thrown away"),
 
     # -- money: no transaction can occur, so the audited act is the grant ---
     "mandate.set": ("money", "a written mandate over money was granted, with caps"),

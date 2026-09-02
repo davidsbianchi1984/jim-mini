@@ -6,6 +6,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.3] - 2026-09-02
+
+### Added
+
+- **The moderated mailbox — the coach agent carries on email, and every
+  send is held for a person.** The coach can read what comes in, draft a
+  reply grounded in the thread, answer back and forth, and write to
+  someone new — but **nothing leaves without approval.** Every outbound
+  message is composed as a *draft* in a moderation queue; a person
+  approves, edits, or discards it, and only an approval sends. It sends
+  through the deployment's mail server when one is configured, and
+  *stages* — composed and held, never dropped, never claimed sent — when
+  none is (`jim/mailbox.py`, the same held-at-the-send shape the 911
+  dialer holds its send with). Inbound is taken into a thread today by the
+  operator; a provider webhook or IMAP poll is the wiring step, named in
+  the mailbox's posture.
+- **A voice chosen by role.** A mailbox has a `role` — `coach` for the
+  guardian, warm and brief and never diagnosing. The same machinery
+  carries a different voice when this seam is lifted into QRME: a
+  synthetic profile answers its correspondence *in its profession*, and
+  the role is the profession. `_system` is the one place the voice is
+  chosen, so the lift is a role, not a rewrite.
+- **The Mail screen.** A person-facing operator surface (`nav.mail`):
+  take a message in, have the coach draft a reply, edit it in place,
+  approve or discard it, or originate one — with the dialer-style posture
+  saying which way mail carries and that every send waits on a person.
+  Every word runs through the console's ten-language table; the message
+  bodies and addresses are the server's and render verbatim. Owner-gated
+  doors: `GET /mail/{user}/posture`, `GET /mail/{user}` (the threads),
+  `POST /mail/{user}/receive`, `POST /mail/{user}/message/{id}/draft`,
+  `POST /mail/{user}/compose`, and `POST /mail/{user}/draft/{id}/moderate`.
+
 ## [3.0.2] - 2026-09-02
 
 ### Added
@@ -11848,7 +11880,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.3...HEAD
+[3.0.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.2...app-v3.0.3
 [3.0.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.1...app-v3.0.2
 [3.0.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.0...app-v3.0.1
 [3.0.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v2.9.0...app-v3.0.0

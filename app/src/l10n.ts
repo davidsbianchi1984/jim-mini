@@ -5194,6 +5194,111 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "ro.cs.declined": {
     en: "Asked not to be called", es: "Pidió no ser llamado", fr: "A demandé à ne plus être appelé", de: "Bat, nicht angerufen zu werden", pt: "Pediu para não ser chamado", it: "Ha chiesto di non essere chiamato", ja: "連絡しないよう希望", zh: "要求不要再联系", hi: "कॉल न करने को कहा", ar: "طلب عدم الاتصال به",
   },
+  // The moderated mailbox — the coach agent reads, drafts, and replies, but
+  // every send is held here for a person to approve. The message bodies and
+  // addresses are the server's; this is the chrome around them.
+  "nav.mail": {
+    en: "Mail", es: "Correo", fr: "Courrier", de: "Post", pt: "Correio", it: "Posta", ja: "メール", zh: "邮件", hi: "मेल", ar: "البريد",
+  },
+  "mail.title": {
+    en: "Correspondence", es: "Correspondencia", fr: "Correspondance", de: "Korrespondenz", pt: "Correspondência", it: "Corrispondenza", ja: "やり取り", zh: "往来信件", hi: "पत्राचार", ar: "المراسلات",
+  },
+  "mail.pitch": {
+    en: "The coach reads what comes in and drafts a reply — but nothing is sent until you approve it.", es: "El coach lee lo que llega y redacta una respuesta, pero no se envía nada hasta que lo apruebes.", fr: "Le coach lit ce qui arrive et rédige une réponse — mais rien n'est envoyé sans votre approbation.", de: "Der Coach liest, was eingeht, und entwirft eine Antwort — aber nichts wird gesendet, bevor du es freigibst.", pt: "O coach lê o que chega e redige uma resposta — mas nada é enviado até que aproves.", it: "Il coach legge ciò che arriva e prepara una risposta, ma non si invia nulla finché non approvi.", ja: "コーチは届いたメールを読んで返信を下書きします — ただし承認するまで何も送信されません。", zh: "教练会阅读来信并起草回复 — 但在你批准之前不会发送任何内容。", hi: "कोच आने वाले संदेश पढ़कर उत्तर का मसौदा बनाता है — पर जब तक आप स्वीकृति न दें, कुछ नहीं भेजा जाता।", ar: "يقرأ المدرّب ما يصل ويصوغ ردًا — لكن لا يُرسَل شيء حتى توافق عليه.",
+  },
+  "mail.signin": {
+    en: "Sign in to see the mailbox.", es: "Inicia sesión para ver el buzón.", fr: "Connectez-vous pour voir la boîte aux lettres.", de: "Melde dich an, um das Postfach zu sehen.", pt: "Inicie sessão para ver a caixa de correio.", it: "Accedi per vedere la casella di posta.", ja: "メールボックスを見るにはサインインしてください。", zh: "请登录以查看邮箱。", hi: "मेलबॉक्स देखने के लिए साइन इन करें।", ar: "سجّل الدخول لعرض صندوق البريد.",
+  },
+  "mail.posture.moderated": {
+    en: "Every message the coach would send is held here for you to approve, edit, or discard. Nothing leaves on its own.", es: "Cada mensaje que el coach enviaría se retiene aquí para que lo apruebes, edites o descartes. Nada sale por sí solo.", fr: "Chaque message que le coach enverrait est retenu ici pour que vous l'approuviez, le modifiiez ou le rejetiez. Rien ne part tout seul.", de: "Jede Nachricht, die der Coach senden würde, wird hier zurückgehalten, damit du sie freigibst, bearbeitest oder verwirfst. Nichts geht von selbst raus.", pt: "Cada mensagem que o coach enviaria fica retida aqui para aprovares, editares ou descartares. Nada sai sozinho.", it: "Ogni messaggio che il coach invierebbe è trattenuto qui perché tu lo approvi, modifichi o scarti. Nulla parte da solo.", ja: "コーチが送ろうとするメッセージはすべてここで保留され、あなたが承認・編集・破棄します。ひとりでに送信されることはありません。", zh: "教练要发送的每条消息都会在此保留，供你批准、编辑或丢弃。任何内容都不会自行发出。", hi: "कोच जो भी संदेश भेजेगा वह यहाँ रोका जाता है ताकि आप उसे स्वीकृत, संपादित या हटा सकें। कुछ भी अपने आप नहीं जाता।", ar: "كل رسالة قد يرسلها المدرّب تُحتجَز هنا لتوافق عليها أو تعدّلها أو تتجاهلها. لا شيء يخرج من تلقاء نفسه.",
+  },
+  "mail.posture.smtp": {
+    en: "An approved reply is sent through your configured mail server.", es: "Una respuesta aprobada se envía a través de tu servidor de correo configurado.", fr: "Une réponse approuvée est envoyée via votre serveur de messagerie configuré.", de: "Eine freigegebene Antwort wird über deinen konfigurierten Mailserver gesendet.", pt: "Uma resposta aprovada é enviada através do teu servidor de correio configurado.", it: "Una risposta approvata viene inviata tramite il tuo server di posta configurato.", ja: "承認された返信は、設定済みのメールサーバー経由で送信されます。", zh: "已批准的回复将通过你配置的邮件服务器发送。", hi: "स्वीकृत उत्तर आपके कॉन्फ़िगर किए गए मेल सर्वर से भेजा जाता है।", ar: "يُرسَل الرد المعتمد عبر خادم البريد الذي أعددته.",
+  },
+  "mail.posture.staged": {
+    en: "No mail server is configured, so an approved reply is composed and held rather than sent — set one up on Settings.", es: "No hay servidor de correo configurado, así que una respuesta aprobada se redacta y se retiene en vez de enviarse — configúralo en Ajustes.", fr: "Aucun serveur de messagerie n'est configuré, donc une réponse approuvée est rédigée et retenue plutôt qu'envoyée — configurez-en un dans les Réglages.", de: "Es ist kein Mailserver konfiguriert, daher wird eine freigegebene Antwort verfasst und zurückgehalten statt gesendet — richte einen in den Einstellungen ein.", pt: "Nenhum servidor de correio está configurado, por isso uma resposta aprovada é redigida e retida em vez de enviada — configura um nas Definições.", it: "Nessun server di posta è configurato, quindi una risposta approvata viene composta e trattenuta invece di essere inviata — impostane uno nelle Impostazioni.", ja: "メールサーバーが設定されていないため、承認された返信は送信されず、作成して保留されます — 設定で用意してください。", zh: "尚未配置邮件服务器，因此已批准的回复会被撰写并保留而非发送 — 请在“设置”中配置。", hi: "कोई मेल सर्वर कॉन्फ़िगर नहीं है, इसलिए स्वीकृत उत्तर भेजने के बजाय तैयार करके रोका जाता है — इसे सेटिंग्स में सेट करें।", ar: "لا يوجد خادم بريد مُعَدّ، لذا يُصاغ الرد المعتمد ويُحتجَز بدل إرساله — أعدّ واحدًا في الإعدادات.",
+  },
+  "mail.posture.inbound": {
+    en: "Inbound email arrives on its own once a mail connection is wired; until then, paste a message below for the coach to answer.", es: "El correo entrante llega por sí solo cuando se conecta el correo; hasta entonces, pega abajo un mensaje para que el coach responda.", fr: "Le courrier entrant arrive tout seul une fois la connexion établie ; en attendant, collez un message ci-dessous pour que le coach y réponde.", de: "Eingehende E-Mails kommen von selbst, sobald eine Mailverbindung besteht; bis dahin füge unten eine Nachricht ein, die der Coach beantworten soll.", pt: "O correio recebido chega sozinho quando a ligação de correio estiver feita; até lá, cola abaixo uma mensagem para o coach responder.", it: "La posta in arrivo arriva da sola una volta collegata la posta; nel frattempo, incolla qui sotto un messaggio a cui il coach risponderà.", ja: "メール接続が設定されると受信メールは自動的に届きます。それまでは下にメッセージを貼り付けてコーチに答えさせてください。", zh: "邮件连接接通后，收件会自动到达；在此之前，请在下方粘贴一封邮件让教练回复。", hi: "मेल कनेक्शन जुड़ने पर आने वाले ईमेल अपने आप आ जाएँगे; तब तक, नीचे कोई संदेश चिपकाएँ ताकि कोच उसका उत्तर दे सके।", ar: "يصل البريد الوارد تلقائيًا بمجرد توصيل البريد؛ حتى ذلك الحين، الصق رسالة بالأسفل ليجيب عليها المدرّب.",
+  },
+  "mail.receive": {
+    en: "A message came in", es: "Llegó un mensaje", fr: "Un message est arrivé", de: "Eine Nachricht ist eingegangen", pt: "Chegou uma mensagem", it: "È arrivato un messaggio", ja: "メッセージが届きました", zh: "收到一封邮件", hi: "एक संदेश आया", ar: "وصلت رسالة",
+  },
+  "mail.receive.from": {
+    en: "From (email address)", es: "De (dirección de correo)", fr: "De (adresse e-mail)", de: "Von (E-Mail-Adresse)", pt: "De (endereço de e-mail)", it: "Da (indirizzo email)", ja: "差出人（メールアドレス）", zh: "发件人（电子邮箱）", hi: "भेजने वाला (ईमेल पता)", ar: "من (عنوان البريد)",
+  },
+  "mail.receive.subject": {
+    en: "Subject", es: "Asunto", fr: "Objet", de: "Betreff", pt: "Assunto", it: "Oggetto", ja: "件名", zh: "主题", hi: "विषय", ar: "الموضوع",
+  },
+  "mail.receive.body": {
+    en: "What they wrote", es: "Lo que escribieron", fr: "Ce qu'ils ont écrit", de: "Was sie geschrieben haben", pt: "O que escreveram", it: "Cosa hanno scritto", ja: "相手が書いた内容", zh: "对方写的内容", hi: "उन्होंने क्या लिखा", ar: "ما كتبوه",
+  },
+  "mail.receive.go": {
+    en: "Take it in", es: "Recibirlo", fr: "Le prendre en compte", de: "Aufnehmen", pt: "Receber", it: "Acquisiscilo", ja: "取り込む", zh: "接收", hi: "इसे लें", ar: "استلمها",
+  },
+  "mail.compose": {
+    en: "Write to someone", es: "Escribir a alguien", fr: "Écrire à quelqu'un", de: "An jemanden schreiben", pt: "Escrever a alguém", it: "Scrivi a qualcuno", ja: "誰かに書く", zh: "写信给某人", hi: "किसी को लिखें", ar: "اكتب إلى شخص",
+  },
+  "mail.compose.to": {
+    en: "To (email address)", es: "Para (dirección de correo)", fr: "À (adresse e-mail)", de: "An (E-Mail-Adresse)", pt: "Para (endereço de e-mail)", it: "A (indirizzo email)", ja: "宛先（メールアドレス）", zh: "收件人（电子邮箱）", hi: "किसे (ईमेल पता)", ar: "إلى (عنوان البريد)",
+  },
+  "mail.compose.subject": {
+    en: "Subject", es: "Asunto", fr: "Objet", de: "Betreff", pt: "Assunto", it: "Oggetto", ja: "件名", zh: "主题", hi: "विषय", ar: "الموضوع",
+  },
+  "mail.compose.objective": {
+    en: "What the message should accomplish", es: "Qué debe lograr el mensaje", fr: "Ce que le message doit accomplir", de: "Was die Nachricht erreichen soll", pt: "O que a mensagem deve alcançar", it: "Cosa deve ottenere il messaggio", ja: "このメッセージで達成したいこと", zh: "这封邮件要达成什么", hi: "संदेश से क्या हासिल होना चाहिए", ar: "ما ينبغي أن تحققه الرسالة",
+  },
+  "mail.compose.go": {
+    en: "Have the coach draft it", es: "Que el coach lo redacte", fr: "Faire rédiger par le coach", de: "Vom Coach entwerfen lassen", pt: "Deixar o coach redigir", it: "Fai redigere al coach", ja: "コーチに下書きさせる", zh: "让教练起草", hi: "कोच से मसौदा बनवाएँ", ar: "دع المدرّب يصوغها",
+  },
+  "mail.threads": {
+    en: "Threads", es: "Hilos", fr: "Fils", de: "Verläufe", pt: "Tópicos", it: "Conversazioni", ja: "スレッド", zh: "会话", hi: "थ्रेड", ar: "المسارات",
+  },
+  "mail.none": {
+    en: "No correspondence yet.", es: "Aún no hay correspondencia.", fr: "Aucune correspondance pour l'instant.", de: "Noch keine Korrespondenz.", pt: "Ainda não há correspondência.", it: "Ancora nessuna corrispondenza.", ja: "まだやり取りはありません。", zh: "暂无往来信件。", hi: "अभी तक कोई पत्राचार नहीं।", ar: "لا مراسلات بعد.",
+  },
+  "mail.held": {
+    en: "{n} held for you", es: "{n} retenidos para ti", fr: "{n} en attente de vous", de: "{n} für dich zurückgehalten", pt: "{n} retidos para ti", it: "{n} in attesa di te", ja: "承認待ち{n}件", zh: "{n} 项待你处理", hi: "{n} आपके लिए रुके", ar: "{n} بانتظارك",
+  },
+  "mail.draftreply.hint": {
+    en: "Use “Draft a reply” on a message to have the coach answer it.", es: "Usa “Redactar respuesta” en un mensaje para que el coach lo responda.", fr: "Utilisez « Rédiger une réponse » sur un message pour que le coach y réponde.", de: "Nutze „Antwort entwerfen“ bei einer Nachricht, damit der Coach sie beantwortet.", pt: "Usa “Redigir resposta” numa mensagem para o coach responder.", it: "Usa “Scrivi una risposta” su un messaggio perché il coach risponda.", ja: "メッセージの「返信を下書き」を使うと、コーチが返信します。", zh: "在某条消息上点击“起草回复”，让教练来回答。", hi: "किसी संदेश पर “उत्तर का मसौदा” का उपयोग करें ताकि कोच उसका जवाब दे।", ar: "استخدم “صياغة رد” على رسالة ليجيب عليها المدرّب.",
+  },
+  "mail.edit.aria": {
+    en: "Edit the reply before approving", es: "Editar la respuesta antes de aprobar", fr: "Modifier la réponse avant approbation", de: "Antwort vor der Freigabe bearbeiten", pt: "Editar a resposta antes de aprovar", it: "Modifica la risposta prima di approvare", ja: "承認する前に返信を編集", zh: "批准前编辑回复", hi: "स्वीकृति से पहले उत्तर संपादित करें", ar: "عدّل الرد قبل الموافقة",
+  },
+  "mail.approve": {
+    en: "Approve & send", es: "Aprobar y enviar", fr: "Approuver et envoyer", de: "Freigeben & senden", pt: "Aprovar e enviar", it: "Approva e invia", ja: "承認して送信", zh: "批准并发送", hi: "स्वीकृत करें और भेजें", ar: "الموافقة والإرسال",
+  },
+  "mail.saveedit": {
+    en: "Save edit", es: "Guardar cambios", fr: "Enregistrer", de: "Änderung speichern", pt: "Guardar edição", it: "Salva modifica", ja: "編集を保存", zh: "保存编辑", hi: "संपादन सहेजें", ar: "حفظ التعديل",
+  },
+  "mail.discard": {
+    en: "Discard", es: "Descartar", fr: "Rejeter", de: "Verwerfen", pt: "Descartar", it: "Scarta", ja: "破棄", zh: "丢弃", hi: "हटाएँ", ar: "تجاهل",
+  },
+  "mail.draftreply": {
+    en: "Draft a reply", es: "Redactar respuesta", fr: "Rédiger une réponse", de: "Antwort entwerfen", pt: "Redigir resposta", it: "Scrivi una risposta", ja: "返信を下書き", zh: "起草回复", hi: "उत्तर का मसौदा", ar: "صياغة رد",
+  },
+  "mail.dir.inbound": {
+    en: "In", es: "Entrada", fr: "Reçu", de: "Ein", pt: "Entrada", it: "In arrivo", ja: "受信", zh: "收", hi: "आया", ar: "وارد",
+  },
+  "mail.dir.outbound": {
+    en: "Out", es: "Salida", fr: "Envoyé", de: "Aus", pt: "Saída", it: "In uscita", ja: "送信", zh: "发", hi: "गया", ar: "صادر",
+  },
+  "mail.state.received": {
+    en: "Received", es: "Recibido", fr: "Reçu", de: "Empfangen", pt: "Recebido", it: "Ricevuto", ja: "受信済み", zh: "已收到", hi: "प्राप्त", ar: "مستلَم",
+  },
+  "mail.state.draft": {
+    en: "Draft — held for you", es: "Borrador — retenido para ti", fr: "Brouillon — en attente de vous", de: "Entwurf — für dich zurückgehalten", pt: "Rascunho — retido para ti", it: "Bozza — in attesa di te", ja: "下書き — 承認待ち", zh: "草稿 — 待你处理", hi: "मसौदा — आपके लिए रुका", ar: "مسودة — بانتظارك",
+  },
+  "mail.state.sent": {
+    en: "Sent", es: "Enviado", fr: "Envoyé", de: "Gesendet", pt: "Enviado", it: "Inviato", ja: "送信済み", zh: "已发送", hi: "भेजा गया", ar: "أُرسِل",
+  },
+  "mail.state.staged": {
+    en: "Approved · held (no mail server)", es: "Aprobado · retenido (sin servidor de correo)", fr: "Approuvé · retenu (pas de serveur de messagerie)", de: "Freigegeben · zurückgehalten (kein Mailserver)", pt: "Aprovado · retido (sem servidor de correio)", it: "Approvato · trattenuto (nessun server di posta)", ja: "承認済み・保留（メールサーバーなし）", zh: "已批准 · 保留（无邮件服务器）", hi: "स्वीकृत · रुका (कोई मेल सर्वर नहीं)", ar: "معتمد · محتجَز (لا خادم بريد)",
+  },
+  "mail.state.discarded": {
+    en: "Discarded", es: "Descartado", fr: "Rejeté", de: "Verworfen", pt: "Descartado", it: "Scartato", ja: "破棄済み", zh: "已丢弃", hi: "हटाया गया", ar: "مُتجاهَل",
+  },
   "aim.title": {
     en: "What you're working on", es: "En qué estás trabajando", fr: "Ce sur quoi vous travaillez", de: "Woran du arbeitest", pt: "No que está a trabalhar", it: "A cosa stai lavorando", ja: "取り組んでいること", zh: "你在努力的事", hi: "आप किस पर काम कर रहे हैं", ar: "ما تعمل عليه",
   },

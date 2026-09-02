@@ -44,6 +44,7 @@ from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons
 from . import continuity
 from . import crashwatch
 from . import dialer
+from . import mailbox
 from . import reachout
 from . import help as help_mod
 from . import calm as calm_mod
@@ -64,6 +65,7 @@ from .models import (
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     ReachOutBegin, ReachOutDigit, ReachOutHeard,
+    MailReceive, MailCompose, MailModerate,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet, FloorSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     AccessReportSubmit,
@@ -115,7 +117,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="3.0.2",
+    app = FastAPI(title="JIM-mini / Guardian", version="3.0.3",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2094,6 +2096,68 @@ def create_app(qrme_client: QRMEClient | None = None,
             return reachout.unreached(call_id)
         except ValueError as exc:
             raise HTTPException(404, i18n.raised(exc)) from None
+
+    # -- the moderated mailbox (jim/mailbox.py) -----------------------------
+    # The coach agent's correspondence — read, draft, reply, moderate — with
+    # every send held for a person to approve. Owner-gated: this is the
+    # account holder's own mailbox and its moderation queue. Nothing here sends
+    # on its own; `moderate` with approve is the only path that carries a
+    # message out, over SMTP when configured and staged otherwise.
+
+    @app.get("/mail/{user_id}/posture")
+    def mail_posture(user_id: str, request: Request) -> dict:
+        """What the mailbox is: which way mail can carry, and that every send
+        waits on a person."""
+        _user_or_404(user_id, request)
+        return mailbox.posture()
+
+    @app.get("/mail/{user_id}")
+    def mail_inbox(user_id: str, request: Request) -> list[dict]:
+        """Every thread on this account, newest first, each with its messages
+        and any held drafts."""
+        _user_or_404(user_id, request)
+        return mailbox.inbox(user_id)
+
+    @app.post("/mail/{user_id}/receive", status_code=201)
+    def mail_receive(user_id: str, body: MailReceive, request: Request) -> dict:
+        """Take an inbound email into a thread for the agent to answer."""
+        _user_or_404(user_id, request)
+        try:
+            return mailbox.receive(user_id, from_addr=body.from_addr,
+                                   subject=body.subject, body=body.body,
+                                   role=body.role)
+        except ValueError as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.post("/mail/{user_id}/message/{message_id}/draft", status_code=201)
+    def mail_draft(user_id: str, message_id: str, request: Request) -> dict:
+        """Have the agent compose a reply, held for approval."""
+        _user_or_404(user_id, request)
+        try:
+            return mailbox.draft(user_id, message_id)
+        except ValueError as exc:
+            raise HTTPException(404, i18n.raised(exc)) from None
+
+    @app.post("/mail/{user_id}/compose", status_code=201)
+    def mail_compose(user_id: str, body: MailCompose, request: Request) -> dict:
+        """Start an outbound message the agent writes, held for approval."""
+        _user_or_404(user_id, request)
+        try:
+            return mailbox.compose(user_id, to=body.to, subject=body.subject,
+                                   objective=body.objective, role=body.role)
+        except ValueError as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.post("/mail/{user_id}/draft/{draft_id}/moderate")
+    def mail_moderate(user_id: str, draft_id: str, body: MailModerate,
+                      request: Request) -> dict:
+        """A person's decision on a held draft: approve, edit, or discard."""
+        _user_or_404(user_id, request)
+        try:
+            return mailbox.moderate(user_id, draft_id, body.action,
+                                    edited=body.edited)
+        except ValueError as exc:
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     # -- the medicine cabinet (jim/meds.py) ---------------------------------
     # What the user takes, in their words. JIM is not a pharmacist: it

@@ -77,3 +77,4 @@ Studio          40
 Watch           41   # the shell; its 36 faces are docs/watch's own gallery
 Hands           42
 Capabilities    43
+Mail            44

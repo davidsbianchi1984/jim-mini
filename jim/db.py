@@ -320,6 +320,37 @@ CREATE TABLE IF NOT EXISTS do_not_call (
     PRIMARY KEY (user_id, channel)
 );
 
+-- The moderated mailbox (jim/mailbox.py): the coach agent's correspondence,
+-- and — when this seam is lifted into QRME — a synthetic profile's, answering
+-- in its profession. A thread is one conversation with one correspondent;
+-- every message the agent would send is composed as a DRAFT and held for a
+-- person to approve, edit, or discard before a byte leaves. Nothing
+-- auto-sends: moderation is the gate, the same shape the 911 dialer holds its
+-- send with (jim/dialer.py). `role` carries the voice (coach, or a profession).
+CREATE TABLE IF NOT EXISTS mail_threads (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id),
+    role          TEXT NOT NULL,   -- coach | <a profile's profession>
+    correspondent TEXT NOT NULL,   -- the email address on the other end
+    subject       TEXT NOT NULL,
+    status        TEXT NOT NULL,   -- open | closed
+    created_at    TEXT NOT NULL,
+    updated_at    TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS mail_messages (
+    id            TEXT PRIMARY KEY,
+    thread_id     TEXT NOT NULL REFERENCES mail_threads(id),
+    user_id       TEXT NOT NULL,
+    direction     TEXT NOT NULL,   -- inbound | outbound
+    state         TEXT NOT NULL,   -- received | draft | sent | staged | discarded
+    from_addr     TEXT NOT NULL DEFAULT '',
+    to_addr       TEXT NOT NULL DEFAULT '',
+    subject       TEXT NOT NULL DEFAULT '',
+    body          TEXT NOT NULL,
+    created_at    TEXT NOT NULL,
+    updated_at    TEXT NOT NULL
+);
+
 -- The Apple Watch bridge (jim/watch.py): one drip channel per user, the
 -- address an iPhone Shortcut deposits readings at. The token is stored in
 -- the clear, deliberately breaking the never-return-the-secret house rule,

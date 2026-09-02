@@ -1003,6 +1003,38 @@ export interface ReachOutStatus {
   started_at?: string;
   calls: ReachOutCall[];
 }
+/** The moderated mailbox's posture — which way mail can carry, and that every
+ * send is held for a person. Outbound is as wired as the deployment's SMTP is;
+ * inbound arrives automatically once a provider webhook or IMAP poll is wired. */
+export interface MailboxPosture {
+  built: boolean;
+  outbound_transport: string;   // smtp | console
+  outbound_ready: boolean;
+  inbound_ready: boolean;
+  moderated: boolean;
+  directions: string[];
+  note: string;
+}
+export interface MailMessage {
+  id: string;
+  direction: string;            // inbound | outbound
+  state: string;                // received | draft | sent | staged | discarded
+  from_addr: string;
+  to_addr: string;
+  subject: string;
+  body: string;
+  created_at: string;
+}
+export interface MailThread {
+  id: string;
+  role: string;                 // coach | <a profile's profession>
+  correspondent: string;
+  subject: string;
+  status: string;               // open | closed
+  updated_at: string;
+  held_drafts: number;
+  messages: MailMessage[];
+}
 export interface MealRow {
   id: string;
   note?: string | null;
@@ -1712,6 +1744,32 @@ export const api = {
     situation: string; life_threatening: boolean;
   }, token: string) =>
     req<ReachOutStatus>(`/reachout/${uid}`, { method: "POST", body, token }),
+
+  // The moderated mailbox: the coach agent reads, drafts, and replies, but
+  // every send is held for a person to approve. Nothing leaves on its own.
+  mailPosture: (uid: string, token: string) =>
+    req<MailboxPosture>(`/mail/${uid}/posture`, { token }),
+  mailInbox: (uid: string, token: string) =>
+    req<MailThread[]>(`/mail/${uid}`, { token }),
+  mailReceive: (uid: string, body: {
+    from_addr: string; subject: string; body: string;
+  }, token: string) =>
+    req<{ thread_id: string; message: MailMessage }>(
+      `/mail/${uid}/receive`, { method: "POST", body, token }),
+  mailDraft: (uid: string, messageId: string, token: string) =>
+    req<{ thread_id: string; draft: MailMessage }>(
+      `/mail/${uid}/message/${messageId}/draft`, { method: "POST", token }),
+  mailCompose: (uid: string, body: {
+    to: string; subject: string; objective: string;
+  }, token: string) =>
+    req<{ thread_id: string; draft: MailMessage }>(
+      `/mail/${uid}/compose`, { method: "POST", body, token }),
+  mailModerate: (uid: string, draftId: string, body: {
+    action: "approve" | "edit" | "discard"; edited?: string;
+  }, token: string) =>
+    req<{ status: string; message?: MailMessage; draft?: MailMessage;
+          reason?: string }>(
+      `/mail/${uid}/draft/${draftId}/moderate`, { method: "POST", body, token }),
 
   // The journal: text or spoken, sealed on private plans.
   addJournal: (uid: string, text: string, token: string) =>

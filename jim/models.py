@@ -1278,3 +1278,34 @@ class ReachOutHeard(BaseModel):
     """What the contact said on the line, for JIM's next spoken turn."""
 
     heard: str = ""
+
+
+class MailReceive(BaseModel):
+    """An inbound email taken into the moderated mailbox — who it is from, what
+    it is about, and its body. ``role`` chooses the voice that will answer it
+    (the coach by default)."""
+
+    from_addr: str
+    subject: str = ""
+    body: str
+    role: str = "coach"
+
+
+class MailCompose(BaseModel):
+    """An outbound email the agent originates: who it goes to, its subject, and
+    what it should accomplish — the agent writes it and it is held for a person
+    to approve, same as a reply."""
+
+    to: str
+    subject: str = ""
+    objective: str
+    role: str = "coach"
+
+
+class MailModerate(BaseModel):
+    """A person's decision on a held draft: ``approve`` to send, ``edit`` to
+    replace the body (in ``edited``) and keep it held, ``discard`` to throw it
+    away."""
+
+    action: str
+    edited: str = ""
