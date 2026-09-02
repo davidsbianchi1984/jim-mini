@@ -311,11 +311,10 @@ them); the links under them are the product.
 
 ## Feature reference: every behaviour, defined
 
-Each entry below states a behaviour of the running product plainly enough
-to be checked against the code and found true or false. The screens are
-photographs of the running console, taken by `tools/shoot_screens.py`
-from the live app — a photograph outranks a drawing as evidence; the
-full tour is [docs/gallery.md](docs/gallery.md).
+Each entry below states a behaviour of the running product plainly
+enough to be checked against the code and found true or false, with
+screenshots of the running console beside it. The full tour is
+[docs/gallery.md](docs/gallery.md).
 
 <table>
   <tr>
