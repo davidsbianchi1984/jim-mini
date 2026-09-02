@@ -462,6 +462,31 @@ See [docs/hosting.md](docs/hosting.md) for production deployment and
 | [docs/releasing.md](docs/releasing.md) | How releases are cut. |
 | [docs/gallery.md](docs/gallery.md) | The full desktop and phone screen gallery. |
 
+## The console, driven
+
+Every picture below was photographed while `tools/walkthrough.py` drove
+the 3.0.0 release gate: a live backend, a member enrolled during the
+run, and whatever the drive put on screen still on it. Nothing here is
+staged — the monitor shows the reading the drip channel actually
+carried, the check-in is the one the harness logged, and the care team
+holds the invitation that actually went out. Re-take the set with
+`python3 tools/walkthrough.py`.
+
+<table>
+<tr>
+<td align="center" width="50%"><a href="docs/walkthrough/01-home.png"><img src="docs/walkthrough/01-home.png" width="460" alt="Home — the front door"></a><br><sub>Home — the front door</sub></td>
+<td align="center" width="50%"><a href="docs/walkthrough/02-monitor.png"><img src="docs/walkthrough/02-monitor.png" width="460" alt="Monitor — the reading that landed"></a><br><sub>Monitor — the reading that landed</sub></td>
+</tr>
+<tr>
+<td align="center" width="50%"><a href="docs/walkthrough/03-checkin.png"><img src="docs/walkthrough/03-checkin.png" width="460" alt="Check-in — logged during the drive"></a><br><sub>Check-in — logged during the drive</sub></td>
+<td align="center" width="50%"><a href="docs/walkthrough/04-coach.png"><img src="docs/walkthrough/04-coach.png" width="460" alt="Coach — answering in its own shape"></a><br><sub>Coach — answering in its own shape</sub></td>
+</tr>
+<tr>
+<td align="center" width="50%"><a href="docs/walkthrough/05-careteam.png"><img src="docs/walkthrough/05-careteam.png" width="460" alt="Care team — the invitation out"></a><br><sub>Care team — the invitation out</sub></td>
+<td align="center" width="50%"><a href="docs/walkthrough/06-channel.png"><img src="docs/walkthrough/06-channel.png" width="460" alt="Channel — the drip road minted"></a><br><sub>Channel — the drip road minted</sub></td>
+</tr>
+</table>
+
 ## Release history
 
 <details>
