@@ -83,8 +83,14 @@ def test_unanswered_attempts_trip_and_summon_the_programmed_help(client):
     detail = _json.loads(row["detail"])
     assert detail["trusted"] == "Rosa"
     assert detail["unanswered_attempts"] == 3
-    assert detail["emergency_services"]["requested"] is True
-    assert "cannot itself place a call" in detail["emergency_services"]["note"]
+    # The connection is assembled and routed to the dialer, and the dialer
+    # holds the send shut — see jim/dialer.py. The record carries both the
+    # request and the held truth, and never claims a call was placed.
+    ems = detail["emergency_services"]
+    assert ems["requested"] is True
+    assert ems["assembled"] is True and ems["routed"] is True
+    assert ems["placed"] is False and ems["held"] is True
+    assert "does not place the call" in ems["reason"]
 
 
 def test_without_the_ticked_box_no_emergency_services(client):

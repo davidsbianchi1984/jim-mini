@@ -74,7 +74,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 
-from . import audit, db
+from . import audit, db, dialer
 
 # The one severity that opens a concern: the clinical detector's
 # "critical" — the severity that already escalates. Never "guidance"
@@ -373,15 +373,22 @@ def _trip(user_id: str, row, t: datetime) -> dict:
         "clipped_by_ceiling": decision["clipped_by_ceiling"],
         "escalation_path": decision["path"],
         # True on both settings of the box: what the tick changes is whether
-        # a dispatch request is relayed, not whether a call was placed.
+        # the emergency connection is assembled and routed, not whether a
+        # call was placed — the dialer holds the send shut either way.
         "call_emergency_services_yourself": True,
-        # Recorded as a *request*, in words that stay honest about what a
-        # local app can and cannot do — see the module docstring.
+        # When the box is ticked, the connection is actually MADE now: the
+        # briefing is assembled and handed to the dialer, which routes it to
+        # the emergency number and holds the send (jim/dialer.py). The receipt
+        # is honest — everything but the dial happened — and it can never
+        # claim a call, because the dialer has no path that places one.
         "emergency_services": (
             {"requested": True,
-             "note": "dispatch requested via every connected system; this "
-                     "app cannot itself place a call"}
-            if row["contact_ems"] else {"requested": False}),
+             **dialer.place(
+                 {"who": row["trusted_name"], "concern": row["concern"],
+                  "unanswered_attempts": row["attempts"],
+                  "channels": dispatched},
+                 user_id=user_id)}
+            if row["contact_ems"] else {"requested": False, "held": None}),
     }
     conn = db.connect()
     now_iso = db.utcnow()

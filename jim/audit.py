@@ -66,6 +66,7 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "alarm.escalate": ("safety", "the trusted channel was paged again; the first page was not the only one"),
     "beacon.alarm": ("safety", "a passer-by raised an alarm from a care beacon"),
     "emergency.raise": ("safety", "the account holder pressed Get help now"),
+    "dial.held": ("safety", "an emergency connection was assembled and routed to the dialer, and the dialer held the send shut — no call was placed"),
 
     # -- money: no transaction can occur, so the audited act is the grant ---
     "mandate.set": ("money", "a written mandate over money was granted, with caps"),
