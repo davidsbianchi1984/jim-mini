@@ -1669,6 +1669,43 @@ export const api = {
   imOkay: (uid: string, token: string) =>
     req<CrashWatchStatus>(`/crash-watch/${uid}/respond`, { method: "POST", token }),
 
+  // The reach-out cascade: JIM calling emergency contacts one after another,
+  // and the 911 dialer held shut beneath them (jim/reachout.py, jim/dialer.py).
+  // The dialer posture is the honest status — built, how a call would be
+  // carried, and that the 911 send stays shut. `beginReachOut` opens the
+  // cascade; the call-id doors carry the keypad choice and the conversation,
+  // the same handlers a telephony provider's webhooks will turn once one is
+  // wired. No call rings until then.
+  dialerPosture: () =>
+    req<{ built: boolean; send_enabled: boolean; would_reach: string;
+          transport_kind: string; transport_kinds: string[];
+          provider: string; providers: string[];
+          transport_ready: boolean; note: string }>(`/dialer/posture`),
+  beginReachOut: (uid: string, body: {
+    contacts: { name: string; channel: string }[];
+    situation: Record<string, string>; life_threatening: boolean;
+  }, token: string) =>
+    req<{ status: string; reachout_id: string;
+          call?: { id: string; name: string };
+          dialer?: Record<string, unknown> }>(
+      `/reachout/${uid}`, { method: "POST", body, token }),
+  reachOutStatus: (reachoutId: string, token: string) =>
+    req<{ id: string; status: string; life_threatening: boolean;
+          calls: { id: string; name: string; status: string }[] }>(
+      `/reachout/${reachoutId}`, { token }),
+  reachOutConsent: (callId: string, digit: string) =>
+    req<{ status: string }>(
+      `/reachout/call/${callId}/consent`, { method: "POST", body: { digit } }),
+  reachOutSay: (callId: string, heard: string) =>
+    req<{ status: string; said: string }>(
+      `/reachout/call/${callId}/say`, { method: "POST", body: { heard } }),
+  reachOutReached: (callId: string) =>
+    req<{ status: string }>(
+      `/reachout/call/${callId}/reached`, { method: "POST" }),
+  reachOutUnreached: (callId: string) =>
+    req<{ status: string }>(
+      `/reachout/call/${callId}/unreached`, { method: "POST" }),
+
   // The journal: text or spoken, sealed on private plans.
   addJournal: (uid: string, text: string, token: string) =>
     req<{ id: string; vaulted: boolean }>(
