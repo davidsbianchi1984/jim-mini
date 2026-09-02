@@ -2868,6 +2868,42 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    # The reach-out cascade (jim/reachout.py). JIM calling emergency
+    # contacts one after another — these are the three ways that can be
+    # asked to do something it cannot.
+    'a reach-out needs at least one emergency contact': {
+        'es': 'un aviso necesita al menos un contacto de emergencia',
+        'fr': "un appel en cascade a besoin d'au moins un contact d'urgence",
+        'de': 'ein Notruf-Durchlauf braucht mindestens einen Notfallkontakt',
+        'pt': 'um alerta precisa de pelo menos um contacto de emergência',
+        'it': 'un avviso richiede almeno un contatto di emergenza',
+        'ja': '緊急連絡先が少なくとも一人必要です',
+        'zh': '至少需要一位紧急联系人',
+        'hi': 'कम से कम एक आपातकालीन संपर्क चाहिए',
+        'ar': 'يلزم جهة اتصال طوارئ واحدة على الأقل',
+    },
+    'no such reach-out': {
+        'es': 'no existe ese aviso',
+        'fr': "cet appel en cascade n'existe pas",
+        'de': 'diesen Notruf-Durchlauf gibt es nicht',
+        'pt': 'esse alerta não existe',
+        'it': 'questo avviso non esiste',
+        'ja': 'その緊急連絡はありません',
+        'zh': '没有这个求助流程',
+        'hi': 'ऐसा कोई अलर्ट नहीं है',
+        'ar': 'لا يوجد هذا الطلب',
+    },
+    'this call is not in a conversation': {
+        'es': 'esta llamada no está en una conversación',
+        'fr': "cet appel n'est pas dans une conversation",
+        'de': 'dieser Anruf ist in keinem Gespräch',
+        'pt': 'esta chamada não está numa conversa',
+        'it': 'questa chiamata non è in una conversazione',
+        'ja': 'この通話は会話中ではありません',
+        'zh': '此通话不在对话中',
+        'hi': 'यह कॉल किसी बातचीत में नहीं है',
+        'ar': 'هذه المكالمة ليست في محادثة',
+    },
     # The hands. Carried from the sibling word for word — a refusal a
     # person meets on one console and then on the other has to say the
     # same thing in their own language.
