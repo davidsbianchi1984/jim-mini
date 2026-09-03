@@ -1099,7 +1099,7 @@ RATCHETS: tuple[Ratchet, ...] = (
     # `test_no_registered_floor_is_decoration` asks of every row here.
     Ratchet("suite.guard_names", 1685, _guard_names,
             "test functions this suite declares"),
-    Ratchet("sweep.files_parsed", 130, _files_swept,
+    Ratchet("sweep.files_parsed", 208, _files_swept,
             "test files the bare-floor sweep can read"),
     Ratchet("knowledge.entries", 39, _pack_entries,
             "hand-written entries in the offline pack"),
