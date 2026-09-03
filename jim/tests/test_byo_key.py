@@ -60,8 +60,9 @@ def test_the_key_reaches_the_provider_build(client, monkeypatch):
     seen: dict = {}
 
     class FakeAnthropic:
-        def __init__(self, api_key=None):
+        def __init__(self, api_key=None, timeout=None):
             seen["api_key"] = api_key
+            seen["timeout"] = timeout      # JIM_LLM_TIMEOUT bounds this path too
             raise RuntimeError("stop here — construction is the assertion")
 
     import sys
@@ -81,6 +82,7 @@ def test_the_key_reaches_the_provider_build(client, monkeypatch):
     # The failed construction degrades to the stub — the reply still comes.
     assert r.status_code == 200, r.text
     assert seen["api_key"] == "sk-their-own"
+    assert seen["timeout"] == 30            # the default ceiling, on every path
 
 
 def test_the_key_is_never_persisted(client):
