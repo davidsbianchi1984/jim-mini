@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-09-03
+
+### Fixed
+
+- **The image carries what the box runs.** With the hosted cloud's
+  profiles in place the first probe got through every wall — the
+  namespaces raised, the hidden places mounted, the interpreter running
+  inside — and fell on `import pytest`: the runtime image installed only
+  what the server needs. The image installs the dev extra now, on
+  purpose, because the box runs the tests a drafted edit names inside
+  the container. And the tree the box copies is named by
+  `JIM_SOURCE_DIR`, which the image sets to `/srv`: the package the
+  server runs from is the installed one in site-packages, and its parent
+  is not a tree. A test reads the Dockerfile for both.
+
 ## [3.1.0] - 2026-09-03
 
 ### Changed
@@ -12204,7 +12219,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.1...HEAD
+[3.1.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.0...app-v3.1.1
 [3.1.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.11...app-v3.1.0
 [3.0.11]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.10...app-v3.0.11
 [3.0.10]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.9...app-v3.0.10

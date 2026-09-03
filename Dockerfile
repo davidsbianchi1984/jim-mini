@@ -32,12 +32,18 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     JIM_DB=/data/jim.db \
-    JIM_CONSOLE_DIR=/srv/app/dist
+    JIM_CONSOLE_DIR=/srv/app/dist \
+    JIM_SOURCE_DIR=/srv
 
 WORKDIR /srv
 COPY pyproject.toml README.md ./
 COPY jim/ ./jim/
-RUN pip install --no-cache-dir .
+# The dev extra is pytest, and it ships on purpose: the assistant's box
+# (jim/workroom.py) runs the tests a drafted edit names inside the container,
+# on a copy of the tree at /srv — which is why JIM_SOURCE_DIR names it above.
+# The package the server runs from is the installed one; the tree at /srv is
+# what the box copies.
+RUN pip install --no-cache-dir ".[dev]"
 
 # The built console, mounted by the API at /app. JIM_CONSOLE_DIR points at it
 # explicitly: the installed package lives in site-packages, so the relative

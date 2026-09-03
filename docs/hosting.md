@@ -80,6 +80,7 @@ or any container platform is the right shape.
 
 | Variable | Why |
 |---|---|
+| `JIM_SOURCE_DIR` | The source tree the box copies for a room. Unset, the parent of the installed package — the repository, in a checkout. The image sets `/srv`, where its copy of the tree is, because the package the server runs from lives in site-packages and its parent is not a tree. The image also ships pytest, which the box runs. |
 | `JIM_WORKROOMS` | Where the coding assistant's box builds its rooms — a copy of the tree with a draft applied, its tests run inside four walls. Default: `jim-workrooms` under the system temp directory. It must sit outside `/home`, `/root`, `/srv` and `/data`, because those are hidden inside the box and a room under one of them cannot see itself. |
 
 **On a hosted cloud.** Inside a container the box needs what Docker's

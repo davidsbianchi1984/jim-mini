@@ -89,7 +89,17 @@ from . import db, i18n
 
 log = logging.getLogger("jim.workroom")
 
-REPO = Path(__file__).resolve().parent.parent
+def source_dir() -> Path:
+    """The source tree the box copies: ``JIM_SOURCE_DIR`` when set — the
+    image sets it to ``/srv``, where the tree is, because the package the
+    server runs from is installed into site-packages and its parent is
+    not a tree — else the parent of this package, which in a checkout is
+    the repository."""
+    given = (os.environ.get("JIM_SOURCE_DIR") or "").strip()
+    return Path(given).resolve() if given else Path(__file__).resolve().parent.parent
+
+
+REPO = source_dir()
 
 #: The ceilings, carried into the child before it starts. ``processes`` is
 #: headroom over what the run's user already has, not a flat count.

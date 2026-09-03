@@ -580,6 +580,20 @@ def test_a_busy_server_is_not_its_own_process_ceiling(tmp_path, monkeypatch, roo
         stop.set()
 
 
+def test_the_image_carries_what_the_box_runs(monkeypatch, tmp_path):
+    """The first probe on the hosted cloud got through every wall and fell
+    on `import pytest`: the runtime image installed only what the server
+    needs, and the tree the box copies was the installed package's parent
+    — site-packages — rather than the source at /srv. Both are pinned."""
+    text = (Path(workroom.__file__).resolve().parent.parent / "Dockerfile").read_text(encoding="utf-8")
+    assert 'pip install --no-cache-dir ".[dev]"' in text, "the image does not ship pytest"
+    assert "JIM_SOURCE_DIR=/srv" in text, "the image does not say where the tree is"
+    monkeypatch.setenv("JIM_SOURCE_DIR", str(tmp_path))
+    assert workroom.source_dir() == tmp_path.resolve()
+    monkeypatch.delenv("JIM_SOURCE_DIR")
+    assert (workroom.source_dir() / "pyproject.toml").is_file()
+
+
 # --- the door, the owner, and oversight ----------------------------------------
 
 def _file(client, uid, patch):
